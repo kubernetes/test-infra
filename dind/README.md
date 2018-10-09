@@ -1,3 +1,12 @@
+# **dind/ is deprecated**
+
+A major refactor is under way at [sigs.k8s.io/kind](https://github.com/kubernetes-sigs/kind)
+
+TODO(bentheelder): remove this directory soon.
+
+----------------------------------------------
+----------------------------------------------
+
 # A dind test cluster for Kubernetes CI
 
 This is a docker-in-docker-in-docker cluster for integration testing. The nodes are

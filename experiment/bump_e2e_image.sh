@@ -43,10 +43,10 @@ TAG="${DATE}-$(git describe --tags --always --dirty)"
  
 make -C "${TREE}/images/kubekins-e2e" push
 K8S=experimental make -C "${TREE}/images/kubekins-e2e" push
+K8S=1.12 make -C "${TREE}/images/kubekins-e2e" push
 K8S=1.11 make -C "${TREE}/images/kubekins-e2e" push
 K8S=1.10 make -C "${TREE}/images/kubekins-e2e" push
 K8S=1.9 make -C "${TREE}/images/kubekins-e2e" push
-K8S=1.8 make -C "${TREE}/images/kubekins-e2e" push
 
 echo "TAG = ${TAG}"
 
@@ -57,7 +57,6 @@ $SED -i "s/\\/kubekins-e2e:v.*-\\(.*\\)$/\\/kubekins-e2e:${TAG}-\\1/" "${TREE}/e
 bazel run //experiment:generate_tests -- \
   "--yaml-config-path=${TREE}/experiment/test_config.yaml" \
   "--output-dir=${TREE}/config/jobs/kubernetes/generated/"
-bazel run //jobs:config_sort
 
 # Scan for kubekins-e2e:v.* as a rudimentary way to avoid
 # replacing :latest.

@@ -1,0 +1,61 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-local-e2e
+    branches:
+    - master
+    always_run: false
+    skip_report: false
+    max_concurrency: 8
+    optional: true
+    run_if_changed: '(hyperkube|local-up-cluster)'
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+        args:
+        - --root=/go/src
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=140"
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --deployment=local
+        - --ginkgo-parallel=1
+        - --provider=local
+        - --test_args=--ginkgo.focus=\[Conformance\]
+        - --timeout=120m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+
+periodics:
+- name: ci-kubernetes-local-e2e
+  interval: 60m
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      args:
+      - "--timeout=140"
+      - "--bare"
+      - --scenario=kubernetes_e2e
+      - --
+      - --deployment=local
+      - --extract=ci/latest
+      - --extract-source
+      - --ginkgo-parallel=1
+      - --provider=local
+      - --test_args=--ginkgo.focus=\[Conformance\]
+      - --timeout=120m
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true

@@ -45,6 +45,11 @@ func (o Options) Run() error {
 			// failed one.
 		}
 	}
+	if len(o.HostFingerprints) > 0 {
+		if err := addHostFingerprints(o.HostFingerprints); err != nil {
+			logrus.WithError(err).Error("failed to add host fingerprints")
+		}
+	}
 
 	var numWorkers int
 	if o.MaxParallelWorkers != 0 {
@@ -62,7 +67,7 @@ func (o Options) Run() error {
 		go func() {
 			defer wg.Done()
 			for ref := range input {
-				output <- clone.Run(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail, env)
+				output <- clone.Run(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail, o.CookiePath, env)
 			}
 		}()
 	}
@@ -89,6 +94,21 @@ func (o Options) Run() error {
 		return fmt.Errorf("failed to write clone records: %v", err)
 	}
 
+	return nil
+}
+
+func addHostFingerprints(fingerprints []string) error {
+	path := filepath.Join(os.Getenv("HOME"), ".ssh", "known_hosts")
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("could not create/append to %s: %v", path, err)
+	}
+	if _, err := f.Write([]byte(strings.Join(fingerprints, "\n"))); err != nil {
+		return fmt.Errorf("failed to write fingerprints to %s: %v", path, err)
+	}
+	if err := f.Close(); err != nil {
+		return fmt.Errorf("failed to close %s: %v", path, err)
+	}
 	return nil
 }
 

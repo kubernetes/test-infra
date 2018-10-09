@@ -11,7 +11,7 @@ ghCache also provides prometheus instrumentation to expose cache activity and AP
 ## Why?
 
 The most important behavior of ghCache is the mandatory cache entry revalidation.
-While this property would cause most API caches to use tokens excessively, in the case of GitHub, we can actually save API tokens. This is because because conditional requests for unchanged resources don't cost any API tokens!!! See: https://developer.github.com/v3/#conditional-requests
+While this property would cause most API caches to use tokens excessively, in the case of GitHub, we can actually save API tokens. This is because conditional requests for unchanged resources don't cost any API tokens!!! See: https://developer.github.com/v3/#conditional-requests
 Free revalidation allows us to ensure that every request is satisfied with the most up to date resource without actually spending an API token unless the resource has been updated since we last checked it.
 
 Request coalescing is beneficial for use cases in which the same resource is requested multiple times in rapid succession. Normally these requests would each result in an upstream request to GitHub, potentially costing API tokens, but with request coalescing at most one token is used.

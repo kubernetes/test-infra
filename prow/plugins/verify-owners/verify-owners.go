@@ -35,21 +35,21 @@ import (
 )
 
 const (
-	pluginName     = "verify-owners"
+	PluginName     = "verify-owners"
 	ownersFileName = "OWNERS"
 )
 
 var (
-	invalidOwnersLabel = "do-not-merge/invalid-owners-file"
+	InvalidOwnersLabel = "do-not-merge/invalid-owners-file"
 )
 
 func init() {
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
+	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	return &pluginhelp.PluginHelp{
-			Description: fmt.Sprintf("The verify-owners plugin validates %s files if they are modified in a PR. On validation failure it automatically adds the '%s' label to the PR, and a review comment on the incriminating file(s).", ownersFileName, invalidOwnersLabel),
+			Description: fmt.Sprintf("The verify-owners plugin validates %s files if they are modified in a PR. On validation failure it automatically adds the '%s' label to the PR, and a review comment on the incriminating file(s).", ownersFileName, InvalidOwnersLabel),
 		},
 		nil
 }
@@ -185,7 +185,7 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 		if len(wrongOwnersFiles) == 1 {
 			s = ""
 		}
-		if err := ghc.AddLabel(org, repo, pre.Number, invalidOwnersLabel); err != nil {
+		if err := ghc.AddLabel(org, repo, pre.Number, InvalidOwnersLabel); err != nil {
 			return err
 		}
 		log.Debugf("Creating a review for %d %s file%s.", len(wrongOwnersFiles), ownersFileName, s)
@@ -204,8 +204,8 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 			Action:   github.Comment,
 			Comments: comments,
 		}
-		if pre.PullRequest.MergeSHA != nil {
-			draftReview.CommitSHA = *pre.PullRequest.MergeSHA
+		if pre.PullRequest.Head.SHA != "" {
+			draftReview.CommitSHA = pre.PullRequest.Head.SHA
 		}
 		err := ghc.CreateReview(org, repo, pre.Number, draftReview)
 		if err != nil {
@@ -215,9 +215,9 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 		// Don't bother checking if it has the label...it's a race, and we'll have
 		// to handle failure due to not being labeled anyway.
 		labelNotFound := true
-		if err := ghc.RemoveLabel(org, repo, pre.Number, invalidOwnersLabel); err != nil {
+		if err := ghc.RemoveLabel(org, repo, pre.Number, InvalidOwnersLabel); err != nil {
 			if _, labelNotFound = err.(*github.LabelNotFound); !labelNotFound {
-				return fmt.Errorf("failed removing %s label: %v", invalidOwnersLabel, err)
+				return fmt.Errorf("failed removing %s label: %v", InvalidOwnersLabel, err)
 			}
 			// If the error is indeed *github.LabelNotFound, consider it a success.
 		}

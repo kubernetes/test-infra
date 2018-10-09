@@ -42,7 +42,7 @@ set -o nounset
 # these can be overridden but otherwise default to the current stable image
 # used to build kubernetes from the master branch
 IMAGE_NAME="${IMAGE_NAME:-gcr.io/k8s-testimages/planter}"
-TAG="${TAG:-0.14.0}"
+TAG="${TAG:-0.16.1}"
 IMAGE=${IMAGE:-${IMAGE_NAME}:${TAG}}
 
 # We want to mount our bazel workspace and the bazel cache
@@ -103,6 +103,11 @@ RUN_OPTS="${RUN_OPTS} -v ${REPO}:${REPO}:delegated"
 #   planter image.
 #   $PWD specifically can also make commands other than bazel more consistent
 RUN_OPTS="${RUN_OPTS} -w ${PWD}"
+
+# Preserve GOPATH if any
+if [ -n "${GOPATH:-}" ]; then
+    RUN_OPTS="${RUN_OPTS} -e GOPATH=${GOPATH}"
+fi
 
 # - pass through any extra user-supplied options
 if [ -n "${DOCKER_EXTRA:-}" ]; then

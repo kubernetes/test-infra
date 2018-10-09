@@ -6,6 +6,7 @@ go_library(
     importpath = "k8s.io/test-infra/testgrid/util/gcs",
     visibility = [
         "//prow/gcsupload:__subpackages__",
+        "//prow/spyglass:__subpackages__",
         "//testgrid:__subpackages__",
     ],
     deps = [

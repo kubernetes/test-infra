@@ -1,0 +1,97 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-typecheck
+    always_run: true
+    skip_report: false
+    skip_branches:
+    - release-1.9 # doesn't have typecheck
+    - release-1.10 # older go
+    - release-1.11 # older go
+    - release-1.12 # older go
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
+        - --scenario=execute
+        - --
+        - make
+        - verify
+        - WHAT=typecheck
+        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts
+  - name: pull-kubernetes-typecheck
+    always_run: true
+    skip_report: false
+    branches:
+    - release-1.12
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.12
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
+        - --scenario=execute
+        - --
+        - make
+        - verify
+        - WHAT=typecheck
+        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts
+  - name: pull-kubernetes-typecheck
+    always_run: true
+    skip_report: false
+    branches:
+    - release-1.11
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.11
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
+        - --scenario=execute
+        - --
+        - make
+        - verify
+        - WHAT=typecheck
+        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts
+  - name: pull-kubernetes-typecheck
+    always_run: true
+    skip_report: false
+    branches:
+    - release-1.10
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.10
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
+        - --scenario=execute
+        - --
+        - make
+        - verify
+        - WHAT=typecheck
+        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts

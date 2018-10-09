@@ -1,0 +1,644 @@
+periodics:
+# gce
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-scalability
+  tags:
+  - "perfDashPrefix: gce-100Nodes"
+  - "perfDashJobType: performance"
+  - "perfDashBuildsCount: 500"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=e2e-big
+      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-nodes=100
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
+      - --timeout=120m
+      - --use-logexporter
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+
+- cron: "0 */6 * * *" # every six hours
+  name: ci-kubernetes-e2e-gci-gce-scalability-beta
+  tags:
+  - "perfDashPrefix: gce-100Nodes-beta"
+  - "perfDashJobType: performance"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=e2e-big-beta
+      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-old-common.env
+      - --extract=ci/k8s-beta
+      - --gcp-node-image=gci
+      - --gcp-nodes=100
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
+      - --timeout=120m
+      - --use-logexporter
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+
+- cron: "0 0/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable2
+  name: ci-kubernetes-e2e-gci-gce-scalability-stable1
+  tags:
+  - "perfDashPrefix: gce-100Nodes-stable1"
+  - "perfDashJobType: performance"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=e2e-big-stable1
+      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-old-common.env
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-stable.env
+      - --extract=ci/k8s-stable1
+      - --gcp-node-image=gci
+      - --gcp-nodes=100
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
+      - --timeout=120m
+      - --use-logexporter
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+
+- cron: "0 3-21/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable1
+  name: ci-kubernetes-e2e-gci-gce-scalability-stable2
+  tags:
+  - "perfDashPrefix: gce-100Nodes-stable2"
+  - "perfDashJobType: performance"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=e2e-big-stable2
+      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-old-common.env
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-stable.env
+      - --extract=ci/k8s-stable2
+      - --gcp-node-image=gci
+      - --gcp-nodes=100
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
+      - --timeout=120m
+      - --use-logexporter
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+
+- cron: '1 6 * * 6' # Run at 22:01PST on Fri (06:01 UTC on Sat)
+  name: ci-kubernetes-e2e-gce-large-correctness
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=420
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=gce-scale-cluster
+      - --env=HEAPSTER_MACHINE_TYPE=n1-standard-8
+      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
+      - --extract=ci/latest
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-node-size=g1-small
+      - --gcp-nodes=2000
+      - --gcp-project=kubernetes-scale
+      - --gcp-zone=us-east1-b
+      - --ginkgo-parallel=40
+      - --provider=gce
+      - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8
+      - --timeout=390m
+      - --use-logexporter
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
+
+- cron: '1 13 * * 6' # Run at 5:01PST on Sat (13:01 UTC on Sat)
+  name: ci-kubernetes-e2e-gce-large-performance
+  tags:
+  - "perfDashPrefix: gce-2000Nodes"
+  - "perfDashJobType: performance"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=540
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=gce-scale-cluster
+      - --env=HEAPSTER_MACHINE_TYPE=n1-standard-8
+      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
+      - --extract=ci/latest
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-nodes=2000
+      - --gcp-project=kubernetes-scale
+      - --gcp-zone=us-east1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=masteranddns --gather-metrics-at-teardown=master
+      - --timeout=510m
+      - --use-logexporter
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
+
+- cron: '1 22 * * 6' # Run at 14:01PST on Sat (22:01 UTC on Sat)
+  name: ci-kubernetes-e2e-gce-scale-correctness
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=600
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=gce-scale-cluster
+      - --env=HEAPSTER_MACHINE_TYPE=n1-standard-16
+      - --env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell
+      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
+      - --extract=ci/latest
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-node-size=g1-small
+      - --gcp-nodes=5000
+      - --gcp-project=kubernetes-scale
+      - --gcp-zone=us-east1-b
+      - --ginkgo-parallel=40
+      - --provider=gce
+      - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
+      - --timeout=570m
+      - --use-logexporter
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
+
+- cron: '1 8 * * 1,2,3,4,5' # Run at 00:01PST (8:01 UTC) from Mon to Fri
+  name: ci-kubernetes-e2e-gce-scale-performance
+  tags:
+  - "perfDashPrefix: gce-5000Nodes"
+  - "perfDashJobType: performance"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=1320
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=gce-scale-cluster
+      - --env=ENABLE_APISERVER_ADVANCED_AUDIT=false
+      - --env=HEAPSTER_MACHINE_TYPE=n1-standard-16
+      - --env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell
+      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
+      - --extract=ci/latest
+      - --gcp-nodes=5000
+      - --gcp-project=kubernetes-scale
+      - --gcp-zone=us-east1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --node-schedulable-timeout=90m --gather-resource-usage=masteranddns --gather-metrics-at-teardown=master
+      - --timeout=1290m
+      - --use-logexporter
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
+
+# gke
+- cron: '1 8 * * 0' # Run at 00:01PST (8:01 UTC) on sunday
+  name: ci-kubernetes-e2e-gke-large-performance
+  tags:
+  - "perfDashPrefix: gke-2000Nodes"
+  - "perfDashJobType: performance"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=600
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=gke-scale-cluster
+      - --deployment=gke
+      - --extract=ci/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project=kubernetes-scale
+      - --gcp-zone=us-east1-a
+      - --gke-command-group=beta
+      - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19
+      - --gke-environment=test
+      - '--gke-shape={"default":{"Nodes":1999,"MachineType":"n1-standard-1"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-8"}}'
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:Performance\]
+      - --timeout=570m
+      - --use-logexporter
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
+
+- cron: '1 8 * * 0' # Run at 00:01PST (8:01 UTC) on sunday
+  name: ci-kubernetes-e2e-gke-large-performance-regional
+  tags:
+  - "perfDashPrefix: gke-2000Nodes-regional"
+  - "perfDashJobType: performance"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=600
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=gke-regional-cluster
+      - --deployment=gke
+      - --extract=ci/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project=kubernetes-scale
+      - --gcp-region=us-east1
+      - --gke-command-group=beta
+      - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet-regional --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19
+      - --gke-environment=staging
+      - --gke-node-locations=us-east1-a
+      - '--gke-shape={"default":{"Nodes":1999,"MachineType":"n1-standard-1"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-8"}}'
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:Performance\]
+      - --timeout=570m
+      - --use-logexporter
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
+
+- cron: '1 18 * * 0' # Run at 10:01PST (18:01 UTC) on sunday
+  name: ci-kubernetes-e2e-gke-scale-correctness
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=240
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=gke-scale-cluster
+      - --deployment=gke
+      - --extract=ci/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project=kubernetes-scale
+      - --gcp-zone=us-east1-a
+      - --ginkgo-parallel=30
+      - --gke-command-group=beta
+      - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/11 --services-ipv4-cidr=/18 --timeout=2700
+      - --gke-environment=test
+      - '--gke-shape={"default":{"Nodes":4999,"MachineType":"g1-small"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-16"}}'
+      - --provider=gke
+      - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8
+      - --timeout=210m
+      - --use-logexporter
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
+
+#kubemark
+- name: ci-kubernetes-kubemark-100-gce
+  tags:
+  - "perfDashPrefix: kubemark-100Nodes"
+  - "perfDashJobType: performance"
+  interval: 3h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      args:
+      - --bare
+      - --timeout=260
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=kubemark-100
+      - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
+      - --extract=ci/latest
+      - --gcp-master-size=n1-standard-2
+      - --gcp-node-image=gci
+      - --gcp-node-size=n1-standard-4
+      - --gcp-nodes=3
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
+      - --kubemark
+      - --kubemark-nodes=100
+      - --provider=gce
+      - --test=false
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
+      - --timeout=240m
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+
+- name: ci-kubernetes-kubemark-5-gce-last-release
+  interval: 30m
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      args:
+      - --bare
+      - --timeout=80
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=kubemark-latest
+      - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
+      - --extract=ci/latest-1.9
+      - --gcp-node-size=n1-standard-2
+      - --gcp-nodes=1
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
+      - --kubemark
+      - --kubemark-nodes=5
+      - --provider=gce
+      - --test=false
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
+      - --timeout=60m
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+
+- name: ci-kubernetes-kubemark-500-gce
+  tags:
+  - "perfDashPrefix: kubemark-500Nodes"
+  - "perfDashJobType: performance"
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      args:
+      - --bare
+      - --timeout=140
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=kubemark-500
+      - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
+      - --env-file=jobs/env/ci-kubernetes-kubemark-gce-big.env
+      - --extract=ci/latest
+      - --gcp-master-size=n1-standard-4
+      - --gcp-node-image=gci
+      - --gcp-node-size=n1-standard-8
+      - --gcp-nodes=7
+      - --gcp-project=k8s-jenkins-blocking-kubemark
+      - --gcp-zone=us-central1-f
+      - --kubemark
+      - --kubemark-nodes=500
+      - --provider=gce
+      - --test=false
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
+      - --timeout=70m
+      # docker-in-docker needs privilged mode
+      securityContext:
+        privileged: true
+
+- name: ci-kubernetes-kubemark-gce-scale
+  tags:
+  - "perfDashPrefix: kubemark-5000Nodes"
+  - "perfDashJobType: performance"
+  interval: 12h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      args:
+      - --bare
+      - --timeout=1100
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=kubemark-5000
+      - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
+      - --env-file=jobs/env/ci-kubernetes-kubemark-gce-scale.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-node-size=n1-standard-8
+      - --gcp-nodes=82
+      - --gcp-project=kubemark-scalability-testing
+      - --gcp-zone=us-east1-b
+      - --kubemark
+      - --kubemark-nodes=5000
+      - --provider=gce
+      - --test=false
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
+      - --timeout=1080m
+      - --use-logexporter
+      # docker-in-docker needs privilged mode
+      securityContext:
+        privileged: true
+
+- name: ci-kubernetes-kubemark-high-density-100-gce
+  tags:
+  - "perfDashPrefix: kubemark-100Nodes-highDensity"
+  - "perfDashJobType: performance"
+  interval: 24h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      args:
+      - --bare
+      - --timeout=300
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=kubemark-100pods
+      - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
+      - --env-file=jobs/env/ci-kubernetes-kubemark-high-density-100-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-node-size=n1-standard-8
+      - --gcp-nodes=8
+      - --gcp-project=k8s-jenkins-kubemark
+      - --gcp-zone=us-central1-f
+      - --kubemark
+      - --kubemark-master-size=n1-standard-32
+      - --kubemark-nodes=600
+      - --provider=gce
+      - --test=false
+      - --test_args=--ginkgo.focus=\[Feature:HighDensityPerformance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
+      - --timeout=280m
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+
+# perf tests
+- name: ci-perf-tests-e2e-gce-clusterloader
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=80
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=clusterloader
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader
+      - --test-cmd-name=ClusterLoader
+      - --timeout=60m
+
+- name: ci-perf-tests-e2e-gce-clusterloader2
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=80
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=clusterloader2
+      - --extract=ci/latest
+      - --gcp-nodes=3
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--nodes=3
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=60m
+
+- name: ci-perf-tests-kubemark-100-benchmark
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      args:
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=10
+      - --scenario=execute
+      - --
+      - ./benchmark/runner.sh
+
+- name: ci-benchmark-scheduler-master
+  tags:
+  - "perfDashPrefix: scheduler-benchmark"
+  - "perfDashJobType: benchmark"
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=40
+      - --root=/go/src
+      - --scenario=execute
+      - --
+      - ./hack/jenkins/benchmark-dockerized.sh
+      - ./test/integration/scheduler_perf
+      env:
+      - name: GOPATH
+        value: /go

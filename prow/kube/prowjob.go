@@ -112,7 +112,7 @@ type DecorationConfig = v1.DecorationConfig
 // to be used for a job
 type UtilityImages = v1.UtilityImages
 
-// PathStrategy specifies minutia about how to contruct the url.
+// PathStrategy specifies minutia about how to construct the url.
 // Usually consumed by gubernator/testgrid.
 const (
 	PathStrategyLegacy   = v1.PathStrategyLegacy

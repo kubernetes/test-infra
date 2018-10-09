@@ -16,72 +16,9 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Conformance\]
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 6h
-  name: ci-kubernetes-gce-conformance-latest-1-10
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=220
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --extract=ci/latest-1.10
-      - --gcp-master-image=gci
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Conformance\]
-      - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 6h
-  name: ci-kubernetes-gce-conformance-latest-1-11
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=220
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --extract=ci/latest-1.11
-      - --gcp-master-image=gci
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Conformance\]
-      - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 6h
-  name: ci-kubernetes-gce-conformance-latest-1-8
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=220
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --extract=ci/latest-1.8
-      - --gcp-master-image=gci
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Conformance\]
-      - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 6h
   name: ci-kubernetes-gce-conformance-latest-1-9
@@ -100,12 +37,12 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Conformance\]
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 6h
-  name: ci-kubernetes-gce-conformance-stable-1-10
+  name: ci-kubernetes-gce-conformance-latest-1-10
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -116,17 +53,17 @@ periodics:
       - --bare
       - --scenario=kubernetes_e2e
       - --
-      - --extract=release/stable-1.10
+      - --extract=ci/latest-1.10
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Conformance\]
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 6h
-  name: ci-kubernetes-gce-conformance-stable-1-8
+  name: ci-kubernetes-gce-conformance-latest-1-11
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -137,14 +74,35 @@ periodics:
       - --bare
       - --scenario=kubernetes_e2e
       - --
-      - --extract=release/stable-1.8
+      - --extract=ci/latest-1.11
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Conformance\]
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e@sha256:773f00d30eca8fc577729f65102aed86febca82a7ce52fbfe6d38ce6a5d63ba0
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+
+- interval: 6h
+  name: ci-kubernetes-gce-conformance-latest-1-12
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=220
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --extract=ci/latest-1.12
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]
+      - --timeout=200m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 6h
   name: ci-kubernetes-gce-conformance-stable-1-9
@@ -163,6 +121,69 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Conformance\]
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+
+- interval: 6h
+  name: ci-kubernetes-gce-conformance-stable-1-10
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=220
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --extract=release/stable-1.10
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
+      - --timeout=200m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+
+- interval: 6h
+  name: ci-kubernetes-gce-conformance-stable-1-11
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=220
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --extract=release/stable-1.11
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
+      - --timeout=200m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+
+- interval: 6h
+  name: ci-kubernetes-gce-conformance-stable-1-12
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=220
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --extract=release/stable-1.12
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]
+      - --timeout=200m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master

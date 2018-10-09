@@ -1,6 +1,6 @@
 # Kubernetes Test Infrastructure
 
-[![Build Status](https://travis-ci.org/kubernetes/test-infra.svg?branch=master)](https://travis-ci.org/kubernetes/test-infra)  [![Go Report Card](https://goreportcard.com/badge/github.com/kubernetes/test-infra)](https://goreportcard.com/report/github.com/kubernetes/test-infra)  [![GoDoc](https://godoc.org/github.com/kubernetes/test-infra?status.svg)](https://godoc.org/github.com/kubernetes/test-infra)
+[![Go Report Card](https://goreportcard.com/badge/github.com/kubernetes/test-infra)](https://goreportcard.com/report/github.com/kubernetes/test-infra)  [![GoDoc](https://godoc.org/github.com/kubernetes/test-infra?status.svg)](https://godoc.org/github.com/kubernetes/test-infra)
 
 The test-infra repository contains a collection of tools for testing Kubernetes
 and displaying Kubernetes tests results. See also [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -28,24 +28,70 @@ the different services interact.
 
 ## Automated testing
 
-Test anything with the following pattern:
+### If you are using kubekins | bootstrap
 
+Assume your job looks something like
+
+```yaml
+  - name: foo-bar-test
+    interval: 1h
+    agent: kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        args:
+        - --repo=github.com/foo/bar
+        - --timeout=90
+        - --scenario=execute
+        - --
+        - make
+        - test
 ```
+
+You can see both images use the [same entrypoint script](/images/bootstrap/entrypoint.sh):
+
+```sh
+/usr/local/bin/runner.sh \
+    ./test-infra/jenkins/bootstrap.py \
+        --job="${JOB_NAME}" \
+        --service-account="${GOOGLE_APPLICATION_CREDENTIALS}" \
+        --upload='gs://kubernetes-jenkins/logs' \
+        "$@"
+```
+
+So to mimic the run locally, you can dump all the args to the entrypoint script, like:
+
+```sh
 git clone https://github.com/kubernetes/test-infra
-test-infra/jenkins/bootstrap.py --job=J --repo=R --service-account=S.json --upload=gs://B
+test-infra/jenkins/bootstrap.py --job=foo-bar-test \
+                                --repo=github.com/foo/bar \
+                                --service-account=S.json \
+                                --upload=gs://B \
+                                --timeout=90 \
+                                --scenario=execute \
+                                -- \
+                                make \
+                                test
 ```
 
-The `--job=J` flag specifies what test job to run.
-The `--repo=R` (or `--bare`) flag controls what we check out from git.
+where `--service-account` is the service account you want to activate for your job, and
+`--upload` is the gcs bucket where you want to upload your job results to.
 
-Anyone can reconfigure our CI system with a test-infra PR that updates the
-appropriate files. Detailed instructions follow:
+### If you are using podutils:
+
+Unfortunately there's no easy way to test it locally - you can follow [getting started](/prow/getting_started.md)
+to schedule a job against your own prow cluster.
+
+We are working on have a utility to run the job locally - https://github.com/kubernetes/test-infra/issues/6590
 
 ### E2E Testing
 
 Our e2e testing uses [kubetest](/kubetest) to build/deploy/test kubernetes
 clusters on various providers. Please see those documents for additional details
 about this tool as well as e2e testing generally.
+
+Anyone can reconfigure our CI system with a test-infra PR that updates the
+appropriate files. Detailed instructions follow:
 
 ### Create a new job
 
@@ -61,6 +107,7 @@ you'll need to do the following:
     - Postsubmit jobs run after merging code
     - Periodic job run on a timed basis
     - You can find more prowjob definitions at [how-to-add-new-jobs](prow#how-to-add-new-jobs)
+  - Please utilize the [podutils](prow/pod-utilities.md#how-to-configure) to create modern prowjobs!
   - Scenario args: (if you are using [bootstrap.py](jenkins/bootstrap.py) instead of [podutils](prow/pod-utilities.md))
     - [Scenarios](scenarios) are python wrappers used by our entry point script [bootstrap.py](jenkins/bootstrap.py).
     - You can append scenario/kubetest args inline in your prowjob definition, example:
@@ -108,10 +155,10 @@ We test different master/node image versions against multiple k8s branches on di
 
 Those jobs are using channel based versions, current supported testing map is:
 - k8s-dev : master
-- k8s-beta : release-1.11
-- k8s-stable1 : release-1.10
-- k8s-stable2 : release-1.9
-- k8s-stable3 : release-1.8
+- k8s-beta : release-1.12
+- k8s-stable1 : release-1.11
+- k8s-stable2 : release-1.10
+- k8s-stable3 : release-1.9
 
 Our build job will generate a ci/(channel-name) file pointer in gcs.
 

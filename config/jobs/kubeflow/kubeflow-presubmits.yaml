@@ -174,3 +174,27 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
+
+  kubeflow/mxnet-operator:
+  - name: kubeflow-mxnet-operator-presubmit
+    always_run: true         # Run for every PR, or only when requested.
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/arena:
+  - name: kubeflow-arena-presubmit
+    always_run: true         # Run for every PR, or only when requested.
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always

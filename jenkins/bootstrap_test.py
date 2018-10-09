@@ -847,7 +847,8 @@ SECONDS = 10
 
 
 def fake_environment(set_home=True, set_node=True, set_job=True,
-                     set_jenkins_home=True, set_workspace=True, **kwargs):
+                     set_jenkins_home=True, set_workspace=True,
+                     set_artifacts=True, **kwargs):
     if set_home:
         kwargs.setdefault(bootstrap.HOME_ENV, '/fake/home-dir')
     if set_node:
@@ -858,6 +859,8 @@ def fake_environment(set_home=True, set_node=True, set_job=True,
         kwargs.setdefault(bootstrap.JENKINS_HOME_ENV, '/fake/home-dir')
     if set_workspace:
         kwargs.setdefault(bootstrap.WORKSPACE_ENV, '/fake/workspace')
+    if set_artifacts:
+        kwargs.setdefault(bootstrap.JOB_ARTIFACTS_ENV, '/fake/workspace/_artifacts')
     return kwargs
 
 

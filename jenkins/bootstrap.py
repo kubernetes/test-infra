@@ -725,6 +725,7 @@ IMAGE_NAME_ENV = 'IMAGE'
 GIT_AUTHOR_DATE_ENV = 'GIT_AUTHOR_DATE'
 GIT_COMMITTER_DATE_ENV = 'GIT_COMMITTER_DATE'
 SOURCE_DATE_EPOCH_ENV = 'SOURCE_DATE_EPOCH'
+JOB_ARTIFACTS_ENV = 'ARTIFACTS'
 
 
 def build_name(started):
@@ -806,6 +807,12 @@ def setup_logging(path):
     return build_log
 
 
+def get_artifacts_dir():
+    return os.getenv(
+        JOB_ARTIFACTS_ENV,
+        os.path.join(os.getenv(WORKSPACE_ENV, os.getcwd()), '_artifacts'))
+
+
 def setup_magic_environment(job, call):
     """Set magic environment variables scripts currently expect."""
     home = os.environ[HOME_ENV]
@@ -857,6 +864,18 @@ def setup_magic_environment(job, call):
     # This helps prevent reuse of cloudsdk configuration. It also reduces the
     # risk that running a job on a workstation corrupts the user's config.
     os.environ[CLOUDSDK_ENV] = '%s/.config/gcloud' % cwd
+
+    # Set $ARTIFACTS to help migrate to podutils
+    os.environ[JOB_ARTIFACTS_ENV] = os.path.join(
+        os.getenv(WORKSPACE_ENV, os.getcwd()), '_artifacts')
+
+    # also make the artifacts dir if it doesn't exist yet
+    if not os.path.isdir(get_artifacts_dir()):
+        try:
+            os.makedirs(get_artifacts_dir())
+        except OSError as exc:
+            logging.info(
+                'cannot create %s, continue : %s', get_artifacts_dir(), exc)
 
     # Try to set SOURCE_DATE_EPOCH based on the commit date of the tip of the
     # tree.
@@ -1109,9 +1128,7 @@ def bootstrap(args):
         logging.info('Gubernator results at %s', gubernator_uri(paths))
         try:
             finish(
-                gsutil, paths, success,
-                os.path.join(
-                    os.getenv(WORKSPACE_ENV, os.getcwd()), '_artifacts'),
+                gsutil, paths, success, get_artifacts_dir(),
                 build, version, repos, call
             )
         except subprocess.CalledProcessError:  # Still try to upload build log

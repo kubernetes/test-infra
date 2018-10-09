@@ -29,6 +29,135 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
+func TestSpyglassConfig(t *testing.T) {
+	testCases := []struct {
+		name                 string
+		spyglassConfig       string
+		expectedViewers      map[string][]string
+		expectedRegexMatches map[string][]string
+		expectedSizeLimit    int64
+		expectError          bool
+	}{
+		{
+			name: "Default: build log, metadata, junit",
+			spyglassConfig: `
+deck:
+  spyglass:
+    size_limit: 500e6
+    viewers:
+      "started.json|finished.json":
+      - "metadata-viewer"
+      "build-log.txt":
+      - "build-log-viewer"
+      "artifacts/junit.*\\.xml":
+      - "junit-viewer"
+`,
+			expectedViewers: map[string][]string{
+				"started.json|finished.json": {"metadata-viewer"},
+				"build-log.txt":              {"build-log-viewer"},
+				"artifacts/junit.*\\.xml":    {"junit-viewer"},
+			},
+			expectedRegexMatches: map[string][]string{
+				"started.json|finished.json": {"started.json", "finished.json"},
+				"build-log.txt":              {"build-log.txt"},
+				"artifacts/junit.*\\.xml":    {"artifacts/junit01.xml", "artifacts/junit_runner.xml"},
+			},
+			expectedSizeLimit: 500e6,
+			expectError:       false,
+		},
+		{
+			name: "Invalid spyglass size limit",
+			spyglassConfig: `
+deck:
+  spyglass:
+    size_limit: -4
+    viewers:
+      "started.json|finished.json":
+      - "metadata-viewer"
+      "build-log.txt":
+      - "build-log-viewer"
+      "artifacts/junit.*\\.xml":
+      - "junit-viewer"
+`,
+			expectError: true,
+		},
+		{
+			name: "Invalid Spyglass regexp",
+			spyglassConfig: `
+deck:
+  spyglass:
+    size_limit: 5
+    viewers:
+      "started.json\|]finished.json":
+      - "metadata-viewer"
+`,
+			expectError: true,
+		},
+	}
+	for _, tc := range testCases {
+		// save the config
+		spyglassConfigDir, err := ioutil.TempDir("", "spyglassConfig")
+		if err != nil {
+			t.Fatalf("fail to make tempdir: %v", err)
+		}
+		defer os.RemoveAll(spyglassConfigDir)
+
+		spyglassConfig := filepath.Join(spyglassConfigDir, "config.yaml")
+		if err := ioutil.WriteFile(spyglassConfig, []byte(tc.spyglassConfig), 0666); err != nil {
+			t.Fatalf("fail to write spyglass config: %v", err)
+		}
+
+		cfg, err := Load(spyglassConfig, "")
+		if (err != nil) != tc.expectError {
+			t.Fatalf("tc %s: expected error: %v, got: %v, error: %v", tc.name, tc.expectError, (err != nil), err)
+		}
+
+		if err != nil {
+			continue
+		}
+		got := cfg.Deck.Spyglass.Viewers
+		for re, viewNames := range got {
+			expected, ok := tc.expectedViewers[re]
+			if !ok {
+				t.Errorf("With re %s, got %s, was not found in expected.", re, viewNames)
+				continue
+			}
+			if !reflect.DeepEqual(expected, viewNames) {
+				t.Errorf("With re %s, got %s, expected view name %s", re, viewNames, expected)
+			}
+
+		}
+		for re, viewNames := range tc.expectedViewers {
+			gotNames, ok := got[re]
+			if !ok {
+				t.Errorf("With re %s, expected %s, was not found in got.", re, viewNames)
+				continue
+			}
+			if !reflect.DeepEqual(gotNames, viewNames) {
+				t.Errorf("With re %s, got %s, expected view name %s", re, gotNames, viewNames)
+			}
+		}
+
+		for expectedRegex, matches := range tc.expectedRegexMatches {
+			compiledRegex, ok := cfg.Deck.Spyglass.RegexCache[expectedRegex]
+			if !ok {
+				t.Errorf("tc %s, regex %s was not found in the spyglass regex cache", tc.name, expectedRegex)
+				continue
+			}
+			for _, match := range matches {
+				if !compiledRegex.MatchString(match) {
+					t.Errorf("tc %s expected compiled regex %s to match %s, did not match.", tc.name, expectedRegex, match)
+				}
+			}
+
+		}
+		if cfg.Deck.Spyglass.SizeLimit != tc.expectedSizeLimit {
+			t.Errorf("%s expected SizeLimit %d, got %d", tc.name, tc.expectedSizeLimit, cfg.Deck.Spyglass.SizeLimit)
+		}
+	}
+
+}
+
 func TestDecorationDefaulting(t *testing.T) {
 	defaults := &kube.DecorationConfig{
 		Timeout:     1 * time.Minute,
@@ -242,6 +371,170 @@ func TestDecorationDefaulting(t *testing.T) {
 			t.Errorf("%s: expected defaulted config %v but got %v", testCase.name, expected, actual)
 		}
 	}
+}
+
+func TestDecorationRawYaml(t *testing.T) {
+	var testCases = []struct {
+		name        string
+		expectError bool
+		rawConfig   string
+		expected    *kube.DecorationConfig
+	}{
+		{
+			name:        "no default",
+			expectError: true,
+			rawConfig: `
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  always_run: true
+  decorate: true
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."`,
+		},
+		{
+			name: "with default, no explicit decorate",
+			rawConfig: `
+plank:
+  default_decoration_config:
+    timeout: 7200000000000 # 2h
+    grace_period: 15000000000 # 15s
+    utility_images:
+      clonerefs: "clonerefs:default"
+      initupload: "initupload:default"
+      entrypoint: "entrypoint:default"
+      sidecar: "sidecar:default"
+    gcs_configuration:
+      bucket: "default-bucket"
+      path_strategy: "legacy"
+      default_org: "kubernetes"
+      default_repo: "kubernetes"
+    gcs_credentials_secret: "default-service-account"
+
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  always_run: true
+  decorate: true
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."`,
+			expected: &kube.DecorationConfig{
+				Timeout:     2 * time.Hour,
+				GracePeriod: 15 * time.Second,
+				UtilityImages: &kube.UtilityImages{
+					CloneRefs:  "clonerefs:default",
+					InitUpload: "initupload:default",
+					Entrypoint: "entrypoint:default",
+					Sidecar:    "sidecar:default",
+				},
+				GCSConfiguration: &kube.GCSConfiguration{
+					Bucket:       "default-bucket",
+					PathStrategy: kube.PathStrategyLegacy,
+					DefaultOrg:   "kubernetes",
+					DefaultRepo:  "kubernetes",
+				},
+				GCSCredentialsSecret: "default-service-account",
+			},
+		},
+		{
+			name: "with default, has explicit decorate",
+			rawConfig: `
+plank:
+  default_decoration_config:
+    timeout: 7200000000000 # 2h
+    grace_period: 15000000000 # 15s
+    utility_images:
+      clonerefs: "clonerefs:default"
+      initupload: "initupload:default"
+      entrypoint: "entrypoint:default"
+      sidecar: "sidecar:default"
+    gcs_configuration:
+      bucket: "default-bucket"
+      path_strategy: "legacy"
+      default_org: "kubernetes"
+      default_repo: "kubernetes"
+    gcs_credentials_secret: "default-service-account"
+
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  always_run: true
+  decorate: true
+  decoration_config:
+    timeout: 1
+    grace_period: 1
+    utility_images:
+      clonerefs: "clonerefs:explicit"
+      initupload: "initupload:explicit"
+      entrypoint: "entrypoint:explicit"
+      sidecar: "sidecar:explicit"
+    gcs_configuration:
+      bucket: "explicit-bucket"
+      path_strategy: "explicit"
+    gcs_credentials_secret: "explicit-service-account"
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."`,
+			expected: &kube.DecorationConfig{
+				Timeout:     1 * time.Nanosecond,
+				GracePeriod: 1 * time.Nanosecond,
+				UtilityImages: &kube.UtilityImages{
+					CloneRefs:  "clonerefs:explicit",
+					InitUpload: "initupload:explicit",
+					Entrypoint: "entrypoint:explicit",
+					Sidecar:    "sidecar:explicit",
+				},
+				GCSConfiguration: &kube.GCSConfiguration{
+					Bucket:       "explicit-bucket",
+					PathStrategy: kube.PathStrategyExplicit,
+				},
+				GCSCredentialsSecret: "explicit-service-account",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		// save the config
+		prowConfigDir, err := ioutil.TempDir("", "prowConfig")
+		if err != nil {
+			t.Fatalf("fail to make tempdir: %v", err)
+		}
+		defer os.RemoveAll(prowConfigDir)
+
+		prowConfig := filepath.Join(prowConfigDir, "config.yaml")
+		if err := ioutil.WriteFile(prowConfig, []byte(tc.rawConfig), 0666); err != nil {
+			t.Fatalf("fail to write prow config: %v", err)
+		}
+
+		cfg, err := Load(prowConfig, "")
+		if tc.expectError && err == nil {
+			t.Errorf("tc %s: Expect error, but got nil", tc.name)
+		} else if !tc.expectError && err != nil {
+			t.Errorf("tc %s: Expect no error, but got error %v", tc.name, err)
+		}
+
+		if tc.expected != nil {
+			if len(cfg.Periodics) != 1 {
+				t.Fatalf("tc %s: Expect to have one periodic job, got none", tc.name)
+			}
+
+			if !reflect.DeepEqual(cfg.Periodics[0].DecorationConfig, tc.expected) {
+				t.Errorf("%s: expected defaulted config:\n%#v\n but got:\n%#v\n", tc.name, tc.expected, cfg.Periodics[0].DecorationConfig)
+			}
+		}
+	}
+
 }
 
 // integration test for fake config loading
@@ -784,6 +1077,22 @@ periodics:
 				},
 			},
 		},
+		{
+			name:       "decorated periodic missing `command`",
+			prowConfig: ``,
+			jobConfigs: []string{
+				`
+periodics:
+- interval: 10m
+  agent: kubernetes
+  name: foo
+  decorate: true
+  spec:
+    containers:
+    - image: alpine`,
+			},
+			expectError: true,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1026,7 +1335,7 @@ func TestSecretAgentLoading(t *testing.T) {
 						tempSecret, changedTokenValue, tempSecretValue))
 				} else {
 					// Secret agent needs some time to update the values. So wait and retry.
-					time.Sleep(100 * time.Millisecond)
+					time.Sleep(400 * time.Millisecond)
 				}
 			} else {
 				break

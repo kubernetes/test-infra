@@ -18,9 +18,10 @@ package tide
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
-	"github.com/shurcooL/githubql"
+	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
@@ -36,6 +37,7 @@ func TestExpectedStatus(t *testing.T) {
 		baseref         string
 		branchWhitelist []string
 		branchBlacklist []string
+		sameBranchReqs  bool
 		labels          []string
 		milestone       string
 		contexts        []Context
@@ -52,40 +54,45 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  statusInPool,
 		},
 		{
-			name:   "check truncation of label list",
-			inPool: false,
+			name:      "check truncation of label list",
+			milestone: "v1.0",
+			inPool:    false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1, need-2 labels."),
 		},
 		{
-			name:   "check truncation of label list is not excessive",
-			labels: append([]string{}, neededLabels[:2]...),
-			inPool: false,
+			name:      "check truncation of label list is not excessive",
+			labels:    append([]string{}, neededLabels[:2]...),
+			milestone: "v1.0",
+			inPool:    false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-a-very-super-duper-extra-not-short-at-all-label-name label."),
 		},
 		{
-			name:   "has forbidden labels",
-			labels: append(append([]string{}, neededLabels...), forbiddenLabels...),
-			inPool: false,
+			name:      "has forbidden labels",
+			labels:    append(append([]string{}, neededLabels...), forbiddenLabels...),
+			milestone: "v1.0",
+			inPool:    false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Should not have forbidden-1, forbidden-2 labels."),
 		},
 		{
-			name:   "has one forbidden label",
-			labels: append(append([]string{}, neededLabels...), forbiddenLabels[0]),
-			inPool: false,
+			name:      "has one forbidden label",
+			labels:    append(append([]string{}, neededLabels...), forbiddenLabels[0]),
+			milestone: "v1.0",
+			inPool:    false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Should not have forbidden-1 label."),
 		},
 		{
-			name:   "only mention one requirement class",
-			labels: append(append([]string{}, neededLabels[1:]...), forbiddenLabels[0]),
-			inPool: false,
+			name:      "only mention one requirement class",
+			labels:    append(append([]string{}, neededLabels[1:]...), forbiddenLabels[0]),
+			milestone: "v1.0",
+			inPool:    false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1 label."),
@@ -94,6 +101,7 @@ func TestExpectedStatus(t *testing.T) {
 			name:            "against excluded branch",
 			baseref:         "bad",
 			branchBlacklist: []string{"bad"},
+			sameBranchReqs:  true,
 			labels:          neededLabels,
 			inPool:          false,
 
@@ -104,11 +112,23 @@ func TestExpectedStatus(t *testing.T) {
 			name:            "not against included branch",
 			baseref:         "bad",
 			branchWhitelist: []string{"good"},
+			sameBranchReqs:  true,
 			labels:          neededLabels,
 			inPool:          false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Merging to branch bad is forbidden."),
+		},
+		{
+			name:            "choose query for correct branch",
+			baseref:         "bad",
+			branchWhitelist: []string{"good"},
+			milestone:       "v1.0",
+			labels:          neededLabels,
+			inPool:          false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Needs 1, 2, 3, 4, 5, 6, 7 labels."),
 		},
 		{
 			name:      "only failed tide context",
@@ -121,17 +141,19 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, ""),
 		},
 		{
-			name:     "single bad context",
-			labels:   neededLabels,
-			contexts: []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateError}},
-			inPool:   false,
+			name:      "single bad context",
+			labels:    neededLabels,
+			contexts:  []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateError}},
+			milestone: "v1.0",
+			inPool:    false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Job job-name has not succeeded."),
 		},
 		{
-			name:   "multiple bad contexts",
-			labels: neededLabels,
+			name:      "multiple bad contexts",
+			labels:    neededLabels,
+			milestone: "v1.0",
 			contexts: []Context{
 				{Context: githubql.String("job-name"), State: githubql.StatusStateError},
 				{Context: githubql.String("other-job-name"), State: githubql.StatusStateError},
@@ -162,9 +184,10 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, ""),
 		},
 		{
-			name:   "check that min diff query is used",
-			labels: []string{"3", "4", "5", "6", "7"},
-			inPool: false,
+			name:      "check that min diff query is used",
+			labels:    []string{"3", "4", "5", "6", "7"},
+			milestone: "v1.0",
+			inPool:    false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs 1, 2 labels."),
@@ -173,6 +196,14 @@ func TestExpectedStatus(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Logf("Test Case: %q\n", tc.name)
+		secondQuery := config.TideQuery{
+			Labels:    []string{"1", "2", "3", "4", "5", "6", "7"}, // lots of requirements
+			Milestone: "v1.0",
+		}
+		if tc.sameBranchReqs {
+			secondQuery.ExcludedBranches = tc.branchBlacklist
+			secondQuery.IncludedBranches = tc.branchWhitelist
+		}
 		queriesByRepo := config.QueryMap(map[string]config.TideQueries{
 			"": {
 				config.TideQuery{
@@ -182,9 +213,7 @@ func TestExpectedStatus(t *testing.T) {
 					MissingLabels:    forbiddenLabels,
 					Milestone:        "v1.0",
 				},
-				config.TideQuery{
-					Labels: []string{"1", "2", "3", "4", "5", "6", "7"}, // lots of requirements
-				},
+				secondQuery,
 			},
 		})
 		var pr PullRequest
@@ -409,4 +438,21 @@ func TestTargetUrl(t *testing.T) {
 			t.Errorf("%s: expected target URL %s but got %s", tc.name, expected, actual)
 		}
 	}
+}
+
+func TestAllOpenPRs(t *testing.T) {
+	var q string
+	checkTok := func(tok string) {
+		if !strings.Contains(q, " "+tok+" ") {
+			t.Errorf("Expected query to contain \"%s\", got \"%s\"", tok, q)
+		}
+	}
+
+	q = " " + openPRsQuery([]string{"k8s", "kuber"}, []string{"k8s/k8s", "k8s/t-i"}) + " "
+	checkTok("is:pr")
+	checkTok("state:open")
+	checkTok("org:\"k8s\"")
+	checkTok("org:\"kuber\"")
+	checkTok("repo:\"k8s/k8s\"")
+	checkTok("repo:\"k8s/t-i\"")
 }

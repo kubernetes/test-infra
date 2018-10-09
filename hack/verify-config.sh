@@ -21,7 +21,6 @@ set -o xtrace
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 
 PROW_CONFIG="${TESTINFRA_ROOT}/prow/config.yaml"
-JOBS_CONFIG="${TESTINFRA_ROOT}/jobs/config.json"
 JOBS_DIR="${TESTINFRA_ROOT}/config/jobs"
 TMP_CONFIG=$(mktemp)
 TMP_GENERATED_JOBS=$(mktemp)
@@ -31,7 +30,6 @@ cp "${PROW_CONFIG}" "${TMP_CONFIG}"
 
 bazel run //config/jobs/kubernetes-security:genjobs -- \
 "--config=${PROW_CONFIG}" \
-"--config-json=${JOBS_CONFIG}" \
 "--jobs=${JOBS_DIR}" \
 "--output=${TMP_GENERATED_JOBS}"
 

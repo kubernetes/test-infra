@@ -168,9 +168,16 @@ type DecorationConfig struct {
 	// SSHKeySecrets are the names of Kubernetes secrets that contain
 	// SSK keys which should be used during the cloning process
 	SSHKeySecrets []string `json:"ssh_key_secrets,omitempty"`
+	// SSHHostFingerprints are the fingerprints of known ssh hosts
+	// that the cloning process can trust.
+	// Create with ssh-keyscan [-t rsa] host
+	SSHHostFingerprints []string `json:"ssh_host_fingerprints,omitempty"`
 	// SkipCloning determines if we should clone source code in the
 	// initcontainers for jobs that specify refs
 	SkipCloning bool `json:"skip_cloning,omitempty"`
+	// CookieFileSecret is the name of a kubernetes secret that contains
+	// a git http.cookiefile, which should be used during the cloning process.
+	CookiefileSecret string `json:"cookiefile_secret,omitempty"`
 }
 
 // UtilityImages holds pull specs for the utility images
@@ -186,7 +193,7 @@ type UtilityImages struct {
 	Sidecar string `json:"sidecar,omitempty"`
 }
 
-// PathStrategy specifies minutia about how to contruct the url.
+// PathStrategy specifies minutia about how to construct the url.
 // Usually consumed by gubernator/testgrid.
 const (
 	PathStrategyLegacy   = "legacy"
@@ -239,6 +246,10 @@ type ProwJobStatus struct {
 	// identifier that Jenkins gave to the build for this
 	// ProwJob.
 	JenkinsBuildID string `json:"jenkins_build_id,omitempty"`
+
+	// PrevReportStates stores the previous reported prowjob state per reporter
+	// So crier won't make duplicated report attempt
+	PrevReportStates map[string]ProwJobState `json:"prev_report_states, omitempty"`
 }
 
 // Complete returns true if the prow job has finished
@@ -315,7 +326,7 @@ func (r Refs) String() string {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// VirtualMachineList is a list of VirtualMachine resources
+// ProwJobList is a list of ProwJob resources
 type ProwJobList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`

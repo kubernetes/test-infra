@@ -9,6 +9,11 @@ load(
     "go_test",
 )
 
+filegroup(
+    name = "templates",
+    srcs = glob(["template/**/*"]),
+)
+
 container_image(
     name = "asset-base",
     base = "@alpine-base//image",
@@ -16,25 +21,28 @@ container_image(
     data_path = ".",
     # Add files under into the root directory.
     directory = "/",
-    # Everything under static/
-    files = glob(
-        ["static/**/*"],
-        exclude = [
-            "static/tide.js",
-            "static/data.js",
-            "static/plugin-help.js",
-        ],
-    ),
+    files = [
+        ":templates",
+        "//prow/cmd/deck/static",
+    ],
 )
 
 go_image(
     name = "image",
     base = ":asset-base",
-    binary = ":deck",
+    embed = [":go_default_library"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
+    visibility = ["//visibility:public"],
 )
 
 go_binary(
     name = "deck",
+    data = [
+        ":templates",
+        "//prow/cmd/deck/static",
+    ],
     embed = [":go_default_library"],
     pure = "on",
 )
@@ -64,6 +72,7 @@ go_library(
         "badge.go",
         "main.go",
         "pluginhelp.go",
+        "templates.go",
         "tide.go",
     ],
     importpath = "k8s.io/test-infra/prow/cmd/deck",
@@ -76,13 +85,19 @@ go_library(
         "//prow/pjutil:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/prstatus:go_default_library",
+        "//prow/spyglass:go_default_library",
+        "//prow/spyglass/viewers/buildlog:go_default_library",
+        "//prow/spyglass/viewers/junit:go_default_library",
+        "//prow/spyglass/viewers/metadata:go_default_library",
         "//prow/tide:go_default_library",
+        "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/NYTimes/gziphandler:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/gorilla/sessions:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/golang.org/x/oauth2:go_default_library",
         "//vendor/golang.org/x/oauth2/github:go_default_library",
+        "//vendor/google.golang.org/api/option:go_default_library",
     ],
 )
 
@@ -95,6 +110,9 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//prow/cmd/deck/static:all-srcs",
+    ],
     tags = ["automanaged"],
 )

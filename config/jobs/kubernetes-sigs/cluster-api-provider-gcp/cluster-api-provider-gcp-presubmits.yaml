@@ -32,7 +32,7 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.10
         resources:
           requests:
             memory: "6Gi"
@@ -42,7 +42,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/cluster-api:v20180720-d52d72975
+      - image: gcr.io/k8s-testimages/cluster-api:v20180927-f09bc3b1b
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"

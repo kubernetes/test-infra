@@ -61,13 +61,13 @@ func handleIC(c client, trigger *plugins.Trigger, ic github.IssueCommentEvent) e
 	if !shouldRetestFailed && len(requestedJobs) == 0 {
 		// Check for the presence of the needs-ok-to-test label and remove it
 		// if a trusted member has commented "/ok-to-test".
-		if okToTest && ic.Issue.HasLabel(needsOkToTest) {
+		if okToTest && ic.Issue.HasLabel(NeedsOkToTest) {
 			trusted, err := trustedUser(c.GitHubClient, trigger, commentAuthor, org, repo)
 			if err != nil {
 				return err
 			}
 			if trusted {
-				return c.GitHubClient.RemoveLabel(org, repo, number, needsOkToTest)
+				return c.GitHubClient.RemoveLabel(org, repo, number, NeedsOkToTest)
 			}
 		}
 		return nil
@@ -120,9 +120,9 @@ func handleIC(c client, trigger *plugins.Trigger, ic github.IssueCommentEvent) e
 		}
 	}
 
-	if okToTest && ic.Issue.HasLabel(needsOkToTest) {
-		if err := c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, needsOkToTest); err != nil {
-			c.Logger.WithError(err).Errorf("Failed at removing %s label", needsOkToTest)
+	if okToTest && ic.Issue.HasLabel(NeedsOkToTest) {
+		if err := c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, NeedsOkToTest); err != nil {
+			c.Logger.WithError(err).Errorf("Failed at removing %s label", NeedsOkToTest)
 		}
 		err = clearStaleComments(c.GitHubClient, *pr, comments)
 		if err != nil {

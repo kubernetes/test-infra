@@ -20,6 +20,8 @@ import (
 	"encoding/json"
 	"strings"
 	"time"
+
+	"k8s.io/test-infra/prow/errorutil"
 )
 
 const (
@@ -35,6 +37,16 @@ const (
 	// RepoLogField is the repository of a PR.
 	// Used as a log field across prow.
 	RepoLogField = "repo"
+
+	// SearchTimeFormat is a time.Time format string for ISO8601 which is the
+	// format that GitHub requires for times specified as part of a search query.
+	SearchTimeFormat = "2006-01-02T15:04:05Z"
+)
+
+var (
+	// FoundingYear is the year GitHub was founded. This is just used so that
+	// we can lower bound dates related to PRs and issues.
+	FoundingYear, _ = time.Parse(SearchTimeFormat, "2007-01-01T00:00:00Z")
 )
 
 // These are possible State entries for a Status.
@@ -68,6 +80,23 @@ const (
 	MergeSquash PullRequestMergeType = "squash"
 )
 
+func unmarshalClientError(b []byte) error {
+	var errors []error
+	clientError := ClientError{}
+	err := json.Unmarshal(b, &clientError)
+	if err == nil {
+		return clientError
+	}
+	errors = append(errors, err)
+	alternativeClientError := AlternativeClientError{}
+	err = json.Unmarshal(b, &alternativeClientError)
+	if err == nil {
+		return alternativeClientError
+	}
+	errors = append(errors, err)
+	return errorutil.NewAggregate(errors...)
+}
+
 // ClientError represents https://developer.github.com/v3/#client-errors
 type ClientError struct {
 	Message string `json:"message"`
@@ -77,6 +106,22 @@ type ClientError struct {
 		Code     string `json:"code"`
 		Message  string `json:"message,omitempty"`
 	} `json:"errors,omitempty"`
+}
+
+func (r ClientError) Error() string {
+	return r.Message
+}
+
+// AlternativeClientError represents an alternative format for https://developer.github.com/v3/#client-errors
+// This is probably a GitHub bug, as documentation_url should appear only in custom errors
+type AlternativeClientError struct {
+	Message          string   `json:"message"`
+	Errors           []string `json:"errors,omitempty"`
+	DocumentationURL string   `json:"documentation_url,omitempty"`
+}
+
+func (r AlternativeClientError) Error() string {
+	return r.Message
 }
 
 // Reaction holds the type of emotional reaction.
@@ -122,13 +167,13 @@ const (
 	PullRequestActionReviewRequested = "review_requested"
 	// PullRequestActionReviewRequestRemoved means review requests were removed.
 	PullRequestActionReviewRequestRemoved = "review_request_removed"
-	// PullRequestActionLabeled means means labels were added.
+	// PullRequestActionLabeled means labels were added.
 	PullRequestActionLabeled = "labeled"
 	// PullRequestActionUnlabeled means labels were removed
 	PullRequestActionUnlabeled = "unlabeled"
 	// PullRequestActionOpened means the PR was created
 	PullRequestActionOpened = "opened"
-	// PullRequestActionEdited means means the PR body changed.
+	// PullRequestActionEdited means the PR body changed.
 	PullRequestActionEdited = "edited"
 	// PullRequestActionClosed means the PR was closed (or was merged).
 	PullRequestActionClosed = "closed"
@@ -438,6 +483,7 @@ type PushEvent struct {
 	Before  string   `json:"before"`
 	After   string   `json:"after"`
 	Compare string   `json:"compare"`
+	Size    int      `json:"size"`
 	Commits []Commit `json:"commits"`
 	// Pusher is the user that pushed the commit, valid in a webhook event.
 	Pusher User `json:"pusher"`
@@ -462,6 +508,16 @@ type Commit struct {
 	Added    []string `json:"added"`
 	Removed  []string `json:"removed"`
 	Modified []string `json:"modified"`
+}
+
+// SingleCommit is the commit part received when requesting a single commit
+// https://developer.github.com/v3/repos/commits/#get-a-single-commit
+type SingleCommit struct {
+	Commit struct {
+		Tree struct {
+			SHA string `json:"sha"`
+		} `json:"tree"`
+	} `json:"commit"`
 }
 
 // ReviewEventAction enumerates the triggers for this

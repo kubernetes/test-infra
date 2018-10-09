@@ -25,8 +25,213 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
+
+func TestPostsubmitSpec(t *testing.T) {
+	tests := []struct {
+		name     string
+		p        config.Postsubmit
+		refs     kube.Refs
+		expected kube.ProwJobSpec
+	}{
+		{
+			name: "can override path alias and cloneuri",
+			p: config.Postsubmit{
+				UtilityConfig: config.UtilityConfig{
+					PathAlias: "foo",
+					CloneURI:  "bar",
+				},
+			},
+			expected: kube.ProwJobSpec{
+				Type: kube.PostsubmitJob,
+				Refs: &kube.Refs{
+					PathAlias: "foo",
+					CloneURI:  "bar",
+				},
+			},
+		},
+		{
+			name: "controller can default path alias and cloneuri",
+			refs: kube.Refs{
+				PathAlias: "fancy",
+				CloneURI:  "cats",
+			},
+			expected: kube.ProwJobSpec{
+				Type: kube.PostsubmitJob,
+				Refs: &kube.Refs{
+					PathAlias: "fancy",
+					CloneURI:  "cats",
+				},
+			},
+		},
+		{
+			name: "job overrides take precedence over controller defaults",
+			p: config.Postsubmit{
+				UtilityConfig: config.UtilityConfig{
+					PathAlias: "foo",
+					CloneURI:  "bar",
+				},
+			},
+			refs: kube.Refs{
+				PathAlias: "fancy",
+				CloneURI:  "cats",
+			},
+			expected: kube.ProwJobSpec{
+				Type: kube.PostsubmitJob,
+				Refs: &kube.Refs{
+					PathAlias: "foo",
+					CloneURI:  "bar",
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		actual := PostsubmitSpec(tc.p, tc.refs)
+		if expected := tc.expected; !reflect.DeepEqual(actual, expected) {
+			t.Errorf("%s: actual %#v != expected %#v", tc.name, actual, expected)
+		}
+	}
+}
+
+func TestPresubmitSpec(t *testing.T) {
+	tests := []struct {
+		name     string
+		p        config.Presubmit
+		refs     kube.Refs
+		expected kube.ProwJobSpec
+	}{
+		{
+			name: "can override path alias and cloneuri",
+			p: config.Presubmit{
+				UtilityConfig: config.UtilityConfig{
+					PathAlias: "foo",
+					CloneURI:  "bar",
+				},
+			},
+			expected: kube.ProwJobSpec{
+				Type: kube.PresubmitJob,
+				Refs: &kube.Refs{
+					PathAlias: "foo",
+					CloneURI:  "bar",
+				},
+				Report: true,
+			},
+		},
+		{
+			name: "controller can default path alias and cloneuri",
+			refs: kube.Refs{
+				PathAlias: "fancy",
+				CloneURI:  "cats",
+			},
+			expected: kube.ProwJobSpec{
+				Type: kube.PresubmitJob,
+				Refs: &kube.Refs{
+					PathAlias: "fancy",
+					CloneURI:  "cats",
+				},
+				Report: true,
+			},
+		},
+		{
+			name: "job overrides take precedence over controller defaults",
+			p: config.Presubmit{
+				UtilityConfig: config.UtilityConfig{
+					PathAlias: "foo",
+					CloneURI:  "bar",
+				},
+			},
+			refs: kube.Refs{
+				PathAlias: "fancy",
+				CloneURI:  "cats",
+			},
+			expected: kube.ProwJobSpec{
+				Type: kube.PresubmitJob,
+				Refs: &kube.Refs{
+					PathAlias: "foo",
+					CloneURI:  "bar",
+				},
+				Report: true,
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		actual := PresubmitSpec(tc.p, tc.refs)
+		if expected := tc.expected; !reflect.DeepEqual(actual, expected) {
+			t.Errorf("%s: actual %#v != expected %#v", tc.name, actual, expected)
+		}
+	}
+}
+
+func TestBatchSpec(t *testing.T) {
+	tests := []struct {
+		name     string
+		p        config.Presubmit
+		refs     kube.Refs
+		expected kube.ProwJobSpec
+	}{
+		{
+			name: "can override path alias and cloneuri",
+			p: config.Presubmit{
+				UtilityConfig: config.UtilityConfig{
+					PathAlias: "foo",
+					CloneURI:  "bar",
+				},
+			},
+			expected: kube.ProwJobSpec{
+				Type: kube.BatchJob,
+				Refs: &kube.Refs{
+					PathAlias: "foo",
+					CloneURI:  "bar",
+				},
+			},
+		},
+		{
+			name: "controller can default path alias and cloneuri",
+			refs: kube.Refs{
+				PathAlias: "fancy",
+				CloneURI:  "cats",
+			},
+			expected: kube.ProwJobSpec{
+				Type: kube.BatchJob,
+				Refs: &kube.Refs{
+					PathAlias: "fancy",
+					CloneURI:  "cats",
+				},
+			},
+		},
+		{
+			name: "job overrides take precedence over controller defaults",
+			p: config.Presubmit{
+				UtilityConfig: config.UtilityConfig{
+					PathAlias: "foo",
+					CloneURI:  "bar",
+				},
+			},
+			refs: kube.Refs{
+				PathAlias: "fancy",
+				CloneURI:  "cats",
+			},
+			expected: kube.ProwJobSpec{
+				Type: kube.BatchJob,
+				Refs: &kube.Refs{
+					PathAlias: "foo",
+					CloneURI:  "bar",
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		actual := BatchSpec(tc.p, tc.refs)
+		if expected := tc.expected; !reflect.DeepEqual(actual, expected) {
+			t.Errorf("%s: actual %#v != expected %#v", tc.name, actual, expected)
+		}
+	}
+}
 
 func TestPartitionActive(t *testing.T) {
 	tests := []struct {
@@ -279,6 +484,27 @@ func TestNewProwJob(t *testing.T) {
 				"prow.k8s.io/refs.repo": "repo",
 				"prow.k8s.io/refs.pull": "1",
 			},
+		}, {
+			name: "job with name too long to fit in a label",
+			spec: kube.ProwJobSpec{
+				Job:  "job-created-by-someone-who-loves-very-very-very-long-names-so-long-that-it-does-not-fit-into-the-Kubernetes-label-so-it-needs-to-be-truncated-to-63-characters",
+				Type: kube.PresubmitJob,
+				Refs: &kube.Refs{
+					Org:  "org",
+					Repo: "repo",
+					Pulls: []kube.Pull{
+						{Number: 1},
+					},
+				},
+			},
+			labels: map[string]string{},
+			expectedLabels: map[string]string{
+				"prow.k8s.io/job":       "job-created-by-someone-who-loves-very-very-very-long-names-so-l",
+				"prow.k8s.io/type":      "presubmit",
+				"prow.k8s.io/refs.org":  "org",
+				"prow.k8s.io/refs.repo": "repo",
+				"prow.k8s.io/refs.pull": "1",
+			},
 		},
 	}
 
@@ -288,6 +514,51 @@ func TestNewProwJob(t *testing.T) {
 			t.Errorf("%s: incorrect ProwJobSpec created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
 		}
 		if actual, expected := pj.Labels, testCase.expectedLabels; !reflect.DeepEqual(actual, expected) {
+			t.Errorf("%s: incorrect ProwJob labels created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
+		}
+	}
+}
+
+func TestNewProwJobWithAnnotations(t *testing.T) {
+	var testCases = []struct {
+		name                string
+		spec                kube.ProwJobSpec
+		annotations         map[string]string
+		expectedAnnotations map[string]string
+	}{
+		{
+			name: "job without annotation",
+			spec: kube.ProwJobSpec{
+				Job:  "job",
+				Type: kube.PeriodicJob,
+			},
+			annotations: nil,
+			expectedAnnotations: map[string]string{
+				"prow.k8s.io/job": "job",
+			},
+		},
+		{
+			name: "job with annotation",
+			spec: kube.ProwJobSpec{
+				Job:  "job",
+				Type: kube.PeriodicJob,
+			},
+			annotations: map[string]string{
+				"annotation": "foo",
+			},
+			expectedAnnotations: map[string]string{
+				"annotation":      "foo",
+				"prow.k8s.io/job": "job",
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		pj := NewProwJobWithAnnotation(testCase.spec, nil, testCase.annotations)
+		if actual, expected := pj.Spec, testCase.spec; !equality.Semantic.DeepEqual(actual, expected) {
+			t.Errorf("%s: incorrect ProwJobSpec created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
+		}
+		if actual, expected := pj.Annotations, testCase.expectedAnnotations; !reflect.DeepEqual(actual, expected) {
 			t.Errorf("%s: incorrect ProwJob labels created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
 		}
 	}

@@ -244,7 +244,6 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             '--kubemark',
             '--extract=this',
             '--extract=that',
-            '--perf-tests',
             '--save=somewhere',
             '--skew',
             '--publish=location',

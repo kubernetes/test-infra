@@ -27,8 +27,6 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
-const timeFormatISO8601 = "2006-01-02T15:04:05Z"
-
 // TideQueries is a TideQuery slice.
 type TideQueries []TideQuery
 
@@ -96,6 +94,11 @@ type Tide struct {
 	// Github issues.
 	// Leave this blank to disable this feature and save 1 API token per sync loop.
 	BlockerLabel string `json:"blocker_label,omitempty"`
+
+	// SquashLabel is an optional label that is used to identify PRs that should
+	// always be squash merged.
+	// Leave this blank to disable this feature.
+	SquashLabel string `json:"squash_label,omitempty"`
 
 	// MaxGoroutines is the maximum number of goroutines spawned inside the
 	// controller to handle org/repo:branch pools. Defaults to 20. Needs to be a
@@ -169,27 +172,6 @@ func (tq *TideQuery) Query() string {
 	}
 	if tq.ReviewApprovedRequired {
 		toks = append(toks, "review:approved")
-	}
-	return strings.Join(toks, " ")
-}
-
-// AllPRsSince returns all open PRs in the repos covered by the query that
-// have changed since time t.
-func (tqs TideQueries) AllPRsSince(t time.Time) string {
-	toks := []string{"is:pr", "state:open"}
-
-	orgs, repos := tqs.OrgsAndRepos()
-	for _, o := range orgs.List() {
-		toks = append(toks, fmt.Sprintf("org:\"%s\"", o))
-	}
-	for _, r := range repos.List() {
-		toks = append(toks, fmt.Sprintf("repo:\"%s\"", r))
-	}
-	// Github's GraphQL API silently fails if you provide it with an invalid time
-	// string.
-	// Dates before 1970 are considered invalid.
-	if t.Year() >= 1970 {
-		toks = append(toks, fmt.Sprintf("updated:>=%s", t.Format(timeFormatISO8601)))
 	}
 	return strings.Join(toks, " ")
 }

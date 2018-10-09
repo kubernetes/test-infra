@@ -6,7 +6,7 @@ go_library(
         "golint.go",
         "import.go",
     ],
-    importmap = "vendor/github.com/golang/lint/golint",
+    importmap = "k8s.io/test-infra/vendor/github.com/golang/lint/golint",
     importpath = "github.com/golang/lint/golint",
     visibility = ["//visibility:private"],
     deps = ["//vendor/golang.org/x/lint:go_default_library"],

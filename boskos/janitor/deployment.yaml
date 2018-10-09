@@ -17,6 +17,7 @@ spec:
       - name: boskos-janitor
         image: gcr.io/k8s-testimages/janitor:v20180725-c421ed4f9
         args:
+        - --boskos-url=http://boskos.test-pods.svc.cluster.local.
         - --service-account=/etc/service-account/service-account.json
         - --resource-type=gke-project
         - --pool-size=20
@@ -48,8 +49,9 @@ spec:
       - name: boskos-janitor-nongke
         image: gcr.io/k8s-testimages/janitor:v20180725-c421ed4f9
         args:
+        - --boskos-url=http://boskos.test-pods.svc.cluster.local.
         - --service-account=/etc/service-account/service-account.json
-        - --resource-type=gce-project,gpu-project,ingress-project,istio-project
+        - --resource-type=gce-project,gpu-project,ingress-project,istio-project,scalability-project
         - --pool-size=20
         volumeMounts:
         - mountPath: /etc/service-account

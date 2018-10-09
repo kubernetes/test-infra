@@ -443,7 +443,7 @@ def main(args):
 
     # Set up workspace/artifacts dir
     workspace = os.environ.get('WORKSPACE', os.getcwd())
-    artifacts = os.path.join(workspace, '_artifacts')
+    artifacts = os.environ.get('ARTIFACTS', os.path.join(workspace, '_artifacts'))
     if not os.path.isdir(artifacts):
         os.makedirs(artifacts)
 
@@ -456,9 +456,22 @@ def main(args):
 
     # TODO(fejta): remove after next image push
     mode.add_environment('KUBETEST_MANUAL_DUMP=y')
-    runner_args = [
-        '--dump=%s' % mode.artifacts,
-    ]
+    if args.dump_before_and_after:
+        before_dir = os.path.join(mode.artifacts, 'before')
+        if not os.path.exists(before_dir):
+            os.makedirs(before_dir)
+        after_dir = os.path.join(mode.artifacts, 'after')
+        if not os.path.exists(after_dir):
+            os.makedirs(after_dir)
+
+        runner_args = [
+            '--dump-pre-test-logs=%s' % before_dir,
+            '--dump=%s' % after_dir,
+            ]
+    else:
+        runner_args = [
+            '--dump=%s' % mode.artifacts,
+        ]
 
     if args.service_account:
         runner_args.append(
@@ -551,7 +564,8 @@ def main(args):
     if args.kubeadm:
         version = kubeadm_version(args.kubeadm, shared_build_gcs_path)
         runner_args.extend([
-            '--kubernetes-anywhere-path=%s' % os.path.join(workspace, 'kubernetes-anywhere'),
+            '--kubernetes-anywhere-path=%s' % os.path.join(workspace, 'k8s.io',
+                'kubernetes-anywhere'),
             '--kubernetes-anywhere-phase2-provider=kubeadm',
             '--kubernetes-anywhere-cluster=%s' % cluster,
             '--kubernetes-anywhere-kubeadm-version=%s' % version,
@@ -653,6 +667,9 @@ def create_parser():
         action='append',
         default=[],
         help='Send unrecognized args directly to kubetest')
+    parser.add_argument(
+        '--dump-before-and-after', action='store_true',
+        help='Dump artifacts from both before and after the test run')
 
 
     # kops & aws

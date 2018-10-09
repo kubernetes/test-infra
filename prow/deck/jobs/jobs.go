@@ -19,6 +19,7 @@ package jobs
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -35,6 +36,10 @@ import (
 
 const (
 	period = 30 * time.Second
+)
+
+var (
+	ErrProwjobNotFound = errors.New("Prowjob not found")
 )
 
 // Job holds information about a job prow is running/has run.
@@ -134,7 +139,8 @@ func (ja *JobAgent) ProwJobs() []kube.ProwJob {
 
 var jobNameRE = regexp.MustCompile(`^([\w-]+)-(\d+)$`)
 
-func (ja *JobAgent) getProwJob(job, id string) (kube.ProwJob, error) {
+// GetProwJob finds the corresponding Prowjob resource from the provided job name and build ID
+func (ja *JobAgent) GetProwJob(job, id string) (kube.ProwJob, error) {
 	var j kube.ProwJob
 	ja.mut.Lock()
 	idMap, ok := ja.jobsIDMap[job]
@@ -143,16 +149,16 @@ func (ja *JobAgent) getProwJob(job, id string) (kube.ProwJob, error) {
 	}
 	ja.mut.Unlock()
 	if !ok {
-		return kube.ProwJob{}, fmt.Errorf("no such job found: %s (id: %s)", job, id)
+		return kube.ProwJob{}, ErrProwjobNotFound
 	}
 	return j, nil
 }
 
 // GetJobLogTail returns the last n bytes of the job logs, works for both kubernetes and jenkins agent types.
 func (ja *JobAgent) GetJobLogTail(job, id string, n int64) ([]byte, error) {
-	j, err := ja.getProwJob(job, id)
+	j, err := ja.GetProwJob(job, id)
 	if err != nil {
-		logrus.WithError(err).Error("Error getting ProwJob.")
+		return nil, fmt.Errorf("error getting prowjob: %v", err)
 	}
 	if j.Spec.Agent == kube.KubernetesAgent {
 		client, ok := ja.pkcs[j.ClusterAlias()]
@@ -200,9 +206,9 @@ func (ja *JobAgent) GetJobLogTail(job, id string, n int64) ([]byte, error) {
 
 // GetJobLog returns the job logs, works for both kubernetes and jenkins agent types.
 func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
-	j, err := ja.getProwJob(job, id)
+	j, err := ja.GetProwJob(job, id)
 	if err != nil {
-		logrus.WithError(err).Error("Error getting ProwJob.")
+		return nil, fmt.Errorf("error getting prowjob: %v", err)
 	}
 	if j.Spec.Agent == kube.KubernetesAgent {
 		client, ok := ja.pkcs[j.ClusterAlias()]

@@ -147,3 +147,25 @@ postsubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
+
+  kubeflow/mxnet-operator:
+  - name: kubeflow-mxnet-operator-postsubmit
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/arena:
+  - name: kubeflow-arena-postsubmit
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always

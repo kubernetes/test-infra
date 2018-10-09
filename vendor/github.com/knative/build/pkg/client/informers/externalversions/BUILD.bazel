@@ -6,7 +6,7 @@ go_library(
         "factory.go",
         "generic.go",
     ],
-    importmap = "vendor/github.com/knative/build/pkg/client/informers/externalversions",
+    importmap = "k8s.io/test-infra/vendor/github.com/knative/build/pkg/client/informers/externalversions",
     importpath = "github.com/knative/build/pkg/client/informers/externalversions",
     visibility = ["//visibility:public"],
     deps = [

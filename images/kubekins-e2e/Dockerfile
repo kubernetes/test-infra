@@ -15,7 +15,7 @@
 # This file creates a build environment for building and running kubernetes
 # unit and integration tests
 
-FROM gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
+FROM gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
 LABEL maintainer "Sen Lu <senlu@google.com>"
 
 # hint to kubetest that it is in CI
@@ -61,9 +61,17 @@ RUN wget -q "https://storage.googleapis.com/golang/${GO_TARBALL}" && \
 # install bazel
 ARG BAZEL_VERSION_ARG
 ENV BAZEL_VERSION=${BAZEL_VERSION_ARG}
-RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
-    wget -q "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/${INSTALLER}" && \
-    chmod +x "${INSTALLER}" && "./${INSTALLER}" && rm "${INSTALLER}"
+COPY ./install-bazel.sh /
+RUN bash /install-bazel.sh
+
+# if UPGRADE_DOCKER_ARG, then install the latest docker over whatever we have
+# in the base image.
+# TODO(bentheelder): after code freeze, roll out newer docker in the
+# base image and possibly remove this ...
+ARG UPGRADE_DOCKER_ARG=false
+RUN [ "${UPGRADE_DOCKER_ARG}" = "true" ] && \
+    apt-get install -y --no-install-recommends docker-ce && \
+    sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker || true
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG

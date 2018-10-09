@@ -1,0 +1,45 @@
+{{define "title"}}Command Help{{end}}
+{{define "scripts"}}
+<link rel="stylesheet" href="/static/dialog-polyfill.css">
+<script type="text/javascript" src="/static/command_help_bundle.min.js"></script>
+<script type="text/javascript" src="plugin-help.js?var=allHelp"></script>
+{{end}}
+{{define "content"}}
+<aside>
+  <div class="card-box">
+    <ul class="noBullets">
+      <li>Command help for</li>
+      <li><select id="repo" onchange="redraw();"><option>all commands</option></select></li>
+    </ul>
+  </div>
+</aside>
+<div class="table-container">
+  <table id="command-table" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+    <thead>
+    <tr>
+      <th></th>
+      <th class="mdl-data-table__cell--non-numeric">Command</th>
+      <th class="mdl-data-table__cell--non-numeric">Example</th>
+      <th id="description-col" class="mdl-data-table__cell--non-numeric">Description</th>
+      <th id="usage-col" class="mdl-data-table__cell--non-numeric">Who Can Use</th>
+      <th class="mdl-data-table__cell--non-numeric">Plugin</th>
+      <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+</div>
+{{end}}
+{{define "extra content"}}
+<dialog id="dialog" class="mdl-dialog">
+  <h4 class="mdl-dialog__title"></h4>
+  <div class="mdl-dialog__content">
+  </div>
+  <div class="mdl-dialog__actions">
+    <button type="button" class="mdl-button close">Close</button>
+  </div>
+</dialog>
+{{end}}
+
+{{template "page" (settings mobileUnfriendly "command-help" .)}}

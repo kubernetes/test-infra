@@ -1,27 +1,5 @@
 periodics:
 - interval: 30m
-  name: ci-kops-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      args:
-      - --repo=k8s.io/kops
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=30
-      - --scenario=execute
-      - --
-      - make
-      - gcs-publish-ci
-      - GCS_LOCATION=gs://kops-ci/bin
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-
-- interval: 30m
   name: ci-kubernetes-e2e-kops-aws
   labels:
     preset-service-account: "true"
@@ -43,7 +21,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-kops-aws-beta
@@ -67,7 +45,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-kops-aws-channelalpha
@@ -113,7 +91,7 @@ periodics:
       - --env=KUBE_SSH_USER=admin
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-args=--node-size=m5.large --master-size=m5.large --channel=alpha
+      - --kops-args=--node-size=m5.large --master-size=m5.large --channel=alpha --image kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2018-08-17
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=us-west-2a
       - --provider=aws
@@ -277,7 +255,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 4h
   name: ci-kubernetes-e2e-kops-aws-stable2
@@ -301,7 +279,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 6h
   name: ci-kubernetes-e2e-kops-aws-stable3
@@ -325,7 +303,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-kops-aws-updown
@@ -350,7 +328,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]
       - --timeout=30m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 24h
   name: ci-kubernetes-e2e-kops-aws-weave
@@ -375,7 +353,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-kops-gce
@@ -399,7 +377,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-kops-gce-channelalpha
@@ -423,7 +401,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-kops-gce-ha
@@ -447,4 +425,4 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master

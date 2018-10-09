@@ -1,0 +1,11 @@
+presubmits:
+  kubernetes-sigs/kube-storage-version-migrator:
+  - name: pull-kube-storage-version-migrator-test
+    decorate: true
+    always_run: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+        command:
+        - make
+        - test

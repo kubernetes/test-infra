@@ -26,6 +26,7 @@ import (
 
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 var initialFiles = map[string][]byte{
@@ -97,6 +98,44 @@ var e = &github.GenericCommentEvent{
 	},
 }
 
+func TestMinConfidence(t *testing.T) {
+	zero := float64(0)
+	half := 0.5
+	cases := []struct {
+		name     string
+		golint   *plugins.Golint
+		expected float64
+	}{
+		{
+			name:     "nothing set",
+			expected: defaultConfidence,
+		},
+		{
+			name:     "no confidence set",
+			golint:   &plugins.Golint{},
+			expected: defaultConfidence,
+		},
+		{
+			name:     "confidence set to zero",
+			golint:   &plugins.Golint{MinimumConfidence: &zero},
+			expected: zero,
+		},
+		{
+			name:     "confidence set positive",
+			golint:   &plugins.Golint{MinimumConfidence: &half},
+			expected: half,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := minConfidence(tc.golint)
+			if actual != tc.expected {
+				t.Errorf("minimum confidence %f != expected %f", actual, tc.expected)
+			}
+		})
+	}
+}
+
 func TestLint(t *testing.T) {
 	lg, c, err := localgit.New()
 	if err != nil {
@@ -136,7 +175,7 @@ func TestLint(t *testing.T) {
 			},
 		},
 	}
-	if err := handle(gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
+	if err := handle(0, gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
 		t.Fatalf("Got error from handle: %v", err)
 	}
 	if len(gh.comment.Comments) != 2 {
@@ -150,7 +189,7 @@ func TestLint(t *testing.T) {
 			Body:     c.Body,
 		})
 	}
-	if err := handle(gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
+	if err := handle(0, gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
 		t.Fatalf("Got error from handle on second try: %v", err)
 	}
 	if len(gh.comment.Comments) != 0 {
@@ -170,7 +209,7 @@ func TestLint(t *testing.T) {
 		t.Fatalf("Adding PR commit: %v", err)
 	}
 	gh.oldComments = nil
-	if err := handle(gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
+	if err := handle(0, gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
 		t.Fatalf("Got error from handle on third try: %v", err)
 	}
 	if len(gh.comment.Comments) != maxComments {
@@ -200,6 +239,10 @@ func TestAddedLines(t *testing.T) {
 		},
 		{
 			patch: "@@ -0,0 +1 @@\n+wow",
+			lines: map[int]int{1: 1},
+		},
+		{
+			patch: "@@ -0,0 +1 @@\n+wow\n\\ No newline at end of file",
 			lines: map[int]int{1: 1},
 		},
 		{

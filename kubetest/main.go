@@ -51,7 +51,7 @@ var (
 	terminate = time.NewTimer(time.Duration(0)) // terminate testing at this time.
 	verbose   = false
 	timeout   = time.Duration(0)
-	boskos    = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos")
+	boskos    = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos.test-pods.svc.cluster.local.")
 	control   = process.NewControl(timeout, interrupt, terminate, verbose)
 )
 
@@ -67,6 +67,7 @@ type options struct {
 	dindImage           string
 	down                bool
 	dump                string
+	dumpPreTestLogs     string
 	extract             extractStrategies
 	extractFederation   extractFederationStrategies
 	extractSource       bool
@@ -100,7 +101,6 @@ type options struct {
 	nodeArgs            string
 	nodeTestArgs        string
 	nodeTests           bool
-	perfTests           bool
 	provider            string
 	publish             string
 	runtimeConfig       string
@@ -133,7 +133,8 @@ func defineFlags() *options {
 	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/conformance/dind/gke/kops/kubernetes-anywhere/node/local")
 	flag.StringVar(&o.dindImage, "dind-image", "", "The dind image to use to start a cluster. Defaults to the docker tag produced by bazel.")
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
-	flag.StringVar(&o.dump, "dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
+	flag.StringVar(&o.dump, "dump", "", "If set, dump bring-up and cluster logs to this location on test or cluster-up failure")
+	flag.StringVar(&o.dumpPreTestLogs, "dump-pre-test-logs", "", "If set, dump cluster logs to this location before running tests")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
 	flag.Var(&o.extractFederation, "extract-federation", "Extract federation binaries from the specified release location")
 	flag.BoolVar(&o.extractSource, "extract-source", false, "Extract k8s src together with other tarballs")
@@ -168,7 +169,6 @@ func defineFlags() *options {
 	flag.StringVar(&o.nodeTestArgs, "node-test-args", "", "Test args specifically for node e2e tests.")
 	flag.BoolVar(&o.noAllowDup, "no-allow-dup", false, "if set --allow-dup will not be passed to push-build and --stage will error if the build already exists on the gcs path")
 	flag.BoolVar(&o.nodeTests, "node-tests", false, "If true, run node-e2e tests.")
-	flag.BoolVar(&o.perfTests, "perf-tests", false, "If true, run tests from perf-tests repo.")
 	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, etc")
 	flag.StringVar(&o.publish, "publish", "", "Publish version to the specified gs:// path on success")
 	flag.StringVar(&o.runtimeConfig, "runtime-config", "batch/v2alpha1=true", "If set, API versions can be turned on or off while bringing up the API server.")
@@ -258,6 +258,8 @@ func getDeployer(o *options) (deployer, error) {
 		return noneDeploy{}, nil
 	case "local":
 		return newLocalCluster(), nil
+	case "acsengine":
+		return newAcsEngine()
 	default:
 		return nil, fmt.Errorf("unknown deployment strategy %q", o.deployment)
 	}
@@ -784,7 +786,7 @@ func prepareGcp(o *options) error {
 		go func(c *client.Client, proj string) {
 			for range time.Tick(time.Minute * 5) {
 				if err := c.UpdateOne(p.Name, "busy", nil); err != nil {
-					log.Printf("[Boskos] Update %s failed with %v", p, err)
+					log.Printf("[Boskos] Update of %s failed with %v", p.Name, err)
 				}
 			}
 		}(boskos, p.Name)

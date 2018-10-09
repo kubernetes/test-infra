@@ -233,6 +233,10 @@ function renderSpans(text, spans) {
   if (!spans) {
     return [text];
   }
+  if (spans.length > 1000) {
+    console.warn(`Not highlighting excessive number of spans to avoid browser hang: ${spans.length}`);
+    return [text];
+  }
   var out = [];
   var c = 0;
   for (var i = 0; i < spans.length; i += 2) {

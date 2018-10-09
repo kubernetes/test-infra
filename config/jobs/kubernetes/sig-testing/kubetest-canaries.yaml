@@ -8,7 +8,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e@sha256:02fe7ded2e8e477e52f3c82eab5fb6632ad7cd09612e2d7c5944d143974f3685
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         args:
         - "--job=$(JOB_NAME)"
@@ -35,7 +35,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e@sha256:02fe7ded2e8e477e52f3c82eab5fb6632ad7cd09612e2d7c5944d143974f3685
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         args:
         - "--job=$(JOB_NAME)"
@@ -104,6 +104,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=65m
+
 - interval: 30m
   name: ci-kubernetes-e2e-gce-canary
   labels:
@@ -131,6 +132,38 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
+# TODO(krzyzacy): get rid once this is working
+- interval: 30m
+  name: ci-kubernetes-e2e-gce-podutil-canary
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  decoration_config:
+    timeout: 18500000000000 # 5h + 5m
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - ./scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --cluster=podutil-canary-e2e
+      - --extract=ci/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-nodes=2
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=300m
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+
 - interval: 30m
   name: ci-kubernetes-e2e-gce-scalability-canary
   labels:
@@ -148,8 +181,8 @@ periodics:
       - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env
       - --extract=ci/latest
       - --gcp-nodes=100
-      - --gcp-project=google.com:k8s-jenkins-scalability
-      - --gcp-zone=us-central1-f
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --minStartupPods=8
       - --timeout=120m
@@ -172,7 +205,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --deployment=gke
-      - --extract=gke-latest-1.8
+      - --extract=gke-latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-b
       - --ginkgo-parallel
@@ -201,7 +234,7 @@ periodics:
       - --env=KUBE_SSH_USER=admin
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-etcd-version=3.1.10
+      - --kops-etcd-version=3.2.24
       - --kops-master-count=3
       - --kops-multiple-zones
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
@@ -283,7 +316,6 @@ periodics:
       - --gcp-master-size=n1-standard-2
       - --gcp-node-size=n1-standard-4
       - --gcp-nodes=3
-      - --gcp-project=k8s-jenkins-gci-kubemark
       - --gcp-zone=us-central1-f
       - --kubemark
       - --kubemark-nodes=100

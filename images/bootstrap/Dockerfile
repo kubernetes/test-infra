@@ -99,7 +99,7 @@ RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID"
 # TODO(benthelder): update docker version. This is pinned because of
 # https://github.com/kubernetes/test-infra/issues/6187
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends docker-ce=17.09.1~ce-0~debian && \
+    apt-get install -y --no-install-recommends docker-ce=18.06.0* && \
     sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker
 
 

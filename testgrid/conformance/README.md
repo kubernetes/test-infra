@@ -39,13 +39,20 @@ For running the conformance tests and obtaining the result files (`b)` and `c)`)
    ```sh
    git clone https://github.com/kubernetes/kubernetes.git && cd kubernetes && git checkout release-1.11
    ```
-   - run `make WHAT=test/e2e.test` to build the test binaries
+   - run `make all WHAT="test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo cmd/kubectl"` to build the test binaries
    - make sure `kubectl` / `$KUBECONFIG` is authed to your cluster
    - run [kubetest](https://github.com/kubernetes/test-infra/tree/master/kubetest) with:
     ```sh
     export KUBERNETES_CONFORMANCE_TEST=y
+    # NOTE: see https://github.com/kubernetes/test-infra/pull/9104 for why 
+    # we have to supply `--ginkgo.skip`, in the longer term we should not do this.
+    # For < Kubernetes 1.12 use:
+    export SKIP="Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]"
+    # otherwise use:
+    export SKIP="Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]"
     kubetest --provider=skeleton \
-             --test --test_args="--ginkgo.focus=\[Conformance\]" \ 
+             --test \
+             --test_args="--ginkgo.focus=\[Conformance\] --ginkgo.skip=${SKIP}" \ 
              --dump=./_artifacts | tee ./e2e.log
     ```
    - You can then find the log file and JUnit at `./e2e.log` and `./_artifacts/junit_01.xml` respectively.

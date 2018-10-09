@@ -52,16 +52,21 @@ type Options struct {
 	// when cloning. Will be added to `ssh-agent`.
 	KeyFiles []string `json:"key_files,omitempty"`
 
+	// HostFingerPrints are ssh-keyscan host fingerprint lines to use
+	// when cloning. Will be added to ~/.ssh/known_hosts
+	HostFingerprints []string `json:"host_fingerprints,omitempty"`
+
 	// MaxParallelWorkers determines how many repositories
 	// can be cloned in parallel. If 0, interpreted as no
 	// limit to parallelism
 	MaxParallelWorkers int `json:"max_parallel_workers,omitempty"`
 
 	// used to hold flag values
-	refs      gitRefs
-	clonePath orgRepoFormat
-	cloneURI  orgRepoFormat
-	keys      stringSlice
+	refs       gitRefs
+	clonePath  orgRepoFormat
+	cloneURI   orgRepoFormat
+	keys       stringSlice
+	CookiePath string `json:"cookie_path,omitempty"`
 }
 
 // Validate ensures that the configuration options are valid
@@ -115,11 +120,6 @@ func (o *Options) LoadConfig(config string) error {
 	return json.Unmarshal([]byte(config), o)
 }
 
-// BindOptions binds flags to options
-func (o *Options) BindOptions(flags *flag.FlagSet) {
-	BindOptions(o, flags)
-}
-
 // Complete internalizes command line arguments
 func (o *Options) Complete(args []string) {
 	o.GitRefs = o.refs.gitRefs
@@ -140,18 +140,19 @@ func (o *Options) Complete(args []string) {
 	}
 }
 
-// BindOptions adds flags to the FlagSet that populate
+// AddFlags adds flags to the FlagSet that populate
 // the GCS upload options struct given.
-func BindOptions(options *Options, fs *flag.FlagSet) {
-	fs.StringVar(&options.SrcRoot, "src-root", "", "Where to root source checkouts")
-	fs.StringVar(&options.Log, "log", "", "Where to write logs")
-	fs.StringVar(&options.GitUserName, "git-user-name", DefaultGitUserName, "Username to set in git config")
-	fs.StringVar(&options.GitUserEmail, "git-user-email", DefaultGitUserEmail, "Email to set in git config")
-	fs.Var(&options.refs, "repo", "Mapping of Git URI to refs to check out, can be provided more than once")
-	fs.Var(&options.keys, "ssh-key", "Path to SSH key to enable during cloning, can be provided more than once")
-	fs.Var(&options.clonePath, "clone-alias", "Format string for the path to clone to")
-	fs.Var(&options.cloneURI, "uri-prefix", "Format string for the URI prefix to clone from")
-	fs.IntVar(&options.MaxParallelWorkers, "max-workers", 0, "Maximum number of parallel workers, unset for unlimited.")
+func (o *Options) AddFlags(fs *flag.FlagSet) {
+	fs.StringVar(&o.SrcRoot, "src-root", "", "Where to root source checkouts")
+	fs.StringVar(&o.Log, "log", "", "Where to write logs")
+	fs.StringVar(&o.GitUserName, "git-user-name", DefaultGitUserName, "Username to set in git config")
+	fs.StringVar(&o.GitUserEmail, "git-user-email", DefaultGitUserEmail, "Email to set in git config")
+	fs.Var(&o.refs, "repo", "Mapping of Git URI to refs to check out, can be provided more than once")
+	fs.Var(&o.keys, "ssh-key", "Path to SSH key to enable during cloning, can be provided more than once")
+	fs.Var(&o.clonePath, "clone-alias", "Format string for the path to clone to")
+	fs.Var(&o.cloneURI, "uri-prefix", "Format string for the URI prefix to clone from")
+	fs.IntVar(&o.MaxParallelWorkers, "max-workers", 0, "Maximum number of parallel workers, unset for unlimited.")
+	fs.StringVar(&o.CookiePath, "cookiefile", "", "Path to git http.coookiefile")
 }
 
 type gitRefs struct {

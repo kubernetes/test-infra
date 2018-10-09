@@ -22,15 +22,15 @@ package tests
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
+	"path"
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -39,38 +39,14 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
-// config.json is the worst but contains useful information :-(
-type configJSON map[string]map[string]interface{}
-
 var configPath = flag.String("config", "../../../prow/config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../jobs", "Path to prow job config")
-var configJSONPath = flag.String("config-json", "../../../jobs/config.json", "Path to prow job config")
 var gubernatorPath = flag.String("gubernator-path", "https://k8s-gubernator.appspot.com", "Path to linked gubernator")
 var bucket = flag.String("bucket", "kubernetes-jenkins", "Gcs bucket for log upload")
-
-func (c configJSON) ScenarioForJob(jobName string) string {
-	if scenario, ok := c[jobName]["scenario"]; ok {
-		return scenario.(string)
-	}
-	return ""
-}
-
-func readConfigJSON(path string) (config configJSON, err error) {
-	raw, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	config = configJSON{}
-	err = json.Unmarshal(raw, &config)
-	if err != nil {
-		return nil, err
-	}
-	return config, nil
-}
+var k8sProw = flag.Bool("k8s-prow", true, "If the config is for k8s prow cluster")
 
 // Loaded at TestMain.
 var c *cfg.Config
-var cj configJSON
 
 func TestMain(m *testing.M) {
 	flag.Parse()
@@ -85,14 +61,6 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	c = conf
-
-	if *configJSONPath != "" {
-		cj, err = readConfigJSON(*configJSONPath)
-		if err != nil {
-			fmt.Printf("Could not load jobs config: %v", err)
-			os.Exit(1)
-		}
-	}
 
 	os.Exit(m.Run())
 }
@@ -163,6 +131,7 @@ func TestURLTemplate(t *testing.T) {
 		job     string
 		build   string
 		expect  string
+		k8sOnly bool
 	}{
 		{
 			name:    "k8s presubmit",
@@ -172,6 +141,7 @@ func TestURLTemplate(t *testing.T) {
 			job:     "k8s-pre-1",
 			build:   "1",
 			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/0/k8s-pre-1/1/",
+			k8sOnly: true,
 		},
 		{
 			name:    "k8s/test-infra presubmit",
@@ -181,6 +151,7 @@ func TestURLTemplate(t *testing.T) {
 			job:     "ti-pre-1",
 			build:   "1",
 			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/test-infra/0/ti-pre-1/1/",
+			k8sOnly: true,
 		},
 		{
 			name:    "foo/k8s presubmit",
@@ -231,10 +202,24 @@ func TestURLTemplate(t *testing.T) {
 			job:     "k8s-batch-1",
 			build:   "1",
 			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/batch/k8s-batch-1/1/",
+			k8sOnly: true,
+		},
+		{
+			name:    "foo bar batch",
+			jobType: kube.BatchJob,
+			org:     "foo",
+			repo:    "bar",
+			job:     "k8s-batch-1",
+			build:   "1",
+			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/foo_bar/batch/k8s-batch-1/1/",
 		},
 	}
 
 	for _, tc := range testcases {
+		if !*k8sProw && tc.k8sOnly {
+			continue
+		}
+
 		var pj = kube.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{Name: tc.name},
 			Spec: kube.ProwJobSpec{
@@ -317,6 +302,40 @@ func findRequired(t *testing.T, presubmits []cfg.Presubmit) []string {
 		required = append(required, p.Context)
 	}
 	return required
+}
+
+func TestTrustedJobs(t *testing.T) {
+	// TODO(fejta): allow each config/jobs/kubernetes/foo/foo-trusted.yaml
+	// that uses a foo-trusted cluster
+	const trusted = "test-infra-trusted"
+	trustedPath := path.Join(*jobConfigPath, "kubernetes", "test-infra", "test-infra-trusted.yaml")
+
+	// Presubmits may not use trusted clusters.
+	for _, pre := range c.AllPresubmits(nil) {
+		if pre.Cluster == trusted {
+			t.Errorf("%s: presubmits cannot use trusted clusters", pre.Name)
+		}
+	}
+
+	// Trusted postsubmits must be defined in trustedPath
+	for _, post := range c.AllPostsubmits(nil) {
+		if post.Cluster != trusted {
+			continue
+		}
+		if post.SourcePath != trustedPath {
+			t.Errorf("%s defined in %s may not run in trusted cluster", post.Name, post.SourcePath)
+		}
+	}
+
+	// Trusted periodics must be defined in trustedPath
+	for _, per := range c.AllPeriodics() {
+		if per.Cluster != trusted {
+			continue
+		}
+		if per.SourcePath != trustedPath {
+			t.Errorf("%s defined in %s may not run in trusted cluster", per.Name, per.SourcePath)
+		}
+	}
 }
 
 func TestConfigSecurityJobsMatch(t *testing.T) {
@@ -640,8 +659,14 @@ func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels, validLabels 
 			}
 		}
 
-		configJSONJobName := strings.Replace(jobName, "pull-kubernetes", "pull-security-kubernetes", -1)
-		if cj.ScenarioForJob(configJSONJobName) == "kubenetes_e2e" {
+		scenario := ""
+		for _, arg := range container.Args {
+			if strings.HasPrefix(arg, "--scenario=") {
+				scenario = strings.TrimPrefix(arg, "--scenario=")
+			}
+		}
+
+		if scenario == "kubenetes_e2e" {
 			ssh = false
 			for key, val := range labels {
 				if (key == "preset-k8s-ssh" || key == "preset-aws-ssh") && val == "true" {
@@ -687,6 +712,10 @@ func TestValidPresets(t *testing.T) {
 				validLabels[label] = val
 			}
 		}
+	}
+
+	if !*k8sProw {
+		return
 	}
 
 	for _, presubmit := range c.AllPresubmits(nil) {
@@ -751,11 +780,6 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 			entry = strings.Replace(entry, "pull-security-kubernetes", "pull-kubernetes", -1)
 		}
 
-		if _, ok := cj[entry]; ok {
-			// the unit test is handled in jobs/config_test.py
-			return nil
-		}
-
 		if !scenarioArgs {
 			if strings.Contains(imageName, "kubekins-e2e") ||
 				strings.Contains(imageName, "bootstrap") ||
@@ -771,7 +795,9 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 		}
 
 		if !scenarioArgs {
-			return fmt.Errorf("job %s: set --scenario and will need scenario args", jobName)
+			if scenario != "kubernetes_heapster" { // this scenario does not have any args
+				return fmt.Errorf("job %s: set --scenario=%s and will need scenario args", jobName, scenario)
+			}
 		}
 	}
 
@@ -827,7 +853,9 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 	}
 
 	expectedExtract := 1
-	if sharedBuilds || nodeE2e || builds {
+	if sharedBuilds || nodeE2e {
+		expectedExtract = 0
+	} else if builds && !extracts {
 		expectedExtract = 0
 	} else if strings.Contains(jobName, "ingress") {
 		expectedExtract = 1
@@ -886,6 +914,35 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 		if strings.Contains(ginkgo_args, "\\\\") {
 			return fmt.Errorf("jobs %s - double slashes in ginkgo args should be single slash now : arg %s", jobName, arg)
 		}
+	}
+
+	// timeout should be valid
+	bootstrap_timeout := 0 * time.Minute
+	kubetest_timeout := 0 * time.Minute
+	var err error
+	kubetest := false
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--timeout=") {
+			timeout := strings.SplitN(arg, "=", 2)[1]
+			if kubetest {
+				if kubetest_timeout, err = time.ParseDuration(timeout); err != nil {
+					return fmt.Errorf("jobs %s - invalid kubetest timeout : arg %s", jobName, arg)
+				}
+			} else {
+				if bootstrap_timeout, err = time.ParseDuration(timeout + "m"); err != nil {
+					return fmt.Errorf("jobs %s - invalid bootstrap timeout : arg %s", jobName, arg)
+				}
+			}
+		}
+
+		if arg == "--" {
+			kubetest = true
+		}
+	}
+
+	if bootstrap_timeout.Minutes()-kubetest_timeout.Minutes() < 20.0 {
+		return fmt.Errorf(
+			"jobs %s - kubetest timeout(%v), bootstrap timeout(%v): bootstrap timeout need to be 20min more than kubetest timeout!", jobName, kubetest_timeout, bootstrap_timeout)
 	}
 
 	return nil

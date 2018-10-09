@@ -18,7 +18,6 @@ go_test(
     ],
     data = [
         "//config:prowjobs",
-        "//mungegithub:submit-queue/deployment/kubernetes/configmap.yaml",
         "//prow:config.yaml",
         "//testgrid:config-yaml",
     ],
@@ -26,7 +25,7 @@ go_test(
     deps = [
         "//prow/config:go_default_library",
         "//testgrid:config",
-        "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 

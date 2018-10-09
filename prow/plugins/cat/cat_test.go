@@ -197,7 +197,7 @@ func TestHttpResponse(t *testing.T) {
 	img := ts2.URL + "/cat.jpg"
 	bigimg := ts2.URL + "/bigcat.jpg"
 	src := "http://localhost?kind=source_url"
-	validResponse := fmt.Sprintf(`<response><data><images><image><url>%s</url><source_url>%s</source_url></image></images></data></response>`, img, src)
+	validResponse := fmt.Sprintf(`[{"id":"valid","url":"%s","source_url":"%s"}]`, img, src)
 	var testcases = []struct {
 		name     string
 		path     string
@@ -208,13 +208,13 @@ func TestHttpResponse(t *testing.T) {
 		{
 			name:     "valid",
 			path:     "/valid",
-			response: fmt.Sprintf(`<response><data><images><image><url>%s</url><source_url>%s</source_url></image></images></data></response>`, img, src),
+			response: validResponse,
 			valid:    true,
 		},
 		{
 			name:     "image too big",
 			path:     "/too-big",
-			response: fmt.Sprintf(`<response><data><images><image><url>%s</url><source_url>%s</source_url></image></images></data></response>`, bigimg, src),
+			response: fmt.Sprintf(`[{"id":"toobig","url":"%s","source_url":"%s"}]`, bigimg, src),
 		},
 		{
 			name: "return-406",
@@ -234,9 +234,14 @@ Available variants:
 </body></html>`,
 		},
 		{
-			name:     "no-image-in-xml",
-			path:     "/no-image-in-xml",
-			response: "<random><xml/></random>",
+			name:     "no-cats-in-json",
+			path:     "/no-cats-in-json",
+			response: "[]",
+		},
+		{
+			name:     "no-image-in-json",
+			path:     "/no-image-in-json",
+			response: "[{}]",
 		},
 	}
 

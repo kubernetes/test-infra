@@ -1,5 +1,19 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-aws:
+  - name: pull-cluster-api-provider-aws-build
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=execute"
+        - "--"
+        - "./scripts/ci-build.sh"
   - name: pull-cluster-api-provider-aws-make
     always_run: true
     labels:
@@ -7,19 +21,32 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - args:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.10
+        args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
         - "--scenario=execute"
         - "--"
-        - "make"
-        - "images"
+        - "./scripts/ci-make.sh"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.10
         resources:
           requests:
             memory: "6Gi"
+  - name: pull-cluster-api-provider-aws-test
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/cluster-api:v20180720-d52d72975
+        args:
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=execute"
+        - "--"
+        - "./scripts/ci-test.sh"

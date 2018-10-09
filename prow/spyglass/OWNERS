@@ -1,0 +1,4 @@
+approvers:
+- paulangton
+labels:
+ - area/prow/spyglass

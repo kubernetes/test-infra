@@ -26,7 +26,7 @@ import (
 	"time"
 
 	gogithub "github.com/google/go-github/github"
-	"github.com/shurcooL/githubql"
+	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 
@@ -116,9 +116,9 @@ type PullRequest struct {
 		}
 	} `graphql:"labels(first: 100)"`
 	Milestone struct {
-		ID     githubql.ID
-		Closed githubql.Boolean
+		Title githubql.String
 	}
+	Mergeable githubql.MergeableState
 }
 
 type UserLoginQuery struct {
@@ -223,12 +223,8 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 				return
 			}
 
-			getSecret := func() []byte {
-				return []byte(token.AccessToken)
-			}
-
 			// Construct query
-			ghc := github.NewClient(getSecret, githubEndpoint)
+			ghc := github.NewClient(func() []byte { return []byte(token.AccessToken) }, githubEndpoint)
 			query := da.ConstructSearchQuery(login)
 			if err := r.ParseForm(); err == nil {
 				if q := r.Form.Get("query"); q != "" {

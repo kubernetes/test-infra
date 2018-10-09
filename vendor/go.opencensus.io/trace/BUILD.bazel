@@ -15,7 +15,7 @@ go_library(
         "trace_go11.go",
         "trace_nongo11.go",
     ],
-    importmap = "vendor/go.opencensus.io/trace",
+    importmap = "k8s.io/test-infra/vendor/go.opencensus.io/trace",
     importpath = "go.opencensus.io/trace",
     visibility = ["//visibility:public"],
     deps = [
@@ -36,6 +36,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//vendor/go.opencensus.io/trace/internal:all-srcs",
+        "//vendor/go.opencensus.io/trace/propagation:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

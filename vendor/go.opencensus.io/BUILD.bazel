@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["opencensus.go"],
-    importmap = "vendor/go.opencensus.io",
+    importmap = "k8s.io/test-infra/vendor/go.opencensus.io",
     importpath = "go.opencensus.io",
     visibility = ["//visibility:public"],
 )
@@ -20,6 +20,9 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//vendor/go.opencensus.io/internal:all-srcs",
+        "//vendor/go.opencensus.io/plugin/ocgrpc:all-srcs",
+        "//vendor/go.opencensus.io/stats:all-srcs",
+        "//vendor/go.opencensus.io/tag:all-srcs",
         "//vendor/go.opencensus.io/trace:all-srcs",
     ],
     tags = ["automanaged"],

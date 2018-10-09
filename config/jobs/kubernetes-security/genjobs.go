@@ -27,7 +27,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -49,41 +48,7 @@ import (
 
 var configPath = flag.String("config", "", "path to prow/config.yaml, defaults to $PWD/../../prow/config.yaml")
 var jobsPath = flag.String("jobs", "", "path to prowjobs, defaults to $PWD/../")
-var configJSONPath = flag.String("config-json", "", "path to jobs/config.json, defaults to $PWD/../../jobs/config.json")
-var outputPath = flag.String("output", "", "path to output the generated jobs to, defaults to $PWD/generated-security-jobs.json")
-
-// config.json is the worst but contains useful information :-(
-type configJSON map[string]map[string]interface{}
-
-func (c configJSON) ScenarioForJob(jobName string) string {
-	if scenario, ok := c[jobName]["scenario"]; ok {
-		return scenario.(string)
-	}
-	return ""
-}
-
-func (c configJSON) ArgsForJob(jobName string) []string {
-	res := []string{}
-	if args, ok := c[jobName]["args"]; ok {
-		for _, arg := range args.([]interface{}) {
-			res = append(res, arg.(string))
-		}
-	}
-	return res
-}
-
-func readConfigJSON(path string) (config configJSON, err error) {
-	raw, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	config = configJSON{}
-	err = json.Unmarshal(raw, &config)
-	if err != nil {
-		return nil, err
-	}
-	return config, nil
-}
+var outputPath = flag.String("output", "", "path to output the generated jobs to, defaults to $PWD/generated-security-jobs.yaml")
 
 // remove merged presets from a podspec
 func undoPreset(preset *config.Preset, labels map[string]string, pod *v1.PodSpec) {
@@ -154,7 +119,7 @@ func undoPresubmitPresets(presets []config.Preset, presubmit *config.Presubmit) 
 // convert a kubernetes/kubernetes job to a kubernetes-security/kubernetes job
 // dropLabels should be a set of "k: v" strings
 // xref: prow/config/config_test.go replace(...)
-func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, jobsConfig configJSON) {
+func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String) {
 	// filter out the unwanted labels
 	if len(j.Labels) > 0 {
 		filteredLabels := make(map[string]string)
@@ -188,7 +153,7 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, jobsCo
 				endsWithScenarioArgs = true
 
 				// handle --repo substitution for main repo
-			} else if strings.HasPrefix(arg, "--repo=k8s.io/kubernetes") || strings.HasPrefix(arg, "--repo=k8s.io/$(REPO_NAME)") {
+			} else if arg == "--repo=k8s.io/kubernetes" || strings.HasPrefix(arg, "--repo=k8s.io/kubernetes=") || arg == "--repo=k8s.io/$(REPO_NAME)" || strings.HasPrefix(arg, "--repo=k8s.io/$(REPO_NAME)=") {
 				container.Args[i] = strings.Replace(arg, "k8s.io/", "github.com/kubernetes-security/", 1)
 
 				// handle upload bucket
@@ -210,9 +175,15 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, jobsCo
 		// check for scenario specific tweaks
 		// NOTE: jobs are remapped to their original name in bootstrap to de-dupe config
 
+		scenario := ""
+		for _, arg := range container.Args {
+			if strings.HasPrefix(arg, "--scenario=") {
+				scenario = strings.TrimPrefix(arg, "--scenario=")
+			}
+		}
 		// check if we need to change staging artifact location for bazel-build and e2es
-		if jobsConfig.ScenarioForJob(originalName) == "kubernetes_bazel" {
-			for _, arg := range jobsConfig.ArgsForJob(originalName) {
+		if scenario == "kubernetes_bazel" {
+			for _, arg := range container.Args {
 				if strings.HasPrefix(arg, "--release") {
 					needGCSFlag = true
 					needGCSSharedFlag = true
@@ -221,8 +192,8 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, jobsCo
 			}
 		}
 
-		if jobsConfig.ScenarioForJob(originalName) == "kubernetes_e2e" {
-			for _, arg := range jobsConfig.ArgsForJob(originalName) {
+		if scenario == "kubernetes_e2e" {
+			for _, arg := range container.Args {
 				if strings.HasPrefix(arg, "--stage") {
 					needStagingFlag = true
 				} else if strings.HasPrefix(arg, "--use-shared-build") {
@@ -269,7 +240,7 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, jobsCo
 	}
 	// done with this job, check for run_after_success
 	for i := range j.RunAfterSuccess {
-		convertJobToSecurityJob(&j.RunAfterSuccess[i], dropLabels, jobsConfig)
+		convertJobToSecurityJob(&j.RunAfterSuccess[i], dropLabels)
 	}
 }
 
@@ -331,9 +302,6 @@ func main() {
 	if *jobsPath == "" {
 		*jobsPath = pwd + "/../"
 	}
-	if *configJSONPath == "" {
-		*configJSONPath = pwd + "/../../jobs/config.json"
-	}
 	if *outputPath == "" {
 		*outputPath = pwd + "/generated-security-jobs.yaml"
 	}
@@ -342,8 +310,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to read config file: %v", err)
 	}
-	// read in jobs config
-	jobsConfig, err := readConfigJSON(*configJSONPath)
 
 	// create temp file to write updated config
 	f, err := ioutil.TempFile(filepath.Dir(*configPath), "temp")
@@ -368,7 +334,7 @@ func main() {
 		// undo merged presets, this needs to occur first!
 		undoPresubmitPresets(parsed.Presets, job)
 		// now convert the job
-		convertJobToSecurityJob(job, dropLabels, jobsConfig)
+		convertJobToSecurityJob(job, dropLabels)
 		jobBytes, err := yaml.Marshal(job)
 		if err != nil {
 			log.Fatalf("Failed to marshal job: %v", err)

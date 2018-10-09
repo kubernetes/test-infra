@@ -1,0 +1,80 @@
+{{define "title"}}Prow Status{{end}}
+
+{{define "scripts"}}
+<script type="text/javascript" src="/static/prow_bundle.min.js"></script>
+<script type="text/javascript" src="data.js?var=allBuilds"></script>
+<script type="text/javascript">
+  var spyglass = {{.SpyglassEnabled}};
+</script>
+{{end}}
+
+{{define "content"}}
+<button id="top-navigator" class="mdl-button mdl-js-button mdl-button--fab hidden">
+  <i class="material-icons">arrow_upward</i>
+</button>
+<div class="page-content">
+  <aside>
+    <div id="filter-box" class="card-box">
+      <ul id="filter-list" class="noBullets">
+        <li>Filter</li>
+        <li><select id="type"><option>all job types</option></select></li>
+        <li><select id="repo"><option>all repositories</option></select></li>
+        &gt;&gt;
+        <li><select id="pull"><option>all pull requests</option></select></li>
+        <li><select id="author"><option>all authors</option></select></li>
+        <li>
+          <div class="fuzzy-search" id="job">
+            <input class="fuzzy-search-input" placeholder="Search job name" type="text" id="job-input">
+            <ul id="job-list" class="fuzzy-search-list"></ul>
+          </div>
+        </li>
+        <li><select id="state"><option>all states</option></select></li>
+        <li id="job-count"></li>
+      </ul>
+    </div>
+    <div id="job-bar">
+    <div id="job-bar-success" class="job-bar-state"></div>
+    <div id="success-tooltip" class="mdl-tooltip" for="job-bar-success"></div>
+    <div id="job-bar-pending" class="job-bar-state"></div>
+    <div id="pending-tooltip" class="mdl-tooltip" for="job-bar-pending"></div>
+    <div id="job-bar-triggered" class="job-bar-state"></div>
+    <div id="triggered-tooltip" class="mdl-tooltip" for="job-bar-triggered"></div>
+    <div id="job-bar-error" class="job-bar-state"></div>
+
+    <div id="error-tooltip" class="mdl-tooltip" for="job-bar-error"></div>
+    <div id="job-bar-failure" class="job-bar-state"></div>
+    <div id="failure-tooltip" class="mdl-tooltip" for="job-bar-failure"></div>
+    <div id="job-bar-aborted" class="job-bar-state"></div>
+    <div id="aborted-tooltip" class="mdl-tooltip" for="job-bar-aborted"></div>
+    <div id="job-bar-unknown" class="job-bar-state"></div>
+    <div id="unknown-tooltip" class="mdl-tooltip" for="job-bar-unknown"></div>
+  </div>
+  </aside>
+  <article>
+    <div class="table-container">
+      <table id="builds">
+        <thead>
+        <tr>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th>Repository</th>
+          <th>Revision</th>
+          <th></th>
+          <th>Job</th>
+          <th>Started</th>
+          <th>Duration</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <div id="rerun">
+    <div id="rerun-content"></div>
+  </div>
+</div>
+{{end}}
+
+{{template "page" (settings mobileUnfriendly "index" .)}}

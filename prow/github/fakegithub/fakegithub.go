@@ -24,6 +24,8 @@ import (
 )
 
 const botName = "k8s-ci-robot"
+
+// Bot is the exported botName
 const Bot = botName
 
 // FakeClient is like client, but fake.
@@ -41,6 +43,7 @@ type FakeClient struct {
 	CombinedStatuses    map[string]*github.CombinedStatus
 	CreatedStatuses     map[string][]github.Status
 	IssueEvents         map[int][]github.ListedIssueEvent
+	Commits             map[string]github.SingleCommit
 
 	//All Labels That Exist In The Repo
 	ExistingLabels []string
@@ -183,12 +186,17 @@ func (f *FakeClient) GetRef(owner, repo, ref string) (string, error) {
 	return "abcde", nil
 }
 
+// GetSingleCommit returns a single commit.
+func (f *FakeClient) GetSingleCommit(org, repo, SHA string) (github.SingleCommit, error) {
+	return f.Commits[SHA], nil
+}
+
 // CreateStatus adds a status context to a commit.
-func (f *FakeClient) CreateStatus(owner, repo, sha string, s github.Status) error {
+func (f *FakeClient) CreateStatus(owner, repo, SHA string, s github.Status) error {
 	if f.CreatedStatuses == nil {
 		f.CreatedStatuses = make(map[string][]github.Status)
 	}
-	statuses := f.CreatedStatuses[sha]
+	statuses := f.CreatedStatuses[SHA]
 	var updated bool
 	for i := range statuses {
 		if statuses[i].Context == s.Context {
@@ -199,7 +207,7 @@ func (f *FakeClient) CreateStatus(owner, repo, sha string, s github.Status) erro
 	if !updated {
 		statuses = append(statuses, s)
 	}
-	f.CreatedStatuses[sha] = statuses
+	f.CreatedStatuses[SHA] = statuses
 	return nil
 }
 

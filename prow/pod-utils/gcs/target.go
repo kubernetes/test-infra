@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"path"
 	"strconv"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -108,6 +109,8 @@ func NewLegacyRepoPathBuilder(defaultOrg, defaultRepo string) RepoPathBuilder {
 			}
 			return repo
 		}
+		// handle gerrit repo
+		repo = strings.Replace(repo, "/", "_", -1)
 		return fmt.Sprintf("%s_%s", org, repo)
 	}
 }
@@ -119,6 +122,8 @@ func NewSingleDefaultRepoPathBuilder(defaultOrg, defaultRepo string) RepoPathBui
 		if org == defaultOrg && repo == defaultRepo {
 			return ""
 		}
+		// handle gerrit repo
+		repo = strings.Replace(repo, "/", "_", -1)
 		return fmt.Sprintf("%s_%s", org, repo)
 	}
 }
@@ -127,6 +132,8 @@ func NewSingleDefaultRepoPathBuilder(defaultOrg, defaultRepo string) RepoPathBui
 // where a path will always have an explicit "org_repo" path segment
 func NewExplicitRepoPathBuilder() RepoPathBuilder {
 	return func(org, repo string) string {
+		// handle gerrit repo
+		repo = strings.Replace(repo, "/", "_", -1)
 		return fmt.Sprintf("%s_%s", org, repo)
 	}
 }

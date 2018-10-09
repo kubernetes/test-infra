@@ -47,14 +47,14 @@ func help(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.Plu
 		Usage:       "/close",
 		Description: "Closes an issue or PR.",
 		Featured:    false,
-		WhoCanUse:   "Authors and assignees can triggers this command.",
+		WhoCanUse:   "Authors and collaborators on the repository can trigger this command.",
 		Examples:    []string{"/close"},
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/reopen",
 		Description: "Reopens an issue or PR",
 		Featured:    false,
-		WhoCanUse:   "Authors and assignees can trigger this command.",
+		WhoCanUse:   "Authors and collaborators on the repository can trigger this command.",
 		Examples:    []string{"/reopen"},
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{

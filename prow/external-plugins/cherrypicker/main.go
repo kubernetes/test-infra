@@ -19,36 +19,61 @@ package main
 import (
 	"flag"
 	"net/http"
-	"net/url"
+	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/flagutil"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/git"
-	"k8s.io/test-infra/prow/github"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
 )
 
-var (
-	port              = flag.Int("port", 8888, "Port to listen on.")
-	dryRun            = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
-	githubEndpoint    = flagutil.NewStrings("https://api.github.com")
-	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
-	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
-	prowAssignments   = flag.Bool("use-prow-assignments", true, "Use prow commands to assign cherrypicked PRs.")
-	allowAll          = flag.Bool("allow-all", false, "Allow anybody to use automated cherrypicks by skipping Github organization membership checks.")
-)
+type options struct {
+	port int
 
-func init() {
-	flag.Var(&githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
+	dryRun bool
+	github prowflagutil.GitHubOptions
+
+	webhookSecretFile string
+	prowAssignments   bool
+	allowAll          bool
+}
+
+func (o *options) Validate() error {
+	for _, group := range []flagutil.OptionGroup{&o.github} {
+		if err := group.Validate(o.dryRun); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func gatherOptions() options {
+	o := options{}
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
+	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
+	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
+	fs.BoolVar(&o.prowAssignments, "use-prow-assignments", true, "Use prow commands to assign cherrypicked PRs.")
+	fs.BoolVar(&o.allowAll, "allow-all", false, "Allow anybody to use automated cherrypicks by skipping Github organization membership checks.")
+	for _, group := range []flagutil.OptionGroup{&o.github} {
+		group.AddFlags(fs)
+	}
+	fs.Parse(os.Args[1:])
+	return o
 }
 
 func main() {
-	flag.Parse()
+	o := gatherOptions()
+	if err := o.Validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
+	}
+
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	// TODO: Use global option from the prow config.
 	logrus.SetLevel(logrus.DebugLevel)
@@ -60,48 +85,36 @@ func main() {
 	signal.Ignore(syscall.SIGTERM)
 
 	secretAgent := &config.SecretAgent{}
-	if err := secretAgent.Start([]string{*githubTokenFile, *webhookSecretFile}); err != nil {
+	if err := secretAgent.Start([]string{o.github.TokenPath, o.webhookSecretFile}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	var err error
-	for _, ep := range githubEndpoint.Strings() {
-		_, err = url.ParseRequestURI(ep)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
-		}
-	}
-
-	githubClient := github.NewClient(secretAgent.GetTokenGenerator(*githubTokenFile), githubEndpoint.Strings()...)
-	if *dryRun {
-		githubClient = github.NewDryRunClient(secretAgent.GetTokenGenerator(*githubTokenFile), githubEndpoint.Strings()...)
-	}
-
-	gitClient, err := git.NewClient()
+	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
 	if err != nil {
-		log.WithError(err).Fatal("Error getting git client.")
+		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-
-	// The bot name is used to determine to what fork we can push cherry-pick branches.
-	botName, err := githubClient.BotName()
+	gitClient, err := o.github.GitClient(secretAgent, o.dryRun)
 	if err != nil {
-		log.WithError(err).Fatal("Error getting bot name.")
+		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
+	defer gitClient.Clean()
+
 	email, err := githubClient.Email()
 	if err != nil {
 		log.WithError(err).Fatal("Error getting bot e-mail.")
 	}
-	// The bot needs to be able to push to its own Github fork and potentially pull
-	// from private repos.
-	gitClient.SetCredentials(botName, secretAgent.GetTokenGenerator(*githubTokenFile))
 
+	botName, err := githubClient.BotName()
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting bot name.")
+	}
 	repos, err := githubClient.GetRepos(botName, true)
 	if err != nil {
 		log.WithError(err).Fatal("Error listing bot repositories.")
 	}
 
 	server := &Server{
-		tokenGenerator: secretAgent.GetTokenGenerator(*webhookSecretFile),
+		tokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
 		botName:        botName,
 		email:          email,
 
@@ -109,8 +122,8 @@ func main() {
 		ghc: githubClient,
 		log: log,
 
-		prowAssignments: *prowAssignments,
-		allowAll:        *allowAll,
+		prowAssignments: o.prowAssignments,
+		allowAll:        o.allowAll,
 
 		bare:     &http.Client{},
 		patchURL: "https://patch-diff.githubusercontent.com",
@@ -120,5 +133,5 @@ func main() {
 
 	http.Handle("/", server)
 	externalplugins.ServeExternalPluginHelp(http.DefaultServeMux, log, HelpProvider)
-	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
+	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(o.port), nil))
 }

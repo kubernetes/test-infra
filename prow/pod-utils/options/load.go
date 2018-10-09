@@ -26,7 +26,7 @@ import (
 type OptionLoader interface {
 	ConfigVar() string
 	LoadConfig(config string) error
-	BindOptions(flags *flag.FlagSet)
+	AddFlags(flags *flag.FlagSet)
 	Complete(args []string)
 }
 
@@ -42,7 +42,7 @@ func Load(loader OptionLoader) error {
 	}
 
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	loader.BindOptions(fs)
+	loader.AddFlags(fs)
 	fs.Parse(os.Args[1:])
 	loader.Complete(fs.Args())
 

@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -50,7 +51,15 @@ type Server struct {
 
 // ServeHTTP validates an incoming webhook and puts it into the event channel.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	eventType, eventGUID, payload, ok := ValidateWebhook(w, r, s.TokenGenerator())
+	eventType, eventGUID, payload, ok, resp := github.ValidateWebhook(w, r, s.TokenGenerator())
+	if counter, err := s.Metrics.WebhookCounter.GetMetricWithLabelValues(strconv.Itoa(resp)); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"status-code": resp,
+		}).WithError(err).Error("Failed to get metric for reporting webhook status code")
+	} else {
+		counter.Inc()
+	}
+
 	if !ok {
 		return
 	}
@@ -59,73 +68,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err := s.demuxEvent(eventType, eventGUID, payload, r.Header); err != nil {
 		logrus.WithError(err).Error("Error parsing event.")
 	}
-}
-
-// ValidateWebhook ensures that the provided request conforms to the
-// format of a Github webhook and the payload can be validated with
-// the provided hmac secret. It returns the event type, the event guid,
-// the payload of the request, and whether the webhook is valid or not.
-func ValidateWebhook(w http.ResponseWriter, r *http.Request, hmacSecret []byte) (string, string, []byte, bool) {
-	defer r.Body.Close()
-
-	// Our health check uses GET, so just kick back a 200.
-	if r.Method == http.MethodGet {
-		return "", "", nil, false
-	}
-
-	// Header checks: It must be a POST with an event type and a signature.
-	if r.Method != http.MethodPost {
-		resp := "405 Method not allowed"
-		logrus.Debug(resp)
-		http.Error(w, resp, http.StatusMethodNotAllowed)
-		return "", "", nil, false
-	}
-	eventType := r.Header.Get("X-GitHub-Event")
-	if eventType == "" {
-		resp := "400 Bad Request: Missing X-GitHub-Event Header"
-		logrus.Debug(resp)
-		http.Error(w, resp, http.StatusBadRequest)
-		return "", "", nil, false
-	}
-	eventGUID := r.Header.Get("X-GitHub-Delivery")
-	if eventGUID == "" {
-		resp := "400 Bad Request: Missing X-GitHub-Delivery Header"
-		logrus.Debug(resp)
-		http.Error(w, resp, http.StatusBadRequest)
-		return "", "", nil, false
-	}
-	sig := r.Header.Get("X-Hub-Signature")
-	if sig == "" {
-		resp := "403 Forbidden: Missing X-Hub-Signature"
-		logrus.Debug(resp)
-		http.Error(w, resp, http.StatusForbidden)
-		return "", "", nil, false
-	}
-	contentType := r.Header.Get("content-type")
-	if contentType != "application/json" {
-		resp := "400 Bad Request: Hook only accepts content-type: application/json - please reconfigure this hook on GitHub"
-		logrus.Debug(resp)
-		http.Error(w, resp, http.StatusBadRequest)
-		return "", "", nil, false
-	}
-
-	payload, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		resp := "500 Internal Server Error: Failed to read request body"
-		logrus.Debug(resp)
-		http.Error(w, resp, http.StatusInternalServerError)
-		return "", "", nil, false
-	}
-
-	// Validate the payload with our HMAC secret.
-	if !github.ValidatePayload(payload, sig, hmacSecret) {
-		resp := "403 Forbidden: Invalid X-Hub-Signature"
-		logrus.Debug(resp)
-		http.Error(w, resp, http.StatusForbidden)
-		return "", "", nil, false
-	}
-
-	return eventType, eventGUID, payload, true
 }
 
 func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.Header) error {

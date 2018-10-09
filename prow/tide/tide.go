@@ -30,7 +30,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/shurcooL/githubql"
+	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -171,9 +171,10 @@ var (
 
 func init() {
 	prometheus.MustRegister(tideMetrics.pooledPRs)
+	prometheus.MustRegister(tideMetrics.updateTime)
+	prometheus.MustRegister(tideMetrics.merges)
 	prometheus.MustRegister(tideMetrics.syncDuration)
 	prometheus.MustRegister(tideMetrics.statusUpdateDuration)
-	prometheus.MustRegister(tideMetrics.merges)
 }
 
 // NewController makes a Controller out of the given clients.
@@ -187,6 +188,9 @@ func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, ca *confi
 		ca:             ca,
 		newPoolPending: make(chan bool, 1),
 		shutDown:       make(chan bool),
+
+		trackedOrgs:  sets.NewString(),
+		trackedRepos: sets.NewString(),
 	}
 	go sc.run()
 	return &Controller{
@@ -256,7 +260,7 @@ func (c *Controller) Sync() error {
 	c.logger.Debug("Building tide pool.")
 	prs := make(map[string]PullRequest)
 	for _, q := range c.ca.Config().Tide.Queries {
-		results, err := search(ctx, c.ghc, c.logger, q.Query())
+		results, err := newSearchExecutor(ctx, c.ghc, c.logger, q.Query()).search()
 		if err != nil {
 			return err
 		}
@@ -288,7 +292,7 @@ func (c *Controller) Sync() error {
 	if err != nil {
 		return err
 	}
-	filteredPools := c.filterSubpools(rawPools)
+	filteredPools := c.filterSubpools(c.ca.Config().Tide.MaxGoroutines, rawPools)
 
 	// Notify statusController about the new pool.
 	c.sc.Lock()
@@ -299,38 +303,23 @@ func (c *Controller) Sync() error {
 	}
 	c.sc.Unlock()
 
-	// Load the subpools into a channel for use as a work queue.
-	sps := make(chan subpool, len(filteredPools))
-	for _, sp := range filteredPools {
-		sps <- *sp
-	}
-	close(sps)
-
-	goroutines := c.ca.Config().Tide.MaxGoroutines
-	if goroutines > len(sps) {
-		goroutines = len(sps)
-	}
-	wg := &sync.WaitGroup{}
-	wg.Add(goroutines)
-	c.logger.Debugf("Firing up %d goroutines", goroutines)
-	poolChan := make(chan Pool, len(sps))
-	for i := 0; i < goroutines; i++ {
-		go func() {
-			defer wg.Done()
-			for sp := range sps {
-				spBlocks := blocks.GetApplicable(sp.org, sp.repo, sp.branch)
-				if pool, err := c.syncSubpool(sp, spBlocks); err != nil {
-					sp.log.WithError(err).Errorf("Error syncing subpool.")
-				} else {
-					poolChan <- pool
-				}
+	// Sync subpools in parallel.
+	poolChan := make(chan Pool, len(filteredPools))
+	subpoolsInParallel(
+		c.ca.Config().Tide.MaxGoroutines,
+		filteredPools,
+		func(sp *subpool) {
+			spBlocks := blocks.GetApplicable(sp.org, sp.repo, sp.branch)
+			if pool, err := c.syncSubpool(*sp, spBlocks); err != nil {
+				sp.log.WithError(err).Errorf("Error syncing subpool.")
+			} else {
+				poolChan <- pool
 			}
-		}()
-	}
-	wg.Wait()
-	close(poolChan)
+		},
+	)
 
-	pools := make([]Pool, 0, len(sps))
+	close(poolChan)
+	pools := make([]Pool, 0, len(poolChan))
 	for pool := range poolChan {
 		pools = append(pools, pool)
 	}
@@ -354,33 +343,71 @@ func (c *Controller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func subpoolsInParallel(goroutines int, sps map[string]*subpool, process func(*subpool)) {
+	// Load the subpools into a channel for use as a work queue.
+	queue := make(chan *subpool, len(sps))
+	for _, sp := range sps {
+		queue <- sp
+	}
+	close(queue)
+
+	if goroutines > len(queue) {
+		goroutines = len(queue)
+	}
+	wg := &sync.WaitGroup{}
+	wg.Add(goroutines)
+	for i := 0; i < goroutines; i++ {
+		go func() {
+			defer wg.Done()
+			for sp := range queue {
+				process(sp)
+			}
+		}()
+	}
+	wg.Wait()
+}
+
 // filterSubpools filters non-pool PRs out of the initially identified subpools,
 // deleting any pools that become empty.
 // See filterSubpool for filtering details.
-func (c *Controller) filterSubpools(raw map[string]*subpool) map[string]*subpool {
+func (c *Controller) filterSubpools(goroutines int, raw map[string]*subpool) map[string]*subpool {
 	filtered := make(map[string]*subpool)
-	for key, sp := range raw {
-		var err error
-		// TODO: move initialization of 'presubmitContexts' 'cc' and 'sha' to an 'initPool' func.
-		sp.presubmitContexts, err = c.presubmitsByPull(sp)
-		if err != nil {
-			sp.log.WithError(err).Error("Determining required presubmit prowjobs.")
-			continue
-		}
-		sp.cc, err = c.ca.Config().GetTideContextPolicy(sp.org, sp.repo, sp.branch)
-		if err != nil {
-			sp.log.WithError(err).Error("Setting up context checker.")
-			continue
-		}
+	var lock sync.Mutex
 
-		if spFiltered := filterSubpool(c.ghc, sp); spFiltered != nil {
-			sp.log.WithField("key", key).WithField("pool", spFiltered).Debug("filtered sub-pool")
-			filtered[key] = spFiltered
-		} else {
-			sp.log.WithField("key", key).WithField("pool", spFiltered).Debug("filtering sub-pool removed all PRs")
-		}
-	}
+	subpoolsInParallel(
+		goroutines,
+		raw,
+		func(sp *subpool) {
+			if err := c.initSubpoolData(sp); err != nil {
+				sp.log.WithError(err).Error("Error initializing subpool.")
+				return
+			}
+			key := fmt.Sprintf("%s/%s %s", sp.org, sp.repo, sp.branch)
+			if spFiltered := filterSubpool(c.ghc, sp); spFiltered != nil {
+				sp.log.WithField("key", key).WithField("pool", spFiltered).Debug("filtered sub-pool")
+
+				lock.Lock()
+				filtered[key] = spFiltered
+				lock.Unlock()
+			} else {
+				sp.log.WithField("key", key).WithField("pool", spFiltered).Debug("filtering sub-pool removed all PRs")
+			}
+		},
+	)
 	return filtered
+}
+
+func (c *Controller) initSubpoolData(sp *subpool) error {
+	var err error
+	sp.presubmitContexts, err = c.presubmitsByPull(sp)
+	if err != nil {
+		return fmt.Errorf("error determining required presubmit prowjobs: %v", err)
+	}
+	sp.cc, err = c.ca.Config().GetTideContextPolicy(sp.org, sp.repo, sp.branch)
+	if err != nil {
+		return fmt.Errorf("error setting up context checker: %v", err)
+	}
+	return nil
 }
 
 // filterSubpool filters PRs from an initially identified subpool, returning the
@@ -547,47 +574,42 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 		if pj.Spec.Type != kube.BatchJob {
 			continue
 		}
-		// If any batch job is pending, return now.
-		if toSimpleState(pj.Status.State) == pendingState {
-			var pending []PullRequest
-			var pendingNums []int
-			for _, pull := range pj.Spec.Refs.Pulls {
-				pending = append(pending, prNums[pull.Number])
-				pendingNums = append(pendingNums, pull.Number)
-			}
-			log.Debugf("no new batch necessary, current batch pending: %v", pendingNums)
-			return nil, pending
-		}
-		// Otherwise, accumulate results.
+		// First validate the batch job's refs.
 		ref := pj.Spec.Refs.String()
 		if _, ok := states[ref]; !ok {
-			states[ref] = &accState{
+			state := &accState{
 				jobStates:  make(map[string]simpleState),
 				validPulls: true,
 			}
 			for _, pull := range pj.Spec.Refs.Pulls {
 				if pr, ok := prNums[pull.Number]; ok && string(pr.HeadRefOID) == pull.SHA {
-					states[ref].prs = append(states[ref].prs, pr)
+					state.prs = append(state.prs, pr)
 				} else if !ok {
-					states[ref].validPulls = false
-					log.WithField("batch", ref).WithFields(pr.logFields()).Debug("batch invalid, PR left pool")
+					state.validPulls = false
+					log.WithField("batch", ref).WithFields(pr.logFields()).Debug("batch job invalid, PR left pool")
 					break
 				} else {
-					states[ref].validPulls = false
-					log.WithField("batch", ref).WithFields(pr.logFields()).Debug("batch invalid, PR HEAD changed")
+					state.validPulls = false
+					log.WithField("batch", ref).WithFields(pr.logFields()).Debug("batch job invalid, PR HEAD changed")
 					break
 				}
 			}
+			states[ref] = state
 		}
 		if !states[ref].validPulls {
 			// The batch contains a PR ref that has changed. Skip it.
 			continue
 		}
+
+		// Batch job refs are valid. Now accumulate job states by batch ref.
 		context := pj.Spec.Context
-		if s, ok := states[ref].jobStates[context]; !ok || s == noneState {
-			states[ref].jobStates[context] = toSimpleState(pj.Status.State)
+		jobState := toSimpleState(pj.Status.State)
+		// Store the best result for this ref+context.
+		if s, ok := states[ref].jobStates[context]; !ok || s == noneState || jobState == successState {
+			states[ref].jobStates[context] = jobState
 		}
 	}
+	var pendingBatch, successBatch []PullRequest
 	for ref, state := range states {
 		if !state.validPulls {
 			continue
@@ -596,20 +618,26 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 		for _, pr := range state.prs {
 			requiredPresubmits = requiredPresubmits.Union(presubmits[int(pr.Number)])
 		}
-		passesAll := true
+		overallState := successState
 		for _, p := range requiredPresubmits.List() {
-			if s, ok := state.jobStates[p]; !ok || s != successState {
-				passesAll = false
-				log.WithField("batch", ref).Debug("batch invalid, required presubmit %s not passing", p)
+			if s, ok := state.jobStates[p]; !ok || s == noneState {
+				overallState = noneState
+				log.WithField("batch", ref).Debugf("batch invalid, required presubmit %s is not passing", p)
 				break
+			} else if s == pendingState && overallState == successState {
+				overallState = pendingState
 			}
 		}
-		if !passesAll {
-			continue
+		switch overallState {
+		// Currently we only consider 1 pending batch and 1 success batch at a time.
+		// If more are somehow present they will be ignored.
+		case pendingState:
+			pendingBatch = state.prs
+		case successState:
+			successBatch = state.prs
 		}
-		return state.prs, nil
 	}
-	return nil, nil
+	return successBatch, pendingBatch
 }
 
 // accumulate returns the supplied PRs sorted into three buckets based on their
@@ -738,10 +766,19 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	for i, pr := range prs {
 		backoff := time.Second * 4
 		log := sp.log.WithFields(pr.logFields())
+		mergeMethod := c.ca.Config().Tide.MergeMethod(sp.org, sp.repo)
+		if squashLabel := c.ca.Config().Tide.SquashLabel; squashLabel != "" {
+			for _, prlabel := range pr.Labels.Nodes {
+				if string(prlabel.Name) == squashLabel {
+					mergeMethod = github.MergeSquash
+					break
+				}
+			}
+		}
 		for retry := 0; retry < maxRetries; retry++ {
 			if err := c.ghc.Merge(sp.org, sp.repo, int(pr.Number), github.MergeDetails{
 				SHA:         string(pr.HeadRefOID),
-				MergeMethod: string(c.ca.Config().Tide.MergeMethod(sp.org, sp.repo)),
+				MergeMethod: string(mergeMethod),
 			}); err != nil {
 				if _, ok := err.(github.ModifiedHeadError); ok {
 					// This is a possible source of incorrect behavior. If someone
@@ -780,6 +817,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 				}
 			} else {
 				log.Info("Merged.")
+				successCount++
 				// If we have more PRs to merge, sleep to give Github time to recalculate
 				// mergeability.
 				if i+1 < len(prs) {
@@ -1099,33 +1137,6 @@ func (c *Controller) dividePool(pool map[string]PullRequest, pjs []kube.ProwJob)
 	return sps, nil
 }
 
-func search(ctx context.Context, ghc githubClient, log *logrus.Entry, q string) ([]PullRequest, error) {
-	var ret []PullRequest
-	vars := map[string]interface{}{
-		"query":        githubql.String(q),
-		"searchCursor": (*githubql.String)(nil),
-	}
-	var totalCost int
-	var remaining int
-	for {
-		sq := searchQuery{}
-		if err := ghc.Query(ctx, &sq, vars); err != nil {
-			return nil, err
-		}
-		totalCost += int(sq.RateLimit.Cost)
-		remaining = int(sq.RateLimit.Remaining)
-		for _, n := range sq.Search.Nodes {
-			ret = append(ret, n.PullRequest)
-		}
-		if !sq.Search.PageInfo.HasNextPage {
-			break
-		}
-		vars["searchCursor"] = githubql.NewString(sq.Search.PageInfo.EndCursor)
-	}
-	log.Debugf("Search for query \"%s\" returned %d PRs and cost %d point(s). %d remaining.", q, len(ret), totalCost, remaining)
-	return ret, nil
-}
-
 // PullRequest holds graphql data about a PR, including its commits and their contexts.
 type PullRequest struct {
 	Number githubql.Int
@@ -1191,7 +1202,8 @@ type searchQuery struct {
 			HasNextPage githubql.Boolean
 			EndCursor   githubql.String
 		}
-		Nodes []struct {
+		IssueCount githubql.Int
+		Nodes      []struct {
 			PullRequest PullRequest `graphql:"... on PullRequest"`
 		}
 	} `graphql:"search(type: ISSUE, first: 100, after: $searchCursor, query: $query)"`

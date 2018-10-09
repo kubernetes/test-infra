@@ -14,7 +14,7 @@ go_library(
         "net.go",
         "transaction.go",
     ],
-    importmap = "vendor/google.golang.org/appengine/internal",
+    importmap = "k8s.io/test-infra/vendor/google.golang.org/appengine/internal",
     importpath = "google.golang.org/appengine/internal",
     visibility = ["//visibility:public"],
     deps = [
@@ -44,6 +44,7 @@ filegroup(
         "//vendor/google.golang.org/appengine/internal/log:all-srcs",
         "//vendor/google.golang.org/appengine/internal/modules:all-srcs",
         "//vendor/google.golang.org/appengine/internal/remote_api:all-srcs",
+        "//vendor/google.golang.org/appengine/internal/socket:all-srcs",
         "//vendor/google.golang.org/appengine/internal/urlfetch:all-srcs",
     ],
     tags = ["automanaged"],

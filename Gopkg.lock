@@ -15,10 +15,49 @@
     "internal/optional",
     "internal/trace",
     "internal/version",
+    "pubsub",
+    "pubsub/apiv1",
+    "pubsub/internal/distribution",
     "storage",
   ]
   revision = "0fd7230b2a7505833d5f69b75cbd6c9582401479"
   version = "v0.23.0"
+
+[[projects]]
+  name = "github.com/Azure/azure-pipeline-go"
+  packages = ["pipeline"]
+  revision = "098e490af5dc2a905cdc5b64cafda6887b29164b"
+  version = "0.1.6"
+
+[[projects]]
+  name = "github.com/Azure/azure-sdk-for-go"
+  packages = [
+    "services/resources/mgmt/2018-05-01/resources",
+    "version",
+  ]
+  revision = "6d20bdbae88c06c36d72eb512295417693bfdf4e"
+  version = "v21.1.0"
+
+[[projects]]
+  name = "github.com/Azure/azure-storage-blob-go"
+  packages = ["2016-05-31/azblob"]
+  revision = "66ba96e49ebbdc3cd26970c6c675c906d304b5e2"
+  version = "0.1.4"
+
+[[projects]]
+  name = "github.com/Azure/go-autorest"
+  packages = [
+    "autorest",
+    "autorest/adal",
+    "autorest/azure",
+    "autorest/date",
+    "autorest/to",
+    "autorest/validation",
+    "logger",
+    "version",
+  ]
+  revision = "9bc4033dd347c7f416fca46b2f42a043dc1fbdf6"
+  version = "v10.15.5"
 
 [[projects]]
   branch = "parse-constraints-with-dash-in-pre"
@@ -110,18 +149,22 @@
   packages = [
     "cmd/gazelle",
     "internal/config",
+    "internal/flag",
     "internal/label",
+    "internal/language",
+    "internal/language/go",
+    "internal/language/proto",
     "internal/merger",
-    "internal/packages",
     "internal/pathtools",
     "internal/repos",
     "internal/resolve",
-    "internal/rules",
+    "internal/rule",
     "internal/version",
+    "internal/walk",
     "internal/wspace",
   ]
-  revision = "8bc6a862933eaa0d7431e15b308ceadc5729a6f9"
-  version = "0.11.0"
+  revision = "6a1b93cc9b1c7e55e7d05a6d324bcf9d87ea3ab1"
+  version = "0.14.0"
 
 [[projects]]
   name = "github.com/bazelbuild/buildtools"
@@ -166,6 +209,12 @@
   packages = ["."]
   revision = "1d4478f51bed434f1dadf96dcd9b43aabac66795"
   version = "v1.7"
+
+[[projects]]
+  name = "github.com/dgrijalva/jwt-go"
+  packages = ["."]
+  revision = "06ea1031745cb8b3dab3f6a236daf2b0aa468b7e"
+  version = "v3.2.0"
 
 [[projects]]
   name = "github.com/djherbis/atime"
@@ -228,6 +277,12 @@
   ]
   revision = "3eb9738c1697594ea6e71a7156a9bb32ed216cf0"
   version = "v2.8.0"
+
+[[projects]]
+  name = "github.com/evanphx/json-patch"
+  packages = ["."]
+  revision = "72bf35d0ff611848c1dc9df0f976c81192392fa5"
+  version = "v4.1.0"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -382,6 +437,7 @@
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
+    "ptypes/empty",
     "ptypes/timestamp",
   ]
   revision = "925541529c1fa6821df4e44ce2723319eb2be768"
@@ -695,9 +751,10 @@
   revision = "836a144573533ea4da4e6929c235fd348aed1c80"
 
 [[projects]]
-  name = "github.com/shurcooL/githubql"
+  branch = "master"
+  name = "github.com/shurcooL/githubv4"
   packages = ["."]
-  revision = "71882d9f5f43fe50be204fe37db8994bf70072bb"
+  revision = "19298c78142b5fe80c2cdaa2091bc51cbc3a94fc"
 
 [[projects]]
   name = "github.com/shurcooL/go"
@@ -705,13 +762,14 @@
   revision = "5924e6132c2f184e262d4bc779e5745fa297d093"
 
 [[projects]]
+  branch = "master"
   name = "github.com/shurcooL/graphql"
   packages = [
     ".",
     "ident",
     "internal/jsonutil",
   ]
-  revision = "68e5b1b3ab56633e42939506bc61f0b9fb2b7a79"
+  revision = "e4a3a37e6d42afa87afee2edeeced52300b63893"
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
@@ -733,8 +791,15 @@
   packages = [
     ".",
     "internal",
+    "internal/tagencoding",
+    "plugin/ocgrpc",
+    "stats",
+    "stats/internal",
+    "stats/view",
+    "tag",
     "trace",
     "trace/internal",
+    "trace/propagation",
   ]
   revision = "6edeb78af2d9e4f169abb223feaef35da2e45d06"
   version = "v0.13.0"
@@ -789,16 +854,20 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/sync"
-  packages = ["errgroup"]
+  packages = [
+    "errgroup",
+    "semaphore",
+  ]
   revision = "fd80eb99c8f653c847d294a001bdf2a3a6f768f5"
 
 [[projects]]
+  branch = "master"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
-  revision = "a646d33e2ee3172a661fc09bca23bb4889a41bc8"
+  revision = "d0be0721c37eeb5299f245a996a483160fc36940"
 
 [[projects]]
   branch = "master"
@@ -831,6 +900,7 @@
 [[projects]]
   name = "golang.org/x/tools"
   packages = [
+    "cover",
     "go/ast/astutil",
     "go/gcexportdata",
     "go/gcimporter15",
@@ -851,6 +921,9 @@
     "iterator",
     "option",
     "storage/v1",
+    "support/bundler",
+    "transport",
+    "transport/grpc",
     "transport/http",
   ]
   revision = "ffa5046912fde3e38fd41244f9593c99431ecfa2"
@@ -866,7 +939,9 @@
     "internal/log",
     "internal/modules",
     "internal/remote_api",
+    "internal/socket",
     "internal/urlfetch",
+    "socket",
     "urlfetch",
   ]
   revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
@@ -878,8 +953,10 @@
   packages = [
     "googleapis/api/annotations",
     "googleapis/iam/v1",
+    "googleapis/pubsub/v1",
     "googleapis/rpc/code",
     "googleapis/rpc/status",
+    "protobuf/field_mask",
   ]
   revision = "4eb30f4778eed4c258ba66527a0d4f9ec8a36c45"
 
@@ -893,10 +970,16 @@
     "codes",
     "connectivity",
     "credentials",
+    "credentials/oauth",
     "encoding",
-    "grpclb/grpc_lb_v1/messages",
+    "encoding/proto",
     "grpclog",
     "internal",
+    "internal/backoff",
+    "internal/channelz",
+    "internal/envconfig",
+    "internal/grpcrand",
+    "internal/transport",
     "keepalive",
     "metadata",
     "naming",
@@ -907,10 +990,9 @@
     "stats",
     "status",
     "tap",
-    "transport",
   ]
-  revision = "6b51017f791ae1cfbec89c52efdf444b13b550ef"
-  version = "v1.9.2"
+  revision = "8dea3dc473e90c8179e519d91302d0597c0ca1d1"
+  version = "v1.15.0"
 
 [[projects]]
   name = "gopkg.in/inf.v0"
@@ -1027,12 +1109,6 @@
   revision = "01bc873149a1802eb74df583613872d126449ed5"
 
 [[projects]]
-  branch = "release-1.10"
-  name = "k8s.io/apiserver"
-  packages = ["pkg/util/flag"]
-  revision = "0841753fc26e934b715ca7a83dced5bcb721245a"
-
-[[projects]]
   name = "k8s.io/client-go"
   packages = [
     "discovery",
@@ -1133,11 +1209,6 @@
   revision = "9de8e796a74d16d2a285165727d04c185ebca6dc"
 
 [[projects]]
-  name = "k8s.io/contrib"
-  packages = ["test-utils/utils"]
-  revision = "8f0f928c68f2c76ade9c1ee0249ae5cea5673cac"
-
-[[projects]]
   branch = "master"
   name = "k8s.io/gengo"
   packages = [
@@ -1176,6 +1247,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8476c16c47c23ba3682a1fc12173e56480631305cebb2fff12524ba81db346ca"
+  inputs-digest = "3a2a86439d75d92b8a2e0c1ab33de0e527f5284e63b05ffeded8d209e8612473"
   solver-name = "gps-cdcl"
   solver-version = 1

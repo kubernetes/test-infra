@@ -103,7 +103,7 @@ func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 	if mw := getMergeWarning(pc.SlackConfig.MergeWarnings, pe.Repo.Owner.Login, pe.Repo.Name); mw != nil {
 		//If the MergeWarning whitelist has the merge user then no need to send a message.
 		if wl := !isWhiteListed(mw, pe); wl {
-			message := fmt.Sprintf("*Warning:* %s (<@%s>) manually merged %s", pe.Sender.Login, pe.Sender.Login, pe.Compare)
+			message := fmt.Sprintf("*Warning:* %s (<@%s>) manually merged %d commit(s) into %s: %s", pe.Sender.Login, pe.Sender.Login, pe.Size, pe.Branch(), pe.Compare)
 			for _, channel := range mw.Channels {
 				if err := pc.SlackClient.WriteMessage(message, channel); err != nil {
 					return err

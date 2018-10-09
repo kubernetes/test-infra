@@ -1,0 +1,19 @@
+# sigs.k8s.io/kind postsubmits
+postsubmits:
+  kubernetes-sigs/kind:
+  - name: ci-kind-build
+    decorate: true
+    path_alias: sigs.k8s.io/kind
+    always_run: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+        command:
+        - "./hack/ci/build-all.sh"
+      # trialing this on kind jobs, we are using FQDN for in-cluster services, now
+      # so use ndots 1 to improve dns performance
+      # TODO(bentheelder): consider setting this at the cluster level instead
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "1"

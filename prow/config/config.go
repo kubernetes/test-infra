@@ -23,6 +23,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -32,10 +33,11 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
-	cron "gopkg.in/robfig/cron.v2"
+	"gopkg.in/robfig/cron.v2"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/validation"
 
 	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/github"
@@ -168,6 +170,9 @@ type Plank struct {
 	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
 	// that request to have their PodSpecs decorated
 	DefaultDecorationConfig *kube.DecorationConfig `json:"default_decoration_config,omitempty"`
+	// JobURLPrefix is the host and path prefix under
+	// which job details will be viewable
+	JobURLPrefix string `json:"job_url_prefix,omitempty"`
 }
 
 // Gerrit is config for the gerrit controller.
@@ -215,8 +220,26 @@ type Sinker struct {
 	MaxPodAge time.Duration `json:"-"`
 }
 
+// Spyglass holds config for Spyglass
+type Spyglass struct {
+	// Viewers is a map of Regexp strings to viewer names that defines which sets
+	// of artifacts need to be consumed by which viewers. The keys are compiled
+	// and stored in RegexCache at load time.
+	Viewers map[string][]string `json:"viewers,omitempty"`
+	// RegexCache is a map of viewer regexp strings to their compiled equivalents.
+	RegexCache map[string]*regexp.Regexp `json:"-"`
+	// SizeLimit is the max size artifact in bytes that Spyglass will attempt to
+	// read in entirety. This will only affect viewers attempting to use
+	// artifact.ReadAll(). To exclude outlier artifacts, set this limit to
+	// expected file size + variance. To include all artifacts with high
+	// probability, use 2*maximum observed artifact size.
+	SizeLimit int64 `json:"size_limit,omitempty"`
+}
+
 // Deck holds config for deck.
 type Deck struct {
+	// Spyglass specifies which viewers wil be used for which artifacts when viewing a job in Deck
+	Spyglass Spyglass `json:"spyglass,omitempty"`
 	// TideUpdatePeriodString compiles into TideUpdatePeriod at load time.
 	TideUpdatePeriodString string `json:"tide_update_period,omitempty"`
 	// TideUpdatePeriod specifies how often Deck will fetch status from Tide. Defaults to 10s.
@@ -275,6 +298,9 @@ func Load(prowConfig, jobConfig string) (c *Config, err error) {
 		return nil, err
 	}
 	if err := c.finalizeJobConfig(); err != nil {
+		return nil, err
+	}
+	if err := c.validateComponentConfig(); err != nil {
 		return nil, err
 	}
 	if err := c.validateJobConfig(); err != nil {
@@ -345,7 +371,7 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 			return nil
 		}
 
-		if filepath.Ext(path) != ".yaml" {
+		if filepath.Ext(path) != ".yaml" && filepath.Ext(path) != ".yml" {
 			return nil
 		}
 
@@ -404,6 +430,48 @@ func yamlToConfig(path string, nc interface{}) error {
 	}
 	if err := yaml.Unmarshal(b, nc); err != nil {
 		return fmt.Errorf("error unmarshaling %s: %v", path, err)
+	}
+	var jc *JobConfig
+	switch v := nc.(type) {
+	case *JobConfig:
+		jc = v
+	case *Config:
+		jc = &v.JobConfig
+	}
+	for rep := range jc.Presubmits {
+		var fix func(*Presubmit)
+		fix = func(job *Presubmit) {
+			job.SourcePath = path
+			for i := range job.RunAfterSuccess {
+				fix(&job.RunAfterSuccess[i])
+			}
+		}
+		for i := range jc.Presubmits[rep] {
+			fix(&jc.Presubmits[rep][i])
+		}
+	}
+	for rep := range jc.Postsubmits {
+		var fix func(*Postsubmit)
+		fix = func(job *Postsubmit) {
+			job.SourcePath = path
+			for i := range job.RunAfterSuccess {
+				fix(&job.RunAfterSuccess[i])
+			}
+		}
+		for i := range jc.Postsubmits[rep] {
+			fix(&jc.Postsubmits[rep][i])
+		}
+	}
+
+	var fix func(*Periodic)
+	fix = func(job *Periodic) {
+		job.SourcePath = path
+		for i := range job.RunAfterSuccess {
+			fix(&job.RunAfterSuccess[i])
+		}
+	}
+	for i := range jc.Periodics {
+		fix(&jc.Periodics[i])
 	}
 	return nil
 }
@@ -552,6 +620,14 @@ func (c *Config) finalizeJobConfig() error {
 	return nil
 }
 
+// validateComponentConfig validates the infrastructure component configuration
+func (c *Config) validateComponentConfig() error {
+	if _, err := url.Parse(c.Plank.JobURLPrefix); c.Plank.JobURLPrefix != "" && err != nil {
+		return fmt.Errorf("plank declares an invalid job URL prefix %q: %v", c.Plank.JobURLPrefix, err)
+	}
+	return nil
+}
+
 // validateJobConfig validates if all the jobspecs/presets are valid
 // if you are mutating the jobs, please add it to finalizeJobConfig above
 func (c *Config) validateJobConfig() error {
@@ -583,6 +659,9 @@ func (c *Config) validateJobConfig() error {
 			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", v.Name, v.MaxConcurrency)
 		}
 		if err := validatePodSpec(v.Name, kube.PresubmitJob, v.Spec); err != nil {
+			return err
+		}
+		if err := validateDecoration(v.Name, v.Spec, v.DecorationConfig); err != nil {
 			return err
 		}
 		if err := validateLabels(v.Name, v.Labels); err != nil {
@@ -737,6 +816,21 @@ func parseProwConfig(c *Config) error {
 		c.Deck.TideUpdatePeriod = period
 	}
 
+	if c.Deck.Spyglass.SizeLimit == 0 {
+		c.Deck.Spyglass.SizeLimit = 100e6
+	} else if c.Deck.Spyglass.SizeLimit <= 0 {
+		return fmt.Errorf("invalid value for deck.spyglass.size_limit, must be >=0")
+	}
+
+	c.Deck.Spyglass.RegexCache = make(map[string]*regexp.Regexp)
+	for k := range c.Deck.Spyglass.Viewers {
+		r, err := regexp.Compile(k)
+		if err != nil {
+			return fmt.Errorf("cannot compile regexp %s, err: %v", k, err)
+		}
+		c.Deck.Spyglass.RegexCache[k] = r
+	}
+
 	if c.PushGateway.IntervalString == "" {
 		c.PushGateway.Interval = time.Minute
 	} else {
@@ -886,6 +980,9 @@ func setDecorationDefaults(provided, defaults *kube.DecorationConfig) *kube.Deco
 	if len(merged.SSHKeySecrets) == 0 {
 		merged.SSHKeySecrets = defaults.SSHKeySecrets
 	}
+	if merged.CookiefileSecret == "" {
+		merged.CookiefileSecret = defaults.CookiefileSecret
+	}
 
 	return merged
 }
@@ -896,6 +993,12 @@ func validateLabels(name string, labels map[string]string) error {
 			if label == prowLabel {
 				return fmt.Errorf("job %s attempted to set Prow-controlled label %s to %s", name, label, labels[label])
 			}
+		}
+		if errs := validation.IsQualifiedName(label); len(errs) != 0 {
+			return fmt.Errorf("job %s sets an invalid label key %s: %v", name, label, errs)
+		}
+		if errs := validation.IsValidLabelValue(labels[label]); len(errs) != 0 {
+			return fmt.Errorf("job %s sets an invalid label value %s for key %s: %v", name, labels[label], label, errs)
 		}
 	}
 	return nil
@@ -910,19 +1013,30 @@ func validateAgent(name, agent string, spec *v1.PodSpec, config *kube.Decoration
 	if agent != string(kube.KubernetesAgent) && config != nil {
 		return fmt.Errorf("job %s configured PodSpec decoration but is not a Kubernetes job", name)
 	}
-	// Jobs asking for decoration should provide config
-	if agent == string(kube.KubernetesAgent) && config != nil {
-		if config.UtilityImages == nil {
-			return fmt.Errorf("job %s does not configure pod utility images but asks for decoration", name)
-		}
-		if config.GCSConfiguration == nil || config.GCSCredentialsSecret == "" {
-			return fmt.Errorf("job %s does not configure GCS uploads but asks for decoration", name)
-		}
-	}
 	// Ensure agent is a known value.
 	if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
 		return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
 			name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
+	}
+	return nil
+}
+
+func validateDecoration(name string, spec *v1.PodSpec, config *kube.DecorationConfig) error {
+	if config == nil {
+		return nil
+	}
+
+	if config.UtilityImages == nil {
+		return fmt.Errorf("job %s does not configure pod utility images but asks for decoration", name)
+	}
+	if config.GCSConfiguration == nil || config.GCSCredentialsSecret == "" {
+		return fmt.Errorf("job %s does not configure GCS uploads but asks for decoration", name)
+	}
+
+	var args []string
+	args = append(append(args, spec.Containers[0].Command...), spec.Containers[0].Args...)
+	if len(args) == 0 || args[0] == "" {
+		return fmt.Errorf("job %s requested decoration, but does not specify `command` or `args` for the container", name)
 	}
 	return nil
 }

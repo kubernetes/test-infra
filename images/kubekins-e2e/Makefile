@@ -17,18 +17,27 @@ TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 # kubernetes master branch config
 K8S ?= master
-GO ?= 1.10.2
-BAZEL ?= 0.14.0
+GO ?= 1.11.1
+BAZEL ?= 0.16.1
+UPGRADE_DOCKER ?=false
+# TODO(bentheelder,cblecker): this is aging and bad
 CFSSL ?= R1.2
 
 # config for testing prior to rolling out to master / ongoing release
 ifeq ($(K8S), experimental)
-	GO = 1.10.2
-	BAZEL = 0.14.0
+	GO = 1.11
+	BAZEL = 0.18.0rc8
 	CFSSL = R1.2
+	UPGRADE_DOCKER = true
 endif
 
 # kubernetes release-X branch configs
+ifeq ($(K8S), 1.12)
+	GO = 1.10.4
+	BAZEL = 0.16.1
+	CFSSL = R1.2
+endif
+
 ifeq ($(K8S), 1.11)
 	GO = 1.10.2
 	BAZEL = 0.14.0
@@ -41,16 +50,10 @@ ifeq ($(K8S), 1.10)
 	CFSSL = R1.2
 endif
 
+# TODO(bentheelder,krzyzacy) deprecate once 1.12 is out
 ifeq ($(K8S), 1.9)
 	GO = 1.9.2
 	BAZEL = 0.8.1
-	CFSSL = R1.2
-endif
-
-# TODO(bentheelder,krzyzacy) deprecate once 1.11 is out
-ifeq ($(K8S), 1.8)
-	GO = 1.8.3
-	BAZEL = 0.6.1
 	CFSSL = R1.2
 endif
 
@@ -62,7 +65,7 @@ kubetest:
 
 build: kubetest
 	@echo Building with go:$(GO) and bazel:$(BAZEL)
-	docker build --build-arg GO_VERSION=$(GO) --build-arg BAZEL_VERSION_ARG=$(BAZEL) --build-arg CFSSL_VERSION=$(CFSSL) --build-arg IMAGE_ARG=$(IMG):$(TAG)-$(K8S) -t $(IMG):$(TAG)-$(K8S) .
+	docker build --build-arg GO_VERSION=$(GO) --build-arg BAZEL_VERSION_ARG=$(BAZEL) --build-arg CFSSL_VERSION=$(CFSSL) --build-arg IMAGE_ARG=$(IMG):$(TAG)-$(K8S) --build-arg=UPGRADE_DOCKER_ARG=$(UPGRADE_DOCKER) -t $(IMG):$(TAG)-$(K8S) .
 	docker tag $(IMG):$(TAG)-$(K8S) $(IMG):latest-$(K8S)
 	rm kubetest
 	@echo Built $(IMG):$(TAG)-$(K8S) and tagged with latest-$(K8S)

@@ -4,8 +4,8 @@ filters:
   ".*":
     approvers:
       - cjwagner
-      - kargakis
-      - spxtr
+      - fejta
+      # - spxtr (emeritus)
       - stevekuznetsov
     labels:
       - area/prow

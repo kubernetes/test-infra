@@ -8,7 +8,7 @@ go_library(
         "sessions.go",
         "store.go",
     ],
-    importmap = "vendor/github.com/gorilla/sessions",
+    importmap = "k8s.io/test-infra/vendor/github.com/gorilla/sessions",
     importpath = "github.com/gorilla/sessions",
     visibility = ["//visibility:public"],
     deps = [

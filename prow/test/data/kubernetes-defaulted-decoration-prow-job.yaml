@@ -1,6 +1,8 @@
 apiVersion: prow.k8s.io/v1
 kind: ProwJob
 metadata:
+  annotations:
+    prow.k8s.io/job: kubernetes-defaulted-decoration
   creationTimestamp: null
   labels:
     prow.k8s.io/job: kubernetes-defaulted-decoration
@@ -49,5 +51,6 @@ spec:
   rerun_command: /test kubernetes-defaulted-decoration
   type: presubmit
 status:
+  prev_report_states: {}
   startTime: 2018-07-06T22:59:02Z
   state: triggered

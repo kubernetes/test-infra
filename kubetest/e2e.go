@@ -56,15 +56,17 @@ func run(deploy deployer, o options) error {
 	os.Setenv("KUBE_CONFIG_FILE", "config-test.sh")
 	os.Setenv("KUBE_RUNTIME_CONFIG", o.runtimeConfig)
 
-	dump := o.dump
-	if dump != "" {
-		if !filepath.IsAbs(dump) { // Directory may change
-			wd, err := os.Getwd()
-			if err != nil {
-				return fmt.Errorf("failed to os.Getwd(): %v", err)
-			}
-			dump = filepath.Join(wd, dump)
-		}
+	var err error
+	var errs []error
+
+	dump, err := util.OptionalAbsPath(o.dump)
+	if err != nil {
+		return fmt.Errorf("failed handling --dump path: %v", err)
+	}
+
+	dumpPreTestLogs, err := util.OptionalAbsPath(o.dumpPreTestLogs)
+	if err != nil {
+		return fmt.Errorf("failed handling --dump-pre-test-logs path: %v", err)
 	}
 
 	if o.up {
@@ -77,9 +79,6 @@ func run(deploy deployer, o options) error {
 			return fmt.Errorf("error tearing down previous cluster: %s", err)
 		}
 	}
-
-	var err error
-	var errs []error
 
 	// Ensures that the cleanup/down action is performed exactly once.
 	var (
@@ -182,6 +181,10 @@ func run(deploy deployer, o options) error {
 		}
 	}
 
+	if dumpPreTestLogs != "" {
+		errs = append(errs, dumpRemoteLogs(deploy, o, dumpPreTestLogs, "pre-test")...)
+	}
+
 	testArgs := argFields(o.testArgs, dump, o.clusterIPRange)
 	if o.test {
 		if err := control.XMLWrap(&suite, "test setup", deploy.TestSetup); err != nil {
@@ -249,19 +252,8 @@ func run(deploy deployer, o options) error {
 		errs = util.AppendError(errs, control.XMLWrap(&suite, "Helm Charts", chartsTest))
 	}
 
-	if o.perfTests {
-		errs = util.AppendError(errs, control.XMLWrap(&suite, "Perf Tests", perfTest))
-	}
-
 	if dump != "" {
-		errs = util.AppendError(errs, control.XMLWrap(&suite, "DumpClusterLogs", func() error {
-			return deploy.DumpClusterLogs(dump, o.logexporterGCSPath)
-		}))
-		if o.federation {
-			errs = util.AppendError(errs, control.XMLWrap(&suite, "dumpFederationLogs", func() error {
-				return dumpFederationLogs(dump)
-			}))
-		}
+		errs = append(errs, dumpRemoteLogs(deploy, o, dump, "")...)
 	}
 
 	if o.checkLeaks {
@@ -360,6 +352,25 @@ func getKubectlVersion() error {
 		log.Print("Failed to reach api. Sleeping for 10 seconds before retrying...")
 		time.Sleep(10 * time.Second)
 	}
+}
+
+func dumpRemoteLogs(deploy deployer, o options, path, reason string) []error {
+	if reason != "" {
+		reason += " "
+	}
+
+	var errs []error
+
+	errs = util.AppendError(errs, control.XMLWrap(&suite, reason+"DumpClusterLogs", func() error {
+		return deploy.DumpClusterLogs(path, o.logexporterGCSPath)
+	}))
+	if o.federation {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, reason+"dumpFederationLogs", func() error {
+			return dumpFederationLogs(path)
+		}))
+	}
+
+	return errs
 }
 
 func listNodes(dump string) error {
@@ -538,15 +549,6 @@ func dumpFederationLogs(location string) error {
 		return control.FinishRunning(exec.Command(logDumpPath, location))
 	}
 	log.Printf("Could not find %s. This is expected if running tests against a Kubernetes 1.6 or older tree.", logDumpPath)
-	return nil
-}
-
-func perfTest() error {
-	// Run perf tests
-	cmdline := util.K8s("perf-tests", "clusterloader", "run-e2e.sh")
-	if err := control.FinishRunning(exec.Command(cmdline)); err != nil {
-		return err
-	}
 	return nil
 }
 

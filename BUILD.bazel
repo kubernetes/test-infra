@@ -1,7 +1,6 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_prefix")
+# gazelle:prefix k8s.io/test-infra
+# gazelle:proto disable_global
 load("@io_kubernetes_build//defs:run_in_workspace.bzl", "workspace_binary")
-
-go_prefix("k8s.io/test-infra")
 
 filegroup(
     name = "package-srcs",
@@ -40,29 +39,24 @@ filegroup(
         "//dind/pkg/cluster-up/cluster:all-srcs",
         "//dind/pkg/cluster-up/options:all-srcs",
         "//experiment:all-srcs",
+        "//flagutil:all-srcs",
         "//gcsweb/cmd/gcsweb:all-srcs",
         "//gcsweb/pkg/version:all-srcs",
         "//ghclient:all-srcs",
         "//ghproxy:all-srcs",
+        "//gopherage:all-srcs",
         "//greenhouse:all-srcs",
         "//hack:all-srcs",
         "//images/bootstrap/barnacle:all-srcs",
         "//jenkins:all-srcs",
         "//jobs:all-srcs",
         "//kettle:all-srcs",
-        "//kind/cmd/kind:all-srcs",
-        "//kind/hack:all-srcs",
-        "//kind/images/node:all-srcs",
-        "//kind/pkg/build:all-srcs",
-        "//kind/pkg/cluster:all-srcs",
-        "//kind/pkg/exec:all-srcs",
         "//kubetest:all-srcs",
         "//label_sync:all-srcs",
         "//logexporter/cmd:all-srcs",
         "//maintenance/aws-janitor:all-srcs",
         "//maintenance/migratestatus:all-srcs",
         "//metrics:all-srcs",
-        "//mungegithub:all-srcs",
         "//prow:all-srcs",
         "//queue_health/graph:all-srcs",
         "//robots/commenter:all-srcs",
@@ -76,3 +70,5 @@ filegroup(
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
+
+exports_files(["tsconfig.json"])

@@ -42,12 +42,13 @@ Append additional entries to `cluster.yaml`:
 
 ```sh
 # Get current values:
-kubectl get secrets/build-cluster -o yaml > old.yaml
+kubectl get secrets/build-cluster -o yaml > ~/old.yaml
 # Add new value
-cat old.yaml | bazel run //prow/cmd/mkbuild-cluster -- \
+cat ~/old.yaml | bazel run //prow/cmd/mkbuild-cluster -- \
   --project=P --zone=Z --cluster=C --alias=NEW_CLUSTER \
-  > updated.yaml
-kubectl apply -f updated.yaml
+  > ~/updated.yaml
+diff ~/old.yaml ~/updated.yaml
+kubectl apply -f ~/updated.yaml
 ```
 
 Note: restart plank to see the updated values.
