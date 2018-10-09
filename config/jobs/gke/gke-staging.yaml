@@ -68,7 +68,7 @@ periodics:
       - --check-version-skew=false
       - --cluster=
       - --deployment=gke
-      - --extract=gke-latest-1.11
+      - --extract=gke-latest-1.12
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/rc
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -95,7 +95,7 @@ periodics:
       - --check-version-skew=false
       - --cluster=
       - --deployment=gke
-      - --extract=gke-latest-1.11
+      - --extract=gke-latest-1.12
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/rc
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -121,7 +121,7 @@ periodics:
       - --check-version-skew=false
       - --cluster=
       - --deployment=gke
-      - --extract=gke-latest-1.10
+      - --extract=gke-latest-1.11
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/rc
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -148,7 +148,7 @@ periodics:
       - --check-version-skew=false
       - --cluster=
       - --deployment=gke
-      - --extract=gke-latest-1.10
+      - --extract=gke-latest-1.11
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/rc
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -174,7 +174,7 @@ periodics:
       - --check-version-skew=false
       - --cluster=
       - --deployment=gke
-      - --extract=gke-latest-1.9
+      - --extract=gke-latest-1.10
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/rc
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -201,7 +201,7 @@ periodics:
       - --check-version-skew=false
       - --cluster=
       - --deployment=gke
-      - --extract=gke-latest-1.9
+      - --extract=gke-latest-1.10
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/rc
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f

@@ -2942,14 +2942,6 @@ test_groups:
 - name: istio-periodic-e2e-gke-addon
   gcs_prefix: kubernetes-jenkins/logs/istio-periodic-e2e-gke-addon
 # TODO(krzyzacy): don't pin version here, try let the version flow
-- name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-master
-- name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-cluster
-- name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-regional-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-regional-cluster
 - name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-master
 - name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-cluster
@@ -2958,6 +2950,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-regional-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-regional-cluster
+- name: ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-master
+- name: ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-cluster
+- name: ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-cluster-new
+- name: ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-regional-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-regional-cluster
 - name: pull-kops-e2e-kubernetes-aws
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws
   num_columns_recent: 20
@@ -4363,14 +4363,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
   - name: gke-staging-latest-device-plugin-gpu-v100
     test_group_name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu-v100
-  - name: gke-staging-1.9-1.10-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-master
-  - name: gke-staging-1.9-1.10-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-cluster
-  - name: gke-staging-1.9-1.10-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-cluster-new
-  - name: gke-staging-1.9-1.10-upgrade-regional-cluster
-    test_group_name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-regional-cluster
   - name: gke-staging-1.10-1.11-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-master
   - name: gke-staging-1.10-1.11-upgrade-cluster
@@ -4379,6 +4371,14 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-cluster-new
   - name: gke-staging-1.10-1.11-upgrade-regional-cluster
     test_group_name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-regional-cluster
+  - name: gke-staging-1.11-1.12-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-master
+  - name: gke-staging-1.11-1.12-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-cluster
+  - name: gke-staging-1.11-1.12-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-cluster-new
+  - name: gke-staging-1.11-1.12-upgrade-regional-cluster
+    test_group_name: ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-regional-cluster
 
 - name: google-gke-prod
   dashboard_tab:
