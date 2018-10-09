@@ -19,7 +19,6 @@ package trigger
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -30,6 +29,7 @@ const (
 	// NeedsOkToTest is a label added to PRs from authors we do not trust;
 	// tests will not run on these PRs until they are marked as trusted
 	NeedsOkToTest = "needs-ok-to-test"
+	okToTest      = "ok-to-test"
 )
 
 func handlePR(c client, trigger *plugins.Trigger, pr github.PullRequestEvent) error {
@@ -55,21 +55,21 @@ func handlePR(c client, trigger *plugins.Trigger, pr github.PullRequestEvent) er
 		}
 	case github.PullRequestActionReopened:
 		// When a PR is reopened, check that the user is in the org or that an org
-		// member had said "/ok-to-test" before building.
-		comments, err := c.GitHubClient.ListIssueComments(org, repo, num)
+		// member had said "/ok-to-test" before building, resulting in label ok-to-test.
+		labels, err := c.GitHubClient.GetIssueLabels(org, repo, num)
 		if err != nil {
 			return err
 		}
-		trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, comments)
+		trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, labels)
 		if err != nil {
 			return fmt.Errorf("could not validate PR: %s", err)
 		} else if trusted {
-			err = clearStaleComments(c.GitHubClient, pr.PullRequest, comments)
-			if err != nil {
-				c.Logger.Warnf("Failed to clear stale comments: %v.", err)
+			// Eventually remove need-ok-to-test
+			if github.HasLabel(NeedsOkToTest, labels) {
+				if err := c.GitHubClient.RemoveLabel(org, repo, num, NeedsOkToTest); err != nil {
+					return err
+				}
 			}
-			// Just try to remove "needs-ok-to-test" label if existing, we don't care about the result.
-			c.GitHubClient.RemoveLabel(org, repo, num, NeedsOkToTest)
 			c.Logger.Info("Starting all jobs for updated PR.")
 			return buildAll(c, &pr.PullRequest, pr.GUID)
 		}
@@ -98,13 +98,13 @@ func handlePR(c client, trigger *plugins.Trigger, pr github.PullRequestEvent) er
 	case github.PullRequestActionSynchronize:
 		return buildAllIfTrusted(c, trigger, pr)
 	case github.PullRequestActionLabeled:
-		comments, err := c.GitHubClient.ListIssueComments(org, repo, num)
-		if err != nil {
-			return err
-		}
 		// When a PR is LGTMd, if it is untrusted then build it once.
 		if pr.Label.Name == lgtmLabel {
-			trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, comments)
+			labels, err := c.GitHubClient.GetIssueLabels(org, repo, num)
+			if err != nil {
+				return err
+			}
+			trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, labels)
 			if err != nil {
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
@@ -131,17 +131,20 @@ func buildAllIfTrusted(c client, trigger *plugins.Trigger, pr github.PullRequest
 	// for "/ok-to-test" because we do that once when the PR is created.
 	org, repo, a := orgRepoAuthor(pr.PullRequest)
 	author := string(a)
-	comments, err := c.GitHubClient.ListIssueComments(org, repo, pr.PullRequest.Number)
+	num := pr.PullRequest.Number
+	labels, err := c.GitHubClient.GetIssueLabels(org, repo, num)
 	if err != nil {
 		return err
 	}
-	trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, comments)
+	trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, labels)
 	if err != nil {
 		return fmt.Errorf("could not validate PR: %s", err)
 	} else if trusted {
-		err = clearStaleComments(c.GitHubClient, pr.PullRequest, comments)
-		if err != nil {
-			c.Logger.Warnf("Failed to clear stale comments: %v.", err)
+		// Eventually remove needs-ok-to-test
+		if github.HasLabel(NeedsOkToTest, labels) {
+			if err := c.GitHubClient.RemoveLabel(org, repo, num, NeedsOkToTest); err != nil {
+				return err
+			}
 		}
 		c.Logger.Info("Starting all jobs for updated PR.")
 		return buildAll(c, &pr.PullRequest, pr.GUID)
@@ -153,6 +156,8 @@ func welcomeMsg(ghc githubClient, trigger *plugins.Trigger, pr github.PullReques
 	commentTemplate := `Hi @%s. Thanks for your PR.
 
 I'm waiting for a [%s](https://github.com/orgs/%s/people) %smember to verify that this patch is reasonable to test. If it is, they should reply with ` + "`/ok-to-test`" + ` on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands by org members will still work. Regular contributors should [join the org](%s) to skip this step.
+
+Once the patch is verified, the new status will be reflected by the ` + fmt.Sprintf("`%s`", okToTest) + ` label.
 
 I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
 
@@ -185,13 +190,16 @@ I understand the commands that are listed [here](https://go.k8s.io/bot-commands)
 }
 
 // trustedPullRequest returns whether or not the given PR should be tested.
-// It first checks if the author is in the org, then looks for "/ok-to-test"
-// comments by org members.
-func trustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org, repo string, comments []github.IssueComment) (bool, error) {
+// It first checks if the author is in the org, then looks for "ok-to-test" label.
+func trustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org, repo string, num int, labels []github.Label) (bool, error) {
 	// First check if the author is a member of the org.
 	if orgMember, err := TrustedUser(ghc, trigger, author, org, repo); err != nil {
 		return false, fmt.Errorf("error checking %s for trust: %v", author, err)
 	} else if orgMember {
+		return true, nil
+	}
+	// Then check if PR has ok-to-test label
+	if github.HasLabel(okToTest, labels) {
 		return true, nil
 	}
 	botName, err := ghc.BotName()
@@ -199,6 +207,10 @@ func trustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org,
 		return false, fmt.Errorf("error finding bot name: %v", err)
 	}
 	// Next look for "/ok-to-test" comments on the PR.
+	comments, err := ghc.ListIssueComments(org, repo, num)
+	if err != nil {
+		return false, err
+	}
 	for _, comment := range comments {
 		commentAuthor := comment.User.Login
 		// Skip comments: by the PR author, or by bot, or not matching "/ok-to-test".
@@ -223,25 +235,4 @@ func buildAll(c client, pr *github.PullRequest, eventGUID string) error {
 		}
 	}
 	return runOrSkipRequested(c, pr, matchingJobs, nil, "", eventGUID)
-}
-
-// clearStaleComments deletes old comments that are no longer applicable.
-func clearStaleComments(gc githubClient, pr github.PullRequest, comments []github.IssueComment) error {
-	botName, err := gc.BotName()
-	if err != nil {
-		return err
-	}
-
-	org, repo, _ := orgRepoAuthor(pr)
-	const waitingComment = "member to verify that this patch is reasonable to test."
-
-	return gc.DeleteStaleComments(
-		org,
-		repo,
-		pr.Number,
-		comments,
-		func(c github.IssueComment) bool { // isStale function
-			return c.User.Login == botName && strings.Contains(c.Body, waitingComment)
-		},
-	)
 }
