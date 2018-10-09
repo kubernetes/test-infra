@@ -54,7 +54,6 @@ approve:
   - kubernetes/kube-deploy
   - kubernetes/kubeadm
   - kubernetes/kubectl
-  - kubernetes/kubernetes
   - kubernetes/kubernetes-template-project
   - kubernetes/kube-state-metrics
   - kubernetes/minikube
@@ -71,6 +70,7 @@ approve:
   implicit_self_approve: true
   lgtm_acts_as_approve: true
 - repos:
+  - kubernetes/kubernetes
   - kubernetes-client
   - kubernetes-csi
   - kubernetes-sigs
