@@ -81,7 +81,6 @@ the `exta_refs` field.
 
 ```yaml
 - name: post-job
-  agent: kubernetes
   decorate: true
   ssh_key_secrets:
   - ssh-secret
