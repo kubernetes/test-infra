@@ -17,7 +17,7 @@ limitations under the License.
 package test
 
 var (
-	tmpArtsDir = absPath("test_output/tmp_artifacts")
+	tmpArtifactsDir = absPath("test_output/tmp_artifacts")
 	//InputArtifactsDir is the absolute path to artifacts as test data
 	InputArtifactsDir = absPath("testdata/artifacts")
 )

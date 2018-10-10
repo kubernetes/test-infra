@@ -41,10 +41,10 @@ func linkInputArt(artifactsDir, artName string) {
 	}
 }
 
-//NewArtsDir create an artifact directory on disk
-func NewArtsDir(dirPrefix string) string {
-	os.MkdirAll(tmpArtsDir, 0755)
-	dir, err := ioutil.TempDir(tmpArtsDir, dirPrefix+"_")
+//NewArtifactsDir create an artifact directory on disk
+func NewArtifactsDir(dirPrefix string) string {
+	os.MkdirAll(tmpArtifactsDir, 0755)
+	dir, err := ioutil.TempDir(tmpArtifactsDir, dirPrefix+"_")
 	logrus.Infof("Artifacts directory ='%s'", dir)
 	if err != nil {
 		logrus.Fatalf("Error making TempDir for artifacts: %v", err)

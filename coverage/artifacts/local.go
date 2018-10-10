@@ -42,7 +42,7 @@ func NewLocalArtifacts(directory string, profileName string,
 		covStdoutName)}
 }
 
-// ProfileReader create and returns a ProfileReader by opening the file stored in profile path
+// ProfileReader creates and returns a ProfileReader by opening the file stored in profile path
 func (artifacts *LocalArtifacts) ProfileReader() (io.ReadCloser, error) {
 	profilePath := artifacts.ProfilePath()
 	f, err := os.Open(profilePath)

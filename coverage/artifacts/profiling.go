@@ -28,7 +28,7 @@ import (
 
 // runProfiling writes coverage profile (&its stdout) by running go test on
 // target package
-func runProfiling(cmdArgs []string, localArts *LocalArtifacts) error {
+func runProfiling(cmdArgs []string, localArtifacts *LocalArtifacts) error {
 	logrus.Info("Start running profiling")
 
 	cmd := exec.Command("go", cmdArgs...)
@@ -41,13 +41,13 @@ func runProfiling(cmdArgs []string, localArts *LocalArtifacts) error {
 		return fmt.Errorf("error running composed shell command: error='%v'; stdout='%s'",
 			err, goTestCoverStdout)
 	}
-	logrus.Infof("Coverage profile created @ '%s'", localArts.ProfilePath())
-	err = covIo.CreateMarker(localArts.Directory, CovProfileCompletionMarker)
+	logrus.Infof("Coverage profile created @ '%s'", localArtifacts.ProfilePath())
+	err = covIo.CreateMarker(localArtifacts.Directory, CovProfileCompletionMarker)
 	if err != nil {
 		return err
 	}
 
-	stdoutPath := localArts.CovStdoutPath()
+	stdoutPath := localArtifacts.CovStdoutPath()
 	stdoutFile, err := os.Create(stdoutPath)
 	if err == nil {
 		stdoutFile.Write(goTestCoverStdout)

@@ -28,7 +28,7 @@ import (
 
 func TestWriteToArtifacts(t *testing.T) {
 	s := "content to be written on disk"
-	artifactsDir := test.NewArtsDir("TestWriteToArtifacts")
+	artifactsDir := test.NewArtifactsDir("TestWriteToArtifacts")
 	Write(&s, artifactsDir, "testWriteToArt.txt")
 	content, err := ioutil.ReadFile(path.Join(artifactsDir, "testWriteToArt.txt"))
 	if err != nil {
