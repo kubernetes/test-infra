@@ -280,8 +280,13 @@ func (c *Controller) Sync() error {
 
 		if label := c.ca.Config().Tide.BlockerLabel; label != "" {
 			c.logger.Debugf("Searching for blocking issues (label %q).", label)
-			orgs, repos := c.ca.Config().Tide.Queries.OrgsAndRepos()
-			blocks, err = blockers.FindAll(c.ghc, c.logger, label, orgs, repos)
+			orgExcepts, repos := c.ca.Config().Tide.Queries.OrgExceptionsAndRepos()
+			orgs := make([]string, 0, len(orgExcepts))
+			for org := range orgExcepts {
+				orgs = append(orgs, org)
+			}
+			orgRepoQuery := orgRepoQueryString(orgs, repos.UnsortedList(), orgExcepts)
+			blocks, err = blockers.FindAll(c.ghc, c.logger, label, orgRepoQuery)
 			if err != nil {
 				return err
 			}
@@ -1265,4 +1270,19 @@ func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Conte
 		},
 	)
 	return contexts, nil
+}
+
+func orgRepoQueryString(orgs, repos []string, orgExceptions map[string]sets.String) string {
+	toks := make([]string, 0, len(orgs))
+	for _, o := range orgs {
+		toks = append(toks, fmt.Sprintf("org:\"%s\"", o))
+
+		for _, e := range orgExceptions[o].UnsortedList() {
+			toks = append(toks, fmt.Sprintf("-repo:\"%s\"", e))
+		}
+	}
+	for _, r := range repos {
+		toks = append(toks, fmt.Sprintf("repo:\"%s\"", r))
+	}
+	return strings.Join(toks, " ")
 }

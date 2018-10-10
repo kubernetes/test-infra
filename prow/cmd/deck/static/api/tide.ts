@@ -3,6 +3,7 @@ import {Commit, PullRequest as BasePullRequest} from "./github";
 export interface TideQuery {
   orgs?: string[];
   repos?: string[];
+  excludedRepos?: string[];
   excludedBranches?: string[];
   includedBranches?: string[];
   labels?: string[];

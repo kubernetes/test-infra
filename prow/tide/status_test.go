@@ -24,6 +24,7 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 )
@@ -197,6 +198,7 @@ func TestExpectedStatus(t *testing.T) {
 	for _, tc := range testcases {
 		t.Logf("Test Case: %q\n", tc.name)
 		secondQuery := config.TideQuery{
+			Orgs:      []string{""},
 			Labels:    []string{"1", "2", "3", "4", "5", "6", "7"}, // lots of requirements
 			Milestone: "v1.0",
 		}
@@ -204,18 +206,17 @@ func TestExpectedStatus(t *testing.T) {
 			secondQuery.ExcludedBranches = tc.branchBlacklist
 			secondQuery.IncludedBranches = tc.branchWhitelist
 		}
-		queriesByRepo := config.QueryMap(map[string]config.TideQueries{
-			"": {
-				config.TideQuery{
-					ExcludedBranches: tc.branchBlacklist,
-					IncludedBranches: tc.branchWhitelist,
-					Labels:           neededLabels,
-					MissingLabels:    forbiddenLabels,
-					Milestone:        "v1.0",
-				},
-				secondQuery,
+		queriesByRepo := config.TideQueries{
+			config.TideQuery{
+				Orgs:             []string{""},
+				ExcludedBranches: tc.branchBlacklist,
+				IncludedBranches: tc.branchWhitelist,
+				Labels:           neededLabels,
+				MissingLabels:    forbiddenLabels,
+				Milestone:        "v1.0",
 			},
-		})
+			secondQuery,
+		}.QueryMap()
 		var pr PullRequest
 		pr.BaseRef = struct {
 			Name   githubql.String
@@ -440,7 +441,7 @@ func TestTargetUrl(t *testing.T) {
 	}
 }
 
-func TestAllOpenPRs(t *testing.T) {
+func TestOpenPRsQuery(t *testing.T) {
 	var q string
 	checkTok := func(tok string) {
 		if !strings.Contains(q, " "+tok+" ") {
@@ -448,11 +449,20 @@ func TestAllOpenPRs(t *testing.T) {
 		}
 	}
 
-	q = " " + openPRsQuery([]string{"k8s", "kuber"}, []string{"k8s/k8s", "k8s/t-i"}) + " "
+	orgs := []string{"org", "kuber"}
+	repos := []string{"k8s/k8s", "k8s/t-i"}
+	exceptions := map[string]sets.String{
+		"org":            sets.NewString("org/repo1", "org/repo2"),
+		"irrelevant-org": sets.NewString("irrelevant-org/repo1", "irrelevant-org/repo2"),
+	}
+
+	q = " " + openPRsQuery(orgs, repos, exceptions) + " "
 	checkTok("is:pr")
 	checkTok("state:open")
-	checkTok("org:\"k8s\"")
+	checkTok("org:\"org\"")
 	checkTok("org:\"kuber\"")
 	checkTok("repo:\"k8s/k8s\"")
 	checkTok("repo:\"k8s/t-i\"")
+	checkTok("-repo:\"org/repo1\"")
+	checkTok("-repo:\"org/repo2\"")
 }

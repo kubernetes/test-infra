@@ -1,6 +1,8 @@
 # Announcements
 
 New features added to each component:
+ - *October 10, 2018* `tide` now supports the `-repo:foo/bar` tag in queries via
+   the `excludedRepos` YAML field.
  - *October 3, 2018* `welcome` now supports a configurable message on a per-org,
    or per-repo basis. Please note that this includes a config schema change that
    will break previous deployments of this plugin.
