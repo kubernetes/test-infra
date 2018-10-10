@@ -17,10 +17,10 @@ limitations under the License.
 package artifacts
 
 import (
+	"strings"
 	"testing"
 
 	"k8s.io/test-infra/coverage/test"
-	"strings"
 )
 
 // generates coverage profile by running go test on target package

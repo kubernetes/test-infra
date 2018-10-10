@@ -33,20 +33,21 @@ type LocalArtifacts struct {
 }
 
 //NewLocalArtifacts constructs LocalArtifacts
-func NewLocalArtifacts(directory string, ProfileName string,
-	KeyProfileName string, CovStdoutName string) *LocalArtifacts {
+func NewLocalArtifacts(directory string, profileName string,
+	keyProfileName string, covStdoutName string) *LocalArtifacts {
 	return &LocalArtifacts{*New(
 		directory,
-		ProfileName,
-		KeyProfileName,
-		CovStdoutName)}
+		profileName,
+		keyProfileName,
+		covStdoutName)}
 }
 
 // ProfileReader create and returns a ProfileReader by opening the file stored in profile path
 func (artifacts *LocalArtifacts) ProfileReader() (io.ReadCloser, error) {
-	f, err := os.Open(artifacts.ProfilePath())
+	profilePath := artifacts.ProfilePath()
+	f, err := os.Open(profilePath)
 	if err != nil {
-		logrus.Debugf("LocalArtifacts.ProfileReader(): os.Open(profilePath) error: %v", err)
+		err = fmt.Errorf("fail to open profile at '%s', error: %v", profilePath, err)
 	}
 	return f, err
 }
@@ -54,20 +55,6 @@ func (artifacts *LocalArtifacts) ProfileReader() (io.ReadCloser, error) {
 //ProfileName gets name of profile
 func (artifacts *LocalArtifacts) ProfileName() string {
 	return artifacts.profileName
-}
-
-// KeyProfileCreator creates a key profile file that will be used to hold a
-// filtered version of coverage profile that only stores the entries that
-// will be displayed by line coverage tool
-func (artifacts *LocalArtifacts) KeyProfileCreator() *os.File {
-	keyProfilePath := artifacts.KeyProfilePath()
-	keyProfileFile, err := os.Create(keyProfilePath)
-	logrus.Infof("os.Create(keyProfilePath)=%s", keyProfilePath)
-	if err != nil {
-		logrus.Fatalf("file(%s) creation error: %v", keyProfilePath, err)
-	}
-
-	return keyProfileFile
 }
 
 // ProduceProfileFile produce coverage profile (&its stdout) by running go test on target package

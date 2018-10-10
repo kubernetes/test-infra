@@ -38,10 +38,10 @@ type Artifacts struct {
 //New Artifact object
 func New(directory, profileName, keyProfileName, covStdoutName string) *Artifacts {
 	return &Artifacts{
-		Directory:directory,
-		profileName:profileName,
-		keyProfileName:keyProfileName,
-		covStdoutName:covStdoutName}
+		Directory:      directory,
+		profileName:    profileName,
+		keyProfileName: keyProfileName,
+		covStdoutName:  covStdoutName}
 }
 
 //ProfilePath returns profile path on disk, accessible by file io functions

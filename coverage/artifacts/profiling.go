@@ -29,7 +29,7 @@ import (
 // runProfiling writes coverage profile (&its stdout) by running go test on
 // target package
 func runProfiling(cmdArgs []string, localArts *LocalArtifacts) error {
-	logrus.Info("Starting .runProfiling(...)")
+	logrus.Info("Start running profiling")
 
 	cmd := exec.Command("go", cmdArgs...)
 	cmdAsString := fmt.Sprintf("go %s", strings.Join(cmdArgs, " "))
@@ -55,6 +55,6 @@ func runProfiling(cmdArgs []string, localArts *LocalArtifacts) error {
 		return fmt.Errorf("error creating stdout file: %v", err)
 	}
 	logrus.Infof("Stdout of test coverage stored in %s", stdoutPath)
-	logrus.Infof("Ends .runProfiling(...)")
+	logrus.Infof("Ends running profiling")
 	return stdoutFile.Close()
 }

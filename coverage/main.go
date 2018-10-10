@@ -26,10 +26,7 @@ import (
 const (
 	keyCovProfileFileName    = "key-cov-prof.txt"
 	defaultStdoutRedirect    = "stdout.txt"
-	defaultCoverageTargetDir = "./pkg/"
-	defaultGcsBucket         = "knative-prow"
-	defaultPostSubmitJobName = "post-knative-serving-go-coverage"
-	defaultCovThreshold      = 80
+	defaultCoverageTargetDir = "."
 )
 
 var (
@@ -38,23 +35,10 @@ var (
 )
 
 func main() {
-	logrus.Infoln("Entering code coverage main")
-
-	gcsBucketName := flag.String("postsubmit-gcs-bucket", defaultGcsBucket, "gcs bucket name")
-	postSubmitJobName := flag.String("postsubmit-job-name", defaultPostSubmitJobName, "name of the prow job")
-	artifactsDirFlag := flag.String("artifacts", artifactsDir, "directory for artifacts")
-	coverageTargetDir := flag.String("cov-target", defaultCoverageTargetDir, "target directory for test coverage")
+	artifactsDirFlag := flag.String("artifacts", artifactsDir, "local directory to store and retrieve artifacts")
+	coverageTargetDir := flag.String("cov-target", defaultCoverageTargetDir, "target directory to run test coverage against")
 	flag.StringVar(&coverageProfileName, "profile-name", coverageProfileName, "file name for coverage profile")
-	githubTokenPath := flag.String("github-token", "", "path to token to access github repo")
-	covThresholdFlag := flag.Int("cov-threshold-percentage", defaultCovThreshold, "token to access github repo")
-	covbotUserName := flag.String("covbot-username", "covbot", "github user name for coverage robot")
 	flag.Parse()
-
-	logrus.Infof("container flag list: postsubmit-gcs-bucket=%s; postSubmitJobName=%s; "+
-		"artifacts=%s; cov-target=%s; profile-name=%s; github-token=%s; "+
-		"cov-threshold-percentage=%d; covbot-username=%s;",
-		*gcsBucketName, *postSubmitJobName, *artifactsDirFlag, *coverageTargetDir, coverageProfileName,
-		*githubTokenPath, *covThresholdFlag, *covbotUserName)
 
 	logrus.Info("Getting env values")
 	pr := os.Getenv("PULL_NUMBER")
