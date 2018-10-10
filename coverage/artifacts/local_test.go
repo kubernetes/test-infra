@@ -24,7 +24,27 @@ import (
 
 // generates coverage profile by running go test on target package
 func TestComposeCmdArgs(t *testing.T) {
-	expected := []string {"test", "./...", "-covermode=count", "-coverprofile", "./path/to/profile"}
-	actual := composeCmdArgs(".", "./path/to/profile")
-	test.AssertDeepEqual(t, expected, actual)
+	t.Run("target=.", func(t *testing.T){
+		expected := []string {"test", ".", "-covermode=count", "-coverprofile", "./path/to/profile"}
+		actual, _ := composeCmdArgs(".", "./path/to/profile")
+		test.AssertDeepEqual(t, expected, actual)
+	})
+	t.Run("target=./...", func(t *testing.T){
+		expected := []string {"test", "./...", "-covermode=count", "-coverprofile", "./path/to/profile"}
+		actual, _ := composeCmdArgs("./...", "./path/to/profile")
+		test.AssertDeepEqual(t, expected, actual)
+	})
+	t.Run("target=./pkg ./cmd/...", func(t *testing.T){
+		expected := []string {"test", "./pkg", "./cmd/...", "-covermode=count", "-coverprofile", "./path/to/profile"}
+		actual, _ := composeCmdArgs("./pkg ./cmd/...", "./path/to/profile")
+		test.AssertDeepEqual(t, expected, actual)
+	})
+	t.Run("target=/absolute", func(t *testing.T){
+		expected := "target path can not be absolute path: Path='/absolute'"
+		_, err := composeCmdArgs("/absolute", "./path/to/profile")
+		if err == nil {
+			t.Errorf("failed to catch error")
+		}
+		test.AssertEqual(t, expected, err.Error())
+	})
 }

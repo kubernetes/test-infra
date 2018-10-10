@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -67,20 +66,25 @@ func (artifacts *LocalArtifacts) ProduceProfileFile(covTargetsStr string) error 
 		return fmt.Errorf("failed os.MkdirAll(path='%s', 0755); err='%v'", artifactsDirPath, err)
 	}
 	logrus.Infof("artifacts dir (path=%s) created successfully", artifactsDirPath)
-	covTargets := composeCmdArgs(covTargetsStr, artifacts.ProfilePath())
+	covTargets, err := composeCmdArgs(covTargetsStr, artifacts.ProfilePath())
+	if err != nil {
+		return err
+	}
 	return runProfiling(covTargets, artifacts)
 }
 
-func composeCmdArgs(covTargetsStr, profileDestinationPath string) []string {
+func composeCmdArgs(covTargetsStr, profileDestinationPath string) ([]string, error) {
 	// generate the complete list of command line args for producing code coverage profile
-	var covTargets []string
-	for _, target := range strings.Split(covTargetsStr, " ") {
-		covTargets = append(covTargets, "./"+path.Join(target, "..."))
+	covTargets := strings.Split(covTargetsStr, " ")
+	for _, target := range covTargets {
+		if strings.HasPrefix(target, "/") {
+			return nil, fmt.Errorf("target path can not be absolute path: Path='%s'", target)
+		}
 	}
 	logrus.Infof("list of coverage targets = %v", covTargets)
 	cmdArgs := []string{"test"}
 	cmdArgs = append(cmdArgs, covTargets...)
 	cmdArgs = append(cmdArgs, []string{"-covermode=count",
 		"-coverprofile", profileDestinationPath}...)
-	return cmdArgs
+	return cmdArgs, nil
 }
