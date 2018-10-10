@@ -2453,6 +2453,12 @@ test_groups:
 - name: pull-cluster-api-provider-openstack-make
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-openstack-make
   num_columns_recent: 20
+- name: pull-cluster-api-provider-openstack-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-openstack-test
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-openstack-check
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-openstack-check
+  num_columns_recent: 20
 - name: pull-kubernetes-bazel-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-build
   num_columns_recent: 20
@@ -5805,6 +5811,10 @@ dashboards:
   dashboard_tab:
   - name: pr-make
     test_group_name: pull-cluster-api-provider-openstack-make
+  - name: pr-check
+    test_group_name: pull-cluster-api-provider-openstack-check
+  - name: pr-test
+    test_group_name: pull-cluster-api-provider-openstack-test
 
 - name: sig-multicluster-kubemci
   dashboard_tab:
