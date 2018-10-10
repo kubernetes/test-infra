@@ -268,6 +268,12 @@ default:
       target: both
       prowPlugin: require-matching-label
       addedBy: prow
+    - color: 15dd18
+      description: Indicates a non-member PR verified by an org member that is safe to test. # This is the opposite of needs-ok-to-test and should be mutually exclusive.
+      name: ok-to-test
+      target: prs
+      prowPlugin: trigger
+      addedBy: prow
     - color: fef2c0
       description: Lowest priority. Possibly useful, but not yet enough support to actually get it done. # These are mostly place-holders for potentially good ideas, so that they don't get completely forgotten, and can be referenced /deduped every time they come up.
       name: priority/awaiting-more-evidence
