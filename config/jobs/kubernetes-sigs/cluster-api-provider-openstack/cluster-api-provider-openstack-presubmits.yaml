@@ -23,3 +23,27 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+  - name: pull-cluster-api-provider-openstack-test
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/cluster-api:v20180720-d52d72975
+        command:
+        - "make"
+        - "test"
+  - name: pull-cluster-api-provider-openstack-check
+    always_run: true
+    decorate: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+        command:
+        - "make"
+        - "check"
