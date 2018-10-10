@@ -18,11 +18,19 @@ package test
 
 import (
 	"testing"
+	"reflect"
 )
 
 //AssertEqual checks equality of expected and actual results, fail the test if not equal
 func AssertEqual(t *testing.T, expected, actual interface{}) {
 	if expected != actual {
+		t.Fatalf("expected='%v'; actual='%v'", expected, actual)
+	}
+}
+
+//AssertDeepEqual checks deep equality of expected and actual results, fail the test if not equal
+func AssertDeepEqual(t *testing.T, expected, actual interface{}) {
+	if !reflect.DeepEqual(expected, actual) {
 		t.Fatalf("expected='%v'; actual='%v'", expected, actual)
 	}
 }

@@ -17,7 +17,6 @@ limitations under the License.
 package artifacts
 
 import (
-	"strings"
 	"testing"
 
 	"k8s.io/test-infra/coverage/test"
@@ -25,9 +24,7 @@ import (
 
 // generates coverage profile by running go test on target package
 func TestComposeCmdArgs(t *testing.T) {
-	profileDestinationPath := "./path/to/profile"
-	input := "."
-	expected := "test ./... -covermode=count -coverprofile " + profileDestinationPath
-	actual := strings.Join(composeCmdArgs(input, profileDestinationPath), " ")
-	test.AssertEqual(t, expected, actual)
+	expected := []string {"test", "./...", "-covermode=count", "-coverprofile", "./path/to/profile"}
+	actual := composeCmdArgs(".", "./path/to/profile")
+	test.AssertDeepEqual(t, expected, actual)
 }
