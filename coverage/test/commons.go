@@ -17,8 +17,8 @@ limitations under the License.
 package test
 
 import (
-	"testing"
 	"reflect"
+	"testing"
 )
 
 //AssertEqual checks equality of expected and actual results, fail the test if not equal
