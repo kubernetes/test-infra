@@ -56,7 +56,7 @@ func gatherOptions() options {
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.StringVar(&o.config, "config-path", "", "Path to prow config.yaml")
 	fs.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
-	flag.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
+	fs.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	o.github.AddFlags(fs)
 	fs.Parse(os.Args[1:])
 	return o
