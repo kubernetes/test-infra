@@ -40,8 +40,9 @@ interface ProcessedQuery {
  * A Tide Query helper class that checks whether a pr is covered by the query.
  */
 class TideQuery {
-    repos?: string[];
     orgs?: string[];
+    repos?: string[];
+    excludedRepos?: string[];
     labels?: string[];
     missingLabels?: string[];
     excludedBranches?: string[];
@@ -49,8 +50,9 @@ class TideQuery {
     milestone?: string;
 
     constructor(query: ITideQuery) {
-        this.repos = query.repos;
         this.orgs = query.orgs;
+        this.repos = query.repos;
+        this.excludedRepos = query.excludedRepos;
         this.labels = query.labels;
         this.missingLabels = query.missingLabels;
         this.excludedBranches = query.excludedBranches;
@@ -64,7 +66,8 @@ class TideQuery {
     matchPr(pr: PullRequest): boolean {
         const isMatched =
             (this.repos && this.repos.indexOf(pr.Repository.NameWithOwner) !== -1) ||
-            (this.orgs && this.orgs.indexOf(pr.Repository.Owner.Login) !== -1);
+            ((this.orgs && this.orgs.indexOf(pr.Repository.Owner.Login) !== -1) &&
+            (this.excludedRepos && this.excludedRepos.indexOf(pr.Repository.NameWithOwner) === -1));
 
         if (!isMatched) {
             return false;

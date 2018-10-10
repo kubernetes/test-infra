@@ -139,11 +139,13 @@ func main() {
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error loading Prow config.")
 	}
+	cfg := configAgent.Config()
 
 	pluginAgent := plugins.PluginAgent{}
 	if err := pluginAgent.Load(o.pluginConfig); err != nil {
 		logrus.WithError(err).Fatal("Error loading Prow plugin config.")
 	}
+	pcfg := pluginAgent.Config()
 
 	// the following checks are useful in finding user errors but their
 	// presence won't lead to strictly incorrect behavior, so we can
@@ -151,22 +153,22 @@ func main() {
 	// in all components on their failure.
 	var errs []error
 	if o.warningEnabled(mismatchedTideWarning) {
-		if err := validateTideRequirements(&configAgent, &pluginAgent); err != nil {
+		if err := validateTideRequirements(cfg, pcfg); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	if o.warningEnabled(nonDecoratedJobsWarning) {
-		if err := validateDecoratedJobs(&configAgent); err != nil {
+		if err := validateDecoratedJobs(cfg); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	if o.warningEnabled(jobNameLengthWarning) {
-		if err := validateJobRequirements(&configAgent); err != nil {
+		if err := validateJobRequirements(cfg.JobConfig); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	if o.warningEnabled(needsOkToTestWarning) {
-		if err := validateNeedsOkToTestLabel(&configAgent); err != nil {
+		if err := validateNeedsOkToTestLabel(cfg); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -175,9 +177,7 @@ func main() {
 	}
 }
 
-func validateJobRequirements(configAgent *config.Agent) error {
-	c := configAgent.Config().JobConfig
-
+func validateJobRequirements(c config.JobConfig) error {
 	var validationErrs []error
 	for repo, jobs := range c.Presubmits {
 		for _, job := range jobs {
@@ -223,7 +223,7 @@ func validatePeriodicJob(job config.Periodic) error {
 	return errorutil.NewAggregate(validationErrs...)
 }
 
-func validateTideRequirements(configAgent *config.Agent, pluginAgent *plugins.PluginAgent) error {
+func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration) error {
 	type matcher struct {
 		// matches determines if the tide query appropriately honors the
 		// label in question -- whether by requiring it or forbidding it
@@ -255,7 +255,7 @@ func validateTideRequirements(configAgent *config.Agent, pluginAgent *plugins.Pl
 		// config holds the orgs and repos for which tide does honor the
 		// label; this container is populated conditionally from queries
 		// using the matcher
-		config orgRepoConfig
+		config *orgRepoConfig
 	}{
 		{plugin: lgtm.PluginName, label: lgtm.LGTMLabel, matcher: requires},
 		{plugin: approve.PluginName, label: approve.ApprovedLabel, matcher: requires},
@@ -269,57 +269,140 @@ func validateTideRequirements(configAgent *config.Agent, pluginAgent *plugins.Pl
 	}
 
 	for i := range configs {
-		configs[i].config = newOrgRepoConfig([]string{}, []string{})
-		for _, query := range configAgent.Config().Tide.Queries {
+		// For each plugin determine the subset of tide queries that match and then
+		// the orgs and repos that the subset matches.
+		var matchingQueries config.TideQueries
+		for _, query := range cfg.Tide.Queries {
 			if configs[i].matcher.matches(configs[i].label, query) {
-				for _, org := range query.Orgs {
-					configs[i].config.orgs.Insert(org)
-				}
-				for _, repo := range query.Repos {
-					configs[i].config.repos.Insert(repo)
-				}
+				matchingQueries = append(matchingQueries, query)
 			}
 		}
+		configs[i].config = newOrgRepoConfig(matchingQueries.OrgExceptionsAndRepos())
 	}
 
-	overallTideConfig := newOrgRepoConfig([]string{}, []string{})
-	for _, query := range configAgent.Config().Tide.Queries {
-		for _, org := range query.Orgs {
-			overallTideConfig.orgs.Insert(org)
-		}
-		for _, repo := range query.Repos {
-			overallTideConfig.repos.Insert(repo)
-		}
-	}
+	overallTideConfig := newOrgRepoConfig(cfg.Tide.Queries.OrgExceptionsAndRepos())
 
+	// Now actually execute the checks we just configured.
 	var validationErrs []error
 	for _, pluginConfig := range configs {
-		validationErrs = append(validationErrs, ensureValidConfiguration(
-			pluginConfig.plugin, pluginConfig.label, pluginConfig.matcher.verb, pluginConfig.config, overallTideConfig,
-			newOrgRepoConfig(pluginAgent.Config().EnabledReposForPlugin(pluginConfig.plugin))),
+		err := ensureValidConfiguration(
+			pluginConfig.plugin,
+			pluginConfig.label,
+			pluginConfig.matcher.verb,
+			pluginConfig.config,
+			overallTideConfig,
+			enabledOrgReposForPlugin(pcfg, pluginConfig.plugin),
 		)
+		validationErrs = append(validationErrs, err)
 	}
 
 	return errorutil.NewAggregate(validationErrs...)
 }
 
-func newOrgRepoConfig(orgs, repos []string) orgRepoConfig {
-	return orgRepoConfig{
-		orgs:  sets.NewString(orgs...),
-		repos: sets.NewString(repos...),
+func newOrgRepoConfig(orgExceptions map[string]sets.String, repos sets.String) *orgRepoConfig {
+	return &orgRepoConfig{
+		orgExceptions: orgExceptions,
+		repos:         repos,
 	}
 }
 
 type orgRepoConfig struct {
-	orgs, repos sets.String
+	orgExceptions map[string]sets.String
+	repos         sets.String
 }
 
 func (c *orgRepoConfig) items() []string {
-	return c.orgs.Union(c.repos).UnsortedList()
+	items := make([]string, 0, len(c.orgExceptions)+len(c.repos))
+	for org, excepts := range c.orgExceptions {
+		item := fmt.Sprintf("org: %s", org)
+		if excepts.Len() > 0 {
+			item = fmt.Sprintf("%s without repo(s) %s", item, strings.Join(excepts.List(), ", "))
+			for _, repo := range excepts.List() {
+				item = fmt.Sprintf("%s '%s'", item, repo)
+			}
+		}
+		items = append(items, item)
+	}
+	for _, repo := range c.repos.List() {
+		items = append(items, fmt.Sprintf("repo: %s", repo))
+	}
+	return items
 }
 
-func (c *orgRepoConfig) has(target string) bool {
-	return c.repos.Has(target) || c.orgs.Has(target) || (strings.Contains(target, "/") && c.orgs.Has(strings.Split(target, "/")[0]))
+// difference returns a new orgRepoConfig that represents the set difference of
+// the repos specified by the receiver and the parameter orgRepoConfigs.
+func (c *orgRepoConfig) difference(c2 *orgRepoConfig) *orgRepoConfig {
+	res := &orgRepoConfig{
+		orgExceptions: make(map[string]sets.String),
+		repos:         sets.NewString().Union(c.repos),
+	}
+	for org, excepts1 := range c.orgExceptions {
+		if excepts2, ok := c2.orgExceptions[org]; ok {
+			res.repos.Insert(excepts2.Difference(excepts1).UnsortedList()...)
+		} else {
+			excepts := sets.NewString().Union(excepts1)
+			// Add any applicable repos in repos2 to excepts
+			for _, repo := range c2.repos.UnsortedList() {
+				if parts := strings.SplitN(repo, "/", 2); len(parts) == 2 && parts[0] == org {
+					excepts.Insert(repo)
+				}
+			}
+			res.orgExceptions[org] = excepts
+		}
+	}
+
+	res.repos = res.repos.Difference(c2.repos)
+
+	for _, repo := range res.repos.UnsortedList() {
+		if parts := strings.SplitN(repo, "/", 2); len(parts) == 2 {
+			if excepts2, ok := c2.orgExceptions[parts[0]]; ok && !excepts2.Has(repo) {
+				res.repos.Delete(repo)
+			}
+		}
+	}
+	return res
+}
+
+// intersection returns a new orgRepoConfig that represents the set intersection
+// of the repos specified by the receiver and the parameter orgRepoConfigs.
+func (c *orgRepoConfig) intersection(c2 *orgRepoConfig) *orgRepoConfig {
+	res := &orgRepoConfig{
+		orgExceptions: make(map[string]sets.String),
+		repos:         sets.NewString(),
+	}
+	for org, excepts1 := range c.orgExceptions {
+		// Include common orgs, but union exceptions.
+		if excepts2, ok := c2.orgExceptions[org]; ok {
+			res.orgExceptions[org] = excepts1.Union(excepts2)
+		} else {
+			// Include right side repos that match left side org.
+			for _, repo := range c2.repos.UnsortedList() {
+				if parts := strings.SplitN(repo, "/", 2); len(parts) == 2 && parts[0] == org && !excepts1.Has(repo) {
+					res.repos.Insert(repo)
+				}
+			}
+		}
+	}
+	for _, repo := range c.repos.UnsortedList() {
+		if c2.repos.Has(repo) {
+			res.repos.Insert(repo)
+		} else if parts := strings.SplitN(repo, "/", 2); len(parts) == 2 {
+			// Include left side repos that match right side org.
+			if excepts2, ok := c2.orgExceptions[parts[0]]; ok && !excepts2.Has(repo) {
+				res.repos.Insert(repo)
+			}
+		}
+	}
+	return res
+}
+
+func enabledOrgReposForPlugin(c *plugins.Configuration, plugin string) *orgRepoConfig {
+	orgs, repos := c.EnabledReposForPlugin(plugin)
+	orgMap := make(map[string]sets.String, len(orgs))
+	for _, org := range orgs {
+		orgMap[org] = nil
+	}
+	return newOrgRepoConfig(orgMap, sets.NewString(repos...))
 }
 
 // ensureValidConfiguration enforces rules about tide and plugin config.
@@ -334,20 +417,9 @@ func (c *orgRepoConfig) has(target string) bool {
 //   - if org/repo is configured in tide, the tide configuration must require the same set of
 //     plugins as are configured. If the repository has LGTM and approve enabled, the tide query
 //     must require both labels
-func ensureValidConfiguration(plugin, label, verb string, tideSubSet, tideSuperSet, pluginsSubSet orgRepoConfig) error {
-	var notEnabled []string
-	for _, target := range tideSubSet.items() {
-		if !pluginsSubSet.has(target) {
-			notEnabled = append(notEnabled, target)
-		}
-	}
-
-	var notRequired []string
-	for _, target := range pluginsSubSet.items() {
-		if tideSuperSet.has(target) && !tideSubSet.has(target) {
-			notRequired = append(notRequired, target)
-		}
-	}
+func ensureValidConfiguration(plugin, label, verb string, tideSubSet, tideSuperSet, pluginsSubSet *orgRepoConfig) error {
+	notEnabled := tideSubSet.difference(pluginsSubSet).items()
+	notRequired := pluginsSubSet.intersection(tideSuperSet).difference(tideSubSet).items()
 
 	var configErrors []error
 	if len(notEnabled) > 0 {
@@ -360,21 +432,21 @@ func ensureValidConfiguration(plugin, label, verb string, tideSubSet, tideSuperS
 	return errorutil.NewAggregate(configErrors...)
 }
 
-func validateDecoratedJobs(configAgent *config.Agent) error {
+func validateDecoratedJobs(cfg *config.Config) error {
 	var nonDecoratedJobs []string
-	for _, presubmit := range configAgent.Config().AllPresubmits([]string{}) {
+	for _, presubmit := range cfg.AllPresubmits([]string{}) {
 		if presubmit.Agent == string(v1.KubernetesAgent) && !presubmit.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, presubmit.Name)
 		}
 	}
 
-	for _, postsubmit := range configAgent.Config().AllPostsubmits([]string{}) {
+	for _, postsubmit := range cfg.AllPostsubmits([]string{}) {
 		if postsubmit.Agent == string(v1.KubernetesAgent) && !postsubmit.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, postsubmit.Name)
 		}
 	}
 
-	for _, periodic := range configAgent.Config().AllPeriodics() {
+	for _, periodic := range cfg.AllPeriodics() {
 		if periodic.Agent == string(v1.KubernetesAgent) && !periodic.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, periodic.Name)
 		}
@@ -386,9 +458,9 @@ func validateDecoratedJobs(configAgent *config.Agent) error {
 	return nil
 }
 
-func validateNeedsOkToTestLabel(configAgent *config.Agent) error {
+func validateNeedsOkToTestLabel(cfg *config.Config) error {
 	var queryErrors []error
-	for i, query := range configAgent.Config().Tide.Queries {
+	for i, query := range cfg.Tide.Queries {
 		for _, label := range query.Labels {
 			if label == lgtm.LGTMLabel {
 				for _, label := range query.MissingLabels {
