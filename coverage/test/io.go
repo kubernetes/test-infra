@@ -19,8 +19,6 @@ package test
 import (
 	"io/ioutil"
 	"os"
-	"path"
-
 	"github.com/sirupsen/logrus"
 )
 
@@ -29,15 +27,6 @@ func DeleteDir(dir string) {
 	err := os.RemoveAll(dir)
 	if err != nil {
 		logrus.Fatalf("Fail to remove artifact '%s': %v", dir, err)
-	}
-}
-
-func linkInputArt(artifactsDir, artName string) {
-	err := os.Symlink(path.Join(InputArtifactsDir, artName),
-		path.Join(artifactsDir, artName))
-
-	if err != nil {
-		logrus.Fatalf("Error creating Symlink: %v", err)
 	}
 }
 

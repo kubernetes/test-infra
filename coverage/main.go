@@ -20,7 +20,6 @@ import (
 	"flag"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/coverage/artifacts"
-	"os"
 )
 
 const (
@@ -39,13 +38,6 @@ func main() {
 	coverageTargetDir := flag.String("cov-target", defaultCoverageTargetDir, "target directory to run test coverage against")
 	flag.StringVar(&coverageProfileName, "profile-name", coverageProfileName, "file name for coverage profile")
 	flag.Parse()
-
-	logrus.Info("Getting env values")
-	pr := os.Getenv("PULL_NUMBER")
-	pullSha := os.Getenv("PULL_PULL_SHA")
-	baseSha := os.Getenv("PULL_BASE_SHA")
-
-	logrus.Printf("Running coverage for PR %s with PR commit SHA %s and base SHA %s", pr, pullSha, baseSha)
 
 	artifactsDir = *artifactsDirFlag
 
