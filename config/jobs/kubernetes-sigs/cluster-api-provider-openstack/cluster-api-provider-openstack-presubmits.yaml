@@ -32,6 +32,12 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/cluster-api:v20180720-d52d72975
         command:
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        - "--scenario=execute"
+        - "--"
         - "make"
         - "test"
   - name: pull-cluster-api-provider-openstack-check
@@ -45,5 +51,11 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
         command:
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        - "--scenario=execute"
+        - "--"
         - "make"
         - "check"
