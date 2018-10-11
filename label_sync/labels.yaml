@@ -625,7 +625,7 @@ default:
       target: prs
       addedBy: humans
     - color: f9d0c4
-      description: "¯\\_(ツ)_/¯"
+      description: ¯\\\_(ツ)_/¯
       name: "¯\\_(ツ)_/¯"
       target: both
       prowPlugin: shrug
