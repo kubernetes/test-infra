@@ -593,6 +593,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --cluster=clusterloader2
+      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env
       - --extract=ci/latest
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project
