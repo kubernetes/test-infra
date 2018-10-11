@@ -575,6 +575,9 @@ periodics:
 
 - name: ci-perf-tests-e2e-gce-clusterloader2
   interval: 2h
+  tags:
+  - "perfDashPrefix: {ClusterLoader} gce-100Nodes"
+  - "perfDashJobType: performance"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -585,24 +588,24 @@ periodics:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
-      - --timeout=80
+      - --timeout=140
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
       - --cluster=clusterloader2
       - --extract=ci/latest
-      - --gcp-nodes=3
-      - --gcp-zone=us-central1-f
+      - --gcp-nodes=100
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
       - --provider=gce
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-args=--nodes=3
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=60m
+      - --timeout=120m
 
 - name: ci-perf-tests-kubemark-100-benchmark
   interval: 2h
