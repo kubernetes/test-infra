@@ -35,7 +35,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=1220
       - --bare
       - --scenario=kubernetes_e2e
       - --
@@ -50,7 +50,7 @@ periodics:
       - --gke-environment=test
       - --provider=gke
       - --skew
-      - --timeout=900m
+      - --timeout=1200m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
