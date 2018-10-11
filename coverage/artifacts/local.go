@@ -57,7 +57,6 @@ func (artifacts *LocalArtifacts) ProfileName() string {
 }
 
 // ProduceProfileFile produce coverage profile (&its stdout) by running go test on target package
-// for periodic job, produce junit xml for testgrid in addition
 func (artifacts *LocalArtifacts) ProduceProfileFile(covTargetsStr string) error {
 	// creates artifacts directory
 	artifactsDirPath := artifacts.Directory
