@@ -138,7 +138,7 @@ function parseLine(line) {
   return {
     filename,
     statements: parseInt(statements),
-    hits: parseInt(hits),
+    hits: Math.max(0, parseInt(hits)),
     start: {
       line: startLine,
       col: startCol,

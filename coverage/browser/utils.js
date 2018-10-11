@@ -38,3 +38,10 @@ export function* filter(iterable, fn) {
     }
   }
 }
+
+export function* enumerate(iterable) {
+  let i = 0;
+  for (let entry of iterable) {
+    yield [i++, entry];
+  }
+}
