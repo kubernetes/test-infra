@@ -24,26 +24,27 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
+
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
 	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
+	_ "k8s.io/test-infra/prow/hook"
+	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/approve"
 	"k8s.io/test-infra/prow/plugins/blockade"
 	"k8s.io/test-infra/prow/plugins/cherrypickunapproved"
 	"k8s.io/test-infra/prow/plugins/hold"
+	"k8s.io/test-infra/prow/plugins/lgtm"
 	"k8s.io/test-infra/prow/plugins/releasenote"
 	"k8s.io/test-infra/prow/plugins/trigger"
 	"k8s.io/test-infra/prow/plugins/verify-owners"
 	"k8s.io/test-infra/prow/plugins/wip"
-
-	"k8s.io/test-infra/prow/config"
-	_ "k8s.io/test-infra/prow/hook"
-	"k8s.io/test-infra/prow/logrusutil"
-	"k8s.io/test-infra/prow/plugins"
-	"k8s.io/test-infra/prow/plugins/lgtm"
 )
 
 type options struct {
@@ -78,6 +79,7 @@ const (
 	nonDecoratedJobsWarning = "non-decorated-jobs"
 	jobNameLengthWarning    = "long-job-names"
 	needsOkToTestWarning    = "needs-ok-to-test"
+	branchProtectionWarning = "branch-protection"
 )
 
 var allWarnings = []string{
@@ -85,6 +87,7 @@ var allWarnings = []string{
 	nonDecoratedJobsWarning,
 	jobNameLengthWarning,
 	needsOkToTestWarning,
+	branchProtectionWarning,
 }
 
 func (o *options) Validate() error {
@@ -169,6 +172,11 @@ func main() {
 	}
 	if o.warningEnabled(needsOkToTestWarning) {
 		if err := validateNeedsOkToTestLabel(cfg); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if o.warningEnabled(branchProtectionWarning) {
+		if err := validateBranchProtectionConfig(cfg); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -472,4 +480,18 @@ func validateNeedsOkToTestLabel(cfg *config.Config) error {
 		}
 	}
 	return errorutil.NewAggregate(queryErrors...)
+}
+
+func validateBranchProtectionConfig(cfg *config.Config) error {
+	var configErrors []error
+	for org := range cfg.BranchProtection.Orgs {
+		for repo := range cfg.BranchProtection.Orgs[org].Repos {
+			for branch := range cfg.BranchProtection.Orgs[org].Repos[repo].Branches {
+				if _, err := cfg.GetBranchProtection(org, repo, branch); err != nil {
+					configErrors = append(configErrors, err)
+				}
+			}
+		}
+	}
+	return errorutil.NewAggregate(configErrors...)
 }
