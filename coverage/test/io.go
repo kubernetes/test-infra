@@ -19,6 +19,7 @@ package test
 import (
 	"io/ioutil"
 	"os"
+
 	"github.com/sirupsen/logrus"
 )
 
