@@ -4,6 +4,8 @@ Configuration of Tide is located under the [prow/config.yaml](/prow/config.yaml)
 
 This document will describe the fields of the `tide` configuration and how to populate them, but you can also check out the [GoDocs](https://godoc.org/github.com/kubernetes/test-infra/prow/config#Tide) for the most up to date configuration specification.
 
+To deploy Tide for your organization or repository, please see [how to get started with prow](/prow/getting_started.md).
+
 ### General configuration
 
 The following configuration fields are available:

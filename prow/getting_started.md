@@ -88,7 +88,7 @@ being ignored unjustly.
 Run the following command to start up a basic set of prow components.
 
 ```sh
-kubectl apply -f cluster/starter.yaml
+kubectl apply -f prow/cluster/starter.yaml
 ```
 
 After a moment, the cluster components will be running.
@@ -101,6 +101,7 @@ hook         2         2         2            2           1m
 horologium   1         1         1            1           1m
 plank        1         1         1            1           1m
 sinker       1         1         1            1           1m
+tide         1         1         1            1           1m
 ```
 
 Find out your external address. It might take a couple minutes for the IP to
@@ -350,6 +351,14 @@ This results in:
 
 See [mkbuild-cluster][5] for more details about how to create/update `cluster.yaml`.
 
+## Enable merge automation using Tide
+
+PRs satisfying a set of predefined criteria can be configured to be
+automatically merged by [Tide][6].
+
+Tide can be enabled by modifying `config.yaml`.
+See [how to configure tide][7] for more details.
+
 ## Configure SSL
 
 Use [kube-lego][3] for automatic LetsEncrypt integration. If you
@@ -371,3 +380,5 @@ a separate namespace.
 [3]: https://github.com/jetstack/kube-lego
 [4]: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
 [5]: /prow/cmd/mkbuild-cluster/
+[6]: /prow/cmd/tide/README.md
+[7]: /prow/cmd/tide/config.md
