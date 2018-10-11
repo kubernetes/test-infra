@@ -25,11 +25,11 @@ import (
 
 // PodLogArtifactFetcher is used to fetch artifacts from k8s apiserver
 type PodLogArtifactFetcher struct {
-	jobAgent podLogJobAgent
+	jobAgent
 }
 
 // NewPodLogArtifactFetcher returns a PodLogArtifactFetcher using the given job agent as storage
-func NewPodLogArtifactFetcher(ja podLogJobAgent) *PodLogArtifactFetcher {
+func NewPodLogArtifactFetcher(ja jobAgent) *PodLogArtifactFetcher {
 	return &PodLogArtifactFetcher{jobAgent: ja}
 }
 
