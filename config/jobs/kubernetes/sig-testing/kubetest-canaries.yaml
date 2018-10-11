@@ -139,17 +139,13 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
   decoration_config:
-    timeout: 18500000000000 # 5h + 5m
+    timeout: 6500000000000 # 1h + 5m
   spec:
     containers:
     - command:
       - runner.sh
-      - ./scenarios/kubernetes_e2e.py
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
       - --cluster=podutil-canary-e2e
@@ -160,7 +156,7 @@ periodics:
       - --ginkgo-parallel
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --timeout=300m
+      - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
