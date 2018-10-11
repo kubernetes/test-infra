@@ -401,6 +401,34 @@ branch-protection:
 			},
 		},
 		{
+			name:     "collapse duplicated contexts",
+			branches: []string{"org/repo=master"},
+			config: `
+branch-protection:
+  protect: true
+  required_status_checks:
+    contexts:
+    - hello-world
+    - duplicate-context
+    - duplicate-context
+    - hello-world
+  orgs:
+    org:
+`,
+			expected: []requirements{
+				{
+					Org:    "org",
+					Repo:   "repo",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						RequiredStatusChecks: &github.RequiredStatusChecks{
+							Contexts: []string{"duplicate-context", "hello-world"},
+						},
+					},
+				},
+			},
+		},
+		{
 			name:     "append contexts",
 			branches: []string{"org/repo=master"},
 			config: `
