@@ -4543,23 +4543,23 @@ dashboards:
 # Blocking tests for the next release
 - name: sig-release-master-blocking
   dashboard_tab:
-  - name: build
+  - name: build-master
     test_group_name: ci-kubernetes-build
-  - name: integration
+  - name: integration-master
     test_group_name: ci-kubernetes-integration-master
-  - name: bazel-build
+  - name: bazel-build-master
     test_group_name: ci-kubernetes-bazel-build
-  - name: bazel-test
+  - name: bazel-test-master
     test_group_name: ci-kubernetes-bazel-test
-  - name: verify
+  - name: verify-master
     test_group_name: ci-kubernetes-verify-master
-  - name: kubelet
+  - name: node-kubelet-master
     test_group_name: ci-kubernetes-node-kubelet
-  - name: gci-gce
+  - name: gce-cos-master-default
     test_group_name: ci-kubernetes-e2e-gci-gce
-  - name: gci-gke
+  - name: gke-cos-master-default
     test_group_name: ci-kubernetes-e2e-gci-gke
-  - name: aws
+  - name: kops-aws-master
     test_group_name: ci-kubernetes-e2e-kops-aws
   - name: Conformance - GCE
     description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
@@ -4573,39 +4573,39 @@ dashboards:
   - name: Conformance - vSphere
     description: Runs conformance tests using e2e.test against latest kubernetes master with in-tree vSphere
     test_group_name: ci-periodic-vsphere-test-e2e-conformance
-  - name: gce-device-plugin-gpu
+  - name: gce-device-plugin-gpu-master
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
-  - name: gke-device-plugin-gpu
+  - name: gke-device-plugin-gpu-master
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu
-  - name: gke-device-plugin-gpu-p100
+  - name: gke-device-plugin-gpu-p100-master
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
-  - name: gci-gce-slow
+  - name: gce-cos-master-slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
-  - name: gci-gke-slow
+  - name: gke-cos-master-slow
     test_group_name: ci-kubernetes-e2e-gci-gke-slow
-  - name: gci-gce-serial
+  - name: gce-cos-master-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
-  - name: gci-gke-serial
+  - name: gke-cos-master-serial
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
-  - name: gci-gce-alpha-features
+  - name: gce-cos-master-alpha-features
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
-  - name: gci-gce-100
+  - name: gce-cos-master-scalability-100
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
-  - name: gce-scale-correctness
+  - name: gce-master-scale-correctness
     test_group_name: ci-kubernetes-e2e-gce-scale-correctness
-  - name: gce-scale-performance
+  - name: gce-master-scale-performance
     test_group_name: ci-kubernetes-e2e-gce-scale-performance
-  - name: gci-gce-ingress
+  - name: gce-cos-master-ingress
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
-  - name: gci-gke-ingress
+  - name: gke-cos-master-ingress
     test_group_name: ci-kubernetes-e2e-gci-gke-ingress
-  - name: gci-gce-reboot
+  - name: gce-cos-master-reboot
     test_group_name: ci-kubernetes-e2e-gci-gce-reboot
-  - name: gci-gke-reboot
+  - name: gke-cos-master-reboot
     test_group_name: ci-kubernetes-e2e-gci-gke-reboot
   - name: kubeadm-gce-master
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-master
-  - name: periodic-kubernetes-e2e-packages-pushed
+  - name: packages-pushed-master
     test_group_name: periodic-kubernetes-e2e-packages-pushed
 
 - name: sig-release-1.12-all
