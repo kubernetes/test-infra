@@ -1,0 +1,45 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
+load("@build_bazel_rules_typescript//:defs.bzl", "ts_library")
+
+ts_library(
+    name = "browser",
+    srcs = glob(
+        ["*.ts"],
+        exclude = ["*_test.ts"],
+    ),
+    deps = [
+        "@npm//:@types/google.visualization",
+    ],
+)
+
+rollup_bundle(
+    name = "browser_bundle",
+    entry_point = "gopherage/cmd/html/static/browser",
+    deps = [
+        ":browser",
+    ],
+)
+
+filegroup(
+    name = "static",
+    srcs = [
+        "browser.html",
+        ":browser_bundle.es6.js",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

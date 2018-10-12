@@ -17,31 +17,34 @@ limitations under the License.
 // JavaScript for some reason can map over arrays but nothing else.
 // Provide our own tools.
 
-export function* map(iterable, fn) {
-  for (let entry of iterable) {
+export function*
+    map<T, U>(iterable: Iterable<T>, fn: (value: T) => U): Iterable<U> {
+  for (const entry of iterable) {
     yield fn(entry);
   }
 }
 
-export function reduce(iterable, fn, initialValue) {
+export function reduce<T, U>(
+    iterable: Iterable<T>, fn: (acc: U, value: T) => U, initialValue: U): U {
   let accumulator = initialValue;
-  for (let entry of iterable) {
+  for (const entry of iterable) {
     accumulator = fn(accumulator, entry);
   }
   return accumulator;
 }
 
-export function* filter(iterable, fn) {
-  for (let entry of iterable) {
+export function*
+    filter<T>(iterable: Iterable<T>, fn: (value: T) => boolean): Iterable<T> {
+  for (const entry of iterable) {
     if (fn(entry)) {
       yield entry;
     }
   }
 }
 
-export function* enumerate(iterable) {
+export function* enumerate<T>(iterable: Iterable<T>): Iterable<[number, T]> {
   let i = 0;
-  for (let entry of iterable) {
+  for (const entry of iterable) {
     yield [i++, entry];
   }
 }
