@@ -59,7 +59,8 @@ as JSON in the `$CLONEREFS_OPTIONS` environment variable, which has the form:
                     "author": "smarterclayton",
                     "sha": "2b58234a8aee0d55918b158a3b38c292d6a95ef7"
                 }
-            ]
+            ],
+            "skip_submodules": true
         }
     ]
 }
