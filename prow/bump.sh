@@ -138,6 +138,7 @@ echo -e "Bumping: $(color-image ${images[@]}) to $(color-version ${new_version})
 for i in "${images[@]}"; do
   echo -e "  $(color-image $i): $(color-version $new_version)" >&2
   $SED -i "s/\(${i}:\)v[a-f0-9-]\+/\1${new_version}/I" cluster/*.yaml
+  $SED -i "s/\(${i}:\)v[a-f0-9-]\+/\1${new_version}/I" config.yaml
 done
 
 echo "Deploy with:" >&2
