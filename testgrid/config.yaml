@@ -2448,6 +2448,9 @@ test_groups:
 - name: pull-cluster-api-provider-gcp-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-gcp-test
   num_columns_recent: 20
+- name: pull-cluster-api-provider-vsphere-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-vsphere-test
+  num_columns_recent: 20
 - name: pull-cluster-api-provider-openstack-make
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-openstack-make
   num_columns_recent: 20
@@ -3551,6 +3554,14 @@ dashboards:
     test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
     alert_options:
       alert_mail_to_addresses: cnx+e2e@vmware.com
+
+- name: vmware-cluster-api-provider-vsphere
+  dashboard_tab:
+  - name: pr-test
+    description: Runs unit tests
+    test_group_name: pull-cluster-api-provider-vsphere-test
+    alert_options:
+      alert_mail_to_addresses: cnx+clusterapi@vmware.com
 
 # Alibaba Cloud Provider Dashboard
 - name: conformance-alibaba-cloud-provider
@@ -5815,6 +5826,11 @@ dashboards:
     test_group_name: ci-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
     description: 'Kubernetes Integration tests for Kubernetes Master branch and Driver Master branch'
 
+- name: sig-cluster-lifecycle-cluster-api-provider-vsphere
+  dashboard_tab:
+  - name: pr-test
+    test_group_name: pull-cluster-api-provider-vsphere-test
+
 - name: sig-cluster-lifecycle-cluster-api-provider-openstack
   dashboard_tab:
   - name: pr-make
@@ -7362,6 +7378,7 @@ dashboard_groups:
   - sig-cluster-lifecycle-multi-platform
   - sig-cluster-lifecycle-cluster-api
   - sig-cluster-lifecycle-cluster-api-provider-aws
+  - sig-cluster-lifecycle-cluster-api-provider-vsphere
   - sig-cluster-lifecycle-cluster-api-provider-gcp
   - sig-cluster-lifecycle-cluster-api-provider-openstack
   - sig-cluster-lifecycle-kops
@@ -7450,3 +7467,4 @@ dashboard_groups:
   - vmware-presubmits-cloud-provider-vsphere
   - vmware-conformance
   - vmware-conformance-cloud-provider
+  - vmware-cluster-api-provider-vsphere
