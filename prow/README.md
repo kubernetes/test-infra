@@ -70,7 +70,7 @@ Assuming your prow components have multiple replicas, this will result in no dow
 
 Update your deployment (optionally build/pushing the image) to a new image with:
 ```shell
-# export STABLE_PROW_REPO=gcr.io/k8s-prow  # optionally override project
+# export PROW_REPO_OVERRIDE=gcr.io/k8s-prow  # optionally override project
 bump.sh --list  # Choose a recent published version
 bump.sh --push  # Build and push the current repo state (and use this version).
 bump.sh v20181002-deadbeef # Use a specific version
