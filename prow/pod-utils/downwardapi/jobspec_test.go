@@ -173,7 +173,6 @@ func TestEnvironmentForSpec(t *testing.T) {
 				"JOB_NAME":    "job-name",
 				"BUILD_ID":    "0",
 				"PROW_JOB_ID": "prowjob",
-				"buildId":     "0",
 				"JOB_TYPE":    "periodic",
 				"JOB_SPEC":    `{"type":"periodic","job":"job-name","buildid":"0","prowjobid":"prowjob","refs":{}}`,
 			},
