@@ -65,6 +65,8 @@ func run(flags *flags, cmd *cobra.Command, args []string) {
 		log.Fatalf("Couldn't read JavaScript: %v", err)
 	}
 
+	// If we're under bazel, move into BUILD_WORKING_DIRECTORY so that manual
+	// invocations of bazel run are less confusing.
 	if wd, ok := os.LookupEnv("BUILD_WORKING_DIRECTORY"); ok {
 		if err := os.Chdir(wd); err != nil {
 			log.Fatalf("Couldn't chdir into expected working directory.")

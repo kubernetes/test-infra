@@ -16,12 +16,12 @@ limitations under the License.
 
 import {filter, reduce} from './utils';
 
-interface Pos {
+export interface Pos {
   line: number;
   col: number;
 }
 
-interface Block {
+export interface Block {
   statements: number;
   hits: number;
   start: Pos;

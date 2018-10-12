@@ -40,7 +40,7 @@ periodics:
         bazel run //gopherage -- merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
         bazel run //gopherage -- merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
         bazel run //gopherage -- diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/conformance.cov"
-        bazel run //gopherage -- html "${ARTIFACTS}/conformance.cov" "${ARTIFACTS}/conformance.html"
+        bazel run //gopherage -- html "${ARTIFACTS}/conformance.cov" > "${ARTIFACTS}/conformance.html"
       env:
       - name: KUBE_BUILD_WITH_COVERAGE
         value: "true"
