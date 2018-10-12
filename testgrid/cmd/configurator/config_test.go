@@ -346,6 +346,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubernetes-sigs/cluster-api",
 		"kubernetes-sigs/cluster-api-provider-aws",
 		"kubernetes-sigs/cluster-api-provider-gcp",
+		"kubernetes-sigs/cluster-api-provider-vsphere",
 		"kubernetes-sigs/cluster-api-provider-openstack",
 		"kubernetes-sigs/poseidon",
 		"kubernetes-sigs/structured-merge-diff",
