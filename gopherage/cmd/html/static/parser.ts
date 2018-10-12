@@ -14,48 +14,59 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {reduce, filter} from './utils.js';
+import {filter, reduce} from './utils';
+
+interface Pos {
+  line: number;
+  col: number;
+}
+
+interface Block {
+  statements: number;
+  hits: number;
+  start: Pos;
+  end: Pos;
+}
+
 
 export class FileCoverage {
-  constructor(filename, fileNumber) {
-    this.filename = filename;
-    this.fileNumber = fileNumber;
-    this.blocks = [];
-  }
+  blocks: Block[] = [];
 
-  addBlock(block) {
+  constructor(readonly filename: string, readonly fileNumber: number) {}
+
+  addBlock(block: Block) {
     this.blocks.push(block);
   }
 
-  get totalStatements() {
+  get totalStatements(): number {
     return this.blocks.reduce((acc, b) => acc + b.statements, 0);
   }
 
-  get coveredStatements() {
-    return this.blocks.reduce((acc, b) => acc + (b.hits > 0 ? b.statements : 0), 0);
+  get coveredStatements(): number {
+    return this.blocks.reduce(
+        (acc, b) => acc + (b.hits > 0 ? b.statements : 0), 0);
   }
 }
 
 export class Coverage {
-  constructor(mode, prefix) {
-    this.mode = mode;
-    this.prefix = prefix || '';
-    this.files = new Map();
-  }
+  files = new Map<string, FileCoverage>();
 
-  addFile(file) {
+  constructor(readonly mode: string, readonly prefix = '') {}
+
+  addFile(file: FileCoverage): void {
     this.files.set(file.filename, file);
   }
 
-  getFile(name) {
+  getFile(name: string): FileCoverage|undefined {
     return this.files.get(name);
   }
 
-  getFilesWithPrefix(prefix) {
-    return new Map(filter(this.files.entries(), ([k]) => k.startsWith(this.prefix + prefix)));
+  getFilesWithPrefix(prefix: string): Map<string, FileCoverage> {
+    return new Map(filter(
+        this.files.entries(), ([k]) => k.startsWith(this.prefix + prefix)));
   }
 
-  getCoverageForPrefix(prefix) {
+  getCoverageForPrefix(prefix: string): Coverage {
     const subCoverage = new Coverage(this.mode, this.prefix + prefix);
     for (const [filename, file] of this.files) {
       if (filename.startsWith(this.prefix + prefix)) {
@@ -65,9 +76,9 @@ export class Coverage {
     return subCoverage;
   }
 
-  get children() {
+  get children(): Map<string, Coverage> {
     const children = new Map();
-    for (let path of this.files.keys()) {
+    for (const path of this.files.keys()) {
       let [dir, rest] = path.substr(this.prefix.length).split('/', 2);
       if (!children.has(dir)) {
         if (rest) {
@@ -79,42 +90,46 @@ export class Coverage {
     return children;
   }
 
-  get basename() {
+  get basename(): string {
     if (this.prefix.endsWith('/')) {
-      return this.prefix.substring(0, this.prefix.length - 1).split('/').pop() + '/';
+      return this.prefix.substring(0, this.prefix.length - 1).split('/').pop() +
+          '/';
     }
-    return this.prefix.split('/').pop();
+    return this.prefix.split('/').pop()!;
   }
 
-  get totalStatements() {
+  get totalStatements(): number {
     return reduce(this.files.values(), (acc, f) => acc + f.totalStatements, 0);
   }
 
-  get coveredStatements() {
-    return reduce(this.files.values(), (acc, f) => acc + f.coveredStatements, 0);
+  get coveredStatements(): number {
+    return reduce(
+        this.files.values(), (acc, f) => acc + f.coveredStatements, 0);
   }
 
-  get totalFiles() {
+  get totalFiles(): number {
     return this.files.size;
   }
 
-  get coveredFiles() {
-    return reduce(this.files.values(), (acc, f) => acc + (f.coveredStatements > 0 ? 1 : 0), 0);
+  get coveredFiles(): number {
+    return reduce(
+        this.files.values(),
+        (acc, f) => acc + (f.coveredStatements > 0 ? 1 : 0), 0);
   }
 }
 
-export function parseCoverage(content) {
-  const lines = content.split("\n");
-  const modeLine = lines.shift();
+export function parseCoverage(content: string): Coverage {
+  const lines = content.split('\n');
+  const modeLine = lines.shift()!;
   const [modeLabel, mode] = modeLine.split(':').map(x => x.trim());
-  if (modeLabel !== "mode") {
-    throw new Error("Expected to start with mode line.");
+  if (modeLabel !== 'mode') {
+    throw new Error('Expected to start with mode line.');
   }
 
   const coverage = new Coverage(mode);
   let fileCounter = 0;
   for (const line of lines) {
-    if (line === "") {
+    if (line === '') {
       continue;
     }
     const {filename, ...block} = parseLine(line);
@@ -129,7 +144,7 @@ export function parseCoverage(content) {
   return coverage;
 }
 
-function parseLine(line) {
+function parseLine(line: string): Block&{filename: string} {
   const [filename, block] = line.split(':');
   const [positions, statements, hits] = block.split(' ');
   const [start, end] = positions.split(',');
@@ -137,8 +152,8 @@ function parseLine(line) {
   const [endLine, endCol] = end.split('.').map(parseInt);
   return {
     filename,
-    statements: parseInt(statements),
-    hits: Math.max(0, parseInt(hits)),
+    statements: Number(statements),
+    hits: Math.max(0, Number(hits)),
     start: {
       line: startLine,
       col: startCol,
