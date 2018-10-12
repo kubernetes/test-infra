@@ -292,7 +292,24 @@ func (qm *QueryMap) ForRepo(org, repo string) TideQueries {
 // * a label that is in both the labels and missing_labels section
 // * a branch that is in both included and excluded branch set.
 func (tq *TideQuery) Validate() error {
-	orgs, repos, excludedRepos := sets.NewString(), sets.NewString(), sets.NewString()
+	duplicates := func(field string, list []string) error {
+		dups := sets.NewString()
+		seen := sets.NewString()
+		for _, elem := range list {
+			if seen.Has(elem) {
+				dups.Insert(elem)
+			} else {
+				seen.Insert(elem)
+			}
+		}
+		dupCount := len(list) - seen.Len()
+		if dupCount == 0 {
+			return nil
+		}
+		return fmt.Errorf("%q contains %d duplicate entries: %s", field, dupCount, strings.Join(dups.List(), ", "))
+	}
+
+	orgs := sets.NewString()
 	for o := range tq.Orgs {
 		if strings.Contains(tq.Orgs[o], "/") {
 			return fmt.Errorf("orgs[%d]: %q contains a '/' which is not valid", o, tq.Orgs[o])
@@ -302,8 +319,8 @@ func (tq *TideQuery) Validate() error {
 		}
 		orgs.Insert(tq.Orgs[o])
 	}
-	if dups := len(tq.Orgs) - orgs.Len(); dups != 0 {
-		return fmt.Errorf("'orgs' contains %d duplicate entries", dups)
+	if err := duplicates("orgs", tq.Orgs); err != nil {
+		return err
 	}
 
 	for r := range tq.Repos {
@@ -314,10 +331,9 @@ func (tq *TideQuery) Validate() error {
 		if orgs.Has(parts[0]) {
 			return fmt.Errorf("repos[%d]: %q is already included via org: %q", r, tq.Repos[r], parts[0])
 		}
-		repos.Insert(tq.Repos[r])
 	}
-	if dups := len(tq.Repos) - repos.Len(); dups != 0 {
-		return fmt.Errorf("'repos' contains %d duplicate entries", dups)
+	if err := duplicates("repos", tq.Repos); err != nil {
+		return err
 	}
 
 	if len(tq.Orgs) == 0 && len(tq.Repos) == 0 {
@@ -333,18 +349,29 @@ func (tq *TideQuery) Validate() error {
 			return fmt.Errorf("excludedRepos[%d]: %q has no effect because org %q is not included", er, tq.ExcludedRepos[er], parts[0])
 		}
 		// Note: At this point we also know that this excludedRepo is not found in 'repos'.
-		excludedRepos.Insert(tq.ExcludedRepos[er])
 	}
-	if dups := len(tq.ExcludedRepos) - excludedRepos.Len(); dups != 0 {
-		return fmt.Errorf("'excludedRepos' contains %d duplicate entries", dups)
+	if err := duplicates("excludedRepos", tq.ExcludedRepos); err != nil {
+		return err
 	}
 
 	if invalids := sets.NewString(tq.Labels...).Intersection(sets.NewString(tq.MissingLabels...)); len(invalids) > 0 {
 		return fmt.Errorf("the labels: %q are both required and forbidden", invalids.List())
 	}
+	if err := duplicates("labels", tq.Labels); err != nil {
+		return err
+	}
+	if err := duplicates("missingLabels", tq.MissingLabels); err != nil {
+		return err
+	}
 
 	if len(tq.ExcludedBranches) > 0 && len(tq.IncludedBranches) > 0 {
 		return errors.New("both 'includedBranches' and 'excludedBranches' are specified ('excludedBranches' have no effect)")
+	}
+	if err := duplicates("includedBranches", tq.IncludedBranches); err != nil {
+		return err
+	}
+	if err := duplicates("excludedBranches", tq.ExcludedBranches); err != nil {
+		return err
 	}
 
 	return nil
