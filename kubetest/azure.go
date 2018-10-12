@@ -428,7 +428,7 @@ func (c *Cluster) createCluster() error {
 
 func (c *Cluster) buildHyperKube() error {
 
-	os.Setenv("VERSION", fmt.Sprintf("win-e2e-%v", os.Getenv("BUILD_NUMBER")))
+	os.Setenv("VERSION", fmt.Sprintf("win-e2e-%v", os.Getenv("BUILD_ID")))
 
 	cwd, _ := os.Getwd()
 	log.Printf("CWD %v", cwd)
@@ -500,7 +500,7 @@ func getZipBuildScript(buildScriptURL string, retry int) (string, error) {
 
 func (c *Cluster) buildWinZip() error {
 
-	zipName := fmt.Sprintf("%s.zip", os.Getenv("BUILD_NUMBER"))
+	zipName := fmt.Sprintf("%s.zip", os.Getenv("BUILD_ID"))
 	buildFolder := path.Join(os.Getenv("HOME"), "winbuild")
 	zipPath := path.Join(os.Getenv("HOME"), zipName)
 	log.Printf("Building %s", zipName)

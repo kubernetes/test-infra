@@ -662,7 +662,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 								{
 									Env: []v1.EnvVar{
 										{
-											Name:  "BUILD_NUMBER",
+											Name:  "BUILD_ID",
 											Value: "0987654321",
 										},
 									},
