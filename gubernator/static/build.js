@@ -31,7 +31,7 @@ function fix_timestamps() {
 		}
 	}
 	replace('timestamp', 'YYYY-MM-DD HH:mm z')
-	replace('shorttimestamp', 'DD HH:mm')
+	replace('shorttimestamp', 'MM-DD HH:mm')
 	replace('humantimestamp', function(t) {
 		var fmt = 'MMM D, Y';
 		if (t.isAfter(moment().startOf('day'))) {
