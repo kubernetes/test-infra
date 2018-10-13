@@ -69,6 +69,18 @@ func VolumeMountPaths() []string {
 	return []string{logMountPath, codeMountPath, toolsMountPath, gcsCredentialsMountPath}
 }
 
+// GetLabelsAndAnnotations returns a standard set of labels to add to pod/build/etc resources.
+func GetLabelsAndAnnotations(pj kube.ProwJob) (map[string]string, map[string]string) {
+	podLabels := make(map[string]string)
+	for k, v := range pj.ObjectMeta.Labels {
+		podLabels[k] = v
+	}
+	podLabels[kube.CreatedByProw] = "true"
+	podLabels[kube.ProwJobTypeLabel] = string(pj.Spec.Type)
+	podLabels[kube.ProwJobIDLabel] = pj.ObjectMeta.Name
+	return podLabels, map[string]string{kube.ProwJobAnnotation: pj.Spec.Job}
+}
+
 // ProwJobToPod converts a ProwJob to a Pod that will run the tests.
 func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 	if pj.Spec.PodSpec == nil {
@@ -92,20 +104,12 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 		}
 	}
 
-	podLabels := make(map[string]string)
-	for k, v := range pj.ObjectMeta.Labels {
-		podLabels[k] = v
-	}
-	podLabels[kube.CreatedByProw] = "true"
-	podLabels[kube.ProwJobTypeLabel] = string(pj.Spec.Type)
-	podLabels[kube.ProwJobIDLabel] = pj.ObjectMeta.Name
+	podLabels, annotations := GetLabelsAndAnnotations(pj)
 	return &v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   pj.ObjectMeta.Name,
-			Labels: podLabels,
-			Annotations: map[string]string{
-				kube.ProwJobAnnotation: pj.Spec.Job,
-			},
+			Name:        pj.ObjectMeta.Name,
+			Labels:      podLabels,
+			Annotations: annotations,
 		},
 		Spec: *spec,
 	}, nil
