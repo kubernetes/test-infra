@@ -508,11 +508,11 @@ func (c *Controller) getBuildID(name string) (string, error) {
 
 func getPodBuildID(pod *kube.Pod) string {
 	for _, env := range pod.Spec.Containers[0].Env {
-		if env.Name == "BUILD_NUMBER" {
+		if env.Name == "BUILD_ID" {
 			return env.Value
 		}
 	}
-	logrus.Warningf("BUILD_NUMBER was not found in pod %q: streaming logs from deck will not work", pod.ObjectMeta.Name)
+	logrus.Warningf("BUILD_ID was not found in pod %q: streaming logs from deck will not work", pod.ObjectMeta.Name)
 	return ""
 }
 

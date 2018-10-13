@@ -208,7 +208,7 @@ Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 `JOB_SPEC` | ✓ | ✓ | ✓ | ✓ | JSON-encoded job specification. | see below
 `BUILD_ID` | ✓ | ✓ | ✓ | ✓ | Unique build number for each run. | `12345`
 `PROW_JOB_ID` | ✓ | ✓ | ✓ | ✓ | Unique identifier for the owning Prow Job. | `1ce07fa2-0831-11e8-b07e-0a58ac101036`
-`BUILD_NUMBER` | ✓ | ✓ | ✓ | ✓ | Unique build number for each run. | `12345`
+`BUILD_ID` | ✓ | ✓ | ✓ | ✓ | Unique build number for each run. | `12345`
 `REPO_OWNER` | | ✓ | ✓ | ✓ | GitHub org that triggered the job. | `kubernetes`
 `REPO_NAME` | | ✓ | ✓ | ✓ | GitHub repo that triggered the job. | `test-infra`
 `PULL_BASE_REF` | | ✓ | ✓ | ✓ | Ref name of the base branch. | `master`
@@ -216,11 +216,6 @@ Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 `PULL_REFS` | | ✓ | ✓ | ✓ | All refs to test. | `master:123abc,5:qwe456`
 `PULL_NUMBER` | | | | ✓ | Pull request number. | `5`
 `PULL_PULL_SHA` | | | | ✓ | Pull request head SHA. | `qwe456`
-
-Note: to not overwrite the Jenkins `$BUILD_NUMBER` variable, the build identifier
-will be passed as `$buildId` to Jenkins jobs.
-
-Note: Use of `$BUILD_NUMBER` is deprecated. Please use `$BUILD_ID` instead.
 
 Note: Examples of the JSON-encoded job specification follow for the different
 job types:
