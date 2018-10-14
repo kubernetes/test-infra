@@ -554,6 +554,9 @@ plugins:
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - trigger
 
+  GoogleCloudPlatform/k8s-cluster-bundle:
+  - trigger
+
   client-go/unofficial-docs:
   - approve
   - assign
