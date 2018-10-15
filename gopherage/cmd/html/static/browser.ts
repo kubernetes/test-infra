@@ -83,31 +83,32 @@ function coveragesForPrefix(coverages: Coverage[], prefix: string):
   keys.sort();
   console.log(m);
   return map(
-      keys, (k) => ({
-              c: [({v: k} as {v: number | string, f?: string})].concat(
-                  m.get(k)!.map((x, i) => {
-                    if (!x) {
-                      return {v: ''};
-                    }
-                    const next = m.get(k)![i + 1];
-                    const coverage = x.coveredStatements / x.totalStatements;
-                    let arrow = '';
-                    if (next) {
-                      const nextCoverage =
-                          next.coveredStatements / next.totalStatements;
-                      if (coverage > nextCoverage) {
-                        arrow = '▲';
-                      } else if (coverage < nextCoverage) {
-                        arrow = '▼';
-                      }
-                    }
-                    return {
-                      v: coverage,
-                          f: `<span style="float: left; margin-right: 5px;">${
-                              arrow}</span> ${(coverage * 100).toFixed(1)}%`
-                    }
-                  }))
-            }));
+      keys,
+      (k) => ({
+        c: [({v: k} as {v: number | string, f?: string})].concat(
+            m.get(k)!.map((x, i) => {
+              if (!x) {
+                return {v: ''};
+              }
+              const next = m.get(k)![i + 1];
+              const coverage = x.coveredStatements / x.totalStatements;
+              let arrow = '';
+              if (next) {
+                const nextCoverage =
+                    next.coveredStatements / next.totalStatements;
+                if (coverage > nextCoverage) {
+                  arrow = '▲';
+                } else if (coverage < nextCoverage) {
+                  arrow = '▼';
+                }
+              }
+              const percentage = `${(coverage * 100).toFixed(1)}%`;
+              return {
+                v: coverage,
+                    f: `<span class="arrow">${arrow}</span> ${percentage}%`,
+              }
+            }))
+      }));
 }
 
 function mergeMaps<T, U>(maps: Iterable<Map<T, U>>): Map<T, U[]> {
