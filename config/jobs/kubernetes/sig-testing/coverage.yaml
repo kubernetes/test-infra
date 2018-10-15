@@ -46,3 +46,16 @@ periodics:
         value: "true"
       securityContext:
         privileged: true
+- interval: 1h
+  name: ci-can-we-upload-large-files
+  decorate: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      command:
+      - bash
+      args:
+      - -e
+      - -c
+      - |
+        dd if=/dev/zero of="${ARTIFACTS}/ten_megabytes_of_zeros" count=10240 bs=1024
