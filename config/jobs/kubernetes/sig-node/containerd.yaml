@@ -434,29 +434,6 @@ periodics:
       - --timeout=90m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
-- interval: 1h
-  name: ci-cri-containerd-e2e-gci-gce-etcd3
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --repo=github.com/containerd/cri=master
-      - --timeout=70
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
-      - --ginkgo-parallel=25
-      - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
-
 - interval: 2h
   name: ci-cri-containerd-e2e-gci-gce-flaky
   labels:
