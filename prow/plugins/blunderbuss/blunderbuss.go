@@ -32,11 +32,12 @@ import (
 )
 
 const (
-	pluginName = "blunderbuss"
+	// PluginName is the name for this plugin
+	PluginName = "blunderbuss"
 )
 
 func init() {
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
+	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {

@@ -32,8 +32,10 @@ import (
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/plugins/approve"
 	"k8s.io/test-infra/prow/plugins/blockade"
+	"k8s.io/test-infra/prow/plugins/blunderbuss"
 	"k8s.io/test-infra/prow/plugins/cherrypickunapproved"
 	"k8s.io/test-infra/prow/plugins/hold"
+	"k8s.io/test-infra/prow/plugins/owners-label"
 	"k8s.io/test-infra/prow/plugins/releasenote"
 	"k8s.io/test-infra/prow/plugins/trigger"
 	"k8s.io/test-infra/prow/plugins/verify-owners"
@@ -78,6 +80,7 @@ const (
 	nonDecoratedJobsWarning = "non-decorated-jobs"
 	jobNameLengthWarning    = "long-job-names"
 	needsOkToTestWarning    = "needs-ok-to-test"
+	validateOwnersWarning   = "validate-owners"
 )
 
 var allWarnings = []string{
@@ -85,6 +88,7 @@ var allWarnings = []string{
 	nonDecoratedJobsWarning,
 	jobNameLengthWarning,
 	needsOkToTestWarning,
+	validateOwnersWarning,
 }
 
 func (o *options) Validate() error {
@@ -169,6 +173,11 @@ func main() {
 	}
 	if o.warningEnabled(needsOkToTestWarning) {
 		if err := validateNeedsOkToTestLabel(cfg); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if o.warningEnabled(validateOwnersWarning) {
+		if err := verifyOwnersPlugin(pcfg); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -306,9 +315,13 @@ func newOrgRepoConfig(orgExceptions map[string]sets.String, repos sets.String) *
 	}
 }
 
+// orgRepoConfig describes a set of repositories with an explicit
+// whitelist and a mapping of blacklists for owning orgs
 type orgRepoConfig struct {
+	// orgExceptions holds explicit blacklists of repos for owning orgs
 	orgExceptions map[string]sets.String
-	repos         sets.String
+	// repos is a whitelist of repos
+	repos sets.String
 }
 
 func (c *orgRepoConfig) items() []string {
@@ -396,6 +409,50 @@ func (c *orgRepoConfig) intersection(c2 *orgRepoConfig) *orgRepoConfig {
 	return res
 }
 
+// union returns a new orgRepoConfig that represents the set union of the
+// repos specified by the receiver and the parameter orgRepoConfigs
+func (c *orgRepoConfig) union(c2 *orgRepoConfig) *orgRepoConfig {
+	res := &orgRepoConfig{
+		orgExceptions: make(map[string]sets.String),
+		repos:         sets.NewString(),
+	}
+
+	for org, excepts1 := range c.orgExceptions {
+		// keep only items in both blacklists that are not in the
+		// explicit repo whitelists for the other configuration;
+		// we know from how the orgRepoConfigs are constructed that
+		// a org blacklist won't intersect it's own repo whitelist
+		pruned := excepts1.Difference(c2.repos)
+		if excepts2, ok := c2.orgExceptions[org]; ok {
+			res.orgExceptions[org] = pruned.Intersection(excepts2.Difference(c.repos))
+		} else {
+			res.orgExceptions[org] = pruned
+		}
+	}
+
+	for org, excepts2 := range c2.orgExceptions {
+		// update any blacklists not previously updated
+		if _, exists := res.orgExceptions[org]; !exists {
+			res.orgExceptions[org] = excepts2.Difference(c.repos)
+		}
+	}
+
+	// we need to prune out repos in the whitelists which are
+	// covered by an org already; we know from above that no
+	// org blacklist in the result will contain a repo whitelist
+	for _, repo := range c.repos.Union(c2.repos).UnsortedList() {
+		parts := strings.SplitN(repo, "/", 2)
+		if len(parts) != 2 {
+			logrus.Warnf("org/repo %q is formatted incorrectly", repo)
+			continue
+		}
+		if _, exists := res.orgExceptions[parts[0]]; !exists {
+			res.repos.Insert(repo)
+		}
+	}
+	return res
+}
+
 func enabledOrgReposForPlugin(c *plugins.Configuration, plugin string) *orgRepoConfig {
 	orgs, repos := c.EnabledReposForPlugin(plugin)
 	orgMap := make(map[string]sets.String, len(orgs))
@@ -465,11 +522,41 @@ func validateNeedsOkToTestLabel(cfg *config.Config) error {
 			if label == lgtm.LGTMLabel {
 				for _, label := range query.MissingLabels {
 					if label == trigger.NeedsOkToTest {
-						queryErrors = append(queryErrors, fmt.Errorf("the tide query at position %d forbids the %q label and requires the %q label, which is not recommended; see https://github.com/kubernetes/test-infra/blob/master/prow/cmd/tide/maintainers.md#best-practices for more information", i, trigger.NeedsOkToTest, lgtm.LGTMLabel))
+						queryErrors = append(queryErrors, fmt.Errorf(
+							"the tide query at position %d"+
+								"forbids the %q label and requires the %q label, "+
+								"which is not recommended; "+
+								"see https://github.com/kubernetes/test-infra/blob/master/prow/cmd/tide/maintainers.md#best-practices "+
+								"for more information",
+							i, trigger.NeedsOkToTest, lgtm.LGTMLabel),
+						)
 					}
 				}
 			}
 		}
 	}
 	return errorutil.NewAggregate(queryErrors...)
+}
+
+func verifyOwnersPlugin(cfg *plugins.Configuration) error {
+	// we do not know the set of repos that use OWNERS, but we
+	// can get a reasonable proxy for this by looking at where
+	// the `approve', `blunderbuss' and `owners-label' plugins
+	// are enabled
+	approveConfig := enabledOrgReposForPlugin(cfg, approve.PluginName)
+	blunderbussConfig := enabledOrgReposForPlugin(cfg, blunderbuss.PluginName)
+	ownersLabelConfig := enabledOrgReposForPlugin(cfg, ownerslabel.PluginName)
+	ownersConfig := approveConfig.union(blunderbussConfig).union(ownersLabelConfig)
+	validateOwnersConfig := enabledOrgReposForPlugin(cfg, verifyowners.PluginName)
+
+	invalid := ownersConfig.difference(validateOwnersConfig).items()
+	if len(invalid) > 0 {
+		return fmt.Errorf("the following orgs or repos "+
+			"enable at least one plugin that uses OWNERS files (%s) "+
+			"but do not enable the %s plugin to ensure validity of OWNERS files: %v",
+			strings.Join([]string{approve.PluginName, blunderbuss.PluginName, ownerslabel.PluginName}, ", "),
+			verifyowners.PluginName, invalid,
+		)
+	}
+	return nil
 }
