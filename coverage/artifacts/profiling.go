@@ -49,10 +49,12 @@ func runProfiling(cmdArgs []string, localArtifacts *LocalArtifacts) error {
 
 	stdoutPath := localArtifacts.CovStdoutPath()
 	stdoutFile, err := os.Create(stdoutPath)
-	if err == nil {
-		stdoutFile.Write(goTestCoverStdout)
-	} else {
+	if err != nil {
 		return fmt.Errorf("error creating stdout file: %v", err)
+	}
+	_, err = stdoutFile.Write(goTestCoverStdout)
+	if err != nil {
+		return err
 	}
 	logrus.Infof("Stdout of test coverage stored in %s", stdoutPath)
 	logrus.Infof("Ends running profiling")
