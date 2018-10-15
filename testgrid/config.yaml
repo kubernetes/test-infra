@@ -4616,6 +4616,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-reboot
   - name: kubeadm-gce-master
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-master
+  - name: kubeadm-gce-stable-on-master
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
   - name: packages-pushed-master
     test_group_name: periodic-kubernetes-e2e-packages-pushed
 
