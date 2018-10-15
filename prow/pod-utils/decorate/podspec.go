@@ -19,11 +19,15 @@ package decorate
 import (
 	"fmt"
 	"path"
+	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/validation"
 
 	"k8s.io/test-infra/prow/clonerefs"
 	"k8s.io/test-infra/prow/entrypoint"
@@ -69,16 +73,69 @@ func VolumeMountPaths() []string {
 	return []string{logMountPath, codeMountPath, toolsMountPath, gcsCredentialsMountPath}
 }
 
-// GetLabelsAndAnnotations returns a standard set of labels to add to pod/build/etc resources.
-func GetLabelsAndAnnotations(pj kube.ProwJob) (map[string]string, map[string]string) {
-	podLabels := make(map[string]string)
-	for k, v := range pj.ObjectMeta.Labels {
-		podLabels[k] = v
+// LabelsAndAnnotationsForSpec returns a minimal set of labels to add to prowjobs or its owned resources.
+//
+// User-provided extraLabels and extraAnnotations values will take precedence over auto-provided values.
+func LabelsAndAnnotationsForSpec(spec kube.ProwJobSpec, extraLabels, extraAnnotations map[string]string) (map[string]string, map[string]string) {
+	jobNameForLabel := spec.Job
+	if len(jobNameForLabel) > validation.LabelValueMaxLength {
+		// TODO(fejta): consider truncating middle rather than end.
+		jobNameForLabel = strings.TrimRight(spec.Job[:validation.LabelValueMaxLength], "-")
+		logrus.Warnf("Cannot use full job name '%s' for '%s' label, will be truncated to '%s'",
+			spec.Job,
+			kube.ProwJobAnnotation,
+			jobNameForLabel,
+		)
 	}
-	podLabels[kube.CreatedByProw] = "true"
-	podLabels[kube.ProwJobTypeLabel] = string(pj.Spec.Type)
-	podLabels[kube.ProwJobIDLabel] = pj.ObjectMeta.Name
-	return podLabels, map[string]string{kube.ProwJobAnnotation: pj.Spec.Job}
+	labels := map[string]string{
+		kube.CreatedByProw:     "true",
+		kube.ProwJobTypeLabel:  string(spec.Type),
+		kube.ProwJobAnnotation: jobNameForLabel,
+	}
+	if spec.Type != kube.PeriodicJob && spec.Refs != nil {
+		labels[kube.OrgLabel] = spec.Refs.Org
+		labels[kube.RepoLabel] = spec.Refs.Repo
+		if len(spec.Refs.Pulls) > 0 {
+			labels[kube.PullLabel] = strconv.Itoa(spec.Refs.Pulls[0].Number)
+		}
+	}
+
+	for k, v := range extraLabels {
+		labels[k] = v
+	}
+
+	// let's validate labels
+	for key, value := range labels {
+		if errs := validation.IsValidLabelValue(value); len(errs) > 0 {
+			// try to use basename of a path, if path contains invalid //
+			base := filepath.Base(value)
+			if errs := validation.IsValidLabelValue(base); len(errs) == 0 {
+				labels[key] = base
+				continue
+			}
+			logrus.Warnf("Removing invalid label: key - %s, value - %s, error: %s", key, value, errs)
+			delete(labels, key)
+		}
+	}
+
+	annotations := map[string]string{
+		kube.ProwJobAnnotation: spec.Job,
+	}
+	for k, v := range extraAnnotations {
+		annotations[k] = v
+	}
+
+	return labels, annotations
+}
+
+// LabelsAndAnnotationsForJob returns a standard set of labels to add to pod/build/etc resources.
+func LabelsAndAnnotationsForJob(pj kube.ProwJob) (map[string]string, map[string]string) {
+	var extraLabels map[string]string
+	if extraLabels = pj.ObjectMeta.Labels; extraLabels == nil {
+		extraLabels = map[string]string{}
+	}
+	extraLabels[kube.ProwJobIDLabel] = pj.ObjectMeta.Name
+	return LabelsAndAnnotationsForSpec(pj.Spec, extraLabels, nil)
 }
 
 // ProwJobToPod converts a ProwJob to a Pod that will run the tests.
@@ -104,7 +161,7 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 		}
 	}
 
-	podLabels, annotations := GetLabelsAndAnnotations(pj)
+	podLabels, annotations := LabelsAndAnnotationsForJob(pj)
 	return &v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        pj.ObjectMeta.Name,

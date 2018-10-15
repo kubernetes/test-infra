@@ -17,6 +17,7 @@ limitations under the License.
 package decorate
 
 import (
+	"strconv"
 	"testing"
 	"time"
 
@@ -73,10 +74,14 @@ func TestProwJobToPod(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "pod",
 					Labels: map[string]string{
-						kube.CreatedByProw:    "true",
-						kube.ProwJobTypeLabel: "presubmit",
-						kube.ProwJobIDLabel:   "pod",
-						"needstobe":           "inherited",
+						kube.CreatedByProw:     "true",
+						kube.ProwJobTypeLabel:  "presubmit",
+						kube.ProwJobIDLabel:    "pod",
+						"needstobe":            "inherited",
+						kube.OrgLabel:          "org-name",
+						kube.RepoLabel:         "repo-name",
+						kube.PullLabel:         "1",
+						kube.ProwJobAnnotation: "job-name",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -165,10 +170,14 @@ func TestProwJobToPod(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "pod",
 					Labels: map[string]string{
-						kube.CreatedByProw:    "true",
-						kube.ProwJobTypeLabel: "presubmit",
-						kube.ProwJobIDLabel:   "pod",
-						"needstobe":           "inherited",
+						kube.CreatedByProw:     "true",
+						kube.ProwJobTypeLabel:  "presubmit",
+						kube.ProwJobIDLabel:    "pod",
+						"needstobe":            "inherited",
+						kube.OrgLabel:          "org-name",
+						kube.RepoLabel:         "repo-name",
+						kube.PullLabel:         "1",
+						kube.ProwJobAnnotation: "job-name",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -393,10 +402,14 @@ func TestProwJobToPod(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "pod",
 					Labels: map[string]string{
-						kube.CreatedByProw:    "true",
-						kube.ProwJobTypeLabel: "presubmit",
-						kube.ProwJobIDLabel:   "pod",
-						"needstobe":           "inherited",
+						kube.CreatedByProw:     "true",
+						kube.ProwJobTypeLabel:  "presubmit",
+						kube.ProwJobIDLabel:    "pod",
+						"needstobe":            "inherited",
+						kube.OrgLabel:          "org-name",
+						kube.RepoLabel:         "repo-name",
+						kube.PullLabel:         "1",
+						kube.ProwJobAnnotation: "job-name",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -622,10 +635,14 @@ func TestProwJobToPod(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "pod",
 					Labels: map[string]string{
-						kube.CreatedByProw:    "true",
-						kube.ProwJobTypeLabel: "presubmit",
-						kube.ProwJobIDLabel:   "pod",
-						"needstobe":           "inherited",
+						kube.CreatedByProw:     "true",
+						kube.ProwJobTypeLabel:  "presubmit",
+						kube.ProwJobIDLabel:    "pod",
+						"needstobe":            "inherited",
+						kube.OrgLabel:          "org-name",
+						kube.RepoLabel:         "repo-name",
+						kube.PullLabel:         "1",
+						kube.ProwJobAnnotation: "job-name",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -863,10 +880,14 @@ func TestProwJobToPod(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "pod",
 					Labels: map[string]string{
-						kube.CreatedByProw:    "true",
-						kube.ProwJobTypeLabel: "presubmit",
-						kube.ProwJobIDLabel:   "pod",
-						"needstobe":           "inherited",
+						kube.CreatedByProw:     "true",
+						kube.ProwJobTypeLabel:  "presubmit",
+						kube.ProwJobIDLabel:    "pod",
+						"needstobe":            "inherited",
+						kube.OrgLabel:          "org-name",
+						kube.RepoLabel:         "repo-name",
+						kube.PullLabel:         "1",
+						kube.ProwJobAnnotation: "job-name",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -1091,10 +1112,11 @@ func TestProwJobToPod(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "pod",
 					Labels: map[string]string{
-						kube.CreatedByProw:    "true",
-						kube.ProwJobTypeLabel: "periodic",
-						kube.ProwJobIDLabel:   "pod",
-						"needstobe":           "inherited",
+						kube.CreatedByProw:     "true",
+						kube.ProwJobTypeLabel:  "periodic",
+						kube.ProwJobIDLabel:    "pod",
+						"needstobe":            "inherited",
+						kube.ProwJobAnnotation: "job-name",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -1269,10 +1291,14 @@ func TestProwJobToPod(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "pod",
 					Labels: map[string]string{
-						kube.CreatedByProw:    "true",
-						kube.ProwJobTypeLabel: "presubmit",
-						kube.ProwJobIDLabel:   "pod",
-						"needstobe":           "inherited",
+						kube.CreatedByProw:     "true",
+						kube.ProwJobTypeLabel:  "presubmit",
+						kube.ProwJobIDLabel:    "pod",
+						"needstobe":            "inherited",
+						kube.OrgLabel:          "org-name",
+						kube.RepoLabel:         "repo-name",
+						kube.PullLabel:         "1",
+						kube.ProwJobAnnotation: "job-name",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -1400,14 +1426,15 @@ func TestProwJobToPod(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		t.Logf("test run #%d", i)
-		pj := kube.ProwJob{ObjectMeta: metav1.ObjectMeta{Name: test.podName, Labels: test.labels}, Spec: test.pjSpec}
-		got, err := ProwJobToPod(pj, test.buildID)
-		if err != nil {
-			t.Errorf("unexpected error: %v", err)
-		}
-		if !equality.Semantic.DeepEqual(got, test.expected) {
-			t.Errorf("expected pod diff:\n%s", diff.ObjectReflectDiff(test.expected, got))
-		}
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			pj := kube.ProwJob{ObjectMeta: metav1.ObjectMeta{Name: test.podName, Labels: test.labels}, Spec: test.pjSpec}
+			got, err := ProwJobToPod(pj, test.buildID)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+			if !equality.Semantic.DeepEqual(got, test.expected) {
+				t.Errorf("expected pod diff:\n%s", diff.ObjectReflectDiff(test.expected, got))
+			}
+		})
 	}
 }

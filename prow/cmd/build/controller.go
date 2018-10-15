@@ -363,7 +363,7 @@ func makeBuild(pj prowjobv1.ProwJob, buildID string) (*buildv1alpha1.Build, erro
 	if err != nil {
 		return nil, fmt.Errorf("failed EnvForSpec: %v", err)
 	}
-	podLabels, annotations := decorate.GetLabelsAndAnnotations(pj)
+	podLabels, annotations := decorate.LabelsAndAnnotationsForJob(pj)
 	b := buildv1alpha1.Build{
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: annotations,
