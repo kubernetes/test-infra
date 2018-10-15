@@ -85,9 +85,8 @@ const (
 	jobTypeEnv   = "JOB_TYPE"
 	prowJobIDEnv = "PROW_JOB_ID"
 
-	buildIDEnv        = "BUILD_ID"
-	prowBuildIDEnv    = "BUILD_NUMBER" // Deprecated, will be removed in the future.
-	jenkinsBuildIDEnv = "buildId"      // Deprecated, will be removed in the future.
+	buildIDEnv     = "BUILD_ID"
+	prowBuildIDEnv = "BUILD_NUMBER" // Deprecated, will be removed in the future.
 
 	repoOwnerEnv   = "REPO_OWNER"
 	repoNameEnv    = "REPO_NAME"
@@ -113,8 +112,6 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 	// and in both $buildId and $BUILD_NUMBER for Jenkins
 	if spec.agent == kube.KubernetesAgent {
 		env[prowBuildIDEnv] = spec.BuildID
-	} else if spec.agent == kube.JenkinsAgent {
-		env[jenkinsBuildIDEnv] = spec.BuildID
 	}
 
 	raw, err := json.Marshal(spec)
@@ -142,7 +139,7 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 
 // EnvForType returns the slice of environment variables to export for jobType
 func EnvForType(jobType kube.ProwJobType) []string {
-	baseEnv := []string{jobNameEnv, JobSpecEnv, jobTypeEnv, prowJobIDEnv, buildIDEnv, prowBuildIDEnv, jenkinsBuildIDEnv}
+	baseEnv := []string{jobNameEnv, JobSpecEnv, jobTypeEnv, prowJobIDEnv, buildIDEnv, prowBuildIDEnv}
 	refsEnv := []string{repoOwnerEnv, repoNameEnv, pullBaseRefEnv, pullBaseShaEnv, pullRefsEnv}
 	pullEnv := []string{pullNumberEnv, pullPullShaEnv}
 

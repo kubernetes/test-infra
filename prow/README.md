@@ -208,7 +208,6 @@ Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 `JOB_SPEC` | ✓ | ✓ | ✓ | ✓ | JSON-encoded job specification. | see below
 `BUILD_ID` | ✓ | ✓ | ✓ | ✓ | Unique build number for each run. | `12345`
 `PROW_JOB_ID` | ✓ | ✓ | ✓ | ✓ | Unique identifier for the owning Prow Job. | `1ce07fa2-0831-11e8-b07e-0a58ac101036`
-`BUILD_ID` | ✓ | ✓ | ✓ | ✓ | Unique build number for each run. | `12345`
 `REPO_OWNER` | | ✓ | ✓ | ✓ | GitHub org that triggered the job. | `kubernetes`
 `REPO_NAME` | | ✓ | ✓ | ✓ | GitHub repo that triggered the job. | `test-infra`
 `PULL_BASE_REF` | | ✓ | ✓ | ✓ | Ref name of the base branch. | `master`

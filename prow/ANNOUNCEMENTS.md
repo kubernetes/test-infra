@@ -30,6 +30,7 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *October 12, 2018* Removed deprecated `buildId` environment variable from prow jobs. Use `BUILD_ID.`
  - *October 3, 2018* `-github-token-file` replaced with
     `-github-token-path` for consistency with `branchprotector` and
     `peribolos` which were already using `-github-token-path`.
