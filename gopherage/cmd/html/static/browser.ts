@@ -17,7 +17,6 @@ limitations under the License.
 import {Coverage, FileCoverage, parseCoverage} from './parser';
 import {enumerate, map} from './utils';
 
-declare const google: any;
 declare const coverage: string;
 
 let coverageFiles: Coverage[] = [];
@@ -146,11 +145,11 @@ function drawTable(): void {
   }
 
   const table =
-      new google.visualization.Table(document.getElementById('table'));
+      new google.visualization.Table(document.getElementById('table')!);
   table.draw(dataTable, {allowHtml: true});
 
   google.visualization.events.addListener(table, 'select', () => {
-    const child = rows[table.getSelection()[0].row].c[0].v as string;
+    const child = rows[table.getSelection()[0].row!].c[0].v as string;
     if (child.endsWith('/')) {
       location.hash = prefix + child;
     } else {
