@@ -26,19 +26,20 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/repoowners"
 )
 
 // PluginName is the registered plugin name
-const PluginName = "lgtm"
+const PluginName = labels.LGTMLabel
 
 var (
 	addLGTMLabelNotification   = "LGTM label has been added.  <details>Git tree hash: %s</details>"
 	addLGTMLabelNotificationRe = regexp.MustCompile(fmt.Sprintf(addLGTMLabelNotification, "(.*)"))
 	// LGTMLabel is the name of the lgtm label applied by the lgtm plugin
-	LGTMLabel           = "lgtm"
+	LGTMLabel           = labels.LGTMLabel
 	lgtmRe              = regexp.MustCompile(`(?mi)^/lgtm(?: no-issue)?\s*$`)
 	lgtmCancelRe        = regexp.MustCompile(`(?mi)^/lgtm cancel\s*$`)
 	removeLGTMLabelNoti = "New changes are detected. LGTM label has been removed."
