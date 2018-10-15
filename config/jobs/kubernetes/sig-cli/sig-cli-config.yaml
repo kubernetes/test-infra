@@ -122,6 +122,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+    preset-e2e-platform-aws: "true"
   spec:
     containers:
     - args:
@@ -131,7 +132,6 @@ periodics:
       - --
       - --aws
       - --cluster=e2e-kops-aws-sig-cli.test-cncf-aws.k8s.io
-      - --env-file=jobs/platform/kops_aws.env
       - --extract=ci/latest
       - --ginkgo-parallel
       - --provider=aws

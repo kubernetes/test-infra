@@ -134,7 +134,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env
+      - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -160,7 +160,9 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-alpha-features.env
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true
+      - --env=KUBE_PROXY_DAEMONSET=true
+      - --env=ENABLE_POD_PRIORITY=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -184,7 +186,9 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-alpha-features.env
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true
+      - --env=KUBE_PROXY_DAEMONSET=true
+      - --env=ENABLE_POD_PRIORITY=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -340,7 +344,9 @@ periodics:
       - --
       - --check-leaked-resources
       - --cluster=bootstrap-e2e-gce-mz
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-multizone.env
+      - --env=MULTIZONE=true
+      # Where the nodes reside.  Master is in the first one.
+      - --env=E2E_ZONES=us-central1-a us-central1-b us-central1-f
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-project=k8s-jkns-e2e-gce-ubelite

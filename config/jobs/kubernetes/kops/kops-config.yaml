@@ -63,6 +63,7 @@ presubmits:
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
       preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
@@ -79,7 +80,6 @@ presubmits:
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
         - --cluster=
-        - --env-file=jobs/platform/kops_aws.env
         - --extract=ci/latest
         - --ginkgo-parallel
         - --kops-build

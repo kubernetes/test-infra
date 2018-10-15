@@ -102,7 +102,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-gpu.env
+      - --env=KUBE_FEATURE_GATES=Accelerators=true
+      - --env=NODE_ACCELERATORS=type=nvidia-tesla-k80,count=2
       - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
