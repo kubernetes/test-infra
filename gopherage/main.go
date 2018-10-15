@@ -17,10 +17,12 @@ limitations under the License.
 package main
 
 import (
+	"log"
+
 	"github.com/spf13/cobra"
 	"k8s.io/test-infra/gopherage/cmd/diff"
+	"k8s.io/test-infra/gopherage/cmd/html"
 	"k8s.io/test-infra/gopherage/cmd/merge"
-	"log"
 )
 
 var rootCommand = &cobra.Command{
@@ -31,6 +33,7 @@ var rootCommand = &cobra.Command{
 func run() error {
 	rootCommand.AddCommand(diff.MakeCommand())
 	rootCommand.AddCommand(merge.MakeCommand())
+	rootCommand.AddCommand(html.MakeCommand())
 	return rootCommand.Execute()
 }
 
