@@ -205,7 +205,9 @@ func (p *protector) UpdateOrg(orgName string, org config.Org, allRepos bool) err
 			return fmt.Errorf("GetRepos(%s) failed: %v", orgName, err)
 		}
 		for _, r := range rs {
-			repos = append(repos, r.Name)
+			if !r.Archived {
+				repos = append(repos, r.Name)
+			}
 		}
 	} else {
 		// Unopinionated org, just set explicitly defined repos
