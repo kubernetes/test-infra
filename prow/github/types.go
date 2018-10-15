@@ -490,6 +490,8 @@ type PushEvent struct {
 	// Sender contains more information that Pusher about the user.
 	Sender User `json:"sender"`
 	Repo   Repo `json:"repository"`
+	// Deleted is set when a branch is deleted
+	Deleted bool `json:"deleted"`
 
 	// GUID is included in the header of the request received by Github.
 	GUID string

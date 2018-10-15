@@ -135,6 +135,16 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		if err := json.Unmarshal(payload, &pe); err != nil {
 			return err
 		}
+		// when a branch is deleted, GitHub sends both a `delete' event
+		// as well as a `push' event updating the branch to an invalid
+		// commit SHA. No consumer of push events is expecting an invalid
+		// commit at the HEAD; we should allow plugins to subscribe to
+		// the `delete' event if they want to handle that case. So, if
+		// we can detect that this is the weird `push' event before the
+		// imminent branch deletion, we don't handle it
+		if pe.Deleted || pe.After == "0000000000000000000000000000000000000000" {
+			break
+		}
 		pe.GUID = eventGUID
 		srcRepo = pe.Repo.FullName
 		s.wg.Add(1)
