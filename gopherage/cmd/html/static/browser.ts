@@ -105,7 +105,7 @@ function coveragesForPrefix(coverages: Coverage[], prefix: string):
               const percentage = `${(coverage * 100).toFixed(1)}%`;
               return {
                 v: coverage,
-                    f: `<span class="arrow">${arrow}</span> ${percentage}%`,
+                    f: `<span class="arrow">${arrow}</span> ${percentage}`,
               }
             }))
       }));
