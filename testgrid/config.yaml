@@ -109,8 +109,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-ubuntu-gce
 - name: ci-cri-containerd-e2e-gci-gce-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-reboot
-- name: ci-cri-containerd-e2e-gci-gce-etcd3
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-etcd3
 - name: ci-cri-containerd-e2e-gci-gce-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-serial
 - name: ci-cri-containerd-e2e-gci-gce-slow
@@ -347,8 +345,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-es-logging
 - name: ci-kubernetes-e2e-gci-gce-sd-logging
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-sd-logging
-- name: ci-kubernetes-e2e-gci-gce-etcd3
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-etcd3
 - name: ci-kubernetes-e2e-gci-gce-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-flaky
 - name: ci-kubernetes-e2e-gci-gce-single-flake-attempt
@@ -374,8 +370,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-serial-sig-cli
 - name: ci-kubernetes-e2e-gke-gci-serial-sig-cli
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-serial-sig-cli
-- name: ci-kubernetes-e2e-gci-gce-etcd3-sig-cli
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-etcd3-sig-cli
 - name: ci-kubernetes-e2e-gci-gce-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-slow
 - name: ci-kubernetes-e2e-gci-gce-sig-cli
@@ -4154,8 +4148,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-es-logging
   - name: gci-gce-sd-logging
     test_group_name: ci-kubernetes-e2e-gci-gce-sd-logging
-  - name: gci-gce-etcd3
-    test_group_name: ci-kubernetes-e2e-gci-gce-etcd3
   - name: gci-gce-flaky
     test_group_name: ci-kubernetes-e2e-gci-gce-flaky
   - name: gci-gce-single-flake-attempt
@@ -5681,11 +5673,6 @@ dashboards:
     description: kubectl gke serial e2e tests for master branch
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-cli-oncall@gmail.com
-  - name: gce-etcd3
-    test_group_name: ci-kubernetes-e2e-gci-gce-etcd3-sig-cli
-    description: e2e tests run against a cluster with an etcd3 instance
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-cli-oncall@gmail.com
   - name: aws
     test_group_name: ci-kubernetes-e2e-kops-aws-sig-cli
     alert_options:
@@ -6178,8 +6165,6 @@ dashboards:
     test_group_name: ci-containerd-e2e-gci-gce-1-1
   - name: containerd-e2e-ubuntu
     test_group_name: ci-containerd-e2e-ubuntu-gce
-  - name: e2e-gci-etcd3
-    test_group_name: ci-cri-containerd-e2e-gci-gce-etcd3
   - name: e2e-gci-reboot
     test_group_name: ci-cri-containerd-e2e-gci-gce-reboot
   - name: e2e-gci-serial
