@@ -117,7 +117,7 @@ function saveOnClick() {
  * tabs and dashboards with selected tabs in them start checked.
  * @param {Array} dashboards List of Dashboard objects.
  * @param {Object} selectedDashboards dictionary from dashboard name to list of
- *   tab names for for selected dashboards and tabs.
+ *   tab names for selected dashboards and tabs.
  * @param {Element} dashboardsDiv The div to add the dashboards and tabs to.
  * @return {Array} list of divs for each dashboard, list of dictionaries for
  *   each dashboard containing the checkboxes for their tabs
