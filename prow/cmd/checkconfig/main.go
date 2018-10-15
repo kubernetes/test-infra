@@ -522,7 +522,14 @@ func validateNeedsOkToTestLabel(cfg *config.Config) error {
 			if label == lgtm.LGTMLabel {
 				for _, label := range query.MissingLabels {
 					if label == trigger.NeedsOkToTest {
-						queryErrors = append(queryErrors, fmt.Errorf("the tide query at position %d forbids the %q label and requires the %q label, which is not recommended; see https://github.com/kubernetes/test-infra/blob/master/prow/cmd/tide/maintainers.md#best-practices for more information", i, trigger.NeedsOkToTest, lgtm.LGTMLabel))
+						queryErrors = append(queryErrors, fmt.Errorf(
+							"the tide query at position %d"+
+								"forbids the %q label and requires the %q label, "+
+								"which is not recommended; "+
+								"see https://github.com/kubernetes/test-infra/blob/master/prow/cmd/tide/maintainers.md#best-practices "+
+								"for more information",
+							i, trigger.NeedsOkToTest, lgtm.LGTMLabel),
+						)
 					}
 				}
 			}
@@ -544,7 +551,12 @@ func verifyOwnersPlugin(cfg *plugins.Configuration) error {
 
 	invalid := ownersConfig.difference(validateOwnersConfig).items()
 	if len(invalid) > 0 {
-		return fmt.Errorf("the following orgs or repos enable at least one plugin that uses OWNERS files (%s) but do not enable the %s plugin to ensure validity of OWNERS files: %v", strings.Join([]string{approve.PluginName, blunderbuss.PluginName, ownerslabel.PluginName}, ", "), verifyowners.PluginName, invalid)
+		return fmt.Errorf("the following orgs or repos "+
+			"enable at least one plugin that uses OWNERS files (%s) "+
+			"but do not enable the %s plugin to ensure validity of OWNERS files: %v",
+			strings.Join([]string{approve.PluginName, blunderbuss.PluginName, ownerslabel.PluginName}, ", "),
+			verifyowners.PluginName, invalid,
+		)
 	}
 	return nil
 }
