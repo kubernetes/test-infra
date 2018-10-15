@@ -1,0 +1,9 @@
+// This config file is used only for editor tooling (like VS Code).
+// Bazel will not use it for building.
+// Don't make any changes here except for overriding the target.
+{
+  "extends": "../../../../tsconfig.json",
+  "compilerOptions": {
+    "target": "es2015"
+  }
+}
