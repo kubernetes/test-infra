@@ -16,7 +16,7 @@ function loadViews(): void {
   }
 }
 
-// refreshView refreshes a single view. Use this function to to communicate with your viewer backend.
+// refreshView refreshes a single view. Use this function to communicate with your viewer backend.
 function refreshView(viewName: string, viewData: string): void {
   requestReload(viewName, createBody(viewName, viewData))
 }
