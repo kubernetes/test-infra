@@ -306,7 +306,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 				log.WithError(err).Errorf("Failed to get pull request.")
 			}
 			if pr.MergeSHA != nil {
-				commit, err := gc.GetSingleCommit(org, repoName, *pr.MergeSHA)
+				commit, err := gc.GetSingleCommit(org, repoName, pr.Head.SHA)
 				if err != nil {
 					log.WithError(err).Errorf("Failed to get commit.")
 				}
