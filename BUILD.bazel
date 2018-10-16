@@ -26,6 +26,40 @@ workspace_binary(
     cmd = "//vendor/github.com/golang/lint/golint",
 )
 
+load("@bazel_gazelle//:def.bzl", "gazelle")
+
+gazelle(
+    name = "gazelle",
+    command = "fix",
+    external = "vendored",
+)
+
+gazelle(
+    name = "gazelle-diff",
+    command = "fix",
+    external = "vendored",
+    mode = "diff",
+)
+
+workspace_binary(
+    name = "kazel",
+    cmd = "//vendor/github.com/kubernetes/repo-infra/kazel",
+)
+
+workspace_binary(
+    name = "kazel-diff",
+    args = [
+        "--dry-run",
+        "--print-diff",
+    ],
+    cmd = "//vendor/github.com/kubernetes/repo-infra/kazel",
+)
+
+workspace_binary(
+    name = "gofmt",
+    cmd = "@go_sdk//:bin/gofmt",
+)
+
 filegroup(
     name = "all-srcs",
     srcs = [
