@@ -85,11 +85,16 @@ if [[ "$cmd" == "--push" ]]; then
 elif [[ "$cmd" == "--list" ]]; then
   # TODO(fejta): figure out why the timestamp on all these image is 1969...
   # Then we'll be able to just sort them.
+  echo "Listing recent versions..." >&2
   options=(
     $(gcloud container images list-tags gcr.io/k8s-prow/plank --filter="tags ~ ^v|,v" --format='value(tags)' \
-      | grep -o -E 'v\d{8}-(\d|[da-f]){6,9}' | sort -u | tail -n 10)
+      | grep -o -E 'v[0-9]{8}-[0-9a-f]{6,9}' | sort -u | tail -n 10)
   )
   echo "Recent versions of prow:" >&2
+  if [[ -z "${options[@]}" ]]; then
+    echo "No versions found" >&2
+    exit 1
+  fi
   new_version=
   for o in "${options[@]}"; do
     def_opt="$o"
