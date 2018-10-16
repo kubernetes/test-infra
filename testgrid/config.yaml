@@ -2439,6 +2439,12 @@ test_groups:
 - name: pull-cluster-api-provider-aws-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-test
   num_columns_recent: 20
+- name: pull-cluster-api-provider-aws-bazel-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-build
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-aws-bazel-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-test
+  num_columns_recent: 20
 - name: pull-cluster-api-provider-gcp-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-gcp-build
   num_columns_recent: 20
@@ -5806,6 +5812,10 @@ dashboards:
     test_group_name: pull-cluster-api-provider-aws-make
   - name: pr-test
     test_group_name: pull-cluster-api-provider-aws-test
+  - name: bazel-pr-build
+    test_group_name: pull-cluster-api-provider-aws-bazel-build
+  - name: bazel-pr-test
+    test_group_name: pull-cluster-api-provider-aws-bazel-test
 
 - name: sig-cluster-lifecycle-cluster-api-provider-gcp
   dashboard_tab:

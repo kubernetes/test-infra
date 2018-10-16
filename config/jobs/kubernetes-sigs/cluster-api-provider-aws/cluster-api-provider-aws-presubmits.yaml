@@ -50,3 +50,21 @@ presubmits:
         - "--scenario=execute"
         - "--"
         - "./scripts/ci-test.sh"
+  - name: pull-cluster-api-provider-aws-bazel-test
+    always_run: true
+    optional: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.12
+        command:
+        - "./scripts/ci-bazel-test.sh"
+  - name: pull-cluster-api-provider-aws-bazel-build
+    always_run: true
+    optional: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.12
+        command:
+        - "./scripts/ci-bazel-build.sh"
