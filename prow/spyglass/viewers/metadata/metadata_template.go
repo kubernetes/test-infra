@@ -66,7 +66,7 @@ var metadataTemplateText = `{{$passed := eq .Finished.Result "SUCCESS"}}
         </tr>
         <tr>
           <td class="mdl-data-table__cell--non-numeric">Started</td>
-          <td class="mdl-data-table__cell--non-numeric">{{.Started.Timestamp}}</td>
+          <td class="mdl-data-table__cell--non-numeric">{{.Derived.StartTime}}</td>
         </tr>
         <tr>
           <td class="mdl-data-table__cell--non-numeric">Elapsed</td>

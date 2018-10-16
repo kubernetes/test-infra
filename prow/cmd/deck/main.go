@@ -466,26 +466,15 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 
 func handleJobHistory(templateRoot string, ca *config.Agent, gcsClient *storage.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		setHeadersNoCaching(w)
 		tmpl, err := getJobHistory(r.URL, ca.Config(), gcsClient)
 		if err != nil {
-			msg := fmt.Sprintf("Failed to get job history: %v", err)
-			logrus.Error(msg)
+			msg := fmt.Sprintf("failed to get job history: %v", err)
+			logrus.WithField("url", r.URL).Error(msg)
 			http.Error(w, msg, http.StatusInternalServerError)
 			return
 		}
-		t := template.New("job-history.html")
-		if _, err := prepareBaseTemplate(templateRoot, ca, t); err != nil {
-			fmt.Fprintf(w, "error preparing base template: %v", err)
-		}
-		t, err = t.ParseFiles(path.Join(templateRoot, "job-history.html"))
-		if err != nil {
-			fmt.Fprintf(w, "error parsing template: %v", err)
-		}
-		var buf bytes.Buffer
-		if err = t.Execute(&buf, tmpl); err != nil {
-			fmt.Fprintf(w, "error rendering template: %v", err)
-		}
-		fmt.Fprint(w, buf.String())
+		handleSimpleTemplate(templateRoot, ca, "job-history.html", tmpl)(w, r)
 	}
 }
 

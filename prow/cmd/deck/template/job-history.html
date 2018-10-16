@@ -1,5 +1,5 @@
 {{define "title"}}Job History: {{.Name}}{{end}}
-{{define "content"}}
+{{define "scripts"}}
 <style>
   .run-success {
     background-color: rgba(0, 255, 0, 0.3);
@@ -11,6 +11,8 @@
     background-color: rgba(255, 255, 0, 0.3);
   }
 </style>
+{{end}}
+{{define "content"}}
 <div class="table-container">
   <table id="history-table" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" style="max-width: 1000px">
     <thead>
@@ -25,7 +27,7 @@
       {{range .Builds}}
       <tr class= {{if eq .Result "SUCCESS"}}"run-success"{{else if eq .Result "FAILURE"}}"run-failure"{{else}}"run-pending"{{end}}>
         <td class="mdl-data-table__cell--non-numeric">
-          {{if ne .SpyglassLink ""}}<a href= {{.SpyglassLink}}>{{.ID}}</a>
+          {{if .SpyglassLink}}<a href="{{.SpyglassLink}}">{{.ID}}</a>
           {{else}}{{.ID}}{{end}}
         </td>
         <td class="mdl-data-table__cell--non-numeric">{{.Started}}</td>
@@ -37,14 +39,14 @@
   </table>
   <table style="max-width: 1000px">
     <tr>
-      {{if ne .LatestLink ""}}
-      <td><a href= {{.LatestLink}}>Latest Runs</a></td>
+      {{if .LatestLink}}
+      <td><a href="{{.LatestLink}}">Latest Runs</a></td>
       {{end}}
-      {{if ne .NewerLink ""}}
-      <td><a href= {{.NewerLink}}>&lt;- Newer Runs</a></td>
+      {{if .NewerLink}}
+      <td><a href="{{.NewerLink}}">&lt;- Newer Runs</a></td>
       {{end}}
-      {{if ne .OlderLink ""}}
-      <td><a href= {{.OlderLink}}>Older Runs -&gt;</a></td>
+      {{if .OlderLink}}
+      <td><a href="{{.OlderLink}}">Older Runs -&gt;</a></td>
       {{end}}
       <td></td>
     </tr>

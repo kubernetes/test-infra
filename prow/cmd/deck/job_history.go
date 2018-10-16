@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"path"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -30,19 +31,26 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/deck/jobs"
 )
 
 const (
-	resultsPerPage = 20
-	idParam        = "buildId"
+	resultsPerPage  = 20
+	idParam         = "buildId"
+	latestBuildFile = "latest-build.txt"
 
 	// ** Job history assumes the GCS layout specified here:
 	// https://github.com/kubernetes/test-infra/tree/master/gubernator#gcs-bucket-layout
-	logsPrefix    = "logs"
-	symLinkPrefix = "pr-logs/directory"
+	logsPrefix     = "logs"
+	symLinkPrefix  = "pr-logs/directory"
+	spyglassPrefix = "/view/gcs"
 )
 
-type BuildData struct {
+var (
+	prefixRe = regexp.MustCompile("gs://.*?/")
+)
+
+type buildData struct {
 	index        int
 	SpyglassLink string
 	ID           string
@@ -51,141 +59,123 @@ type BuildData struct {
 	Result       string
 }
 
-type JobHistoryTemplate struct {
+type jobHistoryTemplate struct {
 	OlderLink  string
 	NewerLink  string
 	LatestLink string
 	Name       string
-	Builds     []BuildData
+	Builds     []buildData
 }
 
-type started struct {
-	Timestamp int64 `json:"timestamp"`
-}
-
-type finished struct {
-	Timestamp int64  `json:"timestamp"`
-	Result    string `json:"result"`
-}
-
-func readLatestBuild(obj *storage.ObjectHandle) (int, error) {
+func readObject(obj *storage.ObjectHandle) ([]byte, error) {
 	rc, err := obj.NewReader(context.Background())
 	if err != nil {
-		return -1, fmt.Errorf("Failed to get reader for latest build number: %v", err)
+		return []byte{}, fmt.Errorf("failed to get reader for GCS object: %v", err)
 	}
-	data, err := ioutil.ReadAll(rc)
+	return ioutil.ReadAll(rc)
+}
+
+func readLatestBuild(bkt *storage.BucketHandle, root string) (int, error) {
+	path := path.Join(root, latestBuildFile)
+	data, err := readObject(bkt.Object(path))
 	if err != nil {
-		return -1, fmt.Errorf("Failed to read latest build number: %v", err)
+		return -1, fmt.Errorf("failed to read latest build number: %v", err)
 	}
-	n64, err := strconv.Atoi(string(data))
+	n, err := strconv.Atoi(string(data))
 	if err != nil {
-		return -1, fmt.Errorf("Failed to parse latest build number: %v", err)
+		return -1, fmt.Errorf("failed to parse latest build number: %v", err)
 	}
-	return int(n64), nil
+	return n, nil
 }
 
 // resolve sym links into the actual log directory for a particular test run
 func resolveSymLink(bkt *storage.BucketHandle, symLink string) (string, error) {
-	linkObj := bkt.Object(symLink)
-	rc, err := linkObj.NewReader(context.Background())
+	data, err := readObject(bkt.Object(symLink))
 	if err != nil {
-		return "", err
-	}
-	data, err := ioutil.ReadAll(rc)
-	if err != nil {
-		return "", err
-	}
-	bAttrs, err := bkt.Attrs(context.Background())
-	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to read %s: %v", symLink, err)
 	}
 	// strip gs://<bucket-name> from global address `u`
 	u := string(data)
-	i := strings.Index(u, bAttrs.Name)
-	dir := u[i+len(bAttrs.Name)+1:] // +1 for leading slash
-	return dir, nil
+	return prefixRe.ReplaceAllString(u, ""), nil
 }
 
-func getDir(bkt *storage.BucketHandle, root, id string) string {
+func spyglassLink(bkt *storage.BucketHandle, root, id string) (string, error) {
 	bAttrs, err := bkt.Attrs(context.Background())
 	if err != nil {
-		return ""
+		return "", fmt.Errorf("failed to get bucket name: %v", err)
 	}
 	bktName := bAttrs.Name
-	if strings.HasPrefix(root, logsPrefix) {
-		return path.Join(bktName, root, id)
-	}
-	symLink := path.Join(root, id+".txt")
-	dir, err := resolveSymLink(bkt, symLink)
+	p, err := getPath(bkt, root, id, "")
 	if err != nil {
-		return ""
+		return "", fmt.Errorf("failed to get path: %v", err)
 	}
-	return path.Join(bktName, dir)
+	return path.Join(spyglassPrefix, bktName, p), nil
 }
 
-func getObject(bkt *storage.BucketHandle, root, id, fname string) *storage.ObjectHandle {
+func getPath(bkt *storage.BucketHandle, root, id, fname string) (string, error) {
 	if strings.HasPrefix(root, logsPrefix) {
-		p := path.Join(root, id, fname)
-		return bkt.Object(p)
+		return path.Join(root, id, fname), nil
 	}
 	symLink := path.Join(root, id+".txt")
 	dir, err := resolveSymLink(bkt, symLink)
 	if err != nil {
-		return &storage.ObjectHandle{}
+		return "", fmt.Errorf("failed to resolve sym link: %v", err)
 	}
-	return bkt.Object(path.Join(dir, fname))
+	return path.Join(dir, fname), nil
 }
 
 func fileExists(bkt *storage.BucketHandle, root, id, fname string) bool {
-	obj := getObject(bkt, root, id, fname)
-	_, err := obj.Attrs(context.Background())
+	p, err := getPath(bkt, root, id, fname)
+	if err != nil {
+		return false
+	}
+	obj := bkt.Object(p)
+	_, err = obj.Attrs(context.Background())
 	return err == nil
 }
 
-func readStarted(bkt *storage.BucketHandle, root, id string) (started, error) {
-	s := started{}
-	sobj := getObject(bkt, root, id, "started.json")
-	sr, err := sobj.NewReader(context.Background())
+func readStarted(bkt *storage.BucketHandle, root, id string) (jobs.Started, error) {
+	s := jobs.Started{}
+	p, err := getPath(bkt, root, id, "started.json")
 	if err != nil {
-		return s, fmt.Errorf("Failed to get reader for started.json for build %s: %v", id, err)
+		return s, fmt.Errorf("failed to get path: %v", err)
 	}
-	sdata, err := ioutil.ReadAll(sr)
+	sdata, err := readObject(bkt.Object(p))
 	if err != nil {
-		return s, fmt.Errorf("Failed to read started.json for build %s: %v", id, err)
+		return s, fmt.Errorf("failed to read started.json for build %s: %v", id, err)
 	}
 	err = json.Unmarshal(sdata, &s)
 	if err != nil {
-		return s, fmt.Errorf("Failed to parse started.json for build %s: %v", id, err)
+		return s, fmt.Errorf("failed to parse started.json for build %s: %v", id, err)
 	}
 	return s, nil
 }
 
-func readFinished(bkt *storage.BucketHandle, root, id string) (finished, error) {
-	f := finished{}
-	fobj := getObject(bkt, root, id, "finished.json")
-	fr, err := fobj.NewReader(context.Background())
+func readFinished(bkt *storage.BucketHandle, root, id string) (jobs.Finished, error) {
+	f := jobs.Finished{}
+	p, err := getPath(bkt, root, id, "finished.json")
 	if err != nil {
-		return f, fmt.Errorf("Failed to get reader for finished.json for build %s: %v", id, err)
+		return f, fmt.Errorf("failed to get path: %v", err)
 	}
-	fdata, err := ioutil.ReadAll(fr)
+	fdata, err := readObject(bkt.Object(p))
 	if err != nil {
-		return f, fmt.Errorf("Failed to read finished.json for build %s: %v", id, err)
+		return f, fmt.Errorf("failed to read finished.json for build %s: %v", id, err)
 	}
 	err = json.Unmarshal(fdata, &f)
 	if err != nil {
-		return f, fmt.Errorf("Failed to parse finished.json for build %s: %v", id, err)
+		return f, fmt.Errorf("failed to parse finished.json for build %s: %v", id, err)
 	}
 	return f, nil
 }
 
 // Gets job history from the GCS bucket specified in config.
-func getJobHistory(url *url.URL, config *config.Config, gcsClient *storage.Client) (JobHistoryTemplate, error) {
+func getJobHistory(url *url.URL, config *config.Config, gcsClient *storage.Client) (jobHistoryTemplate, error) {
 	start := time.Now()
 
 	jobName := strings.TrimPrefix(url.Path, "/job-history/")
-	tmpl := JobHistoryTemplate{
+	tmpl := jobHistoryTemplate{
 		Name:   jobName,
-		Builds: make([]BuildData, resultsPerPage),
+		Builds: make([]buildData, resultsPerPage),
 	}
 
 	var latest int
@@ -195,9 +185,7 @@ func getJobHistory(url *url.URL, config *config.Config, gcsClient *storage.Clien
 	found := false
 	for _, r := range []string{logsPrefix, symLinkPrefix} {
 		root = path.Join(r, jobName)
-		loc := path.Join(root, "latest-build.txt")
-		obj := bkt.Object(loc)
-		n, err := readLatestBuild(obj)
+		n, err := readLatestBuild(bkt, root)
 		if err == nil {
 			latest = n
 			found = true
@@ -205,13 +193,13 @@ func getJobHistory(url *url.URL, config *config.Config, gcsClient *storage.Clien
 		}
 	}
 	if !found {
-		return tmpl, fmt.Errorf("Failed to locate build data")
+		return tmpl, fmt.Errorf("failed to locate build data")
 	}
 	var top, bottom int // build ids of the top (inclusive) and bottom (exclusive) results
 	if idVals := url.Query()[idParam]; len(idVals) >= 1 {
 		var err error
 		if top, err = strconv.Atoi(idVals[0]); err != nil {
-			return tmpl, fmt.Errorf("Invalid value for %s: %v", idParam, err)
+			return tmpl, fmt.Errorf("invalid value for %s: %v", idParam, err)
 		}
 	} else {
 		top = latest
@@ -226,7 +214,8 @@ func getJobHistory(url *url.URL, config *config.Config, gcsClient *storage.Clien
 		q.Set(idParam, strconv.Itoa(newer))
 		u.RawQuery = q.Encode()
 		tmpl.NewerLink = u.String()
-		q.Set(idParam, strconv.Itoa(latest))
+
+		q.Del(idParam)
 		u.RawQuery = q.Encode()
 		tmpl.LatestLink = u.String()
 	}
@@ -253,26 +242,30 @@ func getJobHistory(url *url.URL, config *config.Config, gcsClient *storage.Clien
 		tmpl.OlderLink = u.String()
 	}
 
-	bch := make(chan BuildData)
+	bch := make(chan buildData)
 	for i := top; i > bottom; i-- {
 		go func(i int) {
-			build := BuildData{
-				index: top - i,
-				ID:    strconv.Itoa(i),
+			build := buildData{
+				index:  top - i,
+				ID:     strconv.Itoa(i),
+				Result: "Unfinished",
 			}
-			dir := getDir(bkt, root, build.ID)
-			if dir != "" {
-				build.SpyglassLink = path.Join("/view/gcs", dir)
+			link, err := spyglassLink(bkt, root, build.ID)
+			if err != nil {
+				logrus.Warning(err)
+				bch <- build
+				return
 			}
+			build.SpyglassLink = link
 			started, err := readStarted(bkt, root, build.ID)
 			if err == nil {
 				build.Started = time.Unix(started.Timestamp, 0)
-				finished, err := readFinished(bkt, root, build.ID)
-				if err == nil {
+				finished, _ := readFinished(bkt, root, build.ID)
+				if finished.Timestamp != 0 {
 					build.Duration = time.Unix(finished.Timestamp, 0).Sub(build.Started)
+				}
+				if finished.Result != "" {
 					build.Result = finished.Result
-				} else {
-					build.Result = "Unfinished"
 				}
 			} else {
 				logrus.Warning(err)
