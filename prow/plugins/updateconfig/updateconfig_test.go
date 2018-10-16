@@ -36,10 +36,16 @@ const defaultNamespace = "default"
 type fakeKubeClient struct {
 	maps        map[string]kube.ConfigMap
 	updatedMaps []string
+	createdMaps []string
 }
 
 func (c *fakeKubeClient) GetConfigMap(name, namespace string) (kube.ConfigMap, error) {
-	return c.maps[name], nil
+	data, exists := c.maps[name]
+	var err error
+	if !exists {
+		err = kube.NotFoundError{}
+	}
+	return data, err
 }
 
 func (c *fakeKubeClient) ReplaceConfigMap(name string, config kube.ConfigMap) (kube.ConfigMap, error) {
@@ -49,9 +55,21 @@ func (c *fakeKubeClient) ReplaceConfigMap(name string, config kube.ConfigMap) (k
 	if config.Namespace == "" {
 		config.Namespace = defaultNamespace
 	}
+	if _, exists := c.maps[name]; !exists {
+		return kube.ConfigMap{}, fmt.Errorf("called update on non-existent configmap %s", name)
+	}
 	c.maps[name] = config
 	c.updatedMaps = append(c.updatedMaps, name)
 	return c.maps[name], nil
+}
+
+func (c *fakeKubeClient) CreateConfigMap(content kube.ConfigMap) (kube.ConfigMap, error) {
+	if content.Namespace == "" {
+		content.Namespace = defaultNamespace
+	}
+	c.maps[content.Name] = content
+	c.createdMaps = append(c.createdMaps, content.Name)
+	return c.maps[content.Name], nil
 }
 
 func TestUpdateConfig(t *testing.T) {
@@ -137,7 +155,17 @@ func TestUpdateConfig(t *testing.T) {
 					Additions: 1,
 				},
 			},
-			existConfigMaps: map[string]kube.ConfigMap{},
+			existConfigMaps: map[string]kube.ConfigMap{
+				"config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"config.yaml": "old-config",
+					},
+				},
+			},
 			expectedConfigMaps: map[string]kube.ConfigMap{
 				"config": {
 					ObjectMeta: kube.ObjectMeta{
@@ -195,7 +223,17 @@ func TestUpdateConfig(t *testing.T) {
 					Additions: 1,
 				},
 			},
-			existConfigMaps: map[string]kube.ConfigMap{},
+			existConfigMaps: map[string]kube.ConfigMap{
+				"plugins": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "plugins",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"test-key": "old-plugins",
+					},
+				},
+			},
 			expectedConfigMaps: map[string]kube.ConfigMap{
 				"plugins": {
 					ObjectMeta: kube.ObjectMeta{
@@ -219,7 +257,17 @@ func TestUpdateConfig(t *testing.T) {
 					Additions: 1,
 				},
 			},
-			existConfigMaps: map[string]kube.ConfigMap{},
+			existConfigMaps: map[string]kube.ConfigMap{
+				"boskos-config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "boskos-config",
+						Namespace: "boskos",
+					},
+					Data: map[string]string{
+						"resources.yaml": "old-boskos-config",
+					},
+				},
+			},
 			expectedConfigMaps: map[string]kube.ConfigMap{
 				"boskos-config": {
 					ObjectMeta: kube.ObjectMeta{
@@ -251,7 +299,35 @@ func TestUpdateConfig(t *testing.T) {
 					Additions: 1,
 				},
 			},
-			existConfigMaps: map[string]kube.ConfigMap{},
+			existConfigMaps: map[string]kube.ConfigMap{
+				"config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"config.yaml": "old-config",
+					},
+				},
+				"plugins": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "plugins",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"test-key": "old-plugins",
+					},
+				},
+				"boskos-config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "boskos-config",
+						Namespace: "boskos",
+					},
+					Data: map[string]string{
+						"resources.yaml": "old-boskos-config",
+					},
+				},
+			},
 			expectedConfigMaps: map[string]kube.ConfigMap{
 				"config": {
 					ObjectMeta: kube.ObjectMeta{
@@ -533,6 +609,31 @@ func TestUpdateConfig(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:        "config changes without a backing configmap causes creation",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "prow/config.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+			},
+			existConfigMaps: map[string]kube.ConfigMap{},
+			expectedConfigMaps: map[string]kube.ConfigMap{
+				"config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"config.yaml": "new-config",
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -623,53 +724,61 @@ func TestUpdateConfig(t *testing.T) {
 		}
 
 		if err := handle(fgc, fkc, log, event, m); err != nil {
-			t.Fatalf("tc: %s, err: %s", tc.name, err)
+			t.Errorf("tc: %s, err: %s", tc.name, err)
 		}
 
 		if tc.expectedConfigMaps != nil {
 			if len(fgc.IssueComments[basicPR.Number]) != 1 {
-				t.Fatalf("tc %s : Expect 1 comment, actually got %d", tc.name, len(fgc.IssueComments[basicPR.Number]))
-			}
-
-			comment := fgc.IssueComments[basicPR.Number][0].Body
-			if !strings.Contains(comment, "Updated the") {
-				t.Errorf("%s: missing Updated the from %s", tc.name, comment)
-			}
-			for configName := range tc.expectedConfigMaps {
-				found := false
-				for _, name := range fkc.updatedMaps {
-					if name == configName {
-						if !strings.Contains(comment, configName) {
-							t.Errorf("%s: missing %s from %s", tc.name, configName, comment)
+				t.Errorf("tc %s : Expect 1 comment, actually got %d", tc.name, len(fgc.IssueComments[basicPR.Number]))
+			} else {
+				comment := fgc.IssueComments[basicPR.Number][0].Body
+				if !strings.Contains(comment, "Updated the") {
+					t.Errorf("%s: missing Updated the from %s", tc.name, comment)
+				}
+				for configName := range tc.expectedConfigMaps {
+					found := false
+					for _, collection := range [][]string{fkc.updatedMaps, fkc.createdMaps} {
+						for _, name := range collection {
+							if name == configName {
+								if !strings.Contains(comment, configName) {
+									t.Errorf("%s: missing %s from %s", tc.name, configName, comment)
+								}
+								found = true
+							}
 						}
+
+					}
+					if !found {
+						if strings.Contains(comment, configName) {
+							t.Errorf("%s: should not contain %s in %s", tc.name, configName, comment)
+						}
+					}
+				}
+			}
+		}
+
+		actions := map[string][]string{
+			"update": fkc.updatedMaps,
+			"create": fkc.createdMaps,
+		}
+		for action, names := range actions {
+			for _, name := range names {
+				found := false
+				for expected := range tc.expectedConfigMaps {
+					if name == expected {
 						found = true
 					}
 				}
 
 				if !found {
-					if strings.Contains(comment, configName) {
-						t.Errorf("%s: should not contain %s in %s", tc.name, configName, comment)
-					}
+					t.Errorf("%s: should not %s unexpected configmap %s", tc.name, action, name)
 				}
-			}
-		}
-
-		for _, name := range fkc.updatedMaps {
-			found := false
-			for expected := range tc.expectedConfigMaps {
-				if name == expected {
-					found = true
-				}
-			}
-
-			if !found {
-				t.Errorf("%s: should not update unexpected configmap %s", tc.name, name)
 			}
 		}
 
 		for configName := range tc.expectedConfigMaps {
 			if config, ok := fkc.maps[configName]; !ok {
-				t.Errorf("tc %s : Should have updated configmap for '%s'", tc.name, configName)
+				t.Errorf("tc %s : Should have updated or created configmap for '%s'", tc.name, configName)
 			} else if expected, actual := tc.expectedConfigMaps[configName], config; !equality.Semantic.DeepEqual(expected, actual) {
 				t.Errorf("%s: incorrect ConfigMap state after update: %v", tc.name, diff.ObjectReflectDiff(expected, actual))
 			}
