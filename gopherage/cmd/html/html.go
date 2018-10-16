@@ -46,8 +46,8 @@ func MakeCommand() *cobra.Command {
 }
 
 func run(flags *flags, cmd *cobra.Command, args []string) {
-	if len(args) != 1 {
-		log.Fatalln("Usage: gopherage html [coverage]")
+	if len(args) < 1 {
+		log.Fatalln("Usage: gopherage html [coverage...]")
 	}
 
 	// This path assumes we're being run using bazel.
@@ -73,9 +73,13 @@ func run(flags *flags, cmd *cobra.Command, args []string) {
 		}
 	}
 
-	coverage, err := ioutil.ReadFile(args[0])
-	if err != nil {
-		log.Fatalf("Couldn't read coverage file: %v", err)
+	coverageFiles := make(map[string]string, len(args))
+	for _, arg := range args {
+		content, err := ioutil.ReadFile(arg)
+		if err != nil {
+			log.Fatalf("Couldn't read coverage file: %v", err)
+		}
+		coverageFiles[arg] = string(content)
 	}
 
 	outputPath := flags.OutputFile
@@ -93,6 +97,6 @@ func run(flags *flags, cmd *cobra.Command, args []string) {
 
 	tpl.Execute(output, struct {
 		Script   template.JS
-		Coverage string
-	}{template.JS(script), string(coverage)})
+		Coverage map[string]string
+	}{template.JS(script), coverageFiles})
 }

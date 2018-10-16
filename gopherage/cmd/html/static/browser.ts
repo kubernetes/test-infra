@@ -17,9 +17,9 @@ limitations under the License.
 import {Coverage, FileCoverage, parseCoverage} from './parser';
 import {enumerate, map} from './utils';
 
-declare const coverage: string;
+declare const embeddedProfiles: {[path: string]: string};
 
-let coverageFiles: Coverage[] = [];
+let coverageFiles: Array<{name: string, coverage: Coverage}> = [];
 let prefix = 'k8s.io/kubernetes/';
 
 function filterCoverage(coverage: Coverage): Coverage {
@@ -37,8 +37,23 @@ function filterCoverage(coverage: Coverage): Coverage {
   return coverage;
 }
 
-function loadEmbeddedProfile(): Coverage {
-  return filterCoverage(parseCoverage(coverage));
+function filenameForDisplay(path: string): string {
+  const basename = path.split('/').pop()!;
+  const withoutSuffix = basename.replace(/\.[^.]+$/, '');
+  return withoutSuffix;
+}
+
+function loadEmbeddedProfiles(): Array<{name: string, coverage: Coverage}> {
+  const results = [];
+  for (const path in embeddedProfiles) {
+    if (Object.prototype.hasOwnProperty.call(embeddedProfiles, path)) {
+      results.push({
+        name: filenameForDisplay(path),
+        coverage: filterCoverage(parseCoverage(embeddedProfiles[path]))
+      });
+    }
+  }
+  return results;
 }
 
 async function loadProfile(path: string): Promise<Coverage> {
@@ -52,7 +67,7 @@ async function init(): Promise<void> {
     prefix = location.hash.substring(1);
   }
   // TODO: this path shouldn't be hardcoded.
-  coverageFiles = [loadEmbeddedProfile()];
+  coverageFiles = loadEmbeddedProfiles();
   google.charts.load('current', {'packages': ['table']});
   google.charts.setOnLoadCallback(drawTable);
 }
@@ -130,18 +145,20 @@ function mergeMaps<T, U>(maps: Iterable<Map<T, U>>): Map<T, U[]> {
 }
 
 function drawTable(): void {
-  const rows = Array.from(coveragesForPrefix(coverageFiles, prefix));
+  const rows = Array.from(
+      coveragesForPrefix(coverageFiles.map((x) => x.coverage), prefix));
+  const cols = coverageFiles.map(
+      (x, i) => ({id: `file-${i}`, label: x.name, type: 'number'}));
   const dataTable = new google.visualization.DataTable({
     cols: [
       {id: 'child', label: 'File', type: 'string'},
-      {id: 'statement-coverage', label: 'Coverage', type: 'number'},
-    ],
+    ].concat(cols),
     rows
   });
 
   const colourFormatter = new google.visualization.ColorFormat();
   colourFormatter.addGradientRange(0, 1.0001, '#FFFFFF', '#DD0000', '#00DD00');
-  for (let i = 1; i < rows[0].c.length; ++i) {
+  for (let i = 1; i < cols.length + 1; ++i) {
     colourFormatter.format(dataTable, i);
   }
 
