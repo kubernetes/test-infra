@@ -717,3 +717,61 @@ func fixup(r *requirements) {
 		sort.Strings(*restr.Users)
 	}
 }
+
+func TestIgnoreArchivedRepos(t *testing.T) {
+	repos := map[string]map[string]bool{}
+	branches := map[string][]github.Branch{}
+	org, repo, branch := "organization", "repository", "branch"
+	k := org + "/" + repo
+	branches[k] = append(branches[k], github.Branch{
+		Name: branch,
+	})
+	r := repos[org]
+	if r == nil {
+		repos[org] = make(map[string]bool)
+	}
+	repos[org][repo] = true
+	fc := fakeClient{
+		branches: branches,
+		repos:    map[string][]github.Repo{},
+	}
+	for org, r := range repos {
+		for rname := range r {
+			fc.repos[org] = append(fc.repos[org], github.Repo{Name: rname, FullName: org + "/" + rname, Archived: true})
+		}
+	}
+
+	var cfg config.Config
+	if err := yaml.Unmarshal([]byte(`
+branch-protection:
+  protect-by-default: true
+  orgs:
+    organization:
+`), &cfg); err != nil {
+		t.Fatalf("failed to parse config: %v", err)
+	}
+	p := protector{
+		client:         &fc,
+		cfg:            &cfg,
+		errors:         Errors{},
+		updates:        make(chan requirements),
+		done:           make(chan []error),
+		completedRepos: make(map[string]bool),
+	}
+	go func() {
+		p.protect()
+		close(p.updates)
+	}()
+
+	protectionErrors := p.errors.errs
+	if len(protectionErrors) != 0 {
+		t.Errorf("expected no errors, got %d errors: %v", len(protectionErrors), protectionErrors)
+	}
+	var actual []requirements
+	for r := range p.updates {
+		actual = append(actual, r)
+	}
+	if len(actual) != 0 {
+		t.Errorf("expected no updates, got: %v", actual)
+	}
+}

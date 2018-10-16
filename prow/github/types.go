@@ -272,6 +272,7 @@ type PullRequestChange struct {
 }
 
 // Repo contains general repository information.
+// See also https://developer.github.com/v3/repos/#get
 type Repo struct {
 	Owner         User   `json:"owner"`
 	Name          string `json:"name"`
@@ -279,6 +280,7 @@ type Repo struct {
 	HTMLURL       string `json:"html_url"`
 	Fork          bool   `json:"fork"`
 	DefaultBranch string `json:"default_branch"`
+	Archived      bool   `json:"archived"`
 }
 
 // Branch contains general branch information.
