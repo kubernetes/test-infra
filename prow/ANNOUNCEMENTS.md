@@ -30,6 +30,7 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *October 16, 2018* Prow tls-cert management has been migrated from kube-lego to cert-manager.
  - *October 12, 2018* Removed deprecated `buildId` environment variable from prow jobs. Use `BUILD_ID.`
  - *October 3, 2018* `-github-token-file` replaced with
     `-github-token-path` for consistency with `branchprotector` and
