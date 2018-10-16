@@ -31,7 +31,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-alpha-api.env
+      # List GCE Alpha features we want to enable, separated by commas.
+      - --env=GCE_ALPHA_FEATURES=NetworkTiers
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -130,7 +131,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-ingress.env
+      - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
+      - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-project-type=ingress-project
@@ -176,7 +178,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-ip-alias.env
+      - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci

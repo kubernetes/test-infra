@@ -12,6 +12,7 @@ presubmits:
       preset-aws-credential: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-bazel-scratch-dir: "true"
+      preset-e2e-platform-aws: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
@@ -30,8 +31,10 @@ presubmits:
         - --build=bazel
         - --check-leaked-resources=false
         - --cluster=
-        - --env-file=jobs/platform/kops_aws.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-kops-aws.env
+        - --env=KOPS_LATEST=latest-ci-green.txt
+        - --env=KOPS_DEPLOY_LATEST_KUBE=n
+        - --env=KUBE_GCS_UPDATE_LATEST=n
+        - --env=KUBE_FASTBUILD=true
         - --extract=local
         - --ginkgo-parallel
         - --provider=aws
@@ -55,6 +58,7 @@ presubmits:
       preset-aws-credential: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-bazel-scratch-dir: "true"
+      preset-e2e-platform-aws: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.10
@@ -73,8 +77,10 @@ presubmits:
         - --build=bazel
         - --check-leaked-resources=false
         - --cluster=
-        - --env-file=jobs/platform/kops_aws.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-kops-aws.env
+        - --env=KOPS_LATEST=latest-ci-green.txt
+        - --env=KOPS_DEPLOY_LATEST_KUBE=n
+        - --env=KUBE_GCS_UPDATE_LATEST=n
+        - --env=KUBE_FASTBUILD=true
         - --extract=local
         - --ginkgo-parallel
         - --provider=aws
@@ -97,6 +103,7 @@ presubmits:
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
       preset-bazel-scratch-dir: "true"
+      preset-e2e-platform-aws: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.9
@@ -115,8 +122,10 @@ presubmits:
         - --build=bazel
         - --check-leaked-resources=false
         - --cluster=
-        - --env-file=jobs/platform/kops_aws.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-kops-aws.env
+        - --env=KOPS_LATEST=latest-ci-green.txt
+        - --env=KOPS_DEPLOY_LATEST_KUBE=n
+        - --env=KUBE_GCS_UPDATE_LATEST=n
+        - --env=KUBE_FASTBUILD=true
         - --extract=local
         - --ginkgo-parallel
         - --provider=aws

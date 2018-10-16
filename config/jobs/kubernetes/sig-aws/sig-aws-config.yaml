@@ -1,3 +1,35 @@
+presets:
+- labels:
+    preset-e2e-platform-aws: "true"
+  env:
+  # TODO(zmerlynn): Eliminate the other uses of this env variable
+  - name: KUBE_SSH_USER
+    value: admin
+  # Log dump for kops (relies on kops-e2e-runner.sh support)
+  - name: LOG_DUMP_SSH_KEY
+    value: /workspace/.ssh/kube_aws_rsa
+  - name: LOG_DUMP_SSH_USER
+    value: admin
+  - name: LOG_DUMP_SAVE_LOGS
+    value: cloud-init-output
+  - name: LOG_DUMP_SAVE_SERVICES
+    value: protokube
+  # kops testing only ever uses Cloud SDK for status and uploads
+  - name: CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK
+    value: "true"
+  - name: CLOUDSDK_EXPERIMENTAL_FAST_COMPONENT_UPDATE
+    value: "false"
+    # Ignore version-we-pass vs version-kops-expects
+  - name: KOPS_RUN_OBSOLETE_VERSION
+    value: "true"
+    # Except for the updown job itself, use a version of kops that's
+    # passed updown.
+  - name: KOPS_LATEST
+    value: latest-ci-updown-green.txt
+  - name: KOPS_DEPLOY_LATEST_KUBE
+    value: "y"
+
+
 periodics:
 - interval: 30m
   name: ci-kubernetes-e2e-kops-aws
@@ -5,6 +37,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+    preset-e2e-platform-aws: "true"
   spec:
     containers:
     - args:
@@ -14,8 +47,7 @@ periodics:
       - --
       - --aws
       - --cluster=e2e-kops-aws.test-cncf-aws.k8s.io
-      - --env-file=jobs/platform/kops_aws.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env
+      - --env=KOPS_PUBLISH_GREEN_PATH=gs://kops-ci/bin/latest-ci-green.txt
       - --extract=ci/latest
       - --ginkgo-parallel
       - --provider=aws
@@ -29,6 +61,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+    preset-e2e-platform-aws: "true"
   spec:
     containers:
     - args:
@@ -39,7 +72,6 @@ periodics:
       - --aws
       - --cluster=e2e-kops-aws-beta.test-cncf-aws.k8s.io
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/k8s-beta.txt
-      - --env-file=jobs/platform/kops_aws.env
       - --extract=ci/k8s-beta
       - --ginkgo-parallel
       - --provider=aws

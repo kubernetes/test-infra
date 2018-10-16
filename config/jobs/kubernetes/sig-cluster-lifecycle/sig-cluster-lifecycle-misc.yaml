@@ -34,7 +34,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-min-node-permissions.env
+      # TODO(@ihmccreery): is this right?
+      - --env=KUBE_GCE_NODE_SERVICE_ACCOUNT=min-node-permissions@k8s-min-node-permissions.iam.gserviceaccount.com
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-project=k8s-min-node-permissions

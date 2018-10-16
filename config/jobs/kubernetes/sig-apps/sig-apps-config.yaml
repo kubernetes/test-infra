@@ -46,7 +46,8 @@ periodics:
       - --bare
       - --scenario=kubernetes_e2e
       - --
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-taint-evict.env
+      # TODO(gmarek): Enable this when we've split 1.2 tests into another project.
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--feature-gates=TaintBasedEvictions=true --enable-taint-manager=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f

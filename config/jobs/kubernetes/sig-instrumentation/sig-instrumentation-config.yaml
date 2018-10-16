@@ -12,7 +12,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-influxdb.env
+      - --env=KUBE_ENABLE_CLUSTER_MONITORING=influxdb
       - --extract=ci/latest
       - --gcp-zone=us-central1-f
       - --provider=gce
@@ -32,7 +32,7 @@ periodics:
       - --bare
       - --scenario=kubernetes_e2e
       - --
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-prometheus.env
+      - --env=KUBE_ENABLE_PROMETHEUS_MONITORING=true
       - --extract=ci/latest
       - --gcp-zone=us-central1-f
       - --provider=gce
@@ -53,7 +53,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-stackdriver.env
+      - --env=KUBE_ENABLE_CLUSTER_MONITORING=stackdriver
+      - --env=KUBE_ENABLE_METADATA_AGENT=stackdriver
       - --extract=ci/latest
       - --gcp-project=k8s-jkns-e2e-gce-stackdriver
       - --gcp-zone=us-central1-f
@@ -75,7 +76,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-es-logging.env
+      - --env=KUBE_LOGGING_DESTINATION=elasticsearch
+      - --env=TEST_CLUSTER_LOG_LEVEL=--v=2
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -97,7 +99,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-sd-logging.env
+      - --env=KUBE_LOGGING_DESTINATION=gcp
+      - --env=TEST_CLUSTER_LOG_LEVEL=--v=2
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
