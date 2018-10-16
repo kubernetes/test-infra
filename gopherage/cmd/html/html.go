@@ -45,6 +45,11 @@ func MakeCommand() *cobra.Command {
 	return cmd
 }
 
+type coverageFile struct {
+	Path    string `json:"path"`
+	Content string `json:"content"`
+}
+
 func run(flags *flags, cmd *cobra.Command, args []string) {
 	if len(args) < 1 {
 		log.Fatalln("Usage: gopherage html [coverage...]")
@@ -73,13 +78,13 @@ func run(flags *flags, cmd *cobra.Command, args []string) {
 		}
 	}
 
-	coverageFiles := make(map[string]string, len(args))
+	var coverageFiles []coverageFile
 	for _, arg := range args {
 		content, err := ioutil.ReadFile(arg)
 		if err != nil {
 			log.Fatalf("Couldn't read coverage file: %v", err)
 		}
-		coverageFiles[arg] = string(content)
+		coverageFiles = append(coverageFiles, coverageFile{Path: arg, Content: string(content)})
 	}
 
 	outputPath := flags.OutputFile
@@ -97,6 +102,6 @@ func run(flags *flags, cmd *cobra.Command, args []string) {
 
 	tpl.Execute(output, struct {
 		Script   template.JS
-		Coverage map[string]string
+		Coverage []coverageFile
 	}{template.JS(script), coverageFiles})
 }

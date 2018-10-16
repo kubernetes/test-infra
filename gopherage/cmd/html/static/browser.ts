@@ -17,7 +17,7 @@ limitations under the License.
 import {Coverage, FileCoverage, parseCoverage} from './parser';
 import {enumerate, map} from './utils';
 
-declare const embeddedProfiles: {[path: string]: string};
+declare const embeddedProfiles: Array<{path: string, content: string}>;
 
 let coverageFiles: Array<{name: string, coverage: Coverage}> = [];
 let prefix = 'k8s.io/kubernetes/';
@@ -44,16 +44,10 @@ function filenameForDisplay(path: string): string {
 }
 
 function loadEmbeddedProfiles(): Array<{name: string, coverage: Coverage}> {
-  const results = [];
-  for (const path in embeddedProfiles) {
-    if (Object.prototype.hasOwnProperty.call(embeddedProfiles, path)) {
-      results.push({
-        name: filenameForDisplay(path),
-        coverage: filterCoverage(parseCoverage(embeddedProfiles[path]))
-      });
-    }
-  }
-  return results;
+  return embeddedProfiles.map(({path, content}) => ({
+                                name: filenameForDisplay(path),
+                                coverage: filterCoverage(parseCoverage(content))
+                              }));
 }
 
 async function loadProfile(path: string): Promise<Coverage> {
@@ -66,7 +60,7 @@ async function init(): Promise<void> {
   if (location.hash.length > 1) {
     prefix = location.hash.substring(1);
   }
-  // TODO: this path shouldn't be hardcoded.
+
   coverageFiles = loadEmbeddedProfiles();
   google.charts.load('current', {'packages': ['table']});
   google.charts.setOnLoadCallback(drawTable);
