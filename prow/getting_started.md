@@ -253,7 +253,7 @@ For more information on the job environment, see [How to add new jobs][2].
 ## Run test pods in a different namespace
 
 You may choose to keep prowjobs or run tests in a different namespace. First
-create the namespace by `kubectl create -f`ing this:
+create the namespace by `kubectl create -f` with this:
 
 ```yaml
 apiVersion: v1
