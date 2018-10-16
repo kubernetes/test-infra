@@ -108,24 +108,24 @@ you'll need to do the following:
     - Periodic job run on a timed basis
     - You can find more prowjob definitions at [how-to-add-new-jobs](prow#how-to-add-new-jobs)
   - Please utilize the [podutils](prow/pod-utilities.md#how-to-configure) to create modern prowjobs!
+    A simple sample job uses podutil looks like:
+    ```yaml
+    - name: foo-repo-presubmit-test
+      decorate: true
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+          command:
+          - /path/to/cmd
+          args:
+          - positional
+          - --and
+          - flags
+    ```
   - Scenario args: (if you are using [bootstrap.py](jenkins/bootstrap.py) instead of [podutils](prow/pod-utilities.md))
     - [Scenarios](scenarios) are python wrappers used by our entry point script [bootstrap.py](jenkins/bootstrap.py).
-    - You can append scenario/kubetest args inline in your prowjob definition, example:
-    ```yaml
-      - name: foo-repo-test
-        interval: 1h
-        agent: kubernetes
-        spec:
-          containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-            args:
-            - --repo=github.com/org/repo
-            - --timeout=90
-            - --scenario=execute
-            - --
-            - make
-            - test
-    ```
+    - Scenarios are deprecated, please write your job in podutils.
+    
 
 * Add the job name to the `test_groups` list in [`testgrid/config.yaml`](testgrid/config.yaml)
   - Also the group to at least one `dashboard_tab`
