@@ -21,6 +21,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // makeRequest renders a branch protection policy into the corresponding GitHub api request.
@@ -56,7 +57,7 @@ func makeChecks(cp *branchprotection.ContextPolicy) *github.RequiredStatusChecks
 		return nil
 	}
 	return &github.RequiredStatusChecks{
-		Contexts: append([]string{}, cp.Contexts...),
+		Contexts: append([]string{}, sets.NewString(cp.Contexts...).List()...),
 		Strict:   makeBool(cp.Strict),
 	}
 }
@@ -69,8 +70,8 @@ func makeRestrictions(rp *branchprotection.Restrictions) *github.Restrictions {
 	if rp == nil {
 		return nil
 	}
-	teams := append([]string{}, rp.Teams...)
-	users := append([]string{}, rp.Users...)
+	teams := append([]string{}, sets.NewString(rp.Teams...).List()...)
+	users := append([]string{}, sets.NewString(rp.Users...).List()...)
 	return &github.Restrictions{
 		Teams: &teams,
 		Users: &users,

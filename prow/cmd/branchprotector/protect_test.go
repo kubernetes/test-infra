@@ -262,7 +262,7 @@ func TestProtect(t *testing.T) {
 			name: "unknown org",
 			config: `
 branch-protection:
-  protect-by-default: true
+  protect: true
   orgs:
     unknown:
 `,
@@ -273,7 +273,7 @@ branch-protection:
 			branches: []string{"cfgdef/repo1=master", "cfgdef/repo1=branch", "cfgdef/repo2=master"},
 			config: `
 branch-protection:
-  protect-by-default: true
+  protect: true
   orgs:
     cfgdef:
 `,
@@ -303,10 +303,10 @@ branch-protection:
 			branches: []string{"this/yes=master", "that/no=master"},
 			config: `
 branch-protection:
-  protect-by-default: false
+  protect: false
   orgs:
     this:
-      protect-by-default: true
+      protect: true
     that:
 `,
 			expected: []requirements{
@@ -343,9 +343,10 @@ branch-protection:
 			branches: []string{"org/repo=push"},
 			config: `
 branch-protection:
-  protect-by-default: false
-  allow-push:
-  - oncall
+  protect: false
+  restrictions:
+    teams:
+    - oncall
   orgs:
     org:
 `,
@@ -356,9 +357,10 @@ branch-protection:
 			branches: []string{"org/repo=context"},
 			config: `
 branch-protection:
-  protect-by-default: false
-  require-contexts:
-  - test-foo
+  protect: false
+  required_status_checks:
+    contexts:
+    - test-foo
   orgs:
     org:
 `,
@@ -369,13 +371,13 @@ branch-protection:
 			branches: []string{"org/repo1=master", "org/repo1=branch", "org/skip=master"},
 			config: `
 branch-protection:
-  protect-by-default: false
+  protect: false
   orgs:
     org:
-      protect-by-default: true
+      protect: true
       repos:
         skip:
-          protect-by-default: false
+          protect: false
 `,
 			expected: []requirements{
 				{
@@ -399,25 +401,57 @@ branch-protection:
 			},
 		},
 		{
+			name:     "collapse duplicated contexts",
+			branches: []string{"org/repo=master"},
+			config: `
+branch-protection:
+  protect: true
+  required_status_checks:
+    contexts:
+    - hello-world
+    - duplicate-context
+    - duplicate-context
+    - hello-world
+  orgs:
+    org:
+`,
+			expected: []requirements{
+				{
+					Org:    "org",
+					Repo:   "repo",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						RequiredStatusChecks: &github.RequiredStatusChecks{
+							Contexts: []string{"duplicate-context", "hello-world"},
+						},
+					},
+				},
+			},
+		},
+		{
 			name:     "append contexts",
 			branches: []string{"org/repo=master"},
 			config: `
 branch-protection:
-  protect-by-default: true
-  require-contexts:
-  - config-presubmit
+  protect: true
+  required_status_checks:
+    contexts:
+    - config-presubmit
   orgs:
     org:
-      require-contexts:
-      - org-presubmit
+      required_status_checks:
+        contexts:
+        - org-presubmit
       repos:
         repo:
-          require-contexts:
-          - repo-presubmit
+          required_status_checks:
+            contexts:
+            - repo-presubmit
           branches:
             master:
-              require-contexts:
-              - branch-presubmit
+              required_status_checks:
+                contexts:
+                - branch-presubmit
 `,
 			expected: []requirements{
 				{
@@ -437,21 +471,25 @@ branch-protection:
 			branches: []string{"org/repo=master"},
 			config: `
 branch-protection:
-  protect-by-default: true
-  allow-push:
-  - config-team
+  protect: true
+  restrictions:
+    teams:
+    - config-team
   orgs:
     org:
-      allow-push:
-      - org-team
+      restrictions:
+        teams:
+        - org-team
       repos:
         repo:
-          allow-push:
-          - repo-team
+          restrictions:
+            teams:
+            - repo-team
           branches:
             master:
-              allow-push:
-              - branch-team
+              restrictions:
+                teams:
+                - branch-team
 `,
 			expected: []requirements{
 				{
@@ -561,43 +599,6 @@ branch-protection:
 					Org:    "parent",
 					Repo:   "child",
 					Branch: "unprotected",
-				},
-			},
-		},
-		{
-			name:     "modern/deprecated mixed",
-			branches: []string{"modern/deprecated=mixed"},
-			config: `
-branch-protection:
-  protect: false
-  required_status_checks:
-    contexts:
-    - config-presubmit
-  restrictions:
-    teams:
-    - config-team
-  orgs:
-    modern:
-      protect-by-default: true
-      allow-push:
-      - org-team
-      require-contexts:
-      - org-presubmit
-`,
-			expected: []requirements{
-				{
-					Org:    "modern",
-					Repo:   "deprecated",
-					Branch: "mixed",
-					Request: &github.BranchProtectionRequest{
-						RequiredStatusChecks: &github.RequiredStatusChecks{
-							Contexts: []string{"config-presubmit", "org-presubmit"},
-						},
-						Restrictions: &github.Restrictions{
-							Users: &[]string{},
-							Teams: &[]string{"config-team", "org-team"},
-						},
-					},
 				},
 			},
 		},

@@ -27,8 +27,6 @@ import (
 // Policy for the config/org/repo/branch.
 // When merging policies, a nil value results in inheriting the parent policy.
 type Policy struct {
-	deprecatedPolicy
-	deprecatedWarning bool // true if a warning message was sent
 	// Protect overrides whether branch protection is enabled if set.
 	Protect *bool `json:"protect,omitempty"`
 	// RequiredStatusChecks configures github contexts
@@ -41,24 +39,13 @@ type Policy struct {
 	RequiredPullRequestReviews *ReviewPolicy `json:"required_pull_request_reviews,omitempty"`
 }
 
-// deprecatedPolicy deserializes fields that are no longer in use
-type deprecatedPolicy struct {
-	DeprecatedProtect  *bool    `json:"protect-by-default,omitempty"`
-	DeprecatedContexts []string `json:"require-contexts,omitempty"`
-	DeprecatedPushers  []string `json:"allow-push,omitempty"`
-}
-
-func (d deprecatedPolicy) defined() bool {
-	return d.DeprecatedProtect != nil || d.DeprecatedContexts != nil || d.DeprecatedPushers != nil
-}
-
 func (p Policy) defined() bool {
 	return p.Protect != nil || p.RequiredStatusChecks != nil || p.Admins != nil || p.Restrictions != nil || p.RequiredPullRequestReviews != nil
 }
 
-// HasProtect returns true if the policy or deprecated policy defines protection
+// HasProtect returns true if the policy defines protection
 func (p Policy) HasProtect() bool {
-	return p.Protect != nil || p.deprecatedPolicy.DeprecatedProtect != nil
+	return p.Protect != nil
 }
 
 // ContextPolicy configures required github contexts.
@@ -164,36 +151,12 @@ func mergeRestrictions(parent, child *Restrictions) *Restrictions {
 
 // Apply returns a policy that merges the child into the parent
 func (p Policy) Apply(child Policy) (Policy, error) {
-	if old := child.deprecatedPolicy.defined(); old && child.defined() {
-		return p, errors.New("cannot mix Policy and deprecatedPolicy branch protection fields")
-	} else if old {
-		if !p.deprecatedWarning {
-			p.deprecatedWarning = true
-			logrus.Warn("WARNING: protect-by-default, require-contexts, allow-push are deprecated. Please replace them before July 2018")
-		}
-		d := child.deprecatedPolicy
-		child = Policy{
-			Protect: d.DeprecatedProtect,
-		}
-		if d.DeprecatedContexts != nil {
-			child.RequiredStatusChecks = &ContextPolicy{
-				Contexts: d.DeprecatedContexts,
-			}
-		}
-		if d.DeprecatedPushers != nil {
-			child.Restrictions = &Restrictions{
-				Teams: d.DeprecatedPushers,
-			}
-		}
-	}
-
 	return Policy{
 		Protect:                    selectBool(p.Protect, child.Protect),
 		RequiredStatusChecks:       mergeContextPolicy(p.RequiredStatusChecks, child.RequiredStatusChecks),
 		Admins:                     selectBool(p.Admins, child.Admins),
 		Restrictions:               mergeRestrictions(p.Restrictions, child.Restrictions),
 		RequiredPullRequestReviews: mergeReviewPolicy(p.RequiredPullRequestReviews, child.RequiredPullRequestReviews),
-		deprecatedWarning:          p.deprecatedWarning,
 	}, nil
 }
 
@@ -203,8 +166,6 @@ type BranchProtection struct {
 	ProtectTested         bool           `json:"protect-tested-repos,omitempty"`
 	Orgs                  map[string]Org `json:"orgs,omitempty"`
 	AllowDisabledPolicies bool           `json:"allow_disabled_policies,omitempty"`
-
-	warned bool // warn if deprecated fields are use
 }
 
 // Org holds the default protection policy for an entire org, as well as any repo overrides.

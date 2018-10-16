@@ -197,7 +197,6 @@ func (p *protector) protect() {
 // UpdateOrg updates all repos in the org with the specified defaults
 func (p *protector) UpdateOrg(orgName string, org config.Org, allRepos bool) error {
 	var repos []string
-	allRepos = allRepos || org.HasProtect()
 	if allRepos {
 		// Strongly opinionated org, configure every repo in the org.
 		rs, err := p.client.GetRepos(orgName, false)
@@ -250,7 +249,7 @@ func (p *protector) UpdateRepo(orgName string, repo string, repoDefaults config.
 
 // UpdateBranch updates the branch with the specified configuration
 func (p *protector) UpdateBranch(orgName, repo string, branchName string, protected bool) error {
-	bp, err := p.cfg.GetBranchProtection(orgName, repo, branchName)
+	bp, err := p.cfg.GetBranchProtection(orgName, repo, branchName) // this merges parent config into children
 	if err != nil {
 		return err
 	}
