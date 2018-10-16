@@ -94,6 +94,7 @@ filegroup(
         "//queue_health/graph:all-srcs",
         "//robots/commenter:all-srcs",
         "//robots/issue-creator:all-srcs",
+        "//robots/pr-labeler:all-srcs",
         "//scenarios:all-srcs",
         "//testgrid:all-srcs",
         "//triage:all-srcs",
