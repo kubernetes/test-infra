@@ -5,7 +5,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/cloud-builders/bazel
+      - image: launcher.gcr.io/google/bazel
         command:
         - bazel
         args:
@@ -52,7 +52,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/cloud-builders/bazel
+    - image: launcher.gcr.io/google/bazel
       command:
       - bazel
       args:
