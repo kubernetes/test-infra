@@ -27,6 +27,9 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
+# The -parallel form of the test includes Slow tests, but skips Serial and Disruptive.
+# The non -parallel form of the test includes Serial and Disruptive, so it must run serially;
+# we skip Slow tests though so that the runtime is reasonable.
 - interval: 2h
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
   labels:
@@ -51,6 +54,36 @@ periodics:
       - --provider=gke
       - --skew
       - --timeout=1200m
+      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]
+      - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+
+- interval: 2h
+  name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new-parallel
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=1220
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --check-version-skew=false
+      - --deployment=gke
+      - --extract=ci/latest
+      - --extract=ci/k8s-stable1
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-c
+      - --ginkgo-parallel
+      - --gke-environment=test
+      - --provider=gke
+      - --skew
+      - --timeout=1200m
+      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
