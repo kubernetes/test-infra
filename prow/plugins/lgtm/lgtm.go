@@ -339,6 +339,17 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 
 	// rc.repo.Owner.Login, rc.repo.Name)
 	opts := optionsForRepo(config, org, repo)
+	if opts.StickyForCollaborators {
+		if ok, merr := gc.IsCollaborator(org, repo, pe.PullRequest.User.Login); merr == nil && ok {
+			// StickyForCollaborators indicates if LGTM is sticky for PRs authored by collaborators.
+			// This means that collaborators are trusted to not introduce bad code after the initial
+			// LGTM, and it eliminates the need to re-lgtm minor fixes/updates. If the PR is authored
+			// by non-collaborator, this option does not apply.
+			return nil
+		} else if merr != nil {
+			log.WithError(merr).Errorf("Failed to check if author is a collaborator.")
+		}
+	}
 	if opts.StoreTreeHash {
 		// Check if we have LGTM label
 		labels, err := gc.GetIssueLabels(org, repo, number)

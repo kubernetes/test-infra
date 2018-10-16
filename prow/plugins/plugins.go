@@ -369,6 +369,14 @@ type Lgtm struct {
 	// StoreTreeHash indicates if tree_hash should be stored inside a comment to detect
 	// squashed commits before removing lgtm labels
 	StoreTreeHash bool `json:"store_tree_hash,omitempty"`
+	// WARNING: Read below for potential risk before you enable this option.
+	// StickyForCollaborators indicates if LGTM is sticky for PRs authored by collaborators.
+	// This means that collaborators are trusted to not introduce bad code after the initial
+	// LGTM, and it eliminates the need to re-lgtm minor fixes/updates. If the PR is authored
+	// by non-collaborator, this option does not apply.
+	// This disables the security mechanism that prevents a malicious collaborator (or
+	// compromised collaborator GitHub account) from merging arbitrary code.
+	StickyForCollaborators bool `json:"sticky_for_collaborators,omitempty"`
 }
 
 type Cat struct {

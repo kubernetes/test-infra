@@ -674,6 +674,8 @@ func TestHandlePullRequest(t *testing.T) {
 		issueComments map[int][]github.IssueComment
 
 		expectNoComments bool
+
+		stickyLgtm bool
 	}{
 		{
 			name: "pr_synchronize, no RemoveLabel error",
@@ -704,6 +706,92 @@ func TestHandlePullRequest(t *testing.T) {
 				},
 			},
 			expectNoComments: false,
+		},
+		{
+			name: "Sticky LGTM for collaborator",
+			event: github.PullRequestEvent{
+				Action: github.PullRequestActionSynchronize,
+				PullRequest: github.PullRequest{
+					Number: 101,
+					Base: github.PullRequestBranch{
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "kubernetes",
+							},
+							Name: "kubernetes",
+						},
+					},
+					User: github.User{
+						Login: "collab",
+					},
+					MergeSHA: &SHA,
+				},
+			},
+			expectNoComments: true,
+			stickyLgtm : true,
+		},
+		{
+			name: "LGTM not sticky for collaborator if disabled",
+			event: github.PullRequestEvent{
+				Action: github.PullRequestActionSynchronize,
+				PullRequest: github.PullRequest{
+					Number: 101,
+					Base: github.PullRequestBranch{
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "kubernetes",
+							},
+							Name: "kubernetes",
+						},
+					},
+					User: github.User{
+						Login: "collab",
+					},
+					MergeSHA: &SHA,
+				},
+			},
+			labelsRemoved: []string{LGTMLabel},
+			issueComments: map[int][]github.IssueComment{
+				101: {
+					{
+						Body: removeLGTMLabelNoti,
+						User: github.User{Login: fakegithub.Bot},
+					},
+				},
+			},
+			expectNoComments: false,
+		},
+		{
+			name: "LGTM not sticky for non collaborator",
+			event: github.PullRequestEvent{
+				Action: github.PullRequestActionSynchronize,
+				PullRequest: github.PullRequest{
+					Number: 101,
+					Base: github.PullRequestBranch{
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "kubernetes",
+							},
+							Name: "kubernetes",
+						},
+					},
+					User: github.User{
+						Login: "nonCollab",
+					},
+					MergeSHA: &SHA,
+				},
+			},
+			labelsRemoved: []string{LGTMLabel},
+			issueComments: map[int][]github.IssueComment{
+				101: {
+					{
+						Body: removeLGTMLabelNoti,
+						User: github.User{Login: fakegithub.Bot},
+					},
+				},
+			},
+			expectNoComments: false,
+			stickyLgtm : true,
 		},
 		{
 			name: "pr_assigned",
@@ -789,6 +877,7 @@ func TestHandlePullRequest(t *testing.T) {
 					},
 				},
 				Commits:     make(map[string]github.SingleCommit),
+				Collaborators: []string{"collab"},
 				LabelsAdded: c.labelsAdded,
 			}
 			fakeGitHub.LabelsAdded = append(fakeGitHub.LabelsAdded, "kubernetes/kubernetes#101:lgtm")
@@ -799,6 +888,7 @@ func TestHandlePullRequest(t *testing.T) {
 			pc.Lgtm = append(pc.Lgtm, plugins.Lgtm{
 				Repos:         []string{"kubernetes/kubernetes"},
 				StoreTreeHash: true,
+				StickyForCollaborators: c.stickyLgtm,
 			})
 			err := handlePullRequest(
 				logrus.WithField("plugin", "approve"),
