@@ -1,4 +1,4 @@
-presubmits:  
+presubmits:
   bazelbuild/rules_k8s:
   - name: pull-rules-k8s-e2e
     cluster: gke_rules-k8s_us-central1-f_testing
@@ -7,7 +7,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/rules-k8s/gcloud-bazel:v20180708-d6e1b65
+      - image: gcr.io/rules-k8s/gcloud-bazel:v20181017-3f8359f
         args:
         - bash
         - -c
