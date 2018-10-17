@@ -54,6 +54,7 @@ presubmits:
     always_run: true
     optional: true
     decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.12
@@ -63,6 +64,7 @@ presubmits:
     always_run: true
     optional: true
     decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.12
