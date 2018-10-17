@@ -38,6 +38,7 @@ import (
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/kubetest/conformance"
 	"k8s.io/test-infra/kubetest/dind"
+	"k8s.io/test-infra/kubetest/kubeadmdind"
 	"k8s.io/test-infra/kubetest/process"
 	"k8s.io/test-infra/kubetest/util"
 )
@@ -247,6 +248,8 @@ func getDeployer(o *options) (deployer, error) {
 		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.gcpImageFamily, o.gcpImageProject, o.cluster, &o.testArgs, &o.upgradeArgs)
 	case "kops":
 		return newKops(o.provider, o.gcpProject, o.cluster)
+	case "kubeadm-dind":
+		return kubeadmdind.NewDeployer(control)
 	case "kubernetes-anywhere":
 		if o.multiClusters.Enabled() {
 			return newKubernetesAnywhereMultiCluster(o.gcpProject, o.gcpZone, o.multiClusters)
