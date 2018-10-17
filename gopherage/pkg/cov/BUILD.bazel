@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
+        "aggregate.go",
         "diff.go",
         "merge.go",
         "util.go",
@@ -15,6 +16,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = [
+        "aggregate_test.go",
         "diff_test.go",
         "equality_test.go",
         "merge_test.go",
