@@ -605,6 +605,7 @@ periodics:
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
