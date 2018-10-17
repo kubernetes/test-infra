@@ -868,3 +868,37 @@ repos:
         name: area/prow/pod-utilities
         target: both
         addedBy: label
+  kubernetes/website:
+    labels:
+      - color: e9b3f9
+        description: Issues or PRs related to English language
+        name: language/en
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
+        description: Issues or PRs related to Japanese language
+        name: language/ja
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
+        description: Issues or PRs related to Korean language
+        name: language/ko
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
+        description: Issues or PRs related to Norwegian language
+        name: language/no
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
+        description: Issues or PRs related to Chinese language
+        name: language/zh
+        previously:
+          - name: language/cn
+        target: both
+        prowPlugin: label
+        addedBy: anyone
