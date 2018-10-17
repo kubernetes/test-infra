@@ -138,6 +138,7 @@ func PostsubmitSpec(p config.Postsubmit, refs kube.Refs) kube.ProwJobSpec {
 		Job:       p.Name,
 		Refs:      &refs,
 		ExtraRefs: p.ExtraRefs,
+		Report:    p.Report,
 
 		MaxConcurrency: p.MaxConcurrency,
 
@@ -163,6 +164,7 @@ func PeriodicSpec(p config.Periodic) kube.ProwJobSpec {
 		Type:      kube.PeriodicJob,
 		Job:       p.Name,
 		ExtraRefs: p.ExtraRefs,
+		Report:    p.Report,
 
 		DecorationConfig: p.DecorationConfig,
 	}

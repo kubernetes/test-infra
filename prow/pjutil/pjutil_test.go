@@ -86,10 +86,61 @@ func TestPostsubmitSpec(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "can report",
+			p: config.Postsubmit{
+				UtilityConfig: config.UtilityConfig{
+					PathAlias: "foo",
+					CloneURI:  "bar",
+				},
+				Report: true,
+			},
+			expected: kube.ProwJobSpec{
+				Type: kube.PostsubmitJob,
+				Refs: &kube.Refs{
+					PathAlias: "foo",
+					CloneURI:  "bar",
+				},
+				Report: true,
+			},
+		},
 	}
 
 	for _, tc := range tests {
 		actual := PostsubmitSpec(tc.p, tc.refs)
+		if expected := tc.expected; !reflect.DeepEqual(actual, expected) {
+			t.Errorf("%s: actual %#v != expected %#v", tc.name, actual, expected)
+		}
+	}
+}
+
+func TestPeriodicSpec(t *testing.T) {
+	tests := []struct {
+		name     string
+		p        config.Periodic
+		expected kube.ProwJobSpec
+	}{
+		{
+			name: "default perioidc job",
+			p:    config.Periodic{},
+			expected: kube.ProwJobSpec{
+				Type: kube.PeriodicJob,
+			},
+		},
+		{
+			name: "can report",
+			p: config.Periodic{
+				Report: true,
+			},
+			expected: kube.ProwJobSpec{
+				Type:   kube.PeriodicJob,
+				Report: true,
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		actual := PeriodicSpec(tc.p)
 		if expected := tc.expected; !reflect.DeepEqual(actual, expected) {
 			t.Errorf("%s: actual %#v != expected %#v", tc.name, actual, expected)
 		}

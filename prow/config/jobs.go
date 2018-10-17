@@ -93,7 +93,7 @@ type Presubmit struct {
 	Context string `json:"context"`
 	// Optional indicates that the job's status context should not be required for merge.
 	Optional bool `json:"optional,omitempty"`
-	// SkipReport skips commenting and setting status on GitHub.
+	// SkipReport skips commenting and setting status on target git provider.
 	SkipReport bool `json:"skip_report,omitempty"`
 
 	// Trigger is the regular expression to trigger the job.
@@ -145,6 +145,8 @@ type Postsubmit struct {
 	Spec *v1.PodSpec `json:"spec,omitempty"`
 	// Maximum number of this job running concurrently, 0 implies no limit.
 	MaxConcurrency int `json:"max_concurrency,omitempty"`
+	// Report is whether the job need to report through crier
+	Report bool `json:"report,omitempty"`
 
 	Brancher
 
@@ -176,6 +178,8 @@ type Periodic struct {
 	Tags []string `json:"tags,omitempty"`
 	// Run these jobs after successfully running this one.
 	RunAfterSuccess []Periodic `json:"run_after_success,omitempty"`
+	// Report is whether the job need to report through crier
+	Report bool `json:"report,omitempty"`
 
 	UtilityConfig
 
