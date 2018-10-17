@@ -555,6 +555,9 @@ plugins:
 
   GoogleCloudPlatform/k8s-cluster-bundle:
   - trigger
+  - lgtm
+  - size
+  - welcome
 
   client-go/unofficial-docs:
   - approve
