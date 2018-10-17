@@ -289,10 +289,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable2
   alert_stale_results_hours: 24
   num_failures_to_alert: 4 # Runs every 6h. Alert when it's been failing for a day.
-- name: ci-kubernetes-e2e-gce-pod-preemption
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-pod-preemption
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 4 # Runs every 6h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gci-gce-alpha-enabled-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-enabled-default
 - name: ci-kubernetes-e2e-gci-gce-alpha-features
@@ -6383,10 +6379,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-statefulset
     base_options: include-filter-by-regex=sig-scheduling
     description: scheduling gce statefulset e2e tests for master branch
-  - name: pod-preemption
-    test_group_name: ci-kubernetes-e2e-gce-pod-preemption
-    base_options: include-filter-by-regex=sig-scheduling
-    description: preemption e2e tests for master branch
 
 - name: sig-storage
   dashboard_tab:
