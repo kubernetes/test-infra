@@ -37,7 +37,10 @@ type fakePack string
 
 var human = flag.Bool("human", false, "Enable to run additional manual tests")
 
-func (c fakePack) readDog() (string, error) {
+func (c fakePack) readDog(dogURL string) (string, error) {
+	if dogURL != "" {
+		return dogURL, nil
+	}
 	return string(c), nil
 }
 
@@ -45,7 +48,7 @@ func TestRealDog(t *testing.T) {
 	if !*human {
 		t.Skip("Real dogs disabled for automation. Manual users can add --human [--category=foo]")
 	}
-	if dog, err := dogURL.readDog(); err != nil {
+	if dog, err := dogURL.readDog(""); err != nil {
 		t.Errorf("Could not read dog from %s: %v", dogURL, err)
 	} else {
 		fmt.Println(dog)
@@ -77,9 +80,7 @@ func TestFormat(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		ret, err := dogResult{
-			URL: tc.url,
-		}.Format()
+		ret, err := FormatURL(tc.url)
 		switch {
 		case tc.err:
 			if err == nil {
@@ -95,6 +96,7 @@ func TestFormat(t *testing.T) {
 
 // Medium integration test (depends on ability to open a TCP port)
 func TestHttpResponse(t *testing.T) {
+
 	// create test cases for handling content length of images
 	contentLength := make(map[string]string)
 	contentLength["/dog.jpg"] = "717987"
@@ -126,39 +128,65 @@ func TestHttpResponse(t *testing.T) {
 	validResponse := string(b)
 	var testcases = []struct {
 		name     string
+		comment  string
 		path     string
 		response string
+		expected string
 		isValid  bool
 	}{
 		{
 			name:     "valid",
+			comment:  "/woof",
 			path:     "/valid",
 			response: validResponse,
+			expected: url,
 			isValid:  true,
 		},
 		{
 			name:     "invalid JSON",
+			comment:  "/woof",
 			path:     "/bad-json",
 			response: `{"bad-blob": "not-a-url"`,
 			isValid:  false,
 		},
 		{
 			name:     "invalid URL",
+			comment:  "/woof",
 			path:     "/bad-url",
 			response: `{"url": "not a url.."}`,
 			isValid:  false,
 		},
 		{
 			name:     "mp4 doggo unsupported :(",
+			comment:  "/woof",
 			path:     "/mp4-doggo",
 			response: fmt.Sprintf(`{"url": "%s/doggo.mp4"}`, ts2.URL),
 			isValid:  false,
 		},
 		{
 			name:     "image too big",
+			comment:  "/woof",
 			path:     "/too-big",
 			response: fmt.Sprintf(`{"url": "%s/bigdog.jpg"}`, ts2.URL),
 			isValid:  false,
+		},
+		{
+			name:     "this is fine",
+			comment:  "/this-is-fine",
+			expected: "this_is_fine.png",
+			isValid:  true,
+		},
+		{
+			name:     "this is not fine",
+			comment:  "/this-is-not-fine",
+			expected: "this_is_not_fine.png",
+			isValid:  true,
+		},
+		{
+			name:     "this is unbearable",
+			comment:  "/this-is-unbearable",
+			expected: "this_is_unbearable.jpg",
+			isValid:  true,
 		},
 	}
 
@@ -176,39 +204,42 @@ func TestHttpResponse(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	// github fake client
-	fc := &fakegithub.FakeClient{
-		IssueComments: make(map[int][]github.IssueComment),
-	}
-
 	// run test for each case
 	for _, testcase := range testcases {
-		dog, err := realPack(ts.URL + testcase.path).readDog()
+		dog, err := realPack(ts.URL + testcase.path).readDog("")
 		if testcase.isValid && err != nil {
 			t.Errorf("For case %s, didn't expect error: %v", testcase.name, err)
 		} else if !testcase.isValid && err == nil {
 			t.Errorf("For case %s, expected error, received dog: %s", testcase.name, dog)
 		}
-	}
 
-	// fully test handling a comment
-	comment := "/woof"
-	e := &github.GenericCommentEvent{
-		Action:     github.GenericCommentActionCreated,
-		Body:       comment,
-		Number:     5,
-		IssueState: "open",
-	}
-	err = handle(fc, logrus.WithField("plugin", pluginName), e, realPack(ts.URL))
-	if err != nil {
-		t.Errorf("For comment /woof, didn't expect error: %v", err)
-	}
+		if !testcase.isValid {
+			continue
+		}
 
-	if len(fc.IssueComments[5]) != 1 {
-		t.Error("should have commented.")
-	}
-	if c := fc.IssueComments[5][0]; !strings.Contains(c.Body, url) {
-		t.Errorf("missing image url: %s from comment: %v", url, c)
+		// github fake client
+		fc := &fakegithub.FakeClient{
+			IssueComments: make(map[int][]github.IssueComment),
+		}
+
+		// fully test handling a comment
+		e := &github.GenericCommentEvent{
+			Action:     github.GenericCommentActionCreated,
+			Body:       testcase.comment,
+			Number:     5,
+			IssueState: "open",
+		}
+		err = handle(fc, logrus.WithField("plugin", pluginName), e, realPack(ts.URL))
+		if err != nil {
+			t.Errorf("tc %s: For comment %s, didn't expect error: %v", testcase.name, testcase.comment, err)
+		}
+
+		if len(fc.IssueComments[5]) != 1 {
+			t.Errorf("tc %s: should have commented", testcase.name)
+		}
+		if c := fc.IssueComments[5][0]; !strings.Contains(c.Body, testcase.expected) {
+			t.Errorf("tc %s: missing image url: %s from comment: %v", testcase.name, testcase.expected, c.Body)
+		}
 	}
 }
 
@@ -263,6 +294,30 @@ func TestDogs(t *testing.T) {
 			state:         "open",
 			action:        github.GenericCommentActionCreated,
 			body:          "/bark \r",
+			shouldComment: true,
+		},
+		{
+			name:          "leave this-is-fine on pr",
+			state:         "open",
+			action:        github.GenericCommentActionCreated,
+			body:          "/this-is-fine",
+			pr:            true,
+			shouldComment: true,
+		},
+		{
+			name:          "leave this-is-not-fine on pr",
+			state:         "open",
+			action:        github.GenericCommentActionCreated,
+			body:          "/this-is-not-fine",
+			pr:            true,
+			shouldComment: true,
+		},
+		{
+			name:          "leave this-is-unbearable on pr",
+			state:         "open",
+			action:        github.GenericCommentActionCreated,
+			body:          "/this-is-unbearable",
+			pr:            true,
 			shouldComment: true,
 		},
 	}
