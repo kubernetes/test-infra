@@ -52,23 +52,26 @@ type Controller struct {
 	queue       workqueue.RateLimitingInterface
 	informer    pjinformers.ProwJobInformer
 	reporter    reportClient
+	numWorkers  int
 }
 
 func NewController(
 	pjclientset clientset.Interface,
 	queue workqueue.RateLimitingInterface,
 	informer pjinformers.ProwJobInformer,
-	reporter reportClient) *Controller {
+	reporter reportClient,
+	numWorkers int) *Controller {
 	return &Controller{
 		pjclientset: pjclientset,
 		queue:       queue,
 		informer:    informer,
 		reporter:    reporter,
+		numWorkers:  numWorkers,
 	}
 }
 
 // Run is the main path of execution for the controller loop
-func (c *Controller) Run(numWorkers int, stopCh <-chan struct{}) {
+func (c *Controller) Run(stopCh <-chan struct{}) {
 	// handle a panic with logging and exiting
 	defer utilruntime.HandleCrash()
 	// ignore new items in the queue but when all goroutines
@@ -108,11 +111,11 @@ func (c *Controller) Run(numWorkers int, stopCh <-chan struct{}) {
 	logrus.Info("Controller.Run: cache sync complete")
 
 	// run the runWorker method every second with a stop channel
-	for i := 0; i < numWorkers; i++ {
+	for i := 0; i < c.numWorkers; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
 
-	logrus.Infof("Started %d workers", numWorkers)
+	logrus.Infof("Started %d workers", c.numWorkers)
 	<-stopCh
 	logrus.Info("Shutting down workers")
 }
@@ -172,9 +175,7 @@ func (c *Controller) updateReportState(pj *v1.ProwJob) error {
 // necessary handler action based off of if the item was
 // created or deleted
 func (c *Controller) processNextItem() bool {
-
 	key, quit := c.queue.Get()
-
 	if quit {
 		return false
 	}
