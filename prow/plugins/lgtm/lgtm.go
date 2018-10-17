@@ -28,6 +28,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/trigger"
 	"k8s.io/test-infra/prow/repoowners"
 )
 
@@ -106,6 +107,7 @@ type githubClient interface {
 	DeleteComment(org, repo string, ID int) error
 	BotName() (string, error)
 	GetSingleCommit(org, repo, SHA string) (github.SingleCommit, error)
+	IsMember(org, user string) (bool, error)
 }
 
 // reviewCtx contains information about each review event
@@ -300,28 +302,42 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 		if err := gc.AddLabel(org, repoName, number, LGTMLabel); err != nil {
 			return err
 		}
-		if opts.StoreTreeHash {
-			pr, err := gc.GetPullRequest(org, repoName, number)
-			if err != nil {
-				log.WithError(err).Error("Failed to get pull request.")
+		if !stickyLgtm(log, gc, config, opts, issueAuthor, org, repoName) {
+			if opts.StoreTreeHash {
+				pr, err := gc.GetPullRequest(org, repoName, number)
+				if err != nil {
+					log.WithError(err).Error("Failed to get pull request.")
+				}
+				commit, err := gc.GetSingleCommit(org, repoName, pr.Head.SHA)
+				if err != nil {
+					log.WithField("sha", pr.Head.SHA).WithError(err).Error("Failed to get commit.")
+				}
+				treeHash := commit.Commit.Tree.SHA
+				log.WithField("tree", treeHash).Info("Adding comment to store tree-hash.")
+				if err := gc.CreateComment(org, repoName, number, fmt.Sprintf(addLGTMLabelNotification, treeHash)); err != nil {
+					log.WithError(err).Error("Failed to add comment.")
+				}
 			}
-			commit, err := gc.GetSingleCommit(org, repoName, pr.Head.SHA)
-			if err != nil {
-				log.WithField("sha", pr.Head.SHA).WithError(err).Error("Failed to get commit.")
-			}
-			treeHash := commit.Commit.Tree.SHA
-			log.WithField("tree", treeHash).Info("Adding comment to store tree-hash.")
-			if err := gc.CreateComment(org, repoName, number, fmt.Sprintf(addLGTMLabelNotification, treeHash)); err != nil {
-				log.WithError(err).Error("Failed to add comment.")
-			}
+			// Delete the LGTM removed noti after the LGTM label is added.
+			cp.PruneComments(func(comment github.IssueComment) bool {
+				return strings.Contains(comment.Body, removeLGTMLabelNoti)
+			})
 		}
-		// Delete the LGTM removed noti after the LGTM label is added.
-		cp.PruneComments(func(comment github.IssueComment) bool {
-			return strings.Contains(comment.Body, removeLGTMLabelNoti)
-		})
 	}
 
 	return nil
+}
+
+func stickyLgtm(log *logrus.Entry, gc githubClient, config *plugins.Configuration, lgtm *plugins.Lgtm, author, org, repo string) bool {
+	if lgtm.StickyForTrustedAuthors {
+		triggerOpt := config.TriggerFor(org, repo)
+		if ok, merr := trigger.TrustedUser(gc, triggerOpt, author, org, repo); merr == nil && ok {
+			return true
+		} else if merr != nil {
+			log.WithError(merr).Errorf("Failed to check if author is a collaborator.")
+		}
+	}
+	return false
 }
 
 func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Configuration, pe *github.PullRequestEvent) error {
@@ -337,18 +353,10 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 	repo := pe.PullRequest.Base.Repo.Name
 	number := pe.PullRequest.Number
 
-	// rc.repo.Owner.Login, rc.repo.Name)
 	opts := optionsForRepo(config, org, repo)
-	if opts.StickyForCollaborators {
-		if ok, merr := gc.IsCollaborator(org, repo, pe.PullRequest.User.Login); merr == nil && ok {
-			// StickyForCollaborators indicates if LGTM is sticky for PRs authored by collaborators.
-			// This means that collaborators are trusted to not introduce bad code after the initial
-			// LGTM, and it eliminates the need to re-lgtm minor fixes/updates. If the PR is authored
-			// by non-collaborator, this option does not apply.
-			return nil
-		} else if merr != nil {
-			log.WithError(merr).Errorf("Failed to check if author is a collaborator.")
-		}
+	if stickyLgtm(log, gc, config, opts, pe.PullRequest.User.Login, org, repo) {
+		// If the author is trusted,, skip tree hash verification and LGTM removal.
+		return nil
 	}
 	if opts.StoreTreeHash {
 		// Check if we have LGTM label

@@ -62,7 +62,7 @@ func handleIC(c client, trigger *plugins.Trigger, ic github.IssueCommentEvent) e
 		// Check for the presence of the needs-ok-to-test label and remove it
 		// if a trusted member has commented "/ok-to-test".
 		if okToTest && ic.Issue.HasLabel(NeedsOkToTest) {
-			trusted, err := trustedUser(c.GitHubClient, trigger, commentAuthor, org, repo)
+			trusted, err := TrustedUser(c.GitHubClient, trigger, commentAuthor, org, repo)
 			if err != nil {
 				return err
 			}
@@ -100,7 +100,7 @@ func handleIC(c client, trigger *plugins.Trigger, ic github.IssueCommentEvent) e
 
 	var comments []github.IssueComment
 	// Skip untrusted users.
-	trusted, err := trustedUser(c.GitHubClient, trigger, commentAuthor, org, repo)
+	trusted, err := TrustedUser(c.GitHubClient, trigger, commentAuthor, org, repo)
 	if err != nil {
 		return fmt.Errorf("error checking trust of %s: %v", commentAuthor, err)
 	}

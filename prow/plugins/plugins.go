@@ -372,12 +372,12 @@ type Lgtm struct {
 	// WARNING: This disables the security mechanism that prevents a malicious member (or
 	// compromised GitHub account) from merging arbitrary code. Use with caution.
 	//
-	// StickyForTrustedUsers indicates if LGTM is sticky for PRs authored by trusted users, and
+	// StickyForTrustedAuthors indicates if LGTM is sticky for PRs authored by trusted users, and
 	// eliminates the need to re-lgtm minor fixes/updates. This does not apply if the author is
 	// not trusted. Trusted users are by default collaborators and org members, but can also be
-	// restricted to only org members using Trigger.OnlyOrgMembers. i.e. thr same set of users
+	// restricted to only org members using Trigger.OnlyOrgMembers. i.e. the same set of users
 	// who can issue "/ok-to-test".
-	StickyForTrustedUsers bool `json:"sticky_for_collaborators,omitempty"`
+	StickyForTrustedAuthors bool `json:"sticky_for_trusted_authors,omitempty"`
 }
 
 type Cat struct {
