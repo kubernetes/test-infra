@@ -42,9 +42,9 @@ var (
 
 const (
 	dogURL        = realPack("https://random.dog/woof.json")
-	fineURL       = "https://dogechatbot.appspot.com/static/this_is_fine.png"
-	notFineURL    = "https://dogechatbot.appspot.com/static/this_is_not_fine.png"
-	unbearableURL = "https://dogechatbot.appspot.com/static/this_is_unbearable.jpg"
+	fineURL       = "https://storage.googleapis.com/this-is-fine-images/this_is_fine.png"
+	notFineURL    = "https://storage.googleapis.com/this-is-fine-images/this_is_not_fine.png"
+	unbearableURL = "https://storage.googleapis.com/this-is-fine-images/this_is_unbearable.jpg"
 	pluginName    = "dog"
 )
 
@@ -55,14 +55,14 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The dog plugin adds a dog image to an issue in response to the `/woof` command.",
+		Description: "The dog plugin adds a (famous.)dog image to an issue in response to the `/woof` command.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/(woof|bark|this-is-fine|this-is-not-fine|this-is-unbearable)",
+		Usage:       "/(woof|bark|this-is-{fine|not-fine|unbearable})",
 		Description: "Add a (famous.)dog image to the issue",
 		Featured:    false,
 		WhoCanUse:   "Anyone",
-		Examples:    []string{"/woof", "/bark", "/this-is-fine", "this-is-not-fine", "this-is-unbearable"},
+		Examples:    []string{"/woof", "/bark", "this-is-{fine|not-fine|unbearable}"},
 	})
 	return pluginHelp, nil
 }
