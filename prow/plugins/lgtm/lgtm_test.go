@@ -255,7 +255,9 @@ func TestLGTMComment(t *testing.T) {
 					Base: github.PullRequestBranch{
 						Ref: "master",
 					},
-					MergeSHA: &SHA,
+					Head: github.PullRequestBranch{
+						SHA: SHA,
+					},
 				},
 			},
 			PullRequestChanges: map[int][]github.PullRequestChange{
@@ -313,26 +315,26 @@ func TestLGTMComment(t *testing.T) {
 		if tc.shouldToggle {
 			if tc.hasLGTM {
 				if len(fc.LabelsRemoved) == 0 {
-					t.Errorf("should have removed LGTM.")
+					t.Error("should have removed LGTM.")
 				} else if len(fc.LabelsAdded) > 1 {
-					t.Errorf("should not have added LGTM.")
+					t.Error("should not have added LGTM.")
 				}
 			} else {
 				if len(fc.LabelsAdded) == 0 {
-					t.Errorf("should have added LGTM.")
+					t.Error("should have added LGTM.")
 				} else if len(fc.LabelsRemoved) > 0 {
-					t.Errorf("should not have removed LGTM.")
+					t.Error("should not have removed LGTM.")
 				}
 			}
 		} else if len(fc.LabelsRemoved) > 0 {
-			t.Errorf("should not have removed LGTM.")
+			t.Error("should not have removed LGTM.")
 		} else if (tc.hasLGTM && len(fc.LabelsAdded) > 1) || (!tc.hasLGTM && len(fc.LabelsAdded) > 0) {
-			t.Errorf("should not have added LGTM.")
+			t.Error("should not have added LGTM.")
 		}
 		if tc.shouldComment && len(fc.IssueComments[5]) != 1 {
-			t.Errorf("should have commented.")
+			t.Error("should have commented.")
 		} else if !tc.shouldComment && len(fc.IssueComments[5]) != 0 {
-			t.Errorf("should not have commented.")
+			t.Error("should not have commented.")
 		}
 	}
 }
@@ -411,7 +413,9 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 			IssueComments: make(map[int][]github.IssueComment),
 			PullRequests: map[int]*github.PullRequest{
 				5: {
-					MergeSHA: &SHA,
+					Head: github.PullRequestBranch{
+						SHA: SHA,
+					},
 				},
 			},
 		}
@@ -586,7 +590,9 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			LabelsAdded:   []string{},
 			PullRequests: map[int]*github.PullRequest{
 				5: {
-					MergeSHA: &SHA,
+					Head: github.PullRequestBranch{
+						SHA: SHA,
+					},
 				},
 			},
 		}
@@ -683,7 +689,9 @@ func TestHandlePullRequest(t *testing.T) {
 							Name: "kubernetes",
 						},
 					},
-					MergeSHA: &SHA,
+					Head: github.PullRequestBranch{
+						SHA: SHA,
+					},
 				},
 			},
 			labelsRemoved: []string{LGTMLabel},
@@ -718,7 +726,9 @@ func TestHandlePullRequest(t *testing.T) {
 							Name: "kubernetes",
 						},
 					},
-					MergeSHA: &SHA,
+					Head: github.PullRequestBranch{
+						SHA: SHA,
+					},
 				},
 			},
 			issueComments: map[int][]github.IssueComment{
@@ -745,7 +755,9 @@ func TestHandlePullRequest(t *testing.T) {
 							Name: "kubernetes",
 						},
 					},
-					MergeSHA: &SHA,
+					Head: github.PullRequestBranch{
+						SHA: SHA,
+					},
 				},
 			},
 			labelsRemoved: []string{LGTMLabel},
@@ -771,7 +783,9 @@ func TestHandlePullRequest(t *testing.T) {
 						Base: github.PullRequestBranch{
 							Ref: "master",
 						},
-						MergeSHA: &SHA,
+						Head: github.PullRequestBranch{
+							SHA: SHA,
+						},
 					},
 				},
 				Commits:     make(map[string]github.SingleCommit),
@@ -851,7 +865,9 @@ func TestAddTreeHashComment(t *testing.T) {
 				Base: github.PullRequestBranch{
 					Ref: "master",
 				},
-				MergeSHA: &SHA,
+				Head: github.PullRequestBranch{
+					SHA: SHA,
+				},
 			},
 		},
 	}
