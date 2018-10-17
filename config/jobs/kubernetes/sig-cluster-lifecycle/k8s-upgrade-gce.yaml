@@ -23,7 +23,7 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/k8s-beta --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 2h
   name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new
@@ -48,7 +48,7 @@ periodics:
       - --skew
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/k8s-beta --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 2h
   name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-master
@@ -73,7 +73,7 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/k8s-beta
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster
@@ -99,7 +99,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\]|\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterDowngrade\] --upgrade-target=ci/k8s-stable2 --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster-parallel
@@ -126,7 +126,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterDowngrade\] --upgrade-target=ci/k8s-stable2 --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
@@ -151,7 +151,7 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
@@ -176,7 +176,7 @@ periodics:
       - --skew
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
@@ -201,7 +201,7 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/k8s-stable1
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 2h
   name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster
@@ -233,7 +233,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\]|\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterDowngrade\] --upgrade-target=ci/k8s-stable1
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 2h
   name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster-parallel
@@ -266,7 +266,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterDowngrade\] --upgrade-target=ci/k8s-stable1
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 2h
   name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster
@@ -293,7 +293,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\]|\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterDowngrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 2h
   name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster-parallel
@@ -321,7 +321,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterDowngrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 2h
   name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
@@ -353,7 +353,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\]|\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 2h
   name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
@@ -378,7 +378,7 @@ periodics:
       - --skew
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 2h
   name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
@@ -410,7 +410,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 2h
   name: ci-kubernetes-e2e-gce-new-master-upgrade-master
@@ -436,4 +436,4 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/latest
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master

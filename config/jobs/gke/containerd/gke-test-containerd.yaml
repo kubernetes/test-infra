@@ -32,7 +32,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster
@@ -60,7 +60,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster-features
@@ -88,7 +88,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta
@@ -116,7 +116,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1
@@ -144,7 +144,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster
@@ -172,7 +172,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster-features
@@ -200,7 +200,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster
@@ -227,7 +227,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster-features
@@ -254,7 +254,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster
@@ -281,7 +281,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster-features
@@ -308,7 +308,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 12h
   name: ci-kubernetes-soak-gke-cos-containerd
@@ -340,7 +340,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=800m
       - --up=false
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gke-staging-beta-cos-containerd-parallel
@@ -368,7 +368,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=80m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gke-staging-beta-cos-containerd-serial
@@ -395,4 +395,4 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Slow\]|\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=600m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master

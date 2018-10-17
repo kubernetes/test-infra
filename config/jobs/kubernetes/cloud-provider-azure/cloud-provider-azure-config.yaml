@@ -37,7 +37,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -57,7 +57,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -80,7 +80,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
