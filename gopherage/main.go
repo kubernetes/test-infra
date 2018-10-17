@@ -20,6 +20,7 @@ import (
 	"log"
 
 	"github.com/spf13/cobra"
+	"k8s.io/test-infra/gopherage/cmd/aggregate"
 	"k8s.io/test-infra/gopherage/cmd/diff"
 	"k8s.io/test-infra/gopherage/cmd/html"
 	"k8s.io/test-infra/gopherage/cmd/merge"
@@ -34,6 +35,7 @@ func run() error {
 	rootCommand.AddCommand(diff.MakeCommand())
 	rootCommand.AddCommand(merge.MakeCommand())
 	rootCommand.AddCommand(html.MakeCommand())
+	rootCommand.AddCommand(aggregate.MakeCommand())
 	return rootCommand.Execute()
 }
 
