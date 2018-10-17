@@ -38,6 +38,7 @@ import (
 type options struct {
 	masterURL  string
 	kubeconfig string
+	totURL     string
 
 	// Create these values by following:
 	//   https://github.com/kelseyhightower/grafeas-tutorial/blob/master/pki/gen-certs.sh
@@ -54,6 +55,7 @@ func parseOptions() options {
 }
 
 func (o *options) parse(flags *flag.FlagSet, args []string) error {
+	flags.StringVar(&o.totURL, "tot-url", "", "Tot URL")
 	flags.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to kubeconfig. Only required if out of cluster")
 	flags.StringVar(&o.masterURL, "master", "", "The address of the kubernetes API server. Overrides any value in kubeconfig. Only required if out of cluster")
 	flags.StringVar(&o.cert, "tls-cert-file", "", "Path to x509 certificate for HTTPS")
@@ -107,7 +109,7 @@ func main() {
 	pjif := prowjobinfo.NewSharedInformerFactory(pjc, time.Minute)
 	bif := buildinfo.NewSharedInformerFactory(bc, time.Minute)
 
-	controller := newController(kc, pjc, bc, pjif.Prow().V1().ProwJobs(), bif.Build().V1alpha1().Builds())
+	controller := newController(kc, pjc, bc, pjif.Prow().V1().ProwJobs(), bif.Build().V1alpha1().Builds(), o.totURL)
 
 	go pjif.Start(stop)
 	go bif.Start(stop)

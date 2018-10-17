@@ -5,6 +5,7 @@ metadata:
     prow.k8s.io/job: kubernetes-explicit-decoration
   creationTimestamp: null
   labels:
+    created-by-prow: "true"
     prow.k8s.io/job: kubernetes-explicit-decoration
     prow.k8s.io/refs.org: test-org
     prow.k8s.io/refs.pull: "1"
