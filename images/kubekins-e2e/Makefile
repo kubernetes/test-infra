@@ -25,8 +25,8 @@ CFSSL ?= R1.2
 
 # config for testing prior to rolling out to master / ongoing release
 ifeq ($(K8S), experimental)
-	GO = 1.11
-	BAZEL = 0.18.0rc8
+	GO = 1.11.1
+	BAZEL = 0.18.0
 	CFSSL = R1.2
 	UPGRADE_DOCKER = true
 endif
