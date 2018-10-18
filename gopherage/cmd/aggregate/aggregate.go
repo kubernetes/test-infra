@@ -42,7 +42,7 @@ that counts how many of those coverage profiles hit a block at least once.`,
 			run(flags, cmd, args)
 		},
 	}
-	cmd.Flags().StringVar(&flags.OutputFile, "o", "-", "output file")
+	cmd.Flags().StringVarP(&flags.OutputFile, "output", "o", "-", "output file")
 	return cmd
 }
 

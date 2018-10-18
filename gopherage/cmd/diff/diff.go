@@ -45,7 +45,7 @@ at least equal to those in the first file.`,
 			run(flags, cmd, args)
 		},
 	}
-	cmd.Flags().StringVar(&flags.OutputFile, "o", "-", "output file")
+	cmd.Flags().StringVarP(&flags.OutputFile, "output", "o", "-", "output file")
 	return cmd
 }
 
