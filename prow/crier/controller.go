@@ -212,11 +212,6 @@ func (c *Controller) processNextItem() bool {
 		return c.retry(key, err)
 	}
 
-	if !pj.Spec.Report {
-		c.queue.Forget(key)
-		return true
-	}
-
 	// not belong to the current reporter
 	if !c.reporter.ShouldReport(pj) {
 		c.queue.Forget(key)

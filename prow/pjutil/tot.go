@@ -33,7 +33,8 @@ import (
 )
 
 var (
-	node *snowflake.Node
+	node  *snowflake.Node
+	sleep = time.Sleep
 )
 
 func init() {
@@ -86,11 +87,11 @@ func GetBuildID(name, totURL string) (string, error) {
 		return "", fmt.Errorf("invalid tot url: %v", err)
 	}
 	url.Path = path.Join(url.Path, "vend", name)
-	sleep := 100 * time.Millisecond
+	sleepDuration := 100 * time.Millisecond
 	for retries := 0; retries < 10; retries++ {
 		if retries > 0 {
-			time.Sleep(sleep)
-			sleep = sleep * 2
+			sleep(sleepDuration)
+			sleepDuration = sleepDuration * 2
 		}
 		var resp *http.Response
 		resp, err = http.Get(url.String())
