@@ -1,0 +1,33 @@
+periodics:
+- name: kubernetes-conformance-image
+  interval: 60m
+  always_run: false
+  skip_report: false
+  optional: true
+  run_if_changed: '(hyperkube|local-up-cluster)'
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/kubernetes-ci-images/conformance:v1.13.0-alpha.1.100_feb6475a3097cf
+      env:
+      - name: E2E_FOCUS
+        value: "Conformance"
+      - name: E2E_SKIP
+        value: "Alpha|\\[(Disruptive|Feature:[^\\]]+|Flaky)\\]"
+      cmd:
+      - /run_e2e.sh
+      args:
+      - "--timeout=140"
+      - --
+      - --ginkgo-parallel=1
+      - --provider=local
+      - --test
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]"
+      - --timeout=120m

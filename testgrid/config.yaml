@@ -3056,6 +3056,11 @@ test_groups:
   num_columns_recent: 3
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
+- name: kubernetes-conformance-image
+  gcs_prefix: kubernetes-jenkins/logs/kubernetes-conformance-image
+  num_columns_recent: 3
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
 # sigs.k8s.io/kind jobs
 - name: ci-kubernetes-kind-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance
@@ -3289,7 +3294,7 @@ dashboards:
     test_group_name: ci-kubernetes-kind-conformance
   - name: kind, master (dev) [non-serial]
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
-    test_group_name: ci-kubernetes-kind-conformance-parallel
+    test_group_name: kubernetes-conformance-image
   - name: kind, v1.12 (dev)
     description: Runs conformance tests using kubetest against latest kubernetes relase-1.12 with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance-latest-1-12
@@ -3447,6 +3452,9 @@ dashboards:
   - name: local-up-cluster-containerized, master (dev)
     description: Runs conformance tests using kubetest with local-up-cluster (containerized kubelet)
     test_group_name: ci-kubernetes-local-e2e-containerized
+  - name: kubernetes-conformance-image, master (dev)
+    description: Runs conformance tests using conformace release image locally using ginkgo
+    test_group_name: kubernetes-conformance-image
 
 - name: conformance-vsphere
   dashboard_tab:
