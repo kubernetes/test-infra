@@ -77,8 +77,9 @@ def main():
     root.set('time', '0')
     for package in sorted(test_packages('bazel-testlogs')):
         root.append(result(package))
-    artifacts_dir = os.path.join(os.environ.get('WORKSPACE', os.getcwd()),
-                                 '_artifacts')
+    artifacts_dir = os.environ.get(
+        'ARTIFACTS',
+        os.path.join(os.environ.get('WORKSPACE', os.getcwd()), '_artifacts'))
     try:
         os.mkdir(artifacts_dir)
     except OSError:
