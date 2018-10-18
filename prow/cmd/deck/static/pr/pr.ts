@@ -418,15 +418,13 @@ function loadPrStatus(prData: UserData): void {
         }
         const githubContexts = prWithContext.Contexts;
         const contexts = getFullPRContext(builds, githubContexts);
-        // Initialises an empty pool when Pools from TideData is null.
-        const pools = tideData.Pools || [];
         const validQueries: TideQuery[] = [];
         for (let query of tideQueries) {
             if (query.matchPr(pr)) {
                 validQueries.push(query);
             }
         }
-        container.appendChild(createPRCard(pr, contexts, closestMatchingQueries(pr, validQueries), pools));
+        container.appendChild(createPRCard(pr, contexts, closestMatchingQueries(pr, validQueries), tideData.Pools));
     }
 }
 
