@@ -17,11 +17,12 @@ limitations under the License.
 package merge
 
 import (
+	"log"
+
 	"github.com/spf13/cobra"
 	"golang.org/x/tools/cover"
 	"k8s.io/test-infra/gopherage/pkg/cov"
 	"k8s.io/test-infra/gopherage/pkg/util"
-	"log"
 )
 
 type flags struct {
