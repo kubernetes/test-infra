@@ -106,33 +106,32 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// get the list of members once and use a set for lookups
-	mem, err := c.ListOrgMembers(o.org, "member")
+	// get the list of authors to skip once and use a set for lookups
+	skipAuthors := sets.NewString()
+
+	// skip org members
+	members, err := c.ListOrgMembers(o.org, "all")
 	if err != nil {
 		log.Fatal(err)
 	}
-	members := sets.NewString()
-	for _, member := range mem {
-		members.Insert(member.Login)
+	for _, member := range members {
+		skipAuthors.Insert(member.Login)
 	}
 
-	// get the list of collaborators once and use a set for lookups
-	col, err := c.ListCollaborators(o.org, o.repo)
-	if err != nil {
-		log.Fatal(err)
-	}
-	collaborators := sets.NewString()
-	for _, collaborator := range col {
-		collaborators.Insert(collaborator.Login)
+	// eventually also skip collaborators
+	if o.trustCollaborators {
+		collaborators, err := c.ListCollaborators(o.org, o.repo)
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, collaborator := range collaborators {
+			skipAuthors.Insert(collaborator.Login)
+		}
 	}
 
 	for _, pr := range prs {
-		// skip PRs from members
-		if members.Has(pr.User.Login) {
-			continue
-		}
-		// eventually skip PRs from collaborators
-		if o.trustCollaborators && collaborators.Has(pr.User.Login) {
+		// skip PRs from these authors
+		if skipAuthors.Has(pr.User.Login) {
 			continue
 		}
 		// skip PRs with *ok-to-test labels
