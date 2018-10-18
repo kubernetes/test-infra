@@ -532,8 +532,8 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-node-size=n1-standard-8
       - --gcp-nodes=8
-      - --gcp-project=k8s-jenkins-kubemark
-      - --gcp-zone=us-central1-f
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
       - --kubemark
       - --kubemark-master-size=n1-standard-32
       - --kubemark-nodes=600
