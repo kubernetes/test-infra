@@ -26,6 +26,7 @@ import (
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/labels"
 )
 
 var ownerFiles = map[string][]byte{
@@ -270,14 +271,14 @@ func TestHandle(t *testing.T) {
 			Repo:        github.Repo{FullName: "org/repo"},
 		}
 		fghc := newFakeGithubClient(test.filesChanged, pr)
-		if err := handle(fghc, c, logrus.WithField("plugin", PluginName), pre, []string{"approved", "lgtm"}); err != nil {
+		if err := handle(fghc, c, logrus.WithField("plugin", PluginName), pre, []string{labels.ApprovedLabel, labels.LGTMLabel}); err != nil {
 			t.Fatalf("Handle PR: %v", err)
 		}
-		if !test.shouldLabel && labelsAddedContain(fghc.LabelsAdded, InvalidOwnersLabel) {
-			t.Errorf("%s: didn't expect label %s in %s", test.name, InvalidOwnersLabel, fghc.LabelsAdded)
+		if !test.shouldLabel && labelsAddedContain(fghc.LabelsAdded, labels.InvalidOwnersLabel) {
+			t.Errorf("%s: didn't expect label %s in %s", test.name, labels.InvalidOwnersLabel, fghc.LabelsAdded)
 			continue
-		} else if test.shouldLabel && !labelsAddedContain(fghc.LabelsAdded, InvalidOwnersLabel) {
-			t.Errorf("%s: expected label %s in %s", test.name, InvalidOwnersLabel, fghc.LabelsAdded)
+		} else if test.shouldLabel && !labelsAddedContain(fghc.LabelsAdded, labels.InvalidOwnersLabel) {
+			t.Errorf("%s: expected label %s in %s", test.name, labels.InvalidOwnersLabel, fghc.LabelsAdded)
 			continue
 		}
 	}

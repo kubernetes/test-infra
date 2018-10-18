@@ -30,6 +30,7 @@ import (
 	"k8s.io/test-infra/prow/errorutil"
 	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins/approve"
 	"k8s.io/test-infra/prow/plugins/blockade"
 	"k8s.io/test-infra/prow/plugins/blunderbuss"
@@ -266,15 +267,15 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration) e
 		// using the matcher
 		config *orgRepoConfig
 	}{
-		{plugin: lgtm.PluginName, label: lgtm.LGTMLabel, matcher: requires},
-		{plugin: approve.PluginName, label: approve.ApprovedLabel, matcher: requires},
-		{plugin: hold.PluginName, label: hold.Label, matcher: forbids},
-		{plugin: wip.PluginName, label: wip.Label, matcher: forbids},
-		{plugin: verifyowners.PluginName, label: verifyowners.InvalidOwnersLabel, matcher: forbids},
+		{plugin: lgtm.PluginName, label: labels.LGTMLabel, matcher: requires},
+		{plugin: approve.PluginName, label: labels.ApprovedLabel, matcher: requires},
+		{plugin: hold.PluginName, label: labels.HoldLabel, matcher: forbids},
+		{plugin: wip.PluginName, label: labels.WorkInProgressLabel, matcher: forbids},
+		{plugin: verifyowners.PluginName, label: labels.InvalidOwnersLabel, matcher: forbids},
 		{plugin: releasenote.PluginName, label: releasenote.ReleaseNoteLabelNeeded, matcher: forbids},
-		{plugin: cherrypickunapproved.PluginName, label: cherrypickunapproved.CpUnapprovedLabel, matcher: forbids},
-		{plugin: blockade.PluginName, label: blockade.BlockedPathsLabel, matcher: forbids},
-		{plugin: needsrebase.PluginName, label: needsrebase.NeedsRebaseLabel, matcher: forbids},
+		{plugin: cherrypickunapproved.PluginName, label: labels.CpUnapprovedLabel, matcher: forbids},
+		{plugin: blockade.PluginName, label: labels.BlockedPathsLabel, matcher: forbids},
+		{plugin: needsrebase.PluginName, label: labels.NeedsRebaseLabel, matcher: forbids},
 	}
 
 	for i := range configs {

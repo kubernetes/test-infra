@@ -29,6 +29,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -155,27 +156,27 @@ func TestHandleEvent(t *testing.T) {
 		{
 			name:      "mergeable no-op",
 			mergeable: true,
-			labels:    []string{"lgtm", "needs-sig"},
+			labels:    []string{labels.LGTMLabel, labels.NeedsSigLabel},
 		},
 		{
 			name:      "unmergeable no-op",
 			mergeable: false,
-			labels:    []string{"lgtm", "needs-sig", "needs-rebase"},
+			labels:    []string{labels.LGTMLabel, labels.NeedsSigLabel, labels.NeedsRebaseLabel},
 		},
 		{
 			name:      "mergeable -> unmergeable",
 			mergeable: false,
-			labels:    []string{"lgtm", "needs-sig"},
+			labels:    []string{labels.LGTMLabel, labels.NeedsSigLabel},
 
-			expectedAdded: []string{"needs-rebase"},
+			expectedAdded: []string{labels.NeedsRebaseLabel},
 			expectComment: true,
 		},
 		{
 			name:      "unmergeable -> mergeable",
 			mergeable: true,
-			labels:    []string{"lgtm", "needs-sig", "needs-rebase"},
+			labels:    []string{labels.LGTMLabel, labels.NeedsSigLabel, labels.NeedsRebaseLabel},
 
-			expectedRemoved: []string{"needs-rebase"},
+			expectedRemoved: []string{labels.NeedsRebaseLabel},
 			expectDeletion:  true,
 		},
 	}
@@ -208,24 +209,24 @@ func TestHandleAll(t *testing.T) {
 	}{
 		{
 			mergeable: true,
-			labels:    []string{"lgtm", "needs-sig"},
+			labels:    []string{labels.LGTMLabel, labels.NeedsSigLabel},
 		},
 		{
 			mergeable: false,
-			labels:    []string{"lgtm", "needs-sig", "needs-rebase"},
+			labels:    []string{labels.LGTMLabel, labels.NeedsSigLabel, labels.NeedsRebaseLabel},
 		},
 		{
 			mergeable: false,
-			labels:    []string{"lgtm", "needs-sig"},
+			labels:    []string{labels.LGTMLabel, labels.NeedsSigLabel},
 
-			expectedAdded: []string{"needs-rebase"},
+			expectedAdded: []string{labels.NeedsRebaseLabel},
 			expectComment: true,
 		},
 		{
 			mergeable: true,
-			labels:    []string{"lgtm", "needs-sig", "needs-rebase"},
+			labels:    []string{labels.LGTMLabel, labels.NeedsSigLabel, labels.NeedsRebaseLabel},
 
-			expectedRemoved: []string{"needs-rebase"},
+			expectedRemoved: []string{labels.NeedsRebaseLabel},
 			expectDeletion:  true,
 		},
 	}
@@ -252,7 +253,7 @@ func TestHandleAll(t *testing.T) {
 	}
 	fake := newFakeClient(prs, nil, false)
 	config := &plugins.Configuration{
-		Plugins: map[string][]string{"/": {"lgtm", PluginName}},
+		Plugins: map[string][]string{"/": {labels.LGTMLabel, PluginName}},
 
 		ExternalPlugins: map[string][]plugins.ExternalPlugin{"/": {{Name: PluginName}}},
 	}

@@ -23,6 +23,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -30,8 +31,6 @@ import (
 const pluginName = "help"
 
 var (
-	helpLabel                  = "help wanted"
-	goodFirstIssueLabel        = "good first issue"
 	helpRe                     = regexp.MustCompile(`(?mi)^/help\s*$`)
 	helpRemoveRe               = regexp.MustCompile(`(?mi)^/remove-help\s*$`)
 	helpGoodFirstIssueRe       = regexp.MustCompile(`(?mi)^/good-first-issue\s*$`)
@@ -64,11 +63,11 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The help plugin provides commands that add or remove the '" + helpLabel + "' and the '" + goodFirstIssueLabel + "' labels from issues.",
+		Description: "The help plugin provides commands that add or remove the '" + labels.HelpLabel + "' and the '" + labels.GoodFirstIssueLabel + "' labels from issues.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/[remove-](help|good-first-issue)",
-		Description: "Applies or removes the '" + helpLabel + "' and '" + goodFirstIssueLabel + "' labels to an issue.",
+		Description: "Applies or removes the '" + labels.HelpLabel + "' and '" + labels.GoodFirstIssueLabel + "' labels to an issue.",
 		Featured:    false,
 		WhoCanUse:   "Anyone can trigger this command on a PR.",
 		Examples:    []string{"/help", "/remove-help", "/good-first-issue", "/remove-good-first-issue"},
@@ -103,17 +102,17 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 	commentAuthor := e.User.Login
 
 	// Determine if the issue has the help and the good-first-issue label
-	labels, err := gc.GetIssueLabels(org, repo, e.Number)
+	issueLabels, err := gc.GetIssueLabels(org, repo, e.Number)
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get issue labels.")
 	}
-	hasHelp := github.HasLabel(helpLabel, labels)
-	hasGoodFirstIssue := github.HasLabel(goodFirstIssueLabel, labels)
+	hasHelp := github.HasLabel(labels.HelpLabel, issueLabels)
+	hasGoodFirstIssue := github.HasLabel(labels.GoodFirstIssueLabel, issueLabels)
 
 	// If PR has help label and we're asking for it to be removed, remove label
 	if hasHelp && helpRemoveRe.MatchString(e.Body) {
-		if err := gc.RemoveLabel(org, repo, e.Number, helpLabel); err != nil {
-			log.WithError(err).Errorf("Github failed to remove the following label: %s", helpLabel)
+		if err := gc.RemoveLabel(org, repo, e.Number, labels.HelpLabel); err != nil {
+			log.WithError(err).Errorf("Github failed to remove the following label: %s", labels.HelpLabel)
 		}
 
 		botName, err := gc.BotName()
@@ -124,8 +123,8 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 
 		// if it has the good-first-issue label, remove it too
 		if hasGoodFirstIssue {
-			if err := gc.RemoveLabel(org, repo, e.Number, goodFirstIssueLabel); err != nil {
-				log.WithError(err).Errorf("Github failed to remove the following label: %s", goodFirstIssueLabel)
+			if err := gc.RemoveLabel(org, repo, e.Number, labels.GoodFirstIssueLabel); err != nil {
+				log.WithError(err).Errorf("Github failed to remove the following label: %s", labels.GoodFirstIssueLabel)
 			}
 			cp.PruneComments(shouldPrune(log, botName, goodFirstIssueMsgPruneMatch))
 		}
@@ -140,13 +139,13 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 			log.WithError(err).Errorf("Failed to create comment \"%s\".", goodFirstIssueMsg)
 		}
 
-		if err := gc.AddLabel(org, repo, e.Number, goodFirstIssueLabel); err != nil {
-			log.WithError(err).Errorf("Github failed to add the following label: %s", goodFirstIssueLabel)
+		if err := gc.AddLabel(org, repo, e.Number, labels.GoodFirstIssueLabel); err != nil {
+			log.WithError(err).Errorf("Github failed to add the following label: %s", labels.GoodFirstIssueLabel)
 		}
 
 		if !hasHelp {
-			if err := gc.AddLabel(org, repo, e.Number, helpLabel); err != nil {
-				log.WithError(err).Errorf("Github failed to add the following label: %s", helpLabel)
+			if err := gc.AddLabel(org, repo, e.Number, labels.HelpLabel); err != nil {
+				log.WithError(err).Errorf("Github failed to add the following label: %s", labels.HelpLabel)
 			}
 		}
 
@@ -159,8 +158,8 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 		if err := gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.IssueHTMLURL, commentAuthor, helpMsg)); err != nil {
 			log.WithError(err).Errorf("Failed to create comment \"%s\".", helpMsg)
 		}
-		if err := gc.AddLabel(org, repo, e.Number, helpLabel); err != nil {
-			log.WithError(err).Errorf("Github failed to add the following label: %s", helpLabel)
+		if err := gc.AddLabel(org, repo, e.Number, labels.HelpLabel); err != nil {
+			log.WithError(err).Errorf("Github failed to add the following label: %s", labels.HelpLabel)
 		}
 
 		return nil
@@ -169,8 +168,8 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 	// If PR has good-first-issue label and we are asking for it to be removed,
 	// remove just the good-first-issue label
 	if hasGoodFirstIssue && helpGoodFirstIssueRemoveRe.MatchString(e.Body) {
-		if err := gc.RemoveLabel(org, repo, e.Number, goodFirstIssueLabel); err != nil {
-			log.WithError(err).Errorf("Github failed to remove the following label: %s", goodFirstIssueLabel)
+		if err := gc.RemoveLabel(org, repo, e.Number, labels.GoodFirstIssueLabel); err != nil {
+			log.WithError(err).Errorf("Github failed to remove the following label: %s", labels.GoodFirstIssueLabel)
 		}
 
 		botName, err := gc.BotName()

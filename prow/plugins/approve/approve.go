@@ -27,6 +27,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/approve/approvers"
@@ -37,7 +38,6 @@ const (
 	PluginName = "approve"
 
 	approveCommand  = "APPROVE"
-	ApprovedLabel   = "approved"
 	cancelArgument  = "cancel"
 	lgtmCommand     = "LGTM"
 	noIssueArgument = "no-issue"
@@ -117,7 +117,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		approveConfig[repo] = fmt.Sprintf("Pull requests %s require an associated issue.<br>Pull request authors %s implicitly approve their own PRs.<br>The /lgtm [cancel] command(s) %s act as approval.<br>A GitHub approved or changes requested review %s act as approval or cancel respectively.", doNot(opts.IssueRequired), doNot(opts.ImplicitSelfApprove), willNot(opts.LgtmActsAsApprove), willNot(opts.ReviewActsAsApprove))
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: `The approve plugin implements a pull request approval process that manages the '` + ApprovedLabel + `' label and an approval notification comment. Approval is achieved when the set of users that have approved the PR is capable of approving every file changed by the PR. A user is able to approve a file if their username or an alias they belong to is listed in the 'approvers' section of an OWNERS file in the directory of the file or higher in the directory tree.
+		Description: `The approve plugin implements a pull request approval process that manages the '` + labels.ApprovedLabel + `' label and an approval notification comment. Approval is achieved when the set of users that have approved the PR is capable of approving every file changed by the PR. A user is able to approve a file if their username or an alias they belong to is listed in the 'approvers' section of an OWNERS file in the directory of the file or higher in the directory tree.
 <br>
 <br>Per-repo configuration may be used to require that PRs link to an associated issue before approval is granted. It may also be used to specify that the PR authors implicitly approve their own PRs.
 <br>For more information see <a href="https://git.k8s.io/test-infra/prow/plugins/approve/approvers/README.md">here</a>.`,
@@ -275,7 +275,7 @@ func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, con
 		return err
 	}
 	if pre.Action == github.PullRequestActionLabeled &&
-		(pre.Label.Name != ApprovedLabel || pre.Sender.Login == botName || pre.PullRequest.State == "closed") {
+		(pre.Label.Name != labels.ApprovedLabel || pre.Sender.Login == botName || pre.PullRequest.State == "closed") {
 		return nil
 	}
 
@@ -344,13 +344,13 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, o
 	for _, change := range changes {
 		filenames = append(filenames, change.Filename)
 	}
-	labels, err := ghc.GetIssueLabels(pr.org, pr.repo, pr.number)
+	issueLabels, err := ghc.GetIssueLabels(pr.org, pr.repo, pr.number)
 	if err != nil {
 		return fetchErr("issue labels", err)
 	}
 	hasApprovedLabel := false
-	for _, label := range labels {
-		if label.Name == ApprovedLabel {
+	for _, label := range issueLabels {
+		if label.Name == labels.ApprovedLabel {
 			hasApprovedLabel = true
 			break
 		}
@@ -421,13 +421,13 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, o
 
 	if !approversHandler.IsApproved() {
 		if hasApprovedLabel {
-			if err := ghc.RemoveLabel(pr.org, pr.repo, pr.number, ApprovedLabel); err != nil {
-				log.WithError(err).Errorf("Failed to remove %q label from %s/%s#%d.", ApprovedLabel, pr.org, pr.repo, pr.number)
+			if err := ghc.RemoveLabel(pr.org, pr.repo, pr.number, labels.ApprovedLabel); err != nil {
+				log.WithError(err).Errorf("Failed to remove %q label from %s/%s#%d.", labels.ApprovedLabel, pr.org, pr.repo, pr.number)
 			}
 		}
 	} else if !hasApprovedLabel {
-		if err := ghc.AddLabel(pr.org, pr.repo, pr.number, ApprovedLabel); err != nil {
-			log.WithError(err).Errorf("Failed to add %q label to %s/%s#%d.", ApprovedLabel, pr.org, pr.repo, pr.number)
+		if err := ghc.AddLabel(pr.org, pr.repo, pr.number, labels.ApprovedLabel); err != nil {
+			log.WithError(err).Errorf("Failed to add %q label to %s/%s#%d.", labels.ApprovedLabel, pr.org, pr.repo, pr.number)
 		}
 	}
 	return nil
@@ -446,7 +446,7 @@ func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, n
 		var lastAdded github.ListedIssueEvent
 		for _, event := range events {
 			// Only consider "approved" label added events.
-			if event.Event != github.IssueActionLabeled || event.Label.Name != ApprovedLabel {
+			if event.Event != github.IssueActionLabeled || event.Label.Name != labels.ApprovedLabel {
 				continue
 			}
 			lastAdded = event

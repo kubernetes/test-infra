@@ -28,6 +28,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/labels"
 )
 
 func formatLabels(labels []string) []string {
@@ -78,8 +79,8 @@ func TestSigMention(t *testing.T) {
 			name:              "Repeat when non org adds one sig label (sig label already present)",
 			body:              "@kubernetes/sig-node-bugs",
 			expectedRepeats:   []string{"@kubernetes/sig-node-bugs"},
-			expectedNewLabels: []string{"kind/bug"},
-			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", "kind/bug"},
+			expectedNewLabels: []string{labels.BugLabel},
+			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", labels.BugLabel},
 			issueLabels:       []string{"sig/node"},
 			commenter:         nonOrgMember,
 		},
@@ -97,16 +98,16 @@ func TestSigMention(t *testing.T) {
 			body:              "@kubernetes/sig-node-misc @kubernetes/sig-api-machinery-bugs",
 			expectedRepeats:   []string{},
 			expectedNewLabels: []string{},
-			repoLabels:        []string{"sig/node", "sig/api-machinery", "kind/bug"},
-			issueLabels:       []string{"sig/node", "sig/api-machinery", "kind/bug"},
+			repoLabels:        []string{"sig/node", "sig/api-machinery", labels.BugLabel},
+			issueLabels:       []string{"sig/node", "sig/api-machinery", labels.BugLabel},
 			commenter:         orgMember,
 		},
 		{
 			name:              "Repeat multiple valid labels from non org member",
 			body:              "@kubernetes/sig-node-misc @kubernetes/sig-api-machinery-bugs",
 			expectedRepeats:   []string{"@kubernetes/sig-node-misc", "@kubernetes/sig-api-machinery-bugs"},
-			expectedNewLabels: []string{"sig/node", "sig/api-machinery", "kind/bug"},
-			repoLabels:        []string{"sig/node", "sig/api-machinery", "kind/bug"},
+			expectedNewLabels: []string{"sig/node", "sig/api-machinery", labels.BugLabel},
+			repoLabels:        []string{"sig/node", "sig/api-machinery", labels.BugLabel},
 			issueLabels:       []string{},
 			commenter:         nonOrgMember,
 		},
@@ -114,8 +115,8 @@ func TestSigMention(t *testing.T) {
 			name:              "Repeat multiple valid labels with a line break from non org member.",
 			body:              "@kubernetes/sig-node-misc\n@kubernetes/sig-api-machinery-bugs",
 			expectedRepeats:   []string{"@kubernetes/sig-node-misc", "@kubernetes/sig-api-machinery-bugs"},
-			expectedNewLabels: []string{"sig/node", "sig/api-machinery", "kind/bug"},
-			repoLabels:        []string{"sig/node", "sig/api-machinery", "kind/bug"},
+			expectedNewLabels: []string{"sig/node", "sig/api-machinery", labels.BugLabel},
+			repoLabels:        []string{"sig/node", "sig/api-machinery", labels.BugLabel},
 			issueLabels:       []string{},
 			commenter:         nonOrgMember,
 		},
@@ -123,8 +124,8 @@ func TestSigMention(t *testing.T) {
 			name:              "Repeat Multiple Sig Labels Different Lines With Other Text",
 			body:              "Code Comment.  Design Review\n@kubernetes/sig-node-proposals\ncc @kubernetes/sig-api-machinery-bugs",
 			expectedRepeats:   []string{"@kubernetes/sig-node-proposals", "@kubernetes/sig-api-machinery-bugs"},
-			expectedNewLabels: []string{"sig/node", "sig/api-machinery", "kind/bug"},
-			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery", "kind/bug"},
+			expectedNewLabels: []string{"sig/node", "sig/api-machinery", labels.BugLabel},
+			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery", labels.BugLabel},
 			issueLabels:       []string{},
 			commenter:         nonOrgMember,
 		},
@@ -132,8 +133,8 @@ func TestSigMention(t *testing.T) {
 			name:              "Repeat when multiple label adding commands (sig labels present)",
 			body:              "/area infra\n/priority urgent Design Review\n@kubernetes/sig-node-misc\ncc @kubernetes/sig-api-machinery-bugs",
 			expectedRepeats:   []string{"@kubernetes/sig-node-misc", "@kubernetes/sig-api-machinery-bugs"},
-			expectedNewLabels: []string{"sig/node", "kind/bug"},
-			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery", "sig/testing", "kind/bug"},
+			expectedNewLabels: []string{"sig/node", labels.BugLabel},
+			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery", "sig/testing", labels.BugLabel},
 			issueLabels:       []string{"sig/api-machinery", "sig/testing"},
 			commenter:         nonOrgMember,
 		},

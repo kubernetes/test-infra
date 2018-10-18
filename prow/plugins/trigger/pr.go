@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -103,7 +104,7 @@ func handlePR(c client, trigger *plugins.Trigger, pr github.PullRequestEvent) er
 			return err
 		}
 		// When a PR is LGTMd, if it is untrusted then build it once.
-		if pr.Label.Name == lgtmLabel {
+		if pr.Label.Name == labels.LGTMLabel {
 			trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, comments)
 			if err != nil {
 				return fmt.Errorf("could not validate PR: %s", err)
