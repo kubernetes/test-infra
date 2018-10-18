@@ -1,3 +1,28 @@
+presets:
+- labels:
+    preset-e2e-containerd: "true"
+  env:
+  - name: LOG_DUMP_SYSTEMD_SERVICES
+    value: containerd containerd-installation
+  - name: KUBE_MASTER_EXTRA_METADATA
+    value: user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env
+  - name: KUBE_NODE_EXTRA_METADATA
+    value: user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env
+  - name: KUBE_CONTAINER_RUNTIME
+    value: remote
+  - name: KUBE_CONTAINER_RUNTIME_ENDPOINT
+    value: unix:///run/containerd/containerd.sock
+  - name: KUBE_CONTAINER_RUNTIME_NAME
+    value: containerd
+  - name: KUBE_LOAD_IMAGE_COMMAND
+    value: /home/containerd/usr/local/bin/ctr cri load
+  - name: NETWORK_PROVIDER
+    value: ""
+  - name: NON_MASQUERADE_CIDR
+    value: 0.0.0.0/0
+  - name: KUBELET_TEST_ARGS
+    value: --runtime-cgroups=/system.slice/containerd.service
+
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-containerd-gce
@@ -9,6 +34,7 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+      preset-e2e-containerd: "true"
     spec:
       containers:
       - args:
@@ -26,7 +52,6 @@ presubmits:
         - --env=KUBE_NODE_EXTRA_METADATA=user-data=/go/src/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env
         - --env-file=jobs/env/pull-kubernetes-e2e.env
         - --env-file=jobs/env/pull-kubernetes-e2e-gce.env
-        - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-project=k8s-c8d-pr-e2e
@@ -84,6 +109,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -95,7 +121,6 @@ periodics:
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
       - --env=ENABLE_POD_SECURITY_POLICY=true
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=4
@@ -111,6 +136,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -123,7 +149,6 @@ periodics:
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1/env
       - --env=PREPULL_E2E_IMAGES=false
       - --env=ENABLE_POD_SECURITY_POLICY=true
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest-1.10
       - --gcp-node-image=gci
       - --gcp-nodes=4
@@ -139,6 +164,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -149,7 +175,6 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=ubuntu
       - --gcp-zone=us-central1-f
@@ -250,6 +275,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -260,7 +286,6 @@ periodics:
       - --down=false
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -294,6 +319,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -303,7 +329,6 @@ periodics:
       - --
       - --check-leaked-resources
       - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
@@ -318,6 +343,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -330,7 +356,6 @@ periodics:
       - --env=MULTIZONE=true
       # Where the nodes reside.  Master is in the first one.
       - --env=E2E_ZONES=us-central1-a us-central1-b us-central1-f
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-a
@@ -345,6 +370,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -356,7 +382,6 @@ periodics:
       - --cluster=
       - --env=KUBE_ENABLE_CLUSTER_MONITORING=stackdriver
       - --env=KUBE_ENABLE_METADATA_AGENT=stackdriver
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-project=k8s-jkns-e2e-gce-stackdriver
       - --gcp-zone=us-central1-f
@@ -370,6 +395,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -379,7 +405,6 @@ periodics:
       - --
       - --check-leaked-resources
       - --env=ENABLE_POD_SECURITY_POLICY=true
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=4
@@ -395,6 +420,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -406,7 +432,6 @@ periodics:
       - --env=KUBE_FEATURE_GATES=AllAlpha=true
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -421,6 +446,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -431,7 +457,6 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_LOGGING_DESTINATION=elasticsearch
       - --env=TEST_CLUSTER_LOG_LEVEL=--v=2
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -445,6 +470,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -453,7 +479,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -467,6 +492,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -477,7 +503,6 @@ periodics:
       - --check-leaked-resources
       - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-project-type=ingress-project
@@ -492,6 +517,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -502,7 +528,6 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=4
@@ -518,6 +543,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -527,7 +553,6 @@ periodics:
       - --
       - --check-leaked-resources
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -542,6 +567,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -550,7 +576,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -564,6 +589,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -574,7 +600,6 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_LOGGING_DESTINATION=gcp
       - --env=TEST_CLUSTER_LOG_LEVEL=--v=2
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -588,6 +613,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -602,7 +628,6 @@ periodics:
       - --env=KUBE_ENABLE_METADATA_AGENT=stackdriver
       - --env=ENABLE_METADATA_AGENT=stackdriver
       - --env=LOGGING_STACKDRIVER_RESOURCE_TYPES=new
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -616,6 +641,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -624,7 +650,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -638,6 +663,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -646,7 +672,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -661,6 +686,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -668,7 +694,6 @@ periodics:
       - --timeout=110
       - --scenario=kubernetes_e2e
       - --
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -682,6 +707,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
   spec:
     containers:
     - args:
@@ -690,7 +716,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=ubuntu
       - --gcp-zone=us-central1-f
