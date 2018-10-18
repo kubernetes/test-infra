@@ -57,6 +57,9 @@ ENV GO_TARBALL "go${GO_VERSION}.linux-amd64.tar.gz"
 RUN wget -q "https://storage.googleapis.com/golang/${GO_TARBALL}" && \
     tar xzf "${GO_TARBALL}" -C /usr/local && \
     rm "${GO_TARBALL}"
+# install dep and ko since they are common dependencies for go projects related to k8s
+RUN go get github.com/golang/dep/cmd/dep && \
+    go get github.com/google/go-containerregistry/cmd/ko
 
 # install bazel
 ARG BAZEL_VERSION_ARG
