@@ -120,7 +120,7 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --cluster=canary-e2e
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env
+      - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/k8s-stable1
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
@@ -137,6 +137,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-gci-gce-scalability: "true"
   decorate: true
   decoration_config:
     timeout: 14000000000000 # 140m
@@ -147,8 +149,6 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --cluster=e2e-big-canary
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env
       - --extract=ci/latest
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project
@@ -279,6 +279,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    preset-e2e-kubemark-common: "true"
   decorate: true
   decoration_config:
     timeout: 26000000000000 # 260m
@@ -291,7 +292,6 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --cluster=kubemark-100-canary
-      - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
       - --extract=ci/latest
       - --gcp-master-size=n1-standard-2
       - --gcp-node-size=n1-standard-4
