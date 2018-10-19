@@ -20,6 +20,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"reflect"
 	"regexp"
 	"testing"
 
@@ -644,7 +645,7 @@ func TestMergePreset(t *testing.T) {
 		presets   []Preset
 
 		shouldError  bool
-		numEnv       int
+		envs         []kube.EnvVar
 		numVol       int
 		numVolMounts int
 	}{
@@ -705,7 +706,71 @@ func TestMergePreset(t *testing.T) {
 					Env:    []kube.EnvVar{{Name: "baz"}},
 				},
 			},
-			numEnv: 1,
+			envs: []kube.EnvVar{{Name: "baz"}},
+		},
+		{
+			name:      "append env",
+			jobLabels: map[string]string{"foo1": "bar1", "foo2": "bar2"},
+			pod:       &kube.PodSpec{Containers: []kube.Container{{}}},
+			presets: []Preset{
+				{
+					Labels: map[string]string{"foo1": "bar1"},
+					Env:    []kube.EnvVar{{Name: "baz1", Value: "this-is-fine"}},
+				},
+				{
+					Labels: map[string]string{"foo2": "bar2"},
+					Env:    []kube.EnvVar{{Name: "baz2", Value: "this-is-not-fine"}},
+				},
+			},
+			envs: []kube.EnvVar{
+				{Name: "baz2", Value: "this-is-not-fine"},
+				{Name: "baz1", Value: "this-is-fine"},
+			},
+		},
+		{
+			name:      "dup env, respect prior preset",
+			jobLabels: map[string]string{"foo1": "bar1", "foo2": "bar2"},
+			pod:       &kube.PodSpec{Containers: []kube.Container{{}}},
+			presets: []Preset{
+				{
+					Labels: map[string]string{"foo1": "bar1"},
+					Env:    []kube.EnvVar{{Name: "baz", Value: "this-is-fine"}},
+				},
+				{
+					Labels: map[string]string{"foo2": "bar2"},
+					Env:    []kube.EnvVar{{Name: "baz", Value: "this-is-not-fine"}},
+				},
+			},
+			envs: []kube.EnvVar{{Name: "baz", Value: "this-is-not-fine"}},
+		},
+		{
+			name:      "container env take precedence over preset env",
+			jobLabels: map[string]string{"foo1": "bar1", "foo2": "bar2"},
+			pod: &kube.PodSpec{
+				Containers: []kube.Container{
+					{
+						Env: []kube.EnvVar{
+							{
+								Name:  "baz",
+								Value: "this-is-unbearable",
+							},
+						},
+					},
+				},
+			},
+			presets: []Preset{
+				{
+					Labels: map[string]string{"foo1": "bar1"},
+					Env:    []kube.EnvVar{{Name: "baz", Value: "this-is-fine"}},
+				},
+				{
+					Labels: map[string]string{"foo2": "bar2"},
+					Env:    []kube.EnvVar{{Name: "baz", Value: "this-is-not-fine"}},
+				},
+			},
+			envs: []kube.EnvVar{
+				{Name: "baz", Value: "this-is-unbearable"},
+			},
 		},
 		{
 			name:      "one vm",
@@ -731,7 +796,7 @@ func TestMergePreset(t *testing.T) {
 					Volumes:      []kube.Volume{{Name: "qux"}},
 				},
 			},
-			numEnv:       1,
+			envs:         []kube.EnvVar{{Name: "baz"}},
 			numVol:       1,
 			numVolMounts: 1,
 		},
@@ -764,8 +829,8 @@ func TestMergePreset(t *testing.T) {
 			if len(c.VolumeMounts) != tc.numVolMounts {
 				t.Errorf("For test \"%s\": wrong number of volume mounts. Got %d, expected %d.", tc.name, len(c.VolumeMounts), tc.numVolMounts)
 			}
-			if len(c.Env) != tc.numEnv {
-				t.Errorf("For test \"%s\": wrong number of env vars. Got %d, expected %d.", tc.name, len(c.Env), tc.numEnv)
+			if !reflect.DeepEqual(c.Env, tc.envs) {
+				t.Errorf("For test \"%s\": wrong env vars. Got %v, expected %v.", tc.name, c.Env, tc.envs)
 			}
 		}
 	}

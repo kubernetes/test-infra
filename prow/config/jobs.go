@@ -45,16 +45,23 @@ func mergePreset(preset Preset, labels map[string]string, pod *v1.PodSpec) error
 			return nil
 		}
 	}
-	for _, e1 := range preset.Env {
+
+	for _, presetEnv := range preset.Env {
 		for i := range pod.Containers {
-			for _, e2 := range pod.Containers[i].Env {
-				if e1.Name == e2.Name {
-					return fmt.Errorf("env var duplicated in pod spec: %s", e1.Name)
+			// container envs will overwrite preset envs
+			exist := false
+			for _, containerEnv := range pod.Containers[i].Env {
+				if containerEnv.Name == presetEnv.Name {
+					exist = true
 				}
 			}
-			pod.Containers[i].Env = append(pod.Containers[i].Env, e1)
+
+			if !exist {
+				pod.Containers[i].Env = append(pod.Containers[i].Env, presetEnv)
+			}
 		}
 	}
+
 	for _, v1 := range preset.Volumes {
 		for _, v2 := range pod.Volumes {
 			if v1.Name == v2.Name {

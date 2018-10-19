@@ -1061,12 +1061,12 @@ periodics:
 			expectEnv: map[string][]v1.EnvVar{
 				"foo": {
 					{
-						Name:  "baz",
-						Value: "fejtaverse",
-					},
-					{
 						Name:  "k8s",
 						Value: "kubernetes",
+					},
+					{
+						Name:  "baz",
+						Value: "fejtaverse",
 					},
 				},
 				"bar": {

@@ -1042,8 +1042,9 @@ func validateDecoration(name string, spec *v1.PodSpec, config *kube.DecorationCo
 }
 
 func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, presets []Preset) error {
-	for _, preset := range presets {
-		if err := mergePreset(preset, labels, spec); err != nil {
+	// resolve presets backwards so envs can be resolved properly
+	for i := len(presets) - 1; i >= 0; i-- {
+		if err := mergePreset(presets[i], labels, spec); err != nil {
 			return fmt.Errorf("job %s failed to merge presets: %v", name, err)
 		}
 	}
