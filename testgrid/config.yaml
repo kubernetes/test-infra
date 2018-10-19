@@ -2270,6 +2270,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-new-downgrade-cluster-parallel
 - name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
+- name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new-parallel
 - name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
 - name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-parallel
@@ -4522,7 +4524,10 @@ dashboards:
     description: Downgrade master and node, in gce(gci), from master to 1.10, run parallel tests only
   - name: gce-new-master-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
-    description: Upgrade master and node, in gce(gci), from 1.10 to master, and run skewed e2e tests
+    description: Upgrade master and node, in gce(gci), from 1.10 to master, and run skewed e2e tests.  We only run the serial & disruptive tests; the others are run in the -parallel test.
+  - name: gce-new-master-upgrade-cluster-new-parallel
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new-parallel
+    description: Upgrade master and node, in gce(gci), from 1.10 to master, and run skewed e2e tests.  We skip the serial & disruptive tests; those are run in the non-parallel test.
   - name: gke-gci-new-gci-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
     description: Upgrade master only, in gke(gci), from 1.10 to master
