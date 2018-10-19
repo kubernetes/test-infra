@@ -18,7 +18,8 @@ release(
     ),
     component("hook", "service", "deployment"),
     component("horologium", "deployment"),
-    component("lego", "deployment"),
+    component("cert-manager", MULTI_KIND),
+    component("cluster-issuer", MULTI_KIND),
     component(
         "mem-limit-range",
         "limitrange",
