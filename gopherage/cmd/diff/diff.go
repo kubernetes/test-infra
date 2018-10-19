@@ -17,7 +17,8 @@ limitations under the License.
 package diff
 
 import (
-	"log"
+	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/tools/cover"
@@ -51,25 +52,31 @@ at least equal to those in the first file.`,
 
 func run(flags *flags, cmd *cobra.Command, args []string) {
 	if len(args) != 2 {
-		log.Fatal("Expected exactly two arguments.")
+		fmt.Fprintln(os.Stderr, "Expected two files.")
+		cmd.Usage()
+		os.Exit(2)
 	}
 
 	before, err := cover.ParseProfiles(args[0])
 	if err != nil {
-		log.Fatalf("couldn't load %s: %v", args[0], err)
+		fmt.Fprintf(os.Stderr, "Couldn't load %s: %v.", args[0], err)
+		os.Exit(1)
 	}
 
 	after, err := cover.ParseProfiles(args[1])
 	if err != nil {
-		log.Fatalf("couldn't load %s: %v", args[0], err)
+		fmt.Fprintf(os.Stderr, "Couldn't load %s: %v.", args[0], err)
+		os.Exit(1)
 	}
 
 	diff, err := cov.DiffProfiles(before, after)
 	if err != nil {
-		log.Fatalf("failed to diff profiles: %v", err)
+		fmt.Fprintf(os.Stderr, "failed to diff profiles: %v", err)
+		os.Exit(1)
 	}
 
 	if err := util.DumpProfile(flags.OutputFile, diff); err != nil {
-		log.Fatalln(err)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 }

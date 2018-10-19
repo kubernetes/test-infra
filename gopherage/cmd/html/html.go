@@ -17,10 +17,10 @@ limitations under the License.
 package html
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -61,30 +61,35 @@ type coverageFile struct {
 
 func run(flags *flags, cmd *cobra.Command, args []string) {
 	if len(args) < 1 {
+		fmt.Println("Expected at least one coverage file.")
 		cmd.Usage()
-		log.Fatalln("Usage: gopherage html [coverage...]")
+		os.Exit(2)
 	}
 
 	// This path assumes we're being run using bazel.
 	resourceDir := "gopherage/cmd/html/static"
 	if _, err := os.Stat(resourceDir); os.IsNotExist(err) {
-		log.Fatalln("Resource directory does not exist.")
+		fmt.Fprintf(os.Stderr, "Resource directory does not exist.")
+		os.Exit(1)
 	}
 
 	tpl, err := template.ParseFiles(filepath.Join(resourceDir, "browser.html"))
 	if err != nil {
-		log.Fatalf("Couldn't read the HTML template: %v", err)
+		fmt.Fprintf(os.Stderr, "Couldn't read the HTML template: %v.", err)
+		os.Exit(1)
 	}
 	script, err := ioutil.ReadFile(filepath.Join(resourceDir, "browser_bundle.es6.js"))
 	if err != nil {
-		log.Fatalf("Couldn't read JavaScript: %v", err)
+		fmt.Fprintf(os.Stderr, "Couldn't read JavaScript: %v.", err)
+		os.Exit(1)
 	}
 
 	// If we're under bazel, move into BUILD_WORKING_DIRECTORY so that manual
 	// invocations of bazel run are less confusing.
 	if wd, ok := os.LookupEnv("BUILD_WORKING_DIRECTORY"); ok {
 		if err := os.Chdir(wd); err != nil {
-			log.Fatalf("Couldn't chdir into expected working directory.")
+			fmt.Fprintf(os.Stderr, "Couldn't chdir into expected working directory.")
+			os.Exit(1)
 		}
 	}
 
@@ -92,7 +97,8 @@ func run(flags *flags, cmd *cobra.Command, args []string) {
 	for _, arg := range args {
 		content, err := ioutil.ReadFile(arg)
 		if err != nil {
-			log.Fatalf("Couldn't read coverage file: %v", err)
+			fmt.Fprintf(os.Stderr, "Couldn't read coverage file: %v.", err)
+			os.Exit(1)
 		}
 		coverageFiles = append(coverageFiles, coverageFile{Path: arg, Content: string(content)})
 	}
@@ -104,14 +110,18 @@ func run(flags *flags, cmd *cobra.Command, args []string) {
 	} else {
 		f, err := os.Create(outputPath)
 		if err != nil {
-			log.Fatalf("Couldn't open output file: %v", err)
+			fmt.Fprintf(os.Stderr, "Couldn't open output file: %v.", err)
+			os.Exit(1)
 		}
 		defer f.Close()
 		output = f
 	}
 
-	tpl.Execute(output, struct {
+	err = tpl.Execute(output, struct {
 		Script   template.JS
 		Coverage []coverageFile
 	}{template.JS(script), coverageFiles})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Couldn't write output file: %v.", err)
+	}
 }
