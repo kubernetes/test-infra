@@ -119,6 +119,10 @@ func slicesAreEqual(sliceA, sliceB []string) bool {
 // TestIPModeValidation tests whether the NewDeployer method correctly
 // validates configured values for IP mode.
 func TestIPModeValidation(t *testing.T) {
+	oldEnableCmd := ipv6EnableCmd
+	ipv6EnableCmd = "echo success"
+	defer func() { ipv6EnableCmd = oldEnableCmd }()
+
 	testCases := []struct {
 		ipMode   string
 		expError bool
