@@ -24,7 +24,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
-
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -39,9 +38,11 @@ func TestPostsubmitSpec(t *testing.T) {
 		{
 			name: "can override path alias and cloneuri",
 			p: config.Postsubmit{
-				UtilityConfig: config.UtilityConfig{
-					PathAlias: "foo",
-					CloneURI:  "bar",
+				JobBase: config.JobBase{
+					UtilityConfig: config.UtilityConfig{
+						PathAlias: "foo",
+						CloneURI:  "bar",
+					},
 				},
 			},
 			expected: kube.ProwJobSpec{
@@ -69,9 +70,11 @@ func TestPostsubmitSpec(t *testing.T) {
 		{
 			name: "job overrides take precedence over controller defaults",
 			p: config.Postsubmit{
-				UtilityConfig: config.UtilityConfig{
-					PathAlias: "foo",
-					CloneURI:  "bar",
+				JobBase: config.JobBase{
+					UtilityConfig: config.UtilityConfig{
+						PathAlias: "foo",
+						CloneURI:  "bar",
+					},
 				},
 			},
 			refs: kube.Refs{
@@ -106,9 +109,11 @@ func TestPresubmitSpec(t *testing.T) {
 		{
 			name: "can override path alias and cloneuri",
 			p: config.Presubmit{
-				UtilityConfig: config.UtilityConfig{
-					PathAlias: "foo",
-					CloneURI:  "bar",
+				JobBase: config.JobBase{
+					UtilityConfig: config.UtilityConfig{
+						PathAlias: "foo",
+						CloneURI:  "bar",
+					},
 				},
 			},
 			expected: kube.ProwJobSpec{
@@ -138,9 +143,11 @@ func TestPresubmitSpec(t *testing.T) {
 		{
 			name: "job overrides take precedence over controller defaults",
 			p: config.Presubmit{
-				UtilityConfig: config.UtilityConfig{
-					PathAlias: "foo",
-					CloneURI:  "bar",
+				JobBase: config.JobBase{
+					UtilityConfig: config.UtilityConfig{
+						PathAlias: "foo",
+						CloneURI:  "bar",
+					},
 				},
 			},
 			refs: kube.Refs{
@@ -176,9 +183,11 @@ func TestBatchSpec(t *testing.T) {
 		{
 			name: "can override path alias and cloneuri",
 			p: config.Presubmit{
-				UtilityConfig: config.UtilityConfig{
-					PathAlias: "foo",
-					CloneURI:  "bar",
+				JobBase: config.JobBase{
+					UtilityConfig: config.UtilityConfig{
+						PathAlias: "foo",
+						CloneURI:  "bar",
+					},
 				},
 			},
 			expected: kube.ProwJobSpec{
@@ -206,9 +215,11 @@ func TestBatchSpec(t *testing.T) {
 		{
 			name: "job overrides take precedence over controller defaults",
 			p: config.Presubmit{
-				UtilityConfig: config.UtilityConfig{
-					PathAlias: "foo",
-					CloneURI:  "bar",
+				JobBase: config.JobBase{
+					UtilityConfig: config.UtilityConfig{
+						PathAlias: "foo",
+						CloneURI:  "bar",
+					},
 				},
 			},
 			refs: kube.Refs{

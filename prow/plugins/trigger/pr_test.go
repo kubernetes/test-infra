@@ -331,7 +331,9 @@ func TestHandlePullRequest(t *testing.T) {
 		presubmits := map[string][]config.Presubmit{
 			"org/repo": {
 				{
-					Name:      "jib",
+					JobBase: config.JobBase{
+						Name: "jib",
+					},
 					AlwaysRun: true,
 				},
 			},

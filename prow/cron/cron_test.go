@@ -19,8 +19,7 @@ package cron
 import (
 	"testing"
 
-	"gopkg.in/robfig/cron.v2"
-
+	cron "gopkg.in/robfig/cron.v2"
 	"k8s.io/test-infra/prow/config"
 )
 
@@ -30,11 +29,15 @@ func TestSync(t *testing.T) {
 		JobConfig: config.JobConfig{
 			Periodics: []config.Periodic{
 				{
-					Name:     "interval",
+					JobBase: config.JobBase{
+						Name: "interval",
+					},
 					Interval: "1m",
 				},
 				{
-					Name: "cron",
+					JobBase: config.JobBase{
+						Name: "cron",
+					},
 					Cron: "@every 1m",
 				},
 			},
@@ -45,15 +48,21 @@ func TestSync(t *testing.T) {
 		JobConfig: config.JobConfig{
 			Periodics: []config.Periodic{
 				{
-					Name:     "interval",
+					JobBase: config.JobBase{
+						Name: "interval",
+					},
 					Interval: "1m",
 				},
 				{
-					Name: "cron",
+					JobBase: config.JobBase{
+						Name: "cron",
+					},
 					Cron: "@every 1m",
 				},
 				{
-					Name: "cron-2",
+					JobBase: config.JobBase{
+						Name: "cron-2",
+					},
 					Cron: "@every 1m",
 				},
 			},
@@ -64,11 +73,15 @@ func TestSync(t *testing.T) {
 		JobConfig: config.JobConfig{
 			Periodics: []config.Periodic{
 				{
-					Name:     "interval",
+					JobBase: config.JobBase{
+						Name: "interval",
+					},
 					Interval: "1m",
 				},
 				{
-					Name: "cron-2",
+					JobBase: config.JobBase{
+						Name: "cron-2",
+					},
 					Cron: "@every 1h",
 				},
 			},
@@ -133,11 +146,15 @@ func TestTrigger(t *testing.T) {
 		JobConfig: config.JobConfig{
 			Periodics: []config.Periodic{
 				{
-					Name: "cron",
+					JobBase: config.JobBase{
+						Name: "cron",
+					},
 					Cron: "* 8 * * *",
 				},
 				{
-					Name: "periodic",
+					JobBase: config.JobBase{
+						Name: "periodic",
+					},
 					Cron: "@every 1h",
 				},
 			},

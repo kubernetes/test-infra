@@ -76,13 +76,31 @@ func mergePreset(preset Preset, labels map[string]string, pod *v1.PodSpec) error
 	return nil
 }
 
-// Presubmit runs on PRs.
-type Presubmit struct {
+// JobBase contains attributes common to all job types
+type JobBase struct {
 	// The name of the job.
 	// e.g. pull-test-infra-bazel-build
 	Name string `json:"name"`
 	// Labels are added to prowjobs and pods created for this job.
 	Labels map[string]string `json:"labels,omitempty"`
+	// MaximumConcurrency of this job, 0 implies no limit.
+	MaxConcurrency int `json:"max_concurrency,omitempty"`
+	// Agent that will take care of running this job.
+	Agent string `json:"agent"`
+	// Cluster is the alias of the cluster to run this job in.
+	// (Default: kube.DefaultClusterAlias)
+	Cluster string `json:"cluster,omitempty"`
+	// SourcePath contains the path where this job is defined
+	SourcePath string `json:"-"`
+	// Spec is the Kubernetes pod spec used if Agent is Kubernetes.
+	Spec *v1.PodSpec `json:"spec,omitempty"`
+
+	UtilityConfig
+}
+
+// Presubmit runs on PRs.
+type Presubmit struct {
+	JobBase
 
 	// AlwaysRun automatically for every PR, or only when a comment triggers it.
 	AlwaysRun bool `json:"always_run"`
@@ -106,68 +124,30 @@ type Presubmit struct {
 	// (Default: `/test <job name>`)
 	RerunCommand string `json:"rerun_command"`
 
-	// MaximumConcurrency of this job, 0 implies no limit.
-	MaxConcurrency int `json:"max_concurrency,omitempty"`
-	// Agent that will take care of running this job.
-	Agent string `json:"agent"`
-	// Cluster is the alias of the cluster to run this job in.
-	// (Default: kube.DefaultClusterAlias)
-	Cluster string `json:"cluster,omitempty"`
-
-	// Spec is the Kubernetes pod spec used if Agent is Kubernetes.
-	Spec *v1.PodSpec `json:"spec,omitempty"`
-
 	// RunAfterSuccess is a list of jobs to run after successfully running this one.
 	RunAfterSuccess []Presubmit `json:"run_after_success,omitempty"`
 
 	Brancher
 
-	UtilityConfig
-
 	// We'll set these when we load it.
 	re        *regexp.Regexp // from Trigger.
 	reChanges *regexp.Regexp // from RunIfChanged
-
-	// SourcePath contains the path where this job is defined
-	SourcePath string `json:"-"`
 }
 
 // Postsubmit runs on push events.
 type Postsubmit struct {
-	Name string `json:"name"`
-	// Labels are added in prowjobs created for this job.
-	Labels map[string]string `json:"labels,omitempty"`
-	// Agent that will take care of running this job.
-	Agent string `json:"agent"`
-	// Cluster is the alias of the cluster to run this job in. (Default: kube.DefaultClusterAlias)
-	Cluster string `json:"cluster,omitempty"`
-	// Kubernetes pod spec.
-	Spec *v1.PodSpec `json:"spec,omitempty"`
-	// Maximum number of this job running concurrently, 0 implies no limit.
-	MaxConcurrency int `json:"max_concurrency,omitempty"`
+	JobBase
 
 	Brancher
 
-	UtilityConfig
-
 	// Run these jobs after successfully running this one.
 	RunAfterSuccess []Postsubmit `json:"run_after_success,omitempty"`
-
-	// SourcePath contains the path where this job is defined
-	SourcePath string `json:"-"`
 }
 
 // Periodic runs on a timer.
 type Periodic struct {
-	Name string `json:"name"`
-	// Labels are added in prowjobs created for this job.
-	Labels map[string]string `json:"labels,omitempty"`
-	// Agent that will take care of running this job.
-	Agent string `json:"agent"`
-	// Cluster is the alias of the cluster to run this job in. (Default: kube.DefaultClusterAlias)
-	Cluster string `json:"cluster,omitempty"`
-	// Kubernetes pod spec.
-	Spec *v1.PodSpec `json:"spec,omitempty"`
+	JobBase
+
 	// (deprecated)Interval to wait between two runs of the job.
 	Interval string `json:"interval"`
 	// Cron representation of job trigger time
@@ -177,12 +157,7 @@ type Periodic struct {
 	// Run these jobs after successfully running this one.
 	RunAfterSuccess []Periodic `json:"run_after_success,omitempty"`
 
-	UtilityConfig
-
 	interval time.Duration
-
-	// SourcePath contains the path where this job is defined
-	SourcePath string `json:"-"`
 }
 
 // SetInterval updates interval, the frequency duration it runs.
