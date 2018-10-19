@@ -266,6 +266,9 @@ Now, in `config.yaml`, set `prowjob_namespace` or `pod_namespace` to the
 name from the YAML file. You can then use RBAC roles to limit what test pods
 can do.
 
+**Note**: If you set or update the `prowjob_namespace` or `pod_namespace`
+fields after deploying the prow components, you will need to redeploy them
+so that they pick up the change.
 
 ## Run test pods in different clusters
 
