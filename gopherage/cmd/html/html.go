@@ -35,8 +35,17 @@ type flags struct {
 func MakeCommand() *cobra.Command {
 	flags := &flags{}
 	cmd := &cobra.Command{
-		Use:   "html [coverage]",
-		Short: "Emits an HTML file to browse a coverage file.",
+		Use:   "html [coverage...]",
+		Short: "Emits an HTML file to browse coverage files.",
+		Long: `Produces a self-contained HTML file that enables browsing the provided
+coverage files by directory. The resulting file can be distributed alone to
+produce the same rendering (but does currently require gstatic.com to be
+accessible).
+
+If multiple files are provided, they will all be
+shown in the generated HTML file, with the columns in the same order the files
+were listed. When there are multiples columns, each column will have an arrow
+indicating the change from the column immediately to its right.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			run(flags, cmd, args)
 		},
@@ -52,6 +61,7 @@ type coverageFile struct {
 
 func run(flags *flags, cmd *cobra.Command, args []string) {
 	if len(args) < 1 {
+		cmd.Usage()
 		log.Fatalln("Usage: gopherage html [coverage...]")
 	}
 
