@@ -193,6 +193,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/config" href="#area/config">`area/config`</a> | Issues or PRs related to code in /config| label | |
 | <a id="area/conformance" href="#area/conformance">`area/conformance`</a> | Issues or PRs related to kubernetes conformance tests| label | |
 | <a id="area/ghproxy" href="#area/ghproxy">`area/ghproxy`</a> | Issues or PRs related to code in /ghproxy| label | |
+| <a id="area/gopherage" href="#area/gopherage">`area/gopherage`</a> | Issues or PRs related to code in /gopherage| humans | |
 | <a id="area/greenhouse" href="#area/greenhouse">`area/greenhouse`</a> | Issues or PRs related to code in /greenhouse (our remote bazel cache)| label | |
 | <a id="area/gubernator" href="#area/gubernator">`area/gubernator`</a> | Issues or PRs related to code in /gubernator| label | |
 | <a id="area/kind" href="#area/kind">`area/kind`</a> | Issues or PRs related to code in /kind| label | |
