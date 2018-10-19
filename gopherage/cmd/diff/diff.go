@@ -17,11 +17,13 @@ limitations under the License.
 package diff
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
 	"golang.org/x/tools/cover"
 	"k8s.io/test-infra/gopherage/pkg/cov"
 	"k8s.io/test-infra/gopherage/pkg/util"
-	"log"
 )
 
 type flags struct {
@@ -44,31 +46,37 @@ at least equal to those in the first file.`,
 			run(flags, cmd, args)
 		},
 	}
-	cmd.Flags().StringVar(&flags.OutputFile, "o", "-", "output file")
+	cmd.Flags().StringVarP(&flags.OutputFile, "output", "o", "-", "output file")
 	return cmd
 }
 
 func run(flags *flags, cmd *cobra.Command, args []string) {
 	if len(args) != 2 {
-		log.Fatal("Expected exactly two arguments.")
+		fmt.Fprintln(os.Stderr, "Expected two files.")
+		cmd.Usage()
+		os.Exit(2)
 	}
 
 	before, err := cover.ParseProfiles(args[0])
 	if err != nil {
-		log.Fatalf("couldn't load %s: %v", args[0], err)
+		fmt.Fprintf(os.Stderr, "Couldn't load %s: %v.", args[0], err)
+		os.Exit(1)
 	}
 
 	after, err := cover.ParseProfiles(args[1])
 	if err != nil {
-		log.Fatalf("couldn't load %s: %v", args[0], err)
+		fmt.Fprintf(os.Stderr, "Couldn't load %s: %v.", args[0], err)
+		os.Exit(1)
 	}
 
 	diff, err := cov.DiffProfiles(before, after)
 	if err != nil {
-		log.Fatalf("failed to diff profiles: %v", err)
+		fmt.Fprintf(os.Stderr, "failed to diff profiles: %v", err)
+		os.Exit(1)
 	}
 
 	if err := util.DumpProfile(flags.OutputFile, diff); err != nil {
-		log.Fatalln(err)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 }

@@ -17,7 +17,8 @@ limitations under the License.
 package aggregate
 
 import (
-	"log"
+	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/tools/cover"
@@ -42,30 +43,35 @@ that counts how many of those coverage profiles hit a block at least once.`,
 			run(flags, cmd, args)
 		},
 	}
-	cmd.Flags().StringVar(&flags.OutputFile, "o", "-", "output file")
+	cmd.Flags().StringVarP(&flags.OutputFile, "output", "o", "-", "output file")
 	return cmd
 }
 
 func run(flags *flags, cmd *cobra.Command, args []string) {
 	if len(args) == 0 {
-		log.Fatalf("expected at least one file")
+		fmt.Println("Expected at least one file.")
+		cmd.Usage()
+		os.Exit(2)
 	}
 
 	profiles := make([][]*cover.Profile, 0, len(args))
 	for _, path := range args {
 		profile, err := cover.ParseProfiles(path)
 		if err != nil {
-			log.Fatalf("failed to open %s: %v", path, err)
+			fmt.Fprintf(os.Stderr, "failed to open %s: %v", path, err)
+			os.Exit(1)
 		}
 		profiles = append(profiles, profile)
 	}
 
 	aggregated, err := cov.AggregateProfiles(profiles)
 	if err != nil {
-		log.Fatalf("failed to aggregate files: %v", err)
+		fmt.Fprintf(os.Stderr, "failed to aggregate files: %v", err)
+		os.Exit(1)
 	}
 
 	if err := util.DumpProfile(flags.OutputFile, aggregated); err != nil {
-		log.Fatalln(err)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 }
