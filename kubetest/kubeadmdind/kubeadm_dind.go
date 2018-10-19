@@ -91,6 +91,7 @@ var (
 
 	// Kubeadm-DinD specific flags
 	kubeadmDinDIPMode = flag.String("kubeadm-dind-ip-mode", "ipv4", "(Kubeadm-DinD only) IP Mode. Can be 'ipv4' (default), 'ipv6', or 'dual-stack'.")
+	ipv6EnableCmd     = "sysctl -w net.ipv6.conf.all.disable_ipv6=0"
 )
 
 // Deployer is used to implement a kubetest deployer interface
@@ -113,7 +114,7 @@ func NewDeployer(control *process.Control) (*Deployer, error) {
 		// Valid value
 	case "ipv6", "dual-stack":
 		log.Printf("Enabling IPv6")
-		if err := d.run("sysctl -w net.ipv6.conf.all.disable_ipv6=0"); err != nil {
+		if err := d.run(ipv6EnableCmd); err != nil {
 			return nil, err
 		}
 	default:
