@@ -273,7 +273,7 @@ func TestReadAll_PodLog(t *testing.T) {
 			jobName:     "job",
 			buildID:     "123",
 			sizeLimit:   500e6,
-			expectedErr: fmt.Errorf("error getting pod log size: error getting size of pod log: could not find job job, id 123"),
+			expectedErr: fmt.Errorf("error getting pod log size: error getting size of pod log: could not find job, id 123"),
 			expected:    nil,
 		},
 		{
