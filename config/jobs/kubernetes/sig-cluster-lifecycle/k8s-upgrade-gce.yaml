@@ -402,6 +402,7 @@ periodics:
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
+      - --ginkgo-parallel
       - --provider=gce
       - --skew
       - --timeout=900m
