@@ -41,7 +41,7 @@ import view_base
 class Endpoint(view_base.BaseHandler):
     def github_client(self):
         client_key = 'github_client'
-        if '.appspot.com:' not in self.request.host and \
+        if '.appspot.com' not in self.request.host and \
             not self.request.host.startswith('localhost:'):
             client_key = 'github_client_' + self.request.host
         if not self.app.config.get(client_key):
