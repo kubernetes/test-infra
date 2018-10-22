@@ -27,6 +27,7 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/test-infra/kubetest/kubectl"
 	"k8s.io/test-infra/kubetest/process"
 )
 
@@ -130,8 +131,32 @@ func (t *GinkgoTester) validate() error {
 	return nil
 }
 
+// complete automatically tries to populate any additional fields that can be inferred
+func (t *GinkgoTester) complete(control *process.Control) error {
+	// We need to set the host, for some tests under test/e2e/kubectl/kubectl.go
+	if t.KubeMasterURL == "" && t.Kubeconfig != "" {
+		config, err := kubectl.GetConfig(control, t.Kubeconfig)
+		if err != nil {
+			return fmt.Errorf("error trying to read kubeconfig configuration: %v", err)
+		}
+		master, found := config.CurrentServer()
+		if !found {
+			log.Printf("unable to determine current server url from kubeconfig")
+		} else {
+			log.Printf("automatically populating host as %s, from kubeconfig", master)
+			t.KubeMasterURL = master
+		}
+	}
+
+	return nil
+}
+
 // Run executes the test (calling ginkgo)
 func (t *GinkgoTester) Run(control *process.Control, extraArgs []string) error {
+	if err := t.complete(control); err != nil {
+		return err
+	}
+
 	if err := t.validate(); err != nil {
 		return fmt.Errorf("configuration error in GinkgoTester: %v", err)
 	}

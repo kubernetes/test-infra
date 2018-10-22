@@ -85,6 +85,7 @@ filegroup(
         "//kubetest/dind:all-srcs",
         "//kubetest/e2e:all-srcs",
         "//kubetest/kubeadmdind:all-srcs",
+        "//kubetest/kubectl:all-srcs",
         "//kubetest/process:all-srcs",
         "//kubetest/util:all-srcs",
     ],
