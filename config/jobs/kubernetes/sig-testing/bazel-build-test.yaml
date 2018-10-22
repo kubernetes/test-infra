@@ -55,7 +55,7 @@ presubmits:
           - --ginkgo-parallel=30
           - --kubeadm=pull
           - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
-          - --provider=kubernetes-anywhere
+          - --provider=local
           - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
           - --timeout=55m
           - --use-shared-build=bazel
@@ -115,7 +115,7 @@ presubmits:
           - --ginkgo-parallel=30
           - --kubeadm=pull
           - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
-          - --provider=kubernetes-anywhere
+          - --provider=local
           - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
           - --timeout=55m
           - --use-shared-build=bazel
@@ -174,7 +174,7 @@ presubmits:
           - --ginkgo-parallel=30
           - --kubeadm=pull
           - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
-          - --provider=kubernetes-anywhere
+          - --provider=local
           - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
           - --timeout=55m
           - --use-shared-build=bazel

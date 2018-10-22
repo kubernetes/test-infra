@@ -22,7 +22,7 @@ periodics:
       - --kubeadm=ci
       - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.10
       - --kubernetes-anywhere-kubernetes-version=ci/latest-1.10
-      - --provider=kubernetes-anywhere
+      - --provider=local
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m
 
@@ -48,7 +48,7 @@ periodics:
       - --kubeadm=ci
       - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.11
       - --kubernetes-anywhere-kubernetes-version=ci/latest-1.11
-      - --provider=kubernetes-anywhere
+      - --provider=local
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m
 
@@ -74,6 +74,6 @@ periodics:
       - --kubeadm=ci
       - --kubernetes-anywhere-kubelet-version=stable
       - --kubernetes-anywhere-kubernetes-version=stable
-      - --provider=kubernetes-anywhere
+      - --provider=local
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m
