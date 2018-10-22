@@ -244,7 +244,7 @@ def validate_file_path(path):
 
 
 def _process_path_prefix(path_prefix):
-  """Validate and process a Google Cloud Stoarge path prefix.
+  """Validate and process a Google Cloud Storage path prefix.
 
   Args:
     path_prefix: a Google Cloud Storage path prefix of format '/bucket/prefix'
