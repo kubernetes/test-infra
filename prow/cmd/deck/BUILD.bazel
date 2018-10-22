@@ -98,6 +98,7 @@ go_library(
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/golang.org/x/oauth2:go_default_library",
         "//vendor/golang.org/x/oauth2/github:go_default_library",
+        "//vendor/google.golang.org/api/iterator:go_default_library",
         "//vendor/google.golang.org/api/option:go_default_library",
     ],
 )

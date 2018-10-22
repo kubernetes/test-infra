@@ -24,12 +24,14 @@ import (
 	"net/url"
 	"path"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/api/iterator"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 )
@@ -44,10 +46,12 @@ const (
 	logsPrefix     = "logs"
 	symLinkPrefix  = "pr-logs/directory"
 	spyglassPrefix = "/view/gcs"
+	emptyID        = int64(-1) // indicates no build id was specified
 )
 
 var (
 	prefixRe = regexp.MustCompile("gs://.*?/")
+	linkRe   = regexp.MustCompile("/([0-9]+)\\.txt$")
 )
 
 type buildData struct {
@@ -60,11 +64,13 @@ type buildData struct {
 }
 
 type jobHistoryTemplate struct {
-	OlderLink  string
-	NewerLink  string
-	LatestLink string
-	Name       string
-	Builds     []buildData
+	OlderLink    string
+	NewerLink    string
+	LatestLink   string
+	Name         string
+	ResultsShown int
+	ResultsTotal int
+	Builds       []buildData
 }
 
 func readObject(obj *storage.ObjectHandle) ([]byte, error) {
@@ -75,15 +81,15 @@ func readObject(obj *storage.ObjectHandle) ([]byte, error) {
 	return ioutil.ReadAll(rc)
 }
 
-func readLatestBuild(bkt *storage.BucketHandle, root string) (int, error) {
+func readLatestBuild(bkt *storage.BucketHandle, root string) (int64, error) {
 	path := path.Join(root, latestBuildFile)
 	data, err := readObject(bkt.Object(path))
 	if err != nil {
-		return -1, fmt.Errorf("failed to read latest build number: %v", err)
+		return -1, fmt.Errorf("failed to read %s: %v", path, err)
 	}
-	n, err := strconv.Atoi(string(data))
+	n, err := strconv.ParseInt(string(data), 10, 64)
 	if err != nil {
-		return -1, fmt.Errorf("failed to parse latest build number: %v", err)
+		return -1, fmt.Errorf("failed to parse %s: %v", path, err)
 	}
 	return n, nil
 }
@@ -124,16 +130,6 @@ func getPath(bkt *storage.BucketHandle, root, id, fname string) (string, error) 
 	return path.Join(dir, fname), nil
 }
 
-func fileExists(bkt *storage.BucketHandle, root, id, fname string) bool {
-	p, err := getPath(bkt, root, id, fname)
-	if err != nil {
-		return false
-	}
-	obj := bkt.Object(p)
-	_, err = obj.Attrs(context.Background())
-	return err == nil
-}
-
 func readStarted(bkt *storage.BucketHandle, root, id string) (jobs.Started, error) {
 	s := jobs.Started{}
 	p, err := getPath(bkt, root, id, "started.json")
@@ -168,117 +164,241 @@ func readFinished(bkt *storage.BucketHandle, root, id string) (jobs.Finished, er
 	return f, nil
 }
 
+// Lists the GCS "directory names" immediately under prefix.
+func listSubDirs(bkt *storage.BucketHandle, prefix string) ([]string, error) {
+	if !strings.HasSuffix(prefix, "/") {
+		prefix += "/"
+	}
+	dirs := []string{}
+	it := bkt.Objects(context.Background(), &storage.Query{
+		Prefix:    prefix,
+		Delimiter: "/",
+	})
+	for {
+		attrs, err := it.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return dirs, err
+		}
+		if attrs.Prefix != "" {
+			dirs = append(dirs, attrs.Prefix)
+		}
+	}
+	return dirs, nil
+}
+
+// Lists all GCS keys with given prefix.
+func listAll(bkt *storage.BucketHandle, prefix string) ([]string, error) {
+	keys := []string{}
+	it := bkt.Objects(context.Background(), &storage.Query{
+		Prefix: prefix,
+	})
+	for {
+		attrs, err := it.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return keys, err
+		}
+		keys = append(keys, attrs.Name)
+	}
+	return keys, nil
+}
+
+// Gets all build ids for a job.
+func listBuildIDs(bkt *storage.BucketHandle, root string) ([]int64, error) {
+	ids := []int64{}
+	if strings.HasPrefix(root, logsPrefix) {
+		dirs, err := listSubDirs(bkt, root)
+		if err != nil {
+			return ids, fmt.Errorf("failed to list GCS directories: %v", err)
+		}
+		for _, dir := range dirs {
+			i, err := strconv.ParseInt(path.Base(dir), 10, 64)
+			if err == nil {
+				ids = append(ids, i)
+			}
+		}
+	} else {
+		keys, err := listAll(bkt, root)
+		if err != nil {
+			return ids, fmt.Errorf("failed to list GCS keys: %v", err)
+		}
+		for _, key := range keys {
+			matches := linkRe.FindStringSubmatch(key)
+			if len(matches) == 2 {
+				i, err := strconv.ParseInt(matches[1], 10, 64)
+				if err == nil {
+					ids = append(ids, i)
+				}
+			}
+		}
+	}
+	return ids, nil
+}
+
+func jobHistURL(url *url.URL) (string, string, int64, error) {
+	p := strings.TrimPrefix(url.Path, "/job-history/")
+	s := strings.SplitN(p, "/", 2)
+	if len(s) < 2 {
+		return "", "", emptyID, fmt.Errorf("invalid path: %v", url.Path)
+	}
+	bucketName := s[0]
+	root := s[1]
+	if bucketName == "" {
+		return bucketName, root, emptyID, fmt.Errorf("missing bucket name: %v", url.Path)
+	}
+	if root == "" {
+		return bucketName, root, emptyID, fmt.Errorf("missing path for job: %v", url.Path)
+	}
+
+	buildID := emptyID
+	if idVals := url.Query()[idParam]; len(idVals) >= 1 {
+		if idVals[0] == "" {
+			return bucketName, root, emptyID, nil
+		}
+		var err error
+		buildID, err = strconv.ParseInt(idVals[0], 10, 64)
+		if err != nil {
+			return bucketName, root, buildID, fmt.Errorf("invalid value for %s: %v", idParam, err)
+		}
+		if buildID < 0 {
+			return bucketName, root, buildID, fmt.Errorf("invalid value %s = %d", idParam, buildID)
+		}
+	}
+
+	return bucketName, root, buildID, nil
+}
+
+func linkID(url *url.URL, id int64) string {
+	u := *url
+	q := u.Query()
+	var val string
+	if id != emptyID {
+		val = strconv.FormatInt(id, 10)
+	}
+	q.Set(idParam, val)
+	u.RawQuery = q.Encode()
+	return u.String()
+}
+
+func getBuildData(bkt *storage.BucketHandle, root string, buildID int64, index int) buildData {
+	b := buildData{
+		index:  index,
+		ID:     strconv.FormatInt(buildID, 10),
+		Result: "Unfinished",
+	}
+	link, err := spyglassLink(bkt, root, b.ID)
+	if err != nil {
+		logrus.Warning(err)
+		return b
+	}
+	b.SpyglassLink = link
+	started, err := readStarted(bkt, root, b.ID)
+	if err == nil {
+		b.Started = time.Unix(started.Timestamp, 0)
+		finished, _ := readFinished(bkt, root, b.ID)
+		if finished.Timestamp != 0 {
+			b.Duration = time.Unix(finished.Timestamp, 0).Sub(b.Started)
+		}
+		if finished.Result != "" {
+			b.Result = finished.Result
+		}
+	} else {
+		logrus.Warning(err)
+	}
+	return b
+}
+
+// assumes a to be sorted in descending order
+// returns a subslice of a along with its indices (inclusive)
+func cropResults(a []int64, max int64) ([]int64, int, int) {
+	res := []int64{}
+	firstIndex := -1
+	lastIndex := 0
+	for i, v := range a {
+		if v <= max {
+			res = append(res, v)
+			if firstIndex == -1 {
+				firstIndex = i
+			}
+			lastIndex = i
+			if len(res) >= resultsPerPage {
+				break
+			}
+		}
+	}
+	return res, firstIndex, lastIndex
+}
+
+// golang <3
+type int64slice []int64
+
+func (a int64slice) Len() int           { return len(a) }
+func (a int64slice) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a int64slice) Less(i, j int) bool { return a[i] < a[j] }
+
 // Gets job history from the GCS bucket specified in config.
 func getJobHistory(url *url.URL, config *config.Config, gcsClient *storage.Client) (jobHistoryTemplate, error) {
 	start := time.Now()
+	tmpl := jobHistoryTemplate{}
 
-	jobName := strings.TrimPrefix(url.Path, "/job-history/")
-	tmpl := jobHistoryTemplate{
-		Name:   jobName,
-		Builds: make([]buildData, resultsPerPage),
+	bucketName, root, top, err := jobHistURL(url)
+	if err != nil {
+		return tmpl, fmt.Errorf("invalid url %s: %v", url.String(), err)
 	}
-
-	var latest int
-	bucketName := config.ProwConfig.Plank.DefaultDecorationConfig.GCSConfiguration.Bucket
+	tmpl.Name = root
 	bkt := gcsClient.Bucket(bucketName)
-	var root string
-	found := false
-	for _, r := range []string{logsPrefix, symLinkPrefix} {
-		root = path.Join(r, jobName)
-		n, err := readLatestBuild(bkt, root)
-		if err == nil {
-			latest = n
-			found = true
-			break
-		}
+
+	latest, err := readLatestBuild(bkt, root)
+	if err != nil {
+		return tmpl, fmt.Errorf("failed to locate build data: %v", err)
 	}
-	if !found {
-		return tmpl, fmt.Errorf("failed to locate build data")
-	}
-	var top, bottom int // build ids of the top (inclusive) and bottom (exclusive) results
-	if idVals := url.Query()[idParam]; len(idVals) >= 1 {
-		var err error
-		if top, err = strconv.Atoi(idVals[0]); err != nil {
-			return tmpl, fmt.Errorf("invalid value for %s: %v", idParam, err)
-		}
-	} else {
+	if top == emptyID || top > latest {
 		top = latest
 	}
 	if top != latest {
-		newer := top + resultsPerPage
-		if newer > latest {
-			newer = latest
-		}
-		u := *url
-		q := u.Query()
-		q.Set(idParam, strconv.Itoa(newer))
-		u.RawQuery = q.Encode()
-		tmpl.NewerLink = u.String()
+		tmpl.LatestLink = linkID(url, emptyID)
+	}
 
-		q.Del(idParam)
-		u.RawQuery = q.Encode()
-		tmpl.LatestLink = u.String()
+	buildIDs, err := listBuildIDs(bkt, root)
+	if err != nil {
+		return tmpl, fmt.Errorf("failed to get build ids: %v", err)
 	}
-	bottom = top - resultsPerPage
-	// concurrently check if there are no older results to display
-	showOlder := false
-	fch := make(chan bool)
-	for i := bottom; i > bottom-resultsPerPage; i-- {
-		go func(i int) {
-			fch <- fileExists(bkt, root, strconv.Itoa(i), "started.json")
-		}(i)
-	}
-	for i := 0; i < resultsPerPage; i++ {
-		if <-fch {
-			showOlder = true
-			break
+	sort.Sort(sort.Reverse(int64slice(buildIDs)))
+
+	shownIDs, firstIndex, lastIndex := cropResults(buildIDs, top)
+	if firstIndex > 0 {
+		prevIndex := firstIndex - resultsPerPage
+		prev := emptyID
+		if prevIndex > 0 {
+			prev = buildIDs[prevIndex]
 		}
+		tmpl.NewerLink = linkID(url, prev)
 	}
-	if showOlder {
-		u := *url
-		q := u.Query()
-		q.Set(idParam, strconv.Itoa(bottom))
-		u.RawQuery = q.Encode()
-		tmpl.OlderLink = u.String()
+	if lastIndex < len(buildIDs)-1 {
+		tmpl.OlderLink = linkID(url, buildIDs[lastIndex+1])
 	}
+
+	tmpl.Builds = make([]buildData, len(shownIDs))
+	tmpl.ResultsShown = len(shownIDs)
+	tmpl.ResultsTotal = len(buildIDs)
 
 	bch := make(chan buildData)
-	for i := top; i > bottom; i-- {
-		go func(i int) {
-			build := buildData{
-				index:  top - i,
-				ID:     strconv.Itoa(i),
-				Result: "Unfinished",
-			}
-			link, err := spyglassLink(bkt, root, build.ID)
-			if err != nil {
-				logrus.Warning(err)
-				bch <- build
-				return
-			}
-			build.SpyglassLink = link
-			started, err := readStarted(bkt, root, build.ID)
-			if err == nil {
-				build.Started = time.Unix(started.Timestamp, 0)
-				finished, _ := readFinished(bkt, root, build.ID)
-				if finished.Timestamp != 0 {
-					build.Duration = time.Unix(finished.Timestamp, 0).Sub(build.Started)
-				}
-				if finished.Result != "" {
-					build.Result = finished.Result
-				}
-			} else {
-				logrus.Warning(err)
-			}
-			bch <- build
-		}(i)
+	for i, buildID := range shownIDs {
+		go func(i int, buildID int64) {
+			bch <- getBuildData(bkt, root, buildID, i)
+		}(i, buildID)
 	}
-	for i := 0; i < resultsPerPage; i++ {
+	for i := 0; i < len(shownIDs); i++ {
 		b := <-bch
 		tmpl.Builds[b.index] = b
 	}
 
 	elapsed := time.Now().Sub(start)
-	logrus.Infof("got job history for %s in %v", jobName, elapsed)
+	logrus.Infof("loaded %s in %v", url.Path, elapsed)
 	return tmpl, nil
 }
