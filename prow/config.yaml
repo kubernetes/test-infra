@@ -80,11 +80,6 @@ branch-protection:
             users: []
             teams:
             - stage-bots
-        cloud-controller-manager:
-          restrictions:
-            users: []
-            teams:
-            - stage-bots
         cloud-provider:
           restrictions:
             users: []
