@@ -243,9 +243,10 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, config *
 		&state{
 			org:       re.Repo.Owner.Login,
 			repo:      re.Repo.Name,
+			branch:    pr.Base.Ref,
 			number:    re.PullRequest.Number,
-			body:      re.Review.Body,
-			author:    re.Review.User.Login,
+			body:      re.PullRequest.Body,
+			author:    re.PullRequest.User.Login,
 			assignees: re.PullRequest.Assignees,
 			htmlURL:   re.PullRequest.HTMLURL,
 		},
