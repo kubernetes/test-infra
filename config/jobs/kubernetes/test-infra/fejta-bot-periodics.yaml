@@ -57,7 +57,7 @@ periodics:
         --comment=/retest
         This bot automatically retries jobs that failed/flaked on approved PRs (send feedback to [fejta](https://github.com/fejta)).
 
-        Review the [full test history](https://k8s-gubernator.appspot.com/pr/{{.Number}}) for this PR.
+        Review the [full test history](https://gubernator.k8s.io/pr/{{.Number}}) for this PR.
 
         Silence the bot with an `/lgtm cancel` comment for consistent failures.
 

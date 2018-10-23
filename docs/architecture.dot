@@ -12,7 +12,7 @@ digraph G {
 
 	# handy links!
 	Triage [href="https://go.k8s.io/triage"]
-	Gubernator [href="https://k8s-gubernator.appspot.com"]
+	Gubernator [href="https://gubernator.k8s.io"]
 	Testgrid [href="https://testgrid.k8s.io"]
 	Deck [href="https://prow.k8s.io"]
 	Mungegithub [href="https://submit-queue.k8s.io"]

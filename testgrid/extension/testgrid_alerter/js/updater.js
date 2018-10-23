@@ -39,7 +39,7 @@ var Updater = (function() {
   let hasPermission = false;
 
   // The base url to use to make requests.
-  let URL_BASE = 'https://k8s-testgrid.appspot.com/';
+  let URL_BASE = 'https://testgrid.k8s.io/';
 
   /**
    * Makes a request to the TestGrid server for a list of dashboards and tabs.

@@ -27,7 +27,7 @@ default_test_group:
 
 default_dashboard_tab:
   open_test_template: # The URL template to visit after clicking on a cell
-    url: https://k8s-gubernator.appspot.com/build/<gcs_prefix>/<changelist>
+    url: https://gubernator.k8s.io/build/<gcs_prefix>/<changelist>
   file_bug_template: # The URL template to visit when filing a bug
     url: https://github.com/kubernetes/kubernetes/issues/new
     options:
@@ -40,7 +40,7 @@ default_dashboard_tab:
     options: #empty
   results_text: See these results in Gubernator # Text to show in the about menu as a link to another view of the results
   results_url_template: # The URL template to visit after clicking
-    url: https://k8s-gubernator.appspot.com/builds/<gcs_prefix>
+    url: https://gubernator.k8s.io/builds/<gcs_prefix>
   code_search_path: github.com/kubernetes/kubernetes/search # URL for regression search links.
   num_columns_recent: 10
   code_search_url_template: # The URL template to visit when searching for changelists

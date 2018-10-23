@@ -10,10 +10,10 @@ the different services interact.
 
 ## Viewing test results
 
-* The [Kubernetes TestGrid](https://k8s-testgrid.appspot.com/) shows historical test results
+* The [Kubernetes TestGrid](https://testgrid.k8s.io/) shows historical test results
   - Configure your own testgrid dashboard at [testgrid/config.yaml](testgrid/config.yaml)
-  - [Gubernator](https://k8s-gubernator.appspot.com/) formats the output of each run
-* [PR Dashboard](https://k8s-gubernator.appspot.com/pr) finds PRs that need your attention
+  - [Gubernator](https://gubernator.k8s.io/) formats the output of each run
+* [PR Dashboard](https://gubernator.k8s.io/pr) finds PRs that need your attention
 * [Prow](https://prow.k8s.io) schedules testing and updates issues
   - Prow responds to GitHub events, timers and [manual commands](https://go.k8s.io/bot-commands)
     given in GitHub comments.
