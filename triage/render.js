@@ -70,7 +70,7 @@ function slugify(inp) {
 
 function gubernatorURLForBuild(build, test) {
   let buildPath = builds.jobPaths[build.job] + '/' + build.number;
-  var gubernatorURL = 'https://k8s-gubernator.appspot.com/build/' + buildPath.slice(5);
+  var gubernatorURL = 'https://gubernator.k8s.io/build/' + buildPath.slice(5);
   if (build.pr) {
     gubernatorURL = gubernatorURL.replace(/(\/pr-logs\/pull\/)[^/]*\//, '$1' + build.pr + '/');
   }

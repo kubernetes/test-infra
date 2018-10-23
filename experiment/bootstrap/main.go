@@ -32,7 +32,7 @@ const (
 	GCEPubKeyEnv           string = "JENKINS_GCE_SSH_PUBLIC_KEY_FILE"
 	AWSPrivKeyEnv          string = "JENKINS_AWS_SSH_PRIVATE_KEY_FILE"
 	AWSPubKeyEnv           string = "JENKINS_AWS_SSH_PUBLIC_KEY_FILE"
-	GubernatorBaseBuildURL string = "https://k8s-gubernator.appspot.com/build/"
+	GubernatorBaseBuildURL string = "https://gubernator.k8s.io/build/"
 	HomeEnv                string = "HOME"
 	JenkinsHomeEnv         string = "JENKINS_HOME"
 	JobEnv                 string = "JOB_NAME"
