@@ -18,7 +18,6 @@ package trigger
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -300,7 +299,7 @@ func TestHandlePullRequest(t *testing.T) {
 		}
 
 		if tc.HasOkToTest {
-			g.LabelsAdded = append(g.LabelsAdded, fmt.Sprintf("org/repo#0:%s", labels.OkToTest))
+			g.IssueLabelsExisting = append(g.IssueLabelsExisting, issueLabels(labels.OkToTest)...)
 		}
 		pr := github.PullRequestEvent{
 			Action: tc.prAction,

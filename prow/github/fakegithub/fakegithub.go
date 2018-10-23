@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"regexp"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -48,8 +49,9 @@ type FakeClient struct {
 	//All Labels That Exist In The Repo
 	ExistingLabels []string
 	// org/repo#number:label
-	LabelsAdded   []string
-	LabelsRemoved []string
+	LabelsAdded         []string
+	IssueLabelsExisting []string
+	LabelsRemoved       []string
 
 	// org/repo#number:body
 	IssueCommentsAdded []string
@@ -232,10 +234,12 @@ func (f *FakeClient) GetRepoLabels(owner, repo string) ([]github.Label, error) {
 
 // GetIssueLabels gets labels on an issue
 func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.Label, error) {
-	// Only labels added to an issue are considered. Removals are ignored by this fake.
 	re := regexp.MustCompile(fmt.Sprintf(`^%s/%s#%d:(.*)$`, owner, repo, number))
 	la := []github.Label{}
-	for _, l := range f.LabelsAdded {
+	allLabels := sets.NewString(f.IssueLabelsExisting...)
+	allLabels.Insert(f.LabelsAdded...)
+	allLabels.Delete(f.LabelsRemoved...)
+	for _, l := range allLabels.List() {
 		groups := re.FindStringSubmatch(l)
 		if groups != nil {
 			la = append(la, github.Label{Name: groups[1]})
@@ -246,13 +250,17 @@ func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.La
 
 // AddLabel adds a label
 func (f *FakeClient) AddLabel(owner, repo string, number int, label string) error {
+	labelString := fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label)
+	if sets.NewString(f.LabelsAdded...).Has(labelString) {
+		return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
+	}
 	if f.ExistingLabels == nil {
-		f.LabelsAdded = append(f.LabelsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label))
+		f.LabelsAdded = append(f.LabelsAdded, labelString)
 		return nil
 	}
 	for _, l := range f.ExistingLabels {
 		if label == l {
-			f.LabelsAdded = append(f.LabelsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label))
+			f.LabelsAdded = append(f.LabelsAdded, labelString)
 			return nil
 		}
 	}
@@ -261,8 +269,12 @@ func (f *FakeClient) AddLabel(owner, repo string, number int, label string) erro
 
 // RemoveLabel removes a label
 func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) error {
-	f.LabelsRemoved = append(f.LabelsRemoved, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label))
-	return nil
+	labelString := fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label)
+	if !sets.NewString(f.LabelsRemoved...).Has(labelString) {
+		f.LabelsRemoved = append(f.LabelsRemoved, labelString)
+		return nil
+	}
+	return fmt.Errorf("cannot remove %v from %s/%s/#%d", label, owner, repo, number)
 }
 
 // FindIssues returns f.Issues

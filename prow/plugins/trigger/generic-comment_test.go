@@ -23,6 +23,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
@@ -35,28 +36,40 @@ type fkc struct {
 }
 
 func (c *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
-	c.started = append(c.started, pj.Spec.Context)
+	if !sets.NewString(c.started...).Has(pj.Spec.Context) {
+		c.started = append(c.started, pj.Spec.Context)
+	}
 	return pj, nil
 }
 
-func TestHandleIssueComment(t *testing.T) {
-	var testcases = []struct {
-		name string
+func issueLabels(labels ...string) []string {
+	var ls []string
+	for _, label := range labels {
+		ls = append(ls, fmt.Sprintf("org/repo#0:%s", label))
+	}
+	return ls
+}
 
-		Author        string
-		PRAuthor      string
-		Body          string
-		State         string
-		IsPR          bool
-		Branch        string
-		ShouldBuild   bool
-		ShouldReport  bool
-		AddedLabels   []string
-		RemovedLabels []string
-		StartsExactly string
-		Presubmits    map[string][]config.Presubmit
-		IssueLabels   []github.Label
-	}{
+type testcase struct {
+	name string
+
+	Author        string
+	PRAuthor      string
+	Body          string
+	State         string
+	IsPR          bool
+	Branch        string
+	ShouldBuild   bool
+	ShouldReport  bool
+	AddedLabels   []string
+	RemovedLabels []string
+	StartsExactly string
+	Presubmits    map[string][]config.Presubmit
+	IssueLabels   []string
+}
+
+func TestHandleGenericComment(t *testing.T) {
+	var testcases = []testcase{
 		{
 			name: "Not a PR.",
 
@@ -119,7 +132,7 @@ func TestHandleIssueComment(t *testing.T) {
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: true,
-			IssueLabels: []github.Label{{Name: labels.OkToTest}},
+			IssueLabels: issueLabels(labels.OkToTest),
 		},
 		{
 			name: `Non-trusted member after "/ok-to-test", needs-ok-to-test label wasn't deleted.`,
@@ -129,8 +142,8 @@ func TestHandleIssueComment(t *testing.T) {
 			State:         "open",
 			IsPR:          true,
 			ShouldBuild:   true,
-			IssueLabels:   []github.Label{{Name: labels.NeedsOkToTest}, {Name: labels.OkToTest}},
-			RemovedLabels: []string{fmt.Sprintf("org/repo#0:%s", labels.NeedsOkToTest)},
+			IssueLabels:   issueLabels(labels.NeedsOkToTest, labels.OkToTest),
+			RemovedLabels: issueLabels(labels.NeedsOkToTest),
 		},
 		{
 			name: "Trusted member's ok to test",
@@ -140,7 +153,7 @@ func TestHandleIssueComment(t *testing.T) {
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: true,
-			AddedLabels: []string{fmt.Sprintf("org/repo#0:%s", labels.OkToTest)},
+			AddedLabels: issueLabels(labels.OkToTest),
 		},
 		{
 			name: "Trusted member's ok to test, trailing space.",
@@ -150,7 +163,7 @@ func TestHandleIssueComment(t *testing.T) {
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: true,
-			AddedLabels: []string{fmt.Sprintf("org/repo#0:%s", labels.OkToTest)},
+			AddedLabels: issueLabels(labels.OkToTest),
 		},
 		{
 			name: "Trusted member's not ok to test.",
@@ -231,9 +244,9 @@ func TestHandleIssueComment(t *testing.T) {
 					},
 				},
 			},
-			IssueLabels:   []github.Label{{Name: labels.NeedsOkToTest}},
-			AddedLabels:   []string{fmt.Sprintf("org/repo#0:%s", labels.OkToTest)},
-			RemovedLabels: []string{fmt.Sprintf("org/repo#0:%s", labels.NeedsOkToTest)},
+			IssueLabels:   issueLabels(labels.NeedsOkToTest),
+			AddedLabels:   issueLabels(labels.OkToTest),
+			RemovedLabels: issueLabels(labels.NeedsOkToTest),
 		},
 		{
 			name:   "Wrong branch w/ SkipReport",
@@ -367,9 +380,9 @@ func TestHandleIssueComment(t *testing.T) {
 			},
 			ShouldBuild:   true,
 			StartsExactly: "pull-jab",
-			IssueLabels:   []github.Label{{Name: labels.NeedsOkToTest}},
-			AddedLabels:   []string{fmt.Sprintf("org/repo#0:%s", labels.OkToTest)},
-			RemovedLabels: []string{fmt.Sprintf("org/repo#0:%s", labels.NeedsOkToTest)},
+			IssueLabels:   issueLabels(labels.NeedsOkToTest),
+			AddedLabels:   issueLabels(labels.OkToTest),
+			RemovedLabels: issueLabels(labels.NeedsOkToTest),
 		},
 		{
 			name:   "/test of branch-sharded job",
@@ -537,7 +550,7 @@ func TestHandleIssueComment(t *testing.T) {
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: false,
-			IssueLabels: []github.Label{{Name: labels.LGTM}, {Name: labels.Approved}},
+			IssueLabels: issueLabels(labels.LGTM, labels.Approved),
 		},
 	}
 	for _, tc := range testcases {
@@ -551,6 +564,7 @@ func TestHandleIssueComment(t *testing.T) {
 			OrgMembers:      map[string][]string{"org": {"t"}},
 			PullRequests: map[int]*github.PullRequest{
 				0: {
+					User:   github.User{Login: tc.PRAuthor},
 					Number: 0,
 					Head: github.PullRequestBranch{
 						SHA: "cafe",
@@ -564,7 +578,8 @@ func TestHandleIssueComment(t *testing.T) {
 					},
 				},
 			},
-			PullRequestChanges: map[int][]github.PullRequestChange{0: {{Filename: "CHANGED"}}},
+			IssueLabelsExisting: tc.IssueLabels,
+			PullRequestChanges:  map[int][]github.PullRequestChange{0: {{Filename: "CHANGED"}}},
 			CombinedStatuses: map[string]*github.CombinedStatus{
 				"cafe": {
 					Statuses: []github.Status{
@@ -612,52 +627,52 @@ func TestHandleIssueComment(t *testing.T) {
 			t.Fatalf("failed to set presubmits: %v", err)
 		}
 
-		var pr *struct{}
-		if tc.IsPR {
-			pr = &struct{}{}
-		}
-		event := github.IssueCommentEvent{
-			Action: github.IssueCommentActionCreated,
+		event := github.GenericCommentEvent{
+			Action: github.GenericCommentActionCreated,
 			Repo: github.Repo{
 				Owner:    github.User{Login: "org"},
 				Name:     "repo",
 				FullName: "org/repo",
 			},
-			Comment: github.IssueComment{
-				Body: tc.Body,
-				User: github.User{Login: tc.Author},
-			},
-			Issue: github.Issue{
-				User:        github.User{Login: tc.PRAuthor},
-				PullRequest: pr,
-				State:       tc.State,
-			},
-		}
-		if len(tc.IssueLabels) > 0 {
-			event.Issue.Labels = tc.IssueLabels
+			Body:        tc.Body,
+			User:        github.User{Login: tc.Author},
+			IssueAuthor: github.User{Login: tc.PRAuthor},
+			IssueState:  tc.State,
+			IsPR:        tc.IsPR,
 		}
 
-		if err := handleIC(c, nil, event); err != nil {
+		// In some cases handleGenericComment can be called twice for the same event.
+		// For instance on Issue/PR creation and modification.
+		// Let's call it twice to ensure idempotency.
+		if err := handleGenericComment(c, nil, event); err != nil {
 			t.Fatalf("Didn't expect error: %s", err)
 		}
-		if len(kc.started) > 0 && !tc.ShouldBuild {
-			t.Errorf("Built but should not have: %+v", tc)
-		} else if len(kc.started) == 0 && tc.ShouldBuild {
-			t.Errorf("Not built but should have: %+v", tc)
+		validate(kc, g, tc, t)
+		if err := handleGenericComment(c, nil, event); err != nil {
+			t.Fatalf("Didn't expect error: %s", err)
 		}
-		if tc.StartsExactly != "" && (len(kc.started) != 1 || kc.started[0] != tc.StartsExactly) {
-			t.Errorf("Didn't build expected context %v, instead built %v", tc.StartsExactly, kc.started)
-		}
-		if tc.ShouldReport && len(g.CreatedStatuses) == 0 {
-			t.Error("Expected report to github")
-		} else if !tc.ShouldReport && len(g.CreatedStatuses) > 0 {
-			t.Errorf("Expected no reports to github, but got %d", len(g.CreatedStatuses))
-		}
-		if !reflect.DeepEqual(g.LabelsAdded, tc.AddedLabels) {
-			t.Errorf("expected %q to be added, got %q", tc.AddedLabels, g.LabelsAdded)
-		}
-		if !reflect.DeepEqual(g.LabelsRemoved, tc.RemovedLabels) {
-			t.Errorf("expected %q to be removed, got %q", tc.RemovedLabels, g.LabelsRemoved)
-		}
+		validate(kc, g, tc, t)
+	}
+}
+
+func validate(kc *fkc, g *fakegithub.FakeClient, tc testcase, t *testing.T) {
+	if len(kc.started) > 0 && !tc.ShouldBuild {
+		t.Errorf("Built but should not have: %+v", tc)
+	} else if len(kc.started) == 0 && tc.ShouldBuild {
+		t.Errorf("Not built but should have: %+v", tc)
+	}
+	if tc.StartsExactly != "" && (len(kc.started) != 1 || kc.started[0] != tc.StartsExactly) {
+		t.Errorf("Didn't build expected context %v, instead built %v", tc.StartsExactly, kc.started)
+	}
+	if tc.ShouldReport && len(g.CreatedStatuses) == 0 {
+		t.Error("Expected report to github")
+	} else if !tc.ShouldReport && len(g.CreatedStatuses) > 0 {
+		t.Errorf("Expected no reports to github, but got %d", len(g.CreatedStatuses))
+	}
+	if !reflect.DeepEqual(g.LabelsAdded, tc.AddedLabels) {
+		t.Errorf("expected %q to be added, got %q", tc.AddedLabels, g.LabelsAdded)
+	}
+	if !reflect.DeepEqual(g.LabelsRemoved, tc.RemovedLabels) {
+		t.Errorf("expected %q to be removed, got %q", tc.RemovedLabels, g.LabelsRemoved)
 	}
 }

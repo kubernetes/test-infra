@@ -9,8 +9,8 @@ load(
 go_test(
     name = "go_default_test",
     srcs = [
-        "ic_test.go",
-        "pr_test.go",
+        "generic-comment_test.go",
+        "pull-request_test.go",
     ],
     embed = [":go_default_library"],
     deps = [
@@ -21,13 +21,14 @@ go_test(
         "//prow/labels:go_default_library",
         "//prow/plugins:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 
 go_library(
     name = "go_default_library",
     srcs = [
-        "issue-comment.go",
+        "generic-comment.go",
         "pull-request.go",
         "push.go",
         "trigger.go",
