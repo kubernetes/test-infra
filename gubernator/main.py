@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import yaml
 import webapp2
 
@@ -39,7 +40,7 @@ config = {
         'secret_key': None,  # filled in on the first request
         'cookie_args': {
             # we don't have SSL For local development
-            'secure': hostname and 'appspot.com' in hostname,
+            'secure': os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/'),
             'httponly': True,
         },
     },
