@@ -59,7 +59,7 @@ func run(flags *flags, cmd *cobra.Command, args []string) {
 
 	profiles := make([][]*cover.Profile, len(args))
 	for _, path := range args {
-		profile, err := cover.ParseProfiles(path)
+		profile, err := util.LoadProfile(path)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "failed to open %s: %v", path, err)
 			os.Exit(1)

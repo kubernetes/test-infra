@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package diff
+package filter
 
 import (
 	"fmt"
@@ -26,55 +26,57 @@ import (
 )
 
 type flags struct {
-	OutputFile string
+	OutputFile   string
+	IncludePaths []string
+	ExcludePaths []string
 }
 
-// MakeCommand returns a `diff` command.
+// MakeCommand returns a `filter` command.
 func MakeCommand() *cobra.Command {
 	flags := &flags{}
 	cmd := &cobra.Command{
-		Use:   "diff [first] [second]",
-		Short: "Diffs two Go coverage files.",
-		Long: `Takes the difference between two Go coverage files, producing another Go coverage file
-showing only what was covered between the two files being generated. This works best when using
-files generated in "count" or "atomic" mode; "set" may drastically underreport.
-
-It is assumed that both files came from the same execution, and so all values in the second file are
-at least equal to those in the first file.`,
+		Use:   "filter [file]",
+		Short: "Filters a Go coverage file.",
+		Long:  `Filters a Go coverage file, removing entries that do not match the given flags.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			run(flags, cmd, args)
 		},
 	}
 	cmd.Flags().StringVarP(&flags.OutputFile, "output", "o", "-", "output file")
+	cmd.Flags().StringSliceVar(&flags.IncludePaths, "include-path", nil, "If specified at least once, only files with paths matching one of these regexes are included.")
+	cmd.Flags().StringSliceVar(&flags.ExcludePaths, "exclude-path", nil, "Files with paths matching one of these regexes are excluded. Can be used repeatedly.")
 	return cmd
 }
 
 func run(flags *flags, cmd *cobra.Command, args []string) {
-	if len(args) != 2 {
-		fmt.Fprintln(os.Stderr, "Expected two files.")
+	if len(args) != 1 {
+		fmt.Fprintln(os.Stderr, "Expected one file.")
 		cmd.Usage()
 		os.Exit(2)
 	}
 
-	before, err := util.LoadProfile(args[0])
+	input, err := util.LoadProfile(args[0])
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't load %s: %v.", args[0], err)
 		os.Exit(1)
 	}
 
-	after, err := util.LoadProfile(args[1])
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Couldn't load %s: %v.", args[0], err)
-		os.Exit(1)
+	output := input
+	if len(flags.IncludePaths) > 0 {
+		output, err = cov.FilterProfilePaths(output, flags.IncludePaths, true)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Couldn't filter by include paths: %v.", err)
+		}
 	}
 
-	diff, err := cov.DiffProfiles(before, after)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to diff profiles: %v", err)
-		os.Exit(1)
+	if len(flags.ExcludePaths) > 0 {
+		output, err = cov.FilterProfilePaths(output, flags.ExcludePaths, false)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Couldn't filter by exclude paths: %v.", err)
+		}
 	}
 
-	if err := util.DumpProfile(flags.OutputFile, diff); err != nil {
+	if err := util.DumpProfile(flags.OutputFile, output); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

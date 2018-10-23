@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//gopherage/cmd/aggregate:go_default_library",
         "//gopherage/cmd/diff:go_default_library",
+        "//gopherage/cmd/filter:go_default_library",
         "//gopherage/cmd/html:go_default_library",
         "//gopherage/cmd/merge:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",
@@ -33,6 +34,7 @@ filegroup(
         ":package-srcs",
         "//gopherage/cmd/aggregate:all-srcs",
         "//gopherage/cmd/diff:all-srcs",
+        "//gopherage/cmd/filter:all-srcs",
         "//gopherage/cmd/html:all-srcs",
         "//gopherage/cmd/merge:all-srcs",
         "//gopherage/pkg/cov:all-srcs",
