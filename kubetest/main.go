@@ -938,12 +938,19 @@ func prepare(o *options) error {
 	}
 
 	switch o.provider {
-	case "gce", "gke", "kubernetes-anywhere", "node":
+	case "gce", "gke", "node":
 		if err := prepareGcp(o); err != nil {
 			return err
 		}
 	case "aws":
 		if err := prepareAws(o); err != nil {
+			return err
+		}
+	}
+	// For kubernetes-anywhere as the deployer, call prepareGcp()
+	// independent of the specified provider.
+	if o.deployment == "kubernetes-anywhere" {
+		if err := prepareGcp(o); err != nil {
 			return err
 		}
 	}
