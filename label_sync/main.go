@@ -65,7 +65,7 @@ type Label struct {
 	// Color is rrggbb or color
 	Color string `json:"color"`
 	// Description is brief text explaining its meaning, who can apply it
-	Description string `json:"description"` // What does this label mean, who can apply it
+	Description string `json:"description"`
 	// Target specifies whether it targets PRs, issues or both
 	Target LabelTarget `json:"target"`
 	// ProwPlugin specifies which prow plugin add/removes this label
@@ -217,7 +217,7 @@ func stringInSortedSlice(a string, list []string) bool {
 	return false
 }
 
-// Returns a sorted list of labels unique by name
+// Labels returns a sorted list of labels unique by name
 func (c Configuration) Labels() []Label {
 	var labelarrays [][]Label
 	labelarrays = append(labelarrays, c.Default.Labels)
@@ -246,6 +246,10 @@ func (c Configuration) Labels() []Label {
 // TODO(spiffxp): needs to validate labels duped across repos are identical
 // Ensures the config does not duplicate label names between default and repo
 func (c Configuration) validate(orgs string) error {
+	if len(orgs) == 0 {
+		return nil
+	}
+
 	// Generate list of orgs
 	sortedOrgs := strings.Split(orgs, ",")
 	sort.Strings(sortedOrgs)
@@ -260,7 +264,7 @@ func (c Configuration) validate(orgs string) error {
 		if _, err := validate(repoconfig.Labels, repo, seen); err != nil {
 			return fmt.Errorf("invalid config: %v", err)
 		}
-		// Warn if repo isn't under org
+		// Warn if repo isn't under orgs
 		data := strings.Split(repo, "/")
 		if len(data) == 2 {
 			if !stringInSortedSlice(data[0], sortedOrgs) {
