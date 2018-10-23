@@ -95,7 +95,13 @@ func run(flags *flags, cmd *cobra.Command, args []string) {
 
 	var coverageFiles []coverageFile
 	for _, arg := range args {
-		content, err := ioutil.ReadFile(arg)
+		var content []byte
+		var err error
+		if arg == "-" {
+			content, err = ioutil.ReadAll(os.Stdin)
+		} else {
+			content, err = ioutil.ReadFile(arg)
+		}
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Couldn't read coverage file: %v.", err)
 			os.Exit(1)

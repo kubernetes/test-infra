@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"golang.org/x/tools/cover"
 	"io"
+	"io/ioutil"
 	"k8s.io/test-infra/gopherage/pkg/cov"
 	"os"
 )
@@ -43,4 +44,26 @@ func DumpProfile(destination string, profile []*cover.Profile) error {
 		return fmt.Errorf("failed to dump profile: %v", err)
 	}
 	return nil
+}
+
+// LoadProfile loads a profile from the given filename.
+// If the filename is "-", it instead reads from stdin.
+func LoadProfile(origin string) ([]*cover.Profile, error) {
+	filename := origin
+	if origin == "-" {
+		// Annoyingly, ParseProfiles only accepts a filename, so we have to write the bytes to disk
+		// so it can read them back.
+		// We could probably also just give it /dev/stdin, but that'll break on Windows.
+		tf, err := ioutil.TempFile("", "")
+		if err != nil {
+			return nil, fmt.Errorf("failed to create temp file: %v", err)
+		}
+		defer tf.Close()
+		defer os.Remove(tf.Name())
+		if _, err := io.Copy(tf, os.Stdin); err != nil {
+			return nil, fmt.Errorf("failed to copy stdin to temp file: %v", err)
+		}
+		filename = tf.Name()
+	}
+	return cover.ParseProfiles(filename)
 }

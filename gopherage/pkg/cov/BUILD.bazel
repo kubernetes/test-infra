@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "aggregate.go",
         "diff.go",
+        "filter.go",
         "merge.go",
         "util.go",
     ],
@@ -19,6 +20,7 @@ go_test(
         "aggregate_test.go",
         "diff_test.go",
         "equality_test.go",
+        "filter_test.go",
         "merge_test.go",
         "util_test.go",
     ],

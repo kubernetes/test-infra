@@ -14,28 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {Coverage, FileCoverage, parseCoverage} from './parser';
+import {Coverage, parseCoverage} from './parser';
 import {enumerate, map} from './utils';
 
 declare const embeddedProfiles: Array<{path: string, content: string}>;
 
 let coverageFiles: Array<{name: string, coverage: Coverage}> = [];
 let prefix = 'k8s.io/kubernetes/';
-
-function filterCoverage(coverage: Coverage): Coverage {
-  const toRemove = [];
-  for (const file of coverage.files.keys()) {
-    if (file.match(
-            /zz_generated|third_party\/|cmd\/|cloudprovider\/providers\/|alpha|beta/)) {
-      toRemove.push(file);
-    }
-  }
-  console.log(`Filtering out ${toRemove.length} files.`);
-  for (const file of toRemove) {
-    coverage.files.delete(file);
-  }
-  return coverage;
-}
 
 function filenameForDisplay(path: string): string {
   const basename = path.split('/').pop()!;
@@ -46,14 +31,14 @@ function filenameForDisplay(path: string): string {
 function loadEmbeddedProfiles(): Array<{name: string, coverage: Coverage}> {
   return embeddedProfiles.map(({path, content}) => ({
                                 name: filenameForDisplay(path),
-                                coverage: filterCoverage(parseCoverage(content))
+                                coverage: parseCoverage(content),
                               }));
 }
 
 async function loadProfile(path: string): Promise<Coverage> {
   const response = await fetch(path, {credentials: 'include'});
   const content = await response.text();
-  return filterCoverage(parseCoverage(content));
+  return parseCoverage(content);
 }
 
 async function init(): Promise<void> {
