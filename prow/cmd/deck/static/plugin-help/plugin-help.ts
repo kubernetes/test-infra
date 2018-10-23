@@ -37,6 +37,8 @@ window.onload = function (): void {
     dialog.querySelector('.close')!.addEventListener('click', () => {
         dialog.close();
     });
+    // Set up dropdown
+    document.querySelector<HTMLSelectElement>('#repo')!.onchange = redraw;
 };
 
 function selectionText(sel: HTMLSelectElement): string {
