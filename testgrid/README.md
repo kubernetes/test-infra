@@ -272,13 +272,13 @@ TestGrid assigns dashboard tabs a status based on recent test runs.
 You can get a small widget showing the status of your dashboard tab, based on
 the tab statuses above! For example:
 
-`sig-testing-misc#bazel`: [![sig-testing-misc/bazel](https://amerai-imagefix-dot-k8s-testgrid.appspot.com/q/summary/sig-testing-misc/bazel/tests_status?style=svg)](https://k8s-testgrid.appspot.com/sig-testing-misc/bazel)
+`sig-testing-misc#bazel`: [![sig-testing-misc/bazel](https://amerai-imagefix-dot-k8s-testgrid.appspot.com/q/summary/sig-testing-misc/bazel/tests_status?style=svg)](https://testgrid.k8s.io/sig-testing-misc/bazel)
 
 Inline it with:
 
 ```
 <!-- Inline with a link to your tab -->
-[![<dashboard_name>/<tab_name>](https://k8s-testgrid.appspot.com/q/summary/<dashboard_name>/<tab_name>/tests_status?style=svg)](https://k8s-testgrid.appspot.com/<dashboard_name>#<tab_name>)
+[![<dashboard_name>/<tab_name>](https://testgrid.k8s.io/q/summary/<dashboard_name>/<tab_name>/tests_status?style=svg)](https://testgrid.k8s.io/<dashboard_name>#<tab_name>)
 ```
 
 ### Customizing Test Result Sizes

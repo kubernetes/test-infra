@@ -10,7 +10,7 @@ the different services interact.
 
 ## Viewing test results
 
-* The [Kubernetes TestGrid](https://k8s-testgrid.appspot.com/) shows historical test results
+* The [Kubernetes TestGrid](https://testgrid.k8s.io/) shows historical test results
   - Configure your own testgrid dashboard at [testgrid/config.yaml](testgrid/config.yaml)
   - [Gubernator](https://k8s-gubernator.appspot.com/) formats the output of each run
 * [PR Dashboard](https://k8s-gubernator.appspot.com/pr) finds PRs that need your attention
