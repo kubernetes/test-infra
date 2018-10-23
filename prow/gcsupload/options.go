@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
-	"fmt"
 
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/testgrid/util/gcs"
@@ -73,15 +72,7 @@ func (o *Options) Validate() error {
 		}
 	}
 
-	if o.PathStrategy != kube.PathStrategyLegacy && o.PathStrategy != kube.PathStrategyExplicit && o.PathStrategy != kube.PathStrategySingle {
-		return fmt.Errorf("GCS path strategy must be one of %q, %q, or %q", kube.PathStrategyLegacy, kube.PathStrategyExplicit, kube.PathStrategySingle)
-	}
-
-	if o.PathStrategy != kube.PathStrategyExplicit && (o.DefaultOrg == "" || o.DefaultRepo == "") {
-		return fmt.Errorf("default org and repo must be provided for GCS strategy %q", o.PathStrategy)
-	}
-
-	return nil
+	return o.GCSConfiguration.Validate()
 }
 
 // ConfigVar exposes the environment variable used

@@ -19,6 +19,8 @@ spec:
   decoration_config:
     gcs_configuration:
       bucket: explicit-bucket
+      default_org: kubernetes
+      default_repo: kubernetes
       path_strategy: explicit
     gcs_credentials_secret: explicit-service-account
     grace_period: 1

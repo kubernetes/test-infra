@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -174,10 +175,84 @@ type DecorationConfig struct {
 	SSHHostFingerprints []string `json:"ssh_host_fingerprints,omitempty"`
 	// SkipCloning determines if we should clone source code in the
 	// initcontainers for jobs that specify refs
-	SkipCloning bool `json:"skip_cloning,omitempty"`
+	SkipCloning *bool `json:"skip_cloning,omitempty"`
 	// CookieFileSecret is the name of a kubernetes secret that contains
 	// a git http.cookiefile, which should be used during the cloning process.
 	CookiefileSecret string `json:"cookiefile_secret,omitempty"`
+}
+
+func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig {
+	if d == nil && def == nil {
+		return nil
+	}
+	var merged DecorationConfig
+	if d != nil {
+		merged = *d
+	} else {
+		merged = *def
+	}
+	if d == nil || def == nil {
+		return &merged
+	}
+	merged.UtilityImages = merged.UtilityImages.ApplyDefault(def.UtilityImages)
+	merged.GCSConfiguration = merged.GCSConfiguration.ApplyDefault(def.GCSConfiguration)
+
+	if merged.Timeout == 0 {
+		merged.Timeout = def.Timeout
+	}
+	if merged.GracePeriod == 0 {
+		merged.GracePeriod = def.GracePeriod
+	}
+	if merged.GCSCredentialsSecret == "" {
+		merged.GCSCredentialsSecret = def.GCSCredentialsSecret
+	}
+	if len(merged.SSHKeySecrets) == 0 {
+		merged.SSHKeySecrets = def.SSHKeySecrets
+	}
+	if len(merged.SSHHostFingerprints) == 0 {
+		merged.SSHHostFingerprints = def.SSHHostFingerprints
+	}
+	if merged.SkipCloning == nil {
+		merged.SkipCloning = def.SkipCloning
+	}
+	if merged.CookiefileSecret == "" {
+		merged.CookiefileSecret = def.CookiefileSecret
+	}
+
+	return &merged
+}
+
+func (d *DecorationConfig) Validate() error {
+	if d.UtilityImages == nil {
+		return errors.New("utility image config is not specified")
+	}
+	var missing []string
+	if d.UtilityImages.CloneRefs == "" {
+		missing = append(missing, "clonerefs")
+	}
+	if d.UtilityImages.InitUpload == "" {
+		missing = append(missing, "initupload")
+	}
+	if d.UtilityImages.Entrypoint == "" {
+		missing = append(missing, "entrypoint")
+	}
+	if d.UtilityImages.Sidecar == "" {
+		missing = append(missing, "sidecar")
+	}
+	if len(missing) > 0 {
+		return fmt.Errorf("the following utility images are not specified: %q", missing)
+	}
+
+	if d.GCSConfiguration == nil {
+		return errors.New("GCS upload configuration is not specified")
+	}
+	if d.GCSCredentialsSecret == "" {
+		return errors.New("GCS upload credential secret is not specified")
+	}
+	if err := d.GCSConfiguration.Validate(); err != nil {
+		return fmt.Errorf("GCS configuration is invalid: %v", err)
+	}
+	return nil
 }
 
 // UtilityImages holds pull specs for the utility images
@@ -191,6 +266,29 @@ type UtilityImages struct {
 	Entrypoint string `json:"entrypoint,omitempty"`
 	// sidecar is the pull spec used for the sidecar utility
 	Sidecar string `json:"sidecar,omitempty"`
+}
+
+func (u *UtilityImages) ApplyDefault(def *UtilityImages) *UtilityImages {
+	if u == nil {
+		return def
+	} else if def == nil {
+		return u
+	}
+
+	merged := *u
+	if merged.CloneRefs == "" {
+		merged.CloneRefs = def.CloneRefs
+	}
+	if merged.InitUpload == "" {
+		merged.InitUpload = def.InitUpload
+	}
+	if merged.Entrypoint == "" {
+		merged.Entrypoint = def.Entrypoint
+	}
+	if merged.Sidecar == "" {
+		merged.Sidecar = def.Sidecar
+	}
+	return &merged
 }
 
 // PathStrategy specifies minutia about how to construct the url.
@@ -218,6 +316,48 @@ type GCSConfiguration struct {
 	// DefaultRepo is omitted from GCS paths when using the
 	// legacy or simple strategy
 	DefaultRepo string `json:"default_repo,omitempty"`
+}
+
+func (g *GCSConfiguration) ApplyDefault(def *GCSConfiguration) *GCSConfiguration {
+	if g == nil && def == nil {
+		return nil
+	}
+	var merged GCSConfiguration
+	if g != nil {
+		merged = *g
+	} else {
+		merged = *def
+	}
+	if g == nil || def == nil {
+		return &merged
+	}
+
+	if merged.Bucket == "" {
+		merged.Bucket = def.Bucket
+	}
+	if merged.PathPrefix == "" {
+		merged.PathPrefix = def.PathPrefix
+	}
+	if merged.PathStrategy == "" {
+		merged.PathStrategy = def.PathStrategy
+	}
+	if merged.DefaultOrg == "" {
+		merged.DefaultOrg = def.DefaultOrg
+	}
+	if merged.DefaultRepo == "" {
+		merged.DefaultRepo = def.DefaultRepo
+	}
+	return &merged
+}
+
+func (g *GCSConfiguration) Validate() error {
+	if g.PathStrategy != PathStrategyLegacy && g.PathStrategy != PathStrategyExplicit && g.PathStrategy != PathStrategySingle {
+		return fmt.Errorf("gcs_path_strategy must be one of %q, %q, or %q", PathStrategyLegacy, PathStrategyExplicit, PathStrategySingle)
+	}
+	if g.PathStrategy != PathStrategyExplicit && (g.DefaultOrg == "" || g.DefaultRepo == "") {
+		return fmt.Errorf("default org and repo must be provided for GCS strategy %q", g.PathStrategy)
+	}
+	return nil
 }
 
 // ProwJobStatus provides runtime metadata, such as when it finished, whether it is running, etc.

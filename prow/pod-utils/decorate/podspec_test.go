@@ -45,6 +45,7 @@ func cookiePathOnly(secret string) string {
 }
 
 func TestCloneRefs(t *testing.T) {
+	truth := true
 	logMount := kube.VolumeMount{
 		Name:      "log",
 		MountPath: "/log-mount",
@@ -104,7 +105,7 @@ func TestCloneRefs(t *testing.T) {
 				Spec: kube.ProwJobSpec{
 					Refs: &kube.Refs{},
 					DecorationConfig: &kube.DecorationConfig{
-						SkipCloning: true,
+						SkipCloning: &truth,
 					},
 				},
 			},
@@ -355,6 +356,7 @@ func TestCloneRefs(t *testing.T) {
 }
 
 func TestProwJobToPod(t *testing.T) {
+	truth := true
 	var sshKeyMode int32 = 0400
 	tests := []struct {
 		podName string
@@ -1559,7 +1561,7 @@ func TestProwJobToPod(t *testing.T) {
 					},
 					GCSCredentialsSecret: "secret-name",
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
-					SkipCloning:          true,
+					SkipCloning:          &truth,
 				},
 				Agent: kube.KubernetesAgent,
 				Refs: &kube.Refs{
