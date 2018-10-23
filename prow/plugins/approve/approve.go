@@ -223,14 +223,7 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, config *
 		return nil
 	}
 
-	// This is a valid review state command. Get the pull request and handle it.
-	pr, err := ghc.GetPullRequest(re.Repo.Owner.Login, re.Repo.Name, re.PullRequest.Number)
-	if err != nil {
-		log.Error(err)
-		return err
-	}
-
-	repo, err := oc.LoadRepoOwners(re.Repo.Owner.Login, re.Repo.Name, pr.Base.Ref)
+	repo, err := oc.LoadRepoOwners(re.Repo.Owner.Login, re.Repo.Name, re.PullRequest.Base.Ref)
 	if err != nil {
 		return err
 	}
@@ -243,7 +236,7 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, config *
 		&state{
 			org:       re.Repo.Owner.Login,
 			repo:      re.Repo.Name,
-			branch:    pr.Base.Ref,
+			branch:    re.PullRequest.Base.Ref,
 			number:    re.PullRequest.Number,
 			body:      re.PullRequest.Body,
 			author:    re.PullRequest.User.Login,
