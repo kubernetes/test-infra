@@ -3227,6 +3227,14 @@ test_groups:
 - name: ci-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
   gcs_prefix: kubernetes-jenkins/logs/ci-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
 
+# AWS Test Groups
+- name: pull-aws-ebs-disk-csi-driver-verify
+  gcs_prefix: kubernetes-jenkins/logs/pull-aws-ebs-disk-csi-driver-verify
+- name: pull-aws-ebs-csi-driver-unit
+  gcs_prefix: kubernetes-jenkins/logs/pull-aws-ebs-csi-driver-unit
+- name: pull-aws-ebs-csi-driver-sanity
+  gcs_prefix: kubernetes-jenkins/logs/pull-aws-ebs-csi-driver-sanity
+
 #
 # Start dashboards
 #
@@ -5665,6 +5673,18 @@ dashboards:
   - name: autoscaling-vpa-full
     test_group_name: ci-kubernetes-e2e-autoscaling-vpa-full
 
+- name: sig-aws-ebs-csi-driver
+  dashboard_tab:
+  - name: verify
+    test_group_name: pull-aws-ebs-disk-csi-driver-verify
+    description: "aws ebs csi driver basic code verifiction"
+  - name: unit-test
+    test_group_name: pull-aws-ebs-csi-driver-unit
+    description: "aws ebs csi driver unit test"
+  - name: sanity-test
+    test_group_name: pull-aws-ebs-csi-driver-sanity
+    description: "aws ebs csi driver sanity test"
+
 - name: sig-cli-master
   dashboard_tab:
   - name: gce
@@ -7364,6 +7384,10 @@ dashboard_groups:
   - sig-api-machinery-gce-gke
   - sig-api-machinery-kube-storage-version-migrator
   - sig-api-machinery-structured-merge-diff
+
+- name: sig-aws
+  dashboard_names:
+  - sig-aws-ebs-csi-driver
 
 - name: sig-cli
   dashboard_names:
