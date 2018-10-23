@@ -91,7 +91,6 @@ filegroup(
         "//maintenance/migratestatus:all-srcs",
         "//metrics:all-srcs",
         "//prow:all-srcs",
-        "//queue_health/graph:all-srcs",
         "//robots/commenter:all-srcs",
         "//robots/issue-creator:all-srcs",
         "//robots/pr-labeler:all-srcs",
