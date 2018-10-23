@@ -1211,14 +1211,13 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/go/src/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/go/src/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
-      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
       - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+21777efd99bd59
       - --gcp-node-image=gci
       - --gcp-nodes=4
       - --gcp-zone=asia-southeast1-a
       - --ginkgo-parallel=1
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\].*\[Disruptive\]|\[sig-network\].*\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\].*\[Disruptive\]|\[sig-network\].*\[Serial\] --ginkgo.skip=\[Feature:IngressScale\] --minStartupPods=8
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181019-3f9819d46-master
 
@@ -1241,14 +1240,13 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/go/src/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/go/src/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
-      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
       - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+21777efd99bd59
       - --gcp-node-image=gci
       - --gcp-nodes=4
       - --gcp-zone=asia-southeast1-a
       - --ginkgo-parallel=1
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\].*\[Disruptive\]|\[sig-network\].*\[Serial\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\].*\[Disruptive\]|\[sig-network\].*\[Serial\] --ginkgo.skip=\[Feature:IngressScale\] --minStartupPods=8
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181019-3f9819d46-master
       env:
