@@ -141,7 +141,8 @@ EOF
   chmod a+r /etc/kubernetes/admin.conf
 
   # Apply a pod network.
-  kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f https://docs.projectcalico.org/v3.0/getting-started/kubernetes/installation/hosted/kubeadm/1.7/calico.yaml
+  kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f https://docs.projectcalico.org/v3.1/getting-started/kubernetes/installation/hosted/kubeadm/1.7/calico.yaml
+  #kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 
   # Install the metrics server, and the HPA.
   kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f /addons/metrics-server/
