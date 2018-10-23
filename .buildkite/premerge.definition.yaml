@@ -1,4 +1,4 @@
-agent_queue_id: v-c3aa0727f94b044d-------1537468604
+agent_queue_id: trigger-pipelines
 description: Premerge testing for Prow
 github:
   default_branch: master
