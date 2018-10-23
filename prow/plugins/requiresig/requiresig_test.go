@@ -168,7 +168,7 @@ func TestHandle(t *testing.T) {
 			if test.unrelatedLabel {
 				ie.Label.Name = labels.BugLabel
 			} else {
-				ie.Label.Name = labels.AwesomeLabel
+				ie.Label.Name = "sig/awesome"
 			}
 		}
 		if err := handle(logrus.WithField("plugin", "require-sig"), fghc, &fakePruner{}, ie, mentionRe); err != nil {
