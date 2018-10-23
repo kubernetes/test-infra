@@ -26,8 +26,333 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 
+	"k8s.io/test-infra/prow/clonerefs"
 	"k8s.io/test-infra/prow/kube"
 )
+
+func cookieVolumeOnly(secret string) kube.Volume {
+	v, _, _ := cookiefileVolume(secret)
+	return v
+}
+
+func cookieMountOnly(secret string) kube.VolumeMount {
+	_, vm, _ := cookiefileVolume(secret)
+	return vm
+}
+func cookiePathOnly(secret string) string {
+	_, _, vp := cookiefileVolume(secret)
+	return vp
+}
+
+func TestCloneRefs(t *testing.T) {
+	logMount := kube.VolumeMount{
+		Name:      "log",
+		MountPath: "/log-mount",
+	}
+	codeMount := kube.VolumeMount{
+		Name:      "code",
+		MountPath: "/code-mount",
+	}
+	envOrDie := func(opt clonerefs.Options) []v1.EnvVar {
+		e, err := cloneEnv(opt)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return e
+	}
+	sshVolumeOnly := func(secret string) kube.Volume {
+		v, _ := sshVolume(secret)
+		return v
+	}
+
+	sshMountOnly := func(secret string) kube.VolumeMount {
+		_, vm := sshVolume(secret)
+		return vm
+	}
+
+	cases := []struct {
+		name              string
+		pj                kube.ProwJob
+		codeMountOverride *kube.VolumeMount
+		logMountOverride  *kube.VolumeMount
+		expected          *kube.Container
+		volumes           []kube.Volume
+		err               bool
+	}{
+		{
+			name: "empty returns nil",
+		},
+		{
+			name: "nil refs and extrarefs returns nil",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					DecorationConfig: &kube.DecorationConfig{},
+				},
+			},
+		},
+		{
+			name: "nil DecorationConfig returns nil",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Refs: &kube.Refs{},
+				},
+			},
+		},
+		{
+			name: "SkipCloning returns nil",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Refs: &kube.Refs{},
+					DecorationConfig: &kube.DecorationConfig{
+						SkipCloning: true,
+					},
+				},
+			},
+		},
+		{
+			name: "reject empty code mount name",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					DecorationConfig: &kube.DecorationConfig{},
+					Refs:             &kube.Refs{},
+				},
+			},
+			codeMountOverride: &kube.VolumeMount{
+				MountPath: "/whatever",
+			},
+			err: true,
+		},
+		{
+			name: "reject empty code mountpath",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					DecorationConfig: &kube.DecorationConfig{},
+					Refs:             &kube.Refs{},
+				},
+			},
+			codeMountOverride: &kube.VolumeMount{
+				Name: "wee",
+			},
+			err: true,
+		},
+		{
+			name: "reject empty log mount name",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					DecorationConfig: &kube.DecorationConfig{},
+					Refs:             &kube.Refs{},
+				},
+			},
+			logMountOverride: &kube.VolumeMount{
+				MountPath: "/whatever",
+			},
+			err: true,
+		},
+		{
+			name: "reject empty log mountpath",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					DecorationConfig: &kube.DecorationConfig{},
+					Refs:             &kube.Refs{},
+				},
+			},
+			logMountOverride: &kube.VolumeMount{
+				Name: "wee",
+			},
+			err: true,
+		},
+		{
+			name: "create clonerefs container when refs are set",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Refs: &kube.Refs{},
+					DecorationConfig: &kube.DecorationConfig{
+						UtilityImages: &kube.UtilityImages{},
+					},
+				},
+			},
+			expected: &kube.Container{
+				Name:    cloneRefsName,
+				Command: []string{cloneRefsCommand},
+				Env: envOrDie(clonerefs.Options{
+					GitRefs:      []*kube.Refs{{}},
+					GitUserEmail: clonerefs.DefaultGitUserEmail,
+					GitUserName:  clonerefs.DefaultGitUserName,
+					SrcRoot:      codeMount.MountPath,
+					Log:          CloneLogPath(logMount),
+				}),
+				VolumeMounts: []kube.VolumeMount{logMount, codeMount},
+			},
+		},
+		{
+			name: "create clonerefs containers when extrarefs are set",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					ExtraRefs: []*kube.Refs{{}},
+					DecorationConfig: &kube.DecorationConfig{
+						UtilityImages: &kube.UtilityImages{},
+					},
+				},
+			},
+			expected: &kube.Container{
+				Name:    cloneRefsName,
+				Command: []string{cloneRefsCommand},
+				Env: envOrDie(clonerefs.Options{
+					GitRefs:      []*kube.Refs{{}},
+					GitUserEmail: clonerefs.DefaultGitUserEmail,
+					GitUserName:  clonerefs.DefaultGitUserName,
+					SrcRoot:      codeMount.MountPath,
+					Log:          CloneLogPath(logMount),
+				}),
+				VolumeMounts: []kube.VolumeMount{logMount, codeMount},
+			},
+		},
+		{
+			name: "append extrarefs after refs",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Refs:      &kube.Refs{Org: "first"},
+					ExtraRefs: []*kube.Refs{{Org: "second"}, {Org: "third"}},
+					DecorationConfig: &kube.DecorationConfig{
+						UtilityImages: &kube.UtilityImages{},
+					},
+				},
+			},
+			expected: &kube.Container{
+				Name:    cloneRefsName,
+				Command: []string{cloneRefsCommand},
+				Env: envOrDie(clonerefs.Options{
+					GitRefs:      []*kube.Refs{{Org: "first"}, {Org: "second"}, {Org: "third"}},
+					GitUserEmail: clonerefs.DefaultGitUserEmail,
+					GitUserName:  clonerefs.DefaultGitUserName,
+					SrcRoot:      codeMount.MountPath,
+					Log:          CloneLogPath(logMount),
+				}),
+				VolumeMounts: []kube.VolumeMount{logMount, codeMount},
+			},
+		},
+		{
+			name: "append ssh secrets when set",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Refs: &kube.Refs{},
+					DecorationConfig: &kube.DecorationConfig{
+						UtilityImages: &kube.UtilityImages{},
+						SSHKeySecrets: []string{"super", "secret"},
+					},
+				},
+			},
+			expected: &kube.Container{
+				Name:    cloneRefsName,
+				Command: []string{cloneRefsCommand},
+				Env: envOrDie(clonerefs.Options{
+					GitRefs:      []*kube.Refs{{}},
+					GitUserEmail: clonerefs.DefaultGitUserEmail,
+					GitUserName:  clonerefs.DefaultGitUserName,
+					KeyFiles:     []string{sshMountOnly("super").MountPath, sshMountOnly("secret").MountPath},
+					SrcRoot:      codeMount.MountPath,
+					Log:          CloneLogPath(logMount),
+				}),
+				VolumeMounts: []kube.VolumeMount{
+					logMount,
+					codeMount,
+					sshMountOnly("super"),
+					sshMountOnly("secret"),
+				},
+			},
+			volumes: []kube.Volume{sshVolumeOnly("super"), sshVolumeOnly("secret")},
+		},
+		{
+			name: "include ssh host fingerprints when set",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					ExtraRefs: []*kube.Refs{{}},
+					DecorationConfig: &kube.DecorationConfig{
+						UtilityImages:       &kube.UtilityImages{},
+						SSHHostFingerprints: []string{"thumb", "pinky"},
+					},
+				},
+			},
+			expected: &kube.Container{
+				Name:    cloneRefsName,
+				Command: []string{cloneRefsCommand},
+				Env: envOrDie(clonerefs.Options{
+					GitRefs:          []*kube.Refs{{}},
+					GitUserEmail:     clonerefs.DefaultGitUserEmail,
+					GitUserName:      clonerefs.DefaultGitUserName,
+					SrcRoot:          codeMount.MountPath,
+					HostFingerprints: []string{"thumb", "pinky"},
+					Log:              CloneLogPath(logMount),
+				}),
+				VolumeMounts: []kube.VolumeMount{logMount, codeMount},
+			},
+		},
+		{
+			name: "include cookiefile secrets when set",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					ExtraRefs: []*kube.Refs{{}},
+					DecorationConfig: &kube.DecorationConfig{
+						UtilityImages:    &kube.UtilityImages{},
+						CookiefileSecret: "oatmeal",
+					},
+				},
+			},
+			expected: &kube.Container{
+				Name:    cloneRefsName,
+				Command: []string{cloneRefsCommand},
+				Args:    []string{"--cookiefile=" + cookiePathOnly("oatmeal")},
+				Env: envOrDie(clonerefs.Options{
+					CookiePath:   cookiePathOnly("oatmeal"),
+					GitRefs:      []*kube.Refs{{}},
+					GitUserEmail: clonerefs.DefaultGitUserEmail,
+					GitUserName:  clonerefs.DefaultGitUserName,
+					SrcRoot:      codeMount.MountPath,
+					Log:          CloneLogPath(logMount),
+				}),
+				VolumeMounts: []kube.VolumeMount{logMount, codeMount, cookieMountOnly("oatmeal")},
+			},
+			volumes: []kube.Volume{cookieVolumeOnly("oatmeal")},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			lm := logMount
+			if tc.logMountOverride != nil {
+				lm = *tc.logMountOverride
+			}
+			cm := codeMount
+			if tc.codeMountOverride != nil {
+				cm = *tc.codeMountOverride
+			}
+			actual, refs, volumes, err := CloneRefs(tc.pj, cm, lm)
+			switch {
+			case err != nil:
+				if !tc.err {
+					t.Errorf("unexpected error: %v", err)
+				}
+			case tc.err:
+				t.Error("failed to receive expected exception")
+			case !equality.Semantic.DeepEqual(tc.expected, actual):
+				t.Errorf("unexpected container:\n%s", diff.ObjectReflectDiff(tc.expected, actual))
+			case !equality.Semantic.DeepEqual(tc.volumes, volumes):
+				t.Errorf("unexpected volume:\n%s", diff.ObjectReflectDiff(tc.volumes, volumes))
+			case actual != nil:
+				var er []kube.Refs
+				if tc.pj.Spec.Refs != nil {
+					er = append(er, *tc.pj.Spec.Refs)
+				}
+				for _, r := range tc.pj.Spec.ExtraRefs {
+					er = append(er, *r)
+				}
+				if !equality.Semantic.DeepEqual(refs, er) {
+					t.Errorf("unexpected refs:\n%s", diff.ObjectReflectDiff(er, refs))
+				}
+			}
+		})
+	}
+}
 
 func TestProwJobToPod(t *testing.T) {
 	var sshKeyMode int32 = 0400
@@ -190,9 +515,9 @@ func TestProwJobToPod(t *testing.T) {
 							Name:    "clonerefs",
 							Image:   "clonerefs:tag",
 							Command: []string{"/clonerefs"},
-							Args:    []string{"--cookiefile=" + cookiefileMountPath + "/.gitcookies"},
+							Args:    []string{"--cookiefile=" + cookiePathOnly("yummy/.gitcookies")},
 							Env: []v1.EnvVar{
-								{Name: "CLONEREFS_OPTIONS", Value: `{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}],"cookie_path":"` + cookiefileMountPath + `/.gitcookies"}`},
+								{Name: "CLONEREFS_OPTIONS", Value: `{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}],"cookie_path":"` + cookiePathOnly("yummy/.gitcookies") + `"}`},
 							},
 							VolumeMounts: []v1.VolumeMount{
 								{
@@ -203,11 +528,7 @@ func TestProwJobToPod(t *testing.T) {
 									Name:      "code",
 									MountPath: "/home/prow/go",
 								},
-								{
-									Name:      cookiefileMountName,
-									MountPath: cookiefileMountPath,
-									ReadOnly:  true,
-								},
+								cookieMountOnly("yummy/.gitcookies"),
 							},
 						},
 						{
@@ -327,15 +648,7 @@ func TestProwJobToPod(t *testing.T) {
 								},
 							},
 						},
-						{
-							Name: cookiefileMountName,
-							VolumeSource: v1.VolumeSource{
-								Secret: &v1.SecretVolumeSource{
-									SecretName:  "yummy",
-									DefaultMode: &sshKeyMode,
-								},
-							},
-						},
+						cookieVolumeOnly("yummy/.gitcookies"),
 						{
 							Name: "code",
 							VolumeSource: v1.VolumeSource{
@@ -422,9 +735,9 @@ func TestProwJobToPod(t *testing.T) {
 							Name:    "clonerefs",
 							Image:   "clonerefs:tag",
 							Command: []string{"/clonerefs"},
-							Args:    []string{"--cookiefile=" + cookiefileMountPath + "/yummy"},
+							Args:    []string{"--cookiefile=" + cookiePathOnly("yummy")},
 							Env: []v1.EnvVar{
-								{Name: "CLONEREFS_OPTIONS", Value: `{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}],"cookie_path":"` + cookiefileMountPath + `/yummy"}`},
+								{Name: "CLONEREFS_OPTIONS", Value: `{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}],"cookie_path":"` + cookiePathOnly("yummy") + `"}`},
 							},
 							VolumeMounts: []v1.VolumeMount{
 								{
@@ -435,11 +748,7 @@ func TestProwJobToPod(t *testing.T) {
 									Name:      "code",
 									MountPath: "/home/prow/go",
 								},
-								{
-									Name:      cookiefileMountName,
-									MountPath: cookiefileMountPath,
-									ReadOnly:  true,
-								},
+								cookieMountOnly("yummy"),
 							},
 						},
 						{
@@ -559,15 +868,7 @@ func TestProwJobToPod(t *testing.T) {
 								},
 							},
 						},
-						{
-							Name: cookiefileMountName,
-							VolumeSource: v1.VolumeSource{
-								Secret: &v1.SecretVolumeSource{
-									SecretName:  "yummy",
-									DefaultMode: &sshKeyMode,
-								},
-							},
-						},
+						cookieVolumeOnly("yummy"),
 						{
 							Name: "code",
 							VolumeSource: v1.VolumeSource{
