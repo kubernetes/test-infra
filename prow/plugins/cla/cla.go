@@ -133,17 +133,17 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 
 	for _, issue := range issues {
 		l := log.WithField("pr", issue.Number)
-		hasCncfYes := issue.HasLabel(labels.ClaYesLabel)
-		hasCncfNo := issue.HasLabel(labels.ClaNoLabel)
+		hasCncfYes := issue.HasLabel(labels.ClaYes)
+		hasCncfNo := issue.HasLabel(labels.ClaNo)
 		if hasCncfYes && se.State == github.StatusSuccess {
 			// Nothing to update.
-			l.Infof("PR has up-to-date %s label.", labels.ClaYesLabel)
+			l.Infof("PR has up-to-date %s label.", labels.ClaYes)
 			continue
 		}
 
 		if hasCncfNo && (se.State == github.StatusFailure || se.State == github.StatusError) {
 			// Nothing to update.
-			l.Infof("PR has up-to-date %s label.", labels.ClaNoLabel)
+			l.Infof("PR has up-to-date %s label.", labels.ClaNo)
 			continue
 		}
 
@@ -163,27 +163,27 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 		number := pr.Number
 		if se.State == github.StatusSuccess {
 			if hasCncfNo {
-				if err := gc.RemoveLabel(org, repo, number, labels.ClaNoLabel); err != nil {
-					l.WithError(err).Warningf("Could not remove %s label.", labels.ClaNoLabel)
+				if err := gc.RemoveLabel(org, repo, number, labels.ClaNo); err != nil {
+					l.WithError(err).Warningf("Could not remove %s label.", labels.ClaNo)
 				}
 			}
-			if err := gc.AddLabel(org, repo, number, labels.ClaYesLabel); err != nil {
-				l.WithError(err).Warningf("Could not add %s label.", labels.ClaYesLabel)
+			if err := gc.AddLabel(org, repo, number, labels.ClaYes); err != nil {
+				l.WithError(err).Warningf("Could not add %s label.", labels.ClaYes)
 			}
 			continue
 		}
 
 		// If we end up here, the status is a failure/error.
 		if hasCncfYes {
-			if err := gc.RemoveLabel(org, repo, number, labels.ClaYesLabel); err != nil {
-				l.WithError(err).Warningf("Could not remove %s label.", labels.ClaYesLabel)
+			if err := gc.RemoveLabel(org, repo, number, labels.ClaYes); err != nil {
+				l.WithError(err).Warningf("Could not remove %s label.", labels.ClaYes)
 			}
 		}
 		if err := gc.CreateComment(org, repo, number, fmt.Sprintf(cncfclaNotFoundMessage, plugins.AboutThisBot)); err != nil {
 			l.WithError(err).Warning("Could not create CLA not found comment.")
 		}
-		if err := gc.AddLabel(org, repo, number, labels.ClaNoLabel); err != nil {
-			l.WithError(err).Warningf("Could not add %s label.", labels.ClaNoLabel)
+		if err := gc.AddLabel(org, repo, number, labels.ClaNo); err != nil {
+			l.WithError(err).Warningf("Could not add %s label.", labels.ClaNo)
 		}
 	}
 	return nil
@@ -215,11 +215,11 @@ func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentE
 		log.WithError(err).Errorf("Failed to get the labels on %s/%s#%d.", org, repo, number)
 	}
 	for _, candidate := range issueLabels {
-		if candidate.Name == labels.ClaYesLabel {
+		if candidate.Name == labels.ClaYes {
 			hasCLAYes = true
 		}
 		// Could theoretically have both yes/no labels.
-		if candidate.Name == labels.ClaNoLabel {
+		if candidate.Name == labels.ClaNo {
 			hasCLANo = true
 		}
 	}
@@ -246,15 +246,15 @@ func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentE
 
 				// Remove cncf-cla:no (if label exists).
 				if hasCLANo {
-					if err := gc.RemoveLabel(org, repo, number, labels.ClaNoLabel); err != nil {
-						log.WithError(err).Warningf("Could not remove %s label.", labels.ClaNoLabel)
+					if err := gc.RemoveLabel(org, repo, number, labels.ClaNo); err != nil {
+						log.WithError(err).Warningf("Could not remove %s label.", labels.ClaNo)
 					}
 				}
 
 				// Add cncf-cla:yes (if label doesn't exist).
 				if !hasCLAYes {
-					if err := gc.AddLabel(org, repo, number, labels.ClaYesLabel); err != nil {
-						log.WithError(err).Warningf("Could not add %s label.", labels.ClaYesLabel)
+					if err := gc.AddLabel(org, repo, number, labels.ClaYes); err != nil {
+						log.WithError(err).Warningf("Could not add %s label.", labels.ClaYes)
 					}
 				}
 
@@ -263,15 +263,15 @@ func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentE
 
 				// Remove cncf-cla:yes (if label exists).
 				if hasCLAYes {
-					if err := gc.RemoveLabel(org, repo, number, labels.ClaYesLabel); err != nil {
-						log.WithError(err).Warningf("Could not remove %s label.", labels.ClaYesLabel)
+					if err := gc.RemoveLabel(org, repo, number, labels.ClaYes); err != nil {
+						log.WithError(err).Warningf("Could not remove %s label.", labels.ClaYes)
 					}
 				}
 
 				// Add cncf-cla:no (if label doesn't exist).
 				if !hasCLANo {
-					if err := gc.AddLabel(org, repo, number, labels.ClaNoLabel); err != nil {
-						log.WithError(err).Warningf("Could not add %s label.", labels.ClaNoLabel)
+					if err := gc.AddLabel(org, repo, number, labels.ClaNo); err != nil {
+						log.WithError(err).Warningf("Could not add %s label.", labels.ClaNo)
 					}
 				}
 			}

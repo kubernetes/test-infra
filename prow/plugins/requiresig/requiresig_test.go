@@ -72,18 +72,18 @@ func TestHandle(t *testing.T) {
 			action:        github.IssueActionUnlabeled,
 			initialLabels: []string{helpWanted},
 			expectComment: true,
-			expectedAdd:   labels.NeedsSigLabel,
+			expectedAdd:   labels.NeedsSig,
 		},
 		{
 			name:          "issue has needs-sig label, no sig/foo label",
 			action:        github.IssueActionLabeled,
-			initialLabels: []string{helpWanted, labels.NeedsSigLabel},
+			initialLabels: []string{helpWanted, labels.NeedsSig},
 		},
 		{
 			name:           "issue has both needs-sig label and sig/foo label",
 			action:         github.IssueActionLabeled,
-			initialLabels:  []string{helpWanted, labels.NeedsSigLabel, sigApps},
-			expectedRemove: labels.NeedsSigLabel,
+			initialLabels:  []string{helpWanted, labels.NeedsSig, sigApps},
+			expectedRemove: labels.NeedsSig,
 		},
 		{
 			name:          "issue has committee/foo label, no needs-sig label",
@@ -93,8 +93,8 @@ func TestHandle(t *testing.T) {
 		{
 			name:           "issue has both needs-sig label and committee/foo label",
 			action:         github.IssueActionLabeled,
-			initialLabels:  []string{helpWanted, labels.NeedsSigLabel, committeeSteering},
-			expectedRemove: labels.NeedsSigLabel,
+			initialLabels:  []string{helpWanted, labels.NeedsSig, committeeSteering},
+			expectedRemove: labels.NeedsSig,
 		},
 		{
 			name:          "issue has wg/foo label, no needs-sig label",
@@ -104,8 +104,8 @@ func TestHandle(t *testing.T) {
 		{
 			name:           "issue has both needs-sig label and wg/foo label",
 			action:         github.IssueActionLabeled,
-			initialLabels:  []string{helpWanted, labels.NeedsSigLabel, wgContainerIdentity},
-			expectedRemove: labels.NeedsSigLabel,
+			initialLabels:  []string{helpWanted, labels.NeedsSig, wgContainerIdentity},
+			expectedRemove: labels.NeedsSig,
 		},
 		{
 			name:          "issue has no sig/foo label, no needs-sig label, body mentions sig",
@@ -166,7 +166,7 @@ func TestHandle(t *testing.T) {
 		}
 		if test.action == github.IssueActionUnlabeled || test.action == github.IssueActionLabeled {
 			if test.unrelatedLabel {
-				ie.Label.Name = labels.BugLabel
+				ie.Label.Name = labels.Bug
 			} else {
 				ie.Label.Name = "sig/awesome"
 			}

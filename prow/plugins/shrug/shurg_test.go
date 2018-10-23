@@ -81,7 +81,7 @@ func TestShrugComment(t *testing.T) {
 			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
 		if tc.hasShrug {
-			fc.LabelsAdded = []string{"org/repo#5:" + labels.ShrugLabel}
+			fc.LabelsAdded = []string{"org/repo#5:" + labels.Shrug}
 		}
 		if err := handle(fc, logrus.WithField("plugin", pluginName), e); err != nil {
 			t.Errorf("For case %s, didn't expect error: %v", tc.name, err)

@@ -33,13 +33,13 @@ import (
 )
 
 // PluginName is the registered plugin name
-const PluginName = labels.LGTMLabel
+const PluginName = labels.LGTM
 
 var (
 	addLGTMLabelNotification   = "LGTM label has been added.  <details>Git tree hash: %s</details>"
 	addLGTMLabelNotificationRe = regexp.MustCompile(fmt.Sprintf(addLGTMLabelNotification, "(.*)"))
 	// LGTMLabel is the name of the lgtm label applied by the lgtm plugin
-	LGTMLabel           = labels.LGTMLabel
+	LGTMLabel           = labels.LGTM
 	lgtmRe              = regexp.MustCompile(`(?mi)^/lgtm(?: no-issue)?\s*$`)
 	lgtmCancelRe        = regexp.MustCompile(`(?mi)^/lgtm cancel\s*$`)
 	removeLGTMLabelNoti = "New changes are detected. LGTM label has been removed."

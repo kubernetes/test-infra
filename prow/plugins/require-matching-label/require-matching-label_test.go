@@ -77,7 +77,7 @@ func TestHandle(t *testing.T) {
 			Org:          "k8s",
 			Issues:       true,
 			Re:           regexp.MustCompile(`^(sig|wg|committee)/`),
-			MissingLabel: labels.NeedsSigLabel,
+			MissingLabel: labels.NeedsSig,
 		},
 
 		// needs-kind over k8s/t-i repo (PRs)
@@ -117,7 +117,7 @@ func TestHandle(t *testing.T) {
 				repo:   "k8s",
 				branch: "foo",
 			},
-			initialLabels: []string{labels.LGTMLabel},
+			initialLabels: []string{labels.LGTM},
 		},
 		{
 			name: "ignore wrong org",
@@ -125,7 +125,7 @@ func TestHandle(t *testing.T) {
 				org:  "fejtaverse",
 				repo: "repo",
 			},
-			initialLabels: []string{labels.LGTMLabel},
+			initialLabels: []string{labels.LGTM},
 		},
 		{
 			name: "ignore unrelated label change",
@@ -135,7 +135,7 @@ func TestHandle(t *testing.T) {
 				branch: "master",
 				label:  "unrelated",
 			},
-			initialLabels: []string{labels.LGTMLabel},
+			initialLabels: []string{labels.LGTM},
 		},
 		{
 			name: "add needs-kind label to PR",
@@ -144,7 +144,7 @@ func TestHandle(t *testing.T) {
 				repo:   "t-i",
 				branch: "master",
 			},
-			initialLabels: []string{labels.LGTMLabel},
+			initialLabels: []string{labels.LGTM},
 			expectedAdded: sets.NewString("needs-kind"),
 		},
 		{
@@ -155,7 +155,7 @@ func TestHandle(t *testing.T) {
 				branch: "master",
 				label:  "kind/best",
 			},
-			initialLabels:   []string{labels.LGTMLabel, "needs-kind", "kind/best"},
+			initialLabels:   []string{labels.LGTM, "needs-kind", "kind/best"},
 			expectedRemoved: sets.NewString("needs-kind"),
 		},
 		{
@@ -165,7 +165,7 @@ func TestHandle(t *testing.T) {
 				repo:  "t-i",
 				label: "kind/best",
 			},
-			initialLabels: []string{labels.LGTMLabel, "needs-kind", "kind/best", "sig/cats"},
+			initialLabels: []string{labels.LGTM, "needs-kind", "kind/best", "sig/cats"},
 		},
 		{
 			name: "don't remove needs-kind label from PR already missing it",
@@ -175,7 +175,7 @@ func TestHandle(t *testing.T) {
 				branch: "master",
 				label:  "kind/best",
 			},
-			initialLabels: []string{labels.LGTMLabel, "kind/best"},
+			initialLabels: []string{labels.LGTM, "kind/best"},
 		},
 		{
 			name: "add org scoped needs-sig to issue",
@@ -184,8 +184,8 @@ func TestHandle(t *testing.T) {
 				repo:  "k8s",
 				label: "sig/bash",
 			},
-			initialLabels: []string{labels.LGTMLabel, "kind/best"},
-			expectedAdded: sets.NewString(labels.NeedsSigLabel),
+			initialLabels: []string{labels.LGTM, "kind/best"},
+			expectedAdded: sets.NewString(labels.NeedsSig),
 		},
 		{
 			name: "don't add org scoped needs-sig to issue when another sig/* label remains",
@@ -194,7 +194,7 @@ func TestHandle(t *testing.T) {
 				repo:  "k8s",
 				label: "sig/bash",
 			},
-			initialLabels: []string{labels.LGTMLabel, "kind/best", "wg/foo"},
+			initialLabels: []string{labels.LGTM, "kind/best", "wg/foo"},
 		},
 		{
 			name: "add branch scoped needs-cat to issue",
@@ -203,7 +203,7 @@ func TestHandle(t *testing.T) {
 				repo:  "t-i",
 				label: "cat",
 			},
-			initialLabels: []string{labels.LGTMLabel, "wg/foo"},
+			initialLabels: []string{labels.LGTM, "wg/foo"},
 			expectedAdded: sets.NewString("needs-cat"),
 			expectComment: true,
 		},
@@ -214,7 +214,7 @@ func TestHandle(t *testing.T) {
 				repo:   "t-i",
 				branch: "meow",
 			},
-			initialLabels: []string{labels.LGTMLabel, "kind/best"},
+			initialLabels: []string{labels.LGTM, "kind/best"},
 			expectedAdded: sets.NewString("needs-cat"),
 			expectComment: true,
 		},
@@ -225,7 +225,7 @@ func TestHandle(t *testing.T) {
 				repo:   "t-i",
 				branch: "meow",
 			},
-			initialLabels:   []string{labels.LGTMLabel, "needs-cat", "cat", "floof"},
+			initialLabels:   []string{labels.LGTM, "needs-cat", "cat", "floof"},
 			expectedAdded:   sets.NewString("needs-kind"),
 			expectedRemoved: sets.NewString("needs-cat"),
 		},
@@ -235,9 +235,9 @@ func TestHandle(t *testing.T) {
 				org:  "k8s",
 				repo: "t-i",
 			},
-			initialLabels:   []string{labels.LGTMLabel, labels.NeedsSigLabel, "wg/foo"},
+			initialLabels:   []string{labels.LGTM, labels.NeedsSig, "wg/foo"},
 			expectedAdded:   sets.NewString("needs-cat"),
-			expectedRemoved: sets.NewString(labels.NeedsSigLabel),
+			expectedRemoved: sets.NewString(labels.NeedsSig),
 			expectComment:   true,
 		},
 	}

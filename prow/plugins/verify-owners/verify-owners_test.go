@@ -271,14 +271,14 @@ func TestHandle(t *testing.T) {
 			Repo:        github.Repo{FullName: "org/repo"},
 		}
 		fghc := newFakeGithubClient(test.filesChanged, pr)
-		if err := handle(fghc, c, logrus.WithField("plugin", PluginName), pre, []string{labels.ApprovedLabel, labels.LGTMLabel}); err != nil {
+		if err := handle(fghc, c, logrus.WithField("plugin", PluginName), pre, []string{labels.Approved, labels.LGTM}); err != nil {
 			t.Fatalf("Handle PR: %v", err)
 		}
-		if !test.shouldLabel && labelsAddedContain(fghc.LabelsAdded, labels.InvalidOwnersLabel) {
-			t.Errorf("%s: didn't expect label %s in %s", test.name, labels.InvalidOwnersLabel, fghc.LabelsAdded)
+		if !test.shouldLabel && labelsAddedContain(fghc.LabelsAdded, labels.InvalidOwners) {
+			t.Errorf("%s: didn't expect label %s in %s", test.name, labels.InvalidOwners, fghc.LabelsAdded)
 			continue
-		} else if test.shouldLabel && !labelsAddedContain(fghc.LabelsAdded, labels.InvalidOwnersLabel) {
-			t.Errorf("%s: expected label %s in %s", test.name, labels.InvalidOwnersLabel, fghc.LabelsAdded)
+		} else if test.shouldLabel && !labelsAddedContain(fghc.LabelsAdded, labels.InvalidOwners) {
+			t.Errorf("%s: expected label %s in %s", test.name, labels.InvalidOwners, fghc.LabelsAdded)
 			continue
 		}
 	}

@@ -205,7 +205,7 @@ func TestReleaseNoteComment(t *testing.T) {
 	}
 }
 
-const lgtmLabel = labels.LGTMLabel
+const lgtmLabel = labels.LGTM
 
 func formatLabels(num int, labels ...string) []string {
 	out := make([]string, 0, len(labels))

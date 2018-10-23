@@ -29,7 +29,7 @@ import (
 var testQuery = TideQuery{
 	Orgs:                   []string{"org"},
 	Repos:                  []string{"k/k", "k/t-i"},
-	Labels:                 []string{labels.LGTMLabel, labels.ApprovedLabel},
+	Labels:                 []string{labels.LGTM, labels.Approved},
 	MissingLabels:          []string{"foo"},
 	Milestone:              "milestone",
 	ReviewApprovedRequired: true,
@@ -550,7 +550,7 @@ func TestTideQuery_Validate(t *testing.T) {
 				ExcludedRepos:          []string{"kuber/netes"},
 				IncludedBranches:       []string{"master"},
 				Milestone:              "backlog-forever",
-				Labels:                 []string{labels.LGTMLabel, labels.ApprovedLabel},
+				Labels:                 []string{labels.LGTM, labels.Approved},
 				MissingLabels:          []string{"do-not-merge/evil-code"},
 				ReviewApprovedRequired: true,
 			},
@@ -618,7 +618,7 @@ func TestTideQuery_Validate(t *testing.T) {
 			query: TideQuery{
 				IncludedBranches:       []string{"master"},
 				Milestone:              "backlog-forever",
-				Labels:                 []string{labels.LGTMLabel, labels.ApprovedLabel},
+				Labels:                 []string{labels.LGTM, labels.Approved},
 				MissingLabels:          []string{"do-not-merge/evil-code"},
 				ReviewApprovedRequired: true,
 			},
@@ -661,8 +661,8 @@ func TestTideQuery_Validate(t *testing.T) {
 			name: "label cannot be required and forbidden",
 			query: TideQuery{
 				Orgs:          []string{"kuber"},
-				Labels:        []string{labels.LGTMLabel, labels.ApprovedLabel},
-				MissingLabels: []string{"do-not-merge/evil-code", labels.LGTMLabel},
+				Labels:        []string{labels.LGTM, labels.Approved},
+				MissingLabels: []string{"do-not-merge/evil-code", labels.LGTM},
 			},
 			expectError: true,
 		},

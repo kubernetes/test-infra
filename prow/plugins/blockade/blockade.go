@@ -40,7 +40,7 @@ const (
 	PluginName        = "blockade"
 )
 
-var blockedPathsBody = fmt.Sprintf("Adding label: `%s` because PR changes a protected file.", labels.BlockedPathsLabel)
+var blockedPathsBody = fmt.Sprintf("Adding label: `%s` because PR changes a protected file.", labels.BlockedPaths)
 
 type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
@@ -77,7 +77,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		blockConfig[repo] = buf.String()
 	}
 	return &pluginhelp.PluginHelp{
-			Description: "The blockade plugin blocks pull requests from merging if they touch specific files. The plugin applies the '" + labels.BlockedPathsLabel + "' label to pull requests that touch files that match a blockade's block regular expression and none of the corresponding exception regular expressions.",
+			Description: "The blockade plugin blocks pull requests from merging if they touch specific files. The plugin applies the '" + labels.BlockedPaths + "' label to pull requests that touch files that match a blockade's block regular expression and none of the corresponding exception regular expressions.",
 			Config:      blockConfig,
 		},
 		nil
@@ -164,14 +164,14 @@ func handle(c *client, config []plugins.Blockade, pre *github.PullRequestEvent) 
 	shouldBlock := len(sum) > 0
 	if shouldBlock && !labelPresent {
 		// Add the label and leave a comment explaining why the label was added.
-		if err := c.ghc.AddLabel(org, repo, pre.Number, labels.BlockedPathsLabel); err != nil {
+		if err := c.ghc.AddLabel(org, repo, pre.Number, labels.BlockedPaths); err != nil {
 			return err
 		}
 		msg := plugins.FormatResponse(pre.PullRequest.User.Login, blockedPathsBody, sum.String())
 		return c.ghc.CreateComment(org, repo, pre.Number, msg)
 	} else if !shouldBlock && labelPresent {
 		// Remove the label and delete any comments created by this plugin.
-		if err := c.ghc.RemoveLabel(org, repo, pre.Number, labels.BlockedPathsLabel); err != nil {
+		if err := c.ghc.RemoveLabel(org, repo, pre.Number, labels.BlockedPaths); err != nil {
 			return err
 		}
 		c.pruner.PruneComments(func(ic github.IssueComment) bool {
@@ -236,7 +236,7 @@ func calculateBlocks(changes []github.PullRequestChange, blockades []blockade) s
 }
 
 func hasBlockedLabel(githubLabels []github.Label) bool {
-	label := strings.ToLower(labels.BlockedPathsLabel)
+	label := strings.ToLower(labels.BlockedPaths)
 	for _, elem := range githubLabels {
 		if strings.ToLower(elem.Name) == label {
 			return true

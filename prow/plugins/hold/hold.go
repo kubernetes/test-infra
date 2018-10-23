@@ -48,13 +48,13 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The hold plugin allows anyone to add or remove the '" + labels.HoldLabel + "' Label from a pull request in order to temporarily prevent the PR from merging without withholding approval.",
+		Description: "The hold plugin allows anyone to add or remove the '" + labels.Hold + "' Label from a pull request in order to temporarily prevent the PR from merging without withholding approval.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/hold [cancel]",
-		Description: "Adds or removes the `" + labels.HoldLabel + "` Label which is used to indicate that the PR should not be automatically merged.",
+		Description: "Adds or removes the `" + labels.Hold + "` Label which is used to indicate that the PR should not be automatically merged.",
 		Featured:    false,
-		WhoCanUse:   "Anyone can use the /hold command to add or remove the '" + labels.HoldLabel + "' Label.",
+		WhoCanUse:   "Anyone can use the /hold command to add or remove the '" + labels.Hold + "' Label.",
 		Examples:    []string{"/hold", "/hold cancel"},
 	})
 	return pluginHelp, nil
@@ -96,13 +96,13 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, f
 		return fmt.Errorf("failed to get the labels on %s/%s#%d: %v", org, repo, e.Number, err)
 	}
 
-	hasLabel := f(labels.HoldLabel, issueLabels)
+	hasLabel := f(labels.Hold, issueLabels)
 	if hasLabel && !needsLabel {
-		log.Infof("Removing %q Label for %s/%s#%d", labels.HoldLabel, org, repo, e.Number)
-		return gc.RemoveLabel(org, repo, e.Number, labels.HoldLabel)
+		log.Infof("Removing %q Label for %s/%s#%d", labels.Hold, org, repo, e.Number)
+		return gc.RemoveLabel(org, repo, e.Number, labels.Hold)
 	} else if !hasLabel && needsLabel {
-		log.Infof("Adding %q Label for %s/%s#%d", labels.HoldLabel, org, repo, e.Number)
-		return gc.AddLabel(org, repo, e.Number, labels.HoldLabel)
+		log.Infof("Adding %q Label for %s/%s#%d", labels.Hold, org, repo, e.Number)
+		return gc.AddLabel(org, repo, e.Number, labels.Hold)
 	}
 	return nil
 }

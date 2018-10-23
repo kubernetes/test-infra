@@ -73,7 +73,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, c
 	// Only consider the events that indicate opening of the PR and
 	// when the cpApproved and cpUnapproved labels are added or removed
 	cpLabelUpdated := (pr.Action == github.PullRequestActionLabeled || pr.Action == github.PullRequestActionUnlabeled) &&
-		(pr.Label.Name == labels.CpApprovedLabel || pr.Label.Name == labels.CpUnapprovedLabel)
+		(pr.Label.Name == labels.CpApproved || pr.Label.Name == labels.CpUnapproved)
 	if pr.Action != github.PullRequestActionOpened && pr.Action != github.PullRequestActionReopened && !cpLabelUpdated {
 		return nil
 	}
@@ -94,16 +94,16 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, c
 	if err != nil {
 		return err
 	}
-	hasCherryPickApprovedLabel := github.HasLabel(labels.CpApprovedLabel, issueLabels)
-	hasCherryPickUnapprovedLabel := github.HasLabel(labels.CpUnapprovedLabel, issueLabels)
+	hasCherryPickApprovedLabel := github.HasLabel(labels.CpApproved, issueLabels)
+	hasCherryPickUnapprovedLabel := github.HasLabel(labels.CpUnapproved, issueLabels)
 
 	// if it has the approved label,
 	// remove the unapproved label (if it exists) and
 	// remove any comments left by this plugin
 	if hasCherryPickApprovedLabel {
 		if hasCherryPickUnapprovedLabel {
-			if err := gc.RemoveLabel(org, repo, pr.Number, labels.CpUnapprovedLabel); err != nil {
-				log.WithError(err).Errorf("Github failed to remove the following label: %s", labels.CpUnapprovedLabel)
+			if err := gc.RemoveLabel(org, repo, pr.Number, labels.CpUnapproved); err != nil {
+				log.WithError(err).Errorf("Github failed to remove the following label: %s", labels.CpUnapproved)
 			}
 		}
 		cp.PruneComments(func(comment github.IssueComment) bool {
@@ -118,8 +118,8 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, c
 	}
 
 	// only add the label and comment if none of the approved and unapproved labels are present
-	if err := gc.AddLabel(org, repo, pr.Number, labels.CpUnapprovedLabel); err != nil {
-		log.WithError(err).Errorf("Github failed to add the following label: %s", labels.CpUnapprovedLabel)
+	if err := gc.AddLabel(org, repo, pr.Number, labels.CpUnapproved); err != nil {
+		log.WithError(err).Errorf("Github failed to add the following label: %s", labels.CpUnapproved)
 	}
 
 	formattedComment := plugins.FormatSimpleResponse(pr.PullRequest.User.Login, commentBody)

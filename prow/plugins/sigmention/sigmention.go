@@ -37,7 +37,7 @@ var (
 	chatBack = "Reiterating the mentions to trigger a notification: \n%v\n"
 
 	kindMap = map[string]string{
-		"bugs":             labels.BugLabel,
+		"bugs":             labels.Bug,
 		"feature-requests": "kind/feature",
 		"api-reviews":      "kind/api-change",
 		"proposals":        "kind/design",

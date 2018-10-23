@@ -156,27 +156,27 @@ func TestHandleEvent(t *testing.T) {
 		{
 			name:      "mergeable no-op",
 			mergeable: true,
-			labels:    []string{labels.LGTMLabel, labels.NeedsSigLabel},
+			labels:    []string{labels.LGTM, labels.NeedsSig},
 		},
 		{
 			name:      "unmergeable no-op",
 			mergeable: false,
-			labels:    []string{labels.LGTMLabel, labels.NeedsSigLabel, labels.NeedsRebaseLabel},
+			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
 		},
 		{
 			name:      "mergeable -> unmergeable",
 			mergeable: false,
-			labels:    []string{labels.LGTMLabel, labels.NeedsSigLabel},
+			labels:    []string{labels.LGTM, labels.NeedsSig},
 
-			expectedAdded: []string{labels.NeedsRebaseLabel},
+			expectedAdded: []string{labels.NeedsRebase},
 			expectComment: true,
 		},
 		{
 			name:      "unmergeable -> mergeable",
 			mergeable: true,
-			labels:    []string{labels.LGTMLabel, labels.NeedsSigLabel, labels.NeedsRebaseLabel},
+			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
 
-			expectedRemoved: []string{labels.NeedsRebaseLabel},
+			expectedRemoved: []string{labels.NeedsRebase},
 			expectDeletion:  true,
 		},
 	}
@@ -209,24 +209,24 @@ func TestHandleAll(t *testing.T) {
 	}{
 		{
 			mergeable: true,
-			labels:    []string{labels.LGTMLabel, labels.NeedsSigLabel},
+			labels:    []string{labels.LGTM, labels.NeedsSig},
 		},
 		{
 			mergeable: false,
-			labels:    []string{labels.LGTMLabel, labels.NeedsSigLabel, labels.NeedsRebaseLabel},
+			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
 		},
 		{
 			mergeable: false,
-			labels:    []string{labels.LGTMLabel, labels.NeedsSigLabel},
+			labels:    []string{labels.LGTM, labels.NeedsSig},
 
-			expectedAdded: []string{labels.NeedsRebaseLabel},
+			expectedAdded: []string{labels.NeedsRebase},
 			expectComment: true,
 		},
 		{
 			mergeable: true,
-			labels:    []string{labels.LGTMLabel, labels.NeedsSigLabel, labels.NeedsRebaseLabel},
+			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
 
-			expectedRemoved: []string{labels.NeedsRebaseLabel},
+			expectedRemoved: []string{labels.NeedsRebase},
 			expectDeletion:  true,
 		},
 	}
@@ -253,7 +253,7 @@ func TestHandleAll(t *testing.T) {
 	}
 	fake := newFakeClient(prs, nil, false)
 	config := &plugins.Configuration{
-		Plugins: map[string][]string{"/": {labels.LGTMLabel, PluginName}},
+		Plugins: map[string][]string{"/": {labels.LGTM, PluginName}},
 
 		ExternalPlugins: map[string][]plugins.ExternalPlugin{"/": {{Name: PluginName}}},
 	}

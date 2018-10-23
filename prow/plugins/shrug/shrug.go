@@ -54,13 +54,13 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: labels.ShrugLabel,
+		Description: labels.Shrug,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/[un]shrug",
-		Description: labels.ShrugLabel,
+		Description: labels.Shrug,
 		Featured:    false,
-		WhoCanUse:   "Anyone, " + labels.ShrugLabel,
+		WhoCanUse:   "Anyone, " + labels.Shrug,
 		Examples:    []string{"/shrug", "/unshrug"},
 	})
 	return pluginHelp, nil
@@ -101,7 +101,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 		log.WithError(err).Errorf("Failed to get the labels on %s/%s#%d.", org, repo, e.Number)
 	}
 	for _, candidate := range issueLabels {
-		if candidate.Name == labels.ShrugLabel {
+		if candidate.Name == labels.Shrug {
 			hasShrug = true
 			break
 		}
@@ -113,10 +113,10 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 		if err := gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp)); err != nil {
 			return fmt.Errorf("failed to comment on %s/%s#%d: %v", org, repo, e.Number, err)
 		}
-		return gc.RemoveLabel(org, repo, e.Number, labels.ShrugLabel)
+		return gc.RemoveLabel(org, repo, e.Number, labels.Shrug)
 	} else if !hasShrug && wantShrug {
 		log.Info("Adding Shrug label.")
-		return gc.AddLabel(org, repo, e.Number, labels.ShrugLabel)
+		return gc.AddLabel(org, repo, e.Number, labels.Shrug)
 	}
 	return nil
 }

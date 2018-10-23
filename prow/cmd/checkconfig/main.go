@@ -267,15 +267,15 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration) e
 		// using the matcher
 		config *orgRepoConfig
 	}{
-		{plugin: lgtm.PluginName, label: labels.LGTMLabel, matcher: requires},
-		{plugin: approve.PluginName, label: labels.ApprovedLabel, matcher: requires},
-		{plugin: hold.PluginName, label: labels.HoldLabel, matcher: forbids},
-		{plugin: wip.PluginName, label: labels.WorkInProgressLabel, matcher: forbids},
-		{plugin: verifyowners.PluginName, label: labels.InvalidOwnersLabel, matcher: forbids},
+		{plugin: lgtm.PluginName, label: labels.LGTM, matcher: requires},
+		{plugin: approve.PluginName, label: labels.Approved, matcher: requires},
+		{plugin: hold.PluginName, label: labels.Hold, matcher: forbids},
+		{plugin: wip.PluginName, label: labels.WorkInProgress, matcher: forbids},
+		{plugin: verifyowners.PluginName, label: labels.InvalidOwners, matcher: forbids},
 		{plugin: releasenote.PluginName, label: releasenote.ReleaseNoteLabelNeeded, matcher: forbids},
-		{plugin: cherrypickunapproved.PluginName, label: labels.CpUnapprovedLabel, matcher: forbids},
-		{plugin: blockade.PluginName, label: labels.BlockedPathsLabel, matcher: forbids},
-		{plugin: needsrebase.PluginName, label: labels.NeedsRebaseLabel, matcher: forbids},
+		{plugin: cherrypickunapproved.PluginName, label: labels.CpUnapproved, matcher: forbids},
+		{plugin: blockade.PluginName, label: labels.BlockedPaths, matcher: forbids},
+		{plugin: needsrebase.PluginName, label: labels.NeedsRebase, matcher: forbids},
 	}
 
 	for i := range configs {

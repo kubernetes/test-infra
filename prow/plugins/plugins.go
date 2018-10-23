@@ -652,7 +652,7 @@ func (c *Configuration) setDefaults() {
 		c.SigMention.Regexp = `(?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`
 	}
 	if c.Owners.LabelsBlackList == nil {
-		c.Owners.LabelsBlackList = []string{labels.ApprovedLabel, labels.LGTMLabel}
+		c.Owners.LabelsBlackList = []string{labels.Approved, labels.LGTM}
 	}
 	if c.CherryPickUnapproved.BranchRegexp == "" {
 		c.CherryPickUnapproved.BranchRegexp = `^release-.*$`

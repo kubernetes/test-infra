@@ -89,7 +89,7 @@ func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	// TODO: Use global option from the prow config.
 	logrus.SetLevel(logrus.InfoLevel)
-	log := logrus.StandardLogger().WithField("plugin", labels.NeedsRebaseLabel)
+	log := logrus.StandardLogger().WithField("plugin", labels.NeedsRebase)
 
 	// Ignore SIGTERM so that we don't drop hooks when the pod is removed.
 	// We'll get SIGTERM first and then SIGKILL after our graceful termination
