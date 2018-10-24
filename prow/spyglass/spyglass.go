@@ -19,6 +19,7 @@ package spyglass
 
 import (
 	"fmt"
+	"path"
 	"sort"
 	"strings"
 	"time"
@@ -26,6 +27,8 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/deck/jobs"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
+	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
@@ -173,6 +176,36 @@ func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
 		return artifactNames, nil
 	default:
 		return nil, fmt.Errorf("Unrecognized key type for src: %v", src)
+	}
+}
+
+// returns a link to the GCS directory for the job specified in src
+func (s *Spyglass) JobPath(src string) (string, error) {
+	keyType, key := splitSrc(src)
+	split := strings.Split(key, "/")
+	switch keyType {
+	case gcsKeyType:
+		// see https://github.com/kubernetes/test-infra/tree/master/gubernator
+		bktName := split[0]
+		logType := split[1]
+		jobName := split[len(split)-2]
+		if logType == "logs" {
+			return path.Dir(key), nil
+		} else if logType == "pr-logs" {
+			return path.Join(bktName, "pr-logs/directory", jobName), nil
+		}
+		return "", fmt.Errorf("unrecognized GCS key: %s", key)
+	case prowKeyType:
+		jobName := split[0]
+		buildID := split[1]
+		job, err := s.jobAgent.GetProwJob(jobName, buildID)
+		if err != nil {
+			return "", fmt.Errorf("failed to get prow job from src %q: %v", key, err)
+		}
+		spec := downwardapi.NewJobSpec(job.Spec, buildID, job.Status.PodName)
+		return gcs.AliasForSpec(&spec), nil
+	default:
+		return "", fmt.Errorf("unrecognized key type for src: %v", src)
 	}
 }
 

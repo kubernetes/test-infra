@@ -52,6 +52,8 @@ go_library(
     deps = [
         "//prow/deck/jobs:go_default_library",
         "//prow/kube:go_default_library",
+        "//prow/pod-utils/downwardapi:go_default_library",
+        "//prow/pod-utils/gcs:go_default_library",
         "//prow/spyglass/viewers:go_default_library",
         "//testgrid/util/gcs:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",

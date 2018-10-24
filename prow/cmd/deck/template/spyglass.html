@@ -10,6 +10,9 @@
 {{end}}
 
 {{define "content"}}
+{{if .JobHistLink}}
+<h4>&nbsp;<a href="{{.JobHistLink}}">Job History</a></h4>
+{{end}}
 <div id="lens-container">
   {{range .Views}}
   <div class="mdl-card mdl-shadow--2dp lens-card">
