@@ -106,6 +106,34 @@ periodics:
       imagePullPolicy: Always
 
 - interval: 1h
+  name: ci-kubernetes-e2e-kops-aws-coredns
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  spec:
+    kubeDNS:
+      provider: CoreDNS
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=e2e-kops-aws-channelalpha.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=admin
+      - --extract=ci/latest
+      - --ginkgo-parallel
+      - --kops-args=--channel=alpha
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+      - --timeout=120m
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+
+- interval: 1h
   name: ci-kubernetes-e2e-kops-aws-ena-nvme
   labels:
     preset-service-account: "true"

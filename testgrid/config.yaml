@@ -251,6 +251,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-canary
 - name: ci-kubernetes-e2e-kops-aws-networking-kopeio-vxlan
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-networking-kopeio-vxlan
+- name: ci-kubernetes-e2e-kops-aws-coredns
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-coredns
 - name: ci-kubernetes-e2e-kops-aws-sig-cli
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-sig-cli
 - name: ci-kubernetes-e2e-kops-aws-updown
@@ -2513,6 +2515,11 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
+- name: pull-kubernetes-e2e-kops-aws-coredns
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kops-aws-coredns
+  num_columns_recent: 20
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 10
 - name: pull-kubernetes-e2e-kubeadm-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kubeadm-gce
   num_columns_recent: 20
@@ -4133,6 +4140,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-weave
   - name: kops-aws-channelalpha
     test_group_name: ci-kubernetes-e2e-kops-aws-channelalpha
+  - name: kops-aws-coredns
+    test_group_name: ci-kubernetes-e2e-kops-aws-coredns
   - name: kops-aws-ena-nvme
     test_group_name: ci-kubernetes-e2e-kops-aws-ena-nvme
   - name: kops-aws-ha-uswest2
@@ -7251,6 +7260,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-weave
   - name: kops-aws-channelalpha
     test_group_name: ci-kubernetes-e2e-kops-aws-channelalpha
+  - name: kops-aws-coredns
+    test_group_name: ci-kubernetes-e2e-kops-aws-coredns
   - name: kops-aws-ena-nvme
     test_group_name: ci-kubernetes-e2e-kops-aws-ena-nvme
   - name: kops-aws-ha-uswest2
