@@ -17,7 +17,6 @@ limitations under the License.
 package flagutil
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"net/url"
@@ -33,56 +32,58 @@ type GitHubOptions struct {
 	endpoint            Strings
 	TokenPath           string
 	deprecatedTokenFile string
+	TokenPathRequired   bool
 }
+
+type tokenGeneratorFunc func() []byte
 
 // AddFlags injects GitHub options into the given FlagSet.
 func (o *GitHubOptions) AddFlags(fs *flag.FlagSet) {
 	o.endpoint = NewStrings("https://api.github.com")
 	fs.Var(&o.endpoint, "github-endpoint", "GitHub's API endpoint (may differ for enterprise).")
 	fs.StringVar(&o.TokenPath, "github-token-path", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
-	fs.StringVar(&o.deprecatedTokenFile, "github-token-file", "", "DEPRECATED: use -github-token-path instead.  -github-token-file may be removed anytime after 2019-01-01.")
+	fs.StringVar(&o.deprecatedTokenFile, "github-token-file", deprecatedStringSentinal, "DEPRECATED: use -github-token-path instead.  -github-token-file may be removed anytime after 2019-01-01.")
 }
 
 // Validate validates GitHub options.
 func (o *GitHubOptions) Validate(dryRun bool) error {
+	o.TokenPathRequired = true
 	for _, uri := range o.endpoint.Strings() {
 		if _, err := url.ParseRequestURI(uri); err != nil {
 			return fmt.Errorf("invalid -github-endpoint URI: %q", uri)
 		}
 	}
 
-	if o.deprecatedTokenFile != "" {
+	if o.deprecatedTokenFile != deprecatedStringSentinal {
 		o.TokenPath = o.deprecatedTokenFile
 		logrus.Error("-github-token-file is deprecated and may be removed anytime after 2019-01-01.  Use -github-token-path instead.")
-	}
-
-	if o.TokenPath == "" {
-		return errors.New("empty -github-token-path")
 	}
 
 	return nil
 }
 
+func tokenGenerator(secretAgent *config.SecretAgent, tokenPath string) (generator tokenGeneratorFunc, err error) {
+	if tokenPath == "" {
+		return func() []byte {
+			return []byte{}
+		}, nil
+	}
+	if secretAgent == nil {
+		return nil, fmt.Errorf("cannot store token from %q without a secret agent", tokenPath)
+	}
+	return secretAgent.GetTokenGenerator(tokenPath), nil
+}
+
 // GitHubClient returns a GitHub client.
 func (o *GitHubOptions) GitHubClient(secretAgent *config.SecretAgent, dryRun bool) (client *github.Client, err error) {
-	var generator *func() []byte
-	if o.TokenPath == "" {
-		generatorFunc := func() []byte {
-			return []byte{}
-		}
-		generator = &generatorFunc
-	} else {
-		if secretAgent == nil {
-			return nil, fmt.Errorf("cannot store token from %q without a secret agent", o.TokenPath)
-		}
-		generatorFunc := secretAgent.GetTokenGenerator(o.TokenPath)
-		generator = &generatorFunc
+	generator, err := tokenGenerator(secretAgent, o.TokenPath)
+	if err != nil {
+		return nil, err
 	}
-
 	if dryRun {
-		return github.NewDryRunClient(*generator, o.endpoint.Strings()...), nil
+		return github.NewDryRunClient(generator, o.endpoint.Strings()...), nil
 	}
-	return github.NewClient(*generator, o.endpoint.Strings()...), nil
+	return github.NewClient(generator, o.endpoint.Strings()...), nil
 }
 
 // GitClient returns a Git client.
@@ -106,7 +107,11 @@ func (o *GitHubOptions) GitClient(secretAgent *config.SecretAgent, dryRun bool) 
 	if err != nil {
 		return nil, fmt.Errorf("error getting bot name: %v", err)
 	}
-	client.SetCredentials(botName, secretAgent.GetTokenGenerator(o.TokenPath))
+	generator, err := tokenGenerator(secretAgent, o.TokenPath)
+	if err != nil {
+		return nil, err
+	}
+	client.SetCredentials(botName, generator)
 
 	return client, nil
 }

@@ -17,3 +17,7 @@ limitations under the License.
 // Package flagutil contains utilities and interfaces shared between
 // several Prow commands.
 package flagutil
+
+// deprecatedStringSentinal is a sentinal value so we can detect users
+// explicitly setting an empty-string value for a deprecated option.
+var deprecatedStringSentinal string = "don't use this option, it is deprecated"

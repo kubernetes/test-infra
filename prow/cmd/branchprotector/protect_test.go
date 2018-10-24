@@ -59,7 +59,6 @@ func TestOptions_Validate(t *testing.T) {
 			opt: options{
 				config: "dummy",
 			},
-			expectedErr: true,
 		},
 	}
 
