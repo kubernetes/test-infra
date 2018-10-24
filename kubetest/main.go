@@ -38,6 +38,7 @@ import (
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/kubetest/conformance"
 	"k8s.io/test-infra/kubetest/dind"
+	"k8s.io/test-infra/kubetest/eks"
 	"k8s.io/test-infra/kubetest/kubeadmdind"
 	"k8s.io/test-infra/kubetest/process"
 	"k8s.io/test-infra/kubetest/util"
@@ -170,7 +171,7 @@ func defineFlags() *options {
 	flag.StringVar(&o.nodeTestArgs, "node-test-args", "", "Test args specifically for node e2e tests.")
 	flag.BoolVar(&o.noAllowDup, "no-allow-dup", false, "if set --allow-dup will not be passed to push-build and --stage will error if the build already exists on the gcs path")
 	flag.BoolVar(&o.nodeTests, "node-tests", false, "If true, run node-e2e tests.")
-	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, etc")
+	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, eks, etc")
 	flag.StringVar(&o.publish, "publish", "", "Publish version to the specified gs:// path on success")
 	flag.StringVar(&o.runtimeConfig, "runtime-config", "batch/v2alpha1=true", "If set, API versions can be turned on or off while bringing up the API server.")
 	flag.StringVar(&o.stage.dockerRegistry, "registry", "", "Push images to the specified docker registry (e.g. gcr.io/a-test-project)")
@@ -246,6 +247,8 @@ func getDeployer(o *options) (deployer, error) {
 		return dind.NewDeployer(o.kubecfg, o.dindImage, control)
 	case "gke":
 		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.gcpImageFamily, o.gcpImageProject, o.cluster, &o.testArgs, &o.upgradeArgs)
+	case "eks":
+		return eks.NewDeployer(timeout, verbose)
 	case "kops":
 		return newKops(o.provider, o.gcpProject, o.cluster)
 	case "kubeadm-dind":
