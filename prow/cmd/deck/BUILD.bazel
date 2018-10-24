@@ -51,6 +51,7 @@ go_test(
     name = "go_default_test",
     srcs = [
         "badge_test.go",
+        "job_history_test.go",
         "main_test.go",
         "tide_test.go",
     ],
