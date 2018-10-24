@@ -102,7 +102,6 @@ larger set of contributors to apply/remove them.
 | <a id="triage/unresolved" href="#triage/unresolved">`triage/unresolved`</a> | Indicates an issue that can not or will not be resolved. <br><br> This was previously `close/unresolved`, `invalid`, `wontfix`, | humans | |
 | <a id="wg/app-def" href="#wg/app-def">`wg/app-def`</a> | Categorizes an issue or PR as relevant to wg-app-def.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/apply" href="#wg/apply">`wg/apply`</a> | Categorizes an issue or PR as relevant to wg-apply.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
-| <a id="wg/cluster-api" href="#wg/cluster-api">`wg/cluster-api`</a> | Categorizes an issue or PR as relevant to wg-cluster-api.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/container-identity" href="#wg/container-identity">`wg/container-identity`</a> | Categorizes an issue or PR as relevant to wg-container-identity.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/iot-edge" href="#wg/iot-edge">`wg/iot-edge`</a> | Categorizes an issue or PR as relevant to wg-iot-edge.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/kubeadm-adoption" href="#wg/kubeadm-adoption">`wg/kubeadm-adoption`</a> | Categorizes an issue or PR as relevant to wg-kubeadm-adoption.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |

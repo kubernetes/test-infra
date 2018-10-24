@@ -530,12 +530,6 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to wg-cluster-api.
-      name: wg/cluster-api
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
       description: Categorizes an issue or PR as relevant to wg-container-identity.
       name: wg/container-identity
       target: both
