@@ -17,6 +17,8 @@ limitations under the License.
 package trigger
 
 import (
+	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -48,8 +50,8 @@ func TestHandleIssueComment(t *testing.T) {
 		Branch        string
 		ShouldBuild   bool
 		ShouldReport  bool
-		HasOkToTest   bool
-		IsOkToTest    bool
+		AddedLabels   []string
+		RemovedLabels []string
 		StartsExactly string
 		Presubmits    map[string][]config.Presubmit
 		IssueLabels   []github.Label
@@ -115,8 +117,19 @@ func TestHandleIssueComment(t *testing.T) {
 			Body:        "/test all",
 			State:       "open",
 			IsPR:        true,
-			HasOkToTest: true,
 			ShouldBuild: true,
+			IssueLabels: []github.Label{{Name: okToTest}},
+		},
+		{
+			name: `Non-trusted member after "/ok-to-test", needs-ok-to-test label wasn't deleted.`,
+
+			Author:        "u",
+			Body:          "/test all",
+			State:         "open",
+			IsPR:          true,
+			ShouldBuild:   true,
+			IssueLabels:   []github.Label{{Name: NeedsOkToTest}, {Name: okToTest}},
+			RemovedLabels: []string{fmt.Sprintf("org/repo#0:%s", NeedsOkToTest)},
 		},
 		{
 			name: "Trusted member's ok to test",
@@ -126,6 +139,7 @@ func TestHandleIssueComment(t *testing.T) {
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: true,
+			AddedLabels: []string{fmt.Sprintf("org/repo#0:%s", okToTest)},
 		},
 		{
 			name: "Trusted member's ok to test, trailing space.",
@@ -135,6 +149,7 @@ func TestHandleIssueComment(t *testing.T) {
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: true,
+			AddedLabels: []string{fmt.Sprintf("org/repo#0:%s", okToTest)},
 		},
 		{
 			name: "Trusted member's not ok to test.",
@@ -192,7 +207,6 @@ func TestHandleIssueComment(t *testing.T) {
 			Body:        "/ok-to-test",
 			State:       "open",
 			IsPR:        true,
-			IsOkToTest:  true,
 			ShouldBuild: false,
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
@@ -212,7 +226,9 @@ func TestHandleIssueComment(t *testing.T) {
 					},
 				},
 			},
-			IssueLabels: []github.Label{{Name: "needs-ok-to-test"}},
+			IssueLabels:   []github.Label{{Name: NeedsOkToTest}},
+			AddedLabels:   []string{fmt.Sprintf("org/repo#0:%s", okToTest)},
+			RemovedLabels: []string{fmt.Sprintf("org/repo#0:%s", NeedsOkToTest)},
 		},
 		{
 			name:   "Wrong branch w/ SkipReport",
@@ -316,12 +332,11 @@ func TestHandleIssueComment(t *testing.T) {
 			ShouldBuild: true,
 		},
 		{
-			name:       "Run if changed job triggered by /ok-to-test",
-			Author:     "t",
-			Body:       "/ok-to-test",
-			State:      "open",
-			IsPR:       true,
-			IsOkToTest: true,
+			name:   "Run if changed job triggered by /ok-to-test",
+			Author: "t",
+			Body:   "/ok-to-test",
+			State:  "open",
+			IsPR:   true,
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
@@ -335,7 +350,9 @@ func TestHandleIssueComment(t *testing.T) {
 			},
 			ShouldBuild:   true,
 			StartsExactly: "pull-jab",
-			IssueLabels:   []github.Label{{Name: "needs-ok-to-test"}},
+			IssueLabels:   []github.Label{{Name: NeedsOkToTest}},
+			AddedLabels:   []string{fmt.Sprintf("org/repo#0:%s", okToTest)},
+			RemovedLabels: []string{fmt.Sprintf("org/repo#0:%s", NeedsOkToTest)},
 		},
 		{
 			name:   "/test of branch-sharded job",
@@ -552,12 +569,6 @@ func TestHandleIssueComment(t *testing.T) {
 		if tc.IsPR {
 			pr = &struct{}{}
 		}
-		if tc.HasOkToTest {
-			g.IssueComments[0] = []github.IssueComment{{
-				Body: "/ok-to-test",
-				User: github.User{Login: "t"},
-			}}
-		}
 		event := github.IssueCommentEvent{
 			Action: github.IssueCommentActionCreated,
 			Repo: github.Repo{
@@ -595,15 +606,11 @@ func TestHandleIssueComment(t *testing.T) {
 		} else if !tc.ShouldReport && len(g.CreatedStatuses) > 0 {
 			t.Errorf("Expected no reports to github, but got %d", len(g.CreatedStatuses))
 		}
-		if tc.IsOkToTest {
-			if len(g.LabelsRemoved) != 1 {
-				t.Errorf("expected a label to be removed")
-				continue
-			}
-			expected := "org/repo#0:needs-ok-to-test"
-			if g.LabelsRemoved[0] != expected {
-				t.Errorf("expected %q to be removed, got %q", expected, g.LabelsRemoved[0])
-			}
+		if !reflect.DeepEqual(g.LabelsAdded, tc.AddedLabels) {
+			t.Errorf("expected %q to be added, got %q", tc.AddedLabels, g.LabelsAdded)
+		}
+		if !reflect.DeepEqual(g.LabelsRemoved, tc.RemovedLabels) {
+			t.Errorf("expected %q to be removed, got %q", tc.RemovedLabels, g.LabelsRemoved)
 		}
 	}
 }

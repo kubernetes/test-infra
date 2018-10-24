@@ -18,6 +18,7 @@ package trigger
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -33,97 +34,52 @@ func TestTrusted(t *testing.T) {
 	const sister = "trusted-org-member"
 	const friend = "repo-collaborator"
 
-	const accept = "/ok-to-test"
-	const chatter = "ignore random stuff"
-
 	var testcases = []struct {
-		name      string
-		author    string
-		comment   string
-		commenter string
-		onlyOrg   bool
-		expected  bool
+		name     string
+		author   string
+		labels   []string
+		onlyOrg  bool
+		expected bool
 	}{
 		{
 			name:     "trust org member",
 			author:   member,
+			labels:   []string{},
 			expected: true,
 		},
 		{
 			name:     "trust member of other trusted org",
 			author:   sister,
+			labels:   []string{},
 			expected: true,
 		},
 		{
-			name: "reject random author",
+			name:     "accept random PR with ok-to-test",
+			author:   rando,
+			labels:   []string{okToTest},
+			expected: true,
 		},
 		{
-			name:      "reject random author on random org member commentary",
-			comment:   chatter,
-			commenter: member,
+			name:     "accept random PR with both labels",
+			author:   rando,
+			labels:   []string{okToTest, NeedsOkToTest},
+			expected: true,
 		},
 		{
-			name:      "accept random PR after org member ok",
-			comment:   accept,
-			commenter: member,
-			expected:  true,
+			name:     "reject random PR with needs-ok-to-test",
+			author:   rando,
+			labels:   []string{NeedsOkToTest},
+			expected: false,
 		},
 		{
-			name:      "accept random PR after ok from trusted org member",
-			comment:   accept,
-			commenter: sister,
-			expected:  true,
-		},
-		{
-			name:      "ok may end with a \\r",
-			comment:   accept + "\r",
-			commenter: member,
-			expected:  true,
-		},
-		{
-			name:      "ok start on a middle line",
-			comment:   "hello\n" + accept + "\r\nplease",
-			commenter: member,
-			expected:  true,
-		},
-		{
-			name:      "require ok on start of line",
-			comment:   "please, " + accept,
-			commenter: member,
-		},
-		{
-			name:      "reject acceptance from random person",
-			comment:   accept,
-			commenter: rando + " III",
-		},
-		{
-			name:      "reject acceptance from this bot",
-			comment:   accept,
-			commenter: fakegithub.Bot,
-		},
-		{
-			name:      "reject acceptance from random author",
-			comment:   accept,
-			commenter: rando,
-		},
-		{
-			name:      "reject acceptance from repo collaborator in org-only mode",
-			comment:   accept,
-			commenter: friend,
-			onlyOrg:   true,
-		},
-		{
-			name:      "accept ok from repo collaborator",
-			comment:   accept,
-			commenter: friend,
-			expected:  true,
+			name:     "reject random PR with no label",
+			author:   rando,
+			labels:   []string{},
+			expected: false,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.author == "" {
-				tc.author = rando
-			}
 			g := &fakegithub.FakeClient{
 				OrgMembers:    map[string][]string{"kubernetes": {sister}, "kubernetes-incubator": {member, fakegithub.Bot}},
 				Collaborators: []string{friend},
@@ -133,14 +89,13 @@ func TestTrusted(t *testing.T) {
 				TrustedOrg:     "kubernetes",
 				OnlyOrgMembers: tc.onlyOrg,
 			}
-			var comments []github.IssueComment
-			if tc.comment != "" {
-				comments = append(comments, github.IssueComment{
-					Body: tc.comment,
-					User: github.User{Login: tc.commenter},
+			var labels []github.Label
+			for _, label := range tc.labels {
+				labels = append(labels, github.Label{
+					Name: label,
 				})
 			}
-			actual, err := trustedPullRequest(g, &trigger, tc.author, "kubernetes-incubator", "random-repo", comments)
+			actual, err := trustedPullRequest(g, &trigger, tc.author, "kubernetes-incubator", "random-repo", 1, labels)
 			if err != nil {
 				t.Fatalf("Didn't expect error: %s", err)
 			}
@@ -150,6 +105,7 @@ func TestTrusted(t *testing.T) {
 		})
 	}
 }
+
 func TestHandlePullRequest(t *testing.T) {
 	var testcases = []struct {
 		name string
@@ -341,10 +297,7 @@ func TestHandlePullRequest(t *testing.T) {
 		}
 
 		if tc.HasOkToTest {
-			g.IssueComments[0] = []github.IssueComment{{
-				Body: "/ok-to-test",
-				User: github.User{Login: "t"},
-			}}
+			g.LabelsAdded = append(g.LabelsAdded, fmt.Sprintf("org/repo#0:%s", okToTest))
 		}
 		pr := github.PullRequestEvent{
 			Action: tc.prAction,
