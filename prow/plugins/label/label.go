@@ -31,8 +31,8 @@ import (
 const pluginName = "label"
 
 var (
-	labelRegex              = regexp.MustCompile(`(?m)^/(area|committee|kind|priority|sig|triage|wg)\s*(.*)$`)
-	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|committee|kind|priority|sig|triage|wg)\s*(.*)$`)
+	labelRegex              = regexp.MustCompile(`(?m)^/(area|committee|kind|language|priority|sig|triage|wg)\s*(.*)$`)
+	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|committee|kind|language|priority|sig|triage|wg)\s*(.*)$`)
 	customLabelRegex        = regexp.MustCompile(`(?m)^/label\s*(.*)$`)
 	customRemoveLabelRegex  = regexp.MustCompile(`(?m)^/remove-label\s*(.*)$`)
 	nonExistentLabelOnIssue = "Those labels are not set on the issue: `%v`"
