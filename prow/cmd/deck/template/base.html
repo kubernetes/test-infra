@@ -23,7 +23,7 @@
     <div class="mdl-layout__header-row">
       <a href="https://github.com/kubernetes/test-infra/tree/master/prow#prow"
          class="logo"><img src="/static/{{or branding.Logo "logo.svg"}}" alt="kubernetes logo" class="logo"/></a>
-      <span class="mdl-layout-title header-title">{{template "title" .Arguments}}</span>
+      <span class="mdl-layout-title header-title">{{block "pageTitle" .Arguments}}{{template "title" .}}{{end}}</span>
     </div>
   </header>
   <div class="mdl-layout__drawer">

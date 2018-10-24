@@ -33,13 +33,19 @@ import (
 )
 
 var (
-	match     = regexp.MustCompile(`(?mi)^/(woof|bark)\s*$`)
-	filetypes = regexp.MustCompile(`(?i)\.(jpg|gif|png)$`)
+	match           = regexp.MustCompile(`(?mi)^/(woof|bark)\s*$`)
+	fineRegex       = regexp.MustCompile(`(?mi)^/this-is-fine\s*$`)
+	notFineRegex    = regexp.MustCompile(`(?mi)^/this-is-not-fine\s*$`)
+	unbearableRegex = regexp.MustCompile(`(?mi)^/this-is-unbearable\s*$`)
+	filetypes       = regexp.MustCompile(`(?i)\.(jpg|gif|png)$`)
 )
 
 const (
-	dogURL     = realPack("https://random.dog/woof.json")
-	pluginName = "dog"
+	dogURL        = realPack("https://random.dog/woof.json")
+	fineURL       = "https://storage.googleapis.com/this-is-fine-images/this_is_fine.png"
+	notFineURL    = "https://storage.googleapis.com/this-is-fine-images/this_is_not_fine.png"
+	unbearableURL = "https://storage.googleapis.com/this-is-fine-images/this_is_unbearable.jpg"
+	pluginName    = "dog"
 )
 
 func init() {
@@ -49,14 +55,14 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The dog plugin adds a dog image to an issue in response to the `/woof` command.",
+		Description: "The dog plugin adds a (famous.)dog image to an issue in response to the `/woof` command.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/(woof|bark)",
-		Description: "Add a dog image to the issue",
+		Usage:       "/(woof|bark|this-is-{fine|not-fine|unbearable})",
+		Description: "Add a (famous.)dog image to the issue",
 		Featured:    false,
 		WhoCanUse:   "Anyone",
-		Examples:    []string{"/woof", "/bark"},
+		Examples:    []string{"/woof", "/bark", "this-is-{fine|not-fine|unbearable}"},
 	})
 	return pluginHelp, nil
 }
@@ -66,7 +72,7 @@ type githubClient interface {
 }
 
 type pack interface {
-	readDog() (string, error)
+	readDog(dogURL string) (string, error)
 }
 
 type realPack string
@@ -77,45 +83,49 @@ type dogResult struct {
 	URL string `json:"url"`
 }
 
-func (dr dogResult) Format() (string, error) {
-	if dr.URL == "" {
+func FormatURL(dogURL string) (string, error) {
+	if dogURL == "" {
 		return "", errors.New("empty url")
 	}
-	src, err := url.ParseRequestURI(dr.URL)
+	src, err := url.ParseRequestURI(dogURL)
 	if err != nil {
-		return "", fmt.Errorf("invalid url %s: %v", dr.URL, err)
+		return "", fmt.Errorf("invalid url %s: %v", dogURL, err)
 	}
 	return fmt.Sprintf("[![dog image](%s)](%s)", src, src), nil
 }
 
-func (u realPack) readDog() (string, error) {
-	uri := string(u)
-	req, err := http.NewRequest("GET", uri, nil)
-	if err != nil {
-		return "", fmt.Errorf("could not create request %s: %v", uri, err)
+func (u realPack) readDog(dogURL string) (string, error) {
+	if dogURL == "" {
+		uri := string(u)
+		req, err := http.NewRequest("GET", uri, nil)
+		if err != nil {
+			return "", fmt.Errorf("could not create request %s: %v", uri, err)
+		}
+		req.Header.Add("Accept", "application/json")
+		resp, err := client.Do(req)
+		if err != nil {
+			return "", fmt.Errorf("could not read dog from %s: %v", uri, err)
+		}
+		defer resp.Body.Close()
+		var a dogResult
+		if err = json.NewDecoder(resp.Body).Decode(&a); err != nil {
+			return "", err
+		}
+		dogURL = a.URL
 	}
-	req.Header.Add("Accept", "application/json")
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("could not read dog from %s: %v", uri, err)
-	}
-	defer resp.Body.Close()
-	var a dogResult
-	if err = json.NewDecoder(resp.Body).Decode(&a); err != nil {
-		return "", err
-	}
+
 	// GitHub doesn't support videos :(
-	if !filetypes.MatchString(a.URL) {
-		return "", errors.New("unsupported doggo :( unknown filetype: " + a.URL)
+	if !filetypes.MatchString(dogURL) {
+		return "", errors.New("unsupported doggo :( unknown filetype: " + dogURL)
 	}
 	// checking size, GitHub doesn't support big images
-	toobig, err := github.ImageTooBig(a.URL)
+	toobig, err := github.ImageTooBig(dogURL)
 	if err != nil {
 		return "", err
 	} else if toobig {
-		return "", errors.New("unsupported doggo :( size too big: " + a.URL)
+		return "", errors.New("unsupported doggo :( size too big: " + dogURL)
 	}
-	return a.Format()
+	return FormatURL(dogURL)
 }
 
 func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
@@ -129,8 +139,20 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	}
 	// Make sure they are requesting a dog
 	mat := match.FindStringSubmatch(e.Body)
+	url := ""
 	if mat == nil {
-		return nil
+		// check is this one of the famous.dog
+		if fineRegex.FindStringSubmatch(e.Body) != nil {
+			url = fineURL
+		} else if notFineRegex.FindStringSubmatch(e.Body) != nil {
+			url = notFineURL
+		} else if unbearableRegex.FindStringSubmatch(e.Body) != nil {
+			url = unbearableURL
+		}
+
+		if url == "" {
+			return nil
+		}
 	}
 
 	org := e.Repo.Owner.Login
@@ -138,7 +160,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	number := e.Number
 
 	for i := 0; i < 5; i++ {
-		resp, err := p.readDog()
+		resp, err := p.readDog(url)
 		if err != nil {
 			log.WithError(err).Println("Failed to get dog img")
 			continue

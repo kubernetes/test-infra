@@ -19,6 +19,7 @@ package approve
 import (
 	"fmt"
 	"io/ioutil"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -1143,20 +1144,13 @@ func (fro fakeRepoOwners) RequiredReviewers(path string) sets.String {
 	return sets.NewString()
 }
 
-// func (fro fakeRepoOwners) FindReviewersOwners
-
-func getTestHandleFunc() func(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, opts *plugins.Approve, pr *state) error {
-	return func(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, opts *plugins.Approve, pr *state) error {
-		return nil
-	}
-}
-
 func TestHandleGenericComment(t *testing.T) {
 	tests := []struct {
 		name              string
 		commentEvent      github.GenericCommentEvent
 		lgtmActsAsApprove bool
 		expectHandle      bool
+		expectState       *state
 	}{
 		{
 			name: "valid approve command",
@@ -1168,8 +1162,22 @@ func TestHandleGenericComment(t *testing.T) {
 				User: github.User{
 					Login: "author",
 				},
+				IssueBody: "Fix everything",
+				IssueAuthor: github.User{
+					Login: "P.R. Author",
+				},
 			},
 			expectHandle: true,
+			expectState: &state{
+				org:       "org",
+				repo:      "repo",
+				branch:    "branch",
+				number:    1,
+				body:      "Fix everything",
+				author:    "P.R. Author",
+				assignees: nil,
+				htmlURL:   "",
+			},
 		},
 		{
 			name: "not comment created",
@@ -1254,7 +1262,9 @@ func TestHandleGenericComment(t *testing.T) {
 	}
 
 	var handled bool
+	var gotState *state
 	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, opts *plugins.Approve, pr *state) error {
+		gotState = pr
 		handled = true
 		return nil
 	}
@@ -1301,6 +1311,10 @@ func TestHandleGenericComment(t *testing.T) {
 			t.Errorf("%s: expected no call to handleFunc, but it was called", test.name)
 		}
 
+		if test.expectState != nil && !reflect.DeepEqual(test.expectState, gotState) {
+			t.Errorf("%s: expected PR state to equal: %#v, but got: %#v", test.name, test.expectState, gotState)
+		}
+
 		if err != nil {
 			t.Errorf("%s: error calling handleGenericComment: %v", test.name, err)
 		}
@@ -1313,13 +1327,14 @@ func stateToLower(s github.ReviewState) github.ReviewState {
 	return github.ReviewState(strings.ToLower(string(s)))
 }
 
-func TestHandleReviewEvent(t *testing.T) {
+func TestHandleReview(t *testing.T) {
 	tests := []struct {
 		name                string
 		reviewEvent         github.ReviewEvent
 		lgtmActsAsApprove   bool
 		reviewActsAsApprove bool
 		expectHandle        bool
+		expectState         *state
 	}{
 		{
 			name: "approved state",
@@ -1335,6 +1350,16 @@ func TestHandleReviewEvent(t *testing.T) {
 			},
 			reviewActsAsApprove: true,
 			expectHandle:        true,
+			expectState: &state{
+				org:       "org",
+				repo:      "repo",
+				branch:    "branch",
+				number:    1,
+				body:      "Fix everything",
+				author:    "P.R. Author",
+				assignees: nil,
+				htmlURL:   "",
+			},
 		},
 		{
 			name: "changes requested state",
@@ -1352,7 +1377,7 @@ func TestHandleReviewEvent(t *testing.T) {
 			expectHandle:        true,
 		},
 		{
-			name: "pending state",
+			name: "pending review state",
 			reviewEvent: github.ReviewEvent{
 				Action: github.ReviewActionSubmitted,
 				Review: github.Review{
@@ -1445,7 +1470,9 @@ func TestHandleReviewEvent(t *testing.T) {
 	}
 
 	var handled bool
+	var gotState *state
 	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, opts *plugins.Approve, pr *state) error {
+		gotState = pr
 		handled = true
 		return nil
 	}
@@ -1460,10 +1487,14 @@ func TestHandleReviewEvent(t *testing.T) {
 		Name: "repo",
 	}
 	pr := github.PullRequest{
+		User: github.User{
+			Login: "P.R. Author",
+		},
 		Base: github.PullRequestBranch{
 			Ref: "branch",
 		},
 		Number: 1,
+		Body:   "Fix everything",
 	}
 	fghc := &fakegithub.FakeClient{
 		PullRequests: map[int]*github.PullRequest{1: &pr},
@@ -1494,25 +1525,50 @@ func TestHandleReviewEvent(t *testing.T) {
 			t.Errorf("%s: expected no call to handleFunc, but it was called", test.name)
 		}
 
+		if test.expectState != nil && !reflect.DeepEqual(test.expectState, gotState) {
+			t.Errorf("%s: expected PR state to equal: %#v, but got: %#v", test.name, test.expectState, gotState)
+		}
+
 		if err != nil {
-			t.Errorf("%s: error calling handleGenericComment: %v", test.name, err)
+			t.Errorf("%s: error calling handleReview: %v", test.name, err)
 		}
 		handled = false
 	}
 }
 
-func TestHandlePullRequestEvent(t *testing.T) {
+func TestHandlePullRequest(t *testing.T) {
 	tests := []struct {
 		name         string
 		prEvent      github.PullRequestEvent
 		expectHandle bool
+		expectState  *state
 	}{
 		{
 			name: "pr opened",
 			prEvent: github.PullRequestEvent{
 				Action: github.PullRequestActionOpened,
+				PullRequest: github.PullRequest{
+					User: github.User{
+						Login: "P.R. Author",
+					},
+					Base: github.PullRequestBranch{
+						Ref: "branch",
+					},
+					Body: "Fix everything",
+				},
+				Number: 1,
 			},
 			expectHandle: true,
+			expectState: &state{
+				org:       "org",
+				repo:      "repo",
+				branch:    "branch",
+				number:    1,
+				body:      "Fix everything",
+				author:    "P.R. Author",
+				assignees: nil,
+				htmlURL:   "",
+			},
 		},
 		{
 			name: "pr reopened",
@@ -1571,7 +1627,9 @@ func TestHandlePullRequestEvent(t *testing.T) {
 	}
 
 	var handled bool
+	var gotState *state
 	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, opts *plugins.Approve, pr *state) error {
+		gotState = pr
 		handled = true
 		return nil
 	}
@@ -1605,8 +1663,12 @@ func TestHandlePullRequestEvent(t *testing.T) {
 			t.Errorf("%s: expected no call to handleFunc, but it was called", test.name)
 		}
 
+		if test.expectState != nil && !reflect.DeepEqual(test.expectState, gotState) {
+			t.Errorf("%s: expected PR state to equal: %#v, but got: %#v", test.name, test.expectState, gotState)
+		}
+
 		if err != nil {
-			t.Errorf("%s: error calling handleGenericComment: %v", test.name, err)
+			t.Errorf("%s: error calling handlePullRequest: %v", test.name, err)
 		}
 		handled = false
 	}

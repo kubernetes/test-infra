@@ -20,7 +20,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
   interval: 2h
@@ -43,7 +43,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
   interval: 6h
@@ -65,7 +65,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
   interval: 12h
@@ -87,7 +87,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
 
 - name: ci-kubernetes-e2e-gce-gpu-stable2
   interval: 6h
@@ -102,7 +102,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-gpu.env
+      - --env=KUBE_FEATURE_GATES=Accelerators=true
+      - --env=NODE_ACCELERATORS=type=nvidia-tesla-k80,count=2
       - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
@@ -110,4 +111,4 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPU\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master

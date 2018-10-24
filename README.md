@@ -10,10 +10,10 @@ the different services interact.
 
 ## Viewing test results
 
-* The [Kubernetes TestGrid](https://k8s-testgrid.appspot.com/) shows historical test results
+* The [Kubernetes TestGrid](https://testgrid.k8s.io/) shows historical test results
   - Configure your own testgrid dashboard at [testgrid/config.yaml](testgrid/config.yaml)
-  - [Gubernator](https://k8s-gubernator.appspot.com/) formats the output of each run
-* [PR Dashboard](https://k8s-gubernator.appspot.com/pr) finds PRs that need your attention
+  - [Gubernator](https://gubernator.k8s.io/) formats the output of each run
+* [PR Dashboard](https://gubernator.k8s.io/pr) finds PRs that need your attention
 * [Prow](https://prow.k8s.io) schedules testing and updates issues
   - Prow responds to GitHub events, timers and [manual commands](https://go.k8s.io/bot-commands)
     given in GitHub comments.
@@ -26,65 +26,8 @@ the different services interact.
 * [Velodrome metrics](http://velodrome.k8s.io/dashboard/db/bigquery-metrics?orgId=1) track job and test health.
   - [Kettle](kettle) does collection, [metrics](metrics) does reporting, and [velodrome](velodrome) is the frontend.
 
-## Automated testing
 
-### If you are using kubekins | bootstrap
-
-Assume your job looks something like
-
-```yaml
-  - name: foo-bar-test
-    interval: 1h
-    agent: kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-        args:
-        - --repo=github.com/foo/bar
-        - --timeout=90
-        - --scenario=execute
-        - --
-        - make
-        - test
-```
-
-You can see both images use the [same entrypoint script](/images/bootstrap/entrypoint.sh):
-
-```sh
-/usr/local/bin/runner.sh \
-    ./test-infra/jenkins/bootstrap.py \
-        --job="${JOB_NAME}" \
-        --service-account="${GOOGLE_APPLICATION_CREDENTIALS}" \
-        --upload='gs://kubernetes-jenkins/logs' \
-        "$@"
-```
-
-So to mimic the run locally, you can dump all the args to the entrypoint script, like:
-
-```sh
-git clone https://github.com/kubernetes/test-infra
-test-infra/jenkins/bootstrap.py --job=foo-bar-test \
-                                --repo=github.com/foo/bar \
-                                --service-account=S.json \
-                                --upload=gs://B \
-                                --timeout=90 \
-                                --scenario=execute \
-                                -- \
-                                make \
-                                test
-```
-
-where `--service-account` is the service account you want to activate for your job, and
-`--upload` is the gcs bucket where you want to upload your job results to.
-
-### If you are using podutils:
-
-Unfortunately there's no easy way to test it locally - you can follow [getting started](/prow/getting_started.md)
-to schedule a job against your own prow cluster.
-
-We are working on have a utility to run the job locally - https://github.com/kubernetes/test-infra/issues/6590
-
-### E2E Testing
+## E2E Testing
 
 Our e2e testing uses [kubetest](/kubetest) to build/deploy/test kubernetes
 clusters on various providers. Please see those documents for additional details
@@ -93,7 +36,11 @@ about this tool as well as e2e testing generally.
 Anyone can reconfigure our CI system with a test-infra PR that updates the
 appropriate files. Detailed instructions follow:
 
+## CI Job management
+
 ### Create a new job
+
+Bootstrap is deprecated, Please utilize the [podutils](prow/pod-utilities.md#how-to-configure) to create new prowjobs.
 
 Create a PR in this repo to add/update/remove a job or suite. Specifically
 you'll need to do the following:
@@ -107,24 +54,19 @@ you'll need to do the following:
     - Postsubmit jobs run after merging code
     - Periodic job run on a timed basis
     - You can find more prowjob definitions at [how-to-add-new-jobs](prow#how-to-add-new-jobs)
-  - Please utilize the [podutils](prow/pod-utilities.md#how-to-configure) to create modern prowjobs!
-  - Scenario args: (if you are using [bootstrap.py](jenkins/bootstrap.py) instead of [podutils](prow/pod-utilities.md))
-    - [Scenarios](scenarios) are python wrappers used by our entry point script [bootstrap.py](jenkins/bootstrap.py).
-    - You can append scenario/kubetest args inline in your prowjob definition, example:
+  - A simple sample job uses podutil looks like:
     ```yaml
-      - name: foo-repo-test
-        interval: 1h
-        agent: kubernetes
-        spec:
-          containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-            args:
-            - --repo=github.com/org/repo
-            - --timeout=90
-            - --scenario=execute
-            - --
-            - make
-            - test
+    - name: foo-repo-presubmit-test
+      decorate: true
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+          command:
+          - /path/to/cmd
+          args:
+          - positional
+          - --and
+          - flags
     ```
 
 * Add the job name to the `test_groups` list in [`testgrid/config.yaml`](testgrid/config.yaml)
@@ -136,19 +78,14 @@ You can run the script below to keep them valid:
 hack/update-config.sh
 ```
 
-NOTE: `kubernetes/kubernetes` and `kubernetes-security/kubernetes` must have matching presubmits.
+#### Local testing
 
-Please test the job on your local workstation before creating a PR:
-```
-mkdir /tmp/whatever && cd /tmp/whatever
-$GOPATH/src/k8s.io/test-infra/jenkins/bootstrap.py \
-  --job=J \  # aka your new job
-  --repo=R1 --repo=R2 \  # what repos to check out
-  --service-account ~/S.json  # the service account to use to launch GCE/GKE clusters
-# Note: create a service account at the cloud console for the project J uses
-```
+`docker run` your image locally, and mount in the repos you depend on.
 
-#### Release branch jobs & Image validation jobs
+<!-- TODO: We are working on have a utility to run the job locally - https://github.com/kubernetes/test-infra/issues/6590 -->
+
+
+### Release branch jobs & Image validation jobs
 
 Release branch jobs and image validation jobs are defined in [test_config.yaml](experiment/test_config.yaml).
 We test different master/node image versions against multiple k8s branches on different features.

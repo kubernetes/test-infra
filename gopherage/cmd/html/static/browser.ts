@@ -14,45 +14,39 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {Coverage, FileCoverage, parseCoverage} from './parser';
+import {Coverage, parseCoverage} from './parser';
 import {enumerate, map} from './utils';
 
-declare const coverage: string;
+declare const embeddedProfiles: Array<{path: string, content: string}>;
 
-let coverageFiles: Coverage[] = [];
+let coverageFiles: Array<{name: string, coverage: Coverage}> = [];
 let prefix = 'k8s.io/kubernetes/';
 
-function filterCoverage(coverage: Coverage): Coverage {
-  const toRemove = [];
-  for (const file of coverage.files.keys()) {
-    if (file.match(
-            /zz_generated|third_party\/|cmd\/|cloudprovider\/providers\/|alpha|beta/)) {
-      toRemove.push(file);
-    }
-  }
-  console.log(`Filtering out ${toRemove.length} files.`);
-  for (const file of toRemove) {
-    coverage.files.delete(file);
-  }
-  return coverage;
+function filenameForDisplay(path: string): string {
+  const basename = path.split('/').pop()!;
+  const withoutSuffix = basename.replace(/\.[^.]+$/, '');
+  return withoutSuffix;
 }
 
-function loadEmbeddedProfile(): Coverage {
-  return filterCoverage(parseCoverage(coverage));
+function loadEmbeddedProfiles(): Array<{name: string, coverage: Coverage}> {
+  return embeddedProfiles.map(({path, content}) => ({
+                                name: filenameForDisplay(path),
+                                coverage: parseCoverage(content),
+                              }));
 }
 
 async function loadProfile(path: string): Promise<Coverage> {
   const response = await fetch(path, {credentials: 'include'});
   const content = await response.text();
-  return filterCoverage(parseCoverage(content));
+  return parseCoverage(content);
 }
 
 async function init(): Promise<void> {
   if (location.hash.length > 1) {
     prefix = location.hash.substring(1);
   }
-  // TODO: this path shouldn't be hardcoded.
-  coverageFiles = [loadEmbeddedProfile()];
+
+  coverageFiles = loadEmbeddedProfiles();
   google.charts.load('current', {'packages': ['table']});
   google.charts.setOnLoadCallback(drawTable);
 }
@@ -130,18 +124,20 @@ function mergeMaps<T, U>(maps: Iterable<Map<T, U>>): Map<T, U[]> {
 }
 
 function drawTable(): void {
-  const rows = Array.from(coveragesForPrefix(coverageFiles, prefix));
+  const rows = Array.from(
+      coveragesForPrefix(coverageFiles.map((x) => x.coverage), prefix));
+  const cols = coverageFiles.map(
+      (x, i) => ({id: `file-${i}`, label: x.name, type: 'number'}));
   const dataTable = new google.visualization.DataTable({
     cols: [
       {id: 'child', label: 'File', type: 'string'},
-      {id: 'statement-coverage', label: 'Coverage', type: 'number'},
-    ],
+    ].concat(cols),
     rows
   });
 
   const colourFormatter = new google.visualization.ColorFormat();
   colourFormatter.addGradientRange(0, 1.0001, '#FFFFFF', '#DD0000', '#00DD00');
-  for (let i = 1; i < rows[0].c.length; ++i) {
+  for (let i = 1; i < cols.length + 1; ++i) {
     colourFormatter.format(dataTable, i);
   }
 

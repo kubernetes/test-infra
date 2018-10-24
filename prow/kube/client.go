@@ -450,9 +450,9 @@ func (c *Client) ListPods(selector string) ([]Pod, error) {
 	return pl.Items, err
 }
 
-// DeletePod deletes the pod at name in the client's default namespace.
+// DeletePod deletes the pod at name in the client's specified namespace.
 //
-// Analogous to kubectl delete pod
+// Analogous to kubectl delete pod --namespace=client.namespace
 func (c *Client) DeletePod(name string) error {
 	c.log("DeletePod", name)
 	return c.request(&request{
@@ -461,9 +461,9 @@ func (c *Client) DeletePod(name string) error {
 	}, nil)
 }
 
-// CreateProwJob creates a prowjob in the client's default namespace.
+// CreateProwJob creates a prowjob in the client's specified namespace.
 //
-// Analogous to kubectl create prowjob
+// Analogous to kubectl create prowjob --namespace=client.namespace
 func (c *Client) CreateProwJob(j ProwJob) (ProwJob, error) {
 	var representation string
 	if out, err := json.Marshal(j); err == nil {
@@ -501,9 +501,9 @@ func shouldHide(pj *ProwJob, hiddenRepos sets.String, showHiddenOnly bool) bool 
 	return shouldHide
 }
 
-// GetProwJob returns the prowjob at name in the client's default namespace.
+// GetProwJob returns the prowjob at name in the client's specified namespace.
 //
-// Analogous to kubectl get prowjob/NAME
+// Analogous to kubectl get prowjob/NAME --namespace=client.namespace
 func (c *Client) GetProwJob(name string) (ProwJob, error) {
 	c.log("GetProwJob", name)
 	var pj ProwJob
@@ -520,9 +520,9 @@ func (c *Client) GetProwJob(name string) (ProwJob, error) {
 	return pj, err
 }
 
-// ListProwJobs lists prowjobs using the specified labelSelector in the client's default namespace.
+// ListProwJobs lists prowjobs using the specified labelSelector in the client's specified namespace.
 //
-// Analogous to kubectl get prowjobs --selector=SELECTOR
+// Analogous to kubectl get prowjobs --selector=SELECTOR --namespace=client.namespace
 func (c *Client) ListProwJobs(selector string) ([]ProwJob, error) {
 	c.log("ListProwJobs", selector)
 	var jl struct {
@@ -546,7 +546,9 @@ func (c *Client) ListProwJobs(selector string) ([]ProwJob, error) {
 	return jl.Items, err
 }
 
-// DeleteProwJob deletes the prowjob at name in the client's default namespace.
+// DeleteProwJob deletes the prowjob at name in the client's specified namespace.
+//
+// Analogous to kubectl delete prowjob/NAME --namespace=client.namespace
 func (c *Client) DeleteProwJob(name string) error {
 	c.log("DeleteProwJob", name)
 	return c.request(&request{
@@ -555,9 +557,9 @@ func (c *Client) DeleteProwJob(name string) error {
 	}, nil)
 }
 
-// ReplaceProwJob will replace name with job in the client's default namespace.
+// ReplaceProwJob will replace name with job in the client's specified namespace.
 //
-// Analogous to kubectl replace prowjobs/NAME
+// Analogous to kubectl replace prowjobs/NAME --namespace=client.namespace
 func (c *Client) ReplaceProwJob(name string, job ProwJob) (ProwJob, error) {
 	c.log("ReplaceProwJob", name, job)
 	var retJob ProwJob
@@ -569,9 +571,9 @@ func (c *Client) ReplaceProwJob(name string, job ProwJob) (ProwJob, error) {
 	return retJob, err
 }
 
-// CreatePod creates a pod in the client's default namespace.
+// CreatePod creates a pod in the client's specified namespace.
 //
-// Analogous to kubectl create pod
+// Analogous to kubectl create pod --namespace=client.namespace
 func (c *Client) CreatePod(p v1.Pod) (Pod, error) {
 	c.log("CreatePod", p)
 	var retPod Pod
@@ -583,9 +585,9 @@ func (c *Client) CreatePod(p v1.Pod) (Pod, error) {
 	return retPod, err
 }
 
-// GetLog returns the log of the default container in the specified pod, in the client's default namespace.
+// GetLog returns the log of the default container in the specified pod, in the client's specified namespace.
 //
-// Analogous to kubectl logs pod
+// Analogous to kubectl logs pod --namespace=client.namespace
 func (c *Client) GetLog(pod string) ([]byte, error) {
 	c.log("GetLog", pod)
 	return c.requestRetry(&request{
@@ -594,9 +596,9 @@ func (c *Client) GetLog(pod string) ([]byte, error) {
 }
 
 // GetLogTail returns the last n bytes of the log of the specified container in the specified pod,
-// in the client's default namespace.
+// in the client's specified namespace.
 //
-// Analogous to kubectl logs pod --tail -1 --limit-bytes n -c container
+// Analogous to kubectl logs pod --tail -1 --limit-bytes n -c container --namespace=client.namespace
 func (c *Client) GetLogTail(pod, container string, n int64) ([]byte, error) {
 	c.log("GetLogTail", pod, n)
 	return c.requestRetry(&request{
@@ -609,9 +611,9 @@ func (c *Client) GetLogTail(pod, container string, n int64) ([]byte, error) {
 	})
 }
 
-// GetContainerLog returns the log of a container in the specified pod, in the client's default namespace.
+// GetContainerLog returns the log of a container in the specified pod, in the client's specified namespace.
 //
-// Analogous to kubectl logs pod -c container
+// Analogous to kubectl logs pod -c container --namespace=client.namespace
 func (c *Client) GetContainerLog(pod, container string) ([]byte, error) {
 	c.log("GetContainerLog", pod)
 	return c.requestRetry(&request{
@@ -620,9 +622,9 @@ func (c *Client) GetContainerLog(pod, container string) ([]byte, error) {
 	})
 }
 
-// CreateConfigMap creates a configmap.
+// CreateConfigMap creates a configmap, in the client's specified namespace.
 //
-// Analogous to kubectl create configmap
+// Analogous to kubectl create configmap --namespace=client.namespace
 func (c *Client) CreateConfigMap(content ConfigMap) (ConfigMap, error) {
 	c.log("CreateConfigMap")
 	var retConfigMap ConfigMap
@@ -635,7 +637,9 @@ func (c *Client) CreateConfigMap(content ConfigMap) (ConfigMap, error) {
 	return retConfigMap, err
 }
 
-// GetConfigMap gets the configmap identified.
+// GetConfigMap gets the configmap identified, in the client's specified namespace.
+//
+// Analogous to kubectl get configmap --namespace=client.namespace
 func (c *Client) GetConfigMap(name, namespace string) (ConfigMap, error) {
 	c.log("GetConfigMap", name)
 	if namespace == "" {
@@ -653,7 +657,7 @@ func (c *Client) GetConfigMap(name, namespace string) (ConfigMap, error) {
 //
 // Analogous to kubectl replace configmap
 //
-// If config.Namespace is empty, the client's default namespace is used.
+// If config.Namespace is empty, the client's specified namespace is used.
 // Returns the content returned by the apiserver
 func (c *Client) ReplaceConfigMap(name string, config ConfigMap) (ConfigMap, error) {
 	c.log("ReplaceConfigMap", name)

@@ -40,15 +40,20 @@ import view_base
 
 class Endpoint(view_base.BaseHandler):
     def github_client(self):
-        if not self.app.config['github_client']:
+        client_key = 'github_client'
+        if '.appspot.com' not in self.request.host and \
+            not self.request.host.startswith('localhost:'):
+            client_key = 'github_client_' + self.request.host
+        if not self.app.config.get(client_key):
             try:
-                self.app.config['github_client'] = secrets.get('github_client')
+                self.app.config[client_key] = secrets.get(client_key)
             except KeyError:
                 self.abort(500,
                            body_template=(
                            'An admin must <a href="/config">'
-                           'configure Github secrets</a> first.'))
-        client = self.app.config['github_client']
+                           'configure Github secrets</a> for %r first.'
+                           % self.request.host))
+        client = self.app.config[client_key]
         return client['id'], client['secret']
 
     def maybe_redirect(self, target):

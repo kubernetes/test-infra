@@ -17,11 +17,13 @@ limitations under the License.
 package merge
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
 	"golang.org/x/tools/cover"
 	"k8s.io/test-infra/gopherage/pkg/cov"
 	"k8s.io/test-infra/gopherage/pkg/util"
-	"log"
 )
 
 type flags struct {
@@ -44,30 +46,35 @@ Merging a single file is a no-op, but is supported for convenience when shell sc
 			run(flags, cmd, args)
 		},
 	}
-	cmd.Flags().StringVar(&flags.OutputFile, "o", "-", "output file")
+	cmd.Flags().StringVarP(&flags.OutputFile, "output", "o", "-", "output file")
 	return cmd
 }
 
 func run(flags *flags, cmd *cobra.Command, args []string) {
 	if len(args) == 0 {
-		log.Fatalf("expected at least one file")
+		fmt.Fprintln(os.Stderr, "Expected at least one coverage file.")
+		cmd.Usage()
+		os.Exit(2)
 	}
 
 	profiles := make([][]*cover.Profile, len(args))
 	for _, path := range args {
-		profile, err := cover.ParseProfiles(path)
+		profile, err := util.LoadProfile(path)
 		if err != nil {
-			log.Fatalf("failed to open %s: %v", path, err)
+			fmt.Fprintf(os.Stderr, "failed to open %s: %v", path, err)
+			os.Exit(1)
 		}
 		profiles = append(profiles, profile)
 	}
 
 	merged, err := cov.MergeMultipleProfiles(profiles)
 	if err != nil {
-		log.Fatalf("failed to merge files: %v", err)
+		fmt.Fprintf(os.Stderr, "failed to merge files: %v", err)
+		os.Exit(1)
 	}
 
 	if err := util.DumpProfile(flags.OutputFile, merged); err != nil {
-		log.Fatalln(err)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 }

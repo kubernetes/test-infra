@@ -48,6 +48,11 @@
     color: #ffffff;
 }
 
+.areax00002fgopherage {
+    background-color: #0052cc;
+    color: #ffffff;
+}
+
 .areax00002fgreenhouse {
     background-color: #0052cc;
     color: #ffffff;
@@ -320,6 +325,31 @@
 
 .kindx00002fkep {
     background-color: #cc99ff;
+    color: #000000;
+}
+
+.languagex00002fen {
+    background-color: #e9b3f9;
+    color: #000000;
+}
+
+.languagex00002fja {
+    background-color: #e9b3f9;
+    color: #000000;
+}
+
+.languagex00002fko {
+    background-color: #e9b3f9;
+    color: #000000;
+}
+
+.languagex00002fno {
+    background-color: #e9b3f9;
+    color: #000000;
+}
+
+.languagex00002fzh {
+    background-color: #e9b3f9;
     color: #000000;
 }
 
@@ -639,11 +669,6 @@
 }
 
 .wgx00002fapply {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.wgx00002fclusterx00002dapi {
     background-color: #d2b48c;
     color: #000000;
 }

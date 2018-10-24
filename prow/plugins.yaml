@@ -527,6 +527,9 @@ plugins:
   kubernetes-sigs/structured-merge-diff:
   - trigger
 
+  kubernetes-sigs/aws-ebs-csi-driver:
+  - trigger
+
   containerd/cri:
   - assign
   - cla
@@ -555,6 +558,9 @@ plugins:
 
   GoogleCloudPlatform/k8s-cluster-bundle:
   - trigger
+  - lgtm
+  - size
+  - welcome
 
   client-go/unofficial-docs:
   - approve

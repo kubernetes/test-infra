@@ -7,7 +7,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20181005-ad3ff38ef
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20181024-9b3b78abc
       args:
       - --repo=k8s.io/kubernetes=release-1.10
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -25,7 +25,7 @@ periodics:
       - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.9
       - --kubernetes-anywhere-kubernetes-version=ci/latest-1.9
       - --kubernetes-anywhere-upgrade-method=upgrade
-      - --provider=kubernetes-anywhere
+      - --provider=local
       - --skew
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\]
       - --timeout=300m
@@ -38,7 +38,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20181005-ad3ff38ef
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20181024-9b3b78abc
       args:
       - --repo=k8s.io/kubernetes=release-1.11
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -56,7 +56,7 @@ periodics:
       - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.10
       - --kubernetes-anywhere-kubernetes-version=ci/latest-1.10
       - --kubernetes-anywhere-upgrade-method=upgrade
-      - --provider=kubernetes-anywhere
+      - --provider=local
       - --skew
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m
@@ -69,7 +69,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20181005-ad3ff38ef
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20181024-9b3b78abc
       args:
       - --repo=k8s.io/kubernetes=release-1.12
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -87,7 +87,7 @@ periodics:
       - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.11
       - --kubernetes-anywhere-kubernetes-version=ci/latest-1.11
       - --kubernetes-anywhere-upgrade-method=upgrade
-      - --provider=kubernetes-anywhere
+      - --provider=local
       - --skew
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m
@@ -100,7 +100,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20181005-ad3ff38ef
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20181024-9b3b78abc
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -118,7 +118,7 @@ periodics:
       - --kubernetes-anywhere-kubelet-version=stable
       - --kubernetes-anywhere-kubernetes-version=stable
       - --kubernetes-anywhere-upgrade-method=upgrade
-      - --provider=kubernetes-anywhere
+      - --provider=local
       - --skew
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m

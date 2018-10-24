@@ -26,7 +26,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/bwmarrin/snowflake"
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -1398,16 +1397,11 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			prowjobs: test.pjs,
 		}
 		fpc := &fkc{}
-		n, err := snowflake.NewNode(1)
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
 		c := Controller{
 			kc:          fc,
 			pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: fpc},
 			log:         logrus.NewEntry(logrus.StandardLogger()),
 			ca:          newFakeConfigAgent(t, 0),
-			node:        n,
 			pendingJobs: test.pendingJobs,
 		}
 

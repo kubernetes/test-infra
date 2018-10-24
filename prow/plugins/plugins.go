@@ -370,6 +370,15 @@ type Lgtm struct {
 	// StoreTreeHash indicates if tree_hash should be stored inside a comment to detect
 	// squashed commits before removing lgtm labels
 	StoreTreeHash bool `json:"store_tree_hash,omitempty"`
+	// WARNING: This disables the security mechanism that prevents a malicious member (or
+	// compromised GitHub account) from merging arbitrary code. Use with caution.
+	//
+	// StickyForTrustedAuthors indicates if LGTM is sticky for PRs authored by trusted users, and
+	// eliminates the need to re-lgtm minor fixes/updates. This does not apply if the author is
+	// not trusted. Trusted users are by default collaborators and org members, but can also be
+	// restricted to only org members using Trigger.OnlyOrgMembers. i.e. the same set of users
+	// who can issue "/ok-to-test".
+	StickyForTrustedAuthors bool `json:"sticky_for_trusted_authors,omitempty"`
 }
 
 type Cat struct {

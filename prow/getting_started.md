@@ -266,6 +266,9 @@ Now, in `config.yaml`, set `prowjob_namespace` or `pod_namespace` to the
 name from the YAML file. You can then use RBAC roles to limit what test pods
 can do.
 
+**Note**: If you set or update the `prowjob_namespace` or `pod_namespace`
+fields after deploying the prow components, you will need to redeploy them
+so that they pick up the change.
 
 ## Run test pods in different clusters
 
@@ -361,7 +364,7 @@ See [how to configure tide][7] for more details.
 
 ## Configure SSL
 
-Use [kube-lego][3] for automatic LetsEncrypt integration. If you
+Use [cert-manager][3] for automatic LetsEncrypt integration. If you
 already have a cert then follow the [official docs][4] to set up HTTPS
 termination. Promote your ingress IP to static IP. On GKE, run:
 
@@ -372,12 +375,12 @@ gcloud compute addresses create [ADDRESS_NAME] --addresses [IP_ADDRESS] --region
 Point the DNS record for your domain to point at that ingress IP. The convention
 for naming is `prow.org.io`, but of course that's not a requirement.
 
-Then, install kube-lego as described in its readme. You don't need to run it in
+Then, install cert-manager as described in its readme. You don't need to run it in
 a separate namespace.
 
 [1]: https://github.com/settings/tokens
 [2]: ./README.md##how-to-add-new-jobs
-[3]: https://github.com/jetstack/kube-lego
+[3]: https://github.com/jetstack/cert-manager
 [4]: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
 [5]: /prow/cmd/mkbuild-cluster/
 [6]: /prow/cmd/tide/README.md

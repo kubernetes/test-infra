@@ -57,7 +57,7 @@ periodics:
         --comment=/retest
         This bot automatically retries jobs that failed/flaked on approved PRs (send feedback to [fejta](https://github.com/fejta)).
 
-        Review the [full test history](https://k8s-gubernator.appspot.com/pr/{{.Number}}) for this PR.
+        Review the [full test history](https://gubernator.k8s.io/pr/{{.Number}}) for this PR.
 
         Silence the bot with an `/lgtm cancel` comment for consistent failures.
 
@@ -197,7 +197,7 @@ periodics:
     containers:
     # image contains tools versioned with k/k master
     # secping needs go and make in particular
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       command: 
       - ./experiment/secping.sh
       args:

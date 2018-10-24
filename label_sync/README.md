@@ -57,7 +57,6 @@ bazel run //label_sync -- \
 bazel run //label_sync -- \
   --config $(pwd)/label_sync/labels.yaml \
   --token /path/to/github_oauth_token \
-  --orgs kubernetes \
   --only kubernetes/community,kubernetes/steering
   # see above
 

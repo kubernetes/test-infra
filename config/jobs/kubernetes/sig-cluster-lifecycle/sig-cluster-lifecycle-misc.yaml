@@ -19,7 +19,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:HAMaster\] --minStartupPods=8
       - --timeout=220m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
 
 - interval: 24h
   name: ci-kubernetes-e2e-gce-min-node-permissions
@@ -34,7 +34,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-min-node-permissions.env
+      # TODO(@ihmccreery): is this right?
+      - --env=KUBE_GCE_NODE_SERVICE_ACCOUNT=min-node-permissions@k8s-min-node-permissions.iam.gserviceaccount.com
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-project=k8s-min-node-permissions
@@ -42,4 +43,4 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master

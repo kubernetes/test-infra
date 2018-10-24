@@ -18,33 +18,36 @@ limitations under the License.
 package reporter
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
+	pjlister "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
 	"k8s.io/test-infra/prow/gerrit/client"
 )
 
 type gerritClient interface {
-	SetReview(instance, id, revision, message string) error
+	SetReview(instance, id, revision, message string, labels map[string]string) error
 }
 
 // Client is a gerrit reporter client
 type Client struct {
-	gc gerritClient
+	gc     gerritClient
+	lister pjlister.ProwJobLister
 }
 
 // NewReporter returns a reporter client
-func NewReporter(cookiefilePath string, projects map[string][]string) (*Client, error) {
-	gc, err := gerrit.NewClient(projects)
+func NewReporter(cookiefilePath string, projects map[string][]string, lister pjlister.ProwJobLister) (*Client, error) {
+	gc, err := client.NewClient(projects)
 	if err != nil {
 		return nil, err
 	}
 	gc.Start(cookiefilePath)
 	return &Client{
-		gc: gc,
+		gc:     gc,
+		lister: lister,
 	}, nil
 }
 
@@ -62,33 +65,83 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 	}
 
 	// has gerrit metadata (scheduled by gerrit adapter)
-	return pj.ObjectMeta.Annotations["gerrit-id"] != "" &&
-		pj.ObjectMeta.Annotations["gerrit-instance"] != "" &&
-		pj.ObjectMeta.Labels["gerrit-revision"] != ""
+	if pj.ObjectMeta.Annotations[client.GerritID] == "" ||
+		pj.ObjectMeta.Annotations[client.GerritInstance] == "" ||
+		pj.ObjectMeta.Labels[client.GerritRevision] == "" {
+		return false
+	}
+
+	// Only report when all other jobs on the same revision finished
+	selector := labels.Set{client.GerritRevision: pj.ObjectMeta.Labels[client.GerritRevision]}
+	pjs, err := c.lister.List(selector.AsSelector())
+	if err != nil {
+		logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
+		return false
+	}
+
+	for _, pj := range pjs {
+		if pj.Status.State == v1.TriggeredState || pj.Status.State == v1.PendingState {
+			// other jobs are still running on this revision, skip report
+			return false
+		}
+	}
+
+	return true
 }
 
 // Report will send the current prowjob status as a gerrit review
 func (c *Client) Report(pj *v1.ProwJob) error {
-	// TODO(krzyzacy): we should also do an aggregate report, as golang does in their repo
-	// see https://go-review.googlesource.com/c/go/+/132155
-	// also add ability to set code-review labels
-	// ref: https://github.com/kubernetes/test-infra/issues/9433
+	// If you are hitting here, which means the entire patchset has been finished :-)
 
-	if pj.Spec.Refs == nil {
-		return errors.New("no pj.Spec.Refs, not a presubmit job (should not happen?!)")
+	// list all prowjobs in the patchset
+	selector := labels.Set{client.GerritRevision: pj.ObjectMeta.Labels[client.GerritRevision]}
+	pjsOnRevision, err := c.lister.List(selector.AsSelector())
+	if err != nil {
+		logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
+		return err
 	}
 
-	message := fmt.Sprintf("Job %s finished with %s\n Gubernator URL: %s", pj.Spec.Job, pj.Status.State, pj.Status.URL)
+	// generate an aggregated report:
+	total := len(pjsOnRevision)
+	success := 0
+	message := ""
+
+	for _, pjOnRevision := range pjsOnRevision {
+		if pjOnRevision.Status.PrevReportStates[c.GetName()] == pjOnRevision.Status.State {
+			logrus.Infof("Revision %s has been reported already", pj.ObjectMeta.Labels[client.GerritRevision])
+			return nil
+		}
+
+		if pjOnRevision.Status.State == v1.SuccessState {
+			success++
+		}
+
+		message = fmt.Sprintf("%s\nJob %s finished with %s -- URL: %s", message, pjOnRevision.Spec.Job, pjOnRevision.Status.State, pjOnRevision.Status.URL)
+	}
+
+	message = fmt.Sprintf("%d out of %d jobs passed!\n%s", success, total, message)
 
 	// report back
-	gerritID := pj.ObjectMeta.Annotations["gerrit-id"]
-	gerritInstance := pj.ObjectMeta.Annotations["gerrit-instance"]
-	gerritRevision := pj.ObjectMeta.Labels["gerrit-revision"]
+	gerritID := pj.ObjectMeta.Annotations[client.GerritID]
+	gerritInstance := pj.ObjectMeta.Annotations[client.GerritInstance]
+	gerritRevision := pj.ObjectMeta.Labels[client.GerritRevision]
 
-	logrus.Infof("Reporting job %s to instance %s on id %s with message %s", pj.Spec.Job, gerritInstance, gerritID, message)
-	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message); err != nil {
-		logrus.Warnf("fail to set review")
-		return err
+	codeReview := client.LBTM
+	if success == total {
+		codeReview = client.LGTM
+	}
+	labels := map[string]string{client.CodeReview: codeReview}
+
+	logrus.Infof("Reporting to instance %s on id %s with message %s", gerritInstance, gerritID, message)
+	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, labels); err != nil {
+		logrus.WithError(err).Errorf("fail to set review with %s label on change ID %s", client.CodeReview, gerritID)
+
+		// possibly don't have label permissions, try without labels
+		message = fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", client.CodeReview, message)
+		if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, nil); err != nil {
+			logrus.WithError(err).Errorf("fail to set plain review on change ID %s", gerritID)
+			return err
+		}
 	}
 	logrus.Infof("Review Complete")
 

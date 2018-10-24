@@ -21,6 +21,10 @@ import (
 	"fmt"
 	"time"
 
+	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/pod-utils/decorate"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
+
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobset "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowjobscheme "k8s.io/test-infra/prow/client/clientset/versioned/scheme"
@@ -53,8 +57,9 @@ const (
 )
 
 type controller struct {
-	pjc prowjobset.Interface
-	bc  buildset.Interface
+	pjc    prowjobset.Interface
+	bc     buildset.Interface
+	totURL string
 
 	pjLister prowjoblisters.ProwJobLister
 	pjSynced cache.InformerSynced
@@ -66,7 +71,7 @@ type controller struct {
 	recorder record.EventRecorder
 }
 
-func newController(kc kubernetes.Interface, pjc prowjobset.Interface, bc buildset.Interface, pji prowjobinfov1.ProwJobInformer, bi buildinfov1alpha1.BuildInformer) *controller {
+func newController(kc kubernetes.Interface, pjc prowjobset.Interface, bc buildset.Interface, pji prowjobinfov1.ProwJobInformer, bi buildinfov1alpha1.BuildInformer, totURL string) *controller {
 	// Log to events
 	prowjobscheme.AddToScheme(scheme.Scheme)
 	eventBroadcaster := record.NewBroadcaster()
@@ -84,6 +89,7 @@ func newController(kc kubernetes.Interface, pjc prowjobset.Interface, bc buildse
 		bSynced:   bi.Informer().HasSynced,
 		workqueue: workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), controllerName),
 		recorder:  recorder,
+		totURL:    totURL,
 	}
 
 	logrus.Info("Setting up event handlers")
@@ -166,6 +172,7 @@ type reconciler interface {
 	createBuild(namespace string, b *buildv1alpha1.Build) (*buildv1alpha1.Build, error)
 	updateProwJob(namespace string, pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error)
 	now() metav1.Time
+	buildID(prowjobv1.ProwJob) (string, error)
 }
 
 func (c *controller) getProwJob(namespace, name string) (*prowjobv1.ProwJob, error) {
@@ -187,6 +194,10 @@ func (c *controller) updateProwJob(namespace string, pj *prowjobv1.ProwJob) (*pr
 
 func (c *controller) now() metav1.Time {
 	return metav1.Now()
+}
+
+func (c *controller) buildID(pj prowjobv1.ProwJob) (string, error) {
+	return pjutil.GetBuildID(pj.Spec.Job, c.totURL)
 }
 
 var (
@@ -252,7 +263,11 @@ func reconcile(c reconciler, key string) error {
 	case wantBuild && pj.Spec.BuildSpec == nil:
 		return errors.New("nil BuildSpec")
 	case wantBuild && !haveBuild:
-		if b, err = makeBuild(*pj); err != nil {
+		id, err := c.buildID(*pj)
+		if err != nil {
+			return fmt.Errorf("failed to get build id: %v", err)
+		}
+		if b, err = makeBuild(*pj, id); err != nil {
 			return fmt.Errorf("make build: %v", err)
 		}
 		logrus.Infof("Create builds/%s", key)
@@ -340,18 +355,35 @@ func prowJobStatus(bs buildv1alpha1.BuildStatus) (prowjobv1.ProwJobState, string
 }
 
 // makeBuild creates a build from the prowjob, using the prowjob's buildspec.
-func makeBuild(pj prowjobv1.ProwJob) (*buildv1alpha1.Build, error) {
+func makeBuild(pj prowjobv1.ProwJob, buildID string) (*buildv1alpha1.Build, error) {
 	if pj.Spec.BuildSpec == nil {
 		return nil, errors.New("nil BuildSpec")
 	}
-	return &buildv1alpha1.Build{
+	rawEnv, err := downwardapi.EnvForSpec(downwardapi.NewJobSpec(pj.Spec, buildID, pj.Name))
+	if err != nil {
+		return nil, fmt.Errorf("failed EnvForSpec: %v", err)
+	}
+	podLabels, annotations := decorate.LabelsAndAnnotationsForJob(pj)
+	b := buildv1alpha1.Build{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      pj.Name,
-			Namespace: pj.Namespace,
+			Annotations: annotations,
+			Name:        pj.Name,
+			Namespace:   pj.Namespace,
+			Labels:      podLabels,
 			OwnerReferences: []metav1.OwnerReference{
 				*metav1.NewControllerRef(&pj, groupVersionKind),
 			},
 		},
 		Spec: *pj.Spec.BuildSpec,
-	}, nil
+	}
+	// Inject environment variables
+	for k, v := range rawEnv {
+		for i := range b.Spec.Steps { // Add it to any step
+			b.Spec.Steps[i].Env = append(b.Spec.Steps[i].Env, untypedcorev1.EnvVar{Name: k, Value: v})
+		}
+		if b.Spec.Template != nil { // Also add it as template arguments
+			b.Spec.Template.Arguments = append(b.Spec.Template.Arguments, buildv1alpha1.ArgumentSpec{Name: k, Value: v})
+		}
+	}
+	return &b, nil
 }

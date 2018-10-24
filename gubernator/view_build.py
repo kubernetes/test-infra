@@ -308,35 +308,20 @@ def get_running_pr_log(job, build, config):
         return get_running_build_log(job, build, config["prow_url"])
 
 def get_build_numbers(job_dir, before, indirect):
-    try:
-        if '/pull/' in job_dir and not indirect:
-            raise ValueError('bad code path for PR build list')
-        # If we have latest-build.txt, we can skip an expensive GCS ls call!
-        if before:
-            latest_build = int(before) - 1
-        else:
-            latest_build = int(gcs_async.read(job_dir + 'latest-build.txt').get_result())
-            # latest-build.txt has the most recent finished build. There might
-            # be newer builds that have started but not finished. Probe for them.
-            suffix = '/started.json' if not indirect else '.txt'
-            while gcs_async.read('%s%s%s' % (job_dir, latest_build + 1, suffix)).get_result():
-                latest_build += 1
-        return range(latest_build, max(0, latest_build - 40), -1)
-    except (ValueError, TypeError):
-        fstats = view_base.gcs_ls(job_dir)
-        fstats.sort(key=lambda f: view_base.pad_numbers(f.filename),
-                    reverse=True)
-        if indirect:
-            # find numbered builds
-            builds = [re.search(r'/(\d*)\.txt$', f.filename)
-                      for f in fstats if not f.is_dir]
-            builds = [m.group(1) for m in builds if m]
-        else:
-            builds = [os.path.basename(os.path.dirname(f.filename))
-                      for f in fstats if f.is_dir]
-        if before and before in builds:
-            builds = builds[builds.index(before) + 1:]
-        return builds[:40]
+    fstats = view_base.gcs_ls(job_dir)
+    fstats.sort(key=lambda f: view_base.pad_numbers(f.filename),
+                reverse=True)
+    if indirect:
+        # find numbered builds
+        builds = [re.search(r'/(\d*)\.txt$', f.filename)
+                  for f in fstats if not f.is_dir]
+        builds = [m.group(1) for m in builds if m]
+    else:
+        builds = [os.path.basename(os.path.dirname(f.filename))
+                  for f in fstats if f.is_dir]
+    if before and before in builds:
+        builds = builds[builds.index(before) + 1:]
+    return builds[:40]
 
 
 @view_base.memcache_memoize('build-list://', expires=60)

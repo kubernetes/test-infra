@@ -2,11 +2,11 @@ Gubernator is a frontend for displaying Kubernetes test results stored in GCS.
 
 It runs on Google App Engine, and parses JSON and junit.xml results for display.
 
-https://k8s-gubernator.appspot.com/
+https://gubernator.k8s.io/
 
 # Adding a repository to the PR Dashboard
 
-To make Gubernator's [PR Dashboard](https://k8s-gubernator.appspot.com/pr) work
+To make Gubernator's [PR Dashboard](https://gubernator.k8s.io/pr) work
 on another repository, it needs to receive webhook events.
 
 Go to Settings -> Webhooks on the repository (or organization) you want to add.

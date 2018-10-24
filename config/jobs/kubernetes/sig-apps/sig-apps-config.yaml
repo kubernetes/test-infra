@@ -7,7 +7,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       args:
       - --repo=github.com/kubernetes-sigs/application=master
       - --upload=gs://kubernetes-jenkins/logs/
@@ -46,14 +46,15 @@ periodics:
       - --bare
       - --scenario=kubernetes_e2e
       - --
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-taint-evict.env
+      # TODO(gmarek): Enable this when we've split 1.2 tests into another project.
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--feature-gates=TaintBasedEvictions=true --enable-taint-manager=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:TaintEviction\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
 
 
 - interval: 30m
@@ -74,4 +75,4 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:StatefulSet\] --minStartupPods=8
       - --timeout=90m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master

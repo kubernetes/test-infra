@@ -157,7 +157,7 @@ Official description of the individual files and their content is described by [
 
 ## Publishing test results in TestGrid
 
-To have the [TestGrid](https://k8s-testgrid.appspot.com/) consume the new build results, one needs to extend the TestGrid
+To have the [TestGrid](https://testgrid.k8s.io/) consume the new build results, one needs to extend the TestGrid
 configuration file at https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml.
 
 The header of the file describes what needs to be done to add new build.

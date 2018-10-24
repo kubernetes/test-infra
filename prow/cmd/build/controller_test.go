@@ -121,6 +121,10 @@ func (r *fakeReconciler) updateProwJob(namespace string, pj *prowjobv1.ProwJob) 
 	return pj, nil
 }
 
+func (r *fakeReconciler) buildID(pj prowjobv1.ProwJob) (string, error) {
+	return "7777777777", nil
+}
+
 func TestReconcile(t *testing.T) {
 	now := metav1.Now()
 	buildSpec := buildv1alpha1.BuildSpec{}
@@ -155,7 +159,8 @@ func TestReconcile(t *testing.T) {
 			return pj
 		},
 		expectedBuild: func(pj prowjobv1.ProwJob, _ buildv1alpha1.Build) buildv1alpha1.Build {
-			b, err := makeBuild(pj)
+			pj.Spec.Type = prowjobv1.PeriodicJob
+			b, err := makeBuild(pj, "50")
 			if err != nil {
 				panic(err)
 			}
@@ -205,8 +210,9 @@ func TestReconcile(t *testing.T) {
 			name: "delete build after deleting prowjob",
 			observedBuild: func() *buildv1alpha1.Build {
 				pj := prowjobv1.ProwJob{}
+				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, "7")
 				if err != nil {
 					panic(err)
 				}
@@ -217,8 +223,9 @@ func TestReconcile(t *testing.T) {
 			name: "do not delete deleted builds",
 			observedBuild: func() *buildv1alpha1.Build {
 				pj := prowjobv1.ProwJob{}
+				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, "6")
 				b.DeletionTimestamp = &now
 				if err != nil {
 					panic(err)
@@ -231,8 +238,9 @@ func TestReconcile(t *testing.T) {
 			name: "only delete builds created by controller",
 			observedBuild: func() *buildv1alpha1.Build {
 				pj := prowjobv1.ProwJob{}
+				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, "9999")
 				if err != nil {
 					panic(err)
 				}
@@ -258,9 +266,10 @@ func TestReconcile(t *testing.T) {
 			},
 			observedBuild: func() *buildv1alpha1.Build {
 				pj := prowjobv1.ProwJob{}
+				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, "5")
 				if err != nil {
 					panic(err)
 				}
@@ -287,9 +296,10 @@ func TestReconcile(t *testing.T) {
 			},
 			observedBuild: func() *buildv1alpha1.Build {
 				pj := prowjobv1.ProwJob{}
+				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, "1")
 				if err != nil {
 					panic(err)
 				}
@@ -324,9 +334,10 @@ func TestReconcile(t *testing.T) {
 			},
 			observedBuild: func() *buildv1alpha1.Build {
 				pj := prowjobv1.ProwJob{}
+				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, "22")
 				if err != nil {
 					panic(err)
 				}
@@ -364,9 +375,10 @@ func TestReconcile(t *testing.T) {
 			},
 			observedBuild: func() *buildv1alpha1.Build {
 				pj := prowjobv1.ProwJob{}
+				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, "21")
 				if err != nil {
 					panic(err)
 				}
@@ -411,9 +423,10 @@ func TestReconcile(t *testing.T) {
 			err:       true,
 			observedBuild: func() *buildv1alpha1.Build {
 				pj := prowjobv1.ProwJob{}
+				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, "-72")
 				if err != nil {
 					panic(err)
 				}
@@ -433,8 +446,9 @@ func TestReconcile(t *testing.T) {
 			err:       true,
 			observedBuild: func() *buildv1alpha1.Build {
 				pj := prowjobv1.ProwJob{}
+				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, "44")
 				if err != nil {
 					panic(err)
 				}
@@ -489,9 +503,10 @@ func TestReconcile(t *testing.T) {
 			},
 			observedBuild: func() *buildv1alpha1.Build {
 				pj := prowjobv1.ProwJob{}
+				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, "42")
 				if err != nil {
 					panic(err)
 				}
@@ -517,6 +532,7 @@ func TestReconcile(t *testing.T) {
 			}
 			if j := tc.observedJob; j != nil {
 				j.Name = name
+				j.Spec.Type = prowjobv1.PeriodicJob
 				r.jobs[k] = *j
 			}
 			if b := tc.observedBuild; b != nil {
@@ -550,20 +566,32 @@ func TestReconcile(t *testing.T) {
 }
 
 func TestMakeBuild(t *testing.T) {
-	if _, err := makeBuild(prowjobv1.ProwJob{}); err == nil {
+	if _, err := makeBuild(prowjobv1.ProwJob{}, "70"); err == nil {
 		t.Error("failed to receive expected error")
 	}
 	pj := prowjobv1.ProwJob{}
 	pj.Name = "world"
 	pj.Namespace = "hello"
+	pj.Spec.Type = prowjobv1.PeriodicJob
 	pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
-	switch b, err := makeBuild(pj); {
+	pj.Spec.BuildSpec.Steps = append(pj.Spec.BuildSpec.Steps, corev1.Container{})
+	pj.Spec.BuildSpec.Template = &buildv1alpha1.TemplateInstantiationSpec{}
+	b, err := makeBuild(pj, "60")
+	switch {
 	case err != nil:
 		t.Errorf("unexpected error: %v", err)
 	case !reflect.DeepEqual(b.Spec, *pj.Spec.BuildSpec):
 		t.Errorf("buildspecs do not match %#v != expected %#v", b.Spec, pj.Spec.BuildSpec)
 	case len(b.OwnerReferences) == 0:
 		t.Error("failed to find owner references")
+	case len(b.Labels) == 0:
+		t.Error("failed to find labels")
+	case len(b.Annotations) == 0:
+		t.Error("failed to find annotations")
+	case len(b.Spec.Template.Arguments) == 0:
+		t.Error("failed to find injected template arguments")
+	case len(b.Spec.Steps[0].Env) == 0:
+		t.Error("failed to find injected step env")
 	}
 }
 

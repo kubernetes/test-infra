@@ -586,7 +586,7 @@ def main(args):
         set_up_kops_aws(mode.workspace, args, mode, cluster, runner_args)
     elif args.deployment == 'kops' and args.provider == 'gce':
         set_up_kops_gce(mode.workspace, args, mode, cluster, runner_args)
-    elif args.gce_ssh:
+    elif args.gce_ssh and args.provider != 'local':
         mode.add_gce_ssh(args.gce_ssh, args.gce_pub)
 
     # TODO(fejta): delete this?
