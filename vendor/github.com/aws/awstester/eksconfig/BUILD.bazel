@@ -1,0 +1,47 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "config.go",
+        "config_asg.go",
+        "config_cluster_name_tag.go",
+        "config_cluster_service_role.go",
+        "config_cluster_vpc_stack.go",
+        "config_custom_endpoints.go",
+        "config_kubernetes_version.go",
+        "config_region.go",
+        "config_worker_node_stack.go",
+        "config_worker_node_stack_ami.go",
+        "config_worker_node_stack_instance_type.go",
+        "config_worker_node_stack_key_pair.go",
+        "config_worker_node_stack_volume.go",
+        "default.go",
+        "doc.go",
+        "env.go",
+        "instance.go",
+        "utils.go",
+    ],
+    importmap = "k8s.io/test-infra/vendor/github.com/aws/awstester/eksconfig",
+    importpath = "github.com/aws/awstester/eksconfig",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/aws/awstester/pkg/awsapi/ec2:go_default_library",
+        "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/k8s.io/client-go/util/homedir:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
