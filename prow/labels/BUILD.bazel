@@ -5,12 +5,6 @@ go_library(
     srcs = ["labels.go"],
     importpath = "k8s.io/test-infra/prow/labels",
     visibility = ["//visibility:public"],
-    deps = [
-        "//prow/github:go_default_library",
-        "//prow/pluginhelp:go_default_library",
-        "//prow/plugins:go_default_library",
-        "//vendor/github.com/sirupsen/logrus:go_default_library",
-    ]
 )
 
 filegroup(
