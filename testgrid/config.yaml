@@ -358,10 +358,14 @@ test_groups:
   num_failures_to_alert: 6 # Runs every 1h. Alert when it's been failing for 6 hours.
 - name: ci-kubernetes-e2e-gci-gce-coredns
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-coredns
+- name: ci-kubernetes-e2e-gci-gce-kube-dns
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-kube-dns
 - name: ci-kubernetes-e2e-gce-alpha-api
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-api
 - name: ci-kubernetes-e2e-gci-gce-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial
+- name: ci-kubernetes-e2e-gci-gce-serial-kube-dns
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-kube-dns
 - name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-serial-sig-cli
 - name: ci-kubernetes-e2e-gke-gci-serial-sig-cli
@@ -6000,6 +6004,12 @@ dashboards:
     description: network gci-gce tests with CoreDNS
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+  - name: gci-gce-kube-dns
+    test_group_name: ci-kubernetes-e2e-gci-gce-kube-dns
+    base_options: include-filter-by-regex=\[sig-network\]
+    description: network gci-gce tests with kube-dns
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: gce-alpha-api
     test_group_name: ci-kubernetes-e2e-gce-alpha-api
     alert_options:
@@ -6020,6 +6030,12 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
     base_options: include-filter-by-regex=\[sig-network\]
     description: network gci-gce serial e2e tests for master branch
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+  - name: gci-gce-serial-kube-dns
+    test_group_name: ci-kubernetes-e2e-gci-gce-serial-kube-dns
+    base_options: include-filter-by-regex=\[sig-network\]
+    description: network gci-gce with kube-dns serial e2e tests for master branch
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: gci-gce-alpha-features
