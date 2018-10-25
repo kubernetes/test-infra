@@ -20,6 +20,7 @@ package crier
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
 	jsonpatch "github.com/evanphx/json-patch"
@@ -53,6 +54,7 @@ type Controller struct {
 	informer    pjinformers.ProwJobInformer
 	reporter    reportClient
 	numWorkers  int
+	wg          *sync.WaitGroup
 }
 
 func NewController(
@@ -60,13 +62,15 @@ func NewController(
 	queue workqueue.RateLimitingInterface,
 	informer pjinformers.ProwJobInformer,
 	reporter reportClient,
-	numWorkers int) *Controller {
+	numWorkers int,
+	wg *sync.WaitGroup) *Controller {
 	return &Controller{
 		pjclientset: pjclientset,
 		queue:       queue,
 		informer:    informer,
 		reporter:    reporter,
 		numWorkers:  numWorkers,
+		wg:          wg,
 	}
 }
 
@@ -128,8 +132,10 @@ func (c *Controller) HasSynced() bool {
 
 // runWorker executes the loop to process new items added to the queue
 func (c *Controller) runWorker() {
+	c.wg.Add(1)
 	for c.processNextItem() {
 	}
+	c.wg.Done()
 }
 
 func (c *Controller) retry(key interface{}, err error) bool {
@@ -218,24 +224,9 @@ func (c *Controller) processNextItem() bool {
 		return true
 	}
 
+	// we set omitempty on PrevReportStates, so here we need to init it if is nil
 	if pj.Status.PrevReportStates == nil {
-		// old prowjobs doesn't have this field, let's update it with an empty map...
-
-		pjCopy := pj.DeepCopy()
-		pjCopy.Status.PrevReportStates = map[string]v1.ProwJobState{}
-		if _, err := c.pjclientset.Prow().ProwJobs(pjCopy.Namespace).Update(pjCopy); err != nil {
-			logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to update pj")
-			return c.retry(key, err)
-		}
-
-		//resync with apiserver
-		pj, err = c.pjclientset.Prow().ProwJobs(pj.Namespace).Get(pj.Name, metav1.GetOptions{})
-		if err != nil {
-			// hope next cycle will catch up
-			logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to resync pj")
-			c.queue.Forget(key)
-			return true
-		}
+		pj.Status.PrevReportStates = map[string]v1.ProwJobState{}
 	}
 
 	// already reported current state

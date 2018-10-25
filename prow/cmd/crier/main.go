@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -58,7 +59,7 @@ type options struct {
 }
 
 func (o *options) Validate() error {
-	if o.gerritWorkers > 0 {
+	if o.gerritWorkers > 1 {
 		// TODO(krzyzacy): try to see how to handle racy better for gerrit aggregate report.
 		logrus.Warn("gerrit reporter only supports one worker")
 		o.gerritWorkers = 1
@@ -166,17 +167,20 @@ func main() {
 
 	controllers := []*crier.Controller{}
 
+	// track all worker status before shutdown
+	wg := &sync.WaitGroup{}
+
 	if o.gerritWorkers > 0 {
 		informer := prowjobInformerFactory.Prow().V1().ProwJobs()
 		gerritReporter, err := gerritreporter.NewReporter(o.cookiefilePath, o.gerritProjects, informer.Lister())
 		if err != nil {
 			logrus.Fatalf("Fail to start gerrit reporter: %v", err)
 		}
-		controllers = append(controllers, crier.NewController(prowjobClient, queue, informer, gerritReporter, o.gerritWorkers))
+		controllers = append(controllers, crier.NewController(prowjobClient, queue, informer, gerritReporter, o.gerritWorkers, wg))
 	}
 
 	if o.pubsubWorkers > 0 {
-		controllers = append(controllers, crier.NewController(prowjobClient, queue, prowjobInformerFactory.Prow().V1().ProwJobs(), pubsubreporter.NewReporter(), o.pubsubWorkers))
+		controllers = append(controllers, crier.NewController(prowjobClient, queue, prowjobInformerFactory.Prow().V1().ProwJobs(), pubsubreporter.NewReporter(), o.pubsubWorkers, wg))
 	}
 
 	if len(controllers) == 0 {
@@ -196,13 +200,22 @@ func main() {
 	signal.Notify(sigTerm, syscall.SIGTERM)
 	signal.Notify(sigTerm, syscall.SIGINT)
 
-	go func() {
-		<-sigTerm
-		logrus.Info("Crier received a ternimation signal and is shutting down...")
+	<-sigTerm
+	logrus.Info("Crier received a termination signal and is shutting down...")
+	for range controllers {
 		stopCh <- struct{}{}
-		// waiting for all crier worker to finish
-		// TODO(krzyzacy): ideally we know when all worker finishes, rather than blind sleep 5s here
-		time.Sleep(5 * time.Second)
-		logrus.Info("Crier exited")
+	}
+
+	// waiting for all crier worker to finish
+	c := make(chan struct{})
+	go func() {
+		defer close(c)
+		wg.Wait()
 	}()
+	select {
+	case <-c:
+		logrus.Info("All worker finished, exiting crier")
+	case <-time.After(10 * time.Second):
+		logrus.Info("timed out waiting for all worker to finish")
+	}
 }
