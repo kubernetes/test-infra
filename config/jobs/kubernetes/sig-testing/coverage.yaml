@@ -34,7 +34,7 @@ periodics:
         shopt -s globstar
         ../test-infra/scenarios/kubernetes_e2e.py --build=quick --dump-before-and-after --extract=local \
                                                   --stage=gs://kubernetes-release-dev/ci/ci-kubernetes-conformance-coverage \
-                                                  --gcp-zone=us-central1-f --provider=gce --timeout=120m \
+                                                  --gcp-zone=us-central1-f --provider=gce --timeout=150m \
                                                   --test_args="--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]"
         cd ../test-infra
         bazel run //gopherage -- merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
