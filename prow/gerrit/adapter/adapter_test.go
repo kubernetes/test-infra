@@ -195,12 +195,16 @@ func TestProcessChange(t *testing.T) {
 					Presubmits: map[string][]config.Presubmit{
 						"gerrit/test-infra": {
 							{
-								Name: "test-foo",
+								JobBase: config.JobBase{
+									Name: "test-foo",
+								},
 							},
 						},
 						"https://gerrit/other-repo": {
 							{
-								Name: "other-test",
+								JobBase: config.JobBase{
+									Name: "other-test",
+								},
 							},
 						},
 					},

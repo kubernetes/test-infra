@@ -108,7 +108,7 @@ func newFakeConfigAgent() *fca {
 			},
 			JobConfig: config.JobConfig{
 				Periodics: []config.Periodic{
-					{Name: "retester"},
+					{JobBase: config.JobBase{Name: "retester"}},
 				},
 			},
 		},
