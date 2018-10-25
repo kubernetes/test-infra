@@ -130,38 +130,21 @@ func getPath(bkt *storage.BucketHandle, root, id, fname string) (string, error) 
 	return path.Join(dir, fname), nil
 }
 
-func readStarted(bkt *storage.BucketHandle, root, id string) (jobs.Started, error) {
-	s := jobs.Started{}
-	p, err := getPath(bkt, root, id, "started.json")
+// reads specified JSON file in to `data`
+func readJSON(bkt *storage.BucketHandle, root, id, fname string, data interface{}) error {
+	p, err := getPath(bkt, root, id, fname)
 	if err != nil {
-		return s, fmt.Errorf("failed to get path: %v", err)
+		return fmt.Errorf("failed to get path: %v", err)
 	}
-	sdata, err := readObject(bkt.Object(p))
+	rawData, err := readObject(bkt.Object(p))
 	if err != nil {
-		return s, fmt.Errorf("failed to read started.json for build %s: %v", id, err)
+		return fmt.Errorf("failed to read %s for build %s: %v", fname, id, err)
 	}
-	err = json.Unmarshal(sdata, &s)
+	err = json.Unmarshal(rawData, &data)
 	if err != nil {
-		return s, fmt.Errorf("failed to parse started.json for build %s: %v", id, err)
+		return fmt.Errorf("failed to parse %s for build %s: %v", fname, id, err)
 	}
-	return s, nil
-}
-
-func readFinished(bkt *storage.BucketHandle, root, id string) (jobs.Finished, error) {
-	f := jobs.Finished{}
-	p, err := getPath(bkt, root, id, "finished.json")
-	if err != nil {
-		return f, fmt.Errorf("failed to get path: %v", err)
-	}
-	fdata, err := readObject(bkt.Object(p))
-	if err != nil {
-		return f, fmt.Errorf("failed to read finished.json for build %s: %v", id, err)
-	}
-	err = json.Unmarshal(fdata, &f)
-	if err != nil {
-		return f, fmt.Errorf("failed to parse finished.json for build %s: %v", id, err)
-	}
-	return f, nil
+	return nil
 }
 
 // Lists the GCS "directory names" immediately under prefix.
@@ -297,10 +280,12 @@ func getBuildData(bkt *storage.BucketHandle, root string, buildID int64, index i
 		return b
 	}
 	b.SpyglassLink = link
-	started, err := readStarted(bkt, root, b.ID)
+	started := jobs.Started{}
+	err = readJSON(bkt, root, b.ID, "started.json", &started)
 	if err == nil {
 		b.Started = time.Unix(started.Timestamp, 0)
-		finished, _ := readFinished(bkt, root, b.ID)
+		finished := jobs.Finished{}
+		readJSON(bkt, root, b.ID, "finished.json", &finished)
 		if finished.Timestamp != 0 {
 			b.Duration = time.Unix(finished.Timestamp, 0).Sub(b.Started)
 		}
