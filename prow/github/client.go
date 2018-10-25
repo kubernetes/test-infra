@@ -2260,11 +2260,8 @@ func (c *Client) ListPRCommits(org, repo string, number int) ([]RepositoryCommit
 		return nil, nil
 	}
 	var commits []RepositoryCommit
-	err := c.readPaginatedResultsWithValues(
+	err := c.readPaginatedResults(
 		fmt.Sprintf("/repos/%v/%v/pulls/%d/commits", org, repo, number),
-		url.Values{
-			"per_page": []string{"100"},
-		},
 		acceptNone,
 		func() interface{} { // newObj returns a pointer to the type of object to create
 			return &[]RepositoryCommit{}

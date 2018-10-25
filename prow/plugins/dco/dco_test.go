@@ -72,7 +72,7 @@ func TestHandlePullRequest(t *testing.T) {
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
 			commits: []github.RepositoryCommit{
-				{SHA: strP("sha"), Commit: &github.GitCommit{Message: strP("not a sign off")}},
+				{SHA: "sha", Commit: github.GitCommit{Message: "not a sign off"}},
 			},
 			issueState: "open",
 			hasDCONo:   false,
@@ -88,7 +88,7 @@ func TestHandlePullRequest(t *testing.T) {
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
 			commits: []github.RepositoryCommit{
-				{SHA: strP("sha"), Commit: &github.GitCommit{Message: strP("not a sign off")}},
+				{SHA: "sha", Commit: github.GitCommit{Message: "not a sign off"}},
 			},
 			issueState: "open",
 			hasDCONo:   false,
@@ -120,7 +120,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
 			commits: []github.RepositoryCommit{
-				{SHA: strP("sha"), Commit: &github.GitCommit{Message: strP("not a sign off")}},
+				{SHA: "sha", Commit: github.GitCommit{Message: "not a sign off"}},
 			},
 			issueState: "open",
 			hasDCONo:   true,
@@ -151,8 +151,8 @@ Instructions for interacting with me using PR comments are available [here](http
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
 			commits: []github.RepositoryCommit{
-				{SHA: strP("sha1"), Commit: &github.GitCommit{Message: strP("Signed-off-by: someone")}},
-				{SHA: strP("sha"), Commit: &github.GitCommit{Message: strP("not signed off")}},
+				{SHA: "sha1", Commit: github.GitCommit{Message: "Signed-off-by: someone"}},
+				{SHA: "sha", Commit: github.GitCommit{Message: "not signed off"}},
 			},
 			issueState: "open",
 			hasDCONo:   false,
@@ -184,7 +184,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
 			commits: []github.RepositoryCommit{
-				{SHA: strP("sha"), Commit: &github.GitCommit{Message: strP("Signed-off-by: someone")}},
+				{SHA: "sha", Commit: github.GitCommit{Message: "Signed-off-by: someone"}},
 			},
 			issueState: "open",
 			hasDCONo:   false,
@@ -200,7 +200,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
 			commits: []github.RepositoryCommit{
-				{SHA: strP("sha"), Commit: &github.GitCommit{Message: strP("Signed-off-by: someone")}},
+				{SHA: "sha", Commit: github.GitCommit{Message: "Signed-off-by: someone"}},
 			},
 			issueState: "open",
 			hasDCONo:   true,
@@ -342,7 +342,7 @@ func TestHandleComment(t *testing.T) {
 				3: {Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
 			commits: []github.RepositoryCommit{
-				{SHA: strP("sha"), Commit: &github.GitCommit{Message: strP("not a sign off")}},
+				{SHA: "sha", Commit: github.GitCommit{Message: "not a sign off"}},
 			},
 			issueState: "open",
 			hasDCONo:   false,

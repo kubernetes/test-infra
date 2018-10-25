@@ -67,8 +67,8 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	// The {WhoCanUse, Usage, Examples, Config} fields are omitted because this plugin cannot be
-	// manually triggered and is not configurable.
+	// The Config field is omitted because this plugin does not support
+	// per-repo config
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The dco plugin checks pull request commits for 'DCO sign off' and maintains the '" + dcoContextName + "' status context, as well as the 'dco' label.",
 	}
@@ -110,9 +110,9 @@ func checkCommitMessages(gc gitHubClient, l *logrus.Entry, org, repo string, num
 
 	var commitsMissingDCO []github.GitCommit
 	for _, commit := range allCommits {
-		if !testRe.MatchString(*commit.Commit.Message) {
-			c := *commit.Commit
-			c.SHA = &(*commit.SHA)
+		if !testRe.MatchString(commit.Commit.Message) {
+			c := commit.Commit
+			c.SHA = commit.SHA
 			commitsMissingDCO = append(commitsMissingDCO, c)
 		}
 	}
@@ -278,24 +278,20 @@ func markdownSHAList(org, repo string, list []github.GitCommit) string {
 	lines := make([]string, len(list))
 	lineFmt := "- [%s](https://github.com/%s/%s/commits/%s) %s"
 	for i, commit := range list {
-		if commit.SHA == nil {
+		if commit.SHA == "" {
 			continue
 		}
 		// if we somehow encounter a SHA that's less than 7 characters, we will
 		// just use it as is.
-		shortSHA := *commit.SHA
+		shortSHA := commit.SHA
 		if len(shortSHA) > 7 {
 			shortSHA = shortSHA[:7]
 		}
-		message := ""
-		if commit.Message != nil {
-			message = *commit.Message
-		}
 
 		// get the first line of the commit
-		message = strings.Split(message, "\n")[0]
+		message := strings.Split(commit.Message, "\n")[0]
 
-		lines[i] = fmt.Sprintf(lineFmt, shortSHA, org, repo, *commit.SHA, message)
+		lines[i] = fmt.Sprintf(lineFmt, shortSHA, org, repo, commit.SHA, message)
 	}
 	return strings.Join(lines, "\n")
 }
@@ -303,9 +299,6 @@ func markdownSHAList(org, repo string, list []github.GitCommit) string {
 // shouldPrune finds comments left by this plugin.
 func shouldPrune(log *logrus.Entry, botName string) func(github.IssueComment) bool {
 	return func(comment github.IssueComment) bool {
-		if comment.User.Login != botName {
-			return false
-		}
 		return strings.Contains(comment.Body, dcoMsgPruneMatch)
 	}
 }
@@ -330,7 +323,9 @@ func handlePullRequest(gc gitHubClient, cp commentPruner, log *logrus.Entry, pe 
 		return nil
 	}
 
-	shouldComment := pe.Action == github.PullRequestActionSynchronize || pe.Action == github.PullRequestActionOpened
+	shouldComment := pe.Action == github.PullRequestActionSynchronize ||
+		pe.Action == github.PullRequestActionOpened ||
+		pe.Action == github.PullRequestActionReopened
 
 	return handle(gc, cp, log, org, repo, pe.PullRequest, shouldComment)
 }
