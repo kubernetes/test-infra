@@ -1,6 +1,8 @@
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
+load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
+load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
 load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 docker_bundle(
     name = "bundle",
@@ -18,7 +20,7 @@ docker_push(
 )
 
 go_image(
-    name = "image",
+    name = "app",
     base = "@git-base//image",
     embed = [":go_default_library"],
     goarch = "amd64",
@@ -27,7 +29,12 @@ go_image(
     visibility = ["//visibility:public"],
 )
 
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+container_image(
+    name = "image",
+    base = ":app",
+    stamp = True,
+    visibility = ["//visibility:public"],
+)
 
 go_library(
     name = "go_default_library",

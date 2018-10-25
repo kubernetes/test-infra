@@ -22,9 +22,9 @@ go_binary(
     visibility = ["//visibility:public"],
 )
 
-# same as binary above, but with goarch and goos for placing in the docker image
-go_binary(
-    name = "entrypoint-linux-amd64",
+go_image(
+    name = "app",
+    base = "@git-base//image",
     embed = [":go_default_library"],
     goarch = "amd64",
     goos = "linux",
@@ -32,19 +32,11 @@ go_binary(
     visibility = ["//visibility:public"],
 )
 
-go_image(
-    name = "entrypoint-go_image",
-    base = "@git-base//image",
-    binary = ":entrypoint-linux-amd64",
-    visibility = ["//visibility:public"],
-)
-
 container_image(
     name = "image",
-    base = ":entrypoint-go_image",
-    symlinks = {
-        "/entrypoint": "/app/prow/cmd/entrypoint/entrypoint-linux-amd64",
-    },
+    base = ":app",
+    stamp = True,
+    symlinks = {"/entrypoint": "/app/prow/cmd/entrypoint/app.binary"},
     visibility = ["//visibility:public"],
 )
 
