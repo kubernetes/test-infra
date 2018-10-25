@@ -3233,11 +3233,14 @@ test_groups:
 
 # AWS Test Groups
 - name: pull-aws-ebs-disk-csi-driver-verify
-  gcs_prefix: kubernetes-jenkins/logs/pull-aws-ebs-disk-csi-driver-verify
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-ebs-disk-csi-driver-verify
+  num_columns_recent: 30
 - name: pull-aws-ebs-csi-driver-unit
-  gcs_prefix: kubernetes-jenkins/logs/pull-aws-ebs-csi-driver-unit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-ebs-csi-driver-unit
+  num_columns_recent: 30
 - name: pull-aws-ebs-csi-driver-sanity
-  gcs_prefix: kubernetes-jenkins/logs/pull-aws-ebs-csi-driver-sanity
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-ebs-csi-driver-sanity
+  num_columns_recent: 30
 
 #
 # Start dashboards
