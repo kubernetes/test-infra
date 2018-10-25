@@ -39,7 +39,6 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-old-common: "true"
   spec:
     containers:
     - args:
@@ -48,6 +47,9 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=e2e-big-beta
+      # Use default kube-qps and kube-api-burst flag values.
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling
+      - --env=SCHEDULER_TEST_ARGS=--profiling
       - --extract=ci/k8s-beta
       - --gcp-node-image=gci
       - --gcp-nodes=100
@@ -68,7 +70,6 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-old-common: "true"
     preset-e2e-gci-gce-scalability-stable: "true"
   spec:
     containers:
@@ -78,6 +79,9 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=e2e-big-stable1
+      # Use default kube-qps and kube-api-burst flag values.
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling
+      - --env=SCHEDULER_TEST_ARGS=--profiling
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
       - --gcp-nodes=100
@@ -98,7 +102,6 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-old-common: "true"
     preset-e2e-gci-gce-scalability-stable: "true"
   spec:
     containers:
@@ -108,6 +111,9 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=e2e-big-stable2
+      # Use default kube-qps and kube-api-burst flag values.
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling
+      - --env=SCHEDULER_TEST_ARGS=--profiling
       - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
       - --gcp-nodes=100
@@ -528,6 +534,7 @@ periodics:
       - --
       - --cluster=kubemark-100pods
       # Reduce logs verbosity
+      # TODO(wojtek-t): get rid of this
       - --env=TEST_CLUSTER_LOG_LEVEL=--v=2
       - --extract=ci/latest
       - --gcp-node-image=gci

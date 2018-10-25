@@ -112,15 +112,6 @@ presets:
   # Increase size of default subnetworks to enable large clusters.
   - name: ENABLE_BIG_CLUSTER_SUBNETS
     value: "true"
-### Common env variables for scalability-related suites using 1.9, 1.10 and 1.11 versions.
-- labels:
-    preset-e2e-scalability-old-common: "true"
-  env:
-  # Use default kube-qps and kube-api-burst flag values.
-  - name: CONTROLLER_MANAGER_TEST_ARGS
-    value: "--profiling"
-  - name: SCHEDULER_TEST_ARGS
-    value: "--profiling"
 # Create a project k8s-e2e-gce-scalability-release and move this test there
 - labels:
     preset-e2e-gci-gce-scalability-stable: "true"
@@ -131,10 +122,6 @@ presets:
   # Remove once these releases are no longer supported.
   - name: KUBE_GCI_VERSION
     value: "cos-stable-63-10032-71-0"
-  # Avoid overwriting qps limits to 100 for controller manager.
-  # 1.10 and 1.9 releases can't easily handle that.
-  - name: CONTROLLER_MANAGER_TEST_ARGS
-    value: "--profiling"
 # Create a project k8s-jenkins-scalability-head and move this test there
 - labels:
     preset-e2e-gci-gce-scalability: "true"
@@ -142,3 +129,4 @@ presets:
   # Override GCE defaults.
   - name: CREATE_CUSTOM_NETWORK
     value: "true"
+   
