@@ -34,7 +34,7 @@ import (
 
 const (
 	// PluginName is the name of this plugin
-	PluginName = labels.NeedsRebase
+	PluginName         = labels.NeedsRebase
 	needsRebaseMessage = "PR needs rebase."
 )
 

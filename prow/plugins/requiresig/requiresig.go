@@ -36,7 +36,7 @@ var (
 )
 
 const (
-	pluginName    = "require-sig"
+	pluginName = "require-sig"
 
 	needsSIGMessage = "There are no sig labels on this issue. Please add a sig label."
 	needsSIGDetails = `A sig label can be added by either:

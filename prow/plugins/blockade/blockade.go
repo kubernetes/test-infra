@@ -37,7 +37,7 @@ import (
 )
 
 const (
-	PluginName        = "blockade"
+	PluginName = "blockade"
 )
 
 var blockedPathsBody = fmt.Sprintf("Adding label: `%s` because PR changes a protected file.", labels.BlockedPaths)
