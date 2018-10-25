@@ -27,12 +27,6 @@ import (
 	pjlister "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
 )
 
-const (
-	testPubSubProjectName = "test-project"
-	testPubSubTopicName   = "test-topic"
-	testPubSubRunID       = "test-id"
-)
-
 type fgc struct {
 	reportMessage string
 	instance      string
