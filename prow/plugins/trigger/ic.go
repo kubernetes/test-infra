@@ -21,6 +21,7 @@ import (
 	"regexp"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -61,16 +62,16 @@ func handleIC(c client, trigger *plugins.Trigger, ic github.IssueCommentEvent) e
 	if !shouldRetestFailed && len(requestedJobs) == 0 {
 		// Check for the presence of the needs-ok-to-test label and remove it
 		// if a trusted member has commented "/ok-to-test".
-		if isOkToTest && ic.Issue.HasLabel(NeedsOkToTest) {
+		if isOkToTest && ic.Issue.HasLabel(labels.NeedsOkToTest) {
 			trusted, err := TrustedUser(c.GitHubClient, trigger, commentAuthor, org, repo)
 			if err != nil {
 				return err
 			}
 			if trusted {
-				if err := c.GitHubClient.AddLabel(org, repo, number, okToTest); err != nil {
+				if err := c.GitHubClient.AddLabel(org, repo, number, labels.OkToTest); err != nil {
 					return err
 				}
-				return c.GitHubClient.RemoveLabel(org, repo, number, NeedsOkToTest)
+				return c.GitHubClient.RemoveLabel(org, repo, number, labels.NeedsOkToTest)
 			}
 		}
 		return nil
@@ -107,7 +108,7 @@ func handleIC(c client, trigger *plugins.Trigger, ic github.IssueCommentEvent) e
 		return fmt.Errorf("error checking trust of %s: %v", commentAuthor, err)
 	}
 	if !trusted {
-		trusted, err := trustedPullRequest(c.GitHubClient, trigger, ic.Issue.User.Login, org, repo, number, ic.Issue.Labels)
+		_, trusted, err := trustedPullRequest(c.GitHubClient, trigger, ic.Issue.User.Login, org, repo, number, ic.Issue.Labels)
 		if err != nil {
 			return err
 		}
@@ -118,15 +119,13 @@ func handleIC(c client, trigger *plugins.Trigger, ic github.IssueCommentEvent) e
 		}
 	}
 
-	okToTestAdded := false
 	if isOkToTest {
-		if err := c.GitHubClient.AddLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, okToTest); err != nil {
+		if err := c.GitHubClient.AddLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, labels.OkToTest); err != nil {
 			return err
 		}
-		okToTestAdded = true
 	}
-	if (ic.Issue.HasLabel(okToTest) || okToTestAdded) && ic.Issue.HasLabel(NeedsOkToTest) {
-		if err := c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, NeedsOkToTest); err != nil {
+	if (ic.Issue.HasLabel(labels.OkToTest) || isOkToTest) && ic.Issue.HasLabel(labels.NeedsOkToTest) {
+		if err := c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, labels.NeedsOkToTest); err != nil {
 			return err
 		}
 	}
