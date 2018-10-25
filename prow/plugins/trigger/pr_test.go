@@ -25,6 +25,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -230,7 +231,7 @@ func TestHandlePullRequest(t *testing.T) {
 			Author:      "t",
 			ShouldBuild: false,
 			prAction:    github.PullRequestActionLabeled,
-			prLabel:     "lgtm",
+			prLabel:     labels.LGTM,
 		},
 		{
 			name: "Untrusted user labeled PR with lgtm should build",
@@ -238,7 +239,7 @@ func TestHandlePullRequest(t *testing.T) {
 			Author:      "u",
 			ShouldBuild: true,
 			prAction:    github.PullRequestActionLabeled,
-			prLabel:     "lgtm",
+			prLabel:     labels.LGTM,
 		},
 		{
 			name: "Untrusted user labeled PR without lgtm should not build",

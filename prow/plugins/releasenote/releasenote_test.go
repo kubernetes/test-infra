@@ -26,6 +26,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/labels"
 )
 
 func TestReleaseNoteComment(t *testing.T) {
@@ -204,7 +205,7 @@ func TestReleaseNoteComment(t *testing.T) {
 	}
 }
 
-const lgtmLabel = "lgtm"
+const lgtmLabel = labels.LGTM
 
 func formatLabels(num int, labels ...string) []string {
 	out := make([]string, 0, len(labels))

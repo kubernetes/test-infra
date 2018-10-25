@@ -27,6 +27,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -204,7 +205,7 @@ func TestHandle(t *testing.T) {
 	// Don't need to validate the following because they are validated by other tests:
 	// - Block calculation. (Whether or not changes justify blocking the PR.)
 	// - Comment contents, just existence.
-	otherLabel := "lgtm"
+	otherLabel := labels.LGTM
 
 	tcs := []struct {
 		name       string
@@ -231,7 +232,7 @@ func TestHandle(t *testing.T) {
 			hasLabel:   false,
 			filesBlock: true,
 
-			labelAdded:     BlockedPathsLabel,
+			labelAdded:     labels.BlockedPaths,
 			commentCreated: true,
 		},
 		{
@@ -255,7 +256,7 @@ func TestHandle(t *testing.T) {
 			hasLabel:   true,
 			filesBlock: false,
 
-			labelRemoved: BlockedPathsLabel,
+			labelRemoved: labels.BlockedPaths,
 		},
 		{
 			name:       "No blockade, not labeled",
@@ -271,7 +272,7 @@ func TestHandle(t *testing.T) {
 			hasLabel:   true,
 			filesBlock: true,
 
-			labelRemoved: BlockedPathsLabel,
+			labelRemoved: labels.BlockedPaths,
 		},
 		{
 			name:       "Basic block (org scoped blockade)",
@@ -280,7 +281,7 @@ func TestHandle(t *testing.T) {
 			hasLabel:   false,
 			filesBlock: true,
 
-			labelAdded:     BlockedPathsLabel,
+			labelAdded:     labels.BlockedPaths,
 			commentCreated: true,
 		},
 		{
@@ -295,14 +296,14 @@ func TestHandle(t *testing.T) {
 	for _, tc := range tcs {
 		expectAdded := []string{}
 		fakeClient := &fakegithub.FakeClient{
-			ExistingLabels:     []string{BlockedPathsLabel, otherLabel},
+			ExistingLabels:     []string{labels.BlockedPaths, otherLabel},
 			IssueComments:      make(map[int][]github.IssueComment),
 			PullRequestChanges: make(map[int][]github.PullRequestChange),
 			LabelsAdded:        []string{},
 			LabelsRemoved:      []string{},
 		}
 		if tc.hasLabel {
-			label := formatLabel(BlockedPathsLabel)
+			label := formatLabel(labels.BlockedPaths)
 			fakeClient.LabelsAdded = append(fakeClient.LabelsAdded, label)
 			expectAdded = append(expectAdded, label)
 		}

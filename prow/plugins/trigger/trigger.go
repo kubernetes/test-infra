@@ -34,7 +34,6 @@ import (
 
 const (
 	pluginName = "trigger"
-	lgtmLabel  = "lgtm"
 )
 
 func init() {

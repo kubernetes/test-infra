@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 
@@ -35,8 +36,7 @@ var (
 )
 
 const (
-	pluginName    = "require-sig"
-	needsSigLabel = "needs-sig"
+	pluginName = "require-sig"
 
 	needsSIGMessage = "There are no sig labels on this issue. Please add a sig label."
 	needsSIGDetails = `A sig label can be added by either:
@@ -77,9 +77,9 @@ func helpProvider(config *plugins.Configuration, _ []string) (*pluginhelp.Plugin
 			Description: fmt.Sprintf(
 				`When a new issue is opened the require-sig plugin adds the %q label and leaves a comment requesting that a SIG (Special Interest Group) label be added to the issue. SIG labels are labels that have one of the following prefixes: %q.
 <br>Once a SIG label has been added to an issue, this plugin removes the %q label and deletes the comment it made previously.`,
-				needsSigLabel,
+				labels.NeedsSig,
 				labelPrefixes,
-				needsSigLabel,
+				labels.NeedsSig,
 			),
 			Config: map[string]string{
 				"": fmt.Sprintf("The comment the plugin creates includes this link to a list of the existing groups: %s", url),
@@ -149,11 +149,11 @@ func handle(log *logrus.Entry, ghc githubClient, cp commentPruner, ie *github.Is
 	number := ie.Issue.Number
 
 	hasSigLabel := hasSigLabel(ie.Issue.Labels)
-	hasNeedsSigLabel := github.HasLabel(needsSigLabel, ie.Issue.Labels)
+	hasNeedsSigLabel := github.HasLabel(labels.NeedsSig, ie.Issue.Labels)
 
 	if hasSigLabel && hasNeedsSigLabel {
-		if err := ghc.RemoveLabel(org, repo, number, needsSigLabel); err != nil {
-			log.WithError(err).Errorf("Failed to remove %s label.", needsSigLabel)
+		if err := ghc.RemoveLabel(org, repo, number, labels.NeedsSig); err != nil {
+			log.WithError(err).Errorf("Failed to remove %s label.", labels.NeedsSig)
 		}
 		botName, err := ghc.BotName()
 		if err != nil {
@@ -161,8 +161,8 @@ func handle(log *logrus.Entry, ghc githubClient, cp commentPruner, ie *github.Is
 		}
 		cp.PruneComments(shouldPrune(log, botName))
 	} else if !hasSigLabel && !hasNeedsSigLabel {
-		if err := ghc.AddLabel(org, repo, number, needsSigLabel); err != nil {
-			log.WithError(err).Errorf("Failed to add %s label.", needsSigLabel)
+		if err := ghc.AddLabel(org, repo, number, labels.NeedsSig); err != nil {
+			log.WithError(err).Errorf("Failed to add %s label.", labels.NeedsSig)
 		}
 		msg := plugins.FormatResponse(ie.Issue.User.Login, needsSIGMessage, needsSIGDetails)
 		if err := ghc.CreateComment(org, repo, number, msg); err != nil {

@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/approve/approvers"
 	"k8s.io/test-infra/prow/repoowners"
@@ -1588,7 +1589,7 @@ func TestHandlePullRequest(t *testing.T) {
 			prEvent: github.PullRequestEvent{
 				Action: github.PullRequestActionLabeled,
 				Label: github.Label{
-					Name: ApprovedLabel,
+					Name: labels.Approved,
 				},
 			},
 			expectHandle: true,
@@ -1608,7 +1609,7 @@ func TestHandlePullRequest(t *testing.T) {
 			prEvent: github.PullRequestEvent{
 				Action: github.PullRequestActionLabeled,
 				Label: github.Label{
-					Name: ApprovedLabel,
+					Name: labels.Approved,
 				},
 				PullRequest: github.PullRequest{
 					State: "closed",
