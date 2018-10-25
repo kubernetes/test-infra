@@ -1137,6 +1137,7 @@ func TestPeriodic(t *testing.T) {
 	}
 	c := Controller{
 		kc:          fc,
+		ghc:         &fghc{},
 		pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: &fkc{}, "trusted": fc},
 		log:         logrus.NewEntry(logrus.StandardLogger()),
 		ca:          newFakeConfigAgent(t, 0),

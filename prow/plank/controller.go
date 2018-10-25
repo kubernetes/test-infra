@@ -89,10 +89,13 @@ type Controller struct {
 	pjLock sync.RWMutex
 	// shared across the controller and a goroutine that gathers metrics.
 	pjs []kube.ProwJob
+
+	// if skip report job results to github
+	skipReport bool
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(kc *kube.Client, pkcs map[string]*kube.Client, ghc GitHubClient, logger *logrus.Entry, ca *config.Agent, totURL, selector string) (*Controller, error) {
+func NewController(kc *kube.Client, pkcs map[string]*kube.Client, ghc GitHubClient, logger *logrus.Entry, ca *config.Agent, totURL, selector string, skipReport bool) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
@@ -109,6 +112,7 @@ func NewController(kc *kube.Client, pkcs map[string]*kube.Client, ghc GitHubClie
 		pendingJobs: make(map[string]int),
 		totURL:      totURL,
 		selector:    selector,
+		skipReport:  skipReport,
 	}, nil
 }
 
@@ -215,7 +219,7 @@ func (c *Controller) Sync() error {
 	}
 
 	var reportErrs []error
-	if c.ghc != nil {
+	if !c.skipReport {
 		reportTemplate := c.ca.Config().Plank.ReportTemplate
 		for report := range reportCh {
 			if err := reportlib.Report(c.ghc, reportTemplate, report); err != nil {

@@ -55,11 +55,11 @@ func TestOptions_Validate(t *testing.T) {
 			expectedErr: true,
 		},
 		{
-			name: "no token",
+			name: "no token, allow",
 			opt: options{
 				config: "dummy",
 			},
-			expectedErr: true,
+			expectedErr: false,
 		},
 	}
 
