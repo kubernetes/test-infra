@@ -17,7 +17,6 @@ limitations under the License.
 package flagutil
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"net/url"
@@ -57,7 +56,7 @@ func (o *GitHubOptions) Validate(dryRun bool) error {
 	}
 
 	if o.TokenPath == "" {
-		return errors.New("empty -github-token-path")
+		logrus.Warn("empty -github-token-path, will use anonymous github client")
 	}
 
 	return nil

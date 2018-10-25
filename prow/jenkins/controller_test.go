@@ -618,6 +618,7 @@ func TestBatch(t *testing.T) {
 	defer totServ.Close()
 	c := Controller{
 		kc:          fc,
+		ghc:         &fghc{},
 		jc:          jc,
 		log:         logrus.NewEntry(logrus.StandardLogger()),
 		ca:          newFakeConfigAgent(t, 0, nil),
