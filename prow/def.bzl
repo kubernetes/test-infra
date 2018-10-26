@@ -16,13 +16,11 @@ load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
 load("@io_bazel_rules_k8s//k8s:objects.bzl", "k8s_objects")
 load(
     "//:image.bzl",
-    docker_tags = "tags",
+    _docker_tags = "tags",
 )
 
 MULTI_KIND = None
-
 CORE_CLUSTER = "{STABLE_PROW_CLUSTER}"  # For components like hook
-
 BUILD_CLUSTER = "{STABLE_BUILD_CLUSTER}"  # For untrusted test code
 
 # image returns the image prefix for the command.
@@ -55,7 +53,7 @@ def target(cmd):
 #   }
 def tags(*cmds):
   # Create :YYYYmmdd-commitish :latest :latest-USER tags
-  return docker_tags(**{prefix(cmd): target(cmd) for cmd in cmds})
+  return _docker_tags(**{prefix(cmd): target(cmd) for cmd in cmds})
 
 def object(name, cluster=CORE_CLUSTER, **kwargs):
   k8s_object(
