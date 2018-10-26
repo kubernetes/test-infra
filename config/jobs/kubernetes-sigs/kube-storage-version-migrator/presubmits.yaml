@@ -32,5 +32,6 @@ presubmits:
         - --gcp-nodes=1
         - --gcp-zone=us-central1-f
         - --provider=gce
+        - --test=false
         - --test-cmd=../test/e2e/test-cmd.sh
         - --timeout=50m
