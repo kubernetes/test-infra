@@ -20,3 +20,23 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.12
         command:
         - "./scripts/ci-bazel-build.sh"
+  - name: pull-cluster-api-provider-aws-test-creds
+    interval: 4h
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-aws-credential: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master      
+        args:
+          - "--bare"
+          - "--aws"
+          - "--provider=aws"
+          - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+          - "--root=/go/src"
+          - "--"
+          - "./scripts/ci-aws-cred-test.sh"
+
