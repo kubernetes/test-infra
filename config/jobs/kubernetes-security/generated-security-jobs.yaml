@@ -1282,6 +1282,55 @@ presubmits:
     trigger: (?m)^/test( | .* )pull-security-kubernetes-node-e2e-containerd,?($|\s.*)
   - agent: kubernetes
     always_run: false
+    branches:
+    - master
+    cluster: security
+    context: pull-security-kubernetes-node-e2e-alpha
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    max_concurrency: 12
+    name: pull-security-kubernetes-node-e2e-alpha
+    rerun_command: /test pull-security-kubernetes-node-e2e-alpha
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --root=/go/src
+        - --job=$(JOB_NAME)
+        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=90
+        - --scenario=kubernetes_e2e
+        - --
+        - --deployment=node
+        - --gcp-project=k8s-jkns-pr-node-e2e
+        - --gcp-zone=us-central1-f
+        - --node-test-args=--feature-gates=AllAlpha=true,RotateKubeletServerCertificate=false
+          --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+        - --node-tests=true
+        - --provider=gce
+        - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeAlphaFeature:.+\]"
+          --skip="\[Flaky\]|\[Serial\] --flakeAttempts=2"
+        - --timeout=65m
+        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-node-e2e-alpha,?($|\s.*)
+  - agent: kubernetes
+    always_run: false
     cluster: security
     context: pull-security-kubernetes-cross
     labels:
