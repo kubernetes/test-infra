@@ -240,7 +240,9 @@ require_matching_label:
 
 
 plugins:
-  bazelbuild/rules_k8s:
+  # Enable the following for any bazelbuild repo (rules_k8s, rules_docker) that sends prow webhooks
+  # Repos that do not send prow webhooks will see no effect.
+  bazelbuild:
   - approve  # Allow OWNERS to /approve
   - assign  # Allow /assign and /cc
   - blunderbuss  # Auto-assign people
