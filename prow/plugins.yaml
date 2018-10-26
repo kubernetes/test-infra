@@ -619,3 +619,7 @@ external_plugins:
   - name: needs-rebase
     events:
       - pull_request
+  kubernetes-sigs/cluster-api-provider-digitalocean:
+  - name: needs-rebase
+    events:
+      - pull_request
