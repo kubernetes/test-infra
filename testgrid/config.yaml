@@ -2511,6 +2511,9 @@ test_groups:
 - name: pull-kubernetes-e2e-kubeadm-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kubeadm-gce
   num_columns_recent: 20
+- name: pull-kubernetes-node-e2e-alpha
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e-alpha
+  num_columns_recent: 20
 - name: pull-kubernetes-node-e2e-containerd
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e-containerd
   num_columns_recent: 20
@@ -6929,6 +6932,9 @@ dashboards:
     base_options: width=10
   - name: pull-kubernetes-e2e-kubeadm-gce
     test_group_name: pull-kubernetes-e2e-kubeadm-gce
+    base_options: width=10
+  - name: pull-kubernetes-node-e2e-alpha
+    test_group_name: pull-kubernetes-node-e2e-alpha
     base_options: width=10
 
 - name: presubmits-cloud-provider-vsphere-blocking
