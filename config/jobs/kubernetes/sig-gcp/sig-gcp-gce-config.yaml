@@ -233,7 +233,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --provider=gce
       - --runtime-config=api/all=true
-      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes|VolumeSubpathEnvExpansion|RunAsGroup|TTLAfterFinished)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes|VolumeSubpathEnvExpansion|RunAsGroup|TTLAfterFinished|NodeLease)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
 
