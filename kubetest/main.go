@@ -132,7 +132,7 @@ func defineFlags() *options {
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
 	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
 	flag.StringVar(&o.clusterIPRange, "cluster-ip-range", "", "Specifies CLUSTER_IP_RANGE value during --up and --test (only relevant for --deployment=bash). Auto-calculated if empty.")
-	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/conformance/dind/gke/kops/kubernetes-anywhere/node/local")
+	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/conformance/dind/gke/eks/kops/kubernetes-anywhere/node/local")
 	flag.StringVar(&o.dindImage, "dind-image", "", "The dind image to use to start a cluster. Defaults to the docker tag produced by bazel.")
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
 	flag.StringVar(&o.dump, "dump", "", "If set, dump bring-up and cluster logs to this location on test or cluster-up failure")
