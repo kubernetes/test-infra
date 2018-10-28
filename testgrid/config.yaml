@@ -2157,6 +2157,14 @@ test_groups:
 - name: periodic-kubernetes-e2e-packages-pushed
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-packages-pushed
 
+# EKS e2e results
+- name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-1-10-aws-eks-1-10-prod
+- name: ci-kubernetes-e2e-stable-aws-eks-1-10-prod
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-stable-aws-eks-1-10-prod
+- name: ci-kubernetes-e2e-latest-aws-eks-1-10-prod
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-latest-aws-eks-1-10-prod
+
 # charts tests
 - name: ci-kubernetes-charts-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-charts-gce
@@ -5703,6 +5711,22 @@ dashboards:
     test_group_name: pull-aws-ebs-csi-driver-sanity
     description: "aws ebs csi driver sanity test"
 
+- name: sig-aws-eks-ci-kubernetes-e2e-1-10
+  dashboard_tab:
+  - name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod
+    test_group_name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod
+    description: "Kubernetes 1.10 branch e2e tests with EKS prod build 1.10"
+- name: sig-aws-eks-ci-kubernetes-e2e-stable
+  dashboard_tab:
+  - name: ci-kubernetes-e2e-stable-aws-eks-1-10-prod
+    test_group_name: ci-kubernetes-e2e-stable-aws-eks-1-10-prod
+    description: "Kubernetes stable branch e2e tests with EKS prod build 1.10"
+- name: sig-aws-eks-ci-kubernetes-e2e-latest
+  dashboard_tab:
+  - name: ci-kubernetes-e2e-latest-aws-eks-1-10-prod
+    test_group_name: ci-kubernetes-e2e-latest-aws-eks-1-10-prod
+    description: "Kubernetes latest branch e2e tests with EKS prod build 1.10"
+
 - name: sig-cli-master
   dashboard_tab:
   - name: gce
@@ -7426,6 +7450,9 @@ dashboard_groups:
 - name: sig-aws
   dashboard_names:
   - sig-aws-ebs-csi-driver
+  - sig-aws-eks-ci-kubernetes-e2e-1-10
+  - sig-aws-eks-ci-kubernetes-e2e-stable
+  - sig-aws-eks-ci-kubernetes-e2e-latest
 
 - name: sig-cli
   dashboard_names:
