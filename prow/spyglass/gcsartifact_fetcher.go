@@ -40,6 +40,7 @@ const (
 )
 
 var (
+	// returned by newGCSJobSource when an incorrectly formatted source string is passed
 	ErrCannotParseSource = errors.New("could not create job source from provided source")
 )
 
