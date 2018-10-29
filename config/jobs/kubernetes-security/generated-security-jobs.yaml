@@ -1423,6 +1423,8 @@ presubmits:
     context: pull-security-kubernetes-e2e-gce-100-performance
     labels:
       preset-bazel-scratch-dir: "true"
+      preset-e2e-gci-gce-scalability: "true"
+      preset-e2e-scalability-common: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
@@ -1441,8 +1443,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-        - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env
         - --extract=local
         - --gcp-nodes=100
         - --gcp-project=k8s-presubmit-scale
@@ -1479,6 +1479,8 @@ presubmits:
     context: pull-security-kubernetes-e2e-gce-big-performance
     labels:
       preset-bazel-scratch-dir: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-highspeed-common: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 1
@@ -1498,8 +1500,6 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=n1-standard-4
-        - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-        - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
         - --extract=local
         - --gcp-nodes=500
         - --gcp-project=k8s-scale-testing
@@ -1536,6 +1536,8 @@ presubmits:
     context: pull-security-kubernetes-e2e-gce-large-performance
     labels:
       preset-bazel-scratch-dir: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-highspeed-common: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 1
@@ -1555,8 +1557,6 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=n1-standard-8
-        - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-        - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
         - --extract=local
         - --gcp-nodes=2000
         - --gcp-project=k8s-scale-testing
@@ -1591,6 +1591,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
+      preset-e2e-kubemark-common: "true"
+      preset-e2e-kubemark-gce-big: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
@@ -1614,8 +1616,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
-        - --env-file=jobs/env/ci-kubernetes-kubemark-gce-big.env
         - --extract=local
         - --gcp-master-size=n1-standard-4
         - --gcp-node-size=n1-standard-8
@@ -1657,6 +1657,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
+      preset-e2e-kubemark-common: "true"
+      preset-e2e-kubemark-gce-big: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
@@ -1677,8 +1679,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
-        - --env-file=jobs/env/ci-kubernetes-kubemark-gce-big.env
         - --extract=local
         - --gcp-master-size=n1-standard-4
         - --gcp-node-size=n1-standard-8
@@ -1720,6 +1720,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
+      preset-e2e-kubemark-common: "true"
+      preset-e2e-kubemark-gce-big: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
@@ -1740,8 +1742,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
-        - --env-file=jobs/env/ci-kubernetes-kubemark-gce-big.env
         - --extract=local
         - --gcp-master-size=n1-standard-4
         - --gcp-node-size=n1-standard-8
@@ -1783,6 +1783,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
+      preset-e2e-kubemark-common: "true"
+      preset-e2e-kubemark-gce-scale: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 1
@@ -1803,8 +1805,6 @@ presubmits:
         - --
         - --build
         - --cluster=
-        - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
-        - --env-file=jobs/env/ci-kubernetes-kubemark-gce-scale.env
         - --extract=local
         - --gcp-node-size=n1-standard-8
         - --gcp-nodes=82
