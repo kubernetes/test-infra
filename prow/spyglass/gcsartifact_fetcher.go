@@ -118,17 +118,23 @@ func (af *GCSArtifactFetcher) artifacts(key string) ([]string, error) {
 		Versions: false,
 	}
 	objIter := bkt.Objects(context.Background(), &q)
-	for {
+	wait := []time.Duration{1, 2, 4, 8, 16, 32, 64, 128, 256, 512}
+	for i := 0; ; {
 		oAttrs, err := objIter.Next()
 		if err == iterator.Done {
 			break
 		}
 		if err != nil {
 			logrus.WithFields(fieldsForJob(src)).WithError(err).Error("Error accessing GCS artifact.")
+			if i >= len(wait) {
+				return artifacts, fmt.Errorf("timed out: error accessing GCS artifact: %v", err)
+			}
+			time.Sleep(wait[i] * time.Millisecond)
+			i++
 			continue
 		}
 		artifacts = append(artifacts, strings.TrimPrefix(oAttrs.Name, prefix))
-
+		i = 0
 	}
 	listElapsed := time.Since(listStart)
 	logrus.WithField("duration", listElapsed).Infof("Listed %d artifacts.", len(artifacts))
