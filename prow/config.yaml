@@ -291,6 +291,16 @@ branch-protection:
         contexts:
         - cla/linuxfoundation
       repos:
+        cluster-api-provider-digitalocean:
+          required_status_checks:
+            contexts:
+            - "ci/circleci: build"
+            - "ci/circleci: check-dependencies"
+            - "ci/circleci: checkout_code"
+            - "ci/circleci: e2e"
+            - "ci/circleci: lint"
+            - "ci/circleci: test"
+            - "ci/circleci: verify"
         kube-batch:
           required_status_checks:
             contexts:
@@ -416,6 +426,7 @@ tide:
     kubernetes-incubator/service-catalog: squash
     kubernetes-incubator/kubespray: squash
     kubernetes-sigs/cluster-api-provider-aws: squash
+    kubernetes-sigs/cluster-api-provider-digitalocean: squash
     kubernetes-sigs/cluster-api-provider-gcp: squash
     kubernetes-sigs/cluster-api-provider-openstack: squash
     kubernetes-sigs/cluster-api-provider-vsphere: squash
