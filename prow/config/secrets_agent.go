@@ -27,7 +27,7 @@ import (
 
 // SecretAgent watches a path and automatically loads the secrets stored.
 type SecretAgent struct {
-	sync.Mutex
+	sync.RWMutex
 	secretsMap map[string][]byte
 }
 
@@ -85,8 +85,8 @@ func (sa *SecretAgent) reloadSecret(secretPath string) {
 
 // GetSecret returns the value of a secret stored in a map.
 func (sa *SecretAgent) GetSecret(secretPath string) []byte {
-	sa.Lock()
-	defer sa.Unlock()
+	sa.RLock()
+	defer sa.RUnlock()
 	return sa.secretsMap[secretPath]
 }
 
