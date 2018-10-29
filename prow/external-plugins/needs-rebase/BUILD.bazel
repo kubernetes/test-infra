@@ -1,33 +1,11 @@
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
-load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("//prow:def.bzl", "prow_image")
 
-docker_bundle(
-    name = "bundle",
-    images = {
-        "{STABLE_PROW_REPO}/needs-rebase:{DOCKER_TAG}": ":image",
-        "{STABLE_PROW_REPO}/needs-rebase:latest": ":image",
-        "{STABLE_PROW_REPO}/needs-rebase:latest-{BUILD_USER}": ":image",
-    },
-    stamp = True,
-)
-
-docker_push(
-    name = "push",
-    bundle = ":bundle",
-)
-
-go_image(
+prow_image(
     name = "image",
-    base = "@git-base//image",
-    embed = [":go_default_library"],
-    goarch = "amd64",
-    goos = "linux",
-    pure = "on",
     visibility = ["//visibility:public"],
 )
-
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
     name = "go_default_library",

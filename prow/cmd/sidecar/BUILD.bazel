@@ -1,6 +1,5 @@
-load("@io_bazel_rules_docker//container:image.bzl", "container_image")
-load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("//prow:def.bzl", "prow_image")
 
 go_library(
     name = "go_default_library",
@@ -22,29 +21,10 @@ go_binary(
     visibility = ["//visibility:public"],
 )
 
-# same as binary above, but with goarch and goos for placing in the docker image
-go_binary(
-    name = "sidecar-linux-amd64",
-    embed = [":go_default_library"],
-    goarch = "amd64",
-    goos = "linux",
-    pure = "on",
-    visibility = ["//visibility:public"],
-)
-
-go_image(
-    name = "sidecar-go_image",
-    base = "@git-base//image",
-    binary = ":sidecar-linux-amd64",
-    visibility = ["//visibility:public"],
-)
-
-container_image(
+prow_image(
     name = "image",
-    base = ":sidecar-go_image",
-    symlinks = {
-        "/sidecar": "/app/prow/cmd/sidecar/sidecar-linux-amd64",
-    },
+    base = "@git-base//image",
+    symlinks = {"/sidecar": "/app/prow/cmd/sidecar/app.binary"},
     visibility = ["//visibility:public"],
 )
 

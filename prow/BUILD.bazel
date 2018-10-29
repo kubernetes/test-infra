@@ -1,17 +1,16 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
+load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
+load("//prow:def.bzl", "prefix", "tags")
 load(
-    ":prow.bzl",
-    prow_docker_tags = "docker_tags",
-    prow_prefix = "prefix",
-    prow_tags = "tags",
+    "//:image.bzl",
+    image_tags = "tags",
 )
 
-docker_bundle(
+container_bundle(
     name = "release",
-    images = prow_tags(
+    images = tags(
         "branchprotector",
         "clonerefs",
         "deck",
@@ -28,8 +27,8 @@ docker_bundle(
         "sinker",
         "tide",
         "tot",
-    ) + prow_docker_tags(**{
-        prow_prefix("needs-rebase"): "//prow/external-plugins/needs-rebase:image",
+    ) + image_tags(**{
+        prefix("needs-rebase"): "//prow/external-plugins/needs-rebase:image",
     }),
     stamp = True,
 )

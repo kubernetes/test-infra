@@ -12,17 +12,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@io_bazel_rules_docker//container:image.bzl", "container_image")
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
 load("@io_bazel_rules_k8s//k8s:objects.bzl", "k8s_objects")
 load(
     "//:image.bzl",
-    docker_tags = "tags",
+    _docker_tags = "tags",
 )
 
+## prow_image is a macro for creating :app and :image targets
+def prow_image(
+    name, # use "image"
+    base = None,
+    stamp = True,  # stamp by default, but allow overrides
+    **kwargs):
+  go_image(
+      name = "app",
+      base = base,
+      embed = [":go_default_library"],
+      goarch = "amd64",
+      goos = "linux",
+      pure = "on",
+  )
+
+  container_image(
+      name = name,
+      base = ":app",
+      stamp = stamp,
+      **kwargs)
+
+
+
 MULTI_KIND = None
-
 CORE_CLUSTER = "{STABLE_PROW_CLUSTER}"  # For components like hook
-
 BUILD_CLUSTER = "{STABLE_BUILD_CLUSTER}"  # For untrusted test code
 
 # image returns the image prefix for the command.
@@ -55,7 +78,7 @@ def target(cmd):
 #   }
 def tags(*cmds):
   # Create :YYYYmmdd-commitish :latest :latest-USER tags
-  return docker_tags(**{prefix(cmd): target(cmd) for cmd in cmds})
+  return _docker_tags(**{prefix(cmd): target(cmd) for cmd in cmds})
 
 def object(name, cluster=CORE_CLUSTER, **kwargs):
   k8s_object(
