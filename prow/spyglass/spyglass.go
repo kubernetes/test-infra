@@ -179,7 +179,7 @@ func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
 	}
 }
 
-// returns a link to the GCS directory for the job specified in src
+// JobPath returns a link to the GCS directory for the job specified in src
 func (s *Spyglass) JobPath(src string) (string, error) {
 	keyType, key := splitSrc(src)
 	split := strings.Split(key, "/")
