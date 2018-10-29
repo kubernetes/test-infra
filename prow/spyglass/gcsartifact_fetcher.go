@@ -18,6 +18,7 @@ package spyglass
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -36,6 +37,11 @@ import (
 const (
 	httpScheme  = "http"
 	httpsScheme = "https"
+)
+
+var (
+	// ErrCannotParseSource is returned by newGCSJobSource when an incorrectly formatted source string is passed
+	ErrCannotParseSource = errors.New("could not create job source from provided source")
 )
 
 // GCSArtifactFetcher contains information used for fetching artifacts from GCS
@@ -62,7 +68,7 @@ func NewGCSArtifactFetcher(c *storage.Client) *GCSArtifactFetcher {
 	}
 }
 
-func fieldsForJob(src jobSource) logrus.Fields {
+func fieldsForJob(src *gcsJobSource) logrus.Fields {
 	return logrus.Fields{
 		"jobPrefix": src.jobPath(),
 	}
@@ -70,7 +76,7 @@ func fieldsForJob(src jobSource) logrus.Fields {
 
 // newGCSJobSource creates a new gcsJobSource from a given bucket and jobPrefix
 func newGCSJobSource(src string) (*gcsJobSource, error) {
-	gcsURL, err := url.Parse(src)
+	gcsURL, err := url.Parse(fmt.Sprintf("gs://%s", src))
 	if err != nil {
 		return &gcsJobSource{}, ErrCannotParseSource
 	}
@@ -97,7 +103,12 @@ func newGCSJobSource(src string) (*gcsJobSource, error) {
 }
 
 // Artifacts lists all artifacts available for the given job source
-func (af *GCSArtifactFetcher) artifacts(src jobSource) []string {
+func (af *GCSArtifactFetcher) artifacts(key string) ([]string, error) {
+	src, err := newGCSJobSource(key)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get GCS job source from %s: %v", key, err)
+	}
+
 	listStart := time.Now()
 	bucketName, prefix := extractBucketPrefixPair(src.jobPath())
 	artifacts := []string{}
@@ -121,7 +132,7 @@ func (af *GCSArtifactFetcher) artifacts(src jobSource) []string {
 	}
 	listElapsed := time.Since(listStart)
 	logrus.WithField("duration", listElapsed).Infof("Listed %d artifacts.", len(artifacts))
-	return artifacts
+	return artifacts, nil
 }
 
 type gcsArtifactHandle struct {
@@ -139,7 +150,12 @@ func (h *gcsArtifactHandle) NewRangeReader(ctx context.Context, offset, length i
 // Artifact constructs a GCS artifact from the given GCS bucket and key. Uses the golang GCS library
 // to get read handles. If the artifactName is not a valid key in the bucket a handle will still be
 // constructed and returned, but all read operations will fail (dictated by behavior of golang GCS lib).
-func (af *GCSArtifactFetcher) artifact(src jobSource, artifactName string, sizeLimit int64) viewers.Artifact {
+func (af *GCSArtifactFetcher) artifact(key string, artifactName string, sizeLimit int64) (viewers.Artifact, error) {
+	src, err := newGCSJobSource(key)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get GCS job source from %s: %v", key, err)
+	}
+
 	bucketName, prefix := extractBucketPrefixPair(src.jobPath())
 	bkt := af.client.Bucket(bucketName)
 	obj := &gcsArtifactHandle{bkt.Object(path.Join(prefix, artifactName))}
@@ -148,21 +164,12 @@ func (af *GCSArtifactFetcher) artifact(src jobSource, artifactName string, sizeL
 		Host:   "storage.googleapis.com",
 		Path:   path.Join(src.jobPath(), artifactName),
 	}
-	return NewGCSArtifact(context.Background(), obj, artifactLink.String(), artifactName, sizeLimit)
+	return NewGCSArtifact(context.Background(), obj, artifactLink.String(), artifactName, sizeLimit), nil
 }
 
 func extractBucketPrefixPair(gcsPath string) (string, string) {
 	split := strings.SplitN(gcsPath, "/", 2)
 	return split[0], split[1]
-}
-
-// createJobSource tries to create a GCS job source from the provided string
-func (af *GCSArtifactFetcher) createJobSource(src string) (jobSource, error) {
-	jobSource, err := newGCSJobSource(src)
-	if err != nil {
-		return &gcsJobSource{}, err
-	}
-	return jobSource, nil
 }
 
 // CanonicalLink gets a link to the location of job-specific artifacts in GCS

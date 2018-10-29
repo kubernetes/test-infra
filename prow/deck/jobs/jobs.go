@@ -141,6 +141,9 @@ var jobNameRE = regexp.MustCompile(`^([\w-]+)-(\d+)$`)
 
 // GetProwJob finds the corresponding Prowjob resource from the provided job name and build ID
 func (ja *JobAgent) GetProwJob(job, id string) (kube.ProwJob, error) {
+	if ja == nil {
+		return kube.ProwJob{}, fmt.Errorf("Prow job agent doesn't exist (are you running locally?)")
+	}
 	var j kube.ProwJob
 	ja.mut.Lock()
 	idMap, ok := ja.jobsIDMap[job]

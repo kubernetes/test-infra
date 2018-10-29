@@ -523,18 +523,22 @@ function redraw(fz: FuzzySearch): void {
             r.appendChild(createTextCell(""));
         }
         if (spyglass) {
-            const buildIndex = build.url.indexOf("/build/");
-            if (buildIndex !== -1) {
-                const icon = createIcon("visibility", "View in Spyglass");
-                icon.href = window.location.origin + "/view/gcs/" +
-                    build.url.substring(buildIndex + "/build/".length);
-                const cell = document.createElement("TD");
-                cell.classList.add("icon-cell");
-                cell.appendChild(icon);
-                r.appendChild(cell);
+            if (build.state == 'pending') {
+                let url = window.location.origin + '/view/prowjob/' + build.job + '/' +
+                    build.build_id;
+                r.appendChild(createSpyglassCell(url));
             } else {
-                r.appendChild(createTextCell(""));
+                const buildIndex = build.url.indexOf('/build/');
+                if (buildIndex === -1) {
+                    r.appendChild(createTextCell(''));
+                } else {
+                    let url = window.location.origin + '/view/gcs/' +
+                        build.url.substring(buildIndex + '/build/'.length);
+                    r.appendChild(createSpyglassCell(url));
+                }
             }
+        } else {
+            r.appendChild(createTextCell(''));
         }
         if (build.url === "") {
             r.appendChild(createTextCell(build.job));
@@ -549,6 +553,15 @@ function redraw(fz: FuzzySearch): void {
     const jobCount = document.getElementById("job-count")!;
     jobCount.textContent = "Showing " + Math.min(totalJob, 500) + "/" + totalJob + " jobs";
     drawJobBar(totalJob, jobCountMap);
+}
+
+function createSpyglassCell(url: string): HTMLTableDataCellElement {
+    const icon = createIcon('visibility', 'View in Spyglass');
+    icon.href = url;
+    const cell = document.createElement('td');
+    cell.classList.add('icon-cell');
+    cell.appendChild(icon);
+    return cell;
 }
 
 function createTextCell(text: string): HTMLTableDataCellElement {
