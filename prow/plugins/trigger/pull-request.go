@@ -214,32 +214,7 @@ func TrustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org,
 			return l, false, err
 		}
 	}
-	if github.HasLabel(labels.OkToTest, l) {
-		return l, true, nil
-	}
-	botName, err := ghc.BotName()
-	if err != nil {
-		return l, false, fmt.Errorf("error finding bot name: %v", err)
-	}
-	// Next look for "/ok-to-test" comments on the PR.
-	comments, err := ghc.ListIssueComments(org, repo, num)
-	if err != nil {
-		return l, false, err
-	}
-	for _, comment := range comments {
-		commentAuthor := comment.User.Login
-		// Skip comments: by the PR author, or by bot, or not matching "/ok-to-test".
-		if commentAuthor == author || commentAuthor == botName || !okToTestRe.MatchString(comment.Body) {
-			continue
-		}
-		// Ensure that the commenter is in the org.
-		if commentAuthorMember, err := TrustedUser(ghc, trigger, commentAuthor, org, repo); err != nil {
-			return l, false, fmt.Errorf("error checking %s for trust: %v", commentAuthor, err)
-		} else if commentAuthorMember {
-			return l, true, nil
-		}
-	}
-	return l, false, nil
+	return l, github.HasLabel(labels.OkToTest, l), nil
 }
 
 func buildAll(c Client, pr *github.PullRequest, eventGUID string) error {
