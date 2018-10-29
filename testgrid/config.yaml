@@ -103,6 +103,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-build
 - name: ci-containerd-build-1-1
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-build-1-1
+- name: ci-containerd-build-1-2
+  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-build-1-2
 - name: ci-cri-containerd-e2e-gci-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce
 - name: ci-cri-containerd-e2e-ubuntu-gce
@@ -145,6 +147,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-gci-gce
 - name: ci-containerd-e2e-gci-gce-1-1
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-gci-gce-1-1
+- name: ci-containerd-e2e-gci-gce-1-2
+  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-gci-gce-1-2
 - name: ci-containerd-e2e-ubuntu-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-ubuntu-gce
 - name: ci-cri-containerd-node-e2e
@@ -191,6 +195,13 @@ test_groups:
     name_format: '%s [%s]'
 - name: ci-containerd-node-e2e-1-1
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e-1-1
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-containerd-node-e2e-1-2
+  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e-1-2
   test_name_config:
     name_elements:
     - target_config: Tests name
@@ -6203,16 +6214,22 @@ dashboards:
     test_group_name: ci-containerd-build
   - name: containerd-build-1.1
     test_group_name: ci-containerd-build-1-1
+  - name: containerd-build-1.2
+    test_group_name: ci-containerd-build-1-2
   - name: containerd-node-e2e
     test_group_name: ci-containerd-node-e2e
   - name: containerd-node-e2e-1.1
     test_group_name: ci-containerd-node-e2e-1-1
+  - name: containerd-node-e2e-1.2
+    test_group_name: ci-containerd-node-e2e-1-2
   - name: containerd-node-e2e-features
     test_group_name: ci-containerd-node-e2e-features
   - name: containerd-e2e-gci
     test_group_name: ci-containerd-e2e-gci-gce
   - name: containerd-e2e-gci-1.1
     test_group_name: ci-containerd-e2e-gci-gce-1-1
+  - name: containerd-e2e-gci-1.2
+    test_group_name: ci-containerd-e2e-gci-gce-1-2
   - name: containerd-e2e-ubuntu
     test_group_name: ci-containerd-e2e-ubuntu-gce
   - name: e2e-gci-reboot
