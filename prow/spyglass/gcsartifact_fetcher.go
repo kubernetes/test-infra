@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/url"
 	"path"
 	"strings"
@@ -118,7 +119,7 @@ func (af *GCSArtifactFetcher) artifacts(key string) ([]string, error) {
 		Versions: false,
 	}
 	objIter := bkt.Objects(context.Background(), &q)
-	wait := []time.Duration{1, 2, 4, 8, 16, 32, 64, 128, 256, 512}
+	wait := []time.Duration{16, 32, 64, 128, 256, 256, 512, 512}
 	for i := 0; ; {
 		oAttrs, err := objIter.Next()
 		if err == iterator.Done {
@@ -129,7 +130,7 @@ func (af *GCSArtifactFetcher) artifacts(key string) ([]string, error) {
 			if i >= len(wait) {
 				return artifacts, fmt.Errorf("timed out: error accessing GCS artifact: %v", err)
 			}
-			time.Sleep(wait[i] * time.Millisecond)
+			time.Sleep((wait[i] + time.Duration(rand.Intn(10))) * time.Millisecond)
 			i++
 			continue
 		}
