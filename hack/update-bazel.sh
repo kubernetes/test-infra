@@ -34,7 +34,7 @@ deprecated-update() {
 mkdir -p ./vendor
 touch "./vendor/BUILD.bazel"
 
-if ! which bazel > /dev/null; then
+if ! which bazel &> /dev/null; then
   echo "Bazel is the preferred way to build and test the test-infra repo." >&2
   echo "Please install bazel at https://bazel.build/ (future commits may require it)" >&2
   deprecated-update

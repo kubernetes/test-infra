@@ -17,23 +17,33 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
-TMP_GOPATH=$(mktemp -d)
-cd "${TESTINFRA_ROOT}"
+cd $(git rev-parse --show-toplevel)
 
-OUTPUT_GOBIN="${TESTINFRA_ROOT}/_output/bin"
-GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle
-GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/kubernetes/repo-infra/kazel
+deprecated-verify() {
+  OUTPUT_GOBIN="./_output/bin"
+  GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle
+  GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/kubernetes/repo-infra/kazel
+  gazelle_diff=$("${OUTPUT_GOBIN}/gazelle" fix \
+    -external=vendored \
+    -mode=diff)
 
-touch "${TESTINFRA_ROOT}/vendor/BUILD.bazel"
+  kazel_diff=$("${OUTPUT_GOBIN}/kazel" \
+    -dry-run \
+    -print-diff)
 
-gazelle_diff=$("${OUTPUT_GOBIN}/gazelle" fix \
-  -external=vendored \
-  -mode=diff)
+}
 
-kazel_diff=$("${OUTPUT_GOBIN}/kazel" \
-  -dry-run \
-  -print-diff)
+mkdir -p ./vendor
+touch ./vendor/BUILD.bazel
+
+if ! which bazel &> /dev/null; then
+  echo "Bazel is the preferred way to build and test the test-infra repo." >&2
+  echo "Please install bazel at https://bazel.build/ (future commits may require it)" >&2
+  deprecated-verify
+else
+  gazelle_diff=$(bazel run //:gazelle-diff)
+  kazel_diff=$(bazel run //:kazel-diff)
+fi
 
 if [[ -n "${gazelle_diff}" || -n "${kazel_diff}" ]]; then
   echo "${gazelle_diff}"

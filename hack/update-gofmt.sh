@@ -18,4 +18,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-find . -name "*.go" | grep -v "\/vendor\/" | xargs gofmt -s -w
+cmd="bazel run //:gofmt --"
+if ! which bazel &> /dev/null; then
+  echo "Bazel is the preferred way to build and test the test-infra repo." >&2
+  echo "Please install bazel at https://bazel.build/ (future commits may require it)" >&2
+  cmd="gofmt"
+fi
+find . -name "*.go" | grep -v "\/vendor\/" | xargs $cmd -s -w
