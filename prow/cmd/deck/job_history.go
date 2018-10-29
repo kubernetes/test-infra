@@ -147,7 +147,7 @@ func readJSON(bkt *storage.BucketHandle, root, id, fname string, data interface{
 	return nil
 }
 
-// Lists the GCS "directory names" immediately under prefix.
+// Lists the GCS "directory paths" immediately under prefix.
 func listSubDirs(bkt *storage.BucketHandle, prefix string) ([]string, error) {
 	if !strings.HasSuffix(prefix, "/") {
 		prefix += "/"
@@ -203,6 +203,8 @@ func listBuildIDs(bkt *storage.BucketHandle, root string) ([]int64, error) {
 			i, err := strconv.ParseInt(path.Base(dir), 10, 64)
 			if err == nil {
 				ids = append(ids, i)
+			} else {
+				logrus.Warningf("unrecognized directory name (expected int64): %s", dir)
 			}
 		}
 	} else {
@@ -216,6 +218,8 @@ func listBuildIDs(bkt *storage.BucketHandle, root string) ([]int64, error) {
 				i, err := strconv.ParseInt(matches[1], 10, 64)
 				if err == nil {
 					ids = append(ids, i)
+				} else {
+					logrus.Warningf("unrecognized directory name (expected int64): %s", matches[1])
 				}
 			}
 		}
@@ -227,22 +231,19 @@ func jobHistURL(url *url.URL) (string, string, int64, error) {
 	p := strings.TrimPrefix(url.Path, "/job-history/")
 	s := strings.SplitN(p, "/", 2)
 	if len(s) < 2 {
-		return "", "", emptyID, fmt.Errorf("invalid path: %v", url.Path)
+		return "", "", emptyID, fmt.Errorf("invalid path (expected /job-history/<gcs-path>): %v", url.Path)
 	}
 	bucketName := s[0]
 	root := s[1]
 	if bucketName == "" {
-		return bucketName, root, emptyID, fmt.Errorf("missing bucket name: %v", url.Path)
+		return bucketName, root, emptyID, fmt.Errorf("missing GCS bucket name: %v", url.Path)
 	}
 	if root == "" {
-		return bucketName, root, emptyID, fmt.Errorf("missing path for job: %v", url.Path)
+		return bucketName, root, emptyID, fmt.Errorf("invalid GCS path for job: %v", url.Path)
 	}
 
 	buildID := emptyID
-	if idVals := url.Query()[idParam]; len(idVals) >= 1 {
-		if idVals[0] == "" {
-			return bucketName, root, emptyID, nil
-		}
+	if idVals := url.Query()[idParam]; len(idVals) >= 1 && idVals[0] != "" {
 		var err error
 		buildID, err = strconv.ParseInt(idVals[0], 10, 64)
 		if err != nil {
@@ -268,34 +269,33 @@ func linkID(url *url.URL, id int64) string {
 	return u.String()
 }
 
-func getBuildData(bkt *storage.BucketHandle, root string, buildID int64, index int) buildData {
+func getBuildData(bkt *storage.BucketHandle, root string, buildID int64, index int) (buildData, error) {
 	b := buildData{
 		index:  index,
 		ID:     strconv.FormatInt(buildID, 10),
-		Result: "Unfinished",
+		Result: "Unknown",
 	}
 	link, err := spyglassLink(bkt, root, b.ID)
 	if err != nil {
-		logrus.Warning(err)
-		return b
+		return b, fmt.Errorf("failed to get spyglass link: %v", err)
 	}
 	b.SpyglassLink = link
 	started := jobs.Started{}
 	err = readJSON(bkt, root, b.ID, "started.json", &started)
-	if err == nil {
-		b.Started = time.Unix(started.Timestamp, 0)
-		finished := jobs.Finished{}
-		readJSON(bkt, root, b.ID, "finished.json", &finished)
-		if finished.Timestamp != 0 {
-			b.Duration = time.Unix(finished.Timestamp, 0).Sub(b.Started)
-		}
-		if finished.Result != "" {
-			b.Result = finished.Result
-		}
-	} else {
-		logrus.Warning(err)
+	if err != nil {
+		return b, fmt.Errorf("failed to get job metadata: %v", err)
 	}
-	return b
+	b.Result = "Unfinished"
+	b.Started = time.Unix(started.Timestamp, 0)
+	finished := jobs.Finished{}
+	readJSON(bkt, root, b.ID, "finished.json", &finished)
+	if finished.Timestamp != 0 {
+		b.Duration = time.Unix(finished.Timestamp, 0).Sub(b.Started)
+	}
+	if finished.Result != "" {
+		b.Result = finished.Result
+	}
+	return b, nil
 }
 
 // assumes a to be sorted in descending order
@@ -357,12 +357,13 @@ func getJobHistory(url *url.URL, config *config.Config, gcsClient *storage.Clien
 
 	shownIDs, firstIndex, lastIndex := cropResults(buildIDs, top)
 	if firstIndex > 0 {
-		prevIndex := firstIndex - resultsPerPage
-		prev := emptyID
-		if prevIndex > 0 {
-			prev = buildIDs[prevIndex]
+		nextIndex := firstIndex - resultsPerPage
+		// here emptyID indicates the most recent build, which will not necessarily be buildIDs[0]
+		next := emptyID
+		if nextIndex >= 0 {
+			next = buildIDs[nextIndex]
 		}
-		tmpl.NewerLink = linkID(url, prev)
+		tmpl.NewerLink = linkID(url, next)
 	}
 	if lastIndex < len(buildIDs)-1 {
 		tmpl.OlderLink = linkID(url, buildIDs[lastIndex+1])
@@ -375,7 +376,11 @@ func getJobHistory(url *url.URL, config *config.Config, gcsClient *storage.Clien
 	bch := make(chan buildData)
 	for i, buildID := range shownIDs {
 		go func(i int, buildID int64) {
-			bch <- getBuildData(bkt, root, buildID, i)
+			bd, err := getBuildData(bkt, root, buildID, i)
+			if err != nil {
+				logrus.Warningf("build %d information incomplete: %v", buildID, err)
+			}
+			bch <- bd
 		}(i, buildID)
 	}
 	for i := 0; i < len(shownIDs); i++ {
@@ -384,6 +389,6 @@ func getJobHistory(url *url.URL, config *config.Config, gcsClient *storage.Clien
 	}
 
 	elapsed := time.Now().Sub(start)
-	logrus.Infof("loaded %s in %v", url.Path, elapsed)
+	logrus.Warningf("loaded %s in %v", url.Path, elapsed)
 	return tmpl, nil
 }
