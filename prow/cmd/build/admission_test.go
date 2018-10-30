@@ -286,7 +286,7 @@ func TestReadRequest(t *testing.T) {
 				}
 			}
 			if len(tc.ct) == 0 {
-				tc.ct = contentTypeJson
+				tc.ct = contentTypeJSON
 			}
 			actual, err := readRequest(fr, tc.ct)
 			switch {
