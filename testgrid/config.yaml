@@ -4538,6 +4538,27 @@ dashboards:
   - name: gke-gci-stable-gci-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
     description: Upgrade master only, in gke, from gci 1.10 to gci master
+  - name: gke-gci-new-gci-master-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
+    description: Upgrade master only, in gke(gci), from 1.10 to master
+  - name: gke-gci-new-gci-master-upgrade-cluster-parallel
+    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-parallel
+    description: Upgrade master and node, in gke(gci), from 1.10 to master, run parallel tests only
+  - name: gke-gci-new-gci-master-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
+    description: Upgrade master and node, in gke(gci), from 1.10 to master
+  - name: gke-gci-master-gci-new-downgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
+    description: Downgrade master and node, in gke(gci), from master to 1.10
+  - name: gke-gci-master-gci-new-downgrade-cluster-parallel
+    test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
+    description: Downgrade master and node, in gke(gci), from master to 1.10, run parallel tests only
+  - name: gke-gci-new-gci-master-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
+    description: Upgrade master and node, in gke(gci), from 1.10 to master, and run skewed e2e tests; skipping slow tests as we run serially
+  - name: gke-gci-new-gci-master-upgrade-cluster-new-parallel
+    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new-parallel
+    description: Upgrade master and node, in gke(gci), from 1.10 to master, and run skewed e2e tests; skipping serial and disruptive tests as we run in parallel
 
 - name: sig-release-master-upgrade
   dashboard_tab:
@@ -4562,27 +4583,6 @@ dashboards:
   - name: gce-new-master-upgrade-cluster-new-parallel
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new-parallel
     description: Upgrade master and node, in gce(gci), from 1.10 to master, and run skewed e2e tests.  We skip the serial & disruptive tests; those are run in the non-parallel test.
-  - name: gke-gci-new-gci-master-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
-    description: Upgrade master only, in gke(gci), from 1.10 to master
-  - name: gke-gci-new-gci-master-upgrade-cluster-parallel
-    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-parallel
-    description: Upgrade master and node, in gke(gci), from 1.10 to master, run parallel tests only
-  - name: gke-gci-new-gci-master-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
-    description: Upgrade master and node, in gke(gci), from 1.10 to master
-  - name: gke-gci-master-gci-new-downgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
-    description: Downgrade master and node, in gke(gci), from master to 1.10
-  - name: gke-gci-master-gci-new-downgrade-cluster-parallel
-    test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
-    description: Downgrade master and node, in gke(gci), from master to 1.10, run parallel tests only
-  - name: gke-gci-new-gci-master-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
-    description: Upgrade master and node, in gke(gci), from 1.10 to master, and run skewed e2e tests; skipping slow tests as we run serially
-  - name: gke-gci-new-gci-master-upgrade-cluster-new-parallel
-    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new-parallel
-    description: Upgrade master and node, in gke(gci), from 1.10 to master, and run skewed e2e tests; skipping serial and disruptive tests as we run in parallel
 
 # These are the master *blocking* tests.  These provide a valid binary signal
 # to gate releases (alpha, beta, official).
@@ -4606,8 +4606,6 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet
   - name: gce-cos-master-default
     test_group_name: ci-kubernetes-e2e-gci-gce
-  - name: gke-cos-master-default
-    test_group_name: ci-kubernetes-e2e-gci-gke
   - name: kops-aws-master
     test_group_name: ci-kubernetes-e2e-kops-aws
   - name: Conformance - GCE
@@ -4624,18 +4622,10 @@ dashboards:
     test_group_name: ci-periodic-vsphere-test-e2e-conformance
   - name: gce-device-plugin-gpu-master
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
-  - name: gke-device-plugin-gpu-master
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu
-  - name: gke-device-plugin-gpu-p100-master
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
   - name: gce-cos-master-slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
-  - name: gke-cos-master-slow
-    test_group_name: ci-kubernetes-e2e-gci-gke-slow
   - name: gce-cos-master-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
-  - name: gke-cos-master-serial
-    test_group_name: ci-kubernetes-e2e-gci-gke-serial
   - name: gce-cos-master-alpha-features
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
   - name: gce-cos-master-scalability-100
@@ -4646,12 +4636,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-scale-performance
   - name: gce-cos-master-ingress
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
-  - name: gke-cos-master-ingress
-    test_group_name: ci-kubernetes-e2e-gci-gke-ingress
   - name: gce-cos-master-reboot
     test_group_name: ci-kubernetes-e2e-gci-gce-reboot
-  - name: gke-cos-master-reboot
-    test_group_name: ci-kubernetes-e2e-gci-gke-reboot
   - name: kubeadm-gce-master
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-master
   - name: kubeadm-gce-stable-on-master
@@ -4782,22 +4768,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
   - name: gce-cos-1.12-alphafeatures
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
-  - name: gke-cos-1.12-default
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
-  - name: gke-cos-1.12-reboot
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
-  - name: gke-cos-1.12-serial
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-serial
-  - name: gke-cos-1.12-slow
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
-  - name: gke-cos-1.12-ingress
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
   - name: gce-device-plugin-gpu-1.12
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
-  - name: gke-device-plugin-gpu-1.12
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
-  - name: gke-device-plugin-gpu-p100-1.12
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
   - name: kops-aws-1.12
     test_group_name: ci-kubernetes-e2e-kops-aws-beta
   - name: node-kubelet-1.12
@@ -4958,24 +4930,12 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
   - name: gce-cos-1.11-reboot
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-reboot
-  - name: gke-cos-1.11-default
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
-  - name: gke-cos-1.11-slow
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
-  - name: gke-cos-1.11-serial
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
-  - name: gke-cos-1.11-ingress
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
-  - name: gke-cos-1.11-reboot
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
   - name: kops-aws-1.11
     test_group_name: ci-kubernetes-e2e-kops-aws-stable1
   - name: node-kubelet-1.11
     test_group_name: ci-kubernetes-node-kubelet-stable1
   - name: gce-device-plugin-gpu-1.11
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
-  - name: gke-device-plugin-gpu-1.11
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
 
 - name: sig-cluster-lifecycle-upgrade-skew
   dashboard_tab:
@@ -5129,30 +5089,18 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-default
   - name: gce-cos-1.10-slow
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-slow
-  - name: gke-cos-1.10-slow
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-slow
   - name: gce-cos-1.10-serial
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-serial
-  - name: gke-cos-1.10-serial
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-serial
   - name: gce-cos-1.10-alphafeatures
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures
   - name: gce-cos-1.10-ingress
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-ingress
-  - name: gke-cos-1.10-ingress
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
   - name: gce-cos-1.10-reboot
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-reboot
-  - name: gke-cos-1.10-reboot
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
   - name: gci-gce-scalability-1.10
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable2
   - name: gce-device-plugin-gpu-1.10
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
-  - name: gke-device-plugin-gpu-1.10
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable2
-  - name: gke-device-plugin-gpu-p100-1.10
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2
 
 - name: sig-release-1.9-all
   dashboard_tab:
@@ -5233,28 +5181,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-serial
   - name: gce-cos-1.9-slow
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-slow
-  - name: gke-cos-1.9-ingress
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
-  - name: gke-cos-1.9-reboot
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-reboot
-  - name: gke-cos-1.9-default
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-default
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-cos-1.9-serial
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-serial
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-cos-1.9-slow
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-slow
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
   - name: kops-aws-1.9
     test_group_name: ci-kubernetes-e2e-kops-aws-stable3
 
