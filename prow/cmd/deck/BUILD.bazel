@@ -42,6 +42,7 @@ go_test(
     name = "go_default_test",
     srcs = [
         "badge_test.go",
+        "job_history_test.go",
         "main_test.go",
         "tide_test.go",
     ],
@@ -61,6 +62,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "badge.go",
+        "job_history.go",
         "main.go",
         "pluginhelp.go",
         "templates.go",
@@ -88,6 +90,7 @@ go_library(
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/golang.org/x/oauth2:go_default_library",
         "//vendor/golang.org/x/oauth2/github:go_default_library",
+        "//vendor/google.golang.org/api/iterator:go_default_library",
         "//vendor/google.golang.org/api/option:go_default_library",
     ],
 )

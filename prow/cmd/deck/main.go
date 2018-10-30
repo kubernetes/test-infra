@@ -346,6 +346,7 @@ func initSpyglass(configAgent *config.Agent, o options, mux *http.ServeMux, ja *
 
 	mux.Handle("/view/render", gziphandler.GzipHandler(handleArtifactView(sg, configAgent)))
 	mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent, o.templateFilesLocation)))
+	mux.Handle("/job-history/", gziphandler.GzipHandler(handleJobHistory(o.templateFilesLocation, configAgent, c)))
 }
 
 func loadToken(file string) ([]byte, error) {
@@ -455,6 +456,20 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 		allJobs := ja.ProwJobs()
 		_, _, svg := renderBadge(pickLatestJobs(allJobs, wantJobs))
 		w.Write(svg)
+	}
+}
+
+func handleJobHistory(templateRoot string, ca *config.Agent, gcsClient *storage.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		setHeadersNoCaching(w)
+		tmpl, err := getJobHistory(r.URL, ca.Config(), gcsClient)
+		if err != nil {
+			msg := fmt.Sprintf("failed to get job history: %v", err)
+			logrus.WithField("url", r.URL).Error(msg)
+			http.Error(w, msg, http.StatusInternalServerError)
+			return
+		}
+		handleSimpleTemplate(templateRoot, ca, "job-history.html", tmpl)(w, r)
 	}
 }
 
