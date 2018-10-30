@@ -509,6 +509,9 @@ plugins:
   kubernetes-sigs/cluster-api-provider-aws:
   - trigger
 
+  kubernetes-sigs/cluster-api-provider-digitalocean:
+  - trigger
+
   kubernetes-sigs/cluster-api-provider-gcp:
   - trigger
 
