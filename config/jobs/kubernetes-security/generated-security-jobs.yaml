@@ -722,7 +722,10 @@ presubmits:
         - --timeout=200
         - --scenario=kubernetes_e2e
         - --
-        - --check-leaked-resources
+        - --build=bazel
+        - --cluster=
+        - --env-file=jobs/env/pull-kubernetes-e2e.env
+        - --env-file=jobs/env/pull-kubernetes-e2e-gce.env
         - --env=KUBE_FEATURE_GATES=AllAlpha=true
         - --env=KUBE_PROXY_DAEMONSET=true
         - --env=ENABLE_POD_PRIORITY=true
@@ -741,6 +744,8 @@ presubmits:
         resources:
           requests:
             memory: 6Gi
+        securityContext:
+          privileged: true
         volumeMounts:
         - mountPath: /etc/ssh-security
           name: ssh-security
