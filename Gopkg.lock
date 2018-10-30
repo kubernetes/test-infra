@@ -151,8 +151,8 @@
     "eksdeployer",
     "pkg/awsapi/ec2",
   ]
-  revision = "fc33eb6545163b0d1984f42dc2cc7c6c553dfb1a"
-  version = "0.0.6"
+  revision = "141d7d02b4987b65240f46d6168546aebb61deee"
+  version = "0.1.1"
 
 [[projects]]
   name = "github.com/bazelbuild/bazel-gazelle"
