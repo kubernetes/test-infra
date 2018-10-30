@@ -710,7 +710,7 @@ func TestInjectSource(t *testing.T) {
 			},
 			pj: prowjobv1.ProwJob{
 				Spec: prowjobv1.ProwJobSpec{
-					ExtraRefs: []*prowjobv1.Refs{{Org: "hi", Repo: "there"}},
+					ExtraRefs: []prowjobv1.Refs{{Org: "hi", Repo: "there"}},
 					DecorationConfig: &prowjobv1.DecorationConfig{
 						UtilityImages: &prowjobv1.UtilityImages{},
 					},
@@ -725,7 +725,7 @@ func TestInjectSource(t *testing.T) {
 				b.Spec.Source = &buildv1alpha1.SourceSpec{
 					Custom: src,
 				}
-				wd := workDir(*pj.Spec.ExtraRefs[0])
+				wd := workDir(pj.Spec.ExtraRefs[0])
 				b.Spec.Template.Arguments = append(b.Spec.Template.Arguments, wd)
 				b.Spec.Steps[0].WorkingDir = wd.Value
 
@@ -773,7 +773,7 @@ func TestMakeBuild(t *testing.T) {
 		{
 			name: "configure source when refs are set",
 			job: func(pj prowjobv1.ProwJob) prowjobv1.ProwJob {
-				pj.Spec.ExtraRefs = []*prowjobv1.Refs{{Org: "bonus"}}
+				pj.Spec.ExtraRefs = []prowjobv1.Refs{{Org: "bonus"}}
 				pj.Spec.DecorationConfig = &prowjobv1.DecorationConfig{
 					UtilityImages: &prowjobv1.UtilityImages{},
 				}
@@ -783,7 +783,7 @@ func TestMakeBuild(t *testing.T) {
 		{
 			name: "do not override source when set",
 			job: func(pj prowjobv1.ProwJob) prowjobv1.ProwJob {
-				pj.Spec.ExtraRefs = []*prowjobv1.Refs{{Org: "bonus"}}
+				pj.Spec.ExtraRefs = []prowjobv1.Refs{{Org: "bonus"}}
 				pj.Spec.DecorationConfig = &prowjobv1.DecorationConfig{
 					UtilityImages: &prowjobv1.UtilityImages{},
 				}
