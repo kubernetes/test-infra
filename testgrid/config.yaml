@@ -2500,6 +2500,9 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-100-performance
   days_of_results: 60
   num_columns_recent: 20
+- name: pull-kubernetes-e2e-gce-alpha-features
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-alpha-features
+  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gce-big-performance
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-big-performance
   days_of_results: 60
@@ -6942,6 +6945,9 @@ dashboards:
   dashboard_tab:
   - name: pull-kubernetes-cross
     test_group_name: pull-kubernetes-cross
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce-alpha-features
+    test_group_name: pull-kubernetes-e2e-gce-alpha-features
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
     test_group_name: pull-kubernetes-e2e-gce-device-plugin-gpu
