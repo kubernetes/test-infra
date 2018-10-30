@@ -24,12 +24,20 @@ type Started struct {
 	Pull      string            `json:"pull"`
 }
 
+type Metadata struct {
+	InfraCommit string            `json:"infra-commit"`
+	Pod         string            `json:"pod"`
+	Repo        string            `json:"repo"`
+	RepoCommit  string            `json:"repo-commit"`
+	Repos       map[string]string `json:"repos"`
+}
+
 // Finished is used to mirror the finished.json artifact
 type Finished struct {
-	Timestamp  int64             `json:"timestamp"`
-	Version    string            `json:"version"`
-	JobVersion string            `json:"job-version"`
-	Passed     bool              `json:"passed"`
-	Result     string            `json:"result"`
-	Metadata   map[string]string `json:"metadata"`
+	Timestamp  int64  `json:"timestamp"`
+	Version    string `json:"version"`
+	JobVersion string `json:"job-version"`
+	Passed     bool   `json:"passed"`
+	Result     string `json:"result"`
+	Metadata   `json:"metadata"`
 }

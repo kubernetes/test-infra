@@ -89,11 +89,40 @@ var metadataTemplateText = `{{$passed := eq .Finished.Result "SUCCESS"}}
 	</tr>
       </thead>
       <tbody>
-	{{range $k, $v := .Finished.Metadata}}
+        <tr>
+          <td class="mdl-data-table__cell--non-numeric">Repo</td>
+          <td class="mdl-data-table__cell--non-numeric">{{.Finished.Metadata.Repo}}</td>
+	</tr>
+        <tr>
+          <td class="mdl-data-table__cell--non-numeric">Repo Commit</td>
+          <td class="mdl-data-table__cell--non-numeric">{{.Finished.Metadata.RepoCommit}}</td>
+	</tr>
+        <tr>
+          <td class="mdl-data-table__cell--non-numeric">Infra Commit</td>
+          <td class="mdl-data-table__cell--non-numeric">{{.Finished.Metadata.InfraCommit}}</td>
+	</tr>
+        <tr>
+          <td class="mdl-data-table__cell--non-numeric">Pod</td>
+          <td class="mdl-data-table__cell--non-numeric">{{.Finished.Metadata.Pod}}</td>
+	</tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="mdl-cell mdl-cell--6-col">
+    <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" style="height:unset;">
+      <thead class="metadata-header">
+        <tr>
+	  <th class="mdl-data-table__cell--non-numeric">Package</td>
+	  <th class="mdl-data-table__cell--non-numeric">Version</td>
+	</tr>
+      </thead>
+      <tbody>
+	{{range $k, $v := .Finished.Metadata.Repos}}
 	<tr>
           <td class="mdl-data-table__cell--non-numeric">{{$k}}</td>
           <td class="mdl-data-table__cell--non-numeric">{{$v}}</td>
-        </tr>{{end}}
+	</tr>
+	{{end}}
       </tbody>
     </table>
   </div>
