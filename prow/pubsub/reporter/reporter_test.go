@@ -50,6 +50,7 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 				},
 				Status: kube.ProwJobStatus{
 					State: kube.SuccessState,
+					URL:   "guber/test1",
 				},
 			},
 			expectedMessage: &ReportMessage{
@@ -57,6 +58,7 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 				Topic:   testPubSubTopicName,
 				RunID:   testPubSubRunID,
 				Status:  kube.SuccessState,
+				URL:     "guber/test1",
 			},
 		},
 		{
