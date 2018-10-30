@@ -27,6 +27,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/labels"
 )
 
 type fkc struct {
@@ -118,7 +119,7 @@ func TestHandleIssueComment(t *testing.T) {
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: true,
-			IssueLabels: []github.Label{{Name: okToTest}},
+			IssueLabels: []github.Label{{Name: labels.OkToTest}},
 		},
 		{
 			name: `Non-trusted member after "/ok-to-test", needs-ok-to-test label wasn't deleted.`,
@@ -128,8 +129,8 @@ func TestHandleIssueComment(t *testing.T) {
 			State:         "open",
 			IsPR:          true,
 			ShouldBuild:   true,
-			IssueLabels:   []github.Label{{Name: NeedsOkToTest}, {Name: okToTest}},
-			RemovedLabels: []string{fmt.Sprintf("org/repo#0:%s", NeedsOkToTest)},
+			IssueLabels:   []github.Label{{Name: labels.NeedsOkToTest}, {Name: labels.OkToTest}},
+			RemovedLabels: []string{fmt.Sprintf("org/repo#0:%s", labels.NeedsOkToTest)},
 		},
 		{
 			name: "Trusted member's ok to test",
@@ -139,7 +140,7 @@ func TestHandleIssueComment(t *testing.T) {
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: true,
-			AddedLabels: []string{fmt.Sprintf("org/repo#0:%s", okToTest)},
+			AddedLabels: []string{fmt.Sprintf("org/repo#0:%s", labels.OkToTest)},
 		},
 		{
 			name: "Trusted member's ok to test, trailing space.",
@@ -149,7 +150,7 @@ func TestHandleIssueComment(t *testing.T) {
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: true,
-			AddedLabels: []string{fmt.Sprintf("org/repo#0:%s", okToTest)},
+			AddedLabels: []string{fmt.Sprintf("org/repo#0:%s", labels.OkToTest)},
 		},
 		{
 			name: "Trusted member's not ok to test.",
@@ -230,9 +231,9 @@ func TestHandleIssueComment(t *testing.T) {
 					},
 				},
 			},
-			IssueLabels:   []github.Label{{Name: NeedsOkToTest}},
-			AddedLabels:   []string{fmt.Sprintf("org/repo#0:%s", okToTest)},
-			RemovedLabels: []string{fmt.Sprintf("org/repo#0:%s", NeedsOkToTest)},
+			IssueLabels:   []github.Label{{Name: labels.NeedsOkToTest}},
+			AddedLabels:   []string{fmt.Sprintf("org/repo#0:%s", labels.OkToTest)},
+			RemovedLabels: []string{fmt.Sprintf("org/repo#0:%s", labels.NeedsOkToTest)},
 		},
 		{
 			name:   "Wrong branch w/ SkipReport",
@@ -366,9 +367,9 @@ func TestHandleIssueComment(t *testing.T) {
 			},
 			ShouldBuild:   true,
 			StartsExactly: "pull-jab",
-			IssueLabels:   []github.Label{{Name: NeedsOkToTest}},
-			AddedLabels:   []string{fmt.Sprintf("org/repo#0:%s", okToTest)},
-			RemovedLabels: []string{fmt.Sprintf("org/repo#0:%s", NeedsOkToTest)},
+			IssueLabels:   []github.Label{{Name: labels.NeedsOkToTest}},
+			AddedLabels:   []string{fmt.Sprintf("org/repo#0:%s", labels.OkToTest)},
+			RemovedLabels: []string{fmt.Sprintf("org/repo#0:%s", labels.NeedsOkToTest)},
 		},
 		{
 			name:   "/test of branch-sharded job",

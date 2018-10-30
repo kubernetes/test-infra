@@ -26,13 +26,6 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const (
-	// NeedsOkToTest is a label added to PRs from authors we do not trust;
-	// tests will not run on these PRs until they are marked as trusted
-	NeedsOkToTest = "needs-ok-to-test"
-	okToTest      = "ok-to-test"
-)
-
 func handlePR(c client, trigger *plugins.Trigger, pr github.PullRequestEvent) error {
 	org, repo, a := orgRepoAuthor(pr.PullRequest)
 	author := string(a)
@@ -57,17 +50,14 @@ func handlePR(c client, trigger *plugins.Trigger, pr github.PullRequestEvent) er
 	case github.PullRequestActionReopened:
 		// When a PR is reopened, check that the user is in the org or that an org
 		// member had said "/ok-to-test" before building, resulting in label ok-to-test.
-		labels, err := c.GitHubClient.GetIssueLabels(org, repo, num)
-		if err != nil {
-			return err
-		}
-		trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, labels)
+		l, trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, nil)
 		if err != nil {
 			return fmt.Errorf("could not validate PR: %s", err)
 		} else if trusted {
 			// Eventually remove need-ok-to-test
-			if github.HasLabel(NeedsOkToTest, labels) {
-				if err := c.GitHubClient.RemoveLabel(org, repo, num, NeedsOkToTest); err != nil {
+			// Does not work for TrustedUser() == true since labels are not fetched in this case
+			if github.HasLabel(labels.NeedsOkToTest, l) {
+				if err := c.GitHubClient.RemoveLabel(org, repo, num, labels.NeedsOkToTest); err != nil {
 					return err
 				}
 			}
@@ -101,11 +91,7 @@ func handlePR(c client, trigger *plugins.Trigger, pr github.PullRequestEvent) er
 	case github.PullRequestActionLabeled:
 		// When a PR is LGTMd, if it is untrusted then build it once.
 		if pr.Label.Name == labels.LGTM {
-			issueLabels, err := c.GitHubClient.GetIssueLabels(org, repo, num)
-			if err != nil {
-				return err
-			}
-			trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, issueLabels)
+			_, trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, nil)
 			if err != nil {
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
@@ -133,17 +119,14 @@ func buildAllIfTrusted(c client, trigger *plugins.Trigger, pr github.PullRequest
 	org, repo, a := orgRepoAuthor(pr.PullRequest)
 	author := string(a)
 	num := pr.PullRequest.Number
-	labels, err := c.GitHubClient.GetIssueLabels(org, repo, num)
-	if err != nil {
-		return err
-	}
-	trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, labels)
+	l, trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, nil)
 	if err != nil {
 		return fmt.Errorf("could not validate PR: %s", err)
 	} else if trusted {
 		// Eventually remove needs-ok-to-test
-		if github.HasLabel(NeedsOkToTest, labels) {
-			if err := c.GitHubClient.RemoveLabel(org, repo, num, NeedsOkToTest); err != nil {
+		// Will not work for org members since labels are not fetched in this case
+		if github.HasLabel(labels.NeedsOkToTest, l) {
+			if err := c.GitHubClient.RemoveLabel(org, repo, num, labels.NeedsOkToTest); err != nil {
 				return err
 			}
 		}
@@ -158,7 +141,7 @@ func welcomeMsg(ghc githubClient, trigger *plugins.Trigger, pr github.PullReques
 
 I'm waiting for a [%s](https://github.com/orgs/%s/people) %smember to verify that this patch is reasonable to test. If it is, they should reply with ` + "`/ok-to-test`" + ` on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands by org members will still work. Regular contributors should [join the org](%s) to skip this step.
 
-Once the patch is verified, the new status will be reflected by the ` + fmt.Sprintf("`%s`", okToTest) + ` label.
+Once the patch is verified, the new status will be reflected by the ` + fmt.Sprintf("`%s`", labels.OkToTest) + ` label.
 
 I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
 
@@ -182,7 +165,7 @@ I understand the commands that are listed [here](https://go.k8s.io/bot-commands)
 	}
 	comment := fmt.Sprintf(commentTemplate, author, org, org, more, joinOrgURL, plugins.AboutThisBotWithoutCommands)
 
-	err1 := ghc.AddLabel(org, repo, pr.Number, NeedsOkToTest)
+	err1 := ghc.AddLabel(org, repo, pr.Number, labels.NeedsOkToTest)
 	err2 := ghc.CreateComment(org, repo, pr.Number, comment)
 	if err1 != nil || err2 != nil {
 		return fmt.Errorf("welcomeMsg: error adding label: %v, error creating comment: %v", err1, err2)
@@ -192,25 +175,32 @@ I understand the commands that are listed [here](https://go.k8s.io/bot-commands)
 
 // trustedPullRequest returns whether or not the given PR should be tested.
 // It first checks if the author is in the org, then looks for "ok-to-test" label.
-func trustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org, repo string, num int, labels []github.Label) (bool, error) {
+func trustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org, repo string, num int, l []github.Label) ([]github.Label, bool, error) {
 	// First check if the author is a member of the org.
 	if orgMember, err := TrustedUser(ghc, trigger, author, org, repo); err != nil {
-		return false, fmt.Errorf("error checking %s for trust: %v", author, err)
+		return l, false, fmt.Errorf("error checking %s for trust: %v", author, err)
 	} else if orgMember {
-		return true, nil
+		return l, true, nil
 	}
 	// Then check if PR has ok-to-test label
-	if github.HasLabel(okToTest, labels) {
-		return true, nil
+	if l == nil {
+		var err error
+		l, err = ghc.GetIssueLabels(org, repo, num)
+		if err != nil {
+			return l, false, err
+		}
+	}
+	if github.HasLabel(labels.OkToTest, l) {
+		return l, true, nil
 	}
 	botName, err := ghc.BotName()
 	if err != nil {
-		return false, fmt.Errorf("error finding bot name: %v", err)
+		return l, false, fmt.Errorf("error finding bot name: %v", err)
 	}
 	// Next look for "/ok-to-test" comments on the PR.
 	comments, err := ghc.ListIssueComments(org, repo, num)
 	if err != nil {
-		return false, err
+		return l, false, err
 	}
 	for _, comment := range comments {
 		commentAuthor := comment.User.Login
@@ -220,12 +210,12 @@ func trustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org,
 		}
 		// Ensure that the commenter is in the org.
 		if commentAuthorMember, err := TrustedUser(ghc, trigger, commentAuthor, org, repo); err != nil {
-			return false, fmt.Errorf("error checking %s for trust: %v", commentAuthor, err)
+			return l, false, fmt.Errorf("error checking %s for trust: %v", commentAuthor, err)
 		} else if commentAuthorMember {
-			return true, nil
+			return l, true, nil
 		}
 	}
-	return false, nil
+	return l, false, nil
 }
 
 func buildAll(c client, pr *github.PullRequest, eventGUID string) error {

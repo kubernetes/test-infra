@@ -57,19 +57,19 @@ func TestTrusted(t *testing.T) {
 		{
 			name:     "accept random PR with ok-to-test",
 			author:   rando,
-			labels:   []string{okToTest},
+			labels:   []string{labels.OkToTest},
 			expected: true,
 		},
 		{
 			name:     "accept random PR with both labels",
 			author:   rando,
-			labels:   []string{okToTest, NeedsOkToTest},
+			labels:   []string{labels.OkToTest, labels.NeedsOkToTest},
 			expected: true,
 		},
 		{
 			name:     "reject random PR with needs-ok-to-test",
 			author:   rando,
-			labels:   []string{NeedsOkToTest},
+			labels:   []string{labels.NeedsOkToTest},
 			expected: false,
 		},
 		{
@@ -96,7 +96,7 @@ func TestTrusted(t *testing.T) {
 					Name: label,
 				})
 			}
-			actual, err := trustedPullRequest(g, &trigger, tc.author, "kubernetes-incubator", "random-repo", 1, labels)
+			_, actual, err := trustedPullRequest(g, &trigger, tc.author, "kubernetes-incubator", "random-repo", 1, labels)
 			if err != nil {
 				t.Fatalf("Didn't expect error: %s", err)
 			}
@@ -300,7 +300,7 @@ func TestHandlePullRequest(t *testing.T) {
 		}
 
 		if tc.HasOkToTest {
-			g.LabelsAdded = append(g.LabelsAdded, fmt.Sprintf("org/repo#0:%s", okToTest))
+			g.LabelsAdded = append(g.LabelsAdded, fmt.Sprintf("org/repo#0:%s", labels.OkToTest))
 		}
 		pr := github.PullRequestEvent{
 			Action: tc.prAction,

@@ -38,7 +38,6 @@ import (
 	"k8s.io/test-infra/prow/plugins/hold"
 	"k8s.io/test-infra/prow/plugins/owners-label"
 	"k8s.io/test-infra/prow/plugins/releasenote"
-	"k8s.io/test-infra/prow/plugins/trigger"
 	"k8s.io/test-infra/prow/plugins/verify-owners"
 	"k8s.io/test-infra/prow/plugins/wip"
 
@@ -522,14 +521,14 @@ func validateNeedsOkToTestLabel(cfg *config.Config) error {
 		for _, label := range query.Labels {
 			if label == lgtm.LGTMLabel {
 				for _, label := range query.MissingLabels {
-					if label == trigger.NeedsOkToTest {
+					if label == labels.NeedsOkToTest {
 						queryErrors = append(queryErrors, fmt.Errorf(
 							"the tide query at position %d"+
 								"forbids the %q label and requires the %q label, "+
 								"which is not recommended; "+
 								"see https://github.com/kubernetes/test-infra/blob/master/prow/cmd/tide/maintainers.md#best-practices "+
 								"for more information",
-							i, trigger.NeedsOkToTest, lgtm.LGTMLabel),
+							i, labels.NeedsOkToTest, lgtm.LGTMLabel),
 						)
 					}
 				}
