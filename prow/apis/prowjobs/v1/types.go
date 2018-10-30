@@ -111,7 +111,7 @@ type ProwJobSpec struct {
 	Refs *Refs `json:"refs,omitempty"`
 	// ExtraRefs are auxiliary repositories that
 	// need to be cloned, determined from config
-	ExtraRefs []*Refs `json:"extra_refs,omitempty"`
+	ExtraRefs []Refs `json:"extra_refs,omitempty"`
 
 	// Report determines if the result of this job should
 	// be posted as a status on GitHub
