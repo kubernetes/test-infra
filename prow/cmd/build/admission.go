@@ -60,12 +60,12 @@ func runServer(cert, privateKey string) {
 	logrus.Error(s.ListenAndServeTLS(cert, privateKey))
 }
 
-const contentTypeJson = "application/json"
+const contentTypeJSON = "application/json"
 
 // readRequest extracts the request from the AdmissionReview reader
 func readRequest(r io.Reader, contentType string) (*admissionapi.AdmissionRequest, error) {
-	if contentType != contentTypeJson {
-		return nil, fmt.Errorf("Content-Type=%s, expected %s", contentType, contentTypeJson)
+	if contentType != contentTypeJSON {
+		return nil, fmt.Errorf("Content-Type=%s, expected %s", contentType, contentTypeJSON)
 	}
 
 	// Can we read the body?

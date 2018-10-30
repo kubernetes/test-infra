@@ -17,6 +17,7 @@ limitations under the License.
 package decorate
 
 import (
+	"errors"
 	"fmt"
 	"path"
 	"path/filepath"
@@ -52,10 +53,6 @@ const (
 	toolsMountPath          = "/tools"
 	gcsCredentialsMountName = "gcs-credentials"
 	gcsCredentialsMountPath = "/secrets/gcs"
-	sshKeysMountNamePrefix  = "ssh-keys"
-	sshKeysMountPathPrefix  = "/secrets/ssh"
-	cookiefileMountName     = "cookiefile"
-	cookiefileMountPath     = "/secrets/cookiefile"
 )
 
 // Labels returns a string slice with label consts from kube.
@@ -172,6 +169,173 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 	}, nil
 }
 
+const cloneLogPath = "clone.json"
+
+// CloneLogPath returns the path to the clone log file in the volume mount.
+func CloneLogPath(logMount kube.VolumeMount) string {
+	return filepath.Join(logMount.MountPath, cloneLogPath)
+}
+
+// Exposed for testing
+const (
+	cloneRefsName    = "clonerefs"
+	cloneRefsCommand = "/clonerefs"
+)
+
+// cloneEnv encodes clonerefs Options into json and puts it into an environment variable
+func cloneEnv(opt clonerefs.Options) ([]v1.EnvVar, error) {
+	// TODO(fejta): use flags
+	cloneConfigEnv, err := clonerefs.Encode(opt)
+	if err != nil {
+		return nil, err
+	}
+	return kubeEnv(map[string]string{clonerefs.JSONConfigEnvVar: cloneConfigEnv}), nil
+}
+
+// sshVolume converts a secret holding ssh keys into the corresponding volume and mount.
+//
+// This is used by CloneRefs to attach the mount to the clonerefs container.
+func sshVolume(secret string) (kube.Volume, kube.VolumeMount) {
+	var sshKeyMode int32 = 0400 // this is octal, so symbolic ref is `u+r`
+	name := strings.Join([]string{"ssh-keys", secret}, "-")
+	mountPath := path.Join("/secrets/ssh", secret)
+	v := kube.Volume{
+		Name: name,
+		VolumeSource: kube.VolumeSource{
+			Secret: &kube.SecretSource{
+				SecretName:  secret,
+				DefaultMode: &sshKeyMode,
+			},
+		},
+	}
+
+	vm := kube.VolumeMount{
+		Name:      name,
+		MountPath: mountPath,
+		ReadOnly:  true,
+	}
+
+	return v, vm
+}
+
+// cookiefileVolumes converts a secret holding cookies into the corresponding volume and mount.
+//
+// Secret can be of the form secret-name/base-name or just secret-name.
+// Here secret-name refers to the kubernetes secret volume to mount, and base-name refers to the key in the secret
+// where the cookies are stored. The secret-name pattern is equivalent to secret-name/secret-name.
+//
+// This is used by CloneRefs to attach the mount to the clonerefs container.
+// The returned string value is the path to the cookiefile for use with --cookiefile.
+func cookiefileVolume(secret string) (kube.Volume, kube.VolumeMount, string) {
+	// Separate secret-name/key-in-secret
+	parts := strings.SplitN(secret, "/", 2)
+	cookieSecret := parts[0]
+	var base string
+	if len(parts) == 1 {
+		base = parts[0] // Assume key-in-secret == secret-name
+	} else {
+		base = parts[1]
+	}
+	var cookiefileMode int32 = 0400 // u+r
+	vol := kube.Volume{
+		Name: "cookiefile",
+		VolumeSource: kube.VolumeSource{
+			Secret: &kube.SecretSource{
+				SecretName:  cookieSecret,
+				DefaultMode: &cookiefileMode,
+			},
+		},
+	}
+	mount := kube.VolumeMount{
+		Name:      vol.Name,
+		MountPath: "/secrets/cookiefile", // append base to flag
+		ReadOnly:  true,
+	}
+	return vol, mount, path.Join(mount.MountPath, base)
+}
+
+// CloneRefs constructs the container and volumes necessary to clone the refs requested by the ProwJob.
+//
+// The container checks out repositories specified by the ProwJob Refs to `codeMount`.
+// A log of what it checked out is written to `clone.json` in `logMount`.
+//
+// The container may need to mount SSH keys and/or cookiefiles in order to access private refs.
+// CloneRefs returns a list of volumes containing these secrets required by the container.
+func CloneRefs(pj kube.ProwJob, codeMount, logMount kube.VolumeMount) (*kube.Container, []kube.Refs, []kube.Volume, error) {
+	if pj.Spec.DecorationConfig == nil || pj.Spec.DecorationConfig.SkipCloning {
+		return nil, nil, nil, nil
+	}
+	var cloneVolumes []kube.Volume
+	var refs []kube.Refs // Do not return []*kube.Refs which we do not own
+	if pj.Spec.Refs != nil {
+		refs = append(refs, *pj.Spec.Refs)
+	}
+	for _, r := range pj.Spec.ExtraRefs {
+		if r == nil {
+			return nil, nil, nil, errors.New("nil element in ExtraRefs")
+		}
+		refs = append(refs, *r)
+	}
+	if len(refs) == 0 { // nothing to clone
+		return nil, nil, nil, nil
+	}
+	if codeMount.Name == "" || codeMount.MountPath == "" {
+		return nil, nil, nil, fmt.Errorf("codeMount must set Name and MountPath")
+	}
+	if logMount.Name == "" || logMount.MountPath == "" {
+		return nil, nil, nil, fmt.Errorf("logMount must set Name and MountPath")
+	}
+
+	var cloneMounts []kube.VolumeMount
+	var sshKeyPaths []string
+	for _, secret := range pj.Spec.DecorationConfig.SSHKeySecrets {
+		volume, mount := sshVolume(secret)
+		cloneMounts = append(cloneMounts, mount)
+		sshKeyPaths = append(sshKeyPaths, mount.MountPath)
+		cloneVolumes = append(cloneVolumes, volume)
+	}
+
+	var cloneArgs []string
+	var cookiefilePath string
+
+	if cp := pj.Spec.DecorationConfig.CookiefileSecret; cp != "" {
+		v, vm, vp := cookiefileVolume(cp)
+		cloneMounts = append(cloneMounts, vm)
+		cloneVolumes = append(cloneVolumes, v)
+		cookiefilePath = vp
+		cloneArgs = append(cloneArgs, "--cookiefile="+cookiefilePath)
+	}
+
+	var pointerRefs []*kube.Refs
+	for _, r := range refs {
+		newRefs := r
+		pointerRefs = append(pointerRefs, &newRefs)
+	}
+	env, err := cloneEnv(clonerefs.Options{
+		CookiePath:       cookiefilePath,
+		GitRefs:          pointerRefs,
+		GitUserEmail:     clonerefs.DefaultGitUserEmail,
+		GitUserName:      clonerefs.DefaultGitUserName,
+		HostFingerprints: pj.Spec.DecorationConfig.SSHHostFingerprints,
+		KeyFiles:         sshKeyPaths,
+		Log:              CloneLogPath(logMount),
+		SrcRoot:          codeMount.MountPath,
+	})
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("clone env: %v", err)
+	}
+
+	container := kube.Container{
+		Name:         cloneRefsName,
+		Image:        pj.Spec.DecorationConfig.UtilityImages.CloneRefs,
+		Command:      []string{cloneRefsCommand},
+		Args:         cloneArgs,
+		Env:          env,
+		VolumeMounts: append([]kube.VolumeMount{logMount, codeMount}, cloneMounts...),
+	}
+	return &container, refs, cloneVolumes, nil
+}
+
 func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) error {
 	rawEnv[artifactsEnv] = artifactsPath
 	rawEnv[gopathEnv] = codeMountPath
@@ -221,97 +385,14 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 		},
 	}
 
-	var cloneVolumes []kube.Volume
-	var cloneLog string
-	var refs []*kube.Refs
-	if pj.Spec.Refs != nil {
-		refs = append(refs, pj.Spec.Refs)
+	cloner, refs, cloneVolumes, err := CloneRefs(*pj, codeMount, logMount)
+	if err != nil {
+		return fmt.Errorf("could not create clonerefs container: %v", err)
 	}
-	refs = append(refs, pj.Spec.ExtraRefs...)
-	willCloneRefs := len(refs) > 0 && !pj.Spec.DecorationConfig.SkipCloning
-	if willCloneRefs {
-		var sshKeyMode int32 = 0400 // this is octal, so symbolic ref is `u+r`
-		var cloneMounts []kube.VolumeMount
-		var sshKeyPaths []string
-		for _, secret := range pj.Spec.DecorationConfig.SSHKeySecrets {
-			name := fmt.Sprintf("%s-%s", sshKeysMountNamePrefix, secret)
-			keyPath := path.Join(sshKeysMountPathPrefix, secret)
-			sshKeyPaths = append(sshKeyPaths, keyPath)
-			cloneMounts = append(cloneMounts, kube.VolumeMount{
-				Name:      name,
-				MountPath: keyPath,
-				ReadOnly:  true,
-			})
-			cloneVolumes = append(cloneVolumes, kube.Volume{
-				Name: name,
-				VolumeSource: kube.VolumeSource{
-					Secret: &kube.SecretSource{
-						SecretName:  secret,
-						DefaultMode: &sshKeyMode,
-					},
-				},
-			})
-		}
-
-		var cloneArgs []string
-		var cookiefilePath string
-
-		if cp := pj.Spec.DecorationConfig.CookiefileSecret; cp != "" {
-			// my-cookie/.gitcookies => find my-cookie secret at /secrets/cookiefile/.gitcookies
-			// my-cookie => find my-cookie secret at /secrets/cookiefile/my-cookie
-			parts := strings.SplitN(cp, "/", 2)
-			cookieSecret := parts[0]
-			var base string
-			if len(parts) == 1 {
-				base = parts[0]
-			} else {
-				base = parts[1]
-			}
-			var cookiefileMode int32 = 0400 // u+r
-			cloneMounts = append(cloneMounts, kube.VolumeMount{
-				Name:      cookiefileMountName,
-				MountPath: cookiefileMountPath, // append base to flag
-				ReadOnly:  true,
-			})
-			cloneVolumes = append(cloneVolumes, kube.Volume{
-				Name: cookiefileMountName,
-				VolumeSource: kube.VolumeSource{
-					Secret: &kube.SecretSource{
-						SecretName:  cookieSecret,
-						DefaultMode: &cookiefileMode,
-					},
-				},
-			})
-			cookiefilePath = path.Join(cookiefileMountPath, base)
-			// TODO(fejta): the flags are ignored so long as the magic env is set
-			cloneArgs = append(cloneArgs, "--cookiefile="+cookiefilePath)
-		}
-
-		cloneLog = fmt.Sprintf("%s/clone.json", logMountPath)
-		// TODO(fejta): use flags
-		cloneConfigEnv, err := clonerefs.Encode(clonerefs.Options{
-			CookiePath:       cookiefilePath,
-			GitRefs:          refs,
-			GitUserEmail:     clonerefs.DefaultGitUserEmail,
-			GitUserName:      clonerefs.DefaultGitUserName,
-			HostFingerprints: pj.Spec.DecorationConfig.SSHHostFingerprints,
-			KeyFiles:         sshKeyPaths,
-			Log:              cloneLog,
-			SrcRoot:          codeMountPath,
-		})
-		if err != nil {
-			return fmt.Errorf("could not encode clone configuration as JSON: %v", err)
-		}
-
-		spec.InitContainers = append(spec.InitContainers, kube.Container{
-			Name:         "clonerefs",
-			Image:        pj.Spec.DecorationConfig.UtilityImages.CloneRefs,
-			Command:      []string{"/clonerefs"},
-			Args:         cloneArgs,
-			Env:          kubeEnv(map[string]string{clonerefs.JSONConfigEnvVar: cloneConfigEnv}),
-			VolumeMounts: append([]kube.VolumeMount{logMount, codeMount}, cloneMounts...),
-		})
+	if cloner != nil {
+		spec.InitContainers = append([]kube.Container{*cloner}, spec.InitContainers...)
 	}
+
 	gcsOptions := gcsupload.Options{
 		// TODO: pass the artifact dir here too once we figure that out
 		GCSConfiguration:   pj.Spec.DecorationConfig.GCSConfiguration,
@@ -322,9 +403,10 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 	initUploadOptions := initupload.Options{
 		Options: &gcsOptions,
 	}
-	if willCloneRefs {
-		initUploadOptions.Log = cloneLog
+	if cloner != nil {
+		initUploadOptions.Log = CloneLogPath(logMount)
 	}
+
 	// TODO(fejta): use flags
 	initUploadConfigEnv, err := initupload.Encode(initUploadOptions)
 	if err != nil {
@@ -398,8 +480,8 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 	})
 	spec.Volumes = append(spec.Volumes, logVolume, toolsVolume, gcsCredentialsVolume)
 
-	if willCloneRefs {
-		spec.Containers[0].WorkingDir = clone.PathForRefs(codeMountPath, refs[0])
+	if len(refs) > 0 {
+		spec.Containers[0].WorkingDir = clone.PathForRefs(codeMount.MountPath, &refs[0])
 		spec.Containers[0].VolumeMounts = append(spec.Containers[0].VolumeMounts, codeMount)
 		spec.Volumes = append(spec.Volumes, append(cloneVolumes, codeVolume)...)
 	}
