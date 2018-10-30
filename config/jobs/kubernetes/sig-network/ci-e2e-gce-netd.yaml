@@ -81,43 +81,6 @@ presets:
                 }
               ]
             }
-          calico_cni_spec_template: |-
-            {
-              "name": "gke-pod-network",
-              "cniVersion": "0.3.0",
-              "plugins": [
-                {
-                "type": "calico",
-                "log_level": "debug",
-                "datastore_type": "kubernetes",
-                "nodename": "__KUBERNETES_NODE_NAME__",
-                "ipam": {
-                  "type": "host-local",
-                  "ranges": [
-                  [ { "subnet": "usePodCidr" } ]@ipv6SubnetOptional
-                  ],
-                  "routes": [
-                    {"dst": "0.0.0.0/0"}@ipv6RouteOptional
-                  ]
-                },
-                "policy": {
-                  "type": "k8s",
-                  "k8s_auth_token": "__SERVICEACCOUNT_TOKEN__"
-                },
-                "kubernetes": {
-                  "k8s_api_root": "https://__KUBERNETES_SERVICE_HOST__:__KUBERNETES_SERVICE_PORT__",
-                  "kubeconfig": "__KUBECONFIG_FILEPATH__"
-                }
-                },
-                {
-                  "type": "portmap",
-                  "capabilities": {
-                    "portMappings": true
-                  },
-                  "snat": true
-                }
-              ]
-            }
           cni_spec_name: "10-gke-ptp.conflist"
           enable_policy_routing: "true"
           enable_masquerade: "true"
@@ -167,11 +130,6 @@ presets:
                       configMapKeyRef:
                         name: netd-config
                         key: cni_spec_template
-                  - name: CALICO_CNI_SPEC_TEMPLATE
-                    valueFrom:
-                      configMapKeyRef:
-                        name: netd-config
-                        key: calico_cni_spec_template
                   - name: CNI_SPEC_NAME
                     valueFrom:
                       configMapKeyRef:
@@ -312,43 +270,6 @@ presets:
                 }
               ]
             }
-          calico_cni_spec_template: |-
-            {
-              "name": "gke-pod-network",
-              "cniVersion": "0.3.0",
-              "plugins": [
-                {
-                "type": "calico",
-                "log_level": "debug",
-                "datastore_type": "kubernetes",
-                "nodename": "__KUBERNETES_NODE_NAME__",
-                "ipam": {
-                  "type": "host-local",
-                  "ranges": [
-                  [ { "subnet": "usePodCidr" } ]@ipv6SubnetOptional
-                  ],
-                  "routes": [
-                    {"dst": "0.0.0.0/0"}@ipv6RouteOptional
-                  ]
-                },
-                "policy": {
-                  "type": "k8s",
-                  "k8s_auth_token": "__SERVICEACCOUNT_TOKEN__"
-                },
-                "kubernetes": {
-                  "k8s_api_root": "https://__KUBERNETES_SERVICE_HOST__:__KUBERNETES_SERVICE_PORT__",
-                  "kubeconfig": "__KUBECONFIG_FILEPATH__"
-                }
-                },
-                {
-                  "type": "portmap",
-                  "capabilities": {
-                    "portMappings": true
-                  },
-                  "snat": true
-                }
-              ]
-            }
           cni_spec_name: "10-gke-ptp.conflist"
           enable_policy_routing: "true"
           enable_masquerade: "true"
@@ -398,11 +319,6 @@ presets:
                       configMapKeyRef:
                         name: netd-config
                         key: cni_spec_template
-                  - name: CALICO_CNI_SPEC_TEMPLATE
-                    valueFrom:
-                      configMapKeyRef:
-                        name: netd-config
-                        key: calico_cni_spec_template
                   - name: CNI_SPEC_NAME
                     valueFrom:
                       configMapKeyRef:
