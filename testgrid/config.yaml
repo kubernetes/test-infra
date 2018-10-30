@@ -2599,6 +2599,9 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
+- name: pull-publishing-bot-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-publishing-bot-build
+  num_columns_recent: 20
 - name: post-test-infra-push-prow
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-prow
 - name: pull-test-infra-bazel
@@ -5268,6 +5271,11 @@ dashboards:
   - name: kops-aws-1.9
     test_group_name: ci-kubernetes-e2e-kops-aws-stable3
 
+- name: sig-release-publishing-bot
+  dashboard_tab:
+  - name: build
+    test_group_name: pull-publishing-bot-build
+
 - name: wg-resource-management
   dashboard_tab:
   - name: gce-device-plugin-gpu
@@ -7522,6 +7530,7 @@ dashboard_groups:
   - sig-release-1.9-all
   - sig-release-1.9-blocking
   - sig-release-misc
+  - sig-release-publishing-bot
 
 - name: sig-scalability
   dashboard_names:
