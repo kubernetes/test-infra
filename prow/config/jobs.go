@@ -303,7 +303,7 @@ type UtilityConfig struct {
 
 	// ExtraRefs are auxiliary repositories that
 	// need to be cloned, determined from config
-	ExtraRefs []*kube.Refs `json:"extra_refs,omitempty"`
+	ExtraRefs []kube.Refs `json:"extra_refs,omitempty"`
 
 	// DecorationConfig holds configuration options for
 	// decorating PodSpecs that users provide
