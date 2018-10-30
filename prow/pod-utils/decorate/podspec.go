@@ -17,7 +17,6 @@ limitations under the License.
 package decorate
 
 import (
-	"errors"
 	"fmt"
 	"path"
 	"path/filepath"
@@ -271,10 +270,7 @@ func CloneRefs(pj kube.ProwJob, codeMount, logMount kube.VolumeMount) (*kube.Con
 		refs = append(refs, *pj.Spec.Refs)
 	}
 	for _, r := range pj.Spec.ExtraRefs {
-		if r == nil {
-			return nil, nil, nil, errors.New("nil element in ExtraRefs")
-		}
-		refs = append(refs, *r)
+		refs = append(refs, r)
 	}
 	if len(refs) == 0 { // nothing to clone
 		return nil, nil, nil, nil
@@ -306,14 +302,9 @@ func CloneRefs(pj kube.ProwJob, codeMount, logMount kube.VolumeMount) (*kube.Con
 		cloneArgs = append(cloneArgs, "--cookiefile="+cookiefilePath)
 	}
 
-	var pointerRefs []*kube.Refs
-	for _, r := range refs {
-		newRefs := r
-		pointerRefs = append(pointerRefs, &newRefs)
-	}
 	env, err := cloneEnv(clonerefs.Options{
 		CookiePath:       cookiefilePath,
-		GitRefs:          pointerRefs,
+		GitRefs:          refs,
 		GitUserEmail:     clonerefs.DefaultGitUserEmail,
 		GitUserName:      clonerefs.DefaultGitUserName,
 		HostFingerprints: pj.Spec.DecorationConfig.SSHHostFingerprints,
