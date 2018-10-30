@@ -1,6 +1,6 @@
 periodics:  
 - interval: 4h
-  name: cluster-api-provider-aws-test-creds
+  name: periodic-cluster-api-provider-aws-test-creds
   always_run: true
   decorate: true
   labels:
