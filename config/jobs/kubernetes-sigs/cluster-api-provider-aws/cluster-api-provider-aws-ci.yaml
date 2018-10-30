@@ -2,14 +2,13 @@ periodics:
 - interval: 4h
   name: periodic-cluster-api-provider-aws-test-creds
   always_run: true
-  decorate: true
   labels:
     preset-service-account: "true"
     preset-aws-credential: "true"
   path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/cluster-api:v20180720-d52d72975      
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.10      
       args:
       - "--repo=sigs.k8s.io/cluster-api-provider-aws"
       - "--root=/go/src"
