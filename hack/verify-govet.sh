@@ -18,4 +18,4 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-go vet $(go list ./... | grep -v vendor)
+go vet $(go list ./... | grep -v 'k8s.io/test-infra/testgrid')

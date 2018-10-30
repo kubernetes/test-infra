@@ -25,6 +25,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/labels"
 )
 
 const (
@@ -104,9 +105,9 @@ func TestLabel(t *testing.T) {
 		{
 			name:                  "Add Single Kind Label",
 			body:                  "/kind bug",
-			repoLabels:            []string{"area/infra", "priority/critical", "kind/bug"},
+			repoLabels:            []string{"area/infra", "priority/critical", labels.Bug},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("kind/bug"),
+			expectedNewLabels:     formatLabels(labels.Bug),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 		},
@@ -122,18 +123,18 @@ func TestLabel(t *testing.T) {
 		{
 			name:                  "Adding Labels is Case Insensitive",
 			body:                  "/kind BuG",
-			repoLabels:            []string{"area/infra", "priority/critical", "kind/bug"},
+			repoLabels:            []string{"area/infra", "priority/critical", labels.Bug},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("kind/bug"),
+			expectedNewLabels:     formatLabels(labels.Bug),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 		},
 		{
 			name:                  "Adding Labels is Case Insensitive",
 			body:                  "/kind bug",
-			repoLabels:            []string{"area/infra", "priority/critical", "kind/BUG"},
+			repoLabels:            []string{"area/infra", "priority/critical", labels.Bug},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("kind/BUG"),
+			expectedNewLabels:     formatLabels(labels.Bug),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 		},
@@ -149,7 +150,7 @@ func TestLabel(t *testing.T) {
 		{
 			name:                  "Non Org Member Can't Add",
 			body:                  "/area infra",
-			repoLabels:            []string{"area/infra", "priority/critical", "kind/bug"},
+			repoLabels:            []string{"area/infra", "priority/critical", labels.Bug},
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
@@ -158,7 +159,7 @@ func TestLabel(t *testing.T) {
 		{
 			name:                  "Command must start at the beginning of the line",
 			body:                  "  /area infra",
-			repoLabels:            []string{"area/infra", "area/api", "priority/critical", "priority/urgent", "priority/important", "kind/bug"},
+			repoLabels:            []string{"area/infra", "area/api", "priority/critical", "priority/urgent", "priority/important", labels.Bug},
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},

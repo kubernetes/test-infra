@@ -80,10 +80,16 @@ func TestAccumulateBatch(t *testing.T) {
 		},
 		{
 			name:       "batch pending",
-			presubmits: map[int]sets.String{1: jobSet, 2: jobSet},
+			presubmits: map[int]sets.String{1: sets.NewString("foo"), 2: sets.NewString("foo")},
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs:   []prowjob{{job: "foo", state: kube.PendingState, prs: []pull{{1, "a"}}}},
 			pending:    true,
+		},
+		{
+			name:       "pending batch missing presubmits is ignored",
+			presubmits: map[int]sets.String{1: jobSet},
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs:   []prowjob{{job: "foo", state: kube.PendingState, prs: []pull{{1, "a"}}}},
 		},
 		{
 			name:       "batch pending, successful previous run",
@@ -91,11 +97,14 @@ func TestAccumulateBatch(t *testing.T) {
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs: []prowjob{
 				{job: "foo", state: kube.PendingState, prs: []pull{{1, "a"}}},
+				{job: "bar", state: kube.SuccessState, prs: []pull{{1, "a"}}},
+				{job: "baz", state: kube.SuccessState, prs: []pull{{1, "a"}}},
 				{job: "foo", state: kube.SuccessState, prs: []pull{{2, "b"}}},
 				{job: "bar", state: kube.SuccessState, prs: []pull{{2, "b"}}},
 				{job: "baz", state: kube.SuccessState, prs: []pull{{2, "b"}}},
 			},
 			pending: true,
+			merges:  []int{2},
 		},
 		{
 			name:       "successful run",

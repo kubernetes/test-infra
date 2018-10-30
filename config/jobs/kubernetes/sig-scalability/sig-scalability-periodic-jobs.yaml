@@ -9,6 +9,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-gci-gce-scalability: "true"
   spec:
     containers:
     - args:
@@ -17,8 +19,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=e2e-big
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=100
@@ -28,7 +28,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
 
 - cron: "0 */6 * * *" # every six hours
   name: ci-kubernetes-e2e-gci-gce-scalability-beta
@@ -38,6 +38,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
   spec:
     containers:
     - args:
@@ -46,8 +47,9 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=e2e-big-beta
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-old-common.env
+      # Use default kube-qps and kube-api-burst flag values.
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling
+      - --env=SCHEDULER_TEST_ARGS=--profiling
       - --extract=ci/k8s-beta
       - --gcp-node-image=gci
       - --gcp-nodes=100
@@ -57,7 +59,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
 
 - cron: "0 0/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable2
   name: ci-kubernetes-e2e-gci-gce-scalability-stable1
@@ -67,6 +69,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-gci-gce-scalability-stable: "true"
   spec:
     containers:
     - args:
@@ -75,9 +79,9 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=e2e-big-stable1
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-old-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-stable.env
+      # Use default kube-qps and kube-api-burst flag values.
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling
+      - --env=SCHEDULER_TEST_ARGS=--profiling
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
       - --gcp-nodes=100
@@ -87,7 +91,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
 
 - cron: "0 3-21/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable1
   name: ci-kubernetes-e2e-gci-gce-scalability-stable2
@@ -97,6 +101,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-gci-gce-scalability-stable: "true"
   spec:
     containers:
     - args:
@@ -105,9 +111,9 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=e2e-big-stable2
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-old-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-stable.env
+      # Use default kube-qps and kube-api-burst flag values.
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling
+      - --env=SCHEDULER_TEST_ARGS=--profiling
       - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
       - --gcp-nodes=100
@@ -117,13 +123,15 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
 
 - cron: '1 6 * * 6' # Run at 22:01PST on Fri (06:01 UTC on Sat)
   name: ci-kubernetes-e2e-gce-large-correctness
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-highspeed-common: "true"
   spec:
     containers:
     - args:
@@ -133,8 +141,6 @@ periodics:
       - --
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-8
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -147,7 +153,7 @@ periodics:
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8
       - --timeout=390m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       resources:
         requests:
           cpu: 6
@@ -161,6 +167,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-highspeed-common: "true"
   spec:
     containers:
     - args:
@@ -170,8 +178,6 @@ periodics:
       - --
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-8
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -179,10 +185,10 @@ periodics:
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=masteranddns --gather-metrics-at-teardown=master
       - --timeout=510m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       resources:
         requests:
           cpu: 6
@@ -193,6 +199,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-highspeed-common: "true"
   spec:
     containers:
     - args:
@@ -203,8 +211,6 @@ periodics:
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-16
       - --env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -217,7 +223,7 @@ periodics:
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=570m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       resources:
         requests:
           cpu: 6
@@ -231,6 +237,8 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-highspeed-common: "true"
   spec:
     containers:
     - args:
@@ -242,17 +250,15 @@ periodics:
       - --env=ENABLE_APISERVER_ADVANCED_AUDIT=false
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-16
       - --env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
       - --extract=ci/latest
       - --gcp-nodes=5000
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --node-schedulable-timeout=90m --gather-resource-usage=master --gather-metrics-at-teardown=master
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --node-schedulable-timeout=90m --gather-resource-usage=masteranddns --gather-metrics-at-teardown=master
       - --timeout=1290m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       resources:
         requests:
           cpu: 6
@@ -289,7 +295,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Performance\]
       - --timeout=570m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       resources:
         requests:
           cpu: 6
@@ -326,7 +332,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Performance\]
       - --timeout=570m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       resources:
         requests:
           cpu: 6
@@ -360,7 +366,7 @@ periodics:
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8
       - --timeout=210m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       resources:
         requests:
           cpu: 6
@@ -376,16 +382,16 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    preset-e2e-kubemark-common: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       args:
       - --bare
       - --timeout=260
       - --scenario=kubernetes_e2e
       - --
       - --cluster=kubemark-100
-      - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
       - --extract=ci/latest
       - --gcp-master-size=n1-standard-2
       - --gcp-node-image=gci
@@ -409,16 +415,16 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    preset-e2e-kubemark-common: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       args:
       - --bare
       - --timeout=80
       - --scenario=kubernetes_e2e
       - --
       - --cluster=kubemark-latest
-      - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
       - --extract=ci/latest-1.9
       - --gcp-node-size=n1-standard-2
       - --gcp-nodes=1
@@ -443,17 +449,17 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    preset-e2e-kubemark-common: "true"
+    preset-e2e-kubemark-gce-big: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       args:
       - --bare
       - --timeout=140
       - --scenario=kubernetes_e2e
       - --
       - --cluster=kubemark-500
-      - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
-      - --env-file=jobs/env/ci-kubernetes-kubemark-gce-big.env
       - --extract=ci/latest
       - --gcp-master-size=n1-standard-4
       - --gcp-node-image=gci
@@ -480,17 +486,17 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    preset-e2e-kubemark-common: "true"
+    preset-e2e-kubemark-gce-scale: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       args:
       - --bare
       - --timeout=1100
       - --scenario=kubernetes_e2e
       - --
       - --cluster=kubemark-5000
-      - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
-      - --env-file=jobs/env/ci-kubernetes-kubemark-gce-scale.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-node-size=n1-standard-8
@@ -517,23 +523,25 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    preset-e2e-kubemark-common: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       args:
       - --bare
       - --timeout=300
       - --scenario=kubernetes_e2e
       - --
       - --cluster=kubemark-100pods
-      - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
-      - --env-file=jobs/env/ci-kubernetes-kubemark-high-density-100-gce.env
+      # Reduce logs verbosity
+      # TODO(wojtek-t): get rid of this
+      - --env=TEST_CLUSTER_LOG_LEVEL=--v=2
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-node-size=n1-standard-8
       - --gcp-nodes=8
-      - --gcp-project=k8s-jenkins-kubemark
-      - --gcp-zone=us-central1-f
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
       - --kubemark
       - --kubemark-master-size=n1-standard-32
       - --kubemark-nodes=600
@@ -553,7 +561,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -575,34 +583,40 @@ periodics:
 
 - name: ci-perf-tests-e2e-gce-clusterloader2
   interval: 2h
+  tags:
+  - "perfDashPrefix: {ClusterLoader} gce-100Nodes"
+  - "perfDashJobType: performance"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-gci-gce-scalability: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
-      - --timeout=80
+      - --timeout=140
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
       - --cluster=clusterloader2
       - --extract=ci/latest
-      - --gcp-nodes=3
-      - --gcp-zone=us-central1-f
+      - --gcp-nodes=100
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
       - --provider=gce
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-args=--nodes=3
+      - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=60m
+      - --timeout=120m
 
 - name: ci-perf-tests-kubemark-100-benchmark
   interval: 2h
@@ -611,7 +625,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       args:
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
@@ -630,7 +644,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=40

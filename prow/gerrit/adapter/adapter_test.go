@@ -52,11 +52,11 @@ func (f *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
 
 type fgc struct{}
 
-func (f *fgc) QueryChanges(lastUpdate time.Time, rateLimit int) map[string][]gerrit.ChangeInfo {
+func (f *fgc) QueryChanges(lastUpdate time.Time, rateLimit int) map[string][]client.ChangeInfo {
 	return nil
 }
 
-func (f *fgc) SetReview(instance, id, revision, message string) error {
+func (f *fgc) SetReview(instance, id, revision, message string, labels map[string]string) error {
 	return nil
 }
 
@@ -118,14 +118,14 @@ func TestMakeCloneURI(t *testing.T) {
 func TestProcessChange(t *testing.T) {
 	var testcases = []struct {
 		name        string
-		change      gerrit.ChangeInfo
+		change      client.ChangeInfo
 		numPJ       int
 		pjRef       string
 		shouldError bool
 	}{
 		{
 			name: "no revisions",
-			change: gerrit.ChangeInfo{
+			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "test-infra",
 			},
@@ -133,20 +133,20 @@ func TestProcessChange(t *testing.T) {
 		},
 		{
 			name: "wrong project",
-			change: gerrit.ChangeInfo{
+			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "woof",
-				Revisions: map[string]gerrit.RevisionInfo{
+				Revisions: map[string]client.RevisionInfo{
 					"1": {},
 				},
 			},
 		},
 		{
 			name: "normal",
-			change: gerrit.ChangeInfo{
+			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "test-infra",
-				Revisions: map[string]gerrit.RevisionInfo{
+				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Ref: "refs/changes/00/1/1",
 					},
@@ -157,10 +157,10 @@ func TestProcessChange(t *testing.T) {
 		},
 		{
 			name: "multiple revisions",
-			change: gerrit.ChangeInfo{
+			change: client.ChangeInfo{
 				CurrentRevision: "2",
 				Project:         "test-infra",
-				Revisions: map[string]gerrit.RevisionInfo{
+				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Ref: "refs/changes/00/2/1",
 					},
@@ -174,10 +174,10 @@ func TestProcessChange(t *testing.T) {
 		},
 		{
 			name: "other-test-with-https",
-			change: gerrit.ChangeInfo{
+			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "other-repo",
-				Revisions: map[string]gerrit.RevisionInfo{
+				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Ref: "refs/changes/00/1/1",
 					},
@@ -195,12 +195,16 @@ func TestProcessChange(t *testing.T) {
 					Presubmits: map[string][]config.Presubmit{
 						"gerrit/test-infra": {
 							{
-								Name: "test-foo",
+								JobBase: config.JobBase{
+									Name: "test-foo",
+								},
 							},
 						},
 						"https://gerrit/other-repo": {
 							{
-								Name: "other-test",
+								JobBase: config.JobBase{
+									Name: "other-test",
+								},
 							},
 						},
 					},

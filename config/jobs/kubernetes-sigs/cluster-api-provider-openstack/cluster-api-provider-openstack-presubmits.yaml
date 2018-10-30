@@ -2,24 +2,52 @@ presubmits:
   kubernetes-sigs/cluster-api-provider-openstack:
   - name: pull-cluster-api-provider-openstack-make
     always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-openstack
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
-        - "--scenario=execute"
-        - "--"
-        - "make"
-        - "images"
+      - command:
+        - runner.sh
+        args:
+        - make
+        - images
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         resources:
           requests:
             memory: "6Gi"
+  - name: pull-cluster-api-provider-openstack-test
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-openstack
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test
+  - name: pull-cluster-api-provider-openstack-check
+    always_run: true
+    decorate: true
+    branches:
+    - master
+    path_alias: sigs.k8s.io/cluster-api-provider-openstack
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - check

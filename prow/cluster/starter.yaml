@@ -97,7 +97,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20180928-46ab7c3d9
+        image: gcr.io/k8s-prow/hook:v20181019-08e9d55c9
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -158,7 +158,7 @@ spec:
       serviceAccountName: "plank"
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20180928-46ab7c3d9
+        image: gcr.io/k8s-prow/plank:v20181019-08e9d55c9
         args:
         - --dry-run=false
         volumeMounts:
@@ -192,7 +192,7 @@ spec:
       serviceAccountName: "sinker"
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:v20180928-46ab7c3d9
+        image: gcr.io/k8s-prow/sinker:v20181019-08e9d55c9
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -224,7 +224,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20180928-46ab7c3d9
+        image: gcr.io/k8s-prow/deck:v20181019-08e9d55c9
         args:
         - --hook-url=http://hook:8888/plugin-help
         ports:
@@ -268,7 +268,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20180928-46ab7c3d9
+        image: gcr.io/k8s-prow/horologium:v20181019-08e9d55c9
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -277,6 +277,55 @@ spec:
       - name: config
         configMap:
           name: config
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: tide
+  labels:
+    app: tide
+spec:
+  replicas: 1 # Do not scale up.
+  template:
+    metadata:
+      labels:
+        app: tide
+    spec:
+      serviceAccountName: "tide"
+      containers:
+      - name: tide
+        image: gcr.io/k8s-prow/tide:v20181019-08e9d55c9
+        args:
+        - --dry-run=false
+        ports:
+          - name: http
+            containerPort: 8888
+        volumeMounts:
+        - name: oauth
+          mountPath: /etc/github
+          readOnly: true
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+      volumes:
+      - name: oauth
+        secret:
+          secretName: oauth-token
+      - name: config
+        configMap:
+          name: config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tide
+spec:
+  selector:
+    app: tide
+  ports:
+  - port: 80
+    targetPort: 8888
+  type: NodePort
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -472,3 +521,33 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: "hook"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: "tide"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: "tide"
+rules:
+  - apiGroups:
+      - "prow.k8s.io"
+    resources:
+      - prowjobs
+    verbs:
+      - create
+      - list
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: "tide"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "tide"
+subjects:
+- kind: ServiceAccount
+  name: "tide"

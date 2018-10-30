@@ -18,6 +18,7 @@ package github
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -271,6 +272,7 @@ type PullRequestChange struct {
 }
 
 // Repo contains general repository information.
+// See also https://developer.github.com/v3/repos/#get
 type Repo struct {
 	Owner         User   `json:"owner"`
 	Name          string `json:"name"`
@@ -278,6 +280,7 @@ type Repo struct {
 	HTMLURL       string `json:"html_url"`
 	Fork          bool   `json:"fork"`
 	DefaultBranch string `json:"default_branch"`
+	Archived      bool   `json:"archived"`
 }
 
 // Branch contains general branch information.
@@ -295,6 +298,14 @@ type BranchProtectionRequest struct {
 	EnforceAdmins              *bool                       `json:"enforce_admins"`
 	RequiredPullRequestReviews *RequiredPullRequestReviews `json:"required_pull_request_reviews"`
 	Restrictions               *Restrictions               `json:"restrictions"`
+}
+
+func (r BranchProtectionRequest) String() string {
+	bytes, err := json.Marshal(&r)
+	if err != nil {
+		return fmt.Sprintf("%#v", r)
+	}
+	return string(bytes)
 }
 
 // RequiredStatusChecks specifies which contexts must pass to merge.

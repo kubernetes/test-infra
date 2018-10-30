@@ -126,37 +126,57 @@ function redrawQueries(): void {
             "GitHub Search Link"
         );
         li.appendChild(a);
+        li.appendChild(document.createTextNode(" - Meaning: Is an open Pull Request"));
 
         // build the description
         // all queries should implicitly mean this
-        const ul = document.createElement("ul");
-        const innerLi = document.createElement("li");
         // add the list of repos, defaulting to an empty array if no repos have been provided.
+        const orgs = tideQuery["orgs"] || [];
         const repos = tideQuery["repos"] || [];
+        const excludedRepos = tideQuery["excludedRepos"] || [];
+        if (orgs.length > 0) {
+            li.appendChild(document.createTextNode(" in one of the following orgs: "));
+            const ul = document.createElement("ul");
+            const innerLi = document.createElement("li");
+            for (let i = 0; i < orgs.length; i++) {
+                innerLi.appendChild(createLink("https://github.com/" + orgs[i], orgs[i]));
+                if (i + 1 < repos.length) {
+                    innerLi.appendChild(document.createTextNode(", "));
+                }
+            }
+            ul.appendChild(innerLi);
+            li.appendChild(ul);
+        }
         if (repos.length > 0) {
-            const explanationPrefix = " - Meaning: Is an open Pull Request " +
-                "in one of the following repos: ";
-            li.appendChild(document.createTextNode(explanationPrefix));
+            let reposText = " in one of the following repos: ";
+            if (orgs.length > 0) {
+                reposText = " or " + reposText;
+            }
+            li.appendChild(document.createTextNode(reposText));
+            const ul = document.createElement("ul");
+            const innerLi = document.createElement("li");
             for (let j = 0; j < repos.length; j++) {
                 innerLi.appendChild(createLink("https://github.com/" + repos[j], repos[j]));
                 if (j + 1 < repos.length) {
                     innerLi.appendChild(document.createTextNode(", "));
                 }
             }
-        } else if (tideQuery.orgs && tideQuery.orgs.length > 0) {
-            const explanationPrefix = " - Meaning: Is an open Pull Request " +
-                "in one of the following orgs: ";
-            li.appendChild(document.createTextNode(explanationPrefix));
-            for (let i = 0; i < tideQuery.orgs.length; i++) {
-                const org = tideQuery.orgs[i];
-                innerLi.appendChild(createLink("https://github.com/" + org, org));
-                if (i + 1 < repos.length) {
+            ul.appendChild(innerLi);
+            li.appendChild(ul);
+        }
+        if (excludedRepos.length > 0) {
+            li.appendChild(document.createTextNode(" but NOT in any of the following excluded repos: "));
+            const ul = document.createElement("ul");
+            const innerLi = document.createElement("li");
+            for (let j = 0; j < excludedRepos.length; j++) {
+                innerLi.appendChild(createLink("https://github.com/" + excludedRepos[j], excludedRepos[j]));
+                if (j + 1 < excludedRepos.length) {
                     innerLi.appendChild(document.createTextNode(", "));
                 }
             }
+            ul.appendChild(innerLi);
+            li.appendChild(ul);
         }
-        ul.appendChild(innerLi);
-        li.appendChild(ul);
         // required labels
         fillDetail(tideQuery.labels, "labels", "with ", li, function(data) {
           return createLabelEl(data);

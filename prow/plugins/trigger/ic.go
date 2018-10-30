@@ -21,6 +21,7 @@ import (
 	"regexp"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -54,20 +55,23 @@ func handleIC(c client, trigger *plugins.Trigger, ic github.IssueCommentEvent) e
 	}
 
 	// Which jobs does the comment want us to run?
-	okToTest := okToTestRe.MatchString(ic.Comment.Body)
-	testAll := okToTest || testAllRe.MatchString(ic.Comment.Body)
+	isOkToTest := okToTestRe.MatchString(ic.Comment.Body)
+	testAll := isOkToTest || testAllRe.MatchString(ic.Comment.Body)
 	shouldRetestFailed := retestRe.MatchString(ic.Comment.Body)
 	requestedJobs := c.Config.MatchingPresubmits(ic.Repo.FullName, ic.Comment.Body, testAll)
 	if !shouldRetestFailed && len(requestedJobs) == 0 {
 		// Check for the presence of the needs-ok-to-test label and remove it
 		// if a trusted member has commented "/ok-to-test".
-		if okToTest && ic.Issue.HasLabel(needsOkToTest) {
-			trusted, err := trustedUser(c.GitHubClient, trigger, commentAuthor, org, repo)
+		if isOkToTest && ic.Issue.HasLabel(labels.NeedsOkToTest) {
+			trusted, err := TrustedUser(c.GitHubClient, trigger, commentAuthor, org, repo)
 			if err != nil {
 				return err
 			}
 			if trusted {
-				return c.GitHubClient.RemoveLabel(org, repo, number, needsOkToTest)
+				if err := c.GitHubClient.AddLabel(org, repo, number, labels.OkToTest); err != nil {
+					return err
+				}
+				return c.GitHubClient.RemoveLabel(org, repo, number, labels.NeedsOkToTest)
 			}
 		}
 		return nil
@@ -98,18 +102,13 @@ func handleIC(c client, trigger *plugins.Trigger, ic github.IssueCommentEvent) e
 		requestedJobs = append(requestedJobs, retests...)
 	}
 
-	var comments []github.IssueComment
 	// Skip untrusted users.
-	trusted, err := trustedUser(c.GitHubClient, trigger, commentAuthor, org, repo)
+	trusted, err := TrustedUser(c.GitHubClient, trigger, commentAuthor, org, repo)
 	if err != nil {
 		return fmt.Errorf("error checking trust of %s: %v", commentAuthor, err)
 	}
 	if !trusted {
-		comments, err = c.GitHubClient.ListIssueComments(org, repo, number)
-		if err != nil {
-			return fmt.Errorf("error listing issue comments: %v", err)
-		}
-		trusted, err := trustedPullRequest(c.GitHubClient, trigger, ic.Issue.User.Login, org, repo, comments)
+		_, trusted, err := trustedPullRequest(c.GitHubClient, trigger, ic.Issue.User.Login, org, repo, number, ic.Issue.Labels)
 		if err != nil {
 			return err
 		}
@@ -120,13 +119,14 @@ func handleIC(c client, trigger *plugins.Trigger, ic github.IssueCommentEvent) e
 		}
 	}
 
-	if okToTest && ic.Issue.HasLabel(needsOkToTest) {
-		if err := c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, needsOkToTest); err != nil {
-			c.Logger.WithError(err).Errorf("Failed at removing %s label", needsOkToTest)
+	if isOkToTest {
+		if err := c.GitHubClient.AddLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, labels.OkToTest); err != nil {
+			return err
 		}
-		err = clearStaleComments(c.GitHubClient, *pr, comments)
-		if err != nil {
-			c.Logger.Warnf("Failed to clear stale comments: %v.", err)
+	}
+	if (ic.Issue.HasLabel(labels.OkToTest) || isOkToTest) && ic.Issue.HasLabel(labels.NeedsOkToTest) {
+		if err := c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, labels.NeedsOkToTest); err != nil {
+			return err
 		}
 	}
 

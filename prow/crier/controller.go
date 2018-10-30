@@ -20,6 +20,7 @@ package crier
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
 	jsonpatch "github.com/evanphx/json-patch"
@@ -52,23 +53,29 @@ type Controller struct {
 	queue       workqueue.RateLimitingInterface
 	informer    pjinformers.ProwJobInformer
 	reporter    reportClient
+	numWorkers  int
+	wg          *sync.WaitGroup
 }
 
 func NewController(
 	pjclientset clientset.Interface,
 	queue workqueue.RateLimitingInterface,
 	informer pjinformers.ProwJobInformer,
-	reporter reportClient) *Controller {
+	reporter reportClient,
+	numWorkers int,
+	wg *sync.WaitGroup) *Controller {
 	return &Controller{
 		pjclientset: pjclientset,
 		queue:       queue,
 		informer:    informer,
 		reporter:    reporter,
+		numWorkers:  numWorkers,
+		wg:          wg,
 	}
 }
 
 // Run is the main path of execution for the controller loop
-func (c *Controller) Run(numWorkers int, stopCh <-chan struct{}) {
+func (c *Controller) Run(stopCh <-chan struct{}) {
 	// handle a panic with logging and exiting
 	defer utilruntime.HandleCrash()
 	// ignore new items in the queue but when all goroutines
@@ -108,11 +115,11 @@ func (c *Controller) Run(numWorkers int, stopCh <-chan struct{}) {
 	logrus.Info("Controller.Run: cache sync complete")
 
 	// run the runWorker method every second with a stop channel
-	for i := 0; i < numWorkers; i++ {
+	for i := 0; i < c.numWorkers; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
 
-	logrus.Infof("Started %d workers", numWorkers)
+	logrus.Infof("Started %d workers", c.numWorkers)
 	<-stopCh
 	logrus.Info("Shutting down workers")
 }
@@ -125,8 +132,10 @@ func (c *Controller) HasSynced() bool {
 
 // runWorker executes the loop to process new items added to the queue
 func (c *Controller) runWorker() {
+	c.wg.Add(1)
 	for c.processNextItem() {
 	}
+	c.wg.Done()
 }
 
 func (c *Controller) retry(key interface{}, err error) bool {
@@ -172,9 +181,7 @@ func (c *Controller) updateReportState(pj *v1.ProwJob) error {
 // necessary handler action based off of if the item was
 // created or deleted
 func (c *Controller) processNextItem() bool {
-
 	key, quit := c.queue.Get()
-
 	if quit {
 		return false
 	}
@@ -211,35 +218,15 @@ func (c *Controller) processNextItem() bool {
 		return c.retry(key, err)
 	}
 
-	if !pj.Spec.Report {
-		c.queue.Forget(key)
-		return true
-	}
-
 	// not belong to the current reporter
 	if !c.reporter.ShouldReport(pj) {
 		c.queue.Forget(key)
 		return true
 	}
 
+	// we set omitempty on PrevReportStates, so here we need to init it if is nil
 	if pj.Status.PrevReportStates == nil {
-		// old prowjobs doesn't have this field, let's update it with an empty map...
-
-		pjCopy := pj.DeepCopy()
-		pjCopy.Status.PrevReportStates = map[string]v1.ProwJobState{}
-		if _, err := c.pjclientset.Prow().ProwJobs(pjCopy.Namespace).Update(pjCopy); err != nil {
-			logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to update pj")
-			return c.retry(key, err)
-		}
-
-		//resync with apiserver
-		pj, err = c.pjclientset.Prow().ProwJobs(pj.Namespace).Get(pj.Name, metav1.GetOptions{})
-		if err != nil {
-			// hope next cycle will catch up
-			logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to resync pj")
-			c.queue.Forget(key)
-			return true
-		}
+		pj.Status.PrevReportStates = map[string]v1.ProwJobState{}
 	}
 
 	// already reported current state

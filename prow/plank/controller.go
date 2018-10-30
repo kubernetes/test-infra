@@ -25,7 +25,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bwmarrin/snowflake"
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	"k8s.io/test-infra/prow/config"
@@ -78,7 +77,6 @@ type Controller struct {
 	ghc    GitHubClient
 	log    *logrus.Entry
 	ca     configAgent
-	node   *snowflake.Node
 	totURL string
 	// selector that will be applied on prowjobs and pods.
 	selector string
@@ -91,14 +89,13 @@ type Controller struct {
 	pjLock sync.RWMutex
 	// shared across the controller and a goroutine that gathers metrics.
 	pjs []kube.ProwJob
+
+	// if skip report job results to github
+	skipReport bool
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(kc *kube.Client, pkcs map[string]*kube.Client, ghc GitHubClient, logger *logrus.Entry, ca *config.Agent, totURL, selector string) (*Controller, error) {
-	n, err := snowflake.NewNode(1)
-	if err != nil {
-		return nil, err
-	}
+func NewController(kc *kube.Client, pkcs map[string]*kube.Client, ghc GitHubClient, logger *logrus.Entry, ca *config.Agent, totURL, selector string, skipReport bool) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
@@ -112,10 +109,10 @@ func NewController(kc *kube.Client, pkcs map[string]*kube.Client, ghc GitHubClie
 		ghc:         ghc,
 		log:         logger,
 		ca:          ca,
-		node:        n,
 		pendingJobs: make(map[string]int),
 		totURL:      totURL,
 		selector:    selector,
+		skipReport:  skipReport,
 	}, nil
 }
 
@@ -222,7 +219,7 @@ func (c *Controller) Sync() error {
 	}
 
 	var reportErrs []error
-	if c.ghc != nil {
+	if !c.skipReport {
 		reportTemplate := c.ca.Config().Plank.ReportTemplate
 		for report := range reportCh {
 			if err := reportlib.Report(c.ghc, reportTemplate, report); err != nil {
@@ -500,19 +497,16 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 }
 
 func (c *Controller) getBuildID(name string) (string, error) {
-	if c.totURL == "" {
-		return c.node.Generate().String(), nil
-	}
 	return pjutil.GetBuildID(name, c.totURL)
 }
 
 func getPodBuildID(pod *kube.Pod) string {
 	for _, env := range pod.Spec.Containers[0].Env {
-		if env.Name == "BUILD_NUMBER" {
+		if env.Name == "BUILD_ID" {
 			return env.Value
 		}
 	}
-	logrus.Warningf("BUILD_NUMBER was not found in pod %q: streaming logs from deck will not work", pod.ObjectMeta.Name)
+	logrus.Warningf("BUILD_ID was not found in pod %q: streaming logs from deck will not work", pod.ObjectMeta.Name)
 	return ""
 }
 

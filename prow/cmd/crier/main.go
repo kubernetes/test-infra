@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -36,7 +37,7 @@ import (
 	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
 
 	"k8s.io/test-infra/prow/crier"
-	"k8s.io/test-infra/prow/gerrit/client"
+	gerritclient "k8s.io/test-infra/prow/gerrit/client"
 	gerritreporter "k8s.io/test-infra/prow/gerrit/reporter"
 	"k8s.io/test-infra/prow/logrusutil"
 	pubsubreporter "k8s.io/test-infra/prow/pubsub/reporter"
@@ -47,23 +48,28 @@ const (
 )
 
 type options struct {
-	numWorkers     int
 	masterURL      string
 	kubeConfig     string
 	cookiefilePath string
-	gerritProjects gerrit.ProjectsFlag
+	gerritProjects gerritclient.ProjectsFlag
 
-	gerrit bool
-	pubsub bool
-	// github bool
+	gerritWorkers int
+	pubsubWorkers int
+	// githubWorkers int
 }
 
 func (o *options) Validate() error {
-	if o.numWorkers == 0 {
-		return errors.New("--num-workers must be greater than 0")
+	if o.gerritWorkers > 1 {
+		// TODO(krzyzacy): try to see how to handle racy better for gerrit aggregate report.
+		logrus.Warn("gerrit reporter only supports one worker")
+		o.gerritWorkers = 1
 	}
 
-	if o.gerrit {
+	if o.gerritWorkers+o.pubsubWorkers <= 0 {
+		return errors.New("crier need to have at least one report worker to start")
+	}
+
+	if o.gerritWorkers > 0 {
 		if len(o.gerritProjects) == 0 {
 			return errors.New("--gerrit-projects must be set")
 		}
@@ -78,15 +84,15 @@ func (o *options) Validate() error {
 
 func gatherOptions() options {
 	o := options{
-		gerritProjects: gerrit.ProjectsFlag{},
+		gerritProjects: gerritclient.ProjectsFlag{},
 	}
-	flag.IntVar(&o.numWorkers, "num-workers", 1, "Number of prowjob processers")
+
 	flag.StringVar(&o.masterURL, "masterurl", "", "URL to k8s master")
 	flag.StringVar(&o.kubeConfig, "kubeconfig", "", "Cluster config for the cluster you want to connect to")
 	flag.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for anonymous")
 	flag.Var(&o.gerritProjects, "gerrit-projects", "Set of gerrit repos to monitor on a host example: --gerrit-host=https://android.googlesource.com=platform/build,toolchain/llvm, repeat flag for each host")
-	flag.BoolVar(&o.gerrit, "gerrit", false, "if need to enable gerrit reporter")
-	flag.BoolVar(&o.pubsub, "pubsub", false, "if need to enable pubsub reporter")
+	flag.IntVar(&o.gerritWorkers, "gerrit-workers", 0, "Number of gerrit report workers (0 means disabled)")
+	flag.IntVar(&o.pubsubWorkers, "pubsub-workers", 0, "Number of pubsub report workers (0 means disabled)")
 	flag.Parse()
 	return o
 }
@@ -161,16 +167,20 @@ func main() {
 
 	controllers := []*crier.Controller{}
 
-	if o.gerrit {
-		gerritReporter, err := gerritreporter.NewReporter(o.cookiefilePath, o.gerritProjects)
+	// track all worker status before shutdown
+	wg := &sync.WaitGroup{}
+
+	if o.gerritWorkers > 0 {
+		informer := prowjobInformerFactory.Prow().V1().ProwJobs()
+		gerritReporter, err := gerritreporter.NewReporter(o.cookiefilePath, o.gerritProjects, informer.Lister())
 		if err != nil {
 			logrus.Fatalf("Fail to start gerrit reporter: %v", err)
 		}
-		controllers = append(controllers, crier.NewController(prowjobClient, queue, prowjobInformerFactory.Prow().V1().ProwJobs(), gerritReporter))
+		controllers = append(controllers, crier.NewController(prowjobClient, queue, informer, gerritReporter, o.gerritWorkers, wg))
 	}
 
-	if o.pubsub {
-		controllers = append(controllers, crier.NewController(prowjobClient, queue, prowjobInformerFactory.Prow().V1().ProwJobs(), pubsubreporter.NewReporter()))
+	if o.pubsubWorkers > 0 {
+		controllers = append(controllers, crier.NewController(prowjobClient, queue, prowjobInformerFactory.Prow().V1().ProwJobs(), pubsubreporter.NewReporter(), o.pubsubWorkers, wg))
 	}
 
 	if len(controllers) == 0 {
@@ -183,13 +193,29 @@ func main() {
 	// run the controller loop to process items
 	prowjobInformerFactory.Start(stopCh)
 	for _, controller := range controllers {
-		go controller.Run(o.numWorkers, stopCh)
+		go controller.Run(stopCh)
 	}
 
 	sigTerm := make(chan os.Signal, 1)
 	signal.Notify(sigTerm, syscall.SIGTERM)
 	signal.Notify(sigTerm, syscall.SIGINT)
 
-	// TODO(krzyzacy) : handle graceful shutdown?
 	<-sigTerm
+	logrus.Info("Crier received a termination signal and is shutting down...")
+	for range controllers {
+		stopCh <- struct{}{}
+	}
+
+	// waiting for all crier worker to finish
+	c := make(chan struct{})
+	go func() {
+		defer close(c)
+		wg.Wait()
+	}()
+	select {
+	case <-c:
+		logrus.Info("All worker finished, exiting crier")
+	case <-time.After(10 * time.Second):
+		logrus.Info("timed out waiting for all worker to finish")
+	}
 }

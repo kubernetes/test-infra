@@ -16,7 +16,9 @@ limitations under the License.
 
 package spyglass
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestNewGCSJobSource(t *testing.T) {
 	testCases := []struct {
@@ -30,7 +32,7 @@ func TestNewGCSJobSource(t *testing.T) {
 	}{
 		{
 			name:        "Test standard GCS link",
-			src:         "gs://test-bucket/logs/example-ci-run/403",
+			src:         "test-bucket/logs/example-ci-run/403",
 			exBucket:    "test-bucket",
 			exJobPrefix: "logs/example-ci-run/403/",
 			exName:      "example-ci-run",
@@ -39,7 +41,7 @@ func TestNewGCSJobSource(t *testing.T) {
 		},
 		{
 			name:        "Test GCS link with trailing /",
-			src:         "gs://test-bucket/logs/example-ci-run/403/",
+			src:         "test-bucket/logs/example-ci-run/403/",
 			exBucket:    "test-bucket",
 			exJobPrefix: "logs/example-ci-run/403/",
 			exName:      "example-ci-run",
@@ -48,24 +50,19 @@ func TestNewGCSJobSource(t *testing.T) {
 		},
 		{
 			name:        "Test GCS link with org name",
-			src:         "gs://test-bucket/logs/sig-flexing/example-ci-run/403",
+			src:         "test-bucket/logs/sig-flexing/example-ci-run/403",
 			exBucket:    "test-bucket",
 			exJobPrefix: "logs/sig-flexing/example-ci-run/403/",
 			exName:      "example-ci-run",
 			exBuildID:   "403",
 			expectedErr: nil,
 		},
-		{
-			name:        "Test invalid GCS link",
-			src:         "garbage/test-bucket/logs/sig-flexing/example-ci-run/403",
-			expectedErr: ErrCannotParseSource,
-		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			jobSource, err := newGCSJobSource(tc.src)
-			if err != nil && err != tc.expectedErr {
-				t.Errorf("Expected err: %v, got err: %v", err, tc.expectedErr)
+			if err != tc.expectedErr {
+				t.Errorf("Expected err: %v, got err: %v", tc.expectedErr, err)
 			}
 			if tc.exBucket != jobSource.bucket {
 				t.Errorf("Expected bucket %s, got %s", tc.exBucket, jobSource.bucket)
@@ -92,7 +89,7 @@ func TestArtifacts_ListGCS(t *testing.T) {
 	}{
 		{
 			name:   "Test ArtifactFetcher simple list artifacts",
-			source: "gs://test-bucket/logs/example-ci-run/403",
+			source: "test-bucket/logs/example-ci-run/403",
 			expectedArtifacts: []string{
 				"build-log.txt",
 				"started.json",
@@ -103,17 +100,16 @@ func TestArtifacts_ListGCS(t *testing.T) {
 		},
 		{
 			name:              "Test ArtifactFetcher list artifacts on source with no artifacts",
-			source:            "gs://test-bucket/logs/example-ci/404",
+			source:            "test-bucket/logs/example-ci/404",
 			expectedArtifacts: []string{},
 		},
 	}
 
 	for _, tc := range testCases {
-		jobSrc, err := testAf.createJobSource(tc.source)
+		actualArtifacts, err := testAf.artifacts(tc.source)
 		if err != nil {
-			t.Fatalf("%s failed to create job source for source: %s", tc.name, tc.source)
+			t.Errorf("Failed to get artifact names: %v", err)
 		}
-		actualArtifacts := testAf.artifacts(jobSrc)
 		for _, ea := range tc.expectedArtifacts {
 			found := false
 			for _, aa := range actualArtifacts {
@@ -148,23 +144,22 @@ func TestFetchArtifacts_GCS(t *testing.T) {
 		{
 			name:         "Fetch build-log.txt from valid source",
 			artifactName: "build-log.txt",
-			source:       "gs://test-bucket/logs/example-ci-run/403",
+			source:       "test-bucket/logs/example-ci-run/403",
 			expectedSize: 25,
 		},
 		{
 			name:         "Fetch build-log.txt from invalid source",
 			artifactName: "build-log.txt",
-			source:       "gs://test-bucket/logs/example-ci-run/404",
+			source:       "test-bucket/logs/example-ci-run/404",
 			expectErr:    true,
 		},
 	}
 
 	for _, tc := range testCases {
-		jobSrc, err := testAf.createJobSource(tc.source)
+		artifact, err := testAf.artifact(tc.source, tc.artifactName, maxSize)
 		if err != nil {
-			t.Fatalf("%s failed to create job source from source %s", tc.name, tc.source)
+			t.Errorf("Failed to get artifacts: %v", err)
 		}
-		artifact := testAf.artifact(jobSrc, tc.artifactName, maxSize)
 		size, err := artifact.Size()
 		if err != nil && !tc.expectErr {
 			t.Fatalf("%s failed getting size for artifact %s, err: %v", tc.name, artifact.JobPath(), err)

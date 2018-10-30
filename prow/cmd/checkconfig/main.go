@@ -28,11 +28,15 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/errorutil"
+	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins/approve"
 	"k8s.io/test-infra/prow/plugins/blockade"
+	"k8s.io/test-infra/prow/plugins/blunderbuss"
 	"k8s.io/test-infra/prow/plugins/cherrypickunapproved"
 	"k8s.io/test-infra/prow/plugins/hold"
+	"k8s.io/test-infra/prow/plugins/owners-label"
 	"k8s.io/test-infra/prow/plugins/releasenote"
 	"k8s.io/test-infra/prow/plugins/verify-owners"
 	"k8s.io/test-infra/prow/plugins/wip"
@@ -75,12 +79,16 @@ const (
 	mismatchedTideWarning   = "mismatched-tide"
 	nonDecoratedJobsWarning = "non-decorated-jobs"
 	jobNameLengthWarning    = "long-job-names"
+	needsOkToTestWarning    = "needs-ok-to-test"
+	validateOwnersWarning   = "validate-owners"
 )
 
 var allWarnings = []string{
 	mismatchedTideWarning,
 	nonDecoratedJobsWarning,
 	jobNameLengthWarning,
+	needsOkToTestWarning,
+	validateOwnersWarning,
 }
 
 func (o *options) Validate() error {
@@ -135,11 +143,13 @@ func main() {
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error loading Prow config.")
 	}
+	cfg := configAgent.Config()
 
 	pluginAgent := plugins.PluginAgent{}
 	if err := pluginAgent.Load(o.pluginConfig); err != nil {
 		logrus.WithError(err).Fatal("Error loading Prow plugin config.")
 	}
+	pcfg := pluginAgent.Config()
 
 	// the following checks are useful in finding user errors but their
 	// presence won't lead to strictly incorrect behavior, so we can
@@ -147,17 +157,27 @@ func main() {
 	// in all components on their failure.
 	var errs []error
 	if o.warningEnabled(mismatchedTideWarning) {
-		if err := validateTideRequirements(configAgent, pluginAgent); err != nil {
+		if err := validateTideRequirements(cfg, pcfg); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	if o.warningEnabled(nonDecoratedJobsWarning) {
-		if err := validateDecoratedJobs(configAgent); err != nil {
+		if err := validateDecoratedJobs(cfg); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	if o.warningEnabled(jobNameLengthWarning) {
-		if err := validateJobRequirements(configAgent); err != nil {
+		if err := validateJobRequirements(cfg.JobConfig); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if o.warningEnabled(needsOkToTestWarning) {
+		if err := validateNeedsOkToTestLabel(cfg); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if o.warningEnabled(validateOwnersWarning) {
+		if err := verifyOwnersPlugin(pcfg); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -166,9 +186,7 @@ func main() {
 	}
 }
 
-func validateJobRequirements(configAgent config.Agent) error {
-	c := configAgent.Config().JobConfig
-
+func validateJobRequirements(c config.JobConfig) error {
 	var validationErrs []error
 	for repo, jobs := range c.Presubmits {
 		for _, job := range jobs {
@@ -191,7 +209,7 @@ func validatePresubmitJob(repo string, job config.Presubmit) error {
 	var validationErrs []error
 	// Prow labels k8s resources with job names. Labels are capped at 63 chars.
 	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
-		validationErrs = append(validationErrs, fmt.Errorf("Name of Presubmit job '%s' (for repo '%s') too long (should be at most 63 characters)", job.Name, repo))
+		validationErrs = append(validationErrs, fmt.Errorf("name of Presubmit job %q (for repo %q) too long (should be at most 63 characters)", job.Name, repo))
 	}
 	return errorutil.NewAggregate(validationErrs...)
 }
@@ -200,7 +218,7 @@ func validatePostsubmitJob(repo string, job config.Postsubmit) error {
 	var validationErrs []error
 	// Prow labels k8s resources with job names. Labels are capped at 63 chars.
 	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
-		validationErrs = append(validationErrs, fmt.Errorf("Name of Postsubmit job '%s' (for repo '%s') too long (should be at most 63 characters)", job.Name, repo))
+		validationErrs = append(validationErrs, fmt.Errorf("name of Postsubmit job %q (for repo %q) too long (should be at most 63 characters)", job.Name, repo))
 	}
 	return errorutil.NewAggregate(validationErrs...)
 }
@@ -209,12 +227,12 @@ func validatePeriodicJob(job config.Periodic) error {
 	var validationErrs []error
 	// Prow labels k8s resources with job names. Labels are capped at 63 chars.
 	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
-		validationErrs = append(validationErrs, fmt.Errorf("Name of Periodic job '%s' too long (should be at most 63 characters)", job.Name))
+		validationErrs = append(validationErrs, fmt.Errorf("name of Periodic job %q too long (should be at most 63 characters)", job.Name))
 	}
 	return errorutil.NewAggregate(validationErrs...)
 }
 
-func validateTideRequirements(configAgent config.Agent, pluginAgent plugins.PluginAgent) error {
+func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration) error {
 	type matcher struct {
 		// matches determines if the tide query appropriately honors the
 		// label in question -- whether by requiring it or forbidding it
@@ -246,70 +264,202 @@ func validateTideRequirements(configAgent config.Agent, pluginAgent plugins.Plug
 		// config holds the orgs and repos for which tide does honor the
 		// label; this container is populated conditionally from queries
 		// using the matcher
-		config orgRepoConfig
+		config *orgRepoConfig
 	}{
-		{plugin: lgtm.PluginName, label: lgtm.LGTMLabel, matcher: requires},
-		{plugin: approve.PluginName, label: approve.ApprovedLabel, matcher: requires},
-		{plugin: hold.PluginName, label: hold.Label, matcher: forbids},
-		{plugin: wip.PluginName, label: wip.Label, matcher: forbids},
-		{plugin: verifyowners.PluginName, label: verifyowners.InvalidOwnersLabel, matcher: forbids},
+		{plugin: lgtm.PluginName, label: labels.LGTM, matcher: requires},
+		{plugin: approve.PluginName, label: labels.Approved, matcher: requires},
+		{plugin: hold.PluginName, label: labels.Hold, matcher: forbids},
+		{plugin: wip.PluginName, label: labels.WorkInProgress, matcher: forbids},
+		{plugin: verifyowners.PluginName, label: labels.InvalidOwners, matcher: forbids},
 		{plugin: releasenote.PluginName, label: releasenote.ReleaseNoteLabelNeeded, matcher: forbids},
-		{plugin: cherrypickunapproved.PluginName, label: cherrypickunapproved.CpUnapprovedLabel, matcher: forbids},
-		{plugin: blockade.PluginName, label: blockade.BlockedPathsLabel, matcher: forbids},
+		{plugin: cherrypickunapproved.PluginName, label: labels.CpUnapproved, matcher: forbids},
+		{plugin: blockade.PluginName, label: labels.BlockedPaths, matcher: forbids},
+		{plugin: needsrebase.PluginName, label: labels.NeedsRebase, matcher: forbids},
 	}
 
 	for i := range configs {
-		configs[i].config = newOrgRepoConfig([]string{}, []string{})
-		for _, query := range configAgent.Config().Tide.Queries {
+		// For each plugin determine the subset of tide queries that match and then
+		// the orgs and repos that the subset matches.
+		var matchingQueries config.TideQueries
+		for _, query := range cfg.Tide.Queries {
 			if configs[i].matcher.matches(configs[i].label, query) {
-				for _, org := range query.Orgs {
-					configs[i].config.orgs.Insert(org)
-				}
-				for _, repo := range query.Repos {
-					configs[i].config.repos.Insert(repo)
-				}
+				matchingQueries = append(matchingQueries, query)
 			}
 		}
+		configs[i].config = newOrgRepoConfig(matchingQueries.OrgExceptionsAndRepos())
 	}
 
-	overallTideConfig := newOrgRepoConfig([]string{}, []string{})
-	for _, query := range configAgent.Config().Tide.Queries {
-		for _, org := range query.Orgs {
-			overallTideConfig.orgs.Insert(org)
-		}
-		for _, repo := range query.Repos {
-			overallTideConfig.repos.Insert(repo)
-		}
-	}
+	overallTideConfig := newOrgRepoConfig(cfg.Tide.Queries.OrgExceptionsAndRepos())
 
+	// Now actually execute the checks we just configured.
 	var validationErrs []error
 	for _, pluginConfig := range configs {
-		validationErrs = append(validationErrs, ensureValidConfiguration(
-			pluginConfig.plugin, pluginConfig.label, pluginConfig.matcher.verb, pluginConfig.config, overallTideConfig,
-			newOrgRepoConfig(pluginAgent.Config().EnabledReposForPlugin(pluginConfig.plugin))),
+		err := ensureValidConfiguration(
+			pluginConfig.plugin,
+			pluginConfig.label,
+			pluginConfig.matcher.verb,
+			pluginConfig.config,
+			overallTideConfig,
+			enabledOrgReposForPlugin(pcfg, pluginConfig.plugin),
 		)
+		validationErrs = append(validationErrs, err)
 	}
 
 	return errorutil.NewAggregate(validationErrs...)
 }
 
-func newOrgRepoConfig(orgs, repos []string) orgRepoConfig {
-	return orgRepoConfig{
-		orgs:  sets.NewString(orgs...),
-		repos: sets.NewString(repos...),
+func newOrgRepoConfig(orgExceptions map[string]sets.String, repos sets.String) *orgRepoConfig {
+	return &orgRepoConfig{
+		orgExceptions: orgExceptions,
+		repos:         repos,
 	}
 }
 
+// orgRepoConfig describes a set of repositories with an explicit
+// whitelist and a mapping of blacklists for owning orgs
 type orgRepoConfig struct {
-	orgs, repos sets.String
+	// orgExceptions holds explicit blacklists of repos for owning orgs
+	orgExceptions map[string]sets.String
+	// repos is a whitelist of repos
+	repos sets.String
 }
 
 func (c *orgRepoConfig) items() []string {
-	return c.orgs.Union(c.repos).UnsortedList()
+	items := make([]string, 0, len(c.orgExceptions)+len(c.repos))
+	for org, excepts := range c.orgExceptions {
+		item := fmt.Sprintf("org: %s", org)
+		if excepts.Len() > 0 {
+			item = fmt.Sprintf("%s without repo(s) %s", item, strings.Join(excepts.List(), ", "))
+			for _, repo := range excepts.List() {
+				item = fmt.Sprintf("%s '%s'", item, repo)
+			}
+		}
+		items = append(items, item)
+	}
+	for _, repo := range c.repos.List() {
+		items = append(items, fmt.Sprintf("repo: %s", repo))
+	}
+	return items
 }
 
-func (c *orgRepoConfig) has(target string) bool {
-	return c.repos.Has(target) || c.orgs.Has(target) || (strings.Contains(target, "/") && c.orgs.Has(strings.Split(target, "/")[0]))
+// difference returns a new orgRepoConfig that represents the set difference of
+// the repos specified by the receiver and the parameter orgRepoConfigs.
+func (c *orgRepoConfig) difference(c2 *orgRepoConfig) *orgRepoConfig {
+	res := &orgRepoConfig{
+		orgExceptions: make(map[string]sets.String),
+		repos:         sets.NewString().Union(c.repos),
+	}
+	for org, excepts1 := range c.orgExceptions {
+		if excepts2, ok := c2.orgExceptions[org]; ok {
+			res.repos.Insert(excepts2.Difference(excepts1).UnsortedList()...)
+		} else {
+			excepts := sets.NewString().Union(excepts1)
+			// Add any applicable repos in repos2 to excepts
+			for _, repo := range c2.repos.UnsortedList() {
+				if parts := strings.SplitN(repo, "/", 2); len(parts) == 2 && parts[0] == org {
+					excepts.Insert(repo)
+				}
+			}
+			res.orgExceptions[org] = excepts
+		}
+	}
+
+	res.repos = res.repos.Difference(c2.repos)
+
+	for _, repo := range res.repos.UnsortedList() {
+		if parts := strings.SplitN(repo, "/", 2); len(parts) == 2 {
+			if excepts2, ok := c2.orgExceptions[parts[0]]; ok && !excepts2.Has(repo) {
+				res.repos.Delete(repo)
+			}
+		}
+	}
+	return res
+}
+
+// intersection returns a new orgRepoConfig that represents the set intersection
+// of the repos specified by the receiver and the parameter orgRepoConfigs.
+func (c *orgRepoConfig) intersection(c2 *orgRepoConfig) *orgRepoConfig {
+	res := &orgRepoConfig{
+		orgExceptions: make(map[string]sets.String),
+		repos:         sets.NewString(),
+	}
+	for org, excepts1 := range c.orgExceptions {
+		// Include common orgs, but union exceptions.
+		if excepts2, ok := c2.orgExceptions[org]; ok {
+			res.orgExceptions[org] = excepts1.Union(excepts2)
+		} else {
+			// Include right side repos that match left side org.
+			for _, repo := range c2.repos.UnsortedList() {
+				if parts := strings.SplitN(repo, "/", 2); len(parts) == 2 && parts[0] == org && !excepts1.Has(repo) {
+					res.repos.Insert(repo)
+				}
+			}
+		}
+	}
+	for _, repo := range c.repos.UnsortedList() {
+		if c2.repos.Has(repo) {
+			res.repos.Insert(repo)
+		} else if parts := strings.SplitN(repo, "/", 2); len(parts) == 2 {
+			// Include left side repos that match right side org.
+			if excepts2, ok := c2.orgExceptions[parts[0]]; ok && !excepts2.Has(repo) {
+				res.repos.Insert(repo)
+			}
+		}
+	}
+	return res
+}
+
+// union returns a new orgRepoConfig that represents the set union of the
+// repos specified by the receiver and the parameter orgRepoConfigs
+func (c *orgRepoConfig) union(c2 *orgRepoConfig) *orgRepoConfig {
+	res := &orgRepoConfig{
+		orgExceptions: make(map[string]sets.String),
+		repos:         sets.NewString(),
+	}
+
+	for org, excepts1 := range c.orgExceptions {
+		// keep only items in both blacklists that are not in the
+		// explicit repo whitelists for the other configuration;
+		// we know from how the orgRepoConfigs are constructed that
+		// a org blacklist won't intersect it's own repo whitelist
+		pruned := excepts1.Difference(c2.repos)
+		if excepts2, ok := c2.orgExceptions[org]; ok {
+			res.orgExceptions[org] = pruned.Intersection(excepts2.Difference(c.repos))
+		} else {
+			res.orgExceptions[org] = pruned
+		}
+	}
+
+	for org, excepts2 := range c2.orgExceptions {
+		// update any blacklists not previously updated
+		if _, exists := res.orgExceptions[org]; !exists {
+			res.orgExceptions[org] = excepts2.Difference(c.repos)
+		}
+	}
+
+	// we need to prune out repos in the whitelists which are
+	// covered by an org already; we know from above that no
+	// org blacklist in the result will contain a repo whitelist
+	for _, repo := range c.repos.Union(c2.repos).UnsortedList() {
+		parts := strings.SplitN(repo, "/", 2)
+		if len(parts) != 2 {
+			logrus.Warnf("org/repo %q is formatted incorrectly", repo)
+			continue
+		}
+		if _, exists := res.orgExceptions[parts[0]]; !exists {
+			res.repos.Insert(repo)
+		}
+	}
+	return res
+}
+
+func enabledOrgReposForPlugin(c *plugins.Configuration, plugin string) *orgRepoConfig {
+	orgs, repos := c.EnabledReposForPlugin(plugin)
+	orgMap := make(map[string]sets.String, len(orgs))
+	for _, org := range orgs {
+		orgMap[org] = nil
+	}
+	return newOrgRepoConfig(orgMap, sets.NewString(repos...))
 }
 
 // ensureValidConfiguration enforces rules about tide and plugin config.
@@ -324,20 +474,9 @@ func (c *orgRepoConfig) has(target string) bool {
 //   - if org/repo is configured in tide, the tide configuration must require the same set of
 //     plugins as are configured. If the repository has LGTM and approve enabled, the tide query
 //     must require both labels
-func ensureValidConfiguration(plugin, label, verb string, tideSubSet, tideSuperSet, pluginsSubSet orgRepoConfig) error {
-	var notEnabled []string
-	for _, target := range tideSubSet.items() {
-		if !pluginsSubSet.has(target) {
-			notEnabled = append(notEnabled, target)
-		}
-	}
-
-	var notRequired []string
-	for _, target := range pluginsSubSet.items() {
-		if tideSuperSet.has(target) && !tideSubSet.has(target) {
-			notRequired = append(notRequired, target)
-		}
-	}
+func ensureValidConfiguration(plugin, label, verb string, tideSubSet, tideSuperSet, pluginsSubSet *orgRepoConfig) error {
+	notEnabled := tideSubSet.difference(pluginsSubSet).items()
+	notRequired := pluginsSubSet.intersection(tideSuperSet).difference(tideSubSet).items()
 
 	var configErrors []error
 	if len(notEnabled) > 0 {
@@ -350,21 +489,21 @@ func ensureValidConfiguration(plugin, label, verb string, tideSubSet, tideSuperS
 	return errorutil.NewAggregate(configErrors...)
 }
 
-func validateDecoratedJobs(configAgent config.Agent) error {
+func validateDecoratedJobs(cfg *config.Config) error {
 	var nonDecoratedJobs []string
-	for _, presubmit := range configAgent.Config().AllPresubmits([]string{}) {
+	for _, presubmit := range cfg.AllPresubmits([]string{}) {
 		if presubmit.Agent == string(v1.KubernetesAgent) && !presubmit.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, presubmit.Name)
 		}
 	}
 
-	for _, postsubmit := range configAgent.Config().AllPostsubmits([]string{}) {
+	for _, postsubmit := range cfg.AllPostsubmits([]string{}) {
 		if postsubmit.Agent == string(v1.KubernetesAgent) && !postsubmit.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, postsubmit.Name)
 		}
 	}
 
-	for _, periodic := range configAgent.Config().AllPeriodics() {
+	for _, periodic := range cfg.AllPeriodics() {
 		if periodic.Agent == string(v1.KubernetesAgent) && !periodic.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, periodic.Name)
 		}
@@ -372,6 +511,52 @@ func validateDecoratedJobs(configAgent config.Agent) error {
 
 	if len(nonDecoratedJobs) > 0 {
 		return fmt.Errorf("the following jobs use the kubernetes provider but do not use the pod utilities: %v", nonDecoratedJobs)
+	}
+	return nil
+}
+
+func validateNeedsOkToTestLabel(cfg *config.Config) error {
+	var queryErrors []error
+	for i, query := range cfg.Tide.Queries {
+		for _, label := range query.Labels {
+			if label == lgtm.LGTMLabel {
+				for _, label := range query.MissingLabels {
+					if label == labels.NeedsOkToTest {
+						queryErrors = append(queryErrors, fmt.Errorf(
+							"the tide query at position %d"+
+								"forbids the %q label and requires the %q label, "+
+								"which is not recommended; "+
+								"see https://github.com/kubernetes/test-infra/blob/master/prow/cmd/tide/maintainers.md#best-practices "+
+								"for more information",
+							i, labels.NeedsOkToTest, lgtm.LGTMLabel),
+						)
+					}
+				}
+			}
+		}
+	}
+	return errorutil.NewAggregate(queryErrors...)
+}
+
+func verifyOwnersPlugin(cfg *plugins.Configuration) error {
+	// we do not know the set of repos that use OWNERS, but we
+	// can get a reasonable proxy for this by looking at where
+	// the `approve', `blunderbuss' and `owners-label' plugins
+	// are enabled
+	approveConfig := enabledOrgReposForPlugin(cfg, approve.PluginName)
+	blunderbussConfig := enabledOrgReposForPlugin(cfg, blunderbuss.PluginName)
+	ownersLabelConfig := enabledOrgReposForPlugin(cfg, ownerslabel.PluginName)
+	ownersConfig := approveConfig.union(blunderbussConfig).union(ownersLabelConfig)
+	validateOwnersConfig := enabledOrgReposForPlugin(cfg, verifyowners.PluginName)
+
+	invalid := ownersConfig.difference(validateOwnersConfig).items()
+	if len(invalid) > 0 {
+		return fmt.Errorf("the following orgs or repos "+
+			"enable at least one plugin that uses OWNERS files (%s) "+
+			"but do not enable the %s plugin to ensure validity of OWNERS files: %v",
+			strings.Join([]string{approve.PluginName, blunderbuss.PluginName, ownerslabel.PluginName}, ", "),
+			verifyowners.PluginName, invalid,
+		)
 	}
 	return nil
 }

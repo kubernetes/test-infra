@@ -24,7 +24,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
-
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -39,9 +38,11 @@ func TestPostsubmitSpec(t *testing.T) {
 		{
 			name: "can override path alias and cloneuri",
 			p: config.Postsubmit{
-				UtilityConfig: config.UtilityConfig{
-					PathAlias: "foo",
-					CloneURI:  "bar",
+				JobBase: config.JobBase{
+					UtilityConfig: config.UtilityConfig{
+						PathAlias: "foo",
+						CloneURI:  "bar",
+					},
 				},
 			},
 			expected: kube.ProwJobSpec{
@@ -69,9 +70,11 @@ func TestPostsubmitSpec(t *testing.T) {
 		{
 			name: "job overrides take precedence over controller defaults",
 			p: config.Postsubmit{
-				UtilityConfig: config.UtilityConfig{
-					PathAlias: "foo",
-					CloneURI:  "bar",
+				JobBase: config.JobBase{
+					UtilityConfig: config.UtilityConfig{
+						PathAlias: "foo",
+						CloneURI:  "bar",
+					},
 				},
 			},
 			refs: kube.Refs{
@@ -106,9 +109,11 @@ func TestPresubmitSpec(t *testing.T) {
 		{
 			name: "can override path alias and cloneuri",
 			p: config.Presubmit{
-				UtilityConfig: config.UtilityConfig{
-					PathAlias: "foo",
-					CloneURI:  "bar",
+				JobBase: config.JobBase{
+					UtilityConfig: config.UtilityConfig{
+						PathAlias: "foo",
+						CloneURI:  "bar",
+					},
 				},
 			},
 			expected: kube.ProwJobSpec{
@@ -138,9 +143,11 @@ func TestPresubmitSpec(t *testing.T) {
 		{
 			name: "job overrides take precedence over controller defaults",
 			p: config.Presubmit{
-				UtilityConfig: config.UtilityConfig{
-					PathAlias: "foo",
-					CloneURI:  "bar",
+				JobBase: config.JobBase{
+					UtilityConfig: config.UtilityConfig{
+						PathAlias: "foo",
+						CloneURI:  "bar",
+					},
 				},
 			},
 			refs: kube.Refs{
@@ -176,9 +183,11 @@ func TestBatchSpec(t *testing.T) {
 		{
 			name: "can override path alias and cloneuri",
 			p: config.Presubmit{
-				UtilityConfig: config.UtilityConfig{
-					PathAlias: "foo",
-					CloneURI:  "bar",
+				JobBase: config.JobBase{
+					UtilityConfig: config.UtilityConfig{
+						PathAlias: "foo",
+						CloneURI:  "bar",
+					},
 				},
 			},
 			expected: kube.ProwJobSpec{
@@ -206,9 +215,11 @@ func TestBatchSpec(t *testing.T) {
 		{
 			name: "job overrides take precedence over controller defaults",
 			p: config.Presubmit{
-				UtilityConfig: config.UtilityConfig{
-					PathAlias: "foo",
-					CloneURI:  "bar",
+				JobBase: config.JobBase{
+					UtilityConfig: config.UtilityConfig{
+						PathAlias: "foo",
+						CloneURI:  "bar",
+					},
 				},
 			},
 			refs: kube.Refs{
@@ -422,8 +433,9 @@ func TestNewProwJob(t *testing.T) {
 			},
 			labels: map[string]string{},
 			expectedLabels: map[string]string{
-				"prow.k8s.io/job":  "job",
-				"prow.k8s.io/type": "periodic",
+				kube.CreatedByProw:     "true",
+				kube.ProwJobAnnotation: "job",
+				kube.ProwJobTypeLabel:  "periodic",
 			},
 		},
 		{
@@ -436,9 +448,10 @@ func TestNewProwJob(t *testing.T) {
 				"extra": "stuff",
 			},
 			expectedLabels: map[string]string{
-				"prow.k8s.io/job":  "job",
-				"prow.k8s.io/type": "periodic",
-				"extra":            "stuff",
+				kube.CreatedByProw:     "true",
+				kube.ProwJobAnnotation: "job",
+				kube.ProwJobTypeLabel:  "periodic",
+				"extra":                "stuff",
 			},
 		},
 		{
@@ -456,11 +469,12 @@ func TestNewProwJob(t *testing.T) {
 			},
 			labels: map[string]string{},
 			expectedLabels: map[string]string{
-				"prow.k8s.io/job":       "job",
-				"prow.k8s.io/type":      "presubmit",
-				"prow.k8s.io/refs.org":  "org",
-				"prow.k8s.io/refs.repo": "repo",
-				"prow.k8s.io/refs.pull": "1",
+				kube.CreatedByProw:     "true",
+				kube.ProwJobAnnotation: "job",
+				kube.ProwJobTypeLabel:  "presubmit",
+				kube.OrgLabel:          "org",
+				kube.RepoLabel:         "repo",
+				kube.PullLabel:         "1",
 			},
 		},
 		{
@@ -478,11 +492,12 @@ func TestNewProwJob(t *testing.T) {
 			},
 			labels: map[string]string{},
 			expectedLabels: map[string]string{
-				"prow.k8s.io/job":       "job",
-				"prow.k8s.io/type":      "presubmit",
-				"prow.k8s.io/refs.org":  "some-gerrit-instance.foo.com",
-				"prow.k8s.io/refs.repo": "repo",
-				"prow.k8s.io/refs.pull": "1",
+				kube.CreatedByProw:     "true",
+				kube.ProwJobAnnotation: "job",
+				kube.ProwJobTypeLabel:  "presubmit",
+				kube.OrgLabel:          "some-gerrit-instance.foo.com",
+				kube.RepoLabel:         "repo",
+				kube.PullLabel:         "1",
 			},
 		}, {
 			name: "job with name too long to fit in a label",
@@ -499,11 +514,12 @@ func TestNewProwJob(t *testing.T) {
 			},
 			labels: map[string]string{},
 			expectedLabels: map[string]string{
-				"prow.k8s.io/job":       "job-created-by-someone-who-loves-very-very-very-long-names-so-l",
-				"prow.k8s.io/type":      "presubmit",
-				"prow.k8s.io/refs.org":  "org",
-				"prow.k8s.io/refs.repo": "repo",
-				"prow.k8s.io/refs.pull": "1",
+				kube.CreatedByProw:     "true",
+				kube.ProwJobAnnotation: "job-created-by-someone-who-loves-very-very-very-long-names-so-l",
+				kube.ProwJobTypeLabel:  "presubmit",
+				kube.OrgLabel:          "org",
+				kube.RepoLabel:         "repo",
+				kube.PullLabel:         "1",
 			},
 		},
 	}
@@ -534,7 +550,7 @@ func TestNewProwJobWithAnnotations(t *testing.T) {
 			},
 			annotations: nil,
 			expectedAnnotations: map[string]string{
-				"prow.k8s.io/job": "job",
+				kube.ProwJobAnnotation: "job",
 			},
 		},
 		{
@@ -547,8 +563,8 @@ func TestNewProwJobWithAnnotations(t *testing.T) {
 				"annotation": "foo",
 			},
 			expectedAnnotations: map[string]string{
-				"annotation":      "foo",
-				"prow.k8s.io/job": "job",
+				"annotation":           "foo",
+				kube.ProwJobAnnotation: "job",
 			},
 		},
 	}

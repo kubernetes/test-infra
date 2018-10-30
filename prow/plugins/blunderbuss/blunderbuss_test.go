@@ -230,7 +230,7 @@ func TestHandleWithExcludeApproversOnlyReviewers(t *testing.T) {
 			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, true, pre); err != nil {
+		if err := handle(fghc, foc, logrus.WithField("plugin", PluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, true, pre); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}
@@ -269,7 +269,7 @@ func TestHandleWithoutExcludeApproversNoReviewers(t *testing.T) {
 			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, false, pre); err != nil {
+		if err := handle(fghc, foc, logrus.WithField("plugin", PluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, false, pre); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}
@@ -387,7 +387,7 @@ func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
 			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, false, pre); err != nil {
+		if err := handle(fghc, foc, logrus.WithField("plugin", PluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, false, pre); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}
@@ -478,7 +478,7 @@ func TestHandleOld(t *testing.T) {
 			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), nil, &tc.reviewerCount, 0, false, pre); err != nil {
+		if err := handle(fghc, foc, logrus.WithField("plugin", PluginName), nil, &tc.reviewerCount, 0, false, pre); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}

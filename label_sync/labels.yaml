@@ -268,6 +268,12 @@ default:
       target: both
       prowPlugin: require-matching-label
       addedBy: prow
+    - color: 15dd18
+      description: Indicates a non-member PR verified by an org member that is safe to test. # This is the opposite of needs-ok-to-test and should be mutually exclusive.
+      name: ok-to-test
+      target: prs
+      prowPlugin: trigger
+      addedBy: prow
     - color: fef2c0
       description: Lowest priority. Possibly useful, but not yet enough support to actually get it done. # These are mostly place-holders for potentially good ideas, so that they don't get completely forgotten, and can be referenced /deduped every time they come up.
       name: priority/awaiting-more-evidence
@@ -524,12 +530,6 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to wg-cluster-api.
-      name: wg/cluster-api
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
       description: Categorizes an issue or PR as relevant to wg-container-identity.
       name: wg/container-identity
       target: both
@@ -568,6 +568,12 @@ default:
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to wg-resource-management.
       name: wg/resource-management
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
+      description: Categorizes an issue or PR as relevant to wg-security-audit.
+      name: wg/security-audit
       target: both
       prowPlugin: label
       addedBy: anyone
@@ -613,7 +619,7 @@ default:
       target: prs
       addedBy: humans
     - color: f9d0c4
-      description: "¯\\_(ツ)_/¯"
+      description: ¯\\\_(ツ)_/¯
       name: "¯\\_(ツ)_/¯"
       target: both
       prowPlugin: shrug
@@ -657,6 +663,23 @@ repos:
         name: area/conformance
         target: both
         addedBy: label
+  kubernetes/org:
+    labels:
+      - color: 0052cc
+        description: Third-party integrations, webhooks, or GitHub Apps
+        name: area/github-integration
+        target: issues
+        addedBy: label
+      - color: 0052cc
+        description: Requesting membership in a Kubernetes GitHub Organization or Team
+        name: area/github-membership
+        target: issues
+        addedBy: label
+      - color: 0052cc
+        description: Creating, migrating or deleting a Kubernetes GitHub Repository
+        name: area/github-repo
+        target: issues
+        addedBy: label
   kubernetes/test-infra:
     labels:
       - color: 0052cc
@@ -679,6 +702,11 @@ repos:
         name: area/ghproxy
         target: both
         addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to code in /gopherage
+        name: area/gopherage
+        target: both
+        addedBy: humans
       - color: 0052cc
         description: Issues or PRs related to code in /greenhouse (our remote bazel cache)
         name: area/greenhouse
@@ -839,3 +867,37 @@ repos:
         name: area/prow/pod-utilities
         target: both
         addedBy: label
+  kubernetes/website:
+    labels:
+      - color: e9b3f9
+        description: Issues or PRs related to English language
+        name: language/en
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
+        description: Issues or PRs related to Japanese language
+        name: language/ja
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
+        description: Issues or PRs related to Korean language
+        name: language/ko
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
+        description: Issues or PRs related to Norwegian language
+        name: language/no
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
+        description: Issues or PRs related to Chinese language
+        name: language/zh
+        previously:
+          - name: language/cn
+        target: both
+        prowPlugin: label
+        addedBy: anyone

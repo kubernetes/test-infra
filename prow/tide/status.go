@@ -215,7 +215,7 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 // in order to generate a diff for the status description. We choose the query
 // for the repo that the PR is closest to meeting (as determined by the number
 // of unmet/violated requirements).
-func expectedStatus(queryMap config.QueryMap, pr *PullRequest, pool map[string]PullRequest, cc contextChecker) (string, string) {
+func expectedStatus(queryMap *config.QueryMap, pr *PullRequest, pool map[string]PullRequest, cc contextChecker) (string, string) {
 	if _, ok := pool[prKey(pr)]; !ok {
 		minDiffCount := -1
 		var minDiff string
@@ -254,6 +254,8 @@ func targetURL(c *config.Agent, pr *PullRequest, log *logrus.Entry) string {
 }
 
 func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullRequest) {
+	// queryMap caches which queries match a repo.
+	// Make a new one each sync loop as queries will change.
 	queryMap := sc.ca.Config().Tide.Queries.QueryMap()
 	processed := sets.NewString()
 
@@ -370,7 +372,14 @@ func (sc *statusController) sync(pool map[string]PullRequest) {
 }
 
 func (sc *statusController) search() []PullRequest {
-	orgs, repos := sc.ca.Config().Tide.Queries.OrgsAndRepos()
+	// Note: negative repo matches are ignored for simplicity when tracking orgs.
+	// This means that the addition/removal of a negative repo token on a query
+	// with an existing org token for the parent org won't cause statuses to be
+	// updated until PRs are individually bumped or Tide is restarted.
+	// The actual queries must still consider negative matches in order to avoid
+	// adding statuses to excluded repos.
+	orgExceptions, repos := sc.ca.Config().Tide.Queries.OrgExceptionsAndRepos()
+	orgs := sets.StringKeySet(orgExceptions)
 	freshOrgs, freshRepos := orgs.Difference(sc.trackedOrgs), repos.Difference(sc.trackedRepos)
 	oldOrgs, oldRepos := sc.trackedOrgs.Difference(orgs), sc.trackedRepos.Difference(repos)
 	// Stop tracking orgs and repos that aren't queried this loop.
@@ -379,7 +388,7 @@ func (sc *statusController) search() []PullRequest {
 	// Determine the query for tracked PRs now before we modify 'trackedOrgs' and 'trackedRepos'.
 	var trackedQuery string
 	if sc.trackedOrgs.Len() > 0 || sc.trackedRepos.Len() > 0 {
-		trackedQuery = openPRsQuery(sc.trackedOrgs.UnsortedList(), sc.trackedRepos.UnsortedList())
+		trackedQuery = openPRsQuery(sc.trackedOrgs.UnsortedList(), sc.trackedRepos.UnsortedList(), orgExceptions)
 	}
 	queryStartTime := time.Now()
 
@@ -406,10 +415,10 @@ func (sc *statusController) search() []PullRequest {
 
 	wg.Add(freshOrgs.Len() + freshRepos.Len())
 	for _, org := range freshOrgs.UnsortedList() {
-		go singleTargetSearch(openPRsQuery([]string{org}, nil), org, sc.trackedOrgs)
+		go singleTargetSearch(openPRsQuery([]string{org}, nil, orgExceptions), org, sc.trackedOrgs)
 	}
 	for _, repo := range freshRepos.UnsortedList() {
-		go singleTargetSearch(openPRsQuery(nil, []string{repo}), repo, sc.trackedRepos)
+		go singleTargetSearch(openPRsQuery(nil, []string{repo}, nil), repo, sc.trackedRepos)
 	}
 	wg.Wait()
 
@@ -432,13 +441,6 @@ func (sc *statusController) search() []PullRequest {
 	return allPRs
 }
 
-func openPRsQuery(orgs, repos []string) string {
-	toks := []string{"is:pr", "state:open"}
-	for _, o := range orgs {
-		toks = append(toks, fmt.Sprintf("org:\"%s\"", o))
-	}
-	for _, r := range repos {
-		toks = append(toks, fmt.Sprintf("repo:\"%s\"", r))
-	}
-	return strings.Join(toks, " ")
+func openPRsQuery(orgs, repos []string, orgExceptions map[string]sets.String) string {
+	return "is:pr state:open " + orgRepoQueryString(orgs, repos, orgExceptions)
 }

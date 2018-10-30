@@ -5,6 +5,7 @@ metadata:
     prow.k8s.io/job: kubernetes-defaulted-decoration
   creationTimestamp: null
   labels:
+    created-by-prow: "true"
     prow.k8s.io/job: kubernetes-defaulted-decoration
     prow.k8s.io/refs.org: test-org
     prow.k8s.io/refs.pull: "1"
@@ -51,6 +52,5 @@ spec:
   rerun_command: /test kubernetes-defaulted-decoration
   type: presubmit
 status:
-  prev_report_states: {}
   startTime: 2018-07-06T22:59:02Z
   state: triggered

@@ -235,9 +235,18 @@ func TestWelcomeConfig(t *testing.T) {
 
 	config := &plugins.Configuration{
 		Welcome: []plugins.Welcome{
-			{[]string{"kubernetes/test-infra"}, repoMessage},
-			{[]string{"kubernetes"}, orgMessage},
-			{[]string{"kubernetes/repo-infra"}, repoMessage},
+			{
+				Repos:           []string{"kubernetes/test-infra"},
+				MessageTemplate: repoMessage,
+			},
+			{
+				Repos:           []string{"kubernetes"},
+				MessageTemplate: orgMessage,
+			},
+			{
+				Repos:           []string{"kubernetes/repo-infra"},
+				MessageTemplate: repoMessage,
+			},
 		},
 	}
 

@@ -707,11 +707,11 @@ def pr_paths(base, repos, job, build):
     )
 
 
-BUILD_ENV = 'BUILD_NUMBER'
+BUILD_ENV = 'BUILD_ID'
 BOOTSTRAP_ENV = 'BOOTSTRAP_MIGRATION'
 CLOUDSDK_ENV = 'CLOUDSDK_CONFIG'
 GCE_KEY_ENV = 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE'
-GUBERNATOR = 'https://k8s-gubernator.appspot.com/build'
+GUBERNATOR = 'https://gubernator.k8s.io/build'
 HOME_ENV = 'HOME'
 JENKINS_HOME_ENV = 'JENKINS_HOME'
 K8S_ENV = 'KUBERNETES_SERVICE_HOST'
@@ -730,7 +730,7 @@ JOB_ARTIFACTS_ENV = 'ARTIFACTS'
 
 def build_name(started):
     """Return the unique(ish) string representing this build."""
-    # TODO(fejta): right now jenkins sets the BUILD_NUMBER and does this
+    # TODO(fejta): right now jenkins sets the BUILD_ID and does this
     #              in an environment variable. Consider migrating this to a
     #              bootstrap.py flag
     if BUILD_ENV not in os.environ:

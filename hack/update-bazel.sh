@@ -17,19 +17,28 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 # https://github.com/kubernetes/test-infra/issues/5699#issuecomment-348350792
-cd ${TESTINFRA_ROOT}
-TMP_GOPATH=$(mktemp -d)
+cd $(git rev-parse --show-toplevel)
 
-OUTPUT_GOBIN="${TESTINFRA_ROOT}/_output/bin"
-GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle
-GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/kubernetes/repo-infra/kazel
+# Old way of running gazelle and kazel by first go installing them
+deprecated-update() {
+  OUTPUT_GOBIN="./_output/bin"
+  GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle
+  GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/kubernetes/repo-infra/kazel
 
-touch "${TESTINFRA_ROOT}/vendor/BUILD.bazel"
+  "${OUTPUT_GOBIN}/gazelle" fix --external=vendored --mode=fix
+  "${OUTPUT_GOBIN}/kazel"
+}
 
-"${OUTPUT_GOBIN}/gazelle" fix \
-  -external=vendored \
-  -mode=fix
+# Ensure ./vendor/BUILD.bazel exists
+mkdir -p ./vendor
+touch "./vendor/BUILD.bazel"
 
-"${OUTPUT_GOBIN}/kazel"
+if ! which bazel > /dev/null; then
+  echo "Bazel is the preferred way to build and test the test-infra repo." >&2
+  echo "Please install bazel at https://bazel.build/ (future commits may require it)" >&2
+  deprecated-update
+  exit 0
+fi
+bazel run //:gazelle
+bazel run //:kazel

@@ -6,7 +6,10 @@ go_library(
     importpath = "k8s.io/test-infra/gopherage",
     visibility = ["//visibility:private"],
     deps = [
+        "//gopherage/cmd/aggregate:go_default_library",
         "//gopherage/cmd/diff:go_default_library",
+        "//gopherage/cmd/filter:go_default_library",
+        "//gopherage/cmd/html:go_default_library",
         "//gopherage/cmd/merge:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",
     ],
@@ -29,7 +32,10 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//gopherage/cmd/aggregate:all-srcs",
         "//gopherage/cmd/diff:all-srcs",
+        "//gopherage/cmd/filter:all-srcs",
+        "//gopherage/cmd/html:all-srcs",
         "//gopherage/cmd/merge:all-srcs",
         "//gopherage/pkg/cov:all-srcs",
         "//gopherage/pkg/util:all-srcs",

@@ -131,8 +131,8 @@ projects:
                 - https://submit-queue.k8s.io
                 - http://velodrome.k8s.io
                 - https://testgrid.k8s.io
-                - https://k8s-gubernator.appspot.com
-                - https://k8s-gubernator.appspot.com/pr/fejta # Deep health check of someone's PR dashboard.
+                - https://gubernator.k8s.io
+                - https://gubernator.k8s.io/pr/fejta # Deep health check of someone's PR dashboard.
                 - https://go.k8s.io/triage
                 - https://storage.googleapis.com/kubernetes-jenkins/oncall.html
             relabel_configs:

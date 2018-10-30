@@ -1,6 +1,8 @@
 # Announcements
 
 New features added to each component:
+ - *October 10, 2018* `tide` now supports the `-repo:foo/bar` tag in queries via
+   the `excludedRepos` YAML field.
  - *October 3, 2018* `welcome` now supports a configurable message on a per-org,
    or per-repo basis. Please note that this includes a config schema change that
    will break previous deployments of this plugin.
@@ -28,6 +30,8 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *October 16, 2018* Prow tls-cert management has been migrated from kube-lego to cert-manager.
+ - *October 12, 2018* Removed deprecated `buildId` environment variable from prow jobs. Use `BUILD_ID.`
  - *October 3, 2018* `-github-token-file` replaced with
     `-github-token-path` for consistency with `branchprotector` and
     `peribolos` which were already using `-github-token-path`.

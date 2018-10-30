@@ -1,0 +1,7 @@
+approvers:
+  - sig-cluster-lifecycle-leads
+  - sig-vmware-leads
+  - cluster-api-admins
+  - cluster-api-vsphere-maintainers
+  - figo
+  - akutz

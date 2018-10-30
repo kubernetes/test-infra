@@ -35,6 +35,7 @@ import (
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
@@ -369,6 +370,15 @@ type Lgtm struct {
 	// StoreTreeHash indicates if tree_hash should be stored inside a comment to detect
 	// squashed commits before removing lgtm labels
 	StoreTreeHash bool `json:"store_tree_hash,omitempty"`
+	// WARNING: This disables the security mechanism that prevents a malicious member (or
+	// compromised GitHub account) from merging arbitrary code. Use with caution.
+	//
+	// StickyForTrustedAuthors indicates if LGTM is sticky for PRs authored by trusted users, and
+	// eliminates the need to re-lgtm minor fixes/updates. This does not apply if the author is
+	// not trusted. Trusted users are by default collaborators and org members, but can also be
+	// restricted to only org members using Trigger.OnlyOrgMembers. i.e. the same set of users
+	// who can issue "/ok-to-test".
+	StickyForTrustedAuthors bool `json:"sticky_for_trusted_authors,omitempty"`
 }
 
 type Cat struct {
@@ -453,7 +463,7 @@ type ConfigUpdater struct {
 
 // MergeWarning is a config for the slackevents plugin's manual merge warings.
 // If a PR is pushed to any of the repos listed in the config
-// then send messages to the all the  slack channels listed if pusher is NOT in the whitelist.
+// then send messages to the all the slack channels listed if pusher is NOT in the whitelist.
 type MergeWarning struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
@@ -651,7 +661,7 @@ func (c *Configuration) setDefaults() {
 		c.SigMention.Regexp = `(?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`
 	}
 	if c.Owners.LabelsBlackList == nil {
-		c.Owners.LabelsBlackList = []string{"approved", "lgtm"}
+		c.Owners.LabelsBlackList = []string{labels.Approved, labels.LGTM}
 	}
 	if c.CherryPickUnapproved.BranchRegexp == "" {
 		c.CherryPickUnapproved.BranchRegexp = `^release-.*$`

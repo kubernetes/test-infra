@@ -272,7 +272,7 @@ class BuildTest(main_test.TestBase):
 
     def test_build_testgrid_links(self):
         response = self.get_build_page()
-        base = 'https://k8s-testgrid.appspot.com/k8s#ajob'
+        base = 'https://testgrid.k8s.io/k8s#ajob'
         self.assertIn('a href="%s"' % base, response)
         option = '&amp;include-filter-by-regex=%5EOverall%24%7CThird'
         self.assertIn('a href="%s%s"' % (base, option), response)

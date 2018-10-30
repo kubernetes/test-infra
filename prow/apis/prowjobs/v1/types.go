@@ -193,7 +193,7 @@ type UtilityImages struct {
 	Sidecar string `json:"sidecar,omitempty"`
 }
 
-// PathStrategy specifies minutia about how to contruct the url.
+// PathStrategy specifies minutia about how to construct the url.
 // Usually consumed by gubernator/testgrid.
 const (
 	PathStrategyLegacy   = "legacy"
@@ -249,7 +249,7 @@ type ProwJobStatus struct {
 
 	// PrevReportStates stores the previous reported prowjob state per reporter
 	// So crier won't make duplicated report attempt
-	PrevReportStates map[string]ProwJobState `json:"prev_report_states, omitempty"`
+	PrevReportStates map[string]ProwJobState `json:"prev_report_states,omitempty"`
 }
 
 // Complete returns true if the prow job has finished
@@ -308,6 +308,9 @@ type Refs struct {
 	// repository. If unset, will default to
 	// `https://github.com/org/repo.git`.
 	CloneURI string `json:"clone_uri,omitempty"`
+	// SkipSubmodules determines if submodules should be
+	// cloned when the job is run. Defaults to true.
+	SkipSubmodules bool `json:"skip_submodules,omitempty"`
 }
 
 func (r Refs) String() string {

@@ -54,7 +54,6 @@ approve:
   - kubernetes/kube-deploy
   - kubernetes/kubeadm
   - kubernetes/kubectl
-  - kubernetes/kubernetes
   - kubernetes/kubernetes-template-project
   - kubernetes/kube-state-metrics
   - kubernetes/minikube
@@ -71,6 +70,7 @@ approve:
   implicit_self_approve: true
   lgtm_acts_as_approve: true
 - repos:
+  - kubernetes/kubernetes
   - kubernetes-client
   - kubernetes-csi
   - kubernetes-sigs
@@ -204,11 +204,10 @@ config_updater:
     config/jobs/**/*.yaml:
       name: job-config
 
-##  TODO(cblecker): revert once kubernetes/test-infra#9507 is merged *and* deployed
-# welcome:
-# - repos:
-#   - kubernetes/test-infra
-#   message_template: "Welcome @{{.AuthorLogin}}! It looks like this is your first PR to {{.Org}}/{{.Repo}} 🎉🎉"
+welcome:
+- repos:
+  - kubernetes/test-infra
+  message_template: "Welcome @{{.AuthorLogin}}! It looks like this is your first PR to {{.Org}}/{{.Repo}} 🎉🎉"
 
 require_matching_label:
 - missing_label: needs-kind
@@ -241,7 +240,9 @@ require_matching_label:
 
 
 plugins:
-  bazelbuild/rules_k8s:
+  # Enable the following for any bazelbuild repo (rules_k8s, rules_docker) that sends prow webhooks
+  # Repos that do not send prow webhooks will see no effect.
+  bazelbuild:
   - approve  # Allow OWNERS to /approve
   - assign  # Allow /assign and /cc
   - blunderbuss  # Auto-assign people
@@ -390,7 +391,7 @@ plugins:
   - owners-label
   - override
   - trigger
-  # - welcome // TODO(cblecker): revert once kubernetes/test-infra#9507 is merged *and* deployed
+  - welcome
 
   kubernetes-client:
   - approve
@@ -433,41 +434,30 @@ plugins:
   - yuks
 
   kubernetes-incubator:
+  - approve
   - assign
+  - blunderbuss
+  - cat
   - cla
+  - dog
+  - heart
+  - help
+  - hold
   - label
   - lgtm
   - lifecycle
+  - shrug
   - size
-
-  kubernetes-incubator/bootkube:
-  - approve
-  - blunderbuss
-  - hold
+  - skip
   - verify-owners
   - wip
-
-  kubernetes-incubator/kubespray:
-  - approve
-  - blunderbuss
-  - verify-owners
+  - yuks
 
   kubernetes-incubator/service-catalog:
-  - approve
-  - blunderbuss
-  - cat
-  - dog
-  - help
-  - hold
   - trigger
-  - verify-owners
-  - wip
 
   kubernetes-incubator/ip-masq-agent:
-  - approve
-  - hold
   - trigger
-  - verify-owners
 
   kubernetes-security/kubernetes:
   - trigger
@@ -494,7 +484,7 @@ plugins:
 
   kubernetes-sigs/kind:
   - trigger
-  # - welcome // TODO(cblecker): revert once kubernetes/test-infra#9507 is merged *and* deployed
+  - welcome
 
   kubernetes-sigs/federation-v2:
   - trigger
@@ -522,7 +512,7 @@ plugins:
 
   kubernetes-sigs/contributor-playground:
   - require-sig
-  # - welcome // TODO(cblecker): revert once kubernetes/test-infra#9507 is merged *and* deployed
+  - welcome
 
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - trigger
@@ -537,6 +527,9 @@ plugins:
   - trigger
 
   kubernetes-sigs/structured-merge-diff:
+  - trigger
+
+  kubernetes-sigs/aws-ebs-csi-driver:
   - trigger
 
   containerd/cri:
@@ -564,6 +557,12 @@ plugins:
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - trigger
+
+  GoogleCloudPlatform/k8s-cluster-bundle:
+  - trigger
+  - lgtm
+  - size
+  - welcome
 
   client-go/unofficial-docs:
   - approve
@@ -617,6 +616,10 @@ external_plugins:
     events:
       - pull_request
   kubernetes-sigs/contributor-playground:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes-sigs/cluster-api-provider-digitalocean:
   - name: needs-rebase
     events:
       - pull_request

@@ -87,15 +87,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --bare
-      - --timeout=85
-      - --scenario=kubernetes_e2e
-      - --
       - --check-leaked-resources
       - --cluster=canary-e2e-prow
       - --extract=ci/latest
@@ -110,17 +110,17 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
   spec:
     containers:
-    - args:
-      - --timeout=60
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --check-version-skew=false
       - --cluster=canary-e2e
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env
+      - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/k8s-stable1
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
@@ -132,52 +132,23 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
-# TODO(krzyzacy): get rid once this is working
-- interval: 30m
-  name: ci-kubernetes-e2e-gce-podutil-canary
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-  decoration_config:
-    timeout: 18500000000000 # 5h + 5m
-  spec:
-    containers:
-    - command:
-      - ./scenarios/kubernetes_e2e.py
-      args:
-      - --check-leaked-resources
-      - --cluster=podutil-canary-e2e
-      - --extract=ci/latest
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gcp-nodes=2
-      - --gcp-zone=us-central1-f
-      - --ginkgo-parallel
-      - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --timeout=300m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-
-- interval: 30m
+- interval: 2h
   name: ci-kubernetes-e2e-gce-scalability-canary
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-gci-gce-scalability: "true"
+  decorate: true
+  decoration_config:
+    timeout: 14000000000000 # 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-big-canary
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env
       - --extract=ci/latest
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project
@@ -194,13 +165,13 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
   spec:
     containers:
-    - args:
-      - --timeout=70
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --check-leaked-resources
       - --cluster=
       - --deployment=gke
@@ -221,13 +192,15 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 14000000000000 # 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-kops-aws-canary.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
@@ -248,13 +221,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 14000000000000 # 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-kops-gce-canary.k8s.local
       - --deployment=kops
       - --extract=ci/latest
@@ -272,16 +247,20 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --repo=k8s.io/kubernetes=master
-      - --timeout=110
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
       - --deployment=node
       - --gcp-zone=us-central1-f
       - --node-args=--images=cos-stable-60-9592-76-0 --image-project=cos-cloud
@@ -300,17 +279,19 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    preset-e2e-kubemark-common: "true"
+  decorate: true
+  decoration_config:
+    timeout: 26000000000000 # 260m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --bare
-      - --timeout=260
-      - --scenario=kubernetes_e2e
-      - --
       - --cluster=kubemark-100-canary
-      - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
       - --extract=ci/latest
       - --gcp-master-size=n1-standard-2
       - --gcp-node-size=n1-standard-4

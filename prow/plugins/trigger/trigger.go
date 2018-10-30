@@ -34,7 +34,6 @@ import (
 
 const (
 	pluginName = "trigger"
-	lgtmLabel  = "lgtm"
 )
 
 func init() {
@@ -100,6 +99,7 @@ type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	RemoveLabel(org, repo string, number int, label string) error
 	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
+	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
 type kubeClient interface {
@@ -111,6 +111,11 @@ type client struct {
 	KubeClient   kubeClient
 	Config       *config.Config
 	Logger       *logrus.Entry
+}
+
+type trustedUserClient interface {
+	IsCollaborator(org, repo, user string) (bool, error)
+	IsMember(org, user string) (bool, error)
 }
 
 func getClient(pc plugins.PluginClient) client {
@@ -135,11 +140,11 @@ func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {
 	return handlePE(getClient(pc), pe)
 }
 
-// trustedUser returns true if user is trusted in repo.
+// TrustedUser returns true if user is trusted in repo.
 //
 // Trusted users are either repo collaborators, org members or trusted org members.
 // Whether repo collaborators and/or a second org is trusted is configured by trigger.
-func trustedUser(ghc githubClient, trigger *plugins.Trigger, user, org, repo string) (bool, error) {
+func TrustedUser(ghc trustedUserClient, trigger *plugins.Trigger, user, org, repo string) (bool, error) {
 	// First check if user is a collaborator, assuming this is allowed
 	allowCollaborators := trigger == nil || !trigger.OnlyOrgMembers
 	if allowCollaborators {

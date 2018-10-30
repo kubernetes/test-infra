@@ -1,0 +1,16 @@
+presubmits:
+  kubernetes-sigs/cluster-api-provider-vsphere:
+  - name: pull-cluster-api-provider-vsphere-test
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test

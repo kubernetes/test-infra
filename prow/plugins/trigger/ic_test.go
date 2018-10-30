@@ -17,6 +17,8 @@ limitations under the License.
 package trigger
 
 import (
+	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -25,6 +27,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/labels"
 )
 
 type fkc struct {
@@ -48,8 +51,8 @@ func TestHandleIssueComment(t *testing.T) {
 		Branch        string
 		ShouldBuild   bool
 		ShouldReport  bool
-		HasOkToTest   bool
-		IsOkToTest    bool
+		AddedLabels   []string
+		RemovedLabels []string
 		StartsExactly string
 		Presubmits    map[string][]config.Presubmit
 		IssueLabels   []github.Label
@@ -115,8 +118,19 @@ func TestHandleIssueComment(t *testing.T) {
 			Body:        "/test all",
 			State:       "open",
 			IsPR:        true,
-			HasOkToTest: true,
 			ShouldBuild: true,
+			IssueLabels: []github.Label{{Name: labels.OkToTest}},
+		},
+		{
+			name: `Non-trusted member after "/ok-to-test", needs-ok-to-test label wasn't deleted.`,
+
+			Author:        "u",
+			Body:          "/test all",
+			State:         "open",
+			IsPR:          true,
+			ShouldBuild:   true,
+			IssueLabels:   []github.Label{{Name: labels.NeedsOkToTest}, {Name: labels.OkToTest}},
+			RemovedLabels: []string{fmt.Sprintf("org/repo#0:%s", labels.NeedsOkToTest)},
 		},
 		{
 			name: "Trusted member's ok to test",
@@ -126,6 +140,7 @@ func TestHandleIssueComment(t *testing.T) {
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: true,
+			AddedLabels: []string{fmt.Sprintf("org/repo#0:%s", labels.OkToTest)},
 		},
 		{
 			name: "Trusted member's ok to test, trailing space.",
@@ -135,6 +150,7 @@ func TestHandleIssueComment(t *testing.T) {
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: true,
+			AddedLabels: []string{fmt.Sprintf("org/repo#0:%s", labels.OkToTest)},
 		},
 		{
 			name: "Trusted member's not ok to test.",
@@ -192,19 +208,22 @@ func TestHandleIssueComment(t *testing.T) {
 			Body:        "/ok-to-test",
 			State:       "open",
 			IsPR:        true,
-			IsOkToTest:  true,
 			ShouldBuild: false,
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "job",
+						JobBase: config.JobBase{
+							Name: "job",
+						},
 						AlwaysRun:    false,
 						Context:      "pull-job",
 						Trigger:      `/test all`,
 						RerunCommand: `/test all`,
 					},
 					{
-						Name:         "jib",
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
 						AlwaysRun:    false,
 						Context:      "pull-jib",
 						Trigger:      `/test jib`,
@@ -212,7 +231,9 @@ func TestHandleIssueComment(t *testing.T) {
 					},
 				},
 			},
-			IssueLabels: []github.Label{{Name: "needs-ok-to-test"}},
+			IssueLabels:   []github.Label{{Name: labels.NeedsOkToTest}},
+			AddedLabels:   []string{fmt.Sprintf("org/repo#0:%s", labels.OkToTest)},
+			RemovedLabels: []string{fmt.Sprintf("org/repo#0:%s", labels.NeedsOkToTest)},
 		},
 		{
 			name:   "Wrong branch w/ SkipReport",
@@ -224,7 +245,9 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "job",
+						JobBase: config.JobBase{
+							Name: "job",
+						},
 						AlwaysRun:    true,
 						SkipReport:   true,
 						Context:      "pull-job",
@@ -244,7 +267,9 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jab",
+						JobBase: config.JobBase{
+							Name: "jab",
+						},
 						RunIfChanged: "CHANGED",
 						SkipReport:   true,
 						Context:      "pull-jab",
@@ -265,7 +290,9 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jib",
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
 						RunIfChanged: "CHANGED",
 						Context:      "pull-jib",
 						Trigger:      `/test all`,
@@ -285,7 +312,9 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jub",
+						JobBase: config.JobBase{
+							Name: "jub",
+						},
 						RunIfChanged: "CHANGED",
 						Context:      "pull-jub",
 						Trigger:      `/test jub`,
@@ -305,7 +334,9 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jib",
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
 						RunIfChanged: "CHANGED2",
 						Context:      "pull-jib",
 						Trigger:      `/test all`,
@@ -316,16 +347,17 @@ func TestHandleIssueComment(t *testing.T) {
 			ShouldBuild: true,
 		},
 		{
-			name:       "Run if changed job triggered by /ok-to-test",
-			Author:     "t",
-			Body:       "/ok-to-test",
-			State:      "open",
-			IsPR:       true,
-			IsOkToTest: true,
+			name:   "Run if changed job triggered by /ok-to-test",
+			Author: "t",
+			Body:   "/ok-to-test",
+			State:  "open",
+			IsPR:   true,
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jab",
+						JobBase: config.JobBase{
+							Name: "jab",
+						},
 						RunIfChanged: "CHANGED",
 						Context:      "pull-jab",
 						Trigger:      `/test all`,
@@ -335,7 +367,9 @@ func TestHandleIssueComment(t *testing.T) {
 			},
 			ShouldBuild:   true,
 			StartsExactly: "pull-jab",
-			IssueLabels:   []github.Label{{Name: "needs-ok-to-test"}},
+			IssueLabels:   []github.Label{{Name: labels.NeedsOkToTest}},
+			AddedLabels:   []string{fmt.Sprintf("org/repo#0:%s", labels.OkToTest)},
+			RemovedLabels: []string{fmt.Sprintf("org/repo#0:%s", labels.NeedsOkToTest)},
 		},
 		{
 			name:   "/test of branch-sharded job",
@@ -346,14 +380,18 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jab",
+						JobBase: config.JobBase{
+							Name: "jab",
+						},
 						Brancher:     config.Brancher{Branches: []string{"master"}},
 						Context:      "pull-jab",
 						Trigger:      `/test jab`,
 						RerunCommand: `/test jab`,
 					},
 					{
-						Name:         "jab",
+						JobBase: config.JobBase{
+							Name: "jab",
+						},
 						Brancher:     config.Brancher{Branches: []string{"release"}},
 						Context:      "pull-jab",
 						Trigger:      `/test jab`,
@@ -374,14 +412,18 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jab",
+						JobBase: config.JobBase{
+							Name: "jab",
+						},
 						Brancher:     config.Brancher{Branches: []string{"master"}},
 						Context:      "pull-jab",
 						Trigger:      `/test jab`,
 						RerunCommand: `/test jab`,
 					},
 					{
-						Name:         "jab",
+						JobBase: config.JobBase{
+							Name: "jab",
+						},
 						Brancher:     config.Brancher{Branches: []string{"release"}},
 						Context:      "pull-jab",
 						Trigger:      `/test jab`,
@@ -401,7 +443,9 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jeb",
+						JobBase: config.JobBase{
+							Name: "jeb",
+						},
 						RunIfChanged: "CHANGED2",
 						Context:      "pull-jeb",
 						Trigger:      `/test all`,
@@ -421,7 +465,9 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jeb",
+						JobBase: config.JobBase{
+							Name: "jeb",
+						},
 						RunIfChanged: "CHANGED2",
 						Context:      "pull-jib",
 						Trigger:      `/test (all|pull-jeb)`,
@@ -440,7 +486,9 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jub",
+						JobBase: config.JobBase{
+							Name: "jub",
+						},
 						RunIfChanged: "CHANGED",
 						Context:      "pull-jub",
 						Trigger:      `/test jub`,
@@ -460,7 +508,9 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jub",
+						JobBase: config.JobBase{
+							Name: "jub",
+						},
 						RunIfChanged: "CHANGED2",
 						Context:      "pull-jub",
 						Trigger:      `/test jub`,
@@ -527,7 +577,9 @@ func TestHandleIssueComment(t *testing.T) {
 			presubmits = map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "job",
+						JobBase: config.JobBase{
+							Name: "job",
+						},
 						AlwaysRun:    true,
 						Context:      "pull-job",
 						Trigger:      `/test all`,
@@ -535,7 +587,9 @@ func TestHandleIssueComment(t *testing.T) {
 						Brancher:     config.Brancher{Branches: []string{"master"}},
 					},
 					{
-						Name:         "jib",
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
 						AlwaysRun:    false,
 						Context:      "pull-jib",
 						Trigger:      `/test jib`,
@@ -551,12 +605,6 @@ func TestHandleIssueComment(t *testing.T) {
 		var pr *struct{}
 		if tc.IsPR {
 			pr = &struct{}{}
-		}
-		if tc.HasOkToTest {
-			g.IssueComments[0] = []github.IssueComment{{
-				Body: "/ok-to-test",
-				User: github.User{Login: "t"},
-			}}
 		}
 		event := github.IssueCommentEvent{
 			Action: github.IssueCommentActionCreated,
@@ -595,15 +643,11 @@ func TestHandleIssueComment(t *testing.T) {
 		} else if !tc.ShouldReport && len(g.CreatedStatuses) > 0 {
 			t.Errorf("Expected no reports to github, but got %d", len(g.CreatedStatuses))
 		}
-		if tc.IsOkToTest {
-			if len(g.LabelsRemoved) != 1 {
-				t.Errorf("expected a label to be removed")
-				continue
-			}
-			expected := "org/repo#0:needs-ok-to-test"
-			if g.LabelsRemoved[0] != expected {
-				t.Errorf("expected %q to be removed, got %q", expected, g.LabelsRemoved[0])
-			}
+		if !reflect.DeepEqual(g.LabelsAdded, tc.AddedLabels) {
+			t.Errorf("expected %q to be added, got %q", tc.AddedLabels, g.LabelsAdded)
+		}
+		if !reflect.DeepEqual(g.LabelsRemoved, tc.RemovedLabels) {
+			t.Errorf("expected %q to be removed, got %q", tc.RemovedLabels, g.LabelsRemoved)
 		}
 	}
 }

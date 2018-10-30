@@ -634,7 +634,7 @@ func (vpcs) MarkAndSweep(sess *session.Session, acct string, region string, set 
 					DhcpOptionsId: aws.String("default"),
 				})
 				if err != nil {
-					glog.Warning("%v: disassociating DHCP option set %v failed: %v", v.ARN(), vp.DhcpOptionsId, err)
+					glog.Warningf("%v: disassociating DHCP option set %v failed: %v", v.ARN(), vp.DhcpOptionsId, err)
 				}
 			}
 			_, err := svc.DeleteVpc(&ec2.DeleteVpcInput{VpcId: vp.VpcId})

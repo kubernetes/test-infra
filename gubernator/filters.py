@@ -45,7 +45,7 @@ def do_dt_to_epoch(dt):
 def do_shorttimestamp(unix_time):
     t = datetime.datetime.utcfromtimestamp(unix_time)
     return jinja2.Markup('<span class="shorttimestamp" data-epoch="%s">%s</span>' %
-                         (unix_time, t.strftime('%d %H:%M')))
+                         (unix_time, t.strftime('%m-%d %H:%M')))
 
 
 def do_duration(seconds):
@@ -238,7 +238,7 @@ def do_tg_url(testgrid_query, test_name=''):
     if test_name:
         regex = '^Overall$|' + re.escape(test_name)
         testgrid_query += '&include-filter-by-regex=%s' % urllib.quote(regex)
-    return 'https://k8s-testgrid.appspot.com/%s' % testgrid_query
+    return 'https://testgrid.k8s.io/%s' % testgrid_query
 
 
 def do_gcs_browse_url(gcs_path):

@@ -101,7 +101,7 @@ func (ta *tideAgent) filterHidden(tideQueries []config.TideQuery, pools []tide.P
 		return tideQueries, pools
 	}
 
-	var filteredTideQueries []config.TideQuery
+	filteredTideQueries := make([]config.TideQuery, 0, len(tideQueries))
 	for _, qc := range tideQueries {
 		includesHidden := false
 		// This will exclude the query even if a single
@@ -120,7 +120,7 @@ func (ta *tideAgent) filterHidden(tideQueries []config.TideQuery, pools []tide.P
 		}
 	}
 
-	var filteredPools []tide.Pool
+	filteredPools := make([]tide.Pool, 0, len(pools))
 	for _, pool := range pools {
 		needsHide := matches(pool.Org+"/"+pool.Repo, ta.hiddenRepos)
 		if (needsHide && ta.hiddenOnly) ||

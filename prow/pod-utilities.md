@@ -78,10 +78,10 @@ Additional fields may be required for some use cases:
 to clone the repo to different go import path than the default of `/home/prow/go/src/github.com/{{.Org}}/{{.Repo}}/` (e.g. `path_alias: k8s.io/test-infra` -> `/home/prow/go/src/k8s.io/test-infra`).
 - Jobs that require additional repos to be checked out can arrange for that with
 the `exta_refs` field.
+- Jobs that do not want submodules to be cloned should set `skip_submodules` to `true`
 
 ```yaml
 - name: post-job
-  agent: kubernetes
   decorate: true
   ssh_key_secrets:
   - ssh-secret
@@ -90,6 +90,7 @@ the `exta_refs` field.
   - org: kubernetes
     repo: other-repo
     base_ref: master
+  skip_submodules: true
   spec:
     containers:
     - image: alpine

@@ -141,10 +141,10 @@ class HelperTest(unittest.TestCase):
     def test_tg_url(self):
         self.assertEqual(
             filters.do_tg_url('a#b'),
-            'https://k8s-testgrid.appspot.com/a#b')
+            'https://testgrid.k8s.io/a#b')
         self.assertEqual(
             filters.do_tg_url('a#b', '[low] test'),
-            'https://k8s-testgrid.appspot.com/a#b&include-filter-by-regex=%s' %
+            'https://testgrid.k8s.io/a#b&include-filter-by-regex=%s' %
             urllib.quote('^Overall$|\\[low\\]\\ test'))
 
     def test_gcs_browse_url(self):

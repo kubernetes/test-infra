@@ -864,6 +864,32 @@ func (c *Client) ListIssueComments(org, repo string, number int) ([]IssueComment
 	return comments, nil
 }
 
+// GetPullRequests get all pull requests.
+//
+// See https://developer.github.com/v3/pulls/#get-a-single-pull-request
+func (c *Client) GetPullRequests(org, repo string) ([]PullRequest, error) {
+	c.log("GetPullRequests", org, repo)
+	var prs []PullRequest
+	if c.fake {
+		return prs, nil
+	}
+	path := fmt.Sprintf("/repos/%s/%s/pulls", org, repo)
+	err := c.readPaginatedResults(
+		path,
+		"application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		func() interface{} {
+			return &[]PullRequest{}
+		},
+		func(obj interface{}) {
+			prs = append(prs, *(obj.(*[]PullRequest))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return prs, err
+}
+
 // GetPullRequest gets a pull request.
 //
 // See https://developer.github.com/v3/pulls/#get-a-single-pull-request

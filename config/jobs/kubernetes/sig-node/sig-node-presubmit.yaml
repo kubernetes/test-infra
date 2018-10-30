@@ -13,7 +13,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -32,7 +32,6 @@ presubmits:
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        ports:
         resources:
           requests:
             memory: "6Gi"
@@ -46,7 +45,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.12
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -65,7 +64,6 @@ presubmits:
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        ports:
         resources:
           requests:
             memory: "6Gi"
@@ -79,7 +77,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.11
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.11
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -98,7 +96,6 @@ presubmits:
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        ports:
         resources:
           requests:
             memory: "6Gi"
@@ -112,7 +109,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -131,7 +128,6 @@ presubmits:
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        ports:
         resources:
           requests:
             memory: "6Gi"
@@ -145,7 +141,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.9
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -164,7 +160,6 @@ presubmits:
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        ports:
         resources:
           requests:
             memory: "6Gi"
@@ -179,7 +174,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -199,6 +194,38 @@ presubmits:
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml
+        resources:
+          requests:
+            memory: "6Gi"
+  - name: pull-kubernetes-node-e2e-alpha
+    branches:
+    - master
+    always_run: false
+    max_concurrency: 12
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
+        args:
+        - --root=/go/src
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        - --scenario=kubernetes_e2e
+        - -- # end bootstrap args, scenario args below
+        - --deployment=node
+        - --gcp-project=k8s-jkns-pr-node-e2e
+        - --gcp-zone=us-central1-f
+        - --node-test-args=--feature-gates=AllAlpha=true,RotateKubeletServerCertificate=false --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+        - --node-tests=true
+        - --provider=gce
+        - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeAlphaFeature:.+\]" --skip="\[Flaky\]|\[Serial\] --flakeAttempts=2"
+        - --timeout=65m
+        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
         resources:
           requests:
             memory: "6Gi"

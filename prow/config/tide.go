@@ -17,8 +17,10 @@ limitations under the License.
 package config
 
 import (
+	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -70,10 +72,8 @@ type Tide struct {
 	// StatusUpdatePeriod specifies how often Tide will update Github status contexts.
 	// Defaults to the value of SyncPeriod.
 	StatusUpdatePeriod time.Duration `json:"-"`
-	// Queries must not overlap. It must be impossible for any two queries to
-	// ever return the same PR.
-	// TODO: This will only be possible when we allow specifying orgs. At that
-	//       point, verify the above condition.
+	// Queries represents a list of GitHub search queries that collectively
+	// specify the set of PRs that meet merge requirements.
 	Queries TideQueries `json:"queries,omitempty"`
 
 	// A key/value pair of an org/repo as the key and merge method to override
@@ -132,8 +132,9 @@ func (t *Tide) MergeMethod(org, repo string) github.PullRequestMergeType {
 // TideQuery is turned into a GitHub search query. See the docs for details:
 // https://help.github.com/articles/searching-issues-and-pull-requests/
 type TideQuery struct {
-	Orgs  []string `json:"orgs,omitempty"`
-	Repos []string `json:"repos,omitempty"`
+	Orgs          []string `json:"orgs,omitempty"`
+	Repos         []string `json:"repos,omitempty"`
+	ExcludedRepos []string `json:"excludedRepos,omitempty"`
 
 	ExcludedBranches []string `json:"excludedBranches,omitempty"`
 	IncludedBranches []string `json:"includedBranches,omitempty"`
@@ -154,6 +155,9 @@ func (tq *TideQuery) Query() string {
 	}
 	for _, r := range tq.Repos {
 		toks = append(toks, fmt.Sprintf("repo:\"%s\"", r))
+	}
+	for _, r := range tq.ExcludedRepos {
+		toks = append(toks, fmt.Sprintf("-repo:\"%s\"", r))
 	}
 	for _, b := range tq.ExcludedBranches {
 		toks = append(toks, fmt.Sprintf("-base:\"%s\"", b))
@@ -176,41 +180,108 @@ func (tq *TideQuery) Query() string {
 	return strings.Join(toks, " ")
 }
 
-// OrgsAndRepos returns the set of orgs and repos present in any query.
-func (tqs TideQueries) OrgsAndRepos() (sets.String, sets.String) {
-	orgs := sets.NewString()
-	repos := sets.NewString()
-	for i := range tqs {
-		orgs.Insert(tqs[i].Orgs...)
-		repos.Insert(tqs[i].Repos...)
+// ForRepo indicates if the tide query applies to the specified repo.
+func (tq TideQuery) ForRepo(org, repo string) bool {
+	fullName := fmt.Sprintf("%s/%s", org, repo)
+	for _, queryOrg := range tq.Orgs {
+		if queryOrg != org {
+			continue
+		}
+		// Check for repos excluded from the org.
+		for _, excludedRepo := range tq.ExcludedRepos {
+			if excludedRepo == fullName {
+				return false
+			}
+		}
+		return true
 	}
-	return orgs, repos
+	for _, queryRepo := range tq.Repos {
+		if queryRepo == fullName {
+			return true
+		}
+	}
+	return false
 }
 
-// QueryMap is a mapping from ("org/repo" or "org") -> TideQueries that
-// apply to that org or repo.
-type QueryMap map[string]TideQueries
-
-// QueryMap creates a QueryMap from TideQueries
-func (tqs TideQueries) QueryMap() QueryMap {
-	res := make(map[string]TideQueries)
-	for _, tq := range tqs {
-		for _, org := range tq.Orgs {
-			res[org] = append(res[org], tq)
-		}
-		for _, repo := range tq.Repos {
-			res[repo] = append(res[repo], tq)
+func reposInOrg(org string, repos []string) []string {
+	prefix := org + "/"
+	var res []string
+	for _, repo := range repos {
+		if strings.HasPrefix(repo, prefix) {
+			res = append(res, repo)
 		}
 	}
 	return res
 }
 
+// OrgExceptionsAndRepos determines which orgs and repos a set of queries cover.
+// Output is returned as a mapping from 'included org'->'repos excluded in the org'
+// and a set of included repos.
+func (tqs TideQueries) OrgExceptionsAndRepos() (map[string]sets.String, sets.String) {
+	orgs := make(map[string]sets.String)
+	for i := range tqs {
+		for _, org := range tqs[i].Orgs {
+			applicableRepos := sets.NewString(reposInOrg(org, tqs[i].ExcludedRepos)...)
+			if excepts, ok := orgs[org]; !ok {
+				// We have not seen this org so the exceptions are just applicable
+				// members of 'excludedRepos'.
+				orgs[org] = applicableRepos
+			} else {
+				// We have seen this org so the exceptions are the applicable
+				// members of 'excludedRepos' intersected with existing exceptions.
+				orgs[org] = excepts.Intersection(applicableRepos)
+			}
+		}
+	}
+	repos := sets.NewString()
+	for i := range tqs {
+		repos.Insert(tqs[i].Repos...)
+	}
+	// Remove any org exceptions that are explicitly included in a different query.
+	reposList := repos.UnsortedList()
+	for _, excepts := range orgs {
+		excepts.Delete(reposList...)
+	}
+	return orgs, repos
+}
+
+// QueryMap is a struct mapping from "org/repo" -> TideQueries that
+// apply to that org or repo. It is lazily populated, but threadsafe.
+type QueryMap struct {
+	queries TideQueries
+
+	cache map[string]TideQueries
+	sync.Mutex
+}
+
+// QueryMap creates a QueryMap from TideQueries
+func (tqs TideQueries) QueryMap() *QueryMap {
+	return &QueryMap{
+		queries: tqs,
+		cache:   make(map[string]TideQueries),
+	}
+}
+
 // ForRepo returns the tide queries that apply to a repo.
-func (qm QueryMap) ForRepo(org, repo string) TideQueries {
-	qs := TideQueries(nil)
-	qs = append(qs, qm[org]...)
-	qs = append(qs, qm[fmt.Sprintf("%s/%s", org, repo)]...)
-	return qs
+func (qm *QueryMap) ForRepo(org, repo string) TideQueries {
+	res := TideQueries(nil)
+	fullName := fmt.Sprintf("%s/%s", org, repo)
+
+	qm.Lock()
+	defer qm.Unlock()
+
+	if qs, ok := qm.cache[fullName]; ok {
+		return append(res, qs...) // Return a copy.
+	}
+	// Cache miss. Need to determine relevant queries.
+
+	for _, query := range qm.queries {
+		if query.ForRepo(org, repo) {
+			res = append(res, query)
+		}
+	}
+	qm.cache[fullName] = res
+	return res
 }
 
 // Validate returns an error if the query has any errors.
@@ -221,6 +292,24 @@ func (qm QueryMap) ForRepo(org, repo string) TideQueries {
 // * a label that is in both the labels and missing_labels section
 // * a branch that is in both included and excluded branch set.
 func (tq *TideQuery) Validate() error {
+	duplicates := func(field string, list []string) error {
+		dups := sets.NewString()
+		seen := sets.NewString()
+		for _, elem := range list {
+			if seen.Has(elem) {
+				dups.Insert(elem)
+			} else {
+				seen.Insert(elem)
+			}
+		}
+		dupCount := len(list) - seen.Len()
+		if dupCount == 0 {
+			return nil
+		}
+		return fmt.Errorf("%q contains %d duplicate entries: %s", field, dupCount, strings.Join(dups.List(), ", "))
+	}
+
+	orgs := sets.NewString()
 	for o := range tq.Orgs {
 		if strings.Contains(tq.Orgs[o], "/") {
 			return fmt.Errorf("orgs[%d]: %q contains a '/' which is not valid", o, tq.Orgs[o])
@@ -228,6 +317,10 @@ func (tq *TideQuery) Validate() error {
 		if len(tq.Orgs[o]) == 0 {
 			return fmt.Errorf("orgs[%d]: is an empty string", o)
 		}
+		orgs.Insert(tq.Orgs[o])
+	}
+	if err := duplicates("orgs", tq.Orgs); err != nil {
+		return err
 	}
 
 	for r := range tq.Repos {
@@ -235,20 +328,50 @@ func (tq *TideQuery) Validate() error {
 		if len(parts) != 2 || len(parts[0]) == 0 || len(parts[1]) == 0 {
 			return fmt.Errorf("repos[%d]: %q is not of the form \"org/repo\"", r, tq.Repos[r])
 		}
-		for o := range tq.Orgs {
-			if tq.Orgs[o] == parts[0] {
-				return fmt.Errorf("repos[%d]: %q is already included via orgs[%d]: %q", r, tq.Repos[r], o, tq.Orgs[o])
-			}
+		if orgs.Has(parts[0]) {
+			return fmt.Errorf("repos[%d]: %q is already included via org: %q", r, tq.Repos[r], parts[0])
 		}
+	}
+	if err := duplicates("repos", tq.Repos); err != nil {
+		return err
+	}
+
+	if len(tq.Orgs) == 0 && len(tq.Repos) == 0 {
+		return errors.New("'orgs' and 'repos' cannot both be empty")
+	}
+
+	for er := range tq.ExcludedRepos {
+		parts := strings.Split(tq.ExcludedRepos[er], "/")
+		if len(parts) != 2 || len(parts[0]) == 0 || len(parts[1]) == 0 {
+			return fmt.Errorf("excludedRepos[%d]: %q is not of the form \"org/repo\"", er, tq.ExcludedRepos[er])
+		}
+		if !orgs.Has(parts[0]) {
+			return fmt.Errorf("excludedRepos[%d]: %q has no effect because org %q is not included", er, tq.ExcludedRepos[er], parts[0])
+		}
+		// Note: At this point we also know that this excludedRepo is not found in 'repos'.
+	}
+	if err := duplicates("excludedRepos", tq.ExcludedRepos); err != nil {
+		return err
 	}
 
 	if invalids := sets.NewString(tq.Labels...).Intersection(sets.NewString(tq.MissingLabels...)); len(invalids) > 0 {
 		return fmt.Errorf("the labels: %q are both required and forbidden", invalids.List())
 	}
+	if err := duplicates("labels", tq.Labels); err != nil {
+		return err
+	}
+	if err := duplicates("missingLabels", tq.MissingLabels); err != nil {
+		return err
+	}
 
-	// Warnings
 	if len(tq.ExcludedBranches) > 0 && len(tq.IncludedBranches) > 0 {
-		logrus.Warning("Smell: Both included and excluded branches are specified (excluded branches have no effect).")
+		return errors.New("both 'includedBranches' and 'excludedBranches' are specified ('excludedBranches' have no effect)")
+	}
+	if err := duplicates("includedBranches", tq.IncludedBranches); err != nil {
+		return err
+	}
+	if err := duplicates("excludedBranches", tq.ExcludedBranches); err != nil {
+		return err
 	}
 
 	return nil

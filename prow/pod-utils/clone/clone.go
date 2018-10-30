@@ -19,7 +19,6 @@ package clone
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"os/exec"
 	"strings"
 
@@ -32,64 +31,8 @@ import (
 func Run(refs *kube.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env []string) Record {
 	logrus.WithFields(logrus.Fields{"refs": refs}).Info("Cloning refs")
 	record := Record{Refs: refs}
-	repositoryURI := fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo)
-	if refs.CloneURI != "" {
-		repositoryURI = refs.CloneURI
-	}
-	cloneDir := PathForRefs(dir, refs)
-
-	commands := []cloneCommand{
-		func() (string, string, error) {
-			return fmt.Sprintf("os.MkdirAll(%s, 0755)", cloneDir), "", os.MkdirAll(cloneDir, 0755)
-		},
-	}
-
-	commands = append(commands, shellCloneCommand(cloneDir, env, "git", "init"))
-	if gitUserName != "" {
-		commands = append(commands, shellCloneCommand(cloneDir, env, "git", "config", "user.name", gitUserName))
-	}
-	if gitUserEmail != "" {
-		commands = append(commands, shellCloneCommand(cloneDir, env, "git", "config", "user.email", gitUserEmail))
-	}
-	if cookiePath != "" {
-		commands = append(commands, shellCloneCommand(cloneDir, env, "git", "config", "http.cookiefile", cookiePath))
-	}
-	commands = append(commands, shellCloneCommand(cloneDir, env, "git", "fetch", repositoryURI, "--tags", "--prune"))
-	commands = append(commands, shellCloneCommand(cloneDir, env, "git", "fetch", repositoryURI, refs.BaseRef))
-
-	var target string
-	if refs.BaseSHA != "" {
-		target = refs.BaseSHA
-	} else {
-		target = "FETCH_HEAD"
-	}
-	// we need to be "on" the target branch after the sync
-	// so we need to set the branch to point to the base ref,
-	// but we cannot update a branch we are on, so in case we
-	// are on the branch we are syncing, we check out the SHA
-	// first and reset the branch second, then check out the
-	// branch we just reset to be in the correct final state
-	commands = append(commands, shellCloneCommand(cloneDir, env, "git", "checkout", target))
-	commands = append(commands, shellCloneCommand(cloneDir, env, "git", "branch", "--force", refs.BaseRef, target))
-	commands = append(commands, shellCloneCommand(cloneDir, env, "git", "checkout", refs.BaseRef))
-
-	for _, prRef := range refs.Pulls {
-		ref := fmt.Sprintf("pull/%d/head", prRef.Number)
-		if prRef.Ref != "" {
-			ref = prRef.Ref
-		}
-		commands = append(commands, shellCloneCommand(cloneDir, env, "git", "fetch", repositoryURI, ref))
-		var prCheckout string
-		if prRef.SHA != "" {
-			prCheckout = prRef.SHA
-		} else {
-			prCheckout = "FETCH_HEAD"
-		}
-		commands = append(commands, shellCloneCommand(cloneDir, env, "git", "merge", prCheckout))
-	}
-
-	for _, command := range commands {
-		formattedCommand, output, err := command()
+	for _, command := range commandsForRefs(refs, dir, gitUserName, gitUserEmail, cookiePath, env) {
+		formattedCommand, output, err := command.run()
 		logrus.WithFields(logrus.Fields{"command": formattedCommand, "output": output, "error": err}).Info("Ran command")
 		message := ""
 		if err != nil {
@@ -117,18 +60,87 @@ func PathForRefs(baseDir string, refs *kube.Refs) string {
 	return fmt.Sprintf("%s/src/%s", baseDir, clonePath)
 }
 
-type cloneCommand func() (string, string, error)
+func commandsForRefs(refs *kube.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env []string) []cloneCommand {
+	repositoryURI := fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo)
+	if refs.CloneURI != "" {
+		repositoryURI = refs.CloneURI
+	}
+	cloneDir := PathForRefs(dir, refs)
 
-func shellCloneCommand(dir string, env []string, command string, args ...string) cloneCommand {
+	commands := []cloneCommand{{"/", env, "mkdir", []string{"-p", cloneDir}}}
+
+	gitCommand := func(args ...string) cloneCommand {
+		return cloneCommand{dir: cloneDir, env: env, command: "git", args: args}
+	}
+	commands = append(commands, gitCommand("init"))
+	if gitUserName != "" {
+		commands = append(commands, gitCommand("config", "user.name", gitUserName))
+	}
+	if gitUserEmail != "" {
+		commands = append(commands, gitCommand("config", "user.email", gitUserEmail))
+	}
+	if cookiePath != "" {
+		commands = append(commands, gitCommand("config", "http.cookiefile", cookiePath))
+	}
+	commands = append(commands, gitCommand("fetch", repositoryURI, "--tags", "--prune"))
+	commands = append(commands, gitCommand("fetch", repositoryURI, refs.BaseRef))
+
+	// unless the user specifically asks us not to, init submodules
+	if !refs.SkipSubmodules {
+		commands = append(commands, gitCommand("submodule", "update", "--init", "--recursive"))
+	}
+
+	var target string
+	if refs.BaseSHA != "" {
+		target = refs.BaseSHA
+	} else {
+		target = "FETCH_HEAD"
+	}
+	// we need to be "on" the target branch after the sync
+	// so we need to set the branch to point to the base ref,
+	// but we cannot update a branch we are on, so in case we
+	// are on the branch we are syncing, we check out the SHA
+	// first and reset the branch second, then check out the
+	// branch we just reset to be in the correct final state
+	commands = append(commands, gitCommand("checkout", target))
+	commands = append(commands, gitCommand("branch", "--force", refs.BaseRef, target))
+	commands = append(commands, gitCommand("checkout", refs.BaseRef))
+
+	for _, prRef := range refs.Pulls {
+		ref := fmt.Sprintf("pull/%d/head", prRef.Number)
+		if prRef.Ref != "" {
+			ref = prRef.Ref
+		}
+		commands = append(commands, gitCommand("fetch", repositoryURI, ref))
+		var prCheckout string
+		if prRef.SHA != "" {
+			prCheckout = prRef.SHA
+		} else {
+			prCheckout = "FETCH_HEAD"
+		}
+		commands = append(commands, gitCommand("merge", prCheckout))
+	}
+	return commands
+}
+
+type cloneCommand struct {
+	dir     string
+	env     []string
+	command string
+	args    []string
+}
+
+func (c *cloneCommand) run() (string, string, error) {
 	output := bytes.Buffer{}
-	cmd := exec.Command(command, args...)
-	cmd.Dir = dir
-	cmd.Env = append(cmd.Env, env...)
+	cmd := exec.Command(c.command, c.args...)
+	cmd.Dir = c.dir
+	cmd.Env = append(cmd.Env, c.env...)
 	cmd.Stdout = &output
 	cmd.Stderr = &output
+	err := cmd.Run()
+	return strings.Join(append([]string{c.command}, c.args...), " "), output.String(), err
+}
 
-	return func() (string, string, error) {
-		err := cmd.Run()
-		return strings.Join(append([]string{command}, args...), " "), output.String(), err
-	}
+func (c *cloneCommand) String() string {
+	return fmt.Sprintf("PWD=%s %s %s %s", c.dir, strings.Join(c.env, " "), c.command, strings.Join(c.env, " "))
 }

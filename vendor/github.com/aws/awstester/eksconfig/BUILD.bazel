@@ -1,0 +1,32 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "config.go",
+        "doc.go",
+        "utils.go",
+    ],
+    importmap = "k8s.io/test-infra/vendor/github.com/aws/awstester/eksconfig",
+    importpath = "github.com/aws/awstester/eksconfig",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/aws/awstester/pkg/awsapi/ec2:go_default_library",
+        "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/k8s.io/client-go/util/homedir:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

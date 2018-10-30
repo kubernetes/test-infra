@@ -33,6 +33,26 @@
     color: #ffffff;
 }
 
+.areax00002fgithubx00002dintegration {
+    background-color: #0052cc;
+    color: #ffffff;
+}
+
+.areax00002fgithubx00002dmembership {
+    background-color: #0052cc;
+    color: #ffffff;
+}
+
+.areax00002fgithubx00002drepo {
+    background-color: #0052cc;
+    color: #ffffff;
+}
+
+.areax00002fgopherage {
+    background-color: #0052cc;
+    color: #ffffff;
+}
+
 .areax00002fgreenhouse {
     background-color: #0052cc;
     color: #ffffff;
@@ -308,6 +328,31 @@
     color: #000000;
 }
 
+.languagex00002fen {
+    background-color: #e9b3f9;
+    color: #000000;
+}
+
+.languagex00002fja {
+    background-color: #e9b3f9;
+    color: #000000;
+}
+
+.languagex00002fko {
+    background-color: #e9b3f9;
+    color: #000000;
+}
+
+.languagex00002fno {
+    background-color: #e9b3f9;
+    color: #000000;
+}
+
+.languagex00002fzh {
+    background-color: #e9b3f9;
+    color: #000000;
+}
+
 .lgtm {
     background-color: #15dd18;
     color: #000000;
@@ -350,6 +395,11 @@
 
 .needsx00002dsig {
     background-color: #ededed;
+    color: #000000;
+}
+
+.okx00002dtox00002dtest {
+    background-color: #15dd18;
     color: #000000;
 }
 
@@ -623,11 +673,6 @@
     color: #000000;
 }
 
-.wgx00002fclusterx00002dapi {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
 .wgx00002fcontainerx00002didentity {
     background-color: #d2b48c;
     color: #000000;
@@ -659,6 +704,11 @@
 }
 
 .wgx00002fresourcex00002dmanagement {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.wgx00002fsecurityx00002daudit {
     background-color: #d2b48c;
     color: #000000;
 }

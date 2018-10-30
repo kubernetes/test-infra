@@ -18,16 +18,13 @@ package reporter
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
-)
-
-const (
-	testPubSubProjectName = "test-project"
-	testPubSubTopicName   = "test-topic"
-	testPubSubRunID       = "test-id"
+	pjlister "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
 )
 
 type fgc struct {
@@ -35,7 +32,7 @@ type fgc struct {
 	instance      string
 }
 
-func (f *fgc) SetReview(instance, id, revision, message string) error {
+func (f *fgc) SetReview(instance, id, revision, message string, labels map[string]string) error {
 	if instance != f.instance {
 		return fmt.Errorf("wrong instance: %s", instance)
 	}
@@ -43,16 +40,37 @@ func (f *fgc) SetReview(instance, id, revision, message string) error {
 	return nil
 }
 
+type fakeLister struct {
+	pjs []*v1.ProwJob
+}
+
+func (fl fakeLister) List(selector labels.Selector) (ret []*v1.ProwJob, err error) {
+	result := []*v1.ProwJob{}
+	for _, pj := range fl.pjs {
+		if selector.Matches(labels.Set(pj.ObjectMeta.Labels)) {
+			result = append(result, pj)
+		}
+	}
+
+	return result, nil
+}
+
+func (fl fakeLister) ProwJobs(namespace string) pjlister.ProwJobNamespaceLister {
+	return nil
+}
+
 func TestReport(t *testing.T) {
+
 	var testcases = []struct {
 		name          string
 		pj            *v1.ProwJob
+		existingPJs   []*v1.ProwJob
 		expectReport  bool
-		expectError   bool
-		reportMessage string
+		reportInclude []string
+		reportExclude []string
 	}{
 		{
-			name: "unfinished pj",
+			name: "1 job, unfinished, should not report",
 			pj: &v1.ProwJob{
 				Status: v1.ProwJobStatus{
 					State: v1.PendingState,
@@ -60,7 +78,7 @@ func TestReport(t *testing.T) {
 			},
 		},
 		{
-			name: "finished non-gerrit pj",
+			name: "1 job, finished, no labels, should not report",
 			pj: &v1.ProwJob{
 				Status: v1.ProwJobStatus{
 					State: v1.SuccessState,
@@ -68,7 +86,7 @@ func TestReport(t *testing.T) {
 			},
 		},
 		{
-			name: "finished pj, missing gerrit id",
+			name: "1 job, finished, missing gerrit-id label, should not report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
@@ -84,7 +102,7 @@ func TestReport(t *testing.T) {
 			},
 		},
 		{
-			name: "finished pj, missing gerrit revision",
+			name: "1 job, finished, missing gerrit-revision label, should not report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
@@ -98,7 +116,7 @@ func TestReport(t *testing.T) {
 			},
 		},
 		{
-			name: "finished pj, missing gerrit instance",
+			name: "1 job, finished, missing gerrit-instance label, should not report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
@@ -114,26 +132,7 @@ func TestReport(t *testing.T) {
 			},
 		},
 		{
-			name: "finished pj, no spec",
-			pj: &v1.ProwJob{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{
-						"gerrit-revision": "abc",
-					},
-					Annotations: map[string]string{
-						"gerrit-id":       "123-abc",
-						"gerrit-instance": "gerrit",
-					},
-				},
-				Status: v1.ProwJobStatus{
-					State: v1.SuccessState,
-				},
-			},
-			expectReport: true,
-			expectError:  true,
-		},
-		{
-			name: "finished pj",
+			name: "1 job, passed, should report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
@@ -156,10 +155,36 @@ func TestReport(t *testing.T) {
 				},
 			},
 			expectReport:  true,
-			reportMessage: "Job ci-foo finished with success\n Gubernator URL: guber/foo",
+			reportInclude: []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
 		},
 		{
-			name: "finished pj, slash in repo name",
+			name: "1 job, failed, should report",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"gerrit-revision": "abc",
+					},
+					Annotations: map[string]string{
+						"gerrit-id":       "123-abc",
+						"gerrit-instance": "gerrit",
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.FailureState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job: "ci-foo",
+				},
+			},
+			expectReport:  true,
+			reportInclude: []string{"0 out of 1", "ci-foo", "failure", "guber/foo"},
+		},
+		{
+			name: "1 job, passed, has slash in repo name, should report and handle slash properly",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
@@ -182,13 +207,217 @@ func TestReport(t *testing.T) {
 				},
 			},
 			expectReport:  true,
-			reportMessage: "Job ci-foo-bar finished with success\n Gubernator URL: guber/foo/bar",
+			reportInclude: []string{"1 out of 1", "ci-foo-bar", "success", "guber/foo/bar"},
+			reportExclude: []string{"foo_bar"},
+		},
+		{
+			name: "2 jobs, one passed, other job finished but on different revision, should report",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"gerrit-revision": "abc",
+					},
+					Annotations: map[string]string{
+						"gerrit-id":       "123-abc",
+						"gerrit-instance": "gerrit",
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job: "ci-foo",
+				},
+			},
+			existingPJs: []*v1.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							"gerrit-revision": "def",
+						},
+						Annotations: map[string]string{
+							"gerrit-id":       "123-def",
+							"gerrit-instance": "gerrit",
+						},
+					},
+					Status: v1.ProwJobStatus{
+						State: v1.SuccessState,
+						URL:   "guber/bar",
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "bar",
+						},
+						Job: "ci-bar",
+					},
+				},
+			},
+			expectReport:  true,
+			reportInclude: []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
+			reportExclude: []string{"2", "bar"},
+		},
+		{
+			name: "2 jobs, one passed, other job unfinished, should not report",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"gerrit-revision": "abc",
+					},
+					Annotations: map[string]string{
+						"gerrit-id":       "123-abc",
+						"gerrit-instance": "gerrit",
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job: "ci-foo",
+				},
+			},
+			existingPJs: []*v1.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							"gerrit-revision": "abc",
+						},
+						Annotations: map[string]string{
+							"gerrit-id":       "123-abc",
+							"gerrit-instance": "gerrit",
+						},
+					},
+					Status: v1.ProwJobStatus{
+						State: v1.PendingState,
+						URL:   "guber/bar",
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "bar",
+						},
+						Job: "ci-bar",
+					},
+				},
+			},
+		},
+		{
+			name: "2 jobs, one passed, other job failed, should report",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"gerrit-revision": "abc",
+					},
+					Annotations: map[string]string{
+						"gerrit-id":       "123-abc",
+						"gerrit-instance": "gerrit",
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job: "ci-foo",
+				},
+			},
+			existingPJs: []*v1.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							"gerrit-revision": "abc",
+						},
+						Annotations: map[string]string{
+							"gerrit-id":       "123-abc",
+							"gerrit-instance": "gerrit",
+						},
+					},
+					Status: v1.ProwJobStatus{
+						State: v1.FailureState,
+						URL:   "guber/bar",
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "bar",
+						},
+						Job: "ci-bar",
+					},
+				},
+			},
+			expectReport:  true,
+			reportInclude: []string{"1 out of 2", "ci-foo", "success", "ci-bar", "failure", "guber/foo", "guber/bar"},
+			reportExclude: []string{"0", "2 out of 2"},
+		},
+		{
+			name: "2 jobs, both passed, should report",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"gerrit-revision": "abc",
+					},
+					Annotations: map[string]string{
+						"gerrit-id":       "123-abc",
+						"gerrit-instance": "gerrit",
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job: "ci-foo",
+				},
+			},
+			existingPJs: []*v1.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							"gerrit-revision": "abc",
+						},
+						Annotations: map[string]string{
+							"gerrit-id":       "123-abc",
+							"gerrit-instance": "gerrit",
+						},
+					},
+					Status: v1.ProwJobStatus{
+						State: v1.SuccessState,
+						URL:   "guber/bar",
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "bar",
+						},
+						Job: "ci-bar",
+					},
+				},
+			},
+			expectReport:  true,
+			reportInclude: []string{"2 out of 2", "ci-foo", "success", "ci-bar", "guber/foo", "guber/bar"},
+			reportExclude: []string{"1", "0", "failure"},
 		},
 	}
 
 	for _, tc := range testcases {
 		fgc := &fgc{instance: "gerrit"}
-		reporter := &Client{gc: fgc}
+		allpj := []*v1.ProwJob{tc.pj}
+		if tc.existingPJs != nil {
+			allpj = append(allpj, tc.existingPJs...)
+		}
+
+		fl := &fakeLister{pjs: allpj}
+		reporter := &Client{gc: fgc, lister: fl}
 
 		shouldReport := reporter.ShouldReport(tc.pj)
 		if shouldReport != tc.expectReport {
@@ -200,15 +429,20 @@ func TestReport(t *testing.T) {
 		}
 
 		err := reporter.Report(tc.pj)
-		if err == nil && tc.expectError {
-			t.Errorf("test: %s: expect error but did not happen", tc.name)
-		} else if err != nil && !tc.expectError {
+		if err != nil {
 			t.Errorf("test: %s: expect no error but got error %v", tc.name, err)
 		}
 
 		if err == nil {
-			if fgc.reportMessage != tc.reportMessage {
-				t.Errorf("test: %s: reported with : %s, expect: %s", tc.name, fgc.reportMessage, tc.reportMessage)
+			for _, include := range tc.reportInclude {
+				if !strings.Contains(fgc.reportMessage, include) {
+					t.Errorf("test: %s: reported with: %s, should contain: %s", tc.name, fgc.reportMessage, include)
+				}
+			}
+			for _, exclude := range tc.reportExclude {
+				if strings.Contains(fgc.reportMessage, exclude) {
+					t.Errorf("test: %s: reported with: %s, should not contain: %s", tc.name, fgc.reportMessage, exclude)
+				}
 			}
 		}
 	}

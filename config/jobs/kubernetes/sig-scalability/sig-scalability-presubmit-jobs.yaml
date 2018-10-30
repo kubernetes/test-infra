@@ -10,6 +10,8 @@ presubmits:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-gci-gce-scalability: "true"
     spec:
       containers:
       - args:
@@ -22,8 +24,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-        - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env
         - --extract=local
         - --gcp-nodes=100
         - --gcp-project=k8s-presubmit-scale
@@ -37,7 +37,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         resources:
           requests:
             memory: "6Gi"
@@ -51,6 +51,8 @@ presubmits:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-highspeed-common: "true"
     spec:
       containers:
       - args:
@@ -64,8 +66,6 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=n1-standard-4
-        - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-        - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
         - --extract=local
         - --gcp-nodes=500
         - --gcp-project=k8s-scale-testing
@@ -73,13 +73,13 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-big-performance
         - --tear-down-previous
-        - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master
+        - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=masteranddns --gather-metrics-at-teardown=master
         - --timeout=240m
         - --use-logexporter
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         resources:
           requests:
             memory: "6Gi"
@@ -93,6 +93,8 @@ presubmits:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-highspeed-common: "true"
     spec:
       containers:
       - args:
@@ -106,21 +108,19 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=n1-standard-8
-        - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-        - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
         - --extract=local
         - --gcp-nodes=2000
         - --gcp-project=k8s-scale-testing
         - --gcp-zone=us-east1-a
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-large-performance
-        - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master
+        - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=masteranddns --gather-metrics-at-teardown=master
         - --timeout=540m
         - --use-logexporter
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         resources:
           requests:
             memory: "6Gi"
@@ -137,9 +137,11 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
+      preset-e2e-kubemark-common: "true"
+      preset-e2e-kubemark-gce-big: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -152,8 +154,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
-        - --env-file=jobs/env/ci-kubernetes-kubemark-gce-big.env
         - --extract=local
         - --gcp-master-size=n1-standard-4
         - --gcp-node-size=n1-standard-8
@@ -190,9 +190,11 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
+      preset-e2e-kubemark-common: "true"
+      preset-e2e-kubemark-gce-big: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -205,8 +207,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
-        - --env-file=jobs/env/ci-kubernetes-kubemark-gce-big.env
         - --extract=local
         - --gcp-master-size=n1-standard-4
         - --gcp-node-size=n1-standard-8
@@ -243,9 +243,11 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
+      preset-e2e-kubemark-common: "true"
+      preset-e2e-kubemark-gce-big: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.9
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -258,8 +260,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
-        - --env-file=jobs/env/ci-kubernetes-kubemark-gce-big.env
         - --extract=local
         - --gcp-master-size=n1-standard-4
         - --gcp-node-size=n1-standard-8
@@ -295,9 +295,11 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
+      preset-e2e-kubemark-common: "true"
+      preset-e2e-kubemark-gce-scale: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -310,8 +312,6 @@ presubmits:
         - --
         - --build
         - --cluster=
-        - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
-        - --env-file=jobs/env/ci-kubernetes-kubemark-gce-scale.env
         - --extract=local
         - --gcp-node-size=n1-standard-8
         - --gcp-nodes=82

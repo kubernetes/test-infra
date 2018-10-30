@@ -36,7 +36,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
-
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
@@ -65,7 +65,7 @@ type Label struct {
 	// Color is rrggbb or color
 	Color string `json:"color"`
 	// Description is brief text explaining its meaning, who can apply it
-	Description string `json:"description"` // What does this label mean, who can apply it
+	Description string `json:"description"`
 	// Target specifies whether it targets PRs, issues or both
 	Target LabelTarget `json:"target"`
 	// ProwPlugin specifies which prow plugin add/removes this label
@@ -217,7 +217,7 @@ func stringInSortedSlice(a string, list []string) bool {
 	return false
 }
 
-// Returns a sorted list of labels unique by name
+// Labels returns a sorted list of labels unique by name
 func (c Configuration) Labels() []Label {
 	var labelarrays [][]Label
 	labelarrays = append(labelarrays, c.Default.Labels)
@@ -246,6 +246,10 @@ func (c Configuration) Labels() []Label {
 // TODO(spiffxp): needs to validate labels duped across repos are identical
 // Ensures the config does not duplicate label names between default and repo
 func (c Configuration) validate(orgs string) error {
+	if len(orgs) == 0 {
+		return nil
+	}
+
 	// Generate list of orgs
 	sortedOrgs := strings.Split(orgs, ",")
 	sort.Strings(sortedOrgs)
@@ -260,7 +264,7 @@ func (c Configuration) validate(orgs string) error {
 		if _, err := validate(repoconfig.Labels, repo, seen); err != nil {
 			return fmt.Errorf("invalid config: %v", err)
 		}
-		// Warn if repo isn't under org
+		// Warn if repo isn't under orgs
 		data := strings.Split(repo, "/")
 		if len(data) == 2 {
 			if !stringInSortedSlice(data[0], sortedOrgs) {
@@ -314,25 +318,22 @@ func GetOrg(org string) (string, bool) {
 }
 
 // loadRepos read what (filtered) repos exist under an org
-func loadRepos(org string, gc client, filt filter) (RepoList, error) {
+func loadRepos(org string, gc client) ([]string, error) {
 	org, isUser := GetOrg(org)
 	repos, err := gc.GetRepos(org, isUser)
 	if err != nil {
 		return nil, err
 	}
-	var rl RepoList
+	var rl []string
 	for _, r := range repos {
-		if !filt(org, r.Name) {
-			continue
-		}
-		rl = append(rl, r)
+		rl = append(rl, r.Name)
 	}
 	return rl, nil
 }
 
 // loadLabels returns what labels exist in github
-func loadLabels(gc client, org string, repos RepoList) (*RepoLabels, error) {
-	repoChan := make(chan github.Repo, len(repos))
+func loadLabels(gc client, org string, repos []string) (*RepoLabels, error) {
+	repoChan := make(chan string, len(repos))
 	for _, repo := range repos {
 		repoChan <- repo
 	}
@@ -343,16 +344,16 @@ func loadLabels(gc client, org string, repos RepoList) (*RepoLabels, error) {
 	labels := make(chan RepoLabels, len(repos))
 	errChan := make(chan error, len(repos))
 	for i := 0; i < maxConcurrentWorkers; i++ {
-		go func(repositories <-chan github.Repo) {
+		go func(repositories <-chan string) {
 			defer wg.Done()
 			for repository := range repositories {
-				logrus.WithField("org", org).WithField("repo", repository.Name).Info("Listing labels for repo")
-				repoLabels, err := gc.GetRepoLabels(org, repository.Name)
+				logrus.WithField("org", org).WithField("repo", repository).Info("Listing labels for repo")
+				repoLabels, err := gc.GetRepoLabels(org, repository)
 				if err != nil {
-					logrus.WithField("org", org).WithField("repo", repository.Name).Error("Failed listing labels for repo")
+					logrus.WithField("org", org).WithField("repo", repository).Error("Failed listing labels for repo")
 					errChan <- err
 				}
-				labels <- RepoLabels{repository.Name: repoLabels}
+				labels <- RepoLabels{repository: repoLabels}
 			}
 		}(repoChan)
 	}
@@ -679,6 +680,14 @@ func main() {
 		logrus.WithError(err).Fatalf("failed to load --config=%s", *labelsPath)
 	}
 
+	if *onlyRepos != "" && *skipRepos != "" {
+		logrus.Fatalf("--only and --skip cannot both be set")
+	}
+
+	if *onlyRepos != "" && *orgs != "" {
+		logrus.Fatalf("--only and --orgs cannot both be set")
+	}
+
 	switch {
 	case *action == "docs":
 		writeDocsAndCSS(*docsTemplate, *docsOutput, *cssTemplate, *cssOutput, *config)
@@ -688,39 +697,44 @@ func main() {
 			logrus.WithError(err).Fatal("failed to create client")
 		}
 
-		var filt filter
-		switch {
-		case *onlyRepos != "":
-			if *skipRepos != "" {
-				logrus.Fatalf("--only and --skip cannot both be set")
+		// there are three ways to configure which repos to sync:
+		//  - a whitelist of org/repo values
+		//  - a list of orgs for which we sync all repos
+		//  - a list of orgs with a blacklist of org/repo values
+		if *onlyRepos != "" {
+			reposToSync, parseError := parseCommaDelimitedList(*onlyRepos)
+			if parseError != nil {
+				logrus.WithError(err).Fatal("invalid value for --only")
 			}
-			only := make(map[string]bool)
-			for _, r := range strings.Split(*onlyRepos, ",") {
-				only[strings.TrimSpace(r)] = true
+			for org := range reposToSync {
+				if err = syncOrg(org, githubClient, *config, reposToSync[org]); err != nil {
+					logrus.WithError(err).Fatalf("failed to update %s", org)
+				}
 			}
-			filt = func(org, repo string) bool {
-				_, ok := only[org+"/"+repo]
-				return ok
+			return
+		}
+
+		skippedRepos := map[string][]string{}
+		if *skipRepos != "" {
+			reposToSkip, parseError := parseCommaDelimitedList(*skipRepos)
+			if parseError != nil {
+				logrus.WithError(err).Fatal("invalid value for --skip")
 			}
-		case *skipRepos != "":
-			skip := make(map[string]bool)
-			for _, r := range strings.Split(*skipRepos, ",") {
-				skip[strings.TrimSpace(r)] = true
-			}
-			filt = func(org, repo string) bool {
-				_, ok := skip[org+"/"+repo]
-				return !ok
-			}
-		default:
-			filt = func(o, r string) bool {
-				return true
-			}
+			skippedRepos = reposToSkip
 		}
 
 		for _, org := range strings.Split(*orgs, ",") {
 			org = strings.TrimSpace(org)
-
-			if err = syncOrg(org, githubClient, *config, filt); err != nil {
+			logger := logrus.WithField("org", org)
+			logger.Info("Reading repos")
+			repos, err := loadRepos(org, githubClient)
+			if err != nil {
+				logger.WithError(err).Fatalf("failed to read repos")
+			}
+			if skipped, exist := skippedRepos[org]; exist {
+				repos = sets.NewString(repos...).Difference(sets.NewString(skipped...)).UnsortedList()
+			}
+			if err = syncOrg(org, githubClient, *config, repos); err != nil {
 				logrus.WithError(err).Fatalf("failed to update %s", org)
 			}
 		}
@@ -729,7 +743,27 @@ func main() {
 	}
 }
 
-type filter func(string, string) bool
+// parseCommaDelimitedList parses values in the format:
+//   org/repo,org2/repo2,org/repo3
+// into a mapping of org to repos, i.e.:
+//   org:  repo, repo3
+//   org2: repo2
+func parseCommaDelimitedList(list string) (map[string][]string, error) {
+	mapping := map[string][]string{}
+	for _, r := range strings.Split(list, ",") {
+		value := strings.TrimSpace(r)
+		if strings.Count(value, "/") != 1 {
+			return nil, fmt.Errorf("invalid org/repo value %q", value)
+		}
+		parts := strings.SplitN(value, "/", 2)
+		if others, exist := mapping[parts[0]]; !exist {
+			mapping[parts[0]] = []string{parts[1]}
+		} else {
+			mapping[parts[0]] = append(others, parts[1])
+		}
+	}
+	return mapping, nil
+}
 
 type labelData struct {
 	Description, Link, Labels interface{}
@@ -792,30 +826,25 @@ func linkify(text string) string {
 	return strings.ToLower(link)
 }
 
-func syncOrg(org string, githubClient client, config Configuration, filt filter) error {
-	logrus.WithField("org", org).Info("Reading repos")
-	repos, err := loadRepos(org, githubClient, filt)
-	if err != nil {
-		return err
-	}
-
-	logrus.WithField("org", org).Infof("Found %d repos", len(repos))
+func syncOrg(org string, githubClient client, config Configuration, repos []string) error {
+	logger := logrus.WithField("org", org)
+	logger.Infof("Found %d repos", len(repos))
 	currLabels, err := loadLabels(githubClient, org, repos)
 	if err != nil {
 		return err
 	}
 
-	logrus.WithField("org", org).Infof("Syncing labels for %d repos", len(repos))
+	logger.Infof("Syncing labels for %d repos", len(repos))
 	updates, err := syncLabels(config, org, *currLabels)
 	if err != nil {
 		return err
 	}
 
 	y, _ := yaml.Marshal(updates)
-	logrus.Debug(string(y))
+	logger.Debug(string(y))
 
 	if !*confirm {
-		logrus.Infof("Running without --confirm, no mutations made")
+		logger.Infof("Running without --confirm, no mutations made")
 		return nil
 	}
 

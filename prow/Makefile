@@ -30,6 +30,8 @@ CLUSTER       ?= prow
 REGISTRY ?= gcr.io
 PUSH     ?= docker push
 
+export PROW_REPO_OVERRIDE ?= $(REGISTRY)/$(PROJECT)
+
 DOCKER_LABELS:=--label io.k8s.prow.git-describe="$(shell git describe --tags --always --dirty)"
 
 update-config: get-cluster-credentials
@@ -72,7 +74,6 @@ bazel-release-push:
 	@echo See https://bazel.build/ for install options.
 	@echo Be sure to setup authentication: https://github.com/bazelbuild/rules_docker#authentication
 	@echo Also run gcloud auth application-default login
-	export STABLE_PROW_REPO=$(REGISTRY)/$(PROJECT)
 	bazel run //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
 
 .PHONY: bazel-release-push

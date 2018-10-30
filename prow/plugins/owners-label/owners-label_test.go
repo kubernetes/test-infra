@@ -27,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/labels"
 )
 
 func formatLabels(labels ...string) []string {
@@ -52,9 +53,9 @@ func (foc *fakeOwnersClient) FindLabelsForFile(path string) sets.String {
 func TestHandle(t *testing.T) {
 	foc := &fakeOwnersClient{
 		labels: map[string]sets.String{
-			"a.go": sets.NewString("lgtm", "approved", "kind/docs"),
-			"b.go": sets.NewString("lgtm"),
-			"c.go": sets.NewString("lgtm", "dnm/frozen-docs"),
+			"a.go": sets.NewString(labels.LGTM, labels.Approved, "kind/docs"),
+			"b.go": sets.NewString(labels.LGTM),
+			"c.go": sets.NewString(labels.LGTM, "dnm/frozen-docs"),
 			"d.sh": sets.NewString("dnm/bash"),
 			"e.sh": sets.NewString("dnm/bash"),
 		},
@@ -78,29 +79,29 @@ func TestHandle(t *testing.T) {
 		{
 			name:              "1 file 1 label",
 			filesChanged:      []string{"b.go"},
-			expectedNewLabels: formatLabels("lgtm"),
-			repoLabels:        []string{"lgtm"},
+			expectedNewLabels: formatLabels(labels.LGTM),
+			repoLabels:        []string{labels.LGTM},
 			issueLabels:       []string{},
 		},
 		{
 			name:              "1 file 3 labels",
 			filesChanged:      []string{"a.go"},
-			expectedNewLabels: formatLabels("lgtm", "approved", "kind/docs"),
-			repoLabels:        []string{"lgtm", "approved", "kind/docs"},
+			expectedNewLabels: formatLabels(labels.LGTM, labels.Approved, "kind/docs"),
+			repoLabels:        []string{labels.LGTM, labels.Approved, "kind/docs"},
 			issueLabels:       []string{},
 		},
 		{
 			name:              "2 files no overlap",
 			filesChanged:      []string{"c.go", "d.sh"},
-			expectedNewLabels: formatLabels("lgtm", "dnm/frozen-docs", "dnm/bash"),
-			repoLabels:        []string{"lgtm", "dnm/frozen-docs", "dnm/bash"},
+			expectedNewLabels: formatLabels(labels.LGTM, "dnm/frozen-docs", "dnm/bash"),
+			repoLabels:        []string{labels.LGTM, "dnm/frozen-docs", "dnm/bash"},
 			issueLabels:       []string{},
 		},
 		{
 			name:              "2 files partial overlap",
 			filesChanged:      []string{"a.go", "b.go"},
-			expectedNewLabels: formatLabels("lgtm", "approved", "kind/docs"),
-			repoLabels:        []string{"lgtm", "approved", "kind/docs"},
+			expectedNewLabels: formatLabels(labels.LGTM, labels.Approved, "kind/docs"),
+			repoLabels:        []string{labels.LGTM, labels.Approved, "kind/docs"},
 			issueLabels:       []string{},
 		},
 		{
@@ -113,37 +114,37 @@ func TestHandle(t *testing.T) {
 		{
 			name:              "3 files partial overlap",
 			filesChanged:      []string{"a.go", "b.go", "c.go"},
-			expectedNewLabels: formatLabels("lgtm", "approved", "kind/docs", "dnm/frozen-docs"),
-			repoLabels:        []string{"lgtm", "approved", "kind/docs", "dnm/frozen-docs"},
+			expectedNewLabels: formatLabels(labels.LGTM, labels.Approved, "kind/docs", "dnm/frozen-docs"),
+			repoLabels:        []string{labels.LGTM, labels.Approved, "kind/docs", "dnm/frozen-docs"},
 			issueLabels:       []string{},
 		},
 		{
 			name:              "no labels to add, initial unrelated label",
 			filesChanged:      []string{"other.go", "something.go"},
 			expectedNewLabels: []string{},
-			repoLabels:        []string{"lgtm"},
-			issueLabels:       []string{"lgtm"},
+			repoLabels:        []string{labels.LGTM},
+			issueLabels:       []string{labels.LGTM},
 		},
 		{
 			name:              "1 file 1 label, already present",
 			filesChanged:      []string{"b.go"},
 			expectedNewLabels: []string{},
-			repoLabels:        []string{"lgtm"},
-			issueLabels:       []string{"lgtm"},
+			repoLabels:        []string{labels.LGTM},
+			issueLabels:       []string{labels.LGTM},
 		},
 		{
 			name:              "1 file 1 label, doesn't exist on the repo",
 			filesChanged:      []string{"b.go"},
 			expectedNewLabels: []string{},
-			repoLabels:        []string{"approved"},
+			repoLabels:        []string{labels.Approved},
 			issueLabels:       []string{},
 		},
 		{
 			name:              "2 files no overlap, 1 label already present",
 			filesChanged:      []string{"c.go", "d.sh"},
-			expectedNewLabels: formatLabels("lgtm", "dnm/frozen-docs"),
-			repoLabels:        []string{"dnm/bash", "approved", "lgtm", "dnm/frozen-docs"},
-			issueLabels:       []string{"dnm/bash", "approved"},
+			expectedNewLabels: formatLabels(labels.LGTM, "dnm/frozen-docs"),
+			repoLabels:        []string{"dnm/bash", labels.Approved, labels.LGTM, "dnm/frozen-docs"},
+			issueLabels:       []string{"dnm/bash", labels.Approved},
 		},
 		{
 			name:              "2 files complete overlap, label already present",
@@ -197,7 +198,7 @@ func TestHandle(t *testing.T) {
 			Repo:        basicPR.Base.Repo,
 		}
 
-		err := handle(fghc, foc, logrus.WithField("plugin", pluginName), pre)
+		err := handle(fghc, foc, logrus.WithField("plugin", PluginName), pre)
 		if err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue

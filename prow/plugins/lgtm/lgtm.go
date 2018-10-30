@@ -26,19 +26,21 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/trigger"
 	"k8s.io/test-infra/prow/repoowners"
 )
 
 // PluginName is the registered plugin name
-const PluginName = "lgtm"
+const PluginName = labels.LGTM
 
 var (
 	addLGTMLabelNotification   = "LGTM label has been added.  <details>Git tree hash: %s</details>"
 	addLGTMLabelNotificationRe = regexp.MustCompile(fmt.Sprintf(addLGTMLabelNotification, "(.*)"))
 	// LGTMLabel is the name of the lgtm label applied by the lgtm plugin
-	LGTMLabel           = "lgtm"
+	LGTMLabel           = labels.LGTM
 	lgtmRe              = regexp.MustCompile(`(?mi)^/lgtm(?: no-issue)?\s*$`)
 	lgtmCancelRe        = regexp.MustCompile(`(?mi)^/lgtm cancel\s*$`)
 	removeLGTMLabelNoti = "New changes are detected. LGTM label has been removed."
@@ -106,6 +108,7 @@ type githubClient interface {
 	DeleteComment(org, repo string, ID int) error
 	BotName() (string, error)
 	GetSingleCommit(org, repo, SHA string) (github.SingleCommit, error)
+	IsMember(org, user string) (bool, error)
 }
 
 // reviewCtx contains information about each review event
@@ -246,9 +249,9 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 			if ok, merr := gc.IsCollaborator(org, repoName, author); merr == nil && !ok {
 				msg = fmt.Sprintf("only %s/%s repo collaborators may be assigned issues", org, repoName)
 			} else if merr != nil {
-				log.WithError(merr).Errorf("Failed to check if author is a collaborator.")
+				log.WithError(merr).Error("Failed to check if author is a collaborator.")
 			} else {
-				log.WithError(err).Errorf("Failed to assign issue to author.")
+				log.WithError(err).Error("Failed to assign issue to author.")
 			}
 			resp := "changing LGTM is restricted to assignees, and " + msg + "."
 			log.Infof("Reply to assign via /lgtm request with comment: \"%s\"", resp)
@@ -279,7 +282,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	// Only add the label if it doesn't have it, and vice versa.
 	labels, err := gc.GetIssueLabels(org, repoName, number)
 	if err != nil {
-		log.WithError(err).Errorf("Failed to get issue labels.")
+		log.WithError(err).Error("Failed to get issue labels.")
 	}
 	hasLGTM := github.HasLabel(LGTMLabel, labels)
 
@@ -300,30 +303,42 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 		if err := gc.AddLabel(org, repoName, number, LGTMLabel); err != nil {
 			return err
 		}
-		if opts.StoreTreeHash {
-			pr, err := gc.GetPullRequest(org, repoName, number)
-			if err != nil {
-				log.WithError(err).Errorf("Failed to get pull request.")
-			}
-			if pr.MergeSHA != nil {
-				commit, err := gc.GetSingleCommit(org, repoName, *pr.MergeSHA)
+		if !stickyLgtm(log, gc, config, opts, issueAuthor, org, repoName) {
+			if opts.StoreTreeHash {
+				pr, err := gc.GetPullRequest(org, repoName, number)
 				if err != nil {
-					log.WithError(err).Errorf("Failed to get commit.")
+					log.WithError(err).Error("Failed to get pull request.")
+				}
+				commit, err := gc.GetSingleCommit(org, repoName, pr.Head.SHA)
+				if err != nil {
+					log.WithField("sha", pr.Head.SHA).WithError(err).Error("Failed to get commit.")
 				}
 				treeHash := commit.Commit.Tree.SHA
-				log.Info("Adding comment to store tree-hash: " + treeHash)
+				log.WithField("tree", treeHash).Info("Adding comment to store tree-hash.")
 				if err := gc.CreateComment(org, repoName, number, fmt.Sprintf(addLGTMLabelNotification, treeHash)); err != nil {
-					log.WithError(err).Errorf("Failed to add comment.")
+					log.WithError(err).Error("Failed to add comment.")
 				}
 			}
+			// Delete the LGTM removed noti after the LGTM label is added.
+			cp.PruneComments(func(comment github.IssueComment) bool {
+				return strings.Contains(comment.Body, removeLGTMLabelNoti)
+			})
 		}
-		// Delete the LGTM removed noti after the LGTM label is added.
-		cp.PruneComments(func(comment github.IssueComment) bool {
-			return strings.Contains(comment.Body, removeLGTMLabelNoti)
-		})
 	}
 
 	return nil
+}
+
+func stickyLgtm(log *logrus.Entry, gc githubClient, config *plugins.Configuration, lgtm *plugins.Lgtm, author, org, repo string) bool {
+	if lgtm.StickyForTrustedAuthors {
+		triggerOpt := config.TriggerFor(org, repo)
+		if ok, merr := trigger.TrustedUser(gc, triggerOpt, author, org, repo); merr == nil && ok {
+			return true
+		} else if merr != nil {
+			log.WithError(merr).Errorf("Failed to check if author is a collaborator.")
+		}
+	}
+	return false
 }
 
 func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Configuration, pe *github.PullRequestEvent) error {
@@ -339,16 +354,19 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 	repo := pe.PullRequest.Base.Repo.Name
 	number := pe.PullRequest.Number
 
-	// rc.repo.Owner.Login, rc.repo.Name)
 	opts := optionsForRepo(config, org, repo)
+	if stickyLgtm(log, gc, config, opts, pe.PullRequest.User.Login, org, repo) {
+		// If the author is trusted,, skip tree hash verification and LGTM removal.
+		return nil
+	}
 	if opts.StoreTreeHash {
 		// Check if we have LGTM label
 		labels, err := gc.GetIssueLabels(org, repo, number)
 		if err != nil {
-			log.WithError(err).Errorf("Failed to get labels.")
+			log.WithError(err).Error("Failed to get labels.")
 		}
 
-		if github.HasLabel(LGTMLabel, labels) && pe.PullRequest.MergeSHA != nil {
+		if github.HasLabel(LGTMLabel, labels) {
 			// Check if we have a tree-hash comment
 			var lastLgtmTreeHash string
 			botname, err := gc.BotName()
@@ -357,7 +375,7 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 			}
 			comments, err := gc.ListIssueComments(org, repo, number)
 			if err != nil {
-				log.WithError(err).Errorf("Failed to get issue comments.")
+				log.WithError(err).Error("Failed to get issue comments.")
 			}
 			for _, comment := range comments {
 				m := addLGTMLabelNotificationRe.FindStringSubmatch(comment.Body)
@@ -366,16 +384,18 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 					break
 				}
 			}
-			// Get the current tree-hash
-			commit, err := gc.GetSingleCommit(org, repo, *pe.PullRequest.MergeSHA)
-			if err != nil {
-				log.WithError(err).Errorf("Failed to get commit.")
-			}
-			treeHash := commit.Commit.Tree.SHA
-			if treeHash == lastLgtmTreeHash {
-				// Don't remove the label, PR code hasn't changed
-				log.Infof("Keeping LGTM label as the tree-hash remained the same: %s", treeHash)
-				return nil
+			if lastLgtmTreeHash != "" {
+				// Get the current tree-hash
+				commit, err := gc.GetSingleCommit(org, repo, pe.PullRequest.Head.SHA)
+				if err != nil {
+					log.WithField("sha", pe.PullRequest.Head.SHA).WithError(err).Error("Failed to get commit.")
+				}
+				treeHash := commit.Commit.Tree.SHA
+				if treeHash == lastLgtmTreeHash {
+					// Don't remove the label, PR code hasn't changed
+					log.Infof("Keeping LGTM label as the tree-hash remained the same: %s", treeHash)
+					return nil
+				}
 			}
 		}
 	}

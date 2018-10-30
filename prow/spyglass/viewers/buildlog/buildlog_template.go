@@ -26,13 +26,17 @@ var buildLogTemplateText = `<style>
 	padding: 0;
 	margin: 0;
 	line-height:1.2;
-	color:black;
+  color: #e8e8e8;
+  background-color: #212121;
+}
+.loglines td {
+  padding-left: 0;
 }
 .line-highlighted {
-  background-color: rgba(255, 224, 0, .4);
+ color: rgba(255, 224, 0, 1.0);
 }
 .match-highlighted {
-  font-weight: bold;
+  color: rgba(255, 0, 0, 1.0);
 }
 .skipped {
   display: none;
@@ -45,7 +49,7 @@ tr {
 }
 .linenum {
   user-select: none;
-  color: gray;
+  color: rgba(255,255,2552,0.6);
   text-align: right;
   vertical-align: top;
 }
@@ -53,8 +57,8 @@ tr {
 <div style="font-family:monospace;">
   {{range $log := .LogViews}}
   <div id="{{$log | logID}}">
-    <h4 style="margin-top:0;">
-      <a href="{{$log.ArtifactLink}}">{{$log.ArtifactName}}</a>
+    <h4 style="margin: 0;">
+      <a href="{{$log.ArtifactLink}}">{{$log.ArtifactName}}<i class="material-icons" style="font-size: 1em; vertical-align: middle;">link</i></a>
       <button id="{{$log | logID}}-show-all" onclick="showAllLines({{$log | logID}})">Show all hidden lines</button>
     </h4>
     <table class="loglines">

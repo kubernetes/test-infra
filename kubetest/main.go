@@ -38,6 +38,8 @@ import (
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/kubetest/conformance"
 	"k8s.io/test-infra/kubetest/dind"
+	"k8s.io/test-infra/kubetest/eks"
+	"k8s.io/test-infra/kubetest/kubeadmdind"
 	"k8s.io/test-infra/kubetest/process"
 	"k8s.io/test-infra/kubetest/util"
 )
@@ -130,7 +132,7 @@ func defineFlags() *options {
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
 	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
 	flag.StringVar(&o.clusterIPRange, "cluster-ip-range", "", "Specifies CLUSTER_IP_RANGE value during --up and --test (only relevant for --deployment=bash). Auto-calculated if empty.")
-	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/conformance/dind/gke/kops/kubernetes-anywhere/node/local")
+	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/conformance/dind/gke/eks/kops/kubernetes-anywhere/node/local")
 	flag.StringVar(&o.dindImage, "dind-image", "", "The dind image to use to start a cluster. Defaults to the docker tag produced by bazel.")
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
 	flag.StringVar(&o.dump, "dump", "", "If set, dump bring-up and cluster logs to this location on test or cluster-up failure")
@@ -169,7 +171,7 @@ func defineFlags() *options {
 	flag.StringVar(&o.nodeTestArgs, "node-test-args", "", "Test args specifically for node e2e tests.")
 	flag.BoolVar(&o.noAllowDup, "no-allow-dup", false, "if set --allow-dup will not be passed to push-build and --stage will error if the build already exists on the gcs path")
 	flag.BoolVar(&o.nodeTests, "node-tests", false, "If true, run node-e2e tests.")
-	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, etc")
+	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, eks, etc")
 	flag.StringVar(&o.publish, "publish", "", "Publish version to the specified gs:// path on success")
 	flag.StringVar(&o.runtimeConfig, "runtime-config", "batch/v2alpha1=true", "If set, API versions can be turned on or off while bringing up the API server.")
 	flag.StringVar(&o.stage.dockerRegistry, "registry", "", "Push images to the specified docker registry (e.g. gcr.io/a-test-project)")
@@ -245,8 +247,12 @@ func getDeployer(o *options) (deployer, error) {
 		return dind.NewDeployer(o.kubecfg, o.dindImage, control)
 	case "gke":
 		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.gcpImageFamily, o.gcpImageProject, o.cluster, &o.testArgs, &o.upgradeArgs)
+	case "eks":
+		return eks.NewDeployer(timeout, verbose)
 	case "kops":
 		return newKops(o.provider, o.gcpProject, o.cluster)
+	case "kubeadm-dind":
+		return kubeadmdind.NewDeployer(control)
 	case "kubernetes-anywhere":
 		if o.multiClusters.Enabled() {
 			return newKubernetesAnywhereMultiCluster(o.gcpProject, o.gcpZone, o.multiClusters)
@@ -935,12 +941,19 @@ func prepare(o *options) error {
 	}
 
 	switch o.provider {
-	case "gce", "gke", "kubernetes-anywhere", "node":
+	case "gce", "gke", "node":
 		if err := prepareGcp(o); err != nil {
 			return err
 		}
 	case "aws":
 		if err := prepareAws(o); err != nil {
+			return err
+		}
+	}
+	// For kubernetes-anywhere as the deployer, call prepareGcp()
+	// independent of the specified provider.
+	if o.deployment == "kubernetes-anywhere" {
+		if err := prepareGcp(o); err != nil {
 			return err
 		}
 	}

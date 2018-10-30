@@ -55,11 +55,11 @@ func TestOptions_Validate(t *testing.T) {
 			expectedErr: true,
 		},
 		{
-			name: "no token",
+			name: "no token, allow",
 			opt: options{
 				config: "dummy",
 			},
-			expectedErr: true,
+			expectedErr: false,
 		},
 	}
 
@@ -262,7 +262,7 @@ func TestProtect(t *testing.T) {
 			name: "unknown org",
 			config: `
 branch-protection:
-  protect-by-default: true
+  protect: true
   orgs:
     unknown:
 `,
@@ -273,7 +273,7 @@ branch-protection:
 			branches: []string{"cfgdef/repo1=master", "cfgdef/repo1=branch", "cfgdef/repo2=master"},
 			config: `
 branch-protection:
-  protect-by-default: true
+  protect: true
   orgs:
     cfgdef:
 `,
@@ -303,10 +303,10 @@ branch-protection:
 			branches: []string{"this/yes=master", "that/no=master"},
 			config: `
 branch-protection:
-  protect-by-default: false
+  protect: false
   orgs:
     this:
-      protect-by-default: true
+      protect: true
     that:
 `,
 			expected: []requirements{
@@ -343,9 +343,10 @@ branch-protection:
 			branches: []string{"org/repo=push"},
 			config: `
 branch-protection:
-  protect-by-default: false
-  allow-push:
-  - oncall
+  protect: false
+  restrictions:
+    teams:
+    - oncall
   orgs:
     org:
 `,
@@ -356,9 +357,10 @@ branch-protection:
 			branches: []string{"org/repo=context"},
 			config: `
 branch-protection:
-  protect-by-default: false
-  require-contexts:
-  - test-foo
+  protect: false
+  required_status_checks:
+    contexts:
+    - test-foo
   orgs:
     org:
 `,
@@ -369,13 +371,13 @@ branch-protection:
 			branches: []string{"org/repo1=master", "org/repo1=branch", "org/skip=master"},
 			config: `
 branch-protection:
-  protect-by-default: false
+  protect: false
   orgs:
     org:
-      protect-by-default: true
+      protect: true
       repos:
         skip:
-          protect-by-default: false
+          protect: false
 `,
 			expected: []requirements{
 				{
@@ -399,25 +401,57 @@ branch-protection:
 			},
 		},
 		{
+			name:     "collapse duplicated contexts",
+			branches: []string{"org/repo=master"},
+			config: `
+branch-protection:
+  protect: true
+  required_status_checks:
+    contexts:
+    - hello-world
+    - duplicate-context
+    - duplicate-context
+    - hello-world
+  orgs:
+    org:
+`,
+			expected: []requirements{
+				{
+					Org:    "org",
+					Repo:   "repo",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						RequiredStatusChecks: &github.RequiredStatusChecks{
+							Contexts: []string{"duplicate-context", "hello-world"},
+						},
+					},
+				},
+			},
+		},
+		{
 			name:     "append contexts",
 			branches: []string{"org/repo=master"},
 			config: `
 branch-protection:
-  protect-by-default: true
-  require-contexts:
-  - config-presubmit
+  protect: true
+  required_status_checks:
+    contexts:
+    - config-presubmit
   orgs:
     org:
-      require-contexts:
-      - org-presubmit
+      required_status_checks:
+        contexts:
+        - org-presubmit
       repos:
         repo:
-          require-contexts:
-          - repo-presubmit
+          required_status_checks:
+            contexts:
+            - repo-presubmit
           branches:
             master:
-              require-contexts:
-              - branch-presubmit
+              required_status_checks:
+                contexts:
+                - branch-presubmit
 `,
 			expected: []requirements{
 				{
@@ -437,21 +471,25 @@ branch-protection:
 			branches: []string{"org/repo=master"},
 			config: `
 branch-protection:
-  protect-by-default: true
-  allow-push:
-  - config-team
+  protect: true
+  restrictions:
+    teams:
+    - config-team
   orgs:
     org:
-      allow-push:
-      - org-team
+      restrictions:
+        teams:
+        - org-team
       repos:
         repo:
-          allow-push:
-          - repo-team
+          restrictions:
+            teams:
+            - repo-team
           branches:
             master:
-              allow-push:
-              - branch-team
+              restrictions:
+                teams:
+                - branch-team
 `,
 			expected: []requirements{
 				{
@@ -561,43 +599,6 @@ branch-protection:
 					Org:    "parent",
 					Repo:   "child",
 					Branch: "unprotected",
-				},
-			},
-		},
-		{
-			name:     "modern/deprecated mixed",
-			branches: []string{"modern/deprecated=mixed"},
-			config: `
-branch-protection:
-  protect: false
-  required_status_checks:
-    contexts:
-    - config-presubmit
-  restrictions:
-    teams:
-    - config-team
-  orgs:
-    modern:
-      protect-by-default: true
-      allow-push:
-      - org-team
-      require-contexts:
-      - org-presubmit
-`,
-			expected: []requirements{
-				{
-					Org:    "modern",
-					Repo:   "deprecated",
-					Branch: "mixed",
-					Request: &github.BranchProtectionRequest{
-						RequiredStatusChecks: &github.RequiredStatusChecks{
-							Contexts: []string{"config-presubmit", "org-presubmit"},
-						},
-						Restrictions: &github.Restrictions{
-							Users: &[]string{},
-							Teams: &[]string{"config-team", "org-team"},
-						},
-					},
 				},
 			},
 		},
@@ -715,5 +716,63 @@ func fixup(r *requirements) {
 	if restr := req.Restrictions; restr != nil {
 		sort.Strings(*restr.Teams)
 		sort.Strings(*restr.Users)
+	}
+}
+
+func TestIgnoreArchivedRepos(t *testing.T) {
+	repos := map[string]map[string]bool{}
+	branches := map[string][]github.Branch{}
+	org, repo, branch := "organization", "repository", "branch"
+	k := org + "/" + repo
+	branches[k] = append(branches[k], github.Branch{
+		Name: branch,
+	})
+	r := repos[org]
+	if r == nil {
+		repos[org] = make(map[string]bool)
+	}
+	repos[org][repo] = true
+	fc := fakeClient{
+		branches: branches,
+		repos:    map[string][]github.Repo{},
+	}
+	for org, r := range repos {
+		for rname := range r {
+			fc.repos[org] = append(fc.repos[org], github.Repo{Name: rname, FullName: org + "/" + rname, Archived: true})
+		}
+	}
+
+	var cfg config.Config
+	if err := yaml.Unmarshal([]byte(`
+branch-protection:
+  protect-by-default: true
+  orgs:
+    organization:
+`), &cfg); err != nil {
+		t.Fatalf("failed to parse config: %v", err)
+	}
+	p := protector{
+		client:         &fc,
+		cfg:            &cfg,
+		errors:         Errors{},
+		updates:        make(chan requirements),
+		done:           make(chan []error),
+		completedRepos: make(map[string]bool),
+	}
+	go func() {
+		p.protect()
+		close(p.updates)
+	}()
+
+	protectionErrors := p.errors.errs
+	if len(protectionErrors) != 0 {
+		t.Errorf("expected no errors, got %d errors: %v", len(protectionErrors), protectionErrors)
+	}
+	var actual []requirements
+	for r := range p.updates {
+		actual = append(actual, r)
+	}
+	if len(actual) != 0 {
+		t.Errorf("expected no updates, got: %v", actual)
 	}
 }

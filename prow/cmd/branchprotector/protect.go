@@ -56,7 +56,7 @@ func gatherOptions() options {
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.StringVar(&o.config, "config-path", "", "Path to prow config.yaml")
 	fs.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
-	flag.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
+	fs.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	o.github.AddFlags(fs)
 	fs.Parse(os.Args[1:])
 	return o
@@ -197,7 +197,6 @@ func (p *protector) protect() {
 // UpdateOrg updates all repos in the org with the specified defaults
 func (p *protector) UpdateOrg(orgName string, org config.Org, allRepos bool) error {
 	var repos []string
-	allRepos = allRepos || org.HasProtect()
 	if allRepos {
 		// Strongly opinionated org, configure every repo in the org.
 		rs, err := p.client.GetRepos(orgName, false)
@@ -205,7 +204,9 @@ func (p *protector) UpdateOrg(orgName string, org config.Org, allRepos bool) err
 			return fmt.Errorf("GetRepos(%s) failed: %v", orgName, err)
 		}
 		for _, r := range rs {
-			repos = append(repos, r.Name)
+			if !r.Archived {
+				repos = append(repos, r.Name)
+			}
 		}
 	} else {
 		// Unopinionated org, just set explicitly defined repos
@@ -248,7 +249,7 @@ func (p *protector) UpdateRepo(orgName string, repo string, repoDefaults config.
 
 // UpdateBranch updates the branch with the specified configuration
 func (p *protector) UpdateBranch(orgName, repo string, branchName string, protected bool) error {
-	bp, err := p.cfg.GetBranchProtection(orgName, repo, branchName)
+	bp, err := p.cfg.GetBranchProtection(orgName, repo, branchName) // this merges parent config into children
 	if err != nil {
 		return err
 	}

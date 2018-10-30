@@ -124,4 +124,10 @@ COPY ["barnacle/barnacle", "/usr/local/bin/"]
 COPY ["entrypoint.sh", "runner.sh", "create_bazel_cache_rcs.sh", \
         "/usr/local/bin/"]
 
+# TODO(krzyzacy): Move the scenario scripts to kubekins v2
+# The bundled scenarios are for podutil jobs, bootstrap jobs will still use
+# scenario scripts from cloned test-infra
+RUN mkdir /workspace/scenarios
+COPY ["./scenarios", "/workspace/scenarios"]
+
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

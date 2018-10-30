@@ -45,6 +45,7 @@ type options struct {
 	jobConfigPath string
 	buildCluster  string
 	selector      string
+	skipReport    bool
 
 	dryRun     bool
 	kubernetes prowflagutil.KubernetesOptions
@@ -61,6 +62,7 @@ func gatherOptions() options {
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.buildCluster, "build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 	fs.StringVar(&o.selector, "label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
+	fs.BoolVar(&o.skipReport, "skip-report", false, "Whether or not to ignore report with githubClient")
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
@@ -135,7 +137,7 @@ func main() {
 		}
 	}
 
-	c, err := plank.NewController(kubeClient, pkcs, githubClient, nil, configAgent, o.totURL, o.selector)
+	c, err := plank.NewController(kubeClient, pkcs, githubClient, nil, configAgent, o.totURL, o.selector, o.skipReport)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating plank controller.")
 	}

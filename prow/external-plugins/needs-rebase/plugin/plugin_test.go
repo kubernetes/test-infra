@@ -29,6 +29,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -155,27 +156,27 @@ func TestHandleEvent(t *testing.T) {
 		{
 			name:      "mergeable no-op",
 			mergeable: true,
-			labels:    []string{"lgtm", "needs-sig"},
+			labels:    []string{labels.LGTM, labels.NeedsSig},
 		},
 		{
 			name:      "unmergeable no-op",
 			mergeable: false,
-			labels:    []string{"lgtm", "needs-sig", "needs-rebase"},
+			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
 		},
 		{
 			name:      "mergeable -> unmergeable",
 			mergeable: false,
-			labels:    []string{"lgtm", "needs-sig"},
+			labels:    []string{labels.LGTM, labels.NeedsSig},
 
-			expectedAdded: []string{"needs-rebase"},
+			expectedAdded: []string{labels.NeedsRebase},
 			expectComment: true,
 		},
 		{
 			name:      "unmergeable -> mergeable",
 			mergeable: true,
-			labels:    []string{"lgtm", "needs-sig", "needs-rebase"},
+			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
 
-			expectedRemoved: []string{"needs-rebase"},
+			expectedRemoved: []string{labels.NeedsRebase},
 			expectDeletion:  true,
 		},
 	}
@@ -191,7 +192,7 @@ func TestHandleEvent(t *testing.T) {
 			Number: 5,
 		}
 		t.Logf("Running test scenario: %q", tc.name)
-		if err := HandleEvent(logrus.WithField("plugin", pluginName), fake, pre); err != nil {
+		if err := HandleEvent(logrus.WithField("plugin", PluginName), fake, pre); err != nil {
 			t.Fatalf("Unexpected error handling event: %v.", err)
 		}
 		fake.compareExpected(t, "org", "repo", 5, tc.expectedAdded, tc.expectedRemoved, tc.expectComment, tc.expectDeletion)
@@ -208,24 +209,24 @@ func TestHandleAll(t *testing.T) {
 	}{
 		{
 			mergeable: true,
-			labels:    []string{"lgtm", "needs-sig"},
+			labels:    []string{labels.LGTM, labels.NeedsSig},
 		},
 		{
 			mergeable: false,
-			labels:    []string{"lgtm", "needs-sig", "needs-rebase"},
+			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
 		},
 		{
 			mergeable: false,
-			labels:    []string{"lgtm", "needs-sig"},
+			labels:    []string{labels.LGTM, labels.NeedsSig},
 
-			expectedAdded: []string{"needs-rebase"},
+			expectedAdded: []string{labels.NeedsRebase},
 			expectComment: true,
 		},
 		{
 			mergeable: true,
-			labels:    []string{"lgtm", "needs-sig", "needs-rebase"},
+			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
 
-			expectedRemoved: []string{"needs-rebase"},
+			expectedRemoved: []string{labels.NeedsRebase},
 			expectDeletion:  true,
 		},
 	}
@@ -252,12 +253,12 @@ func TestHandleAll(t *testing.T) {
 	}
 	fake := newFakeClient(prs, nil, false)
 	config := &plugins.Configuration{
-		Plugins: map[string][]string{"/": {"lgtm", pluginName}},
+		Plugins: map[string][]string{"/": {labels.LGTM, PluginName}},
 
-		ExternalPlugins: map[string][]plugins.ExternalPlugin{"/": {{Name: pluginName}}},
+		ExternalPlugins: map[string][]plugins.ExternalPlugin{"/": {{Name: PluginName}}},
 	}
 
-	if err := HandleAll(logrus.WithField("plugin", pluginName), fake, config); err != nil {
+	if err := HandleAll(logrus.WithField("plugin", PluginName), fake, config); err != nil {
 		t.Fatalf("Unexpected error handling all prs: %v.", err)
 	}
 	for i, pr := range testPRs {

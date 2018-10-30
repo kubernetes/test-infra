@@ -255,7 +255,9 @@ func TestLGTMComment(t *testing.T) {
 					Base: github.PullRequestBranch{
 						Ref: "master",
 					},
-					MergeSHA: &SHA,
+					Head: github.PullRequestBranch{
+						SHA: SHA,
+					},
 				},
 			},
 			PullRequestChanges: map[int][]github.PullRequestChange{
@@ -313,26 +315,26 @@ func TestLGTMComment(t *testing.T) {
 		if tc.shouldToggle {
 			if tc.hasLGTM {
 				if len(fc.LabelsRemoved) == 0 {
-					t.Errorf("should have removed LGTM.")
+					t.Error("should have removed LGTM.")
 				} else if len(fc.LabelsAdded) > 1 {
-					t.Errorf("should not have added LGTM.")
+					t.Error("should not have added LGTM.")
 				}
 			} else {
 				if len(fc.LabelsAdded) == 0 {
-					t.Errorf("should have added LGTM.")
+					t.Error("should have added LGTM.")
 				} else if len(fc.LabelsRemoved) > 0 {
-					t.Errorf("should not have removed LGTM.")
+					t.Error("should not have removed LGTM.")
 				}
 			}
 		} else if len(fc.LabelsRemoved) > 0 {
-			t.Errorf("should not have removed LGTM.")
+			t.Error("should not have removed LGTM.")
 		} else if (tc.hasLGTM && len(fc.LabelsAdded) > 1) || (!tc.hasLGTM && len(fc.LabelsAdded) > 0) {
-			t.Errorf("should not have added LGTM.")
+			t.Error("should not have added LGTM.")
 		}
 		if tc.shouldComment && len(fc.IssueComments[5]) != 1 {
-			t.Errorf("should have commented.")
+			t.Error("should have commented.")
 		} else if !tc.shouldComment && len(fc.IssueComments[5]) != 0 {
-			t.Errorf("should not have commented.")
+			t.Error("should not have commented.")
 		}
 	}
 }
@@ -411,7 +413,9 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 			IssueComments: make(map[int][]github.IssueComment),
 			PullRequests: map[int]*github.PullRequest{
 				5: {
-					MergeSHA: &SHA,
+					Head: github.PullRequestBranch{
+						SHA: SHA,
+					},
 				},
 			},
 		}
@@ -586,7 +590,9 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			LabelsAdded:   []string{},
 			PullRequests: map[int]*github.PullRequest{
 				5: {
-					MergeSHA: &SHA,
+					Head: github.PullRequestBranch{
+						SHA: SHA,
+					},
 				},
 			},
 		}
@@ -666,6 +672,7 @@ func TestHandlePullRequest(t *testing.T) {
 		labelsAdded   []string
 		labelsRemoved []string
 		issueComments map[int][]github.IssueComment
+		stickyLgtm    bool
 
 		expectNoComments bool
 	}{
@@ -683,6 +690,62 @@ func TestHandlePullRequest(t *testing.T) {
 							Name: "kubernetes",
 						},
 					},
+					Head: github.PullRequestBranch{
+						SHA: SHA,
+					},
+				},
+			},
+			labelsRemoved: []string{LGTMLabel},
+			issueComments: map[int][]github.IssueComment{
+				101: {
+					{
+						Body: removeLGTMLabelNoti,
+						User: github.User{Login: fakegithub.Bot},
+					},
+				},
+			},
+			expectNoComments: false,
+		},
+		{
+			name: "Sticky LGTM for trusted user",
+			event: github.PullRequestEvent{
+				Action: github.PullRequestActionSynchronize,
+				PullRequest: github.PullRequest{
+					Number: 101,
+					Base: github.PullRequestBranch{
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "kubernetes",
+							},
+							Name: "kubernetes",
+						},
+					},
+					User: github.User{
+						Login: "collab",
+					},
+					MergeSHA: &SHA,
+				},
+			},
+			stickyLgtm:       true,
+			expectNoComments: true,
+		},
+		{
+			name: "LGTM not sticky for trusted user if disabled",
+			event: github.PullRequestEvent{
+				Action: github.PullRequestActionSynchronize,
+				PullRequest: github.PullRequest{
+					Number: 101,
+					Base: github.PullRequestBranch{
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "kubernetes",
+							},
+							Name: "kubernetes",
+						},
+					},
+					User: github.User{
+						Login: "collab",
+					},
 					MergeSHA: &SHA,
 				},
 			},
@@ -695,6 +758,38 @@ func TestHandlePullRequest(t *testing.T) {
 					},
 				},
 			},
+			expectNoComments: false,
+		},
+		{
+			name: "LGTM not sticky for non trusted user",
+			event: github.PullRequestEvent{
+				Action: github.PullRequestActionSynchronize,
+				PullRequest: github.PullRequest{
+					Number: 101,
+					Base: github.PullRequestBranch{
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "kubernetes",
+							},
+							Name: "kubernetes",
+						},
+					},
+					User: github.User{
+						Login: "nonCollab",
+					},
+					MergeSHA: &SHA,
+				},
+			},
+			labelsRemoved: []string{LGTMLabel},
+			issueComments: map[int][]github.IssueComment{
+				101: {
+					{
+						Body: removeLGTMLabelNoti,
+						User: github.User{Login: fakegithub.Bot},
+					},
+				},
+			},
+			stickyLgtm:       true,
 			expectNoComments: false,
 		},
 		{
@@ -718,7 +813,9 @@ func TestHandlePullRequest(t *testing.T) {
 							Name: "kubernetes",
 						},
 					},
-					MergeSHA: &SHA,
+					Head: github.PullRequestBranch{
+						SHA: SHA,
+					},
 				},
 			},
 			issueComments: map[int][]github.IssueComment{
@@ -745,7 +842,9 @@ func TestHandlePullRequest(t *testing.T) {
 							Name: "kubernetes",
 						},
 					},
-					MergeSHA: &SHA,
+					Head: github.PullRequestBranch{
+						SHA: SHA,
+					},
 				},
 			},
 			labelsRemoved: []string{LGTMLabel},
@@ -771,11 +870,14 @@ func TestHandlePullRequest(t *testing.T) {
 						Base: github.PullRequestBranch{
 							Ref: "master",
 						},
-						MergeSHA: &SHA,
+						Head: github.PullRequestBranch{
+							SHA: SHA,
+						},
 					},
 				},
-				Commits:     make(map[string]github.SingleCommit),
-				LabelsAdded: c.labelsAdded,
+				Commits:       make(map[string]github.SingleCommit),
+				Collaborators: []string{"collab"},
+				LabelsAdded:   c.labelsAdded,
 			}
 			fakeGitHub.LabelsAdded = append(fakeGitHub.LabelsAdded, "kubernetes/kubernetes#101:lgtm")
 			commit := github.SingleCommit{}
@@ -783,8 +885,9 @@ func TestHandlePullRequest(t *testing.T) {
 			fakeGitHub.Commits[SHA] = commit
 			pc := &plugins.Configuration{}
 			pc.Lgtm = append(pc.Lgtm, plugins.Lgtm{
-				Repos:         []string{"kubernetes/kubernetes"},
-				StoreTreeHash: true,
+				Repos:                   []string{"kubernetes/kubernetes"},
+				StoreTreeHash:           true,
+				StickyForTrustedAuthors: c.stickyLgtm,
 			})
 			err := handlePullRequest(
 				logrus.WithField("plugin", "approve"),
@@ -824,50 +927,89 @@ func TestHandlePullRequest(t *testing.T) {
 }
 
 func TestAddTreeHashComment(t *testing.T) {
-	SHA := "0bd3ed50c88cd53a09316bf7a298f900e9371652"
-	treeSHA := "6dcb09b5b57875f334f61aebed695e2e4193db5e"
-	pc := &plugins.Configuration{}
-	pc.Lgtm = append(pc.Lgtm, plugins.Lgtm{
-		Repos:         []string{"kubernetes/kubernetes"},
-		StoreTreeHash: true,
-	})
-	rc := reviewCtx{
-		author:      "alice",
-		issueAuthor: "bob",
-		repo: github.Repo{
-			Owner: github.User{
-				Login: "kubernetes",
-			},
-			Name: "kubernetes",
+	cases := []struct {
+		name          string
+		author        string
+		stickyLgtm    bool
+		expectTreeSha bool
+	}{
+		{
+			name:          "Tree SHA added",
+			author:        "Bob",
+			expectTreeSha: true,
 		},
-		number: 101,
-		body:   "/lgtm",
+		{
+			name:          "Tree SHA if sticky lgtm off",
+			author:        "Collab",
+			stickyLgtm:    false,
+			expectTreeSha: true,
+		},
+		{
+			name:          "No Tree SHA if sticky lgtm",
+			author:        "Collab",
+			stickyLgtm:    true,
+			expectTreeSha: false,
+		},
 	}
-	fc := &fakegithub.FakeClient{
-		Commits:       make(map[string]github.SingleCommit),
-		IssueComments: map[int][]github.IssueComment{},
-		PullRequests: map[int]*github.PullRequest{
-			101: {
-				Base: github.PullRequestBranch{
-					Ref: "master",
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+
+			SHA := "0bd3ed50c88cd53a09316bf7a298f900e9371652"
+			treeSHA := "6dcb09b5b57875f334f61aebed695e2e4193db5e"
+			pc := &plugins.Configuration{}
+			pc.Lgtm = append(pc.Lgtm, plugins.Lgtm{
+				Repos:                   []string{"kubernetes/kubernetes"},
+				StoreTreeHash:           true,
+				StickyForTrustedAuthors: c.stickyLgtm,
+			})
+			rc := reviewCtx{
+				author:      "alice",
+				issueAuthor: c.author,
+				repo: github.Repo{
+					Owner: github.User{
+						Login: "kubernetes",
+					},
+					Name: "kubernetes",
 				},
-				MergeSHA: &SHA,
-			},
-		},
-	}
-	commit := github.SingleCommit{}
-	commit.Commit.Tree.SHA = treeSHA
-	fc.Commits[SHA] = commit
-	handle(true, pc, &fakeOwnersClient{}, rc, fc, logrus.WithField("plugin", PluginName), &fakePruner{})
-	found := false
-	for _, body := range fc.IssueCommentsAdded {
-		if addLGTMLabelNotificationRe.MatchString(body) {
-			found = true
-			break
-		}
-	}
-	if !found {
-		t.Fatalf("expected tree_hash comment but got none")
+				number: 101,
+				body:   "/lgtm",
+			}
+			fc := &fakegithub.FakeClient{
+				Commits:       make(map[string]github.SingleCommit),
+				IssueComments: map[int][]github.IssueComment{},
+				PullRequests: map[int]*github.PullRequest{
+					101: {
+						Base: github.PullRequestBranch{
+							Ref: "master",
+						},
+						Head: github.PullRequestBranch{
+							SHA: SHA,
+						},
+					},
+				},
+			}
+			commit := github.SingleCommit{}
+			commit.Commit.Tree.SHA = treeSHA
+			fc.Commits[SHA] = commit
+			handle(true, pc, &fakeOwnersClient{}, rc, fc, logrus.WithField("plugin", PluginName), &fakePruner{})
+			found := false
+			for _, body := range fc.IssueCommentsAdded {
+				if addLGTMLabelNotificationRe.MatchString(body) {
+					found = true
+					break
+				}
+			}
+			if c.expectTreeSha {
+				if !found {
+					t.Fatalf("expected tree_hash comment but got none")
+				}
+			} else {
+				if !found {
+					t.Fatalf("expected no tree_hash comment but got one")
+				}
+			}
+		})
 	}
 }
 

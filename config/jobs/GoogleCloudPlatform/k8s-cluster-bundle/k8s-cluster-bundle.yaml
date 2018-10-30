@@ -13,6 +13,12 @@ presubmits:
         args:  
         - "test"
         - "..."
+        volumeMounts:
+        - name: empty-workspace
+          mountPath: /workspace
+      volumes:
+      - name: empty-workspace
+        emptyDir: {}
 postsubmits:
   GoogleCloudPlatform/k8s-cluster-bundle:
   - name: post-k8s-cluster-bundle-bazel-test
@@ -27,3 +33,9 @@ postsubmits:
         args: 
         - "test"
         - "..."
+        volumeMounts:
+        - name: empty-workspace
+          mountPath: /workspace
+      volumes:
+      - name: empty-workspace
+        emptyDir: {}

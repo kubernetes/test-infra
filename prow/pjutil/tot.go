@@ -19,6 +19,7 @@ package pjutil
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -27,7 +28,22 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
+
+	"github.com/bwmarrin/snowflake"
 )
+
+var (
+	node  *snowflake.Node
+	sleep = time.Sleep
+)
+
+func init() {
+	var err error
+	node, err = snowflake.NewNode(1)
+	if err != nil {
+		log.Fatalf("failed to register snowflake node: %v", err)
+	}
+}
 
 // PresubmitToJobSpec generates a downwardapi.JobSpec out of a Presubmit.
 // Useful for figuring out GCS paths when parsing jobs out
@@ -62,17 +78,20 @@ func PeriodicToJobSpec(periodic config.Periodic) *downwardapi.JobSpec {
 // GetBuildID calls out to `tot` in order
 // to vend build identifier for the job
 func GetBuildID(name, totURL string) (string, error) {
+	if totURL == "" {
+		return node.Generate().String(), nil
+	}
 	var err error
 	url, err := url.Parse(totURL)
 	if err != nil {
 		return "", fmt.Errorf("invalid tot url: %v", err)
 	}
 	url.Path = path.Join(url.Path, "vend", name)
-	sleep := 100 * time.Millisecond
+	sleepDuration := 100 * time.Millisecond
 	for retries := 0; retries < 10; retries++ {
 		if retries > 0 {
-			time.Sleep(sleep)
-			sleep = sleep * 2
+			sleep(sleepDuration)
+			sleepDuration = sleepDuration * 2
 		}
 		var resp *http.Response
 		resp, err = http.Get(url.String())

@@ -39,7 +39,10 @@ bq --headless --format=json query -n 1000000 \
     job,
     number
   from
-    [k8s-gubernator:build.week]" > triage_builds.json
+    [k8s-gubernator:build.all]
+  where
+    timestamp_to_sec(started) > TIMESTAMP_TO_SEC(DATE_ADD(CURRENT_DATE(), -14, 'DAY'))" \
+  > triage_builds.json
 
 bq query --allow_large_results --headless -n0 --replace --destination_table k8s-gubernator:temp.triage \
   "select
@@ -48,10 +51,10 @@ bq query --allow_large_results --headless -n0 --replace --destination_table k8s-
     test.name name,
     test.failure_text failure_text
   from
-    [k8s-gubernator:build.week]
+    [k8s-gubernator:build.all]
   where
     test.failed
-    and timestamp_to_sec(started) > TIMESTAMP_TO_SEC(DATE_ADD(CURRENT_DATE(), -7, 'DAY'))"
+    and timestamp_to_sec(started) > TIMESTAMP_TO_SEC(DATE_ADD(CURRENT_DATE(), -14, 'DAY'))"
 bq extract --compression GZIP --destination_format NEWLINE_DELIMITED_JSON 'k8s-gubernator:temp.triage' gs://k8s-gubernator/triage_tests.json.gz
 gsutil cp gs://k8s-gubernator/triage_tests.json.gz triage_tests.json.gz
 gzip -df triage_tests.json.gz
