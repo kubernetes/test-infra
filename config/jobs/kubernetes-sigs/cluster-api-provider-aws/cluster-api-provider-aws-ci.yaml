@@ -2,17 +2,11 @@ periodics:
 - interval: 4h
   name: periodic-cluster-api-provider-aws-test-creds
   always_run: true
-  labels:
-    preset-service-account: "true"
-    preset-aws-credential: "true"
+  optional: false
+  decorate: true
   path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.10      
-      args:
-      - "--repo=sigs.k8s.io/cluster-api-provider-aws"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.12
+      command:
       - "./scripts/ci-aws-cred-test.sh"
