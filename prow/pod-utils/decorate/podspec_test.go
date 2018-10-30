@@ -175,7 +175,7 @@ func TestCloneRefs(t *testing.T) {
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:      []*kube.Refs{{}},
+					GitRefs:      []kube.Refs{{}},
 					GitUserEmail: clonerefs.DefaultGitUserEmail,
 					GitUserName:  clonerefs.DefaultGitUserName,
 					SrcRoot:      codeMount.MountPath,
@@ -188,7 +188,7 @@ func TestCloneRefs(t *testing.T) {
 			name: "create clonerefs containers when extrarefs are set",
 			pj: kube.ProwJob{
 				Spec: kube.ProwJobSpec{
-					ExtraRefs: []*kube.Refs{{}},
+					ExtraRefs: []kube.Refs{{}},
 					DecorationConfig: &kube.DecorationConfig{
 						UtilityImages: &kube.UtilityImages{},
 					},
@@ -198,7 +198,7 @@ func TestCloneRefs(t *testing.T) {
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:      []*kube.Refs{{}},
+					GitRefs:      []kube.Refs{{}},
 					GitUserEmail: clonerefs.DefaultGitUserEmail,
 					GitUserName:  clonerefs.DefaultGitUserName,
 					SrcRoot:      codeMount.MountPath,
@@ -212,7 +212,7 @@ func TestCloneRefs(t *testing.T) {
 			pj: kube.ProwJob{
 				Spec: kube.ProwJobSpec{
 					Refs:      &kube.Refs{Org: "first"},
-					ExtraRefs: []*kube.Refs{{Org: "second"}, {Org: "third"}},
+					ExtraRefs: []kube.Refs{{Org: "second"}, {Org: "third"}},
 					DecorationConfig: &kube.DecorationConfig{
 						UtilityImages: &kube.UtilityImages{},
 					},
@@ -222,7 +222,7 @@ func TestCloneRefs(t *testing.T) {
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:      []*kube.Refs{{Org: "first"}, {Org: "second"}, {Org: "third"}},
+					GitRefs:      []kube.Refs{{Org: "first"}, {Org: "second"}, {Org: "third"}},
 					GitUserEmail: clonerefs.DefaultGitUserEmail,
 					GitUserName:  clonerefs.DefaultGitUserName,
 					SrcRoot:      codeMount.MountPath,
@@ -246,7 +246,7 @@ func TestCloneRefs(t *testing.T) {
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:      []*kube.Refs{{}},
+					GitRefs:      []kube.Refs{{}},
 					GitUserEmail: clonerefs.DefaultGitUserEmail,
 					GitUserName:  clonerefs.DefaultGitUserName,
 					KeyFiles:     []string{sshMountOnly("super").MountPath, sshMountOnly("secret").MountPath},
@@ -266,7 +266,7 @@ func TestCloneRefs(t *testing.T) {
 			name: "include ssh host fingerprints when set",
 			pj: kube.ProwJob{
 				Spec: kube.ProwJobSpec{
-					ExtraRefs: []*kube.Refs{{}},
+					ExtraRefs: []kube.Refs{{}},
 					DecorationConfig: &kube.DecorationConfig{
 						UtilityImages:       &kube.UtilityImages{},
 						SSHHostFingerprints: []string{"thumb", "pinky"},
@@ -277,7 +277,7 @@ func TestCloneRefs(t *testing.T) {
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:          []*kube.Refs{{}},
+					GitRefs:          []kube.Refs{{}},
 					GitUserEmail:     clonerefs.DefaultGitUserEmail,
 					GitUserName:      clonerefs.DefaultGitUserName,
 					SrcRoot:          codeMount.MountPath,
@@ -291,7 +291,7 @@ func TestCloneRefs(t *testing.T) {
 			name: "include cookiefile secrets when set",
 			pj: kube.ProwJob{
 				Spec: kube.ProwJobSpec{
-					ExtraRefs: []*kube.Refs{{}},
+					ExtraRefs: []kube.Refs{{}},
 					DecorationConfig: &kube.DecorationConfig{
 						UtilityImages:    &kube.UtilityImages{},
 						CookiefileSecret: "oatmeal",
@@ -304,7 +304,7 @@ func TestCloneRefs(t *testing.T) {
 				Args:    []string{"--cookiefile=" + cookiePathOnly("oatmeal")},
 				Env: envOrDie(clonerefs.Options{
 					CookiePath:   cookiePathOnly("oatmeal"),
-					GitRefs:      []*kube.Refs{{}},
+					GitRefs:      []kube.Refs{{}},
 					GitUserEmail: clonerefs.DefaultGitUserEmail,
 					GitUserName:  clonerefs.DefaultGitUserName,
 					SrcRoot:      codeMount.MountPath,
@@ -344,7 +344,7 @@ func TestCloneRefs(t *testing.T) {
 					er = append(er, *tc.pj.Spec.Refs)
 				}
 				for _, r := range tc.pj.Spec.ExtraRefs {
-					er = append(er, *r)
+					er = append(er, r)
 				}
 				if !equality.Semantic.DeepEqual(refs, er) {
 					t.Errorf("unexpected refs:\n%s", diff.ObjectReflectDiff(er, refs))
@@ -477,7 +477,7 @@ func TestProwJobToPod(t *testing.T) {
 					}},
 					PathAlias: "somewhere/else",
 				},
-				ExtraRefs: []*kube.Refs{},
+				ExtraRefs: []kube.Refs{},
 				PodSpec: &v1.PodSpec{
 					Containers: []v1.Container{
 						{
@@ -697,7 +697,7 @@ func TestProwJobToPod(t *testing.T) {
 					}},
 					PathAlias: "somewhere/else",
 				},
-				ExtraRefs: []*kube.Refs{},
+				ExtraRefs: []kube.Refs{},
 				PodSpec: &v1.PodSpec{
 					Containers: []v1.Container{
 						{
@@ -918,7 +918,7 @@ func TestProwJobToPod(t *testing.T) {
 					}},
 					PathAlias: "somewhere/else",
 				},
-				ExtraRefs: []*kube.Refs{},
+				ExtraRefs: []kube.Refs{},
 				PodSpec: &v1.PodSpec{
 					Containers: []v1.Container{
 						{
@@ -1163,7 +1163,7 @@ func TestProwJobToPod(t *testing.T) {
 					}},
 					PathAlias: "somewhere/else",
 				},
-				ExtraRefs: []*kube.Refs{},
+				ExtraRefs: []kube.Refs{},
 				PodSpec: &v1.PodSpec{
 					Containers: []v1.Container{
 						{
@@ -1574,7 +1574,7 @@ func TestProwJobToPod(t *testing.T) {
 					}},
 					PathAlias: "somewhere/else",
 				},
-				ExtraRefs: []*kube.Refs{},
+				ExtraRefs: []kube.Refs{},
 				PodSpec: &v1.PodSpec{
 					Containers: []v1.Container{
 						{

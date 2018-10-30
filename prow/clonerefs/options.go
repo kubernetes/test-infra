@@ -47,7 +47,7 @@ type Options struct {
 	GitUserEmail string `json:"git_user_email,omitempty"`
 
 	// GitRefs are the refs to clone
-	GitRefs []*kube.Refs `json:"refs"`
+	GitRefs []kube.Refs `json:"refs"`
 	// KeyFiles are files containing SSH keys to be used
 	// when cloning. Will be added to `ssh-agent`.
 	KeyFiles []string `json:"key_files,omitempty"`
@@ -156,7 +156,7 @@ func (o *Options) AddFlags(fs *flag.FlagSet) {
 }
 
 type gitRefs struct {
-	gitRefs []*kube.Refs
+	gitRefs []kube.Refs
 }
 
 func (r *gitRefs) String() string {
@@ -178,7 +178,7 @@ func (r *gitRefs) Set(value string) error {
 	if err != nil {
 		return err
 	}
-	r.gitRefs = append(r.gitRefs, gitRef)
+	r.gitRefs = append(r.gitRefs, *gitRef)
 	return nil
 }
 
