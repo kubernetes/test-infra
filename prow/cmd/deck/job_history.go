@@ -219,7 +219,7 @@ func listBuildIDs(bkt *storage.BucketHandle, root string) ([]int64, error) {
 				if err == nil {
 					ids = append(ids, i)
 				} else {
-					logrus.Warningf("unrecognized directory name (expected int64): %s", matches[1])
+					logrus.Warningf("unrecognized file name (expected <int64>.txt): %s", key)
 				}
 			}
 		}
@@ -288,7 +288,10 @@ func getBuildData(bkt *storage.BucketHandle, root string, buildID int64, index i
 	b.Result = "Unfinished"
 	b.Started = time.Unix(started.Timestamp, 0)
 	finished := jobs.Finished{}
-	readJSON(bkt, root, b.ID, "finished.json", &finished)
+	err = readJSON(bkt, root, b.ID, "finished.json", &finished)
+	if err != nil {
+		logrus.Warningf("failed to read finished.json (job might be unfinished): %v", err)
+	}
 	if finished.Timestamp != 0 {
 		b.Duration = time.Unix(finished.Timestamp, 0).Sub(b.Started)
 	}
@@ -389,6 +392,6 @@ func getJobHistory(url *url.URL, config *config.Config, gcsClient *storage.Clien
 	}
 
 	elapsed := time.Now().Sub(start)
-	logrus.Warningf("loaded %s in %v", url.Path, elapsed)
+	logrus.Infof("loaded %s in %v", url.Path, elapsed)
 	return tmpl, nil
 }
