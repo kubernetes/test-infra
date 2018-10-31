@@ -19,7 +19,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"reflect"
 	"testing"
 	"time"
 
@@ -31,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/diff"
 
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 )
 
@@ -48,11 +48,8 @@ type fakeReconciler struct {
 	nows   metav1.Time
 }
 
-func key(namespace, name string) string {
-	if namespace == "" {
-		return name
-	}
-	return namespace + "/" + name
+func key(context, namespace, name string) string {
+	return toKey(context, metav1.ObjectMeta{Namespace: namespace, Name: name})
 }
 
 func (r *fakeReconciler) now() metav1.Time {
@@ -64,29 +61,29 @@ func (r *fakeReconciler) getProwJob(namespace, name string) (*prowjobv1.ProwJob,
 	if namespace == errorGetProwJob {
 		return nil, errors.New("injected create build error")
 	}
-	k := key(namespace, name)
+	k := key("", namespace, name)
 	pj, present := r.jobs[k]
 	if !present {
 		return nil, apierrors.NewNotFound(prowjobv1.Resource("ProwJob"), name)
 	}
 	return &pj, nil
 }
-func (r *fakeReconciler) getBuild(namespace, name string) (*buildv1alpha1.Build, error) {
+func (r *fakeReconciler) getBuild(context, namespace, name string) (*buildv1alpha1.Build, error) {
 	if namespace == errorGetBuild {
 		return nil, errors.New("injected create build error")
 	}
-	k := key(namespace, name)
+	k := key(context, namespace, name)
 	b, present := r.builds[k]
 	if !present {
 		return nil, apierrors.NewNotFound(buildv1alpha1.Resource("Build"), name)
 	}
 	return &b, nil
 }
-func (r *fakeReconciler) deleteBuild(namespace, name string) error {
+func (r *fakeReconciler) deleteBuild(context, namespace, name string) error {
 	if namespace == errorDeleteBuild {
 		return errors.New("injected create build error")
 	}
-	k := key(namespace, name)
+	k := key(context, namespace, name)
 	if _, present := r.builds[k]; !present {
 		return apierrors.NewNotFound(buildv1alpha1.Resource("Build"), name)
 	}
@@ -94,14 +91,14 @@ func (r *fakeReconciler) deleteBuild(namespace, name string) error {
 	return nil
 }
 
-func (r *fakeReconciler) createBuild(namespace string, b *buildv1alpha1.Build) (*buildv1alpha1.Build, error) {
+func (r *fakeReconciler) createBuild(context, namespace string, b *buildv1alpha1.Build) (*buildv1alpha1.Build, error) {
 	if b == nil {
 		return nil, errors.New("nil build")
 	}
 	if namespace == errorCreateBuild {
 		return nil, errors.New("injected create build error")
 	}
-	k := key(namespace, b.Name)
+	k := key(context, namespace, b.Name)
 	if _, alreadyExists := r.builds[k]; alreadyExists {
 		return nil, apierrors.NewAlreadyExists(prowjobv1.Resource("ProwJob"), b.Name)
 	}
@@ -116,7 +113,7 @@ func (r *fakeReconciler) updateProwJob(namespace string, pj *prowjobv1.ProwJob) 
 	if namespace == errorUpdateProwJob {
 		return nil, errors.New("injected update prowjob error")
 	}
-	k := key(namespace, pj.Name)
+	k := key("", namespace, pj.Name)
 	if _, present := r.jobs[k]; !present {
 		return nil, apierrors.NewNotFound(prowjobv1.Resource("ProwJob"), pj.Name)
 	}
@@ -140,6 +137,7 @@ func TestReconcile(t *testing.T) {
 	cases := []struct {
 		name          string
 		namespace     string
+		context       string
 		observedJob   *prowjobv1.ProwJob
 		observedBuild *buildv1alpha1.Build
 		expectedJob   func(prowjobv1.ProwJob, buildv1alpha1.Build) prowjobv1.ProwJob
@@ -247,9 +245,71 @@ func TestReconcile(t *testing.T) {
 				if err != nil {
 					panic(err)
 				}
-				b.OwnerReferences = nil
+				delete(b.Labels, kube.CreatedByProw)
 				return b
 			}(),
+			expectedBuild: noBuildChange,
+		},
+		{
+			name:    "delete prow builds in the wrong cluster",
+			context: "wrong-cluster",
+			observedJob: &prowjobv1.ProwJob{
+				Spec: prowjobv1.ProwJobSpec{
+					Agent:   prowjobv1.KnativeBuildAgent,
+					Cluster: "target-cluster",
+					BuildSpec: &buildv1alpha1.BuildSpec{
+						ServiceAccountName: "robot",
+					},
+				},
+				Status: prowjobv1.ProwJobStatus{
+					State:       prowjobv1.PendingState,
+					StartTime:   metav1.Now(),
+					Description: "fancy",
+				},
+			},
+			observedBuild: func() *buildv1alpha1.Build {
+				pj := prowjobv1.ProwJob{}
+				pj.Spec.Type = prowjobv1.PeriodicJob
+				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
+				pj.Spec.BuildSpec = &buildSpec
+				b, err := makeBuild(pj, "5")
+				if err != nil {
+					panic(err)
+				}
+				return b
+			}(),
+			expectedJob: noJobChange,
+		},
+		{
+			name:    "ignore random builds in the wrong cluster",
+			context: "wrong-cluster",
+			observedJob: &prowjobv1.ProwJob{
+				Spec: prowjobv1.ProwJobSpec{
+					Agent:   prowjobv1.KnativeBuildAgent,
+					Cluster: "target-cluster",
+					BuildSpec: &buildv1alpha1.BuildSpec{
+						ServiceAccountName: "robot",
+					},
+				},
+				Status: prowjobv1.ProwJobStatus{
+					State:       prowjobv1.PendingState,
+					StartTime:   metav1.Now(),
+					Description: "fancy",
+				},
+			},
+			observedBuild: func() *buildv1alpha1.Build {
+				pj := prowjobv1.ProwJob{}
+				pj.Spec.Type = prowjobv1.PeriodicJob
+				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
+				pj.Spec.BuildSpec = &buildSpec
+				b, err := makeBuild(pj, "5")
+				if err != nil {
+					panic(err)
+				}
+				delete(b.Labels, kube.CreatedByProw)
+				return b
+			}(),
+			expectedJob:   noJobChange,
 			expectedBuild: noBuildChange,
 		},
 		{
@@ -527,7 +587,7 @@ func TestReconcile(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			const name = "the-object-name"
-			k := key(tc.namespace, name)
+			k := key(tc.context, tc.namespace, name)
 			r := &fakeReconciler{
 				jobs:   map[string]prowjobv1.ProwJob{},
 				builds: map[string]buildv1alpha1.Build{},
@@ -558,10 +618,10 @@ func TestReconcile(t *testing.T) {
 				}
 			case tc.err:
 				t.Error("failed to receive expected error")
-			case !reflect.DeepEqual(r.jobs, expectedJobs):
-				t.Errorf("prowjobs do not match: %#v != %#v %t", r.jobs, expectedJobs, r.jobs[k].Status.StartTime == expectedJobs[k].Status.StartTime)
-			case !reflect.DeepEqual(r.builds, expectedBuilds):
-				t.Errorf("builds do not match: %#v != %#v", r.builds, expectedBuilds)
+			case !equality.Semantic.DeepEqual(r.jobs, expectedJobs):
+				t.Errorf("prowjobs do not match:\n%s", diff.ObjectReflectDiff(expectedJobs, r.jobs))
+			case !equality.Semantic.DeepEqual(r.builds, expectedBuilds):
+				t.Errorf("builds do not match:\n%s", diff.ObjectReflectDiff(expectedBuilds, r.builds))
 			}
 		})
 	}
