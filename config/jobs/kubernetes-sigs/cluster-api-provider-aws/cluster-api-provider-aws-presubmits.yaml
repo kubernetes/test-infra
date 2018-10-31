@@ -24,11 +24,8 @@ presubmits:
     always_run: true
     optional: true
     decorate: true
-    # kind needs privileged mode
     labels:
       preset-dind-enabled: "true"
-    securityContext:
-      privileged: true
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
@@ -36,6 +33,9 @@ presubmits:
         command:
         - "runner.sh"
         - "./scripts/ci-bazel-e2e.sh"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
         volumeMounts:
         - mountPath: /lib/modules
           name: modules
