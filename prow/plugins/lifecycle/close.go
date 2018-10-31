@@ -79,27 +79,31 @@ func handleClose(gc closeClient, log *logrus.Entry, e *github.GenericCommentEven
 
 	// Only authors and collaborators are allowed to close active issues.
 	if !isAuthor && !isCollaborator && active {
-		response := fmt.Sprintf("You can't close an active issue/PR unless you authored it or you are a collaborator.")
+		response := "You can't close an active issue/PR unless you authored it or you are a collaborator."
 		log.Infof("Commenting \"%s\".", response)
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, response))
+		return gc.CreateComment(
+			org,
+			repo,
+			number,
+			plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, response),
+		)
 	}
 
-	// Add a comment before closing the PR or issue
+	// Add a comment after closing the PR or issue
 	// to leave an audit trail of who asked to close it.
 	if e.IsPR {
-		response := fmt.Sprintf("Closing this PR.")
-		if err := gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, response)); err != nil {
-			log.WithError(err).Errorf("Failed adding comment while closing the PR")
-		}
-
 		log.Info("Closing PR.")
-		return gc.ClosePR(org, repo, number)
+		if err := gc.ClosePR(org, repo, number); err != nil {
+			return fmt.Errorf("Error closing PR: %v", err)
+		}
+		response := plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, "Closed this PR.")
+		return gc.CreateComment(org, repo, number, response)
 	}
 
-	response := fmt.Sprintf("Closing this issue.")
-	if err := gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, response)); err != nil {
-		log.WithError(err).Errorf("Failed adding comment while closing the issue")
-	}
 	log.Info("Closing issue.")
-	return gc.CloseIssue(org, repo, number)
+	if err := gc.CloseIssue(org, repo, number); err != nil {
+		return fmt.Errorf("Error closing issue: %v", err)
+	}
+	response := plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, "Closing this issue.")
+	return gc.CreateComment(org, repo, number, response)
 }
