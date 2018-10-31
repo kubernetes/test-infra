@@ -23,31 +23,31 @@ import (
 
 // CoverageList is a collection and summary over multiple file Coverage objects
 type CoverageList struct {
-	*coverage
-	Group []coverage
+	*Coverage
+	Group []Coverage
 }
 
 // CovList constructs new (file) Group Coverage
 func newCoverageList(name string) *CoverageList {
 	return &CoverageList{
-		coverage: &coverage{Name: name},
-		Group:    []coverage{},
+		Coverage: &Coverage{Name: name},
+		Group:    []Coverage{},
 	}
 }
 
 // Ratio summarizes the list of coverages and returns the summarized ratio
 func (covList *CoverageList) Ratio() float32 {
 	covList.summarize()
-	return covList.coverage.Ratio()
+	return covList.Coverage.Ratio()
 }
 
 // summarize summarizes all items in the Group and stores the result
 func (covList *CoverageList) summarize() {
-	covList.nCoveredStmts = 0
-	covList.nAllStmts = 0
+	covList.NumCoveredStmts = 0
+	covList.NumAllStmts = 0
 	for _, item := range covList.Group {
-		covList.nCoveredStmts += item.nCoveredStmts
-		covList.nAllStmts += item.nAllStmts
+		covList.NumCoveredStmts += item.NumCoveredStmts
+		covList.NumAllStmts += item.NumAllStmts
 	}
 }
 
