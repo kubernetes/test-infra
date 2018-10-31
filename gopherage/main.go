@@ -24,6 +24,7 @@ import (
 	"k8s.io/test-infra/gopherage/cmd/diff"
 	"k8s.io/test-infra/gopherage/cmd/filter"
 	"k8s.io/test-infra/gopherage/cmd/html"
+	"k8s.io/test-infra/gopherage/cmd/junit"
 	"k8s.io/test-infra/gopherage/cmd/merge"
 )
 
@@ -37,6 +38,7 @@ func run() error {
 	rootCommand.AddCommand(diff.MakeCommand())
 	rootCommand.AddCommand(filter.MakeCommand())
 	rootCommand.AddCommand(html.MakeCommand())
+	rootCommand.AddCommand(junit.MakeCommand())
 	rootCommand.AddCommand(merge.MakeCommand())
 	return rootCommand.Execute()
 }
