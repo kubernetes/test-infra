@@ -4,6 +4,10 @@ periodics:
   always_run: true
   optional: false
   decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-aws
