@@ -15,6 +15,7 @@ rules:
   resources:
   - secrets
   verbs:
+  - get
   - create
   - replace
 ---
