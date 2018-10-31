@@ -15,9 +15,9 @@ rules:
   resources:
   - secrets
   verbs:
-  - get
   - create
-  - replace
+  - get
+  - update
 ---
 
 kind: RoleBinding
