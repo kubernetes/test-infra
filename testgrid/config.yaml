@@ -287,6 +287,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-canary
 - name: ci-kubernetes-coverage-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-coverage-conformance
+- name: ci-kubernetes-coverage-e2e-gci-gce
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-coverage-e2e-gci-gce
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu
   alert_stale_results_hours: 24
@@ -6723,6 +6725,10 @@ dashboards:
     test_group_name: pull-kubernetes-integration-prow
   - name: ci-kubernetes-coverage-conformance
     test_group_name: ci-kubernetes-coverage-conformance
+    description: build instrumented kubernetes, run conformance tests, generate line coverage using gopherage
+  - name: ci-kubernetes-coverage-e2e-gci-gce
+    test_group_name: ci-kubernetes-coverage-e2e-gci-gce
+    description: build instrumented kubernetes, run (non-slow/serial/disruptive/flaky/feature) e2e tests, generate line coverage using gopherage
 
 - name: sig-testing-org
   dashboard_tab:
