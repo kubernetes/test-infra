@@ -25,6 +25,8 @@ presubmits:
     optional: true
     decorate: true
     # kind needs privileged mode
+    labels:
+      preset-dind-enabled: "true"
     securityContext:
       privileged: true
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
@@ -32,4 +34,20 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master # needs bazel 0.18+
         command:
+        - "runner.sh"
         - "./scripts/ci-bazel-e2e.sh"
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /sys/fs/cgroup
+          name: cgroup
+      volumes:
+      - name: modules
+        hostPath:
+          path: /lib/modules
+          type: Directory
+      - name: cgroup
+        hostPath:
+          path: /sys/fs/cgroup
+          type: Directory
