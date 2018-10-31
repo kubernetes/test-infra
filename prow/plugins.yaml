@@ -237,6 +237,11 @@ require_matching_label:
 
     Note: Method 1 will trigger an email to the group. See the [group list](https://git.k8s.io/community/sig-list.md).
     The `<group-suffix>` in method 1 has to be replaced with one of these: _**bugs, feature-requests, pr-reviews, test-failures, proposals**_.
+- missing_label: needs-priority
+  org: kubernetes
+  repo: kubernetes
+  prs: true
+  regexp: ^priority/
 
 
 plugins:
