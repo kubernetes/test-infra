@@ -3258,6 +3258,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
 
 # AWS Test Groups
+- name: pull-aws-alb-ingress-controller-lint
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-alb-ingress-controller-lint
+  num_columns_recent: 30
+- name: pull-aws-alb-ingress-controller-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-alb-ingress-controller-test
+  num_columns_recent: 30
 - name: pull-aws-ebs-disk-csi-driver-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-ebs-disk-csi-driver-verify
   num_columns_recent: 30
@@ -5706,11 +5712,20 @@ dashboards:
   - name: autoscaling-vpa-full
     test_group_name: ci-kubernetes-e2e-autoscaling-vpa-full
 
+- name: sig-aws-alb-ingress-controller
+  dashboard_tab:
+  - name: lint
+    test_group_name: pull-aws-alb-ingress-controller-lint
+    description: "aws alb ingress controller code lint"
+  - name: test
+    test_group_name: pull-aws-alb-ingress-controller-test
+    description: "aws alb ingress controller tests"
+
 - name: sig-aws-ebs-csi-driver
   dashboard_tab:
   - name: verify
     test_group_name: pull-aws-ebs-disk-csi-driver-verify
-    description: "aws ebs csi driver basic code verifiction"
+    description: "aws ebs csi driver basic code verification"
   - name: unit-test
     test_group_name: pull-aws-ebs-csi-driver-unit
     description: "aws ebs csi driver unit test"
@@ -7458,6 +7473,7 @@ dashboard_groups:
 
 - name: sig-aws
   dashboard_names:
+  - sig-aws-alb-ingress-controller
   - sig-aws-ebs-csi-driver
   - sig-aws-eks-ci-kubernetes-e2e-1-10
   - sig-aws-eks-ci-kubernetes-e2e-stable
