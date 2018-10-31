@@ -73,6 +73,7 @@ type options struct {
 	staticFilesLocation   string
 	templateFilesLocation string
 	spyglass              bool
+	gcsCredentialsFile    string
 }
 
 func (o *options) Validate() error {
@@ -108,6 +109,7 @@ func gatherOptions() options {
 	flag.BoolVar(&o.spyglass, "spyglass", false, "Use Prow built-in job viewing instead of Gubernator")
 	flag.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
 	flag.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
+	flag.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the GCS credentials file")
 	flag.Parse()
 	return o
 }
@@ -337,8 +339,7 @@ func prodOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *htt
 }
 
 func initSpyglass(configAgent *config.Agent, o options, mux *http.ServeMux, ja *jobs.JobAgent) {
-	//TODO: Need to support authenticated buckets, #8910
-	c, err := storage.NewClient(context.Background(), option.WithoutAuthentication())
+	c, err := storage.NewClient(context.Background(), option.WithCredentialsFile(o.gcsCredentialsFile))
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GCS client")
 	}
