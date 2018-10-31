@@ -90,11 +90,15 @@ func (o *GitHubOptions) GitClient(secretAgent *config.SecretAgent, dryRun bool) 
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
+
+	// We must capture the value of client here to prevent issues related
+	// to the use of named return values when an error is encountered.
+	// Without this, we risk a nil pointer dereference.
+	defer func(client *git.Client) {
 		if err != nil {
 			client.Clean()
 		}
-	}()
+	}(client)
 
 	// Get the bot's name in order to set credentials for the Git client.
 	githubClient, err := o.GitHubClient(secretAgent, dryRun)
