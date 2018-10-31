@@ -20,5 +20,3 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.12
         command:
         - "./scripts/ci-bazel-build.sh"
-
-
