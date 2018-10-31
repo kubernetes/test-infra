@@ -663,6 +663,12 @@ repos:
         name: area/conformance
         target: both
         addedBy: label
+      - color: ededed
+        description: Indicates a PR lacks a `priority/foo` label and requires one.
+        name: needs-priority
+        target: prs
+        prowPlugin: require-matching-label
+        addedBy: prow
   kubernetes/org:
     labels:
       - color: 0052cc
