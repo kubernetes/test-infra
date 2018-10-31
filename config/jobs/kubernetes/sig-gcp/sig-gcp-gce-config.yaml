@@ -142,8 +142,6 @@ presubmits:
         - --env-file=jobs/env/pull-kubernetes-e2e.env
         - --env-file=jobs/env/pull-kubernetes-e2e-gce.env
         - --env=KUBE_FEATURE_GATES=AllAlpha=true
-        - --env=KUBE_PROXY_DAEMONSET=true
-        - --env=ENABLE_POD_PRIORITY=true
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-central1-f
