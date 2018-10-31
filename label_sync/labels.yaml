@@ -638,7 +638,7 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
-  kubernetes/features:
+  kubernetes/enhancements:
     labels:
       - color: cc99ff
         description: Categorizes KEP tracking issues and PRs modifying the KEP directory

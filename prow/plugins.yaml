@@ -43,8 +43,8 @@ approve:
   - kubernetes/contrib
   - kubernetes/dashboard
   - kubernetes/dns
+  - kubernetes/enhancements
   - kubernetes/examples
-  - kubernetes/features
   - kubernetes/federation
   - kubernetes/gengo
   - kubernetes/heapster
@@ -338,15 +338,15 @@ plugins:
   kubernetes/dns:
   - trigger
 
-  kubernetes/examples:
-  - trigger
-
-  kubernetes/features:
+  kubernetes/enhancements:
   - blockade
   - milestone
   - owners-label
   - require-sig
   - stage
+
+  kubernetes/examples:
+  - trigger
 
   kubernetes/ingress-gce:
   - trigger

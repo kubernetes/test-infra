@@ -2192,8 +2192,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/metrics-kettle
   alert_stale_results_hours: 12
   num_failures_to_alert: 6 # Runs every 1h. Alert when it's been failing for 6 hours
-- name: periodic-features-unfreeze
-  gcs_prefix: kubernetes-jenkins/logs/periodic-features-unfreeze
+- name: periodic-enhancements-unfreeze
+  gcs_prefix: kubernetes-jenkins/logs/periodic-enhancements-unfreeze
 - name: periodic-kubernetes-bazel-test-master
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-master
 - name: periodic-kubernetes-bazel-test-1-9
@@ -6658,9 +6658,9 @@ dashboards:
   - name: secping
     description: files bugs for SECURITY_CONTACTS
     test_group_name: periodic-secping
-  - name: features-unfreeze
-    description: Prevents issues in `k/features` from being marked as `lifecycle/frozen`
-    test_group_name: periodic-features-unfreeze
+  - name: enhancements-unfreeze
+    description: Prevents issues in `k/enhancements` from being marked as `lifecycle/frozen`
+    test_group_name: periodic-enhancements-unfreeze
   - name: issue-creator
     description: Creates github issues based on data from various 'IssueSource's.
     test_group_name: issue-creator

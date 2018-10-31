@@ -356,8 +356,8 @@ tide:
     - kubernetes/contrib
     - kubernetes/dashboard
     - kubernetes/dns
+    - kubernetes/enhancements
     - kubernetes/examples
-    - kubernetes/features
     - kubernetes/federation
     - kubernetes/frakti
     - kubernetes/gengo
