@@ -261,7 +261,10 @@ func cookiefileVolume(secret string) (kube.Volume, kube.VolumeMount, string) {
 // The container may need to mount SSH keys and/or cookiefiles in order to access private refs.
 // CloneRefs returns a list of volumes containing these secrets required by the container.
 func CloneRefs(pj kube.ProwJob, codeMount, logMount kube.VolumeMount) (*kube.Container, []kube.Refs, []kube.Volume, error) {
-	if pj.Spec.DecorationConfig == nil || pj.Spec.DecorationConfig.SkipCloning {
+	if pj.Spec.DecorationConfig == nil {
+		return nil, nil, nil, nil
+	}
+	if skip := pj.Spec.DecorationConfig.SkipCloning; skip != nil && *skip {
 		return nil, nil, nil, nil
 	}
 	var cloneVolumes []kube.Volume
