@@ -3473,7 +3473,7 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
 
-- name: conformance-providerless
+- name: conformance-kind
   dashboard_tab:
   - name: kind, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster
@@ -3487,6 +3487,9 @@ dashboards:
   - name: kind, v1.11 (dev)
     description: Runs conformance tests using kubetest against latest kubernetes relase-1.12 with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance-latest-1-11
+
+- name: conformance-hack-local-up-cluster
+  dashboard_tab:
   - name: local-up-cluster, master (dev)
     description: Runs conformance tests using kubetest with local-up-cluster
     test_group_name: ci-kubernetes-local-e2e
@@ -7555,7 +7558,7 @@ dashboard_groups:
   dashboard_names:
   - conformance-all
   - conformance-gce
-  - conformance-providerless
+  - conformance-kind
   - conformance-cloud-provider-openstack
   - conformance-cloud-provider-vsphere
   - conformance-vsphere
@@ -7563,6 +7566,7 @@ dashboard_groups:
   - conformance-cloud-provider-digitalocean
   - conformance-cloud-provider-baiducloud
   - conformance-gardener
+  - conformance-hack-local-up-cluster
 
 - name: vmware
   dashboard_names:
