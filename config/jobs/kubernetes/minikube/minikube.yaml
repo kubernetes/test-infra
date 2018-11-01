@@ -8,14 +8,14 @@ presets:
   - name: k8s-minikube-build-gcs
     secret:
       secretName: k8s-minikube-build-gcs
-  - name: k8s-minikube-jumphost-ssh
+  - name: ssh-key-secret
     secret:
-      secretName: k8s-minikube-jumphost-ssh
+      secretName: ssh-key-secret
   volumeMounts:
   - name: k8s-minikube-build-gcs
     mountPath: /root/.config/gcloud
     readOnly: true
-  - name: k8s-minikube-jumphost-ssh
+  - name: ssh-key-secret
     mountPath: /root/.ssh
     readOnly: true
 
