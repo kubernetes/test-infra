@@ -57,7 +57,7 @@ periodics:
         --comment=/retest
         This bot automatically retries jobs that failed/flaked on approved PRs (send feedback to [fejta](https://github.com/fejta)).
 
-        Review the [full test history](https://k8s-gubernator.appspot.com/pr/{{.Number}}) for this PR.
+        Review the [full test history](https://gubernator.k8s.io/pr/{{.Number}}) for this PR.
 
         Silence the bot with an `/lgtm cancel` comment for consistent failures.
 
@@ -163,20 +163,20 @@ periodics:
       secret:
         secretName: fejta-bot-token
 
-- name: periodic-features-unfreeze
+- name: periodic-enhancements-unfreeze
   interval: 30m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
       args:
       - |-
-        --query=repo:kubernetes/features
+        --query=repo:kubernetes/enhancements
         label:lifecycle/frozen
       - --updated=5m
       - --token=/etc/token/bot-github-token
       - |-
-        --comment=Feature issues opened in `kubernetes/features` should never be marked as frozen.
-        Feature Owners can ensure that features stay fresh by consistently updating their states across release cycles.
+        --comment=Enhancement issues opened in `kubernetes/enhancements` should never be marked as frozen.
+        Enhancement Owners can ensure that enhancements stay fresh by consistently updating their states across release cycles.
 
         /remove-lifecycle frozen
       - --ceiling=10
@@ -197,7 +197,7 @@ periodics:
     containers:
     # image contains tools versioned with k/k master
     # secping needs go and make in particular
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       command: 
       - ./experiment/secping.sh
       args:

@@ -1,0 +1,118 @@
+
+presets:
+- env:
+  - name: AWSTESTER_EKS_TEST_MODE
+    value: "embedded"
+  - name: AWSTESTER_EKS_KUBERNETES_VERSION
+    value: "1.10"
+  - name: AWSTESTER_EKS_WAIT_BEFORE_DOWN
+    value: 1m0s
+  - name: AWSTESTER_EKS_DOWN
+    value: "true"
+  - name: AWSTESTER_EKS_ENABLE_WORKER_NODE_HA
+    value: "true"
+  - name: AWSTESTER_EKS_ENABLE_NODE_SSH
+    value: "true"
+  - name: AWSTESTER_EKS_ENABLE_LOG_ACCESS
+    value: "true"
+  - name: AWSTESTER_EKS_UPLOAD_TESTER_LOGS
+    value: "true"
+  - name: AWSTESTER_EKS_UPLOAD_WORKER_NODE_LOGS
+    value: "true"
+  - name: AWSTESTER_EKS_WORKER_NODE_INSTANCE_TYPE
+    value: m3.xlarge
+  - name: AWSTESTER_EKS_WORKER_NODE_ASG_MIN
+    value: "1"
+  - name: AWSTESTER_EKS_WORKER_NODE_ASG_MAX
+    value: "1"
+  - name: AWSTESTER_EKS_LOG_DEBUG
+    value: "false"
+  - name: AWSTESTER_EKS_LOG_ACCESS
+    value: "true"
+  - name: AWSTESTER_EKS_ALB_ENABLE
+    value: "false"
+  - name: AWS_SHARED_CREDENTIALS_FILE
+    value: /etc/eks-aws-credentials/eks-aws-credentials
+  labels:
+    preset-ci-kubernetes-e2e-aws-eks-1-10: "true"
+  volumeMounts:
+  - mountPath: /etc/eks-aws-credentials
+    name: eks-aws-credentials
+    readOnly: true
+  volumes:
+  - name: eks-aws-credentials
+    secret:
+      secretName: eks-aws-credentials
+
+periodics:
+# Run Kubernetes 1.10 branch e2e tests with EKS prod build 1.10
+# similar to "pull-kubernetes-e2e-gke" but as a periodic job
+- interval: 1h
+  name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod
+  labels:
+    preset-service-account: "true"
+    preset-ci-kubernetes-e2e-aws-eks-1-10: "true"
+  spec:
+    containers:
+    - image: 607362164682.dkr.ecr.us-west-2.amazonaws.com/awstester-e2e:20181029-8a9413d299e9
+      args:
+      - --timeout=200
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --check-version-skew=false
+      - --deployment=eks
+      - --provider=eks
+      - --extract=ci/latest-1.10
+      - --ginkgo-parallel=30
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=180m
+
+# Run Kubernetes e2e tests with EKS prod build 1.10
+# similar to "pull-kubernetes-e2e-gke" but as a periodic job
+- interval: 1h
+  name: ci-kubernetes-e2e-stable-aws-eks-1-10-prod
+  labels:
+    preset-service-account: "true"
+    preset-ci-kubernetes-e2e-aws-eks-1-10: "true"
+  spec:
+    containers:
+    - image: 607362164682.dkr.ecr.us-west-2.amazonaws.com/awstester-e2e:20181029-8a9413d299e9
+      args:
+      - --timeout=200
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --check-version-skew=false
+      - --deployment=eks
+      - --provider=eks
+      - --extract=ci/k8s-stable1
+      - --ginkgo-parallel=30
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=180m
+
+# Run Kubernetes e2e tests with EKS prod build 1.10
+# similar to "pull-kubernetes-e2e-gke" but as a periodic job
+- interval: 1h
+  name: ci-kubernetes-e2e-latest-aws-eks-1-10-prod
+  labels:
+    preset-service-account: "true"
+    preset-ci-kubernetes-e2e-aws-eks-1-10: "true"
+  spec:
+    containers:
+    - image: 607362164682.dkr.ecr.us-west-2.amazonaws.com/awstester-e2e:20181029-8a9413d299e9
+      args:
+      - --timeout=200
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --check-version-skew=false
+      - --deployment=eks
+      - --provider=eks
+      - --extract=ci/latest
+      - --ginkgo-parallel=30
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=180m

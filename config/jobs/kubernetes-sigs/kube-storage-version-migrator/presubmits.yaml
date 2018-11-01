@@ -5,7 +5,33 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         command:
         - make
         - test
+
+  - name: pull-kube-storage-version-migrator-e2e
+    decorate: true
+    always_run: true
+    # TODO: remove this when the test is stable
+    optional: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181019-3f9819d46-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --check-leaked-resources
+        - --extract=ci/latest
+        - --gcp-master-image=gci
+        - --gcp-node-image=gci
+        - --gcp-nodes=1
+        - --gcp-zone=us-central1-f
+        - --provider=gce
+        - --test=false
+        - --test-cmd=../test/e2e/test-cmd.sh
+        - --timeout=50m

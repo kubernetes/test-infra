@@ -27,7 +27,7 @@ default_test_group:
 
 default_dashboard_tab:
   open_test_template: # The URL template to visit after clicking on a cell
-    url: https://k8s-gubernator.appspot.com/build/<gcs_prefix>/<changelist>
+    url: https://gubernator.k8s.io/build/<gcs_prefix>/<changelist>
   file_bug_template: # The URL template to visit when filing a bug
     url: https://github.com/kubernetes/kubernetes/issues/new
     options:
@@ -40,7 +40,7 @@ default_dashboard_tab:
     options: #empty
   results_text: See these results in Gubernator # Text to show in the about menu as a link to another view of the results
   results_url_template: # The URL template to visit after clicking
-    url: https://k8s-gubernator.appspot.com/builds/<gcs_prefix>
+    url: https://gubernator.k8s.io/builds/<gcs_prefix>
   code_search_path: github.com/kubernetes/kubernetes/search # URL for regression search links.
   num_columns_recent: 10
   code_search_url_template: # The URL template to visit when searching for changelists
@@ -103,6 +103,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-build
 - name: ci-containerd-build-1-1
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-build-1-1
+- name: ci-containerd-build-1-2
+  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-build-1-2
 - name: ci-cri-containerd-e2e-gci-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce
 - name: ci-cri-containerd-e2e-ubuntu-gce
@@ -145,6 +147,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-gci-gce
 - name: ci-containerd-e2e-gci-gce-1-1
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-gci-gce-1-1
+- name: ci-containerd-e2e-gci-gce-1-2
+  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-gci-gce-1-2
 - name: ci-containerd-e2e-ubuntu-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-ubuntu-gce
 - name: ci-cri-containerd-node-e2e
@@ -196,8 +200,22 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
+- name: ci-containerd-node-e2e-1-2
+  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e-1-2
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-containerd-node-e2e-features
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e-features
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-containerd-node-e2e-features-1-2
+  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e-features-1-2
   test_name_config:
     name_elements:
     - target_config: Tests name
@@ -358,10 +376,14 @@ test_groups:
   num_failures_to_alert: 6 # Runs every 1h. Alert when it's been failing for 6 hours.
 - name: ci-kubernetes-e2e-gci-gce-coredns
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-coredns
+- name: ci-kubernetes-e2e-gci-gce-kube-dns
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-kube-dns
 - name: ci-kubernetes-e2e-gce-alpha-api
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-api
 - name: ci-kubernetes-e2e-gci-gce-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial
+- name: ci-kubernetes-e2e-gci-gce-serial-kube-dns
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-kube-dns
 - name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-serial-sig-cli
 - name: ci-kubernetes-e2e-gke-gci-serial-sig-cli
@@ -2142,6 +2164,14 @@ test_groups:
 - name: periodic-kubernetes-e2e-packages-pushed
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-packages-pushed
 
+# EKS e2e results
+- name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-1-10-aws-eks-1-10-prod
+- name: ci-kubernetes-e2e-stable-aws-eks-1-10-prod
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-stable-aws-eks-1-10-prod
+- name: ci-kubernetes-e2e-latest-aws-eks-1-10-prod
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-latest-aws-eks-1-10-prod
+
 # charts tests
 - name: ci-kubernetes-charts-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-charts-gce
@@ -2162,8 +2192,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/metrics-kettle
   alert_stale_results_hours: 12
   num_failures_to_alert: 6 # Runs every 1h. Alert when it's been failing for 6 hours
-- name: periodic-features-unfreeze
-  gcs_prefix: kubernetes-jenkins/logs/periodic-features-unfreeze
+- name: periodic-enhancements-unfreeze
+  gcs_prefix: kubernetes-jenkins/logs/periodic-enhancements-unfreeze
 - name: periodic-kubernetes-bazel-test-master
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-master
 - name: periodic-kubernetes-bazel-test-1-9
@@ -2424,20 +2454,17 @@ test_groups:
 - name: pull-cluster-api-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-test
   num_columns_recent: 20
-- name: pull-cluster-api-provider-aws-build
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-build
-  num_columns_recent: 20
-- name: pull-cluster-api-provider-aws-make
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-make
-  num_columns_recent: 20
-- name: pull-cluster-api-provider-aws-test
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-test
+- name: periodic-cluster-api-provider-aws-test-creds
+  gcs_prefix: kubernetes-jenkins/logs/directory/periodic-cluster-api-provider-aws-test-creds
   num_columns_recent: 20
 - name: pull-cluster-api-provider-aws-bazel-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-build
   num_columns_recent: 20
 - name: pull-cluster-api-provider-aws-bazel-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-test
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-aws-bazel-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-e2e
   num_columns_recent: 20
 - name: pull-cluster-api-provider-gcp-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-gcp-build
@@ -2491,6 +2518,9 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-100-performance
   days_of_results: 60
   num_columns_recent: 20
+- name: pull-kubernetes-e2e-gce-alpha-features
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-alpha-features
+  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gce-big-performance
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-big-performance
   days_of_results: 60
@@ -2515,6 +2545,9 @@ test_groups:
   num_failures_to_alert: 10
 - name: pull-kubernetes-e2e-kubeadm-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kubeadm-gce
+  num_columns_recent: 20
+- name: pull-kubernetes-node-e2e-alpha
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e-alpha
   num_columns_recent: 20
 - name: pull-kubernetes-node-e2e-containerd
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e-containerd
@@ -3226,6 +3259,17 @@ test_groups:
 # GCP Compute Persistent Disk CSI Driver Test Groups
 - name: ci-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
   gcs_prefix: kubernetes-jenkins/logs/ci-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
+
+# AWS Test Groups
+- name: pull-aws-ebs-disk-csi-driver-verify
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-ebs-disk-csi-driver-verify
+  num_columns_recent: 30
+- name: pull-aws-ebs-csi-driver-unit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-ebs-csi-driver-unit
+  num_columns_recent: 30
+- name: pull-aws-ebs-csi-driver-sanity
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-ebs-csi-driver-sanity
+  num_columns_recent: 30
 
 #
 # Start dashboards
@@ -5665,6 +5709,34 @@ dashboards:
   - name: autoscaling-vpa-full
     test_group_name: ci-kubernetes-e2e-autoscaling-vpa-full
 
+- name: sig-aws-ebs-csi-driver
+  dashboard_tab:
+  - name: verify
+    test_group_name: pull-aws-ebs-disk-csi-driver-verify
+    description: "aws ebs csi driver basic code verifiction"
+  - name: unit-test
+    test_group_name: pull-aws-ebs-csi-driver-unit
+    description: "aws ebs csi driver unit test"
+  - name: sanity-test
+    test_group_name: pull-aws-ebs-csi-driver-sanity
+    description: "aws ebs csi driver sanity test"
+
+- name: sig-aws-eks-ci-kubernetes-e2e-1-10
+  dashboard_tab:
+  - name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod
+    test_group_name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod
+    description: "Kubernetes 1.10 branch e2e tests with EKS prod build 1.10"
+- name: sig-aws-eks-ci-kubernetes-e2e-stable
+  dashboard_tab:
+  - name: ci-kubernetes-e2e-stable-aws-eks-1-10-prod
+    test_group_name: ci-kubernetes-e2e-stable-aws-eks-1-10-prod
+    description: "Kubernetes stable branch e2e tests with EKS prod build 1.10"
+- name: sig-aws-eks-ci-kubernetes-e2e-latest
+  dashboard_tab:
+  - name: ci-kubernetes-e2e-latest-aws-eks-1-10-prod
+    test_group_name: ci-kubernetes-e2e-latest-aws-eks-1-10-prod
+    description: "Kubernetes latest branch e2e tests with EKS prod build 1.10"
+
 - name: sig-cli-master
   dashboard_tab:
   - name: gce
@@ -5801,16 +5873,14 @@ dashboards:
 
 - name: sig-cluster-lifecycle-cluster-api-provider-aws
   dashboard_tab:
-  - name: pr-build
-    test_group_name: pull-cluster-api-provider-aws-build
-  - name: pr-make
-    test_group_name: pull-cluster-api-provider-aws-make
-  - name: pr-test
-    test_group_name: pull-cluster-api-provider-aws-test
   - name: bazel-pr-build
     test_group_name: pull-cluster-api-provider-aws-bazel-build
   - name: bazel-pr-test
     test_group_name: pull-cluster-api-provider-aws-bazel-test
+  - name: bazel-pr-e2e
+    test_group_name: pull-cluster-api-provider-aws-bazel-e2e
+  - name: test-creds
+    test_group_name: periodic-cluster-api-provider-aws-test-creds
 
 - name: sig-cluster-lifecycle-cluster-api-provider-gcp
   dashboard_tab:
@@ -5980,6 +6050,12 @@ dashboards:
     description: network gci-gce tests with CoreDNS
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+  - name: gci-gce-kube-dns
+    test_group_name: ci-kubernetes-e2e-gci-gce-kube-dns
+    base_options: include-filter-by-regex=\[sig-network\]
+    description: network gci-gce tests with kube-dns
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: gce-alpha-api
     test_group_name: ci-kubernetes-e2e-gce-alpha-api
     alert_options:
@@ -6000,6 +6076,12 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
     base_options: include-filter-by-regex=\[sig-network\]
     description: network gci-gce serial e2e tests for master branch
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+  - name: gci-gce-serial-kube-dns
+    test_group_name: ci-kubernetes-e2e-gci-gce-serial-kube-dns
+    base_options: include-filter-by-regex=\[sig-network\]
+    description: network gci-gce with kube-dns serial e2e tests for master branch
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: gci-gce-alpha-features
@@ -6171,16 +6253,24 @@ dashboards:
     test_group_name: ci-containerd-build
   - name: containerd-build-1.1
     test_group_name: ci-containerd-build-1-1
+  - name: containerd-build-1.2
+    test_group_name: ci-containerd-build-1-2
   - name: containerd-node-e2e
     test_group_name: ci-containerd-node-e2e
   - name: containerd-node-e2e-1.1
     test_group_name: ci-containerd-node-e2e-1-1
+  - name: containerd-node-e2e-1.2
+    test_group_name: ci-containerd-node-e2e-1-2
   - name: containerd-node-e2e-features
     test_group_name: ci-containerd-node-e2e-features
+  - name: containerd-node-e2e-features-1.2
+    test_group_name: ci-containerd-node-e2e-features-1-2
   - name: containerd-e2e-gci
     test_group_name: ci-containerd-e2e-gci-gce
   - name: containerd-e2e-gci-1.1
     test_group_name: ci-containerd-e2e-gci-gce-1-1
+  - name: containerd-e2e-gci-1.2
+    test_group_name: ci-containerd-e2e-gci-gce-1-2
   - name: containerd-e2e-ubuntu
     test_group_name: ci-containerd-e2e-ubuntu-gce
   - name: e2e-gci-reboot
@@ -6573,9 +6663,9 @@ dashboards:
   - name: secping
     description: files bugs for SECURITY_CONTACTS
     test_group_name: periodic-secping
-  - name: features-unfreeze
-    description: Prevents issues in `k/features` from being marked as `lifecycle/frozen`
-    test_group_name: periodic-features-unfreeze
+  - name: enhancements-unfreeze
+    description: Prevents issues in `k/enhancements` from being marked as `lifecycle/frozen`
+    test_group_name: periodic-enhancements-unfreeze
   - name: issue-creator
     description: Creates github issues based on data from various 'IssueSource's.
     test_group_name: issue-creator
@@ -6894,6 +6984,9 @@ dashboards:
   - name: pull-kubernetes-cross
     test_group_name: pull-kubernetes-cross
     base_options: width=10
+  - name: pull-kubernetes-e2e-gce-alpha-features
+    test_group_name: pull-kubernetes-e2e-gce-alpha-features
+    base_options: width=10
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
     test_group_name: pull-kubernetes-e2e-gce-device-plugin-gpu
     base_options: width=10
@@ -6905,6 +6998,9 @@ dashboards:
     base_options: width=10
   - name: pull-kubernetes-e2e-kubeadm-gce
     test_group_name: pull-kubernetes-e2e-kubeadm-gce
+    base_options: width=10
+  - name: pull-kubernetes-node-e2e-alpha
+    test_group_name: pull-kubernetes-node-e2e-alpha
     base_options: width=10
 
 - name: presubmits-cloud-provider-vsphere-blocking
@@ -7364,6 +7460,13 @@ dashboard_groups:
   - sig-api-machinery-gce-gke
   - sig-api-machinery-kube-storage-version-migrator
   - sig-api-machinery-structured-merge-diff
+
+- name: sig-aws
+  dashboard_names:
+  - sig-aws-ebs-csi-driver
+  - sig-aws-eks-ci-kubernetes-e2e-1-10
+  - sig-aws-eks-ci-kubernetes-e2e-stable
+  - sig-aws-eks-ci-kubernetes-e2e-latest
 
 - name: sig-cli
   dashboard_names:

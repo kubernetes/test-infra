@@ -149,13 +149,9 @@ func (in *ProwJobSpec) DeepCopyInto(out *ProwJobSpec) {
 	}
 	if in.ExtraRefs != nil {
 		in, out := &in.ExtraRefs, &out.ExtraRefs
-		*out = make([]*Refs, len(*in))
+		*out = make([]Refs, len(*in))
 		for i := range *in {
-			if (*in)[i] != nil {
-				in, out := &(*in)[i], &(*out)[i]
-				*out = new(Refs)
-				(*in).DeepCopyInto(*out)
-			}
+			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
 	if in.PodSpec != nil {

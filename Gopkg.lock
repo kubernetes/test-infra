@@ -145,6 +145,16 @@
   version = "v1.12.53"
 
 [[projects]]
+  name = "github.com/aws/awstester"
+  packages = [
+    "eksconfig",
+    "eksdeployer",
+    "pkg/awsapi/ec2",
+  ]
+  revision = "141d7d02b4987b65240f46d6168546aebb61deee"
+  version = "0.1.1"
+
+[[projects]]
   name = "github.com/bazelbuild/bazel-gazelle"
   packages = [
     "cmd/gazelle",
@@ -1245,6 +1255,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "eefbf884c1382c898e4a35f755c0c4fcd0714927553683bc58c04a088018c017"
+  inputs-digest = "06f148fdad51dba9da69d469cb24bfd002ae5c4273ab781431c4b1a8a6e66166"
   solver-name = "gps-cdcl"
   solver-version = 1

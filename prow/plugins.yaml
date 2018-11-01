@@ -43,8 +43,8 @@ approve:
   - kubernetes/contrib
   - kubernetes/dashboard
   - kubernetes/dns
+  - kubernetes/enhancements
   - kubernetes/examples
-  - kubernetes/features
   - kubernetes/federation
   - kubernetes/gengo
   - kubernetes/heapster
@@ -237,10 +237,17 @@ require_matching_label:
 
     Note: Method 1 will trigger an email to the group. See the [group list](https://git.k8s.io/community/sig-list.md).
     The `<group-suffix>` in method 1 has to be replaced with one of these: _**bugs, feature-requests, pr-reviews, test-failures, proposals**_.
+- missing_label: needs-priority
+  org: kubernetes
+  repo: kubernetes
+  prs: true
+  regexp: ^priority/
 
 
 plugins:
-  bazelbuild/rules_k8s:
+  # Enable the following for any bazelbuild repo (rules_k8s, rules_docker) that sends prow webhooks
+  # Repos that do not send prow webhooks will see no effect.
+  bazelbuild:
   - approve  # Allow OWNERS to /approve
   - assign  # Allow /assign and /cc
   - blunderbuss  # Auto-assign people
@@ -336,15 +343,15 @@ plugins:
   kubernetes/dns:
   - trigger
 
-  kubernetes/examples:
-  - trigger
-
-  kubernetes/features:
+  kubernetes/enhancements:
   - blockade
   - milestone
   - owners-label
   - require-sig
   - stage
+
+  kubernetes/examples:
+  - trigger
 
   kubernetes/ingress-gce:
   - trigger
@@ -527,6 +534,9 @@ plugins:
   kubernetes-sigs/structured-merge-diff:
   - trigger
 
+  kubernetes-sigs/aws-ebs-csi-driver:
+  - trigger
+
   containerd/cri:
   - assign
   - cla
@@ -611,6 +621,10 @@ external_plugins:
     events:
       - pull_request
   kubernetes-sigs/contributor-playground:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes-sigs/cluster-api-provider-digitalocean:
   - name: needs-rebase
     events:
       - pull_request

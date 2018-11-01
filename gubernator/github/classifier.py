@@ -21,7 +21,7 @@ import google.appengine.ext.ndb as ndb
 import models
 
 
-XREF_RE = re.compile(r'k8s-gubernator.appspot.com/build(/[^])\s]+/\d+)')
+XREF_RE = re.compile(r'(?:k8s-gubernator\.appspot\.com|gubernator\.k8s\.io)/build(/[^])\s]+/\d+)')
 APPROVERS_RE = re.compile(r'<!-- META={"?approvers"?:\[([^]]*)\]} -->')
 
 

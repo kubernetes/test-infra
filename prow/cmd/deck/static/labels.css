@@ -328,6 +328,31 @@
     color: #000000;
 }
 
+.languagex00002fen {
+    background-color: #e9b3f9;
+    color: #000000;
+}
+
+.languagex00002fja {
+    background-color: #e9b3f9;
+    color: #000000;
+}
+
+.languagex00002fko {
+    background-color: #e9b3f9;
+    color: #000000;
+}
+
+.languagex00002fno {
+    background-color: #e9b3f9;
+    color: #000000;
+}
+
+.languagex00002fzh {
+    background-color: #e9b3f9;
+    color: #000000;
+}
+
 .lgtm {
     background-color: #15dd18;
     color: #000000;
@@ -361,6 +386,11 @@
 .needsx00002dokx00002dtox00002dtest {
     background-color: #b60205;
     color: #ffffff;
+}
+
+.needsx00002dpriority {
+    background-color: #ededed;
+    color: #000000;
 }
 
 .needsx00002drebase {
@@ -644,11 +674,6 @@
 }
 
 .wgx00002fapply {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.wgx00002fclusterx00002dapi {
     background-color: #d2b48c;
     color: #000000;
 }

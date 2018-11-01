@@ -81,43 +81,6 @@ presets:
                 }
               ]
             }
-          calico_cni_spec_template: |-
-            {
-              "name": "gke-pod-network",
-              "cniVersion": "0.3.0",
-              "plugins": [
-                {
-                "type": "calico",
-                "log_level": "debug",
-                "datastore_type": "kubernetes",
-                "nodename": "__KUBERNETES_NODE_NAME__",
-                "ipam": {
-                  "type": "host-local",
-                  "ranges": [
-                  [ { "subnet": "usePodCidr" } ]@ipv6SubnetOptional
-                  ],
-                  "routes": [
-                    {"dst": "0.0.0.0/0"}@ipv6RouteOptional
-                  ]
-                },
-                "policy": {
-                  "type": "k8s",
-                  "k8s_auth_token": "__SERVICEACCOUNT_TOKEN__"
-                },
-                "kubernetes": {
-                  "k8s_api_root": "https://__KUBERNETES_SERVICE_HOST__:__KUBERNETES_SERVICE_PORT__",
-                  "kubeconfig": "__KUBECONFIG_FILEPATH__"
-                }
-                },
-                {
-                  "type": "portmap",
-                  "capabilities": {
-                    "portMappings": true
-                  },
-                  "snat": true
-                }
-              ]
-            }
           cni_spec_name: "10-gke-ptp.conflist"
           enable_policy_routing: "true"
           enable_masquerade: "true"
@@ -167,11 +130,6 @@ presets:
                       configMapKeyRef:
                         name: netd-config
                         key: cni_spec_template
-                  - name: CALICO_CNI_SPEC_TEMPLATE
-                    valueFrom:
-                      configMapKeyRef:
-                        name: netd-config
-                        key: calico_cni_spec_template
                   - name: CNI_SPEC_NAME
                     valueFrom:
                       configMapKeyRef:
@@ -312,43 +270,6 @@ presets:
                 }
               ]
             }
-          calico_cni_spec_template: |-
-            {
-              "name": "gke-pod-network",
-              "cniVersion": "0.3.0",
-              "plugins": [
-                {
-                "type": "calico",
-                "log_level": "debug",
-                "datastore_type": "kubernetes",
-                "nodename": "__KUBERNETES_NODE_NAME__",
-                "ipam": {
-                  "type": "host-local",
-                  "ranges": [
-                  [ { "subnet": "usePodCidr" } ]@ipv6SubnetOptional
-                  ],
-                  "routes": [
-                    {"dst": "0.0.0.0/0"}@ipv6RouteOptional
-                  ]
-                },
-                "policy": {
-                  "type": "k8s",
-                  "k8s_auth_token": "__SERVICEACCOUNT_TOKEN__"
-                },
-                "kubernetes": {
-                  "k8s_api_root": "https://__KUBERNETES_SERVICE_HOST__:__KUBERNETES_SERVICE_PORT__",
-                  "kubeconfig": "__KUBECONFIG_FILEPATH__"
-                }
-                },
-                {
-                  "type": "portmap",
-                  "capabilities": {
-                    "portMappings": true
-                  },
-                  "snat": true
-                }
-              ]
-            }
           cni_spec_name: "10-gke-ptp.conflist"
           enable_policy_routing: "true"
           enable_masquerade: "true"
@@ -398,11 +319,6 @@ presets:
                       configMapKeyRef:
                         name: netd-config
                         key: cni_spec_template
-                  - name: CALICO_CNI_SPEC_TEMPLATE
-                    valueFrom:
-                      configMapKeyRef:
-                        name: netd-config
-                        key: calico_cni_spec_template
                   - name: CNI_SPEC_NAME
                     valueFrom:
                       configMapKeyRef:
@@ -1022,7 +938,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
 
 - interval: 2h
   name: ci-kubernetes-e2e-gci-gce-netd-calico
@@ -1045,7 +961,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico
@@ -1073,7 +989,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
 
 - interval: 2h
   name: ci-kubernetes-e2e-ubuntu-gce-netd-calico
@@ -1097,7 +1013,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico
@@ -1129,7 +1045,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
 
 - interval: 2h
   name: ci-kubernetes-e2e-containerd-gce-netd-calico
@@ -1158,7 +1074,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico
@@ -1190,7 +1106,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
 
 - interval: 2h
   name: ci-kubernetes-e2e-containerd-gce-calico-serial
@@ -1217,9 +1133,9 @@ periodics:
       - --gcp-zone=asia-southeast1-a
       - --ginkgo-parallel=1
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\].*\[Disruptive\]|\[sig-network\].*\[Serial\]|\[Feature:PerformanceDNS\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\].*\[Disruptive\]|\[sig-network\].*\[Serial\] --ginkgo.skip=\[Feature:IngressScale\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
 
 - interval: 2h
   name: ci-kubernetes-e2e-containerd-gce-netd-calico-serial
@@ -1246,9 +1162,9 @@ periodics:
       - --gcp-zone=asia-southeast1-a
       - --ginkgo-parallel=1
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\].*\[Disruptive\]|\[sig-network\].*\[Serial\]|\[Feature:PerformanceDNS\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\].*\[Disruptive\]|\[sig-network\].*\[Serial\] --ginkgo.skip=\[Feature:IngressScale\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181017-0323abc4c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico

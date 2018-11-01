@@ -73,7 +73,7 @@ func (o Options) Run() error {
 	}
 
 	for _, ref := range o.GitRefs {
-		input <- ref
+		input <- &ref
 	}
 
 	close(input)

@@ -530,12 +530,6 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to wg-cluster-api.
-      name: wg/cluster-api
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
       description: Categorizes an issue or PR as relevant to wg-container-identity.
       name: wg/container-identity
       target: both
@@ -644,7 +638,7 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
-  kubernetes/features:
+  kubernetes/enhancements:
     labels:
       - color: cc99ff
         description: Categorizes KEP tracking issues and PRs modifying the KEP directory
@@ -669,6 +663,12 @@ repos:
         name: area/conformance
         target: both
         addedBy: label
+      - color: ededed
+        description: Indicates a PR lacks a `priority/foo` label and requires one.
+        name: needs-priority
+        target: prs
+        prowPlugin: require-matching-label
+        addedBy: prow
   kubernetes/org:
     labels:
       - color: 0052cc
@@ -873,3 +873,37 @@ repos:
         name: area/prow/pod-utilities
         target: both
         addedBy: label
+  kubernetes/website:
+    labels:
+      - color: e9b3f9
+        description: Issues or PRs related to English language
+        name: language/en
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
+        description: Issues or PRs related to Japanese language
+        name: language/ja
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
+        description: Issues or PRs related to Korean language
+        name: language/ko
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
+        description: Issues or PRs related to Norwegian language
+        name: language/no
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
+        description: Issues or PRs related to Chinese language
+        name: language/zh
+        previously:
+          - name: language/cn
+        target: both
+        prowPlugin: label
+        addedBy: anyone

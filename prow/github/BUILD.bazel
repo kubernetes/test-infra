@@ -49,6 +49,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//prow/github/fakegithub:all-srcs",
+        "//prow/github/reporter:all-srcs",
     ],
     tags = ["automanaged"],
 )

@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//prow/git:go_default_library",
         "//prow/github:go_default_library",
+        "//prow/labels:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/plugins/golint:go_default_library",
@@ -25,6 +26,7 @@ go_test(
         "//prow/git/localgit:go_default_library",
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",
+        "//prow/labels:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )

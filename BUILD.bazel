@@ -60,6 +60,12 @@ workspace_binary(
     cmd = "@go_sdk//:bin/gofmt",
 )
 
+workspace_binary(
+    name = "govet",
+    args = ["vet"],
+    cmd = "@go_sdk//:bin/go",
+)
+
 filegroup(
     name = "all-srcs",
     srcs = [
@@ -91,7 +97,6 @@ filegroup(
         "//maintenance/migratestatus:all-srcs",
         "//metrics:all-srcs",
         "//prow:all-srcs",
-        "//queue_health/graph:all-srcs",
         "//robots/commenter:all-srcs",
         "//robots/issue-creator:all-srcs",
         "//robots/pr-labeler:all-srcs",

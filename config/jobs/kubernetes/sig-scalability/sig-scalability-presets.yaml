@@ -1,0 +1,132 @@
+presets:
+###### Kubemark envs
+### Common env variables for all kubemark-related suites.
+- labels:
+    preset-e2e-kubemark-common: "true"
+  env:
+  - name: KUBE_GCS_UPDATE_LATEST
+    value: "n"
+  - name: KUBE_FASTBUILD
+    value: "true"
+  - name: KUBE_GCE_ENABLE_IP_ALIASES
+    value: "true"
+  - name: CREATE_CUSTOM_NETWORK
+    value: "true"
+  - name: ENABLE_HOLLOW_NODE_LOGS
+    value: "true"
+  # Turn on profiling for various components.
+  - name: ETCD_TEST_ARGS
+    value: "--enable-pprof"
+  - name: CONTROLLER_MANAGER_TEST_ARGS
+    value: "--profiling"
+  - name: SCHEDULER_TEST_ARGS
+    value: "--profiling"
+  # Increase controller-manager's resync period to simulate production.
+  - name: TEST_CLUSTER_RESYNC_PERIOD
+    value: "--min-resync-period=12h"
+  # Reduce etcd compaction frequency to match production.
+  - name: KUBEMARK_ETCD_COMPACTION_INTERVAL_SEC
+    value: "150"
+  # Use Taint based evictions to control hollow node recreation in case of
+  # node VM restart.
+  # See https://github.com/kubernetes/kubernetes/issues/67120 for context.
+  - name: KUBE_FEATURE_GATES
+    value: "TaintBasedEvictions=true"
+### kubemark-gce-big
+- labels:
+    preset-e2e-kubemark-gce-big: "true"
+  env:
+  # kubernetes env
+  # Reduce logs verbosity
+  - name: TEST_CLUSTER_LOG_LEVEL
+    value: "--v=2"
+  # Increase throughput in Kubemark master components.
+  - name: KUBEMARK_MASTER_COMPONENTS_QPS_LIMITS
+    value: "--kube-api-qps=100 --kube-api-burst=100"
+  ### e2e-env
+  # Increase throughput in Load test.
+  - name: LOAD_TEST_THROUGHPUT
+    value: "50"
+### kubemark-gce-big
+- labels:
+    preset-e2e-kubemark-gce-scale: "true"
+  env:
+  # kubernetes env
+  # Reduce logs verbosity
+  - name: TEST_CLUSTER_LOG_LEVEL
+    value: "--v=2"
+  # Increase throughput in Kubemark master components.
+  - name: KUBEMARK_MASTER_COMPONENTS_QPS_LIMITS
+    value: "--kube-api-qps=100 --kube-api-burst=100"
+  # TODO: Remove this after kube-proxy improvements.
+  - name: USE_REAL_PROXIER
+    value: "false"
+  - name: HOLLOW_PROXY_TEST_ARGS
+    value: "--use-real-proxier=false"
+
+###### Scalability Envs    
+### Common env variables for all scalability-related suites.
+- labels:
+    preset-e2e-scalability-common: "true"
+  env:
+  # Override GCE defaults.
+  - name: NODE_SIZE
+    value: "n1-standard-1"
+  - name: NODE_DISK_SIZE
+    value: "50GB"
+  - name: REGISTER_MASTER
+    value: "true"
+  - name: LOGROTATE_MAX_SIZE
+    value: "5G"
+  # Use IP-aliases for scalability tests.
+  - name: KUBE_GCE_ENABLE_IP_ALIASES
+    value: "true"
+  # Turn on profiling for various components and
+  # increase throughput in master components.
+  - name: ETCD_EXTRA_ARGS
+    value: "--enable-pprof"
+  - name: CONTROLLER_MANAGER_TEST_ARGS
+    value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
+  - name: KUBELET_TEST_ARGS
+    value: "--enable-debugging-handlers"
+  - name: KUBEPROXY_TEST_ARGS
+    value: "--profiling"
+  - name: SCHEDULER_TEST_ARGS
+    value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
+  # Switch off image puller to workaround #44701
+  - name: PREPULL_E2E_IMAGES
+    value: "false"
+  # Reduce logs verbosity.
+  - name: TEST_CLUSTER_LOG_LEVEL
+    value: --v=2
+  # Increase resync period to simulate production.
+  - name: TEST_CLUSTER_RESYNC_PERIOD
+    value: --min-resync-period=12h
+  # Increase delete collection parallelism.
+  - name: TEST_CLUSTER_DELETE_COLLECTION_WORKERS
+    value: --delete-collection-workers=16
+### Common env variables for all high-speed scalability suites.
+- labels:
+    preset-e2e-scalability-highspeed-common: "true"
+  env:
+  # Increase size of default subnetworks to enable large clusters.
+  - name: ENABLE_BIG_CLUSTER_SUBNETS
+    value: "true"
+# Create a project k8s-e2e-gce-scalability-release and move this test there
+- labels:
+    preset-e2e-gci-gce-scalability-stable: "true"
+  env:
+  # Bump COS version to avoid kernel panics soflookups
+  # after last security patch: pr.k8s.io/61047
+  # TODO: This is needed only in release 1.9.
+  # Remove once these releases are no longer supported.
+  - name: KUBE_GCI_VERSION
+    value: "cos-stable-63-10032-71-0"
+# Create a project k8s-jenkins-scalability-head and move this test there
+- labels:
+    preset-e2e-gci-gce-scalability: "true"
+  env:
+  # Override GCE defaults.
+  - name: CREATE_CUSTOM_NETWORK
+    value: "true"
+   

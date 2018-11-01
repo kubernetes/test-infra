@@ -64,7 +64,7 @@ The gerrit adapter currently does not support [gerrit hooks](https://gerrit-revi
 If you need them, please send us a PR to support them :-)
 
 
-[Gerrit]: https://www.gerritcodereview.coQm/
+[Gerrit]: https://www.gerritcodereview.com/
 [Prow]: /prow/README.md
 [grandmatriarch]: /prow/cmd/grandmatriarch
 [crier]: /prow/crier

@@ -24,10 +24,12 @@ import (
 	"net/url"
 	"strings"
 
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
-type podLogJobAgent interface {
+type jobAgent interface {
+	GetProwJob(job string, id string) (kube.ProwJob, error)
 	GetJobLog(job string, id string) ([]byte, error)
 	GetJobLogTail(job string, id string, n int64) ([]byte, error)
 }
@@ -36,9 +38,8 @@ type podLogJobAgent interface {
 type PodLogArtifact struct {
 	name      string
 	buildID   string
-	podName   string
 	sizeLimit int64
-	ja        podLogJobAgent
+	jobAgent
 }
 
 var (
@@ -47,7 +48,7 @@ var (
 )
 
 // NewPodLogArtifact creates a new PodLogArtifact
-func NewPodLogArtifact(jobName string, buildID string, podName string, sizeLimit int64, ja podLogJobAgent) (*PodLogArtifact, error) {
+func NewPodLogArtifact(jobName string, buildID string, sizeLimit int64, ja jobAgent) (*PodLogArtifact, error) {
 	if jobName == "" {
 		return nil, errInsufficientJobInfo
 	}
@@ -60,9 +61,8 @@ func NewPodLogArtifact(jobName string, buildID string, podName string, sizeLimit
 	return &PodLogArtifact{
 		name:      jobName,
 		buildID:   buildID,
-		podName:   podName,
 		sizeLimit: sizeLimit,
-		ja:        ja,
+		jobAgent:  ja,
 	}, nil
 }
 
@@ -88,7 +88,7 @@ func (a *PodLogArtifact) JobPath() string {
 
 // ReadAt implements reading a range of bytes from the pod logs endpoint
 func (a *PodLogArtifact) ReadAt(p []byte, off int64) (n int, err error) {
-	logs, err := a.ja.GetJobLog(a.name, a.buildID)
+	logs, err := a.jobAgent.GetJobLog(a.name, a.buildID)
 	if err != nil {
 		return 0, fmt.Errorf("error getting pod log: %v", err)
 	}
@@ -112,7 +112,7 @@ func (a *PodLogArtifact) ReadAll() ([]byte, error) {
 	if size > a.sizeLimit {
 		return nil, viewers.ErrFileTooLarge
 	}
-	logs, err := a.ja.GetJobLog(a.name, a.buildID)
+	logs, err := a.jobAgent.GetJobLog(a.name, a.buildID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting pod log: %v", err)
 	}
@@ -121,7 +121,7 @@ func (a *PodLogArtifact) ReadAll() ([]byte, error) {
 
 // ReadAtMost reads at most n bytes
 func (a *PodLogArtifact) ReadAtMost(n int64) ([]byte, error) {
-	logs, err := a.ja.GetJobLog(a.name, a.buildID)
+	logs, err := a.jobAgent.GetJobLog(a.name, a.buildID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting pod log: %v", err)
 	}
@@ -144,7 +144,7 @@ func (a *PodLogArtifact) ReadAtMost(n int64) ([]byte, error) {
 
 // ReadTail reads the last n bytes of the pod log
 func (a *PodLogArtifact) ReadTail(n int64) ([]byte, error) {
-	logs, err := a.ja.GetJobLogTail(a.name, a.buildID, n)
+	logs, err := a.jobAgent.GetJobLogTail(a.name, a.buildID, n)
 	if err != nil {
 		return nil, fmt.Errorf("error getting pod log tail: %v", err)
 	}
@@ -165,7 +165,7 @@ func (a *PodLogArtifact) ReadTail(n int64) ([]byte, error) {
 
 // Size gets the size of the pod log. Note: this function makes the same network call as reading the entire file.
 func (a *PodLogArtifact) Size() (int64, error) {
-	logs, err := a.ja.GetJobLog(a.name, a.buildID)
+	logs, err := a.jobAgent.GetJobLog(a.name, a.buildID)
 	if err != nil {
 		return 0, fmt.Errorf("error getting size of pod log: %v", err)
 	}

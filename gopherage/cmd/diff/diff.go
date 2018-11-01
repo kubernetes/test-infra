@@ -21,7 +21,6 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"golang.org/x/tools/cover"
 	"k8s.io/test-infra/gopherage/pkg/cov"
 	"k8s.io/test-infra/gopherage/pkg/util"
 )
@@ -57,13 +56,13 @@ func run(flags *flags, cmd *cobra.Command, args []string) {
 		os.Exit(2)
 	}
 
-	before, err := cover.ParseProfiles(args[0])
+	before, err := util.LoadProfile(args[0])
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't load %s: %v.", args[0], err)
 		os.Exit(1)
 	}
 
-	after, err := cover.ParseProfiles(args[1])
+	after, err := util.LoadProfile(args[1])
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't load %s: %v.", args[0], err)
 		os.Exit(1)

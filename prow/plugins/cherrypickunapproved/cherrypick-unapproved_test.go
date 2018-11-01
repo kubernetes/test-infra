@@ -24,6 +24,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 )
 
 type fakeClient struct {
@@ -130,7 +131,7 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 			name:          "has cpUnapproved -> no-op",
 			branch:        "release-1.10",
 			action:        github.PullRequestActionOpened,
-			labels:        []string{CpUnapprovedLabel},
+			labels:        []string{labels.CpUnapproved},
 			added:         []string{},
 			removed:       []string{},
 			expectComment: false,
@@ -139,9 +140,9 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 			name:          "has both cpApproved and cpUnapproved -> remove cpUnapproved",
 			branch:        "release-1.10",
 			action:        github.PullRequestActionOpened,
-			labels:        []string{cpApprovedLabel, CpUnapprovedLabel},
+			labels:        []string{labels.CpApproved, labels.CpUnapproved},
 			added:         []string{},
-			removed:       []string{CpUnapprovedLabel},
+			removed:       []string{labels.CpUnapproved},
 			expectComment: false,
 		},
 		{
@@ -149,7 +150,7 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 			branch:        "release-1.10",
 			action:        github.PullRequestActionOpened,
 			labels:        []string{},
-			added:         []string{CpUnapprovedLabel},
+			added:         []string{labels.CpUnapproved},
 			removed:       []string{},
 			expectComment: true,
 		},
@@ -158,7 +159,7 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 			branch:        "release-1.10",
 			action:        github.PullRequestActionReopened,
 			labels:        []string{},
-			added:         []string{CpUnapprovedLabel},
+			added:         []string{labels.CpUnapproved},
 			removed:       []string{},
 			expectComment: true,
 		},

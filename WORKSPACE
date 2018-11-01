@@ -23,39 +23,13 @@ load("@io_bazel_rules_go//go:def.bzl", "go_register_toolchains", "go_rules_depen
 
 go_rules_dependencies()
 
-go_register_toolchains(
-    go_version = "1.11",
-)
-
-git_repository(
-    name = "io_bazel_rules_k8s",
-    commit = "3756369d4920033c32c12d16207e8ee14fee1b18",
-    remote = "https://github.com/bazelbuild/rules_k8s.git",
-)
+go_register_toolchains(go_version = "1.11")
 
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "cef4e7adfc1df999891e086bf42bed9092cfdf374adb902f18de2c1d6e1e0197",
-    strip_prefix = "rules_docker-198367210c55fba5dded22274adde1a289801dc4",
-    urls = ["https://github.com/bazelbuild/rules_docker/archive/198367210c55fba5dded22274adde1a289801dc4.tar.gz"],
-)
-
-git_repository(
-    name = "io_kubernetes_build",
-    commit = "4ce715fbe67d8fbed05ec2bb47a148e754100a4b",
-    remote = "https://github.com/kubernetes/repo-infra.git",
-)
-
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_pull", "docker_repositories")
-
-docker_repositories()
-
-docker_pull(
-    name = "distroless-base",
-    # latest circa 2017/11/29
-    digest = "sha256:bef8d030c7f36dfb73a8c76137616faeea73ac5a8495d535f27c911d0db77af3",
-    registry = "gcr.io",
-    repository = "distroless/base",
+    sha256 = "5235045774d2f40f37331636378f21fe11f69906c0386a790c5987a09211c3c4",
+    strip_prefix = "rules_docker-8010a50ef03d1e13f1bebabfc625478da075fa60",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/8010a50ef03d1e13f1bebabfc625478da075fa60.tar.gz"],
 )
 
 load(
@@ -65,34 +39,60 @@ load(
 
 _go_repositories()
 
+load("@io_bazel_rules_docker//docker:docker.bzl", "docker_pull", "docker_repositories")
+
+docker_repositories()
+
+docker_pull(
+    name = "distroless-base",
+    digest = "sha256:472206d4c501691d9e72cafca4362f2adbc610fecff3dfa42e5b345f9b7d05e5",  # 2018/10/25
+    registry = "gcr.io",
+    repository = "distroless/base",
+    tag = "latest",
+)
+
 docker_pull(
     name = "alpine-base",
-    # 0.1 as of 2017/11/29
-    digest = "sha256:317d39ece9dd09992fa81236964be3f3919b940f42e3143379dd66e4af930f3a",
+    digest = "sha256:bd327018b3effc802514b63cc90102bfcd92765f4486fc5abc28abf7eb9f1e4d",  # 2018/09/20
     registry = "gcr.io",
     repository = "k8s-prow/alpine",
+    tag = "0.1",
 )
 
 docker_pull(
     name = "gcloud-base",
+    digest = "sha256:1dbdee42a553dd6a652d64df1902015ba36ef12d6c16df568a59843e410e270b",  # 2018/10/25
     registry = "gcr.io",
     repository = "cloud-builders/gcloud",
+    tag = "latest",
 )
 
 docker_pull(
     name = "git-base",
-    # 0.2 as of 2018/05/10
-    digest = "sha256:3eaeff9a2c35a50c3a0af7ef7cf26ea73e6fd966f54ef3dfe79d4ffb45805112",
+    digest = "sha256:01b0f83fe91b782ec7ddf1e742ab7cc9a2261894fd9ab0760ebfd39af2d6ab28",  # 2018/07/02
     registry = "gcr.io",
     repository = "k8s-prow/git",
+    tag = "0.2",
 )
 
 docker_pull(
     name = "python",
-    digest = "sha256:8bfeec8f8ba3aaeea918a0198f4b1c7c9b2b39e26f399a7173229dfcef76fc1f",
+    digest = "sha256:0888426cc407c5ce9f2d656d776757f8fdb31795e01f60df38a5bacb697a0db0",  # 2018/10/25
     registry = "index.docker.io",
     repository = "library/python",
-    tag = "2.7.14-jessie",
+    tag = "2",
+)
+
+git_repository(
+    name = "io_bazel_rules_k8s",
+    commit = "9d2f6e8e21f1b5e58e721fc29b806957d9931930",
+    remote = "https://github.com/bazelbuild/rules_k8s.git",
+)
+
+git_repository(
+    name = "io_kubernetes_build",
+    commit = "4ce715fbe67d8fbed05ec2bb47a148e754100a4b",
+    remote = "https://github.com/kubernetes/repo-infra.git",
 )
 
 git_repository(

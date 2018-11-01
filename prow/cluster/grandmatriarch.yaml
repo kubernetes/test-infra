@@ -16,7 +16,8 @@ rules:
   - secrets
   verbs:
   - create
-  - replace
+  - get
+  - update
 ---
 
 kind: RoleBinding
@@ -52,7 +53,7 @@ spec:
       serviceAccountName: grandmatriarch
       containers:
       - name: bakery
-        image: gcr.io/k8s-prow/grandmatriarch:v20181017-d31417a
+        image: gcr.io/k8s-prow/grandmatriarch:v20181019-08e9d55c9
         args:
         - /etc/robot/service-account.json
         - http-cookiefile

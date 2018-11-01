@@ -1,2 +1,4 @@
+approvers:
+- krzyzacy
 labels:
- - area/prow/gerrit
+- area/prow/gerrit

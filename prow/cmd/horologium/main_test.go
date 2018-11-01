@@ -117,7 +117,7 @@ func TestSync(t *testing.T) {
 	for _, tc := range testcases {
 		cfg := config.Config{
 			JobConfig: config.JobConfig{
-				Periodics: []config.Periodic{{Name: "j"}},
+				Periodics: []config.Periodic{{JobBase: config.JobBase{Name: "j"}}},
 			},
 		}
 		cfg.Periodics[0].SetInterval(time.Minute)
@@ -184,7 +184,7 @@ func TestSyncCron(t *testing.T) {
 	for _, tc := range testcases {
 		cfg := config.Config{
 			JobConfig: config.JobConfig{
-				Periodics: []config.Periodic{{Name: "j", Cron: "@every 1m"}},
+				Periodics: []config.Periodic{{JobBase: config.JobBase{Name: "j"}, Cron: "@every 1m"}},
 			},
 		}
 

@@ -30,6 +30,7 @@ import (
 	"k8s.io/test-infra/prow/errorutil"
 	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins/approve"
 	"k8s.io/test-infra/prow/plugins/blockade"
 	"k8s.io/test-infra/prow/plugins/blunderbuss"
@@ -37,7 +38,6 @@ import (
 	"k8s.io/test-infra/prow/plugins/hold"
 	"k8s.io/test-infra/prow/plugins/owners-label"
 	"k8s.io/test-infra/prow/plugins/releasenote"
-	"k8s.io/test-infra/prow/plugins/trigger"
 	"k8s.io/test-infra/prow/plugins/verify-owners"
 	"k8s.io/test-infra/prow/plugins/wip"
 
@@ -266,15 +266,15 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration) e
 		// using the matcher
 		config *orgRepoConfig
 	}{
-		{plugin: lgtm.PluginName, label: lgtm.LGTMLabel, matcher: requires},
-		{plugin: approve.PluginName, label: approve.ApprovedLabel, matcher: requires},
-		{plugin: hold.PluginName, label: hold.Label, matcher: forbids},
-		{plugin: wip.PluginName, label: wip.Label, matcher: forbids},
-		{plugin: verifyowners.PluginName, label: verifyowners.InvalidOwnersLabel, matcher: forbids},
+		{plugin: lgtm.PluginName, label: labels.LGTM, matcher: requires},
+		{plugin: approve.PluginName, label: labels.Approved, matcher: requires},
+		{plugin: hold.PluginName, label: labels.Hold, matcher: forbids},
+		{plugin: wip.PluginName, label: labels.WorkInProgress, matcher: forbids},
+		{plugin: verifyowners.PluginName, label: labels.InvalidOwners, matcher: forbids},
 		{plugin: releasenote.PluginName, label: releasenote.ReleaseNoteLabelNeeded, matcher: forbids},
-		{plugin: cherrypickunapproved.PluginName, label: cherrypickunapproved.CpUnapprovedLabel, matcher: forbids},
-		{plugin: blockade.PluginName, label: blockade.BlockedPathsLabel, matcher: forbids},
-		{plugin: needsrebase.PluginName, label: needsrebase.NeedsRebaseLabel, matcher: forbids},
+		{plugin: cherrypickunapproved.PluginName, label: labels.CpUnapproved, matcher: forbids},
+		{plugin: blockade.PluginName, label: labels.BlockedPaths, matcher: forbids},
+		{plugin: needsrebase.PluginName, label: labels.NeedsRebase, matcher: forbids},
 	}
 
 	for i := range configs {
@@ -521,14 +521,14 @@ func validateNeedsOkToTestLabel(cfg *config.Config) error {
 		for _, label := range query.Labels {
 			if label == lgtm.LGTMLabel {
 				for _, label := range query.MissingLabels {
-					if label == trigger.NeedsOkToTest {
+					if label == labels.NeedsOkToTest {
 						queryErrors = append(queryErrors, fmt.Errorf(
 							"the tide query at position %d"+
 								"forbids the %q label and requires the %q label, "+
 								"which is not recommended; "+
 								"see https://github.com/kubernetes/test-infra/blob/master/prow/cmd/tide/maintainers.md#best-practices "+
 								"for more information",
-							i, trigger.NeedsOkToTest, lgtm.LGTMLabel),
+							i, labels.NeedsOkToTest, lgtm.LGTMLabel),
 						)
 					}
 				}

@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
@@ -39,28 +40,10 @@ func init() {
 	}, ViewHandler)
 }
 
-// Started is used to mirror the started.json artifact
-type Started struct {
-	TimestampRaw int64             `json:"timestamp"`
-	Timestamp    time.Time         `json:"-"`
-	Node         string            `json:"node"`
-	Repos        map[string]string `json:"repos"`
-	Pull         string            `json:"pull"`
-}
-
-// Finished is used to mirror the finished.json artifact
-type Finished struct {
-	TimestampRaw int64             `json:"timestamp"`
-	Timestamp    time.Time         `json:"-"`
-	Version      string            `json:"version"`
-	JobVersion   string            `json:"job-version"`
-	Passed       bool              `json:"passed"`
-	Result       string            `json:"result"`
-	Metadata     map[string]string `json:"metadata"`
-}
-
 // Derived contains metadata derived from provided metadata for insertion into the template
 type Derived struct {
+	StartTime        time.Time
+	FinishedTime     time.Time
 	Elapsed          time.Duration
 	Done             bool
 	Status           string
@@ -72,8 +55,8 @@ type Derived struct {
 func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 	var buf bytes.Buffer
 	type MetadataViewData struct {
-		Started  Started
-		Finished Finished
+		Started  jobs.Started
+		Finished jobs.Finished
 		Derived  Derived
 	}
 	var metadataViewData MetadataViewData
@@ -83,20 +66,20 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 			logrus.WithError(err).Error("Failed reading from artifact.")
 		}
 		if a.JobPath() == "started.json" {
-			s := Started{}
+			s := jobs.Started{}
 			if err = json.Unmarshal(read, &s); err != nil {
 				logrus.WithError(err).Error("Error unmarshaling started.json")
 			}
-			s.Timestamp = time.Unix(s.TimestampRaw, 0)
+			metadataViewData.Derived.StartTime = time.Unix(s.Timestamp, 0)
 			metadataViewData.Started = s
 
 		} else if a.JobPath() == "finished.json" {
 			metadataViewData.Derived.Done = true
-			f := Finished{}
+			f := jobs.Finished{}
 			if err = json.Unmarshal(read, &f); err != nil {
 				logrus.WithError(err).Error("Error unmarshaling finished.json")
 			}
-			f.Timestamp = time.Unix(f.TimestampRaw, 0)
+			metadataViewData.Derived.FinishedTime = time.Unix(f.Timestamp, 0)
 			metadataViewData.Finished = f
 		}
 
@@ -105,10 +88,10 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 	if metadataViewData.Derived.Done {
 		metadataViewData.Derived.Status = metadataViewData.Finished.Result
 		metadataViewData.Derived.Elapsed =
-			metadataViewData.Finished.Timestamp.Sub(metadataViewData.Started.Timestamp)
+			metadataViewData.Derived.FinishedTime.Sub(metadataViewData.Derived.StartTime)
 	} else {
 		metadataViewData.Derived.Status = "In Progress"
-		metadataViewData.Derived.Elapsed = time.Now().Sub(metadataViewData.Started.Timestamp)
+		metadataViewData.Derived.Elapsed = time.Now().Sub(metadataViewData.Derived.StartTime)
 	}
 	if err := metadataTemplate.Execute(&buf, metadataViewData); err != nil {
 		logrus.WithError(err).Error("Error executing template.")
