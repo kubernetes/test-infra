@@ -2455,7 +2455,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-test
   num_columns_recent: 20
 - name: periodic-cluster-api-provider-aws-test-creds
-  gcs_prefix: kubernetes-jenkins/logs/directory/periodic-cluster-api-provider-aws-test-creds
+  gcs_prefix: kubernetes-jenkins/logs/periodic-cluster-api-provider-aws-test-creds
   num_columns_recent: 20
 - name: pull-cluster-api-provider-aws-bazel-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-build
