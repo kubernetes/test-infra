@@ -50,7 +50,7 @@ def recreate_plugins_config(wet, configmap_name, path):
     print('recreating plugins config:')
     cmd = (
         'kubectl create configmap %s'
-        ' --from-file=config.yaml=%s'
+        ' --from-file=plugins.yaml=%s'
         ' --dry-run -o yaml | kubectl replace configmap config -f -'
     ) % (configmap_name, path)
     real_cmd = ['/bin/sh', '-c', cmd]
