@@ -1,4 +1,8 @@
-# How to turn up a new cluster
+# Deploying Prow
+
+This document will walk you through deploying your own Prow instance to a new Kubernetes cluster. If you encounter difficulties, please open an issue so that we can make this process easier.
+
+## How to turn up a new cluster
 
 Prow should run anywhere that Kubernetes runs. Here are the steps required to
 set up a basic prow cluster on [GKE](https://cloud.google.com/container-engine/).
@@ -6,7 +10,7 @@ Prow will work on any Kubernetes cluster, so feel free to turn up a cluster
 some other way and skip the first step. You can set up a project on GCP using
 the [cloud console](https://console.cloud.google.com/).
 
-## Create the cluster
+#### Create the cluster
 
 I'm assuming that `PROJECT` and `ZONE` environment variables are set.
 
@@ -23,7 +27,7 @@ gcloud container --project "${PROJECT}" clusters create prow \
   --zone "${ZONE}" --machine-type n1-standard-4 --num-nodes 2
 ```
 
-## Create cluster role bindings
+#### Create cluster role bindings
 As of 1.8 Kubernetes uses [Role-Based Access Control (“RBAC”)](https://kubernetes.io/docs/admin/authorization/rbac/) to drive authorization decisions, allowing `cluster-admin` to dynamically configure policies.
 To create cluster resources you need to grant a user `cluster-admin` role in all namespaces for the cluster.
 
@@ -129,6 +133,9 @@ sent an event by putting a green checkmark under "Recent Deliveries."
 
 # Next steps
 
+You now have a working Prow cluster (Woohoo!), but it isn't doing anything interesting yet.
+This section will help you configure your first plugin and job, and complete any additional setup that your instance may need.
+
 ## Enable some plugins by modifying `plugins.yaml`
 
 Create a file called `plugins.yaml` and add the following to it:
@@ -187,8 +194,8 @@ Add the following to `config.yaml`:
 ```yaml
 periodics:
 - interval: 10m
-  agent: kubernetes
   name: echo-test
+  decorate: true
   spec:
     containers:
     - image: alpine
@@ -196,7 +203,7 @@ periodics:
 postsubmits:
   YOUR_ORG/YOUR_REPO:
   - name: test-postsubmit
-    agent: kubernetes
+    decorate: true
     spec:
       containers:
       - image: alpine
@@ -204,12 +211,9 @@ postsubmits:
 presubmits:
   YOUR_ORG/YOUR_REPO:
   - name: test-presubmit
-    trigger: "(?m)^/test this"
-    rerun_command: "/test this"
-    context: test-presubmit
+    decorate: true
     always_run: true
     skip_report: true
-    agent: kubernetes
     spec:
       containers:
       - image: alpine
@@ -246,9 +250,9 @@ PR. When you make a change to the config and push it with `make update-config`,
 you do not need to redeploy any of your cluster components. They will pick up
 the change within a few minutes.
 
-When you push a new change, the postsubmit job will run.
+When you push or merge a new change to the git repo, the postsubmit job will run.
 
-For more information on the job environment, see [How to add new jobs][2].
+For more information on the job environment, see [`jobs.md`](/prow/jobs.md)
 
 ## Run test pods in a different namespace
 
@@ -272,8 +276,8 @@ so that they pick up the change.
 
 ## Run test pods in different clusters
 
-You may choose to run test pods in a separate cluster entirely. Create a secret
-containing a `{"cluster-name": {cluster-details}}` map like this:
+You may choose to run test pods in a separate cluster entirely. This is a good practice to keep testing isolated from Prow's service components and secrets. It can also be used to furcate job execution to different clusters.
+Create a secret containing a `{"cluster-name": {cluster-details}}` map like this:
 
 ```yaml
 default:
@@ -325,7 +329,7 @@ periodics:
 - name: cluster-unspecified
   # cluster: 
   interval: 10m
-  agent: kubernetes
+  decorate: true
   spec:
     containers:
     - image: alpine
@@ -333,7 +337,7 @@ periodics:
 - name: cluster-default
   cluster: default
   interval: 10m
-  agent: kubernetes
+  decorate: true
   spec:
     containers:
     - image: alpine
@@ -341,7 +345,7 @@ periodics:
 - name: cluster-other
   cluster: other
   interval: 10m
-  agent: kubernetes
+  decorate: true
   spec:
     containers:
     - image: alpine
@@ -378,8 +382,13 @@ for naming is `prow.org.io`, but of course that's not a requirement.
 Then, install cert-manager as described in its readme. You don't need to run it in
 a separate namespace.
 
+# Further reading
+
+* [Developing for Prow](/prow/getting_started_develop.md)
+* [Getting more out of Prow](/prow/more_prow.md)
+
 [1]: https://github.com/settings/tokens
-[2]: ./README.md##how-to-add-new-jobs
+[2]: /prow/jobs.md#How-to-configure-new-jobs
 [3]: https://github.com/jetstack/cert-manager
 [4]: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
 [5]: /prow/cmd/mkbuild-cluster/
