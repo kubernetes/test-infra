@@ -83,7 +83,7 @@ func (f fpkc) GetLogTail(pod, container string, n int64) ([]byte, error) {
 func TestMain(m *testing.M) {
 	var longLog string
 	for i := 0; i < 300; i++ {
-		longLog += "here a log\nthere a log\neverywhere a log log\n"
+		longLog += "here a log\nthere a log\neverywhere a log\n"
 	}
 	fakeGCSServer = fakestorage.NewServer([]fakestorage.Object{
 		{
