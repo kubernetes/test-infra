@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: branchprotector
 spec:
-  schedule: "54 11 * * *"  # Run every day at 1154
+  schedule: "54 * * * *"  # Every hour at 54 minutes past the hour
   concurrencyPolicy: Forbid
   jobTemplate:
     metadata:
