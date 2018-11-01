@@ -46,7 +46,7 @@ var (
 	kubernetesAnywhereKubeletVersion = flag.String("kubernetes-anywhere-kubelet-version", "stable",
 		"(kubernetes-anywhere only) Version of Kubelet to use, if phase2-provider is kubeadm. May be \"stable\" or a gs:// link to a custom build.")
 	kubernetesAnywhereKubeletCIVersion = flag.String("kubernetes-anywhere-kubelet-ci-version", "",
-		"(kubernetes-anywhere only) If specified, the ci version for the kubelt to use. Overrides kubernetes-anywhere-kubelet-version.")
+		"(kubernetes-anywhere only) If specified, the ci version for the kubelet to use. Overrides kubernetes-anywhere-kubelet-version.")
 	kubernetesAnywhereCluster = flag.String("kubernetes-anywhere-cluster", "",
 		"(kubernetes-anywhere only) Cluster name. Must be set for kubernetes-anywhere.")
 	kubernetesAnywhereProxyMode = flag.String("kubernetes-anywhere-proxy-mode", "",
