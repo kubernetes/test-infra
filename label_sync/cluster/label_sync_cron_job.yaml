@@ -17,7 +17,7 @@ kind: CronJob
 metadata:
   name: label-sync
 spec:
-  schedule: "17 23 * * *"    # Every day 23:17 / 11:17PM
+  schedule: "17 * * * *"  # Every hour at 17 minutes past the hour
   concurrencyPolicy: Forbid
   jobTemplate:
     metadata:
