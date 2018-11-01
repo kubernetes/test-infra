@@ -339,7 +339,13 @@ func prodOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *htt
 }
 
 func initSpyglass(configAgent *config.Agent, o options, mux *http.ServeMux, ja *jobs.JobAgent) {
-	c, err := storage.NewClient(context.Background(), option.WithCredentialsFile(o.gcsCredentialsFile))
+	var c *storage.Client
+	var err error
+	if o.gcsCredentialsFile == "" {
+		c, err = storage.NewClient(context.Background(), option.WithoutAuthentication())
+	} else {
+		c, err = storage.NewClient(context.Background(), option.WithCredentialsFile(o.gcsCredentialsFile))
+	}
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GCS client")
 	}
