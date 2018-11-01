@@ -200,7 +200,7 @@ func TestLastNLines_GCS(t *testing.T) {
 	fakeGCSServerChunkSize := int64(3500)
 	var longLog string
 	for i := 0; i < 300; i++ {
-		longLog += "here a log\nthere a log\neverywhere a log log\n"
+		longLog += "here a log\nthere a log\neverywhere a log\n"
 	}
 	testCases := []struct {
 		name     string
@@ -231,7 +231,7 @@ func TestLastNLines_GCS(t *testing.T) {
 			contents: []byte(longLog),
 			expected: []string{
 				"there a log",
-				"everywhere a log log",
+				"everywhere a log",
 			},
 		},
 	}
