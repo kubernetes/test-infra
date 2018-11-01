@@ -1,5 +1,5 @@
 presets:
-- label:
+- labels:
     preset-minikube-e2e-creds: "true"
   env:
   - name: GCS_CREDS
@@ -8,9 +8,15 @@ presets:
   - name: k8s-minikube-build-gcs
     secret:
       secretName: k8s-minikube-build-gcs
+  - name: k8s-minikube-jumphost-ssh
+    secret:
+      secretName: k8s-minikube-jumphost-ssh
   volumeMounts:
   - name: k8s-minikube-build-gcs
     mountPath: /root/.config/gcloud
+    readOnly: true
+  - name: k8s-minikube-jumphost-ssh
+    mountPath: /root/.ssh
     readOnly: true
 
 presubmits:
