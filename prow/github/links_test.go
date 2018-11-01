@@ -44,7 +44,7 @@ func TestParseLinks(t *testing.T) {
 			map[string]string{"r": "u"},
 		},
 		{
-			`<u>; rel="r",,`,
+			`<u>; rel="r"`,
 			map[string]string{"r": "u"},
 		},
 	}
