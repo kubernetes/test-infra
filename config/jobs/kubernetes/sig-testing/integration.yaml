@@ -84,6 +84,30 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
       args:
+      - --repo=k8s.io/kubernetes=release-1.13
+      - --timeout=100
+      - --scenario=kubernetes_verify
+      - --
+      - --branch=release-1.13
+      - --force
+      - --prow
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4
+
+# manual-release-bump-required
+- interval: 2h
+  name: ci-kubernetes-integration-stable1
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
+      args:
       - --repo=k8s.io/kubernetes=release-1.12
       - --timeout=100
       - --scenario=kubernetes_verify
@@ -99,8 +123,8 @@ periodics:
           cpu: 4
 
 # manual-release-bump-required
-- interval: 2h
-  name: ci-kubernetes-integration-stable1
+- interval: 6h
+  name: ci-kubernetes-integration-stable2
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -123,8 +147,8 @@ periodics:
           cpu: 4
 
 # manual-release-bump-required
-- interval: 6h
-  name: ci-kubernetes-integration-stable2
+- interval: 24h
+  name: ci-kubernetes-integration-stable3
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -137,30 +161,6 @@ periodics:
       - --scenario=kubernetes_verify
       - --
       - --branch=release-1.10
-      - --force
-      - --prow
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          cpu: 4
-
-# manual-release-bump-required
-- interval: 24h
-  name: ci-kubernetes-integration-stable3
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
-      args:
-      - --repo=k8s.io/kubernetes=release-1.9
-      - --timeout=100
-      - --scenario=kubernetes_verify
-      - --
-      - --branch=release-1.9
       - --force
       - --prow
       # docker-in-docker needs privileged mode

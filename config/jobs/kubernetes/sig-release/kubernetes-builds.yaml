@@ -118,7 +118,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
       args:
-      - --repo=k8s.io/kubernetes=release-1.12
+      - --repo=k8s.io/kubernetes=release-1.13
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=180
@@ -146,7 +146,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
       args:
-      - --repo=k8s.io/kubernetes=release-1.11
+      - --repo=k8s.io/kubernetes=release-1.12
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=180
@@ -174,7 +174,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
       args:
-      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/kubernetes=release-1.11
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=180
@@ -202,7 +202,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
       args:
-      - --repo=k8s.io/kubernetes=release-1.9
+      - --repo=k8s.io/kubernetes=release-1.10
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=180
