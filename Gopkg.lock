@@ -173,8 +173,8 @@
     "internal/walk",
     "internal/wspace",
   ]
-  revision = "6a1b93cc9b1c7e55e7d05a6d324bcf9d87ea3ab1"
-  version = "0.14.0"
+  revision = "c728ce9f663e2bff26361ba5978ec5c9e6816a3c"
+  version = "0.15.0"
 
 [[projects]]
   name = "github.com/bazelbuild/buildtools"
@@ -716,6 +716,12 @@
   version = "v0.8.0"
 
 [[projects]]
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/prometheus/client_golang"
   packages = [
     "prometheus",
@@ -1255,6 +1261,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "06f148fdad51dba9da69d469cb24bfd002ae5c4273ab781431c4b1a8a6e66166"
+  inputs-digest = "0592c18e2d825dadfd52f944eb7c56003471ca8276602fcd51b5a059feb15892"
   solver-name = "gps-cdcl"
   solver-version = 1
