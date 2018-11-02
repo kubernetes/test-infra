@@ -382,6 +382,9 @@ plugins:
   kubernetes/perf-tests:
   - trigger
 
+  kubernetes/publishing-bot:
+  - trigger
+
   kubernetes/release:
   - trigger
 

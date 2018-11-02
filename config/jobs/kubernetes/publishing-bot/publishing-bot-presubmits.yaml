@@ -1,0 +1,11 @@
+presubmits:
+  kubernetes/publishing-bot:
+  - name: pull-publishing-bot-build
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/publishing-bot
+    spec:
+      containers:
+      - image: golang:1.11
+        command:
+        - make

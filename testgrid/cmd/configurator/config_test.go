@@ -342,6 +342,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubernetes/kops",
 		"kubernetes/kubernetes",
 		"kubernetes/org",
+		"kubernetes/publishing-bot",
 		"kubernetes/test-infra",
 		"kubernetes-sigs/aws-alb-ingress-controller",
 		"kubernetes-sigs/aws-ebs-csi-driver",
