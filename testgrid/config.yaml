@@ -3223,6 +3223,10 @@ test_groups:
 - name: ci-kubernetes-e2e-gce-kubedns-performance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-kubedns-performance
 
+# GCE windows test groups.
+- name: ci-kubernetes-e2e-windows-gce-poc
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-windows-gce-poc
+
 # bazelbuild/rules_k8s tests
 - name: pull-rules-k8s-e2e
   gcs_prefix: kubernetes-jenkins/logs/pull-rules-k8s-e2e
@@ -4514,6 +4518,11 @@ dashboards:
     test_group_name: ci-kubernetes-verify-stable1
   - name: verify-1.12
     test_group_name: ci-kubernetes-verify-beta
+
+- name: google-windows
+  dashboard_tab:
+  - name: windows-prototype
+    test_group_name: ci-kubernetes-e2e-windows-gce-poc
 
 - name: sig-release-master-kubectl-skew
   dashboard_tab:
@@ -7383,6 +7392,7 @@ dashboard_groups:
   - google-gke-stackdriver
   - google-rules_k8s
   - google-kops-gce
+  - google-windows
 
 - name: istio
   dashboard_names:

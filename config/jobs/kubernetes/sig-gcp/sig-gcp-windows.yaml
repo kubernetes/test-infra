@@ -1,0 +1,34 @@
+periodics:
+- name: ci-kubernetes-e2e-windows-gce-poc
+  decorate: true
+  extra_refs:
+  - org: pjh
+    repo: kubernetes
+    base_ref: windows-up
+    path_alias: k8s.io/kubernetes
+  interval: 6h
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --cluster=
+      - --build=bazel
+      - --extract=local
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel=25
+      - --provider=gce
+      - --test=false
+      - --test-cmd=/workspace/k8s.io/kubernetes/run-e2e.sh
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\] --minStartupPods=8
+      - --timeout=720m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
+      resources:
+        requests:
+          memory: "8Gi"
