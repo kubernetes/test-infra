@@ -280,3 +280,98 @@ func TestSplitSrc(t *testing.T) {
 		}
 	}
 }
+
+func TestJobPath(t *testing.T) {
+	kc := fkc{
+		kube.ProwJob{
+			Spec: kube.ProwJobSpec{
+				Type: kube.PeriodicJob,
+				Job:  "example-periodic-job",
+				DecorationConfig: &kube.DecorationConfig{
+					GCSConfiguration: &kube.GCSConfiguration{
+						Bucket: "chum-bucket",
+					},
+				},
+			},
+			Status: kube.ProwJobStatus{
+				PodName: "flying-whales",
+				BuildID: "1111",
+			},
+		},
+		kube.ProwJob{
+			Spec: kube.ProwJobSpec{
+				Type: kube.PresubmitJob,
+				Job:  "example-presubmit-job",
+				DecorationConfig: &kube.DecorationConfig{
+					GCSConfiguration: &kube.GCSConfiguration{
+						Bucket: "chum-bucket",
+					},
+				},
+			},
+			Status: kube.ProwJobStatus{
+				PodName: "flying-whales",
+				BuildID: "2222",
+			},
+		},
+	}
+	fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, &config.Agent{})
+	fakeJa.Start()
+	testCases := []struct {
+		src        string
+		expJobPath string
+		expError   bool
+	}{
+		{
+			src:        "gcs/kubernetes-jenkins/logs/example-job-name/123/",
+			expJobPath: "kubernetes-jenkins/logs/example-job-name",
+		},
+		{
+			src:        "gcs/kubernetes-jenkins/logs/example-job-name/123",
+			expJobPath: "kubernetes-jenkins/logs/example-job-name",
+		},
+		{
+			src:        "gcs/kubernetes-jenkins/pr-logs/pull/test-infra/0000/example-job-name/314159/",
+			expJobPath: "kubernetes-jenkins/pr-logs/directory/example-job-name",
+		},
+		{
+			src:        "gcs/kubernetes-jenkins/pr-logs/pull/test-infra/0000/example-job-name/314159",
+			expJobPath: "kubernetes-jenkins/pr-logs/directory/example-job-name",
+		},
+		{
+			src:        "prowjob/example-periodic-job/1111",
+			expJobPath: "chum-bucket/logs/example-periodic-job",
+		},
+		{
+			src:        "prowjob/example-presubmit-job/2222",
+			expJobPath: "chum-bucket/pr-logs/directory/example-presubmit-job",
+		},
+		{
+			src:      "prowjob/example-periodic-job/0000",
+			expError: true,
+		},
+		{
+			src:      "oh/my/glob/drama/bomb",
+			expError: true,
+		},
+		{
+			src:      "gcs/kubernetes-jenkins/bad-path",
+			expError: true,
+		},
+	}
+	for _, tc := range testCases {
+		fakeGCSClient := fakeGCSServer.Client()
+		sg := New(fakeJa, fakeGCSClient)
+		jobPath, err := sg.JobPath(tc.src)
+		if tc.expError && err == nil {
+			t.Errorf("JobPath(%q) expected error", tc.src)
+			continue
+		}
+		if !tc.expError && err != nil {
+			t.Errorf("JobPath(%q) returned unexpected error %v", tc.src, err)
+			continue
+		}
+		if jobPath != tc.expJobPath {
+			t.Errorf("JobPath(%q) expected %q, got %q", tc.src, tc.expJobPath, jobPath)
+		}
+	}
+}

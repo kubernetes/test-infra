@@ -27,8 +27,7 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/deck/jobs"
-	"k8s.io/test-infra/prow/pod-utils/downwardapi"
-	"k8s.io/test-infra/prow/pod-utils/gcs"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
@@ -181,6 +180,7 @@ func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
 
 // JobPath returns a link to the GCS directory for the job specified in src
 func (s *Spyglass) JobPath(src string) (string, error) {
+	src = strings.TrimSuffix(src, "/")
 	keyType, key := splitSrc(src)
 	split := strings.Split(key, "/")
 	switch keyType {
@@ -202,8 +202,11 @@ func (s *Spyglass) JobPath(src string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("failed to get prow job from src %q: %v", key, err)
 		}
-		spec := downwardapi.NewJobSpec(job.Spec, buildID, job.Status.PodName)
-		return gcs.AliasForSpec(&spec), nil
+		bktName := job.Spec.DecorationConfig.GCSConfiguration.Bucket
+		if job.Spec.Type == kube.PresubmitJob {
+			return path.Join(bktName, "pr-logs/directory", jobName), nil
+		}
+		return path.Join(bktName, "logs", jobName), nil
 	default:
 		return "", fmt.Errorf("unrecognized key type for src: %v", src)
 	}
