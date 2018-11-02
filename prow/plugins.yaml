@@ -534,6 +534,9 @@ plugins:
   kubernetes-sigs/structured-merge-diff:
   - trigger
 
+  kubernetes-sigs/aws-alb-ingress-controller:
+  - trigger
+
   kubernetes-sigs/aws-ebs-csi-driver:
   - trigger
 

@@ -1,0 +1,36 @@
+presubmits:
+  kubernetes-sigs/aws-alb-ingress-controller:
+  - name: pull-aws-alb-ingress-controller-lint
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - lint
+  - name: pull-aws-alb-ingress-controller-test
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test
+        volumeMounts:
+        - name: coveralls
+          mountPath: /etc/coveralls-token
+          readOnly: true
+      volumes:
+      - name: coveralls
+        secret:
+          secretName: k8s-aws-alb-ingress-coveralls-token
