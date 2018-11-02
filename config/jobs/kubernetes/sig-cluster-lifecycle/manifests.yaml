@@ -1,0 +1,17 @@
+# manifest list tests
+periodics:
+- name: periodic-kubernetes-e2e-manifest-lists
+  interval: 24h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=60
+      - --repo=k8s.io/kubeadm=master
+      - --scenario=execute
+      - --
+      - ./tests/e2e/manifests/verify_manifest_lists.sh
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
