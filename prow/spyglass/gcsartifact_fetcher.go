@@ -110,7 +110,6 @@ func (af *GCSArtifactFetcher) artifacts(key string) ([]string, error) {
 		return nil, fmt.Errorf("Failed to get GCS job source from %s: %v", key, err)
 	}
 
-	listStart := time.Now()
 	bucketName, prefix := extractBucketPrefixPair(src.jobPath())
 	artifacts := []string{}
 	bkt := af.client.Bucket(bucketName)
@@ -137,8 +136,6 @@ func (af *GCSArtifactFetcher) artifacts(key string) ([]string, error) {
 		artifacts = append(artifacts, strings.TrimPrefix(oAttrs.Name, prefix))
 		i = 0
 	}
-	listElapsed := time.Since(listStart)
-	logrus.WithField("duration", listElapsed).Infof("Listed %d artifacts.", len(artifacts))
 	return artifacts, nil
 }
 

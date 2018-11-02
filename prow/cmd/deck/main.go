@@ -490,7 +490,6 @@ func handleJobHistory(templateRoot string, ca *config.Agent, gcsClient *storage.
 // - /view/prowjob/echo-test/1046875594609922048
 func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
 		setHeadersNoCaching(w)
 		src := strings.TrimPrefix(r.URL.Path, "/view/")
 
@@ -502,18 +501,11 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot
 		}
 
 		fmt.Fprint(w, page)
-		elapsed := time.Since(start)
-		logrus.WithFields(logrus.Fields{
-			"duration": elapsed.String(),
-			"endpoint": r.URL.Path,
-			"source":   src,
-		}).Info("Loading view completed.")
 	}
 }
 
 // renderSpyglass returns a pre-rendered Spyglass page from the given source string
 func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, templateRoot string) (string, error) {
-	renderStart := time.Now()
 	artifactNames, err := sg.ListArtifacts(src)
 	if err != nil {
 		return "", fmt.Errorf("error listing artifacts: %v", err)
@@ -544,7 +536,6 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, templat
 	if err == nil {
 		jobHistLink = path.Join("/job-history", jobPath)
 	}
-	logrus.Infof("job history link: %s", jobHistLink)
 
 	var viewBuf bytes.Buffer
 	type ViewsTemplate struct {
@@ -571,11 +562,6 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, templat
 	if err = t.Execute(&viewBuf, vTmpl); err != nil {
 		return "", fmt.Errorf("error rendering template: %v", err)
 	}
-	renderElapsed := time.Since(renderStart)
-	logrus.WithFields(logrus.Fields{
-		"duration": renderElapsed.String(),
-		"source":   src,
-	}).Info("Rendered spyglass views.")
 	return viewBuf.String(), nil
 }
 
@@ -586,7 +572,6 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, templat
 // - src: required, specifies the job source from which to fetch artifacts
 func handleArtifactView(sg *spyglass.Spyglass, ca *config.Agent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
 		setHeadersNoCaching(w)
 		w.Header().Set("Content-Type", "application/json")
 		name := r.URL.Query().Get("name")
@@ -628,11 +613,6 @@ func handleArtifactView(sg *spyglass.Spyglass, ca *config.Agent) http.HandlerFun
 		}
 
 		fmt.Fprint(w, string(pd))
-		elapsed := time.Since(start)
-		logrus.WithFields(logrus.Fields{
-			"duration": elapsed,
-			"viewer":   name,
-		}).Infof("Refreshed view.") //TODO (paulangton): move these load times next to the title of the viewer expose in Prometheus metrics
 	}
 }
 

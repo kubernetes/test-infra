@@ -85,7 +85,7 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 						Link:  a.CanonicalLink(),
 					})
 				} else {
-					logrus.Error("Invalid test status string: ", test.Status)
+					logrus.Warning("Invalid test status string: ", test.Status)
 				}
 			}
 		}

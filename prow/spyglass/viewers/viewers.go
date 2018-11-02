@@ -146,7 +146,6 @@ func RegisterViewer(viewerName string, metadata ViewMetadata, handler ViewHandle
 	}
 	viewHandlerReg.reg[viewerName] = handler
 	viewMetadataReg.reg[viewerName] = metadata
-	logrus.Infof("Spyglass registered viewer %s with title %s.", viewerName, metadata.Title)
 	return nil
 }
 

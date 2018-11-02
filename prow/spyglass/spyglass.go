@@ -22,7 +22,6 @@ import (
 	"path"
 	"sort"
 	"strings"
-	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
@@ -234,7 +233,6 @@ func (s *Spyglass) prowToGCS(prowKey string) (string, error) {
 // FetchArtifacts constructs and returns Artifact objects for each artifact name in the list.
 // This includes getting any handles needed for read write operations, direct artifact links, etc.
 func (s *Spyglass) FetchArtifacts(src string, podName string, sizeLimit int64, artifactNames []string) ([]viewers.Artifact, error) {
-	artStart := time.Now()
 	arts := []viewers.Artifact{}
 	switch keyType, key := splitSrc(src); keyType {
 	case gcsKeyType:
@@ -275,6 +273,5 @@ func (s *Spyglass) FetchArtifacts(src string, podName string, sizeLimit int64, a
 		return nil, fmt.Errorf("Invalid src: %v", src)
 	}
 
-	logrus.WithField("duration", time.Since(artStart)).Infof("Retrieved artifacts for %v", src)
 	return arts, nil
 }
