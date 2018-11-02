@@ -367,6 +367,7 @@ tide:
     - kubernetes/ingress-nginx
     - kubernetes/k8s.io
     - kubernetes/komposer
+    - kubernetes/klog
     - kubernetes/kops
     - kubernetes/kube-deploy
     - kubernetes/kube-openapi

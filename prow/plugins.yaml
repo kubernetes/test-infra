@@ -50,6 +50,7 @@ approve:
   - kubernetes/heapster
   - kubernetes/ingress-gce
   - kubernetes/ingress-nginx
+  - kubernetes/klog
   - kubernetes/kops
   - kubernetes/kube-deploy
   - kubernetes/kubeadm
@@ -67,6 +68,7 @@ approve:
   - kubernetes/test-infra
   - kubernetes/utils
   - kubernetes-incubator/ip-masq-agent
+  - kubernetes-sigs/yaml
   implicit_self_approve: true
   lgtm_acts_as_approve: true
 - repos:
