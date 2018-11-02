@@ -1,6 +1,6 @@
 periodics:
-- name: ci-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
-  interval: 24h
+- name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable
+  interval: 4h
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -8,7 +8,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
       args:
-      - "--repo=sigs.k8s.io/$(REPO_NAME)"
+      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--clean"
@@ -16,6 +16,11 @@ periodics:
       - "--scenario=execute"
       - "--" # end bootstrap args, scenario args below
       - "test/run-k8s-integration.sh"
+      env:
+      - name: GCE_PD_OVERLAY_NAME
+        value: "stable"
+      - name: GCE_PD_DO_DRIVER_BUILD
+        value: "false"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
