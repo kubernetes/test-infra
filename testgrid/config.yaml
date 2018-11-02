@@ -3299,51 +3299,27 @@ dashboards:
   - name: GCE, v1.12 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.12 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-12
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.12 (dev)
     description: Runs conformance tests using kubetest against kubernetes release 1.12 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-12
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.11 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.11 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-11
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.11 (dev)
     description: Runs conformance tests using kubetest against kubernetes release 1.11 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-11
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.10 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.10 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-10
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.10 (dev)
     description: Runs conformance tests using kubetest against kubernetes release 1.10 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-10
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.9 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.9 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-9
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.9 (dev)
     description: Runs conformance tests using kubetest against kubernetes release 1.9 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-9
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: kind, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance
@@ -3492,15 +3468,21 @@ dashboards:
   - name: kind, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance
+    alert_options:
+      alert_mail_to_addresses: bentheelder@google.com
   - name: kind, master (dev) [non-serial]
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
     test_group_name: ci-kubernetes-kind-conformance-parallel
   - name: kind, v1.12 (dev)
     description: Runs conformance tests using kubetest against latest kubernetes relase-1.12 with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance-latest-1-12
+    alert_options:
+      alert_mail_to_addresses: bentheelder@google.com
   - name: kind, v1.11 (dev)
     description: Runs conformance tests using kubetest against latest kubernetes relase-1.12 with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance-latest-1-11
+    alert_options:
+      alert_mail_to_addresses: bentheelder@google.com
 
 - name: conformance-hack-local-up-cluster
   dashboard_tab:
@@ -6710,6 +6692,8 @@ dashboards:
   - name: ci build
     description: kind CI build
     test_group_name: ci-kind-build
+    alert_options:
+      alert_mail_to_addresses: bentheelder@google.com
   - name: conformance, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance
