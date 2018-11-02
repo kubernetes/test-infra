@@ -124,48 +124,35 @@ func (c *controller) clean() {
 		return
 	}
 
-	// Only delete pod if its prowjob is marked as finished
-	isFinished := make(map[string]bool)
-
-	maxProwJobAge := c.configAgent.Config().Sinker.MaxProwJobAge
-	for _, prowJob := range prowJobs {
-		// Handle periodics separately.
-		if prowJob.Spec.Type == kube.PeriodicJob {
-			continue
-		}
-		if !prowJob.Complete() {
-			continue
-		}
-		isFinished[prowJob.ObjectMeta.Name] = true
-		if time.Since(prowJob.Status.StartTime.Time) <= maxProwJobAge {
-			continue
-		}
-		if err := c.kc.DeleteProwJob(prowJob.ObjectMeta.Name); err == nil {
-			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
-		} else {
-			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
-		}
-	}
-
 	// Keep track of what periodic jobs are in the config so we will
 	// not clean up their last prowjob.
+	// This allows horologium to determine time since the last run for periodics.
 	isActivePeriodic := make(map[string]bool)
 	for _, p := range c.configAgent.Config().Periodics {
 		isActivePeriodic[p.Name] = true
 	}
-
-	// Get the jobs that we need to retain so horologium can continue working
-	// as intended.
 	latestPeriodics := pjutil.GetLatestProwJobs(prowJobs, kube.PeriodicJob)
-	for _, prowJob := range prowJobs {
-		if prowJob.Spec.Type != kube.PeriodicJob {
-			continue
-		}
 
-		latestPJ := latestPeriodics[prowJob.Spec.Job]
-		if isActivePeriodic[prowJob.Spec.Job] && prowJob.ObjectMeta.Name == latestPJ.ObjectMeta.Name {
-			// Ignore deleting this one.
-			continue
+	// Only delete pod if either
+	// - The prowjob is missing
+	// - The prowjob is marked as finished AND either
+	//   - The pod is completed.
+	//   - The pod reaches the max age.
+	// Note that this intentionally allows pods to continue running if the PJ is
+	// aborted, but the pod is not explicitly deleted.
+	isFinished := make(map[string]bool)
+	existing := make(map[string]bool)
+
+	maxProwJobAge := c.configAgent.Config().Sinker.MaxProwJobAge
+	for _, prowJob := range prowJobs {
+		existing[prowJob.ObjectMeta.Name] = true
+		if prowJob.Spec.Type == kube.PeriodicJob {
+			// Additional check for periodics to keep the latest run.
+			latestPJ := latestPeriodics[prowJob.Spec.Job]
+			if isActivePeriodic[prowJob.Spec.Job] && prowJob.ObjectMeta.Name == latestPJ.ObjectMeta.Name {
+				// Ignore deleting this one.
+				continue
+			}
 		}
 		if !prowJob.Complete() {
 			continue
@@ -191,19 +178,32 @@ func (c *controller) clean() {
 		}
 		maxPodAge := c.configAgent.Config().Sinker.MaxPodAge
 		for _, pod := range pods {
-			if _, ok := isFinished[pod.ObjectMeta.Name]; !ok {
-				// prowjob is not marked as completed yet
-				// deleting the pod now will result in plank creating a brand new pod
-				continue
-			}
-			if !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge {
-				// Delete old completed pods. Don't quit if we fail to delete one.
-				if err := client.DeletePod(pod.ObjectMeta.Name); err == nil {
-					c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
-				} else {
-					c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
+			if _, ok := existing[pod.ObjectMeta.Name]; ok {
+				// ProwJob exists for the pod. Delete pod iff PJ and is finished AND
+				// either the pod is finished OR the pod has expired.
+				if _, ok := isFinished[pod.ObjectMeta.Name]; !ok {
+					// prowjob is not marked as completed yet
+					// deleting the pod now will result in plank creating a brand new pod
+					continue
 				}
+				if !podComplete(pod) && !podExpired(pod, maxPodAge) {
+					continue
+				}
+			}
+			// Delete pod. Don't quit if we fail to delete one.
+			if err := client.DeletePod(pod.ObjectMeta.Name); err == nil {
+				c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
+			} else {
+				c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
 			}
 		}
 	}
+}
+
+func podComplete(pod kube.Pod) bool {
+	return pod.Status.Phase == kube.PodFailed || pod.Status.Phase == kube.PodSucceeded
+}
+
+func podExpired(pod kube.Pod, maxPodAge time.Duration) bool {
+	return !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
 }

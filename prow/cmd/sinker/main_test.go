@@ -202,6 +202,39 @@ func TestClean(t *testing.T) {
 		},
 		{
 			ObjectMeta: metav1.ObjectMeta{
+				Name: "new-pending",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: kube.PodStatus{
+				StartTime: startTime(time.Now().Add(-10 * time.Second)),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "aborted-with-running-pod",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: kube.PodStatus{
+				StartTime: startTime(time.Now().Add(-10 * time.Second)),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "orphaned-running-pod",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: kube.PodStatus{
+				StartTime: startTime(time.Now().Add(-10 * time.Second)),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: "old-running",
 				Labels: map[string]string{
 					kube.CreatedByProw: "true",
@@ -238,6 +271,8 @@ func TestClean(t *testing.T) {
 		"old-failed",
 		"old-succeeded",
 		"old-pending-abort",
+		"new-failed",
+		"orphaned-running-pod",
 	}
 	setComplete := func(d time.Duration) *metav1.Time {
 		completed := metav1.NewTime(time.Now().Add(d))
@@ -293,6 +328,40 @@ func TestClean(t *testing.T) {
 			},
 			Status: kube.ProwJobStatus{
 				StartTime: metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "old-running",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime: metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "new-failed",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime:      metav1.NewTime(time.Now().Add(-time.Minute)),
+				CompletionTime: setComplete(-time.Second),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "new-pending",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime: metav1.NewTime(time.Now().Add(-time.Minute)),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "aborted-with-running-pod",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime:      metav1.NewTime(time.Now().Add(-time.Minute)),
+				CompletionTime: setComplete(-time.Second),
 			},
 		},
 		{
