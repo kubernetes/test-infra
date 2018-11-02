@@ -1,0 +1,31 @@
+presets:
+- labels:
+    preset-minikube-e2e-creds: "true"
+  env:
+  - name: GCS_CREDS
+    value: /root/.config/gcloud/k8s-minikube-build-gcs.json
+  volumes:
+  - name: k8s-minikube-build-gcs
+    secret:
+      secretName: k8s-minikube-build-gcs
+  volumeMounts:
+  - name: k8s-minikube-build-gcs
+    mountPath: /root/.config/gcloud
+    readOnly: true
+
+presubmits:
+  kubernetes/minikube:
+  - name: pull-minikube-linux-kvm
+    labels:
+        preset-minikube-e2e-creds: "true"
+        preset-k8s-ssh: "true"
+    always_run: false
+    optional: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-minikube/minikube-e2e:v20181022-a850455f-experimental
+        command:
+        - make
+        args:
+        - "test-linux-kvm"
