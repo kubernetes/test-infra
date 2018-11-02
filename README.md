@@ -53,7 +53,7 @@ you'll need to do the following:
     - Presubmit jobs run on unmerged code in PRs
     - Postsubmit jobs run after merging code
     - Periodic job run on a timed basis
-    - You can find more prowjob definitions at [how-to-add-new-jobs](prow#how-to-add-new-jobs)
+    - You can find more prowjob definitions at [how-to-add-new-jobs](prow/jobs.md#how-to-configure-new-jobs)
   - A simple sample job uses podutil looks like:
     ```yaml
     - name: foo-repo-presubmit-test
