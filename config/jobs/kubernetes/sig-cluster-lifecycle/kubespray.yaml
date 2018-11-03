@@ -1,28 +1,15 @@
 # kubeadm release and master tests
 periodics:
-  kubernetes-incubator/kubespray:
-  - name: ci-kubernetes-e2e-kubeadm-gce-master
-    interval: 2h
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    spec:
-      containers:
-      - image: quay.io/kubespray/kubespray:v2.7
-        args:
-        - --repo=k8s.io/kubernetes=master
-        - --repo=github.com/kubernetes-incubator/kubespray=master
-        - --timeout=320
-        - --upload=gs://kubernetes-jenkins/logs
-        - --scenario=kubernetes_e2e
-        - --
-        - --cluster=
-        - --deployment=kubespray
-        - --kubeadm=ci
-        - --provider=kubespray
-        - --
-        - "/usr/bin/python -m pip install -r requirements.txt"
-        - "make" #create gce Instance
-        - "ansible-playbook -i ${ANSIBLE_INVENTORY} -b --become-user=root --private-key=${HOME}/.ssh/id_rsa -u $SSH_USER ${SSH_ARGS} ${LOG_LEVEL} -e @${CI_TEST_VARS} -e ansible_ssh_user=${SSH_USER} -e local_release_dir=${PWD}/downloads cluster.yml"
-        - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
-        - --timeout=300m
+- name: ci-kubernetes-e2e-kubeadm-kubespray-gce-master
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20181024-9b3b78abc
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=github.com/kubernetes-incubator/kubespray=master
+      - --timeout=320
+      - --upload=gs://kubernetes-jenkins/logs
