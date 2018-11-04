@@ -210,7 +210,7 @@ func (c *fakeClient) ListOrgMembers(org, role string) ([]github.TeamMember, erro
 	case github.RoleAdmin:
 		return c.makeMembers(c.admins), nil
 	default:
-		// RoleAll: implmenent when/if necessary
+		// RoleAll: implement when/if necessary
 		return nil, fmt.Errorf("bad role: %s", role)
 	}
 }
