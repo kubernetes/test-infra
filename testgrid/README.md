@@ -272,7 +272,7 @@ TestGrid assigns dashboard tabs a status based on recent test runs.
 You can get a small widget showing the status of your dashboard tab, based on
 the tab statuses above! For example:
 
-`sig-testing-misc#bazel`: [![sig-testing-misc/bazel](https://testgrid.k8s.io/q/summary/sig-testing-misc/bazel/tests_status?style=svg)](https://testgrid.k8s.io/sig-testing-misc/bazel)
+`sig-testing-misc#bazel`: [![sig-testing-misc/bazel](https://testgrid.k8s.io/q/summary/sig-testing-misc/bazel/tests_status?style=svg)](https://testgrid.k8s.io/sig-testing-misc#bazel)
 
 Inline it with:
 
