@@ -318,7 +318,6 @@ tide:
     - do-not-merge/hold
     - do-not-merge/invalid-owners-file
     - do-not-merge/work-in-progress
-    - needs-ok-to-test
     - needs-rebase
   - repos:
     - helm/charts
@@ -334,7 +333,6 @@ tide:
     - do-not-merge/invalid-owners-file
     - do-not-merge/release-note-label-needed
     - do-not-merge/work-in-progress
-    - needs-ok-to-test
     - needs-rebase
   - orgs:
     - kubernetes-client
@@ -399,7 +397,6 @@ tide:
     - do-not-merge/invalid-owners-file
     - do-not-merge/release-note-label-needed
     - do-not-merge/work-in-progress
-    - needs-ok-to-test
     - needs-rebase
   - repos:
     - kubernetes/kubernetes
