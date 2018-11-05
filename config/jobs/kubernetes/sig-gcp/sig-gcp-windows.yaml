@@ -8,6 +8,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   interval: 6h
   labels:
+    preset-k8s-ssh: "true"
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
     preset-bazel-remote-cache-enabled: "true"
