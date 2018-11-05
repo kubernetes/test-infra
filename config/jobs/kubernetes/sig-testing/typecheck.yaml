@@ -12,7 +12,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -35,7 +35,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-1.12
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -58,7 +58,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.11
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-1.11
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -81,7 +81,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-1.10
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
