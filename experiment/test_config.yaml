@@ -1216,12 +1216,12 @@ images:
     - --gcp-node-image=custom
   ubuntu1:
     args:
-    - --image-family=ubuntu-gke-1804-lts-1
+    - --image-family=pipeline-1
     - --image-project=ubuntu-os-gke-cloud-devel
     - --gcp-node-image=custom
   ubuntu2:
     args:
-    - --image-family=ubuntu-gke-1604-lts-2
+    - --image-family=pipeline-2
     - --image-project=ubuntu-os-gke-cloud-devel
     - --gcp-node-image=custom
   cos:
@@ -1334,11 +1334,11 @@ nodeImages:
     - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
   ubuntu1:
     args:
-    - --image-family=ubuntu-gke-1804-lts-1
+    - --image-family=pipeline-1
     - --image-project=ubuntu-os-gke-cloud-devel
   ubuntu2:
     args:
-    - --image-family=ubuntu-gke-1604-lts-2
+    - --image-family=pipeline-2
     - --image-project=ubuntu-os-gke-cloud-devel
 
 nodeK8sVersions:
