@@ -257,26 +257,46 @@ func TestViews(t *testing.T) {
 
 func TestSplitSrc(t *testing.T) {
 	testCases := []struct {
+		name       string
 		src        string
 		expKeyType string
 		expKey     string
+		expError   bool
 	}{
 		{
+			name:     "empty string",
+			src:      "",
+			expError: true,
+		},
+		{
+			name:     "missing key",
+			src:      "gcs",
+			expError: true,
+		},
+		{
+			name:       "prow key",
 			src:        "prowjob/example-job-name/123456",
 			expKeyType: "prowjob",
 			expKey:     "example-job-name/123456",
 		},
 		{
+			name:       "gcs key",
 			src:        "gcs/kubernetes-jenkins/pr-logs/pull/test-infra/0000/example-job-name/314159/",
 			expKeyType: "gcs",
 			expKey:     "kubernetes-jenkins/pr-logs/pull/test-infra/0000/example-job-name/314159/",
 		},
 	}
 	for _, tc := range testCases {
-		keyType, key := splitSrc(tc.src)
+		keyType, key, err := splitSrc(tc.src)
+		if tc.expError && err == nil {
+			t.Errorf("test %q expected error", tc.name)
+		}
+		if !tc.expError && err != nil {
+			t.Errorf("test %q encountered unexpected error: %v", tc.name, err)
+		}
 		if keyType != tc.expKeyType || key != tc.expKey {
-			t.Errorf("Splitting src %q: Expected <%q, %q>, got <%q, %q>",
-				tc.src, tc.expKeyType, tc.expKey, keyType, key)
+			t.Errorf("test %q: splitting src %q: Expected <%q, %q>, got <%q, %q>",
+				tc.name, tc.src, tc.expKeyType, tc.expKey, keyType, key)
 		}
 	}
 }
