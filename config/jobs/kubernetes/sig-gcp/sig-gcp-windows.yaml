@@ -21,6 +21,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --build=bazel
+      - --stage=gs://kubernetes-release-dev/ci/ci-kubernetes-e2e-windows-gce-poc
       - --extract=local
       - --gcp-zone=us-central1-f
       - --ginkgo-parallel=25
