@@ -6,7 +6,7 @@ periodics:
     repo: kubernetes
     base_ref: windows-up
     path_alias: k8s.io/kubernetes
-  interval: 6h
+  interval: 1h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
