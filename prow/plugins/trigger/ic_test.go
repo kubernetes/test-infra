@@ -521,13 +521,23 @@ func TestHandleIssueComment(t *testing.T) {
 			ShouldReport: true,
 		},
 		{
-			name:        "accept /test all from submit-queue",
+			name:        "accept /test all from trusted user",
 			Author:      "t",
 			PRAuthor:    "t",
-			Body:        "/test all [submit-queue is verifying that this PR is safe to merge]",
+			Body:        "/test all",
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: true,
+		},
+		{
+			name:        `Non-trusted member after "/lgtm" and "/approve"`,
+			Author:      "u",
+			PRAuthor:    "u",
+			Body:        "/retest",
+			State:       "open",
+			IsPR:        true,
+			ShouldBuild: false,
+			IssueLabels: []github.Label{{Name: labels.LGTM}, {Name: labels.Approved}},
 		},
 	}
 	for _, tc := range testcases {
