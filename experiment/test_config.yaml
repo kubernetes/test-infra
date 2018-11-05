@@ -1341,6 +1341,7 @@ nodeImages:
     - --image-family=pipeline-2
     - --image-project=ubuntu-os-gke-cloud-devel
 
+#manual-release-bump-required
 nodeK8sVersions:
   dev:
     args:
@@ -1348,20 +1349,20 @@ nodeK8sVersions:
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
   beta:
     args:
+    - --repo=k8s.io/kubernetes=release-1.13
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.13
+  stable1:
+    args:
+    - --repo=k8s.io/kubernetes=release-1.12
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.12
+  stable2:
+    args:
     - --repo=k8s.io/kubernetes=release-1.11
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.11
-  stable1:
+  stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.10
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.10
-  stable2:
-    args:
-    - --repo=k8s.io/kubernetes=release-1.9
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.9
-  stable3:
-    args:
-    - --repo=k8s.io/kubernetes=release-1.8
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.8
 
 nodeTestSuites:
   default:
