@@ -1,5 +1,23 @@
 package(default_visibility = ["//visibility:public"])
 
+sh_binary(
+    name = "mkpj",
+    srcs = ["mkpj_binary"],
+    args = [
+        "--config-path=$(location //prow:config.yaml)",
+        "--job-config-path=config/jobs",
+    ],
+    data = [
+        ":prowjobs",
+        "//prow:config.yaml",
+    ],
+)
+
+alias(
+    name = "mkpj_binary",
+    actual = "//prow/cmd/mkpj:mkpj",
+)
+
 filegroup(
     name = "prowjobs",
     srcs = glob([

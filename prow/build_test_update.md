@@ -44,8 +44,15 @@ merges, cron schedule) are not sufficient for your testing you can use `mkpj` to
 manually trigger new ProwJob runs.
 To manually trigger any ProwJob, run the following, specifying `JOB_NAME`:
 
+For K8S Prow, you can trigger a job by running
 ```shell
-bazel run //prow/cmd/mkpj -- --job=JOB_NAME
+bazel run //config:mkpj -- --job=JOB_NAME
+```
+
+For your own prow instance, you can either define your own bazel rule, or
+just go run mkpj like:
+```shell
+go run k8s.io/test-infra/prow/cmd/mkpj --job=JOB_NAME --config-path=path/to/config.yaml
 ```
 
 This will print the ProwJob YAML to stdout. You may pipe it into `kubectl`.
