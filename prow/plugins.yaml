@@ -132,7 +132,9 @@ blockades:
   - kubernetes/community
   blockregexps:
   - ^events/2016
+  - ^events/2017
   - ^events/elections/2017
+  - ^events/elections/2018
   explanation: "These files are historical, and from events that have already occurred."
 
 blunderbuss:
