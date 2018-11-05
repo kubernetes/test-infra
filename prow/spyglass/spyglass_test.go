@@ -317,43 +317,53 @@ func TestJobPath(t *testing.T) {
 	fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, &config.Agent{})
 	fakeJa.Start()
 	testCases := []struct {
+		name       string
 		src        string
 		expJobPath string
 		expError   bool
 	}{
 		{
+			name:       "non-presubmit job in GCS with trailing /",
 			src:        "gcs/kubernetes-jenkins/logs/example-job-name/123/",
 			expJobPath: "kubernetes-jenkins/logs/example-job-name",
 		},
 		{
+			name:       "non-presubmit job in GCS without trailing /",
 			src:        "gcs/kubernetes-jenkins/logs/example-job-name/123",
 			expJobPath: "kubernetes-jenkins/logs/example-job-name",
 		},
 		{
+			name:       "presubmit job in GCS with trailing /",
 			src:        "gcs/kubernetes-jenkins/pr-logs/pull/test-infra/0000/example-job-name/314159/",
 			expJobPath: "kubernetes-jenkins/pr-logs/directory/example-job-name",
 		},
 		{
+			name:       "presubmit job in GCS without trailing /",
 			src:        "gcs/kubernetes-jenkins/pr-logs/pull/test-infra/0000/example-job-name/314159",
 			expJobPath: "kubernetes-jenkins/pr-logs/directory/example-job-name",
 		},
 		{
+			name:       "non-presubmit Prow job",
 			src:        "prowjob/example-periodic-job/1111",
 			expJobPath: "chum-bucket/logs/example-periodic-job",
 		},
 		{
+			name:       "Prow presubmit job",
 			src:        "prowjob/example-presubmit-job/2222",
 			expJobPath: "chum-bucket/pr-logs/directory/example-presubmit-job",
 		},
 		{
+			name:     "nonexistent job",
 			src:      "prowjob/example-periodic-job/0000",
 			expError: true,
 		},
 		{
+			name:     "invalid key type",
 			src:      "oh/my/glob/drama/bomb",
 			expError: true,
 		},
 		{
+			name:     "invalid GCS path",
 			src:      "gcs/kubernetes-jenkins/bad-path",
 			expError: true,
 		},
@@ -363,15 +373,15 @@ func TestJobPath(t *testing.T) {
 		sg := New(fakeJa, fakeGCSClient)
 		jobPath, err := sg.JobPath(tc.src)
 		if tc.expError && err == nil {
-			t.Errorf("JobPath(%q) expected error", tc.src)
+			t.Errorf("test %q: JobPath(%q) expected error", tc.name, tc.src)
 			continue
 		}
 		if !tc.expError && err != nil {
-			t.Errorf("JobPath(%q) returned unexpected error %v", tc.src, err)
+			t.Errorf("test %q: JobPath(%q) returned unexpected error %v", tc.name, tc.src, err)
 			continue
 		}
 		if jobPath != tc.expJobPath {
-			t.Errorf("JobPath(%q) expected %q, got %q", tc.src, tc.expJobPath, jobPath)
+			t.Errorf("test %q: JobPath(%q) expected %q, got %q", tc.name, tc.src, tc.expJobPath, jobPath)
 		}
 	}
 }
