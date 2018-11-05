@@ -6,6 +6,10 @@ periodics:
     repo: kubernetes
     base_ref: windows-up
     path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
   interval: 1h
   labels:
     preset-k8s-ssh: "true"
