@@ -105,7 +105,7 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 		return fmt.Errorf("--confirm cannot be used with --dump=%s", o.dump)
 	}
 	if o.config == "" && o.dump == "" {
-		return errors.New("--config or --dump required")
+		return errors.New("--config-path or --dump required")
 	}
 	if o.config != "" && o.dump != "" {
 		return fmt.Errorf("--config-path=%s and --dump=%s cannot both be set", o.config, o.dump)
@@ -123,8 +123,6 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "peribolos"}),
 	)
 	o := parseOptions()
-
-	var c *github.Client
 
 	secretAgent := &config.SecretAgent{}
 	if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
@@ -159,7 +157,7 @@ func main() {
 	}
 
 	for name, orgcfg := range cfg.Orgs {
-		if err := configureOrg(o, c, name, orgcfg); err != nil {
+		if err := configureOrg(o, githubClient, name, orgcfg); err != nil {
 			logrus.Fatalf("Configuration failed: %v", err)
 		}
 	}
@@ -173,10 +171,7 @@ type dumpClient interface {
 }
 
 func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
-	out := org.Config{
-		Members: []string{},
-		Admins:  []string{},
-	}
+	out := org.Config{}
 	meta, err := client.GetOrg(orgName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get org: %v", err)
@@ -581,7 +576,7 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 	if reused := unused.Intersection(used); len(reused) > 0 {
 		// Logically possible for:
 		// * another actor to delete team N after the ListTeams() call
-		// * github to reuse team N after someone deted it
+		// * github to reuse team N after someone deleted it
 		// Therefore used may now include IDs in unused, handle this situation.
 		logrus.Warnf("Will not delete %d team IDs reused by github: %v", len(reused), reused.List())
 		unused = unused.Difference(reused)
