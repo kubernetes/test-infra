@@ -418,12 +418,6 @@ test_groups:
 - name: ci-kubernetes-e2e-containerd-gce-calico
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-containerd-gce-calico
   alert_stale_results_hours: 24
-- name: ci-kubernetes-e2e-containerd-gce-calico-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-containerd-gce-calico-serial
-  alert_stale_results_hours: 24
-- name: ci-kubernetes-e2e-containerd-gce-netd-calico-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-containerd-gce-netd-calico-serial
-  alert_stale_results_hours: 24
 - name: ci-kubemci-ingress-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubemci-ingress-conformance
 - name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
@@ -6156,14 +6150,6 @@ dashboards:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: e2e-containerd-gce-netd-calico
     test_group_name: ci-kubernetes-e2e-containerd-gce-netd-calico
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: e2e-containerd-gce-calico-serial
-    test_group_name: ci-kubernetes-e2e-containerd-gce-calico-serial
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: e2e-containerd-gce-netd-calico-serial
-    test_group_name: ci-kubernetes-e2e-containerd-gce-netd-calico-serial
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: e2e-containerd-gce-calico
