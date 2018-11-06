@@ -148,6 +148,7 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String) {
 		needGCSFlag := false
 		needGCSSharedFlag := false
 		needStagingFlag := false
+		isGCPe2e := false
 		for i, arg := range container.Args {
 			if arg == "--" {
 				endsWithScenarioArgs = true
@@ -194,6 +195,9 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String) {
 
 		if scenario == "kubernetes_e2e" {
 			for _, arg := range container.Args {
+				if strings.Contains(arg, "gcp") {
+					isGCPe2e = true
+				}
 				if strings.HasPrefix(arg, "--stage") {
 					needStagingFlag = true
 				} else if strings.HasPrefix(arg, "--use-shared-build") {
@@ -214,6 +218,10 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String) {
 		}
 		if needStagingFlag {
 			container.Args = append(container.Args, "--stage=gs://kubernetes-security-prow/ci/"+j.Name)
+		}
+		// GCP e2e use a fixed project for security testing
+		if isGCPe2e {
+			container.Args = append(container.Args, "--gcp-project=k8s-jkns-pr-gce-etcd3")
 		}
 
 		// add ssh key volume / mount
