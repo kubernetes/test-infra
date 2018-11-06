@@ -2,11 +2,11 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["eksdeployer.go"],
-    importmap = "k8s.io/test-infra/vendor/github.com/aws/awstester/eksdeployer",
-    importpath = "github.com/aws/awstester/eksdeployer",
+    srcs = ["tester.go"],
+    importmap = "k8s.io/test-infra/vendor/github.com/aws/aws-k8s-tester/ekstester",
+    importpath = "github.com/aws/aws-k8s-tester/ekstester",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/aws/awstester/eksconfig:go_default_library"],
+    deps = ["//vendor/github.com/aws/aws-k8s-tester/eksconfig:go_default_library"],
 )
 
 filegroup(

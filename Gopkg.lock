@@ -108,6 +108,19 @@
   revision = "1fca145dffbcaa8fe914309b1ec0cfc67500fe61"
 
 [[projects]]
+  name = "github.com/aws/aws-k8s-tester"
+  packages = [
+    "ec2config",
+    "ec2config/plugins",
+    "eksconfig",
+    "ekstester",
+    "etcdconfig/plugins",
+    "pkg/awsapi/ec2",
+  ]
+  revision = "1cd3e8ae2b5c41662eb4008bbb3fb9736dc651c7"
+  version = "0.1.2"
+
+[[projects]]
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -145,16 +158,6 @@
   version = "v1.12.53"
 
 [[projects]]
-  name = "github.com/aws/awstester"
-  packages = [
-    "eksconfig",
-    "eksdeployer",
-    "pkg/awsapi/ec2",
-  ]
-  revision = "141d7d02b4987b65240f46d6168546aebb61deee"
-  version = "0.1.1"
-
-[[projects]]
   name = "github.com/bazelbuild/bazel-gazelle"
   packages = [
     "cmd/gazelle",
@@ -188,6 +191,12 @@
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
   revision = "3ac7bf7a47d159a033b107610db8a1b6575507a4"
+
+[[projects]]
+  name = "github.com/blang/semver"
+  packages = ["."]
+  revision = "2ee87856327ba09384cabd113bc6b5d174e9ec0f"
+  version = "v3.5.1"
 
 [[projects]]
   name = "github.com/boltdb/bolt"
@@ -1261,6 +1270,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0592c18e2d825dadfd52f944eb7c56003471ca8276602fcd51b5a059feb15892"
+  inputs-digest = "a6d1c21e9d72d50a0968342de074652f4e589e061d7d52e66c1d71cf7d6dc534"
   solver-name = "gps-cdcl"
   solver-version = 1
