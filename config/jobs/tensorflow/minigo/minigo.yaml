@@ -17,7 +17,7 @@ presubmits:
         - -c
         args:
         # Copy prebuilt tensorflow into repo, check clang-format, test with board_size 9 and 19.
-        - ".testing/setup.sh && ./cc/test.sh
+        - "./testing/setup.sh && ./cc/test.sh
 
   - name: tf-minigo-presubmit
     always_run: true         # Run for every PR, or only when requested.
@@ -32,9 +32,6 @@ presubmits:
       containers:
       - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
         command:
-        - /bin/bash 
-        - -c
-        args:
         - ./test.sh
 
 postsubmits:
@@ -51,25 +48,18 @@ postsubmits:
       containers:
       - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
         command:
-        - /bin/bash 
-        - -c
-        args:
         - ./test.sh
 
 periodics:
-  tensorflow/minigo:
-  - name: tf-minigo-periodic
-    interval: 8h
-    decorate: true
-    extra_refs:
-    - org: tensorflow
-      repo: minigo
-      base_ref: master
-    spec:
-      containers:
-      - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
-        command:
-        - /bin/bash 
-        - -c
-        args:
-        - ./test.sh
+- name: tf-minigo-periodic
+  interval: 8h
+  decorate: true
+  extra_refs:
+  - org: tensorflow
+    repo: minigo
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
+      command:
+      - ./test.sh
