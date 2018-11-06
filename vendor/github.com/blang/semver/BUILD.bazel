@@ -2,15 +2,16 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["eks.go"],
-    importpath = "k8s.io/test-infra/kubetest/eks",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//kubetest/process:go_default_library",
-        "//kubetest/util:go_default_library",
-        "//vendor/github.com/aws/aws-k8s-tester/eksconfig:go_default_library",
-        "//vendor/github.com/aws/aws-k8s-tester/ekstester:go_default_library",
+    srcs = [
+        "json.go",
+        "range.go",
+        "semver.go",
+        "sort.go",
+        "sql.go",
     ],
+    importmap = "k8s.io/test-infra/vendor/github.com/blang/semver",
+    importpath = "github.com/blang/semver",
+    visibility = ["//visibility:public"],
 )
 
 filegroup(

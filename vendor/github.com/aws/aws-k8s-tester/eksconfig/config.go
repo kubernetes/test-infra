@@ -1,33 +1,49 @@
+// Package eksconfig defines EKS test configuration.
 package eksconfig
 
 import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"reflect"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/aws/awstester/pkg/awsapi/ec2"
+	"github.com/aws/aws-k8s-tester/ec2config"
+	"github.com/aws/aws-k8s-tester/pkg/awsapi/ec2"
 
 	gyaml "github.com/ghodss/yaml"
 	"k8s.io/client-go/util/homedir"
 )
 
-// Config defines EKS testing configuration.
+// Config defines EKS test configuration.
 type Config struct {
 	// TestMode is "embedded" or "aws-cli".
 	TestMode string `json:"test-mode,omitempty"`
 
-	// AWSTesterImage is the awstester container image.
-	// Required for "awstester ingress server" for ALB Ingress Controller tests.
+	// Tag is the tag used for S3 bucket name.
+	// If empty, deployer auto-populates it.
+	Tag string `json:"tag,omitempty"`
+	// ClusterName is the cluster name.
+	// If empty, deployer auto-populates it.
+	ClusterName string `json:"cluster-name,omitempty"`
+
+	// AWSK8sTesterImage is the aws-k8s-tester container image.
+	// Required for "aws-k8s-tester ingress server" for ALB Ingress Controller tests.
 	// Only required when ALB Ingress "TestMode" is "ingress-test-server".
-	AWSTesterImage string `json:"awstester-image,omitempty"`
+	AWSK8sTesterImage string `json:"aws-k8s-tester-image,omitempty"`
+
+	// AWSK8sTesterDownloadURL is the URL to download the "aws-k8s-tester" from.
+	// This is required for Kubernetes kubetest plugin.
+	AWSK8sTesterDownloadURL string `json:"aws-k8s-tester-download-url,omitempty"`
+	// AWSIAMAuthenticatorDownloadURL is the URL to download the "aws-iam-authenticator" from.
+	// This is required for Kubernetes kubetest plugin.
+	AWSIAMAuthenticatorDownloadURL string `json:"aws-iam-authenticator-download-url,omitempty"`
 
 	// WaitBeforeDown is the duration to sleep before cluster tear down.
 	WaitBeforeDown time.Duration `json:"wait-before-down,omitempty"`
@@ -42,12 +58,6 @@ type Config struct {
 	// Note that at least 2 subnets are required for EKS cluster.
 	EnableWorkerNodeHA bool `json:"enable-worker-node-ha"`
 
-	// Tag is the tag used for all cloudformation stacks.
-	// Must be left empty, and let deployer auto-populate this field.
-	Tag string `json:"tag,omitempty"` // read-only to user
-	// ClusterName is the EKS cluster name.
-	// Must be left empty, and let deployer auto-populate this field.
-	ClusterName string `json:"cluster-name,omitempty"` // read-only to user
 	// ConfigPath is the configuration file path.
 	// Must be left empty, and let deployer auto-populate this field.
 	// Deployer is expected to update this file with latest status,
@@ -75,8 +85,8 @@ type Config struct {
 	AWSAccountID string `json:"aws-account-id,omitempty"`
 	// AWSCredentialToMountPath is the file path to AWS credential.
 	// Required for AWS ALB Ingress Controller deployments and other AWS specific tests.
-	// If not empty, deployer is expected to mount the file as a secret object "aws-cred-awstester",
-	// to the path "/etc/aws-cred-awstester/aws-cred-awstester", under "kube-system" namespace.
+	// If not empty, deployer is expected to mount the file as a secret object "aws-cred-aws-k8s-tester",
+	// to the path "/etc/aws-cred-aws-k8s-tester/aws-cred-aws-k8s-tester", under "kube-system" namespace.
 	// Path must be an absolute path, although it will try to parse '~/.aws' or '${HOME}/.aws'.
 	// If "AWS_SHARED_CREDENTIALS_FILE" is specified, this field will overwritten.
 	AWSCredentialToMountPath string `json:"aws-credential-to-mount-path,omitempty"`
@@ -119,7 +129,7 @@ type Config struct {
 	// Multiple values are accepted. If empty, it sets to 'default', which outputs to stderr.
 	// See https://godoc.org/go.uber.org/zap#Open and https://godoc.org/go.uber.org/zap#Config for more details.
 	LogOutputs []string `json:"log-outputs,omitempty"`
-	// LogOutputToUploadPath is the awstester log file path to upload to cloud storage.
+	// LogOutputToUploadPath is the aws-k8s-tester log file path to upload to cloud storage.
 	// Must be left empty.
 	// This will be overwritten by cluster name.
 	LogOutputToUploadPath       string `json:"log-output-to-upload-path,omitempty"`
@@ -198,7 +208,7 @@ type ClusterState struct {
 	// "READY" when they successfully join the EKS cluster as worker nodes.
 	WorkerNodeGroupStatus string `json:"worker-node-group-status,omitempty"`
 	// WorkerNodes is a list of worker nodes.
-	WorkerNodes []Instance `json:"worker-nodes,omitempty"`
+	WorkerNodes map[string]ec2config.Instance `json:"worker-nodes,omitempty"`
 
 	// WorkerNodeLogs is a list of worker node log file paths, fetched via SSH.
 	WorkerNodeLogs map[string]string `json:"worker-node-logs,omitempty"`
@@ -223,69 +233,6 @@ type ClusterState struct {
 	// Required to enable worker nodes to join cluster.
 	// Update this after creating node group stack
 	CFStackWorkerNodeGroupWorkerNodeInstanceRoleARN string `json:"cf-stack-worker-node-group-worker-node-instance-role-arn,omitempty"`
-}
-
-// Instance represents an EC2 instance.
-type Instance struct {
-	ImageID                string                  `json:"image-id,omitempty"`
-	InstanceID             string                  `json:"instance-id,omitempty"`
-	InstanceType           string                  `json:"instance-type,omitempty"`
-	KeyName                string                  `json:"key-name,omitempty"`
-	Placement              EC2Placement            `json:"placement,omitempty"`
-	PrivateDNSName         string                  `json:"private-dns-name,omitempty"`
-	PrivateIP              string                  `json:"private-ip,omitempty"`
-	PublicDNSName          string                  `json:"public-dns-name,omitempty"`
-	PublicIP               string                  `json:"public-ip,omitempty"`
-	EC2State               EC2State                `json:"state,omitempty"`
-	SubnetID               string                  `json:"subnet-id,omitempty"`
-	VPCID                  string                  `json:"vpc-id,omitempty"`
-	EC2BlockDeviceMappings []EC2BlockDeviceMapping `json:"block-device-mappings,omitempty"`
-	EBSOptimized           bool                    `json:"ebs-optimized"`
-	RootDeviceName         string                  `json:"root-device-name,omitempty"`
-	RootDeviceType         string                  `json:"root-device-type,omitempty"`
-	SecurityGroups         []EC2SecurityGroup      `json:"security-groups,omitempty"`
-	LaunchTime             time.Time               `json:"launch-time,omitempty"`
-}
-
-// Instances is a list of EC2 instances.
-type Instances []Instance
-
-func (ss Instances) Len() int      { return len(ss) }
-func (ss Instances) Swap(i, j int) { ss[i], ss[j] = ss[j], ss[i] }
-func (ss Instances) Less(i, j int) bool {
-	// first launched instances in front
-	return ss[i].LaunchTime.Before(ss[j].LaunchTime)
-}
-
-// EC2Placement defines EC2 placement.
-type EC2Placement struct {
-	AvailabilityZone string `json:"availability-zone,omitempty"`
-	Tenancy          string `json:"tenancy,omitempty"`
-}
-
-// EC2State defines an EC2 state.
-type EC2State struct {
-	Code int64  `json:"code,omitempty"`
-	Name string `json:"name,omitempty"`
-}
-
-// EC2BlockDeviceMapping defines a block device mapping.
-type EC2BlockDeviceMapping struct {
-	DeviceName string `json:"device-name,omitempty"`
-	EBS        EBS    `json:"ebs,omitempty"`
-}
-
-// EBS defines an EBS volume.
-type EBS struct {
-	DeleteOnTermination bool   `json:"delete-on-termination,omitempty"`
-	Status              string `json:"status,omitempty"`
-	VolumeID            string `json:"volume-id,omitempty"`
-}
-
-// EC2SecurityGroup defines a security group.
-type EC2SecurityGroup struct {
-	GroupName string `json:"group-name,omitempty"`
-	GroupID   string `json:"group-id,omitempty"`
 }
 
 // ALBIngressController configures ingress controller for EKS.
@@ -316,6 +263,9 @@ type ALBIngressController struct {
 
 	// TestScalability is true to run scalability tests.
 	TestScalability bool `json:"test-scalability"`
+	// TestScalabilityMinutes is the number of minutes to send scalability test workloads.
+	// Reference: https://github.com/wg/wrk#command-line-options.
+	TestScalabilityMinutes int `json:"test-scalability-minutes"`
 	// TestMetrics is true to run metrics tests.
 	TestMetrics bool `json:"test-metrics"`
 	// TestServerReplicas is the number of ingress test server pods to deploy.
@@ -418,20 +368,9 @@ func NewDefault() *Config {
 	return &vv
 }
 
-var (
-	reg               *regexp.Regexp
-	testerTag         string
-	testerClusterName string
-)
-
 func init() {
-	var err error
-	reg, err = regexp.Compile("[^a-zA-Z]+")
-	if err != nil {
-		panic(err)
-	}
 	defaultConfig.Tag = genTag()
-	defaultConfig.ClusterName = genClusterName(defaultConfig.Tag)
+	defaultConfig.ClusterName = defaultConfig.Tag + "-" + randString(7)
 }
 
 // genTag generates a tag for cluster name, CloudFormation, and S3 bucket.
@@ -439,20 +378,7 @@ func init() {
 func genTag() string {
 	// use UTC time for everything
 	now := time.Now().UTC()
-	return fmt.Sprintf("awstester-eks-%d%02d%02d", now.Year(), now.Month(), now.Day())
-}
-
-func genClusterName(tag string) string {
-	h, _ := os.Hostname()
-	h = strings.TrimSpace(reg.ReplaceAllString(h, ""))
-	if len(h) > 12 {
-		h = h[:12]
-	}
-	name := tag
-	if len(name) > 0 {
-		name += "-"
-	}
-	return fmt.Sprintf("%s%s-%s", name, h, randString(7))
+	return fmt.Sprintf("awsk8stester-eks-%d%02d%02d", now.Year(), now.Month(), now.Day())
 }
 
 // defaultConfig is the default configuration.
@@ -462,11 +388,12 @@ func genClusterName(tag string) string {
 var defaultConfig = Config{
 	TestMode: "embedded",
 
-	// enough time for ALB access log
-	WaitBeforeDown: 10 * time.Minute,
-	Down:           true,
+	AWSK8sTesterDownloadURL:        "https://github.com/aws/aws-k8s-tester/releases/download/0.1.2/aws-k8s-tester-0.1.2-linux-amd64",
+	AWSIAMAuthenticatorDownloadURL: "https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator",
 
-	ConfigPath: "test.yaml",
+	// enough time for ALB access log
+	WaitBeforeDown: time.Minute,
+	Down:           true,
 
 	EnableWorkerNodeHA:  true,
 	EnableWorkerNodeSSH: true,
@@ -477,8 +404,9 @@ var defaultConfig = Config{
 	AWSRegion:                "us-west-2",
 	AWSCustomEndpoint:        "",
 
-	// https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
-	WorkerNodeAMI:          "ami-0a54c984b9f908c81",
+	// Amazon EKS-optimized AMI, https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
+	WorkerNodeAMI: "ami-0a54c984b9f908c81",
+
 	WorkerNodeInstanceType: "m5.large",
 	WorkderNodeASGMin:      1,
 	WorkderNodeASGMax:      1,
@@ -508,6 +436,7 @@ var defaultConfig = Config{
 		TestMode:   "nginx",
 
 		TestScalability:          true,
+		TestScalabilityMinutes:   1,
 		TestMetrics:              true,
 		TestServerReplicas:       1,
 		TestServerRoutes:         1,
@@ -524,7 +453,7 @@ var defaultConfig = Config{
 //
 // Example usage:
 //
-//  import "github.com/aws/awstester/eksconfig"
+//  import "github.com/aws/aws-k8s-tester/eksconfig"
 //  cfg := eksconfig.Load("test.yaml")
 //  p, err := cfg.BackupConfig()
 //  err = cfg.ValidateAndSetDefaults()
@@ -584,10 +513,11 @@ func (cfg *Config) Sync() (err error) {
 	if err != nil {
 		return err
 	}
+	fmt.Println("writing to:", cfg.ConfigPath)
 	return ioutil.WriteFile(cfg.ConfigPath, d, 0600)
 }
 
-// BackupConfig stores the original awstester configuration
+// BackupConfig stores the original aws-k8s-tester configuration
 // file to backup, suffixed with ".backup.yaml".
 // Otherwise, deployer will overwrite its state back to YAML.
 // Useful when the original configuration would be reused
@@ -618,7 +548,7 @@ const (
 
 // ValidateAndSetDefaults returns an error for invalid configurations.
 // And updates empty fields with default values.
-// At the end, it writes populated YAML to awstester config path.
+// At the end, it writes populated YAML to aws-k8s-tester config path.
 func (cfg *Config) ValidateAndSetDefaults() error {
 	switch cfg.TestMode {
 	case "embedded":
@@ -689,7 +619,7 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 		return fmt.Errorf("AWSCustomEndpoint %q is not valid", cfg.AWSCustomEndpoint)
 	}
 
-	// resources created from awstester always follow
+	// resources created from aws-k8s-tester always follow
 	// the same naming convention
 	cfg.ClusterState.ServiceRoleWithPolicyName = genServiceRoleWithPolicy(cfg.ClusterName)
 	cfg.ClusterState.ServiceRolePolicies = []string{serviceRolePolicyARNCluster, serviceRolePolicyARNService}
@@ -704,8 +634,16 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 
 	////////////////////////////////////////////////////////////////////////
 	// populate all paths on disks and on remote storage
-	cfg.ConfigPathBucket = filepath.Join(cfg.ClusterName, "awstester-eks.config.yaml")
-	cfg.ConfigPathURL = genS3URL(cfg.AWSRegion, cfg.Tag, cfg.ConfigPathBucket)
+	if cfg.ConfigPath == "" {
+		f, err := ioutil.TempFile(os.TempDir(), "awsk8stester-eksconfig")
+		if err != nil {
+			return err
+		}
+		cfg.ConfigPath, _ = filepath.Abs(f.Name())
+		f.Close()
+		os.RemoveAll(cfg.ConfigPath)
+	}
+	cfg.ConfigPathBucket = filepath.Join(cfg.ClusterName, "awsk8stester-eksconfig.yaml")
 
 	cfg.LogOutputToUploadPath = filepath.Join(os.TempDir(), fmt.Sprintf("%s.log", cfg.ClusterName))
 	logOutputExist := false
@@ -719,23 +657,10 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 		// auto-insert generated log output paths to zap logger output list
 		cfg.LogOutputs = append(cfg.LogOutputs, cfg.LogOutputToUploadPath)
 	}
-	cfg.LogOutputToUploadPathBucket = filepath.Join(cfg.ClusterName, "awstester-eks.log")
-	cfg.LogOutputToUploadPathURL = genS3URL(cfg.AWSRegion, cfg.Tag, cfg.LogOutputToUploadPathBucket)
+	cfg.LogOutputToUploadPathBucket = filepath.Join(cfg.ClusterName, "awsk8stester-eks.log")
 
-	cfg.KubeConfigPath = fmt.Sprintf(
-		"%s.%s.kubeconfig.generated.yaml",
-		cfg.ConfigPath,
-		cfg.ClusterName,
-	)
-	cfg.KubeConfigPathBucket = filepath.Join(
-		cfg.ClusterName,
-		"kubeconfig",
-	)
-	cfg.KubeConfigPathURL = genS3URL(
-		cfg.AWSRegion,
-		cfg.Tag,
-		cfg.KubeConfigPathBucket,
-	)
+	cfg.KubeConfigPath = fmt.Sprintf("%s.%s.kubeconfig.generated.yaml", cfg.ConfigPath, cfg.ClusterName)
+	cfg.KubeConfigPathBucket = filepath.Join(cfg.ClusterName, "kubeconfig")
 
 	cfg.ALBIngressController.IngressTestServerDeploymentServiceSpecPath = fmt.Sprintf(
 		"%s.%s.alb.ingress-test-server.yaml",
@@ -745,11 +670,6 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 	cfg.ALBIngressController.IngressTestServerDeploymentServiceSpecPathBucket = filepath.Join(
 		cfg.ClusterName,
 		"alb.ingress-test-server.deployment.service.yaml",
-	)
-	cfg.ALBIngressController.IngressTestServerDeploymentServiceSpecPathURL = genS3URL(
-		cfg.AWSRegion,
-		cfg.Tag,
-		cfg.ALBIngressController.IngressTestServerDeploymentServiceSpecPathBucket,
 	)
 
 	cfg.ALBIngressController.IngressControllerSpecPath = fmt.Sprintf(
@@ -761,11 +681,6 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 		cfg.ClusterName,
 		"alb.controller.deployment.service.yaml",
 	)
-	cfg.ALBIngressController.IngressControllerSpecPathURL = genS3URL(
-		cfg.AWSRegion,
-		cfg.Tag,
-		cfg.ALBIngressController.IngressControllerSpecPathBucket,
-	)
 
 	cfg.ALBIngressController.IngressObjectSpecPath = fmt.Sprintf(
 		"%s.%s.alb.ingress.yaml",
@@ -775,11 +690,6 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 	cfg.ALBIngressController.IngressObjectSpecPathBucket = filepath.Join(
 		cfg.ClusterName,
 		"alb.ingress.yaml",
-	)
-	cfg.ALBIngressController.IngressObjectSpecPathURL = genS3URL(
-		cfg.AWSRegion,
-		cfg.Tag,
-		cfg.ALBIngressController.IngressObjectSpecPathBucket,
 	)
 
 	cfg.ALBIngressController.ScalabilityOutputToUploadPath = fmt.Sprintf(
@@ -791,11 +701,6 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 		cfg.ClusterName,
 		"alb.scalability.txt",
 	)
-	cfg.ALBIngressController.ScalabilityOutputToUploadPathURL = genS3URL(
-		cfg.AWSRegion,
-		cfg.Tag,
-		cfg.ALBIngressController.ScalabilityOutputToUploadPathBucket,
-	)
 
 	cfg.ALBIngressController.MetricsOutputToUploadPath = fmt.Sprintf(
 		"%s.%s.alb.metrics.txt",
@@ -805,11 +710,6 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 	cfg.ALBIngressController.MetricsOutputToUploadPathBucket = filepath.Join(
 		cfg.ClusterName,
 		"alb.metrics.txt",
-	)
-	cfg.ALBIngressController.MetricsOutputToUploadPathURL = genS3URL(
-		cfg.AWSRegion,
-		cfg.Tag,
-		cfg.ALBIngressController.MetricsOutputToUploadPathBucket,
 	)
 	////////////////////////////////////////////////////////////////////////
 
@@ -868,8 +768,8 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 	if cfg.ALBIngressController != nil && cfg.ALBIngressController.Enable {
 		switch cfg.ALBIngressController.TestMode {
 		case "ingress-test-server":
-			if cfg.AWSTesterImage == "" {
-				return errors.New("'ingress-test-server' requires AWSTesterImage")
+			if cfg.AWSK8sTesterImage == "" {
+				return errors.New("'ingress-test-server' requires AWSK8sTesterImage")
 			}
 		case "nginx":
 			if cfg.ALBIngressController.TestServerRoutes != 1 {
@@ -934,8 +834,8 @@ func (cfg *Config) SetIngressUpTook(d time.Duration) {
 }
 
 const (
-	envPfxAWSTesterEKS    = "AWSTESTER_EKS_"
-	envPfxAWSTesterEKSALB = "AWSTESTER_EKS_ALB_"
+	envPfx    = "AWS_K8S_TESTER_EKS_"
+	envPfxALB = "AWS_K8S_TESTER_EKS_ALB_"
 )
 
 // UpdateFromEnvs updates fields from environmental variables.
@@ -951,11 +851,13 @@ func (cfg *Config) UpdateFromEnvs() error {
 		jv = strings.Replace(jv, ",omitempty", "", -1)
 		jv = strings.Replace(jv, "-", "_", -1)
 		jv = strings.ToUpper(strings.Replace(jv, "-", "_", -1))
-		env := envPfxAWSTesterEKS + jv
+		env := envPfx + jv
 		if os.Getenv(env) == "" {
 			continue
 		}
 		sv := os.Getenv(env)
+
+		fieldName := tp1.Field(i).Name
 
 		switch vv1.Field(i).Type().Kind() {
 		case reflect.String:
@@ -969,7 +871,7 @@ func (cfg *Config) UpdateFromEnvs() error {
 			vv1.Field(i).SetBool(bb)
 
 		case reflect.Int, reflect.Int32, reflect.Int64:
-			if tp1.Field(i).Name == "WaitBeforeDown" {
+			if fieldName == "WaitBeforeDown" {
 				dv, err := time.ParseDuration(sv)
 				if err != nil {
 					return fmt.Errorf("failed to parse %q (%q, %v)", sv, env, err)
@@ -1020,7 +922,7 @@ func (cfg *Config) UpdateFromEnvs() error {
 		}
 		jv = strings.Replace(jv, ",omitempty", "", -1)
 		jv = strings.ToUpper(strings.Replace(jv, "-", "_", -1))
-		env := envPfxAWSTesterEKSALB + jv
+		env := envPfxALB + jv
 		if os.Getenv(env) == "" {
 			continue
 		}
@@ -1158,12 +1060,6 @@ const (
 	serviceRolePolicyARNCluster = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 )
 
-// genS3URL returns S3 URL path.
-// e.g. https://s3-us-west-2.amazonaws.com/awstester-20180925/hello-world
-func genS3URL(region, bucket, s3Path string) string {
-	return fmt.Sprintf("https://s3-%s.amazonaws.com/%s/%s", region, bucket, s3Path)
-}
-
 func genServiceRoleWithPolicy(clusterName string) string {
 	return fmt.Sprintf("%s-SERVICE-ROLE", clusterName)
 }
@@ -1210,3 +1106,19 @@ func checkEKSEp(s string) (ok bool) {
 // defaultWorkderNodeVolumeSizeGB is the default EKS worker node volume size in gigabytes.
 // https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
 const defaultWorkderNodeVolumeSizeGB = 20
+
+func exist(name string) bool {
+	_, err := os.Stat(name)
+	return err == nil
+}
+
+const ll = "0123456789abcdefghijklmnopqrstuvwxyz"
+
+func randString(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		rand.Seed(time.Now().UTC().UnixNano())
+		b[i] = ll[rand.Intn(len(ll))]
+	}
+	return string(b)
+}

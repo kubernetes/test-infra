@@ -4,11 +4,12 @@ go_library(
     name = "go_default_library",
     srcs = [
         "doc.go",
-        "instance_types.go",
+        "plugins.go",
     ],
-    importmap = "k8s.io/test-infra/vendor/github.com/aws/awstester/pkg/awsapi/ec2",
-    importpath = "github.com/aws/awstester/pkg/awsapi/ec2",
+    importmap = "k8s.io/test-infra/vendor/github.com/aws/aws-k8s-tester/ec2config/plugins",
+    importpath = "github.com/aws/aws-k8s-tester/ec2config/plugins",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/aws/aws-k8s-tester/etcdconfig/plugins:go_default_library"],
 )
 
 filegroup(
