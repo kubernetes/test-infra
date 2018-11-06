@@ -2846,6 +2846,8 @@ test_groups:
 - name: istio-unit-tests-presubmit
   gcs_prefix: istio-prow/pr-logs/directory/istio-unit-tests
   days_of_results: 7
+- name: istio-integ-local-tests-presubmit
+  gcs_prefix: istio-prow/pr-logs/directory/istio-integ-local-tests
 - name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit
   gcs_prefix: istio-prow/pr-logs/directory/istio-pilot-e2e-envoyv2-v1alpha3
 - name: istio-e2e-mixer-no_auth-presubmit
@@ -2861,29 +2863,32 @@ test_groups:
 - name: istio-e2e-mixer-no_auth-mcp-presubmit
   gcs_prefix: istio-prow/pr-logs/directory/e2e-mixer-no_auth-mcp
 # Istio Prow Postsubmits
-- name: istio-istio-postsubmit
-  gcs_prefix: istio-prow/istio-postsubmit
+- name: istio-postsubmit
+  gcs_prefix: istio-prow/logs/istio-postsubmit
   days_of_results: 7
+- name: istio-integ-local-tests
+  gcs_prefix: istio-prow/logs/istio-integ-local-tests
+  num_failures_to_alert: 1
 - name: istio-e2e-simpleTests
-  gcs_prefix: istio-prow/e2e-simpleTests
+  gcs_prefix: istio-prow/logs/e2e-simpleTests
   num_failures_to_alert: 1
 - name: istio-e2e-bookInfoTests-envoyv2-v1alpha3
-  gcs_prefix: istio-prow/e2e-bookInfoTests-envoyv2-v1alpha3
+  gcs_prefix: istio-prow/logs/e2e-bookInfoTests-envoyv2-v1alpha3
   num_failures_to_alert: 1
 - name: istio-pilot-e2e-envoyv2-v1alpha3
-  gcs_prefix: istio-prow/istio-pilot-e2e-envoyv2-v1alpha3
+  gcs_prefix: istio-prow/logs/istio-pilot-e2e-envoyv2-v1alpha3
   num_failures_to_alert: 1
 - name: istio-pilot-e2e-envoyv2-v1alpha3-k8s-1.10
-  gcs_prefix: istio-prow/istio-pilot-e2e-envoyv2-v1alpha3-k8s-1.10
+  gcs_prefix: istio-prow/logs/istio-pilot-e2e-envoyv2-v1alpha3-k8s-1.10
   num_failures_to_alert: 1
 - name: istio-e2e-mixer-no_auth
-  gcs_prefix: istio-prow/e2e-mixer-no_auth
+  gcs_prefix: istio-prow/logs/e2e-mixer-no_auth
   num_failures_to_alert: 1
 - name: istio-e2e-dashboard
-  gcs_prefix: istio-prow/e2e-dashboard
+  gcs_prefix: istio-prow/logs/e2e-dashboard
   num_failures_to_alert: 1
 - name: istio-e2e-simpleTests-mcp
-  gcs_prefix: istio-prow/e2e-simpleTests-mcp
+  gcs_prefix: istio-prow/logs/e2e-simpleTests-mcp
   num_failures_to_alert: 1
 # Istio CircleCI Presubmits
 - name: istio-circleci-e2e-simple-presubmit
@@ -7080,6 +7085,8 @@ dashboards:
   dashboard_tab:
   - name: unit-tests
     test_group_name: istio-unit-tests-presubmit
+  - name: integration-local-tests
+    test_group_name: istio-integ-local-tests-presubmit
   - name: pilot-e2e-envoyv2-v1alpha3
     test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit
   - name: e2e-mixer-no_auth
@@ -7124,7 +7131,11 @@ dashboards:
 - name: istio-postsubmits
   dashboard_tab:
   - name: unit-tests
-    test_group_name: istio-istio-postsubmit
+    test_group_name: istio-postsubmit
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: integration-local-tests
+    test_group_name: istio-integ-local-tests
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: e2e-simpleTests
