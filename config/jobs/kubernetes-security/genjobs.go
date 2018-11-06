@@ -119,7 +119,13 @@ func undoPresubmitPresets(presets []config.Preset, presubmit *config.Presubmit) 
 // convert a kubernetes/kubernetes job to a kubernetes-security/kubernetes job
 // dropLabels should be a set of "k: v" strings
 // xref: prow/config/config_test.go replace(...)
-func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String) {
+// it will return the same job mutated, or nil if the job should be removed
+func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String) *config.Presubmit {
+	// if a GKE job, disable it
+	if strings.Contains(j.Name, "gke") {
+		return nil
+	}
+
 	// filter out the unwanted labels
 	if len(j.Labels) > 0 {
 		filteredLabels := make(map[string]string)
@@ -247,9 +253,17 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String) {
 		)
 	}
 	// done with this job, check for run_after_success
-	for i := range j.RunAfterSuccess {
-		convertJobToSecurityJob(&j.RunAfterSuccess[i], dropLabels)
+	if len(j.RunAfterSuccess) > 0 {
+		filteredRunAfterSucces := []config.Presubmit{}
+		for i := range j.RunAfterSuccess {
+			newJob := convertJobToSecurityJob(&j.RunAfterSuccess[i], dropLabels)
+			if newJob != nil {
+				filteredRunAfterSucces = append(filteredRunAfterSucces, *newJob)
+			}
+		}
+		j.RunAfterSuccess = filteredRunAfterSucces
 	}
+	return j
 }
 
 // these are unnecessary, and make the config larger so we strip them out
@@ -342,7 +356,10 @@ func main() {
 		// undo merged presets, this needs to occur first!
 		undoPresubmitPresets(parsed.Presets, job)
 		// now convert the job
-		convertJobToSecurityJob(job, dropLabels)
+		job = convertJobToSecurityJob(job, dropLabels)
+		if job == nil {
+			continue
+		}
 		jobBytes, err := yaml.Marshal(job)
 		if err != nil {
 			log.Fatalf("Failed to marshal job: %v", err)
