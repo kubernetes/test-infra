@@ -5,6 +5,10 @@ presubmits:
     branches:
     - master
     decorate: true
+    extra_refs:
+    - org: tensorflow
+      repo: minigo
+      base_ref: master
     spec:
       containers:
       - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
@@ -20,6 +24,10 @@ presubmits:
     branches:
     - master
     decorate: true
+    extra_refs:
+    - org: tensorflow
+      repo: minigo
+      base_ref: master
     spec:
       containers:
       - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
@@ -35,6 +43,10 @@ postsubmits:
     branches:
     - master
     decorate: true
+    extra_refs:
+    - org: tensorflow
+      repo: minigo
+      base_ref: master
     spec:
       containers:
       - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
@@ -49,6 +61,10 @@ periodics:
   - name: tf-minigo-periodic
     interval: 8h
     decorate: true
+    extra_refs:
+    - org: tensorflow
+      repo: minigo
+      base_ref: master
     spec:
       containers:
       - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
