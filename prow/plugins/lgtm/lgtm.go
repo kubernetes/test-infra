@@ -29,7 +29,6 @@ import (
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
-	"k8s.io/test-infra/prow/plugins/trigger"
 	"k8s.io/test-infra/prow/repoowners"
 )
 
@@ -109,6 +108,8 @@ type githubClient interface {
 	BotName() (string, error)
 	GetSingleCommit(org, repo, SHA string) (github.SingleCommit, error)
 	IsMember(org, user string) (bool, error)
+	ListTeams(org string) ([]github.Team, error)
+	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
 }
 
 // reviewCtx contains information about each review event
@@ -330,12 +331,25 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 }
 
 func stickyLgtm(log *logrus.Entry, gc githubClient, config *plugins.Configuration, lgtm *plugins.Lgtm, author, org, repo string) bool {
-	if lgtm.StickyForTrustedAuthors {
-		triggerOpt := config.TriggerFor(org, repo)
-		if ok, merr := trigger.TrustedUser(gc, triggerOpt, author, org, repo); merr == nil && ok {
-			return true
-		} else if merr != nil {
-			log.WithError(merr).Errorf("Failed to check if author is a collaborator.")
+	if len(lgtm.StickyLgtmTeam) > 0 {
+		if teams, err := gc.ListTeams(org); err == nil {
+			for _, teamInOrg := range teams {
+				// lgtm.TrustedAuthorTeams is supposed to be a very short list.
+				if strings.Compare(teamInOrg.Name, lgtm.StickyLgtmTeam) == 0 {
+					if members, err := gc.ListTeamMembers(teamInOrg.ID, github.RoleAll); err == nil {
+						for _, member := range members {
+							if strings.Compare(member.Login, author) == 0 {
+								// The author is in a trusted team
+								return true
+							}
+						}
+					} else {
+						log.WithError(err).Errorf("Failed to list members in %s:%s.", org, teamInOrg.Name)
+					}
+				}
+			}
+		} else {
+			log.WithError(err).Errorf("Failed to list teams in org %s.", org)
 		}
 	}
 	return false
