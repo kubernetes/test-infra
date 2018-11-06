@@ -15,46 +15,49 @@ limitations under the License.
 */
 
 // Package eks implements 'kubetest' deployer interface.
-// It uses 'awstester' and 'kubectl' binaries, rather than importing
-// EKS packages directly. This is to eliminate the need of dependency
-// management, both in upstream and downstream.
+// It uses 'aws-k8s-tester' and 'kubectl' binaries, rather than importing internal packages.
+// All underlying implementation and external dependencies are compiled into one binary.
 package eks
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
+	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"syscall"
 	"time"
 
-	"github.com/aws/awstester/eksconfig"
-	"github.com/aws/awstester/eksdeployer"
+	"github.com/aws/aws-k8s-tester/eksconfig"
+	"github.com/aws/aws-k8s-tester/ekstester"
 
 	"k8s.io/test-infra/kubetest/process"
+	"k8s.io/test-infra/kubetest/util"
 )
 
-// deployer implements EKS deployer interface using "awstester" binary.
+// deployer implements EKS deployer interface using "aws-k8s-tester" binary.
 // Satisfies "k8s.io/test-infra/kubetest/main.go" 'deployer' and 'publisher" interfaces.
 // Reference https://github.com/kubernetes/test-infra/blob/master/kubetest/main.go.
 type deployer struct {
-	stopc         chan struct{}
-	cfg           *eksconfig.Config
-	awsTesterPath string
-	kubectlPath   string
-	ctrl          *process.Control
+	stopc            chan struct{}
+	cfg              *eksconfig.Config
+	awsK8sTesterPath string
+	kubectlPath      string
+	ctrl             *process.Control
 }
 
 // NewDeployer creates a new EKS deployer.
-func NewDeployer(timeout time.Duration, verbose bool) (eksdeployer.Deployer, error) {
+func NewDeployer(timeout time.Duration, verbose bool) (ekstester.Deployer, error) {
 	cfg := eksconfig.NewDefault()
 	err := cfg.UpdateFromEnvs()
 	if err != nil {
 		return nil, err
 	}
 	var f *os.File
-	f, err = ioutil.TempFile(os.TempDir(), "awstester")
+	f, err = ioutil.TempFile(os.TempDir(), "aws-k8s-tester")
 	if err != nil {
 		return nil, err
 	}
@@ -79,18 +82,47 @@ func NewDeployer(timeout time.Duration, verbose bool) (eksdeployer.Deployer, err
 		),
 	}
 
-	dp.awsTesterPath, err = exec.LookPath("awstester")
+	dp.awsK8sTesterPath, err = exec.LookPath("aws-k8s-tester")
 	if err != nil {
-		return nil, fmt.Errorf("cannot find 'awstester' executable (%v)", err)
+		dp.awsK8sTesterPath = filepath.Join(os.TempDir(), "aws-k8s-tester")
+		var f *os.File
+		f, err = os.Create(dp.awsK8sTesterPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create %q (%v)", dp.awsK8sTesterPath, err)
+		}
+		defer f.Close()
+		if err = httpRead(cfg.AWSK8sTesterDownloadURL, f); err != nil {
+			return nil, err
+		}
+		if err = util.EnsureExecutable(dp.awsK8sTesterPath); err != nil {
+			return nil, err
+		}
 	}
+
 	dp.kubectlPath, err = exec.LookPath("kubectl")
 	if err != nil {
 		return nil, fmt.Errorf("cannot find 'kubectl' executable (%v)", err)
 	}
+
 	// TODO(gyuho): replace this kubernetes native Go client
 	_, err = exec.LookPath("aws-iam-authenticator")
 	if err != nil {
-		return nil, fmt.Errorf("cannot find 'aws-iam-authenticator' executable (%v)", err)
+		bin := filepath.Join(os.TempDir(), "aws-iam-authenticator")
+		var f *os.File
+		f, err = os.Create(bin)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create %q (%v)", bin, err)
+		}
+		defer f.Close()
+		if err = httpRead(cfg.AWSIAMAuthenticatorDownloadURL, f); err != nil {
+			return nil, err
+		}
+		if err = util.EnsureExecutable(bin); err != nil {
+			return nil, err
+		}
+		if err = os.Rename(bin, "/usr/local/bin/aws-iam-authenticator"); err != nil {
+			return nil, err
+		}
 	}
 
 	return dp, nil
@@ -102,7 +134,7 @@ func (dp *deployer) Up() (err error) {
 	// in the configuraion file (e.g. VPC ID, ALB DNS names, etc.)
 	// this needs be reloaded for other deployer method calls
 	createCmd := exec.Command(
-		dp.awsTesterPath,
+		dp.awsK8sTesterPath,
 		"eks",
 		"--path="+dp.cfg.ConfigPath,
 		"create",
@@ -130,7 +162,7 @@ func (dp *deployer) Down() (err error) {
 		return err
 	}
 	_, err = dp.ctrl.Output(exec.Command(
-		dp.awsTesterPath,
+		dp.awsK8sTesterPath,
 		"eks",
 		"--path="+dp.cfg.ConfigPath,
 		"delete",
@@ -146,7 +178,7 @@ func (dp *deployer) IsUp() (err error) {
 		return err
 	}
 	_, err = dp.ctrl.Output(exec.Command(
-		dp.awsTesterPath,
+		dp.awsK8sTesterPath,
 		"eks",
 		"--path="+dp.cfg.ConfigPath,
 		"check",
@@ -187,7 +219,7 @@ func (dp *deployer) GetWorkerNodeLogs() (err error) {
 		return err
 	}
 	_, err = dp.ctrl.Output(exec.Command(
-		dp.awsTesterPath,
+		dp.awsK8sTesterPath,
 		"eks",
 		"--path="+dp.cfg.ConfigPath,
 		"test", "get-worker-node-logs",
@@ -204,7 +236,7 @@ func (dp *deployer) DumpClusterLogs(artifactDir, _ string) (err error) {
 		return err
 	}
 	_, err = dp.ctrl.Output(exec.Command(
-		dp.awsTesterPath,
+		dp.awsK8sTesterPath,
 		"eks",
 		"--path="+dp.cfg.ConfigPath,
 		"test", "get-worker-node-logs",
@@ -213,7 +245,7 @@ func (dp *deployer) DumpClusterLogs(artifactDir, _ string) (err error) {
 		return err
 	}
 	_, err = dp.ctrl.Output(exec.Command(
-		dp.awsTesterPath,
+		dp.awsK8sTesterPath,
 		"eks",
 		"--path="+dp.cfg.ConfigPath,
 		"test", "dump-cluster-logs",
@@ -236,4 +268,27 @@ func (dp *deployer) LoadConfig() (eksconfig.Config, error) {
 	var err error
 	dp.cfg, err = eksconfig.Load(dp.cfg.ConfigPath)
 	return *dp.cfg, err
+}
+
+var httpTransport *http.Transport
+
+func init() {
+	httpTransport = new(http.Transport)
+	httpTransport.RegisterProtocol("file", http.NewFileTransport(http.Dir("/")))
+}
+
+// curl -L [URL] | writer
+func httpRead(u string, wr io.Writer) error {
+	log.Printf("curl %s", u)
+	cli := &http.Client{Transport: httpTransport}
+	r, err := cli.Get(u)
+	if err != nil {
+		return err
+	}
+	defer r.Body.Close()
+	if r.StatusCode >= 400 {
+		return fmt.Errorf("%v returned %d", u, r.StatusCode)
+	}
+	_, err = io.Copy(wr, r.Body)
+	return err
 }
