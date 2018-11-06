@@ -409,6 +409,7 @@ periodics:
       securityContext:
         privileged: true
 
+#manual-release-bump-required
 - name: ci-kubernetes-kubemark-5-gce-last-release
   interval: 30m
   labels:
@@ -425,7 +426,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=kubemark-latest
-      - --extract=ci/latest-1.9
+      - --extract=ci/latest-1.12
       - --gcp-node-size=n1-standard-2
       - --gcp-nodes=1
       - --gcp-project-type=scalability-project

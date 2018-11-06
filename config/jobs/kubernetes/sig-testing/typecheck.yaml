@@ -1,18 +1,42 @@
 presubmits:
   kubernetes/kubernetes:
+  # manual-release-bump-required 
   - name: pull-kubernetes-typecheck
     always_run: true
     skip_report: false
     skip_branches:
-    - release-1.9 # doesn't have typecheck
     - release-1.10 # older go
     - release-1.11 # older go
     - release-1.12 # older go
+    - release-1.13 # per-release job
     labels:
       preset-service-account: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
+        - --scenario=execute
+        - --
+        - make
+        - verify
+        - WHAT=typecheck
+        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts
+  - name: pull-kubernetes-typecheck
+    always_run: true
+    skip_report: false
+    branches:
+    - release-1.13 # per-release job
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-1.13
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
