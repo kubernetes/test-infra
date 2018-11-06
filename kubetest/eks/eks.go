@@ -157,6 +157,10 @@ func (dp *deployer) Up() (err error) {
 
 // Down tears down the existing EKS cluster.
 func (dp *deployer) Down() (err error) {
+	defer func() {
+		os.RemoveAll(dp.awsK8sTesterPath)
+		os.RemoveAll("/usr/local/bin/aws-iam-authenticator")
+	}()
 	// reload configuration from disk to read the latest configuration
 	if _, err = dp.LoadConfig(); err != nil {
 		return err
