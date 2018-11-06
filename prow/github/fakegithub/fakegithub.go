@@ -307,6 +307,20 @@ func (f *FakeClient) GetFile(org, repo, file, commit string) ([]byte, error) {
 	return nil, fmt.Errorf("could not find file %s with ref %s", file, commit)
 }
 
+// ListTeams return a list of fake teams that correspond to the fake team members returned by ListTeamMembers
+func (f *FakeClient) ListTeams(org string) ([]github.Team, error) {
+	return []github.Team{
+		{
+			ID:   0,
+			Name: "Admins",
+		},
+		{
+			ID:   42,
+			Name: "Leads",
+		},
+	}, nil
+}
+
 // ListTeamMembers return a fake team with a single "sig-lead" Github teammember
 func (f *FakeClient) ListTeamMembers(teamID int, role string) ([]github.TeamMember, error) {
 	if role != github.RoleAll {

@@ -672,7 +672,7 @@ func TestHandlePullRequest(t *testing.T) {
 		labelsAdded   []string
 		labelsRemoved []string
 		issueComments map[int][]github.IssueComment
-		stickyLgtm    bool
+		trustedTeam   string
 
 		expectNoComments bool
 	}{
@@ -707,7 +707,7 @@ func TestHandlePullRequest(t *testing.T) {
 			expectNoComments: false,
 		},
 		{
-			name: "Sticky LGTM for trusted user",
+			name: "Sticky LGTM for trusted team members",
 			event: github.PullRequestEvent{
 				Action: github.PullRequestActionSynchronize,
 				PullRequest: github.PullRequest{
@@ -721,12 +721,12 @@ func TestHandlePullRequest(t *testing.T) {
 						},
 					},
 					User: github.User{
-						Login: "collab",
+						Login: "sig-lead",
 					},
 					MergeSHA: &SHA,
 				},
 			},
-			stickyLgtm:       true,
+			trustedTeam:      "Leads",
 			expectNoComments: true,
 		},
 		{
@@ -744,7 +744,7 @@ func TestHandlePullRequest(t *testing.T) {
 						},
 					},
 					User: github.User{
-						Login: "collab",
+						Login: "sig-lead",
 					},
 					MergeSHA: &SHA,
 				},
@@ -775,7 +775,7 @@ func TestHandlePullRequest(t *testing.T) {
 						},
 					},
 					User: github.User{
-						Login: "nonCollab",
+						Login: "sig-lead",
 					},
 					MergeSHA: &SHA,
 				},
@@ -789,7 +789,7 @@ func TestHandlePullRequest(t *testing.T) {
 					},
 				},
 			},
-			stickyLgtm:       true,
+			trustedTeam:      "Committers",
 			expectNoComments: false,
 		},
 		{
@@ -885,9 +885,9 @@ func TestHandlePullRequest(t *testing.T) {
 			fakeGitHub.Commits[SHA] = commit
 			pc := &plugins.Configuration{}
 			pc.Lgtm = append(pc.Lgtm, plugins.Lgtm{
-				Repos:                   []string{"kubernetes/kubernetes"},
-				StoreTreeHash:           true,
-				StickyForTrustedAuthors: c.stickyLgtm,
+				Repos:          []string{"kubernetes/kubernetes"},
+				StoreTreeHash:  true,
+				StickyLgtmTeam: c.trustedTeam,
 			})
 			err := handlePullRequest(
 				logrus.WithField("plugin", "approve"),
@@ -930,7 +930,7 @@ func TestAddTreeHashComment(t *testing.T) {
 	cases := []struct {
 		name          string
 		author        string
-		stickyLgtm    bool
+		trustedTeam   string
 		expectTreeSha bool
 	}{
 		{
@@ -940,14 +940,13 @@ func TestAddTreeHashComment(t *testing.T) {
 		},
 		{
 			name:          "Tree SHA if sticky lgtm off",
-			author:        "Collab",
-			stickyLgtm:    false,
+			author:        "sig-lead",
 			expectTreeSha: true,
 		},
 		{
 			name:          "No Tree SHA if sticky lgtm",
-			author:        "Collab",
-			stickyLgtm:    true,
+			author:        "sig-lead",
+			trustedTeam:   "Leads",
 			expectTreeSha: false,
 		},
 	}
@@ -959,9 +958,9 @@ func TestAddTreeHashComment(t *testing.T) {
 			treeSHA := "6dcb09b5b57875f334f61aebed695e2e4193db5e"
 			pc := &plugins.Configuration{}
 			pc.Lgtm = append(pc.Lgtm, plugins.Lgtm{
-				Repos:                   []string{"kubernetes/kubernetes"},
-				StoreTreeHash:           true,
-				StickyForTrustedAuthors: c.stickyLgtm,
+				Repos:          []string{"kubernetes/kubernetes"},
+				StoreTreeHash:  true,
+				StickyLgtmTeam: c.trustedTeam,
 			})
 			rc := reviewCtx{
 				author:      "alice",
@@ -1005,7 +1004,7 @@ func TestAddTreeHashComment(t *testing.T) {
 					t.Fatalf("expected tree_hash comment but got none")
 				}
 			} else {
-				if !found {
+				if found {
 					t.Fatalf("expected no tree_hash comment but got one")
 				}
 			}
