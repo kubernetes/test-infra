@@ -45,14 +45,15 @@ postsubmits:
         - ./test.sh
 
 periodics:
-- name: tf-minigo-periodic
-  interval: 8h
-  decorate: true
-  spec:
-    containers:
-    - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
-      command:
-      - /bin/bash 
-      - -c
-      args:
-      - ./test.sh
+  tensorflow/minigo:
+  - name: tf-minigo-periodic
+    interval: 8h
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
+        command:
+        - /bin/bash 
+        - -c
+        args:
+        - ./test.sh
