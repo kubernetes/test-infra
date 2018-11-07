@@ -83,7 +83,7 @@ periodics:
       - --check-version-skew=false
       - --deployment=eks
       - --provider=eks
-      - --gce-ssh=""
+      - --gce-ssh=
       - --extract=ci/latest-1.10
       - --ginkgo-parallel=30
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -107,7 +107,7 @@ periodics:
       - --check-version-skew=false
       - --deployment=eks
       - --provider=eks
-      - --gce-ssh=""
+      - --gce-ssh=
       - --extract=ci/k8s-stable1
       - --ginkgo-parallel=30
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -131,7 +131,7 @@ periodics:
       - --check-version-skew=false
       - --deployment=eks
       - --provider=eks
-      - --gce-ssh=""
+      - --gce-ssh=
       - --extract=ci/latest
       - --ginkgo-parallel=30
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
