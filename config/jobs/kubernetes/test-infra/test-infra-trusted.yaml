@@ -6,6 +6,7 @@ postsubmits:
     spec:
       containers:
       - image: launcher.gcr.io/google/bazel
+        imagePullPolicy: Always
         command:
         - bazel
         args:
@@ -53,6 +54,7 @@ periodics:
   spec:
     containers:
     - image: launcher.gcr.io/google/bazel
+      imagePullPolicy: Always
       command:
       - bazel
       args:
