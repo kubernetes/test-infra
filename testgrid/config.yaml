@@ -2760,6 +2760,8 @@ test_groups:
   gcs_prefix: compute-image-tools-test/logs/linux-image-tests
 - name: windows-image-tests
   gcs_prefix: compute-image-tools-test/logs/windows-image-tests
+- name: osconfig-tests
+  gcs_prefix: compute-image-tools-test/logs/osconfig-tests
 # Cluster registry
 - name: pull-cluster-registry-verify-gensrc
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-gensrc
@@ -4264,6 +4266,15 @@ dashboards:
       options:
       - key: title
         value: 'windows-image-tests issue: <test-name>'
+      - key: body
+        value: <test-url>
+  - name: osconfig-tests
+    test_group_name: osconfig-tests
+    file_bug_template:
+      url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
+      options:
+      - key: title
+        value: 'osconfig-tests issue: <test-name>'
       - key: body
         value: <test-url>
 
