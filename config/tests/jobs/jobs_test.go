@@ -338,14 +338,6 @@ func TestTrustedJobs(t *testing.T) {
 	}
 }
 
-func TestConfigSecurityJobsMatch(t *testing.T) {
-	kp := c.Presubmits["kubernetes/kubernetes"]
-	sp := c.Presubmits["kubernetes-security/kubernetes"]
-	if len(kp) != len(sp) {
-		t.Fatalf("length of kubernetes/kubernetes presubmits %d does not equal length of kubernetes-security/kubernetes presubmits %d", len(kp), len(sp))
-	}
-}
-
 // Unit test jobs outside kubernetes-security do not use the security cluster
 // and that jobs inside kubernetes-security DO
 func TestConfigSecurityClusterRestricted(t *testing.T) {
