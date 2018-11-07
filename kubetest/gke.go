@@ -47,7 +47,7 @@ var (
 	gkeAdditionalZones             = flag.String("gke-additional-zones", "", "(gke only) List of additional Google Compute Engine zones to use. Clusters are created symmetrically across zones by default, see --gke-shape for details.")
 	gkeNodeLocations               = flag.String("gke-node-locations", "", "(gke only) List of Google Compute Engine zones to use.")
 	gkeEnvironment                 = flag.String("gke-environment", "", "(gke only) Container API endpoint to use, one of 'test', 'staging', 'prod', or a custom https:// URL")
-	gkeShape                       = flag.String("gke-shape", `{"default":{"Nodes":3,"MachineType":"n1-standard-2"}}`, `(gke only) A JSON description of node pools to create. The node pool 'default' is required and used for initial cluster creation. All node pools are symmetric across zones, so the cluster total node count is {total nodes in --gke-shape} * {1 + (length of --gke-additional-zones)}. Example: '{"default":{"Nodes":999,"MachineType:":"n1-standard-1"},"heapster":{"Nodes":1, "MachineType":"n1-standard-8"}}`)
+	gkeShape                       = flag.String("gke-shape", `{"default":{"Nodes":3,"MachineType":"n1-standard-2"}}`, `(gke only) A JSON description of node pools to create. The node pool 'default' is required and used for initial cluster creation. All node pools are symmetric across zones, so the cluster total node count is {total nodes in --gke-shape} * {1 + (length of --gke-additional-zones)}. Example: '{"default":{"Nodes":999,"MachineType:":"n1-standard-1"},"heapster":{"Nodes":1, "MachineType":"n1-standard-8", "ExtraArgs": []}}`)
 	gkeCreateArgs                  = flag.String("gke-create-args", "", "(gke only) (deprecated, use a modified --gke-create-command') Additional arguments passed directly to 'gcloud container clusters create'")
 	gkeCommandGroup                = flag.String("gke-command-group", "", "(gke only) Use a different gcloud track (e.g. 'alpha') for all 'gcloud container' commands. Note: This is added to --gke-create-command on create. You should only use --gke-command-group if you need to change the gcloud track for *every* gcloud container command.")
 	gkeCreateCommand               = flag.String("gke-create-command", defaultCreate, "(gke only) gcloud subcommand used to create a cluster. Modify if you need to pass arbitrary arguments to create.")
@@ -67,6 +67,7 @@ var (
 type gkeNodePool struct {
 	Nodes       int
 	MachineType string
+	ExtraArgs   []string
 }
 
 type gkeDeployer struct {
@@ -303,6 +304,7 @@ func (g *gkeDeployer) Up() error {
 		"--num-nodes="+strconv.Itoa(def.Nodes),
 		"--network="+g.network,
 	)
+	args = append(args, def.ExtraArgs...)
 	if strings.ToUpper(g.image) == "CUSTOM" {
 		args = append(args, "--image-family="+g.imageFamily)
 		args = append(args, "--image-project="+g.imageProject)
@@ -339,13 +341,14 @@ func (g *gkeDeployer) Up() error {
 		if poolName == defaultPool {
 			continue
 		}
-		if err := control.FinishRunning(exec.Command("gcloud", g.containerArgs(
-			"node-pools", "create", poolName,
-			"--cluster="+g.cluster,
-			"--project="+g.project,
+		poolArgs := []string{"node-pools", "create", poolName,
+			"--cluster=" + g.cluster,
+			"--project=" + g.project,
 			g.location,
-			"--machine-type="+pool.MachineType,
-			"--num-nodes="+strconv.Itoa(pool.Nodes))...)); err != nil {
+			"--machine-type=" + pool.MachineType,
+			"--num-nodes=" + strconv.Itoa(pool.Nodes)}
+		poolArgs = append(poolArgs, pool.ExtraArgs...)
+		if err := control.FinishRunning(exec.Command("gcloud", g.containerArgs(poolArgs...)...)); err != nil {
 			return fmt.Errorf("error creating node pool %q: %v", poolName, err)
 		}
 	}
