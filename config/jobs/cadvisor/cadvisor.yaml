@@ -25,7 +25,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/kubernetes"
@@ -75,7 +75,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
       args:
       - --job=$(JOB_NAME)
       - --root=/go/src

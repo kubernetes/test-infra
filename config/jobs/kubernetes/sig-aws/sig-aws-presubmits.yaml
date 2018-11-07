@@ -1,9 +1,10 @@
 presubmits:
   kubernetes/kubernetes:
+  # manual-release-bump-required
   - name: pull-kubernetes-e2e-kops-aws
     skip_branches:
+    - release-1.13  # per-release image
     - release-1.10  # per-release image
-    - release-1.9  # per-release image
     max_concurrency: 12
     always_run: true
     labels:
@@ -15,7 +16,53 @@ presubmits:
       preset-e2e-platform-aws: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
+        args:
+        - --root=/go/src
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
+        - --scenario=kubernetes_e2e
+        - --
+        - --aws
+        - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --build=bazel
+        - --check-leaked-resources=false
+        - --cluster=
+        - --env=KOPS_LATEST=latest-ci-green.txt
+        - --env=KOPS_DEPLOY_LATEST_KUBE=n
+        - --env=KUBE_GCS_UPDATE_LATEST=n
+        - --env=KUBE_FASTBUILD=true
+        - --extract=local
+        - --ginkgo-parallel
+        - --provider=aws
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws
+        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+        - --timeout=55m
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+  - name: pull-kubernetes-e2e-kops-aws
+    branches:
+    - release-1.13  # per-release image
+    max_concurrency: 12
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-e2e-platform-aws: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-1.13
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -61,52 +108,7 @@ presubmits:
       preset-e2e-platform-aws: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.10
-        args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=75"
-        - --scenario=kubernetes_e2e
-        - --
-        - --aws
-        - --aws-cluster-domain=test-cncf-aws.k8s.io
-        - --build=bazel
-        - --check-leaked-resources=false
-        - --cluster=
-        - --env=KOPS_LATEST=latest-ci-green.txt
-        - --env=KOPS_DEPLOY_LATEST_KUBE=n
-        - --env=KUBE_GCS_UPDATE_LATEST=n
-        - --env=KUBE_FASTBUILD=true
-        - --extract=local
-        - --ginkgo-parallel
-        - --provider=aws
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-        - --timeout=55m
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-  - name: pull-kubernetes-e2e-kops-aws
-    branches:
-    - release-1.9  # per-release image
-    max_concurrency: 12
-    always_run: true
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-e2e-platform-aws: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"

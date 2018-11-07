@@ -8,7 +8,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
@@ -35,7 +35,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-1.10
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"

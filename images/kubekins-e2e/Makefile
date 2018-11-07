@@ -32,6 +32,12 @@ ifeq ($(K8S), experimental)
 endif
 
 # kubernetes release-X branch configs
+ifeq ($(K8S), 1.13)
+	GO = 1.11.1
+	BAZEL = 0.18.0
+	CFSSL = R1.2
+endif
+
 ifeq ($(K8S), 1.12)
 	GO = 1.10.4
 	BAZEL = 0.16.1
@@ -47,13 +53,6 @@ endif
 ifeq ($(K8S), 1.10)
 	GO = 1.9.3
 	BAZEL = 0.14.0
-	CFSSL = R1.2
-endif
-
-# TODO(bentheelder,krzyzacy) deprecate once 1.12 is out
-ifeq ($(K8S), 1.9)
-	GO = 1.9.2
-	BAZEL = 0.8.1
 	CFSSL = R1.2
 endif
 
