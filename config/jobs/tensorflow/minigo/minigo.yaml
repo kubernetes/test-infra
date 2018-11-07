@@ -7,38 +7,23 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/tensor-go/cc-base:latest
+      - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
         command:
         - /bin/bash
         - -c
         args:
-        # Copy tensorflow libraries into repo, test with board_size=9, test with board_size=19.
-        - "cp -r /app/cc/tensorflow ./cc/tensorflow && bazel test cc:all --test_output=errors --compilation_mode=dbg --define=board_size=9 && bazel test cc:all --test_output=errors --compilation_mode=dbg --define=board_size=19"
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "2Gi"
-      imagePullSecrets:
-      - name: minigo-image-pull
+        # Copy prebuilt tensorflow into repo, check clang-format, test with board_size 9 and 19.
+        - "./testing/setup.sh && ./cc/test.sh"
 
   - name: tf-minigo-presubmit
     always_run: true         # Run for every PR, or only when requested.
     branches:
     - master
-    labels:
-      preset-service-account: "true"
+    decorate: true
     spec:
       containers:
       - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
-        imagePullPolicy: Always
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=github.com/tensorflow/minigo=$(PULL_REFS)"
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --scenario=execute
-        - --
+        command:
         - ./test.sh
 
 postsubmits:
@@ -46,35 +31,23 @@ postsubmits:
   - name: tf-minigo-postsubmit
     branches:
     - master
-    labels:
-      preset-service-account: "true"
+    decorate: true
     spec:
       containers:
       - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
-        imagePullPolicy: Always
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=github.com/tensorflow/minigo=$(PULL_REFS)"
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-jenkins/logs
-        - --scenario=execute
-        - --
+        command:
         - ./test.sh
 
 periodics:
 - name: tf-minigo-periodic
   interval: 8h
-  labels:
-    preset-service-account: "true"
+  decorate: true
+  extra_refs:
+  - org: tensorflow
+    repo: minigo
+    base_ref: master
   spec:
     containers:
     - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
-      imagePullPolicy: Always
-      args:
-      - "--job=$(JOB_NAME)"
-      - --repo=github.com/tensorflow/minigo=master
-      - --service-account=/etc/service-account/service-account.json
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=execute
-      - --
+      command:
       - ./test.sh
