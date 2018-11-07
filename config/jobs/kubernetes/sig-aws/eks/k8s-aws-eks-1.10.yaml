@@ -73,7 +73,7 @@ periodics:
     preset-ci-kubernetes-e2e-aws-eks-1-10: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       args:
       - --timeout=200
       - --bare
@@ -97,7 +97,7 @@ periodics:
     preset-ci-kubernetes-e2e-aws-eks-1-10: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       args:
       - --timeout=200
       - --bare
@@ -121,7 +121,7 @@ periodics:
     preset-ci-kubernetes-e2e-aws-eks-1-10: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       args:
       - --timeout=200
       - --bare
