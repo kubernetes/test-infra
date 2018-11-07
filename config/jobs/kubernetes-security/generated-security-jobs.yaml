@@ -226,6 +226,7 @@ presubmits:
         - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
         - --timeout=60m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         name: ""
         resources:
@@ -284,6 +285,7 @@ presubmits:
         - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
         - --timeout=60m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.10
         name: ""
         resources:
@@ -342,6 +344,7 @@ presubmits:
         - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
         - --timeout=60m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.9
         name: ""
         resources:
@@ -359,184 +362,6 @@ presubmits:
           secretName: ssh-security
     trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-device-plugin-gpu,?($|\s.*)
   - agent: kubernetes
-    always_run: false
-    cluster: security
-    context: pull-security-kubernetes-e2e-gke-device-plugin-gpu
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-k8s-ssh: "true"
-      preset-service-account: "true"
-    max_concurrency: 1
-    name: pull-security-kubernetes-e2e-gke-device-plugin-gpu
-    rerun_command: /test pull-security-kubernetes-e2e-gke-device-plugin-gpu
-    skip_branches:
-    - release-1.10
-    - release-1.9
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
-        - --cluster=
-        - --deployment=gke
-        - --extract=local
-        - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-        - --gcp-node-image=gci
-        - --gcp-project=k8s-gke-gpu-pr
-        - --gcp-zone=us-west1-b
-        - --ginkgo-parallel=30
-        - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
-        - --gke-environment=test
-        - --provider=gke
-        - --stage=gs://kubernetes-release-dev/ci
-        - --stage-suffix=pull-kubernetes-e2e-gke-device-plugin-gpu
-        - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-        - --timeout=60m
-        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke-device-plugin-gpu,?($|\s.*)
-  - agent: kubernetes
-    always_run: false
-    branches:
-    - release-1.10
-    cluster: security
-    context: pull-security-kubernetes-e2e-gke-device-plugin-gpu
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-k8s-ssh: "true"
-      preset-service-account: "true"
-    max_concurrency: 1
-    name: pull-security-kubernetes-e2e-gke-device-plugin-gpu
-    rerun_command: /test pull-security-kubernetes-e2e-gke-device-plugin-gpu
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
-        - --cluster=
-        - --deployment=gke
-        - --extract=local
-        - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-        - --gcp-node-image=gci
-        - --gcp-project=k8s-gke-gpu-pr
-        - --gcp-zone=us-west1-b
-        - --ginkgo-parallel=30
-        - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
-        - --gke-environment=test
-        - --provider=gke
-        - --stage=gs://kubernetes-release-dev/ci
-        - --stage-suffix=pull-kubernetes-e2e-gke-device-plugin-gpu
-        - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-        - --timeout=60m
-        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.10
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke-device-plugin-gpu,?($|\s.*)
-  - agent: kubernetes
-    always_run: false
-    branches:
-    - release-1.9
-    cluster: security
-    context: pull-security-kubernetes-e2e-gke-device-plugin-gpu
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-k8s-ssh: "true"
-      preset-service-account: "true"
-    max_concurrency: 1
-    name: pull-security-kubernetes-e2e-gke-device-plugin-gpu
-    rerun_command: /test pull-security-kubernetes-e2e-gke-device-plugin-gpu
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
-        - --cluster=
-        - --deployment=gke
-        - --extract=local
-        - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-        - --gcp-node-image=gci
-        - --gcp-project=k8s-gke-gpu-pr
-        - --gcp-zone=us-west1-b
-        - --ginkgo-parallel=30
-        - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
-        - --gke-environment=test
-        - --provider=gke
-        - --stage=gs://kubernetes-release-dev/ci
-        - --stage-suffix=pull-kubernetes-e2e-gke-device-plugin-gpu
-        - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-        - --timeout=60m
-        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.9
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke-device-plugin-gpu,?($|\s.*)
-  - agent: kubernetes
     always_run: true
     cluster: security
     context: pull-security-kubernetes-e2e-gce
@@ -575,6 +400,7 @@ presubmits:
           --minStartupPods=8
         - --timeout=65m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         name: ""
         resources:
@@ -629,6 +455,7 @@ presubmits:
           --minStartupPods=8
         - --timeout=65m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.10
         name: ""
         resources:
@@ -683,6 +510,7 @@ presubmits:
           --minStartupPods=8
         - --timeout=65m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.9
         name: ""
         resources:
@@ -737,6 +565,7 @@ presubmits:
           --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
         - --timeout=180m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-alpha-features
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         name: ""
         resources:
@@ -753,184 +582,6 @@ presubmits:
           defaultMode: 256
           secretName: ssh-security
     trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-alpha-features,?($|\s.*)
-  - agent: kubernetes
-    always_run: false
-    cluster: security
-    context: pull-security-kubernetes-e2e-gke
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-k8s-ssh: "true"
-      preset-service-account: "true"
-    name: pull-security-kubernetes-e2e-gke
-    rerun_command: /test pull-security-kubernetes-e2e-gke
-    run_if_changed: ^(cluster/gce|cluster/addons).*$
-    skip_branches:
-    - release-1.10
-    - release-1.9
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
-        - --cluster=
-        - --deployment=gke
-        - --extract=local
-        - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-        - --gcp-node-image=gci
-        - --gcp-project=k8s-jkns-pr-gci-gke
-        - --gcp-zone=us-central1-f
-        - --ginkgo-parallel=30
-        - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard
-        - --gke-environment=test
-        - --gke-shape={"default":{"Nodes":4,"MachineType":"n1-standard-2"}}
-        - --provider=gke
-        - --stage=gs://kubernetes-release-dev/ci
-        - --stage-suffix=pull-kubernetes-e2e-gke
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-          --minStartupPods=8
-        - --timeout=65m
-        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke,?($|\s.*)
-  - agent: kubernetes
-    always_run: false
-    branches:
-    - release-1.10
-    cluster: security
-    context: pull-security-kubernetes-e2e-gke
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-k8s-ssh: "true"
-      preset-service-account: "true"
-    name: pull-security-kubernetes-e2e-gke
-    rerun_command: /test pull-security-kubernetes-e2e-gke
-    run_if_changed: ^(cluster/gce|cluster/addons).*$
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
-        - --cluster=
-        - --deployment=gke
-        - --extract=local
-        - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-        - --gcp-node-image=gci
-        - --gcp-project=k8s-jkns-pr-gci-gke
-        - --gcp-zone=us-central1-f
-        - --ginkgo-parallel=30
-        - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard
-        - --gke-environment=test
-        - --gke-shape={"default":{"Nodes":4,"MachineType":"n1-standard-2"}}
-        - --provider=gke
-        - --stage=gs://kubernetes-release-dev/ci
-        - --stage-suffix=pull-kubernetes-e2e-gke
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-          --minStartupPods=8
-        - --timeout=65m
-        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.10
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke,?($|\s.*)
-  - agent: kubernetes
-    always_run: false
-    branches:
-    - release-1.9
-    cluster: security
-    context: pull-security-kubernetes-e2e-gke
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-k8s-ssh: "true"
-      preset-service-account: "true"
-    name: pull-security-kubernetes-e2e-gke
-    rerun_command: /test pull-security-kubernetes-e2e-gke
-    run_if_changed: ^(cluster/gce|cluster/addons).*$
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
-        - --cluster=
-        - --deployment=gke
-        - --extract=local
-        - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-        - --gcp-node-image=gci
-        - --gcp-project=k8s-jkns-pr-gci-gke
-        - --gcp-zone=us-central1-f
-        - --ginkgo-parallel=30
-        - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard
-        - --gke-environment=test
-        - --gke-shape={"default":{"Nodes":4,"MachineType":"n1-standard-2"}}
-        - --provider=gke
-        - --stage=gs://kubernetes-release-dev/ci
-        - --stage-suffix=pull-kubernetes-e2e-gke
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-          --minStartupPods=8
-        - --timeout=65m
-        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.9
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -974,6 +625,7 @@ presubmits:
           --minStartupPods=8
         - --timeout=65m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-containerd-gce
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         name: ""
         resources:
@@ -1076,6 +728,7 @@ presubmits:
           --flakeAttempts=2
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         name: ""
         resources:
@@ -1124,6 +777,7 @@ presubmits:
           --flakeAttempts=2
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.12
         name: ""
         resources:
@@ -1172,6 +826,7 @@ presubmits:
           --flakeAttempts=2
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.11
         name: ""
         resources:
@@ -1220,6 +875,7 @@ presubmits:
           --flakeAttempts=2
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.10
         name: ""
         resources:
@@ -1268,6 +924,7 @@ presubmits:
           --flakeAttempts=2
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.9
         name: ""
         resources:
@@ -1320,6 +977,7 @@ presubmits:
           --flakeAttempts=2
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         name: ""
         resources:
@@ -1369,6 +1027,7 @@ presubmits:
           --skip="\[Flaky\]|\[Serial\] --flakeAttempts=2"
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         name: ""
         resources:
@@ -1509,6 +1168,7 @@ presubmits:
         - --timeout=100m
         - --use-logexporter
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-100-performance
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         name: ""
         resources:
@@ -1566,6 +1226,7 @@ presubmits:
         - --timeout=240m
         - --use-logexporter
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-big-performance
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         name: ""
         resources:
@@ -1622,6 +1283,7 @@ presubmits:
         - --timeout=540m
         - --use-logexporter
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-large-performance
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         name: ""
         resources:
@@ -1686,6 +1348,7 @@ presubmits:
           --gather-metrics-at-teardown=true
         - --timeout=100m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         name: ""
         resources:
@@ -1749,6 +1412,7 @@ presubmits:
           --gather-metrics-at-teardown=true
         - --timeout=100m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.10
         name: ""
         resources:
@@ -1812,6 +1476,7 @@ presubmits:
           --gather-metrics-at-teardown=true
         - --timeout=100m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.9
         name: ""
         resources:
@@ -1873,6 +1538,7 @@ presubmits:
           --gather-metrics-at-teardown=true
         - --timeout=1200m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-scale
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
         name: ""
         resources:
@@ -1936,6 +1602,7 @@ presubmits:
           - --timeout=55m
           - --use-shared-build=bazel
           - --gcs-shared=gs://kubernetes-security-prow/bazel
+          - --gcp-project=k8s-jkns-pr-gce-etcd3
           env:
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
@@ -2033,6 +1700,7 @@ presubmits:
           - --timeout=55m
           - --use-shared-build=bazel
           - --gcs-shared=gs://kubernetes-security-prow/bazel
+          - --gcp-project=k8s-jkns-pr-gce-etcd3
           env:
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
@@ -2127,6 +1795,7 @@ presubmits:
           - --timeout=55m
           - --use-shared-build=bazel
           - --gcs-shared=gs://kubernetes-security-prow/bazel
+          - --gcp-project=k8s-jkns-pr-gce-etcd3
           env:
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
