@@ -27,8 +27,7 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/deck/jobs"
-	"k8s.io/test-infra/prow/pod-utils/downwardapi"
-	"k8s.io/test-infra/prow/pod-utils/gcs"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
@@ -144,8 +143,12 @@ func (s *Spyglass) Refresh(src string, podName string, sizeLimit int64, viewReq 
 	return lens, nil
 }
 
-func splitSrc(src string) (keyType, key string) {
+func splitSrc(src string) (keyType, key string, err error) {
 	split := strings.SplitN(src, "/", 2)
+	if len(split) < 2 {
+		err = fmt.Errorf("invalid src %s: expected <key-type>/<key>", src)
+		return
+	}
 	keyType = split[0]
 	key = split[1]
 	return
@@ -153,7 +156,11 @@ func splitSrc(src string) (keyType, key string) {
 
 // ListArtifacts gets the names of all artifacts available from the given source
 func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
-	switch keyType, key := splitSrc(src); keyType {
+	keyType, key, err := splitSrc(src)
+	if err != nil {
+		return []string{}, fmt.Errorf("error parsing src: %v", err)
+	}
+	switch keyType {
 	case gcsKeyType:
 		return s.GCSArtifactFetcher.artifacts(key)
 	case prowKeyType:
@@ -181,10 +188,17 @@ func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
 
 // JobPath returns a link to the GCS directory for the job specified in src
 func (s *Spyglass) JobPath(src string) (string, error) {
-	keyType, key := splitSrc(src)
+	src = strings.TrimSuffix(src, "/")
+	keyType, key, err := splitSrc(src)
+	if err != nil {
+		return "", fmt.Errorf("error parsing src: %v", src)
+	}
 	split := strings.Split(key, "/")
 	switch keyType {
 	case gcsKeyType:
+		if len(split) < 4 {
+			return "", fmt.Errorf("invalid key %s: expected <bucket-name>/<log-type>/.../<job-name>/<build-id>", key)
+		}
 		// see https://github.com/kubernetes/test-infra/tree/master/gubernator
 		bktName := split[0]
 		logType := split[1]
@@ -196,14 +210,20 @@ func (s *Spyglass) JobPath(src string) (string, error) {
 		}
 		return "", fmt.Errorf("unrecognized GCS key: %s", key)
 	case prowKeyType:
+		if len(split) < 2 {
+			return "", fmt.Errorf("invalid key %s: expected <job-name>/<build-id>", key)
+		}
 		jobName := split[0]
 		buildID := split[1]
 		job, err := s.jobAgent.GetProwJob(jobName, buildID)
 		if err != nil {
 			return "", fmt.Errorf("failed to get prow job from src %q: %v", key, err)
 		}
-		spec := downwardapi.NewJobSpec(job.Spec, buildID, job.Status.PodName)
-		return gcs.AliasForSpec(&spec), nil
+		bktName := job.Spec.DecorationConfig.GCSConfiguration.Bucket
+		if job.Spec.Type == kube.PresubmitJob {
+			return path.Join(bktName, "pr-logs/directory", jobName), nil
+		}
+		return path.Join(bktName, "logs", jobName), nil
 	default:
 		return "", fmt.Errorf("unrecognized key type for src: %v", src)
 	}
@@ -236,7 +256,11 @@ func (s *Spyglass) prowToGCS(prowKey string) (string, error) {
 func (s *Spyglass) FetchArtifacts(src string, podName string, sizeLimit int64, artifactNames []string) ([]viewers.Artifact, error) {
 	artStart := time.Now()
 	arts := []viewers.Artifact{}
-	switch keyType, key := splitSrc(src); keyType {
+	keyType, key, err := splitSrc(src)
+	if err != nil {
+		return arts, fmt.Errorf("error parsing src: %v", err)
+	}
+	switch keyType {
 	case gcsKeyType:
 		for _, name := range artifactNames {
 			art, err := s.GCSArtifactFetcher.artifact(key, name, sizeLimit)
