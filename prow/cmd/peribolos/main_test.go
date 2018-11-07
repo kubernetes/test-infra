@@ -576,6 +576,30 @@ func TestConfigureOrgMembers(t *testing.T) {
 			err: true,
 		},
 		{
+			name: "require team members with upper name to be org member",
+			config: org.Config{
+				Teams: map[string]org.Team{
+					"foo": {
+						Members: []string{"Me"},
+					},
+				},
+				Members: []string{"Me"},
+			},
+			members: []string{"Me"},
+		},
+		{
+			name: "require team maintainer with upper name to be org member",
+			config: org.Config{
+				Teams: map[string]org.Team{
+					"foo": {
+						Maintainers: []string{"Me"},
+					},
+				},
+				Admins: []string{"Me"},
+			},
+			admins: []string{"Me"},
+		},
+		{
 			name: "disallow duplicate names",
 			config: org.Config{
 				Teams: map[string]org.Team{

@@ -349,6 +349,7 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 		}
 	}
 
+	teamMembers = normalize(teamMembers)
 	if outside := teamMembers.Difference(want.all()); len(outside) > 0 {
 		return fmt.Errorf("all team members/maintainers must also be org members: %s", strings.Join(outside.List(), ", "))
 	}
