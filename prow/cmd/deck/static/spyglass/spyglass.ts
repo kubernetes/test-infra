@@ -76,11 +76,17 @@ function showAllLines(logID: string): void {
   }
 }
 
-function showLines(linesID: string, skipID: string): void {
+function showLines(logID:string, linesID: string, skipID: string): void {
   // show a single group of hidden lines
   document.getElementById(linesID)!.classList.remove("skipped");
   // hide the corresponding button
   document.getElementById(skipID)!.style.display = "none";
+  // hide the "show all" button if nothing's left to show
+  const log = document.getElementById(logID)!;
+  const skipped = log.querySelectorAll<HTMLElement>(".skipped");
+  if (skipped.length === 0) {
+    document.getElementById(logID + "-show-all")!.style.display = "none";
+  }
 }
 
 function toggleExpansion(bodyId: string, expanderId: string): void {
