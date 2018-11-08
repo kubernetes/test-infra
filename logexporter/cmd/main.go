@@ -65,7 +65,7 @@ var (
 
 // Check if the config provided through the flags take valid values.
 func checkConfigValidity() error {
-	glog.Infof("Verifying if a valid config has been provided through the flags")
+	glog.Info("Verifying if a valid config has been provided through the flags")
 	if *nodeName == "" {
 		return fmt.Errorf("Flag --node-name has its value unspecified")
 	}
@@ -126,7 +126,7 @@ func createSystemdLogfiles(outputDir string) {
 // to a temporary directory. Also create logfiles for systemd services if journalctl is present.
 // We do not expect this function to see an error.
 func prepareLogfiles(logDir string) {
-	glog.Infof("Preparing logfiles relevant to this node")
+	glog.Info("Preparing logfiles relevant to this node")
 	logfiles := nodeLogs[:]
 
 	switch *cloudProvider {
@@ -145,7 +145,7 @@ func prepareLogfiles(logDir string) {
 
 	// Select system/service specific logs.
 	if _, err := os.Stat("/workspace/etc/systemd/journald.conf"); err == nil {
-		glog.Infof("Journalctl found on host. Collecting systemd logs")
+		glog.Info("Journalctl found on host. Collecting systemd logs")
 		createSystemdLogfiles(logDir)
 	} else {
 		glog.Infof("Journalctl not found on host (%v). Collecting supervisord logs instead", err)
@@ -223,7 +223,7 @@ func main() {
 	if err := uploadLogfilesToGCS(localTmpLogPath); err != nil {
 		glog.Fatalf("Could not upload logs to GCS: %v", err)
 	}
-	glog.Infof("Logs successfully uploaded")
+	glog.Info("Logs successfully uploaded")
 
 	glog.Infof("Entering sleep for a duration of %v seconds", *sleepDuration)
 	time.Sleep(*sleepDuration)
