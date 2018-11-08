@@ -228,12 +228,12 @@ func (d *Deployer) DumpClusterLogs(localPath, gcsPath string) error {
 		return err
 	}
 
-	// Save logs from  master node container(s)
+	// Save logs from master node container(s)
 	if err := d.saveMasterNodeLogs(localPath); err != nil {
 		return err
 	}
 
-	// Save logs from  worker node containers
+	// Save logs from worker node containers
 	return d.saveWorkerNodeLogs(localPath)
 }
 

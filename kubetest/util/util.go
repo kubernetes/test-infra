@@ -60,7 +60,7 @@ func AppendError(errs []error, err error) []error {
 	return errs
 }
 
-// Home returns Returns $HOME/part/part/part
+// Home returns $HOME/part/part/part
 func Home(parts ...string) string {
 	p := []string{os.Getenv("HOME")}
 	for _, a := range parts {
