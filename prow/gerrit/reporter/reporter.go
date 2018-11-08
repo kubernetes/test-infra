@@ -125,19 +125,23 @@ func (c *Client) Report(pj *v1.ProwJob) error {
 	gerritID := pj.ObjectMeta.Annotations[client.GerritID]
 	gerritInstance := pj.ObjectMeta.Annotations[client.GerritInstance]
 	gerritRevision := pj.ObjectMeta.Labels[client.GerritRevision]
-
-	codeReview := client.LBTM
-	if success == total {
-		codeReview = client.LGTM
+	reportLabel := client.CodeReview
+	if val, ok := pj.ObjectMeta.Labels[client.GerritReportLabel]; ok {
+		reportLabel = val
 	}
-	labels := map[string]string{client.CodeReview: codeReview}
+
+	vote := client.LBTM
+	if success == total {
+		vote = client.LGTM
+	}
+	labels := map[string]string{reportLabel: vote}
 
 	logrus.Infof("Reporting to instance %s on id %s with message %s", gerritInstance, gerritID, message)
 	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, labels); err != nil {
-		logrus.WithError(err).Errorf("fail to set review with %s label on change ID %s", client.CodeReview, gerritID)
+		logrus.WithError(err).Errorf("fail to set review with %s label on change ID %s", reportLabel, gerritID)
 
 		// possibly don't have label permissions, try without labels
-		message = fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", client.CodeReview, message)
+		message = fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", reportLabel, message)
 		if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, nil); err != nil {
 			logrus.WithError(err).Errorf("fail to set plain review on change ID %s", gerritID)
 			return err
