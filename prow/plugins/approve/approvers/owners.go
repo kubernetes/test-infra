@@ -447,7 +447,7 @@ func (ap Approvers) GetFiles(org, project, branch string) []File {
 // remove those that are not useful considering current approvers and
 // assignees. This only uses leave approvers to find approvers the
 // closest to the changes.
-// - We find a subset of suggested approvers from from current
+// - We find a subset of suggested approvers from current
 // approvers, suggested approvers and assignees, but we remove thoses
 // that are not useful considering suggestd approvers and current
 // approvers. This uses the full approvers list, and will result in root
