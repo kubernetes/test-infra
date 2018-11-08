@@ -28,7 +28,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20181002-996397d
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20181107-d88dbbf
         command:
         - prow/bump.sh
         env:
