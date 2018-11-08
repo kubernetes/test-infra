@@ -124,7 +124,7 @@ rules_typescript_dependencies()
 
 # Setup TypeScript toolchain
 load("@build_bazel_rules_typescript//:defs.bzl", "ts_setup_workspace")
-load(":test_infra.bzl", "http_archive_with_pkg_path")
+load("//def:test_infra.bzl", "http_archive_with_pkg_path")
 
 http_archive_with_pkg_path(
     name = "ruamel_yaml",
