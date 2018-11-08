@@ -2619,6 +2619,8 @@ test_groups:
 - name: pull-publishing-bot-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-publishing-bot-build
   num_columns_recent: 20
+- name: post-test-infra-deploy-prow
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-deploy-prow
 - name: post-test-infra-push-prow
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-prow
 - name: pull-test-infra-bazel
@@ -6652,6 +6654,11 @@ dashboards:
   - name: push-prow
     description: builds and pushes all prow on each commit by running bump.sh
     test_group_name: post-test-infra-push-prow
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: deploy-prow
+    description: deploys the configured version of prow by running deploy.sh
+    test_group_name: post-test-infra-deploy-prow
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 
