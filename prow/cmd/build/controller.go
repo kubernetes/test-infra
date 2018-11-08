@@ -499,7 +499,7 @@ func injectEnvironment(b *buildv1alpha1.Build, rawEnv map[string]string) {
 
 func workDir(refs prowjobv1.Refs) buildv1alpha1.ArgumentSpec {
 	// workspaceMountName is auto-injected into each step at workspaceMountPath
-	return buildv1alpha1.ArgumentSpec{Name: "WORKDIR", Value: clone.PathForRefs(workspaceMountPath, &refs)}
+	return buildv1alpha1.ArgumentSpec{Name: "WORKDIR", Value: clone.PathForRefs(workspaceMountPath, refs)}
 }
 
 // injectSource adds the custom source container to call clonerefs correctly.

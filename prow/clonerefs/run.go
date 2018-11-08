@@ -31,6 +31,8 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/clone"
 )
 
+var cloneFunc = clone.Run
+
 // Run clones the configured refs
 func (o Options) Run() error {
 	var env []string
@@ -61,19 +63,19 @@ func (o Options) Run() error {
 	wg := &sync.WaitGroup{}
 	wg.Add(numWorkers)
 
-	input := make(chan *kube.Refs)
+	input := make(chan kube.Refs)
 	output := make(chan clone.Record, len(o.GitRefs))
 	for i := 0; i < numWorkers; i++ {
 		go func() {
 			defer wg.Done()
 			for ref := range input {
-				output <- clone.Run(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail, o.CookiePath, env)
+				output <- cloneFunc(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail, o.CookiePath, env)
 			}
 		}()
 	}
 
 	for _, ref := range o.GitRefs {
-		input <- &ref
+		input <- ref
 	}
 
 	close(input)

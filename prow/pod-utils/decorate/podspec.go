@@ -475,7 +475,7 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 	spec.Volumes = append(spec.Volumes, logVolume, toolsVolume, gcsCredentialsVolume)
 
 	if len(refs) > 0 {
-		spec.Containers[0].WorkingDir = clone.PathForRefs(codeMount.MountPath, &refs[0])
+		spec.Containers[0].WorkingDir = clone.PathForRefs(codeMount.MountPath, refs[0])
 		spec.Containers[0].VolumeMounts = append(spec.Containers[0].VolumeMounts, codeMount)
 		spec.Volumes = append(spec.Volumes, append(cloneVolumes, codeVolume)...)
 	}

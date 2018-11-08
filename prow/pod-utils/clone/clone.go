@@ -28,7 +28,7 @@ import (
 
 // Run clones the refs under the prescribed directory and optionally
 // configures the git username and email in the repository as well.
-func Run(refs *kube.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env []string) Record {
+func Run(refs kube.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env []string) Record {
 	logrus.WithFields(logrus.Fields{"refs": refs}).Info("Cloning refs")
 	record := Record{Refs: refs}
 	for _, command := range commandsForRefs(refs, dir, gitUserName, gitUserEmail, cookiePath, env) {
@@ -50,7 +50,7 @@ func Run(refs *kube.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env
 
 // PathForRefs determines the full path to where
 // refs should be cloned
-func PathForRefs(baseDir string, refs *kube.Refs) string {
+func PathForRefs(baseDir string, refs kube.Refs) string {
 	var clonePath string
 	if refs.PathAlias != "" {
 		clonePath = refs.PathAlias
@@ -60,7 +60,7 @@ func PathForRefs(baseDir string, refs *kube.Refs) string {
 	return fmt.Sprintf("%s/src/%s", baseDir, clonePath)
 }
 
-func commandsForRefs(refs *kube.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env []string) []cloneCommand {
+func commandsForRefs(refs kube.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env []string) []cloneCommand {
 	repositoryURI := fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo)
 	if refs.CloneURI != "" {
 		repositoryURI = refs.CloneURI

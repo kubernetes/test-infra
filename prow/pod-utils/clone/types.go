@@ -24,9 +24,9 @@ import (
 // git state was, what steps we took to get there,
 // and whether or not we were successful.
 type Record struct {
-	Refs     *kube.Refs `json:"refs"`
-	Commands []Command  `json:"commands"`
-	Failed   bool       `json:"failed"`
+	Refs     kube.Refs `json:"refs"`
+	Commands []Command `json:"commands"`
+	Failed   bool      `json:"failed"`
 }
 
 // Command is a trace of a command executed
