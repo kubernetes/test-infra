@@ -112,10 +112,9 @@ func (c *Client) retry(action string, call func() (*github.Response, error)) (*g
 
 		if retryCount == c.retries {
 			return resp, err
-		} else {
-			glog.Errorf("error %s: %v. Will retry.\n", action, err)
-			c.sleepForAttempt(retryCount)
 		}
+		glog.Errorf("error %s: %v. Will retry.\n", action, err)
+		c.sleepForAttempt(retryCount)
 	}
 	return resp, err
 }
