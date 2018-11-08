@@ -71,7 +71,7 @@ func (client *Client) CheckFlags() error {
 	return nil
 }
 
-// Create the github client that we use to communicate with github
+// getGithubClient create the github client that we use to communicate with github
 func (client *Client) getGithubClient() (*github.Client, error) {
 	if client.githubClient != nil {
 		return client.githubClient, nil
@@ -95,7 +95,7 @@ func (client *Client) getGithubClient() (*github.Client, error) {
 	return client.githubClient, nil
 }
 
-// Make sure we have not reached the limit or wait
+// limitsCheckAndWait make sure we have not reached the limit or wait
 func (client *Client) limitsCheckAndWait() {
 	var sleep time.Duration
 	githubClient, err := client.getGithubClient()
@@ -173,7 +173,7 @@ func (client *Client) FetchIssues(latest time.Time, c chan *github.Issue) {
 	close(c)
 }
 
-// Look for a specific Id in a list of events
+// hasID look for a specific Id in a list of events
 func hasID(events []*github.IssueEvent, ID int) bool {
 	for _, event := range events {
 		if *event.ID == ID {
