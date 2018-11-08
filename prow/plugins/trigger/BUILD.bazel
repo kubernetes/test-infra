@@ -27,8 +27,8 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = [
-        "ic.go",
-        "pr.go",
+        "issue-comment.go",
+        "pull-request.go",
         "push.go",
         "trigger.go",
     ],
