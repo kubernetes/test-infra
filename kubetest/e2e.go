@@ -144,17 +144,6 @@ func run(deploy deployer, o options) error {
 				return fmt.Errorf("error starting federation: %s", err)
 			}
 		}
-
-		// The dind deployer checks that the control plane is healthy.
-		if !o.nodeTests && o.deployment != "dind" {
-			// Check that the api is reachable before proceeding with further steps.
-			errs = util.AppendError(errs, control.XMLWrap(&suite, "Check APIReachability", getKubectlVersion))
-			if dump != "" {
-				errs = util.AppendError(errs, control.XMLWrap(&suite, "list nodes", func() error {
-					return listNodes(dump)
-				}))
-			}
-		}
 	}
 
 	if o.checkLeaks {
@@ -201,7 +190,7 @@ func run(deploy deployer, o options) error {
 				return federationTest(testArgs)
 			}))
 		} else {
-			if o.deployment != "dind" && o.deployment != "conformance" {
+			if o.deployment != "conformance" {
 				errs = util.AppendError(errs, control.XMLWrap(&suite, "kubectl version", getKubectlVersion))
 			}
 

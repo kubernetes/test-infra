@@ -28,7 +28,6 @@ go_library(
     deps = [
         "//boskos/client:go_default_library",
         "//kubetest/conformance:go_default_library",
-        "//kubetest/dind:go_default_library",
         "//kubetest/e2e:go_default_library",
         "//kubetest/eks:go_default_library",
         "//kubetest/kubeadmdind:go_default_library",
@@ -83,7 +82,6 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//kubetest/conformance:all-srcs",
-        "//kubetest/dind:all-srcs",
         "//kubetest/e2e:all-srcs",
         "//kubetest/eks:all-srcs",
         "//kubetest/kubeadmdind:all-srcs",
