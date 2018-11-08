@@ -27,19 +27,19 @@ import (
 func TestPathForRefs(t *testing.T) {
 	var testCases = []struct {
 		name     string
-		refs     *kube.Refs
+		refs     kube.Refs
 		expected string
 	}{
 		{
 			name: "literal override",
-			refs: &kube.Refs{
+			refs: kube.Refs{
 				PathAlias: "alias",
 			},
 			expected: "base/src/alias",
 		},
 		{
 			name: "default generated",
-			refs: &kube.Refs{
+			refs: kube.Refs{
 				Org:  "org",
 				Repo: "repo",
 			},
@@ -57,14 +57,14 @@ func TestPathForRefs(t *testing.T) {
 func TestCommandsForRefs(t *testing.T) {
 	var testCases = []struct {
 		name                                       string
-		refs                                       *kube.Refs
+		refs                                       kube.Refs
 		dir, gitUserName, gitUserEmail, cookiePath string
 		env                                        []string
 		expected                                   []cloneCommand
 	}{
 		{
 			name: "simplest case, minimal refs",
-			refs: &kube.Refs{
+			refs: kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "master",
@@ -83,7 +83,7 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "minimal refs with git user name",
-			refs: &kube.Refs{
+			refs: kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "master",
@@ -104,7 +104,7 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "minimal refs with git user email",
-			refs: &kube.Refs{
+			refs: kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "master",
@@ -125,7 +125,7 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "minimal refs with http cookie file",
-			refs: &kube.Refs{
+			refs: kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "master",
@@ -146,7 +146,7 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "minimal refs with no submodules",
-			refs: &kube.Refs{
+			refs: kube.Refs{
 				Org:            "org",
 				Repo:           "repo",
 				BaseRef:        "master",
@@ -165,7 +165,7 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "refs with clone URI override",
-			refs: &kube.Refs{
+			refs: kube.Refs{
 				Org:      "org",
 				Repo:     "repo",
 				BaseRef:  "master",
@@ -185,7 +185,7 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "refs with path alias",
-			refs: &kube.Refs{
+			refs: kube.Refs{
 				Org:       "org",
 				Repo:      "repo",
 				BaseRef:   "master",
@@ -205,7 +205,7 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "refs with specific base sha",
-			refs: &kube.Refs{
+			refs: kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "master",
@@ -225,7 +225,7 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "refs with simple pr ref",
-			refs: &kube.Refs{
+			refs: kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "master",
@@ -249,7 +249,7 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "refs with pr ref override",
-			refs: &kube.Refs{
+			refs: kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "master",
@@ -273,7 +273,7 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "refs with pr ref with specific sha",
-			refs: &kube.Refs{
+			refs: kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "master",
@@ -297,7 +297,7 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "refs with multiple simple pr refs",
-			refs: &kube.Refs{
+			refs: kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "master",
