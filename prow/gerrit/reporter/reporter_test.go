@@ -164,6 +164,34 @@ func TestReport(t *testing.T) {
 			expectLabel:   map[string]string{client.CodeReview: client.LGTM},
 		},
 		{
+			// TODO(krzyzacy): remove after we clean up deprecated labels
+			name: "1 job, passed, has deprecated labels, should report",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.DeprecatedGerritRevision: "abc",
+					},
+					Annotations: map[string]string{
+						client.DeprecatedGerritID:       "123-abc",
+						client.DeprecatedGerritInstance: "gerrit",
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job: "ci-foo",
+				},
+			},
+			expectReport:  true,
+			reportInclude: []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
+			expectLabel:   map[string]string{client.CodeReview: client.LGTM},
+		},
+		{
 			name: "1 job, passed, with customized label, should report to customized label",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
