@@ -2172,6 +2172,8 @@ test_groups:
 # EKS e2e results
 - name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-1-10-aws-eks-1-10-prod
+- name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod-conformance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-1-10-aws-eks-1-10-prod-conformance
 - name: ci-kubernetes-e2e-stable-aws-eks-1-10-prod
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-stable-aws-eks-1-10-prod
 - name: ci-kubernetes-e2e-latest-aws-eks-1-10-prod
@@ -5709,6 +5711,9 @@ dashboards:
   - name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod
     test_group_name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod
     description: Kubernetes 1.10 branch e2e tests with EKS prod build 1.10
+  - name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod-conformance
+    test_group_name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod-conformance
+    description: Kubernetes 1.10 branch e2e tests with EKS prod build 1.10, Conformance tests
 - name: sig-aws-eks-ci-kubernetes-e2e-stable
   dashboard_tab:
   - name: ci-kubernetes-e2e-stable-aws-eks-1-10-prod
