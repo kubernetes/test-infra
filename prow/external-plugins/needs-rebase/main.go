@@ -29,12 +29,13 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/flagutil"
+	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
+
 	// TODO: Remove the need for this import; it's currently required to allow the plugin config loader to function correctly (it expects plugins to be initialised)
 	// See https://github.com/kubernetes/test-infra/pull/8933#issuecomment-411511180
 	_ "k8s.io/test-infra/prow/hook"

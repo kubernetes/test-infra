@@ -19,7 +19,6 @@ package prstatus
 import (
 	"context"
 	"encoding/gob"
-	"golang.org/x/oauth2"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -27,12 +26,14 @@ import (
 	"testing"
 	"time"
 
+	"golang.org/x/oauth2"
+
 	"github.com/ghodss/yaml"
 	gogithub "github.com/google/go-github/github"
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/ghclient"
+	"k8s.io/test-infra/pkg/ghclient"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 )

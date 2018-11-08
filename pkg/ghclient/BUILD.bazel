@@ -23,7 +23,7 @@ go_library(
         "core.go",
         "wrappers.go",
     ],
-    importpath = "k8s.io/test-infra/ghclient",
+    importpath = "k8s.io/test-infra/pkg/ghclient",
     tags = ["automanaged"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",

@@ -29,7 +29,7 @@ import (
 	"golang.org/x/net/xsrftoken"
 	"golang.org/x/oauth2"
 
-	"k8s.io/test-infra/ghclient"
+	"k8s.io/test-infra/pkg/ghclient"
 	"k8s.io/test-infra/prow/config"
 )
 

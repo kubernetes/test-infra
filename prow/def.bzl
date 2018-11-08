@@ -17,7 +17,7 @@ load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
 load("@io_bazel_rules_k8s//k8s:objects.bzl", "k8s_objects")
 load(
-    "//:image.bzl",
+    "//def:image.bzl",
     _docker_tags = "tags",
 )
 

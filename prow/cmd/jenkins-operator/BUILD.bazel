@@ -19,7 +19,7 @@ go_library(
     ],
     importpath = "k8s.io/test-infra/prow/cmd/jenkins-operator",
     deps = [
-        "//flagutil:go_default_library",
+        "//pkg/flagutil:go_default_library",
         "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/jenkins:go_default_library",
