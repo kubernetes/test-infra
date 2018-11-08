@@ -70,7 +70,6 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//autogo:all-srcs",
         "//boskos:all-srcs",
         "//config:all-srcs",
         "//def:all-srcs",
