@@ -1,0 +1,49 @@
+presubmits:
+  kubernetes-sigs/cluster-api-provider-digitalocean:
+  - name: pull-cluster-api-provider-digitalocean-build
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-digitalocean
+    spec:
+      containers:
+      - image: golang:1.11
+        command:
+        - make
+        args:
+        - compile
+  - name: pull-cluster-api-provider-digitalocean-test
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-digitalocean
+    spec:
+      containers:
+      - image: golang:1.11
+        command:
+        - make
+        args:
+        - test-unit
+  - name: pull-cluster-api-provider-digitalocean-verify
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-digitalocean
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-master
+        command:
+        - make
+        args:
+        - verify
+  - name: pull-cluster-api-provider-digitalocean-lint
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-digitalocean
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-experimental
+        command:
+        - runner.sh
+        - kubernetes_bazel.py
+        args:
+        - "--install=gubernator/test_requirements.txt"
+        - "--test=//..."
+        - "--test-args=--config=lint"

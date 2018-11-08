@@ -291,16 +291,6 @@ branch-protection:
         contexts:
         - cla/linuxfoundation
       repos:
-        cluster-api-provider-digitalocean:
-          required_status_checks:
-            contexts:
-            - "ci/circleci: build"
-            - "ci/circleci: check-dependencies"
-            - "ci/circleci: checkout_code"
-            - "ci/circleci: e2e"
-            - "ci/circleci: lint"
-            - "ci/circleci: test"
-            - "ci/circleci: verify"
         kube-batch:
           required_status_checks:
             contexts:

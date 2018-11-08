@@ -348,6 +348,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubernetes-sigs/aws-ebs-csi-driver",
 		"kubernetes-sigs/cluster-api",
 		"kubernetes-sigs/cluster-api-provider-aws",
+		"kubernetes-sigs/cluster-api-provider-digitalocean",
 		"kubernetes-sigs/cluster-api-provider-gcp",
 		"kubernetes-sigs/cluster-api-provider-vsphere",
 		"kubernetes-sigs/cluster-api-provider-openstack",

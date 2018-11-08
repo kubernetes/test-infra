@@ -2471,6 +2471,18 @@ test_groups:
 - name: pull-cluster-api-provider-aws-bazel-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-e2e
   num_columns_recent: 20
+- name: pull-cluster-api-provider-digitalocean-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-digitalocean-build
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-digitalocean-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-digitalocean-test
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-digitalocean-verify
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-digitalocean-verify
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-digitalocean-lint
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-digitalocean-lint
+  num_columns_recent: 20
 - name: pull-cluster-api-provider-gcp-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-gcp-build
   num_columns_recent: 20
@@ -5845,6 +5857,17 @@ dashboards:
   - name: test-creds
     test_group_name: periodic-cluster-api-provider-aws-test-creds
 
+- name: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+  dashboard_tab:
+  - name: build
+    test_group_name: pull-cluster-api-provider-digitalocean-build
+  - name: test
+    test_group_name: pull-cluster-api-provider-digitalocean-test
+  - name: verify
+    test_group_name: pull-cluster-api-provider-digitalocean-verify
+  - name: lint
+    test_group_name: pull-cluster-api-provider-digitalocean-lint
+
 - name: sig-cluster-lifecycle-cluster-api-provider-gcp
   dashboard_tab:
   - name: build
@@ -7449,6 +7472,7 @@ dashboard_groups:
   - sig-cluster-lifecycle-multi-platform
   - sig-cluster-lifecycle-cluster-api
   - sig-cluster-lifecycle-cluster-api-provider-aws
+  - sig-cluster-lifecycle-cluster-api-provider-digitalocean
   - sig-cluster-lifecycle-cluster-api-provider-vsphere
   - sig-cluster-lifecycle-cluster-api-provider-gcp
   - sig-cluster-lifecycle-cluster-api-provider-openstack
