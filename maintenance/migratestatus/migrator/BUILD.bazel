@@ -18,7 +18,7 @@ go_library(
     srcs = ["migrator.go"],
     importpath = "k8s.io/test-infra/maintenance/migratestatus/migrator",
     deps = [
-        "//ghclient:go_default_library",
+        "//pkg/ghclient:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",
     ],
