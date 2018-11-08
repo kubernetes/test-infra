@@ -48,7 +48,7 @@ presubmits:
         - test-check
 
   - name: pull-cloud-provider-azure-e2e
-    always_run: false
+    always_run: true
     branches:
     - master
     labels:
