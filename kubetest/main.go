@@ -37,7 +37,6 @@ import (
 
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/kubetest/conformance"
-	"k8s.io/test-infra/kubetest/dind"
 	"k8s.io/test-infra/kubetest/eks"
 	"k8s.io/test-infra/kubetest/kubeadmdind"
 	"k8s.io/test-infra/kubetest/process"
@@ -66,7 +65,6 @@ type options struct {
 	cluster             string
 	clusterIPRange      string
 	deployment          string
-	dindImage           string
 	down                bool
 	dump                string
 	dumpPreTestLogs     string
@@ -125,15 +123,14 @@ type options struct {
 
 func defineFlags() *options {
 	o := options{}
-	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (release|quick|bazel|dind) strategy")
+	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (release|quick|bazel) strategy")
 	flag.Var(&o.buildFederation, "build-federation", "Rebuild federation binaries, optionally forcing (release|quick|bazel) strategy")
 	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
 	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
 	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
 	flag.StringVar(&o.clusterIPRange, "cluster-ip-range", "", "Specifies CLUSTER_IP_RANGE value during --up and --test (only relevant for --deployment=bash). Auto-calculated if empty.")
-	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/conformance/dind/gke/eks/kops/kubernetes-anywhere/node/local")
-	flag.StringVar(&o.dindImage, "dind-image", "", "The dind image to use to start a cluster. Defaults to the docker tag produced by bazel.")
+	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/conformance/gke/eks/kops/kubernetes-anywhere/node/local")
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
 	flag.StringVar(&o.dump, "dump", "", "If set, dump bring-up and cluster logs to this location on test or cluster-up failure")
 	flag.StringVar(&o.dumpPreTestLogs, "dump-pre-test-logs", "", "If set, dump cluster logs to this location before running tests")
@@ -243,8 +240,6 @@ func getDeployer(o *options) (deployer, error) {
 		return newBash(&o.clusterIPRange), nil
 	case "conformance":
 		return conformance.NewDeployer(o.kubecfg)
-	case "dind":
-		return dind.NewDeployer(o.kubecfg, o.dindImage, control)
 	case "gke":
 		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.gcpImageFamily, o.gcpImageProject, o.cluster, &o.testArgs, &o.upgradeArgs)
 	case "eks":
@@ -435,9 +430,6 @@ func acquireKubernetes(o *options) error {
 
 	// Potentially stage build binaries somewhere on GCS
 	if o.stage.Enabled() {
-		if o.build == "dind" {
-			return fmt.Errorf("staging dind images isn't supported yet")
-		}
 		if err := control.XMLWrap(&suite, "Stage", func() error {
 			return o.stage.Stage(o.federation, o.noAllowDup)
 		}); err != nil {
