@@ -1051,11 +1051,6 @@ def parse_repos(args):
 def bootstrap(args):
     """Clone repo at pull/branch into root and run job script."""
     # pylint: disable=too-many-locals,too-many-branches,too-many-statements
-    logging.warning('bootstrap.py is deprecated!\n'
-                    'Please migrate your job to podutils!'
-                    'https://github.com/kubernetes/test-infra/blob/master/prow/pod-utilities.md'
-    )
-
     job = args.job
     repos = parse_repos(args)
     upload = args.upload
@@ -1069,6 +1064,11 @@ def bootstrap(args):
         end = 0
     call = lambda *a, **kw: _call(end, *a, **kw)
     gsutil = GSUtil(call)
+
+    logging.warning('bootstrap.py is deprecated!\n'
+                    'Please migrate your job to podutils!\n'
+                    'https://github.com/kubernetes/test-infra/blob/master/prow/pod-utilities.md'
+    )
 
     if len(sys.argv) > 1:
         logging.info('Args: %s', ' '.join(pipes.quote(a)
