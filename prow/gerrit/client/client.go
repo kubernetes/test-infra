@@ -42,6 +42,8 @@ const (
 	GerritInstance = "gerrit-instance"
 	// GerritRevision is the SHA of current patchset from a gerrit change
 	GerritRevision = "gerrit-revision"
+	// GerritReportLabel is the gerrit label prow will cast vote on, fallback to CodeReview label if unset
+	GerritReportLabel = "gerrit-report-label"
 )
 
 // ProjectsFlag is the flag type for gerrit projects when initializing a gerrit client
