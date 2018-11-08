@@ -27,7 +27,7 @@ deprecated-update() {
   GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/kubernetes/repo-infra/kazel
 
   "${OUTPUT_GOBIN}/gazelle" fix --external=vendored --mode=fix
-  "${OUTPUT_GOBIN}/kazel"
+  "${OUTPUT_GOBIN}/kazel" --cfg-path=./hack/.kazelcfg.json
 }
 
 # Ensure ./vendor/BUILD.bazel exists

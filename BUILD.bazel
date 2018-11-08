@@ -43,6 +43,9 @@ gazelle(
 
 workspace_binary(
     name = "kazel",
+    args = [
+        "--cfg-path=./hack/.kazelcfg.json",
+    ],
     cmd = "//vendor/github.com/kubernetes/repo-infra/kazel",
 )
 
@@ -51,6 +54,7 @@ workspace_binary(
     args = [
         "--dry-run",
         "--print-diff",
+        "--cfg-path=./hack/.kazelcfg.json",
     ],
     cmd = "//vendor/github.com/kubernetes/repo-infra/kazel",
 )
