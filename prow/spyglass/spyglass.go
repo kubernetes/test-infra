@@ -219,8 +219,11 @@ func (s *Spyglass) JobPath(src string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("failed to get prow job from src %q: %v", key, err)
 		}
-		if job.Spec.DecorationConfig == nil || job.Spec.DecorationConfig.GCSConfiguration == nil {
-			return "", fmt.Errorf("failed to get GCS upload path for undecorated job %s", jobName)
+		if job.Spec.DecorationConfig == nil {
+			return "", fmt.Errorf("failed to locate GCS upload bucket for %s: job is undecorated", jobName)
+		}
+		if job.Spec.DecorationConfig.GCSConfiguration == nil {
+			return "", fmt.Errorf("failed to locate GCS upload bucket for %s: missing GCS configuration", jobName)
 		}
 		bktName := job.Spec.DecorationConfig.GCSConfiguration.Bucket
 		if job.Spec.Type == kube.PresubmitJob {
