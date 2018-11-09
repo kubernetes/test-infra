@@ -1,6 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: pushgateway
   labels:
     app: pushgateway
@@ -21,6 +22,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: default
   name: pushgateway
   labels:
     app: pushgateway
@@ -36,6 +38,7 @@ spec:
 kind: ConfigMap
 apiVersion: v1
 metadata:
+  namespace: default
   name: pushgateway-proxy-config
 data:
   nginx.conf: |-
@@ -62,6 +65,7 @@ data:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: pushgateway-proxy
   labels:
     app: pushgateway-proxy
@@ -89,6 +93,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: default
   name: pushgateway-external
   labels:
     app: pushgateway-external
