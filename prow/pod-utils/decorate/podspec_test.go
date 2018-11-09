@@ -357,6 +357,7 @@ func TestCloneRefs(t *testing.T) {
 
 func TestProwJobToPod(t *testing.T) {
 	truth := true
+	falseth := false
 	var sshKeyMode int32 = 0400
 	tests := []struct {
 		podName string
@@ -415,7 +416,8 @@ func TestProwJobToPod(t *testing.T) {
 					},
 				},
 				Spec: v1.PodSpec{
-					RestartPolicy: "Never",
+					AutomountServiceAccountToken: &falseth,
+					RestartPolicy:                "Never",
 					Containers: []v1.Container{
 						{
 							Name:  "test",
@@ -511,7 +513,8 @@ func TestProwJobToPod(t *testing.T) {
 					},
 				},
 				Spec: v1.PodSpec{
-					RestartPolicy: "Never",
+					AutomountServiceAccountToken: &falseth,
+					RestartPolicy:                "Never",
 					InitContainers: []v1.Container{
 						{
 							Name:    "clonerefs",
@@ -731,7 +734,8 @@ func TestProwJobToPod(t *testing.T) {
 					},
 				},
 				Spec: v1.PodSpec{
-					RestartPolicy: "Never",
+					AutomountServiceAccountToken: &falseth,
+					RestartPolicy:                "Never",
 					InitContainers: []v1.Container{
 						{
 							Name:    "clonerefs",
@@ -952,7 +956,8 @@ func TestProwJobToPod(t *testing.T) {
 					},
 				},
 				Spec: v1.PodSpec{
-					RestartPolicy: "Never",
+					AutomountServiceAccountToken: &falseth,
+					RestartPolicy:                "Never",
 					InitContainers: []v1.Container{
 						{
 							Name:    "clonerefs",
@@ -1197,7 +1202,8 @@ func TestProwJobToPod(t *testing.T) {
 					},
 				},
 				Spec: v1.PodSpec{
-					RestartPolicy: "Never",
+					AutomountServiceAccountToken: &falseth,
+					RestartPolicy:                "Never",
 					InitContainers: []v1.Container{
 						{
 							Name:    "clonerefs",
@@ -1426,7 +1432,8 @@ func TestProwJobToPod(t *testing.T) {
 					},
 				},
 				Spec: v1.PodSpec{
-					RestartPolicy: "Never",
+					AutomountServiceAccountToken: &falseth,
+					RestartPolicy:                "Never",
 					InitContainers: []v1.Container{
 						{
 							Name:    "initupload",
@@ -1608,7 +1615,8 @@ func TestProwJobToPod(t *testing.T) {
 					},
 				},
 				Spec: v1.PodSpec{
-					RestartPolicy: "Never",
+					AutomountServiceAccountToken: &falseth,
+					RestartPolicy:                "Never",
 					InitContainers: []v1.Container{
 						{
 							Name:    "initupload",
@@ -1736,7 +1744,7 @@ func TestProwJobToPod(t *testing.T) {
 				t.Errorf("unexpected error: %v", err)
 			}
 			if !equality.Semantic.DeepEqual(got, test.expected) {
-				t.Errorf("expected pod diff:\n%s", diff.ObjectReflectDiff(test.expected, got))
+				t.Errorf("unexpected pod diff:\n%s", diff.ObjectReflectDiff(test.expected, got))
 			}
 		})
 	}
