@@ -92,7 +92,7 @@ type JobBase struct {
 	Cluster string `json:"cluster,omitempty"`
 	// SourcePath contains the path where this job is defined
 	SourcePath string `json:"-"`
-	// Spec is the Kubernetes pod spec used if Agent is Kubernetes.
+	// Spec is the Kubernetes pod spec used if Agent is kubernetes.
 	Spec *v1.PodSpec `json:"spec,omitempty"`
 
 	UtilityConfig
