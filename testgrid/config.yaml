@@ -380,12 +380,18 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-coredns
 - name: ci-kubernetes-e2e-gci-gce-kube-dns
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-kube-dns
+- name: ci-kubernetes-e2e-gci-gce-coredns-nodecache
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-coredns-nodecache
+- name: ci-kubernetes-e2e-gci-gce-kube-dns-nodecache
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-kube-dns-nodecache
 - name: ci-kubernetes-e2e-gce-alpha-api
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-api
 - name: ci-kubernetes-e2e-gci-gce-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial
 - name: ci-kubernetes-e2e-gci-gce-serial-kube-dns
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-kube-dns
+- name: ci-kubernetes-e2e-gci-gce-serial-kube-dns-nodecache
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-kube-dns-nodecache
 - name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-serial-sig-cli
 - name: ci-kubernetes-e2e-gke-gci-serial-sig-cli
@@ -3243,6 +3249,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-coredns-performance
 - name: ci-kubernetes-e2e-gce-kubedns-performance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-kubedns-performance
+- name: ci-kubernetes-e2e-gce-coredns-performance-nodecache
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-coredns-performance-nodecache
+- name: ci-kubernetes-e2e-gce-kubedns-performance-nodecache
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-kubedns-performance-nodecache
 
 # GCE windows test groups.
 - name: ci-kubernetes-e2e-windows-gce-poc
