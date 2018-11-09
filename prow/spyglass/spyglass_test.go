@@ -333,6 +333,27 @@ func TestJobPath(t *testing.T) {
 				BuildID: "2222",
 			},
 		},
+		kube.ProwJob{
+			Spec: kube.ProwJobSpec{
+				Type: kube.PresubmitJob,
+				Job:  "undecorated-job",
+			},
+			Status: kube.ProwJobStatus{
+				PodName: "flying-whales",
+				BuildID: "1",
+			},
+		},
+		kube.ProwJob{
+			Spec: kube.ProwJobSpec{
+				Type:             kube.PresubmitJob,
+				Job:              "missing-gcs-job",
+				DecorationConfig: &kube.DecorationConfig{},
+			},
+			Status: kube.ProwJobStatus{
+				PodName: "flying-whales",
+				BuildID: "1",
+			},
+		},
 	}
 	fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, &config.Agent{})
 	fakeJa.Start()
@@ -385,6 +406,16 @@ func TestJobPath(t *testing.T) {
 		{
 			name:     "invalid GCS path",
 			src:      "gcs/kubernetes-jenkins/bad-path",
+			expError: true,
+		},
+		{
+			name:     "job missing decoration",
+			src:      "prowjob/undecorated-job/1",
+			expError: true,
+		},
+		{
+			name:     "job missing GCS config",
+			src:      "prowjob/missing-gcs-job/1",
 			expError: true,
 		},
 	}
