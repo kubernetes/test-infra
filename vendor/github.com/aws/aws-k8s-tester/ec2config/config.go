@@ -121,8 +121,8 @@ type Config struct {
 	SubnetIDs                  []string          `json:"subnet-ids,omitempty"`
 	SubnetIDToAvailibilityZone map[string]string `json:"subnet-id-to-availability-zone,omitempty"` // read-only to user
 
-	// IngressCIDRs is a map from TCP port to CIDR to allow via security groups.
-	IngressCIDRs map[int64]string `json:"ingress-cidrs,omitempty"`
+	// IngressRulesTCP is a map from TCP port range to CIDR to allow via security groups.
+	IngressRulesTCP map[string]string `json:"ingress-rules-tcp,omitempty"`
 
 	// SecurityGroupIDs is the list of security group IDs.
 	// Leave empty to create a temporary one.
@@ -227,14 +227,7 @@ var defaultConfig = Config{
 	UserName: "ec2-user",
 	Plugins: []string{
 		"update-amazon-linux-2",
-		"install-go1.11.2",
-		"install-docker-amazon-linux-2",
 	},
-
-	// Ubuntu Server 16.04 LTS (HVM), SSD Volume Type
-	// ImageID: "ami-ba602bc2",
-	// UserName: "ubuntu",
-	// Plugins: []string{"update-ubuntu"},
 
 	// 4 vCPU, 15 GB RAM
 	InstanceType: "m3.xlarge",
@@ -243,11 +236,11 @@ var defaultConfig = Config{
 	AssociatePublicIPAddress: true,
 
 	VPCCIDR: "192.168.0.0/16",
-	IngressCIDRs: map[int64]string{
-		22: "0.0.0.0/0",
+	IngressRulesTCP: map[string]string{
+		"22": "0.0.0.0/0",
 	},
 
-	Wait: false,
+	Wait: true,
 }
 
 // UpdateFromEnvs updates fields from environmental variables.
@@ -314,15 +307,11 @@ func (cfg *Config) UpdateFromEnvs() error {
 		case reflect.Map:
 			ss := strings.Split(sv, ",")
 			switch fieldName {
-			case "IngressCIDRs":
-				m := reflect.MakeMap(reflect.TypeOf(map[int64]string{}))
+			case "IngressRulesTCP":
+				m := reflect.MakeMap(reflect.TypeOf(map[string]string{}))
 				for i := range ss {
 					fields := strings.Split(ss[i], "=")
-					nv, nerr := strconv.ParseInt(fields[0], 10, 64)
-					if nerr != nil {
-						return fmt.Errorf("failed to parse IngressTCPPort %s (%v)", fields[0], nerr)
-					}
-					m.SetMapIndex(reflect.ValueOf(nv), reflect.ValueOf(fields[1]))
+					m.SetMapIndex(reflect.ValueOf(fields[0]), reflect.ValueOf(fields[1]))
 				}
 				vv.Field(i).Set(m)
 
@@ -483,7 +472,7 @@ func (cfg *Config) SSHCommands() (s string) {
 		s += fmt.Sprintf(`ssh -o "StrictHostKeyChecking no" -i %s %s@%s
 `, cfg.KeyPath, cfg.UserName, v.PublicDNSName)
 	}
-	return s
+	return s + "\n"
 }
 
 // Sync persists current configuration and states to disk.

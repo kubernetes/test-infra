@@ -1,3 +1,5 @@
+// Package plugins defines various plugins to install on EC2 creation,
+// using init scripts or EC2 user data.
 package plugins
 
 import (
@@ -11,6 +13,7 @@ import (
 	"text/template"
 
 	etcdplugin "github.com/aws/aws-k8s-tester/etcdconfig/plugins"
+	kubeadmplugin "github.com/aws/aws-k8s-tester/kubeadmconfig/plugins"
 )
 
 // headerBash is the bash script header.
@@ -31,19 +34,18 @@ func (ss scripts) Swap(i, j int)      { ss[i], ss[j] = ss[j], ss[i] }
 func (ss scripts) Less(i, j int) bool { return keyPriorities[ss[i].key] < keyPriorities[ss[j].key] }
 
 var keyPriorities = map[string]int{ // in the order of:
-	"update-amazon-linux-2":         1,
-	"update-ubuntu":                 2,
-	"set-env-aws-cred":              3, // TODO: use instance role instead
-	"mount-aws-cred":                4, // TODO: use instance role instead
-	"install-go":                    5,
-	"install-csi":                   6,
-	"install-etcd":                  7,
-	"install-aws-k8s-tester":        8,
-	"install-wrk":                   9,
-	"install-alb":                   10,
-	"install-kubeadm-ubuntu":        11,
-	"install-docker-amazon-linux-2": 12,
-	"install-docker-ubuntu":         13,
+	"update-amazon-linux-2":                1,
+	"update-ubuntu":                        2,
+	"set-env-aws-cred":                     3, // TODO: use instance role instead
+	"mount-aws-cred":                       4, // TODO: use instance role instead
+	"install-go":                           5,
+	"install-csi":                          6,
+	"install-etcd":                         7,
+	"install-aws-k8s-tester":               8,
+	"install-wrk":                          9,
+	"install-alb":                          10,
+	"install-start-docker-amazon-linux-2":  11,
+	"install-start-kubeadm-amazon-linux-2": 12,
 }
 
 func convertToScript(userName, plugin string) (script, error) {
@@ -113,10 +115,11 @@ cat << EOT > /home/%s/.aws/credentials
 EOT`, userName, userName, string(d)),
 		}, nil
 
-	case plugin == "install-go1.11.2":
+	case strings.HasPrefix(plugin, "install-go-"):
+		goVer := strings.Replace(plugin, "install-go-", "", -1)
 		s, err := createInstallGo(goInfo{
 			UserName:  userName,
-			GoVersion: "1.11.2",
+			GoVersion: goVer,
 		})
 		if err != nil {
 			return script{}, err
@@ -190,23 +193,19 @@ make server
 		}
 		return script{key: "install-alb", data: s}, nil
 
-	case plugin == "install-kubeadm-ubuntu":
+	case plugin == "install-start-docker-amazon-linux-2":
 		return script{
 			key:  plugin,
-			data: installKubeadmnUbuntu,
+			data: installStartDockerAmazonLinux2,
 		}, nil
 
-	case plugin == "install-docker-amazon-linux-2":
-		return script{
-			key:  plugin,
-			data: installDockerAmazonLinux2,
-		}, nil
-
-	case plugin == "install-docker-ubuntu":
-		return script{
-			key:  plugin,
-			data: installDockerUbuntu,
-		}, nil
+	case strings.HasPrefix(plugin, "install-start-kubeadm-amazon-linux-2-"):
+		id := strings.Replace(plugin, "install-start-kubeadm-amazon-linux-2-", "", -1)
+		s, err := kubeadmplugin.CreateInstallStart(id)
+		if err != nil {
+			return script{}, err
+		}
+		return script{key: "install-start-kubeadm-amazon-linux-2", data: s}, nil
 	}
 
 	return script{}, fmt.Errorf("unknown plugin %q", plugin)
@@ -221,7 +220,6 @@ func Create(userName string, plugins []string) (data string, err error) {
 				return "", fmt.Errorf("'update-ubuntu' requires 'ubuntu' user name, got %q", userName)
 			}
 		}
-
 		script, err := convertToScript(userName, plugin)
 		if err != nil {
 			return "", err
@@ -344,9 +342,7 @@ DOWNLOAD_URL=${GOOGLE_URL}
 sudo curl -s ${DOWNLOAD_URL}/go$GO_VERSION.linux-amd64.tar.gz | sudo tar -v -C /usr/local/ -xz
 
 mkdir -p ${GOPATH}/bin/
-mkdir -p ${GOPATH}/src/github.com/kubernetes-sigs
-mkdir -p ${GOPATH}/src/k8s.io
-mkdir -p ${GOPATH}/src/sigs.k8s.io
+mkdir -p ${GOPATH}/src/
 
 if grep -q GOPATH "${HOME}/.bashrc"; then
   echo "bashrc already has GOPATH";
@@ -366,34 +362,6 @@ sudo echo GOPATH=/home/{{ .UserName }}/go >> /etc/environment
 echo "source /etc/environment" >> ${HOME}/.bashrc;
 
 go version
-
-##################################
-
-`
-
-const installKubeadmnUbuntu = `
-
-################################## install kubeadm on Ubuntu
-
-cd ${HOME}
-
-sudo apt-get update -y && sudo apt-get install -y apt-transport-https curl
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-
-cat <<EOF >/tmp/kubernetes.list
-deb https://apt.kubernetes.io/ kubernetes-$(lsb_release -cs) main
-EOF
-
-sudo cp /tmp/kubernetes.list /etc/apt/sources.list.d/kubernetes.list
-
-sudo apt-get update -y
-sudo apt-get install -y kubelet kubeadm kubectl || true
-sudo apt-mark hold kubelet kubeadm kubectl || true
-
-sudo systemctl enable kubelet
-sudo systemctl start kubelet
-
-sudo journalctl --no-pager --output=cat -u kubelet
 
 ##################################
 
@@ -542,50 +510,52 @@ pwd
 
 `
 
-const installDockerUbuntu = `
-
-################################## install Docker on Ubuntu
-sudo apt update -y
-sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
-
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-
-sudo apt update -y
-apt-cache policy docker-ce || true
-sudo apt install -y docker-ce
-
-sudo systemctl start docker || true
-sudo systemctl status docker --full --no-pager || true
-sudo usermod -aG docker ubuntu || true
-
-# su - ubuntu
-# or logout and login to use docker without 'sudo'
-
-id -nG
-sudo docker version
-sudo docker info
-##################################
-
-`
-
 // https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html
-const installDockerAmazonLinux2 = `
+// https://kubernetes.io/docs/setup/cri/#docker
+const installStartDockerAmazonLinux2 = `
 
 ################################## install Docker on Amazon Linux 2
+
 sudo yum update -y
 sudo yum install -y docker
+sudo yum install -y yum-utils device-mapper-persistent-data lvm2
 
+sudo yum-config-manager \
+  --add-repo \
+  https://download.docker.com/linux/centos/docker-ce.repo
+
+sudo yum update && sudo yum install -y docker-ce-18.06.1.ce
+sudo mkdir -p /etc/docker
+
+cat > /etc/docker/daemon.json <<EOF
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "storage-driver": "overlay2",
+  "storage-opts": [
+    "overlay2.override_kernel_check=true"
+  ]
+}
+EOF
+mkdir -p /etc/systemd/system/docker.service.d
+
+sudo systemctl daemon-reload
+sudo systemctl enable docker || true
 sudo systemctl start docker || true
+sudo systemctl restart docker || true
+
 sudo systemctl status docker --full --no-pager || true
 sudo usermod -aG docker ec2-user || true
 
 # su - ec2-user
 # or logout and login to use docker without 'sudo'
-
 id -nG
 sudo docker version
 sudo docker info
+
 ##################################
 
 `

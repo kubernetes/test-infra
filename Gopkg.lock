@@ -115,10 +115,11 @@
     "eksconfig",
     "ekstester",
     "etcdconfig/plugins",
+    "kubeadmconfig/plugins",
     "pkg/awsapi/ec2",
   ]
-  revision = "1cd3e8ae2b5c41662eb4008bbb3fb9736dc651c7"
-  version = "0.1.2"
+  revision = "7a149356ae339b531b6189f4a801378b62c7b98b"
+  version = "0.1.3"
 
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
@@ -1270,6 +1271,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a6d1c21e9d72d50a0968342de074652f4e589e061d7d52e66c1d71cf7d6dc534"
+  inputs-digest = "4e42140600055c4abd3f81c94fe0a73c70bfd520954970ff07bbfb3545331f2a"
   solver-name = "gps-cdcl"
   solver-version = 1
