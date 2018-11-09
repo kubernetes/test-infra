@@ -30,9 +30,13 @@
     <span class="mdl-layout-title">Prow Dashboard</span>
     <nav class="mdl-navigation">
       <a class="mdl-navigation__link{{if eq .PageName "index"}} mdl-navigation__link--current{{end}}" href="/">Prow Status</a>
-      <a class="mdl-navigation__link{{if eq .PageName "pr"}} mdl-navigation__link--current{{end}}" href="/pr">PR Status</a>
+      {{ if sections.PR }}
+        <a class="mdl-navigation__link{{if eq .PageName "pr"}} mdl-navigation__link--current{{end}}" href="/pr">PR Status</a>
+      {{ end }}
       <a class="mdl-navigation__link{{if eq .PageName "command-help"}} mdl-navigation__link--current{{end}}" href="/command-help">Command Help</a>
-      <a class="mdl-navigation__link{{if eq .PageName "tide"}} mdl-navigation__link--current{{end}}" href="/tide">Tide Status</a>
+      {{ if sections.Tide }}
+        <a class="mdl-navigation__link{{if eq .PageName "tide"}} mdl-navigation__link--current{{end}}" href="/tide">Tide Status</a>
+      {{ end }}
       <a class="mdl-navigation__link{{if eq .PageName "plugins"}} mdl-navigation__link--current{{end}}" href="/plugins">Plugins</a>
     </nav>
   </div>
