@@ -37,7 +37,7 @@ import (
 )
 
 var (
-	match = regexp.MustCompile(`(?mi)^/meow( .+)?\s*$`)
+	match = regexp.MustCompile(`(?mi)^/meow(vie)?(?: (.+))?\s*$`)
 	meow  = &realClowder{
 		url: "https://api.thecatapi.com/api/images/get?format=json&results_per_page=1",
 	}
@@ -57,11 +57,11 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		Description: "The cat plugin adds a cat image to an issue in response to the `/meow` command.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/meow",
+		Usage:       "/meow(vie) [CATegory]",
 		Description: "Add a cat image to the issue",
 		Featured:    false,
 		WhoCanUse:   "Anyone",
-		Examples:    []string{"/meow", "/meow caturday"},
+		Examples:    []string{"/meow", "/meow caturday", "/meowvie clothes"},
 	})
 	return pluginHelp, nil
 }
@@ -71,7 +71,7 @@ type githubClient interface {
 }
 
 type clowder interface {
-	readCat(string) (string, error)
+	readCat(string, bool) (string, error)
 }
 
 type realClowder struct {
@@ -126,7 +126,7 @@ func (cr catResult) Format() (string, error) {
 	return fmt.Sprintf("[![cat image](%s)](%s)", img, src), nil
 }
 
-func (r *realClowder) Url(category string) string {
+func (r *realClowder) Url(category string, movieCat bool) string {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 	uri := string(r.url)
@@ -136,11 +136,14 @@ func (r *realClowder) Url(category string) string {
 	if r.key != "" {
 		uri += "&api_key=" + url.QueryEscape(r.key)
 	}
+	if movieCat {
+		uri += "&mime_types=gif"
+	}
 	return uri
 }
 
-func (r *realClowder) readCat(category string) (string, error) {
-	uri := r.Url(category)
+func (r *realClowder) readCat(category string, movieCat bool) (string, error) {
+	uri := r.Url(category, movieCat)
 	resp, err := http.Get(uri)
 	if err != nil {
 		return "", fmt.Errorf("could not read cat from %s: %v", uri, err)
@@ -191,20 +194,20 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 		return nil
 	}
 
+	category, movieCat, err := parseMatch(mat)
+	if err != nil {
+		return err
+	}
+
 	// Now that we know this is a relevant event we can set the key.
 	setKey()
-
-	category := mat[1]
-	if len(category) > 1 {
-		category = category[1:]
-	}
 
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 	number := e.Number
 
 	for i := 0; i < 3; i++ {
-		resp, err := c.readCat(category)
+		resp, err := c.readCat(category, movieCat)
 		if err != nil {
 			log.WithError(err).Error("Failed to get cat img")
 			continue
@@ -223,4 +226,14 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 	}
 
 	return errors.New("could not find a valid cat image")
+}
+
+func parseMatch(mat []string) (string, bool, error) {
+	if len(mat) != 3 {
+		err := fmt.Errorf("expected 3 capture groups in regexp match, but got %d", len(mat))
+		return "", false, err
+	}
+	category := strings.TrimSpace(mat[2])
+	movieCat := len(mat[1]) > 0 // "vie" suffix is present.
+	return category, movieCat, nil
 }
