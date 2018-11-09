@@ -68,9 +68,9 @@ DEFAULT_AWS_ZONES = [
     'sa-east-1a',
     #'sa-east-1b', AZ does not exist, so we're breaking the 3 AZs per region target here
     'sa-east-1c',
-    'us-east-1a',
-    'us-east-1b',
-    'us-east-1c',
+    #'us-east-1a', # temporarily removing due to lack of quota #10043
+    #'us-east-1b', # temporarily removing due to lack of quota #10043
+    #'us-east-1c', # temporarily removing due to lack of quota #10043
     #'us-east-1d', # limiting to 3 zones to not overallocate
     #'us-east-1e', # limiting to 3 zones to not overallocate
     #'us-east-1f', # limiting to 3 zones to not overallocate
@@ -80,9 +80,9 @@ DEFAULT_AWS_ZONES = [
     'us-west-1a',
     'us-west-1b',
     #'us-west-1c', AZ does not exist, so we're breaking the 3 AZs per region target here
-    'us-west-2a',
-    'us-west-2b',
-    'us-west-2c'
+    #'us-west-2a', # temporarily removing due to lack of quota #10043
+    #'us-west-2b', # temporarily removing due to lack of quota #10043
+    #'us-west-2c', # temporarily removing due to lack of quota #10043
 ]
 
 def test_infra(*paths):
