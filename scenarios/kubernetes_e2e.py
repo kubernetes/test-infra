@@ -40,28 +40,28 @@ DEFAULT_AWS_ZONES = [
     'ap-northeast-1a',
     'ap-northeast-1c',
     'ap-northeast-1d',
-    #'ap-northeast-2a', InsufficientInstanceCapacity for c4.large 2018-05-30
+    'ap-northeast-2a',
     #'ap-northeast-2b' - AZ does not exist, so we're breaking the 3 AZs per region target here
-    #'ap-northeast-2c', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-south-1a', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-south-1b', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-southeast-1a', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-southeast-1b', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-southeast-1c', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-southeast-2a', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-southeast-2b', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-southeast-2c', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ca-central-1a', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ca-central-1b', InsufficientInstanceCapacity for c4.large 2018-05-30
+    'ap-northeast-2c',
+    'ap-south-1a',
+    'ap-south-1b',
+    'ap-southeast-1a',
+    'ap-southeast-1b',
+    'ap-southeast-1c',
+    'ap-southeast-2a',
+    'ap-southeast-2b',
+    'ap-southeast-2c',
+    'ca-central-1a',
+    'ca-central-1b',
     'eu-central-1a',
     'eu-central-1b',
     'eu-central-1c',
     'eu-west-1a',
     'eu-west-1b',
     'eu-west-1c',
-    #'eu-west-2a', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'eu-west-2b', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'eu-west-2c', InsufficientInstanceCapacity for c4.large 2018-05-30
+    'eu-west-2a',
+    'eu-west-2b',
+    'eu-west-2c',
     #'eu-west-3a', documented to not support c4 family
     #'eu-west-3b', documented to not support c4 family
     #'eu-west-3c', documented to not support c4 family
