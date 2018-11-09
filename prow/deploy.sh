@@ -31,6 +31,20 @@ if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
   gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
 fi
 
+case "${1:-}" in
+"--confirm")
+    ;;
+"")
+  read -p "Deploy prow to prod [no]: " confirm
+  if [[ "${confirm}" != y* ]]; then
+    exit 1
+  fi
+  ;;
+*)
+  echo "Usage: $(basename "$0") [--confirm]"
+  exit 1
+esac
+
 # See https://misc.flogisoft.com/bash/tip_colors_and_formatting
 
 color-green() { # Green
@@ -69,5 +83,9 @@ trap restore-context EXIT
 ensure-context k8s-prow-builds us-central1-f prow
 ensure-context k8s-prow us-central1-f prow
 echo " $(color-green done), Deploying prow..."
+for s in {5..1}; do
+    echo -n $'\r'"in $s..."
+    sleep 1s
+done
 bazel run //prow/cluster:production.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
 echo "$(color-green SUCCESS)"

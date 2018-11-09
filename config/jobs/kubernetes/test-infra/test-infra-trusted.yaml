@@ -33,6 +33,8 @@ postsubmits:
       - image: gcr.io/k8s-testimages/gcloud-bazel:v20181107-d88dbbf
         command:
         - prow/deploy.sh
+        args:
+        - --confirm
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /creds/service-account.json
