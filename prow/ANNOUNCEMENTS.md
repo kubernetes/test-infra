@@ -1,6 +1,8 @@
 # Announcements
 
 New features added to each component:
+ - *November 8, 2018* `plank` now defaults jobs with `decorate: true` to have 
+   `automountServiceAccountToken: false` in their PodSpec if unset.
  - *October 10, 2018* `tide` now supports the `-repo:foo/bar` tag in queries via
    the `excludedRepos` YAML field.
  - *October 3, 2018* `welcome` now supports a configurable message on a per-org,
