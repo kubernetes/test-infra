@@ -15,6 +15,7 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
+  namespace: default
   labels:
     app: ghproxy
   name: ghproxy
@@ -36,6 +37,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: ghproxy
   labels:
     app: ghproxy
