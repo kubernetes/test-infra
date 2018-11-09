@@ -162,6 +162,7 @@ func auth(c *Client, cookiefilePath string) {
 			self, _, err := handler.accountService.GetAccount("self")
 			if err != nil {
 				logrus.WithError(err).Error("Failed to auth with token")
+				continue
 			}
 
 			logrus.Infof("Authentication to %s successful, Username: %s", handler.instance, self.Name)
