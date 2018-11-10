@@ -32,6 +32,8 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *November 9, 2018* Prow gerrit client label/annotations now have a `prow.k8s.io/` namespace
+    prefix, if you have a gerrit deployment, please bump both cmd/gerrit and cmd/crier.
  - *October 16, 2018* Prow tls-cert management has been migrated from kube-lego to cert-manager.
  - *October 12, 2018* Removed deprecated `buildId` environment variable from prow jobs. Use `BUILD_ID.`
  - *October 3, 2018* `-github-token-file` replaced with
