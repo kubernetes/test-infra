@@ -5815,6 +5815,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
   - name: kubeadm-gce-upgrade-1.11-1.12
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
+  - name: kubeadm-gce-upgrade-1.12-1.13
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-12-1-13
   - name: kubeadm-gce-upgrade-stable-master
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
 # packages tests
