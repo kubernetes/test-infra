@@ -28,10 +28,13 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
+const githubURL = "https://github.com"
+
 // GitHubOptions holds options for interacting with GitHub.
 type GitHubOptions struct {
 	endpoint            Strings
 	TokenPath           string
+	gitURL              string
 	deprecatedTokenFile string
 }
 
@@ -56,6 +59,7 @@ func (o *GitHubOptions) addFlags(wantDefaultGithubTokenPath bool, fs *flag.FlagS
 	}
 	fs.StringVar(&o.TokenPath, "github-token-path", defaultGithubTokenPath, "Path to the file containing the GitHub OAuth secret.")
 	fs.StringVar(&o.deprecatedTokenFile, "github-token-file", "", "DEPRECATED: use -github-token-path instead.  -github-token-file may be removed anytime after 2019-01-01.")
+	fs.StringVar(&o.gitURL, "git-url", "github.com", "the github url that prow will target (may differ for enterprise).")
 }
 
 // Validate validates GitHub options.
@@ -64,6 +68,10 @@ func (o *GitHubOptions) Validate(dryRun bool) error {
 		if _, err := url.ParseRequestURI(uri); err != nil {
 			return fmt.Errorf("invalid -github-endpoint URI: %q", uri)
 		}
+	}
+
+	if _, err := url.ParseRequestURI(o.gitURL); err != nil {
+		return fmt.Errorf("invalid -gitIRL URI: %q", o.gitURL)
 	}
 
 	if o.deprecatedTokenFile != "" {
@@ -102,7 +110,7 @@ func (o *GitHubOptions) GitHubClient(secretAgent *secret.Agent, dryRun bool) (cl
 
 // GitClient returns a Git client.
 func (o *GitHubOptions) GitClient(secretAgent *secret.Agent, dryRun bool) (client *git.Client, err error) {
-	client, err = git.NewClient()
+	client, err = git.NewClient(o.gitURL)
 	if err != nil {
 		return nil, err
 	}
