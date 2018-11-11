@@ -11,7 +11,7 @@ Mason only handles lease and release of physical resources.
 
 ## Configuration
 
-Each configuration is represented by a name. The name of confguration maps to the virtual resource type in Boskos.
+Each configuration is represented by a name. The name of configuration maps to the virtual resource type in Boskos.
 
 Here is an example configuration:
 
