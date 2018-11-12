@@ -3290,8 +3290,8 @@ test_groups:
   gcs_prefix: k8s-conformance-baiducloud/baiducloud-e2e-conformance-v1.11
 
 # GCP Compute Persistent Disk CSI Driver Test Groups
-- name: ci-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
-  gcs_prefix: kubernetes-jenkins/logs/ci-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
+- name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable
+  gcs_prefix: kubernetes-jenkins/logs/ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable
 
 # AWS Test Groups
 - name: pull-aws-alb-ingress-controller-lint
@@ -5887,9 +5887,9 @@ dashboards:
 
 - name: sig-gcp-compute-persistent-disk-csi-driver
   dashboard_tab:
-  - name: Kubernetes Master Driver Master
-    test_group_name: ci-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
-    description: Kubernetes Integration tests for Kubernetes Master branch and Driver Master branch
+  - name: Kubernetes Master Driver Stable
+    test_group_name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable
+    description: 'Kubernetes Integration tests for Kubernetes Master branch and Driver Stable'
 
 - name: sig-cluster-lifecycle-cluster-api-provider-vsphere
   dashboard_tab:
