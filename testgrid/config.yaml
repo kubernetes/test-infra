@@ -2295,6 +2295,8 @@ test_groups:
 # master-1 to master
 - name: ci-kubernetes-e2e-gce-new-master-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-master
+- name: ci-kubernetes-e2e-gce-new-master-upgrade-master-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-master-parallel
 - name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
 - name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
@@ -4612,7 +4614,10 @@ dashboards:
   dashboard_tab:
   - name: gce-new-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master
-    description: Upgrade master only, in gce(gci), from 1.10 to master
+    description: Upgrade master only, in gce(gci), from 1.10 to master, run non-parallel-safe tests only
+  - name: gce-new-master-upgrade-master-parallel
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master-parallel
+    description: Upgrade master only, in gce(gci), from 1.10 to master, run parallel tests only
   - name: gce-new-master-upgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
     description: Upgrade master and node, in gce(gci), from 1.10 to master, run parallel tests only
