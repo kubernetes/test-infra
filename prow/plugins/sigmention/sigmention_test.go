@@ -58,7 +58,7 @@ func TestSigMention(t *testing.T) {
 	}
 	testcases := []testCase{
 		{
-			name:              "Dont repeat when org member mentions sig",
+			name:              "Don't repeat when org member mentions sig",
 			body:              "@kubernetes/sig-node-misc",
 			expectedRepeats:   []string{},
 			expectedNewLabels: []string{"sig/node"},
@@ -67,7 +67,7 @@ func TestSigMention(t *testing.T) {
 			commenter:         orgMember,
 		},
 		{
-			name:              "Dont repeat or label when bot adds mentions sig",
+			name:              "Don't repeat or label when bot adds mentions sig",
 			body:              "@kubernetes/sig-node-misc",
 			expectedRepeats:   []string{},
 			expectedNewLabels: []string{},
@@ -94,7 +94,7 @@ func TestSigMention(t *testing.T) {
 			commenter:         nonOrgMember,
 		},
 		{
-			name:              "Dont repeat multiple if org member (all labels present).",
+			name:              "Don't repeat multiple if org member (all labels present).",
 			body:              "@kubernetes/sig-node-misc @kubernetes/sig-api-machinery-bugs",
 			expectedRepeats:   []string{},
 			expectedNewLabels: []string{},

@@ -101,7 +101,7 @@ class ClusterTest(unittest.TestCase):
             {'exit 1': {'test a': [t1, t2], 'test b': [t3]}})
 
     def test_cluster_global_previous(self):
-        # clusters are stable when provided with previou seeds
+        # clusters are stable when provided with previous seeds
         textOld = 'some long failure message that changes occasionally foo'
         textNew = textOld.replace('foo', 'bar')
         t1 = make_test(textNew)

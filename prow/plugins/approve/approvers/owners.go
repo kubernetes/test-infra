@@ -448,8 +448,8 @@ func (ap Approvers) GetFiles(org, project, branch string) []File {
 // assignees. This only uses leave approvers to find approvers the
 // closest to the changes.
 // - We find a subset of suggested approvers from current
-// approvers, suggested approvers and assignees, but we remove thoses
-// that are not useful considering suggestd approvers and current
+// approvers, suggested approvers and assignees, but we remove those
+// that are not useful considering suggested approvers and current
 // approvers. This uses the full approvers list, and will result in root
 // approvers to be suggested when they are assigned.
 // We return the union of the two sets: suggested and suggested

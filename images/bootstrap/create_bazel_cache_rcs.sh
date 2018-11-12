@@ -29,7 +29,7 @@ command_to_package () {
     # https://wiki.debian.org/DebianAlternatives
     local binary_path
     binary_path=$(readlink -f "$(command -v "$1")")
-    # `dpkg-query --search $file-pattern` ouputs lines with the format: "$package: $file-path"
+    # `dpkg-query --search $file-pattern` outputs lines with the format: "$package: $file-path"
     # where $file-path belongs to $package
     # https://manpages.debian.org/jessie/dpkg/dpkg-query.1.en.html
     dpkg-query --search "${binary_path}" | cut -d':' -f1

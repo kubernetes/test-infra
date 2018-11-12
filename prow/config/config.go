@@ -238,7 +238,7 @@ type Spyglass struct {
 
 // Deck holds config for deck.
 type Deck struct {
-	// Spyglass specifies which viewers wil be used for which artifacts when viewing a job in Deck
+	// Spyglass specifies which viewers will be used for which artifacts when viewing a job in Deck
 	Spyglass Spyglass `json:"spyglass,omitempty"`
 	// TideUpdatePeriodString compiles into TideUpdatePeriod at load time.
 	TideUpdatePeriodString string `json:"tide_update_period,omitempty"`

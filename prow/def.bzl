@@ -131,7 +131,7 @@ def component(cmd, *kinds, **kwargs):
 #   release(
 #     "fancy",
 #     component("hook", "deployment", "service"),
-#     compoennt("plank", "deployment"),
+#     component("plank", "deployment"),
 #   )
 # Generates the five following rules:
 #   k8s_objects(name = "hook", objects=[":hook_deployment", ":hook_service"])

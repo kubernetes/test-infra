@@ -240,7 +240,7 @@ func TestCommentBodyMatches(t *testing.T) {
 								JobBase: JobBase{
 									Name: "another-after-cadveapster",
 								},
-								re:        regexp.MustCompile(`@k8s-bot dont test this`),
+								re:        regexp.MustCompile(`@k8s-bot don't test this`),
 								AlwaysRun: true,
 							},
 						},

@@ -89,7 +89,7 @@ func (h *fakeArtifactHandle) NewReader(ctx context.Context) (io.ReadCloser, erro
 		return nil, fmt.Errorf("Failed to close gzip writer, err: %v", err)
 	}
 	if bytes.Equal(h.contents, buf.Bytes()) {
-		return nil, fmt.Errorf("cannot read unreadable contents, even if theyre gzipped")
+		return nil, fmt.Errorf("cannot read unreadable contents, even if they're gzipped")
 	}
 	if bytes.Equal(h.contents, []byte("unreadable contents")) {
 		return nil, fmt.Errorf("cannot read unreadable contents")
@@ -318,7 +318,7 @@ func TestReadAt(t *testing.T) {
 			expectErr: false,
 		},
 		{
-			name:      "ReadAt offest past file size",
+			name:      "ReadAt offset past file size",
 			n:         4,
 			offset:    400,
 			contents:  []byte("Oh wow\nlogs\nthis is\ncrazy"),

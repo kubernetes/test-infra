@@ -623,7 +623,7 @@ func TestConfigureOrgMembers(t *testing.T) {
 			err: true,
 		},
 		{
-			name: "trival case works",
+			name: "trivial case works",
 		},
 		{
 			name: "some of everything",
