@@ -45,25 +45,40 @@ func getConcreteBrandingFunction(ca jobs.ConfigAgent) func() config.Branding {
 	}
 }
 
-func prepareBaseTemplate(templateRoot string, ca jobs.ConfigAgent, t *template.Template) (*template.Template, error) {
+type baseTemplateSections struct {
+	PR   bool
+	Tide bool
+}
+
+func getConcreteSectionFunction(o options) func() baseTemplateSections {
+	return func() baseTemplateSections {
+		return baseTemplateSections{
+			PR:   o.oauthURL != "" || o.pregeneratedData != "",
+			Tide: o.tideURL != "" || o.pregeneratedData != "",
+		}
+	}
+}
+
+func prepareBaseTemplate(o options, ca jobs.ConfigAgent, t *template.Template) (*template.Template, error) {
 	return t.Funcs(map[string]interface{}{
 		"settings":         makeBaseTemplateSettings,
 		"branding":         getConcreteBrandingFunction(ca),
+		"sections":         getConcreteSectionFunction(o),
 		"mobileFriendly":   func() bool { return true },
 		"mobileUnfriendly": func() bool { return false },
-	}).ParseFiles(path.Join(templateRoot, "base.html"))
+	}).ParseFiles(path.Join(o.templateFilesLocation, "base.html"))
 }
 
-func handleSimpleTemplate(templateRoot string, ca jobs.ConfigAgent, templateName string, param interface{}) http.HandlerFunc {
+func handleSimpleTemplate(o options, ca jobs.ConfigAgent, templateName string, param interface{}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		t := template.New(templateName) // the name matters, and must match the filename.
-		if _, err := prepareBaseTemplate(templateRoot, ca, t); err != nil {
+		if _, err := prepareBaseTemplate(o, ca, t); err != nil {
 			logrus.WithError(err).Error("error preparing base template")
 			http.Error(w, "error preparing base template", http.StatusInternalServerError)
 			return
 		}
 		w.Header().Add("Content-Type", "text/html; charset=utf-8")
-		if _, err := t.ParseFiles(path.Join(templateRoot, templateName)); err != nil {
+		if _, err := t.ParseFiles(path.Join(o.templateFilesLocation, templateName)); err != nil {
 			logrus.WithError(err).Error("error parsing template " + templateName)
 			http.Error(w, "error parsing template", http.StatusInternalServerError)
 			return
