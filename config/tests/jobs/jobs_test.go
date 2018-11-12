@@ -906,11 +906,11 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 	for _, arg := range args {
 		ginkgo_args := ""
 		if strings.HasPrefix(arg, "--test_args=") {
-			splitted := strings.SplitN(arg, "=", 2)
-			ginkgo_args = splitted[1]
+			split := strings.SplitN(arg, "=", 2)
+			ginkgo_args = split[1]
 		} else if strings.HasPrefix(arg, "--upgrade_args=") {
-			splitted := strings.SplitN(arg, "=", 2)
-			ginkgo_args = splitted[1]
+			split := strings.SplitN(arg, "=", 2)
+			ginkgo_args = split[1]
 		}
 
 		if strings.Contains(ginkgo_args, "\\\\") {

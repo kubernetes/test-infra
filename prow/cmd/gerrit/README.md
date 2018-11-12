@@ -7,7 +7,7 @@ gerrit changes.
 ## Deployment Usage
 
 When deploy the gerrit component, you need to specify `--config-path` to your prow config, and optionally
-`--job-config-path` to your prowjob config if you have splitted them up.
+`--job-config-path` to your prowjob config if you have split them up.
 
 Set `--gerrit-projects` to the gerrit projects you want to poll against.
 

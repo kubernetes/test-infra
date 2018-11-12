@@ -51,21 +51,21 @@ func TestMilestoneStatus(t *testing.T) {
 	}
 	testcases := []testCase{
 		{
-			name:              "Dont label when non sig-lead user approves",
+			name:              "Don't label when non sig-lead user approves",
 			body:              "/status approved-for-milestone",
 			expectedNewLabels: []string{},
 			commenter:         "sig-follow",
 			shouldComment:     true,
 		},
 		{
-			name:              "Dont label when non sig-lead user marks in progress",
+			name:              "Don't label when non sig-lead user marks in progress",
 			body:              "/status in-progress",
 			expectedNewLabels: []string{},
 			commenter:         "sig-follow",
 			shouldComment:     true,
 		},
 		{
-			name:              "Dont label when non sig-lead user marks in review",
+			name:              "Don't label when non sig-lead user marks in review",
 			body:              "/status in-review",
 			expectedNewLabels: []string{},
 			commenter:         "sig-follow",
@@ -93,14 +93,14 @@ func TestMilestoneStatus(t *testing.T) {
 			shouldComment:     false,
 		},
 		{
-			name:              "Dont label when sig-lead user marks invalid status",
+			name:              "Don't label when sig-lead user marks invalid status",
 			body:              "/status in-valid",
 			expectedNewLabels: []string{},
 			commenter:         "sig-lead",
 			shouldComment:     false,
 		},
 		{
-			name:              "Dont label when sig-lead user marks empty status",
+			name:              "Don't label when sig-lead user marks empty status",
 			body:              "/status ",
 			expectedNewLabels: []string{},
 			commenter:         "sig-lead",

@@ -339,7 +339,7 @@ func (c *JobConfig) GetPresubmit(repo, jobName string) *Presubmit {
 	return nil
 }
 
-// SetPresubmits updates c.Presubmits to jobs, after compiling and validing their regexes.
+// SetPresubmits updates c.Presubmits to jobs, after compiling and validating their regexes.
 func (c *JobConfig) SetPresubmits(jobs map[string][]Presubmit) error {
 	nj := map[string][]Presubmit{}
 	for k, v := range jobs {

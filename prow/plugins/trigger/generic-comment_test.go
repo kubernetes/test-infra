@@ -513,7 +513,7 @@ func TestHandleGenericComment(t *testing.T) {
 			StartsExactly: "pull-jub",
 		},
 		{
-			name:   "/test all of run_if_changed job that has passed and doesnt need to run",
+			name:   "/test all of run_if_changed job that has passed and doesn't need to run",
 			Author: "t",
 			Body:   "/test all",
 			State:  "open",

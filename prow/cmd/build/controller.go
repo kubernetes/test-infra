@@ -489,7 +489,7 @@ func defaultEnv(c *untypedcorev1.Container, rawEnv map[string]string) {
 
 // injectEnvironment will add rawEnv to the build steps and/or template arguments.
 func injectEnvironment(b *buildv1alpha1.Build, rawEnv map[string]string) {
-	for i := range b.Spec.Steps { // Inject envionment variables to each step
+	for i := range b.Spec.Steps { // Inject environment variables to each step
 		defaultEnv(&b.Spec.Steps[i], rawEnv)
 	}
 	if b.Spec.Template != nil { // Also add it as template arguments

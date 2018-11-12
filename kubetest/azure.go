@@ -403,7 +403,7 @@ func (c *Cluster) createCluster() error {
 	kubecfg := path.Join(c.outputDir, "kubeconfig", kubecfgDir[0].Name())
 	log.Printf("Setting kubeconfig env variable: kubeconfig path: %v.", kubecfg)
 	os.Setenv("KUBECONFIG", kubecfg)
-	log.Printf("Creating resurce group: %v.", c.resourceGroup)
+	log.Printf("Creating resource group: %v.", c.resourceGroup)
 
 	log.Printf("Creating Azure resource group: %v for cluster deployment.", c.resourceGroup)
 	_, err = c.azureClient.EnsureResourceGroup(c.ctx, c.resourceGroup, c.location, nil)

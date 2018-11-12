@@ -361,7 +361,7 @@ func (br Column) Overall() Row {
 // AppendMetric adds the value at index to metric.
 //
 // Handles the details of sparse-encoding the results.
-// Indicies must be monotonically increasing for the same metric.
+// Indices must be monotonically increasing for the same metric.
 func AppendMetric(metric *state.Metric, idx int32, value float64) {
 	if l := int32(len(metric.Indices)); l == 0 || metric.Indices[l-2]+metric.Indices[l-1] != idx {
 		// If we append V to idx 9 and metric.Indices = [3, 4] then the last filled index is 3+4-1=7
@@ -954,7 +954,7 @@ func ReadBuilds(parent context.Context, group config.TestGroup, builds Builds, m
 		}
 	}()
 
-	// Concurrently receive indicies and read builds
+	// Concurrently receive indices and read builds
 	for i := 0; i < concurrency; i++ {
 		wg.Add(1)
 		go func() {

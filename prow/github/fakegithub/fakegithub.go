@@ -336,7 +336,7 @@ func (f *FakeClient) ListTeams(org string) ([]github.Team, error) {
 // ListTeamMembers return a fake team with a single "sig-lead" Github teammember
 func (f *FakeClient) ListTeamMembers(teamID int, role string) ([]github.TeamMember, error) {
 	if role != github.RoleAll {
-		return nil, fmt.Errorf("unsupport role %v (only all supported)", role)
+		return nil, fmt.Errorf("unsupported role %v (only all supported)", role)
 	}
 	teams := map[int][]github.TeamMember{
 		0:  {{Login: "default-sig-lead"}},

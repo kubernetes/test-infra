@@ -16,7 +16,7 @@ to do something evil like breaking out of the container and stealing secrets
 that live in the cluster.
 
 More than one build cluster can be used in order to isolate specific jobs from
-eachother, improve scalability, and offer different node shapes.
+each other, improve scalability, and offer different node shapes.
 Instructions for configuring jobs to run in different clusters can be found [here](/prow/getting_started_deploy.md#Run-test-pods-in-different-clusters).
 
 ### Pull Request Merge Automation

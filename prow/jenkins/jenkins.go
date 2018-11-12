@@ -148,7 +148,7 @@ func (jb *Build) ProwJobID() string {
 // Jenkins operator is configured to run.
 // We return an empty string if we are dealing with
 // a build that does not have the ProwJobID set
-// explicitly, as in  that case the Jenkins build has
+// explicitly, as in that case the Jenkins build has
 // not started by prow.
 func (jb *Build) BuildID() string {
 	var buildID string
