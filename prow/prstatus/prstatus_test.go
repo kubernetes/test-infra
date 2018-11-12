@@ -120,6 +120,43 @@ func TestHandlePrStatusWithoutLogin(t *testing.T) {
 	}
 }
 
+func TestHandlePrStatusWithInvalidToken(t *testing.T) {
+	logrus.SetLevel(logrus.ErrorLevel)
+	repos := []string{"mock/repo", "kubernetes/test-infra", "foo/bar"}
+	mockCookieStore := sessions.NewCookieStore([]byte("secret-key"))
+	mockConfig := &config.GithubOAuthConfig{
+		CookieStore: mockCookieStore,
+	}
+	mockAgent := createMockAgent(repos, mockConfig)
+	mockQueryHandler := newMockQueryHandler([]PullRequest{}, map[int][]Context{})
+
+	rr := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/pr-data.js", nil)
+	request.AddCookie(&http.Cookie{Name: tokenSession, Value: "garbage"})
+	prHandler := mockAgent.HandlePrStatus(mockQueryHandler)
+	prHandler.ServeHTTP(rr, request)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("Bad status code: %d", rr.Code)
+	}
+	response := rr.Result()
+	defer response.Body.Close()
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		t.Fatalf("Error with reading response body: %v", err)
+	}
+
+	var dataReturned UserData
+	if err := yaml.Unmarshal(body, &dataReturned); err != nil {
+		t.Errorf("Error with unmarshaling response: %v", err)
+	}
+
+	expectedData := UserData{Login: false}
+	if !reflect.DeepEqual(dataReturned, expectedData) {
+		t.Fatalf("Invalid user data. Got %v, expected %v.", dataReturned, expectedData)
+	}
+}
+
 func TestHandlePrStatusWithLogin(t *testing.T) {
 	repos := []string{"mock/repo", "kubernetes/test-infra", "foo/bar"}
 	mockCookieStore := sessions.NewCookieStore([]byte("secret-key"))
