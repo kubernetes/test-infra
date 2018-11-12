@@ -245,7 +245,7 @@ periodics:
         value: /go
 
 - name: ci-kubernetes-node-kubelet-serial
-  interval: 4h
+  interval: 4h30m
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -254,7 +254,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
       args:
       - --repo=k8s.io/kubernetes=master
-      - --timeout=240
+      - --timeout=265
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -266,7 +266,7 @@ periodics:
       - --node-tests=true
       - --provider=gce
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeAlphaFeature:.+\]"
-      - --timeout=220m
+      - --timeout=245m
       env:
       - name: GOPATH
         value: /go
