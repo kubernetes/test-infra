@@ -51,7 +51,17 @@ function requestReload(name: string, body: string): void {
 // Insert rendered view into page and remove loading wheel
 function insertView(name: string, content: string): void {
   document.getElementById(name + "-loading")!.style.display = "none";
-  document.getElementById(name + "-view")!.innerHTML = content;
+
+  const view = document.getElementById(name + "-view");
+  view!.innerHTML = content;
+  // This is an icky workaround until we have viewer-specific scripts
+  // https://github.com/kubernetes/test-infra/issues/8967
+  if (name === "build-log-viewer") {
+    const shown = view!.getElementsByClassName("shown");
+    for (let i = 0; i < shown.length; i++) {
+      shown[i].innerHTML = ansiToHTML(shown[i].innerHTML);
+    }
+  }
 }
 
 // Show loading wheel over view
@@ -61,13 +71,18 @@ function insertLoading(name: string): void {
 
 window.onload = loadViews;
 
+function showElem(elem: HTMLElement) {
+  elem.className = "shown";
+  elem.innerHTML = ansiToHTML(elem.innerHTML);
+}
+
 // Show all lines in specified log
 function showAllLines(logID: string): void {
   document.getElementById(logID + "-show-all")!.style.display = "none";
   const log = document.getElementById(logID)!;
   const skipped = log.querySelectorAll<HTMLElement>(".skipped");
   for (let i = 0; i < skipped.length; i++) {
-    skipped[i].classList.remove("skipped");
+    showElem(skipped[i]);
   }
   // hide any remaining "show hidden lines" buttons
   const showSkipped = log.querySelectorAll<HTMLElement>(".show-skipped");
@@ -77,8 +92,7 @@ function showAllLines(logID: string): void {
 }
 
 function showLines(logID:string, linesID: string, skipID: string): void {
-  // show a single group of hidden lines
-  document.getElementById(linesID)!.classList.remove("skipped");
+  showElem(document.getElementById(linesID)!);
   // hide the corresponding button
   document.getElementById(skipID)!.style.display = "none";
   // hide the "show all" button if nothing's left to show
@@ -99,6 +113,39 @@ function toggleExpansion(bodyId: string, expanderId: string): void {
   }
 }
 
+// given a string containing ansi formatting directives, return a new one
+// with designated regions of text marked with the appropriate color directives,
+// and with all unknown directives stripped
+function ansiToHTML(orig: string) {
+  // Given a cmd (like "32" or "0;97"), some enclosed body text, and the original string,
+  // either return the body wrapped in an element to achieve the desired result, or the
+  // original string if nothing works.
+  function annotate(cmd: string, body: string, orig: string) {
+    var code = +(cmd.replace('0;', ''));
+    if (code === 0) // reset
+      return body;
+    else if (code === 1) // bold
+      return '<em>' + body + '</em>';
+    else if (30 <= code && code <= 37) // foreground color
+      return '<span class="ansi-' + (code - 30) + '">' + body + '</span>';
+    else if (90 <= code && code <= 97) // foreground color, bright
+      return '<span class="ansi-' + (code - 90 + 8) + '">' + body + '</span>';
+    return body;  // fallback: don't change anything
+  }
+  // Find commands, optionally followed by a bold command, with some content, then a reset command.
+  // Unpaired commands are *not* handled here, but they're very uncommon.
+  var filtered = orig.replace(/\033\[([0-9;]*)\w(\033\[1m)?([^\033]*?)\033\[0m/g, function(match: string, cmd: string, bold: string, body: string, offset: number, str: string) {
+    if (bold !== undefined)  // normal code + bold
+      return '<em>' + annotate(cmd, body, str) + '</em>';
+    return annotate(cmd, body, str);
+  });
+  // Strip out anything left over.
+  return filtered.replace(/\033\[([0-9;]*\w)/g, function(match: string, cmd: string, offset: number, str: string) {
+    console.log('unhandled ansi code: ', cmd, "context:", filtered);
+    return '';
+  });
+}
+
 // The following form the "public API" and so are exposed until we do something
 // better.
 
@@ -108,4 +155,6 @@ function toggleExpansion(bodyId: string, expanderId: string): void {
 // Just for the build log:
 (window as any).showAllLines = showAllLines;
 (window as any).showLines = showLines;
+
+// Just for Junit test output
 (window as any).toggleExpansion = toggleExpansion;
