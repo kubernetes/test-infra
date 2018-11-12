@@ -25,9 +25,59 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/api/core/v1"
+	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/kube"
+
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
+	//"k8s.io/apimachinery/pkg/api/equality"
+	//"k8s.io/apimachinery/pkg/util/diff"
+	"k8s.io/test-infra/prow/pod-utils/decorate"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
+
+func TestDefaultJobBase(t *testing.T) {
+	filled := JobBase{
+		Agent: "foo",
+	}
+	cases := []struct {
+		name     string
+		config   ProwConfig
+		base     func(j *JobBase)
+		expected func(j *JobBase)
+	}{
+		{
+			name: "no changes when fields are already set",
+		},
+		{
+			name: "empty agent results in kubernetes",
+			base: func(j *JobBase) {
+				j.Agent = ""
+			},
+			expected: func(j *JobBase) {
+				j.Agent = string(kube.KubernetesAgent)
+			},
+		},
+		// TODO(fejta): namespace tests
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := filled
+			if tc.base != nil {
+				tc.base(&actual)
+			}
+			expected := actual
+			if tc.expected != nil {
+				tc.expected(&expected)
+			}
+			tc.config.defaultJobBase(&actual)
+			if !reflect.DeepEqual(actual, expected) {
+				t.Errorf("expected %#v\n!=\nactual %#v", expected, actual)
+			}
+		})
+	}
+}
 
 func TestSpyglassConfig(t *testing.T) {
 	testCases := []struct {
@@ -324,6 +374,424 @@ periodics:
 
 }
 
+func TestValidateAgent(t *testing.T) {
+	b := string(prowjobv1.KnativeBuildAgent)
+	jenk := string(prowjobv1.JenkinsAgent)
+	k := string(prowjobv1.KubernetesAgent)
+	base := JobBase{
+		Agent: k,
+		Spec:  &v1.PodSpec{},
+		UtilityConfig: UtilityConfig{
+			DecorationConfig: &kube.DecorationConfig{},
+		},
+	}
+
+	cases := []struct {
+		name string
+		base func(j *JobBase)
+		pass bool
+	}{
+		{
+			name: "reject unknown agent",
+			base: func(j *JobBase) {
+				j.Agent = "random-agent"
+			},
+		},
+		{
+			name: "spec requires kubernetes agent",
+			base: func(j *JobBase) {
+				j.Agent = b
+			},
+		},
+		{
+			name: "kubernetes agent requires spec",
+			base: func(j *JobBase) {
+				j.Spec = nil
+			},
+		},
+		{
+			name: "decoration requires kubernetes agent",
+			base: func(j *JobBase) {
+				j.Agent = jenk
+				j.Spec = nil
+			},
+		},
+		{
+			name: "accept kubernetes agent",
+			pass: true,
+		},
+		{
+			name: "accept kubernetes agent without decoration",
+			base: func(j *JobBase) {
+				j.DecorationConfig = nil
+			},
+			pass: true,
+		},
+		{
+			name: "accept jenkins agent",
+			base: func(j *JobBase) {
+				j.Agent = jenk
+				j.Spec = nil
+				j.DecorationConfig = nil
+			},
+			pass: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			jb := base
+			if tc.base != nil {
+				tc.base(&jb)
+			}
+			switch err := validateAgent(jb); {
+			case err == nil && !tc.pass:
+				t.Error("validation failed to raise an error")
+			case err != nil && tc.pass:
+				t.Errorf("validation should have passed, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestValidatePodSpec(t *testing.T) {
+	periodEnv := sets.NewString(downwardapi.EnvForType(kube.PeriodicJob)...)
+	postEnv := sets.NewString(downwardapi.EnvForType(kube.PostsubmitJob)...)
+	preEnv := sets.NewString(downwardapi.EnvForType(kube.PresubmitJob)...)
+	cases := []struct {
+		name    string
+		jobType kube.ProwJobType
+		spec    func(s *v1.PodSpec)
+		noSpec  bool
+		pass    bool
+	}{
+		{
+			name:   "allow nil spec",
+			noSpec: true,
+			pass:   true,
+		},
+		{
+			name: "happy case",
+			pass: true,
+		},
+		{
+			name: "reject init containers",
+			spec: func(s *v1.PodSpec) {
+				s.InitContainers = []v1.Container{
+					{},
+				}
+			},
+		},
+		{
+			name: "reject 0 containers",
+			spec: func(s *v1.PodSpec) {
+				s.Containers = nil
+			},
+		},
+		{
+			name: "reject 2 containers",
+			spec: func(s *v1.PodSpec) {
+				s.Containers = append(s.Containers, v1.Container{})
+			},
+		},
+		{
+			name:    "reject reserved presubmit env",
+			jobType: kube.PresubmitJob,
+			spec: func(s *v1.PodSpec) {
+				// find a presubmit value
+				for n := range preEnv.Difference(postEnv).Difference(periodEnv) {
+
+					s.Containers[0].Env = append(s.Containers[0].Env, v1.EnvVar{Name: n, Value: "whatever"})
+				}
+				if len(s.Containers[0].Env) == 0 {
+					t.Fatal("empty env")
+				}
+			},
+		},
+		{
+			name:    "reject reserved postsubmit env",
+			jobType: kube.PostsubmitJob,
+			spec: func(s *v1.PodSpec) {
+				// find a postsubmit value
+				for n := range postEnv.Difference(periodEnv) {
+
+					s.Containers[0].Env = append(s.Containers[0].Env, v1.EnvVar{Name: n, Value: "whatever"})
+				}
+				if len(s.Containers[0].Env) == 0 {
+					t.Fatal("empty env")
+				}
+			},
+		},
+		{
+			name:    "reject reserved periodic env",
+			jobType: kube.PeriodicJob,
+			spec: func(s *v1.PodSpec) {
+				// find a postsubmit value
+				for n := range periodEnv {
+
+					s.Containers[0].Env = append(s.Containers[0].Env, v1.EnvVar{Name: n, Value: "whatever"})
+				}
+				if len(s.Containers[0].Env) == 0 {
+					t.Fatal("empty env")
+				}
+			},
+		},
+		{
+			name: "reject reserved mount name",
+			spec: func(s *v1.PodSpec) {
+				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
+					Name:      decorate.VolumeMounts()[0],
+					MountPath: "/whatever",
+				})
+			},
+		},
+		{
+			name: "reject reserved mount path",
+			spec: func(s *v1.PodSpec) {
+				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
+					Name:      "fun",
+					MountPath: decorate.VolumeMountPaths()[0],
+				})
+			},
+		},
+		{
+			name: "reject conflicting mount paths (decorate in user)",
+			spec: func(s *v1.PodSpec) {
+				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
+					Name:      "foo",
+					MountPath: filepath.Dir(decorate.VolumeMountPaths()[0]),
+				})
+			},
+		},
+		{
+			name: "reject conflicting mount paths (user in decorate)",
+			spec: func(s *v1.PodSpec) {
+				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
+					Name:      "foo",
+					MountPath: filepath.Join(decorate.VolumeMountPaths()[0], "extra"),
+				})
+			},
+		},
+		{
+			name: "reject reserved volume",
+			spec: func(s *v1.PodSpec) {
+				s.Volumes = append(s.Volumes, v1.Volume{Name: decorate.VolumeMounts()[0]})
+			},
+		},
+	}
+
+	spec := v1.PodSpec{
+		Containers: []v1.Container{
+			{},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			jt := kube.PresubmitJob
+			if tc.jobType != "" {
+				jt = tc.jobType
+			}
+			current := spec.DeepCopy()
+			if tc.noSpec {
+				current = nil
+			} else if tc.spec != nil {
+				tc.spec(current)
+			}
+			switch err := validatePodSpec(jt, current); {
+			case err == nil && !tc.pass:
+				t.Error("validation failed to raise an error")
+			case err != nil && tc.pass:
+				t.Errorf("validation should have passed, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestValidateDecoration(t *testing.T) {
+	defCfg := kube.DecorationConfig{
+		UtilityImages: &prowjobv1.UtilityImages{
+			CloneRefs:  "clone-me",
+			InitUpload: "upload-me",
+			Entrypoint: "enter-me",
+			Sidecar:    "official-drink-of-the-org",
+		},
+		GCSCredentialsSecret: "upload-secret",
+		GCSConfiguration: &prowjobv1.GCSConfiguration{
+			PathStrategy: prowjobv1.PathStrategyExplicit,
+			DefaultOrg:   "so-org",
+			DefaultRepo:  "very-repo",
+		},
+	}
+	cases := []struct {
+		name      string
+		container v1.Container
+		config    *kube.DecorationConfig
+		pass      bool
+	}{
+		{
+			name: "allow no decoration",
+			pass: true,
+		},
+		{
+			name:   "happy case with cmd",
+			config: &defCfg,
+			container: v1.Container{
+				Command: []string{"hello", "world"},
+			},
+			pass: true,
+		},
+		{
+			name:   "happy case with args",
+			config: &defCfg,
+			container: v1.Container{
+				Args: []string{"hello", "world"},
+			},
+			pass: true,
+		},
+		{
+			name:   "reject invalid decoration config",
+			config: &kube.DecorationConfig{},
+			container: v1.Container{
+				Command: []string{"hello", "world"},
+			},
+		},
+		{
+			name:   "reject container that has no cmd, no args",
+			config: &defCfg,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			switch err := validateDecoration(tc.container, tc.config); {
+			case err == nil && !tc.pass:
+				t.Error("validation failed to raise an error")
+			case err != nil && tc.pass:
+				t.Errorf("validation should have passed, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestValidateLabels(t *testing.T) {
+	cases := []struct {
+		name   string
+		labels map[string]string
+		pass   bool
+	}{
+		{
+			name: "happy case",
+			pass: true,
+		},
+		{
+			name: "reject reserved label",
+			labels: map[string]string{
+				decorate.Labels()[0]: "anything",
+			},
+		},
+		{
+			name: "reject bad label key",
+			labels: map[string]string{
+				"_underscore-prefix": "annoying",
+			},
+		},
+		{
+			name: "reject bad label value",
+			labels: map[string]string{
+				"whatever": "_private-is-rejected",
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			switch err := validateLabels(tc.labels); {
+			case err == nil && !tc.pass:
+				t.Error("validation failed to raise an error")
+			case err != nil && tc.pass:
+				t.Errorf("validation should have passed, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestValidateJobBase(t *testing.T) {
+	ka := string(prowjobv1.KubernetesAgent)
+	ja := string(prowjobv1.JenkinsAgent)
+	goodSpec := v1.PodSpec{
+		Containers: []v1.Container{
+			{},
+		},
+	}
+	cases := []struct {
+		name string
+		base JobBase
+		pass bool
+	}{
+		{
+			name: "valid kubernetes job",
+			base: JobBase{
+				Agent: ka,
+				Spec:  &goodSpec,
+			},
+			pass: true,
+		},
+		{
+			name: "valid jenkins job",
+			base: JobBase{
+				Agent: ja,
+			},
+			pass: true,
+		},
+		{
+			name: "invalid concurrency",
+			base: JobBase{
+				MaxConcurrency: -1,
+				Agent:          ka,
+				Spec:           &goodSpec,
+			},
+		},
+		{
+			name: "invalid pod spec",
+			base: JobBase{
+				Agent: ka,
+				Spec:  &v1.PodSpec{}, // no containers
+			},
+		},
+		{
+			name: "invalid decoration",
+			base: JobBase{
+				Agent: ka,
+				Spec:  &goodSpec,
+				UtilityConfig: UtilityConfig{
+					DecorationConfig: &prowjobv1.DecorationConfig{}, // missing many fields
+				},
+			},
+		},
+		{
+			name: "invalid labels",
+			base: JobBase{
+				Agent: ka,
+				Spec:  &goodSpec,
+				Labels: map[string]string{
+					"_leading_underscore": "_rejected",
+				},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			switch err := validateJobBase(tc.base, prowjobv1.PresubmitJob); {
+			case err == nil && !tc.pass:
+				t.Error("validation failed to raise an error")
+			case err != nil && tc.pass:
+				t.Errorf("validation should have passed, got: %v", err)
+			}
+		})
+	}
+}
+
 // integration test for fake config loading
 func TestValidConfigLoading(t *testing.T) {
 	var testCases = []struct {
@@ -339,13 +807,14 @@ func TestValidConfigLoading(t *testing.T) {
 			prowConfig: ``,
 		},
 		{
-			name:       "invalid periodic",
+			name:       "kubernetes periodic missing spec",
 			prowConfig: ``,
 			jobConfigs: []string{
 				`
 periodics:
 - interval: 10m
   agent: kubernetes
+  build_spec:
   name: foo`,
 			},
 			expectError: true,
