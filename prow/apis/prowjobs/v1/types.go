@@ -105,6 +105,8 @@ type ProwJobSpec struct {
 	// to run the job, only applicable for that
 	// specific agent
 	Cluster string `json:"cluster,omitempty"`
+	// Namespace defines where to create pods/resources.
+	Namespace string `json:"namespace,omitempty"`
 	// Job is the name of the job
 	Job string `json:"job,omitempty"`
 	// Refs is the code under test, determined at

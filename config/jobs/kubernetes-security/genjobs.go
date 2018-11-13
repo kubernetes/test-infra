@@ -120,7 +120,7 @@ func undoPresubmitPresets(presets []config.Preset, presubmit *config.Presubmit) 
 // dropLabels should be a set of "k: v" strings
 // xref: prow/config/config_test.go replace(...)
 // it will return the same job mutated, or nil if the job should be removed
-func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String) *config.Presubmit {
+func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, podNamespace string) *config.Presubmit {
 	// if a GKE job, disable it
 	if strings.Contains(j.Name, "gke") {
 		return nil
@@ -144,6 +144,9 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String) *confi
 	j.RerunCommand = strings.Replace(j.RerunCommand, "pull-kubernetes", "pull-security-kubernetes", -1)
 	j.Trigger = strings.Replace(j.Trigger, "pull-kubernetes", "pull-security-kubernetes", -1)
 	j.Context = strings.Replace(j.Context, "pull-kubernetes", "pull-security-kubernetes", -1)
+	if j.Namespace != nil && *j.Namespace == podNamespace {
+		j.Namespace = nil
+	}
 
 	// handle k8s job args, volumes etc
 	if j.Agent == "kubernetes" {
@@ -256,7 +259,7 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String) *confi
 	if len(j.RunAfterSuccess) > 0 {
 		filteredRunAfterSucces := []config.Presubmit{}
 		for i := range j.RunAfterSuccess {
-			newJob := convertJobToSecurityJob(&j.RunAfterSuccess[i], dropLabels)
+			newJob := convertJobToSecurityJob(&j.RunAfterSuccess[i], dropLabels, podNamespace)
 			if newJob != nil {
 				filteredRunAfterSucces = append(filteredRunAfterSucces, *newJob)
 			}
@@ -356,7 +359,7 @@ func main() {
 		// undo merged presets, this needs to occur first!
 		undoPresubmitPresets(parsed.Presets, job)
 		// now convert the job
-		job = convertJobToSecurityJob(job, dropLabels)
+		job = convertJobToSecurityJob(job, dropLabels, parsed.PodNamespace)
 		if job == nil {
 			continue
 		}

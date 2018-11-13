@@ -38,8 +38,10 @@ import (
 )
 
 func TestDefaultJobBase(t *testing.T) {
+	bar := "bar"
 	filled := JobBase{
-		Agent: "foo",
+		Agent:     "foo",
+		Namespace: &bar,
 	}
 	cases := []struct {
 		name     string
@@ -59,7 +61,35 @@ func TestDefaultJobBase(t *testing.T) {
 				j.Agent = string(kube.KubernetesAgent)
 			},
 		},
-		// TODO(fejta): namespace tests
+		{
+			name: "nil namespace becomes PodNamespace",
+			config: ProwConfig{
+				PodNamespace:     "pod-namespace",
+				ProwJobNamespace: "wrong",
+			},
+			base: func(j *JobBase) {
+				j.Namespace = nil
+			},
+			expected: func(j *JobBase) {
+				p := "pod-namespace"
+				j.Namespace = &p
+			},
+		},
+		{
+			name: "empty namespace becomes PodNamespace",
+			config: ProwConfig{
+				PodNamespace:     "new-pod-namespace",
+				ProwJobNamespace: "still-wrong",
+			},
+			base: func(j *JobBase) {
+				var empty string
+				j.Namespace = &empty
+			},
+			expected: func(j *JobBase) {
+				p := "new-pod-namespace"
+				j.Namespace = &p
+			},
+		},
 	}
 
 	for _, tc := range cases {
@@ -379,9 +409,11 @@ func TestValidateAgent(t *testing.T) {
 	b := string(prowjobv1.KnativeBuildAgent)
 	jenk := string(prowjobv1.JenkinsAgent)
 	k := string(prowjobv1.KubernetesAgent)
+	ns := "default"
 	base := JobBase{
-		Agent: k,
-		Spec:  &v1.PodSpec{},
+		Agent:     k,
+		Namespace: &ns,
+		Spec:      &v1.PodSpec{},
 		UtilityConfig: UtilityConfig{
 			DecorationConfig: &kube.DecorationConfig{},
 		},
@@ -436,6 +468,26 @@ func TestValidateAgent(t *testing.T) {
 			},
 		},
 		{
+			name: "non-nil namespace required",
+			base: func(j *JobBase) {
+				j.Namespace = nil
+			},
+		},
+		{
+			name: "filled namespace required",
+			base: func(j *JobBase) {
+				var s string
+				j.Namespace = &s
+			},
+		},
+		{
+			name: "custom namespace requires knative-build agent",
+			base: func(j *JobBase) {
+				s := "custom-namespace"
+				j.Namespace = &s
+			},
+		},
+		{
 			name: "accept kubernetes agent",
 			pass: true,
 		},
@@ -451,6 +503,8 @@ func TestValidateAgent(t *testing.T) {
 			base: func(j *JobBase) {
 				j.Agent = b
 				j.BuildSpec = &buildv1alpha1.BuildSpec{}
+				ns := "custom-namespace"
+				j.Namespace = &ns
 				j.Spec = nil
 				j.DecorationConfig = nil
 			},
@@ -473,7 +527,7 @@ func TestValidateAgent(t *testing.T) {
 			if tc.base != nil {
 				tc.base(&jb)
 			}
-			switch err := validateAgent(jb); {
+			switch err := validateAgent(jb, ns); {
 			case err == nil && !tc.pass:
 				t.Error("validation failed to raise an error")
 			case err != nil && tc.pass:
@@ -753,6 +807,7 @@ func TestValidateJobBase(t *testing.T) {
 			{},
 		},
 	}
+	ns := "target-namespace"
 	cases := []struct {
 		name string
 		base JobBase
@@ -761,8 +816,9 @@ func TestValidateJobBase(t *testing.T) {
 		{
 			name: "valid kubernetes job",
 			base: JobBase{
-				Agent: ka,
-				Spec:  &goodSpec,
+				Agent:     ka,
+				Spec:      &goodSpec,
+				Namespace: &ns,
 			},
 			pass: true,
 		},
@@ -771,13 +827,15 @@ func TestValidateJobBase(t *testing.T) {
 			base: JobBase{
 				Agent:     ba,
 				BuildSpec: &buildv1alpha1.BuildSpec{},
+				Namespace: &ns,
 			},
 			pass: true,
 		},
 		{
 			name: "valid jenkins job",
 			base: JobBase{
-				Agent: ja,
+				Agent:     ja,
+				Namespace: &ns,
 			},
 			pass: true,
 		},
@@ -787,20 +845,23 @@ func TestValidateJobBase(t *testing.T) {
 				MaxConcurrency: -1,
 				Agent:          ka,
 				Spec:           &goodSpec,
+				Namespace:      &ns,
 			},
 		},
 		{
 			name: "invalid agent",
 			base: JobBase{
-				Agent: ba,
-				Spec:  &goodSpec, // want BuildSpec
+				Agent:     ba,
+				Spec:      &goodSpec, // want BuildSpec
+				Namespace: &ns,
 			},
 		},
 		{
 			name: "invalid pod spec",
 			base: JobBase{
-				Agent: ka,
-				Spec:  &v1.PodSpec{}, // no containers
+				Agent:     ka,
+				Namespace: &ns,
+				Spec:      &v1.PodSpec{}, // no containers
 			},
 		},
 		{
@@ -811,6 +872,7 @@ func TestValidateJobBase(t *testing.T) {
 				UtilityConfig: UtilityConfig{
 					DecorationConfig: &prowjobv1.DecorationConfig{}, // missing many fields
 				},
+				Namespace: &ns,
 			},
 		},
 		{
@@ -821,13 +883,14 @@ func TestValidateJobBase(t *testing.T) {
 				Labels: map[string]string{
 					"_leading_underscore": "_rejected",
 				},
+				Namespace: &ns,
 			},
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			switch err := validateJobBase(tc.base, prowjobv1.PresubmitJob); {
+			switch err := validateJobBase(tc.base, prowjobv1.PresubmitJob, ns); {
 			case err == nil && !tc.pass:
 				t.Error("validation failed to raise an error")
 			case err != nil && tc.pass:
@@ -852,7 +915,7 @@ func TestValidConfigLoading(t *testing.T) {
 			prowConfig: ``,
 		},
 		{
-			name:       "kubernetes periodic missing spec",
+			name:       "reject invalid kubernetes periodic",
 			prowConfig: ``,
 			jobConfigs: []string{
 				`

@@ -91,6 +91,10 @@ type JobBase struct {
 	// Cluster is the alias of the cluster to run this job in.
 	// (Default: kube.DefaultClusterAlias)
 	Cluster string `json:"cluster,omitempty"`
+	// Namespace is the namespace in which pods schedule.
+	//   nil: results in config.PodNamespace (aka pod default)
+	//   empty: results in config.ProwJobNamespace (aka same as prowjob)
+	Namespace *string `json:"namespace,omitempty"`
 	// SourcePath contains the path where this job is defined
 	SourcePath string `json:"-"`
 	// Spec is the Kubernetes pod spec used if Agent is kubernetes.

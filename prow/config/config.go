@@ -629,12 +629,12 @@ func (c *Config) validateComponentConfig() error {
 	return nil
 }
 
-func validateJobBase(v JobBase, jobType kube.ProwJobType) error {
+func validateJobBase(v JobBase, jobType kube.ProwJobType, podNamespace string) error {
 	// Ensure max_concurrency is non-negative.
 	if v.MaxConcurrency < 0 {
 		return fmt.Errorf("max_concurrency: %d must be a non-negative number", v.MaxConcurrency)
 	}
-	if err := validateAgent(v); err != nil {
+	if err := validateAgent(v, podNamespace); err != nil {
 		return err
 	}
 	if err := validatePodSpec(jobType, v.Spec); err != nil {
@@ -672,7 +672,7 @@ func (c *Config) validateJobConfig() error {
 	}
 
 	for _, v := range c.AllPresubmits(nil) {
-		if err := validateJobBase(v.JobBase, prowjobv1.PresubmitJob); err != nil {
+		if err := validateJobBase(v.JobBase, prowjobv1.PresubmitJob, c.PodNamespace); err != nil {
 			return fmt.Errorf("invalid presubmit job %s: %v", v.Name, err)
 		}
 		if err := validateTriggering(v); err != nil {
@@ -696,7 +696,7 @@ func (c *Config) validateJobConfig() error {
 	}
 
 	for _, j := range c.AllPostsubmits(nil) {
-		if err := validateJobBase(j.JobBase, prowjobv1.PostsubmitJob); err != nil {
+		if err := validateJobBase(j.JobBase, prowjobv1.PostsubmitJob, c.PodNamespace); err != nil {
 			return fmt.Errorf("invalid postsubmit job %s: %v", j.Name, err)
 		}
 	}
@@ -709,7 +709,7 @@ func (c *Config) validateJobConfig() error {
 			return fmt.Errorf("duplicated periodic job : %s", p.Name)
 		}
 		validPeriodics.Insert(p.Name)
-		if err := validateJobBase(p.JobBase, prowjobv1.PeriodicJob); err != nil {
+		if err := validateJobBase(p.JobBase, prowjobv1.PeriodicJob, c.PodNamespace); err != nil {
 			return fmt.Errorf("invalid periodic job %s: %v", p.Name, err)
 		}
 	}
@@ -965,7 +965,7 @@ func validateLabels(labels map[string]string) error {
 	return nil
 }
 
-func validateAgent(v JobBase) error {
+func validateAgent(v JobBase, podNamespace string) error {
 	k := string(prowjobv1.KubernetesAgent)
 	b := string(prowjobv1.KnativeBuildAgent)
 	j := string(prowjobv1.JenkinsAgent)
@@ -985,6 +985,11 @@ func validateAgent(v JobBase) error {
 	case v.DecorationConfig != nil && agent != k:
 		// TODO(fejta): support decoration
 		return fmt.Errorf("decoration requires agent: %s (found %q)", k, agent)
+	case v.Namespace == nil || *v.Namespace == "":
+		return fmt.Errorf("failed to default namespace")
+	case *v.Namespace != podNamespace && agent != b:
+		// TODO(fejta): update plank to allow this (depends on client change)
+		return fmt.Errorf("namespace customization requires agent: %s (found %q)", b, agent)
 	}
 	return nil
 }
@@ -1110,12 +1115,15 @@ func DefaultRerunCommandFor(name string) string {
 	return fmt.Sprintf("/test %s", name)
 }
 
-// defaultJobBase configures common parameters, currently Agent.
+// defaultJobBase configures common parameters, currently Agent and Namespace.
 func (c *ProwConfig) defaultJobBase(base *JobBase) {
 	if base.Agent == "" { // Use kubernetes by default
 		base.Agent = string(kube.KubernetesAgent)
 	}
-	// TODO(fejta): configure namespace once available
+	if base.Namespace == nil || *base.Namespace == "" {
+		s := c.PodNamespace
+		base.Namespace = &s
+	}
 }
 
 func (c *ProwConfig) defaultPresubmitFields(js []Presubmit) {
