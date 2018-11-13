@@ -52,12 +52,12 @@ function requestReload(name: string, body: string): void {
 function insertView(name: string, content: string): void {
   document.getElementById(name + "-loading")!.style.display = "none";
 
-  const view = document.getElementById(name + "-view");
-  view!.innerHTML = content;
+  const view = document.getElementById(name + "-view")!;
+  view.innerHTML = content;
   // This is an icky workaround until we have viewer-specific scripts
   // https://github.com/kubernetes/test-infra/issues/8967
   if (name === "build-log-viewer") {
-    const shown = view!.getElementsByClassName("shown");
+    const shown = view.getElementsByClassName("shown");
     for (let i = 0; i < shown.length; i++) {
       shown[i].innerHTML = ansiToHTML(shown[i].innerHTML);
     }
@@ -71,7 +71,7 @@ function insertLoading(name: string): void {
 
 window.onload = loadViews;
 
-function showElem(elem: HTMLElement) {
+function showElem(elem: HTMLElement): void {
   elem.className = "shown";
   elem.innerHTML = ansiToHTML(elem.innerHTML);
 }
@@ -116,12 +116,12 @@ function toggleExpansion(bodyId: string, expanderId: string): void {
 // given a string containing ansi formatting directives, return a new one
 // with designated regions of text marked with the appropriate color directives,
 // and with all unknown directives stripped
-function ansiToHTML(orig: string) {
+function ansiToHTML(orig: string): string {
   // Given a cmd (like "32" or "0;97"), some enclosed body text, and the original string,
   // either return the body wrapped in an element to achieve the desired result, or the
   // original string if nothing works.
-  function annotate(cmd: string, body: string, orig: string) {
-    var code = +(cmd.replace('0;', ''));
+  function annotate(cmd: string, body: string, orig: string): string {
+    const code = +(cmd.replace('0;', ''));
     if (code === 0) // reset
       return body;
     else if (code === 1) // bold
@@ -134,13 +134,13 @@ function ansiToHTML(orig: string) {
   }
   // Find commands, optionally followed by a bold command, with some content, then a reset command.
   // Unpaired commands are *not* handled here, but they're very uncommon.
-  var filtered = orig.replace(/\033\[([0-9;]*)\w(\033\[1m)?([^\033]*?)\033\[0m/g, function(match: string, cmd: string, bold: string, body: string, offset: number, str: string) {
+  const filtered = orig.replace(/\033\[([0-9;]*)\w(\033\[1m)?([^\033]*?)\033\[0m/g, (match: string, cmd: string, bold: string, body: string, offset: number, str: string) => {
     if (bold !== undefined)  // normal code + bold
       return '<em>' + annotate(cmd, body, str) + '</em>';
     return annotate(cmd, body, str);
   });
   // Strip out anything left over.
-  return filtered.replace(/\033\[([0-9;]*\w)/g, function(match: string, cmd: string, offset: number, str: string) {
+  return filtered.replace(/\033\[([0-9;]*\w)/g, (match: string, cmd: string, offset: number, str: string) => {
     console.log('unhandled ansi code: ', cmd, "context:", filtered);
     return '';
   });
