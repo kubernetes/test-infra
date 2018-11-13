@@ -122,21 +122,28 @@ function ansiToHTML(orig: string): string {
   // original string if nothing works.
   function annotate(cmd: string, body: string, orig: string): string {
     const code = +(cmd.replace('0;', ''));
-    if (code === 0) // reset
+    if (code === 0) {
+      // reset
       return body;
-    else if (code === 1) // bold
+    } else if (code === 1) {
+      // bold
       return '<em>' + body + '</em>';
-    else if (30 <= code && code <= 37) // foreground color
+    } else if (30 <= code && code <= 37) {
+      // foreground color
       return '<span class="ansi-' + (code - 30) + '">' + body + '</span>';
-    else if (90 <= code && code <= 97) // foreground color, bright
+    } else if (90 <= code && code <= 97) {
+      // foreground color, bright
       return '<span class="ansi-' + (code - 90 + 8) + '">' + body + '</span>';
+    }
     return body;  // fallback: don't change anything
   }
   // Find commands, optionally followed by a bold command, with some content, then a reset command.
   // Unpaired commands are *not* handled here, but they're very uncommon.
   const filtered = orig.replace(/\033\[([0-9;]*)\w(\033\[1m)?([^\033]*?)\033\[0m/g, (match: string, cmd: string, bold: string, body: string, offset: number, str: string) => {
-    if (bold !== undefined)  // normal code + bold
+    if (bold !== undefined) {
+      // normal code + bold
       return '<em>' + annotate(cmd, body, str) + '</em>';
+    }
     return annotate(cmd, body, str);
   });
   // Strip out anything left over.
