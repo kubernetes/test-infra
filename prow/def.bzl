@@ -17,7 +17,7 @@ load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
 load("@io_bazel_rules_k8s//k8s:objects.bzl", "k8s_objects")
 load(
-    "//:image.bzl",
+    "//def:image.bzl",
     _docker_tags = "tags",
 )
 
@@ -131,7 +131,7 @@ def component(cmd, *kinds, **kwargs):
 #   release(
 #     "fancy",
 #     component("hook", "deployment", "service"),
-#     compoennt("plank", "deployment"),
+#     component("plank", "deployment"),
 #   )
 # Generates the five following rules:
 #   k8s_objects(name = "hook", objects=[":hook_deployment", ":hook_service"])

@@ -4,7 +4,7 @@ load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 load("//prow:def.bzl", "prefix", "tags")
 load(
-    "//:image.bzl",
+    "//def:image.bzl",
     image_tags = "tags",
 )
 

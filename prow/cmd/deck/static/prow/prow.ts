@@ -127,7 +127,7 @@ function handleDownKey(): void {
         return;
     }
     if (selectedJobs.length === 0) {
-        // If no job selected, selecte the first one that visible in the list.
+        // If no job selected, select the first one that visible in the list.
         const jobs = Array.from(activeSearch.children)
             .filter((elChild) => {
                 const childRect = elChild.getBoundingClientRect();
@@ -750,7 +750,7 @@ function drawJobBar(total: number, jobCountMap: Map<JobState, number>): void {
   });
   states.forEach((state, index) => {
     const count = jobCountMap.get(state);
-    // If state is undefined or empty, treats it as unkown state.
+    // If state is undefined or empty, treats it as unknown state.
     if (!state) {
       state = "unknown";
     }

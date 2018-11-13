@@ -19,7 +19,7 @@ package flagutil
 import (
 	"testing"
 
-	"k8s.io/test-infra/flagutil"
+	"k8s.io/test-infra/pkg/flagutil"
 )
 
 func TestKubernetesOptions_Validate(t *testing.T) {

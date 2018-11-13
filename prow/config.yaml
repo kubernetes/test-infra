@@ -7,10 +7,10 @@ plank:
     timeout: 7200000000000 # 2h
     grace_period: 15000000000 # 15s
     utility_images:
-      clonerefs: "gcr.io/k8s-prow/clonerefs:v20181108-54398d2"
-      initupload: "gcr.io/k8s-prow/initupload:v20181108-54398d2"
-      entrypoint: "gcr.io/k8s-prow/entrypoint:v20181108-54398d2"
-      sidecar: "gcr.io/k8s-prow/sidecar:v20181108-54398d2"
+      clonerefs: "gcr.io/k8s-prow/clonerefs:v20181109-1a84354"
+      initupload: "gcr.io/k8s-prow/initupload:v20181109-1a84354"
+      entrypoint: "gcr.io/k8s-prow/entrypoint:v20181109-1a84354"
+      sidecar: "gcr.io/k8s-prow/sidecar:v20181109-1a84354"
     gcs_configuration:
       bucket: "kubernetes-jenkins"
       path_strategy: "legacy"
@@ -291,16 +291,6 @@ branch-protection:
         contexts:
         - cla/linuxfoundation
       repos:
-        cluster-api-provider-digitalocean:
-          required_status_checks:
-            contexts:
-            - "ci/circleci: build"
-            - "ci/circleci: check-dependencies"
-            - "ci/circleci: checkout_code"
-            - "ci/circleci: e2e"
-            - "ci/circleci: lint"
-            - "ci/circleci: test"
-            - "ci/circleci: verify"
         kube-batch:
           required_status_checks:
             contexts:
@@ -400,6 +390,31 @@ tide:
     - needs-rebase
   - repos:
     - kubernetes/kubernetes
+    milestone: v1.13
+    includedBranches:
+    - master
+    - release-1.13
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/cherry-pick-not-approved
+    - do-not-merge/hold
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-kind
+    - needs-rebase
+    - needs-sig
+    - needs-priority
+  - repos:
+    - kubernetes/kubernetes
+    excludedBranches:
+    - master
+    - release-1.13
     labels:
     - lgtm
     - approved

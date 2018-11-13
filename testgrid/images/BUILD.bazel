@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//:image.bzl", "tags")
+load("//def:image.bzl", "tags")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
 load("@io_bazel_rules_docker//go:image.bzl", "go_image")

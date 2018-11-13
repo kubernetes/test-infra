@@ -21,6 +21,7 @@ import (
 	"regexp"
 	"time"
 
+	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
 	"k8s.io/api/core/v1"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -90,10 +91,16 @@ type JobBase struct {
 	// Cluster is the alias of the cluster to run this job in.
 	// (Default: kube.DefaultClusterAlias)
 	Cluster string `json:"cluster,omitempty"`
+	// Namespace is the namespace in which pods schedule.
+	//   nil: results in config.PodNamespace (aka pod default)
+	//   empty: results in config.ProwJobNamespace (aka same as prowjob)
+	Namespace *string `json:"namespace,omitempty"`
 	// SourcePath contains the path where this job is defined
 	SourcePath string `json:"-"`
-	// Spec is the Kubernetes pod spec used if Agent is Kubernetes.
+	// Spec is the Kubernetes pod spec used if Agent is kubernetes.
 	Spec *v1.PodSpec `json:"spec,omitempty"`
+	// BuildSpec is the Knative build spec used if Agent is knative-build.
+	BuildSpec *buildv1alpha1.BuildSpec `json:"build_spec,omitempty"`
 
 	UtilityConfig
 }
@@ -339,7 +346,7 @@ func (c *JobConfig) GetPresubmit(repo, jobName string) *Presubmit {
 	return nil
 }
 
-// SetPresubmits updates c.Presubmits to jobs, after compiling and validing their regexes.
+// SetPresubmits updates c.Presubmits to jobs, after compiling and validating their regexes.
 func (c *JobConfig) SetPresubmits(jobs map[string][]Presubmit) error {
 	nj := map[string][]Presubmit{}
 	for k, v := range jobs {

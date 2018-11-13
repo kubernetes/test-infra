@@ -29,7 +29,7 @@ import (
 	"golang.org/x/net/xsrftoken"
 	"golang.org/x/oauth2"
 
-	"k8s.io/test-infra/ghclient"
+	"k8s.io/test-infra/pkg/ghclient"
 	"k8s.io/test-infra/prow/config"
 )
 
@@ -173,7 +173,19 @@ func (ga *GithubOAuthAgent) HandleRedirect(client OAuthClient, getter GithubClie
 		code := r.FormValue("code")
 		token, err := client.Exchange(context.Background(), code)
 		if err != nil {
-			ga.serverError(w, "Exchange code for token", err)
+			if gherror := r.FormValue("error"); len(gherror) > 0 {
+				gherrorDescription := r.FormValue("error_description")
+				gherrorURI := r.FormValue("error_uri")
+				fields := logrus.Fields{
+					"gh_error":             gherror,
+					"gh_error_description": gherrorDescription,
+					"gh_error_uri":         gherrorURI,
+				}
+				ga.logger.WithFields(fields).Error("GitHub passed errors in callback, token is not present")
+				ga.serverError(w, "OAuth authentication with GitHub", fmt.Errorf(gherror))
+			} else {
+				ga.serverError(w, "Exchange code for token", err)
+			}
 			return
 		}
 

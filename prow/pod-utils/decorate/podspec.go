@@ -149,6 +149,13 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 	spec.RestartPolicy = "Never"
 	spec.Containers[0].Name = kube.TestContainerName
 
+	// we treat this as false if unset, while kubernetes treats it as true if
+	// unset because it was added in v1.6
+	if spec.AutomountServiceAccountToken == nil {
+		myFalse := false
+		spec.AutomountServiceAccountToken = &myFalse
+	}
+
 	if pj.Spec.DecorationConfig == nil {
 		spec.Containers[0].Env = append(spec.Containers[0].Env, kubeEnv(rawEnv)...)
 	} else {
@@ -475,7 +482,7 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 	spec.Volumes = append(spec.Volumes, logVolume, toolsVolume, gcsCredentialsVolume)
 
 	if len(refs) > 0 {
-		spec.Containers[0].WorkingDir = clone.PathForRefs(codeMount.MountPath, &refs[0])
+		spec.Containers[0].WorkingDir = clone.PathForRefs(codeMount.MountPath, refs[0])
 		spec.Containers[0].VolumeMounts = append(spec.Containers[0].VolumeMounts, codeMount)
 		spec.Volumes = append(spec.Volumes, append(cloneVolumes, codeVolume)...)
 	}

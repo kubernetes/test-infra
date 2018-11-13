@@ -1,6 +1,7 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
+  namespace: default
   name: branchprotector
 spec:
   schedule: "54 * * * *"  # Every hour at 54 minutes past the hour
@@ -14,7 +15,7 @@ spec:
         spec:
           containers:
           - name: branchprotector
-            image: gcr.io/k8s-prow/branchprotector:v20181108-54398d2
+            image: gcr.io/k8s-prow/branchprotector:v20181109-1a84354
             args:
             - --config-path=/etc/config/config.yaml
             - --job-config-path=/etc/job-config

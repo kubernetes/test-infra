@@ -26,11 +26,12 @@ import (
 	"time"
 
 	gogithub "github.com/google/go-github/github"
+	"github.com/gorilla/sessions"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 
-	"k8s.io/test-infra/ghclient"
+	"k8s.io/test-infra/pkg/ghclient"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 )
@@ -152,6 +153,21 @@ func NewDashboardAgent(repos []string, config *config.GithubOAuthConfig, log *lo
 	}
 }
 
+func invalidateGitHubSession(w http.ResponseWriter, r *http.Request, session *sessions.Session) error {
+	// Invalidate github login session
+	http.SetCookie(w, &http.Cookie{
+		Name:    loginSession,
+		Path:    "/",
+		Expires: time.Now().Add(-time.Hour * 24),
+		MaxAge:  -1,
+		Secure:  true,
+	})
+
+	// Invalidate access token session
+	session.Options.MaxAge = -1
+	return session.Save(r, w)
+}
+
 // HandlePrStatus returns a http handler function that handles request to /pr-status
 // endpoint. The handler takes user access token stored in the cookie to query to Github on behalf
 // of the user and serve the data in return. The Query handler is passed to the method so as it
@@ -164,40 +180,37 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 			http.Error(w, msg, http.StatusInternalServerError)
 		}
 
-		session, err := da.goac.CookieStore.Get(r, tokenSession)
-		if err != nil {
-			serverError("Error with getting git token session.", err)
-			return
-		}
-		token, ok := session.Values[tokenKey].(*oauth2.Token)
 		data := UserData{
 			Login: false,
 		}
 
+		// Get existing session. Invalidate everything if we fail and continue as
+		// if not logged in.
+		session, err := da.goac.CookieStore.Get(r, tokenSession)
+		if err != nil {
+			da.log.WithError(err).Info("Failed to get existing session, invalidating GitHub login session")
+			if err := invalidateGitHubSession(w, r, session); err != nil {
+				serverError("Failed to invalidate GitHub session", err)
+				return
+			}
+		}
+
+		// If access token exists, get user login using the access token. This is a
+		// chance to validate whether the access token is consumable or not. If
+		// not, we invalidate the sessions and continue as if not logged in.
+		token, ok := session.Values[tokenKey].(*oauth2.Token)
 		var user *gogithub.User
 		if ok && token.Valid() {
-			// If access token exist, get user login using the access token. This is a chance
-			// to validate whether the access token is consumable or not. If not, invalidate the
-			// session.
 			goGithubClient := ghclient.NewClient(token.AccessToken, false)
 			var err error
 			user, err = queryHandler.GetUser(goGithubClient)
 			if err != nil {
 				if strings.Contains(err.Error(), "401") {
-					// Invalidate access token session
-					session.Options.MaxAge = -1
-					if err := session.Save(r, w); err != nil {
-						serverError("Error with saving invalidated session", err)
+					da.log.Info("Failed to access GitHub with existing access token, invalidating GitHub login session")
+					if err := invalidateGitHubSession(w, r, session); err != nil {
+						serverError("Failed to invalidate GitHub session", err)
 						return
 					}
-					// Invalidate github login session
-					http.SetCookie(w, &http.Cookie{
-						Name:    loginSession,
-						Path:    "/",
-						Expires: time.Now().Add(-time.Hour * 24),
-						MaxAge:  -1,
-						Secure:  true,
-					})
 				} else {
 					serverError("Error with getting user login", err)
 					return
@@ -258,6 +271,7 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 
 			data.PullRequestsWithContexts = pullRequestWithContexts
 		}
+
 		marshaledData, err := json.Marshal(data)
 		if err != nil {
 			da.log.WithError(err).Error("Error with marshalling user data.")

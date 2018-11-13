@@ -37,9 +37,10 @@ type fakeClowder string
 
 var human = flag.Bool("human", false, "Enable to run additional manual tests")
 var category = flag.String("category", "", "Request a particular category if set")
-var path = flag.String("key-path", "", "Path to api key if set")
+var movieCat = flag.Bool("gif", false, "Specifically request a GIF image if set")
+var keyPath = flag.String("key-path", "", "Path to api key if set")
 
-func (c fakeClowder) readCat(category string) (string, error) {
+func (c fakeClowder) readCat(category string, movieCat bool) (string, error) {
 	if category == "error" {
 		return "", errors.New(string(c))
 	}
@@ -50,11 +51,11 @@ func TestRealCat(t *testing.T) {
 	if !*human {
 		t.Skip("Real cats disabled for automation. Manual users can add --human [--category=foo]")
 	}
-	if *path != "" {
-		meow.setKey(*path, logrus.WithField("plugin", pluginName))
+	if *keyPath != "" {
+		meow.setKey(*keyPath, logrus.WithField("plugin", pluginName))
 	}
 
-	if cat, err := meow.readCat(*category); err != nil {
+	if cat, err := meow.readCat(*category, *movieCat); err != nil {
 		t.Errorf("Could not read cats from %#v: %v", meow, err)
 	} else {
 		fmt.Println(cat)
@@ -67,6 +68,7 @@ func TestUrl(t *testing.T) {
 		url      string
 		category string
 		key      string
+		movie    bool
 		require  []string
 		deny     []string
 	}{
@@ -79,13 +81,28 @@ func TestUrl(t *testing.T) {
 			url:     "http://foo",
 			key:     "blah",
 			require: []string{"api_key=blah"},
-			deny:    []string{"category="},
+			deny:    []string{"category=", "mime_types=gif"},
 		},
 		{
 			name:     "category",
 			url:      "http://foo",
 			category: "bar",
 			require:  []string{"category=bar"},
+			deny:     []string{"api_key=", "mime_types=gif"},
+		},
+		{
+			name:    "movie",
+			url:     "http://foo",
+			movie:   true,
+			require: []string{"mime_types=gif"},
+			deny:    []string{"category=this", "api_key=that"},
+		},
+		{
+			name:     "category and movie",
+			url:      "http://foo",
+			category: "this",
+			movie:    true,
+			require:  []string{"mime_types=gif", "category=this", "&"},
 			deny:     []string{"api_key="},
 		},
 		{
@@ -94,6 +111,15 @@ func TestUrl(t *testing.T) {
 			category: "this",
 			key:      "that",
 			require:  []string{"category=this", "api_key=that", "&"},
+			deny:     []string{"mime_types=gif"},
+		},
+		{
+			name:     "category, key, and movie",
+			url:      "http://foo",
+			category: "this",
+			key:      "that",
+			movie:    true,
+			require:  []string{"category=this", "api_key=that", "&", "mime_types=gif"},
 		},
 	}
 
@@ -102,7 +128,7 @@ func TestUrl(t *testing.T) {
 			url: tc.url,
 			key: tc.key,
 		}
-		url := rc.Url(tc.category)
+		url := rc.Url(tc.category, tc.movie)
 		for _, r := range tc.require {
 			if !strings.Contains(url, r) {
 				t.Errorf("%s: %s does not contain %s", tc.name, url, r)
@@ -275,7 +301,7 @@ Available variants:
 	// run test for each case
 	for _, testcase := range testcases {
 		fakemeow := &realClowder{url: ts.URL + testcase.path}
-		cat, err := fakemeow.readCat(*category)
+		cat, err := fakemeow.readCat(*category, *movieCat)
 		if testcase.valid && err != nil {
 			t.Errorf("For case %s, didn't expect error: %v", testcase.name, err)
 		} else if !testcase.valid && err == nil {
@@ -286,7 +312,7 @@ Available variants:
 	}
 
 	// fully test handling a comment
-	comment := "/meow"
+	comment := "/meowvie space"
 
 	e := &github.GenericCommentEvent{
 		Action:     github.GenericCommentActionCreated,
@@ -294,7 +320,7 @@ Available variants:
 		Number:     5,
 		IssueState: "open",
 	}
-	if err := handle(fc, logrus.WithField("plugin", pluginName), e, &realClowder{url: ts.URL}, func() {}); err != nil {
+	if err := handle(fc, logrus.WithField("plugin", pluginName), e, &realClowder{url: ts.URL + "/?format=json"}, func() {}); err != nil {
 		t.Errorf("didn't expect error: %v", err)
 		return
 	}
@@ -369,6 +395,22 @@ func TestCats(t *testing.T) {
 			body:          "/meow error",
 			shouldComment: true,
 			shouldError:   true,
+		},
+		{
+			name:          "movie cat",
+			state:         "open",
+			action:        github.GenericCommentActionCreated,
+			body:          "/meowvie",
+			shouldComment: true,
+			shouldError:   false,
+		},
+		{
+			name:          "categorical movie cat",
+			state:         "open",
+			action:        github.GenericCommentActionCreated,
+			body:          "/meowvie space",
+			shouldComment: true,
+			shouldError:   false,
 		},
 	}
 	for _, tc := range testcases {

@@ -403,6 +403,9 @@ plugins:
   - trigger
   - welcome
 
+  kubernetes/website:
+  - owners-label
+
   kubernetes-client:
   - approve
   - assign
@@ -509,6 +512,9 @@ plugins:
   - trigger
 
   kubernetes-sigs/cluster-api-provider-aws:
+  - trigger
+
+  kubernetes-sigs/cluster-api-provider-digitalocean:
   - trigger
 
   kubernetes-sigs/cluster-api-provider-gcp:

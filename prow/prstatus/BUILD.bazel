@@ -6,10 +6,11 @@ go_library(
     importpath = "k8s.io/test-infra/prow/prstatus",
     visibility = ["//visibility:public"],
     deps = [
-        "//ghclient:go_default_library",
+        "//pkg/ghclient:go_default_library",
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",
+        "//vendor/github.com/gorilla/sessions:go_default_library",
         "//vendor/github.com/shurcooL/githubv4:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/golang.org/x/oauth2:go_default_library",
@@ -35,7 +36,7 @@ go_test(
     srcs = ["prstatus_test.go"],
     embed = [":go_default_library"],
     deps = [
-        "//ghclient:go_default_library",
+        "//pkg/ghclient:go_default_library",
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",

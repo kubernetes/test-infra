@@ -11,8 +11,8 @@ You can enable gerrit reporter in crier by specifying `--gerrit` flag.
 Similar to the [gerrit adapter](/prow/cmd/gerrit), you'll need to specify `--gerrit-projects` for
 your gerrit projects, and also `--cookiefile` for the gerrit auth token (leave it unset for anonymous).
 
-Gerrit reporter will send a gerrit code review, when a [gerrit adapter](/prow/cmd/gerrit)
-scheduled prowjob finishes, aka, on `SuccessState`, `FailureState`, `AbortedState` or `ErrorState`.
+Gerrit reporter will send a gerrit code review, when all [gerrit adapter](/prow/cmd/gerrit)
+scheduled prowjob finishes on a revision, aka, on `SuccessState`, `FailureState`, `AbortedState` or `ErrorState`.
 It will also attach a report url so people can find logs of the job.
 
 ### [Pubsub reporter](/prow/pubsub/reporter)

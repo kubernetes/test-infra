@@ -5,6 +5,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  namespace: default
   name: plugins
 data:
   plugins.yaml: ""
@@ -12,6 +13,7 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  namespace: default
   name: config
 data:
   config.yaml: |
@@ -78,6 +80,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: hook
   labels:
     app: hook
@@ -97,7 +100,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20181108-54398d2
+        image: gcr.io/k8s-prow/hook:v20181109-1a84354
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -134,7 +137,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: default
   name: hook
+  namespace: default
 spec:
   selector:
     app: hook
@@ -145,6 +150,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: plank
   labels:
     app: plank
@@ -158,7 +164,7 @@ spec:
       serviceAccountName: "plank"
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20181108-54398d2
+        image: gcr.io/k8s-prow/plank:v20181109-1a84354
         args:
         - --dry-run=false
         volumeMounts:
@@ -179,6 +185,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: sinker
   labels:
     app: sinker
@@ -192,7 +199,7 @@ spec:
       serviceAccountName: "sinker"
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:v20181108-54398d2
+        image: gcr.io/k8s-prow/sinker:v20181109-1a84354
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -205,6 +212,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: deck
   labels:
     app: deck
@@ -224,7 +232,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20181108-54398d2
+        image: gcr.io/k8s-prow/deck:v20181109-1a84354
         args:
         - --tide-url=http://tide/
         - --hook-url=http://hook:8888/plugin-help
@@ -243,6 +251,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: default
   name: deck
 spec:
   selector:
@@ -255,6 +264,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: horologium
   labels:
     app: horologium
@@ -269,7 +279,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20181108-54398d2
+        image: gcr.io/k8s-prow/horologium:v20181109-1a84354
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -282,6 +292,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: tide
   labels:
     app: tide
@@ -295,7 +306,7 @@ spec:
       serviceAccountName: "tide"
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20181108-54398d2
+        image: gcr.io/k8s-prow/tide:v20181109-1a84354
         args:
         - --dry-run=false
         ports:
@@ -319,7 +330,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: default
   name: tide
+  namespace: default
 spec:
   selector:
     app: tide
@@ -331,6 +344,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
+  namespace: default
   name: ing
 spec:
   rules:
@@ -348,11 +362,13 @@ spec:
 kind: ServiceAccount
 apiVersion: v1
 metadata:
+  namespace: default
   name: "deck"
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "deck"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -365,6 +381,7 @@ subjects:
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "deck"
 rules:
   - apiGroups:
@@ -384,11 +401,13 @@ rules:
 kind: ServiceAccount
 apiVersion: v1
 metadata:
+  namespace: default
   name: "horologium"
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "horologium"
 rules:
   - apiGroups:
@@ -402,6 +421,7 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "horologium"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -414,11 +434,13 @@ subjects:
 kind: ServiceAccount
 apiVersion: v1
 metadata:
+  namespace: default
   name: "plank"
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "plank"
 rules:
   - apiGroups:
@@ -441,6 +463,7 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "plank"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -453,11 +476,13 @@ subjects:
 kind: ServiceAccount
 apiVersion: v1
 metadata:
+  namespace: default
   name: "sinker"
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "sinker"
 rules:
   - apiGroups:
@@ -478,6 +503,7 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "sinker"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -490,11 +516,13 @@ subjects:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  namespace: default
   name: "hook"
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "hook"
 rules:
   - apiGroups:
@@ -514,6 +542,7 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "hook"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -526,11 +555,13 @@ subjects:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  namespace: default
   name: "tide"
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "tide"
 rules:
   - apiGroups:
@@ -544,6 +575,7 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "tide"
 roleRef:
   apiGroup: rbac.authorization.k8s.io

@@ -1065,6 +1065,11 @@ def bootstrap(args):
     call = lambda *a, **kw: _call(end, *a, **kw)
     gsutil = GSUtil(call)
 
+    logging.warning('bootstrap.py is deprecated!\n'
+                    'Please migrate your job to podutils!\n'
+                    'https://github.com/kubernetes/test-infra/blob/master/prow/pod-utilities.md'
+    )
+
     if len(sys.argv) > 1:
         logging.info('Args: %s', ' '.join(pipes.quote(a)
                                           for a in sys.argv[1:]))

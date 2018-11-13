@@ -15,6 +15,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: plank
   labels:
     app: plank
@@ -28,7 +29,7 @@ spec:
       # serviceAccountName: "plank" # Uncomment for use with RBAC
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20181108-54398d2
+        image: gcr.io/k8s-prow/plank:v20181109-1a84354
         args:
         - --tot-url=http://tot
         - --build-cluster=/etc/cluster/cluster

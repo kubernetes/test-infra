@@ -15,6 +15,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: deck
   labels:
     app: deck
@@ -34,7 +35,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20181108-54398d2
+        image: gcr.io/k8s-prow/deck:v20181109-1a84354
         imagePullPolicy: Always
         ports:
           - name: http

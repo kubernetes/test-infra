@@ -37,11 +37,21 @@ const (
 	CodeReview = "Code-Review"
 
 	// GerritID identifies a gerrit change
-	GerritID = "gerrit-id"
+	GerritID = "prow.k8s.io/gerrit-id"
 	// GerritInstance is the gerrit host url
-	GerritInstance = "gerrit-instance"
+	GerritInstance = "prow.k8s.io/gerrit-instance"
 	// GerritRevision is the SHA of current patchset from a gerrit change
-	GerritRevision = "gerrit-revision"
+	GerritRevision = "prow.k8s.io/gerrit-revision"
+	// GerritReportLabel is the gerrit label prow will cast vote on, fallback to CodeReview label if unset
+	GerritReportLabel = "prow.k8s.io/gerrit-report-label"
+
+	// TODO(krzyzacy): remove them after we don't have deployment uses deprecated labels
+	// DeprecatedGerritID is the deprecated version of GerritID
+	DeprecatedGerritID = "gerrit-id"
+	// DeprecatedGerritInstance is the deprecated version of GerritInstance
+	DeprecatedGerritInstance = "gerrit-instance"
+	// DeprecatedGerritRevision is the deprecated version of GerritRevision
+	DeprecatedGerritRevision = "gerrit-revision"
 )
 
 // ProjectsFlag is the flag type for gerrit projects when initializing a gerrit client
@@ -160,6 +170,7 @@ func auth(c *Client, cookiefilePath string) {
 			self, _, err := handler.accountService.GetAccount("self")
 			if err != nil {
 				logrus.WithError(err).Error("Failed to auth with token")
+				continue
 			}
 
 			logrus.Infof("Authentication to %s successful, Username: %s", handler.instance, self.Name)

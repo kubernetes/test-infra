@@ -37,7 +37,7 @@ const (
 )
 
 func init() {
-	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment, helpProvider)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericCommentEvent, helpProvider)
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
 	plugins.RegisterPushEventHandler(pluginName, handlePush, helpProvider)
 }
@@ -132,8 +132,8 @@ func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) erro
 	return handlePR(getClient(pc), pc.PluginConfig.TriggerFor(org, repo), pr)
 }
 
-func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	return handleIC(getClient(pc), pc.PluginConfig.TriggerFor(ic.Repo.Owner.Login, ic.Repo.Name), ic)
+func handleGenericCommentEvent(pc plugins.PluginClient, gc github.GenericCommentEvent) error {
+	return handleGenericComment(getClient(pc), pc.PluginConfig.TriggerFor(gc.Repo.Owner.Login, gc.Repo.Name), gc)
 }
 
 func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {

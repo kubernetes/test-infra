@@ -173,7 +173,7 @@ func (ud *UserData) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// MarshalJSON implents JSON Marshaler interface
+// MarshalJSON implements JSON Marshaler interface
 func (ud *UserData) MarshalJSON() ([]byte, error) {
 	return json.Marshal(ud.ToMap())
 }

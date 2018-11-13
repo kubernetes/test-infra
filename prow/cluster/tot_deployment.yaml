@@ -15,6 +15,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
+  namespace: default
   labels:
     app: tot
   name: tot-storage
@@ -31,6 +32,7 @@ spec:
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
+  namespace: default
   labels:
     app: tot
   name: tot-storage
@@ -44,6 +46,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: tot
   labels:
     app: tot
@@ -57,7 +60,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: tot
-        image: gcr.io/k8s-prow/tot:v20181108-54398d2
+        image: gcr.io/k8s-prow/tot:v20181109-1a84354
         imagePullPolicy: Always
         args:
         - -storage=/store/tot.json

@@ -279,7 +279,7 @@ func validateFlags(o *options) error {
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	// Initialize global pseudo random generator. Intializing it to select random AWS Zones.
+	// Initialize global pseudo random generator. Initializing it to select random AWS Zones.
 	rand.Seed(time.Now().UnixNano())
 
 	pflag.CommandLine = pflag.NewFlagSet(os.Args[0], pflag.ContinueOnError)

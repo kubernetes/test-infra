@@ -23,6 +23,29 @@ postsubmits:
         secret:
           secretName: oauth-token
   kubernetes/test-infra:
+  - name: post-test-infra-deploy-prow
+    cluster: test-infra-trusted
+    decorate: true
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20181107-d88dbbf
+        command:
+        - prow/deploy.sh
+        args:
+        - --confirm
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /creds/service-account.json
+        volumeMounts:
+        - name: creds
+          mountPath: /creds
+      volumes:
+      - name: creds
+        secret:
+          secretName: deployer-service-account
+
   - name: post-test-infra-push-prow
     cluster: test-infra-trusted
     decorate: true

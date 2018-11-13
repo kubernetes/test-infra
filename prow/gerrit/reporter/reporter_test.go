@@ -18,6 +18,7 @@ package reporter
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -25,10 +26,12 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	pjlister "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
+	"k8s.io/test-infra/prow/gerrit/client"
 )
 
 type fgc struct {
 	reportMessage string
+	reportLabel   map[string]string
 	instance      string
 }
 
@@ -37,6 +40,7 @@ func (f *fgc) SetReview(instance, id, revision, message string, labels map[strin
 		return fmt.Errorf("wrong instance: %s", instance)
 	}
 	f.reportMessage = message
+	f.reportLabel = labels
 	return nil
 }
 
@@ -68,6 +72,7 @@ func TestReport(t *testing.T) {
 		expectReport  bool
 		reportInclude []string
 		reportExclude []string
+		expectLabel   map[string]string
 	}{
 		{
 			name: "1 job, unfinished, should not report",
@@ -90,10 +95,10 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"gerrit-revision": "abc",
+						client.GerritRevision: "abc",
 					},
 					Annotations: map[string]string{
-						"gerrit-instance": "gerrit",
+						client.GerritInstance: "gerrit",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -106,8 +111,8 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						"gerrit-id":       "123-abc",
-						"gerrit-instance": "gerrit",
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -120,10 +125,10 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"gerrit-revision": "abc",
+						client.GerritRevision: "abc",
 					},
 					Annotations: map[string]string{
-						"gerrit-id": "123-abc",
+						client.GerritID: "123-abc",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -136,11 +141,11 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"gerrit-revision": "abc",
+						client.GerritRevision: "abc",
 					},
 					Annotations: map[string]string{
-						"gerrit-id":       "123-abc",
-						"gerrit-instance": "gerrit",
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -156,17 +161,74 @@ func TestReport(t *testing.T) {
 			},
 			expectReport:  true,
 			reportInclude: []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
+			expectLabel:   map[string]string{client.CodeReview: client.LGTM},
+		},
+		{
+			// TODO(krzyzacy): remove after we clean up deprecated labels
+			name: "1 job, passed, has deprecated labels, should report",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.DeprecatedGerritRevision: "abc",
+					},
+					Annotations: map[string]string{
+						client.DeprecatedGerritID:       "123-abc",
+						client.DeprecatedGerritInstance: "gerrit",
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job: "ci-foo",
+				},
+			},
+			expectReport:  true,
+			reportInclude: []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
+			expectLabel:   map[string]string{client.CodeReview: client.LGTM},
+		},
+		{
+			name: "1 job, passed, with customized label, should report to customized label",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritRevision:    "abc",
+						client.GerritReportLabel: "foobar-label",
+					},
+					Annotations: map[string]string{
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job: "ci-foo",
+				},
+			},
+			expectReport:  true,
+			reportInclude: []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
+			expectLabel:   map[string]string{"foobar-label": client.LGTM},
 		},
 		{
 			name: "1 job, failed, should report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"gerrit-revision": "abc",
+						client.GerritRevision: "abc",
 					},
 					Annotations: map[string]string{
-						"gerrit-id":       "123-abc",
-						"gerrit-instance": "gerrit",
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -182,17 +244,18 @@ func TestReport(t *testing.T) {
 			},
 			expectReport:  true,
 			reportInclude: []string{"0 out of 1", "ci-foo", "failure", "guber/foo"},
+			expectLabel:   map[string]string{client.CodeReview: client.LBTM},
 		},
 		{
 			name: "1 job, passed, has slash in repo name, should report and handle slash properly",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"gerrit-revision": "abc",
+						client.GerritRevision: "abc",
 					},
 					Annotations: map[string]string{
-						"gerrit-id":       "123-abc",
-						"gerrit-instance": "gerrit",
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -209,17 +272,18 @@ func TestReport(t *testing.T) {
 			expectReport:  true,
 			reportInclude: []string{"1 out of 1", "ci-foo-bar", "success", "guber/foo/bar"},
 			reportExclude: []string{"foo_bar"},
+			expectLabel:   map[string]string{client.CodeReview: client.LGTM},
 		},
 		{
 			name: "2 jobs, one passed, other job finished but on different revision, should report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"gerrit-revision": "abc",
+						client.GerritRevision: "abc",
 					},
 					Annotations: map[string]string{
-						"gerrit-id":       "123-abc",
-						"gerrit-instance": "gerrit",
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -237,11 +301,11 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							"gerrit-revision": "def",
+							client.GerritRevision: "def",
 						},
 						Annotations: map[string]string{
-							"gerrit-id":       "123-def",
-							"gerrit-instance": "gerrit",
+							client.GerritID:       "123-def",
+							client.GerritInstance: "gerrit",
 						},
 					},
 					Status: v1.ProwJobStatus{
@@ -259,17 +323,18 @@ func TestReport(t *testing.T) {
 			expectReport:  true,
 			reportInclude: []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
 			reportExclude: []string{"2", "bar"},
+			expectLabel:   map[string]string{client.CodeReview: client.LGTM},
 		},
 		{
 			name: "2 jobs, one passed, other job unfinished, should not report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"gerrit-revision": "abc",
+						client.GerritRevision: "abc",
 					},
 					Annotations: map[string]string{
-						"gerrit-id":       "123-abc",
-						"gerrit-instance": "gerrit",
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -287,11 +352,11 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							"gerrit-revision": "abc",
+							client.GerritRevision: "abc",
 						},
 						Annotations: map[string]string{
-							"gerrit-id":       "123-abc",
-							"gerrit-instance": "gerrit",
+							client.GerritID:       "123-abc",
+							client.GerritInstance: "gerrit",
 						},
 					},
 					Status: v1.ProwJobStatus{
@@ -312,11 +377,11 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"gerrit-revision": "abc",
+						client.GerritRevision: "abc",
 					},
 					Annotations: map[string]string{
-						"gerrit-id":       "123-abc",
-						"gerrit-instance": "gerrit",
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -334,11 +399,11 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							"gerrit-revision": "abc",
+							client.GerritRevision: "abc",
 						},
 						Annotations: map[string]string{
-							"gerrit-id":       "123-abc",
-							"gerrit-instance": "gerrit",
+							client.GerritID:       "123-abc",
+							client.GerritInstance: "gerrit",
 						},
 					},
 					Status: v1.ProwJobStatus{
@@ -356,17 +421,18 @@ func TestReport(t *testing.T) {
 			expectReport:  true,
 			reportInclude: []string{"1 out of 2", "ci-foo", "success", "ci-bar", "failure", "guber/foo", "guber/bar"},
 			reportExclude: []string{"0", "2 out of 2"},
+			expectLabel:   map[string]string{client.CodeReview: client.LBTM},
 		},
 		{
 			name: "2 jobs, both passed, should report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"gerrit-revision": "abc",
+						client.GerritRevision: "abc",
 					},
 					Annotations: map[string]string{
-						"gerrit-id":       "123-abc",
-						"gerrit-instance": "gerrit",
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -384,11 +450,11 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							"gerrit-revision": "abc",
+							client.GerritRevision: "abc",
 						},
 						Annotations: map[string]string{
-							"gerrit-id":       "123-abc",
-							"gerrit-instance": "gerrit",
+							client.GerritID:       "123-abc",
+							client.GerritInstance: "gerrit",
 						},
 					},
 					Status: v1.ProwJobStatus{
@@ -406,6 +472,7 @@ func TestReport(t *testing.T) {
 			expectReport:  true,
 			reportInclude: []string{"2 out of 2", "ci-foo", "success", "ci-bar", "guber/foo", "guber/bar"},
 			reportExclude: []string{"1", "0", "failure"},
+			expectLabel:   map[string]string{client.CodeReview: client.LGTM},
 		},
 	}
 
@@ -443,6 +510,10 @@ func TestReport(t *testing.T) {
 				if strings.Contains(fgc.reportMessage, exclude) {
 					t.Errorf("test: %s: reported with: %s, should not contain: %s", tc.name, fgc.reportMessage, exclude)
 				}
+			}
+
+			if !reflect.DeepEqual(tc.expectLabel, fgc.reportLabel) {
+				t.Errorf("test: %s: reported with %s label, should have %s label", tc.name, fgc.reportLabel, tc.expectLabel)
 			}
 		}
 	}

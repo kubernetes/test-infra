@@ -56,18 +56,17 @@ fi
 cd "$(dirname "${BASH_SOURCE}")"
 
 usage() {
-  echo "Usage: "$(basename "$0")" [--push || --list || vYYYYMMDD-deadbeef] [image subset...]" >&2
+  echo "Usage: "$(basename "$0")" [--list || --push || vYYYYMMDD-deadbeef] [image subset...]" >&2
   exit 1
 }
 
+cmd=
 if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
   echo "Detected GOOGLE_APPLICATION_CREDENTIALS, activating..." >&2
   gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
   gcloud auth configure-docker
   cmd="--push"
-elif [[ $# == 0 ]]; then
-  usage
-else
+elif [[ $# != 0 ]]; then
   cmd="$1"
   shift
 fi
@@ -82,13 +81,13 @@ if [[ "$cmd" == "--push" ]]; then
   fi
   echo -e "Pushing $(color-version ${new_version}) via $(color-target //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64) ..." >&2
   bazel run //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
-elif [[ "$cmd" == "--list" ]]; then
+elif [[ -z "$cmd" || "$cmd" == "--list" ]]; then
   # TODO(fejta): figure out why the timestamp on all these image is 1969...
   # Then we'll be able to just sort them.
   echo "Listing recent versions..." >&2
   options=(
-    $(gcloud container images list-tags gcr.io/k8s-prow/plank --filter="tags ~ ^v|,v" --format='value(tags)' \
-      | grep -o -E 'v[0-9]{8}-[0-9a-f]{6,9}' | sort -u | tail -n 10)
+    $(gcloud container images list-tags gcr.io/k8s-prow/plank --limit=10 --format='value(tags)' \
+      | grep -o -E 'v[^,]+' | tac)
   )
   echo "Recent versions of prow:" >&2
   if [[ -z "${options[@]}" ]]; then
@@ -98,9 +97,9 @@ elif [[ "$cmd" == "--list" ]]; then
   new_version=
   for o in "${options[@]}"; do
     def_opt="$o"
-    echo -e "  $(color-version $o)"
+    echo -e "  $(color-version "$o")"
   done
-  read -p "select version [$def_opt]: " new_version
+  read -p "Select version [$(color-version "$def_opt")]: " new_version
   if [[ -z "${new_version:-}" ]]; then
     new_version="$def_opt"
   else

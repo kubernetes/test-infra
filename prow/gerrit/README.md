@@ -53,10 +53,11 @@ presubmit jobs base on your prow config.
 The reporter package handles send presubmit results back to gerrit. It implements a reporter interface
 from [crier].
 
-Currently it will set a review message on target patchset for each finished presubmit, with a URL field
-which you can configure in your prow configuration.
+The reporter will send an aggregated summary message, after all presubmits on a patchset finishes.
 
-<!-- TODO(krzyzacy): add labeling + aggregate result after https://github.com/kubernetes/test-infra/pull/9506 -->
+The reporter will also cast a +1/-1 vote on the `prow.k8s.io/gerrit-report-label` label of your prowjob,
+or by default it will vote on `CodeReview` label. Where `+1` means all presubmit on the patshset pass and `-1`
+means one or more presubmit failed on the patchset.
 
 ## Caveat
 

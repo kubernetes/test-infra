@@ -29,7 +29,8 @@ deprecated-verify() {
 
   kazel_diff=$("${OUTPUT_GOBIN}/kazel" \
     -dry-run \
-    -print-diff)
+    -print-diff\
+    --cfg-path=./hack/.kazelcfg.json)
 
 }
 

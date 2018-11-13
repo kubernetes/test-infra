@@ -28,7 +28,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	flagutil "k8s.io/test-infra/flagutil"
+	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -155,7 +155,7 @@ func main() {
 			case <-sig:
 				logrus.Info("Tide is shutting down...")
 				// Shutdown the http server with a 10s timeout then return to execute
-				// defered c.Shutdown()
+				// deferred c.Shutdown()
 				ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 				defer cancel() // frees ctx resources
 				server.Shutdown(ctx)

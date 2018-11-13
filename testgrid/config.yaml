@@ -2295,6 +2295,8 @@ test_groups:
 # master-1 to master
 - name: ci-kubernetes-e2e-gce-new-master-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-master
+- name: ci-kubernetes-e2e-gce-new-master-upgrade-master-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-master-parallel
 - name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
 - name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
@@ -2471,6 +2473,18 @@ test_groups:
 - name: pull-cluster-api-provider-aws-bazel-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-e2e
   num_columns_recent: 20
+- name: pull-cluster-api-provider-digitalocean-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-digitalocean-build
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-digitalocean-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-digitalocean-test
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-digitalocean-verify
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-digitalocean-verify
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-digitalocean-lint
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-digitalocean-lint
+  num_columns_recent: 20
 - name: pull-cluster-api-provider-gcp-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-gcp-build
   num_columns_recent: 20
@@ -2607,6 +2621,8 @@ test_groups:
 - name: pull-publishing-bot-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-publishing-bot-build
   num_columns_recent: 20
+- name: post-test-infra-deploy-prow
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-deploy-prow
 - name: post-test-infra-push-prow
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-prow
 - name: pull-test-infra-bazel
@@ -3276,8 +3292,8 @@ test_groups:
   gcs_prefix: k8s-conformance-baiducloud/baiducloud-e2e-conformance-v1.11
 
 # GCP Compute Persistent Disk CSI Driver Test Groups
-- name: ci-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
-  gcs_prefix: kubernetes-jenkins/logs/ci-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
+- name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable
+  gcs_prefix: kubernetes-jenkins/logs/ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable
 
 # AWS Test Groups
 - name: pull-aws-alb-ingress-controller-lint
@@ -4598,7 +4614,10 @@ dashboards:
   dashboard_tab:
   - name: gce-new-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master
-    description: Upgrade master only, in gce(gci), from 1.10 to master
+    description: Upgrade master only, in gce(gci), from 1.10 to master, run non-parallel-safe tests only
+  - name: gce-new-master-upgrade-master-parallel
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master-parallel
+    description: Upgrade master only, in gce(gci), from 1.10 to master, run parallel tests only
   - name: gce-new-master-upgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
     description: Upgrade master and node, in gce(gci), from 1.10 to master, run parallel tests only
@@ -5801,6 +5820,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
   - name: kubeadm-gce-upgrade-1.11-1.12
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
+  - name: kubeadm-gce-upgrade-1.12-1.13
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-12-1-13
   - name: kubeadm-gce-upgrade-stable-master
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
 # packages tests
@@ -5845,6 +5866,17 @@ dashboards:
   - name: test-creds
     test_group_name: periodic-cluster-api-provider-aws-test-creds
 
+- name: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+  dashboard_tab:
+  - name: build
+    test_group_name: pull-cluster-api-provider-digitalocean-build
+  - name: test
+    test_group_name: pull-cluster-api-provider-digitalocean-test
+  - name: verify
+    test_group_name: pull-cluster-api-provider-digitalocean-verify
+  - name: lint
+    test_group_name: pull-cluster-api-provider-digitalocean-lint
+
 - name: sig-cluster-lifecycle-cluster-api-provider-gcp
   dashboard_tab:
   - name: build
@@ -5860,9 +5892,9 @@ dashboards:
 
 - name: sig-gcp-compute-persistent-disk-csi-driver
   dashboard_tab:
-  - name: Kubernetes Master Driver Master
-    test_group_name: ci-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
-    description: Kubernetes Integration tests for Kubernetes Master branch and Driver Master branch
+  - name: Kubernetes Master Driver Stable
+    test_group_name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable
+    description: 'Kubernetes Integration tests for Kubernetes Master branch and Driver Stable'
 
 - name: sig-cluster-lifecycle-cluster-api-provider-vsphere
   dashboard_tab:
@@ -6629,6 +6661,11 @@ dashboards:
   - name: push-prow
     description: builds and pushes all prow on each commit by running bump.sh
     test_group_name: post-test-infra-push-prow
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: deploy-prow
+    description: deploys the configured version of prow by running deploy.sh
+    test_group_name: post-test-infra-deploy-prow
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 
@@ -7449,6 +7486,7 @@ dashboard_groups:
   - sig-cluster-lifecycle-multi-platform
   - sig-cluster-lifecycle-cluster-api
   - sig-cluster-lifecycle-cluster-api-provider-aws
+  - sig-cluster-lifecycle-cluster-api-provider-digitalocean
   - sig-cluster-lifecycle-cluster-api-provider-vsphere
   - sig-cluster-lifecycle-cluster-api-provider-gcp
   - sig-cluster-lifecycle-cluster-api-provider-openstack

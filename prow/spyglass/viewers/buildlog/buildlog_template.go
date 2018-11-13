@@ -67,7 +67,7 @@ tr {
       <tbody class="show-skipped" id="{{$g | skipID}}">
         <tr>
           <td></td>
-          <td><button onclick="showLines({{$g | linesID}}, {{$g | skipID}})">Show {{$g | linesSkipped}} hidden lines</button></td>
+          <td><button onclick="showLines({{$log | logID}}, {{$g | linesID}}, {{$g | skipID}})">Show {{$g | linesSkipped}} hidden lines</button></td>
         </tr>
       </tbody>
       {{end}}

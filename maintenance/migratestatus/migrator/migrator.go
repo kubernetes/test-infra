@@ -19,7 +19,7 @@ package migrator
 import (
 	"fmt"
 
-	"k8s.io/test-infra/ghclient"
+	"k8s.io/test-infra/pkg/ghclient"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"

@@ -15,6 +15,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: tide
   labels:
     app: tide
@@ -28,7 +29,7 @@ spec:
       # serviceAccountName: "tide" # Uncomment for use with RBAC
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20181108-54398d2
+        image: gcr.io/k8s-prow/tide:v20181109-1a84354
         args:
         - --dry-run=false
         - --github-endpoint=http://ghproxy

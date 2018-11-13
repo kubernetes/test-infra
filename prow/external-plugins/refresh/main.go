@@ -29,7 +29,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/flagutil"
+	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"

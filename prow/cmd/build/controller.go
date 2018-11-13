@@ -489,7 +489,7 @@ func defaultEnv(c *untypedcorev1.Container, rawEnv map[string]string) {
 
 // injectEnvironment will add rawEnv to the build steps and/or template arguments.
 func injectEnvironment(b *buildv1alpha1.Build, rawEnv map[string]string) {
-	for i := range b.Spec.Steps { // Inject envionment variables to each step
+	for i := range b.Spec.Steps { // Inject environment variables to each step
 		defaultEnv(&b.Spec.Steps[i], rawEnv)
 	}
 	if b.Spec.Template != nil { // Also add it as template arguments
@@ -499,7 +499,7 @@ func injectEnvironment(b *buildv1alpha1.Build, rawEnv map[string]string) {
 
 func workDir(refs prowjobv1.Refs) buildv1alpha1.ArgumentSpec {
 	// workspaceMountName is auto-injected into each step at workspaceMountPath
-	return buildv1alpha1.ArgumentSpec{Name: "WORKDIR", Value: clone.PathForRefs(workspaceMountPath, &refs)}
+	return buildv1alpha1.ArgumentSpec{Name: "WORKDIR", Value: clone.PathForRefs(workspaceMountPath, refs)}
 }
 
 // injectSource adds the custom source container to call clonerefs correctly.
