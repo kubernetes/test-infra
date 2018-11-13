@@ -142,7 +142,7 @@ function ansi_to_html(orig) {
 			return '<span class="ansi-' + (code - 30) + '">' + body + '</span>'
 		else if (90 <= code && code <= 97) // foreground color, bright
 			return '<span class="ansi-' + (code - 90 + 8) + '">' + body + '</span>'
-		return orig;  // fallback: don't change anything
+		return body;  // fallback: don't change anything
 	}
 	// Find commands, optionally followed by a bold command, with some content, then a reset command.
 	// Unpaired commands are *not* handled here, but they're very uncommon.
