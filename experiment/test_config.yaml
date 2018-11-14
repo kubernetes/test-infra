@@ -1274,7 +1274,7 @@ testSuites:
     - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
   serial:
     args:
-    - --timeout=500m
+    - --timeout=660m
     - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
     - --ginkgo-parallel=1
   slow:
@@ -1376,6 +1376,6 @@ nodeTestSuites:
     - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
   serial:
     args:
-    - --timeout=180m
+    - --timeout=300m
     - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
     - --node-test-args=--feature-gates=DynamicKubeletConfig=true

@@ -127,7 +127,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-796e51783d
@@ -138,7 +138,7 @@ periodics:
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -272,7 +272,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-fa0769fae5
@@ -283,7 +283,7 @@ periodics:
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -386,7 +386,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-cb966978b8
@@ -400,7 +400,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -474,7 +474,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-b8beff6a04
@@ -488,7 +488,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -532,7 +532,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=200
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.10
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -543,7 +543,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --image-family=cos-lts-2
       - --image-project=gke-node-images-test
-      - --timeout=180m
+      - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
       - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true
@@ -733,7 +733,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-15c136be7c
@@ -744,7 +744,7 @@ periodics:
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -820,7 +820,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-21b1dbcad3
@@ -830,7 +830,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       - --check-leaked-resources=false
@@ -875,7 +875,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=200
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.10
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -886,7 +886,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
-      - --timeout=180m
+      - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
       - --gcp-project=ubuntu-image-validation
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true
@@ -965,7 +965,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-3154607d16
@@ -974,7 +974,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable3
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -1158,7 +1158,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-c0e43133f1
@@ -1170,7 +1170,7 @@ periodics:
       - --gke-environment=test
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable3
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -1244,7 +1244,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=200
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.13
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -1255,7 +1255,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --image-family=cos-lts-1
       - --image-project=gke-node-images-test
-      - --timeout=180m
+      - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
       - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true
@@ -1389,7 +1389,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-7671b0fd74
@@ -1403,7 +1403,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -1816,7 +1816,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-002b9d4651
@@ -1830,7 +1830,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -1875,7 +1875,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-7eeb103eb8
@@ -1889,7 +1889,7 @@ periodics:
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -1904,7 +1904,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=200
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.10
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -1915,7 +1915,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
-      - --timeout=180m
+      - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
       - --gcp-project=ubuntu-image-validation
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true
@@ -2023,7 +2023,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-2842d22e0b
@@ -2035,7 +2035,7 @@ periodics:
       - --gke-environment=test
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable2
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -2050,7 +2050,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=200
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.12
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -2061,7 +2061,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
-      - --timeout=180m
+      - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
       - --gcp-project=ubuntu-image-validation
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true
@@ -2079,7 +2079,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=200
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.13
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -2090,7 +2090,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
-      - --timeout=180m
+      - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
       - --gcp-project=ubuntu-image-validation
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true
@@ -2165,7 +2165,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-6bbac58e9d
@@ -2175,7 +2175,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       - --check-leaked-resources=false
@@ -3026,7 +3026,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=200
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.11
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -3037,7 +3037,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
-      - --timeout=180m
+      - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
       - --gcp-project=ubuntu-image-validation
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true
@@ -3172,7 +3172,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-a84bf75ce1
@@ -3186,7 +3186,7 @@ periodics:
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -3202,7 +3202,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-9b5ed62f1f
@@ -3211,7 +3211,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable2
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -3315,7 +3315,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-869bd83cc7
@@ -3325,7 +3325,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       - --check-leaked-resources=false
@@ -3402,7 +3402,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-2a6f534d76
@@ -3416,7 +3416,7 @@ periodics:
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -3461,7 +3461,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-76f0c99482
@@ -3472,7 +3472,7 @@ periodics:
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -3547,7 +3547,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-c546202c9f
@@ -3558,7 +3558,7 @@ periodics:
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -3777,7 +3777,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-927e1a3e59
@@ -3789,7 +3789,7 @@ periodics:
       - --gke-environment=test
       - --gcp-node-image=gci
       - --extract=ci/k8s-beta
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -4090,7 +4090,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-e6ac6c0a34
@@ -4104,7 +4104,7 @@ periodics:
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -4148,7 +4148,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=200
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.13
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -4159,7 +4159,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
-      - --timeout=180m
+      - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
       - --gcp-project=ubuntu-image-validation
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true
@@ -4178,7 +4178,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-0d4c6b9a5b
@@ -4188,7 +4188,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       - --check-leaked-resources=false
@@ -4376,7 +4376,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-bd4d093510
@@ -4390,7 +4390,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -4491,7 +4491,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-b9c2cf519b
@@ -4503,7 +4503,7 @@ periodics:
       - --gke-environment=test
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable1
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -4518,7 +4518,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=200
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.11
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -4529,7 +4529,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --image-family=cos-lts-1
       - --image-project=gke-node-images-test
-      - --timeout=180m
+      - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
       - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true
@@ -4630,7 +4630,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-896dd46063
@@ -4640,7 +4640,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       - --check-leaked-resources=false
@@ -4944,7 +4944,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-5168472258
@@ -4958,7 +4958,7 @@ periodics:
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -5237,7 +5237,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-f49fb1d994
@@ -5247,7 +5247,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       - --check-leaked-resources=false
@@ -5374,7 +5374,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=200
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.10
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -5385,7 +5385,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --image-family=cos-lts-1
       - --image-project=gke-node-images-test
-      - --timeout=180m
+      - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
       - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true
@@ -5492,7 +5492,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-cb9e7587b0
@@ -5506,7 +5506,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -5554,7 +5554,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-f59a9b46eb
@@ -5565,7 +5565,7 @@ periodics:
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -5610,7 +5610,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-4e41f68c16
@@ -5621,7 +5621,7 @@ periodics:
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -5637,7 +5637,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-ef6e185752
@@ -5646,7 +5646,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable1
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -5773,7 +5773,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=200
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.12
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -5784,7 +5784,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
-      - --timeout=180m
+      - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
       - --gcp-project=ubuntu-image-validation
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true
@@ -5914,7 +5914,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-34cf3ed1e3
@@ -5923,7 +5923,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-beta
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -6137,7 +6137,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-0cd4c447a2
@@ -6151,7 +6151,7 @@ periodics:
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -6167,7 +6167,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-8b08c25618
@@ -6178,7 +6178,7 @@ periodics:
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -6249,7 +6249,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=200
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.12
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -6260,7 +6260,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --image-family=cos-lts-1
       - --image-project=gke-node-images-test
-      - --timeout=180m
+      - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
       - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true
@@ -6355,7 +6355,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=200
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.13
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -6366,7 +6366,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --image-family=cos-lts-2
       - --image-project=gke-node-images-test
-      - --timeout=180m
+      - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
       - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true
@@ -6614,7 +6614,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-93ac9bcd15
@@ -6628,7 +6628,7 @@ periodics:
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -6672,7 +6672,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=200
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.12
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -6683,7 +6683,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --image-family=cos-lts-2
       - --image-project=gke-node-images-test
-      - --timeout=180m
+      - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
       - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true
@@ -6875,7 +6875,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-22dede87e1
@@ -6889,7 +6889,7 @@ periodics:
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -6994,7 +6994,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-4c74069865
@@ -7004,7 +7004,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       - --check-leaked-resources=false
@@ -7082,7 +7082,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-9120335ea7
@@ -7096,7 +7096,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -7283,7 +7283,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=200
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.11
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -7294,7 +7294,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
-      - --timeout=180m
+      - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
       - --gcp-project=ubuntu-image-validation
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true
@@ -7341,7 +7341,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-944c3d1a73
@@ -7355,7 +7355,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
@@ -7429,7 +7429,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=200
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.11
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -7440,7 +7440,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --image-family=cos-lts-2
       - --image-project=gke-node-images-test
-      - --timeout=180m
+      - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
       - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true
@@ -7551,7 +7551,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=520
+      - --timeout=680
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-79194b4fe0
@@ -7561,7 +7561,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
-      - --timeout=500m
+      - --timeout=660m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       - --check-leaked-resources=false
