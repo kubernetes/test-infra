@@ -29,6 +29,7 @@ import (
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 type fkc struct {
@@ -53,19 +54,20 @@ func issueLabels(labels ...string) []string {
 type testcase struct {
 	name string
 
-	Author        string
-	PRAuthor      string
-	Body          string
-	State         string
-	IsPR          bool
-	Branch        string
-	ShouldBuild   bool
-	ShouldReport  bool
-	AddedLabels   []string
-	RemovedLabels []string
-	StartsExactly string
-	Presubmits    map[string][]config.Presubmit
-	IssueLabels   []string
+	Author         string
+	PRAuthor       string
+	Body           string
+	State          string
+	IsPR           bool
+	Branch         string
+	ShouldBuild    bool
+	ShouldReport   bool
+	AddedLabels    []string
+	RemovedLabels  []string
+	StartsExactly  string
+	Presubmits     map[string][]config.Presubmit
+	IssueLabels    []string
+	IgnoreOkToTest bool
 }
 
 func TestHandleGenericComment(t *testing.T) {
@@ -144,6 +146,16 @@ func TestHandleGenericComment(t *testing.T) {
 			ShouldBuild:   true,
 			IssueLabels:   issueLabels(labels.NeedsOkToTest, labels.OkToTest),
 			RemovedLabels: issueLabels(labels.NeedsOkToTest),
+		},
+		{
+			name: "Trusted member's ok to test, IgnoreOkToTest",
+
+			Author:         "t",
+			Body:           "/ok-to-test",
+			State:          "open",
+			IsPR:           true,
+			ShouldBuild:    false,
+			IgnoreOkToTest: true,
 		},
 		{
 			name: "Trusted member's ok to test",
@@ -641,14 +653,18 @@ func TestHandleGenericComment(t *testing.T) {
 			IsPR:        tc.IsPR,
 		}
 
+		trigger := plugins.Trigger{
+			IgnoreOkToTest: tc.IgnoreOkToTest,
+		}
+
 		// In some cases handleGenericComment can be called twice for the same event.
 		// For instance on Issue/PR creation and modification.
 		// Let's call it twice to ensure idempotency.
-		if err := handleGenericComment(c, nil, event); err != nil {
+		if err := handleGenericComment(c, &trigger, event); err != nil {
 			t.Fatalf("Didn't expect error: %s", err)
 		}
 		validate(kc, g, tc, t)
-		if err := handleGenericComment(c, nil, event); err != nil {
+		if err := handleGenericComment(c, &trigger, event); err != nil {
 			t.Fatalf("Didn't expect error: %s", err)
 		}
 		validate(kc, g, tc, t)

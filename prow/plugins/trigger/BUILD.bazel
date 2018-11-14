@@ -36,6 +36,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/plugins/trigger",
     deps = [
         "//prow/config:go_default_library",
+        "//prow/errorutil:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/labels:go_default_library",

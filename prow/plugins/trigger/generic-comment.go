@@ -50,29 +50,32 @@ func handleGenericComment(c client, trigger *plugins.Trigger, gc github.GenericC
 	}
 
 	// Which jobs does the comment want us to run?
-	isOkToTest := okToTestRe.MatchString(gc.Body)
+	allowOkToTest := trigger == nil || !trigger.IgnoreOkToTest
+	isOkToTest := okToTestRe.MatchString(gc.Body) && allowOkToTest
 	testAll := isOkToTest || testAllRe.MatchString(gc.Body)
 	shouldRetestFailed := retestRe.MatchString(gc.Body)
 	requestedJobs := c.Config.MatchingPresubmits(gc.Repo.FullName, gc.Body, testAll)
 	if !shouldRetestFailed && len(requestedJobs) == 0 {
-		// Check for the presence of the needs-ok-to-test label and remove it
-		// if a trusted member has commented "/ok-to-test".
+		// If a trusted member has commented "/ok-to-test",
+		// eventually add ok-to-test and remove needs-ok-to-test.
 		l, err := c.GitHubClient.GetIssueLabels(org, repo, number)
 		if err != nil {
 			return err
 		}
-		if isOkToTest && github.HasLabel(labels.NeedsOkToTest, l) {
+		if isOkToTest && !github.HasLabel(labels.OkToTest, l) {
 			trusted, err := TrustedUser(c.GitHubClient, trigger, commentAuthor, org, repo)
 			if err != nil {
 				return err
 			}
 			if trusted {
-				if !github.HasLabel(labels.OkToTest, l) {
-					if err := c.GitHubClient.AddLabel(org, repo, number, labels.OkToTest); err != nil {
+				if err := c.GitHubClient.AddLabel(org, repo, number, labels.OkToTest); err != nil {
+					return err
+				}
+				if github.HasLabel(labels.NeedsOkToTest, l) {
+					if err := c.GitHubClient.RemoveLabel(org, repo, number, labels.NeedsOkToTest); err != nil {
 						return err
 					}
 				}
-				return c.GitHubClient.RemoveLabel(org, repo, number, labels.NeedsOkToTest)
 			}
 		}
 		return nil

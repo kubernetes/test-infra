@@ -402,6 +402,9 @@ type Trigger struct {
 	// OnlyOrgMembers requires PRs and/or /ok-to-test comments to come from org members.
 	// By default, trigger also include repo collaborators.
 	OnlyOrgMembers bool `json:"only_org_members,omitempty"`
+	// IgnoreOkToTest makes trigger ignore /ok-to-test comments.
+	// This is a security mitigation to only allow testing from trusted users.
+	IgnoreOkToTest bool `json:"ignore_ok_to_test,omitempty"`
 }
 
 type Heart struct {

@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
@@ -137,19 +138,7 @@ func buildAllIfTrusted(c client, trigger *plugins.Trigger, pr github.PullRequest
 }
 
 func welcomeMsg(ghc githubClient, trigger *plugins.Trigger, pr github.PullRequest) error {
-	commentTemplate := `Hi @%s. Thanks for your PR.
-
-I'm waiting for a [%s](https://github.com/orgs/%s/people) %smember to verify that this patch is reasonable to test. If it is, they should reply with ` + "`/ok-to-test`" + ` on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands by org members will still work. Regular contributors should [join the org](%s) to skip this step.
-
-Once the patch is verified, the new status will be reflected by the ` + fmt.Sprintf("`%s`", labels.OkToTest) + ` label.
-
-I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
-
-<details>
-
-%s
-</details>
-`
+	var errors []error
 	org, repo, a := orgRepoAuthor(pr)
 	author := string(a)
 	var more string
@@ -163,12 +152,45 @@ I understand the commands that are listed [here](https://go.k8s.io/bot-commands)
 	} else {
 		joinOrgURL = fmt.Sprintf("https://github.com/orgs/%s/people", org)
 	}
-	comment := fmt.Sprintf(commentTemplate, author, org, org, more, joinOrgURL, plugins.AboutThisBotWithoutCommands)
 
-	err1 := ghc.AddLabel(org, repo, pr.Number, labels.NeedsOkToTest)
-	err2 := ghc.CreateComment(org, repo, pr.Number, comment)
-	if err1 != nil || err2 != nil {
-		return fmt.Errorf("welcomeMsg: error adding label: %v, error creating comment: %v", err1, err2)
+	var comment string
+	if trigger.IgnoreOkToTest {
+		comment = fmt.Sprintf(`Hi @%s. Thanks for your PR.
+
+PRs from untrusted users cannot be marked as trusted with `+"`/ok-to-test`"+` in this repo meaning untrusted PR authors can never trigger tests themselves. Collaborators can still trigger tests on the PR using `+"`/test all`"+`.
+
+I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+
+<details>
+
+%s
+</details>
+`, author, plugins.AboutThisBotWithoutCommands)
+	} else {
+		comment = fmt.Sprintf(`Hi @%s. Thanks for your PR.
+
+I'm waiting for a [%s](https://github.com/orgs/%s/people) %smember to verify that this patch is reasonable to test. If it is, they should reply with `+"`/ok-to-test`"+` on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands by org members will still work. Regular contributors should [join the org](%s) to skip this step.
+
+Once the patch is verified, the new status will be reflected by the `+"`%s`"+` label.
+
+I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+
+<details>
+
+%s
+</details>
+`, author, org, org, more, joinOrgURL, labels.OkToTest, plugins.AboutThisBotWithoutCommands)
+		if err := ghc.AddLabel(org, repo, pr.Number, labels.NeedsOkToTest); err != nil {
+			errors = append(errors, err)
+		}
+	}
+
+	if err := ghc.CreateComment(org, repo, pr.Number, comment); err != nil {
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return errorutil.NewAggregate(errors...)
 	}
 	return nil
 }
