@@ -354,6 +354,7 @@ tide:
     - kubernetes/ingress-gce
     - kubernetes/ingress-nginx
     - kubernetes/k8s.io
+    - kubernetes/klog
     - kubernetes/komposer
     - kubernetes/kops
     - kubernetes/kube-deploy
