@@ -38,6 +38,7 @@ owners:
 
 approve:
 - repos:
+  - kubernetes/cloud-provider-aws
   - kubernetes/cloud-provider-azure
   - kubernetes/cluster-registry
   - kubernetes/contrib
@@ -246,6 +247,11 @@ require_matching_label:
   repo: kubernetes
   prs: true
   regexp: ^priority/
+- missing_label: needs-kind
+  org: kubernetes
+  repo: cloud-provider-aws
+  prs: true
+  regexp: ^kind/
 
 
 plugins:
@@ -320,6 +326,12 @@ plugins:
   - yuks
 
   kubernetes/cloud-provider-aws:
+  - milestone
+  - milestonestatus
+  - owners-label
+  - release-note
+  - require-matching-label
+  - welcome
   - trigger
 
   kubernetes/cloud-provider-azure:

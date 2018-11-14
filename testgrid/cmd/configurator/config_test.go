@@ -335,6 +335,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubeflow/testing",
 		"kubeflow/tf-operator",
 		"kubeflow/website",
+		"kubernetes/cloud-provider-aws",
 		"kubernetes/cloud-provider-vsphere",
 		"kubernetes/cluster-registry",
 		"kubernetes/federation",

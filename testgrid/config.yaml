@@ -3302,6 +3302,12 @@ test_groups:
 - name: pull-aws-alb-ingress-controller-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-alb-ingress-controller-test
   num_columns_recent: 30
+- name: pull-cloud-provider-aws-check
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-aws-check
+  num_columns_recent: 30
+- name: pull-cloud-provider-aws-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-aws-test
+  num_columns_recent: 30
 - name: pull-aws-ebs-disk-csi-driver-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-ebs-disk-csi-driver-verify
   num_columns_recent: 30
@@ -5680,6 +5686,15 @@ dashboards:
     test_group_name: pull-aws-alb-ingress-controller-test
     description: "aws alb ingress controller tests"
 
+- name: sig-aws-cloud-provider-aws
+  dashboard_tab:
+  - name: check
+    test_group_name: pull-cloud-provider-aws-check
+    description: "aws cloud provider checks"
+  - name: test
+    test_group_name: pull-cloud-provider-aws-test
+    description: "aws cloud provider tests"
+
 - name: sig-aws-ebs-csi-driver
   dashboard_tab:
   - name: verify
@@ -7469,6 +7484,7 @@ dashboard_groups:
 - name: sig-aws
   dashboard_names:
   - sig-aws-alb-ingress-controller
+  - sig-aws-cloud-provider-aws
   - sig-aws-ebs-csi-driver
   - sig-aws-eks-ci-kubernetes-e2e-1-10
   - sig-aws-eks-ci-kubernetes-e2e-stable
