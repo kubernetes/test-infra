@@ -2828,10 +2828,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
 - name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster
+- name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-parallel
 - name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new
+- name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new-parallel
 - name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-upgrade-master
+- name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-master-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-upgrade-master-parallel
 - name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
 - name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster-parallel
@@ -4739,10 +4745,16 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster-parallel
   - name: gce-1.12-1.13-upgrade-cluster
     test_group_name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster
+  - name: gce-1.12-1.13-upgrade-cluster-parallel
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-parallel
   - name: gce-1.12-1.13-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new
+  - name: gce-1.12-1.13-upgrade-cluster-new-parallel
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new-parallel
   - name: gce-1.12-1.13-upgrade-master
     test_group_name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-master
+  - name: gce-1.12-1.13-upgrade-master-parallel
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-master-parallel
   - name: gce-1.13-1.12-gci-kubectl-skew
     test_group_name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
   - name: gce-1.13-1.12-gci-kubectl-skew-serial
