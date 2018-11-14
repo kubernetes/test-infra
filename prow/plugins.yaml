@@ -50,6 +50,7 @@ approve:
   - kubernetes/heapster
   - kubernetes/ingress-gce
   - kubernetes/ingress-nginx
+  - kubernetes/klog
   - kubernetes/kops
   - kubernetes/kube-deploy
   - kubernetes/kubeadm
