@@ -25,7 +25,7 @@ periodics:
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8 --vmodule=request=4
       - --timeout=120m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
@@ -185,7 +185,7 @@ periodics:
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=masteranddns --gather-metrics-at-teardown=master
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=masteranddns --gather-metrics-at-teardown=master --vmodule=request=4
       - --timeout=510m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
@@ -255,7 +255,7 @@ periodics:
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --node-schedulable-timeout=90m --gather-resource-usage=masteranddns --gather-metrics-at-teardown=master
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --node-schedulable-timeout=90m --gather-resource-usage=masteranddns --gather-metrics-at-teardown=master --vmodule=request=4
       - --timeout=1290m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
