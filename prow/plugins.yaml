@@ -162,7 +162,6 @@ slack:
     - kubernetes-dev
     whitelist:
     - k8s-ci-robot # future home of tide
-    - k8s-merge-robot # submit queue
     - k8s-release-robot # anago
     branch_whitelist:
         release-1.8:
@@ -174,9 +173,11 @@ slack:
         release-1.11:
             - foxish # 1.11 patch release manager
         release-1.12:
-            - dougm # 1.12 branch manager
-            - hoegaarden # 1.12 branch manager shadow
-            - idealhack # 1.12 branch manager shadow
+            - feiskyer # 1.12 patch release manager
+        release-1.13:
+            - dougm # 1.13 branch manager
+            - hoegaarden # 1.13 branch manager shadow
+            - idealhack # 1.13 branch manager shadow
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
             - apelisse # feature-serverside-apply "branch manager"
