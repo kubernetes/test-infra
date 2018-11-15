@@ -611,7 +611,7 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
         rerunElement.innerHTML = `kubectl create -f "<a href="${url}">${url}</a>"`;
         const copyButton = document.createElement('a');
         copyButton.className = "mdl-button mdl-js-button mdl-button--icon";
-        copyButton.onclick = () => copyToClipboardWithToast(`kubectl create -f "${url}`);
+        copyButton.onclick = () => copyToClipboardWithToast(`kubectl create -f "${url}"`);
         copyButton.innerHTML = "<i class='material-icons state triggered' style='color: gray'>file_copy</i>";
         rerunElement.appendChild(copyButton);
     };
