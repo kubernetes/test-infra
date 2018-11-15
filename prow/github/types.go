@@ -494,7 +494,6 @@ type PushEvent struct {
 	Before  string   `json:"before"`
 	After   string   `json:"after"`
 	Compare string   `json:"compare"`
-	Size    int      `json:"size"`
 	Commits []Commit `json:"commits"`
 	// Pusher is the user that pushed the commit, valid in a webhook event.
 	Pusher User `json:"pusher"`
