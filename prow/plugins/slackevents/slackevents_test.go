@@ -41,7 +41,9 @@ func TestPush(t *testing.T) {
   "ref": "refs/heads/master",
   "before": "d73a75b4b1ddb63870954b9a60a63acaa4cb1ca5",
   "after": "045a6dca07840efaf3311450b615e19b5c75f787",
-  "size": 2,
+  "created": false,
+  "deleted": false,
+  "forced": false,
   "compare": "https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784",
   "commits": [
     {
@@ -91,10 +93,35 @@ func TestPush(t *testing.T) {
 	pushEvManualNotBranchWhiteListed := pushEvManualBranchWhiteListed
 	pushEvManualNotBranchWhiteListed.Ref = "refs/head/master"
 
+	pushEvManualCreated := pushEvManual
+	pushEvManualCreated.Created = true
+	pushEvManualCreated.Ref = "refs/head/release-1.99"
+	pushEvManualCreated.Compare = "https://github.com/kubernetes/kubernetes/compare/045a6dca0784"
+
+	pushEvManualDeleted := pushEvManual
+	pushEvManualDeleted.Deleted = true
+	pushEvManualDeleted.Ref = "refs/head/release-1.99"
+	pushEvManualDeleted.Compare = "https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...000000000000"
+
+	pushEvManualForced := pushEvManual
+	pushEvManualForced.Forced = true
+
 	noMessages := map[string][]string{}
 	stdWarningMessages := map[string][]string{
 		"sig-contribex":  {"*Warning:* tester (<@tester>) manually merged 2 commit(s) into master: https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"},
 		"kubernetes-dev": {"*Warning:* tester (<@tester>) manually merged 2 commit(s) into master: https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"}}
+
+	createdWarningMessages := map[string][]string{
+		"sig-contribex":  {"*Warning:* tester (<@tester>) pushed a new branch (release-1.99): https://github.com/kubernetes/kubernetes/compare/045a6dca0784"},
+		"kubernetes-dev": {"*Warning:* tester (<@tester>) pushed a new branch (release-1.99): https://github.com/kubernetes/kubernetes/compare/045a6dca0784"}}
+
+	deletedWarningMessages := map[string][]string{
+		"sig-contribex":  {"*Warning:* tester (<@tester>) deleted a branch (release-1.99): https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...000000000000"},
+		"kubernetes-dev": {"*Warning:* tester (<@tester>) deleted a branch (release-1.99): https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...000000000000"}}
+
+	forcedWarningMessages := map[string][]string{
+		"sig-contribex":  {"*Warning:* tester (<@tester>) *force* merged 2 commit(s) into master: https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"},
+		"kubernetes-dev": {"*Warning:* tester (<@tester>) *force* merged 2 commit(s) into master: https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"}}
 
 	type testCase struct {
 		name             string
@@ -104,9 +131,14 @@ func TestPush(t *testing.T) {
 
 	testcases := []testCase{
 		{
-			name:             "If PR merged manually by a user we send message to sig-contribex and kubernetes-dev.",
+			name:             "If PR merged manually by a user, we send message to sig-contribex and kubernetes-dev.",
 			pushReq:          pushEvManual,
 			expectedMessages: stdWarningMessages,
+		},
+		{
+			name:             "If PR force merged by a user, we send message to sig-contribex and kubernetes-dev with force merge message.",
+			pushReq:          pushEvManualForced,
+			expectedMessages: forcedWarningMessages,
 		},
 		{
 			name:             "If PR merged by k8s merge bot we should NOT send message to sig-contribex and kubernetes-dev.",
@@ -122,6 +154,16 @@ func TestPush(t *testing.T) {
 			name:             "If PR merged by a user not in the whitelist, in a branch whitelist, but not THIS branch whitelist, we should send a message to sig-contrib-ax and kubernetes-dev.",
 			pushReq:          pushEvManualBranchWhiteListed,
 			expectedMessages: noMessages,
+		},
+		{
+			name:             "If a branch is created by a non-whitelisted user, we send message to sig-contribex and kubernetes-dev with branch created message.",
+			pushReq:          pushEvManualCreated,
+			expectedMessages: createdWarningMessages,
+		},
+		{
+			name:             "If a branch is deleted by a non-whitelisted user, we send message to sig-contribex and kubernetes-dev with branch deleted message.",
+			pushReq:          pushEvManualDeleted,
+			expectedMessages: deletedWarningMessages,
 		},
 	}
 
