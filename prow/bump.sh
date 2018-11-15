@@ -56,40 +56,49 @@ fi
 cd "$(dirname "${BASH_SOURCE}")"
 
 usage() {
-  echo "Usage: "$(basename "$0")" [--list || --push || vYYYYMMDD-deadbeef] [image subset...]" >&2
+  echo "Usage: "$(basename "$0")" [--list || --push || --latest || vYYYYMMDD-deadbeef] [image subset...]" >&2
   exit 1
 }
 
-cmd=
 if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
   echo "Detected GOOGLE_APPLICATION_CREDENTIALS, activating..." >&2
   gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
   gcloud auth configure-docker
-  cmd="--push"
-elif [[ $# != 0 ]]; then
+fi
+
+cmd=
+if [[ $# != 0 ]]; then
   cmd="$1"
   shift
 fi
 
-if [[ "$cmd" == "--push" ]]; then
-  new_version="v$(date -u '+%Y%m%d')-$(git describe --tags --always --dirty)"
-  echo -e "version: $(color-version ${new_version})" >&2
-  if [[ "${new_version}" == *-dirty ]]; then
-    echo -e "$(color-error ERROR): uncommitted changes to repo" >&2
-    echo "  Fix with git commit" >&2
-    exit 1
-  fi
-  echo -e "Pushing $(color-version ${new_version}) via $(color-target //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64) ..." >&2
-  bazel run //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
-elif [[ -z "$cmd" || "$cmd" == "--list" ]]; then
-  # TODO(fejta): figure out why the timestamp on all these image is 1969...
-  # Then we'll be able to just sort them.
+# Build and push the current commit, failing on any uncommitted changes.
+push() {
+    new_version="v$(date -u '+%Y%m%d')-$(git describe --tags --always --dirty)"
+    echo -e "version: $(color-version ${new_version})" >&2
+    if [[ "${new_version}" == *-dirty ]]; then
+      echo -e "$(color-error ERROR): uncommitted changes to repo" >&2
+      echo "  Fix with git commit" >&2
+      exit 1
+    fi
+    echo -e "Pushing $(color-version ${new_version}) via $(color-target //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64) ..." >&2
+    bazel run //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
+}
+
+# List the $1 most recently pushed prow versions
+list-options() {
+  count="$1"
+  gcloud container images list-tags gcr.io/k8s-prow/plank --limit="$count" --format='value(tags)' \
+      | grep -o -E 'v[^,]+' | tac
+}
+
+# Print 10 most recent prow versions, ask user to select one, which becomes new_version
+list() {
   echo "Listing recent versions..." >&2
-  options=(
-    $(gcloud container images list-tags gcr.io/k8s-prow/plank --limit=10 --format='value(tags)' \
-      | grep -o -E 'v[^,]+' | tac)
-  )
   echo "Recent versions of prow:" >&2
+  options=(
+    $(list-options 10)
+    )
   if [[ -z "${options[@]}" ]]; then
     echo "No versions found" >&2
     exit 1
@@ -115,17 +124,20 @@ elif [[ -z "$cmd" || "$cmd" == "--list" ]]; then
       exit 1
     fi
   fi
+}
+
+if [[ "$cmd" == "--push" ]]; then
+  push
+  exit 0
+elif [[ -z "$cmd" || "$cmd" == "--list" ]]; then
+  list
 elif [[ "$cmd" =~ v[0-9]{8}-[a-f0-9]{6,9} ]]; then
   new_version="$cmd"
+elif [[ "$cmd" == "--latest" ]]; then
+  new_version="$(list-options 1)"
 else
   usage
 fi
-
-if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
-  # TODO(fejta): consider making this publish to a recent-releases.json or something
-  exit 0
-fi
-
 
 # Determine what deployment images we need to update
 echo -n "images: " >&2
