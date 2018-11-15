@@ -603,17 +603,17 @@ function createLinkCell(text: string, url: string, title: string): HTMLTableData
 }
 
 function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob: string): HTMLTableDataCellElement {
-    const url = "https://" + window.location.hostname + "/rerun?prowjob="
-        + prowjob;
+    const url = `https://${window.location.hostname}/rerun?prowjob=${prowjob}`;
     const c = document.createElement("td");
     const icon = createIcon("refresh", "Show instructions for rerunning this job");
-    icon.onclick = function () {
+    icon.onclick = () => {
         modal.style.display = "block";
-        rerunElement.innerHTML = "kubectl create -f \"<a href='" + url + "'>"
-        + url + "</a>\" " 
-        + "<a class='mdl-button mdl-js-button mdl-button--icon' onclick=\""+
-        "copyToClipboardWithToast('kubectl create -f " + url + "')\">"
-        + "<i class='material-icons state triggered' style='color: gray'>file_copy</i></a>";
+        rerunElement.innerHTML = `kubectl create -f "<a href="${url}">${url}</a>"`;
+        const copyButton = document.createElement('a');
+        copyButton.className = "mdl-button mdl-js-button mdl-button--icon";
+        copyButton.onclick = () => copyToClipboardWithToast(`kubectl create -f "${url}`);
+        copyButton.innerHTML = "<i class='material-icons state triggered' style='color: gray'>file_copy</i>";
+        rerunElement.appendChild(copyButton);
     };
     c.appendChild(icon);
     c.classList.add("icon-cell");
