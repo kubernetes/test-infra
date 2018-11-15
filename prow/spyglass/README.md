@@ -95,7 +95,8 @@ more details and examples.
 
 ## Config
 
-Spyglass is currently disabled by default. To enable it, add the `--spyglass` arg to your [deck deployment](https://github.com/kubernetes/test-infra/blob/e9e544733854d54403aa1dfd84ca009fd9b942f0/prow/cluster/starter.yaml#L236).
+Spyglass is currently disabled by default. To enable it, add the `--spyglass` arg to your
+[deck deployment](https://github.com/kubernetes/test-infra/blob/e9e544733854d54403aa1dfd84ca009fd9b942f0/prow/cluster/starter.yaml#L236).
 
 Spyglass config takes the following form:
 ```yaml
