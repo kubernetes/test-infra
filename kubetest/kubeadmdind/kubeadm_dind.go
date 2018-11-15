@@ -402,7 +402,7 @@ func (d *Deployer) clusterSize() (int, error) {
 	return 0, nil
 }
 
-// Create a local log artifacts directory
+// makeLogDir create a local log artifacts directory
 func (d *Deployer) makeLogDir(logDir string) error {
 	cmd := fmt.Sprintf("mkdir -p %s", logDir)
 	execCmd := d.execCmd(cmd)
