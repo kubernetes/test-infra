@@ -1180,6 +1180,7 @@ type PullRequest struct {
 	Milestone *struct {
 		Title githubql.String
 	}
+	Title githubql.String
 }
 
 // Commit holds graphql data about commits and which contexts they have

@@ -276,7 +276,21 @@ function createBatchCell(pool: TidePool): HTMLTableDataCellElement {
             '&type=batch&pull=' + encodeURIComponent(batchRef);
         const link = document.createElement('a');
         link.href = href;
-        link.appendChild(document.createTextNode(numbers.join(' ')));
+        for (let i = 0; i < pool.BatchPending.length; i++) {
+            const pr = pool.BatchPending[i];
+            const text = document.createElement('span');
+            text.appendChild(document.createTextNode("#" + String(pr.Number)));
+            text.id = "pr-" + pool.Org + "-" + pool.Repo + "-" + pr.Number + "-" + nextID();
+            if (pr.Title) {
+                const tip = toolTipForElem(text.id, document.createTextNode(pr.Title));
+                text.appendChild(tip);
+            }
+            link.appendChild(text);
+            // Add a space after each PR number except the last.
+            if (i+1 < pool.BatchPending.length) {
+                link.appendChild(document.createTextNode(" "));
+            }
+        }
         td.appendChild(link);
     }
     return td;
@@ -289,6 +303,11 @@ function addPRsToElem(elem: HTMLElement, pool: TidePool, prs?: PullRequest[]): v
             const a = document.createElement("a");
             a.href = "https://github.com/" + pool.Org + "/" + pool.Repo + "/pull/" + prs[i].Number;
             a.appendChild(document.createTextNode("#" + prs[i].Number));
+            a.id = "pr-" + pool.Org + "-" + pool.Repo + "-" + prs[i].Number + "-" + nextID();
+            if (prs[i].Title) {
+                const tip = toolTipForElem(a.id, document.createTextNode(prs[i].Title));
+                a.appendChild(tip);
+            }
             elem.appendChild(a);
             // Add a space after each PR number except the last.
             if (i+1 < prs.length) {
@@ -306,13 +325,11 @@ function addBlockersToElem(elem: HTMLElement, pool: TidePool): void {
     }
     for (let i = 0; i < pool.Blockers.length; i++) {
         const b = pool.Blockers[i];
-        const id = "blocker-" + pool.Org + "-" + pool.Repo + "-" + b.Number;
         const a = document.createElement("a");
         a.href = b.URL;
         a.appendChild(document.createTextNode("#" + b.Number));
-        a.id = id;
-        addToolTipToElem(a, document.createTextNode(b.Title));
-
+        a.id = "blocker-" + pool.Org + "-" + pool.Repo + "-" + b.Number + "-" + nextID();
+        a.appendChild(toolTipForElem(a.id, document.createTextNode(b.Title)));
 
         elem.appendChild(a);
         // Add a space after each PR number except the last.
@@ -322,10 +339,16 @@ function addBlockersToElem(elem: HTMLElement, pool: TidePool): void {
     }
 }
 
-function addToolTipToElem(elem: HTMLElement, tipElem: Node): void {
+let idCounter = 0;
+function nextID(): String {
+    idCounter++;
+    return "elemID-" + String(idCounter);
+}
+
+function toolTipForElem(elemID: string, tipElem: Node): Node {
     const tooltip = document.createElement("div");
     tooltip.appendChild(tipElem);
-    tooltip.setAttribute("data-mdl-for", elem.id);
+    tooltip.setAttribute("data-mdl-for", elemID);
     tooltip.classList.add("mdl-tooltip", "mdl-tooltip--large");
-    elem.appendChild(tooltip);
+    return tooltip;
 }

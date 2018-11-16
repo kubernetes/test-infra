@@ -13,6 +13,7 @@ export interface TideQuery {
 }
 
 export interface PullRequest extends BasePullRequest {
+  Title: string;
   HeadRefName: string;
   Commits: {
     Nodes: {
