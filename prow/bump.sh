@@ -35,10 +35,6 @@ color-version() { # Bold blue
   echo -e "\x1B[1;34m${@}\x1B[0m"
 }
 
-color-error() { # Light red
-  echo -e "\x1B[91m${@}\x1B[0m"
-}
-
 color-target() { # Bold cyan
   echo -e "\x1B[1;33m${@}\x1B[0m"
 }
@@ -53,10 +49,19 @@ if ! ($SED --version 2>&1 | grep -q GNU); then
   exit 1
 fi
 
+TAC=tac
+if which gtac &>/dev/null; then
+  TAC=gtac
+fi
+if ! which "$TAC" &>/dev/null; then
+  echo "tac (reverse cat) required. If on OS X then 'brew install coreutils'." >&2
+  exit 1
+fi
+
 cd "$(dirname "${BASH_SOURCE}")"
 
 usage() {
-  echo "Usage: "$(basename "$0")" [--list || --push || --latest || vYYYYMMDD-deadbeef] [image subset...]" >&2
+  echo "Usage: "$(basename "$0")" [--list || --latest || vYYYYMMDD-deadbeef] [image subset...]" >&2
   exit 1
 }
 
@@ -72,24 +77,11 @@ if [[ $# != 0 ]]; then
   shift
 fi
 
-# Build and push the current commit, failing on any uncommitted changes.
-push() {
-    new_version="v$(date -u '+%Y%m%d')-$(git describe --tags --always --dirty)"
-    echo -e "version: $(color-version ${new_version})" >&2
-    if [[ "${new_version}" == *-dirty ]]; then
-      echo -e "$(color-error ERROR): uncommitted changes to repo" >&2
-      echo "  Fix with git commit" >&2
-      exit 1
-    fi
-    echo -e "Pushing $(color-version ${new_version}) via $(color-target //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64) ..." >&2
-    bazel run //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
-}
-
 # List the $1 most recently pushed prow versions
 list-options() {
   count="$1"
   gcloud container images list-tags gcr.io/k8s-prow/plank --limit="$count" --format='value(tags)' \
-      | grep -o -E 'v[^,]+' | tac
+      | grep -o -E 'v[^,]+' | "$TAC"
 }
 
 # Print 10 most recent prow versions, ask user to select one, which becomes new_version
@@ -127,9 +119,12 @@ list() {
 }
 
 if [[ "$cmd" == "--push" ]]; then
-  push
+  echo "WARNING: --push is depreacated please use push.sh instead"
+  "$(dirname "$0")/push.sh"
   exit 0
-elif [[ -z "$cmd" || "$cmd" == "--list" ]]; then
+fi
+
+if [[ -z "$cmd" || "$cmd" == "--list" ]]; then
   list
 elif [[ "$cmd" =~ v[0-9]{8}-[a-f0-9]{6,9} ]]; then
   new_version="$cmd"
@@ -143,7 +138,7 @@ fi
 echo -n "images: " >&2
 images=("$@")
 if [[ "${#images[@]}" == 0 ]]; then
-  echo "querying bazel for $(color-target :image) targets under $(color-target //prow/...) ..." >&2
+  echo -e "querying bazel for $(color-target :image) targets under $(color-target //prow/...) ..." >&2
   images=($(bazel query 'filter(".*:image", //prow/...)' | cut -d : -f 1 | xargs -n 1 basename))
   echo -n "images: " >&2
 fi

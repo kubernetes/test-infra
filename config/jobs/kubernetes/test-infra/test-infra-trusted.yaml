@@ -53,9 +53,7 @@ postsubmits:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-bazel:v20181107-d88dbbf
         command:
-        - prow/bump.sh
-        args:
-        - --push
+        - prow/push.sh
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /creds/service-account.json
