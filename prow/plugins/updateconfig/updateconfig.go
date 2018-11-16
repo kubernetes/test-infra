@@ -65,6 +65,7 @@ type githubClient interface {
 type kubeClient interface {
 	GetConfigMap(name, namespace string) (kube.ConfigMap, error)
 	ReplaceConfigMap(name string, config kube.ConfigMap) (kube.ConfigMap, error)
+	CreateConfigMap(content kube.ConfigMap) (kube.ConfigMap, error)
 }
 
 func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) error {
@@ -76,9 +77,10 @@ func maps(pc plugins.PluginClient) map[string]plugins.ConfigMapSpec {
 }
 
 func update(gc githubClient, kc kubeClient, org, repo, commit, name, namespace string, updates map[string]string) error {
-	currentContent, err := kc.GetConfigMap(name, namespace)
-	if _, isNotFound := err.(kube.NotFoundError); err != nil && !isNotFound {
-		return fmt.Errorf("failed to fetch current state of configmap: %v", err)
+	currentContent, getErr := kc.GetConfigMap(name, namespace)
+	_, isNotFound := getErr.(kube.NotFoundError)
+	if getErr != nil && !isNotFound {
+		return fmt.Errorf("failed to fetch current state of configmap: %v", getErr)
 	}
 
 	data := map[string]string{}
@@ -107,9 +109,14 @@ func update(gc githubClient, kc kubeClient, org, repo, commit, name, namespace s
 		Data: data,
 	}
 
-	_, err = kc.ReplaceConfigMap(name, cm)
-	if err != nil {
-		return fmt.Errorf("replace config map err: %v", err)
+	var updateErr error
+	if getErr != nil && isNotFound {
+		_, updateErr = kc.CreateConfigMap(cm)
+	} else {
+		_, updateErr = kc.ReplaceConfigMap(name, cm)
+	}
+	if updateErr != nil {
+		return fmt.Errorf("replace config map err: %v", updateErr)
 	}
 	return nil
 }
