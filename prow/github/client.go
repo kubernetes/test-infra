@@ -955,6 +955,39 @@ func (c *Client) CreatePullRequest(org, repo, title, body, head, base string, ca
 	return resp.Num, nil
 }
 
+// UpdatePullRequest modifies the title, body, open state
+func (c *Client) UpdatePullRequest(org, repo string, number int, title, body *string, open *bool, branch *string, canModify *bool) error {
+	c.log("UpdatePullRequest", org, repo, title)
+	data := struct {
+		State *string `json:"state,omitempty"`
+		Title *string `json:"title,omitempty"`
+		Body  *string `json:"body,omitempty"`
+		Base  *string `json:"base,omitempty"`
+		// MaintainerCanModify allows maintainers of the repo to modify this
+		// pull request, eg. push changes to it before merging.
+		MaintainerCanModify *bool `json:"maintainer_can_modify,omitempty"`
+	}{
+		Title:               title,
+		Body:                body,
+		Base:                branch,
+		MaintainerCanModify: canModify,
+	}
+	if open != nil && *open {
+		op := "open"
+		data.State = &op
+	} else if open != nil {
+		cl := "clossed"
+		data.State = &cl
+	}
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d", org, repo, number),
+		requestBody: &data,
+		exitCodes:   []int{200},
+	}, nil)
+	return err
+}
+
 // GetPullRequestChanges gets a list of files modified in a pull request.
 //
 // See https://developer.github.com/v3/pulls/#list-pull-requests-files

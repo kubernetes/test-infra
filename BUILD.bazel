@@ -99,6 +99,7 @@ filegroup(
         "//prow:all-srcs",
         "//robots/commenter:all-srcs",
         "//robots/issue-creator:all-srcs",
+        "//robots/pr-creator:all-srcs",
         "//robots/pr-labeler:all-srcs",
         "//scenarios:all-srcs",
         "//testgrid:all-srcs",
