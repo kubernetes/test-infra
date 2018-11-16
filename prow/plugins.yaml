@@ -35,6 +35,7 @@ owners:
   - kubernetes/website
   skip_collaborators:
   - kubernetes-sigs/contributor-playground
+  - helm/charts
 
 approve:
 - repos:
