@@ -219,6 +219,23 @@ func GetLatestProwJobs(pjs []kube.ProwJob, jobType kube.ProwJobType) map[string]
 	return latestJobs
 }
 
+func GetTriggeredAndPendingProwJobs(pjs []kube.ProwJob, jobType kube.ProwJobType) map[string][]kube.ProwJob {
+	runningJobs := make(map[string][]kube.ProwJob)
+	for _, j := range pjs {
+		if j.Spec.Type != jobType {
+			continue
+		}
+		switch j.Status.State {
+		case kube.TriggeredState, kube.PendingState:
+		default:
+			continue
+		}
+		name := j.Spec.Job
+		runningJobs[name] = append(runningJobs[name], j)
+	}
+	return runningJobs
+}
+
 // ProwJobFields extracts logrus fields from a prowjob useful for logging.
 func ProwJobFields(pj *kube.ProwJob) logrus.Fields {
 	fields := make(logrus.Fields)
