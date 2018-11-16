@@ -82,7 +82,6 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=cos_containerd
       - --gcp-zone=us-central1-f
-      - --ginkgo-parallel
       - --gke-create-command=container clusters create --quiet --enable-kubernetes-alpha
       - --gke-environment=test
       - --provider=gke
@@ -248,7 +247,6 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
-      - --ginkgo-parallel
       - --gke-create-command=container clusters create --quiet --enable-kubernetes-alpha
       - --gke-environment=test
       - --provider=gke
