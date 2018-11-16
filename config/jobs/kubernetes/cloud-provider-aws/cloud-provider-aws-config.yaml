@@ -1,0 +1,38 @@
+presubmits:
+  kubernetes/cloud-provider-aws:
+  - name: pull-cloud-provider-aws-check
+    always_run: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --scenario=execute
+        - --
+        - make
+        - check
+
+  - name: pull-cloud-provider-aws-test
+    always_run: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --scenario=execute
+        - --
+        - make
+        - test
+
