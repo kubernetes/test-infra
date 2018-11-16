@@ -86,7 +86,7 @@ periodics:
       - --gke-create-command=container clusters create --quiet --enable-kubernetes-alpha
       - --gke-environment=test
       - --provider=gke
-      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes|NodeLease)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
 
@@ -252,7 +252,7 @@ periodics:
       - --gke-create-command=container clusters create --quiet --enable-kubernetes-alpha
       - --gke-environment=test
       - --provider=gke
-      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes|NodeLease)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
 
