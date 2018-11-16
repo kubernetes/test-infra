@@ -16,7 +16,7 @@ ts_library(
 
 rollup_bundle(
     name = "browser_bundle",
-    entry_point = "gopherage/cmd/html/static/browser",
+    entry_point = "test_infra/gopherage/cmd/html/static/browser",
     deps = [
         ":browser",
     ],
