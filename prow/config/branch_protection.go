@@ -43,11 +43,6 @@ func (p Policy) defined() bool {
 	return p.Protect != nil || p.RequiredStatusChecks != nil || p.Admins != nil || p.Restrictions != nil || p.RequiredPullRequestReviews != nil
 }
 
-// HasProtect returns true if the policy defines protection
-func (p Policy) HasProtect() bool {
-	return p.Protect != nil
-}
-
 // ContextPolicy configures required github contexts.
 // When merging policies, contexts are appended to context list from parent.
 // Strict determines whether merging to the branch invalidates existing contexts.
@@ -168,16 +163,61 @@ type BranchProtection struct {
 	AllowDisabledPolicies bool           `json:"allow_disabled_policies,omitempty"`
 }
 
+// GetOrg returns the org config after merging in any global policies.
+func (bp BranchProtection) GetOrg(name string) (*Org, error) {
+	o, ok := bp.Orgs[name]
+	if ok {
+		var err error
+		if o.Policy, err = bp.Apply(o.Policy); err != nil {
+			return nil, err
+		}
+	} else {
+		o.Policy = bp.Policy
+	}
+	return &o, nil
+}
+
 // Org holds the default protection policy for an entire org, as well as any repo overrides.
 type Org struct {
 	Policy
 	Repos map[string]Repo `json:"repos,omitempty"`
 }
 
+// GetRepo returns the repo config after merging in any org policies.
+func (o Org) GetRepo(name string) (*Repo, error) {
+	r, ok := o.Repos[name]
+	if ok {
+		var err error
+		if r.Policy, err = o.Apply(r.Policy); err != nil {
+			return nil, err
+		}
+	} else {
+		r.Policy = o.Policy
+	}
+	return &r, nil
+}
+
 // Repo holds protection policy overrides for all branches in a repo, as well as specific branch overrides.
 type Repo struct {
 	Policy
 	Branches map[string]Branch `json:"branches,omitempty"`
+}
+
+// GetBranch returns the branch config after merging in any repo policies.
+func (r Repo) GetBranch(name string) (*Branch, error) {
+	b, ok := r.Branches[name]
+	if ok {
+		var err error
+		if b.Policy, err = r.Apply(b.Policy); err != nil {
+			return nil, err
+		}
+		if b.Protect == nil {
+			return nil, errors.New("defined branch policies must set protect")
+		}
+	} else {
+		b.Policy = r.Policy
+	}
+	return &b, nil
 }
 
 // Branch holds protection policy overrides for a particular branch.
@@ -189,36 +229,24 @@ type Branch struct {
 //
 // Handles merging any policies defined at repo/org/global levels into the branch policy.
 func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) {
-	bp := c.BranchProtection
-	var policy Policy
-	policy, err := policy.Apply(bp.Policy)
-	if err != nil {
-		return nil, err
+	if _, present := c.BranchProtection.Orgs[org]; !present {
+		return nil, nil // only consider branches in configured orgs
+	}
+	var b *Branch
+	if o, err := c.BranchProtection.GetOrg(org); err != nil {
+		return nil, fmt.Errorf("org: %v", err)
+	} else if r, err := o.GetRepo(repo); err != nil {
+		return nil, fmt.Errorf("repo: %v", err)
+	} else if b, err = r.GetBranch(branch); err != nil {
+		return nil, fmt.Errorf("branch: %v", err)
 	}
 
-	if o, ok := bp.Orgs[org]; ok {
-		policy, err = policy.Apply(o.Policy)
-		if err != nil {
-			return nil, err
-		}
-		if r, ok := o.Repos[repo]; ok {
-			policy, err = policy.Apply(r.Policy)
-			if err != nil {
-				return nil, err
-			}
-			if b, ok := r.Branches[branch]; ok {
-				policy, err = policy.Apply(b.Policy)
-				if err != nil {
-					return nil, err
-				}
-				if policy.Protect == nil {
-					return nil, errors.New("defined branch policies must set protect")
-				}
-			}
-		}
-	} else {
-		return nil, nil
-	}
+	return c.GetPolicy(org, repo, branch, *b)
+}
+
+// GetPolicy returns the protection policy for the branch, after merging in presubmits.
+func (c *Config) GetPolicy(org, repo, branch string, b Branch) (*Policy, error) {
+	policy := b.Policy
 
 	// Automatically require any required prow jobs
 	if prowContexts, _ := BranchRequirements(org, repo, branch, c.Presubmits); len(prowContexts) > 0 {
@@ -232,12 +260,12 @@ func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) 
 			},
 		}
 		// Require protection by default if ProtectTested is true
-		if bp.ProtectTested {
+		if c.BranchProtection.ProtectTested {
 			yes := true
 			ps.Protect = &yes
 		}
-		policy, err = policy.Apply(ps)
-		if err != nil {
+		var err error
+		if policy, err = policy.Apply(ps); err != nil {
 			return nil, err
 		}
 	}
@@ -247,7 +275,7 @@ func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) 
 		var old *bool
 		old, policy.Protect = policy.Protect, old
 		switch {
-		case policy.defined() && bp.AllowDisabledPolicies:
+		case policy.defined() && c.BranchProtection.AllowDisabledPolicies:
 			logrus.Warnf("%s/%s=%s defines a policy but has protect: false", org, repo, branch)
 			policy = Policy{
 				Protect: policy.Protect,

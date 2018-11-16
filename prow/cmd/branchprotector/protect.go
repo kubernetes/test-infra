@@ -166,9 +166,11 @@ func (p *protector) protect() {
 	bp := p.cfg.BranchProtection
 
 	// Scan the branch-protection configuration
-	for orgName, org := range bp.Orgs {
-		if err := p.UpdateOrg(orgName, org, bp.HasProtect()); err != nil {
-			p.errors.add(err)
+	for orgName := range bp.Orgs {
+		if org, err := bp.GetOrg(orgName); err != nil {
+			p.errors.add(fmt.Errorf("get %s: %v", orgName, err))
+		} else if err = p.UpdateOrg(orgName, *org); err != nil {
+			p.errors.add(fmt.Errorf("update %s: %v", orgName, err))
 		}
 	}
 
@@ -184,24 +186,29 @@ func (p *protector) protect() {
 		}
 		parts := strings.Split(repo, "/")
 		if len(parts) != 2 { // TODO(fejta): use a strong type here instead
-			logrus.Fatalf("Bad repo: %s", repo)
+			p.errors.add(fmt.Errorf("bad presubmit repo: %s", repo))
+			continue
 		}
 		orgName := parts[0]
 		repoName := parts[1]
-		if err := p.UpdateRepo(orgName, repoName, config.Repo{}); err != nil {
-			p.errors.add(err)
+		if org, err := bp.GetOrg(orgName); err != nil {
+			p.errors.add(fmt.Errorf("get %s: %v", orgName, err))
+		} else if repo, err := org.GetRepo(repoName); err != nil {
+			p.errors.add(fmt.Errorf("get %s/%s: %v", orgName, repoName, err))
+		} else if err = p.UpdateRepo(orgName, repoName, *repo); err != nil {
+			p.errors.add(fmt.Errorf("update %s/%s: %v", orgName, repoName, err))
 		}
 	}
 }
 
 // UpdateOrg updates all repos in the org with the specified defaults
-func (p *protector) UpdateOrg(orgName string, org config.Org, allRepos bool) error {
+func (p *protector) UpdateOrg(orgName string, org config.Org) error {
 	var repos []string
-	if allRepos {
+	if org.Protect != nil {
 		// Strongly opinionated org, configure every repo in the org.
 		rs, err := p.client.GetRepos(orgName, false)
 		if err != nil {
-			return fmt.Errorf("GetRepos(%s) failed: %v", orgName, err)
+			return fmt.Errorf("list repos: %v", err)
 		}
 		for _, r := range rs {
 			if !r.Archived {
@@ -216,42 +223,45 @@ func (p *protector) UpdateOrg(orgName string, org config.Org, allRepos bool) err
 	}
 
 	for _, repoName := range repos {
-		err := p.UpdateRepo(orgName, repoName, org.Repos[repoName])
-		if err != nil {
-			return err
+		if repo, err := org.GetRepo(repoName); err != nil {
+			return fmt.Errorf("get %s: %v", repoName, err)
+		} else if err = p.UpdateRepo(orgName, repoName, *repo); err != nil {
+			return fmt.Errorf("update %s: %v", repoName, err)
 		}
 	}
 	return nil
 }
 
 // UpdateRepo updates all branches in the repo with the specified defaults
-func (p *protector) UpdateRepo(orgName string, repo string, repoDefaults config.Repo) error {
-	p.completedRepos[orgName+"/"+repo] = true
+func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo) error {
+	p.completedRepos[orgName+"/"+repoName] = true
 
 	branches := map[string]github.Branch{}
-	for _, onlyProtected := range []bool{false, true} { // put true second so it becomes the value
-		bs, err := p.client.GetBranches(orgName, repo, onlyProtected)
+	for _, onlyProtected := range []bool{false, true} { // put true second so b.Protected is set correctly
+		bs, err := p.client.GetBranches(orgName, repoName, onlyProtected)
 		if err != nil {
-			return fmt.Errorf("GetBranches(%s, %s, %t) failed: %v", orgName, repo, onlyProtected, err)
+			return fmt.Errorf("list branches: %v", err)
 		}
 		for _, b := range bs {
 			branches[b.Name] = b
 		}
 	}
 
-	for bn, branch := range branches {
-		if err := p.UpdateBranch(orgName, repo, bn, branch.Protected); err != nil {
-			return fmt.Errorf("UpdateBranch(%s, %s, %s, %t) failed: %v", orgName, repo, bn, branch.Protected, err)
+	for bn, githubBranch := range branches {
+		if branch, err := repo.GetBranch(bn); err != nil {
+			return fmt.Errorf("get %s: %v", bn, err)
+		} else if err = p.UpdateBranch(orgName, repoName, bn, *branch, githubBranch.Protected); err != nil {
+			return fmt.Errorf("update %s from protected=%t: %v", bn, githubBranch.Protected, err)
 		}
 	}
 	return nil
 }
 
 // UpdateBranch updates the branch with the specified configuration
-func (p *protector) UpdateBranch(orgName, repo string, branchName string, protected bool) error {
-	bp, err := p.cfg.GetBranchProtection(orgName, repo, branchName) // this merges parent config into children
+func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch config.Branch, protected bool) error {
+	bp, err := p.cfg.GetPolicy(orgName, repo, branchName, branch)
 	if err != nil {
-		return err
+		return fmt.Errorf("get policy: %v", err)
 	}
 	if bp == nil || bp.Protect == nil {
 		return nil
@@ -271,6 +281,5 @@ func (p *protector) UpdateBranch(orgName, repo string, branchName string, protec
 		Branch:  branchName,
 		Request: req,
 	}
-
 	return nil
 }

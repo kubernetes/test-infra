@@ -325,6 +325,39 @@ branch-protection:
 			},
 		},
 		{
+			name:     "protect all repos when protection configured at org level",
+			branches: []string{"kubernetes/test-infra=master", "kubernetes/publishing-bot=master"},
+			config: `
+branch-protection:
+  orgs:
+    kubernetes:
+      protect: true
+      repos:
+        test-infra:
+          required_status_checks:
+            contexts:
+            - hello-world
+`,
+			expected: []requirements{
+				{
+					Org:    "kubernetes",
+					Repo:   "test-infra",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						RequiredStatusChecks: &github.RequiredStatusChecks{
+							Contexts: []string{"hello-world"},
+						},
+					},
+				},
+				{
+					Org:     "kubernetes",
+					Repo:    "publishing-bot",
+					Branch:  "master",
+					Request: &github.BranchProtectionRequest{},
+				},
+			},
+		},
+		{
 			name:     "require a defined branch to make a protection decision",
 			branches: []string{"org/repo=branch"},
 			config: `
