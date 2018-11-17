@@ -942,7 +942,7 @@ periodics:
         value: /go
 
 - name: ci-cri-containerd-node-e2e-serial
-  interval: 4h
+  interval: 4h30m
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -953,7 +953,7 @@ periodics:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
       - --repo=github.com/containerd/cri=master
-      - --timeout=240
+      - --timeout=265
       - --scenario=kubernetes_e2e
       - --
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml
@@ -964,7 +964,7 @@ periodics:
       - --node-tests=true
       - --provider=gce
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeAlphaFeature:.+\]"
-      - --timeout=220m
+      - --timeout=245m
       env:
       - name: GOPATH
         value: /go
