@@ -42,7 +42,7 @@ set -o nounset
 # these can be overridden but otherwise default to the current stable image
 # used to build kubernetes from the master branch
 IMAGE_NAME="${IMAGE_NAME:-gcr.io/k8s-testimages/planter}"
-TAG="${TAG:-0.18.0}"
+TAG="${TAG:-0.18.1}"
 IMAGE=${IMAGE:-${IMAGE_NAME}:${TAG}}
 
 # We want to mount our bazel workspace and the bazel cache
