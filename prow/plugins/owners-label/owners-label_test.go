@@ -184,8 +184,8 @@ func TestHandle(t *testing.T) {
 			PullRequestChanges: map[int][]github.PullRequestChange{
 				basicPR.Number: changes,
 			},
-			ExistingLabels: tc.repoLabels,
-			LabelsAdded:    []string{},
+			RepoLabelsExisting: tc.repoLabels,
+			IssueLabelsAdded:   []string{},
 		}
 		// Add initial labels
 		for _, label := range tc.issueLabels {
@@ -210,9 +210,9 @@ func TestHandle(t *testing.T) {
 			expectLabels = []string{}
 		}
 		sort.Strings(expectLabels)
-		sort.Strings(fghc.LabelsAdded)
-		if !reflect.DeepEqual(expectLabels, fghc.LabelsAdded) {
-			t.Errorf("expected the labels %q to be added, but %q were added.", expectLabels, fghc.LabelsAdded)
+		sort.Strings(fghc.IssueLabelsAdded)
+		if !reflect.DeepEqual(expectLabels, fghc.IssueLabelsAdded) {
+			t.Errorf("expected the labels %q to be added, but %q were added.", expectLabels, fghc.IssueLabelsAdded)
 		}
 
 	}

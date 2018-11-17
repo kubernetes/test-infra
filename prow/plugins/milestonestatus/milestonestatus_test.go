@@ -148,9 +148,9 @@ func TestMilestoneStatus(t *testing.T) {
 		// Check that the correct labels were added.
 		expectLabels := formatLabels(tc.expectedNewLabels...)
 		sort.Strings(expectLabels)
-		sort.Strings(fakeClient.LabelsAdded)
-		if !reflect.DeepEqual(expectLabels, fakeClient.LabelsAdded) {
-			t.Errorf("(%s): Expected issue to end with labels %q, but ended with %q.", tc.name, expectLabels, fakeClient.LabelsAdded)
+		sort.Strings(fakeClient.IssueLabelsAdded)
+		if !reflect.DeepEqual(expectLabels, fakeClient.IssueLabelsAdded) {
+			t.Errorf("(%s): Expected issue to end with labels %q, but ended with %q.", tc.name, expectLabels, fakeClient.IssueLabelsAdded)
 		}
 
 		// Check that a comment was left iff one should have been left.

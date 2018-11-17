@@ -432,12 +432,12 @@ func TestLabel(t *testing.T) {
 		t.Logf("Running scenario %q", tc.name)
 		sort.Strings(tc.expectedNewLabels)
 		fakeClient := &fakegithub.FakeClient{
-			Issues:         make([]github.Issue, 1),
-			IssueComments:  make(map[int][]github.IssueComment),
-			ExistingLabels: tc.repoLabels,
-			OrgMembers:     map[string][]string{"org": {orgMember}},
-			LabelsAdded:    []string{},
-			LabelsRemoved:  []string{},
+			Issues:             make([]github.Issue, 1),
+			IssueComments:      make(map[int][]github.IssueComment),
+			RepoLabelsExisting: tc.repoLabels,
+			OrgMembers:         map[string][]string{"org": {orgMember}},
+			IssueLabelsAdded:   []string{},
+			IssueLabelsRemoved: []string{},
 		}
 		// Add initial labels
 		for _, label := range tc.issueLabels {
@@ -462,15 +462,15 @@ func TestLabel(t *testing.T) {
 			expectLabels = []string{}
 		}
 		sort.Strings(expectLabels)
-		sort.Strings(fakeClient.LabelsAdded)
-		if !reflect.DeepEqual(expectLabels, fakeClient.LabelsAdded) {
-			t.Errorf("expected the labels %q to be added, but %q were added.", expectLabels, fakeClient.LabelsAdded)
+		sort.Strings(fakeClient.IssueLabelsAdded)
+		if !reflect.DeepEqual(expectLabels, fakeClient.IssueLabelsAdded) {
+			t.Errorf("expected the labels %q to be added, but %q were added.", expectLabels, fakeClient.IssueLabelsAdded)
 		}
 
 		sort.Strings(tc.expectedRemovedLabels)
-		sort.Strings(fakeClient.LabelsRemoved)
-		if !reflect.DeepEqual(tc.expectedRemovedLabels, fakeClient.LabelsRemoved) {
-			t.Errorf("expected the labels %q to be removed, but %q were removed.", tc.expectedRemovedLabels, fakeClient.LabelsRemoved)
+		sort.Strings(fakeClient.IssueLabelsRemoved)
+		if !reflect.DeepEqual(tc.expectedRemovedLabels, fakeClient.IssueLabelsRemoved) {
+			t.Errorf("expected the labels %q to be removed, but %q were removed.", tc.expectedRemovedLabels, fakeClient.IssueLabelsRemoved)
 		}
 		if len(fakeClient.IssueCommentsAdded) > 0 && !tc.expectedBotComment {
 			t.Errorf("unexpected bot comments: %#v", fakeClient.IssueCommentsAdded)

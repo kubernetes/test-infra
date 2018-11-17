@@ -47,11 +47,11 @@ type FakeClient struct {
 	Commits             map[string]github.SingleCommit
 
 	//All Labels That Exist In The Repo
-	ExistingLabels []string
+	RepoLabelsExisting []string
 	// org/repo#number:label
-	LabelsAdded         []string
+	IssueLabelsAdded    []string
 	IssueLabelsExisting []string
-	LabelsRemoved       []string
+	IssueLabelsRemoved  []string
 
 	// org/repo#number:body
 	IssueCommentsAdded []string
@@ -226,7 +226,7 @@ func (f *FakeClient) GetCombinedStatus(owner, repo, ref string) (*github.Combine
 // GetRepoLabels gets labels in a repo.
 func (f *FakeClient) GetRepoLabels(owner, repo string) ([]github.Label, error) {
 	la := []github.Label{}
-	for _, l := range f.ExistingLabels {
+	for _, l := range f.RepoLabelsExisting {
 		la = append(la, github.Label{Name: l})
 	}
 	return la, nil
@@ -237,8 +237,8 @@ func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.La
 	re := regexp.MustCompile(fmt.Sprintf(`^%s/%s#%d:(.*)$`, owner, repo, number))
 	la := []github.Label{}
 	allLabels := sets.NewString(f.IssueLabelsExisting...)
-	allLabels.Insert(f.LabelsAdded...)
-	allLabels.Delete(f.LabelsRemoved...)
+	allLabels.Insert(f.IssueLabelsAdded...)
+	allLabels.Delete(f.IssueLabelsRemoved...)
 	for _, l := range allLabels.List() {
 		groups := re.FindStringSubmatch(l)
 		if groups != nil {
@@ -251,16 +251,16 @@ func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.La
 // AddLabel adds a label
 func (f *FakeClient) AddLabel(owner, repo string, number int, label string) error {
 	labelString := fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label)
-	if sets.NewString(f.LabelsAdded...).Has(labelString) {
+	if sets.NewString(f.IssueLabelsAdded...).Has(labelString) {
 		return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
 	}
-	if f.ExistingLabels == nil {
-		f.LabelsAdded = append(f.LabelsAdded, labelString)
+	if f.RepoLabelsExisting == nil {
+		f.IssueLabelsAdded = append(f.IssueLabelsAdded, labelString)
 		return nil
 	}
-	for _, l := range f.ExistingLabels {
+	for _, l := range f.RepoLabelsExisting {
 		if label == l {
-			f.LabelsAdded = append(f.LabelsAdded, labelString)
+			f.IssueLabelsAdded = append(f.IssueLabelsAdded, labelString)
 			return nil
 		}
 	}
@@ -270,8 +270,8 @@ func (f *FakeClient) AddLabel(owner, repo string, number int, label string) erro
 // RemoveLabel removes a label
 func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) error {
 	labelString := fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label)
-	if !sets.NewString(f.LabelsRemoved...).Has(labelString) {
-		f.LabelsRemoved = append(f.LabelsRemoved, labelString)
+	if !sets.NewString(f.IssueLabelsRemoved...).Has(labelString) {
+		f.IssueLabelsRemoved = append(f.IssueLabelsRemoved, labelString)
 		return nil
 	}
 	return fmt.Errorf("cannot remove %v from %s/%s/#%d", label, owner, repo, number)

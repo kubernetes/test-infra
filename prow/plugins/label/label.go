@@ -126,9 +126,9 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 		return err
 	}
 
-	existingLabels := map[string]string{}
+	RepoLabelsExisting := map[string]string{}
 	for _, l := range repoLabels {
-		existingLabels[strings.ToLower(l.Name)] = l.Name
+		RepoLabelsExisting[strings.ToLower(l.Name)] = l.Name
 	}
 	var (
 		nonexistent         []string
@@ -147,12 +147,12 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 			continue
 		}
 
-		if _, ok := existingLabels[labelToAdd]; !ok {
+		if _, ok := RepoLabelsExisting[labelToAdd]; !ok {
 			nonexistent = append(nonexistent, labelToAdd)
 			continue
 		}
 
-		if err := gc.AddLabel(org, repo, e.Number, existingLabels[labelToAdd]); err != nil {
+		if err := gc.AddLabel(org, repo, e.Number, RepoLabelsExisting[labelToAdd]); err != nil {
 			log.WithError(err).Errorf("Github failed to add the following label: %s", labelToAdd)
 		}
 	}
@@ -164,7 +164,7 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 			continue
 		}
 
-		if _, ok := existingLabels[labelToRemove]; !ok {
+		if _, ok := RepoLabelsExisting[labelToRemove]; !ok {
 			nonexistent = append(nonexistent, labelToRemove)
 			continue
 		}

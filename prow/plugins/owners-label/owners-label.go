@@ -81,9 +81,9 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, pre *github.Pu
 		return err
 	}
 
-	existingLabels := sets.NewString()
+	RepoLabelsExisting := sets.NewString()
 	for _, label := range repoLabels {
-		existingLabels.Insert(label.Name)
+		RepoLabelsExisting.Insert(label.Name)
 	}
 	changes, err := ghc.GetPullRequestChanges(org, repo, number)
 	if err != nil {
@@ -101,7 +101,7 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, pre *github.Pu
 	nonexistent := sets.NewString()
 
 	for _, labelToAdd := range neededLabels.Difference(currentLabels).List() {
-		if !existingLabels.Has(labelToAdd) {
+		if !RepoLabelsExisting.Has(labelToAdd) {
 			nonexistent.Insert(labelToAdd)
 			continue
 		}

@@ -181,24 +181,24 @@ func TestHandle(t *testing.T) {
 			t.Errorf("[%s] Expected no comments to be created but got %d.", test.name, got)
 		}
 
-		if count := len(fghc.LabelsAdded); test.expectedAdd == "" && count != 0 {
-			t.Errorf("[%s] Unexpected labels added: %q.", test.name, fghc.LabelsAdded)
+		if count := len(fghc.IssueLabelsAdded); test.expectedAdd == "" && count != 0 {
+			t.Errorf("[%s] Unexpected labels added: %q.", test.name, fghc.IssueLabelsAdded)
 		} else if test.expectedAdd != "" && count == 1 {
-			if expected, got := "/#5:"+test.expectedAdd, fghc.LabelsAdded[0]; got != expected {
+			if expected, got := "/#5:"+test.expectedAdd, fghc.IssueLabelsAdded[0]; got != expected {
 				t.Errorf("[%s] Expected label %q to be added but got %q.", test.name, expected, got)
 			}
 		} else if test.expectedAdd != "" && count > 1 {
-			t.Errorf("[%s] Expected label \"/#5:%s\" to be added but got %q.", test.name, test.expectedAdd, fghc.LabelsAdded)
+			t.Errorf("[%s] Expected label \"/#5:%s\" to be added but got %q.", test.name, test.expectedAdd, fghc.IssueLabelsAdded)
 		}
 
-		if count := len(fghc.LabelsRemoved); test.expectedRemove == "" && count != 0 {
-			t.Errorf("[%s] Unexpected labels removed: %q.", test.name, fghc.LabelsRemoved)
+		if count := len(fghc.IssueLabelsRemoved); test.expectedRemove == "" && count != 0 {
+			t.Errorf("[%s] Unexpected labels removed: %q.", test.name, fghc.IssueLabelsRemoved)
 		} else if test.expectedRemove != "" && count == 1 {
-			if expected, got := "/#5:"+test.expectedRemove, fghc.LabelsRemoved[0]; got != expected {
+			if expected, got := "/#5:"+test.expectedRemove, fghc.IssueLabelsRemoved[0]; got != expected {
 				t.Errorf("[%s] Expected label %q to be removed but got %q.", test.name, expected, got)
 			}
 		} else if test.expectedRemove != "" && count > 1 {
-			t.Errorf("[%s] Expected label \"/#5:%s\" to be removed but got %q.", test.name, test.expectedRemove, fghc.LabelsRemoved)
+			t.Errorf("[%s] Expected label \"/#5:%s\" to be removed but got %q.", test.name, test.expectedRemove, fghc.IssueLabelsRemoved)
 		}
 	}
 }

@@ -162,12 +162,12 @@ func TestCLALabels(t *testing.T) {
 			continue
 		}
 
-		if !reflect.DeepEqual(fc.LabelsAdded, tc.addedLabels) {
-			t.Errorf("Expected: %#v, Got %#v in case %s.", tc.addedLabels, fc.LabelsAdded, tc.name)
+		if !reflect.DeepEqual(fc.IssueLabelsAdded, tc.addedLabels) {
+			t.Errorf("Expected: %#v, Got %#v in case %s.", tc.addedLabels, fc.IssueLabelsAdded, tc.name)
 		}
 
-		if !reflect.DeepEqual(fc.LabelsRemoved, tc.removedLabels) {
-			t.Errorf("Expected: %#v, Got %#v in case %s.", tc.removedLabels, fc.LabelsRemoved, tc.name)
+		if !reflect.DeepEqual(fc.IssueLabelsRemoved, tc.removedLabels) {
+			t.Errorf("Expected: %#v, Got %#v in case %s.", tc.removedLabels, fc.IssueLabelsRemoved, tc.name)
 		}
 	}
 }
@@ -352,17 +352,17 @@ func TestCheckCLA(t *testing.T) {
 				},
 			}
 			if tc.hasCLAYes {
-				fc.LabelsAdded = append(fc.LabelsAdded, fmt.Sprintf("/#3:%s", labels.ClaYes))
+				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", labels.ClaYes))
 			}
 			if tc.hasCLANo {
-				fc.LabelsAdded = append(fc.LabelsAdded, fmt.Sprintf("/#3:%s", labels.ClaNo))
+				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", labels.ClaNo))
 			}
 			if err := handleComment(fc, logrus.WithField("plugin", pluginName), e); err != nil {
 				t.Errorf("For case %s, didn't expect error from cla plugin: %v", tc.name, err)
 			}
 			ok := tc.addedLabel == ""
 			if !ok {
-				for _, label := range fc.LabelsAdded {
+				for _, label := range fc.IssueLabelsAdded {
 					if reflect.DeepEqual(tc.addedLabel, label) {
 						ok = true
 						break
@@ -370,11 +370,11 @@ func TestCheckCLA(t *testing.T) {
 				}
 			}
 			if !ok {
-				t.Errorf("Expected to add: %#v, Got %#v in case %s.", tc.addedLabel, fc.LabelsAdded, tc.name)
+				t.Errorf("Expected to add: %#v, Got %#v in case %s.", tc.addedLabel, fc.IssueLabelsAdded, tc.name)
 			}
 			ok = tc.removedLabel == ""
 			if !ok {
-				for _, label := range fc.LabelsRemoved {
+				for _, label := range fc.IssueLabelsRemoved {
 					if reflect.DeepEqual(tc.removedLabel, label) {
 						ok = true
 						break
@@ -382,7 +382,7 @@ func TestCheckCLA(t *testing.T) {
 				}
 			}
 			if !ok {
-				t.Errorf("Expected to remove: %#v, Got %#v in case %s.", tc.removedLabel, fc.LabelsRemoved, tc.name)
+				t.Errorf("Expected to remove: %#v, Got %#v in case %s.", tc.removedLabel, fc.IssueLabelsRemoved, tc.name)
 			}
 		})
 	}

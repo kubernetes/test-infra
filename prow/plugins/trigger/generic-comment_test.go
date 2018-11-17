@@ -685,10 +685,10 @@ func validate(kc *fkc, g *fakegithub.FakeClient, tc testcase, t *testing.T) {
 	} else if !tc.ShouldReport && len(g.CreatedStatuses) > 0 {
 		t.Errorf("Expected no reports to github, but got %d", len(g.CreatedStatuses))
 	}
-	if !reflect.DeepEqual(g.LabelsAdded, tc.AddedLabels) {
-		t.Errorf("expected %q to be added, got %q", tc.AddedLabels, g.LabelsAdded)
+	if !reflect.DeepEqual(g.IssueLabelsAdded, tc.AddedLabels) {
+		t.Errorf("expected %q to be added, got %q", tc.AddedLabels, g.IssueLabelsAdded)
 	}
-	if !reflect.DeepEqual(g.LabelsRemoved, tc.RemovedLabels) {
-		t.Errorf("expected %q to be removed, got %q", tc.RemovedLabels, g.LabelsRemoved)
+	if !reflect.DeepEqual(g.IssueLabelsRemoved, tc.RemovedLabels) {
+		t.Errorf("expected %q to be removed, got %q", tc.RemovedLabels, g.IssueLabelsRemoved)
 	}
 }

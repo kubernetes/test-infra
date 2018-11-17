@@ -175,11 +175,11 @@ func TestLabel(t *testing.T) {
 	for _, tc := range testcases {
 		sort.Strings(tc.expectedNewLabels)
 		fakeClient := &fakegithub.FakeClient{
-			Issues:         make([]github.Issue, 1),
-			IssueComments:  make(map[int][]github.IssueComment),
-			ExistingLabels: []string{labels.Help, labels.GoodFirstIssue},
-			LabelsAdded:    []string{},
-			LabelsRemoved:  []string{},
+			Issues:             make([]github.Issue, 1),
+			IssueComments:      make(map[int][]github.IssueComment),
+			RepoLabelsExisting: []string{labels.Help, labels.GoodFirstIssue},
+			IssueLabelsAdded:   []string{},
+			IssueLabelsRemoved: []string{},
 		}
 		// Add initial labels
 		for _, label := range tc.issueLabels {
@@ -214,15 +214,15 @@ func TestLabel(t *testing.T) {
 			expectLabels = []string{}
 		}
 		sort.Strings(expectLabels)
-		sort.Strings(fakeClient.LabelsAdded)
-		if !reflect.DeepEqual(expectLabels, fakeClient.LabelsAdded) {
-			t.Errorf("(%s): Expected the labels %q to be added, but %q were added.", tc.name, expectLabels, fakeClient.LabelsAdded)
+		sort.Strings(fakeClient.IssueLabelsAdded)
+		if !reflect.DeepEqual(expectLabels, fakeClient.IssueLabelsAdded) {
+			t.Errorf("(%s): Expected the labels %q to be added, but %q were added.", tc.name, expectLabels, fakeClient.IssueLabelsAdded)
 		}
 
 		sort.Strings(tc.expectedRemovedLabels)
-		sort.Strings(fakeClient.LabelsRemoved)
-		if !reflect.DeepEqual(tc.expectedRemovedLabels, fakeClient.LabelsRemoved) {
-			t.Errorf("(%s): Expected the labels %q to be removed, but %q were removed.", tc.name, tc.expectedRemovedLabels, fakeClient.LabelsRemoved)
+		sort.Strings(fakeClient.IssueLabelsRemoved)
+		if !reflect.DeepEqual(tc.expectedRemovedLabels, fakeClient.IssueLabelsRemoved) {
+			t.Errorf("(%s): Expected the labels %q to be removed, but %q were removed.", tc.name, tc.expectedRemovedLabels, fakeClient.IssueLabelsRemoved)
 		}
 	}
 }

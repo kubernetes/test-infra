@@ -46,17 +46,17 @@ type fghc struct {
 	mergeable     bool
 
 	// The following are maps are keyed using 'testKey'
-	commentCreated, commentDeleted map[string]bool
-	labelsAdded, labelsRemoved     map[string][]string
+	commentCreated, commentDeleted       map[string]bool
+	IssueLabelsAdded, IssueLabelsRemoved map[string][]string
 }
 
 func newFakeClient(prs []pullRequest, initialLabels []string, mergeable bool) *fghc {
 	f := &fghc{
-		mergeable:      mergeable,
-		commentCreated: make(map[string]bool),
-		commentDeleted: make(map[string]bool),
-		labelsAdded:    make(map[string][]string),
-		labelsRemoved:  make(map[string][]string),
+		mergeable:          mergeable,
+		commentCreated:     make(map[string]bool),
+		commentDeleted:     make(map[string]bool),
+		IssueLabelsAdded:   make(map[string][]string),
+		IssueLabelsRemoved: make(map[string][]string),
 	}
 	for _, pr := range prs {
 		s := struct {
@@ -85,13 +85,13 @@ func (f *fghc) BotName() (string, error) {
 
 func (f *fghc) AddLabel(org, repo string, number int, label string) error {
 	key := testKey(org, repo, number)
-	f.labelsAdded[key] = append(f.labelsAdded[key], label)
+	f.IssueLabelsAdded[key] = append(f.IssueLabelsAdded[key], label)
 	return nil
 }
 
 func (f *fghc) RemoveLabel(org, repo string, number int, label string) error {
 	key := testKey(org, repo, number)
-	f.labelsRemoved[key] = append(f.labelsRemoved[key], label)
+	f.IssueLabelsRemoved[key] = append(f.IssueLabelsRemoved[key], label)
 	return nil
 }
 
@@ -117,13 +117,13 @@ func (f *fghc) compareExpected(t *testing.T, org, repo string, num int, expected
 	key := testKey(org, repo, num)
 	sort.Strings(expectedAdded)
 	sort.Strings(expectedRemoved)
-	sort.Strings(f.labelsAdded[key])
-	sort.Strings(f.labelsRemoved[key])
-	if !reflect.DeepEqual(expectedAdded, f.labelsAdded[key]) {
-		t.Errorf("Expected the following labels to be added to %s: %q, but got %q.", key, expectedAdded, f.labelsAdded[key])
+	sort.Strings(f.IssueLabelsAdded[key])
+	sort.Strings(f.IssueLabelsRemoved[key])
+	if !reflect.DeepEqual(expectedAdded, f.IssueLabelsAdded[key]) {
+		t.Errorf("Expected the following labels to be added to %s: %q, but got %q.", key, expectedAdded, f.IssueLabelsAdded[key])
 	}
-	if !reflect.DeepEqual(expectedRemoved, f.labelsRemoved[key]) {
-		t.Errorf("Expected the following labels to be removed from %s: %q, but got %q.", key, expectedRemoved, f.labelsRemoved[key])
+	if !reflect.DeepEqual(expectedRemoved, f.IssueLabelsRemoved[key]) {
+		t.Errorf("Expected the following labels to be removed from %s: %q, but got %q.", key, expectedRemoved, f.IssueLabelsRemoved[key])
 	}
 	if expectComment && !f.commentCreated[key] {
 		t.Errorf("Expected a comment to be created on %s, but none was.", key)

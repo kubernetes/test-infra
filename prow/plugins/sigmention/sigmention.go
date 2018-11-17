@@ -104,15 +104,15 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 	if err != nil {
 		return err
 	}
-	existingLabels := map[string]string{}
+	RepoLabelsExisting := map[string]string{}
 	for _, l := range repoLabels {
-		existingLabels[strings.ToLower(l.Name)] = l.Name
+		RepoLabelsExisting[strings.ToLower(l.Name)] = l.Name
 	}
 
 	var nonexistent, toRepeat []string
 	for _, sigMatch := range sigMatches {
 		sigLabel := strings.ToLower("sig" + "/" + sigMatch[1])
-		sigLabel, ok := existingLabels[sigLabel]
+		sigLabel, ok := RepoLabelsExisting[sigLabel]
 		if !ok {
 			nonexistent = append(nonexistent, "sig/"+sigMatch[1])
 			continue
