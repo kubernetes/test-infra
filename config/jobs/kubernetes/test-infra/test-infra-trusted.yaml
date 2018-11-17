@@ -93,3 +93,26 @@ periodics:
     - name: github
       secret:
         secretName: oauth-token
+- interval: 24h
+  name: ci-test-infra-autobump-prow
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/gcloud-bazel:v20181107-d88dbbf
+      command:
+      - prow/autobump.sh
+      args:
+      - k8s-ci-robot
+      - /etc/github-token/oauth
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+    volumes:
+    - name: github
+      secret:
+        secretName: oauth-token
