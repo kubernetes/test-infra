@@ -1575,7 +1575,7 @@ presubmits:
       max_concurrency: 8
       name: pull-security-kubernetes-e2e-kubeadm-gce
       rerun_command: /test pull-security-kubernetes-e2e-kubeadm-gce
-      run_if_changed: ^(cmd/kubeadm|build/debs).*$
+      run_if_changed: ^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$
       skip_branches:
       - release-1.13
       - release-1.10
@@ -1676,7 +1676,7 @@ presubmits:
       max_concurrency: 8
       name: pull-security-kubernetes-e2e-kubeadm-gce
       rerun_command: /test pull-security-kubernetes-e2e-kubeadm-gce
-      run_if_changed: ^(cmd/kubeadm|build/debs).*$
+      run_if_changed: ^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$
       skip_report: true
       spec:
         containers:
@@ -1771,7 +1771,7 @@ presubmits:
       max_concurrency: 8
       name: pull-security-kubernetes-e2e-kubeadm-gce
       rerun_command: /test pull-security-kubernetes-e2e-kubeadm-gce
-      run_if_changed: ^(cmd/kubeadm|build/debs).*$
+      run_if_changed: ^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$
       skip_report: true
       spec:
         containers:
