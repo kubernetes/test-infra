@@ -152,9 +152,9 @@ func TestSigMention(t *testing.T) {
 
 	for _, tc := range testcases {
 		fakeClient := &fakegithub.FakeClient{
-			OrgMembers:     map[string][]string{"org": {orgMember, bot}},
-			ExistingLabels: tc.repoLabels,
-			IssueComments:  make(map[int][]github.IssueComment),
+			OrgMembers:         map[string][]string{"org": {orgMember, bot}},
+			RepoLabelsExisting: tc.repoLabels,
+			IssueComments:      make(map[int][]github.IssueComment),
 		}
 		// Add initial labels to issue.
 		for _, label := range tc.issueLabels {
@@ -186,9 +186,9 @@ func TestSigMention(t *testing.T) {
 		// Check that all the correct labels (and only the correct labels) were added.
 		expectLabels := append(formatLabels(tc.expectedNewLabels), formatLabels(tc.issueLabels)...)
 		sort.Strings(expectLabels)
-		sort.Strings(fakeClient.LabelsAdded)
-		if !reflect.DeepEqual(expectLabels, fakeClient.LabelsAdded) {
-			t.Errorf("(%s): Expected issue to end with labels %q, but ended with %q.", tc.name, expectLabels, fakeClient.LabelsAdded)
+		sort.Strings(fakeClient.IssueLabelsAdded)
+		if !reflect.DeepEqual(expectLabels, fakeClient.IssueLabelsAdded) {
+			t.Errorf("(%s): Expected issue to end with labels %q, but ended with %q.", tc.name, expectLabels, fakeClient.IssueLabelsAdded)
 		}
 
 		// Check that the comment contains the correct sig mentions repeats if it exists.

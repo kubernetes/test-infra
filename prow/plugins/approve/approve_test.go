@@ -126,7 +126,7 @@ func newFakeGithubClient(hasLabel, humanApproved bool, files []string, comments 
 		changes = append(changes, github.PullRequestChange{Filename: file})
 	}
 	return &fakegithub.FakeClient{
-		LabelsAdded:        labels,
+		IssueLabelsAdded:   labels,
 		PullRequestChanges: map[int][]github.PullRequestChange{prNumber: changes},
 		IssueComments:      map[int][]github.IssueComment{prNumber: comments},
 		IssueEvents:        map[int][]github.ListedIssueEvent{prNumber: events},
@@ -1080,7 +1080,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 		}
 
 		labelAdded := false
-		for _, l := range fghc.LabelsAdded {
+		for _, l := range fghc.IssueLabelsAdded {
 			if l == fmt.Sprintf("org/repo#%v:approved", prNumber) {
 				if labelAdded {
 					t.Errorf("[%s] The approved label was applied to a PR that already had it!", test.name)
@@ -1092,7 +1092,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			labelAdded = false
 		}
 		toggled := labelAdded
-		for _, l := range fghc.LabelsRemoved {
+		for _, l := range fghc.IssueLabelsRemoved {
 			if l == fmt.Sprintf("org/repo#%v:approved", prNumber) {
 				if !test.hasLabel {
 					t.Errorf("[%s] The approved label was removed from a PR that doesn't have it!", test.name)

@@ -296,15 +296,15 @@ func TestHandle(t *testing.T) {
 	for _, tc := range tcs {
 		expectAdded := []string{}
 		fakeClient := &fakegithub.FakeClient{
-			ExistingLabels:     []string{labels.BlockedPaths, otherLabel},
+			RepoLabelsExisting: []string{labels.BlockedPaths, otherLabel},
 			IssueComments:      make(map[int][]github.IssueComment),
 			PullRequestChanges: make(map[int][]github.PullRequestChange),
-			LabelsAdded:        []string{},
-			LabelsRemoved:      []string{},
+			IssueLabelsAdded:   []string{},
+			IssueLabelsRemoved: []string{},
 		}
 		if tc.hasLabel {
 			label := formatLabel(labels.BlockedPaths)
-			fakeClient.LabelsAdded = append(fakeClient.LabelsAdded, label)
+			fakeClient.IssueLabelsAdded = append(fakeClient.IssueLabelsAdded, label)
 			expectAdded = append(expectAdded, label)
 		}
 		calcF := func(_ []github.PullRequestChange, blockades []blockade) summary {
@@ -338,18 +338,18 @@ func TestHandle(t *testing.T) {
 			expectAdded = append(expectAdded, formatLabel(tc.labelAdded))
 		}
 		sort.Strings(expectAdded)
-		sort.Strings(fakeClient.LabelsAdded)
-		if !reflect.DeepEqual(expectAdded, fakeClient.LabelsAdded) {
-			t.Errorf("[%s]: Expected labels to be added: %q, but got: %q.", tc.name, expectAdded, fakeClient.LabelsAdded)
+		sort.Strings(fakeClient.IssueLabelsAdded)
+		if !reflect.DeepEqual(expectAdded, fakeClient.IssueLabelsAdded) {
+			t.Errorf("[%s]: Expected labels to be added: %q, but got: %q.", tc.name, expectAdded, fakeClient.IssueLabelsAdded)
 		}
 		expectRemoved := []string{}
 		if tc.labelRemoved != "" {
 			expectRemoved = append(expectRemoved, formatLabel(tc.labelRemoved))
 		}
 		sort.Strings(expectRemoved)
-		sort.Strings(fakeClient.LabelsRemoved)
-		if !reflect.DeepEqual(expectRemoved, fakeClient.LabelsRemoved) {
-			t.Errorf("[%s]: Expected labels to be removed: %q, but got: %q.", tc.name, expectRemoved, fakeClient.LabelsRemoved)
+		sort.Strings(fakeClient.IssueLabelsRemoved)
+		if !reflect.DeepEqual(expectRemoved, fakeClient.IssueLabelsRemoved) {
+			t.Errorf("[%s]: Expected labels to be removed: %q, but got: %q.", tc.name, expectRemoved, fakeClient.IssueLabelsRemoved)
 		}
 
 		if count := len(fakeClient.IssueComments[1]); count > 1 {

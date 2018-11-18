@@ -180,12 +180,12 @@ func TestReleaseNoteComment(t *testing.T) {
 		if tc.shouldComment && len(fc.IssueComments[5]) == 0 {
 			t.Errorf("For case %s, didn't comment but should have.", tc.name)
 		}
-		if len(fc.LabelsAdded) > 1 {
-			t.Errorf("For case %s, added more than one label: %v", tc.name, fc.LabelsAdded)
-		} else if len(fc.LabelsAdded) == 0 && tc.addedLabel != "" {
+		if len(fc.IssueLabelsAdded) > 1 {
+			t.Errorf("For case %s, added more than one label: %v", tc.name, fc.IssueLabelsAdded)
+		} else if len(fc.IssueLabelsAdded) == 0 && tc.addedLabel != "" {
 			t.Errorf("For case %s, should have added %s but didn't.", tc.name, tc.addedLabel)
-		} else if len(fc.LabelsAdded) == 1 && fc.LabelsAdded[0] != "/#5:"+tc.addedLabel {
-			t.Errorf("For case %s, added wrong label. Got %s, expected %s", tc.name, fc.LabelsAdded[0], tc.addedLabel)
+		} else if len(fc.IssueLabelsAdded) == 1 && fc.IssueLabelsAdded[0] != "/#5:"+tc.addedLabel {
+			t.Errorf("For case %s, added wrong label. Got %s, expected %s", tc.name, fc.IssueLabelsAdded[0], tc.addedLabel)
 		}
 
 		var expectedDeleted []string
@@ -193,13 +193,13 @@ func TestReleaseNoteComment(t *testing.T) {
 			expectedDeleted = append(expectedDeleted, "/#5:"+expect)
 		}
 		sort.Strings(expectedDeleted)
-		sort.Strings(fc.LabelsRemoved)
-		if !reflect.DeepEqual(expectedDeleted, fc.LabelsRemoved) {
+		sort.Strings(fc.IssueLabelsRemoved)
+		if !reflect.DeepEqual(expectedDeleted, fc.IssueLabelsRemoved) {
 			t.Errorf(
 				"For case %s, expected %q labels to be deleted, but %q were deleted.",
 				tc.name,
 				expectedDeleted,
-				fc.LabelsRemoved,
+				fc.IssueLabelsRemoved,
 			)
 		}
 	}
@@ -226,15 +226,15 @@ func newFakeClient(body, branch string, initialLabels, comments []string, parent
 	}
 	return &fakegithub.FakeClient{
 			IssueComments: map[int][]github.IssueComment{1: issueComments},
-			ExistingLabels: []string{
+			RepoLabelsExisting: []string{
 				lgtmLabel,
 				releaseNote,
 				ReleaseNoteLabelNeeded,
 				releaseNoteNone,
 				releaseNoteActionRequired,
 			},
-			LabelsAdded:   labels,
-			LabelsRemoved: []string{},
+			IssueLabelsAdded:   labels,
+			IssueLabelsRemoved: []string{},
 		},
 		&github.PullRequestEvent{
 			Action: github.PullRequestActionEdited,
@@ -254,14 +254,14 @@ func newFakeClient(body, branch string, initialLabels, comments []string, parent
 
 func TestReleaseNotePR(t *testing.T) {
 	tests := []struct {
-		name          string
-		initialLabels []string
-		body          string
-		branch        string // Defaults to master
-		parentPRs     map[int]string
-		issueComments []string
-		labelsAdded   []string
-		labelsRemoved []string
+		name               string
+		initialLabels      []string
+		body               string
+		branch             string // Defaults to master
+		parentPRs          map[int]string
+		issueComments      []string
+		IssueLabelsAdded   []string
+		IssueLabelsRemoved []string
 	}{
 		{
 			name:          "LGTM with release-note",
@@ -301,21 +301,21 @@ func TestReleaseNotePR(t *testing.T) {
 			initialLabels: []string{lgtmLabel, ReleaseNoteLabelNeeded},
 		},
 		{
-			name:          "LGTM with do-not-merge/release-note-label-needed, /release-note-none comment",
-			initialLabels: []string{lgtmLabel, ReleaseNoteLabelNeeded},
-			issueComments: []string{"Release notes are great fun.", "Especially \n/release-note-none"},
-			labelsAdded:   []string{releaseNoteNone},
-			labelsRemoved: []string{ReleaseNoteLabelNeeded},
+			name:               "LGTM with do-not-merge/release-note-label-needed, /release-note-none comment",
+			initialLabels:      []string{lgtmLabel, ReleaseNoteLabelNeeded},
+			issueComments:      []string{"Release notes are great fun.", "Especially \n/release-note-none"},
+			IssueLabelsAdded:   []string{releaseNoteNone},
+			IssueLabelsRemoved: []string{ReleaseNoteLabelNeeded},
 		},
 		{
-			name:          "LGTM only",
-			initialLabels: []string{lgtmLabel},
-			labelsAdded:   []string{ReleaseNoteLabelNeeded},
+			name:             "LGTM only",
+			initialLabels:    []string{lgtmLabel},
+			IssueLabelsAdded: []string{ReleaseNoteLabelNeeded},
 		},
 		{
-			name:          "No labels",
-			initialLabels: []string{},
-			labelsAdded:   []string{ReleaseNoteLabelNeeded},
+			name:             "No labels",
+			initialLabels:    []string{},
+			IssueLabelsAdded: []string{ReleaseNoteLabelNeeded},
 		},
 		{
 			name:          "release-note",
@@ -339,27 +339,27 @@ func TestReleaseNotePR(t *testing.T) {
 			body:          "```release-note\n action required```",
 		},
 		{
-			name:          "release-note and do-not-merge/release-note-label-needed with no note",
-			initialLabels: []string{releaseNote, ReleaseNoteLabelNeeded},
-			labelsRemoved: []string{releaseNote},
+			name:               "release-note and do-not-merge/release-note-label-needed with no note",
+			initialLabels:      []string{releaseNote, ReleaseNoteLabelNeeded},
+			IssueLabelsRemoved: []string{releaseNote},
 		},
 		{
-			name:          "release-note and do-not-merge/release-note-label-needed with note",
-			initialLabels: []string{releaseNote, ReleaseNoteLabelNeeded},
-			body:          "```release-note note  ```",
-			labelsRemoved: []string{ReleaseNoteLabelNeeded},
+			name:               "release-note and do-not-merge/release-note-label-needed with note",
+			initialLabels:      []string{releaseNote, ReleaseNoteLabelNeeded},
+			body:               "```release-note note  ```",
+			IssueLabelsRemoved: []string{ReleaseNoteLabelNeeded},
 		},
 		{
-			name:          "release-note-none and do-not-merge/release-note-label-needed",
-			initialLabels: []string{releaseNoteNone, ReleaseNoteLabelNeeded},
-			body:          "```release-note\nnone\n```",
-			labelsRemoved: []string{ReleaseNoteLabelNeeded},
+			name:               "release-note-none and do-not-merge/release-note-label-needed",
+			initialLabels:      []string{releaseNoteNone, ReleaseNoteLabelNeeded},
+			body:               "```release-note\nnone\n```",
+			IssueLabelsRemoved: []string{ReleaseNoteLabelNeeded},
 		},
 		{
-			name:          "release-note-action-required and do-not-merge/release-note-label-needed",
-			initialLabels: []string{releaseNoteActionRequired, ReleaseNoteLabelNeeded},
-			body:          "```release-note\nSomething something dark side. Something something ACTION REQUIRED.```",
-			labelsRemoved: []string{ReleaseNoteLabelNeeded},
+			name:               "release-note-action-required and do-not-merge/release-note-label-needed",
+			initialLabels:      []string{releaseNoteActionRequired, ReleaseNoteLabelNeeded},
+			body:               "```release-note\nSomething something dark side. Something something ACTION REQUIRED.```",
+			IssueLabelsRemoved: []string{ReleaseNoteLabelNeeded},
 		},
 		{
 			name:          "do not add needs label when parent PR has releaseNote label",
@@ -369,12 +369,12 @@ func TestReleaseNotePR(t *testing.T) {
 			parentPRs:     map[int]string{2: releaseNote},
 		},
 		{
-			name:          "do not touch LGTM on non-master when parent PR has releaseNote label, but remove releaseNoteNeeded",
-			branch:        "release-1.2",
-			initialLabels: []string{lgtmLabel, ReleaseNoteLabelNeeded},
-			body:          "Cherry pick of #2 on release-1.2.",
-			parentPRs:     map[int]string{2: releaseNote},
-			labelsRemoved: []string{ReleaseNoteLabelNeeded},
+			name:               "do not touch LGTM on non-master when parent PR has releaseNote label, but remove releaseNoteNeeded",
+			branch:             "release-1.2",
+			initialLabels:      []string{lgtmLabel, ReleaseNoteLabelNeeded},
+			body:               "Cherry pick of #2 on release-1.2.",
+			parentPRs:          map[int]string{2: releaseNote},
+			IssueLabelsRemoved: []string{ReleaseNoteLabelNeeded},
 		},
 		{
 			name:          "do nothing when PR has releaseNoteActionRequired, but parent PR does not have releaseNote label",
@@ -384,55 +384,55 @@ func TestReleaseNotePR(t *testing.T) {
 			parentPRs:     map[int]string{2: releaseNoteNone},
 		},
 		{
-			name:          "add releaseNoteNeeded on non-master when parent PR has releaseNoteNone label",
-			branch:        "release-1.2",
-			initialLabels: []string{lgtmLabel},
-			body:          "Cherry pick of #2 on release-1.2.",
-			parentPRs:     map[int]string{2: releaseNoteNone},
-			labelsAdded:   []string{ReleaseNoteLabelNeeded},
+			name:             "add releaseNoteNeeded on non-master when parent PR has releaseNoteNone label",
+			branch:           "release-1.2",
+			initialLabels:    []string{lgtmLabel},
+			body:             "Cherry pick of #2 on release-1.2.",
+			parentPRs:        map[int]string{2: releaseNoteNone},
+			IssueLabelsAdded: []string{ReleaseNoteLabelNeeded},
 		},
 		{
-			name:          "add releaseNoteNeeded on non-master when 1 of 2 parent PRs has releaseNoteNone",
-			branch:        "release-1.2",
-			initialLabels: []string{lgtmLabel},
-			body:          "Other text.\nCherry pick of #2 on release-1.2.\nCherry pick of #4 on release-1.2.\n",
-			parentPRs:     map[int]string{2: releaseNote, 4: releaseNoteNone},
-			labelsAdded:   []string{ReleaseNoteLabelNeeded},
+			name:             "add releaseNoteNeeded on non-master when 1 of 2 parent PRs has releaseNoteNone",
+			branch:           "release-1.2",
+			initialLabels:    []string{lgtmLabel},
+			body:             "Other text.\nCherry pick of #2 on release-1.2.\nCherry pick of #4 on release-1.2.\n",
+			parentPRs:        map[int]string{2: releaseNote, 4: releaseNoteNone},
+			IssueLabelsAdded: []string{ReleaseNoteLabelNeeded},
 		},
 		{
-			name:          "remove releaseNoteNeeded on non-master when both parent PRs have a release note",
-			branch:        "release-1.2",
-			initialLabels: []string{lgtmLabel, ReleaseNoteLabelNeeded},
-			body:          "Other text.\nCherry pick of #2 on release-1.2.\nCherry pick of #4 on release-1.2.\n",
-			parentPRs:     map[int]string{2: releaseNote, 4: releaseNoteActionRequired},
-			labelsRemoved: []string{ReleaseNoteLabelNeeded},
+			name:               "remove releaseNoteNeeded on non-master when both parent PRs have a release note",
+			branch:             "release-1.2",
+			initialLabels:      []string{lgtmLabel, ReleaseNoteLabelNeeded},
+			body:               "Other text.\nCherry pick of #2 on release-1.2.\nCherry pick of #4 on release-1.2.\n",
+			parentPRs:          map[int]string{2: releaseNote, 4: releaseNoteActionRequired},
+			IssueLabelsRemoved: []string{ReleaseNoteLabelNeeded},
 		},
 		{
-			name:          "add releaseNoteActionRequired on non-master when body contains note even though both parent PRs have a release note (non-mandatory RN)",
-			branch:        "release-1.2",
-			initialLabels: []string{lgtmLabel, ReleaseNoteLabelNeeded},
-			body:          "Other text.\nCherry pick of #2 on release-1.2.\nCherry pick of #4 on release-1.2.\n```release-note\nSome changes were made but there still is action required.\n```",
-			parentPRs:     map[int]string{2: releaseNote, 4: releaseNoteActionRequired},
-			labelsAdded:   []string{releaseNoteActionRequired},
-			labelsRemoved: []string{ReleaseNoteLabelNeeded},
+			name:               "add releaseNoteActionRequired on non-master when body contains note even though both parent PRs have a release note (non-mandatory RN)",
+			branch:             "release-1.2",
+			initialLabels:      []string{lgtmLabel, ReleaseNoteLabelNeeded},
+			body:               "Other text.\nCherry pick of #2 on release-1.2.\nCherry pick of #4 on release-1.2.\n```release-note\nSome changes were made but there still is action required.\n```",
+			parentPRs:          map[int]string{2: releaseNote, 4: releaseNoteActionRequired},
+			IssueLabelsAdded:   []string{releaseNoteActionRequired},
+			IssueLabelsRemoved: []string{ReleaseNoteLabelNeeded},
 		},
 		{
-			name:          "add releaseNoteNeeded, remove release-note on non-master when release-note block is removed and parent PR has releaseNoteNone label",
-			branch:        "release-1.2",
-			initialLabels: []string{lgtmLabel, releaseNote},
-			body:          "Cherry pick of #2 on release-1.2.\n```release-note\n```\n/cc @cjwagner",
-			parentPRs:     map[int]string{2: releaseNoteNone},
-			labelsAdded:   []string{ReleaseNoteLabelNeeded},
-			labelsRemoved: []string{releaseNote},
+			name:               "add releaseNoteNeeded, remove release-note on non-master when release-note block is removed and parent PR has releaseNoteNone label",
+			branch:             "release-1.2",
+			initialLabels:      []string{lgtmLabel, releaseNote},
+			body:               "Cherry pick of #2 on release-1.2.\n```release-note\n```\n/cc @cjwagner",
+			parentPRs:          map[int]string{2: releaseNoteNone},
+			IssueLabelsAdded:   []string{ReleaseNoteLabelNeeded},
+			IssueLabelsRemoved: []string{releaseNote},
 		},
 		{
-			name:          "add ReleaseNoteLabelNeeded, remove release-note on non-master when release-note block is removed and parent PR has releaseNoteNone label",
-			branch:        "release-1.2",
-			initialLabels: []string{lgtmLabel, releaseNote},
-			body:          "Cherry pick of #2 on release-1.2.\n```release-note\n```\n/cc @cjwagner",
-			parentPRs:     map[int]string{2: releaseNoteNone},
-			labelsAdded:   []string{ReleaseNoteLabelNeeded},
-			labelsRemoved: []string{releaseNote},
+			name:               "add ReleaseNoteLabelNeeded, remove release-note on non-master when release-note block is removed and parent PR has releaseNoteNone label",
+			branch:             "release-1.2",
+			initialLabels:      []string{lgtmLabel, releaseNote},
+			body:               "Cherry pick of #2 on release-1.2.\n```release-note\n```\n/cc @cjwagner",
+			parentPRs:          map[int]string{2: releaseNoteNone},
+			IssueLabelsAdded:   []string{ReleaseNoteLabelNeeded},
+			IssueLabelsRemoved: []string{releaseNote},
 		},
 	}
 	for _, test := range tests {
@@ -447,20 +447,20 @@ func TestReleaseNotePR(t *testing.T) {
 		}
 
 		// Check that all the correct labels (and only the correct labels) were added.
-		expectAdded := formatLabels(1, append(test.initialLabels, test.labelsAdded...)...)
+		expectAdded := formatLabels(1, append(test.initialLabels, test.IssueLabelsAdded...)...)
 		for parent, label := range test.parentPRs {
 			expectAdded = append(expectAdded, formatLabels(parent, label)...)
 		}
 		sort.Strings(expectAdded)
-		sort.Strings(fc.LabelsAdded)
-		if !reflect.DeepEqual(expectAdded, fc.LabelsAdded) {
-			t.Errorf("(%s): Expected labels to be added: %q, but got: %q.", test.name, expectAdded, fc.LabelsAdded)
+		sort.Strings(fc.IssueLabelsAdded)
+		if !reflect.DeepEqual(expectAdded, fc.IssueLabelsAdded) {
+			t.Errorf("(%s): Expected labels to be added: %q, but got: %q.", test.name, expectAdded, fc.IssueLabelsAdded)
 		}
-		expectRemoved := formatLabels(1, test.labelsRemoved...)
+		expectRemoved := formatLabels(1, test.IssueLabelsRemoved...)
 		sort.Strings(expectRemoved)
-		sort.Strings(fc.LabelsRemoved)
-		if !reflect.DeepEqual(expectRemoved, fc.LabelsRemoved) {
-			t.Errorf("(%s): Expected labels to be removed: %q, but got %q.", test.name, expectRemoved, fc.LabelsRemoved)
+		sort.Strings(fc.IssueLabelsRemoved)
+		if !reflect.DeepEqual(expectRemoved, fc.IssueLabelsRemoved) {
+			t.Errorf("(%s): Expected labels to be removed: %q, but got %q.", test.name, expectRemoved, fc.IssueLabelsRemoved)
 		}
 	}
 }

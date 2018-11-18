@@ -116,9 +116,9 @@ labels:
 `),
 }
 
-func labelsAddedContain(arr []string, str string) bool {
+func IssueLabelsAddedContain(arr []string, str string) bool {
 	for _, a := range arr {
-		// LabelsAdded format is owner/repo#number:label
+		// IssueLabelsAdded format is owner/repo#number:label
 		b := strings.Split(a, ":")
 		if b[len(b)-1] == str {
 			return true
@@ -274,11 +274,11 @@ func TestHandle(t *testing.T) {
 		if err := handle(fghc, c, logrus.WithField("plugin", PluginName), pre, []string{labels.Approved, labels.LGTM}); err != nil {
 			t.Fatalf("Handle PR: %v", err)
 		}
-		if !test.shouldLabel && labelsAddedContain(fghc.LabelsAdded, labels.InvalidOwners) {
-			t.Errorf("%s: didn't expect label %s in %s", test.name, labels.InvalidOwners, fghc.LabelsAdded)
+		if !test.shouldLabel && IssueLabelsAddedContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
+			t.Errorf("%s: didn't expect label %s in %s", test.name, labels.InvalidOwners, fghc.IssueLabelsAdded)
 			continue
-		} else if test.shouldLabel && !labelsAddedContain(fghc.LabelsAdded, labels.InvalidOwners) {
-			t.Errorf("%s: expected label %s in %s", test.name, labels.InvalidOwners, fghc.LabelsAdded)
+		} else if test.shouldLabel && !IssueLabelsAddedContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
+			t.Errorf("%s: expected label %s in %s", test.name, labels.InvalidOwners, fghc.IssueLabelsAdded)
 			continue
 		}
 	}

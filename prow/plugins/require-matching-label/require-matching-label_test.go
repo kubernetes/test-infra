@@ -28,28 +28,28 @@ import (
 )
 
 type fakeGitHub struct {
-	labels                     sets.String
-	labelsAdded, labelsRemoved sets.String
-	commented                  bool
+	labels                               sets.String
+	IssueLabelsAdded, IssueLabelsRemoved sets.String
+	commented                            bool
 }
 
 func newFakeGitHub(initialLabels ...string) *fakeGitHub {
 	return &fakeGitHub{
-		labels:        sets.NewString(initialLabels...),
-		labelsAdded:   sets.NewString(),
-		labelsRemoved: sets.NewString(),
+		labels:             sets.NewString(initialLabels...),
+		IssueLabelsAdded:   sets.NewString(),
+		IssueLabelsRemoved: sets.NewString(),
 	}
 }
 
 func (f *fakeGitHub) AddLabel(org, repo string, number int, label string) error {
 	f.labels.Insert(label)
-	f.labelsAdded.Insert(label)
+	f.IssueLabelsAdded.Insert(label)
 	return nil
 }
 
 func (f *fakeGitHub) RemoveLabel(org, repo string, number int, label string) error {
 	f.labels.Delete(label)
-	f.labelsRemoved.Insert(label)
+	f.IssueLabelsRemoved.Insert(label)
 	return nil
 }
 
@@ -256,12 +256,12 @@ func TestHandle(t *testing.T) {
 			t.Error("Expected no comments to be created but got one.")
 		}
 
-		if !tc.expectedAdded.Equal(fghc.labelsAdded) {
-			t.Errorf("Expected the %q labels to be added, but got %q.", tc.expectedAdded.List(), fghc.labelsAdded.List())
+		if !tc.expectedAdded.Equal(fghc.IssueLabelsAdded) {
+			t.Errorf("Expected the %q labels to be added, but got %q.", tc.expectedAdded.List(), fghc.IssueLabelsAdded.List())
 		}
 
-		if !tc.expectedRemoved.Equal(fghc.labelsRemoved) {
-			t.Errorf("Expected the %q labels to be removed, but got %q.", tc.expectedRemoved.List(), fghc.labelsRemoved.List())
+		if !tc.expectedRemoved.Equal(fghc.IssueLabelsRemoved) {
+			t.Errorf("Expected the %q labels to be removed, but got %q.", tc.expectedRemoved.List(), fghc.IssueLabelsRemoved.List())
 		}
 	}
 }
