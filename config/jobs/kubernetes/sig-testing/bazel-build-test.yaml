@@ -33,7 +33,7 @@ presubmits:
     - name: pull-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
       skip_report: true
-      run_if_changed: '^(cmd/kubeadm|build/debs).*$'
+      run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
       skip_branches:
       - release-1.13 # per-release job
       - release-1.10 # different bazel version
@@ -94,7 +94,7 @@ presubmits:
     - name: pull-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
       skip_report: true
-      run_if_changed: '^(cmd/kubeadm|build/debs).*$'
+      run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
       branches:
       - release-1.13
       labels:
@@ -154,7 +154,7 @@ presubmits:
     - name: pull-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
       skip_report: true
-      run_if_changed: '^(cmd/kubeadm|build/debs).*$'
+      run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
       branches:
       - release-1.10
       labels:
