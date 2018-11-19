@@ -27,7 +27,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/spyglass/viewers"
+	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
 var (
@@ -184,7 +184,25 @@ test/e2e/e2e.go:137 BeforeSuite on Node 1 failed test/e2e/e2e.go:137
 	os.Exit(m.Run())
 }
 
-func dumpViewHandler(artifacts []viewers.Artifact, raw string) string {
+type dumpLens struct{}
+
+func (dumpLens) Name() string {
+	return "dump"
+}
+
+func (dumpLens) Title() string {
+	return "Dump View"
+}
+
+func (dumpLens) Priority() int {
+	return 1
+}
+
+func (dumpLens) Header(artifacts []lenses.Artifact, resourceDir string) string {
+	return ""
+}
+
+func (dumpLens) Body(artifacts []lenses.Artifact, resourceDir, data string) string {
 	var view []byte
 	for _, a := range artifacts {
 		data, err := a.ReadAll()
@@ -197,52 +215,46 @@ func dumpViewHandler(artifacts []viewers.Artifact, raw string) string {
 	return string(view)
 }
 
+func (dumpLens) Callback(artifacts []lenses.Artifact, resourceDir, data string) string {
+	return ""
+}
+
 func TestViews(t *testing.T) {
 	fakeGCSClient := fakeGCSServer.Client()
 	testCases := []struct {
 		name               string
-		registeredViewers  map[string]viewers.ViewMetadata
+		registeredViewers  []lenses.Lens
 		matchCache         map[string][]string
 		expectedLensTitles []string
 	}{
 		{
-			name: "Spyglass basic test",
-			registeredViewers: map[string]viewers.ViewMetadata{
-				"metadata-viewer": {
-					Title:    "MetadataView",
-					Priority: 0,
-				},
-			},
+			name:              "Spyglass basic test",
+			registeredViewers: []lenses.Lens{dumpLens{}},
 			matchCache: map[string][]string{
-				"metadata-viewer": {"started.json"},
+				"dump": {"started.json"},
 			},
-			expectedLensTitles: []string{"MetadataView"},
+			expectedLensTitles: []string{"Dump View"},
 		},
 		{
-			name: "Spyglass no matches",
-			registeredViewers: map[string]viewers.ViewMetadata{
-				"metadata-viewer": {
-					Title:    "MetadataView",
-					Priority: 0,
-				},
-			},
+			name:              "Spyglass no matches",
+			registeredViewers: []lenses.Lens{dumpLens{}},
 			matchCache: map[string][]string{
-				"metadata-viewer": {},
+				"dump": {},
 			},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			for k, v := range tc.registeredViewers {
-				viewers.RegisterViewer(k, v, dumpViewHandler)
+			for _, l := range tc.registeredViewers {
+				lenses.RegisterLens(l)
 			}
 			sg := New(fakeJa, &config.Agent{}, fakeGCSClient)
-			lenses := sg.Views(tc.matchCache)
+			lenses := sg.Lenses(tc.matchCache)
 			for _, l := range lenses {
 				var found bool
 				for _, title := range tc.expectedLensTitles {
-					if title == l.Title {
+					if title == l.Title() {
 						found = true
 					}
 				}
@@ -253,7 +265,7 @@ func TestViews(t *testing.T) {
 			for _, title := range tc.expectedLensTitles {
 				var found bool
 				for _, l := range lenses {
-					if title == l.Title {
+					if title == l.Title() {
 						found = true
 					}
 				}

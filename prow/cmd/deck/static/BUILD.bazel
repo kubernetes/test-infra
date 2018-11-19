@@ -95,7 +95,23 @@ rollup_bundle(
 
 ts_library(
     name = "spyglass",
-    srcs = glob(["spyglass/*.ts"]),
+    srcs = ["spyglass/spyglass.ts"],
+    deps = [
+        ":spyglass_common",
+    ],
+)
+
+ts_library(
+    name = "spyglass_lens",
+    srcs = ["spyglass/lens.ts"],
+    deps = [
+        ":spyglass_common",
+    ],
+)
+
+ts_library(
+    name = "spyglass_common",
+    srcs = ["spyglass/common.ts"],
 )
 
 rollup_bundle(
@@ -103,6 +119,16 @@ rollup_bundle(
     entry_point = "prow/cmd/deck/static/spyglass/spyglass",
     deps = [
         ":spyglass",
+        ":spyglass_common",
+    ],
+)
+
+rollup_bundle(
+    name = "spyglass_lens_bundle",
+    entry_point = "prow/cmd/deck/static/spyglass/lens",
+    deps = [
+        ":spyglass_common",
+        ":spyglass_lens",
     ],
 )
 
@@ -122,6 +148,7 @@ filegroup(
         ":pr_bundle",
         ":prow_bundle",
         ":spyglass_bundle",
+        ":spyglass_lens_bundle",
         ":tide_bundle",
     ],
 )

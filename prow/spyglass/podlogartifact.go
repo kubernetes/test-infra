@@ -25,7 +25,7 @@ import (
 	"strings"
 
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/spyglass/viewers"
+	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
 type jobAgent interface {
@@ -110,7 +110,7 @@ func (a *PodLogArtifact) ReadAll() ([]byte, error) {
 		return nil, fmt.Errorf("error getting pod log size: %v", err)
 	}
 	if size > a.sizeLimit {
-		return nil, viewers.ErrFileTooLarge
+		return nil, lenses.ErrFileTooLarge
 	}
 	logs, err := a.jobAgent.GetJobLog(a.name, a.buildID)
 	if err != nil {

@@ -1,0 +1,38 @@
+{{define "header"}}
+<link rel="stylesheet" href="buildlog.css">
+<script type="text/javascript" src="script_bundle.min.js"></script>
+{{end}}
+{{define "body"}}
+<div style="font-family:monospace;">
+{{range $log := .LogViews}}
+  <div id="{{$log | logID}}">
+    <h4 style="margin: 0;">
+      <a href="{{$log.ArtifactLink}}">{{$log.ArtifactName}}<i class="material-icons" style="font-size: 1em; vertical-align: middle;">link</i></a>
+      <button id="{{$log | logID}}-show-all" onclick="showAllLines({{$log | logID}})">Show all hidden lines</button>
+    </h4>
+    <table class="loglines">
+    {{range $g := $log.LineGroups}}
+    {{if $g.Skip}}
+      <tbody class="show-skipped" id="{{$g | skipID}}">
+      <tr>
+        <td></td>
+        <td><button onclick="showLines({{$log | logID}}, {{$g | linesID}}, {{$g | skipID}})">Show {{$g | linesSkipped}} hidden lines</button></td>
+      </tr>
+      </tbody>
+    {{end}}
+      <tbody class="{{if $g.Skip}}skipped{{else}}shown{{end}}" id="{{$g | linesID}}">
+      {{range $line := $g.LogLines}}
+      <tr>
+        <td class="linenum">{{$line.Number}}</td>
+        <td>
+          <span {{if $line.Highlighted}}class="line-highlighted"{{end}}>{{range $s := $line.SubLines}}<span {{if $s.Highlighted}}class="match-highlighted"{{end}}>{{$s.Text}}</span>{{end}}</span>
+        </td>
+      </tr>
+      {{end}}
+      </tbody>
+    {{end}}
+    </table>
+  </div>
+{{end}}
+</div>
+{{end}}

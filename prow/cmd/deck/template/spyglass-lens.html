@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Spyglass Lens: {{.Title}}</title>
+  <base href="{{.BaseURL}}" target="_parent">
+  <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <style>
+      /*
+       * Ensure we don't accidentally scroll on this frame.
+       */
+      html {
+          overflow-y: hidden;
+      }
+      /*
+       * MDL sets min-height: 100% for the body, which prevents us from ever shrinking.
+       * In order to prevent this, we unset it again, using a higher-priority selector.
+       */
+      body.lens-body {
+          min-height: unset;
+      }
+  </style>
+  <script src="/static/spyglass_lens_bundle.min.js"></script>
+  {{.Head}}
+</head>
+<body class="lens-body">
+  {{.Body}}
+</body>
+</html>

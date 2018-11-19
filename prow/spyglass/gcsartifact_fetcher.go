@@ -31,7 +31,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 
-	"k8s.io/test-infra/prow/spyglass/viewers"
+	"k8s.io/test-infra/prow/spyglass/lenses"
 	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
@@ -157,7 +157,7 @@ func (h *gcsArtifactHandle) NewRangeReader(ctx context.Context, offset, length i
 // Artifact constructs a GCS artifact from the given GCS bucket and key. Uses the golang GCS library
 // to get read handles. If the artifactName is not a valid key in the bucket a handle will still be
 // constructed and returned, but all read operations will fail (dictated by behavior of golang GCS lib).
-func (af *GCSArtifactFetcher) artifact(key string, artifactName string, sizeLimit int64) (viewers.Artifact, error) {
+func (af *GCSArtifactFetcher) artifact(key string, artifactName string, sizeLimit int64) (lenses.Artifact, error) {
 	src, err := newGCSJobSource(key)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get GCS job source from %s: %v", key, err)

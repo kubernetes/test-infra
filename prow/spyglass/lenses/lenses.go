@@ -14,46 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package viewers provides interfaces and methods necessary for implementing custom artifact viewers
-package viewers
+// Package lenses provides interfaces and methods necessary for implementing custom artifact viewers
+package lenses
 
 import (
 	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
-	"io"
-	"sync"
-
 	"github.com/sirupsen/logrus"
+	"io"
+	"path/filepath"
 )
 
-type viewHandlerRegistry struct {
-	reg map[string]ViewHandler
-	mut sync.Mutex
-}
-
-type viewMetadataRegistry struct {
-	reg map[string]ViewMetadata
-	mut sync.Mutex
-}
-
 var (
-	viewHandlerReg = viewHandlerRegistry{
-		reg: map[string]ViewHandler{},
-		mut: sync.Mutex{},
-	}
+	lensReg = map[string]Lens{}
 
-	viewMetadataReg = viewMetadataRegistry{
-		reg: map[string]ViewMetadata{},
-		mut: sync.Mutex{},
-	}
 	// ErrGzipOffsetRead will be thrown when an offset read is attempted on a gzip-compressed object
 	ErrGzipOffsetRead = errors.New("offset read on gzipped files unsupported")
-	// ErrInvalidViewName will be thrown when a viewer method is called on a view name that has not
+	// ErrInvalidLensName will be thrown when a viewer method is called on a view name that has not
 	// been registered. Ensure your viewer is registered using RegisterViewer and that you are
 	// providing the correct viewer name.
-	ErrInvalidViewName = errors.New("invalid view name")
+	ErrInvalidLensName = errors.New("invalid lens name")
 	// ErrFileTooLarge will be thrown when a size-limited operation (ex. ReadAll) is called on an
 	// artifact whose size exceeds the configured limit.
 	ErrFileTooLarge = errors.New("file size over specified limit")
@@ -62,15 +44,22 @@ var (
 	ErrContextUnsupported = errors.New("artifact does not support context operations")
 )
 
-// ViewMetadata represents some metadata associated with rendering views
-type ViewMetadata struct {
-	// The title of the view
-	Title string
-
-	// Defines the order of views on the page. Lower priority values will be rendered higher up.
-	// Views with identical priorities will be rendered in alphabetical order by title.
-	// Valid: [0-INTMAX].
-	Priority int
+// Lens defines the interface that lenses are required to implement in order to be used by Spyglass.
+type Lens interface {
+	// Name returns the name of the lens. It must match the package name.
+	Name() string
+	// Title returns a human-readable title for the lens.
+	Title() string
+	// Priority returns a number used to sort viewers. Lower is more important.
+	Priority() int
+	// Header returns a a string that is injected into the rendered lens's <head>
+	Header(artifacts []Artifact, resourceDir string) string
+	// Body returns a string that is initially injected into the rendered lens's <body>.
+	// The lens's front-end code may call back to Body again, passing in some data string of its choosing.
+	Body(artifacts []Artifact, resourceDir string, data string) string
+	// Callback receives a string sent by the lens's front-end code and returns another string to be returned
+	// to that frontend code.
+	Callback(artifacts []Artifact, resourceDir string, data string) string
 }
 
 // Artifact represents some output of a prow job
@@ -91,73 +80,41 @@ type Artifact interface {
 	Size() (int64, error)
 }
 
-// ViewHandler consumes artifacts and some possible callback json data and returns an html view.
-// Use the javascript function refreshView(viewName, viewData) to allow your viewer to call back to itself
-// (request more data, update the view, etc.). ViewData is a json blob that will be passed back to the
-// handler function for your view as the string
-type ViewHandler func([]Artifact, string) string
-
-// View gets the updated view from an artifact viewer with the provided name
-func View(name string, artifacts []Artifact, raw string) (string, error) {
-	handler, ok := viewHandlerReg.reg[name]
-	if !ok {
-		return "", ErrInvalidViewName
-	}
-	return handler(artifacts, raw), nil
-
+// ResourceDirForLens returns the path to a lens's public resource directory.
+func ResourceDirForLens(baseDir, name string) string {
+	return filepath.Join(baseDir, name)
 }
 
-// Title gets the title of the view with the given name
-func Title(name string) (string, error) {
-	m, ok := viewMetadataReg.reg[name]
-	if !ok {
-		return "", ErrInvalidViewName
-	}
-	return m.Title, nil
-
-}
-
-// Priority gets the priority of the view with the given name
-func Priority(name string) (int, error) {
-	m, ok := viewMetadataReg.reg[name]
-	if !ok {
-		return -1, ErrInvalidViewName
-	}
-	return m.Priority, nil
-
-}
-
-// RegisterViewer registers new viewers
-func RegisterViewer(viewerName string, metadata ViewMetadata, handler ViewHandler) error {
-	viewHandlerReg.mut.Lock()
-	defer viewHandlerReg.mut.Unlock()
-	viewMetadataReg.mut.Lock()
-	defer viewMetadataReg.mut.Unlock()
-	_, ok := viewHandlerReg.reg[viewerName]
+// RegisterLens registers new viewers
+func RegisterLens(lens Lens) error {
+	_, ok := lensReg[lens.Name()]
 	if ok {
-		return fmt.Errorf("viewer already registered with name %s", viewerName)
+		return fmt.Errorf("viewer already registered with name %s", lens.Name())
 	}
 
-	if metadata.Title == "" {
+	if lens.Title() == "" {
 		return errors.New("empty title field in view metadata")
 	}
-	if metadata.Priority < 0 {
+	if lens.Priority() < 0 {
 		return errors.New("priority must be >=0")
 	}
-	viewHandlerReg.reg[viewerName] = handler
-	viewMetadataReg.reg[viewerName] = metadata
-	logrus.Infof("Spyglass registered viewer %s with title %s.", viewerName, metadata.Title)
+	lensReg[lens.Name()] = lens
+	logrus.Infof("Spyglass registered viewer %s with title %s.", lens.Name(), lens.Title())
 	return nil
 }
 
-// UnregisterViewer unregisters viewers
-func UnregisterViewer(viewerName string) {
-	viewHandlerReg.mut.Lock()
-	defer viewHandlerReg.mut.Unlock()
-	viewMetadataReg.mut.Lock()
-	defer viewMetadataReg.mut.Unlock()
-	delete(viewHandlerReg.reg, viewerName)
-	delete(viewMetadataReg.reg, viewerName)
+// GetLens returns a Lens by name, if it exists; otherwise it returns an error.
+func GetLens(name string) (Lens, error) {
+	lens, ok := lensReg[name]
+	if !ok {
+		return nil, ErrInvalidLensName
+	}
+	return lens, nil
+}
+
+// UnregisterLens unregisters lenses
+func UnregisterLens(viewerName string) {
+	delete(lensReg, viewerName)
 	logrus.Infof("Spyglass unregistered viewer %s.", viewerName)
 }
 

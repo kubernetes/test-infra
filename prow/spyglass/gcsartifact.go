@@ -26,7 +26,7 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/spyglass/viewers"
+	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
 // GCSArtifact represents some output of a prow job stored in GCS
@@ -97,7 +97,7 @@ func (a *GCSArtifact) ReadAt(p []byte, off int64) (n int, err error) {
 		return 0, fmt.Errorf("error checking artifact for gzip compression: %v", err)
 	}
 	if gzipped {
-		return 0, viewers.ErrGzipOffsetRead
+		return 0, lenses.ErrGzipOffsetRead
 	}
 	artifactSize, err := a.Size()
 	if err != nil {
@@ -192,7 +192,7 @@ func (a *GCSArtifact) ReadAll() ([]byte, error) {
 		return nil, fmt.Errorf("error getting artifact size: %v", err)
 	}
 	if size > a.sizeLimit {
-		return nil, viewers.ErrFileTooLarge
+		return nil, lenses.ErrFileTooLarge
 	}
 	reader, err := a.handle.NewReader(a.ctx)
 	if err != nil {
@@ -213,7 +213,7 @@ func (a *GCSArtifact) ReadTail(n int64) ([]byte, error) {
 		return nil, fmt.Errorf("error checking artifact for gzip compression: %v", err)
 	}
 	if gzipped {
-		return nil, viewers.ErrGzipOffsetRead
+		return nil, lenses.ErrGzipOffsetRead
 	}
 	size, err := a.Size()
 	if err != nil {

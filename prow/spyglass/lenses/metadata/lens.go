@@ -22,22 +22,58 @@ import (
 	"encoding/json"
 	"time"
 
+	"fmt"
 	"github.com/sirupsen/logrus"
+	"html/template"
 	"k8s.io/test-infra/prow/deck/jobs"
-	"k8s.io/test-infra/prow/spyglass/viewers"
+	"k8s.io/test-infra/prow/spyglass/lenses"
+	"path/filepath"
 )
 
 const (
-	name     = "metadata-viewer"
+	name     = "metadata"
 	title    = "Metadata"
 	priority = 0
 )
 
+// Lens is the implementation of a metadata-rendering Spyglass lens.
+type Lens struct{}
+
 func init() {
-	viewers.RegisterViewer(name, viewers.ViewMetadata{
-		Title:    title,
-		Priority: priority,
-	}, ViewHandler)
+	lenses.RegisterLens(Lens{})
+}
+
+// Title returns the title.
+func (lens Lens) Title() string {
+	return title
+}
+
+// Name returns the name.
+func (lens Lens) Name() string {
+	return name
+}
+
+// Priority returns the priority.
+func (lens Lens) Priority() int {
+	return priority
+}
+
+// Header renders the <head> from template.html.
+func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string) string {
+	t, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
+	if err != nil {
+		return fmt.Sprintf("<!-- FAILED LOADING HEADER: %v -->", err)
+	}
+	var buf bytes.Buffer
+	if err := t.ExecuteTemplate(&buf, "header", nil); err != nil {
+		return fmt.Sprintf("<!-- FAILED EXECUTING HEADER TEMPLATE: %v -->", err)
+	}
+	return buf.String()
+}
+
+// Callback does nothing.
+func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string) string {
+	return ""
 }
 
 // Derived contains metadata derived from provided metadata for insertion into the template
@@ -50,9 +86,9 @@ type Derived struct {
 	GCSArtifactsLink string
 }
 
-// ViewHandler creates a view for prow job metadata
+// Body creates a view for prow job metadata.
 // TODO: os image,
-func ViewHandler(artifacts []viewers.Artifact, raw string) string {
+func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string) string {
 	var buf bytes.Buffer
 	type MetadataViewData struct {
 		Started  jobs.Started
@@ -93,7 +129,13 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 		metadataViewData.Derived.Status = "In Progress"
 		metadataViewData.Derived.Elapsed = time.Now().Sub(metadataViewData.Derived.StartTime)
 	}
-	if err := metadataTemplate.Execute(&buf, metadataViewData); err != nil {
+
+	metadataTemplate, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
+	if err != nil {
+		return fmt.Sprintf("Failed to load template: %v", err)
+	}
+
+	if err := metadataTemplate.ExecuteTemplate(&buf, "body", metadataViewData); err != nil {
 		logrus.WithError(err).Error("Error executing template.")
 	}
 	return buf.String()

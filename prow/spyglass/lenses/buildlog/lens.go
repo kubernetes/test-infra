@@ -27,11 +27,13 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/spyglass/viewers"
+	"html/template"
+	"k8s.io/test-infra/prow/spyglass/lenses"
+	"path/filepath"
 )
 
 const (
-	name            = "build-log-viewer"
+	name            = "buildlog"
 	title           = "Build Log"
 	priority        = 10
 	byteChunkSize   = 1e3 // 1KB
@@ -40,14 +42,39 @@ const (
 	minLinesSkipped = 5
 )
 
+// Lens implements the build lens.
+type Lens struct{}
+
+// Name returns the name.
+func (lens Lens) Name() string {
+	return name
+}
+
+// Title returns the title.
+func (lens Lens) Title() string {
+	return title
+}
+
+// Priority returns the priority.
+func (lens Lens) Priority() int {
+	return priority
+}
+
+// Header executes the "header" section of the template.
+func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string) string {
+	return executeTemplate(resourceDir, "header", BuildLogsView{})
+}
+
+// Callback does nothing.
+func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string) string {
+	return ""
+}
+
 // errRE matches keywords and glog error messages
 var errRE = regexp.MustCompile(`(?i)(\s|^)timed out\b|(\s|^)error(s)?\b|(\s|^)fail(ure|ed)?\b|(\s|^)fatal\b|(\s|^)panic\b|^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]`)
 
 func init() {
-	viewers.RegisterViewer(name, viewers.ViewMetadata{
-		Title:    title,
-		Priority: priority,
-	}, ViewHandler)
+	lenses.RegisterLens(Lens{})
 }
 
 // LogViewerRequest contains the operations to perform on each log artifact
@@ -67,7 +94,7 @@ type LogViewData struct {
 	Operation string `json:"operation,omitempty"`
 }
 
-// LogLines are broken up into SubLines so error terms can be highlighted.
+// SubLine is a part of a LogLine, used so that error terms can be highlighted.
 type SubLine struct {
 	Highlighted bool
 	Text        string
@@ -101,7 +128,7 @@ func skipID(g LineGroup) string {
 	return fmt.Sprintf("skip-%d-%d-%d", g.LogIndex, g.Start, g.End)
 }
 
-//LogArtifactView holds a single log file's view
+// LogArtifactView holds a single log file's view
 type LogArtifactView struct {
 	ArtifactName          string
 	ArtifactLink          string
@@ -125,8 +152,8 @@ type BuildLogsView struct {
 	RawGetMoreRequests map[string]string
 }
 
-// ViewHandler creates a view for a build log (or multiple build logs)
-func ViewHandler(artifacts []viewers.Artifact, raw string) string {
+// Body returns the <body> content for a build log (or multiple build logs)
+func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string) string {
 	buildLogsView := BuildLogsView{
 		LogViews:           []LogArtifactView{},
 		GetAllRequests:     make(map[string]LogViewerRequest),
@@ -137,8 +164,8 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 	viewReq := LogViewerRequest{
 		Requests: make(map[string]LogViewData),
 	}
-	if err := json.Unmarshal([]byte(raw), &viewReq); err != nil {
-		logrus.WithError(err).Error("Error unmarshaling log view request data.")
+	if err := json.Unmarshal([]byte(data), &viewReq); err != nil {
+		logrus.WithError(err).Error("Error unmarshalling log view request data.")
 	}
 
 	getAllReq := LogViewerRequest{
@@ -198,12 +225,12 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 		buildLogsView.RawGetMoreRequests[aName] = string(raw)
 	}
 
-	return LogViewTemplate(buildLogsView)
+	return executeTemplate(resourceDir, "body", buildLogsView)
 }
 
 // nextViewData constructs the new log artifact view and needed requests from the current
 // view data and artifact
-func nextViewData(logIndex int, artifact viewers.Artifact, currentViewData LogViewData) (LogArtifactView, LogViewData) {
+func nextViewData(logIndex int, artifact lenses.Artifact, currentViewData LogViewData) (LogArtifactView, LogViewData) {
 	newLogViewData := LogViewData{
 		Operation: "",
 	}
@@ -223,7 +250,7 @@ func nextViewData(logIndex int, artifact viewers.Artifact, currentViewData LogVi
 }
 
 // logLinesHead reads the first n bytes of an artifact and splits it into lines.
-func logLinesHead(artifact viewers.Artifact, n int64) ([]string, error) {
+func logLinesHead(artifact lenses.Artifact, n int64) ([]string, error) {
 	read, err := artifact.ReadAtMost(n)
 	if err != nil {
 		if err == io.ErrUnexpectedEOF {
@@ -248,10 +275,10 @@ func logLinesHead(artifact viewers.Artifact, n int64) ([]string, error) {
 }
 
 // logLinesAll reads all of an artifact and splits it into lines.
-func logLinesAll(artifact viewers.Artifact) []string {
+func logLinesAll(artifact lenses.Artifact) []string {
 	read, err := artifact.ReadAll()
 	if err != nil {
-		if err == viewers.ErrFileTooLarge {
+		if err == lenses.ErrFileTooLarge {
 			logrus.WithError(err).Error("Artifact too large to read all.")
 		} else {
 			logrus.WithError(err).Error("Failed to read log.")
@@ -335,9 +362,19 @@ func groupLines(lines []string, logIndex int) []LineGroup {
 }
 
 // LogViewTemplate executes the log viewer template ready for rendering
-func LogViewTemplate(buildLogsView BuildLogsView) string {
+func executeTemplate(resourceDir, templateName string, buildLogsView BuildLogsView) string {
+	t := template.New("template.html")
+	t.Funcs(template.FuncMap{
+		"linesSkipped": linesSkipped,
+		"linesID":      linesID,
+		"skipID":       skipID,
+		"logID":        logID})
+	_, err := t.ParseFiles(filepath.Join(resourceDir, "template.html"))
+	if err != nil {
+		return fmt.Sprintf("Failed to load template: %v", err)
+	}
 	var buf bytes.Buffer
-	if err := buildLogTemplate.Execute(&buf, buildLogsView); err != nil {
+	if err := t.ExecuteTemplate(&buf, templateName, buildLogsView); err != nil {
 		logrus.WithError(err).Error("Error executing template.")
 	}
 	return buf.String()

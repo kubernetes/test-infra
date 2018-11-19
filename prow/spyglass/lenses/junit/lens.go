@@ -23,20 +23,56 @@ import (
 	junit "github.com/joshdk/go-junit"
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/spyglass/viewers"
+	"fmt"
+	"html/template"
+	"k8s.io/test-infra/prow/spyglass/lenses"
+	"path/filepath"
 )
 
 const (
-	name     = "junit-viewer"
+	name     = "junit"
 	title    = "JUnit"
 	priority = 5
 )
 
 func init() {
-	viewers.RegisterViewer(name, viewers.ViewMetadata{
-		Title:    title,
-		Priority: priority,
-	}, ViewHandler)
+	lenses.RegisterLens(Lens{})
+}
+
+// Lens is the implementation of a JUnit-rendering Spyglass lens.
+type Lens struct{}
+
+// Name returns the name.
+func (lens Lens) Name() string {
+	return name
+}
+
+// Title returns the title.
+func (lens Lens) Title() string {
+	return title
+}
+
+// Priority returns the priority.
+func (lens Lens) Priority() int {
+	return priority
+}
+
+// Header renders the content of <head> from template.html.
+func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string) string {
+	t, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
+	if err != nil {
+		return fmt.Sprintf("<!-- FAILED LOADING HEADER: %v -->", err)
+	}
+	var buf bytes.Buffer
+	if err := t.ExecuteTemplate(&buf, "header", nil); err != nil {
+		return fmt.Sprintf("<!-- FAILED EXECUTING HEADER TEMPLATE: %v -->", err)
+	}
+	return buf.String()
+}
+
+// Callback does nothing.
+func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string) string {
+	return ""
 }
 
 // TestResult holds data about a test extracted from junit output
@@ -45,8 +81,8 @@ type TestResult struct {
 	Link  string
 }
 
-// ViewHandler creates a view for JUnit tests
-func ViewHandler(artifacts []viewers.Artifact, raw string) string {
+// Body renders the <body> for JUnit tests
+func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string) string {
 	type JunitViewData struct {
 		NumTests int
 		Passed   []TestResult
@@ -93,8 +129,14 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 
 	}
 
+	junitTemplate, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
+	if err != nil {
+		logrus.WithError(err).Error("Error executing template.")
+		return fmt.Sprintf("Failed to load template file: %v", err)
+	}
+
 	var buf bytes.Buffer
-	if err := junitTemplate.Execute(&buf, jvd); err != nil {
+	if err := junitTemplate.ExecuteTemplate(&buf, "body", jvd); err != nil {
 		logrus.WithError(err).Error("Error executing template.")
 	}
 
