@@ -10,7 +10,7 @@ periodics:
     repo: release
     base_ref: master
     path_alias: k8s.io/release
-  interval: 1h
+  interval: 2h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -28,7 +28,7 @@ periodics:
       - --stage=gs://kubernetes-release-dev/ci/ci-kubernetes-e2e-windows-gce-poc
       - --extract=local
       - --gcp-zone=us-central1-f
-      - --ginkgo-parallel=25
+      - --ginkgo-parallel=8
       - --provider=gce
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/kubernetes/hack/run-e2e.sh
