@@ -380,6 +380,7 @@ plugins:
   - trigger
 
   kubernetes/kops:
+  - milestone
   - trigger
 
   kubernetes/kubernetes:
