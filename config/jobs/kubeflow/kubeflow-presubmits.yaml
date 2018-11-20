@@ -229,6 +229,22 @@ presubmits:
           - e2e_test_gke.yaml
           - --test_result_folder
           - e2e_test
+    - name: presubmit-e2e-test-gke
+      always_run: true
+      decorate: true
+      skip_report: true
+      labels:
+        preset-service-account: "true"
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20181024-be2f242dd-1.10
+          command:
+          - ./test/presubmit-tests.gke.sh
+          args:
+          - --workflow_file
+          - e2e_test_gke.yaml
+          - --test_result_folder
+          - e2e_test
     - name: presubmit-e2e-test-gce-minikube
       always_run: true
       decorate: true
