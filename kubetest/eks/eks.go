@@ -45,7 +45,6 @@ type deployer struct {
 	stopc            chan struct{}
 	cfg              *eksconfig.Config
 	awsK8sTesterPath string
-	kubectlPath      string
 	ctrl             *process.Control
 }
 
@@ -84,47 +83,21 @@ func NewDeployer(timeout time.Duration, verbose bool) (ekstester.Deployer, error
 
 	dp.awsK8sTesterPath, err = exec.LookPath("aws-k8s-tester")
 	if err != nil {
-		dp.awsK8sTesterPath = filepath.Join(os.TempDir(), "aws-k8s-tester")
 		var f *os.File
-		f, err = os.Create(dp.awsK8sTesterPath)
+		f, err = ioutil.TempFile(os.TempDir(), "aws-k8s-tester")
 		if err != nil {
 			return nil, fmt.Errorf("failed to create %q (%v)", dp.awsK8sTesterPath, err)
 		}
-		defer f.Close()
+		dp.awsK8sTesterPath = f.Name()
+		dp.awsK8sTesterPath, _ = filepath.Abs(dp.awsK8sTesterPath)
 		if err = httpRead(cfg.AWSK8sTesterDownloadURL, f); err != nil {
 			return nil, err
 		}
+		f.Close()
 		if err = util.EnsureExecutable(dp.awsK8sTesterPath); err != nil {
 			return nil, err
 		}
 	}
-
-	dp.kubectlPath, err = exec.LookPath("kubectl")
-	if err != nil {
-		return nil, fmt.Errorf("cannot find 'kubectl' executable (%v)", err)
-	}
-
-	// TODO(gyuho): replace this kubernetes native Go client
-	_, err = exec.LookPath("aws-iam-authenticator")
-	if err != nil {
-		bin := filepath.Join(os.TempDir(), "aws-iam-authenticator")
-		var f *os.File
-		f, err = os.Create(bin)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create %q (%v)", bin, err)
-		}
-		defer f.Close()
-		if err = httpRead(cfg.AWSIAMAuthenticatorDownloadURL, f); err != nil {
-			return nil, err
-		}
-		if err = util.EnsureExecutable(bin); err != nil {
-			return nil, err
-		}
-		if err = os.Rename(bin, "/usr/local/bin/aws-iam-authenticator"); err != nil {
-			return nil, err
-		}
-	}
-
 	return dp, nil
 }
 

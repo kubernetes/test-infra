@@ -3,13 +3,9 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["plugins.go"],
-    importmap = "k8s.io/test-infra/vendor/github.com/aws/aws-k8s-tester/ec2config/plugins",
-    importpath = "github.com/aws/aws-k8s-tester/ec2config/plugins",
+    importmap = "k8s.io/test-infra/vendor/github.com/aws/aws-k8s-tester/kubeadmconfig/plugins",
+    importpath = "github.com/aws/aws-k8s-tester/kubeadmconfig/plugins",
     visibility = ["//visibility:public"],
-    deps = [
-        "//vendor/github.com/aws/aws-k8s-tester/etcdconfig/plugins:go_default_library",
-        "//vendor/github.com/aws/aws-k8s-tester/kubeadmconfig/plugins:go_default_library",
-    ],
 )
 
 filegroup(

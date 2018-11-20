@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -41,6 +42,8 @@ type Config struct {
 	// AWSK8sTesterDownloadURL is the URL to download the "aws-k8s-tester" from.
 	// This is required for Kubernetes kubetest plugin.
 	AWSK8sTesterDownloadURL string `json:"aws-k8s-tester-download-url,omitempty"`
+	// KubectlDownloadURL is the URL to download the "kubectl" from.
+	KubectlDownloadURL string `json:"kubectl-download-url,omitempty"`
 	// AWSIAMAuthenticatorDownloadURL is the URL to download the "aws-iam-authenticator" from.
 	// This is required for Kubernetes kubetest plugin.
 	AWSIAMAuthenticatorDownloadURL string `json:"aws-iam-authenticator-download-url,omitempty"`
@@ -371,6 +374,10 @@ func NewDefault() *Config {
 func init() {
 	defaultConfig.Tag = genTag()
 	defaultConfig.ClusterName = defaultConfig.Tag + "-" + randString(7)
+	if runtime.GOOS == "darwin" {
+		defaultConfig.KubectlDownloadURL = strings.Replace(defaultConfig.KubectlDownloadURL, "linux", "darwin", -1)
+		defaultConfig.AWSIAMAuthenticatorDownloadURL = strings.Replace(defaultConfig.AWSIAMAuthenticatorDownloadURL, "linux", "darwin", -1)
+	}
 }
 
 // genTag generates a tag for cluster name, CloudFormation, and S3 bucket.
@@ -389,6 +396,7 @@ var defaultConfig = Config{
 	TestMode: "embedded",
 
 	AWSK8sTesterDownloadURL:        "https://github.com/aws/aws-k8s-tester/releases/download/0.1.2/aws-k8s-tester-0.1.2-linux-amd64",
+	KubectlDownloadURL:             "https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/kubectl",
 	AWSIAMAuthenticatorDownloadURL: "https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator",
 
 	// enough time for ALB access log
@@ -405,7 +413,7 @@ var defaultConfig = Config{
 	AWSCustomEndpoint:        "",
 
 	// Amazon EKS-optimized AMI, https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
-	WorkerNodeAMI: "ami-0a54c984b9f908c81",
+	WorkerNodeAMI: "ami-0f54a2f7d2e9c88b3",
 
 	WorkerNodeInstanceType: "m5.large",
 	WorkderNodeASGMin:      1,
@@ -419,14 +427,14 @@ var defaultConfig = Config{
 	// default, stderr, stdout, or file name
 	// log file named with cluster name will be added automatically
 	LogOutputs:           []string{"stderr"},
-	LogAccess:            true,
-	UploadTesterLogs:     true,
-	UploadWorkerNodeLogs: true,
+	LogAccess:            false,
+	UploadTesterLogs:     false,
+	UploadWorkerNodeLogs: false,
 
 	ClusterState: &ClusterState{},
 	ALBIngressController: &ALBIngressController{
-		Enable:           true,
-		UploadTesterLogs: true,
+		Enable:           false,
+		UploadTesterLogs: false,
 
 		IngressControllerImage: "quay.io/coreos/alb-ingress-controller:1.0-beta.7",
 
@@ -979,15 +987,14 @@ func checkKubernetesVersion(s string) (ok bool) {
 	return ok
 }
 
-var (
-	// supportedRegions is a list of currently EKS supported AWS regions.
-	// See https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services.
-	supportedRegions = map[string]struct{}{
-		"us-west-2": {},
-		"us-east-1": {},
-		"eu-west-1": {},
-	}
-)
+// supportedRegions is a list of currently EKS supported AWS regions.
+// See https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services.
+var supportedRegions = map[string]struct{}{
+	"us-west-2": {},
+	"us-east-1": {},
+	"us-east-2": {},
+	"eu-west-1": {},
+}
 
 func checkRegion(s string) (ok bool) {
 	_, ok = supportedRegions[s]
@@ -997,17 +1004,19 @@ func checkRegion(s string) (ok bool) {
 // https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
 // https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
 var regionToAMICPU = map[string]string{
-	"us-west-2": "ami-0a54c984b9f908c81",
-	"us-east-1": "ami-0440e4f6b9713faf6",
-	"eu-west-1": "ami-0c7a4976cb6fafd3a",
+	"us-west-2": "ami-0f54a2f7d2e9c88b3",
+	"us-east-1": "ami-0a0b913ef3249b655",
+	"us-east-2": "ami-0958a76db2d150238",
+	"eu-west-1": "ami-00c3b2d35bddd4f5c",
 }
 
 // https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
 // https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
 var regionToAMIGPU = map[string]string{
-	"us-west-2": "ami-0731694d53ef9604b",
-	"us-east-1": "ami-058bfb8c236caae89",
-	"eu-west-1": "ami-0706dc8a5eed2eed9",
+	"us-west-2": "ami-08156e8fd65879a13",
+	"us-east-1": "ami-0c974dde3f6d691a1",
+	"us-east-2": "ami-089849e811ace242f",
+	"eu-west-1": "ami-0c3479bcd739094f0",
 }
 
 func checkAMI(region, imageID string) (ok bool) {
