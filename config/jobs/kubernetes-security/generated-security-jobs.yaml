@@ -1606,7 +1606,7 @@ presubmits:
           env:
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
-          image: gcr.io/k8s-testimages/e2e-kubeadm:v20181105-3f98a394f
+          image: gcr.io/k8s-testimages/e2e-kubeadm:v20181120-69252eea8
           name: ""
           resources: {}
           volumeMounts:
@@ -1704,7 +1704,7 @@ presubmits:
           env:
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
-          image: gcr.io/k8s-testimages/e2e-kubeadm:v20181105-3f98a394f
+          image: gcr.io/k8s-testimages/e2e-kubeadm:v20181120-69252eea8
           name: ""
           resources: {}
           volumeMounts:
@@ -1799,7 +1799,7 @@ presubmits:
           env:
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
-          image: gcr.io/k8s-testimages/e2e-kubeadm:v20181105-3f98a394f
+          image: gcr.io/k8s-testimages/e2e-kubeadm:v20181120-69252eea8
           name: ""
           resources: {}
           volumeMounts:
