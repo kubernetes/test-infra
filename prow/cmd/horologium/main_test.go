@@ -153,10 +153,12 @@ func TestSync(t *testing.T) {
 // Test sync periodic job scheduled by cron.
 func TestSyncCron(t *testing.T) {
 	testcases := []struct {
-		testName    string
-		jobName     string
-		jobComplete bool
-		shouldStart bool
+		testName       string
+		jobName        string
+		jobComplete    bool
+		shouldStart    bool
+		jobState       kube.ProwJobState
+		maxConcurrency int
 	}{
 		{
 			testName:    "no job",
@@ -169,10 +171,26 @@ func TestSyncCron(t *testing.T) {
 			shouldStart: true,
 		},
 		{
-			testName:    "job still running",
+			testName:    "job still running no maxconcurrency",
 			jobName:     "j",
 			jobComplete: false,
-			shouldStart: false,
+			shouldStart: true,
+		},
+		{
+			testName:       "job still running maxconcurrency 1",
+			jobName:        "j",
+			jobComplete:    false,
+			shouldStart:    false,
+			maxConcurrency: 1,
+			jobState:       kube.PendingState,
+		},
+		{
+			testName:       "job still running maxconcurrency 2",
+			jobName:        "j",
+			jobComplete:    false,
+			shouldStart:    true,
+			maxConcurrency: 2,
+			jobState:       kube.PendingState,
 		},
 		{
 			testName:    "job finished",
@@ -184,7 +202,7 @@ func TestSyncCron(t *testing.T) {
 	for _, tc := range testcases {
 		cfg := config.Config{
 			JobConfig: config.JobConfig{
-				Periodics: []config.Periodic{{JobBase: config.JobBase{Name: "j"}, Cron: "@every 1m"}},
+				Periodics: []config.Periodic{{JobBase: config.JobBase{Name: "j", MaxConcurrency: tc.maxConcurrency}, Cron: "@every 1m"}},
 			},
 		}
 
@@ -202,7 +220,11 @@ func TestSyncCron(t *testing.T) {
 			}}
 			complete := metav1.NewTime(now.Add(-time.Millisecond))
 			if tc.jobComplete {
+				jobs[0].Status.State = kube.SuccessState
 				jobs[0].Status.CompletionTime = &complete
+			}
+			if tc.jobState != "" {
+				jobs[0].Status.State = tc.jobState
 			}
 		}
 		kc := &fakeKube{jobs: jobs}

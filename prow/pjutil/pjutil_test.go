@@ -390,7 +390,7 @@ func TestGetLatestProwJobs(t *testing.T) {
 						RerunCommand: "/test extended_networking_minimal",
 					},
 					Status: kube.ProwJobStatus{
-						StartTime:   metav1.Date(2017, time.October, 26, 22, 22, 19, 0, time.UTC),
+						StartTime:   metav1.Date(2017, time.October, 25, 22, 22, 19, 0, time.UTC),
 						State:       kube.FailureState,
 						Description: "Jenkins job failed.",
 						URL:         "https://openshift-gce-devel.appspot.com/build/origin-ci-test/pr-logs/pull/17061/test_pull_request_origin_extended_networking_minimal/9755/",
@@ -410,9 +410,154 @@ func TestGetLatestProwJobs(t *testing.T) {
 			t.Errorf("expected jobs:\n%+v\ngot jobs:\n%+v", test.expected, got)
 			continue
 		}
-		for name := range test.expected {
-			if _, ok := got[name]; ok {
+		for name, job := range got {
+			if _, ok := test.expected[job.ObjectMeta.Name]; !ok {
+				t.Errorf("expected job: %s, %s", name, job.ObjectMeta.Name)
+			}
+		}
+	}
+}
+
+func TestGetTriggeredAndPendingProwJobs(t *testing.T) {
+	tests := []struct {
+		name string
+
+		pjs     []kube.ProwJob
+		jobType string
+
+		expected map[string]int
+	}{
+		{
+			name: "skipped states",
+			pjs: []kube.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "831c7df0-baa4-11e7-a1a4-0a58ac10134a",
+					},
+					Spec: kube.ProwJobSpec{
+						Type: kube.PresubmitJob,
+						Job:  "job1",
+					},
+					Status: kube.ProwJobStatus{
+						StartTime: metav1.Date(2017, time.October, 26, 23, 22, 19, 0, time.UTC),
+						State:     kube.FailureState,
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "0079d4d3-ba25-11e7-ae3f-0a58ac10123b",
+					},
+					Spec: kube.ProwJobSpec{
+						Type: kube.PresubmitJob,
+						Job:  "job2",
+					},
+					Status: kube.ProwJobStatus{
+						StartTime: metav1.Date(2017, time.October, 26, 22, 22, 19, 0, time.UTC),
+						State:     kube.SuccessState,
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "831c7df0-baa4-11e7-a1a4-0a58ac10134a",
+					},
+					Spec: kube.ProwJobSpec{
+						Type: kube.PresubmitJob,
+						Job:  "job1",
+					},
+					Status: kube.ProwJobStatus{
+						StartTime: metav1.Date(2017, time.October, 26, 23, 22, 19, 0, time.UTC),
+						State:     kube.AbortedState,
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "0079d4d3-ba25-11e7-ae3f-0a58ac10123b",
+					},
+					Spec: kube.ProwJobSpec{
+						Type: kube.PresubmitJob,
+						Job:  "job2",
+					},
+					Status: kube.ProwJobStatus{
+						StartTime: metav1.Date(2017, time.October, 26, 22, 22, 19, 0, time.UTC),
+						State:     kube.ErrorState,
+					},
+				},
+			},
+			jobType:  "presubmit",
+			expected: map[string]int{},
+		},
+		{
+			name: "2 running with name",
+			pjs: []kube.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "831c7df0-baa4-11e7-a1a4-0a58ac10134a",
+					},
+					Spec: kube.ProwJobSpec{
+						Type: kube.PresubmitJob,
+						Job:  "job1",
+					},
+					Status: kube.ProwJobStatus{
+						StartTime: metav1.Date(2017, time.October, 26, 23, 22, 19, 0, time.UTC),
+						State:     kube.FailureState,
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "0079d4d3-ba25-11e7-ae3f-0a58ac10123b",
+					},
+					Spec: kube.ProwJobSpec{
+						Type: kube.PresubmitJob,
+						Job:  "job2",
+					},
+					Status: kube.ProwJobStatus{
+						StartTime: metav1.Date(2017, time.October, 26, 22, 22, 19, 0, time.UTC),
+						State:     kube.PendingState,
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "831c7df0-baa4-11e7-a1a4-0a58ac10134a",
+					},
+					Spec: kube.ProwJobSpec{
+						Type: kube.PresubmitJob,
+						Job:  "job1",
+					},
+					Status: kube.ProwJobStatus{
+						StartTime: metav1.Date(2017, time.October, 26, 23, 22, 19, 0, time.UTC),
+						State:     kube.TriggeredState,
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "0079d4d3-ba25-11e7-ae3f-0a58ac10123b",
+					},
+					Spec: kube.ProwJobSpec{
+						Type: kube.PresubmitJob,
+						Job:  "job1",
+					},
+					Status: kube.ProwJobStatus{
+						StartTime: metav1.Date(2017, time.October, 26, 22, 22, 19, 0, time.UTC),
+						State:     kube.PendingState,
+					},
+				},
+			},
+			jobType:  "presubmit",
+			expected: map[string]int{"job1": 2, "job2": 1},
+		},
+	}
+
+	for _, test := range tests {
+		got := GetTriggeredAndPendingProwJobs(test.pjs, kube.ProwJobType(test.jobType))
+		if len(got) != len(test.expected) {
+			t.Errorf("expected jobs %d got jobs %d", len(test.expected), len(got))
+			continue
+		}
+		for name, count := range test.expected {
+			if jobs, ok := got[name]; !ok {
 				t.Errorf("expected job: %s", name)
+			} else if len(jobs) != count {
+				t.Errorf("expected %d matching jobs for %s got %d", count, name, len(jobs))
 			}
 		}
 	}
