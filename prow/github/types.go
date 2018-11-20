@@ -140,6 +140,7 @@ type Status struct {
 
 // CombinedStatus is the latest statuses for a ref.
 type CombinedStatus struct {
+	SHA      string   `json:"sha"`
 	Statuses []Status `json:"statuses"`
 }
 
