@@ -366,6 +366,11 @@ automatically merged by [Tide][6].
 Tide can be enabled by modifying `config.yaml`.
 See [how to configure tide][7] for more details.
 
+### Setup PR status dashboard
+
+To setup a PR status dashboard like https://prow.k8s.io/pr, follow the
+instructions in [`pr_status_setup.md`](https://github.com/kubernetes/test-infra/blob/master/prow/docs/pr_status_setup.md).
+
 ## Configure SSL
 
 Use [cert-manager][3] for automatic LetsEncrypt integration. If you
