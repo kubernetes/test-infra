@@ -864,9 +864,9 @@ func (c *Client) ListIssueComments(org, repo string, number int) ([]IssueComment
 	return comments, nil
 }
 
-// GetPullRequests get all pull requests.
+// GetPullRequests get all open pull requests for a repo.
 //
-// See https://developer.github.com/v3/pulls/#get-a-single-pull-request
+// See https://developer.github.com/v3/pulls/#list-pull-requests
 func (c *Client) GetPullRequests(org, repo string) ([]PullRequest, error) {
 	c.log("GetPullRequests", org, repo)
 	var prs []PullRequest

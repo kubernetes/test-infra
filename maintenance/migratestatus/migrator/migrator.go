@@ -19,10 +19,10 @@ package migrator
 import (
 	"fmt"
 
-	"k8s.io/test-infra/pkg/ghclient"
-
 	"github.com/golang/glog"
-	"github.com/google/go-github/github"
+	"k8s.io/test-infra/prow/errorutil"
+
+	"k8s.io/test-infra/prow/github"
 )
 
 var (
@@ -46,22 +46,23 @@ type Mode struct {
 	conditions []*contextCondition
 	// actions returns the status updates to make based on the current statuses and the sha.
 	// When actions is called, the Mode may assume that it's conditions are met.
-	actions func(statuses []github.RepoStatus, sha string) []*github.RepoStatus
+	actions func(statuses []github.Status, sha string) []github.Status
 }
 
 // MoveMode creates a mode that both copies and retires.
 // The mode creates a new context on every PR with the old context but not the new one, setting the
-// state of the new context to that of the old context before retiring the old context.
-func MoveMode(origContext, newContext string) *Mode {
+// state of the new context to that of the old context before retiring the old context. A target URL
+// to describe why the old context was migrated can optionally be provided, as well.
+func MoveMode(origContext, newContext, targetURL string) *Mode {
 	dup := copyAction(origContext, newContext)
-	dep := retireAction(origContext, newContext)
+	dep := retireAction(origContext, newContext, targetURL)
 
 	return &Mode{
 		conditions: []*contextCondition{
 			{context: origContext, state: stateAny},
 			{context: newContext, state: stateDNE},
 		},
-		actions: func(statuses []github.RepoStatus, sha string) []*github.RepoStatus {
+		actions: func(statuses []github.Status, sha string) []github.Status {
 			return append(dup(statuses, sha), dep(statuses, sha)...)
 		},
 	}
@@ -84,38 +85,41 @@ func CopyMode(origContext, newContext string) *Mode {
 // 'success' and its description is set to indicate that the context is retired.
 // If newContext is not the empty string it is considered the replacement of origContext. This means
 // that only PRs that have the newContext in addition to the origContext will be considered and the
-// description of the retired context will indicate that it was replaced by newContext.
-func RetireMode(origContext, newContext string) *Mode {
+// description of the retired context will indicate that it was replaced by newContext. A target URL
+// to describe why the old context was migrated can optionally be provided, as well.
+func RetireMode(origContext, newContext, targetURL string) *Mode {
 	conditions := []*contextCondition{{context: origContext, state: stateAny}}
 	if newContext != "" {
 		conditions = append(conditions, &contextCondition{context: newContext, state: stateAny})
 	}
 	return &Mode{
 		conditions: conditions,
-		actions:    retireAction(origContext, newContext),
+		actions:    retireAction(origContext, newContext, targetURL),
 	}
 }
 
 // copyAction creates a function that returns a copy action.
 // Specifically the returned function returns a RepoStatus that will create a status for newContext
 // with state set to the state of origContext.
-func copyAction(origContext, newContext string) func(statuses []github.RepoStatus, sha string) []*github.RepoStatus {
-	return func(statuses []github.RepoStatus, sha string) []*github.RepoStatus {
-		var oldStatus *github.RepoStatus
+func copyAction(origContext, newContext string) func(statuses []github.Status, sha string) []github.Status {
+	return func(statuses []github.Status, sha string) []github.Status {
+		var oldStatus github.Status
+		var found bool
 		for _, status := range statuses {
-			if status.Context != nil && *status.Context == origContext {
-				oldStatus = &status
+			if status.Context == origContext {
+				oldStatus = status
+				found = true
 				break
 			}
 		}
-		if oldStatus == nil {
+		if !found {
 			// This means the conditions were not met! Should never have called this function, but it is a recoverable error.
 			glog.Error("failed to find original context in status list thus conditions for this duplicate action were not met. This should never happen!")
 			return nil
 		}
-		return []*github.RepoStatus{
+		return []github.Status{
 			{
-				Context:     &newContext,
+				Context:     newContext,
 				State:       oldStatus.State,
 				TargetURL:   oldStatus.TargetURL,
 				Description: oldStatus.Description,
@@ -127,7 +131,9 @@ func copyAction(origContext, newContext string) func(statuses []github.RepoStatu
 // retireAction creates a function that returns a retire action.
 // Specifically the returned function returns a RepoStatus that will update the origContext status
 // to 'success' and set it's description to mark it as retired and replaced by newContext.
-func retireAction(origContext, newContext string) func(statuses []github.RepoStatus, sha string) []*github.RepoStatus {
+// If a non-empty URL is provided to describe why the context was retired, it will be
+// set as the target URL for the context.
+func retireAction(origContext, newContext, targetURL string) func(statuses []github.Status, sha string) []github.Status {
 	stateSuccess := "success"
 	var desc string
 	if newContext == "" {
@@ -135,65 +141,61 @@ func retireAction(origContext, newContext string) func(statuses []github.RepoSta
 	} else {
 		desc = fmt.Sprintf("Context retired. Status moved to \"%s\".", newContext)
 	}
-	return func(statuses []github.RepoStatus, sha string) []*github.RepoStatus {
-		return []*github.RepoStatus{
+	return func(statuses []github.Status, sha string) []github.Status {
+		return []github.Status{
 			{
-				Context:     &origContext,
-				State:       &stateSuccess,
-				TargetURL:   nil,
-				Description: &desc,
+				Context:     origContext,
+				State:       stateSuccess,
+				TargetURL:   targetURL,
+				Description: desc,
 			},
 		}
 	}
 }
 
 // processStatuses checks the mode against the combined status of a PR and emits the actions to take.
-func (m Mode) processStatuses(combStatus *github.CombinedStatus) []*github.RepoStatus {
-	var sha string
-	if combStatus.SHA != nil {
-		sha = *combStatus.SHA
-	}
-
+func (m Mode) processStatuses(combStatus *github.CombinedStatus) []github.Status {
 	for _, cond := range m.conditions {
-		var match *github.RepoStatus
-		match = nil
+		var match github.Status
+		var found bool
 		for _, status := range combStatus.Statuses {
-			if status.Context == nil {
-				glog.Errorf("a status context for SHA ref '%s' had a nil Context field.", sha)
+			if status.Context == "" {
+				glog.Errorf("a status context for SHA ref '%s' had an empty Context field.", combStatus.SHA)
 				continue
 			}
-			if *status.Context == cond.context {
-				match = &status
+			if status.Context == cond.context {
+				match = status
+				found = true
 				break
 			}
 		}
 
 		switch cond.state {
 		case stateDNE:
-			if match != nil {
+			if found {
 				return nil
 			}
 		case stateAny:
-			if match == nil {
+			if !found {
 				return nil
 			}
 		default:
 			// Looking for a specific state in this case.
-			if match == nil {
+			if !found {
 				// Did not find the context.
 				return nil
 			}
-			if match.State == nil {
-				glog.Errorf("context '%s' of SHA ref '%s' has a nil state.", cond.context, sha)
+			if match.State == "" {
+				glog.Errorf("context '%s' of SHA ref '%s' has an empty state.", cond.context, combStatus.SHA)
 				return nil
 			}
-			if *match.State != cond.state {
+			if match.State != cond.state {
 				// Context had a different state than what the condition requires.
 				return nil
 			}
 		}
 	}
-	return m.actions(combStatus.Statuses, sha)
+	return m.actions(combStatus.Statuses, combStatus.SHA)
 }
 
 // Migrator will search github for PRs with a given context and migrate/retire/move them.
@@ -202,42 +204,30 @@ type Migrator struct {
 	repo            string
 	continueOnError bool
 
-	client *ghclient.Client
+	client *github.Client
 	Mode
 }
 
-// New creates a new migrator with specified options.
-//
-// If dryRun is true it will only perform GET requests that do not change github.
-func New(mode Mode, token, org, repo string, dryRun, continueOnError bool) *Migrator {
+// New creates a new migrator with specified options and client.
+func New(mode Mode, client *github.Client, org, repo string, continueOnError bool) *Migrator {
 	return &Migrator{
 		org:             org,
 		repo:            repo,
 		continueOnError: continueOnError,
-		client:          ghclient.NewClient(token, dryRun),
+		client:          client,
 		Mode:            mode,
 	}
 }
 
-func (m *Migrator) processPR(pr *github.PullRequest) error {
-	if pr == nil {
-		return fmt.Errorf("migrator cannot process a nil PullRequest")
-	}
-	if pr.Head == nil {
-		return fmt.Errorf("migrator cannot process a PullRequest with a nil 'Head' field")
-	}
-	if pr.Head.SHA == nil {
-		return fmt.Errorf("migrator cannot process a PullRequest with a nil 'Head.SHA' field")
-	}
-
-	combined, err := m.client.GetCombinedStatus(m.org, m.repo, *pr.Head.SHA)
+func (m *Migrator) processPR(pr github.PullRequest) error {
+	combined, err := m.client.GetCombinedStatus(m.org, m.repo, pr.Head.SHA)
 	if err != nil {
 		return err
 	}
 	actions := m.processStatuses(combined)
 
 	for _, action := range actions {
-		if _, err = m.client.CreateStatus(m.org, m.repo, *pr.Head.SHA, action); err != nil {
+		if err := m.client.CreateStatus(m.org, m.repo, pr.Head.SHA, action); err != nil {
 			return err
 		}
 	}
@@ -245,6 +235,21 @@ func (m *Migrator) processPR(pr *github.PullRequest) error {
 }
 
 // Migrate will retire/migrate/copy statuses for all matching PRs.
-func (m *Migrator) Migrate(prOptions *github.PullRequestListOptions) error {
-	return m.client.ForEachPR(m.org, m.repo, prOptions, m.continueOnError, m.processPR)
+func (m *Migrator) Migrate() error {
+	prs, err := m.client.GetPullRequests(m.org, m.repo)
+	if err != nil {
+		return err
+	}
+
+	var errors []error
+	for _, pr := range prs {
+		if err := m.processPR(pr); err != nil {
+			if m.continueOnError {
+				errors = append(errors, err)
+				continue
+			}
+			return err
+		}
+	}
+	return errorutil.NewAggregate(errors...)
 }
