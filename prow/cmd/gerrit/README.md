@@ -1,8 +1,8 @@
 # Gerrit
 
 Gerrit is a Prow-gerrit adapter for handling CI on gerrit workflows. It can poll gerrit
-changes from multiple gerrit instances, and trigger presubmits on Prow upon new patchsets on
-gerrit changes.
+changes from multiple gerrit instances, and trigger presubmits on Prow upon new patchsets
+on Gerrit changes, and postsubmits when Gerrit changes are merged.
 
 ## Deployment Usage
 
@@ -29,4 +29,4 @@ it empty for anonymous access to gerrit API.
 
 Also take a look at [gerrit related packages](/prow/gerrit/README.md) for implementation details.
 
-you might also want to deploy [Crier](/prow/cmd/crier) which handles report presubmit jobs back to gerrit.
+You might also want to deploy [Crier](/prow/cmd/crier) which reports job results back to gerrit.

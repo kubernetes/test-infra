@@ -52,6 +52,11 @@ const (
 	DeprecatedGerritInstance = "gerrit-instance"
 	// DeprecatedGerritRevision is the deprecated version of GerritRevision
 	DeprecatedGerritRevision = "gerrit-revision"
+
+	// Merged status indicates a Gerrit change has been merged
+	Merged = "MERGED"
+	// New status indicates a Gerrit change is new (ie pending)
+	New = "NEW"
 )
 
 // ProjectsFlag is the flag type for gerrit projects when initializing a gerrit client
@@ -255,7 +260,7 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 	pending := []gerrit.ChangeInfo{}
 
 	opt := &gerrit.QueryChangeOptions{}
-	opt.Query = append(opt.Query, "project:"+project+"+status:open")
+	opt.Query = append(opt.Query, "project:"+project)
 	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT"}
 
 	start := 0
@@ -290,31 +295,47 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 				continue
 			}
 
-			logrus.Infof("Change %d, last updated %s", change.Number, change.Updated)
+			logrus.Infof("Change %d, last updated %s, status %s", change.Number, change.Updated, change.Status)
 
 			// process if updated later than last updated
 			// stop if update was stale
 			if !updated.Before(lastUpdate) {
-				// we need to make sure the change update is from a new commit change
-				rev, ok := change.Revisions[change.CurrentRevision]
-				if !ok {
-					logrus.WithError(err).Errorf("(should not happen?)cannot find current revision for change %v", change.ID)
-					continue
-				}
+				switch change.Status {
+				case Merged:
+					submitted, err := time.Parse(layout, change.Submitted)
+					if err != nil {
+						logrus.WithError(err).Errorf("Parse time %v failed", change.Submitted)
+						continue
+					}
+					if submitted.Before(lastUpdate) {
+						logrus.Infof("Change %d, submitted %s before lastUpdate %s, skipping this patchset", change.Number, submitted, lastUpdate)
+						continue
+					}
+					pending = append(pending, change)
+				case New:
+					// we need to make sure the change update is from a fresh commit change
+					rev, ok := change.Revisions[change.CurrentRevision]
+					if !ok {
+						logrus.WithError(err).Errorf("(should not happen?)cannot find current revision for change %v", change.ID)
+						continue
+					}
 
-				created, err := time.Parse(layout, rev.Created)
-				if err != nil {
-					logrus.WithError(err).Errorf("Parse time %v failed", rev.Created)
-					continue
-				}
+					created, err := time.Parse(layout, rev.Created)
+					if err != nil {
+						logrus.WithError(err).Errorf("Parse time %v failed", rev.Created)
+						continue
+					}
 
-				if created.Before(lastUpdate) {
-					// stale commit
-					logrus.Infof("Change %d, latest revision updated %s before lastUpdate %s, skipping this patchset", change.Number, created, lastUpdate)
-					continue
-				}
+					if created.Before(lastUpdate) {
+						// stale commit
+						logrus.Infof("Change %d, latest revision updated %s before lastUpdate %s, skipping this patchset", change.Number, created, lastUpdate)
+						continue
+					}
 
-				pending = append(pending, change)
+					pending = append(pending, change)
+				default:
+					// change has been abandoned, do nothing
+				}
 			} else {
 				logrus.Infof("Change %d, updated %s before lastUpdate %s, return", change.Number, change.Updated, lastUpdate)
 				return pending, nil

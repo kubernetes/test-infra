@@ -128,6 +128,7 @@ func TestProcessChange(t *testing.T) {
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "test-infra",
+				Status:          "NEW",
 			},
 			shouldError: true,
 		},
@@ -136,6 +137,7 @@ func TestProcessChange(t *testing.T) {
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "woof",
+				Status:          "NEW",
 				Revisions: map[string]client.RevisionInfo{
 					"1": {},
 				},
@@ -146,6 +148,7 @@ func TestProcessChange(t *testing.T) {
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "test-infra",
+				Status:          "NEW",
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Ref: "refs/changes/00/1/1",
@@ -160,6 +163,7 @@ func TestProcessChange(t *testing.T) {
 			change: client.ChangeInfo{
 				CurrentRevision: "2",
 				Project:         "test-infra",
+				Status:          "NEW",
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Ref: "refs/changes/00/2/1",
@@ -177,6 +181,7 @@ func TestProcessChange(t *testing.T) {
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "other-repo",
+				Status:          "NEW",
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Ref: "refs/changes/00/1/1",
@@ -185,6 +190,34 @@ func TestProcessChange(t *testing.T) {
 			},
 			numPJ: 1,
 			pjRef: "refs/changes/00/1/1",
+		},
+		{
+			name: "merged change should trigger postsubmit",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "postsubmits-project",
+				Status:          "MERGED",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Ref: "refs/changes/00/1/1",
+					},
+				},
+			},
+			numPJ: 1,
+			pjRef: "refs/changes/00/1/1",
+		},
+		{
+			name: "merged change on project without postsubmits",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "MERGED",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Ref: "refs/changes/00/1/1",
+					},
+				},
+			},
 		},
 	}
 
@@ -204,6 +237,15 @@ func TestProcessChange(t *testing.T) {
 							{
 								JobBase: config.JobBase{
 									Name: "other-test",
+								},
+							},
+						},
+					},
+					Postsubmits: map[string][]config.Postsubmit{
+						"gerrit/postsubmits-project": {
+							{
+								JobBase: config.JobBase{
+									Name: "test-bar",
 								},
 							},
 						},
