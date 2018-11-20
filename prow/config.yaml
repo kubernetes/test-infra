@@ -156,6 +156,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        node-api:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         org:
           restrictions: # only allow admins
             users: []
