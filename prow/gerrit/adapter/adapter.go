@@ -145,7 +145,7 @@ func (c *Controller) SaveLastSync(lastSync time.Time) error {
 }
 
 // Sync looks for newly made gerrit changes
-// and creates prowjobs according to presubmit specs
+// and creates prowjobs according to specs
 func (c *Controller) Sync() error {
 	// gerrit timestamp only has second precision
 	syncTime := time.Now().Truncate(time.Second)
@@ -204,50 +204,91 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 
 	triggeredJobs := []string{}
 
-	presubmits := c.ca.Config().Presubmits[cloneURI.String()]
-	presubmits = append(presubmits, c.ca.Config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
-	for _, spec := range presubmits {
-		kr := kube.Refs{
-			Org:      cloneURI.Host,  // Something like android.googlesource.com
-			Repo:     change.Project, // Something like platform/build
-			BaseRef:  change.Branch,
-			BaseSHA:  baseSHA,
-			CloneURI: cloneURI.String(), // Something like https://android.googlesource.com/platform/build
-			Pulls: []kube.Pull{
-				{
-					Number: change.Number,
-					Author: rev.Commit.Author.Name,
-					SHA:    change.CurrentRevision,
-					Ref:    rev.Ref,
+	if change.Status == client.Merged {
+		postsubmits := c.ca.Config().Postsubmits[cloneURI.String()]
+		postsubmits = append(postsubmits, c.ca.Config().Postsubmits[cloneURI.Host+"/"+cloneURI.Path]...)
+		for _, spec := range postsubmits {
+			kr := kube.Refs{
+				Org:      cloneURI.Host,  // Something like android.googlesource.com
+				Repo:     change.Project, // Something like platform/build
+				BaseRef:  change.Branch,
+				BaseSHA:  baseSHA,
+				CloneURI: cloneURI.String(), // Something like https://android.googlesource.com/platform/build
+				Pulls: []kube.Pull{
+					{
+						Number: change.Number,
+						Author: rev.Commit.Author.Name,
+						SHA:    change.CurrentRevision,
+						Ref:    rev.Ref,
+					},
 				},
-			},
+			}
+
+			pj := pjutil.NewProwJobWithAnnotation(
+				pjutil.PostsubmitSpec(spec, kr),
+				map[string]string{
+					client.GerritRevision: change.CurrentRevision,
+				},
+				map[string]string{
+					client.GerritID:       change.ID,
+					client.GerritInstance: instance,
+				},
+			)
+
+			logger.WithFields(pjutil.ProwJobFields(&pj)).Infof("Creating a new postsubmit job for change %d.", change.Number)
+
+			if _, err := c.kc.CreateProwJob(pj); err != nil {
+				logger.WithError(err).Errorf("fail to create prowjob %v", pj)
+			} else {
+				triggeredJobs = append(triggeredJobs, spec.Name)
+			}
 		}
+	} else {
+		presubmits := c.ca.Config().Presubmits[cloneURI.String()]
+		presubmits = append(presubmits, c.ca.Config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
+		for _, spec := range presubmits {
+			kr := kube.Refs{
+				Org:      cloneURI.Host,  // Something like android.googlesource.com
+				Repo:     change.Project, // Something like platform/build
+				BaseRef:  change.Branch,
+				BaseSHA:  baseSHA,
+				CloneURI: cloneURI.String(), // Something like https://android.googlesource.com/platform/build
+				Pulls: []kube.Pull{
+					{
+						Number: change.Number,
+						Author: rev.Commit.Author.Name,
+						SHA:    change.CurrentRevision,
+						Ref:    rev.Ref,
+					},
+				},
+			}
 
-		// TODO(krzyzacy): Support AlwaysRun and RunIfChanged
+			// TODO(krzyzacy): Support AlwaysRun and RunIfChanged
 
-		pj := pjutil.NewProwJobWithAnnotation(
-			pjutil.PresubmitSpec(spec, kr),
-			map[string]string{
-				client.GerritRevision: change.CurrentRevision,
-			},
-			map[string]string{
-				client.GerritID:       change.ID,
-				client.GerritInstance: instance,
-			},
-		)
+			pj := pjutil.NewProwJobWithAnnotation(
+				pjutil.PresubmitSpec(spec, kr),
+				map[string]string{
+					client.GerritRevision: change.CurrentRevision,
+				},
+				map[string]string{
+					client.GerritID:       change.ID,
+					client.GerritInstance: instance,
+				},
+			)
 
-		logger.WithFields(pjutil.ProwJobFields(&pj)).Infof("Creating a new prowjob for change %d.", change.Number)
+			logger.WithFields(pjutil.ProwJobFields(&pj)).Infof("Creating a new presubmit job for change %d.", change.Number)
 
-		if _, err := c.kc.CreateProwJob(pj); err != nil {
-			logger.WithError(err).Errorf("fail to create prowjob %v", pj)
-		} else {
-			triggeredJobs = append(triggeredJobs, spec.Name)
+			if _, err := c.kc.CreateProwJob(pj); err != nil {
+				logger.WithError(err).Errorf("fail to create prowjob %v", pj)
+			} else {
+				triggeredJobs = append(triggeredJobs, spec.Name)
+			}
 		}
 	}
 
 	if len(triggeredJobs) > 0 {
 		// comment back to gerrit
-		message := fmt.Sprintf("Triggered %d presubmit jobs:", len(triggeredJobs))
+		message := fmt.Sprintf("Triggered %d prow jobs:", len(triggeredJobs))
 		for _, job := range triggeredJobs {
 			message += fmt.Sprintf("\n  * Name: %s", job)
 		}
