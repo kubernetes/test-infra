@@ -204,7 +204,8 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 
 	triggeredJobs := []string{}
 
-	if change.Status == client.Merged {
+	switch change.Status {
+	case client.Merged:
 		postsubmits := c.ca.Config().Postsubmits[cloneURI.String()]
 		postsubmits = append(postsubmits, c.ca.Config().Postsubmits[cloneURI.Host+"/"+cloneURI.Path]...)
 		for _, spec := range postsubmits {
@@ -243,7 +244,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 				triggeredJobs = append(triggeredJobs, spec.Name)
 			}
 		}
-	} else {
+	case client.New:
 		presubmits := c.ca.Config().Presubmits[cloneURI.String()]
 		presubmits = append(presubmits, c.ca.Config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
 		for _, spec := range presubmits {
