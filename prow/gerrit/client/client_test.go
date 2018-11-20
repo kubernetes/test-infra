@@ -93,6 +93,7 @@ func TestQueryChange(t *testing.T) {
 								Created: now.Add(-time.Hour).Format(layout),
 							},
 						},
+						Status: "NEW",
 					},
 				},
 			},
@@ -113,6 +114,7 @@ func TestQueryChange(t *testing.T) {
 								Created: now.Format(layout),
 							},
 						},
+						Status: "NEW",
 					},
 				},
 			},
@@ -135,6 +137,7 @@ func TestQueryChange(t *testing.T) {
 								Created: now.Format(layout),
 							},
 						},
+						Status: "NEW",
 					},
 				},
 			},
@@ -157,6 +160,7 @@ func TestQueryChange(t *testing.T) {
 								Created: now.Add(-time.Hour).Format(layout),
 							},
 						},
+						Status: "NEW",
 					},
 				},
 			},
@@ -177,6 +181,7 @@ func TestQueryChange(t *testing.T) {
 								Created: now.Format(layout),
 							},
 						},
+						Status: "NEW",
 					},
 				},
 			},
@@ -197,6 +202,7 @@ func TestQueryChange(t *testing.T) {
 								Created: now.Format(layout),
 							},
 						},
+						Status: "NEW",
 					},
 				},
 			},
@@ -217,6 +223,7 @@ func TestQueryChange(t *testing.T) {
 								Created: now.Format(layout),
 							},
 						},
+						Status: "NEW",
 					},
 					{
 						Project:         "bar",
@@ -228,6 +235,7 @@ func TestQueryChange(t *testing.T) {
 								Created: now.Format(layout),
 							},
 						},
+						Status: "NEW",
 					},
 				},
 			},
@@ -250,6 +258,7 @@ func TestQueryChange(t *testing.T) {
 								Created: now.Format(layout),
 							},
 						},
+						Status: "NEW",
 					},
 					{
 						Project:         "bar",
@@ -261,6 +270,7 @@ func TestQueryChange(t *testing.T) {
 								Created: now.Add(-time.Hour).Format(layout),
 							},
 						},
+						Status: "NEW",
 					},
 				},
 			},
@@ -283,6 +293,7 @@ func TestQueryChange(t *testing.T) {
 								Created: now.Format(layout),
 							},
 						},
+						Status: "NEW",
 					},
 					{
 						Project:         "bar",
@@ -294,6 +305,7 @@ func TestQueryChange(t *testing.T) {
 								Created: now.Format(layout),
 							},
 						},
+						Status: "NEW",
 					},
 				},
 				"baz": {
@@ -310,6 +322,7 @@ func TestQueryChange(t *testing.T) {
 								Created: now.Format(layout),
 							},
 						},
+						Status: "NEW",
 					},
 					{
 						Project:         "evil",
@@ -321,12 +334,92 @@ func TestQueryChange(t *testing.T) {
 								Created: now.Add(-time.Hour).Format(layout),
 							},
 						},
+						Status: "NEW",
 					},
 				},
 			},
 			revisions: map[string][]string{
 				"foo": {"1-1", "2-1"},
 				"baz": {"3-2"},
+			},
+		},
+		{
+			name:       "one up-to-date merged change",
+			lastUpdate: now.Add(-time.Minute),
+			changes: map[string][]gerrit.ChangeInfo{
+				"foo": {
+					{
+						Project:         "bar",
+						ID:              "1",
+						CurrentRevision: "1-1",
+						Updated:         now.Format(layout),
+						Submitted:       now.Format(layout),
+						Status:          "MERGED",
+					},
+				},
+			},
+			revisions: map[string][]string{
+				"foo": {"1-1"},
+			},
+		},
+		{
+			name:       "one up-to-date abandoned change",
+			lastUpdate: now.Add(-time.Minute),
+			changes: map[string][]gerrit.ChangeInfo{
+				"foo": {
+					{
+						Project:         "bar",
+						ID:              "1",
+						CurrentRevision: "1-1",
+						Updated:         now.Format(layout),
+						Submitted:       now.Format(layout),
+						Status:          "ABANDONED",
+					},
+				},
+			},
+			revisions: map[string][]string{},
+		},
+		{
+			name:       "merged change recently updated but submitted before last update",
+			lastUpdate: now.Add(-time.Minute),
+			changes: map[string][]gerrit.ChangeInfo{
+				"foo": {
+					{
+						Project:         "bar",
+						ID:              "1",
+						CurrentRevision: "1-1",
+						Updated:         now.Format(layout),
+						Submitted:       now.Add(-2 * time.Minute).Format(layout),
+						Status:          "MERGED",
+					},
+				},
+			},
+			revisions: map[string][]string{},
+		},
+		{
+			name:       "one abandoned, one merged",
+			lastUpdate: now.Add(-time.Minute),
+			changes: map[string][]gerrit.ChangeInfo{
+				"foo": {
+					{
+						Project:         "bar",
+						ID:              "1",
+						CurrentRevision: "1-1",
+						Updated:         now.Format(layout),
+						Status:          "ABANDONED",
+					},
+					{
+						Project:         "bar",
+						ID:              "2",
+						CurrentRevision: "2-1",
+						Updated:         now.Format(layout),
+						Submitted:       now.Format(layout),
+						Status:          "MERGED",
+					},
+				},
+			},
+			revisions: map[string][]string{
+				"foo": {"2-1"},
 			},
 		},
 	}
