@@ -217,6 +217,89 @@ func TestLint(t *testing.T) {
 	}
 }
 
+func TestLintCodeSuggestion(t *testing.T) {
+
+	var testcases = []struct {
+		codeChange string
+		pullFiles  map[string][]byte
+		comment    string
+	}{
+		{
+			codeChange: "@@ -0,0 +1,7 @@\n+// Package bar comment\n+package bar\n+\n+// Qux_1 comment\n+func Qux_1_Func() error {\n+   return nil\n+}",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("// Package bar comment\npackage bar\n\n// Qux_1 comment\nfunc Qux_1() error {\n	return nil\n}\n"),
+			},
+			comment: "```suggestion\nfunc Qux1() error {\n```\nGolint naming: don't use underscores in Go names; func Qux_1 should be Qux1. [More info](http://golang.org/doc/effective_go.html#mixed-caps). <!-- golint -->",
+		},
+		{
+			codeChange: "@@ -0,0 +1,7 @@\n+// Package bar comment\n+package bar\n+\n+// QUX_FUNC comment\n+func QUX_FUNC() error {\n+   return nil\n+}",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("// Package bar comment\npackage bar\n\n// QUX_FUNC comment\nfunc QUX_FUNC() error {\n       return nil\n}\n"),
+			},
+			comment: "```suggestion\nfunc QuxFunc() error {\n```\nGolint naming: don't use ALL_CAPS in Go names; use CamelCase. [More info](https://golang.org/wiki/CodeReviewComments#mixed-caps). <!-- golint -->",
+		},
+		{
+			codeChange: "@@ -0,0 +1,7 @@\n+// Package bar comment\n+package bar\n+\n+// QuxFunc comment\n+func QuxFunc() error {\n+   return nil\n+}",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("// Package bar comment\npackage bar\n\n// QuxFunc comment\nfunc QuxFunc() error {\n       return nil\n}\n"),
+			},
+			comment: "",
+		},
+	}
+
+	lg, c, err := localgit.New()
+	if err != nil {
+		t.Fatalf("Making localgit: %v", err)
+	}
+	defer func() {
+		if err := lg.Clean(); err != nil {
+			t.Errorf("Cleaning up localgit: %v", err)
+		}
+		if err := c.Clean(); err != nil {
+			t.Errorf("Cleaning up client: %v", err)
+		}
+	}()
+	if err := lg.MakeFakeRepo("foo", "bar"); err != nil {
+		t.Fatalf("Making fake repo: %v", err)
+	}
+	if err := lg.AddCommit("foo", "bar", initialFiles); err != nil {
+		t.Fatalf("Adding initial commit: %v", err)
+	}
+	if err := lg.CheckoutNewBranch("foo", "bar", "pull/42/head"); err != nil {
+		t.Fatalf("Checking out pull branch: %v", err)
+	}
+
+	for _, test := range testcases {
+		if err := lg.AddCommit("foo", "bar", test.pullFiles); err != nil {
+			t.Fatalf("Adding PR commit: %v", err)
+		}
+		gh := &ghc{
+			changes: []github.PullRequestChange{
+				{
+					Filename: "qux.go",
+					Patch:    test.codeChange,
+				},
+			},
+		}
+		if err := handle(0, gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
+			t.Fatalf("Got error from handle: %v", err)
+		}
+
+		if test.comment == "" {
+			if len(gh.comment.Comments) > 0 {
+				t.Fatalf("Expected no comment, got %d: %v.", len(gh.comment.Comments), gh.comment.Comments)
+			}
+		} else {
+			if len(gh.comment.Comments) != 1 {
+				t.Fatalf("Expected one comments, got %d: %v.", len(gh.comment.Comments), gh.comment.Comments)
+			}
+			if test.comment != gh.comment.Comments[0].Body {
+				t.Fatalf("Expected " + test.comment + "\n but not able to find matching code suggestion comment for " + test.codeChange)
+			}
+		}
+	}
+}
+
 func TestAddedLines(t *testing.T) {
 	var testcases = []struct {
 		patch string
