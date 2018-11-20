@@ -2880,6 +2880,8 @@ test_groups:
   days_of_results: 7
 - name: istio-integ-local-tests-presubmit
   gcs_prefix: istio-prow/pr-logs/directory/istio-integ-local-tests
+- name: istio-integ-k8s-tests-presubmit
+  gcs_prefix: istio-prow/pr-logs/directory/istio-integ-k8s-tests
 - name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit
   gcs_prefix: istio-prow/pr-logs/directory/istio-pilot-e2e-envoyv2-v1alpha3
 - name: istio-e2e-mixer-no_auth-presubmit
@@ -2900,6 +2902,9 @@ test_groups:
   days_of_results: 7
 - name: istio-integ-local-tests
   gcs_prefix: istio-prow/logs/istio-integ-local-tests
+  num_failures_to_alert: 1
+- name: istio-integ-k8s-tests
+  gcs_prefix: istio-prow/logs/istio-integ-k8s-tests
   num_failures_to_alert: 1
 - name: istio-e2e-simpleTests
   gcs_prefix: istio-prow/logs/e2e-simpleTests
@@ -7169,6 +7174,8 @@ dashboards:
     test_group_name: istio-unit-tests-presubmit
   - name: integration-local-tests
     test_group_name: istio-integ-local-tests-presubmit
+  - name: integration-k8s-tests
+    test_group_name: istio-integ-k8s-tests-presubmit
   - name: pilot-e2e-envoyv2-v1alpha3
     test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit
   - name: e2e-mixer-no_auth
@@ -7218,6 +7225,10 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: integration-local-tests
     test_group_name: istio-integ-local-tests
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: integration-k8s-tests
+    test_group_name: istio-integ-k8s-tests
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: e2e-simpleTests
