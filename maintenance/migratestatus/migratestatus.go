@@ -31,6 +31,7 @@ import (
 type options struct {
 	org, repo                                            string
 	copyContext, moveContext, retireContext, destContext string
+	descriptionURL                                       string
 	continueOnError, dryRun                              bool
 	github                                               prowflagutil.GitHubOptions
 }
@@ -48,6 +49,7 @@ func gatherOptions() options {
 	fs.StringVar(&o.moveContext, "move", "", "Indicates move mode and specifies the context to move.")
 	fs.StringVar(&o.retireContext, "retire", "", "Indicates retire mode and specifies the context to retire.")
 	fs.StringVar(&o.destContext, "dest", "", "The destination context to copy or move to. For retire mode this is the context that replaced the retired context.")
+	fs.StringVar(&o.descriptionURL, "description", "", "A URL to a page explaining why a context was migrated or retired. (Optional)")
 
 	o.github.AddFlags(fs)
 	fs.Parse(os.Args[1:])
@@ -64,6 +66,10 @@ func (o *options) Validate() error {
 
 	if o.destContext == "" && o.retireContext == "" {
 		return errors.New("'--dest' is required unless using '--retire' mode.\n")
+	}
+
+	if o.descriptionURL != "" && o.copyContext != "" {
+		return errors.New("'--description' URL is not applicable to '--copy' mode")
 	}
 
 	var optionCount int
@@ -113,10 +119,10 @@ func main() {
 		mode = migrator.CopyMode(o.copyContext, o.destContext)
 	}
 	if o.moveContext != "" {
-		mode = migrator.MoveMode(o.moveContext, o.destContext)
+		mode = migrator.MoveMode(o.moveContext, o.destContext, o.descriptionURL)
 	}
 	if o.retireContext != "" {
-		mode = migrator.RetireMode(o.retireContext, o.destContext)
+		mode = migrator.RetireMode(o.retireContext, o.destContext, o.descriptionURL)
 	}
 
 	// Note that continueOnError is false by default so that errors can be addressed when they occur

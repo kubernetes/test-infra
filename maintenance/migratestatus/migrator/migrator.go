@@ -51,10 +51,11 @@ type Mode struct {
 
 // MoveMode creates a mode that both copies and retires.
 // The mode creates a new context on every PR with the old context but not the new one, setting the
-// state of the new context to that of the old context before retiring the old context.
-func MoveMode(origContext, newContext string) *Mode {
+// state of the new context to that of the old context before retiring the old context. A target URL
+// to describe why the old context was migrated can optionally be provided, as well.
+func MoveMode(origContext, newContext, targetURL string) *Mode {
 	dup := copyAction(origContext, newContext)
-	dep := retireAction(origContext, newContext)
+	dep := retireAction(origContext, newContext, targetURL)
 
 	return &Mode{
 		conditions: []*contextCondition{
@@ -84,15 +85,16 @@ func CopyMode(origContext, newContext string) *Mode {
 // 'success' and its description is set to indicate that the context is retired.
 // If newContext is not the empty string it is considered the replacement of origContext. This means
 // that only PRs that have the newContext in addition to the origContext will be considered and the
-// description of the retired context will indicate that it was replaced by newContext.
-func RetireMode(origContext, newContext string) *Mode {
+// description of the retired context will indicate that it was replaced by newContext. A target URL
+// to describe why the old context was migrated can optionally be provided, as well.
+func RetireMode(origContext, newContext, targetURL string) *Mode {
 	conditions := []*contextCondition{{context: origContext, state: stateAny}}
 	if newContext != "" {
 		conditions = append(conditions, &contextCondition{context: newContext, state: stateAny})
 	}
 	return &Mode{
 		conditions: conditions,
-		actions:    retireAction(origContext, newContext),
+		actions:    retireAction(origContext, newContext, targetURL),
 	}
 }
 
@@ -129,7 +131,9 @@ func copyAction(origContext, newContext string) func(statuses []github.Status, s
 // retireAction creates a function that returns a retire action.
 // Specifically the returned function returns a RepoStatus that will update the origContext status
 // to 'success' and set it's description to mark it as retired and replaced by newContext.
-func retireAction(origContext, newContext string) func(statuses []github.Status, sha string) []github.Status {
+// If a non-empty URL is provided to describe why the context was retired, it will be
+// set as the target URL for the context.
+func retireAction(origContext, newContext, targetURL string) func(statuses []github.Status, sha string) []github.Status {
 	stateSuccess := "success"
 	var desc string
 	if newContext == "" {
@@ -142,6 +146,7 @@ func retireAction(origContext, newContext string) func(statuses []github.Status,
 			{
 				Context:     origContext,
 				State:       stateSuccess,
+				TargetURL:   targetURL,
 				Description: desc,
 			},
 		}

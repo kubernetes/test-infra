@@ -139,7 +139,7 @@ func TestMoveMode(t *testing.T) {
 		},
 	}
 
-	m := *MoveMode(contextA, contextB)
+	m := *MoveMode(contextA, contextB, "")
 	for _, test := range tests {
 		diff := m.processStatuses(&github.CombinedStatus{Statuses: test.start})
 		if err := compareDiffs(diff, test.expectedDiffs); err != nil {
@@ -298,7 +298,7 @@ func TestRetireModeReplacement(t *testing.T) {
 		},
 	}
 
-	m := *RetireMode(contextA, contextB)
+	m := *RetireMode(contextA, contextB, "")
 	for _, test := range tests {
 		diff := m.processStatuses(&github.CombinedStatus{Statuses: test.start})
 		if err := compareDiffs(diff, test.expectedDiffs); err != nil {
@@ -347,7 +347,7 @@ func TestRetireModeNoReplacement(t *testing.T) {
 		},
 	}
 
-	m := *RetireMode(contextA, "")
+	m := *RetireMode(contextA, "", "")
 	for _, test := range tests {
 		diff := m.processStatuses(&github.CombinedStatus{Statuses: test.start})
 		if err := compareDiffs(diff, test.expectedDiffs); err != nil {
