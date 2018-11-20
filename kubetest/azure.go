@@ -574,6 +574,33 @@ func (c Cluster) GetClusterCreated(clusterName string) (time.Time, error) {
 }
 
 func (c Cluster) TestSetup() error {
+
+	// Download repo-list that defines repositories for Windows test images.
+
+	downloadUrl, ok := os.LookupEnv("KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION")
+	if !ok {
+		// Env value for downloadUrl is not set, nothing to do
+		log.Printf("KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION not set. Using default test image repos.")
+		return nil
+	}
+
+	downloadPath := path.Join(os.Getenv("HOME"), "repo-list")
+	f, err := os.Create(downloadPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	log.Printf("downloading %v from %v.", downloadPath, downloadUrl)
+	err = httpRead(downloadUrl, f)
+
+	if err != nil {
+		return fmt.Errorf("url=%s failed get %v: %v.", downloadUrl, downloadPath, err)
+	}
+	f.Chmod(0744)
+	if err := os.Setenv("KUBE_TEST_REPO_LIST", downloadPath); err != nil {
+		return err
+	}
 	return nil
 }
 
