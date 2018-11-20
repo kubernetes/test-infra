@@ -1,8 +1,8 @@
 # Gerrit
 
 Gerrit is a Prow-gerrit adapter for handling CI on gerrit workflows. It can poll gerrit
-changes from multiple gerrit instances, and trigger presubmits on Prow upon new patchsets on
-gerrit changes.
+changes from multiple gerrit instances, and trigger presubmits on Prow upon new patchsets
+on Gerrit changes, and postsubmits when Gerrit changes are merged.
 
 ## Deployment Usage
 
