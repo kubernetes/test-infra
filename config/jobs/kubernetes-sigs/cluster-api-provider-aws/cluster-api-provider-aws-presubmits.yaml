@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181120-dea0825e3-1.12
         command:
         - "./scripts/ci-bazel-test.sh"
   - name: pull-cluster-api-provider-aws-bazel-build
@@ -17,7 +17,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181120-dea0825e3-1.12
         command:
         - "./scripts/ci-bazel-build.sh"
   - name: pull-cluster-api-provider-aws-bazel-e2e
@@ -29,7 +29,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master # needs bazel 0.18+
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181120-dea0825e3-master # needs bazel 0.18+
         command:
         - "runner.sh"
         - "./scripts/ci-bazel-e2e.sh"
