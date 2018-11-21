@@ -247,6 +247,9 @@ func (br Brancher) Intersects(other Brancher) bool {
 
 // RunsAgainstChanges returns true if any of the changed input paths match the run_if_changed regex.
 func (cm ChangeMatcher) RunsAgainstChanges(changes []string) bool {
+	if cm.RunIfChanged == "" {
+		return true
+	}
 	for _, change := range changes {
 		if cm.reChanges.MatchString(change) {
 			return true
