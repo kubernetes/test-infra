@@ -37,17 +37,10 @@ presubmits:
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-digitalocean
-    labels:
-        preset-service-account: "true"
-        preset-bazel-scratch-dir: "true"
-        preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181120-dea0825e3-experimental
+      - image: quay.io/kubermatic/gometalinter:latest
         command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_bazel.py
+        - make
         args:
-        - "--install=hack/test_requirements.txt"
-        - "--test=//..."
-        - "--test-args=--config=lint"
+        - lint
