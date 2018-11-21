@@ -239,7 +239,7 @@ presubmits:
         containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20181120-dea0825e3-1.10
           command:
-          - ./test/presubmit-tests-with-pipeline-deployed.sh
+          - ./test/presubmit-tests-with-pipeline-deployment.sh
           args:
           - --workflow_file
           - e2e_test_gke.yaml
