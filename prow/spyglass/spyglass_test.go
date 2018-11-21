@@ -259,7 +259,7 @@ func TestViews(t *testing.T) {
 					}
 				}
 				if !found {
-					t.Errorf("lens title %s not found in expected titles.", l.Title)
+					t.Errorf("lens title %s not found in expected titles.", l.Title())
 				}
 			}
 			for _, title := range tc.expectedLensTitles {
