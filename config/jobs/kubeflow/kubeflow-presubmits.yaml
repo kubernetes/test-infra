@@ -242,7 +242,7 @@ presubmits:
           - ./test/presubmit-tests-with-pipeline-deployment.sh
           args:
           - --workflow_file
-          - e2e_test_gke.yaml
+          - e2e_test_gke_v2.yaml
           - --test_result_folder
           - e2e_test
     - name: presubmit-sample-test-v2
@@ -258,7 +258,7 @@ presubmits:
           - ./test/presubmit-tests-with-pipeline-deployment.sh
           args:
           - --workflow_file
-          - sample_test.yaml
+          - sample_test_v2.yaml
           - --test_result_folder
           - sample_test
           - --timeout
