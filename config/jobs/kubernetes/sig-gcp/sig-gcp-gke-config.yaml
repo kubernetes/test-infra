@@ -490,7 +490,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --gke-environment=test
       - --provider=gke
-      - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gke-gci
+      - --save=gs://kubernetes-e2e-soak-configs/ci-kubernetes-soak-gke-gci
       - --soak
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=800m
