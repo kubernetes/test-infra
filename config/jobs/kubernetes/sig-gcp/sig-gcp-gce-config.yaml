@@ -394,7 +394,7 @@ periodics:
       - --gcp-project=k8s-jkns-gce-gci-soak
       - --gcp-zone=us-central1-f
       - --provider=gce
-      - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-gci
+      - --save=gs://kubernetes-e2e-soak-configs/ci-kubernetes-soak-gce-gci
       - --soak
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1200m
@@ -421,7 +421,7 @@ periodics:
       - --gcp-project=k8s-jkns-gce-soak-1-6
       - --gcp-zone=us-central1-f
       - --provider=gce
-      - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-beta
+      - --save=gs://kubernetes-e2e-soak-configs/ci-kubernetes-soak-gci-gce-beta
       - --soak
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1200m
@@ -448,7 +448,7 @@ periodics:
       - --gcp-project=k8s-jkns-gci-gce-soak-1-4
       - --gcp-zone=us-central1-f
       - --provider=gce
-      - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-stable1
+      - --save=gs://kubernetes-e2e-soak-configs/ci-kubernetes-soak-gci-gce-stable1
       - --soak
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1200m
@@ -474,7 +474,7 @@ periodics:
       - --gcp-project=k8s-jkns-gci-gce-soak-1-7
       - --gcp-zone=us-central1-f
       - --provider=gce
-      - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-stable2
+      - --save=gs://kubernetes-e2e-soak-configs/ci-kubernetes-soak-gci-gce-stable2
       - --soak
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=800m
@@ -500,7 +500,7 @@ periodics:
       - --gcp-project=k8s-jkns-gci-gce-soak-1-6
       - --gcp-zone=us-central1-f
       - --provider=gce
-      - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-stable3
+      - --save=gs://kubernetes-e2e-soak-configs/ci-kubernetes-soak-gci-gce-stable3
       - --soak
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=800m
