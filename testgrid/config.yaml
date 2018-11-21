@@ -3268,14 +3268,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/pull-rules-k8s-e2e
 
 # Alibaba Cloud Provider Test Groups
+- name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.11
+  gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.11
+
 - name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.10
   gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.10
 
 - name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.9
   gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.9
-
-- name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.8
-  gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.8
 
 # kube-storage-version-migrator
 - name: pull-kube-storage-version-migrator-test
@@ -3655,15 +3655,15 @@ dashboards:
 # Alibaba Cloud Provider Dashboard
 - name: conformance-alibaba-cloud-provider
   dashboard_tab:
+  - name: Alibaba Cloud Provider, v1.11
+    description: Runs conformance tests for cloud provier alibaba cloud on release v1.11
+    test_group_name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.11
   - name: Alibaba Cloud Provider, v1.10
     description: Runs conformance tests for cloud provier alibaba cloud on release v1.10
     test_group_name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.10
   - name: Alibaba Cloud Provider, v1.9
     description: Runs conformance tests for cloud provier alibaba cloud on release v1.9
     test_group_name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.9
-  - name: Alibaba Cloud Provider, v1.8
-    description: Runs conformance tests for cloud provier alibaba cloud on release v1.8
-    test_group_name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.8
 
 # DigitalOcean Dashboard
 - name: conformance-cloud-provider-digitalocean
