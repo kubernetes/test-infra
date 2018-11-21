@@ -31,8 +31,9 @@ import (
 )
 
 const (
-	pluginName     = "heart"
-	ownersFilename = "OWNERS"
+	pluginName            = "heart"
+	ownersFilename        = "OWNERS"
+	ownersAliasesFilename = "OWNERS_ALIASES"
 )
 
 var mergeRe = regexp.MustCompile(`Automatic merge from submit-queue`)
@@ -134,7 +135,7 @@ func handlePR(c client, pre github.PullRequestEvent) error {
 	// Smile at any change that adds to OWNERS files
 	for _, change := range changes {
 		_, filename := filepath.Split(change.Filename)
-		if filename == ownersFilename && change.Additions > 0 {
+		if (filename == ownersFilename || filename == ownersAliasesFilename) && change.Additions > 0 {
 			c.Logger.Info("Adding new OWNERS makes me happy!")
 			return c.GitHubClient.CreateIssueReaction(
 				pre.PullRequest.Base.Repo.Owner.Login,
