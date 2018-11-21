@@ -56,7 +56,7 @@ from [crier].
 The reporter will send an aggregated summary message, after all presubmits on a patchset finishes.
 
 The reporter will also cast a +1/-1 vote on the `prow.k8s.io/gerrit-report-label` label of your prowjob,
-or by default it will vote on `CodeReview` label. Where `+1` means all presubmit on the patshset pass and `-1`
+or by default it will vote on `CodeReview` label. Where `+1` means all presubmit on the patchset pass and `-1`
 means one or more presubmit failed on the patchset.
 
 ## Caveat
