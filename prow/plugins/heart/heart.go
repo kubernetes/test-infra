@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"math/rand"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -35,8 +34,6 @@ const (
 	ownersFilename        = "OWNERS"
 	ownersAliasesFilename = "OWNERS_ALIASES"
 )
-
-var mergeRe = regexp.MustCompile(`Automatic merge from submit-queue`)
 
 var reactions = []string{
 	github.ReactionThumbsUp,
@@ -53,10 +50,10 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The {WhoCanUse, Usage, Examples} fields are omitted because this plugin is not triggered with commands.
 	return &pluginhelp.PluginHelp{
-			Description: "The heart plugin celebrates certain Github actions with the reaction emojis. Emojis are added to merge notifications left by mungegithub's submit-queue and to pull requests that make additions to OWNERS files.",
+			Description: "The heart plugin celebrates certain Github actions with the reaction emojis. Emojis are added to pull requests that make additions to OWNERS or OWNERS_ALIASES files and to comments left by specified \"adorees\".",
 			Config: map[string]string{
 				"": fmt.Sprintf(
-					"The heart plugin is configured to react to merge notifications left by the following Github users: %s.",
+					"The heart plugin is configured to react to comments left by the following Github users: %s.",
 					strings.Join(config.Heart.Adorees, ", "),
 				),
 			},
@@ -83,6 +80,9 @@ func getClient(pc plugins.Agent) client {
 }
 
 func handleIssueComment(pc plugins.Agent, ic github.IssueCommentEvent) error {
+	if pc.PluginConfig.Heart.Adorees == nil || len(pc.PluginConfig.Heart.Adorees) == 0 {
+		return nil
+	}
 	return handleIC(getClient(pc), pc.PluginConfig.Heart.Adorees, ic)
 }
 
@@ -103,10 +103,6 @@ func handleIC(c client, adorees []string, ic github.IssueCommentEvent) error {
 		}
 	}
 	if !adoredLogin {
-		return nil
-	}
-
-	if !mergeRe.MatchString(ic.Comment.Body) {
 		return nil
 	}
 
