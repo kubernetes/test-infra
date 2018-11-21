@@ -959,7 +959,9 @@ func TestTakeAction(t *testing.T) {
 						Context:      "if-changed",
 						Trigger:      "/test if-changed",
 						RerunCommand: "/test if-changed",
-						RunIfChanged: "CHANGED",
+						ChangeMatcher: config.ChangeMatcher{
+							RunIfChanged: "CHANGED",
+						},
 					},
 				},
 			},
@@ -1796,8 +1798,10 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "no matching presubmits",
 			presubmits: []config.Presubmit{
 				{
-					Context:      "always",
-					RunIfChanged: "foo",
+					Context: "always",
+					ChangeMatcher: config.ChangeMatcher{
+						RunIfChanged: "foo",
+					},
 				},
 				{
 					Context: "never",
@@ -1825,8 +1829,10 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "no matching presubmits (check cache retention)",
 			presubmits: []config.Presubmit{
 				{
-					Context:      "always",
-					RunIfChanged: "foo",
+					Context: "always",
+					ChangeMatcher: config.ChangeMatcher{
+						RunIfChanged: "foo",
+					},
 				},
 				{
 					Context: "never",
@@ -1889,8 +1895,10 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "run_if_changed (uncached)",
 			presubmits: []config.Presubmit{
 				{
-					Context:      "presubmit",
-					RunIfChanged: "^CHANGE.$",
+					Context: "presubmit",
+					ChangeMatcher: config.ChangeMatcher{
+						RunIfChanged: "^CHANGE.$",
+					},
 				},
 				{
 					Context:   "always",
@@ -1907,8 +1915,10 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "run_if_changed (cached)",
 			presubmits: []config.Presubmit{
 				{
-					Context:      "presubmit",
-					RunIfChanged: "^FIL.$",
+					Context: "presubmit",
+					ChangeMatcher: config.ChangeMatcher{
+						RunIfChanged: "^FIL.$",
+					},
 				},
 				{
 					Context:   "always",
@@ -1926,8 +1936,10 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "run_if_changed (cached) (skippable)",
 			presubmits: []config.Presubmit{
 				{
-					Context:      "presubmit",
-					RunIfChanged: "^CHANGE.$",
+					Context: "presubmit",
+					ChangeMatcher: config.ChangeMatcher{
+						RunIfChanged: "^CHANGE.$",
+					},
 				},
 				{
 					Context:   "always",

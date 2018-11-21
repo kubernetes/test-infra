@@ -1169,18 +1169,17 @@ func SetPresubmitRegexes(js []Presubmit) error {
 		if !js[i].re.MatchString(j.RerunCommand) {
 			return fmt.Errorf("for job %s, rerun command \"%s\" does not match trigger \"%s\"", j.Name, j.RerunCommand, j.Trigger)
 		}
-		if j.RunIfChanged != "" {
-			re, err := regexp.Compile(j.RunIfChanged)
-			if err != nil {
-				return fmt.Errorf("could not compile changes regex for %s: %v", j.Name, err)
-			}
-			js[i].reChanges = re
-		}
 		b, err := setBrancherRegexes(j.Brancher)
 		if err != nil {
 			return fmt.Errorf("could not set branch regexes for %s: %v", j.Name, err)
 		}
 		js[i].Brancher = b
+
+		c, err := setChangeRegexes(j.ChangeMatcher)
+		if err != nil {
+			return fmt.Errorf("could not set change regexes for %s: %v", j.Name, err)
+		}
+		js[i].ChangeMatcher = c
 
 		if err := SetPresubmitRegexes(j.RunAfterSuccess); err != nil {
 			return err
@@ -1209,6 +1208,17 @@ func setBrancherRegexes(br Brancher) (Brancher, error) {
 	return br, nil
 }
 
+func setChangeRegexes(cm ChangeMatcher) (ChangeMatcher, error) {
+	if cm.RunIfChanged != "" {
+		re, err := regexp.Compile(cm.RunIfChanged)
+		if err != nil {
+			return cm, fmt.Errorf("could not compile run_if_changed regex: %v", err)
+		}
+		cm.reChanges = re
+	}
+	return cm, nil
+}
+
 // SetPostsubmitRegexes compiles and validates all the regular expressions for
 // the provided postsubmits.
 func SetPostsubmitRegexes(ps []Postsubmit) error {
@@ -1218,6 +1228,11 @@ func SetPostsubmitRegexes(ps []Postsubmit) error {
 			return fmt.Errorf("could not set branch regexes for %s: %v", j.Name, err)
 		}
 		ps[i].Brancher = b
+		c, err := setChangeRegexes(j.ChangeMatcher)
+		if err != nil {
+			return fmt.Errorf("could not set change regexes for %s: %v", j.Name, err)
+		}
+		ps[i].ChangeMatcher = c
 		if err := SetPostsubmitRegexes(j.RunAfterSuccess); err != nil {
 			return err
 		}

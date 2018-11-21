@@ -22,8 +22,8 @@ import (
 	"time"
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
-	"k8s.io/api/core/v1"
 
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -111,8 +111,6 @@ type Presubmit struct {
 
 	// AlwaysRun automatically for every PR, or only when a comment triggers it.
 	AlwaysRun bool `json:"always_run"`
-	// RunIfChanged automatically run if the PR modifies a file that matches this regex.
-	RunIfChanged string `json:"run_if_changed,omitempty"`
 
 	// Context is the name of the GitHub status context for the job.
 	Context string `json:"context"`
@@ -136,14 +134,17 @@ type Presubmit struct {
 
 	Brancher
 
+	ChangeMatcher
+
 	// We'll set these when we load it.
-	re        *regexp.Regexp // from Trigger.
-	reChanges *regexp.Regexp // from RunIfChanged
+	re *regexp.Regexp // from Trigger.
 }
 
 // Postsubmit runs on push events.
 type Postsubmit struct {
 	JobBase
+
+	ChangeMatcher
 
 	Brancher
 
@@ -188,6 +189,13 @@ type Brancher struct {
 	// We'll set these when we load it.
 	re     *regexp.Regexp
 	reSkip *regexp.Regexp
+}
+
+// ChangeMatcher is for code shared between jobs that run only when certain files are changed.
+type ChangeMatcher struct {
+	// RunIfChanged automatically run if the PR modifies a file that matches this regex.
+	RunIfChanged string         `json:"run_if_changed,omitempty"`
+	reChanges    *regexp.Regexp // from RunIfChanged
 }
 
 // RunsAgainstAllBranch returns true if there are both branches and skip_branches are unset
@@ -238,9 +246,9 @@ func (br Brancher) Intersects(other Brancher) bool {
 }
 
 // RunsAgainstChanges returns true if any of the changed input paths match the run_if_changed regex.
-func (ps Presubmit) RunsAgainstChanges(changes []string) bool {
+func (cm ChangeMatcher) RunsAgainstChanges(changes []string) bool {
 	for _, change := range changes {
-		if ps.reChanges.MatchString(change) {
+		if cm.reChanges.MatchString(change) {
 			return true
 		}
 	}
@@ -357,6 +365,20 @@ func (c *JobConfig) SetPresubmits(jobs map[string][]Presubmit) error {
 		}
 	}
 	c.Presubmits = nj
+	return nil
+}
+
+// SetPostsubmits updates c.Postsubmits to jobs, after compiling and validating their regexes.
+func (c *JobConfig) SetPostsubmits(jobs map[string][]Postsubmit) error {
+	nj := map[string][]Postsubmit{}
+	for k, v := range jobs {
+		nj[k] = make([]Postsubmit, len(v))
+		copy(nj[k], v)
+		if err := SetPostsubmitRegexes(nj[k]); err != nil {
+			return err
+		}
+	}
+	c.Postsubmits = nj
 	return nil
 }
 

@@ -56,7 +56,9 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 					JobBase: config.JobBase{
 						Name: "test-kubeadm-cloud",
 					},
-					RunIfChanged: "^(cmd/kubeadm|build/debs).*$",
+					ChangeMatcher: config.ChangeMatcher{
+						RunIfChanged: "^(cmd/kubeadm|build/debs).*$",
+					},
 				},
 			},
 		},

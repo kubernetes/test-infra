@@ -110,8 +110,10 @@ func TestSkipStatus(t *testing.T) {
 					Context:   "extended-tests",
 				},
 				{
-					RunIfChanged: "^(test/integration)",
-					Context:      "integration-tests",
+					ChangeMatcher: config.ChangeMatcher{
+						RunIfChanged: "^(test/integration)",
+					},
+					Context: "integration-tests",
 				},
 			},
 			sha: "shalala",
@@ -169,8 +171,10 @@ func TestSkipStatus(t *testing.T) {
 
 			presubmits: []config.Presubmit{
 				{
-					RunIfChanged: "^(test/integration)",
-					Context:      "integration-tests",
+					ChangeMatcher: config.ChangeMatcher{
+						RunIfChanged: "^(test/integration)",
+					},
+					Context: "integration-tests",
 				},
 			},
 			sha: "shalala",
@@ -212,9 +216,11 @@ func TestSkipStatus(t *testing.T) {
 
 			presubmits: []config.Presubmit{
 				{
-					SkipReport:   true,
-					RunIfChanged: "^(test/integration)",
-					Context:      "integration-tests",
+					SkipReport: true,
+					ChangeMatcher: config.ChangeMatcher{
+						RunIfChanged: "^(test/integration)",
+					},
+					Context: "integration-tests",
 				},
 			},
 			sha: "shalala",
