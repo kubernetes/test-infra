@@ -15,7 +15,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181120-dea0825e3-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -59,7 +59,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-1.13
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181120-dea0825e3-1.13
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -103,7 +103,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181120-dea0825e3-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -149,7 +149,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181120-dea0825e3-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -194,7 +194,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-1.13
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181120-dea0825e3-1.13
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -239,7 +239,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181120-dea0825e3-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
