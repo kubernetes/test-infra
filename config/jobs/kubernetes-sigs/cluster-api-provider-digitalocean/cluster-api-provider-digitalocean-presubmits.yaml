@@ -48,6 +48,6 @@ presubmits:
         - runner.sh
         - /workspace/scenarios/kubernetes_bazel.py
         args:
-        - "--install=gubernator/test_requirements.txt"
+        - "--install=hack/test_requirements.txt"
         - "--test=//..."
         - "--test-args=--config=lint"
