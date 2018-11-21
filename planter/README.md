@@ -54,7 +54,7 @@ consider tuning the following Docker options:
 
 You can find these under [preferences > advanced](https://docs.docker.com/docker-for-mac/#advanced)
 
-Check [this unnoficial guide](https://medium.com/@TomKeur/how-get-better-disk-performance-in-docker-for-mac-2ba1244b5b70)
+Check [this unofficial guide](https://medium.com/@TomKeur/how-get-better-disk-performance-in-docker-for-mac-2ba1244b5b70)
 and make sure that you are using `.raw` formatted VM disk for the daemon. 
 
 Periodically restarting the daemon (docker for mac tray icon > restart) can
