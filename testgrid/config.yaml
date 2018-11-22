@@ -3258,6 +3258,10 @@ test_groups:
 - name: ci-kubernetes-e2e-win-1-13
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-win-1-13
 
+# Cloud-provider-azure e2e tests
+- name: ci-cloud-provider-azure-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-cloud-provider-azure-master
+
 # Add New Testgroups Here
 
 - name: ci-kubernetes-e2e-gce-coredns-performance
@@ -7452,6 +7456,13 @@ dashboards:
     description: Runs conformance tests on a Kubernetes cluster provided by acs-engine (https://github.com/Azure/acs-engine) on Azure cloud"
     test_group_name: ci-kubernetes-e2e-win-1-13
 
+# sig-azure dashboard
+- name: sig-azure-master
+  dashboard_tab:
+  - name: "azure-master-conformance"
+    description: Runs conformance tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
+    test_group_name: ci-cloud-provider-azure-master
+
 #
 # Start dashboard groups
 #
@@ -7636,3 +7647,6 @@ dashboard_groups:
   - vmware-conformance-cloud-provider
   - vmware-cluster-api-provider-vsphere
 
+- name: sig-azure
+  dashboard_names:
+  - sig-azure-master
