@@ -28,7 +28,7 @@ presubmits:
         - --repo=k8s.io/release
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
+        - --timeout=90
         - --scenario=kubernetes_e2e
         - --
         - --aws
@@ -45,7 +45,7 @@ presubmits:
         - --provider=aws
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws
         - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-        - --timeout=55m
+        - --timeout=70m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181120-dea0825e3-master
         name: ""
@@ -382,7 +382,7 @@ presubmits:
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=90
+        - --timeout=100
         - --scenario=kubernetes_e2e
         - --
         - --build=bazel
@@ -398,7 +398,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
-        - --timeout=65m
+        - --timeout=80m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
         - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181120-dea0825e3-master
