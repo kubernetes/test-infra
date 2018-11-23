@@ -144,6 +144,16 @@ func run(deploy deployer, o options) error {
 				return fmt.Errorf("error starting federation: %s", err)
 			}
 		}
+		// If node testing is enabled, check that the api is reachable before
+		// proceeding with further steps. This is accomplished by listing the nodes.
+		if !o.nodeTests {
+			errs = util.AppendError(errs, control.XMLWrap(&suite, "Check APIReachability", getKubectlVersion))
+			if dump != "" {
+				errs = util.AppendError(errs, control.XMLWrap(&suite, "list nodes", func() error {
+					return listNodes(dump)
+				}))
+			}
+		}
 	}
 
 	if o.checkLeaks {
