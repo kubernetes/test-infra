@@ -220,11 +220,13 @@ func TestLint(t *testing.T) {
 func TestLintCodeSuggestion(t *testing.T) {
 
 	var testcases = []struct {
+		name       string
 		codeChange string
 		pullFiles  map[string][]byte
 		comment    string
 	}{
 		{
+			name:       "Check names with underscore",
 			codeChange: "@@ -0,0 +1,7 @@\n+// Package bar comment\n+package bar\n+\n+// Qux_1 comment\n+func Qux_1_Func() error {\n+   return nil\n+}",
 			pullFiles: map[string][]byte{
 				"qux.go": []byte("// Package bar comment\npackage bar\n\n// Qux_1 comment\nfunc Qux_1() error {\n	return nil\n}\n"),
@@ -232,6 +234,7 @@ func TestLintCodeSuggestion(t *testing.T) {
 			comment: "```suggestion\nfunc Qux1() error {\n```\nGolint naming: don't use underscores in Go names; func Qux_1 should be Qux1. [More info](http://golang.org/doc/effective_go.html#mixed-caps). <!-- golint -->",
 		},
 		{
+			name:       "Check names with all caps",
 			codeChange: "@@ -0,0 +1,7 @@\n+// Package bar comment\n+package bar\n+\n+// QUX_FUNC comment\n+func QUX_FUNC() error {\n+   return nil\n+}",
 			pullFiles: map[string][]byte{
 				"qux.go": []byte("// Package bar comment\npackage bar\n\n// QUX_FUNC comment\nfunc QUX_FUNC() error {\n       return nil\n}\n"),
@@ -239,9 +242,34 @@ func TestLintCodeSuggestion(t *testing.T) {
 			comment: "```suggestion\nfunc QuxFunc() error {\n```\nGolint naming: don't use ALL_CAPS in Go names; use CamelCase. [More info](https://golang.org/wiki/CodeReviewComments#mixed-caps). <!-- golint -->",
 		},
 		{
+			name:       "Correct function name",
 			codeChange: "@@ -0,0 +1,7 @@\n+// Package bar comment\n+package bar\n+\n+// QuxFunc comment\n+func QuxFunc() error {\n+   return nil\n+}",
 			pullFiles: map[string][]byte{
 				"qux.go": []byte("// Package bar comment\npackage bar\n\n// QuxFunc comment\nfunc QuxFunc() error {\n       return nil\n}\n"),
+			},
+			comment: "",
+		},
+		{
+			name:       "Check stutter in function names",
+			codeChange: "@@ -0,0 +1,9 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+// BarFunc comment\n+func BarFunc() error {\n+   return nil\n+}",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\n// BarFunc comment\nfunc BarFunc() error {\n   return nil\n}"),
+			},
+			comment: "```suggestion\nfunc Func() error {\n```\nGolint naming: func name will be used as bar.BarFunc by other packages, and that stutters; consider calling this Func. [More info](https://golang.org/wiki/CodeReviewComments#package-names). <!-- golint -->",
+		},
+		{
+			name:       "Check stutter in type names",
+			codeChange: "@@ -0,0 +1,8 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+// BarMaker comment\n+type BarMaker struct{}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\n// BarMaker comment\ntype BarMaker struct{}\n"),
+			},
+			comment: "```suggestion\ntype Maker struct{}\n```\nGolint naming: type name will be used as bar.BarMaker by other packages, and that stutters; consider calling this Maker. [More info](https://golang.org/wiki/CodeReviewComments#package-names). <!-- golint -->",
+		},
+		{
+			name:       "Check stutter: no stutter",
+			codeChange: "@@ -0,0 +1,8 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+// barMaker comment\n+type barMaker struct{}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\n// barMaker comment\ntype barMaker struct{}\n"),
 			},
 			comment: "",
 		},
@@ -270,6 +298,7 @@ func TestLintCodeSuggestion(t *testing.T) {
 	}
 
 	for _, test := range testcases {
+		t.Logf("Running test case %q...", test.name)
 		if err := lg.AddCommit("foo", "bar", test.pullFiles); err != nil {
 			t.Fatalf("Adding PR commit: %v", err)
 		}
@@ -294,7 +323,7 @@ func TestLintCodeSuggestion(t *testing.T) {
 				t.Fatalf("Expected one comments, got %d: %v.", len(gh.comment.Comments), gh.comment.Comments)
 			}
 			if test.comment != gh.comment.Comments[0].Body {
-				t.Fatalf("Expected " + test.comment + "\n but not able to find matching code suggestion comment for " + test.codeChange)
+				t.Fatalf("Expected\n" + test.comment + "\n but got\n" + gh.comment.Comments[0].Body)
 			}
 		}
 	}

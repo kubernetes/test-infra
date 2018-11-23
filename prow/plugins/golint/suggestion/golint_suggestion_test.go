@@ -167,3 +167,56 @@ func TestLintNamesAllCaps(t *testing.T) {
 		}
 	}
 }
+
+func TestLintStutter(t *testing.T) {
+	var testcases = []struct {
+		problem            lint.Problem
+		expectedSuggestion string
+	}{
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "func name will be used as bar.BarFunc by other packages, and that stutters; consider calling this Func",
+				Link:       "https://golang.org/wiki/CodeReviewComments#package-names",
+				Category:   "naming",
+				LineText:   "func BarFunc() error {",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\nfunc Func() error {```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "type name will be used as bar.BarMaker by other packages, and that stutters; consider calling this Maker",
+				Link:       "https://golang.org/wiki/CodeReviewComments#package-names",
+				Category:   "naming",
+				LineText:   "type BarMaker struct{}",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\ntype Maker struct{}```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "type name will be used as bar.Bar by other packages, and that stutters; consider calling this Bar",
+				Link:       "https://golang.org/wiki/CodeReviewComments#package-names",
+				Category:   "naming",
+				LineText:   "type Bar struct{}",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "",
+		},
+	}
+	for _, test := range testcases {
+		suggestion := SuggestCodeChange(test.problem)
+		if suggestion != test.expectedSuggestion {
+			t.Errorf("Excepted code suggestion %s but got %s for LineText %s", test.expectedSuggestion, suggestion, test.problem.LineText)
+		}
+	}
+}
