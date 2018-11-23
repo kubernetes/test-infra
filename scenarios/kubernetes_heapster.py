@@ -32,7 +32,7 @@ def check(*cmd):
     print >>sys.stderr, 'Run:', cmd
     subprocess.check_call(cmd)
 
-HEAPSTER_IMAGE_VERSION = '0.8'
+HEAPSTER_IMAGE_VERSION = '0.9'
 
 def main(ssh, ssh_pub, robot, project):
     """Run unit/integration heapster test against master in docker"""
