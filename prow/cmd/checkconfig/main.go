@@ -258,6 +258,8 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration) e
 	configs := []struct {
 		// plugin and label identify the relationship we are validating
 		plugin, label string
+		// external indicates plugin is external or not
+		external bool
 		// matcher determines if the tide query appropriately honors the
 		// label in question -- whether by requiring it or forbidding it
 		matcher matcher
@@ -274,7 +276,7 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration) e
 		{plugin: releasenote.PluginName, label: releasenote.ReleaseNoteLabelNeeded, matcher: forbids},
 		{plugin: cherrypickunapproved.PluginName, label: labels.CpUnapproved, matcher: forbids},
 		{plugin: blockade.PluginName, label: labels.BlockedPaths, matcher: forbids},
-		{plugin: needsrebase.PluginName, label: labels.NeedsRebase, matcher: forbids},
+		{plugin: needsrebase.PluginName, label: labels.NeedsRebase, external: true, matcher: forbids},
 	}
 
 	for i := range configs {
@@ -300,7 +302,7 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration) e
 			pluginConfig.matcher.verb,
 			pluginConfig.config,
 			overallTideConfig,
-			enabledOrgReposForPlugin(pcfg, pluginConfig.plugin),
+			enabledOrgReposForPlugin(pcfg, pluginConfig.plugin, pluginConfig.external),
 		)
 		validationErrs = append(validationErrs, err)
 	}
@@ -453,8 +455,16 @@ func (c *orgRepoConfig) union(c2 *orgRepoConfig) *orgRepoConfig {
 	return res
 }
 
-func enabledOrgReposForPlugin(c *plugins.Configuration, plugin string) *orgRepoConfig {
-	orgs, repos := c.EnabledReposForPlugin(plugin)
+func enabledOrgReposForPlugin(c *plugins.Configuration, plugin string, external bool) *orgRepoConfig {
+	var (
+		orgs  []string
+		repos []string
+	)
+	if external {
+		orgs, repos = c.EnabledReposForExternalPlugin(plugin)
+	} else {
+		orgs, repos = c.EnabledReposForPlugin(plugin)
+	}
 	orgMap := make(map[string]sets.String, len(orgs))
 	for _, org := range orgs {
 		orgMap[org] = nil
@@ -543,11 +553,11 @@ func verifyOwnersPlugin(cfg *plugins.Configuration) error {
 	// can get a reasonable proxy for this by looking at where
 	// the `approve', `blunderbuss' and `owners-label' plugins
 	// are enabled
-	approveConfig := enabledOrgReposForPlugin(cfg, approve.PluginName)
-	blunderbussConfig := enabledOrgReposForPlugin(cfg, blunderbuss.PluginName)
-	ownersLabelConfig := enabledOrgReposForPlugin(cfg, ownerslabel.PluginName)
+	approveConfig := enabledOrgReposForPlugin(cfg, approve.PluginName, false)
+	blunderbussConfig := enabledOrgReposForPlugin(cfg, blunderbuss.PluginName, false)
+	ownersLabelConfig := enabledOrgReposForPlugin(cfg, ownerslabel.PluginName, false)
 	ownersConfig := approveConfig.union(blunderbussConfig).union(ownersLabelConfig)
-	validateOwnersConfig := enabledOrgReposForPlugin(cfg, verifyowners.PluginName)
+	validateOwnersConfig := enabledOrgReposForPlugin(cfg, verifyowners.PluginName, false)
 
 	invalid := ownersConfig.difference(validateOwnersConfig).items()
 	if len(invalid) > 0 {
