@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-VERSION = 0.8
+VERSION = 0.9
 
 image:
 	docker build -t "gcr.io/k8s-testimages/heapster-test:$(VERSION)" .
