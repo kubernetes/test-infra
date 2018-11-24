@@ -23,7 +23,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Slow\]|\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=600m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181120-dea0825e3-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-prod-parallel
@@ -50,7 +50,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=80m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181120-dea0825e3-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-prod-smoke
@@ -77,4 +77,4 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=80m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181120-dea0825e3-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
