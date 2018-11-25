@@ -597,7 +597,6 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, o optio
 // - src: required, specifies the job source from which to fetch artifacts
 func handleArtifactView(o options, sg *spyglass.Spyglass, ca *config.Agent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		//start := time.Now()
 		setHeadersNoCaching(w)
 		pathSegments := strings.Split(r.URL.Path, "/")
 		if len(pathSegments) != 2 {
@@ -629,7 +628,8 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, ca *config.Agent) http
 			return
 		}
 
-		if resource == "iframe" {
+		switch resource {
+		case "iframe":
 			t, err := template.ParseFiles(path.Join(o.templateFilesLocation, "spyglass-lens.html"))
 			if err != nil {
 				http.Error(w, fmt.Sprintf("Failed to load template: %v", err), http.StatusInternalServerError)
@@ -648,7 +648,7 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, ca *config.Agent) http
 				template.HTML(lens.Header(artifacts, lensResourcesDir)),
 				template.HTML(lens.Body(artifacts, lensResourcesDir, "")),
 			})
-		} else if resource == "rerender" {
+		case "rerender":
 			data, err := ioutil.ReadAll(r.Body)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("Failed to read body: %v", err), http.StatusInternalServerError)
@@ -656,14 +656,14 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, ca *config.Agent) http
 			}
 			w.Header().Set("Content-Type", "text/html; encoding=utf-8")
 			w.Write([]byte(lens.Body(artifacts, lensResourcesDir, string(data))))
-		} else if resource == "callback" {
+		case "callback":
 			data, err := ioutil.ReadAll(r.Body)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("Failed to read body: %v", err), http.StatusInternalServerError)
 				return
 			}
 			w.Write([]byte(lens.Callback(artifacts, lensResourcesDir, string(data))))
-		} else {
+		default:
 			http.NotFound(w, r)
 		}
 	}

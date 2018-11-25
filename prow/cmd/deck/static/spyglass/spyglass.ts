@@ -52,7 +52,7 @@ window.addEventListener('message', async (e) => {
         respond('');
         break;
       case "request": {
-        const req = await fetch(urlForLensRequest('callback', 'callback'),
+        const req = await fetch(urlForLensRequest(lens, 'callback'),
           {body: message.data, method: 'POST', credentials: 'omit'});
         respond(await req.text());
         break;

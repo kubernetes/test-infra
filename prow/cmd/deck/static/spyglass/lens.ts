@@ -63,7 +63,7 @@ class SpyglassImpl implements Spyglass {
     return new Promise<Response>((resolve, reject) => {
       const id = ++this.messageId;
       this.pendingRequests.set(id, resolve);
-      window.parent.postMessage({id, message}, '*');
+      window.parent.postMessage({id, message}, document.location.origin);
     });
   }
 
