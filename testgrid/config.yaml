@@ -2927,6 +2927,9 @@ test_groups:
 - name: istio-e2e-simpleTests-mcp
   gcs_prefix: istio-prow/logs/e2e-simpleTests-mcp
   num_failures_to_alert: 1
+- name: istio-e2e-simpleTests-minProfile
+  gcs_prefix: istio-prow/logs/e2e-simpleTestsMinProfile
+  num_failures_to_alert: 1
 # Istio CircleCI Presubmits
 - name: istio-circleci-e2e-simple-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-simple
@@ -7261,6 +7264,14 @@ dashboards:
     test_group_name: istio-e2e-dashboard
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: e2e-simpleTests-mcp
+    test_group_name: istio-e2e-simpleTests-mcp
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: e2e-simpleTests-minProfile
+    test_group_name: istio-e2e-simpleTests-minProfile
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: circleci-e2e-mixer-noauth-v1alpha3-v2
     test_group_name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2
     alert_options:
@@ -7295,10 +7306,6 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: circleci-racetest
     test_group_name: istio-circleci-racetest
-    alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-  - name: e2e-simpleTests-mcp
-    test_group_name: istio-e2e-simpleTests-mcp
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: circleci-e2e-mixer-noauth-v1alpha3-v2-mcp
