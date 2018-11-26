@@ -17,7 +17,7 @@ TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 # kubernetes master branch config
 K8S ?= master
-GO ?= 1.11.1
+GO ?= 1.11.2
 BAZEL ?= 0.18.0
 UPGRADE_DOCKER ?=false
 # TODO(bentheelder,cblecker): this is aging and bad
@@ -25,7 +25,7 @@ CFSSL ?= R1.2
 
 # config for testing prior to rolling out to master / ongoing release
 ifeq ($(K8S), experimental)
-	GO = 1.11.1
+	GO = 1.11.2
 	BAZEL = 0.18.0
 	CFSSL = R1.2
 	UPGRADE_DOCKER = true
@@ -33,7 +33,7 @@ endif
 
 # kubernetes release-X branch configs
 ifeq ($(K8S), 1.13)
-	GO = 1.11.1
+	GO = 1.11.2
 	BAZEL = 0.18.0
 	CFSSL = R1.2
 endif
