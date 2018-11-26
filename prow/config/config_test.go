@@ -816,6 +816,7 @@ func TestValidateJobBase(t *testing.T) {
 		{
 			name: "valid kubernetes job",
 			base: JobBase{
+				Name:      "name",
 				Agent:     ka,
 				Spec:      &goodSpec,
 				Namespace: &ns,
@@ -825,6 +826,7 @@ func TestValidateJobBase(t *testing.T) {
 		{
 			name: "valid build job",
 			base: JobBase{
+				Name:      "name",
 				Agent:     ba,
 				BuildSpec: &buildv1alpha1.BuildSpec{},
 				Namespace: &ns,
@@ -834,6 +836,7 @@ func TestValidateJobBase(t *testing.T) {
 		{
 			name: "valid jenkins job",
 			base: JobBase{
+				Name:      "name",
 				Agent:     ja,
 				Namespace: &ns,
 			},
@@ -842,6 +845,7 @@ func TestValidateJobBase(t *testing.T) {
 		{
 			name: "invalid concurrency",
 			base: JobBase{
+				Name:           "name",
 				MaxConcurrency: -1,
 				Agent:          ka,
 				Spec:           &goodSpec,
@@ -851,6 +855,7 @@ func TestValidateJobBase(t *testing.T) {
 		{
 			name: "invalid agent",
 			base: JobBase{
+				Name:      "name",
 				Agent:     ba,
 				Spec:      &goodSpec, // want BuildSpec
 				Namespace: &ns,
@@ -859,6 +864,7 @@ func TestValidateJobBase(t *testing.T) {
 		{
 			name: "invalid pod spec",
 			base: JobBase{
+				Name:      "name",
 				Agent:     ka,
 				Namespace: &ns,
 				Spec:      &v1.PodSpec{}, // no containers
@@ -867,6 +873,7 @@ func TestValidateJobBase(t *testing.T) {
 		{
 			name: "invalid decoration",
 			base: JobBase{
+				Name:  "name",
 				Agent: ka,
 				Spec:  &goodSpec,
 				UtilityConfig: UtilityConfig{
@@ -878,6 +885,7 @@ func TestValidateJobBase(t *testing.T) {
 		{
 			name: "invalid labels",
 			base: JobBase{
+				Name:  "name",
 				Agent: ka,
 				Spec:  &goodSpec,
 				Labels: map[string]string{
@@ -885,6 +893,26 @@ func TestValidateJobBase(t *testing.T) {
 				},
 				Namespace: &ns,
 			},
+		},
+		{
+			name: "invalid name",
+			base: JobBase{
+				Name:      "a/b",
+				Agent:     ka,
+				Spec:      &goodSpec,
+				Namespace: &ns,
+			},
+			pass: false,
+		},
+		{
+			name: "valid complex name",
+			base: JobBase{
+				Name:      "a-b.c",
+				Agent:     ka,
+				Spec:      &goodSpec,
+				Namespace: &ns,
+			},
+			pass: true,
 		},
 	}
 

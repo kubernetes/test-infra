@@ -629,7 +629,12 @@ func (c *Config) validateComponentConfig() error {
 	return nil
 }
 
+var jobNameRegex = regexp.MustCompile(`^[A-Za-z0-9-._]+$`)
+
 func validateJobBase(v JobBase, jobType kube.ProwJobType, podNamespace string) error {
+	if !jobNameRegex.MatchString(v.Name) {
+		return fmt.Errorf("name: must match regex %q", jobNameRegex.String())
+	}
 	// Ensure max_concurrency is non-negative.
 	if v.MaxConcurrency < 0 {
 		return fmt.Errorf("max_concurrency: %d must be a non-negative number", v.MaxConcurrency)

@@ -79,7 +79,7 @@ func mergePreset(preset Preset, labels map[string]string, pod *v1.PodSpec) error
 
 // JobBase contains attributes common to all job types
 type JobBase struct {
-	// The name of the job.
+	// The name of the job. Must match regex [A-Za-z0-9-._]+
 	// e.g. pull-test-infra-bazel-build
 	Name string `json:"name"`
 	// Labels are added to prowjobs and pods created for this job.

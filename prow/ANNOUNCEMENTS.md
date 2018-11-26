@@ -32,6 +32,8 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *November 26, 2018* job names must now match `^[A-Za-z0-9-._]+$`. Jobs that did not
+   match this before were allowed but did not provide a good user experience.
  - *November 15, 2018* the `hook` service account now requires RBAC privileges
    to create `ConfigMaps` to support new functionality in the `updateconfig` plugin.
  - *November 9, 2018* Prow gerrit client label/annotations now have a `prow.k8s.io/` namespace
