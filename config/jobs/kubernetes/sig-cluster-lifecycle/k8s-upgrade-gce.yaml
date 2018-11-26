@@ -300,7 +300,7 @@ periodics:
       # 3.1.x. ETCD doesn't downgrade minor versions. So for downgrades, we
       # pin this to the lower version. The long term fix is to change
       # downgrade/upgrade to not upgrade/downgrade etcd.
-      - --env=TEST_ETCD_VERSION=3.0.17
+      - --env=TEST_ETCD_VERSION=3.2.10
       # In 1.11 influxdb is no longer deployed by default.
       - --env=KUBE_ENABLE_CLUSTER_MONITORING=standalone
       - --extract=ci/k8s-stable1
@@ -332,7 +332,7 @@ periodics:
       # 3.1.x. ETCD doesn't downgrade minor versions. So for downgrades, we
       # pin this to the lower version. The long term fix is to change
       # downgrade/upgrade to not upgrade/downgrade etcd.
-      - --env=TEST_ETCD_VERSION=3.0.17
+      - --env=TEST_ETCD_VERSION=3.2.10
       # In 1.11 influxdb is no longer deployed by default.
       - --env=KUBE_ENABLE_CLUSTER_MONITORING=standalone
       - --extract=ci/k8s-stable1
@@ -361,7 +361,7 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
-      - --env=TEST_ETCD_VERSION=3.0.17
+      - --env=TEST_ETCD_VERSION=3.2.10
       - --extract=ci/k8s-stable1
       - --extract=ci/k8s-beta
       - --gcp-node-image=gci
@@ -388,7 +388,7 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
-      - --env=TEST_ETCD_VERSION=3.0.17
+      - --env=TEST_ETCD_VERSION=3.2.10
       - --extract=ci/k8s-stable1
       - --extract=ci/k8s-beta
       - --gcp-node-image=gci
@@ -420,7 +420,7 @@ periodics:
       # 3.1.x. ETCD doesn't downgrade minor versions. So for downgrades, we
       # pin this to the lower version. The long term fix is to change
       # downgrade/upgrade to not upgrade/downgrade etcd.
-      - --env=TEST_ETCD_VERSION=3.0.17
+      - --env=TEST_ETCD_VERSION=3.2.10
       # In 1.11 influxdb is no longer deployed by default.
       - --env=KUBE_ENABLE_CLUSTER_MONITORING=standalone
       - --extract=ci/latest
@@ -507,7 +507,7 @@ periodics:
       # 3.1.x. ETCD doesn't downgrade minor versions. So for downgrades, we
       # pin this to the lower version. The long term fix is to change
       # downgrade/upgrade to not upgrade/downgrade etcd.
-      - --env=TEST_ETCD_VERSION=3.0.17
+      - --env=TEST_ETCD_VERSION=3.2.10
       # In 1.11 influxdb is no longer deployed by default.
       - --env=KUBE_ENABLE_CLUSTER_MONITORING=standalone
       - --extract=ci/latest

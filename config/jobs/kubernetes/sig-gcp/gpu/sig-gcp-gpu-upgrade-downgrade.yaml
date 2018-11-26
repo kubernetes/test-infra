@@ -176,7 +176,7 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
-      - --env=TEST_ETCD_VERSION=3.0.17
+      - --env=TEST_ETCD_VERSION=3.2.10
       - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
       - --extract=ci/k8s-stable1
       - --extract=ci/k8s-beta
@@ -204,7 +204,7 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
-      - --env=TEST_ETCD_VERSION=3.0.17
+      - --env=TEST_ETCD_VERSION=3.2.10
       - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
       - --extract=ci/k8s-stable1
       - --extract=ci/latest
