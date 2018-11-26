@@ -85,11 +85,6 @@ func commandsForRefs(refs kube.Refs, dir, gitUserName, gitUserEmail, cookiePath 
 	commands = append(commands, gitCommand("fetch", repositoryURI, "--tags", "--prune"))
 	commands = append(commands, gitCommand("fetch", repositoryURI, refs.BaseRef))
 
-	// unless the user specifically asks us not to, init submodules
-	if !refs.SkipSubmodules {
-		commands = append(commands, gitCommand("submodule", "update", "--init", "--recursive"))
-	}
-
 	var target string
 	if refs.BaseSHA != "" {
 		target = refs.BaseSHA
@@ -120,6 +115,12 @@ func commandsForRefs(refs kube.Refs, dir, gitUserName, gitUserEmail, cookiePath 
 		}
 		commands = append(commands, gitCommand("merge", prCheckout))
 	}
+
+	// unless the user specifically asks us not to, init submodules
+	if !refs.SkipSubmodules {
+		commands = append(commands, gitCommand("submodule", "update", "--init", "--recursive"))
+	}
+
 	return commands
 }
 
