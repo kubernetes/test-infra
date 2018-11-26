@@ -30,12 +30,12 @@ func ProduceCovList(profiles []*cover.Profile) *CoverageList {
 	return covList
 }
 
-func summarizeBlocks(profile *cover.Profile) coverage {
-	cov := coverage{Name: profile.FileName}
+func summarizeBlocks(profile *cover.Profile) Coverage {
+	cov := Coverage{Name: profile.FileName}
 	for _, blk := range profile.Blocks {
-		cov.nAllStmts += blk.NumStmt
+		cov.NumAllStmts += blk.NumStmt
 		if blk.Count > 0 {
-			cov.nCoveredStmts += blk.NumStmt
+			cov.NumCoveredStmts += blk.NumStmt
 		}
 	}
 	return cov

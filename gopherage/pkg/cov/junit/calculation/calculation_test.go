@@ -45,14 +45,14 @@ func TestCovList(t *testing.T) {
 	}
 
 	testCases := []struct {
-		covExpected coverage
-		covActual   coverage
+		covExpected Coverage
+		covActual   Coverage
 	}{
-		{coverage{Name: "a", nCoveredStmts: 105, nAllStmts: 2123},
+		{Coverage{Name: "a", NumCoveredStmts: 105, NumAllStmts: 2123},
 			covList.Group[0]},
-		{coverage{Name: "b", nCoveredStmts: 1559, nAllStmts: 3559},
+		{Coverage{Name: "b", NumCoveredStmts: 1559, NumAllStmts: 3559},
 			covList.Group[1]},
-		{coverage{Name: "a/c"},
+		{Coverage{Name: "a/c"},
 			covList.Group[2]},
 	}
 

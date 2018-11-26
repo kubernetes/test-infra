@@ -14,25 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package calculation
+package main
 
 import (
-	"testing"
+	"log"
+
+	"github.com/spf13/cobra"
+	"k8s.io/test-infra/robots/coverage/cmd/diff"
 )
 
-func TestRatio(t *testing.T) {
-	t.Run("regular", func(t *testing.T) {
-		c := &Coverage{Name: "fake-coverage", NumCoveredStmts: 105, NumAllStmts: 210}
-		actualRatio := c.Ratio()
-		if actualRatio != float32(.5) {
-			t.Fatalf("incorrect coverage ratio: expected 0.5, got %f", actualRatio)
-		}
-	})
+var rootCommand = &cobra.Command{
+	Use:   "coverage-robot",
+	Short: "coverage-robot is a tool for posting content related to pre-submit coverage change on github",
+}
 
-	t.Run("no actual statements", func(t *testing.T) {
-		c := &Coverage{Name: "fake-coverage", NumCoveredStmts: 0, NumAllStmts: 0}
-		if c.Ratio() != float32(1) {
-			t.Fatalf("incorrect coverage ratio: expected 1, got %f", c.Ratio())
-		}
-	})
+func run() error {
+	rootCommand.AddCommand(diff.MakeCommand())
+
+	return rootCommand.Execute()
+}
+
+func main() {
+	if err := run(); err != nil {
+		log.Fatal(err)
+	}
 }
