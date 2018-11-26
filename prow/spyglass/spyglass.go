@@ -59,6 +59,7 @@ type Spyglass struct {
 	*PodLogArtifactFetcher
 }
 
+// This interface matches config.Agent and exists for the purpose of unit tests.
 type configAgent interface {
 	Config() *config.Config
 }
@@ -82,7 +83,7 @@ type ViewRequest struct {
 	ViewData    string   `json:"viewData"`
 }
 
-// New constructs a Spyglass object from a JobAgent and a list of ArtifactFetchers
+// New constructs a Spyglass object from a JobAgent, a config.Agent, and a storage Client.
 func New(ja *jobs.JobAgent, conf configAgent, c *storage.Client) *Spyglass {
 	return &Spyglass{
 		Lenses:                make(map[string]Lens),
@@ -261,7 +262,7 @@ func (s *Spyglass) prowToGCS(prowKey string) (string, error) {
 	url := job.Status.URL
 	prefix := s.ConfigAgent.Config().Plank.JobURLPrefix
 	if url[:len(prefix)] != prefix {
-		return "", fmt.Errorf("Unrecognized GCS url: %q", url)
+		return "", fmt.Errorf("unexpected job URL %q when finding GCS path: expected something starting with %q", url, prefix)
 	}
 	return url[len(prefix):], nil
 }
