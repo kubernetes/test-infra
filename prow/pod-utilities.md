@@ -72,7 +72,7 @@ array not just a string. It should point to the test binary location in the cont
 Additional fields may be required for some use cases:
 - Private repos need to do two things:
 	- Add an ssh secret that gives the bot access to the repo to the build cluster
-	and specify the secret name in the `ssh_key_secrets` field of the job spec.
+	and specify the secret name in the `ssh_key_secrets` field of the job decoration config.
 	- Set the `clone_uri` field of the job spec to `git@github.com:{{.Org}}/{{.Repo}}.git`.
 - Repos requiring a non-standard clone path can use the `path_alias` field
 to clone the repo to different go import path than the default of `/home/prow/go/src/github.com/{{.Org}}/{{.Repo}}/` (e.g. `path_alias: k8s.io/test-infra` -> `/home/prow/go/src/k8s.io/test-infra`).
@@ -83,8 +83,9 @@ the `exta_refs` field.
 ```yaml
 - name: post-job
   decorate: true
-  ssh_key_secrets:
-  - ssh-secret
+  decoration_config:
+    ssh_key_secrets:
+    - ssh-secret
   clone_uri: "git@github.com:{{.Org}}/{{.Repo}}.git"
   extra_refs:
   - org: kubernetes
