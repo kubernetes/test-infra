@@ -382,7 +382,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=1220
+      - --timeout=1420
       - --bare
       - --scenario=kubernetes_e2e
       - --
@@ -397,7 +397,7 @@ periodics:
       - --save=gs://kubernetes-e2e-soak-configs/ci-kubernetes-soak-gce-gci
       - --soak
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
-      - --timeout=1200m
+      - --timeout=1400m
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
 
@@ -409,7 +409,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=1220
+      - --timeout=1420
       - --bare
       - --scenario=kubernetes_e2e
       - --
@@ -424,7 +424,7 @@ periodics:
       - --save=gs://kubernetes-e2e-soak-configs/ci-kubernetes-soak-gci-gce-beta
       - --soak
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
-      - --timeout=1200m
+      - --timeout=1400m
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
 
@@ -436,7 +436,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=1220
+      - --timeout=1420
       - --bare
       - --scenario=kubernetes_e2e
       - --
@@ -451,7 +451,7 @@ periodics:
       - --save=gs://kubernetes-e2e-soak-configs/ci-kubernetes-soak-gci-gce-stable1
       - --soak
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
-      - --timeout=1200m
+      - --timeout=1400m
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
 
@@ -463,7 +463,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=820
+      - --timeout=1420
       - --bare
       - --scenario=kubernetes_e2e
       - --
@@ -477,7 +477,7 @@ periodics:
       - --save=gs://kubernetes-e2e-soak-configs/ci-kubernetes-soak-gci-gce-stable2
       - --soak
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
-      - --timeout=800m
+      - --timeout=1400m
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
 
@@ -489,7 +489,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=820
+      - --timeout=1420
       - --bare
       - --scenario=kubernetes_e2e
       - --
@@ -503,6 +503,6 @@ periodics:
       - --save=gs://kubernetes-e2e-soak-configs/ci-kubernetes-soak-gci-gce-stable3
       - --soak
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
-      - --timeout=800m
+      - --timeout=1400m
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
