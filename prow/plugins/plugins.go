@@ -29,15 +29,15 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
-
 	"k8s.io/test-infra/prow/commentpruner"
+	"k8s.io/test-infra/prow/repoowners"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
-	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
 )
 
@@ -125,9 +125,8 @@ type Agent struct {
 	KubeClient   *kube.Client
 	GitClient    *git.Client
 	SlackClient  *slack.Client
-	OwnersClient repoowners.Interface
 
-	CommentPruner *commentpruner.EventClient
+	OwnersClient *repoowners.Client
 
 	// Config provides information about the jobs
 	// that we know how to run for repos.
@@ -136,11 +135,52 @@ type Agent struct {
 	PluginConfig *Configuration
 
 	Logger *logrus.Entry
+
+	// may be nil if not initialized
+	commentPruner *commentpruner.EventClient
+}
+
+func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientAgent *ClientAgent, logger *logrus.Entry) Agent {
+	prowConfig := configAgent.Config()
+	pluginConfig := pluginConfigAgent.Config()
+	return Agent{
+		GitHubClient: clientAgent.GitHubClient,
+		KubeClient:   clientAgent.KubeClient,
+		GitClient:    clientAgent.GitClient,
+		SlackClient:  clientAgent.SlackClient,
+		OwnersClient: repoowners.NewClient(
+			clientAgent.GitClient, clientAgent.GitHubClient,
+			prowConfig, pluginConfig.MDYAMLEnabled,
+			pluginConfig.SkipCollaborators,
+		),
+		Config:       prowConfig,
+		PluginConfig: pluginConfig,
+		Logger:       logger,
+	}
+}
+
+func (a *Agent) InitializeCommentPruner(org, repo string, pr int) {
+	a.commentPruner = commentpruner.NewEventClient(
+		a.GitHubClient, a.Logger.WithField("client", "commentpruner"),
+		org, repo, pr,
+	)
+}
+
+func (a *Agent) CommentPruner() (*commentpruner.EventClient, error) {
+	if a.commentPruner == nil {
+		return nil, errors.New("comment pruner client never initialized")
+	}
+	return a.commentPruner, nil
+}
+
+type ClientAgent struct {
+	GitHubClient *github.Client
+	KubeClient   *kube.Client
+	GitClient    *git.Client
+	SlackClient  *slack.Client
 }
 
 type ConfigAgent struct {
-	Agent
-
 	mut           sync.Mutex
 	configuration *Configuration
 }
@@ -251,9 +291,9 @@ type Owners struct {
 	LabelsBlackList []string `json:"labels_blacklist,omitempty"`
 }
 
-func (pa *ConfigAgent) MDYAMLEnabled(org, repo string) bool {
+func (c *Configuration) MDYAMLEnabled(org, repo string) bool {
 	full := fmt.Sprintf("%s/%s", org, repo)
-	for _, elem := range pa.Config().Owners.MDYAMLRepos {
+	for _, elem := range c.Owners.MDYAMLRepos {
 		if elem == org || elem == full {
 			return true
 		}
@@ -261,9 +301,9 @@ func (pa *ConfigAgent) MDYAMLEnabled(org, repo string) bool {
 	return false
 }
 
-func (pa *ConfigAgent) SkipCollaborators(org, repo string) bool {
+func (c *Configuration) SkipCollaborators(org, repo string) bool {
 	full := fmt.Sprintf("%s/%s", org, repo)
-	for _, elem := range pa.Config().Owners.SkipCollaborators {
+	for _, elem := range c.Owners.SkipCollaborators {
 		if elem == org || elem == full {
 			return true
 		}

@@ -121,7 +121,11 @@ type reviewCtx struct {
 }
 
 func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) error {
-	return handleGenericComment(pc.GitHubClient, pc.PluginConfig, pc.OwnersClient, pc.Logger, pc.CommentPruner, e)
+	cp, err := pc.CommentPruner()
+	if err != nil {
+		return err
+	}
+	return handleGenericComment(pc.GitHubClient, pc.PluginConfig, pc.OwnersClient, pc.Logger, cp, e)
 }
 
 func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
@@ -139,7 +143,11 @@ func handlePullRequestReviewEvent(pc plugins.Agent, e github.ReviewEvent) error 
 	if !opts.ReviewActsAsLgtm {
 		return nil
 	}
-	return handlePullRequestReview(pc.GitHubClient, pc.PluginConfig, pc.OwnersClient, pc.Logger, pc.CommentPruner, e)
+	cp, err := pc.CommentPruner()
+	if err != nil {
+		return err
+	}
+	return handlePullRequestReview(pc.GitHubClient, pc.PluginConfig, pc.OwnersClient, pc.Logger, cp, e)
 }
 
 func handleGenericComment(gc githubClient, config *plugins.Configuration, ownersClient repoowners.Interface, log *logrus.Entry, cp commentPruner, e github.GenericCommentEvent) error {

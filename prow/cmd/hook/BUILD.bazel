@@ -41,7 +41,6 @@ go_library(
         "//prow/metrics:go_default_library",
         "//prow/pluginhelp/hook:go_default_library",
         "//prow/plugins:go_default_library",
-        "//prow/repoowners:go_default_library",
         "//prow/slack:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus/promhttp:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

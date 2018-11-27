@@ -59,6 +59,7 @@ func TestHook(t *testing.T) {
 	pa := &plugins.ConfigAgent{}
 	pa.Set(&plugins.Configuration{Plugins: map[string][]string{"foo/bar": {"baz"}}})
 	ca := &config.Agent{}
+	clientAgent := &plugins.ClientAgent{}
 	metrics := NewMetrics()
 
 	getSecret := func() []byte {
@@ -66,6 +67,7 @@ func TestHook(t *testing.T) {
 	}
 
 	s := httptest.NewServer(&Server{
+		ClientAgent:    clientAgent,
 		Plugins:        pa,
 		ConfigAgent:    ca,
 		Metrics:        metrics,

@@ -86,22 +86,18 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 type blockCalc func([]github.PullRequestChange, []blockade) summary
 
 type client struct {
-	ghc    githubClient
-	log    *logrus.Entry
-	pruner pruneClient
+	ghc githubClient
+	log *logrus.Entry
 
 	blockCalc blockCalc
 }
 
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
-	c := &client{
-		ghc:    pc.GitHubClient,
-		log:    pc.Logger,
-		pruner: pc.CommentPruner,
-
-		blockCalc: calculateBlocks,
+	cp, err := pc.CommentPruner()
+	if err != nil {
+		return err
 	}
-	return handle(c, pc.PluginConfig.Blockades, &pre)
+	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.Blockades, cp, calculateBlocks, &pre)
 }
 
 // blockade is a compiled version of a plugins.Blockade config struct.
@@ -131,7 +127,7 @@ func (s summary) String() string {
 	return buf.String()
 }
 
-func handle(c *client, config []plugins.Blockade, pre *github.PullRequestEvent) error {
+func handle(ghc githubClient, log *logrus.Entry, config []plugins.Blockade, cp pruneClient, blockCalc blockCalc, pre *github.PullRequestEvent) error {
 	if pre.Action != github.PullRequestActionSynchronize &&
 		pre.Action != github.PullRequestActionOpened &&
 		pre.Action != github.PullRequestActionReopened {
@@ -140,13 +136,13 @@ func handle(c *client, config []plugins.Blockade, pre *github.PullRequestEvent) 
 
 	org := pre.Repo.Owner.Login
 	repo := pre.Repo.Name
-	issueLabels, err := c.ghc.GetIssueLabels(org, repo, pre.Number)
+	issueLabels, err := ghc.GetIssueLabels(org, repo, pre.Number)
 	if err != nil {
 		return err
 	}
 
 	labelPresent := hasBlockedLabel(issueLabels)
-	blockades := compileApplicableBlockades(org, repo, c.log, config)
+	blockades := compileApplicableBlockades(org, repo, log, config)
 	if len(blockades) == 0 && !labelPresent {
 		// Since the label is missing, we assume that we removed any associated comments.
 		return nil
@@ -154,27 +150,27 @@ func handle(c *client, config []plugins.Blockade, pre *github.PullRequestEvent) 
 
 	var sum summary
 	if len(blockades) > 0 {
-		changes, err := c.ghc.GetPullRequestChanges(org, repo, pre.Number)
+		changes, err := ghc.GetPullRequestChanges(org, repo, pre.Number)
 		if err != nil {
 			return err
 		}
-		sum = c.blockCalc(changes, blockades)
+		sum = blockCalc(changes, blockades)
 	}
 
 	shouldBlock := len(sum) > 0
 	if shouldBlock && !labelPresent {
 		// Add the label and leave a comment explaining why the label was added.
-		if err := c.ghc.AddLabel(org, repo, pre.Number, labels.BlockedPaths); err != nil {
+		if err := ghc.AddLabel(org, repo, pre.Number, labels.BlockedPaths); err != nil {
 			return err
 		}
 		msg := plugins.FormatResponse(pre.PullRequest.User.Login, blockedPathsBody, sum.String())
-		return c.ghc.CreateComment(org, repo, pre.Number, msg)
+		return ghc.CreateComment(org, repo, pre.Number, msg)
 	} else if !shouldBlock && labelPresent {
 		// Remove the label and delete any comments created by this plugin.
-		if err := c.ghc.RemoveLabel(org, repo, pre.Number, labels.BlockedPaths); err != nil {
+		if err := ghc.RemoveLabel(org, repo, pre.Number, labels.BlockedPaths); err != nil {
 			return err
 		}
-		c.pruner.PruneComments(func(ic github.IssueComment) bool {
+		cp.PruneComments(func(ic github.IssueComment) bool {
 			return strings.Contains(ic.Body, blockedPathsBody)
 		})
 	}

@@ -31,7 +31,6 @@ go_library(
     ],
     importpath = "k8s.io/test-infra/prow/hook",
     deps = [
-        "//prow/commentpruner:go_default_library",
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",
