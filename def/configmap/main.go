@@ -38,7 +38,7 @@ type options struct {
 	output    string
 }
 
-// multiKeyValue allows --key=value --key=value
+// multiKeyValue allows --key=value --key=value2
 type multiKeyValue map[string]string
 
 func (mkv *multiKeyValue) String() string {
