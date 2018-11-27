@@ -959,7 +959,9 @@ func TestTakeAction(t *testing.T) {
 						Context:      "if-changed",
 						Trigger:      "/test if-changed",
 						RerunCommand: "/test if-changed",
-						RunIfChanged: "CHANGED",
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
+							RunIfChanged: "CHANGED",
+						},
 					},
 				},
 			},
@@ -1796,8 +1798,10 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "no matching presubmits",
 			presubmits: []config.Presubmit{
 				{
-					Context:      "always",
-					RunIfChanged: "foo",
+					Context: "always",
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						RunIfChanged: "foo",
+					},
 				},
 				{
 					Context: "never",
@@ -1825,8 +1829,10 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "no matching presubmits (check cache retention)",
 			presubmits: []config.Presubmit{
 				{
-					Context:      "always",
-					RunIfChanged: "foo",
+					Context: "always",
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						RunIfChanged: "foo",
+					},
 				},
 				{
 					Context: "never",
@@ -1889,8 +1895,10 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "run_if_changed (uncached)",
 			presubmits: []config.Presubmit{
 				{
-					Context:      "presubmit",
-					RunIfChanged: "^CHANGE.$",
+					Context: "presubmit",
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						RunIfChanged: "^CHANGE.$",
+					},
 				},
 				{
 					Context:   "always",
@@ -1907,8 +1915,10 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "run_if_changed (cached)",
 			presubmits: []config.Presubmit{
 				{
-					Context:      "presubmit",
-					RunIfChanged: "^FIL.$",
+					Context: "presubmit",
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						RunIfChanged: "^FIL.$",
+					},
 				},
 				{
 					Context:   "always",
@@ -1926,8 +1936,10 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "run_if_changed (cached) (skippable)",
 			presubmits: []config.Presubmit{
 				{
-					Context:      "presubmit",
-					RunIfChanged: "^CHANGE.$",
+					Context: "presubmit",
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						RunIfChanged: "^CHANGE.$",
+					},
 				},
 				{
 					Context:   "always",

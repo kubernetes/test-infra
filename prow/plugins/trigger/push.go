@@ -22,9 +22,33 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 )
 
+func listPushEventChanges(pe github.PushEvent) []string {
+	changed := make(map[string]bool)
+	for _, commit := range pe.Commits {
+		for _, added := range commit.Added {
+			changed[added] = true
+		}
+		for _, removed := range commit.Removed {
+			changed[removed] = true
+		}
+		for _, modified := range commit.Modified {
+			changed[modified] = true
+		}
+	}
+	changedFiles := []string{}
+	for file := range changed {
+		changedFiles = append(changedFiles, file)
+	}
+	return changedFiles
+}
+
 func handlePE(c client, pe github.PushEvent) error {
 	for _, j := range c.Config.Postsubmits[pe.Repo.FullName] {
 		if !j.RunsAgainstBranch(pe.Branch()) {
+			continue
+		}
+		changedFiles := listPushEventChanges(pe)
+		if !j.RunsAgainstChanges(changedFiles) {
 			continue
 		}
 		kr := kube.Refs{

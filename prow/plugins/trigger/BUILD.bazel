@@ -11,6 +11,7 @@ go_test(
     srcs = [
         "generic-comment_test.go",
         "pull-request_test.go",
+        "push_test.go",
     ],
     embed = [":go_default_library"],
     deps = [
