@@ -68,7 +68,7 @@ type githubClient interface {
 	RemoveLabel(owner, repo string, number int, label string) error
 }
 
-func handlePullRequest(pc plugins.PluginClient, pe github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
 	// These are the only actions indicating the PR title may have changed.
 	if pe.Action != github.PullRequestActionOpened &&
 		pe.Action != github.PullRequestActionReopened &&

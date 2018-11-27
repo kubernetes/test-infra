@@ -88,7 +88,7 @@ func helpProvider(config *plugins.Configuration, _ []string) (*pluginhelp.Plugin
 		nil
 }
 
-func handleIssue(pc plugins.PluginClient, ie github.IssueEvent) error {
+func handleIssue(pc plugins.Agent, ie github.IssueEvent) error {
 	return handle(pc.Logger, pc.GitHubClient, pc.CommentPruner, &ie, pc.PluginConfig.SigMention.Re)
 }
 

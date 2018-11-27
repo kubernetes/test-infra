@@ -149,7 +149,7 @@ func main() {
 		pluginAgent.SkipCollaborators,
 	)
 
-	pluginAgent.PluginClient = plugins.PluginClient{
+	pluginAgent.Agent = plugins.Agent{
 		GitHubClient: githubClient,
 		KubeClient:   kubeClient,
 		GitClient:    gitClient,

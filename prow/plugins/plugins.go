@@ -63,64 +63,64 @@ func HelpProviders() map[string]HelpProvider {
 	return pluginHelp
 }
 
-type IssueHandler func(PluginClient, github.IssueEvent) error
+type IssueHandler func(Agent, github.IssueEvent) error
 
 func RegisterIssueHandler(name string, fn IssueHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	issueHandlers[name] = fn
 }
 
-type IssueCommentHandler func(PluginClient, github.IssueCommentEvent) error
+type IssueCommentHandler func(Agent, github.IssueCommentEvent) error
 
 func RegisterIssueCommentHandler(name string, fn IssueCommentHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	issueCommentHandlers[name] = fn
 }
 
-type PullRequestHandler func(PluginClient, github.PullRequestEvent) error
+type PullRequestHandler func(Agent, github.PullRequestEvent) error
 
 func RegisterPullRequestHandler(name string, fn PullRequestHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	pullRequestHandlers[name] = fn
 }
 
-type StatusEventHandler func(PluginClient, github.StatusEvent) error
+type StatusEventHandler func(Agent, github.StatusEvent) error
 
 func RegisterStatusEventHandler(name string, fn StatusEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	statusEventHandlers[name] = fn
 }
 
-type PushEventHandler func(PluginClient, github.PushEvent) error
+type PushEventHandler func(Agent, github.PushEvent) error
 
 func RegisterPushEventHandler(name string, fn PushEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	pushEventHandlers[name] = fn
 }
 
-type ReviewEventHandler func(PluginClient, github.ReviewEvent) error
+type ReviewEventHandler func(Agent, github.ReviewEvent) error
 
 func RegisterReviewEventHandler(name string, fn ReviewEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	reviewEventHandlers[name] = fn
 }
 
-type ReviewCommentEventHandler func(PluginClient, github.ReviewCommentEvent) error
+type ReviewCommentEventHandler func(Agent, github.ReviewCommentEvent) error
 
 func RegisterReviewCommentEventHandler(name string, fn ReviewCommentEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	reviewCommentEventHandlers[name] = fn
 }
 
-type GenericCommentHandler func(PluginClient, github.GenericCommentEvent) error
+type GenericCommentHandler func(Agent, github.GenericCommentEvent) error
 
 func RegisterGenericCommentHandler(name string, fn GenericCommentHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	genericCommentHandlers[name] = fn
 }
 
-// PluginClient may be used concurrently, so each entry must be thread-safe.
-type PluginClient struct {
+// Agent may be used concurrently, so each entry must be thread-safe.
+type Agent struct {
 	GitHubClient *github.Client
 	KubeClient   *kube.Client
 	GitClient    *git.Client
@@ -139,7 +139,7 @@ type PluginClient struct {
 }
 
 type ConfigAgent struct {
-	PluginClient
+	Agent
 
 	mut           sync.Mutex
 	configuration *Configuration

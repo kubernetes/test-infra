@@ -80,7 +80,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		nil
 }
 
-func handleComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	c := client{
 		GithubClient: pc.GitHubClient,
 		SlackConfig:  pc.PluginConfig.Slack,
@@ -89,7 +89,7 @@ func handleComment(pc plugins.PluginClient, e github.GenericCommentEvent) error 
 	return echoToSlack(c, e)
 }
 
-func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {
+func handlePush(pc plugins.Agent, pe github.PushEvent) error {
 	c := client{
 		GithubClient: pc.GitHubClient,
 		SlackConfig:  pc.PluginConfig.Slack,

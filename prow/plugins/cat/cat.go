@@ -173,7 +173,7 @@ func (r *realClowder) readCat(category string, movieCat bool) (string, error) {
 	return a.Format()
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	return handle(
 		pc.GitHubClient,
 		pc.Logger,

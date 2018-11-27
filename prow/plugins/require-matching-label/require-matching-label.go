@@ -98,7 +98,7 @@ type event struct {
 	currentLabels []github.Label
 }
 
-func handleIssue(pc plugins.PluginClient, ie github.IssueEvent) error {
+func handleIssue(pc plugins.Agent, ie github.IssueEvent) error {
 	if !handleIssueActions[ie.Action] {
 		return nil
 	}
@@ -113,7 +113,7 @@ func handleIssue(pc plugins.PluginClient, ie github.IssueEvent) error {
 	return handle(pc.Logger, pc.GitHubClient, pc.CommentPruner, pc.PluginConfig.RequireMatchingLabel, e)
 }
 
-func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	if !handlePRActions[pre.Action] {
 		return nil
 	}

@@ -59,7 +59,7 @@ type commentPruner interface {
 // 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequestEvent, helpProvider)
 // }
 
-// func handlePullRequestEvent(pc plugins.PluginClient, pre github.PullRequestEvent) error {
+// func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
 // 	return handleEvent(pc.Logger, pc.GitHubClient, pc.CommentPruner, &pre)
 // }
 

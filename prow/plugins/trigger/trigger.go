@@ -118,7 +118,7 @@ type trustedUserClient interface {
 	IsMember(org, user string) (bool, error)
 }
 
-func getClient(pc plugins.PluginClient) client {
+func getClient(pc plugins.Agent) client {
 	return client{
 		GitHubClient: pc.GitHubClient,
 		Config:       pc.Config,
@@ -127,16 +127,16 @@ func getClient(pc plugins.PluginClient) client {
 	}
 }
 
-func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
 	org, repo, _ := orgRepoAuthor(pr.PullRequest)
 	return handlePR(getClient(pc), pc.PluginConfig.TriggerFor(org, repo), pr)
 }
 
-func handleGenericCommentEvent(pc plugins.PluginClient, gc github.GenericCommentEvent) error {
+func handleGenericCommentEvent(pc plugins.Agent, gc github.GenericCommentEvent) error {
 	return handleGenericComment(getClient(pc), pc.PluginConfig.TriggerFor(gc.Repo.Owner.Login, gc.Repo.Name), gc)
 }
 
-func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {
+func handlePush(pc plugins.Agent, pe github.PushEvent) error {
 	return handlePE(getClient(pc), pe)
 }
 

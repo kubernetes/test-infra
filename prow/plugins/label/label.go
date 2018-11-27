@@ -57,7 +57,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	return pluginHelp, nil
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	var labels []string
 	if pc.PluginConfig.Label != nil {
 		labels = pc.PluginConfig.Label.AdditionalLabels

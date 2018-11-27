@@ -65,7 +65,7 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 		s.wg.Add(1)
 		go func(p string, h plugins.ReviewEventHandler) {
 			defer s.wg.Done()
-			pc := s.Plugins.PluginClient
+			pc := s.Plugins.Agent
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
@@ -121,7 +121,7 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 		s.wg.Add(1)
 		go func(p string, h plugins.ReviewCommentEventHandler) {
 			defer s.wg.Done()
-			pc := s.Plugins.PluginClient
+			pc := s.Plugins.Agent
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
@@ -176,7 +176,7 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 		s.wg.Add(1)
 		go func(p string, h plugins.PullRequestHandler) {
 			defer s.wg.Done()
-			pc := s.Plugins.PluginClient
+			pc := s.Plugins.Agent
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
@@ -232,7 +232,7 @@ func (s *Server) handlePushEvent(l *logrus.Entry, pe github.PushEvent) {
 		s.wg.Add(1)
 		go func(p string, h plugins.PushEventHandler) {
 			defer s.wg.Done()
-			pc := s.Plugins.PluginClient
+			pc := s.Plugins.Agent
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
@@ -257,7 +257,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 		s.wg.Add(1)
 		go func(p string, h plugins.IssueHandler) {
 			defer s.wg.Done()
-			pc := s.Plugins.PluginClient
+			pc := s.Plugins.Agent
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
@@ -314,7 +314,7 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 		s.wg.Add(1)
 		go func(p string, h plugins.IssueCommentHandler) {
 			defer s.wg.Done()
-			pc := s.Plugins.PluginClient
+			pc := s.Plugins.Agent
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
@@ -370,7 +370,7 @@ func (s *Server) handleStatusEvent(l *logrus.Entry, se github.StatusEvent) {
 		s.wg.Add(1)
 		go func(p string, h plugins.StatusEventHandler) {
 			defer s.wg.Done()
-			pc := s.Plugins.PluginClient
+			pc := s.Plugins.Agent
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
@@ -401,7 +401,7 @@ func (s *Server) handleGenericComment(l *logrus.Entry, ce *github.GenericComment
 		s.wg.Add(1)
 		go func(p string, h plugins.GenericCommentHandler) {
 			defer s.wg.Done()
-			pc := s.Plugins.PluginClient
+			pc := s.Plugins.Agent
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()

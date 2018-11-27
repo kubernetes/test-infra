@@ -93,7 +93,7 @@ type client struct {
 	blockCalc blockCalc
 }
 
-func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	c := &client{
 		ghc:    pc.GitHubClient,
 		log:    pc.Logger,

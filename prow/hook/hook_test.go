@@ -50,7 +50,7 @@ func TestHook(t *testing.T) {
 	}
 	plugins.RegisterIssueHandler(
 		"baz",
-		func(pc plugins.PluginClient, ie github.IssueEvent) error {
+		func(pc plugins.Agent, ie github.IssueEvent) error {
 			called <- true
 			return nil
 		},

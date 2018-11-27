@@ -51,7 +51,7 @@ type commentPruner interface {
 
 func init() {
 	plugins.RegisterGenericCommentHandler(PluginName, handleGenericCommentEvent, helpProvider)
-	plugins.RegisterPullRequestHandler(PluginName, func(pc plugins.PluginClient, pe github.PullRequestEvent) error {
+	plugins.RegisterPullRequestHandler(PluginName, func(pc plugins.Agent, pe github.PullRequestEvent) error {
 		return handlePullRequestEvent(pc, pe)
 	}, helpProvider)
 	plugins.RegisterReviewEventHandler(PluginName, handlePullRequestReviewEvent, helpProvider)
@@ -120,11 +120,11 @@ type reviewCtx struct {
 	number                             int
 }
 
-func handleGenericCommentEvent(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) error {
 	return handleGenericComment(pc.GitHubClient, pc.PluginConfig, pc.OwnersClient, pc.Logger, pc.CommentPruner, e)
 }
 
-func handlePullRequestEvent(pc plugins.PluginClient, pre github.PullRequestEvent) error {
+func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
 	return handlePullRequest(
 		pc.Logger,
 		pc.GitHubClient,
@@ -133,7 +133,7 @@ func handlePullRequestEvent(pc plugins.PluginClient, pre github.PullRequestEvent
 	)
 }
 
-func handlePullRequestReviewEvent(pc plugins.PluginClient, e github.ReviewEvent) error {
+func handlePullRequestReviewEvent(pc plugins.Agent, e github.ReviewEvent) error {
 	// If ReviewActsAsLgtm is disabled, ignore review event.
 	opts := optionsForRepo(pc.PluginConfig, e.Repo.Owner.Login, e.Repo.Name)
 	if !opts.ReviewActsAsLgtm {

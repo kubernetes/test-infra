@@ -133,7 +133,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	return pluginHelp, nil
 }
 
-func handleGenericCommentEvent(pc plugins.PluginClient, ce github.GenericCommentEvent) error {
+func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
 	return handleGenericComment(
 		pc.Logger,
 		pc.GitHubClient,
@@ -188,7 +188,7 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, 
 
 // handleReviewEvent should only handle reviews that have no approval command.
 // Reviews with approval commands will be handled by handleGenericCommentEvent.
-func handleReviewEvent(pc plugins.PluginClient, re github.ReviewEvent) error {
+func handleReviewEvent(pc plugins.Agent, re github.ReviewEvent) error {
 	return handleReview(
 		pc.Logger,
 		pc.GitHubClient,
@@ -247,7 +247,7 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, config *
 
 }
 
-func handlePullRequestEvent(pc plugins.PluginClient, pre github.PullRequestEvent) error {
+func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
 	return handlePullRequest(
 		pc.Logger,
 		pc.GitHubClient,

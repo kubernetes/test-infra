@@ -74,18 +74,18 @@ type client struct {
 	Logger       *logrus.Entry
 }
 
-func getClient(pc plugins.PluginClient) client {
+func getClient(pc plugins.Agent) client {
 	return client{
 		GitHubClient: pc.GitHubClient,
 		Logger:       pc.Logger,
 	}
 }
 
-func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
+func handleIssueComment(pc plugins.Agent, ic github.IssueCommentEvent) error {
 	return handleIC(getClient(pc), pc.PluginConfig.Heart.Adorees, ic)
 }
 
-func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	return handlePR(getClient(pc), pre)
 }
 
