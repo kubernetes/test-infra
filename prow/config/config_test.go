@@ -42,6 +42,7 @@ func TestDefaultJobBase(t *testing.T) {
 	filled := JobBase{
 		Agent:     "foo",
 		Namespace: &bar,
+		Cluster:   "build",
 	}
 	cases := []struct {
 		name     string
@@ -88,6 +89,15 @@ func TestDefaultJobBase(t *testing.T) {
 			expected: func(j *JobBase) {
 				p := "new-pod-namespace"
 				j.Namespace = &p
+			},
+		},
+		{
+			name: "empty cluster becomes DefaultClusterAlias",
+			base: func(j *JobBase) {
+				j.Cluster = ""
+			},
+			expected: func(j *JobBase) {
+				j.Cluster = kube.DefaultClusterAlias
 			},
 		},
 	}
@@ -516,6 +526,20 @@ func TestValidateAgent(t *testing.T) {
 				j.Agent = jenk
 				j.Spec = nil
 				j.DecorationConfig = nil
+			},
+			pass: true,
+		},
+		{
+			name: "error_on_eviction requires kubernetes agent",
+			base: func(j *JobBase) {
+				j.Agent = b
+				j.ErrorOnEviction = true
+			},
+		},
+		{
+			name: "error_on_eviction allowed for kubernetes agent",
+			base: func(j *JobBase) {
+				j.ErrorOnEviction = true
 			},
 			pass: true,
 		},

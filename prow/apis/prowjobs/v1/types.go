@@ -128,6 +128,11 @@ type ProwJobSpec struct {
 	// MaxConcurrency restricts the total number of instances
 	// of this job that can run in parallel at once
 	MaxConcurrency int `json:"max_concurrency,omitempty"`
+	// ErrorOnEviction indicates that the ProwJob should be completed and given
+	// the ErrorState status if the pod that is executing the job is evicted.
+	// If this field is unspecified or false, a new pod will be created to replace
+	// the evicted one.
+	ErrorOnEviction bool `json:"error_on_eviction,omitempty"`
 
 	// PodSpec provides the basis for running the test under
 	// a Kubernetes agent

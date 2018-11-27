@@ -941,6 +941,38 @@ func TestSyncPendingJob(t *testing.T) {
 			expectedNumPods:  0,
 		},
 		{
+			name: "don't delete evicted pod w/ error_on_eviction, complete PJ instead",
+			pj: kube.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "boop-42",
+				},
+				Spec: kube.ProwJobSpec{
+					ErrorOnEviction: true,
+					PodSpec:         &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
+				},
+				Status: kube.ProwJobStatus{
+					State:   kube.PendingState,
+					PodName: "boop-42",
+				},
+			},
+			pods: []kube.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "boop-42",
+					},
+					Status: kube.PodStatus{
+						Phase:  kube.PodFailed,
+						Reason: kube.Evicted,
+					},
+				},
+			},
+			expectedComplete: true,
+			expectedState:    kube.ErrorState,
+			expectedNumPods:  1,
+			expectedReport:   true,
+			expectedURL:      "boop-42/error",
+		},
+		{
 			name: "running pod",
 			pj: kube.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{

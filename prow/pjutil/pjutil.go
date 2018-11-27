@@ -89,34 +89,13 @@ func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, e
 
 // PresubmitSpec initializes a ProwJobSpec for a given presubmit job.
 func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
-	if p.PathAlias != "" {
-		refs.PathAlias = p.PathAlias
-	}
-	if p.CloneURI != "" {
-		refs.CloneURI = p.CloneURI
-	}
-	refs.SkipSubmodules = p.SkipSubmodules
-	pjs := kube.ProwJobSpec{
-		Type:      kube.PresubmitJob,
-		Job:       p.Name,
-		Refs:      &refs,
-		ExtraRefs: p.ExtraRefs,
+	pjs := specFromJobBase(p.JobBase)
+	pjs.Type = kube.PresubmitJob
+	pjs.Context = p.Context
+	pjs.Report = !p.SkipReport
+	pjs.RerunCommand = p.RerunCommand
+	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
 
-		Report:         !p.SkipReport,
-		Context:        p.Context,
-		RerunCommand:   p.RerunCommand,
-		MaxConcurrency: p.MaxConcurrency,
-
-		DecorationConfig: p.DecorationConfig,
-	}
-	pjs.Agent = kube.ProwJobAgent(p.Agent)
-	if pjs.Agent == kube.KubernetesAgent {
-		pjs.PodSpec = p.Spec
-		pjs.Cluster = p.Cluster
-		if pjs.Cluster == "" {
-			pjs.Cluster = kube.DefaultClusterAlias
-		}
-	}
 	for _, nextP := range p.RunAfterSuccess {
 		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, PresubmitSpec(nextP, refs))
 	}
@@ -125,31 +104,10 @@ func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 
 // PostsubmitSpec initializes a ProwJobSpec for a given postsubmit job.
 func PostsubmitSpec(p config.Postsubmit, refs kube.Refs) kube.ProwJobSpec {
-	if p.PathAlias != "" {
-		refs.PathAlias = p.PathAlias
-	}
-	if p.CloneURI != "" {
-		refs.CloneURI = p.CloneURI
-	}
-	refs.SkipSubmodules = p.SkipSubmodules
-	pjs := kube.ProwJobSpec{
-		Type:      kube.PostsubmitJob,
-		Job:       p.Name,
-		Refs:      &refs,
-		ExtraRefs: p.ExtraRefs,
+	pjs := specFromJobBase(p.JobBase)
+	pjs.Type = kube.PostsubmitJob
+	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
 
-		MaxConcurrency: p.MaxConcurrency,
-
-		DecorationConfig: p.DecorationConfig,
-	}
-	pjs.Agent = kube.ProwJobAgent(p.Agent)
-	if pjs.Agent == kube.KubernetesAgent {
-		pjs.PodSpec = p.Spec
-		pjs.Cluster = p.Cluster
-		if pjs.Cluster == "" {
-			pjs.Cluster = kube.DefaultClusterAlias
-		}
-	}
 	for _, nextP := range p.RunAfterSuccess {
 		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, PostsubmitSpec(nextP, refs))
 	}
@@ -158,21 +116,9 @@ func PostsubmitSpec(p config.Postsubmit, refs kube.Refs) kube.ProwJobSpec {
 
 // PeriodicSpec initializes a ProwJobSpec for a given periodic job.
 func PeriodicSpec(p config.Periodic) kube.ProwJobSpec {
-	pjs := kube.ProwJobSpec{
-		Type:      kube.PeriodicJob,
-		Job:       p.Name,
-		ExtraRefs: p.ExtraRefs,
+	pjs := specFromJobBase(p.JobBase)
+	pjs.Type = kube.PeriodicJob
 
-		DecorationConfig: p.DecorationConfig,
-	}
-	pjs.Agent = kube.ProwJobAgent(p.Agent)
-	if pjs.Agent == kube.KubernetesAgent {
-		pjs.PodSpec = p.Spec
-		pjs.Cluster = p.Cluster
-		if pjs.Cluster == "" {
-			pjs.Cluster = kube.DefaultClusterAlias
-		}
-	}
 	for _, nextP := range p.RunAfterSuccess {
 		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, PeriodicSpec(nextP))
 	}
@@ -181,34 +127,47 @@ func PeriodicSpec(p config.Periodic) kube.ProwJobSpec {
 
 // BatchSpec initializes a ProwJobSpec for a given batch job and ref spec.
 func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
-	if p.PathAlias != "" {
-		refs.PathAlias = p.PathAlias
-	}
-	if p.CloneURI != "" {
-		refs.CloneURI = p.CloneURI
-	}
-	refs.SkipSubmodules = p.SkipSubmodules
-	pjs := kube.ProwJobSpec{
-		Type:      kube.BatchJob,
-		Job:       p.Name,
-		Refs:      &refs,
-		ExtraRefs: p.ExtraRefs,
-		Context:   p.Context,
+	pjs := specFromJobBase(p.JobBase)
+	pjs.Type = kube.BatchJob
+	pjs.Context = p.Context
+	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
 
-		DecorationConfig: p.DecorationConfig,
-	}
-	pjs.Agent = kube.ProwJobAgent(p.Agent)
-	if pjs.Agent == kube.KubernetesAgent {
-		pjs.PodSpec = p.Spec
-		pjs.Cluster = p.Cluster
-		if pjs.Cluster == "" {
-			pjs.Cluster = kube.DefaultClusterAlias
-		}
-	}
 	for _, nextP := range p.RunAfterSuccess {
 		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, BatchSpec(nextP, refs))
 	}
 	return pjs
+}
+
+func specFromJobBase(jb config.JobBase) kube.ProwJobSpec {
+	var namespace string
+	if jb.Namespace != nil {
+		namespace = *jb.Namespace
+	}
+	return kube.ProwJobSpec{
+		Job:             jb.Name,
+		Agent:           kube.ProwJobAgent(jb.Agent),
+		Cluster:         jb.Cluster,
+		Namespace:       namespace,
+		MaxConcurrency:  jb.MaxConcurrency,
+		ErrorOnEviction: jb.ErrorOnEviction,
+
+		ExtraRefs:        jb.ExtraRefs,
+		DecorationConfig: jb.DecorationConfig,
+
+		PodSpec:   jb.Spec,
+		BuildSpec: jb.BuildSpec,
+	}
+}
+
+func completePrimaryRefs(refs kube.Refs, jb config.JobBase) *kube.Refs {
+	if jb.PathAlias != "" {
+		refs.PathAlias = jb.PathAlias
+	}
+	if jb.CloneURI != "" {
+		refs.CloneURI = jb.CloneURI
+	}
+	refs.SkipSubmodules = jb.SkipSubmodules
+	return &refs
 }
 
 // PartitionActive separates the provided prowjobs into pending and triggered
