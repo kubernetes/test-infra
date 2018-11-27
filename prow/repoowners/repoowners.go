@@ -84,10 +84,6 @@ type cacheEntry struct {
 	owners  *RepoOwners
 }
 
-type configGetter interface {
-	Config() *prowConf.Config
-}
-
 // Interface is an interface to work with OWNERS files.
 type Interface interface {
 	LoadRepoAliases(org, repo, base string) (RepoAliases, error)
@@ -99,7 +95,7 @@ var _ Interface = &Client{}
 
 // Client is the repoowners client
 type Client struct {
-	configGetter configGetter
+	config *prowConf.Config
 
 	git    *git.Client
 	ghc    githubClient
@@ -116,7 +112,7 @@ type Client struct {
 func NewClient(
 	gc *git.Client,
 	ghc *github.Client,
-	configGetter *prowConf.Agent,
+	config *prowConf.Config,
 	mdYAMLEnabled func(org, repo string) bool,
 	skipCollaborators func(org, repo string) bool,
 ) *Client {
@@ -129,7 +125,7 @@ func NewClient(
 		mdYAMLEnabled:     mdYAMLEnabled,
 		skipCollaborators: skipCollaborators,
 
-		configGetter: configGetter,
+		config: config,
 	}
 }
 
@@ -235,7 +231,7 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwnerInterface, err
 			entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
 		}
 
-		blacklistConfig := c.configGetter.Config().OwnersDirBlacklist
+		blacklistConfig := c.config.OwnersDirBlacklist
 
 		dirBlacklist := defaultDirBlacklist.Union(sets.NewString(blacklistConfig.Default...))
 		if bl, ok := blacklistConfig.Repos[org]; ok {

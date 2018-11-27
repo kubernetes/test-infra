@@ -100,22 +100,6 @@ func patternAll(values ...string) map[string]sets.String {
 	return map[string]sets.String{"": sets.NewString(values...)}
 }
 
-type testConfigGetter struct {
-	defaultBlacklist []string
-	repoBlacklist    map[string][]string
-}
-
-func (c testConfigGetter) Config() *prowConf.Config {
-	return &prowConf.Config{
-		ProwConfig: prowConf.ProwConfig{
-			OwnersDirBlacklist: prowConf.OwnersDirBlacklist{
-				Repos:   c.repoBlacklist,
-				Default: c.defaultBlacklist,
-			},
-		},
-	}
-}
-
 func getTestClient(
 	files map[string][]byte,
 	enableMdYaml,
@@ -172,9 +156,13 @@ func getTestClient(
 			skipCollaborators: func(org, repo string) bool {
 				return skipCollab
 			},
-			configGetter: testConfigGetter{
-				repoBlacklist:    ownersDirBlacklistByRepo,
-				defaultBlacklist: ownersDirBlacklistDefault,
+			config: &prowConf.Config{
+				ProwConfig: prowConf.ProwConfig{
+					OwnersDirBlacklist: prowConf.OwnersDirBlacklist{
+						Repos:   ownersDirBlacklistByRepo,
+						Default: ownersDirBlacklistDefault,
+					},
+				},
 			},
 		},
 		// Clean up function
