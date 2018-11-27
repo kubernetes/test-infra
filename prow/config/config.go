@@ -1175,11 +1175,11 @@ func SetPresubmitRegexes(js []Presubmit) error {
 		}
 		js[i].Brancher = b
 
-		c, err := setChangeRegexes(j.ChangeMatcher)
+		c, err := setChangeRegexes(j.RegexpChangeMatcher)
 		if err != nil {
 			return fmt.Errorf("could not set change regexes for %s: %v", j.Name, err)
 		}
-		js[i].ChangeMatcher = c
+		js[i].RegexpChangeMatcher = c
 
 		if err := SetPresubmitRegexes(j.RunAfterSuccess); err != nil {
 			return err
@@ -1208,7 +1208,7 @@ func setBrancherRegexes(br Brancher) (Brancher, error) {
 	return br, nil
 }
 
-func setChangeRegexes(cm ChangeMatcher) (ChangeMatcher, error) {
+func setChangeRegexes(cm RegexpChangeMatcher) (RegexpChangeMatcher, error) {
 	if cm.RunIfChanged != "" {
 		re, err := regexp.Compile(cm.RunIfChanged)
 		if err != nil {
@@ -1228,11 +1228,11 @@ func SetPostsubmitRegexes(ps []Postsubmit) error {
 			return fmt.Errorf("could not set branch regexes for %s: %v", j.Name, err)
 		}
 		ps[i].Brancher = b
-		c, err := setChangeRegexes(j.ChangeMatcher)
+		c, err := setChangeRegexes(j.RegexpChangeMatcher)
 		if err != nil {
 			return fmt.Errorf("could not set change regexes for %s: %v", j.Name, err)
 		}
-		ps[i].ChangeMatcher = c
+		ps[i].RegexpChangeMatcher = c
 		if err := SetPostsubmitRegexes(j.RunAfterSuccess); err != nil {
 			return err
 		}

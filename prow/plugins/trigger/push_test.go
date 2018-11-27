@@ -40,7 +40,7 @@ func TestHandlePE(t *testing.T) {
 				JobBase: config.JobBase{
 					Name: "pass-butter",
 				},
-				ChangeMatcher: config.ChangeMatcher{
+				RegexpChangeMatcher: config.RegexpChangeMatcher{
 					RunIfChanged: "\\.sh$",
 				},
 			},

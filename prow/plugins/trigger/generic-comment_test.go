@@ -295,7 +295,7 @@ func TestHandleGenericComment(t *testing.T) {
 						JobBase: config.JobBase{
 							Name: "jab",
 						},
-						ChangeMatcher: config.ChangeMatcher{
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
 							RunIfChanged: "CHANGED",
 						},
 						SkipReport:   true,
@@ -320,7 +320,7 @@ func TestHandleGenericComment(t *testing.T) {
 						JobBase: config.JobBase{
 							Name: "jib",
 						},
-						ChangeMatcher: config.ChangeMatcher{
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
 							RunIfChanged: "CHANGED",
 						},
 						Context:      "pull-jib",
@@ -344,7 +344,7 @@ func TestHandleGenericComment(t *testing.T) {
 						JobBase: config.JobBase{
 							Name: "jub",
 						},
-						ChangeMatcher: config.ChangeMatcher{
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
 							RunIfChanged: "CHANGED",
 						},
 						Context:      "pull-jub",
@@ -368,7 +368,7 @@ func TestHandleGenericComment(t *testing.T) {
 						JobBase: config.JobBase{
 							Name: "jib",
 						},
-						ChangeMatcher: config.ChangeMatcher{
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
 							RunIfChanged: "CHANGED2",
 						},
 						Context:      "pull-jib",
@@ -391,7 +391,7 @@ func TestHandleGenericComment(t *testing.T) {
 						JobBase: config.JobBase{
 							Name: "jab",
 						},
-						ChangeMatcher: config.ChangeMatcher{
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
 							RunIfChanged: "CHANGED",
 						},
 						Context:      "pull-jab",
@@ -481,7 +481,7 @@ func TestHandleGenericComment(t *testing.T) {
 						JobBase: config.JobBase{
 							Name: "jeb",
 						},
-						ChangeMatcher: config.ChangeMatcher{
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
 							RunIfChanged: "CHANGED2",
 						},
 						Context:      "pull-jeb",
@@ -505,7 +505,7 @@ func TestHandleGenericComment(t *testing.T) {
 						JobBase: config.JobBase{
 							Name: "jeb",
 						},
-						ChangeMatcher: config.ChangeMatcher{
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
 							RunIfChanged: "CHANGED2",
 						},
 						Context:      "pull-jib",
@@ -528,7 +528,7 @@ func TestHandleGenericComment(t *testing.T) {
 						JobBase: config.JobBase{
 							Name: "jub",
 						},
-						ChangeMatcher: config.ChangeMatcher{
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
 							RunIfChanged: "CHANGED",
 						},
 						Context:      "pull-jub",
@@ -552,7 +552,7 @@ func TestHandleGenericComment(t *testing.T) {
 						JobBase: config.JobBase{
 							Name: "jub",
 						},
-						ChangeMatcher: config.ChangeMatcher{
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
 							RunIfChanged: "CHANGED2",
 						},
 						Context:      "pull-jub",

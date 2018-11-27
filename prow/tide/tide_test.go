@@ -959,7 +959,7 @@ func TestTakeAction(t *testing.T) {
 						Context:      "if-changed",
 						Trigger:      "/test if-changed",
 						RerunCommand: "/test if-changed",
-						ChangeMatcher: config.ChangeMatcher{
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
 							RunIfChanged: "CHANGED",
 						},
 					},
@@ -1799,7 +1799,7 @@ func TestPresubmitsByPull(t *testing.T) {
 			presubmits: []config.Presubmit{
 				{
 					Context: "always",
-					ChangeMatcher: config.ChangeMatcher{
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
 						RunIfChanged: "foo",
 					},
 				},
@@ -1830,7 +1830,7 @@ func TestPresubmitsByPull(t *testing.T) {
 			presubmits: []config.Presubmit{
 				{
 					Context: "always",
-					ChangeMatcher: config.ChangeMatcher{
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
 						RunIfChanged: "foo",
 					},
 				},
@@ -1896,7 +1896,7 @@ func TestPresubmitsByPull(t *testing.T) {
 			presubmits: []config.Presubmit{
 				{
 					Context: "presubmit",
-					ChangeMatcher: config.ChangeMatcher{
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
 						RunIfChanged: "^CHANGE.$",
 					},
 				},
@@ -1916,7 +1916,7 @@ func TestPresubmitsByPull(t *testing.T) {
 			presubmits: []config.Presubmit{
 				{
 					Context: "presubmit",
-					ChangeMatcher: config.ChangeMatcher{
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
 						RunIfChanged: "^FIL.$",
 					},
 				},
@@ -1937,7 +1937,7 @@ func TestPresubmitsByPull(t *testing.T) {
 			presubmits: []config.Presubmit{
 				{
 					Context: "presubmit",
-					ChangeMatcher: config.ChangeMatcher{
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
 						RunIfChanged: "^CHANGE.$",
 					},
 				},

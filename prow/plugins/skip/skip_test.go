@@ -110,7 +110,7 @@ func TestSkipStatus(t *testing.T) {
 					Context:   "extended-tests",
 				},
 				{
-					ChangeMatcher: config.ChangeMatcher{
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
 						RunIfChanged: "^(test/integration)",
 					},
 					Context: "integration-tests",
@@ -171,7 +171,7 @@ func TestSkipStatus(t *testing.T) {
 
 			presubmits: []config.Presubmit{
 				{
-					ChangeMatcher: config.ChangeMatcher{
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
 						RunIfChanged: "^(test/integration)",
 					},
 					Context: "integration-tests",
@@ -217,7 +217,7 @@ func TestSkipStatus(t *testing.T) {
 			presubmits: []config.Presubmit{
 				{
 					SkipReport: true,
-					ChangeMatcher: config.ChangeMatcher{
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
 						RunIfChanged: "^(test/integration)",
 					},
 					Context: "integration-tests",

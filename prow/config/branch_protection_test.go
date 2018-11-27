@@ -308,7 +308,7 @@ func TestJobRequirements(t *testing.T) {
 				},
 				{
 					Context: "run-if-changed",
-					ChangeMatcher: ChangeMatcher{
+					RegexpChangeMatcher: RegexpChangeMatcher{
 						RunIfChanged: "foo",
 					},
 					AlwaysRun:  false,
@@ -354,7 +354,7 @@ func TestJobRequirements(t *testing.T) {
 				},
 				{
 					Context: "run-if-changed",
-					ChangeMatcher: ChangeMatcher{
+					RegexpChangeMatcher: RegexpChangeMatcher{
 						RunIfChanged: "foo",
 					},
 					SkipReport: true,

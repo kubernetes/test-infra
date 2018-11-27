@@ -134,7 +134,7 @@ type Presubmit struct {
 
 	Brancher
 
-	ChangeMatcher
+	RegexpChangeMatcher
 
 	// We'll set these when we load it.
 	re *regexp.Regexp // from Trigger.
@@ -144,7 +144,7 @@ type Presubmit struct {
 type Postsubmit struct {
 	JobBase
 
-	ChangeMatcher
+	RegexpChangeMatcher
 
 	Brancher
 
@@ -191,9 +191,10 @@ type Brancher struct {
 	reSkip *regexp.Regexp
 }
 
-// ChangeMatcher is for code shared between jobs that run only when certain files are changed.
-type ChangeMatcher struct {
-	// RunIfChanged automatically run if the PR modifies a file that matches this regex.
+// RegexpChangeMatcher is for code shared between jobs that run only when certain files are changed.
+type RegexpChangeMatcher struct {
+	// RunIfChanged defines a regex used to select which subset of file changes should trigger this job.
+	// If any file in the changeset matches this regex, the job will be triggered
 	RunIfChanged string         `json:"run_if_changed,omitempty"`
 	reChanges    *regexp.Regexp // from RunIfChanged
 }
@@ -246,7 +247,7 @@ func (br Brancher) Intersects(other Brancher) bool {
 }
 
 // RunsAgainstChanges returns true if any of the changed input paths match the run_if_changed regex.
-func (cm ChangeMatcher) RunsAgainstChanges(changes []string) bool {
+func (cm RegexpChangeMatcher) RunsAgainstChanges(changes []string) bool {
 	if cm.RunIfChanged == "" {
 		return true
 	}

@@ -370,7 +370,7 @@ func TestConditionalPresubmits(t *testing.T) {
 			JobBase: JobBase{
 				Name: "cross build",
 			},
-			ChangeMatcher: ChangeMatcher{
+			RegexpChangeMatcher: RegexpChangeMatcher{
 				RunIfChanged: `(Makefile|\.sh|_(windows|linux|osx|unknown)(_test)?\.go)$`,
 			},
 		},
