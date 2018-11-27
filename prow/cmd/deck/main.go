@@ -349,7 +349,7 @@ func initSpyglass(configAgent *config.Agent, o options, mux *http.ServeMux, ja *
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GCS client")
 	}
-	sg := spyglass.New(ja, c)
+	sg := spyglass.New(ja, configAgent, c)
 
 	mux.Handle("/view/render", gziphandler.GzipHandler(handleArtifactView(sg, configAgent)))
 	mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent, o)))

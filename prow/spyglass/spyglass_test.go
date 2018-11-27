@@ -80,6 +80,14 @@ func (f fpkc) GetLogTail(pod, container string, n int64) ([]byte, error) {
 	return nil, fmt.Errorf("pod not found: %s", pod)
 }
 
+type fca struct {
+	c config.Config
+}
+
+func (ca fca) Config() *config.Config {
+	return &ca.c
+}
+
 func TestMain(m *testing.M) {
 	var longLog string
 	for i := 0; i < 300; i++ {
@@ -222,12 +230,13 @@ func TestViews(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			for k, v := range tc.registeredViewers {
 				viewers.RegisterViewer(k, v, dumpViewHandler)
 			}
-			sg := New(fakeJa, fakeGCSClient)
+			sg := New(fakeJa, &config.Agent{}, fakeGCSClient)
 			lenses := sg.Views(tc.matchCache)
 			for _, l := range lenses {
 				var found bool
@@ -421,7 +430,7 @@ func TestJobPath(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		fakeGCSClient := fakeGCSServer.Client()
-		sg := New(fakeJa, fakeGCSClient)
+		sg := New(fakeJa, &config.Agent{}, fakeGCSClient)
 		jobPath, err := sg.JobPath(tc.src)
 		if tc.expError && err == nil {
 			t.Errorf("test %q: JobPath(%q) expected error", tc.name, tc.src)
@@ -433,6 +442,88 @@ func TestJobPath(t *testing.T) {
 		}
 		if jobPath != tc.expJobPath {
 			t.Errorf("test %q: JobPath(%q) expected %q, got %q", tc.name, tc.src, tc.expJobPath, jobPath)
+		}
+	}
+}
+
+func TestProwToGCS(t *testing.T) {
+	kc := fkc{
+		kube.ProwJob{
+			Spec: kube.ProwJobSpec{
+				Job: "gubernator-job",
+			},
+			Status: kube.ProwJobStatus{
+				URL:     "https://gubernator.example.com/build/some-bucket/gubernator-job/1111/",
+				BuildID: "1111",
+			},
+		},
+		kube.ProwJob{
+			Spec: kube.ProwJobSpec{
+				Job: "spyglass-job",
+			},
+			Status: kube.ProwJobStatus{
+				URL:     "https://prow.example.com/view/gcs/some-bucket/spyglass-job/2222/",
+				BuildID: "2222",
+			},
+		},
+	}
+	fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, &config.Agent{})
+	fakeJa.Start()
+
+	testCases := []struct {
+		name         string
+		key          string
+		configPrefix string
+		expectedPath string
+		expectError  bool
+	}{
+		{
+			name:         "extraction from gubernator-like URL",
+			key:          "gubernator-job/1111",
+			configPrefix: "https://gubernator.example.com/build/",
+			expectedPath: "some-bucket/gubernator-job/1111/",
+			expectError:  false,
+		},
+		{
+			name:         "extraction from spyglass-like URL",
+			key:          "spyglass-job/2222",
+			configPrefix: "https://prow.example.com/view/gcs/",
+			expectedPath: "some-bucket/spyglass-job/2222/",
+			expectError:  false,
+		},
+		{
+			name:         "failed extraction from wrong URL",
+			key:          "spyglass-job/1111",
+			configPrefix: "https://gubernator.example.com/build/",
+			expectedPath: "",
+			expectError:  true,
+		},
+	}
+
+	for _, tc := range testCases {
+		fakeGCSClient := fakeGCSServer.Client()
+		fakeConfigAgent := fca{
+			c: config.Config{
+				ProwConfig: config.ProwConfig{
+					Plank: config.Plank{
+						JobURLPrefix: tc.configPrefix,
+					},
+				},
+			},
+		}
+		sg := New(fakeJa, fakeConfigAgent, fakeGCSClient)
+
+		p, err := sg.prowToGCS(tc.key)
+		if err != nil && !tc.expectError {
+			t.Errorf("test %q: unexpected error: %v", tc.key, err)
+			continue
+		}
+		if err == nil && tc.expectError {
+			t.Errorf("test %q: expected an error but instead got success and path '%s'", tc.key, p)
+			continue
+		}
+		if p != tc.expectedPath {
+			t.Errorf("test %q: expected '%s' but got '%s'", tc.key, tc.expectedPath, p)
 		}
 	}
 }

@@ -26,6 +26,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/spyglass/viewers"
@@ -51,8 +52,16 @@ type Spyglass struct {
 	// JobAgent contains information about the current jobs in deck
 	JobAgent *jobs.JobAgent
 
+	// ConfigAgent contains information about the prow configuration
+	ConfigAgent configAgent
+
 	*GCSArtifactFetcher
 	*PodLogArtifactFetcher
+}
+
+// This interface matches config.Agent and exists for the purpose of unit tests.
+type configAgent interface {
+	Config() *config.Config
 }
 
 // Lens is a single view of a set of artifacts
@@ -74,11 +83,12 @@ type ViewRequest struct {
 	ViewData    string   `json:"viewData"`
 }
 
-// New constructs a Spyglass object from a JobAgent and a list of ArtifactFetchers
-func New(ja *jobs.JobAgent, c *storage.Client) *Spyglass {
+// New constructs a Spyglass object from a JobAgent, a config.Agent, and a storage Client.
+func New(ja *jobs.JobAgent, conf configAgent, c *storage.Client) *Spyglass {
 	return &Spyglass{
 		Lenses:                make(map[string]Lens),
 		JobAgent:              ja,
+		ConfigAgent:           conf,
 		PodLogArtifactFetcher: NewPodLogArtifactFetcher(ja),
 		GCSArtifactFetcher:    NewGCSArtifactFetcher(c),
 	}
@@ -250,11 +260,11 @@ func (s *Spyglass) prowToGCS(prowKey string) (string, error) {
 	}
 
 	url := job.Status.URL
-	buildIndex := strings.Index(url, "/build/")
-	if buildIndex == -1 {
-		return "", fmt.Errorf("Unrecognized GCS url: %q", url)
+	prefix := s.ConfigAgent.Config().Plank.JobURLPrefix
+	if url[:len(prefix)] != prefix {
+		return "", fmt.Errorf("unexpected job URL %q when finding GCS path: expected something starting with %q", url, prefix)
 	}
-	return url[buildIndex+len("/build/"):], nil
+	return url[len(prefix):], nil
 }
 
 // FetchArtifacts constructs and returns Artifact objects for each artifact name in the list.
