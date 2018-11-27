@@ -19,6 +19,7 @@ package spyglass
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/fsouza/fake-gcs-server/fakestorage"
@@ -496,6 +497,12 @@ func TestProwToGCS(t *testing.T) {
 			key:          "spyglass-job/1111",
 			configPrefix: "https://gubernator.example.com/build/",
 			expectedPath: "",
+			expectError:  true,
+		},
+		{
+			name:         "prefix longer than URL",
+			key:          "spyglass-job/2222",
+			configPrefix: strings.Repeat("!", 100),
 			expectError:  true,
 		},
 	}
