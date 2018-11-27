@@ -282,10 +282,6 @@ branch-protection:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
-        node-feature-discovery:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
     kubernetes-sigs:
       protect: true
       required_status_checks:
@@ -300,6 +296,10 @@ branch-protection:
           required_status_checks:
             contexts:
             - Kubespray CI Pipeline
+        node-feature-discovery:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
 
 tide:
   queries:
