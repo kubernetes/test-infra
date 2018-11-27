@@ -25,11 +25,13 @@ import (
 var (
 	lintNamesUnderscoreRegex = regexp.MustCompile("don't use underscores in Go names; (.*) should be (.*)")
 	lintNamesAllCapsRegex    = regexp.MustCompile("don't use ALL_CAPS in Go names; use CamelCase")
+	lintStutter              = regexp.MustCompile("name will be used as [^.]+\\.(.*) by other packages, and that stutters; consider calling this (.*)")
 )
 
 var lintHandlers = [...]func(lint.Problem) string{
 	fixNameUnderscore,
 	fixNameAllCaps,
+	fixStutter,
 }
 
 // SuggestCodeChange returns code suggestions for a given lint.Problem
@@ -74,6 +76,18 @@ func fixNameAllCaps(p lint.Problem) string {
 		return ""
 	}
 	return result
+}
+
+func fixStutter(p lint.Problem) string {
+	matches := lintStutter.FindStringSubmatch(p.Text)
+	if len(matches) < 3 {
+		return ""
+	}
+	suggestion := strings.Replace(p.LineText, matches[1], matches[2], -1)
+	if suggestion == p.LineText {
+		return ""
+	}
+	return suggestion
 }
 
 func formatSuggestion(s string) string {
