@@ -188,7 +188,9 @@ func auth(c *Client, cookiefilePath string) {
 // Start will authenticate the client with gerrit periodically
 // Start must be called before user calls any client functions.
 func (c *Client) Start(cookiefilePath string) {
-	go auth(c, cookiefilePath)
+	if cookiefilePath != "" {
+		go auth(c, cookiefilePath)
+	}
 }
 
 // QueryChanges queries for all changes from all projects after lastUpdate time
