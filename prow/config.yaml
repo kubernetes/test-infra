@@ -278,10 +278,6 @@ branch-protection:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
-        kubespray:
-          required_status_checks:
-            contexts:
-            - Kubespray CI Pipeline
         metrics-server:
           required_status_checks:
             contexts:
@@ -300,6 +296,10 @@ branch-protection:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
+        kubespray:
+          required_status_checks:
+            contexts:
+            - Kubespray CI Pipeline
 
 tide:
   queries:
@@ -464,13 +464,13 @@ tide:
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
     kubernetes-incubator/service-catalog: squash
-    kubernetes-incubator/kubespray: squash
     kubernetes-sigs/cluster-api-provider-aws: squash
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
     kubernetes-sigs/cluster-api-provider-gcp: squash
     kubernetes-sigs/cluster-api-provider-openstack: squash
     kubernetes-sigs/cluster-api-provider-vsphere: squash
     kubernetes-sigs/cluster-api: squash
+    kubernetes-sigs/kubespray: squash
     kubernetes/dashboard: squash
     kubernetes/kube-deploy: squash
     kubernetes/website: squash
