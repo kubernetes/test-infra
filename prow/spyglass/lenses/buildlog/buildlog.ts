@@ -1,32 +1,3 @@
-// Show all lines in specified log
-function showAllLines(logID: string): void {
-  document.getElementById(logID + "-show-all")!.style.display = "none";
-  const log = document.getElementById(logID)!;
-  const skipped = log.querySelectorAll<HTMLElement>(".skipped");
-  for (let i = 0; i < skipped.length; i++) {
-    showElem(skipped[i]);
-  }
-  // hide any remaining "show hidden lines" buttons
-  const showSkipped = log.querySelectorAll<HTMLElement>(".show-skipped");
-  for (let i = 0; i < showSkipped.length; i++) {
-    showSkipped[i].style.display = "none";
-  }
-  spyglass.contentUpdated();
-}
-
-function showLines(logID:string, linesID: string, skipID: string): void {
-  showElem(document.getElementById(linesID)!);
-  // hide the corresponding button
-  document.getElementById(skipID)!.style.display = "none";
-  // hide the "show all" button if nothing's left to show
-  const log = document.getElementById(logID)!;
-  const skipped = log.querySelectorAll<HTMLElement>(".skipped");
-  if (skipped.length === 0) {
-    document.getElementById(logID + "-show-all")!.style.display = "none";
-  }
-  spyglass.contentUpdated();
-}
-
 function showElem(elem: HTMLElement): void {
   elem.className = 'shown';
   elem.innerHTML = ansiToHTML(elem.innerHTML);
@@ -72,14 +43,50 @@ function ansiToHTML(orig: string): string {
   });
 }
 
-function updateVisibleLines() {
-    const shown = document.getElementsByClassName("shown");
-    for (let i = 0; i < shown.length; i++) {
-        shown[i].innerHTML = ansiToHTML(shown[i].innerHTML);
-    }
+async function handleShowSkipped(this: HTMLDivElement, e: MouseEvent) {
+  // Don't do anything unless they actually clicked the button.
+  if (!(e.target instanceof HTMLButtonElement)) {
+    return;
+  }
+  const {artifact, offset, length, startLine} = this.dataset;
+  const content = await spyglass.request(JSON.stringify({
+    artifact, offset: +offset!, length: +length!, startLine: +startLine!}));
+  this.innerHTML = ansiToHTML(content);
+  showElem(this);
+
+  // Remove the "show all" button if we no longer need it.
+  const log = document.getElementById(`${artifact}-content`)!;
+  const skipped = log.querySelectorAll<HTMLElement>(".show-skipped");
+  if (skipped.length === 0) {
+    const button = log.querySelector('button.show-all-button')!;
+    button.parentNode!.removeChild(button);
+  }
+  spyglass.contentUpdated();
 }
 
-window.addEventListener('load', updateVisibleLines);
+async function handleShowAll(this: HTMLButtonElement) {
+  // Remove ourselves immediately.
+  if (this.parentElement) {
+    this.parentElement.removeChild(this);
+  }
 
-(window as any).showAllLines = showAllLines;
-(window as any).showLines = showLines;
+  const {artifact} = this.dataset;
+  const content = await spyglass.request(JSON.stringify({artifact, offset: 0, length: -1}));
+  document.getElementById(`${artifact}-content`)!.innerHTML = `<tbody class="shown">${ansiToHTML(content)}</tbody>`;
+  spyglass.contentUpdated();
+}
+
+window.addEventListener('load', () => {
+  const shown = document.getElementsByClassName("shown");
+  for (let i = 0; i < shown.length; i++) {
+    shown[i].innerHTML = ansiToHTML(shown[i].innerHTML);
+  }
+
+  for (const button of Array.from(document.querySelectorAll<HTMLDivElement>(".show-skipped"))) {
+    button.addEventListener('click', handleShowSkipped);
+  }
+
+  for (const button of Array.from(document.querySelectorAll<HTMLButtonElement>("button.show-all-button"))) {
+    button.addEventListener('click', handleShowAll);
+  }
+});
