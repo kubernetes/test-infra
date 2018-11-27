@@ -169,3 +169,22 @@ postsubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
+
+  kubeflow/pipelines:
+    - name: kubeflow-pipeline-sample-test-postsubmit
+      branches:
+      - master
+      labels:
+        preset-service-account: "true"
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.10
+          command:
+          - ./test/postsubmit-tests-with-pipeline-deployment.sh
+          args:
+          - --workflow_file
+          - sample_test.yaml
+          - --test_result_folder
+          - sample_test
+          - --timeout
+          - "3600"
