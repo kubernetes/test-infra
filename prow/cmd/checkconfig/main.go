@@ -145,7 +145,7 @@ func main() {
 	}
 	cfg := configAgent.Config()
 
-	pluginAgent := plugins.PluginAgent{}
+	pluginAgent := plugins.ConfigAgent{}
 	if err := pluginAgent.Load(o.pluginConfig); err != nil {
 		logrus.WithError(err).Fatal("Error loading Prow plugin config.")
 	}

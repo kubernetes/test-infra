@@ -138,7 +138,7 @@ type PluginClient struct {
 	Logger *logrus.Entry
 }
 
-type PluginAgent struct {
+type ConfigAgent struct {
 	PluginClient
 
 	mut           sync.Mutex
@@ -251,7 +251,7 @@ type Owners struct {
 	LabelsBlackList []string `json:"labels_blacklist,omitempty"`
 }
 
-func (pa *PluginAgent) MDYAMLEnabled(org, repo string) bool {
+func (pa *ConfigAgent) MDYAMLEnabled(org, repo string) bool {
 	full := fmt.Sprintf("%s/%s", org, repo)
 	for _, elem := range pa.Config().Owners.MDYAMLRepos {
 		if elem == org || elem == full {
@@ -261,7 +261,7 @@ func (pa *PluginAgent) MDYAMLEnabled(org, repo string) bool {
 	return false
 }
 
-func (pa *PluginAgent) SkipCollaborators(org, repo string) bool {
+func (pa *ConfigAgent) SkipCollaborators(org, repo string) bool {
 	full := fmt.Sprintf("%s/%s", org, repo)
 	for _, elem := range pa.Config().Owners.SkipCollaborators {
 		if elem == org || elem == full {
@@ -683,7 +683,7 @@ The list of patch release managers for each release can be found [here](https://
 
 // Load attempts to load config from the path. It returns an error if either
 // the file can't be read or it contains an unknown plugin.
-func (pa *PluginAgent) Load(path string) error {
+func (pa *ConfigAgent) Load(path string) error {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
@@ -726,7 +726,7 @@ func (pa *PluginAgent) Load(path string) error {
 	return nil
 }
 
-func (pa *PluginAgent) Config() *Configuration {
+func (pa *ConfigAgent) Config() *Configuration {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 	return pa.configuration
@@ -896,7 +896,7 @@ func compileRegexpsAndDurations(pc *Configuration) error {
 // as a map from repositories to the list of plugins that are enabled on them.
 // Specifying simply an org name will also work, and will enable the plugin on
 // all repos in the org.
-func (pa *PluginAgent) Set(pc *Configuration) {
+func (pa *ConfigAgent) Set(pc *Configuration) {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 	pa.configuration = pc
@@ -904,7 +904,7 @@ func (pa *PluginAgent) Set(pc *Configuration) {
 
 // Start starts polling path for plugin config. If the first attempt fails,
 // then start returns the error. Future errors will halt updates but not stop.
-func (pa *PluginAgent) Start(path string) error {
+func (pa *ConfigAgent) Start(path string) error {
 	if err := pa.Load(path); err != nil {
 		return err
 	}
@@ -920,7 +920,7 @@ func (pa *PluginAgent) Start(path string) error {
 }
 
 // GenericCommentHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) GenericCommentHandlers(owner, repo string) map[string]GenericCommentHandler {
+func (pa *ConfigAgent) GenericCommentHandlers(owner, repo string) map[string]GenericCommentHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
@@ -934,7 +934,7 @@ func (pa *PluginAgent) GenericCommentHandlers(owner, repo string) map[string]Gen
 }
 
 // IssueHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) IssueHandlers(owner, repo string) map[string]IssueHandler {
+func (pa *ConfigAgent) IssueHandlers(owner, repo string) map[string]IssueHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
@@ -948,7 +948,7 @@ func (pa *PluginAgent) IssueHandlers(owner, repo string) map[string]IssueHandler
 }
 
 // IssueCommentHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) IssueCommentHandlers(owner, repo string) map[string]IssueCommentHandler {
+func (pa *ConfigAgent) IssueCommentHandlers(owner, repo string) map[string]IssueCommentHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
@@ -963,7 +963,7 @@ func (pa *PluginAgent) IssueCommentHandlers(owner, repo string) map[string]Issue
 }
 
 // PullRequestHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) PullRequestHandlers(owner, repo string) map[string]PullRequestHandler {
+func (pa *ConfigAgent) PullRequestHandlers(owner, repo string) map[string]PullRequestHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
@@ -978,7 +978,7 @@ func (pa *PluginAgent) PullRequestHandlers(owner, repo string) map[string]PullRe
 }
 
 // ReviewEventHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) ReviewEventHandlers(owner, repo string) map[string]ReviewEventHandler {
+func (pa *ConfigAgent) ReviewEventHandlers(owner, repo string) map[string]ReviewEventHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
@@ -993,7 +993,7 @@ func (pa *PluginAgent) ReviewEventHandlers(owner, repo string) map[string]Review
 }
 
 // ReviewCommentEventHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) ReviewCommentEventHandlers(owner, repo string) map[string]ReviewCommentEventHandler {
+func (pa *ConfigAgent) ReviewCommentEventHandlers(owner, repo string) map[string]ReviewCommentEventHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
@@ -1008,7 +1008,7 @@ func (pa *PluginAgent) ReviewCommentEventHandlers(owner, repo string) map[string
 }
 
 // StatusEventHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) StatusEventHandlers(owner, repo string) map[string]StatusEventHandler {
+func (pa *ConfigAgent) StatusEventHandlers(owner, repo string) map[string]StatusEventHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
@@ -1023,7 +1023,7 @@ func (pa *PluginAgent) StatusEventHandlers(owner, repo string) map[string]Status
 }
 
 // PushEventHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) PushEventHandlers(owner, repo string) map[string]PushEventHandler {
+func (pa *ConfigAgent) PushEventHandlers(owner, repo string) map[string]PushEventHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
@@ -1038,7 +1038,7 @@ func (pa *PluginAgent) PushEventHandlers(owner, repo string) map[string]PushEven
 }
 
 // getPlugins returns a list of plugins that are enabled on a given (org, repository).
-func (pa *PluginAgent) getPlugins(owner, repo string) []string {
+func (pa *ConfigAgent) getPlugins(owner, repo string) []string {
 	var plugins []string
 
 	fullName := fmt.Sprintf("%s/%s", owner, repo)

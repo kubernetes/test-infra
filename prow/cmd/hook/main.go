@@ -141,7 +141,7 @@ func main() {
 		slackClient = slack.NewFakeClient()
 	}
 
-	pluginAgent := &plugins.PluginAgent{}
+	pluginAgent := &plugins.ConfigAgent{}
 
 	ownersClient := repoowners.NewClient(
 		gitClient, githubClient,

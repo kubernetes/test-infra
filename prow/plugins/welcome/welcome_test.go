@@ -292,7 +292,7 @@ func TestWelcomeConfig(t *testing.T) {
 
 // TestPluginConfig validates that there are no duplicate repos in the welcome plugin config.
 func TestPluginConfig(t *testing.T) {
-	pa := &plugins.PluginAgent{}
+	pa := &plugins.ConfigAgent{}
 
 	b, err := ioutil.ReadFile("../../plugins.yaml")
 	if err != nil {

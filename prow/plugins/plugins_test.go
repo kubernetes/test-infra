@@ -71,7 +71,7 @@ func TestGetPlugins(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		pa := PluginAgent{configuration: &Configuration{Plugins: tc.pluginMap}}
+		pa := ConfigAgent{configuration: &Configuration{Plugins: tc.pluginMap}}
 
 		plugins := pa.getPlugins(tc.owner, tc.repo)
 		if len(plugins) != len(tc.expectedPlugins) {

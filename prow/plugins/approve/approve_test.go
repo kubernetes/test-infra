@@ -41,7 +41,7 @@ const prNumber = 1
 
 // TestPluginConfig validates that there are no duplicate repos in the approve plugin config.
 func TestPluginConfig(t *testing.T) {
-	pa := &plugins.PluginAgent{}
+	pa := &plugins.ConfigAgent{}
 
 	b, err := ioutil.ReadFile("../../plugins.yaml")
 	if err != nil {

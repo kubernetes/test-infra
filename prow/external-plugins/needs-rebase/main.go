@@ -102,7 +102,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	pa := &plugins.PluginAgent{}
+	pa := &plugins.ConfigAgent{}
 	if err := pa.Start(o.pluginConfig); err != nil {
 		log.WithError(err).Fatalf("Error loading plugin config from %q.", o.pluginConfig)
 	}
@@ -173,7 +173,7 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 	return nil
 }
 
-func periodicUpdate(log *logrus.Entry, pa *plugins.PluginAgent, ghc *github.Client, period time.Duration) {
+func periodicUpdate(log *logrus.Entry, pa *plugins.ConfigAgent, ghc *github.Client, period time.Duration) {
 	update := func() {
 		start := time.Now()
 		if err := plugin.HandleAll(log, ghc, pa.Config()); err != nil {

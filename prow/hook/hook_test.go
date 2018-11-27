@@ -56,7 +56,7 @@ func TestHook(t *testing.T) {
 		},
 		nil,
 	)
-	pa := &plugins.PluginAgent{}
+	pa := &plugins.ConfigAgent{}
 	pa.Set(&plugins.Configuration{Plugins: map[string][]string{"foo/bar": {"baz"}}})
 	ca := &config.Agent{}
 	metrics := NewMetrics()
