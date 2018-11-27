@@ -225,11 +225,15 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 				},
 			}
 
+			labels := make(map[string]string)
+			for k, v := range spec.Labels {
+				labels[k] = v
+			}
+			labels[client.GerritRevision] = change.CurrentRevision
+
 			pj := pjutil.NewProwJobWithAnnotation(
 				pjutil.PostsubmitSpec(spec, kr),
-				map[string]string{
-					client.GerritRevision: change.CurrentRevision,
-				},
+				labels,
 				map[string]string{
 					client.GerritID:       change.ID,
 					client.GerritInstance: instance,
@@ -266,11 +270,15 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 
 			// TODO(krzyzacy): Support AlwaysRun and RunIfChanged
 
+			labels := make(map[string]string)
+			for k, v := range spec.Labels {
+				labels[k] = v
+			}
+			labels[client.GerritRevision] = change.CurrentRevision
+
 			pj := pjutil.NewProwJobWithAnnotation(
 				pjutil.PresubmitSpec(spec, kr),
-				map[string]string{
-					client.GerritRevision: change.CurrentRevision,
-				},
+				labels,
 				map[string]string{
 					client.GerritID:       change.ID,
 					client.GerritInstance: instance,
