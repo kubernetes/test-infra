@@ -100,6 +100,7 @@ filegroup(
         "//robots/commenter:all-srcs",
         "//robots/coverage:all-srcs",
         "//robots/issue-creator:all-srcs",
+        "//robots/pr-creator:all-srcs",
         "//robots/pr-labeler:all-srcs",
         "//scenarios:all-srcs",
         "//testgrid:all-srcs",
