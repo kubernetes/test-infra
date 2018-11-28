@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"math/rand"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -53,7 +54,8 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 			Description: "The heart plugin celebrates certain Github actions with the reaction emojis. Emojis are added to pull requests that make additions to OWNERS or OWNERS_ALIASES files and to comments left by specified \"adorees\".",
 			Config: map[string]string{
 				"": fmt.Sprintf(
-					"The heart plugin is configured to react to comments left by the following Github users: %s.",
+					"The heart plugin is configured to react to comments,  satisfying the regular expression %s, left by the following Github users: %s.",
+					config.Heart.CommentRegexp,
 					strings.Join(config.Heart.Adorees, ", "),
 				),
 			},
@@ -80,17 +82,17 @@ func getClient(pc plugins.Agent) client {
 }
 
 func handleIssueComment(pc plugins.Agent, ic github.IssueCommentEvent) error {
-	if pc.PluginConfig.Heart.Adorees == nil || len(pc.PluginConfig.Heart.Adorees) == 0 {
+	if (pc.PluginConfig.Heart.Adorees == nil || len(pc.PluginConfig.Heart.Adorees) == 0) || len(pc.PluginConfig.Heart.CommentRegexp) == 0 {
 		return nil
 	}
-	return handleIC(getClient(pc), pc.PluginConfig.Heart.Adorees, ic)
+	return handleIC(getClient(pc), pc.PluginConfig.Heart.Adorees, pc.PluginConfig.Heart.CommentRe, ic)
 }
 
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	return handlePR(getClient(pc), pre)
 }
 
-func handleIC(c client, adorees []string, ic github.IssueCommentEvent) error {
+func handleIC(c client, adorees []string, commentRe *regexp.Regexp, ic github.IssueCommentEvent) error {
 	// Only consider new comments on PRs.
 	if !ic.Issue.IsPullRequest() || ic.Action != github.IssueCommentActionCreated {
 		return nil
@@ -103,6 +105,10 @@ func handleIC(c client, adorees []string, ic github.IssueCommentEvent) error {
 		}
 	}
 	if !adoredLogin {
+		return nil
+	}
+
+	if !commentRe.MatchString(ic.Comment.Body) {
 		return nil
 	}
 
