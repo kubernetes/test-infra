@@ -759,6 +759,11 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
+        description: Updates to the k8s prow cluster
+        name: area/prow/bump
+        target: both
+        addedBy: label
+      - color: 0052cc
         description: Issues or PRs related to prow's clonerefs component
         name: area/prow/clonerefs
         target: both
