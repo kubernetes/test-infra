@@ -26,6 +26,7 @@ import (
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	pjlister "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/kube"
 )
 
 type gerritClient interface {
@@ -96,9 +97,13 @@ func (c *Client) Report(pj *v1.ProwJob) error {
 	clientGerritRevision := client.GerritRevision
 	clientGerritID := client.GerritID
 	clientGerritInstance := client.GerritInstance
+	pjTypeLabel := kube.ProwJobTypeLabel
 
-	// list all prowjobs in the patchset
-	selector := labels.Set{clientGerritRevision: pj.ObjectMeta.Labels[clientGerritRevision]}
+	// list all prowjobs in the patchset matching pj's type (pre- or post-submit)
+	selector := labels.Set{
+		clientGerritRevision: pj.ObjectMeta.Labels[clientGerritRevision],
+		pjTypeLabel:          pj.ObjectMeta.Labels[pjTypeLabel],
+	}
 	pjsOnRevision, err := c.lister.List(selector.AsSelector())
 	if err != nil {
 		logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
