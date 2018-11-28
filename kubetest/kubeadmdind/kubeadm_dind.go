@@ -90,23 +90,29 @@ var (
 	numWorkerNodes = "2"
 
 	// Kubeadm-DinD specific flags
-	kubeadmDinDIPMode = flag.String("kubeadm-dind-ip-mode", "ipv4", "(Kubeadm-DinD only) IP Mode. Can be 'ipv4' (default), 'ipv6', or 'dual-stack'.")
-	ipv6EnableCmd     = "sysctl -w net.ipv6.conf.all.disable_ipv6=0"
+	kubeadmDinDIPMode     = flag.String("kubeadm-dind-ip-mode", "ipv4", "(Kubeadm-DinD only) IP Mode. Can be 'ipv4' (default), 'ipv6', or 'dual-stack'.")
+	kubeadmDinDK8sTarFile = flag.String("kubeadm-dind-k8s-tar-file", "", "(Kubeadm-DinD only) Location of tar file containing Kubernetes server binaries.")
+	k8sExtractSubDir      = "kubernetes/server/bin"
+	k8sTestBinSubDir      = "platforms/linux/amd64"
+	testBinDir            = "/usr/bin"
+	ipv6EnableCmd         = "sysctl -w net.ipv6.conf.all.disable_ipv6=0"
 )
 
 // Deployer is used to implement a kubetest deployer interface
 type Deployer struct {
-	ipMode    string
-	hostCmder execCmder
-	control   *process.Control
+	ipMode     string
+	k8sTarFile string
+	hostCmder  execCmder
+	control    *process.Control
 }
 
 // NewDeployer returns a new Kubeadm-DinD Deployer
 func NewDeployer(control *process.Control) (*Deployer, error) {
 	d := &Deployer{
-		ipMode:    *kubeadmDinDIPMode,
-		hostCmder: new(hostCmder),
-		control:   control,
+		ipMode:     *kubeadmDinDIPMode,
+		k8sTarFile: *kubeadmDinDK8sTarFile,
+		hostCmder:  new(hostCmder),
+		control:    control,
 	}
 
 	switch d.ipMode {
@@ -164,16 +170,32 @@ func (d *Deployer) outputWithStderr(cmd *exec.Cmd) ([]byte, error) {
 // Prow DinD container.
 func (d *Deployer) Up() error {
 
-	d.setEnv()
+	var binDir string
+	if d.k8sTarFile != "" {
+		// Extract Kubernetes server binaries
+		cmd := fmt.Sprintf("tar -xvf %s", *kubeadmDinDK8sTarFile)
+		if err := d.run(cmd); err != nil {
+			return err
+		}
+		// Derive the location of the extracted binaries
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		binDir = filepath.Join(cwd, k8sExtractSubDir)
+	} else {
+		// K-D-C scripts must be run from Kubernetes source tree for
+		// building binaries.
+		kubeDir, err := findPath(kubeOrg, kubeRepo, "")
+		if err == nil {
+			err = os.Chdir(kubeDir)
+		}
+		if err != nil {
+			return err
+		}
+	}
 
-	// Scripts must be run from Kubernetes source directory
-	kubeDir, err := findPath(kubeOrg, kubeRepo, "")
-	if err == nil {
-		err = os.Chdir(kubeDir)
-	}
-	if err != nil {
-		return err
-	}
+	d.setEnv(binDir)
 
 	// Bring up a cluster inside the host Prow container
 	script, err := findPath(kdcOrg, kdcRepo, kdcScript)
@@ -185,16 +207,25 @@ func (d *Deployer) Up() error {
 
 // setEnv sets environment variables for building and testing
 // a cluster.
-func (d *Deployer) setEnv() error {
+func (d *Deployer) setEnv(k8sBinDir string) error {
+	var doBuild string
+	switch {
+	case k8sBinDir == "":
+		doBuild = "y"
+	default:
+		doBuild = "n"
+	}
+
 	// Set KUBERNETES_CONFORMANCE_TEST so that the master IP address
 	// is derived from kube config rather than through gcloud.
 	envMap := map[string]string{
 		"NUM_NODES":                   numWorkerNodes,
-		"BUILD_KUBEADM":               "y",
-		"BUILD_HYPERKUBE":             "y",
+		"DIND_K8S_BIN_DIR":            k8sBinDir,
+		"BUILD_KUBEADM":               doBuild,
+		"BUILD_HYPERKUBE":             doBuild,
 		"IP_MODE":                     d.ipMode,
 		"KUBERNETES_CONFORMANCE_TEST": "y",
-		"REMOTE_DNS64_V4SERVER":       "173.37.87.157",
+		"NAT64_V4_SUBNET_PREFIX":      "172.20",
 	}
 	for env, val := range envMap {
 		if err := os.Setenv(env, val); err != nil {
@@ -239,11 +270,22 @@ func (d *Deployer) DumpClusterLogs(localPath, gcsPath string) error {
 
 // TestSetup builds end-to-end test and ginkgo binaries.
 func (d *Deployer) TestSetup() error {
-	// Build e2e.test and ginkgo binaries
-	if err := d.run("make WHAT=test/e2e/e2e.test"); err != nil {
-		return err
+	if d.k8sTarFile == "" {
+		// Build e2e.test and ginkgo binaries
+		if err := d.run("make WHAT=test/e2e/e2e.test"); err != nil {
+			return err
+		}
+		return d.run("make WHAT=vendor/github.com/onsi/ginkgo/ginkgo")
 	}
-	return d.run("make WHAT=vendor/github.com/onsi/ginkgo/ginkgo")
+	// Copy downloaded e2e.test and ginkgo binaries
+	for _, file := range []string{"e2e.test", "ginkgo"} {
+		srcPath := filepath.Join(k8sTestBinSubDir, file)
+		cmd := fmt.Sprintf("cp %s %s", srcPath, testBinDir)
+		if err := d.run(cmd); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Down brings the DinD-based cluster down and cleans up any DinD state
@@ -277,6 +319,7 @@ func (d *Deployer) GetClusterCreated(gcpProject string) (time.Time, error) {
 //    - $GOPATH/src/<gitOrg>/<gitRepo>/<gitFile>
 //    - ./<gitRepo>/<gitFile>
 //    - ./<gitFile>
+//    - ../<gitFile>
 // and returns the path for the first match or returns an error.
 func findPath(gitOrg, gitRepo, gitFile string) (string, error) {
 	workPath := os.Getenv("WORKSPACE")
@@ -288,14 +331,20 @@ func findPath(gitOrg, gitRepo, gitFile string) (string, error) {
 		goPath = filepath.Join(goPath, "src", gitOrg, gitRepo, gitFile)
 	}
 	relPath := filepath.Join(gitRepo, gitFile)
-	paths := []string{workPath, goPath, relPath, gitFile}
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	parentDir := filepath.Dir(cwd)
+	parentPath := filepath.Join(parentDir, gitFile)
+	paths := []string{workPath, goPath, relPath, gitFile, parentPath}
 	for _, path := range paths {
 		_, err := os.Stat(path)
 		if err == nil {
 			return path, nil
 		}
 	}
-	err := fmt.Errorf("could not locate %s/%s/%s", gitOrg, gitRepo, gitFile)
+	err = fmt.Errorf("could not locate %s/%s/%s", gitOrg, gitRepo, gitFile)
 	return "", err
 }
 
