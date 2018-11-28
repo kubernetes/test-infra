@@ -16,6 +16,9 @@ $GOPATH/src/k8s.io/test-infra/   # ... <kubernetes/test-infra checkout>
 Then from `$GOPATH/src/k8s.io/kubernetes/` run:
  `./../planter/planter.sh make bazel-build`.
 
+NOTE: if you previously built Kubernetes by other means, you may need to run
+`make clean` first to clean up some symlink cycles.
+
  For `test-infra` you can run eg `./planter/planter.sh bazel test //...`.
 
 ## Options
