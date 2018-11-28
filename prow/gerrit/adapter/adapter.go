@@ -30,6 +30,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
@@ -183,19 +184,15 @@ func makeCloneURI(instance, project string) (*url.URL, error) {
 	return u, nil
 }
 
-// lists the files changed as part of a Gerrit patchset
+// listChangedFiles lists (in lexicographic order) the files changed as part of a Gerrit patchset
 func listChangedFiles(changeInfo client.ChangeInfo) []string {
-	changed := make(map[string]bool)
+	changed := sets.NewString()
 	for _, revision := range changeInfo.Revisions {
 		for file := range revision.Files {
-			changed[file] = true
+			changed.Insert(file)
 		}
 	}
-	changedFiles := []string{}
-	for file := range changed {
-		changedFiles = append(changedFiles, file)
-	}
-	return changedFiles
+	return changed.List()
 }
 
 // ProcessChange creates new presubmit prowjobs base off the gerrit changes
