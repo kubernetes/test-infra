@@ -40,7 +40,7 @@ func (ca *Agent) Start(prowConfig, jobConfig string) error {
 	if err != nil {
 		return err
 	}
-	ca.c = c
+	ca.Set(c)
 	go func() {
 		var lastModTime time.Time
 		// Rarely, if two changes happen in the same second, mtime will
@@ -84,15 +84,7 @@ func (ca *Agent) Start(prowConfig, jobConfig string) error {
 					WithError(err).Error("Error loading config.")
 			} else {
 				skips = 0
-				ca.Lock()
-				delta := ConfigDelta{*ca.c, *c}
-				for _, subscription := range ca.subscriptions {
-					// we can't let unbuffered channels for subscriptions lock us up
-					// here, so we will send events best-effort into the channels we have
-					go func(out chan<- ConfigDelta) { out <- delta }(subscription)
-				}
-				ca.c = c
-				ca.Unlock()
+				ca.Set(c)
 			}
 		}
 	}()
@@ -124,5 +116,15 @@ func (ca *Agent) Config() *Config {
 func (ca *Agent) Set(c *Config) {
 	ca.Lock()
 	defer ca.Unlock()
+	var oldConfig Config
+	if ca.c != nil {
+		oldConfig = *ca.c
+	}
+	delta := ConfigDelta{oldConfig, *c}
+	for _, subscription := range ca.subscriptions {
+		// we can't let unbuffered channels for subscriptions lock us up
+		// here, so we will send events best-effort into the channels we have
+		go func(out chan<- ConfigDelta) { out <- delta }(subscription)
+	}
 	ca.c = c
 }
