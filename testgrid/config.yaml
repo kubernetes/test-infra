@@ -357,6 +357,11 @@ test_groups:
   days_of_results: 60
   num_columns_recent: 3
   num_failures_to_alert: 1
+- name: ci-kubernetes-e2e-gce-scale-performance-kube-dns
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scale-performance-kube-dns
+  days_of_results: 60
+  num_columns_recent: 3
+  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gci-gce-es-logging
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-es-logging
 - name: ci-kubernetes-e2e-gci-gce-sd-logging
@@ -4717,6 +4722,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-scale-correctness
   - name: gce-master-scale-performance
     test_group_name: ci-kubernetes-e2e-gce-scale-performance
+  - name: gce-master-scale-performance-kube-dns
+    test_group_name: ci-kubernetes-e2e-gce-scale-performance-kube-dns
   - name: gce-cos-master-ingress
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
   - name: gce-cos-master-reboot
@@ -6442,6 +6449,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-scale-correctness
   - name: gce-scale-performance
     test_group_name: ci-kubernetes-e2e-gce-scale-performance
+  - name: gce-scale-performance-kube-dns
+    test_group_name: ci-kubernetes-e2e-gce-scale-performance-kube-dns
 
 - name: sig-scalability-gke
   dashboard_tab:

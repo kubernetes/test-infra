@@ -229,7 +229,7 @@ periodics:
           cpu: 6
           memory: "16Gi"
 
-- cron: '1 8 * * 1,2,3,4,5' # Run at 00:01PST (8:01 UTC) from Mon to Fri
+- cron: '1 8 * * 1,2,4,5' # Run at 00:01PST (8:01 UTC) on Mon, Tues, Thurs, Fri
   name: ci-kubernetes-e2e-gce-scale-performance
   tags:
   - "perfDashPrefix: gce-5000Nodes"
@@ -250,6 +250,42 @@ periodics:
       - --env=ENABLE_APISERVER_ADVANCED_AUDIT=false
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-16
       - --env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell
+      - --extract=ci/latest
+      - --gcp-nodes=5000
+      - --gcp-project=kubernetes-scale
+      - --gcp-zone=us-east1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --node-schedulable-timeout=90m --gather-resource-usage=masteranddns --gather-metrics-at-teardown=master --vmodule=request=4
+      - --timeout=1290m
+      - --use-logexporter
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
+
+- cron: '1 8 * * 3' # Run at 00:01PST (8:01 UTC) on Wednesday
+  name: ci-kubernetes-e2e-gce-scale-performance-kube-dns
+  tags:
+  - "perfDashPrefix: gce-5000Nodes"
+  - "perfDashJobType: performance"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-highspeed-common: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=1320
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=gce-scale-cluster
+      - --env=ENABLE_APISERVER_ADVANCED_AUDIT=false
+      - --env=HEAPSTER_MACHINE_TYPE=n1-standard-16
+      - --env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell
+      - --env=CLUSTER_DNS_CORE_DNS=false
       - --extract=ci/latest
       - --gcp-nodes=5000
       - --gcp-project=kubernetes-scale
