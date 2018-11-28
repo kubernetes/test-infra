@@ -159,6 +159,10 @@ func (c *Controller) updateReportState(pj *v1.ProwJob) error {
 
 	// update pj report status
 	newpj := pj.DeepCopy()
+	// we set omitempty on PrevReportStates, so here we need to init it if is nil
+	if newpj.Status.PrevReportStates == nil {
+		newpj.Status.PrevReportStates = map[string]v1.ProwJobState{}
+	}
 	newpj.Status.PrevReportStates[c.reporter.GetName()] = newpj.Status.State
 
 	newpjData, err := json.Marshal(newpj)
