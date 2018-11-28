@@ -47,6 +47,7 @@ periodics:
         bazel run //gopherage -- diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/conformance.cov"
         bazel run //gopherage -- filter --exclude-path=zz_generated,third_party/,cmd/,cloudprovider/providers/,alpha,beta  "${ARTIFACTS}/conformance.cov" > "${ARTIFACTS}/filtered.cov"
         bazel run //gopherage -- html "${ARTIFACTS}/filtered.cov"  > "${ARTIFACTS}/conformance.html"
+        bazel run //gopherage -- junit "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml"
       env:
       - name: KUBE_BUILD_WITH_COVERAGE
         value: "true"
@@ -110,6 +111,7 @@ periodics:
         bazel run //gopherage -- diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/e2e.cov"
         bazel run //gopherage -- filter --exclude-path=zz_generated,third_party/,cmd/,cloudprovider/providers/ "${ARTIFACTS}/e2e.cov" > "${ARTIFACTS}/filtered.cov"
         bazel run //gopherage -- html "${ARTIFACTS}/filtered.cov"  > "${ARTIFACTS}/e2e.html"
+        bazel run //gopherage -- junit "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml"
       env:
       - name: KUBE_BUILD_WITH_COVERAGE
         value: "true"
