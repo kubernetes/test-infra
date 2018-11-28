@@ -2132,8 +2132,6 @@ test_groups:
 - name: periodic-multi-platform-kubeadm-packet-arm64
   gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-packet-arm64
 # kubeadm tests
-- name: ci-kubernetes-e2e-kubeadm-gce-1-10
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-10
 - name: ci-kubernetes-e2e-kubeadm-gce-1-11
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-11
 - name: ci-kubernetes-e2e-kubeadm-gce-1-12
@@ -2143,8 +2141,6 @@ test_groups:
 - name: ci-kubernetes-e2e-kubeadm-gce-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-master
 # kubeadm x-on-y tests
-- name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
 - name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
 - name: ci-kubernetes-e2e-kubeadm-gce-1-12-on-1-13
@@ -2152,8 +2148,6 @@ test_groups:
 - name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-stable-on-master
 # kubeadm upgrade tests
-- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
@@ -5826,8 +5820,6 @@ dashboards:
 - name: sig-cluster-lifecycle-all
   dashboard_tab:
 # kubeadm tests
-  - name: kubeadm-gce-1.10
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10
   - name: kubeadm-gce-1.11
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11
   - name: kubeadm-gce-1.12
@@ -5849,8 +5841,6 @@ dashboards:
     alert_stale_results_hours: 24
     num_failures_to_alert: 4 # Runs every 6h. Alert when it's been failing for 24 hours
 # kubeadm x-on-y tests
-  - name: kubeadm-gce-1.10-on-1.11
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
   - name: kubeadm-gce-1.11-on-1.12
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
   - name: kubeadm-gce-1.12-on-1.13
@@ -5862,8 +5852,6 @@ dashboards:
     alert_stale_results_hours: 24
     num_failures_to_alert: 4 # Runs every 6h. Alert when it's been failing for 24 hours
 # kubeadm upgrade tests
-  - name: kubeadm-gce-upgrade-1.9-1.10
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
   - name: kubeadm-gce-upgrade-1.10-1.11
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
   - name: kubeadm-gce-upgrade-1.11-1.12

@@ -1,31 +1,5 @@
 # kubeadm x-on-y tests
 periodics:
-- name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
-  interval: 6h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20181122-3648a2bf2
-      args:
-      - --repo=k8s.io/kubernetes=release-1.11
-      - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
-      - --timeout=320
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=
-      - --deployment=kubernetes-anywhere
-      - --extract=ci/latest-bazel-1.10
-      - --gcp-zone=us-central1-f
-      - --kubeadm=ci
-      - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.10
-      - --kubernetes-anywhere-kubernetes-version=ci/latest-1.10
-      - --provider=kubernetes-anywhere
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
-      - --timeout=300m
-
 - name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
   interval: 12h
   labels:
@@ -79,7 +53,7 @@ periodics:
       - --timeout=300m
 
 - name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
-  interval: 6h
+  interval: 4h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"

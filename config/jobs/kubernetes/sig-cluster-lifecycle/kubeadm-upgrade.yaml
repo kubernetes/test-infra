@@ -1,39 +1,8 @@
 # kubeadm upgrade tests
 periodics:
 # manual-release-bump-required (create a new job and delete the oldest)
-- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
-  interval: 6h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20181122-3648a2bf2
-      args:
-      - --repo=k8s.io/kubernetes=release-1.10
-      - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
-      - --timeout=320
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-version-skew=false
-      - --cluster=
-      - --deployment=kubernetes-anywhere
-      - --extract=release/latest-1.10
-      - --extract=ci/latest-bazel-1.9
-      - --gcp-zone=us-central1-f
-      - --kubeadm=periodic
-      - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.9
-      - --kubernetes-anywhere-kubernetes-version=ci/latest-1.9
-      - --kubernetes-anywhere-upgrade-method=upgrade
-      - --provider=kubernetes-anywhere
-      - --skew
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\]
-      - --timeout=300m
-      - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --ginkgo.skip=statefulset-upgrade|hpa-upgrade|service-upgrade --upgrade-target=release/latest-1.10
-
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
-  interval: 2h
+  interval: 12h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -64,7 +33,7 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --ginkgo.skip=statefulset-upgrade|hpa-upgrade|service-upgrade --upgrade-target=release/latest-1.11
 
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
-  interval: 6h
+  interval: 12h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -95,7 +64,7 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --ginkgo.skip=statefulset-upgrade|hpa-upgrade|service-upgrade --upgrade-target=release/latest-1.12
 
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-12-1-13
-  interval: 6h
+  interval: 12h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
