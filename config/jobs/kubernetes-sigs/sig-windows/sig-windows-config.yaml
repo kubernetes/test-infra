@@ -54,7 +54,7 @@ periodics:
       - "--up=true"
       - "--down=true"
       - "--deployment=acsengine"
-      - "--provider=azure"
+      - "--provider=skeleton"
       - "--build=bazel"
       - "--acsengine-admin-username=azureuser"
       - "--acsengine-admin-password=AdminPassw0rd"
