@@ -219,20 +219,69 @@ func TestProcessChange(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "presubmit runs when a file matches run_if_changed",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Files: map[string]client.FileInfo{
+							"bee-movie-script.txt": client.FileInfo{},
+							"africa-lyrics.txt":    client.FileInfo{},
+							"important-code.go":    client.FileInfo{},
+						},
+					},
+				},
+			},
+			numPJ: 2,
+		},
+		{
+			name: "presubmit doesn't run when no files match run_if_changed",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Files: map[string]client.FileInfo{
+							"hacky-hack.sh": client.FileInfo{},
+							"README.md":     client.FileInfo{},
+							"let-it-go.txt": client.FileInfo{},
+						},
+					},
+				},
+			},
+			numPJ: 1,
+		},
 	}
 
 	for _, tc := range testcases {
+		testInfraPresubmits := []config.Presubmit{
+			{
+				JobBase: config.JobBase{
+					Name: "test-foo",
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name: "test-go",
+				},
+				RegexpChangeMatcher: config.RegexpChangeMatcher{
+					RunIfChanged: "\\.go",
+				},
+			},
+		}
+		if err := config.SetPresubmitRegexes(testInfraPresubmits); err != nil {
+			t.Fatalf("could not set regexes: %v", err)
+		}
+
 		fca := &fca{
 			c: &config.Config{
 				JobConfig: config.JobConfig{
 					Presubmits: map[string][]config.Presubmit{
-						"gerrit/test-infra": {
-							{
-								JobBase: config.JobBase{
-									Name: "test-foo",
-								},
-							},
-						},
+						"gerrit/test-infra": testInfraPresubmits,
 						"https://gerrit/other-repo": {
 							{
 								JobBase: config.JobBase{

@@ -117,6 +117,9 @@ type ChangeInfo = gerrit.ChangeInfo
 // RevisionInfo is a gerrit.RevisionInfo
 type RevisionInfo = gerrit.RevisionInfo
 
+// FileInfo is a gerrit.FileInfo
+type FileInfo = gerrit.FileInfo
+
 // NewClient returns a new gerrit client
 func NewClient(instances map[string][]string) (*Client, error) {
 	c := &Client{
@@ -255,7 +258,7 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 
 	opt := &gerrit.QueryChangeOptions{}
 	opt.Query = append(opt.Query, "project:"+project)
-	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT"}
+	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT", "CURRENT_FILES"}
 
 	start := 0
 
