@@ -32,15 +32,14 @@ type flags struct {
 	jobName    string
 }
 
-// MakeCommand returns a `junit` command.
+// MakeCommand returns a `diff` command.
 func MakeCommand() *cobra.Command {
 	flags := &flags{}
 	cmd := &cobra.Command{
 		Use:   "diff [base-profile] [new-profile]",
-		Short: "Summarize coverage profile and produce the result in junit xml format.",
-		Long: `Summarize coverage profile and produce the result in junit xml format.
-Summary done at per-file and per-package level. Any coverage below coverage-threshold will be marked
-with a <failure> tag in the xml produced.`,
+		Short: "Calculate the file level difference between two coverage profiles",
+		Long: `Calculate the file level difference between two coverage profiles.
+		Produce the result in a markdown table`,
 		Run: func(cmd *cobra.Command, args []string) {
 			run(flags, cmd, args)
 		},
