@@ -28,7 +28,8 @@ import (
 // therein.
 type Agent struct {
 	sync.Mutex
-	c *Config
+	c             *Config
+	subscriptions []chan<- ConfigDelta
 }
 
 // Start will begin polling the config file at the path. If the first load
@@ -84,12 +85,32 @@ func (ca *Agent) Start(prowConfig, jobConfig string) error {
 			} else {
 				skips = 0
 				ca.Lock()
+				delta := ConfigDelta{*ca.c, *c}
+				for _, subscription := range ca.subscriptions {
+					// we can't let unbuffered channels for subscriptions lock us up
+					// here, so we will send events best-effort into the channels we have
+					go func(out chan<- ConfigDelta) { out <- delta }(subscription)
+				}
 				ca.c = c
 				ca.Unlock()
 			}
 		}
 	}()
 	return nil
+}
+
+type ConfigDelta struct {
+	Before, After Config
+}
+
+// Subscribe registers the channel for messages on config reload.
+// The caller can expect a copy of the previous and current config
+// to be sent down the subscribed channel when a new configuration
+// is loaded.
+func (ca *Agent) Subscribe(subscription chan<- ConfigDelta) {
+	ca.Lock()
+	defer ca.Unlock()
+	ca.subscriptions = append(ca.subscriptions, subscription)
 }
 
 // Config returns the latest config. Do not modify the config.
