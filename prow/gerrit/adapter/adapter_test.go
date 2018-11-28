@@ -228,9 +228,9 @@ func TestProcessChange(t *testing.T) {
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Files: map[string]client.FileInfo{
-							"bee-movie-script.txt": client.FileInfo{},
-							"africa-lyrics.txt":    client.FileInfo{},
-							"important-code.go":    client.FileInfo{},
+							"bee-movie-script.txt": {},
+							"africa-lyrics.txt":    {},
+							"important-code.go":    {},
 						},
 					},
 				},
@@ -246,9 +246,9 @@ func TestProcessChange(t *testing.T) {
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Files: map[string]client.FileInfo{
-							"hacky-hack.sh": client.FileInfo{},
-							"README.md":     client.FileInfo{},
-							"let-it-go.txt": client.FileInfo{},
+							"hacky-hack.sh": {},
+							"README.md":     {},
+							"let-it-go.txt": {},
 						},
 					},
 				},
