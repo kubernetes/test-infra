@@ -21,6 +21,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/test-infra/robots/coverage/cmd/diff"
+	"k8s.io/test-infra/robots/coverage/cmd/downloader"
 )
 
 var rootCommand = &cobra.Command{
@@ -30,6 +31,7 @@ var rootCommand = &cobra.Command{
 
 func run() error {
 	rootCommand.AddCommand(diff.MakeCommand())
+	rootCommand.AddCommand(downloader.MakeCommand())
 
 	return rootCommand.Execute()
 }
