@@ -2949,6 +2949,8 @@ test_groups:
 - name: istio-circleci-test-presubmit
   gcs_prefix: istio-circleci/presubmit/test
   days_of_results: 7
+- name: istio-circleci-codecov-presubmit
+  gcs_prefix: istio-circleci/presubmit/codecov
 - name: istio-circleci-racetest-presubmit
   gcs_prefix: istio-circleci/presubmit/racetest
 - name: istio-circleci-test-integration-local-presubmit
@@ -7211,6 +7213,8 @@ dashboards:
     test_group_name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit
   - name: circleci-unit-tests
     test_group_name: istio-circleci-test-presubmit
+  - name: circleci-codecov-tests
+    test_group_name: istio-circleci-codecov-presubmit
   - name: circleci-racetest
     test_group_name: istio-circleci-racetest-presubmit
   - name: circleci-integration-local
