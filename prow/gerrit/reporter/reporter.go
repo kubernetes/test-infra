@@ -64,22 +64,10 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 		return false
 	}
 
-	hasGerritMeta := false
 	// has gerrit metadata (scheduled by gerrit adapter)
-	if pj.ObjectMeta.Annotations[client.GerritID] != "" &&
-		pj.ObjectMeta.Annotations[client.GerritInstance] != "" &&
-		pj.ObjectMeta.Labels[client.GerritRevision] != "" {
-		hasGerritMeta = true
-	}
-
-	// TODO(krzyzacy): remove after we clean up deprecated labels
-	if pj.ObjectMeta.Annotations[client.DeprecatedGerritID] != "" &&
-		pj.ObjectMeta.Annotations[client.DeprecatedGerritInstance] != "" &&
-		pj.ObjectMeta.Labels[client.DeprecatedGerritRevision] != "" {
-		hasGerritMeta = true
-	}
-
-	if !hasGerritMeta {
+	if pj.ObjectMeta.Annotations[client.GerritID] == "" ||
+		pj.ObjectMeta.Annotations[client.GerritInstance] == "" ||
+		pj.ObjectMeta.Labels[client.GerritRevision] == "" {
 		return false
 	}
 
@@ -89,16 +77,6 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 	if err != nil {
 		logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
 		return false
-	}
-
-	// TODO(krzyzacy): remove after we clean up deprecated labels
-	if len(pjs) == 0 {
-		selector := labels.Set{client.DeprecatedGerritRevision: pj.ObjectMeta.Labels[client.DeprecatedGerritRevision]}
-		pjs, err = c.lister.List(selector.AsSelector())
-		if err != nil {
-			logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
-			return false
-		}
 	}
 
 	for _, pj := range pjs {
@@ -125,21 +103,6 @@ func (c *Client) Report(pj *v1.ProwJob) error {
 	if err != nil {
 		logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
 		return err
-	}
-
-	// TODO(krzyzacy): remove after we clean up deprecated labels
-	if len(pjsOnRevision) == 0 {
-		logrus.Warn("Please use latest gerrit adapter deployment!")
-		clientGerritRevision = client.DeprecatedGerritRevision
-		clientGerritID = client.DeprecatedGerritID
-		clientGerritInstance = client.DeprecatedGerritInstance
-
-		selector := labels.Set{clientGerritRevision: pj.ObjectMeta.Labels[clientGerritRevision]}
-		pjsOnRevision, err = c.lister.List(selector.AsSelector())
-		if err != nil {
-			logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
-			return err
-		}
 	}
 
 	// generate an aggregated report:
