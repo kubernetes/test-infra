@@ -14,7 +14,7 @@ Periodic config looks like so:
 
 ```yaml
 periodics:
-- name: foo-job         # Names need not be unique.
+- name: foo-job         # Names need not be unique, but must match the regex ^[A-Za-z0-9-._]+$
   decorate: true        # Enable Pod Utility decoration. (see below)
   interval: 1h          # Anything that can be parsed by time.ParseDuration.
   spec: {}              # Valid Kubernetes PodSpec.
