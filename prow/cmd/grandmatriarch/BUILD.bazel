@@ -1,10 +1,13 @@
 load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 
+# Consider using :app :image pattern from
+# prow_image() in //prow:def.bzl.
 container_image(
     name = "image",
     base = "@gcloud-base//image",
     entrypoint = ["/bake.sh"],
     files = ["bake.sh"],
+    stamp = True,
     visibility = ["//visibility:public"],
 )
 
