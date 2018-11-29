@@ -17,7 +17,6 @@ limitations under the License.
 package spyglass
 
 import (
-	"compress/gzip"
 	"context"
 	"fmt"
 	"io"
@@ -141,10 +140,6 @@ func (a *GCSArtifact) ReadAtMost(n int64) ([]byte, error) {
 		reader, err = a.handle.NewReader(a.ctx)
 		if err != nil {
 			return nil, fmt.Errorf("error getting artifact reader: %v", err)
-		}
-		reader, err = gzip.NewReader(reader)
-		if err != nil {
-			return nil, fmt.Errorf("error getting gzip reader: %v", err)
 		}
 		defer reader.Close()
 		p, err = ioutil.ReadAll(reader) // Must readall for gzipped files
