@@ -546,3 +546,49 @@ func TestProwToGCS(t *testing.T) {
 		}
 	}
 }
+
+func TestFetchArtifactsPodLog(t *testing.T) {
+	kc := fkc{
+		kube.ProwJob{
+			Spec: kube.ProwJobSpec{
+				Agent: kube.KubernetesAgent,
+				Job:   "job",
+			},
+			Status: kube.ProwJobStatus{
+				PodName: "wowowow",
+				BuildID: "123",
+				URL:     "https://gubernator.example.com/build/job/123",
+			},
+		},
+	}
+	fakeConfigAgent := fca{
+		c: config.Config{
+			ProwConfig: config.ProwConfig{
+				Plank: config.Plank{
+					JobURLPrefix: "https://gubernator.example.com/build/",
+				},
+			},
+		},
+	}
+	fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA")}, &config.Agent{})
+	fakeJa.Start()
+
+	fakeGCSClient := fakeGCSServer.Client()
+
+	sg := New(fakeJa, fakeConfigAgent, fakeGCSClient)
+
+	result, err := sg.FetchArtifacts("prowjob/job/123", "", 500e6, []string{"build-log.txt"})
+	if err != nil {
+		t.Fatalf("Unexpected error grabbing pod log: %v", err)
+	}
+	if len(result) != 1 {
+		t.Fatalf("Expected 1 result, got %d", len(result))
+	}
+	content, err := result[0].ReadAll()
+	if err != nil {
+		t.Fatalf("Unexpected error reading pod log: %v", err)
+	}
+	if string(content) != "clusterA" {
+		t.Fatalf("Bad pod log content: %q (expected 'clusterA')", content)
+	}
+}

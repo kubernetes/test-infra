@@ -98,15 +98,22 @@ func (s *Spyglass) FetchArtifacts(src string, podName string, sizeLimit int64, a
 			arts = append(arts, art)
 		}
 	case prowKeyType:
-		logFound := false
+		podLogNeeded := false
 		if gcsKey, err := s.prowToGCS(key); err == nil {
 			for _, name := range artifactNames {
-				if name == "build-log.txt" {
-					logFound = true
-				}
 				art, err := s.GCSArtifactFetcher.artifact(gcsKey, name, sizeLimit)
+				if err == nil {
+					// Actually try making a request, because calling GCSArtifactFetcher.artifact does no I/O.
+					// (these files are being explicitly requested and so will presumably soon be accessed, so
+					// the extra network I/O should not be too problematic).
+					_, err = art.Size()
+				}
 				if err != nil {
-					logrus.Errorf("Failed to fetch artifact %s: %v", name, err)
+					if name == "build-log.txt" {
+						podLogNeeded = true
+					} else {
+						logrus.Errorf("Failed to fetch artifact %s: %v", name, err)
+					}
 					continue
 				}
 				arts = append(arts, art)
@@ -114,7 +121,7 @@ func (s *Spyglass) FetchArtifacts(src string, podName string, sizeLimit int64, a
 		} else {
 			logrus.Warningln(err)
 		}
-		if !logFound {
+		if podLogNeeded {
 			art, err := s.PodLogArtifactFetcher.artifact(key, sizeLimit)
 			if err != nil {
 				logrus.Errorf("Failed to fetch pod log: %v", err)
