@@ -761,10 +761,7 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 	scenario := ""
 	for _, arg := range args {
 		if strings.HasPrefix(arg, "--env-file=") {
-			env := strings.TrimPrefix(arg, "--env-file=")
-			if _, err := os.Stat("../../../" + env); err != nil {
-				return fmt.Errorf("job %s: cannot stat env file %s", jobName, env)
-			}
+			return fmt.Errorf("job %s: --env-file is deprecated, please migrate to presets %s", jobName, arg)
 		}
 
 		if arg == "--" {
@@ -836,7 +833,7 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 		return fmt.Errorf("with --deployment=gke, job %s must use --gcp-node-image", jobName)
 	}
 
-	if hasArg("--env-file=jobs/pull-kubernetes-e2e.env", args) && hasArg("--check-leaked-resources", args) {
+	if hasArg("--stage=gs://kubernetes-release-pull", args) && hasArg("--check-leaked-resources", args) {
 		return fmt.Errorf("presubmit job %s should not check for resource leaks", jobName)
 	}
 

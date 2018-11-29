@@ -34,7 +34,6 @@ presubmits:
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --build=bazel
-        - --check-leaked-resources=false
         - --cluster=
         - --env=KOPS_LATEST=latest-ci-green.txt
         - --env=KOPS_DEPLOY_LATEST_KUBE=n
@@ -94,7 +93,6 @@ presubmits:
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --build=bazel
-        - --check-leaked-resources=false
         - --cluster=
         - --env=KOPS_LATEST=latest-ci-green.txt
         - --env=KOPS_DEPLOY_LATEST_KUBE=n
@@ -154,7 +152,6 @@ presubmits:
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --build=bazel
-        - --check-leaked-resources=false
         - --cluster=
         - --env=KOPS_LATEST=latest-ci-green.txt
         - --env=KOPS_DEPLOY_LATEST_KUBE=n
@@ -190,6 +187,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
+      preset-pull-gce-device-plugin-gpu: "true"
+      preset-pull-kubernetes-e2e: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
@@ -213,8 +212,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce-device-plugin-gpu.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-nodes=4
@@ -252,6 +249,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
+      preset-pull-gce-device-plugin-gpu: "true"
+      preset-pull-kubernetes-e2e: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
@@ -272,8 +271,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce-device-plugin-gpu.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-nodes=4
@@ -311,6 +308,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
+      preset-pull-gce-device-plugin-gpu: "true"
+      preset-pull-kubernetes-e2e: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
@@ -331,8 +330,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce-device-plugin-gpu.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-nodes=4
@@ -368,6 +365,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-security-kubernetes-e2e-gce
     rerun_command: /test pull-security-kubernetes-e2e-gce
@@ -387,8 +386,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-central1-f
@@ -426,6 +423,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-security-kubernetes-e2e-gce
     rerun_command: /test pull-security-kubernetes-e2e-gce
@@ -442,8 +441,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-central1-f
@@ -481,6 +478,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-security-kubernetes-e2e-gce
     rerun_command: /test pull-security-kubernetes-e2e-gce
@@ -497,8 +496,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-central1-f
@@ -536,6 +533,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-security-kubernetes-e2e-gce-alpha-features
     rerun_command: /test pull-security-kubernetes-e2e-gce-alpha-features
@@ -552,8 +551,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce.env
         - --env=KUBE_FEATURE_GATES=AllAlpha=true
         - --extract=local
         - --gcp-node-image=gci
@@ -592,6 +589,8 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-e2e-containerd: "true"
       preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-security-kubernetes-e2e-containerd-gce
     rerun_command: /test pull-security-kubernetes-e2e-containerd-gce
@@ -611,8 +610,6 @@ presubmits:
         - --cluster=
         - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/go/src/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env
         - --env=KUBE_NODE_EXTRA_METADATA=user-data=/go/src/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-project=k8s-c8d-pr-e2e
