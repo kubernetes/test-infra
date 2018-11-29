@@ -28,10 +28,10 @@ import (
 
 	"golang.org/x/oauth2"
 
-	"github.com/ghodss/yaml"
 	gogithub "github.com/google/go-github/github"
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/pkg/ghclient"
 	"k8s.io/test-infra/prow/config"

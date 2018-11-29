@@ -26,9 +26,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"sigs.k8s.io/yaml"
+
 	"k8s.io/test-infra/prow/commentpruner"
 	"k8s.io/test-infra/prow/repoowners"
 

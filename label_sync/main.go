@@ -34,12 +34,12 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
+	"sigs.k8s.io/yaml"
 )
 
 const maxConcurrentWorkers = 20

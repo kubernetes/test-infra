@@ -26,8 +26,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ghodss/yaml"
 	"k8s.io/api/core/v1"
+	"sigs.k8s.io/yaml"
 )
 
 type options struct {
