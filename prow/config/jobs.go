@@ -169,6 +169,8 @@ type Periodic struct {
 	Tags []string `json:"tags,omitempty"`
 	// Run these jobs after successfully running this one.
 	RunAfterSuccess []Periodic `json:"run_after_success,omitempty"`
+	// Maximum number concurrent executions of this jobs, unset is 1, 0 is infinite.
+	MaxConcurrency *int `json:"max_concurrency,omitempty"`
 
 	interval time.Duration
 }

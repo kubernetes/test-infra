@@ -101,21 +101,26 @@ func sync(kc kubeClient, cfg *config.Config, cr cronClient, now time.Time) error
 
 	errs := []error{}
 	for _, p := range cfg.Periodics {
+		max := 1
+		if p.MaxConcurrency != nil {
+			max = *p.MaxConcurrency
+		}
 		j, ok := latestJobs[p.Name]
-		if p.Cron == "" {
-			if !ok || (j.Complete() && now.Sub(j.Status.StartTime.Time) > p.GetInterval()) {
+		runningJobs := currentJobs[p.Name]
+		if max == 0 || len(runningJobs) < max {
+			if p.Cron == "" {
+				if !ok || now.Sub(j.Status.StartTime.Time) > p.GetInterval() {
+					if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels)); err != nil {
+						errs = append(errs, err)
+					}
+				}
+			} else if _, exist := cronTriggers[p.Name]; exist {
 				if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels)); err != nil {
 					errs = append(errs, err)
 				}
 			}
-		} else if _, exist := cronTriggers[p.Name]; exist {
-			if currentJobs := currentJobs[p.Name]; p.MaxConcurrency == 0 || len(currentJobs) < p.MaxConcurrency {
-				if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels)); err != nil {
-					errs = append(errs, err)
-				}
-			} else {
-				logrus.WithField("MaxConcurrency", p.MaxConcurrency).WithField("NumberRunning", len(currentJobs)).WithField("Name", p.Name).Info("Skipping cron trigger with number running and pending exceeding max concurrency")
-			}
+		} else {
+			logrus.WithField("MaxConcurrency", p.MaxConcurrency).WithField("NumberRunning", len(runningJobs)).WithField("Name", p.Name).Info("Skipping cron trigger with number running and pending exceeding max concurrency")
 		}
 	}
 

@@ -119,6 +119,12 @@ func PeriodicSpec(p config.Periodic) kube.ProwJobSpec {
 	pjs := specFromJobBase(p.JobBase)
 	pjs.Type = kube.PeriodicJob
 
+	if p.MaxConcurrency == nil {
+		pjs.MaxConcurrency = 1
+	} else {
+		pjs.MaxConcurrency = *p.MaxConcurrency
+	}
+
 	for _, nextP := range p.RunAfterSuccess {
 		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, PeriodicSpec(nextP))
 	}
