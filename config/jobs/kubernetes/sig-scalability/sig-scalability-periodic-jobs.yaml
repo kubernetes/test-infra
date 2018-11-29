@@ -30,6 +30,33 @@ periodics:
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
 
+# copy of ci-kubernetes-e2e-gci-gce-scalability with node killer enabled
+- interval: 1h
+  name: ci-kubernetes-e2e-gci-gce-scalability-killer
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-gci-gce-scalability: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=e2e-big
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-nodes=100
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8 --vmodule=request=4 --node-killer=true
+      - --timeout=120m
+      - --use-logexporter
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+
 - cron: "0 */6 * * *" # every six hours
   name: ci-kubernetes-e2e-gci-gce-scalability-beta
   tags:
