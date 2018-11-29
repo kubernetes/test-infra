@@ -52,6 +52,8 @@ metadata:
     app: tot
 spec:
   replicas: 1  # one canonical source of build numbers
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
