@@ -45,14 +45,6 @@ const (
 	// GerritReportLabel is the gerrit label prow will cast vote on, fallback to CodeReview label if unset
 	GerritReportLabel = "prow.k8s.io/gerrit-report-label"
 
-	// TODO(krzyzacy): remove them after we don't have deployment uses deprecated labels
-	// DeprecatedGerritID is the deprecated version of GerritID
-	DeprecatedGerritID = "gerrit-id"
-	// DeprecatedGerritInstance is the deprecated version of GerritInstance
-	DeprecatedGerritInstance = "gerrit-instance"
-	// DeprecatedGerritRevision is the deprecated version of GerritRevision
-	DeprecatedGerritRevision = "gerrit-revision"
-
 	// Merged status indicates a Gerrit change has been merged
 	Merged = "MERGED"
 	// New status indicates a Gerrit change is new (ie pending)
