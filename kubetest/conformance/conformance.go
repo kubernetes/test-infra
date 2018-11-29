@@ -19,7 +19,9 @@ package conformance
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"os/exec"
 	"time"
 
 	"k8s.io/api/core/v1"
@@ -131,4 +133,9 @@ func (d *Deployer) Down() error {
 // GetClusterCreated returns the start time of the cluster container. If the container doesn't exist, has no start time, or has a malformed start time, then an error is returned.
 func (d *Deployer) GetClusterCreated(gcpProject string) (time.Time, error) {
 	return time.Time{}, fmt.Errorf("cannot get cluster create time for conformance cluster")
+}
+
+func (_ *Deployer) KubectlCommand() (*exec.Cmd, error) {
+	log.Print("Noop - Conformance KubectlCommand()")
+	return nil, nil
 }

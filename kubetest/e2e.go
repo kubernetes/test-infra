@@ -147,7 +147,7 @@ func run(deploy deployer, o options) error {
 		// If node testing is enabled, check that the api is reachable before
 		// proceeding with further steps. This is accomplished by listing the nodes.
 		if !o.nodeTests {
-			errs = util.AppendError(errs, control.XMLWrap(&suite, "Check APIReachability", getKubectlVersion))
+			errs = util.AppendError(errs, control.XMLWrap(&suite, "Check APIReachability", func() error { return getKubectlVersion(deploy) }))
 			if dump != "" {
 				errs = util.AppendError(errs, control.XMLWrap(&suite, "list nodes", func() error {
 					return listNodes(dump)
@@ -201,7 +201,7 @@ func run(deploy deployer, o options) error {
 			}))
 		} else {
 			if o.deployment != "conformance" {
-				errs = util.AppendError(errs, control.XMLWrap(&suite, "kubectl version", getKubectlVersion))
+				errs = util.AppendError(errs, control.XMLWrap(&suite, "kubectl version", func() error { return getKubectlVersion(deploy) }))
 			}
 
 			if o.skew {
@@ -337,10 +337,19 @@ func run(deploy deployer, o options) error {
 	return nil
 }
 
-func getKubectlVersion() error {
+func getKubectlVersion(dp deployer) error {
+	cmd, err := dp.KubectlCommand()
+	if err != nil {
+		return err
+	}
+	if cmd == nil {
+		cmd = exec.Command("./cluster/kubectl.sh")
+	}
+	cmd.Args = append(cmd.Args, "--match-server-version=false", "version")
+	copied := *cmd
 	retries := 5
 	for {
-		_, err := control.Output(exec.Command("./cluster/kubectl.sh", "--match-server-version=false", "version"))
+		_, err := control.Output(&copied)
 		if err == nil {
 			return nil
 		}
@@ -348,7 +357,7 @@ func getKubectlVersion() error {
 		if retries == 0 {
 			return err
 		}
-		log.Print("Failed to reach api. Sleeping for 10 seconds before retrying...")
+		log.Printf("Failed to reach api. Sleeping for 10 seconds before retrying... (%v)", copied.Args)
 		time.Sleep(10 * time.Second)
 	}
 }
