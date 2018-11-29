@@ -197,7 +197,7 @@ periodics:
     containers:
     # image contains tools versioned with k/k master
     # secping needs go and make in particular
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181129-33929460d-master
       command: 
       - ./experiment/secping.sh
       args:
