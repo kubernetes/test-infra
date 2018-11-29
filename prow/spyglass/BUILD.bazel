@@ -14,7 +14,7 @@ go_test(
         "//prow/config:go_default_library",
         "//prow/deck/jobs:go_default_library",
         "//prow/kube:go_default_library",
-        "//prow/spyglass/viewers:go_default_library",
+        "//prow/spyglass/lenses:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/fsouza/fake-gcs-server/fakestorage:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
@@ -32,7 +32,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//prow/spyglass/viewers:all-srcs",
+        "//prow/spyglass/lenses:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
@@ -41,6 +41,7 @@ filegroup(
 go_library(
     name = "go_default_library",
     srcs = [
+        "artifacts.go",
         "gcsartifact.go",
         "gcsartifact_fetcher.go",
         "podlogartifact.go",
@@ -53,7 +54,7 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/deck/jobs:go_default_library",
         "//prow/kube:go_default_library",
-        "//prow/spyglass/viewers:go_default_library",
+        "//prow/spyglass/lenses:go_default_library",
         "//testgrid/util/gcs:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

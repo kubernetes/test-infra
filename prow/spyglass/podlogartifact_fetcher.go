@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/test-infra/prow/spyglass/viewers"
+	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
 // PodLogArtifactFetcher is used to fetch artifacts from k8s apiserver
@@ -34,7 +34,7 @@ func NewPodLogArtifactFetcher(ja jobAgent) *PodLogArtifactFetcher {
 }
 
 // artifact constructs an artifact handle from the given key
-func (af *PodLogArtifactFetcher) artifact(key string, sizeLimit int64) (viewers.Artifact, error) {
+func (af *PodLogArtifactFetcher) artifact(key string, sizeLimit int64) (lenses.Artifact, error) {
 	parsed := strings.Split(key, "/")
 	if len(parsed) != 2 {
 		return nil, fmt.Errorf("Could not fetch artifact: key %q incorrectly formatted", key)

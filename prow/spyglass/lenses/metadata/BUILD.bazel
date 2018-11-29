@@ -2,17 +2,26 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "metadata_template.go",
-        "metadata_viewer.go",
-    ],
-    importpath = "k8s.io/test-infra/prow/spyglass/viewers/metadata",
+    srcs = ["lens.go"],
+    importpath = "k8s.io/test-infra/prow/spyglass/lenses/metadata",
     visibility = ["//visibility:public"],
     deps = [
         "//prow/deck/jobs:go_default_library",
-        "//prow/spyglass/viewers:go_default_library",
+        "//prow/spyglass/lenses:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
+)
+
+filegroup(
+    name = "template",
+    srcs = ["template.html"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "resources",
+    srcs = ["style.css"],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(

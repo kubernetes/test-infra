@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package viewers
+package lenses
 
 import (
 	"bytes"
@@ -80,7 +80,25 @@ func (fa *FakeArtifact) ReadAtMost(n int64) ([]byte, error) {
 	return buf, err
 }
 
-func dumpViewHandler(artifacts []Artifact, raw string) string {
+type dumpLens struct{}
+
+func (dumpLens) Name() string {
+	return "dump"
+}
+
+func (dumpLens) Title() string {
+	return "Dump View"
+}
+
+func (dumpLens) Priority() int {
+	return 1
+}
+
+func (dumpLens) Header(artifacts []Artifact, resourceDir string) string {
+	return ""
+}
+
+func (dumpLens) Body(artifacts []Artifact, resourceDir, data string) string {
 	var view []byte
 	for _, a := range artifacts {
 		data, err := a.ReadAll()
@@ -93,13 +111,13 @@ func dumpViewHandler(artifacts []Artifact, raw string) string {
 	return string(view)
 }
 
+func (dumpLens) Callback(artifacts []Artifact, resourceDir, data string) string {
+	return ""
+}
+
 // Tests getting a view from a viewer
 func TestView(t *testing.T) {
-	dumpMetadata := ViewMetadata{
-		Title:    "Dump View",
-		Priority: 1,
-	}
-	err := RegisterViewer("DumpView", dumpMetadata, dumpViewHandler)
+	err := RegisterLens(dumpLens{})
 	if err != nil {
 		t.Fatal("Failed to register viewer for testing View")
 	}
@@ -109,16 +127,16 @@ func TestView(t *testing.T) {
 		sizeLimit: 500e6,
 	}
 	testCases := []struct {
-		name       string
-		viewerName string
-		artifacts  []Artifact
-		raw        string
-		expected   string
-		err        error
+		name      string
+		lensName  string
+		artifacts []Artifact
+		raw       string
+		expected  string
+		err       error
 	}{
 		{
-			name:       "simple view",
-			viewerName: "DumpView",
+			name:     "simple view",
+			lensName: "dump",
 			artifacts: []Artifact{
 				fakeLog, fakeLog,
 			},
@@ -133,66 +151,29 @@ crazy`,
 			err: nil,
 		},
 		{
-			name:       "fail on unregistered view name",
-			viewerName: "MicroverseBattery",
-			artifacts:  []Artifact{},
-			raw:        "",
-			expected:   "",
-			err:        ErrInvalidViewName,
+			name:      "fail on unregistered view name",
+			lensName:  "MicroverseBattery",
+			artifacts: []Artifact{},
+			raw:       "",
+			expected:  "",
+			err:       ErrInvalidLensName,
 		},
 	}
 	for _, tc := range testCases {
-		view, err := View(tc.viewerName, tc.artifacts, tc.raw)
+		lens, err := GetLens(tc.lensName)
 		if tc.err != err {
 			t.Errorf("%s expected error %v but got error %v", tc.name, tc.err, err)
 			continue
 		}
-		if view != tc.expected {
-			t.Errorf("%s expected view to be %s but got %s", tc.name, tc.expected, view)
+		if tc.err == nil && lens == nil {
+			t.Fatalf("Expected lens %s but got nil.", tc.lensName)
+		}
+		if lens != nil && lens.Body(tc.artifacts, "", tc.raw) != tc.expected {
+			t.Errorf("%s expected view to be %s but got %s", tc.name, tc.expected, lens)
 		}
 	}
-	UnregisterViewer("DumpView")
+	UnregisterLens("DumpView")
 
-}
-
-// Test registering a new viewer
-func TestRegisterViewer(t *testing.T) {
-	testCases := []struct {
-		name           string
-		viewerName     string
-		viewerMetadata ViewMetadata
-		handler        ViewHandler
-		err            error
-	}{
-		{
-			name:       "register dump view",
-			viewerName: "DumpView",
-			viewerMetadata: ViewMetadata{
-				Title:    "Dump View",
-				Priority: 1,
-			},
-			handler: dumpViewHandler,
-			err:     nil,
-		},
-	}
-	for _, tc := range testCases {
-		err := RegisterViewer(tc.viewerName, tc.viewerMetadata, tc.handler)
-		if err != nil {
-			if err != tc.err {
-				t.Errorf("%s expected error %v but got error %v", tc.name, tc.err, err)
-			}
-			continue
-		}
-		title, err := Title(tc.viewerName)
-		if err != nil {
-			t.Errorf("%s got error %v when trying to get title", tc.name, err)
-			continue
-		}
-		if title != tc.viewerMetadata.Title {
-			t.Errorf("%s registered a viewer with title %s but got title %s", tc.name, tc.viewerMetadata.Title, title)
-		}
-		UnregisterViewer(tc.viewerName)
-	}
 }
 
 // Tests reading last N Lines from files in GCS

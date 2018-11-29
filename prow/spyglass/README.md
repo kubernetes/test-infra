@@ -15,23 +15,22 @@ A typical Spyglass page might look something like this:
 A general Spyglass query will proceed as follows:
 - User provides a job source in the query (usually a job name and build ID).
 - Spyglass finds all artifact names associated with the given job source.
-- Spyglass builds a cache of which artifacts match which viewers via
+- Spyglass builds a cache of which artifacts match which lenses via
   configured regular expressions.
-- Viewers with matching artifacts are pre-rendered in order of descending
+- Lenses with matching artifacts are pre-rendered in order of descending
   priority.
-- Spyglass then sends render requests to each registered viewer with its
+- Spyglass then sends render requests to each registered lens with its
   matching artifacts.
-- Each viewer performs any necessary operations on the artifacts and produces
+- Each lens performs any necessary operations on the artifacts and produces
   a blob of HTML.
 - Views (HTML) are inserted asynchronously as viewers return.
 
 
-## Viewers
-A viewer is a function that consumes a list of artifacts and produces some
+## Lenses
+A lens is an set of functions that consume a list of artifacts and produces some
 HTML.
 
-Viewer names are unique and are stored in registries that map the name
-to a handler function and some metadata about the viewer.
+Lens names are unique, and must much the package name for the lens.
 
 
 ### Built-in Viewers
@@ -39,21 +38,21 @@ Spyglass comes with some built-in viewers for commonly produced artifacts.
 
 - Prow Metadata  
   ```
-  Name: MetadataViewer
+  Name: metadata
   Title: Metadata
   Match: finished.json|started.json
   Priority: 0
   ```
 - JUnit  
   ```
-  Name: JUnitViewer
+  Name: junit
   Title: JUnit
   Matches: artifacts/junit.*\.xml
   Priority: 5
   ```
 - Logs  
   ```
-  Name: BuildLogViewer
+  Name: buildlog
   Title: Build Log
   Matches: build-log.txt|pod-log
   Priority: 10
@@ -63,19 +62,67 @@ Spyglass comes with some built-in viewers for commonly produced artifacts.
 Building a viewer consists of three main steps.
 
 #### Write Boilerplate
-First, create a package `viewernamehere` under `prow/spyglass/viewers` and
-import the `viewers` package.
+First, create a package `lensnamehere` under `prow/spyglass/lenses` and
+import the `lenses` package.
 
 #### Implement
 Next, implement the necessary functions for a viewer. More specifically,
-implement the following function signature:
+implement the following interface (defined in lenses.go):
 ```go
-type ViewHandler func([]Artifact, string) string
+type Lens interface {
+    // Name returns the name of your lens (which must match the name of the directory it lives in)
+	Name() string
+	// Title returns a human-readable title for your lens.
+	Title() string
+	// Priority returns a number that is used to determine the ordering of your lens (lower is more important)
+	Priority() int
+	// Header is used to inject content into the lens's <head>. It will only ever be called once per load.
+	Header(artifacts []Artifact, resourceDir string) string
+	// Body is used to generate the contents of the lens's <body>. It will initially be called with empty data, but
+	// the lens front-end code may choose to re-render itself with custom data.
+	Body(artifacts []Artifact, resourceDir string, data string) string
+	// Callback is used for the viewer to exchange arbitrary data with the frontend. It is called with lens-specified
+	// data, and returns data to be passed to the lens. JSON encoding is recommended in both directions.
+	Callback(artifacts []Artifact, resourceDir string, data string) string
+}
 ```
 
-In the `init` method, call `viewers.RegisterViewer()` with the appropriate
-`ViewMetadata` struct (required: `Name`, `Title`, `Priority`) and your implementation of `ViewHandler`.
-Spyglass should now be aware of your viewer.
+In the `init` method, call `lenses.RegisterLens()` with an instance of your implementation of the interface.
+Spyglass should now be aware of your lens.
+
+Additionally, some front-end TypeScript code can be provided. Configure your BUILD.bazel to build it, then emit a
+<script> tag with a relative reference to it in your `Header()` implementation. See `buildlog/BUILD.bazel` for an
+example.
+
+In your typescript code, a global `spyglass` object will be available, providing the following interface:
+
+```ts
+export interface Spyglass {
+  /**
+   * Replaces the lens display with a new server-rendered page.
+   * The returned promise will be resolved once the page has been updated.
+   */
+  updatePage(data: string): Promise<void>;
+  /**
+   * Requests that the server re-render the lens with the provided data, and
+   * returns a promise that will resolve with that HTML as a string.
+   *
+   * This is equivalent to updatePage(), except that the displayed content is
+   * not automatically changed.
+   */
+  requestPage(data: string): Promise<string>;
+  /**
+   * Sends a request to the server-side lens backend with the provided data, and
+   * returns a promise that will resolve with the response as a string.
+   */
+  request(data: string): Promise<string>;
+  /**
+   * Inform Spyglass that the lens content has updated. This should be called whenever
+   * the visible content changes, so Spyglass can ensure that all content is visible.
+   */
+  contentUpdated(): void;
+}
+```
 
 #### Add to config
 Finally, decide which artifacts you want your viewer to consume and create a regex that
@@ -90,7 +137,7 @@ Add a line in `prow` config under the `viewers` section of `spyglass` of the fol
 The next time a job is viewed that contains artifacts matched by your regexp,
 your view should display.
 
-See the [GoDoc](https://godoc.org/k8s.io/test-infra/prow/spyglass/viewers) for
+See the [GoDoc](https://godoc.org/k8s.io/test-infra/prow/spyglass/lenses) for
 more details and examples.
 
 ## Config

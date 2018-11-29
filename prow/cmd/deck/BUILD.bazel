@@ -24,8 +24,19 @@ container_image(
 
 prow_image(
     name = "image",
-    base = ":asset-base",
+    base = ":spyglass-lenses",
     visibility = ["//visibility:public"],
+)
+
+container_image(
+    name = "spyglass-lenses",
+    base = ":asset-base",
+    data_path = "/prow/spyglass/lenses",
+    directory = "/lenses",
+    files = [
+        "//prow/spyglass/lenses:resources",
+        "//prow/spyglass/lenses:templates",
+    ],
 )
 
 go_binary(
@@ -33,6 +44,8 @@ go_binary(
     data = [
         ":templates",
         "//prow/cmd/deck/static",
+        "//prow/spyglass/lenses:resources",
+        "//prow/spyglass/lenses:templates",
     ],
     embed = [":go_default_library"],
     pure = "on",
@@ -79,9 +92,10 @@ go_library(
         "//prow/pluginhelp:go_default_library",
         "//prow/prstatus:go_default_library",
         "//prow/spyglass:go_default_library",
-        "//prow/spyglass/viewers/buildlog:go_default_library",
-        "//prow/spyglass/viewers/junit:go_default_library",
-        "//prow/spyglass/viewers/metadata:go_default_library",
+        "//prow/spyglass/lenses:go_default_library",
+        "//prow/spyglass/lenses/buildlog:go_default_library",
+        "//prow/spyglass/lenses/junit:go_default_library",
+        "//prow/spyglass/lenses/metadata:go_default_library",
         "//prow/tide:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/NYTimes/gziphandler:go_default_library",

@@ -1,0 +1,28 @@
+.test-row {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+.failed-row {
+    background-color: #FF0000;
+    color: white;
+}
+.passed-row {
+    background-color:#00FF00;
+    color: black;
+}
+.mdl-data-table .metadata-header th {
+    font-size: 1.2em;
+}
+.metadata-table {
+    height: unset;
+    padding: 0;
+    margin: 0;
+}
+
+.mdl-data-table {
+    background: #fff;
+    border-radius: 2px;
+    box-shadow: 0 0 4px #e0e0e0;
+    border-collapse: collapse;
+    width: 100%;
+}

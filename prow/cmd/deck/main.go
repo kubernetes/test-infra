@@ -53,9 +53,10 @@ import (
 
 	// Import standard spyglass viewers
 
-	_ "k8s.io/test-infra/prow/spyglass/viewers/buildlog"
-	_ "k8s.io/test-infra/prow/spyglass/viewers/junit"
-	_ "k8s.io/test-infra/prow/spyglass/viewers/metadata"
+	"k8s.io/test-infra/prow/spyglass/lenses"
+	_ "k8s.io/test-infra/prow/spyglass/lenses/buildlog"
+	_ "k8s.io/test-infra/prow/spyglass/lenses/junit"
+	_ "k8s.io/test-infra/prow/spyglass/lenses/metadata"
 )
 
 type options struct {
@@ -73,6 +74,7 @@ type options struct {
 	staticFilesLocation   string
 	templateFilesLocation string
 	spyglass              bool
+	spyglassFilesLocation string
 	gcsCredentialsFile    string
 }
 
@@ -107,11 +109,16 @@ func gatherOptions() options {
 	flag.BoolVar(&o.hiddenOnly, "hidden-only", false, "Show only hidden jobs. Useful for serving hidden jobs behind an oauth proxy.")
 	flag.StringVar(&o.pregeneratedData, "pregenerated-data", "", "Use API output from another prow instance. Used by the prow/cmd/deck/runlocal script")
 	flag.BoolVar(&o.spyglass, "spyglass", false, "Use Prow built-in job viewing instead of Gubernator")
+	flag.StringVar(&o.spyglassFilesLocation, "spyglass-files-location", "/lenses", "Location of the static files for spyglass.")
 	flag.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
 	flag.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
 	flag.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the GCS credentials file")
 	flag.Parse()
 	return o
+}
+
+func staticHandlerFromDir(dir string) http.Handler {
+	return gziphandler.GzipHandler(handleCached(http.FileServer(http.Dir(dir))))
 }
 
 func main() {
@@ -125,10 +132,6 @@ func main() {
 	)
 
 	mux := http.NewServeMux()
-
-	staticHandlerFromDir := func(dir string) http.Handler {
-		return gziphandler.GzipHandler(handleCached(http.FileServer(http.Dir(dir))))
-	}
 
 	// setup config agent, pod log clients etc.
 	configAgent := &config.Agent{}
@@ -351,7 +354,8 @@ func initSpyglass(configAgent *config.Agent, o options, mux *http.ServeMux, ja *
 	}
 	sg := spyglass.New(ja, configAgent, c)
 
-	mux.Handle("/view/render", gziphandler.GzipHandler(handleArtifactView(sg, configAgent)))
+	mux.Handle("/spyglass/static/", http.StripPrefix("/spyglass/static", staticHandlerFromDir(o.spyglassFilesLocation)))
+	mux.Handle("/spyglass/lens/", gziphandler.GzipHandler(http.StripPrefix("/spyglass/lens/", handleArtifactView(o, sg, configAgent))))
 	mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent, o)))
 	mux.Handle("/job-history/", gziphandler.GzipHandler(handleJobHistory(o, configAgent, c)))
 }
@@ -537,7 +541,11 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, o optio
 		}
 	}
 
-	lenses := sg.Views(viewerCache)
+	ls := sg.Lenses(viewerCache)
+	lensNames := []string{}
+	for _, l := range ls {
+		lensNames = append(lensNames, l.Name())
+	}
 
 	jobHistLink := ""
 	jobPath, err := sg.JobPath(src)
@@ -547,17 +555,19 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, o optio
 	logrus.Infof("job history link: %s", jobHistLink)
 
 	var viewBuf bytes.Buffer
-	type ViewsTemplate struct {
-		Views       []spyglass.Lens
-		Source      string
-		ViewerCache map[string][]string
-		JobHistLink string
+	type lensesTemplate struct {
+		Lenses        []lenses.Lens
+		LensNames     []string
+		Source        string
+		LensArtifacts map[string][]string
+		JobHistLink   string
 	}
-	vTmpl := ViewsTemplate{
-		Views:       lenses,
-		Source:      src,
-		ViewerCache: viewerCache,
-		JobHistLink: jobHistLink,
+	lTmpl := lensesTemplate{
+		Lenses:        ls,
+		LensNames:     lensNames,
+		Source:        src,
+		LensArtifacts: viewerCache,
+		JobHistLink:   jobHistLink,
 	}
 	t := template.New("spyglass.html")
 
@@ -569,7 +579,7 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, o optio
 		return "", fmt.Errorf("error parsing template: %v", err)
 	}
 
-	if err = t.Execute(&viewBuf, vTmpl); err != nil {
+	if err = t.Execute(&viewBuf, lTmpl); err != nil {
 		return "", fmt.Errorf("error rendering template: %v", err)
 	}
 	renderElapsed := time.Since(renderStart)
@@ -585,55 +595,77 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, o optio
 // Query params:
 // - name: required, specifies the name of the viewer to load
 // - src: required, specifies the job source from which to fetch artifacts
-func handleArtifactView(sg *spyglass.Spyglass, ca *config.Agent) http.HandlerFunc {
+func handleArtifactView(o options, sg *spyglass.Spyglass, ca *config.Agent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
 		setHeadersNoCaching(w)
-		w.Header().Set("Content-Type", "application/json")
-		name := r.URL.Query().Get("name")
-		src := r.URL.Query().Get("src")
-		if name == "" {
-			http.Error(w, "missing name query parameter", http.StatusBadRequest)
+		pathSegments := strings.Split(r.URL.Path, "/")
+		if len(pathSegments) != 2 {
+			http.NotFound(w, r)
 			return
 		}
-		if src == "" {
-			http.Error(w, "missing src query parameter", http.StatusBadRequest)
-			return
-		}
+		lensName := pathSegments[0]
+		resource := pathSegments[1]
 
-		body, err := ioutil.ReadAll(r.Body)
+		lens, err := lenses.GetLens(lensName)
 		if err != nil {
-			http.Error(w, "failed to read body", http.StatusBadRequest)
+			http.Error(w, fmt.Sprintf("No such template: %s (%v)", lensName, err), http.StatusNotFound)
 			return
 		}
 
-		viewReq := &spyglass.ViewRequest{}
-		err = json.Unmarshal(body, viewReq)
+		lensResourcesDir := lenses.ResourceDirForLens(o.spyglassFilesLocation, lens.Name())
+
+		reqString := r.URL.Query().Get("req")
+		var request spyglass.LensRequest
+		err = json.Unmarshal([]byte(reqString), &request)
 		if err != nil {
-			http.Error(w, "failed to unmarshal request body", http.StatusBadRequest)
+			http.Error(w, fmt.Sprintf("Failed to parse request: %v", err), http.StatusBadRequest)
 			return
 		}
 
-		lens, err := sg.Refresh(src, "", ca.Config().Deck.Spyglass.SizeLimit, viewReq)
+		artifacts, err := sg.FetchArtifacts(request.Source, "", ca.Config().Deck.Spyglass.SizeLimit, request.Artifacts)
 		if err != nil {
-			logrus.WithError(err).Error("failed to refresh view")
-			http.Error(w, "failed to refresh view", http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("Failed to retrieve expected artifacts: %v", err), http.StatusInternalServerError)
 			return
 		}
 
-		pd, err := json.Marshal(lens)
-		if err != nil {
-			logrus.WithError(err).Error("Error marshaling payload.")
-			http.Error(w, "failed to refresh view", http.StatusInternalServerError)
-			return
-		}
+		switch resource {
+		case "iframe":
+			t, err := template.ParseFiles(path.Join(o.templateFilesLocation, "spyglass-lens.html"))
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Failed to load template: %v", err), http.StatusInternalServerError)
+				return
+			}
 
-		fmt.Fprint(w, string(pd))
-		elapsed := time.Since(start)
-		logrus.WithFields(logrus.Fields{
-			"duration": elapsed,
-			"viewer":   name,
-		}).Infof("Refreshed view.") //TODO (paulangton): move these load times next to the title of the viewer expose in Prometheus metrics
+			w.Header().Set("Content-Type", "text/html; encoding=utf-8")
+			t.Execute(w, struct {
+				Title   string
+				BaseURL string
+				Head    template.HTML
+				Body    template.HTML
+			}{
+				lens.Title(),
+				"/spyglass/static/" + lensName + "/",
+				template.HTML(lens.Header(artifacts, lensResourcesDir)),
+				template.HTML(lens.Body(artifacts, lensResourcesDir, "")),
+			})
+		case "rerender":
+			data, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Failed to read body: %v", err), http.StatusInternalServerError)
+				return
+			}
+			w.Header().Set("Content-Type", "text/html; encoding=utf-8")
+			w.Write([]byte(lens.Body(artifacts, lensResourcesDir, string(data))))
+		case "callback":
+			data, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Failed to read body: %v", err), http.StatusInternalServerError)
+				return
+			}
+			w.Write([]byte(lens.Callback(artifacts, lensResourcesDir, string(data))))
+		default:
+			http.NotFound(w, r)
+		}
 	}
 }
 

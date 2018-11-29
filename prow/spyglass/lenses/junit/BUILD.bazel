@@ -1,0 +1,57 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
+load("@build_bazel_rules_typescript//:defs.bzl", "ts_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["lens.go"],
+    importpath = "k8s.io/test-infra/prow/spyglass/lenses/junit",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//prow/spyglass/lenses:go_default_library",
+        "//vendor/github.com/joshdk/go-junit:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
+)
+
+ts_library(
+    name = "script",
+    srcs = ["lens.ts"],
+    deps = [
+        "//prow/spyglass/lenses:lens_api",
+    ],
+)
+
+rollup_bundle(
+    name = "script_bundle",
+    entry_point = "prow/spyglass/lenses/junit/lens",
+    deps = [
+        ":script",
+    ],
+)
+
+filegroup(
+    name = "resources",
+    srcs = [":script_bundle"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "template",
+    srcs = ["template.html"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
