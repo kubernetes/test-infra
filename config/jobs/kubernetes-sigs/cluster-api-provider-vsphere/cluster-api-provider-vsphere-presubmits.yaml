@@ -95,7 +95,7 @@ presubmits:
         command:
         - runner.sh
         args:
-        - ./../../figo/cluster-api-provider-vsphere-ci/prow/e2e.sh ${PULL_PULL_SHA}
+        - ./../../figo/cluster-api-provider-vsphere-ci/prow/e2e.sh
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
