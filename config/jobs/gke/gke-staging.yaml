@@ -24,7 +24,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=80m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181129-33929460d-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gke-staging-default-serial
@@ -50,7 +50,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Slow\]|\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=800m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181129-33929460d-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gke-staging-beta-parallel
@@ -77,7 +77,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=80m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181129-33929460d-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gke-staging-beta-serial
@@ -103,7 +103,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Slow\]|\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=600m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181129-33929460d-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gke-staging-stable1-parallel
@@ -130,7 +130,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=80m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181129-33929460d-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gke-staging-stable1-serial
@@ -156,7 +156,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Slow\]|\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=600m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181129-33929460d-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gke-staging-stable2-parallel
@@ -183,7 +183,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=80m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181129-33929460d-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gke-staging-stable2-serial
@@ -209,4 +209,4 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Slow\]|\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=600m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181129-33929460d-master
