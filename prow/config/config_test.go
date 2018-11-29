@@ -127,6 +127,33 @@ deck:
     size_limit: 500e6
     viewers:
       "started.json|finished.json":
+      - "metadata"
+      "build-log.txt":
+      - "buildlog"
+      "artifacts/junit.*\\.xml":
+      - "junit"
+`,
+			expectedViewers: map[string][]string{
+				"started.json|finished.json": {"metadata"},
+				"build-log.txt":              {"buildlog"},
+				"artifacts/junit.*\\.xml":    {"junit"},
+			},
+			expectedRegexMatches: map[string][]string{
+				"started.json|finished.json": {"started.json", "finished.json"},
+				"build-log.txt":              {"build-log.txt"},
+				"artifacts/junit.*\\.xml":    {"artifacts/junit01.xml", "artifacts/junit_runner.xml"},
+			},
+			expectedSizeLimit: 500e6,
+			expectError:       false,
+		},
+		{
+			name: "Backwards compatibility",
+			spyglassConfig: `
+deck:
+  spyglass:
+    size_limit: 500e+6
+    viewers:
+      "started.json|finished.json":
       - "metadata-viewer"
       "build-log.txt":
       - "build-log-viewer"
@@ -134,14 +161,9 @@ deck:
       - "junit-viewer"
 `,
 			expectedViewers: map[string][]string{
-				"started.json|finished.json": {"metadata-viewer"},
-				"build-log.txt":              {"build-log-viewer"},
-				"artifacts/junit.*\\.xml":    {"junit-viewer"},
-			},
-			expectedRegexMatches: map[string][]string{
-				"started.json|finished.json": {"started.json", "finished.json"},
-				"build-log.txt":              {"build-log.txt"},
-				"artifacts/junit.*\\.xml":    {"artifacts/junit01.xml", "artifacts/junit_runner.xml"},
+				"started.json|finished.json": {"metadata"},
+				"build-log.txt":              {"buildlog"},
+				"artifacts/junit.*\\.xml":    {"junit"},
 			},
 			expectedSizeLimit: 500e6,
 			expectError:       false,
