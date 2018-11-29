@@ -45,14 +45,14 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The label plugin provides commands that add or remove certain types of labels. Labels of the following types can be manipulated: 'area/*', 'committee/*', 'kind/*', 'priority/*', 'sig/*', 'triage/*', and 'wg/*'. More labels can be configured to be used via the /label command.",
+		Description: "The label plugin provides commands that add or remove certain types of labels. Labels of the following types can be manipulated: 'area/*', 'committee/*', 'kind/*', 'language/*', 'priority/*', 'sig/*', 'triage/*', and 'wg/*'. More labels can be configured to be used via the /label command.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/[remove-](area|committee|kind|priority|sig|triage|wg|label) <target>",
+		Usage:       "/[remove-](area|committee|kind|language|priority|sig|triage|wg|label) <target>",
 		Description: "Applies or removes a label from one of the recognized types of labels.",
 		Featured:    false,
 		WhoCanUse:   "Anyone can trigger this command on a PR.",
-		Examples:    []string{"/kind bug", "/remove-area prow", "/sig testing"},
+		Examples:    []string{"/kind bug", "/remove-area prow", "/sig testing", "/language zh"},
 	})
 	return pluginHelp, nil
 }
