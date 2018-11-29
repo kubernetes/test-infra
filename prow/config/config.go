@@ -828,6 +828,22 @@ func parseProwConfig(c *Config) error {
 		c.Deck.Spyglass.RegexCache[k] = r
 	}
 
+	// Map old viewer names to the new ones for backwards compatibility.
+	// TODO(Katharine, #10274): remove this, eventually.
+	oldViewers := map[string]string{
+		"build-log-viewer": "buildlog",
+		"metadata-viewer":  "metadata",
+		"junit-viewer":     "junit",
+	}
+
+	for re, viewers := range c.Deck.Spyglass.Viewers {
+		for i, v := range viewers {
+			if rename, ok := oldViewers[v]; ok {
+				c.Deck.Spyglass.Viewers[re][i] = rename
+			}
+		}
+	}
+
 	if c.PushGateway.IntervalString == "" {
 		c.PushGateway.Interval = time.Minute
 	} else {
