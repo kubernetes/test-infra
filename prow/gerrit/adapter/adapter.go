@@ -183,6 +183,16 @@ func makeCloneURI(instance, project string) (*url.URL, error) {
 	return u, nil
 }
 
+// listChangedFiles lists (in lexicographic order) the files changed as part of a Gerrit patchset
+func listChangedFiles(changeInfo client.ChangeInfo) []string {
+	changed := []string{}
+	revision := changeInfo.Revisions[changeInfo.CurrentRevision]
+	for file := range revision.Files {
+		changed = append(changed, file)
+	}
+	return changed
+}
+
 // ProcessChange creates new presubmit prowjobs base off the gerrit changes
 func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) error {
 	rev, ok := change.Revisions[change.CurrentRevision]
@@ -204,94 +214,73 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 
 	triggeredJobs := []string{}
 
+	kr := kube.Refs{
+		Org:      cloneURI.Host,  // Something like android.googlesource.com
+		Repo:     change.Project, // Something like platform/build
+		BaseRef:  change.Branch,
+		BaseSHA:  baseSHA,
+		CloneURI: cloneURI.String(), // Something like https://android.googlesource.com/platform/build
+		Pulls: []kube.Pull{
+			{
+				Number: change.Number,
+				Author: rev.Commit.Author.Name,
+				SHA:    change.CurrentRevision,
+				Ref:    rev.Ref,
+			},
+		},
+	}
+
+	type jobSpec struct {
+		spec   kube.ProwJobSpec
+		labels map[string]string
+	}
+
+	var jobSpecs []jobSpec
+
+	changedFiles := listChangedFiles(change)
+
 	switch change.Status {
 	case client.Merged:
 		postsubmits := c.ca.Config().Postsubmits[cloneURI.String()]
 		postsubmits = append(postsubmits, c.ca.Config().Postsubmits[cloneURI.Host+"/"+cloneURI.Path]...)
-		for _, spec := range postsubmits {
-			kr := kube.Refs{
-				Org:      cloneURI.Host,  // Something like android.googlesource.com
-				Repo:     change.Project, // Something like platform/build
-				BaseRef:  change.Branch,
-				BaseSHA:  baseSHA,
-				CloneURI: cloneURI.String(), // Something like https://android.googlesource.com/platform/build
-				Pulls: []kube.Pull{
-					{
-						Number: change.Number,
-						Author: rev.Commit.Author.Name,
-						SHA:    change.CurrentRevision,
-						Ref:    rev.Ref,
-					},
-				},
-			}
-
-			labels := make(map[string]string)
-			for k, v := range spec.Labels {
-				labels[k] = v
-			}
-			labels[client.GerritRevision] = change.CurrentRevision
-
-			pj := pjutil.NewProwJobWithAnnotation(
-				pjutil.PostsubmitSpec(spec, kr),
-				labels,
-				map[string]string{
-					client.GerritID:       change.ID,
-					client.GerritInstance: instance,
-				},
-			)
-
-			logger.WithFields(pjutil.ProwJobFields(&pj)).Infof("Creating a new postsubmit job for change %d.", change.Number)
-
-			if _, err := c.kc.CreateProwJob(pj); err != nil {
-				logger.WithError(err).Errorf("fail to create prowjob %v", pj)
-			} else {
-				triggeredJobs = append(triggeredJobs, spec.Name)
+		for _, postsubmit := range postsubmits {
+			if postsubmit.RunsAgainstChanges(changedFiles) {
+				jobSpecs = append(jobSpecs, jobSpec{
+					spec:   pjutil.PostsubmitSpec(postsubmit, kr),
+					labels: postsubmit.Labels,
+				})
 			}
 		}
 	case client.New:
 		presubmits := c.ca.Config().Presubmits[cloneURI.String()]
 		presubmits = append(presubmits, c.ca.Config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
-		for _, spec := range presubmits {
-			kr := kube.Refs{
-				Org:      cloneURI.Host,  // Something like android.googlesource.com
-				Repo:     change.Project, // Something like platform/build
-				BaseRef:  change.Branch,
-				BaseSHA:  baseSHA,
-				CloneURI: cloneURI.String(), // Something like https://android.googlesource.com/platform/build
-				Pulls: []kube.Pull{
-					{
-						Number: change.Number,
-						Author: rev.Commit.Author.Name,
-						SHA:    change.CurrentRevision,
-						Ref:    rev.Ref,
-					},
-				},
+		for _, presubmit := range presubmits {
+			if presubmit.RunsAgainstChanges(changedFiles) {
+				jobSpecs = append(jobSpecs, jobSpec{
+					spec:   pjutil.PresubmitSpec(presubmit, kr),
+					labels: presubmit.Labels,
+				})
 			}
+		}
+	}
 
-			// TODO(krzyzacy): Support AlwaysRun and RunIfChanged
+	annotations := map[string]string{
+		client.GerritID:       change.ID,
+		client.GerritInstance: instance,
+	}
 
-			labels := make(map[string]string)
-			for k, v := range spec.Labels {
-				labels[k] = v
-			}
-			labels[client.GerritRevision] = change.CurrentRevision
+	for _, jSpec := range jobSpecs {
+		labels := make(map[string]string)
+		for k, v := range jSpec.labels {
+			labels[k] = v
+		}
+		labels[client.GerritRevision] = change.CurrentRevision
 
-			pj := pjutil.NewProwJobWithAnnotation(
-				pjutil.PresubmitSpec(spec, kr),
-				labels,
-				map[string]string{
-					client.GerritID:       change.ID,
-					client.GerritInstance: instance,
-				},
-			)
-
-			logger.WithFields(pjutil.ProwJobFields(&pj)).Infof("Creating a new presubmit job for change %d.", change.Number)
-
-			if _, err := c.kc.CreateProwJob(pj); err != nil {
-				logger.WithError(err).Errorf("fail to create prowjob %v", pj)
-			} else {
-				triggeredJobs = append(triggeredJobs, spec.Name)
-			}
+		pj := pjutil.NewProwJobWithAnnotation(jSpec.spec, labels, annotations)
+		if _, err := c.kc.CreateProwJob(pj); err != nil {
+			logger.WithError(err).Errorf("fail to create prowjob %v", pj)
+		} else {
+			triggeredJobs = append(triggeredJobs, jSpec.spec.Job)
 		}
 	}
 
