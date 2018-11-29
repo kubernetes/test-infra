@@ -55,14 +55,6 @@ type commentPruner interface {
 	PruneComments(shouldPrune func(github.IssueComment) bool)
 }
 
-// func init() {
-// 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequestEvent, helpProvider)
-// }
-
-// func handlePullRequestEvent(pc plugins.PluginClient, pre github.PullRequestEvent) error {
-// 	return handleEvent(pc.Logger, pc.GitHubClient, pc.CommentPruner, &pre)
-// }
-
 func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	return &pluginhelp.PluginHelp{
 			Description: `The needs-rebase plugin manages the '` + labels.NeedsRebase + `' label by removing it from Pull Requests that are mergeable and adding it to those which are not.

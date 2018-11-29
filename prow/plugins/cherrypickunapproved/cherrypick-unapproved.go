@@ -65,8 +65,15 @@ type commentPruner interface {
 	PruneComments(shouldPrune func(github.IssueComment) bool)
 }
 
-func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
-	return handlePR(pc.GitHubClient, pc.Logger, &pr, pc.CommentPruner, pc.PluginConfig.CherryPickUnapproved.BranchRe, pc.PluginConfig.CherryPickUnapproved.Comment)
+func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
+	cp, err := pc.CommentPruner()
+	if err != nil {
+		return err
+	}
+	return handlePR(
+		pc.GitHubClient, pc.Logger, &pr, cp,
+		pc.PluginConfig.CherryPickUnapproved.BranchRe, pc.PluginConfig.CherryPickUnapproved.Comment,
+	)
 }
 
 func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, cp commentPruner, branchRe *regexp.Regexp, commentBody string) error {

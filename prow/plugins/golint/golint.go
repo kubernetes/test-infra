@@ -80,7 +80,7 @@ func minConfidence(g *plugins.Golint) float64 {
 	return *g.MinimumConfidence
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	return handle(minConfidence(pc.PluginConfig.Golint), pc.GitHubClient, pc.GitClient, pc.Logger, &e)
 }
 

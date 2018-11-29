@@ -50,15 +50,16 @@ func TestHook(t *testing.T) {
 	}
 	plugins.RegisterIssueHandler(
 		"baz",
-		func(pc plugins.PluginClient, ie github.IssueEvent) error {
+		func(pc plugins.Agent, ie github.IssueEvent) error {
 			called <- true
 			return nil
 		},
 		nil,
 	)
-	pa := &plugins.PluginAgent{}
+	pa := &plugins.ConfigAgent{}
 	pa.Set(&plugins.Configuration{Plugins: map[string][]string{"foo/bar": {"baz"}}})
 	ca := &config.Agent{}
+	clientAgent := &plugins.ClientAgent{}
 	metrics := NewMetrics()
 
 	getSecret := func() []byte {
@@ -66,6 +67,7 @@ func TestHook(t *testing.T) {
 	}
 
 	s := httptest.NewServer(&Server{
+		ClientAgent:    clientAgent,
 		Plugins:        pa,
 		ConfigAgent:    ca,
 		Metrics:        metrics,

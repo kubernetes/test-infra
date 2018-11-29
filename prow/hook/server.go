@@ -37,7 +37,8 @@ import (
 // Server implements http.Handler. It validates incoming GitHub webhooks and
 // then dispatches them to the appropriate plugins.
 type Server struct {
-	Plugins        *plugins.PluginAgent
+	ClientAgent    *plugins.ClientAgent
+	Plugins        *plugins.ConfigAgent
 	ConfigAgent    *config.Agent
 	TokenGenerator func() []byte
 	Metrics        *Metrics

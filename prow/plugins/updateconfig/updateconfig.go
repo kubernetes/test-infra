@@ -68,11 +68,11 @@ type kubeClient interface {
 	CreateConfigMap(content kube.ConfigMap) (kube.ConfigMap, error)
 }
 
-func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	return handle(pc.GitHubClient, pc.KubeClient, pc.Logger, pre, maps(pc))
 }
 
-func maps(pc plugins.PluginClient) map[string]plugins.ConfigMapSpec {
+func maps(pc plugins.Agent) map[string]plugins.ConfigMapSpec {
 	return pc.PluginConfig.ConfigUpdater.Maps
 }
 

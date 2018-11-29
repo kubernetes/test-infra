@@ -61,7 +61,7 @@ type stageClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
-func stageHandleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func stageHandleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, &e)
 }
 

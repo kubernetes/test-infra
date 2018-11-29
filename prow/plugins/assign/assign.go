@@ -72,7 +72,7 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	if e.Action != github.GenericCommentActionCreated {
 		return nil
 	}

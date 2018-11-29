@@ -71,7 +71,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		nil
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.SigMention.Re)
 }
 

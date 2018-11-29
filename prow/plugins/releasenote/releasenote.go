@@ -99,7 +99,7 @@ type githubClient interface {
 	BotName() (string, error)
 }
 
-func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
+func handleIssueComment(pc plugins.Agent, ic github.IssueCommentEvent) error {
 	return handleComment(pc.GitHubClient, pc.Logger, ic)
 }
 
@@ -191,7 +191,7 @@ func removeOtherLabels(remover func(string) error, label string, labelSet []stri
 	return nil
 }
 
-func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
 	return handlePR(pc.GitHubClient, pc.Logger, &pr)
 }
 

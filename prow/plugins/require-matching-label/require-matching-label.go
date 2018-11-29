@@ -98,7 +98,7 @@ type event struct {
 	currentLabels []github.Label
 }
 
-func handleIssue(pc plugins.PluginClient, ie github.IssueEvent) error {
+func handleIssue(pc plugins.Agent, ie github.IssueEvent) error {
 	if !handleIssueActions[ie.Action] {
 		return nil
 	}
@@ -110,10 +110,14 @@ func handleIssue(pc plugins.PluginClient, ie github.IssueEvent) error {
 		label:         ie.Label.Name, // This will be empty for non-label events.
 		currentLabels: ie.Issue.Labels,
 	}
-	return handle(pc.Logger, pc.GitHubClient, pc.CommentPruner, pc.PluginConfig.RequireMatchingLabel, e)
+	cp, err := pc.CommentPruner()
+	if err != nil {
+		return err
+	}
+	return handle(pc.Logger, pc.GitHubClient, cp, pc.PluginConfig.RequireMatchingLabel, e)
 }
 
-func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	if !handlePRActions[pre.Action] {
 		return nil
 	}
@@ -125,7 +129,11 @@ func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) err
 		author: pre.PullRequest.User.Login,
 		label:  pre.Label.Name, // This will be empty for non-label events.
 	}
-	return handle(pc.Logger, pc.GitHubClient, pc.CommentPruner, pc.PluginConfig.RequireMatchingLabel, e)
+	cp, err := pc.CommentPruner()
+	if err != nil {
+		return err
+	}
+	return handle(pc.Logger, pc.GitHubClient, cp, pc.PluginConfig.RequireMatchingLabel, e)
 }
 
 // matchingConfigs filters irrelevant RequireMtchingLabel configs from

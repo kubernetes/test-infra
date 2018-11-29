@@ -24,7 +24,7 @@ import (
 
 // Make sure that our plugins are valid.
 func TestPlugins(t *testing.T) {
-	pa := &plugins.PluginAgent{}
+	pa := &plugins.ConfigAgent{}
 	if err := pa.Load("../../plugins.yaml"); err != nil {
 		t.Fatalf("Could not load plugins: %v.", err)
 	}

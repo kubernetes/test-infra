@@ -22,11 +22,12 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"regexp"
+
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
-	"regexp"
 )
 
 const (
@@ -89,7 +90,7 @@ type gitHubClient interface {
 	ListStatuses(org, repo, ref string) ([]github.Status, error)
 }
 
-func handleStatusEvent(pc plugins.PluginClient, se github.StatusEvent) error {
+func handleStatusEvent(pc plugins.Agent, se github.StatusEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, se)
 }
 
@@ -189,7 +190,7 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 	return nil
 }
 
-func handleCommentEvent(pc plugins.PluginClient, ce github.GenericCommentEvent) error {
+func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
 	return handleComment(pc.GitHubClient, pc.Logger, &ce)
 }
 

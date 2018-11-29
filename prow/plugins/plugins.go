@@ -29,15 +29,15 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
-
 	"k8s.io/test-infra/prow/commentpruner"
+	"k8s.io/test-infra/prow/repoowners"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
-	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
 )
 
@@ -63,71 +63,70 @@ func HelpProviders() map[string]HelpProvider {
 	return pluginHelp
 }
 
-type IssueHandler func(PluginClient, github.IssueEvent) error
+type IssueHandler func(Agent, github.IssueEvent) error
 
 func RegisterIssueHandler(name string, fn IssueHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	issueHandlers[name] = fn
 }
 
-type IssueCommentHandler func(PluginClient, github.IssueCommentEvent) error
+type IssueCommentHandler func(Agent, github.IssueCommentEvent) error
 
 func RegisterIssueCommentHandler(name string, fn IssueCommentHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	issueCommentHandlers[name] = fn
 }
 
-type PullRequestHandler func(PluginClient, github.PullRequestEvent) error
+type PullRequestHandler func(Agent, github.PullRequestEvent) error
 
 func RegisterPullRequestHandler(name string, fn PullRequestHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	pullRequestHandlers[name] = fn
 }
 
-type StatusEventHandler func(PluginClient, github.StatusEvent) error
+type StatusEventHandler func(Agent, github.StatusEvent) error
 
 func RegisterStatusEventHandler(name string, fn StatusEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	statusEventHandlers[name] = fn
 }
 
-type PushEventHandler func(PluginClient, github.PushEvent) error
+type PushEventHandler func(Agent, github.PushEvent) error
 
 func RegisterPushEventHandler(name string, fn PushEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	pushEventHandlers[name] = fn
 }
 
-type ReviewEventHandler func(PluginClient, github.ReviewEvent) error
+type ReviewEventHandler func(Agent, github.ReviewEvent) error
 
 func RegisterReviewEventHandler(name string, fn ReviewEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	reviewEventHandlers[name] = fn
 }
 
-type ReviewCommentEventHandler func(PluginClient, github.ReviewCommentEvent) error
+type ReviewCommentEventHandler func(Agent, github.ReviewCommentEvent) error
 
 func RegisterReviewCommentEventHandler(name string, fn ReviewCommentEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	reviewCommentEventHandlers[name] = fn
 }
 
-type GenericCommentHandler func(PluginClient, github.GenericCommentEvent) error
+type GenericCommentHandler func(Agent, github.GenericCommentEvent) error
 
 func RegisterGenericCommentHandler(name string, fn GenericCommentHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	genericCommentHandlers[name] = fn
 }
 
-// PluginClient may be used concurrently, so each entry must be thread-safe.
-type PluginClient struct {
+// Agent may be used concurrently, so each entry must be thread-safe.
+type Agent struct {
 	GitHubClient *github.Client
 	KubeClient   *kube.Client
 	GitClient    *git.Client
 	SlackClient  *slack.Client
-	OwnersClient repoowners.Interface
 
-	CommentPruner *commentpruner.EventClient
+	OwnersClient *repoowners.Client
 
 	// Config provides information about the jobs
 	// that we know how to run for repos.
@@ -136,11 +135,52 @@ type PluginClient struct {
 	PluginConfig *Configuration
 
 	Logger *logrus.Entry
+
+	// may be nil if not initialized
+	commentPruner *commentpruner.EventClient
 }
 
-type PluginAgent struct {
-	PluginClient
+func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientAgent *ClientAgent, logger *logrus.Entry) Agent {
+	prowConfig := configAgent.Config()
+	pluginConfig := pluginConfigAgent.Config()
+	return Agent{
+		GitHubClient: clientAgent.GitHubClient,
+		KubeClient:   clientAgent.KubeClient,
+		GitClient:    clientAgent.GitClient,
+		SlackClient:  clientAgent.SlackClient,
+		OwnersClient: repoowners.NewClient(
+			clientAgent.GitClient, clientAgent.GitHubClient,
+			prowConfig, pluginConfig.MDYAMLEnabled,
+			pluginConfig.SkipCollaborators,
+		),
+		Config:       prowConfig,
+		PluginConfig: pluginConfig,
+		Logger:       logger,
+	}
+}
 
+func (a *Agent) InitializeCommentPruner(org, repo string, pr int) {
+	a.commentPruner = commentpruner.NewEventClient(
+		a.GitHubClient, a.Logger.WithField("client", "commentpruner"),
+		org, repo, pr,
+	)
+}
+
+func (a *Agent) CommentPruner() (*commentpruner.EventClient, error) {
+	if a.commentPruner == nil {
+		return nil, errors.New("comment pruner client never initialized")
+	}
+	return a.commentPruner, nil
+}
+
+type ClientAgent struct {
+	GitHubClient *github.Client
+	KubeClient   *kube.Client
+	GitClient    *git.Client
+	SlackClient  *slack.Client
+}
+
+type ConfigAgent struct {
 	mut           sync.Mutex
 	configuration *Configuration
 }
@@ -251,9 +291,9 @@ type Owners struct {
 	LabelsBlackList []string `json:"labels_blacklist,omitempty"`
 }
 
-func (pa *PluginAgent) MDYAMLEnabled(org, repo string) bool {
+func (c *Configuration) MDYAMLEnabled(org, repo string) bool {
 	full := fmt.Sprintf("%s/%s", org, repo)
-	for _, elem := range pa.Config().Owners.MDYAMLRepos {
+	for _, elem := range c.Owners.MDYAMLRepos {
 		if elem == org || elem == full {
 			return true
 		}
@@ -261,9 +301,9 @@ func (pa *PluginAgent) MDYAMLEnabled(org, repo string) bool {
 	return false
 }
 
-func (pa *PluginAgent) SkipCollaborators(org, repo string) bool {
+func (c *Configuration) SkipCollaborators(org, repo string) bool {
 	full := fmt.Sprintf("%s/%s", org, repo)
-	for _, elem := range pa.Config().Owners.SkipCollaborators {
+	for _, elem := range c.Owners.SkipCollaborators {
 		if elem == org || elem == full {
 			return true
 		}
@@ -683,7 +723,7 @@ The list of patch release managers for each release can be found [here](https://
 
 // Load attempts to load config from the path. It returns an error if either
 // the file can't be read or it contains an unknown plugin.
-func (pa *PluginAgent) Load(path string) error {
+func (pa *ConfigAgent) Load(path string) error {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
@@ -726,7 +766,7 @@ func (pa *PluginAgent) Load(path string) error {
 	return nil
 }
 
-func (pa *PluginAgent) Config() *Configuration {
+func (pa *ConfigAgent) Config() *Configuration {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 	return pa.configuration
@@ -896,7 +936,7 @@ func compileRegexpsAndDurations(pc *Configuration) error {
 // as a map from repositories to the list of plugins that are enabled on them.
 // Specifying simply an org name will also work, and will enable the plugin on
 // all repos in the org.
-func (pa *PluginAgent) Set(pc *Configuration) {
+func (pa *ConfigAgent) Set(pc *Configuration) {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 	pa.configuration = pc
@@ -904,7 +944,7 @@ func (pa *PluginAgent) Set(pc *Configuration) {
 
 // Start starts polling path for plugin config. If the first attempt fails,
 // then start returns the error. Future errors will halt updates but not stop.
-func (pa *PluginAgent) Start(path string) error {
+func (pa *ConfigAgent) Start(path string) error {
 	if err := pa.Load(path); err != nil {
 		return err
 	}
@@ -920,7 +960,7 @@ func (pa *PluginAgent) Start(path string) error {
 }
 
 // GenericCommentHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) GenericCommentHandlers(owner, repo string) map[string]GenericCommentHandler {
+func (pa *ConfigAgent) GenericCommentHandlers(owner, repo string) map[string]GenericCommentHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
@@ -934,7 +974,7 @@ func (pa *PluginAgent) GenericCommentHandlers(owner, repo string) map[string]Gen
 }
 
 // IssueHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) IssueHandlers(owner, repo string) map[string]IssueHandler {
+func (pa *ConfigAgent) IssueHandlers(owner, repo string) map[string]IssueHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
@@ -948,7 +988,7 @@ func (pa *PluginAgent) IssueHandlers(owner, repo string) map[string]IssueHandler
 }
 
 // IssueCommentHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) IssueCommentHandlers(owner, repo string) map[string]IssueCommentHandler {
+func (pa *ConfigAgent) IssueCommentHandlers(owner, repo string) map[string]IssueCommentHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
@@ -963,7 +1003,7 @@ func (pa *PluginAgent) IssueCommentHandlers(owner, repo string) map[string]Issue
 }
 
 // PullRequestHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) PullRequestHandlers(owner, repo string) map[string]PullRequestHandler {
+func (pa *ConfigAgent) PullRequestHandlers(owner, repo string) map[string]PullRequestHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
@@ -978,7 +1018,7 @@ func (pa *PluginAgent) PullRequestHandlers(owner, repo string) map[string]PullRe
 }
 
 // ReviewEventHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) ReviewEventHandlers(owner, repo string) map[string]ReviewEventHandler {
+func (pa *ConfigAgent) ReviewEventHandlers(owner, repo string) map[string]ReviewEventHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
@@ -993,7 +1033,7 @@ func (pa *PluginAgent) ReviewEventHandlers(owner, repo string) map[string]Review
 }
 
 // ReviewCommentEventHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) ReviewCommentEventHandlers(owner, repo string) map[string]ReviewCommentEventHandler {
+func (pa *ConfigAgent) ReviewCommentEventHandlers(owner, repo string) map[string]ReviewCommentEventHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
@@ -1008,7 +1048,7 @@ func (pa *PluginAgent) ReviewCommentEventHandlers(owner, repo string) map[string
 }
 
 // StatusEventHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) StatusEventHandlers(owner, repo string) map[string]StatusEventHandler {
+func (pa *ConfigAgent) StatusEventHandlers(owner, repo string) map[string]StatusEventHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
@@ -1023,7 +1063,7 @@ func (pa *PluginAgent) StatusEventHandlers(owner, repo string) map[string]Status
 }
 
 // PushEventHandlers returns a map of plugin names to handlers for the repo.
-func (pa *PluginAgent) PushEventHandlers(owner, repo string) map[string]PushEventHandler {
+func (pa *ConfigAgent) PushEventHandlers(owner, repo string) map[string]PushEventHandler {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 
@@ -1038,7 +1078,7 @@ func (pa *PluginAgent) PushEventHandlers(owner, repo string) map[string]PushEven
 }
 
 // getPlugins returns a list of plugins that are enabled on a given (org, repository).
-func (pa *PluginAgent) getPlugins(owner, repo string) []string {
+func (pa *ConfigAgent) getPlugins(owner, repo string) []string {
 	var plugins []string
 
 	fullName := fmt.Sprintf("%s/%s", owner, repo)
