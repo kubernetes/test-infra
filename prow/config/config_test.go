@@ -124,7 +124,7 @@ func TestSpyglassConfig(t *testing.T) {
 			spyglassConfig: `
 deck:
   spyglass:
-    size_limit: 500e6
+    size_limit: 500e+6
     viewers:
       "started.json|finished.json":
       - "metadata"
