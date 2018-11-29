@@ -11,6 +11,7 @@ load(
 container_bundle(
     name = "release",
     images = tags(
+        "artifact-uploader",
         "branchprotector",
         "clonerefs",
         "deck",
@@ -18,6 +19,7 @@ container_bundle(
         "gerrit",
         "crier",
         "grandmatriarch",
+        "gcsupload",
         "hook",
         "horologium",
         "initupload",
@@ -29,6 +31,10 @@ container_bundle(
         "tot",
     ) + image_tags(**{
         prefix("needs-rebase"): "//prow/external-plugins/needs-rebase:image",
+    }) + image_tags(**{
+        prefix("cherrypicker"): "//prow/external-plugins/cherrypicker:image",
+    }) + image_tags(**{
+        prefix("refresh"): "//prow/external-plugins/refresh:image",
     }),
     stamp = True,
 )
