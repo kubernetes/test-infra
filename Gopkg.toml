@@ -106,3 +106,8 @@ required = [
   name = "github.com/jteeuwen/go-bindata"
   # latest, unlikely to change as go-bindata is no longer maintained
   revision = "6025e8de665b31fa74ab1a66f2cddd8c0abf887e"
+
+[[constraint]]
+  name = "gopkg.in/yaml.v2"
+  # ensure we're using an updated version, as sigs.k8s.io/yaml depends on it
+  version = "2.2.1"
