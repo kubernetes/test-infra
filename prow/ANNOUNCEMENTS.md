@@ -30,6 +30,9 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *November 29, 2018* `plank` will no longer default jobs with `decorate: true`
+   to have `automountServiceAccountToken: false` in their PodSpec if unset, if the
+   job explicitly sets `serviceAccountName`
  - *November 26, 2018* job names must now match `^[A-Za-z0-9-._]+$`. Jobs that did not
    match this before were allowed but did not provide a good user experience.
  - *November 15, 2018* the `hook` service account now requires RBAC privileges
