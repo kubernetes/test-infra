@@ -254,6 +254,16 @@ test_groups:
   ignore_pending: true
 ```
 
+### Showing a metric in the cells
+Specify `short_text_metric` to display a custom numeric metric in the TestGrid cells. Example:
+
+```
+test_groups:
+- name: ci-kubernetes-coverage-conformance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-coverage-conformance
+  short_text_metric: coverage
+```
+
 ## Using the client
 
 Here are some quick tips and clarifications for using the TestGrid site!
