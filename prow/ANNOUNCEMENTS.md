@@ -1,8 +1,6 @@
 # Announcements
 
 New features added to each component:
- - *November 8, 2018* `plank` now defaults jobs with `decorate: true` to have 
-   `automountServiceAccountToken: false` in their PodSpec if unset.
  - *October 10, 2018* `tide` now supports the `-repo:foo/bar` tag in queries via
    the `excludedRepos` YAML field.
  - *October 3, 2018* `welcome` now supports a configurable message on a per-org,
@@ -38,6 +36,9 @@ used when updating deployments.
    to create `ConfigMaps` to support new functionality in the `updateconfig` plugin.
  - *November 9, 2018* Prow gerrit client label/annotations now have a `prow.k8s.io/` namespace
     prefix, if you have a gerrit deployment, please bump both cmd/gerrit and cmd/crier.
+ - *November 8, 2018* `plank` now defaults jobs with `decorate: true` to have
+   `automountServiceAccountToken: false` in their PodSpec if unset. Jobs that used the default
+   service account should explicitly set this field to maintain functionality.
  - *October 16, 2018* Prow tls-cert management has been migrated from kube-lego to cert-manager.
  - *October 12, 2018* Removed deprecated `buildId` environment variable from prow jobs. Use `BUILD_ID.`
  - *October 3, 2018* `-github-token-file` replaced with
