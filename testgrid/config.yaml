@@ -2493,6 +2493,9 @@ test_groups:
 - name: pull-cluster-api-provider-vsphere-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-vsphere-test
   num_columns_recent: 20
+- name: pull-cluster-api-provider-vsphere-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-vsphere-e2e
+  num_columns_recent: 20
 - name: pull-cluster-api-provider-openstack-make
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-openstack-make
   num_columns_recent: 20
@@ -3656,6 +3659,11 @@ dashboards:
   - name: pr-test
     description: Runs unit tests
     test_group_name: pull-cluster-api-provider-vsphere-test
+    alert_options:
+      alert_mail_to_addresses: cnx+clusterapi@vmware.com
+  - name: pr-e2e
+    description: Runs e2e tests
+    test_group_name: pull-cluster-api-provider-vsphere-e2e
     alert_options:
       alert_mail_to_addresses: cnx+clusterapi@vmware.com
 
@@ -5938,6 +5946,8 @@ dashboards:
   dashboard_tab:
   - name: pr-test
     test_group_name: pull-cluster-api-provider-vsphere-test
+  - name: pr-e2e
+    test_group_name: pull-cluster-api-provider-vsphere-e2e
 
 - name: sig-cluster-lifecycle-cluster-api-provider-openstack
   dashboard_tab:

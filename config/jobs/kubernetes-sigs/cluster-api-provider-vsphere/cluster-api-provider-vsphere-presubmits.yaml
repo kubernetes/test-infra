@@ -1,3 +1,63 @@
+presets:
+- labels:
+    preset-cluster-api-provider-vsphere-e2e-creds: "true"
+  env:
+  - name: JUMPHOST
+    valueFrom:
+      secretKeyRef:
+        name: clusterapi-provider-vsphere-ci-prow
+        key: jumphost
+  - name: GOVC_URL
+    valueFrom:
+      secretKeyRef:
+        name: clusterapi-provider-vsphere-ci-prow
+        key: vsphere-server
+  - name: GOVC_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: clusterapi-provider-vsphere-ci-prow
+        key: vsphere-username
+  - name: GOVC_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: clusterapi-provider-vsphere-ci-prow
+        key: vsphere-password
+  - name: TARGET_VM_SSH
+    valueFrom:
+      secretKeyRef:
+        name: clusterapi-provider-vsphere-ci-prow
+        key: target-vm-ssh
+  - name: TARGET_VM_SSH_PUB
+    valueFrom:
+      secretKeyRef:
+        name: clusterapi-provider-vsphere-ci-prow
+        key: target-vm-ssh-pub
+  - name: GCR_KEY_FILE
+    valueFrom:
+      secretKeyRef:
+        name: clusterapi-provider-vsphere-ci-prow
+        key: cluster-api-vsphere-gcr-service-account
+  volumeMounts:
+  - name: jumphost-key
+    mountPath: /root/ssh/.jumphost
+  - name: bootstrapper-key
+    mountPath: /root/ssh/.bootstrapper
+  volumes:
+  - name: jumphost-key
+    secret:
+      secretName: clusterapi-provider-vsphere-ci-prow
+      defaultMode: 256
+      items:
+      - key: jumphost-key
+        path: jumphost-key
+  - name: bootstrapper-key
+    secret:
+      secretName: clusterapi-provider-vsphere-ci-prow
+      defaultMode: 256
+      items:
+      - key: bootstrapper-key
+        path: bootstrapper-key
+
 presubmits:
   kubernetes-sigs/cluster-api-provider-vsphere:
   - name: pull-cluster-api-provider-vsphere-test
@@ -13,3 +73,29 @@ presubmits:
         - runner.sh
         args:
         - ./scripts/ci-test.sh
+  
+  - name: pull-cluster-api-provider-vsphere-e2e
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+      preset-cluster-api-provider-vsphere-e2e-creds: "true"
+    always_run: false
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    # TODO: move this to clusterapi-vsphere main repo 
+    extra_refs:
+    - org: figo
+      repo: cluster-api-provider-vsphere-ci
+      base_ref: master
+      path_alias: figo/cluster-api-provider-vsphere-ci
+    max_concurrency: 1
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181120-dea0825e3-master
+        command:
+        - runner.sh
+        args:
+        - ./../../figo/cluster-api-provider-vsphere-ci/prow/e2e.sh ${PULL_PULL_SHA}
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
