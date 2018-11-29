@@ -113,9 +113,11 @@ def component(cmd, *kinds, **kwargs):
       kwargs["kind"] = k
       kwargs["template"] = ":%s.yaml" % n
       object(**kwargs)
+      tgt = ":%s" % n
+      targets.setdefault("all",[]).append(tgt)
       if k != MULTI_KIND:
-        targets.setdefault(cmd,[]).append(":%s" % n)
-        targets.setdefault(k,[]).append(":%s" % n)
+        targets.setdefault(cmd,[]).append(tgt)
+        targets.setdefault(k,[]).append(tgt)
   return targets
 
 # release packages multiple components into a release.
@@ -125,11 +127,11 @@ def component(cmd, *kinds, **kwargs):
 #
 # Thus you can do things like:
 #   bazel run //prow/cluster:hook.apply  # Update all hook resources
-#   bazel run //prow/cluster:deployment.apply  # Update all deployments in prow
+#   bazel run //prow/cluster:staging.apply  # Update everything on staging prow
 #
 # Concretely, the following:
 #   release(
-#     "fancy",
+#     "staging",
 #     component("hook", "deployment", "service"),
 #     component("plank", "deployment"),
 #   )
@@ -138,19 +140,21 @@ def component(cmd, *kinds, **kwargs):
 #   k8s_objects(name = "plank", objects=[":plank_deployment"])
 #   k8s_objects(name = "deployment", objects=[":hook_deployment", ":plank_deployment"])
 #   k8s_objects(name = "service", objects=[":hook_service"])
-#   k8s_objects(name = "fancy", objects=[":hook", ":plank", ":deployment", ":service"])
+#   k8s_objects(name = "staging", objects=[":hook_deployment", ":hook_service", ":plank_deployment"])
 def release(name, *components):
   targets = {}
   objs = []
   for cs in components:
     for (n, ts) in cs.items():
-      targets.setdefault(n, []).extend(ts)
+      if n == "all":
+        objs.extend(ts)
+      else:
+        targets.setdefault(n, []).extend(ts)
   for (piece, ts) in targets.items():
     k8s_objects(
         name = piece,
         objects = ts,
     )
-    objs.append(":%s" % piece)
   k8s_objects(
       name = name,
       objects=objs,
