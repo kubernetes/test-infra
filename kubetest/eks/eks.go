@@ -26,13 +26,12 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
+	osexec "os/exec"
 	"syscall"
 	"time"
 
 	"github.com/aws/aws-k8s-tester/eksconfig"
 	"github.com/aws/aws-k8s-tester/ekstester"
-
 	"k8s.io/test-infra/kubetest/process"
 	"k8s.io/test-infra/kubetest/util"
 )
@@ -102,7 +101,7 @@ func (dp *deployer) Up() (err error) {
 	// "create cluster" command outputs cluster information
 	// in the configuration file (e.g. VPC ID, ALB DNS names, etc.)
 	// this needs be reloaded for other deployer method calls
-	createCmd := exec.Command(
+	createCmd := osexec.Command(
 		dp.cfg.AWSK8sTesterPath,
 		"eks",
 		"--path="+dp.cfg.ConfigPath,
@@ -130,7 +129,7 @@ func (dp *deployer) Down() (err error) {
 	if _, err = dp.LoadConfig(); err != nil {
 		return err
 	}
-	_, err = dp.ctrl.Output(exec.Command(
+	_, err = dp.ctrl.Output(osexec.Command(
 		dp.cfg.AWSK8sTesterPath,
 		"eks",
 		"--path="+dp.cfg.ConfigPath,
@@ -146,7 +145,7 @@ func (dp *deployer) IsUp() (err error) {
 	if _, err = dp.LoadConfig(); err != nil {
 		return err
 	}
-	_, err = dp.ctrl.Output(exec.Command(
+	_, err = dp.ctrl.Output(osexec.Command(
 		dp.cfg.AWSK8sTesterPath,
 		"eks",
 		"--path="+dp.cfg.ConfigPath,
@@ -187,7 +186,7 @@ func (dp *deployer) GetWorkerNodeLogs() (err error) {
 	if _, err = dp.LoadConfig(); err != nil {
 		return err
 	}
-	_, err = dp.ctrl.Output(exec.Command(
+	_, err = dp.ctrl.Output(osexec.Command(
 		dp.cfg.AWSK8sTesterPath,
 		"eks",
 		"--path="+dp.cfg.ConfigPath,
@@ -204,7 +203,7 @@ func (dp *deployer) DumpClusterLogs(artifactDir, _ string) (err error) {
 	if _, err = dp.LoadConfig(); err != nil {
 		return err
 	}
-	_, err = dp.ctrl.Output(exec.Command(
+	_, err = dp.ctrl.Output(osexec.Command(
 		dp.cfg.AWSK8sTesterPath,
 		"eks",
 		"--path="+dp.cfg.ConfigPath,
@@ -213,7 +212,7 @@ func (dp *deployer) DumpClusterLogs(artifactDir, _ string) (err error) {
 	if err != nil {
 		return err
 	}
-	_, err = dp.ctrl.Output(exec.Command(
+	_, err = dp.ctrl.Output(osexec.Command(
 		dp.cfg.AWSK8sTesterPath,
 		"eks",
 		"--path="+dp.cfg.ConfigPath,
@@ -221,6 +220,15 @@ func (dp *deployer) DumpClusterLogs(artifactDir, _ string) (err error) {
 		artifactDir,
 	))
 	return err
+}
+
+// KubectlCommand returns "kubectl" command object for API reachability tests.
+func (dp *deployer) KubectlCommand() (*osexec.Cmd, error) {
+	// reload configuration from disk to read the latest configuration
+	if _, err := dp.LoadConfig(); err != nil {
+		return nil, err
+	}
+	return osexec.Command(dp.cfg.KubectlPath, "--kubeconfig="+dp.cfg.KubeConfigPath), nil
 }
 
 // Stop stops ongoing operations.
