@@ -7,7 +7,6 @@ package main
 import (
 	"context"
 	"flag"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -103,12 +102,12 @@ func (cmd *initCommand) Run(ctx *dep.Ctx, args []string) error {
 		ctx.Out.Println("Getting direct dependencies...")
 	}
 
-	ptree, directDeps, err := p.GetDirectDependencyNames(sm)
+	directDeps, err := p.GetDirectDependencyNames(sm)
 	if err != nil {
 		return errors.Wrap(err, "init failed: unable to determine direct dependencies")
 	}
 	if ctx.Verbose {
-		ctx.Out.Printf("Checked %d directories for packages.\nFound %d direct dependencies.\n", len(ptree.Packages), len(directDeps))
+		ctx.Out.Printf("Checked %d directories for packages.\nFound %d direct dependencies.\n", len(p.RootPackageTree.Packages), len(directDeps))
 	}
 
 	// Initialize with imported data, then fill in the gaps using the GOPATH
@@ -129,12 +128,12 @@ func (cmd *initCommand) Run(ctx *dep.Ctx, args []string) error {
 		}
 	}
 
-	rootAnalyzer.skipTools = true // Don't import external config during solve for now
-	copyLock := *p.Lock           // Copy lock before solving. Use this to separate new lock projects from solved lock
+	rootAnalyzer.skipTools = importDuringSolve()
+	copyLock := *p.Lock // Copy lock before solving. Use this to separate new lock projects from solved lock
 
 	params := gps.SolveParameters{
 		RootDir:         root,
-		RootPackageTree: ptree,
+		RootPackageTree: p.RootPackageTree,
 		Manifest:        p.Manifest,
 		Lock:            p.Lock,
 		ProjectAnalyzer: rootAnalyzer,
@@ -158,18 +157,9 @@ func (cmd *initCommand) Run(ctx *dep.Ctx, args []string) error {
 		err = handleAllTheFailuresOfTheWorld(err)
 		return errors.Wrap(err, "init failed: unable to solve the dependency graph")
 	}
-	p.Lock = dep.LockFromSolution(soln)
+	p.Lock = dep.LockFromSolution(soln, p.Manifest.PruneOptions)
 
 	rootAnalyzer.FinalizeRootManifestAndLock(p.Manifest, p.Lock, copyLock)
-
-	// Run gps.Prepare with appropriate constraint solutions from solve run
-	// to generate the final lock memo.
-	s, err = gps.Prepare(params, sm)
-	if err != nil {
-		return errors.Wrap(err, "init failed: unable to recalculate the lock digest")
-	}
-
-	p.Lock.SolveMeta.InputsDigest = s.HashInputs()
 
 	// Pass timestamp (yyyyMMddHHmmss format) as suffix to backup name.
 	vendorbak, err := dep.BackupVendor(filepath.Join(root, "vendor"), time.Now().Format("20060102150405"))
@@ -180,14 +170,14 @@ func (cmd *initCommand) Run(ctx *dep.Ctx, args []string) error {
 		ctx.Err.Printf("Old vendor backed up to %v", vendorbak)
 	}
 
-	sw, err := dep.NewSafeWriter(p.Manifest, nil, p.Lock, dep.VendorAlways, p.Manifest.PruneOptions)
+	sw, err := dep.NewSafeWriter(p.Manifest, nil, p.Lock, dep.VendorAlways, p.Manifest.PruneOptions, nil)
 	if err != nil {
 		return errors.Wrap(err, "init failed: unable to create a SafeWriter")
 	}
 
-	logger := ctx.Err
-	if !ctx.Verbose {
-		logger = log.New(ioutil.Discard, "", 0)
+	var logger *log.Logger
+	if ctx.Verbose {
+		logger = ctx.Err
 	}
 	if err := sw.Write(root, sm, !cmd.noExamples, logger); err != nil {
 		return errors.Wrap(err, "init failed: unable to write the manifest, lock and vendor directory to disk")

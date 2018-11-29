@@ -9,8 +9,13 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
+	"time"
 
 	"github.com/golang/dep/gps"
+	"github.com/golang/dep/gps/paths"
+	"github.com/golang/dep/gps/pkgtree"
+	"github.com/golang/dep/gps/verify"
 	"github.com/golang/dep/internal/fs"
 	"github.com/pkg/errors"
 )
@@ -34,13 +39,15 @@ import (
 //	}
 //
 type Ctx struct {
-	WorkingDir     string      // Where to execute.
-	GOPATH         string      // Selected Go path, containing WorkingDir.
-	GOPATHs        []string    // Other Go paths.
-	Out, Err       *log.Logger // Required loggers.
-	Verbose        bool        // Enables more verbose logging.
-	DisableLocking bool        // When set, no lock file will be created to protect against simultaneous dep processes.
-	Cachedir       string      // Cache directory loaded from environment.
+	WorkingDir     string        // Where to execute.
+	GOPATH         string        // Selected Go path, containing WorkingDir.
+	GOPATHs        []string      // Other Go paths.
+	ExplicitRoot   string        // An explicitly-set path to use as the project root.
+	Out, Err       *log.Logger   // Required loggers.
+	Verbose        bool          // Enables more verbose logging.
+	DisableLocking bool          // When set, no lock file will be created to protect against simultaneous dep processes.
+	Cachedir       string        // Cache directory loaded from environment.
+	CacheAge       time.Duration // Maximum valid age of cached source data. <=0: Don't cache.
 }
 
 // SetPaths sets the WorkingDir and GOPATHs fields. If GOPATHs is empty, then
@@ -60,6 +67,8 @@ func (c *Ctx) SetPaths(wd string, GOPATHs ...string) error {
 	}
 
 	c.GOPATHs = append(c.GOPATHs, GOPATHs...)
+
+	c.ExplicitRoot = os.Getenv("DEPPROJECTROOT")
 
 	return nil
 }
@@ -99,6 +108,7 @@ func (c *Ctx) SourceManager() (*gps.SourceMgr, error) {
 	}
 
 	return gps.NewSourceManager(gps.SourceManagerConfig{
+		CacheAge:       c.CacheAge,
 		Cachedir:       cachedir,
 		Logger:         c.Out,
 		DisableLocking: c.DisableLocking,
@@ -134,11 +144,15 @@ func (c *Ctx) LoadProject() (*Project, error) {
 		return nil, err
 	}
 
-	ip, err := c.ImportForAbs(p.AbsRoot)
-	if err != nil {
-		return nil, errors.Wrap(err, "root project import")
+	if c.ExplicitRoot != "" {
+		p.ImportRoot = gps.ProjectRoot(c.ExplicitRoot)
+	} else {
+		ip, err := c.ImportForAbs(p.AbsRoot)
+		if err != nil {
+			return nil, errors.Wrap(err, "root project import")
+		}
+		p.ImportRoot = gps.ProjectRoot(ip)
 	}
-	p.ImportRoot = gps.ProjectRoot(ip)
 
 	mp := filepath.Join(p.AbsRoot, ManifestName)
 	mf, err := os.Open(mp)
@@ -161,24 +175,69 @@ func (c *Ctx) LoadProject() (*Project, error) {
 		return nil, errors.Wrapf(err, "error while parsing %s", mp)
 	}
 
+	// Parse in the root package tree.
+	ptree, err := p.parseRootPackageTree()
+	if err != nil {
+		return nil, err
+	}
+
 	lp := filepath.Join(p.AbsRoot, LockName)
 	lf, err := os.Open(lp)
-	if err != nil {
-		if os.IsNotExist(err) {
-			// It's fine for the lock not to exist
-			return p, nil
-		}
-		// But if a lock does exist and we can't open it, that's a problem
-		return nil, errors.Wrapf(err, "could not open %s", lp)
-	}
-	defer lf.Close()
+	if err == nil {
+		defer lf.Close()
 
-	p.Lock, err = readLock(lf)
-	if err != nil {
-		return nil, errors.Wrapf(err, "error while parsing %s", lp)
+		p.Lock, err = readLock(lf)
+		if err != nil {
+			return nil, errors.Wrapf(err, "error while parsing %s", lp)
+		}
+
+		// If there's a current Lock, apply the input and pruneopt changes that we
+		// can know without solving.
+		if p.Lock != nil {
+			p.ChangedLock = p.Lock.dup()
+			p.ChangedLock.SolveMeta.InputImports = externalImportList(ptree, p.Manifest)
+
+			for k, lp := range p.ChangedLock.Projects() {
+				vp := lp.(verify.VerifiableProject)
+				vp.PruneOpts = p.Manifest.PruneOptions.PruneOptionsFor(lp.Ident().ProjectRoot)
+				p.ChangedLock.P[k] = vp
+			}
+		}
+
+	} else if !os.IsNotExist(err) {
+		// It's fine for the lock not to exist, but if a file does exist and we
+		// can't open it, that's a problem.
+		return nil, errors.Wrapf(err, "could not open %s", lp)
 	}
 
 	return p, nil
+}
+
+func externalImportList(rpt pkgtree.PackageTree, m gps.RootManifest) []string {
+	rm, _ := rpt.ToReachMap(true, true, false, m.IgnoredPackages())
+	reach := rm.FlattenFn(paths.IsStandardImportPath)
+	req := m.RequiredPackages()
+
+	// If there are any requires, slide them into the reach list, as well.
+	if len(req) > 0 {
+		// Make a map of imports that are both in the import path list and the
+		// required list to avoid duplication.
+		skip := make(map[string]bool, len(req))
+		for _, r := range reach {
+			if req[r] {
+				skip[r] = true
+			}
+		}
+
+		for r := range req {
+			if !skip[r] {
+				reach = append(reach, r)
+			}
+		}
+	}
+
+	sort.Strings(reach)
+	return reach
 }
 
 // DetectProjectGOPATH attempt to find the GOPATH containing the project.
@@ -199,9 +258,14 @@ func (c *Ctx) DetectProjectGOPATH(p *Project) (string, error) {
 		return "", errors.New("project AbsRoot and ResolvedAbsRoot must be set to detect GOPATH")
 	}
 
+	if c.ExplicitRoot != "" {
+		// If an explicit root is set, just use the first GOPATH in the list.
+		return c.GOPATHs[0], nil
+	}
+
 	pGOPATH, perr := c.detectGOPATH(p.AbsRoot)
 
-	// If p.AbsRoot is a not symlink, attempt to detect GOPATH for p.AbsRoot only.
+	// If p.AbsRoot is a not a symlink, attempt to detect GOPATH for p.AbsRoot only.
 	if equal, _ := fs.EquivalentPaths(p.AbsRoot, p.ResolvedAbsRoot); equal {
 		return pGOPATH, perr
 	}
@@ -238,7 +302,7 @@ func (c *Ctx) detectGOPATH(path string) (string, error) {
 			return "", errors.Wrap(err, "failed to detect GOPATH")
 		}
 		if isPrefix {
-			return gp, nil
+			return filepath.Clean(gp), nil
 		}
 	}
 	return "", errors.Errorf("%s is not within a known GOPATH/src", path)

@@ -34,10 +34,10 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/NYTimes/gziphandler"
-	"github.com/ghodss/yaml"
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
+	"sigs.k8s.io/yaml"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"

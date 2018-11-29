@@ -16,8 +16,7 @@ import (
 // sourceBridge is an adapter to SourceManagers that tailor operations for a
 // single solve run.
 type sourceBridge interface {
-	// sourceBridge includes all the methods in the SourceManager interface except
-	// for Release().
+	// sourceBridge includes many methods from the SourceManager interface.
 	SourceExists(ProjectIdentifier) (bool, error)
 	SyncSourceFor(ProjectIdentifier) error
 	RevisionPresentIn(ProjectIdentifier, Revision) (bool, error)
@@ -26,14 +25,7 @@ type sourceBridge interface {
 	ExportProject(ProjectIdentifier, Version, string) error
 	DeduceProjectRoot(ip string) (ProjectRoot, error)
 
-	//sourceExists(ProjectIdentifier) (bool, error)
-	//syncSourceFor(ProjectIdentifier) error
 	listVersions(ProjectIdentifier) ([]Version, error)
-	//revisionPresentIn(ProjectIdentifier, Revision) (bool, error)
-	//listPackages(ProjectIdentifier, Version) (pkgtree.PackageTree, error)
-	//getManifestAndLock(ProjectIdentifier, Version, ProjectAnalyzer) (Manifest, Lock, error)
-	//exportProject(ProjectIdentifier, Version, string) error
-	//deduceProjectRoot(ip string) (ProjectRoot, error)
 	verifyRootDir(path string) error
 	vendorCodeExists(ProjectIdentifier) (bool, error)
 	breakLock()
@@ -203,8 +195,8 @@ func (b *bridge) breakLock() {
 	}
 
 	for _, lp := range b.s.rd.rl.Projects() {
-		if _, is := b.s.sel.selected(lp.pi); !is {
-			pi, v := lp.pi, lp.Version()
+		if _, is := b.s.sel.selected(lp.Ident()); !is {
+			pi, v := lp.Ident(), lp.Version()
 			go func() {
 				// Sync first
 				b.sm.SyncSourceFor(pi)

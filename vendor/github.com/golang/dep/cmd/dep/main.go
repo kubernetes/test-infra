@@ -14,8 +14,11 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
+	"runtime/pprof"
 	"strings"
 	"text/tabwriter"
+	"time"
 
 	"github.com/golang/dep"
 	"github.com/golang/dep/internal/fs"
@@ -36,20 +39,54 @@ type command interface {
 	Run(*dep.Ctx, []string) error
 }
 
+// Helper type so that commands can fail without generating any additional
+// ouptut.
+type silentfail struct{}
+
+func (silentfail) Error() string {
+	return ""
+}
+
 func main() {
+	p := &profile{}
+
+	// Redefining Usage() customizes the output of `dep -h`
+	flag.CommandLine.Usage = func() {
+		fprintUsage(os.Stderr)
+	}
+
+	flag.StringVar(&p.cpuProfile, "cpuprofile", "", "Writes a CPU profile to the specified file before exiting.")
+	flag.StringVar(&p.memProfile, "memprofile", "", "Writes a memory profile to the specified file before exiting.")
+	flag.IntVar(&p.memProfileRate, "memprofilerate", 0, "Enable more precise memory profiles by setting runtime.MemProfileRate.")
+	flag.StringVar(&p.mutexProfile, "mutexprofile", "", "Writes a mutex profile to the specified file before exiting.")
+	flag.IntVar(&p.mutexProfileFraction, "mutexprofilefraction", 0, "Enable more precise mutex profiles by runtime.SetMutexProfileFraction.")
+	flag.Parse()
+
 	wd, err := os.Getwd()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to get working directory", err)
 		os.Exit(1)
 	}
+
+	args := append([]string{os.Args[0]}, flag.Args()...)
 	c := &Config{
-		Args:       os.Args,
+		Args:       args,
 		Stdout:     os.Stdout,
 		Stderr:     os.Stderr,
 		WorkingDir: wd,
 		Env:        os.Environ(),
 	}
-	os.Exit(c.Run())
+
+	if err := p.start(); err != nil {
+		fmt.Fprintf(os.Stderr, "failed to profile: %v\n", err)
+		os.Exit(1)
+	}
+	exit := c.Run()
+	if err := p.finish(); err != nil {
+		fmt.Fprintf(os.Stderr, "failed to finish the profile: %v\n", err)
+		os.Exit(1)
+	}
+	os.Exit(exit)
 }
 
 // A Config specifies a full configuration for a dep execution.
@@ -62,62 +99,11 @@ type Config struct {
 
 // Run executes a configuration and returns an exit code.
 func (c *Config) Run() int {
-	// Build the list of available commands.
-	commands := [...]command{
-		&initCommand{},
-		&statusCommand{},
-		&ensureCommand{},
-		&pruneCommand{},
-		&hashinCommand{},
-		&versionCommand{},
-	}
-
-	examples := [...][2]string{
-		{
-			"dep init",
-			"set up a new project",
-		},
-		{
-			"dep ensure",
-			"install the project's dependencies",
-		},
-		{
-			"dep ensure -update",
-			"update the locked versions of all dependencies",
-		},
-		{
-			"dep ensure -add github.com/pkg/errors",
-			"add a dependency to the project",
-		},
-	}
-
-	usage := func(w io.Writer) {
-		fmt.Fprintln(w, "Dep is a tool for managing dependencies for Go projects")
-		fmt.Fprintln(w)
-		fmt.Fprintln(w, "Usage: \"dep [command]\"")
-		fmt.Fprintln(w)
-		fmt.Fprintln(w, "Commands:")
-		fmt.Fprintln(w)
-		tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
-		for _, cmd := range commands {
-			if !cmd.Hidden() {
-				fmt.Fprintf(tw, "\t%s\t%s\n", cmd.Name(), cmd.ShortHelp())
-			}
-		}
-		tw.Flush()
-		fmt.Fprintln(w)
-		fmt.Fprintln(w, "Examples:")
-		for _, example := range examples {
-			fmt.Fprintf(tw, "\t%s\t%s\n", example[0], example[1])
-		}
-		tw.Flush()
-		fmt.Fprintln(w)
-		fmt.Fprintln(w, "Use \"dep help [command]\" for more information about a command.")
-	}
+	commands := commandList()
 
 	cmdName, printCommandHelp, exit := parseArgs(c.Args)
 	if exit {
-		usage(c.Stderr)
+		fprintUsage(c.Stderr)
 		return errorExitCode
 	}
 
@@ -132,7 +118,7 @@ func (c *Config) Run() int {
 		fmt.Println()
 
 		var cw io.Writer = &commentWriter{W: c.Stdout}
-		usage(cw)
+		fprintUsage(cw)
 		for _, cmd := range commands {
 			if !cmd.Hidden() {
 				fmt.Fprintln(cw)
@@ -161,7 +147,12 @@ func (c *Config) Run() int {
 			// Build flag set with global flags in there.
 			flags := flag.NewFlagSet(cmdName, flag.ContinueOnError)
 			flags.SetOutput(c.Stderr)
-			verbose := flags.Bool("v", false, "enable verbose logging")
+
+			var verbose bool
+			// No verbose for verify
+			if cmdName != "check" {
+				flags.BoolVar(&verbose, "v", false, "enable verbose logging")
+			}
 
 			// Register the subcommand flags in there, too.
 			cmd.Register(flags)
@@ -194,13 +185,24 @@ func (c *Config) Run() int {
 				}
 			}
 
+			var cacheAge time.Duration
+			if env := getEnv(c.Env, "DEPCACHEAGE"); env != "" {
+				var err error
+				cacheAge, err = time.ParseDuration(env)
+				if err != nil {
+					errLogger.Printf("dep: failed to parse $DEPCACHEAGE duration %q: %v\n", env, err)
+					return errorExitCode
+				}
+			}
+
 			// Set up dep context.
 			ctx := &dep.Ctx{
 				Out:            outLogger,
 				Err:            errLogger,
-				Verbose:        *verbose,
+				Verbose:        verbose,
 				DisableLocking: getEnv(c.Env, "DEPNOLOCK") != "",
 				Cachedir:       cachedir,
+				CacheAge:       cacheAge,
 			}
 
 			GOPATHS := filepath.SplitList(getEnv(c.Env, "GOPATH"))
@@ -208,7 +210,9 @@ func (c *Config) Run() int {
 
 			// Run the command with the post-flag-processing args.
 			if err := cmd.Run(ctx, flags.Args()); err != nil {
-				errLogger.Printf("%v\n", err)
+				if _, ok := err.(silentfail); !ok {
+					errLogger.Printf("%v\n", err)
+				}
 				return errorExitCode
 			}
 
@@ -218,8 +222,68 @@ func (c *Config) Run() int {
 	}
 
 	errLogger.Printf("dep: %s: no such command\n", cmdName)
-	usage(c.Stderr)
+	fprintUsage(c.Stderr)
 	return errorExitCode
+}
+
+// Build the list of available commands.
+//
+// Note that these commands are mutable, but parts of this file
+// use them for their immutable characteristics (help strings, etc).
+func commandList() []command {
+	return []command{
+		&initCommand{},
+		&statusCommand{},
+		&ensureCommand{},
+		&pruneCommand{},
+		&versionCommand{},
+		&checkCommand{},
+	}
+}
+
+var examples = [...][2]string{
+	{
+		"dep init",
+		"set up a new project",
+	},
+	{
+		"dep ensure",
+		"install the project's dependencies",
+	},
+	{
+		"dep ensure -update",
+		"update the locked versions of all dependencies",
+	},
+	{
+		"dep ensure -add github.com/pkg/errors",
+		"add a dependency to the project",
+	},
+}
+
+func fprintUsage(w io.Writer) {
+	fmt.Fprintln(w, "Dep is a tool for managing dependencies for Go projects")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Usage: \"dep [command]\"")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Commands:")
+	fmt.Fprintln(w)
+	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
+
+	commands := commandList()
+	for _, cmd := range commands {
+		if !cmd.Hidden() {
+			fmt.Fprintf(tw, "\t%s\t%s\n", cmd.Name(), cmd.ShortHelp())
+		}
+	}
+	tw.Flush()
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Examples:")
+	for _, example := range examples {
+		fmt.Fprintf(tw, "\t%s\t%s\n", example[0], example[1])
+	}
+	tw.Flush()
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Use \"dep help [command]\" for more information about a command.")
 }
 
 func resetUsage(logger *log.Logger, fs *flag.FlagSet, name, args, longHelp string) {
@@ -326,4 +390,67 @@ func (c *commentWriter) Write(p []byte) (int, error) {
 		}
 	}
 	return len(p), nil
+}
+
+type profile struct {
+	cpuProfile string
+
+	memProfile     string
+	memProfileRate int
+
+	mutexProfile         string
+	mutexProfileFraction int
+
+	// TODO(jbd): Add block profile and -trace.
+
+	f *os.File // file to write the profiling output to
+}
+
+func (p *profile) start() error {
+	switch {
+	case p.cpuProfile != "":
+		if err := p.createOutput(p.cpuProfile); err != nil {
+			return err
+		}
+		return pprof.StartCPUProfile(p.f)
+	case p.memProfile != "":
+		if p.memProfileRate > 0 {
+			runtime.MemProfileRate = p.memProfileRate
+		}
+		return p.createOutput(p.memProfile)
+	case p.mutexProfile != "":
+		if p.mutexProfileFraction > 0 {
+			runtime.SetMutexProfileFraction(p.mutexProfileFraction)
+		}
+		return p.createOutput(p.mutexProfile)
+	}
+	return nil
+}
+
+func (p *profile) finish() error {
+	if p.f == nil {
+		return nil
+	}
+	switch {
+	case p.cpuProfile != "":
+		pprof.StopCPUProfile()
+	case p.memProfile != "":
+		if err := pprof.WriteHeapProfile(p.f); err != nil {
+			return err
+		}
+	case p.mutexProfile != "":
+		if err := pprof.Lookup("mutex").WriteTo(p.f, 2); err != nil {
+			return err
+		}
+	}
+	return p.f.Close()
+}
+
+func (p *profile) createOutput(name string) error {
+	f, err := os.Create(name)
+	if err != nil {
+		return err
+	}
+	p.f = f
+	return nil
 }

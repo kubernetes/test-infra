@@ -14,7 +14,6 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
-	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -90,7 +89,7 @@ func ListPackages(fileRoot, importRoot string) (PackageTree, error) {
 		// We don't skip _*, or testdata dirs because, while it may be poor
 		// form, importing them is not a compilation error.
 		switch fi.Name() {
-		case "vendor", "Godeps":
+		case "vendor":
 			return filepath.SkipDir
 		}
 
@@ -350,7 +349,7 @@ func findImportComment(pkgName *ast.Ident, c *ast.CommentGroup) string {
 			return ""
 		}
 		text = text[:end]
-		if bytes.IndexByte(text, '\n') > 0 {
+		if bytes.IndexByte(text, '\n') >= 0 {
 			// multiline comment, can't be an import comment
 			return ""
 		}
@@ -607,38 +606,28 @@ func (t PackageTree) ToReachMap(main, tests, backprop bool, ignore *IgnoredRules
 // This is really only useful as a defensive measure to prevent external state
 // mutations.
 func (t PackageTree) Copy() PackageTree {
-	t2 := PackageTree{
+	return PackageTree{
 		ImportRoot: t.ImportRoot,
-		Packages:   make(map[string]PackageOrErr, len(t.Packages)),
+		Packages:   CopyPackages(t.Packages, nil),
 	}
+}
 
+// CopyPackages returns a deep copy of p, optionally modifying the entries with fn.
+func CopyPackages(p map[string]PackageOrErr, fn func(string, PackageOrErr) (string, PackageOrErr)) map[string]PackageOrErr {
+	p2 := make(map[string]PackageOrErr, len(p))
 	// Walk through and count up the total number of string slice elements we'll
 	// need, then allocate them all at once.
 	strcount := 0
-	for _, poe := range t.Packages {
+	for _, poe := range p {
 		strcount = strcount + len(poe.P.Imports) + len(poe.P.TestImports)
 	}
 	pool := make([]string, strcount)
 
-	for path, poe := range t.Packages {
+	for path, poe := range p {
 		var poe2 PackageOrErr
 
 		if poe.Err != nil {
-			refl := reflect.ValueOf(poe.Err)
-			switch refl.Kind() {
-			case reflect.Ptr:
-				poe2.Err = reflect.New(refl.Elem().Type()).Interface().(error)
-			case reflect.Slice:
-				err2 := reflect.MakeSlice(refl.Type(), refl.Len(), refl.Len())
-				reflect.Copy(err2, refl)
-				poe2.Err = err2.Interface().(error)
-			default:
-				// This shouldn't be too onerous to maintain - the set of errors
-				// we can get here is restricted by what ListPackages() allows.
-				// So just panic if one is outside the expected kinds of ptr or
-				// slice, as that would mean we've missed something notable.
-				panic(fmt.Sprintf("unrecognized PackgeOrErr error type, %T", poe.Err))
-			}
+			poe2.Err = poe.Err
 		} else {
 			poe2.P = poe.P
 			il, til := len(poe.P.Imports), len(poe.P.TestImports)
@@ -651,11 +640,13 @@ func (t PackageTree) Copy() PackageTree {
 				copy(poe2.P.TestImports, poe.P.TestImports)
 			}
 		}
-
-		t2.Packages[path] = poe2
+		if fn != nil {
+			path, poe2 = fn(path, poe2)
+		}
+		p2[path] = poe2
 	}
 
-	return t2
+	return p2
 }
 
 // TrimHiddenPackages returns a new PackageTree where packages that are ignored,
