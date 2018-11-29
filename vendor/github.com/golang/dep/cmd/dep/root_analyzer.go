@@ -9,12 +9,11 @@ import (
 	"io/ioutil"
 	"log"
 
-	"golang.org/x/sync/errgroup"
-
 	"github.com/golang/dep"
 	"github.com/golang/dep/gps"
 	fb "github.com/golang/dep/internal/feedback"
 	"github.com/golang/dep/internal/importers"
+	"golang.org/x/sync/errgroup"
 )
 
 // rootAnalyzer supplies manifest/lock data from both dep and external tool's
@@ -168,6 +167,9 @@ func (a *rootAnalyzer) DeriveManifestAndLock(dir string, pr gps.ProjectRoot) (gp
 func (a *rootAnalyzer) FinalizeRootManifestAndLock(m *dep.Manifest, l *dep.Lock, ol dep.Lock) {
 	// Iterate through the new projects in solved lock and add them to manifest
 	// if they are direct deps and log feedback for all the new projects.
+	diff := fb.DiffLocks(&ol, l)
+	bi := fb.NewBrokenImportFeedback(diff)
+	bi.LogFeedback(a.ctx.Err)
 	for _, y := range l.Projects() {
 		var f *fb.ConstraintFeedback
 		pr := y.Ident().ProjectRoot

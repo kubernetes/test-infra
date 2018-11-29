@@ -5,7 +5,6 @@
 package main
 
 import (
-	"bytes"
 	"flag"
 	"io/ioutil"
 	"log"
@@ -35,17 +34,18 @@ func (cmd *pruneCommand) Name() string      { return "prune" }
 func (cmd *pruneCommand) Args() string      { return "" }
 func (cmd *pruneCommand) ShortHelp() string { return pruneShortHelp }
 func (cmd *pruneCommand) LongHelp() string  { return pruneLongHelp }
-func (cmd *pruneCommand) Hidden() bool      { return false }
+func (cmd *pruneCommand) Hidden() bool      { return true }
 
 func (cmd *pruneCommand) Register(fs *flag.FlagSet) {
 }
 
 func (cmd *pruneCommand) Run(ctx *dep.Ctx, args []string) error {
 	ctx.Err.Printf("Pruning is now performed automatically by dep ensure.\n")
-	ctx.Err.Printf("Set prune settings in %s and it it will be applied when running ensure.\n", dep.ManifestName)
+	ctx.Err.Printf("Set prune settings in %s and it will be applied when running ensure.\n", dep.ManifestName)
 	ctx.Err.Printf("\nThis command currently still prunes as it always has, to ease the transition.\n")
 	ctx.Err.Printf("However, it will be removed in a future version of dep.\n")
 	ctx.Err.Printf("\nNow is the time to update your Gopkg.toml and remove `dep prune` from any scripts.\n")
+	ctx.Err.Printf("\nFor more information, see: https://golang.github.io/dep/docs/Gopkg.toml.html#prune\n")
 
 	p, err := ctx.LoadProject()
 	if err != nil {
@@ -74,17 +74,8 @@ func (cmd *pruneCommand) Run(ctx *dep.Ctx, args []string) error {
 		params.TraceLogger = ctx.Err
 	}
 
-	s, err := gps.Prepare(params, sm)
-	if err != nil {
-		return errors.Wrap(err, "could not set up solver for input hashing")
-	}
-
 	if p.Lock == nil {
 		return errors.Errorf("Gopkg.lock must exist for prune to know what files are safe to remove.")
-	}
-
-	if !bytes.Equal(s.HashInputs(), p.Lock.SolveMeta.InputsDigest) {
-		return errors.Errorf("Gopkg.lock is out of sync; run dep ensure before pruning.")
 	}
 
 	pruneLogger := ctx.Err
@@ -102,7 +93,10 @@ func pruneProject(p *dep.Project, sm gps.SourceManager, logger *log.Logger) erro
 	}
 	defer os.RemoveAll(td)
 
-	if err := gps.WriteDepTree(td, p.Lock, sm, gps.CascadingPruneOptions{DefaultOptions: gps.PruneNestedVendorDirs}, logger); err != nil {
+	onWrite := func(progress gps.WriteProgress) {
+		logger.Println(progress)
+	}
+	if err := gps.WriteDepTree(td, p.Lock, sm, gps.CascadingPruneOptions{DefaultOptions: gps.PruneNestedVendorDirs}, onWrite); err != nil {
 		return err
 	}
 
@@ -168,7 +162,7 @@ fail:
 func calculatePrune(vendorDir string, keep []string, logger *log.Logger) ([]string, error) {
 	logger.Println("Calculating prune. Checking the following packages:")
 	sort.Strings(keep)
-	toDelete := []string{}
+	var toDelete []string
 	err := filepath.Walk(vendorDir, func(path string, info os.FileInfo, err error) error {
 		if _, err := os.Lstat(path); err != nil {
 			return nil

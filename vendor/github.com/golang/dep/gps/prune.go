@@ -5,7 +5,8 @@
 package gps
 
 import (
-	"log"
+	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -56,6 +57,47 @@ type PruneOptionSet struct {
 type CascadingPruneOptions struct {
 	DefaultOptions    PruneOptions
 	PerProjectOptions map[ProjectRoot]PruneOptionSet
+}
+
+// ParsePruneOptions extracts PruneOptions from a string using the standard
+// encoding.
+func ParsePruneOptions(input string) (PruneOptions, error) {
+	var po PruneOptions
+	for _, char := range input {
+		switch char {
+		case 'T':
+			po |= PruneGoTestFiles
+		case 'U':
+			po |= PruneUnusedPackages
+		case 'N':
+			po |= PruneNonGoFiles
+		case 'V':
+			po |= PruneNestedVendorDirs
+		default:
+			return 0, errors.Errorf("unknown pruning code %q", char)
+		}
+	}
+
+	return po, nil
+}
+
+func (po PruneOptions) String() string {
+	var buf bytes.Buffer
+
+	if po&PruneNonGoFiles != 0 {
+		fmt.Fprintf(&buf, "N")
+	}
+	if po&PruneUnusedPackages != 0 {
+		fmt.Fprintf(&buf, "U")
+	}
+	if po&PruneGoTestFiles != 0 {
+		fmt.Fprintf(&buf, "T")
+	}
+	if po&PruneNestedVendorDirs != 0 {
+		fmt.Fprintf(&buf, "V")
+	}
+
+	return buf.String()
 }
 
 // PruneOptionsFor returns the PruneOptions bits for the given project,
@@ -138,7 +180,7 @@ var (
 
 // PruneProject remove excess files according to the options passed, from
 // the lp directory in baseDir.
-func PruneProject(baseDir string, lp LockedProject, options PruneOptions, logger *log.Logger) error {
+func PruneProject(baseDir string, lp LockedProject, options PruneOptions) error {
 	fsState, err := deriveFilesystemState(baseDir)
 
 	if err != nil {
@@ -246,7 +288,7 @@ func collectUnusedPackagesFiles(fsState filesystemState, unusedPackages map[stri
 	files := make([]string, 0, len(unusedPackages))
 
 	for _, path := range fsState.files {
-		// Keep perserved files.
+		// Keep preserved files.
 		if isPreservedFile(filepath.Base(path)) {
 			continue
 		}
@@ -261,6 +303,37 @@ func collectUnusedPackagesFiles(fsState filesystemState, unusedPackages map[stri
 	return files
 }
 
+func isSourceFile(path string) bool {
+	ext := fileExt(path)
+
+	// Refer to: https://github.com/golang/go/blob/release-branch.go1.9/src/go/build/build.go#L750
+	switch ext {
+	case ".go":
+		return true
+	case ".c":
+		return true
+	case ".cc", ".cpp", ".cxx":
+		return true
+	case ".m":
+		return true
+	case ".h", ".hh", ".hpp", ".hxx":
+		return true
+	case ".f", ".F", ".for", ".f90":
+		return true
+	case ".s":
+		return true
+	case ".S":
+		return true
+	case ".swig":
+		return true
+	case ".swigcxx":
+		return true
+	case ".syso":
+		return true
+	}
+	return false
+}
+
 // pruneNonGoFiles delete all non-Go files existing in fsState.
 //
 // Files matching licenseFilePrefixes and legalFileSubstrings are not pruned.
@@ -268,35 +341,11 @@ func pruneNonGoFiles(fsState filesystemState) error {
 	toDelete := make([]string, 0, len(fsState.files)/4)
 
 	for _, path := range fsState.files {
-		ext := fileExt(path)
-
-		// Refer to: https://github.com/golang/go/blob/release-branch.go1.9/src/go/build/build.go#L750
-		switch ext {
-		case ".go":
-			continue
-		case ".c":
-			continue
-		case ".cc", ".cpp", ".cxx":
-			continue
-		case ".m":
-			continue
-		case ".h", ".hh", ".hpp", ".hxx":
-			continue
-		case ".f", ".F", ".for", ".f90":
-			continue
-		case ".s":
-			continue
-		case ".S":
-			continue
-		case ".swig":
-			continue
-		case ".swigcxx":
-			continue
-		case ".syso":
+		if isSourceFile(path) {
 			continue
 		}
 
-		// Ignore perserved files.
+		// Ignore preserved files.
 		if isPreservedFile(filepath.Base(path)) {
 			continue
 		}
@@ -315,7 +364,12 @@ func pruneNonGoFiles(fsState filesystemState) error {
 
 // isPreservedFile checks if the file name indicates that the file should be
 // preserved based on licenseFilePrefixes or legalFileSubstrings.
+// This applies only to non-source files.
 func isPreservedFile(name string) bool {
+	if isSourceFile(name) {
+		return false
+	}
+
 	name = strings.ToLower(name)
 
 	for _, prefix := range licenseFilePrefixes {

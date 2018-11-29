@@ -3,8 +3,6 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "digest.go",
-        "dirwalk.go",
         "ignored_ruleset.go",
         "pkgtree.go",
         "reachmap.go",
@@ -12,10 +10,7 @@ go_library(
     importmap = "k8s.io/test-infra/vendor/github.com/golang/dep/gps/pkgtree",
     importpath = "github.com/golang/dep/gps/pkgtree",
     visibility = ["//visibility:public"],
-    deps = [
-        "//vendor/github.com/armon/go-radix:go_default_library",
-        "//vendor/github.com/pkg/errors:go_default_library",
-    ],
+    deps = ["//vendor/github.com/armon/go-radix:go_default_library"],
 )
 
 filegroup(

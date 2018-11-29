@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/boltdb/bolt"
@@ -19,6 +21,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+// boltCacheFilename is a versioned filename for the bolt cache. The version
+// must be incremented whenever incompatible changes are made.
+const boltCacheFilename = "bolt-v1.db"
+
 // boltCache manages a bolt.DB cache and provides singleSourceCaches.
 type boltCache struct {
 	db     *bolt.DB
@@ -28,14 +34,14 @@ type boltCache struct {
 
 // newBoltCache returns a new boltCache backed by a BoltDB file under the cache directory.
 func newBoltCache(cd string, epoch int64, logger *log.Logger) (*boltCache, error) {
-	path := sourceCachePath(cd, "bolt") + ".db"
+	path := filepath.Join(cd, boltCacheFilename)
 	dir := filepath.Dir(path)
 	if fi, err := os.Stat(dir); os.IsNotExist(err) {
 		if err := os.MkdirAll(dir, os.ModeDir|os.ModePerm); err != nil {
 			return nil, errors.Wrapf(err, "failed to create source cache directory: %s", dir)
 		}
 	} else if err != nil {
-		return nil, errors.Wrapf(err, "failed to check source cache directory: ", dir)
+		return nil, errors.Wrapf(err, "failed to check source cache directory: %s", dir)
 	} else if !fi.IsDir() {
 		return nil, errors.Wrapf(err, "source cache path is not directory: %s", dir)
 	}
@@ -54,7 +60,6 @@ func newBoltCache(cd string, epoch int64, logger *log.Logger) (*boltCache, error
 func (c *boltCache) newSingleSourceCache(pi ProjectIdentifier) singleSourceCache {
 	return &singleSourceCacheBolt{
 		boltCache:  c,
-		pi:         pi,
 		sourceName: []byte(pi.normalizedSource()),
 	}
 }
@@ -101,7 +106,6 @@ func (c *boltCache) close() error {
 //	Values: Unpaired Versions serialized via ConstraintMsg
 type singleSourceCacheBolt struct {
 	*boltCache
-	pi         ProjectIdentifier
 	sourceName []byte
 }
 
@@ -199,8 +203,14 @@ func (s *singleSourceCacheBolt) setPackageTree(rev Revision, ptree pkgtree.Packa
 			return err
 		}
 
+		root := string(ptree.ImportRoot)
 		for ip, poe := range ptree.Packages {
-			pb, err := ptrees.CreateBucket([]byte(ip))
+			// Stored by relative import path.
+			rip := strings.TrimPrefix(ip, root)
+			if rip == "" {
+				rip = "/"
+			}
+			pb, err := ptrees.CreateBucket([]byte(rip))
 			if err != nil {
 				return err
 			}
@@ -216,7 +226,7 @@ func (s *singleSourceCacheBolt) setPackageTree(rev Revision, ptree pkgtree.Packa
 	}
 }
 
-func (s *singleSourceCacheBolt) getPackageTree(rev Revision) (ptree pkgtree.PackageTree, ok bool) {
+func (s *singleSourceCacheBolt) getPackageTree(rev Revision, pr ProjectRoot) (ptree pkgtree.PackageTree, ok bool) {
 	err := s.viewRevBucket(rev, func(b *bolt.Bucket) error {
 		ptrees := b.Bucket(cacheKeyPTree)
 		if ptrees == nil {
@@ -224,21 +234,27 @@ func (s *singleSourceCacheBolt) getPackageTree(rev Revision) (ptree pkgtree.Pack
 		}
 
 		pkgs := make(map[string]pkgtree.PackageOrErr)
-		err := ptrees.ForEach(func(ip, _ []byte) error {
-			poe, err := cacheGetPackageOrErr(ptrees.Bucket(ip))
+		err := ptrees.ForEach(func(rip, _ []byte) error {
+			poe, err := cacheGetPackageOrErr(ptrees.Bucket(rip))
 			if err != nil {
 				return err
 			}
-			if poe.Err == nil {
-				poe.P.ImportPath = string(ip)
+			srip := string(rip)
+			if srip == "/" {
+				srip = ""
 			}
-			pkgs[string(ip)] = poe
+			// Return full import paths.
+			ip := path.Join(string(pr), srip)
+			if poe.Err == nil {
+				poe.P.ImportPath = ip
+			}
+			pkgs[ip] = poe
 			return nil
 		})
 		if err != nil {
 			return err
 		}
-		ptree.ImportRoot = string(s.pi.ProjectRoot)
+		ptree.ImportRoot = string(pr)
 		ptree.Packages = pkgs
 		ok = true
 		return nil

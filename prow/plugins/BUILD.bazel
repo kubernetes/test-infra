@@ -33,9 +33,9 @@ go_library(
         "//prow/pluginhelp:go_default_library",
         "//prow/repoowners:go_default_library",
         "//prow/slack:go_default_library",
-        "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
 

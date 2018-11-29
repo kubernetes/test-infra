@@ -127,10 +127,6 @@ type solver struct {
 	// names a SourceManager operates on.
 	b sourceBridge
 
-	// A versionUnifier, to facilitate cross-type version comparison and set
-	// operations.
-	vUnify *versionUnifier
-
 	// A stack containing projects and packages that are currently "selected" -
 	// that is, they have passed all satisfiability checks, and are part of the
 	// current solution.
@@ -305,15 +301,11 @@ func Prepare(params SolveParameters, sm SourceManager) (Solver, error) {
 	if err != nil {
 		return nil, err
 	}
-	s.vUnify = &versionUnifier{
-		b: s.b,
-	}
 
 	// Initialize stacks and queues
 	s.sel = &selection{
 		deps:      make(map[ProjectRoot][]dependency),
 		foldRoots: make(map[string]ProjectRoot),
-		vu:        s.vUnify,
 	}
 	s.unsel = &unselected{
 		sl:  make([]bimodalIdentifier, 0),
@@ -331,14 +323,6 @@ func Prepare(params SolveParameters, sm SourceManager) (Solver, error) {
 // a "lock file" - and/or use it to write out a directory tree of dependencies,
 // suitable to be a vendor directory, via CreateVendorTree.
 type Solver interface {
-	// HashInputs hashes the unique inputs to this solver, returning the hash
-	// digest. It is guaranteed that, if the resulting digest is equal to the
-	// digest returned from a previous Solution.InputHash(), that that Solution
-	// is valid for this Solver's inputs.
-	//
-	// In such a case, it may not be necessary to run Solve() at all.
-	HashInputs() []byte
-
 	// Solve initiates a solving run. It will either abort due to a canceled
 	// Context, complete successfully with a Solution, or fail with an
 	// informative error.
@@ -447,7 +431,6 @@ func (s *solver) Solve(ctx context.Context) (Solution, error) {
 
 	// Set up a metrics object
 	s.mtr = newMetrics()
-	s.vUnify.mtr = s.mtr
 
 	// Prime the queues with the root project
 	if err := s.selectRoot(); err != nil {
@@ -464,14 +447,19 @@ func (s *solver) Solve(ctx context.Context) (Solution, error) {
 			solv: s,
 		}
 		soln.analyzerInfo = s.rd.an.Info()
-		soln.hd = s.HashInputs()
+		soln.i = s.rd.externalImportList(s.stdLibFn)
 
 		// Convert ProjectAtoms into LockedProjects
-		soln.p = make([]LockedProject, len(all))
-		k := 0
+		soln.p = make([]LockedProject, 0, len(all))
 		for pa, pl := range all {
-			soln.p[k] = pa2lp(pa, pl)
-			k++
+			lp := pa2lp(pa, pl)
+			// Pass back the original inputlp directly if it Eqs what was
+			// selected.
+			if inputlp, has := s.rd.rlm[lp.Ident().ProjectRoot]; has && lp.Eq(inputlp) {
+				lp = inputlp
+			}
+
+			soln.p = append(soln.p, lp)
 		}
 	}
 
@@ -1007,35 +995,9 @@ func (s *solver) getLockVersionIfValid(id ProjectIdentifier) (Version, error) {
 	constraint := s.sel.getConstraint(id)
 	v := lp.Version()
 	if !constraint.Matches(v) {
-		var found bool
-		if tv, ok := v.(Revision); ok {
-			// If we only have a revision from the root's lock, allow matching
-			// against other versions that have that revision
-			for _, pv := range s.vUnify.pairRevision(id, tv) {
-				if constraint.Matches(pv) {
-					v = pv
-					found = true
-					break
-				}
-			}
-			//} else if _, ok := constraint.(Revision); ok {
-			//// If the current constraint is itself a revision, and the lock gave
-			//// an unpaired version, see if they match up
-			////
-			//if u, ok := v.(UnpairedVersion); ok {
-			//pv := s.sm.pairVersion(id, u)
-			//if constraint.Matches(pv) {
-			//v = pv
-			//found = true
-			//}
-			//}
-		}
-
-		if !found {
-			// No match found, which means we're going to be breaking the lock
-			// Still return the invalid version so that is included in the trace
-			s.b.breakLock()
-		}
+		// No match found, which means we're going to be breaking the lock
+		// Still return the invalid version so that is included in the trace
+		s.b.breakLock()
 	}
 
 	return v, nil
@@ -1382,7 +1344,7 @@ func (s *solver) unselectLast() (atomWithPackages, bool, error) {
 
 // simple (temporary?) helper just to convert atoms into locked projects
 func pa2lp(pa atom, pkgs map[string]struct{}) LockedProject {
-	lp := LockedProject{
+	lp := lockedProject{
 		pi: pa.id,
 	}
 
@@ -1398,18 +1360,16 @@ func pa2lp(pa atom, pkgs map[string]struct{}) LockedProject {
 		panic("unreachable")
 	}
 
-	lp.pkgs = make([]string, len(pkgs))
-	k := 0
+	lp.pkgs = make([]string, 0, len(pkgs))
 
 	pr := string(pa.id.ProjectRoot)
 	trim := pr + "/"
 	for pkg := range pkgs {
 		if pkg == string(pa.id.ProjectRoot) {
-			lp.pkgs[k] = "."
+			lp.pkgs = append(lp.pkgs, ".")
 		} else {
-			lp.pkgs[k] = strings.TrimPrefix(pkg, trim)
+			lp.pkgs = append(lp.pkgs, strings.TrimPrefix(pkg, trim))
 		}
-		k++
 	}
 	sort.Strings(lp.pkgs)
 
