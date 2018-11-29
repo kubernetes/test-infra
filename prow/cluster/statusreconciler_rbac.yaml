@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: default
+  name: "statusreconciler"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: default
+  name: "statusreconciler"
+rules:
+  - apiGroups:
+      - "prow.k8s.io"
+    resources:
+      - prowjobs
+    verbs:
+      - create
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: default
+  name: "statusreconciler"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "statusreconciler"
+subjects:
+- kind: ServiceAccount
+  name: "statusreconciler"

@@ -95,7 +95,7 @@ func TestTrusted(t *testing.T) {
 					Name: label,
 				})
 			}
-			_, actual, err := trustedPullRequest(g, &trigger, tc.author, "kubernetes-incubator", "random-repo", 1, labels)
+			_, actual, err := TrustedPullRequest(g, &trigger, tc.author, "kubernetes-incubator", "random-repo", 1, labels)
 			if err != nil {
 				t.Fatalf("Didn't expect error: %s", err)
 			}
