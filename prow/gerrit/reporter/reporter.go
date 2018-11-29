@@ -72,8 +72,11 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 		return false
 	}
 
-	// Only report when all other jobs on the same revision finished
-	selector := labels.Set{client.GerritRevision: pj.ObjectMeta.Labels[client.GerritRevision]}
+	// Only report when all jobs of the same type on the same revision finished
+	selector := labels.Set{
+		client.GerritRevision: pj.ObjectMeta.Labels[client.GerritRevision],
+		kube.ProwJobTypeLabel: pj.ObjectMeta.Labels[kube.ProwJobTypeLabel],
+	}
 	pjs, err := c.lister.List(selector.AsSelector())
 	if err != nil {
 		logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
