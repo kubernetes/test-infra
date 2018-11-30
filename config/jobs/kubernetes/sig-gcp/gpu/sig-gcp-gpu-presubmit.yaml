@@ -1,3 +1,14 @@
+presets:
+- labels:
+    preset-pull-gce-device-plugin-gpu: "true"
+  env:
+  - name: KUBE_FEATURE_GATES
+    value: DevicePlugins=true
+  - name: NODE_ACCELERATORS
+    value: type=nvidia-tesla-k80,count=2
+  - name: CREATE_CUSTOM_NETWORK
+    value: "true"
+
 presubmits:
   kubernetes/kubernetes:
   # manual-release-bump-required
@@ -13,6 +24,8 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-gce-device-plugin-gpu: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181129-33929460d-master
@@ -28,8 +41,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce-device-plugin-gpu.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-nodes=4
@@ -57,6 +68,8 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-gce-device-plugin-gpu: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181129-33929460d-1.13
@@ -72,8 +85,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce-device-plugin-gpu.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-nodes=4
@@ -101,6 +112,8 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-gce-device-plugin-gpu: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181129-33929460d-1.10
@@ -116,8 +129,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce-device-plugin-gpu.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-nodes=4

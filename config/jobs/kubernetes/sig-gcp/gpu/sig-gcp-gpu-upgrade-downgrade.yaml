@@ -4,6 +4,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
   spec:
     containers:
     - args:
@@ -14,7 +15,6 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
       - --extract=ci/k8s-stable1
       - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
@@ -31,6 +31,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
   spec:
     containers:
     - args:
@@ -41,7 +42,6 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
       - --extract=ci/k8s-stable1
       - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
@@ -58,6 +58,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
   spec:
     containers:
     - args:
@@ -68,7 +69,6 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
       - --extract=ci/k8s-beta
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
@@ -85,6 +85,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
   spec:
     containers:
     - args:
@@ -95,7 +96,6 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
       - --extract=ci/k8s-beta
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
@@ -112,6 +112,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
   spec:
     containers:
     - args:
@@ -122,7 +123,6 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
       - --extract=ci/latest
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
@@ -139,6 +139,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
   spec:
     containers:
     - args:
@@ -149,7 +150,6 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
       - --extract=ci/latest
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
@@ -166,6 +166,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
   spec:
     containers:
     - args:
@@ -177,7 +178,6 @@ periodics:
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
       - --env=TEST_ETCD_VERSION=3.0.17
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
       - --extract=ci/k8s-stable1
       - --extract=ci/k8s-beta
       - --gcp-node-image=gci
@@ -194,6 +194,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
   spec:
     containers:
     - args:
@@ -205,7 +206,6 @@ periodics:
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
       - --env=TEST_ETCD_VERSION=3.0.17
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
       - --extract=ci/k8s-stable1
       - --extract=ci/latest
       - --gcp-node-image=gci

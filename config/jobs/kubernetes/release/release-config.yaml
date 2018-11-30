@@ -7,6 +7,7 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
     spec:
       containers:
       - args:
@@ -20,7 +21,6 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --down=false
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-nodes=4
