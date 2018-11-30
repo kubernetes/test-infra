@@ -106,6 +106,17 @@ func TestHandlePE(t *testing.T) {
 			},
 			jobsToRun: 1,
 		},
+		{
+			name: "branch deleted",
+			pe: github.PushEvent{
+				Ref: "master",
+				Repo: github.Repo{
+					FullName: "org/repo",
+				},
+				Deleted: true,
+			},
+			jobsToRun: 0,
+		},
 	}
 	for _, tc := range testCases {
 		err := handlePE(c, tc.pe)
