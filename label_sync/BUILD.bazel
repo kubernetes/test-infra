@@ -34,7 +34,7 @@ docker_push(
 # bazel-bin/.../label_sync loads the image into docker
 # bazel-bin/.../label_sync.binary is the binary
 go_image(
-    name = "label_sync-image",
+    name = "image",
     base = "@distroless-base//image",
     embed = [":go_default_library"],
     goarch = "amd64",

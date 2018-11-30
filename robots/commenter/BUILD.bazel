@@ -27,7 +27,7 @@ load(
 )
 
 go_image(
-    name = "commenter-image",
+    name = "image",
     base = "@distroless-base//image",
     embed = [":go_default_library"],
 )

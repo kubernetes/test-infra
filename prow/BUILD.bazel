@@ -35,6 +35,10 @@ container_bundle(
         prefix("cherrypicker"): "//prow/external-plugins/cherrypicker:image",
     }) + image_tags(**{
         prefix("refresh"): "//prow/external-plugins/refresh:image",
+    }) + image_tags(**{
+        prefix("label_sync"): "//label_sync:image",
+    }) + image_tags(**{
+        prefix("commenter"): "//robots/commenter:image",
     }),
     stamp = True,
 )
