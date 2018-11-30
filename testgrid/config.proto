@@ -111,6 +111,10 @@ message TestGroup {
 
   // The number of consecutive test passes to close the alert.
   int32 num_passes_to_disable_alert = 38;
+
+  // Numeric property metric value to be used for short text. If this property
+  // is present, it will override all the other short text values.
+  string short_text_metric = 43;
 }
 
 
