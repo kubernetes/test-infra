@@ -49,7 +49,6 @@ approve:
   - kubernetes/examples
   - kubernetes/federation
   - kubernetes/gengo
-  - kubernetes/heapster
   - kubernetes/ingress-gce
   - kubernetes/ingress-nginx
   - kubernetes/klog
@@ -374,9 +373,6 @@ plugins:
   - trigger
 
   kubernetes/federation:
-  - trigger
-
-  kubernetes/heapster:
   - trigger
 
   kubernetes/kops:

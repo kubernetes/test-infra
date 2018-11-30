@@ -339,7 +339,6 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubernetes/cloud-provider-vsphere",
 		"kubernetes/cluster-registry",
 		"kubernetes/federation",
-		"kubernetes/heapster",
 		"kubernetes/kops",
 		"kubernetes/kubernetes",
 		"kubernetes/org",

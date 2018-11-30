@@ -3072,12 +3072,6 @@ test_groups:
 - name: pull-kops-verify-packages
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-packages
   num_columns_recent: 20
-- name: pull-heapster-e2e
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-heapster-e2e
-  num_columns_recent: 20
-- name: pull-heapster-unit
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-heapster-unit
-  num_columns_recent: 20
 - name: pull-charts-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-charts-e2e
   num_columns_recent: 20
@@ -7142,10 +7136,6 @@ dashboards:
 
 - name: presubmits-misc
   dashboard_tab:
-  - name: heapster-e2e
-    test_group_name: pull-heapster-e2e
-  - name: heapster-unit
-    test_group_name: pull-heapster-unit
   - name: charts
     test_group_name: pull-charts-e2e
   - name: cadvisor
@@ -7655,4 +7645,3 @@ dashboard_groups:
   - vmware-conformance
   - vmware-conformance-cloud-provider
   - vmware-cluster-api-provider-vsphere
-
