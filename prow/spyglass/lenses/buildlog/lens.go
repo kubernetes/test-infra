@@ -259,7 +259,7 @@ func groupLines(logLines []LogLine) []LineGroup {
 			currentOffset += line.Length
 		} else {
 			curGroup.End = i
-			curGroup.ByteLength = currentOffset - previousOffset - 1  // -1 for trailing newline
+			curGroup.ByteLength = currentOffset - previousOffset - 1 // -1 for trailing newline
 			previousOffset = currentOffset
 			if curGroup.Skip {
 				if curGroup.LinesSkipped() < minLinesSkipped {
