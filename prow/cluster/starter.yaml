@@ -156,6 +156,8 @@ metadata:
     app: plank
 spec:
   replicas: 1 # Do not scale up.
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -269,7 +271,9 @@ metadata:
   labels:
     app: horologium
 spec:
-  replicas: 1
+  replicas: 1 # Do not scale up.
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -298,6 +302,8 @@ metadata:
     app: tide
 spec:
   replicas: 1 # Do not scale up.
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
