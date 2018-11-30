@@ -172,6 +172,7 @@ postsubmits:
 
   kubeflow/pipelines:
     - name: kubeflow-pipeline-sample-test-postsubmit
+      decorate: true
       branches:
       - master
       labels:
