@@ -82,7 +82,6 @@ projects:
             - --ignore-authors=k8s-merge-robot,k8s-ci-robot
             - --comments=(?m)^@k8s-bot.*test this
       kubernetes/contrib: *kubernetes-transform
-      kubernetes/heapster: *kubernetes-transform
       kubernetes/ingress: *kubernetes-transform
       kubernetes/dns: *kubernetes-transform
       kubernetes/test-infra: *kubernetes-transform
