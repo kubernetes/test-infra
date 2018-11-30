@@ -250,6 +250,7 @@ func groupLines(logLines []LogLine) []LineGroup {
 	}
 	// break into groups
 	currentOffset := 0
+	previousOffset := 0
 	var lineGroups []LineGroup
 	curGroup := LineGroup{}
 	for i, line := range logLines {
@@ -258,7 +259,8 @@ func groupLines(logLines []LogLine) []LineGroup {
 			currentOffset += line.Length
 		} else {
 			curGroup.End = i
-			curGroup.ByteLength = currentOffset - curGroup.Start
+			curGroup.ByteLength = currentOffset - previousOffset - 1  // -1 for trailing newline
+			previousOffset = currentOffset
 			if curGroup.Skip {
 				if curGroup.LinesSkipped() < minLinesSkipped {
 					curGroup.Skip = false
@@ -277,6 +279,7 @@ func groupLines(logLines []LogLine) []LineGroup {
 		}
 	}
 	curGroup.End = len(logLines)
+	curGroup.ByteLength = currentOffset - previousOffset - 1
 	if curGroup.Skip {
 		if curGroup.LinesSkipped() < minLinesSkipped {
 			curGroup.Skip = false
