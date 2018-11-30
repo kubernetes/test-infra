@@ -46,9 +46,11 @@ func TestGroupLines(t *testing.T) {
 			lines: []string{"This is an ErRoR message"},
 			groups: []LineGroup{
 				{
-					Start: 0,
-					End:   1,
-					Skip:  false,
+					Start:      0,
+					End:        1,
+					Skip:       false,
+					ByteOffset: 0,
+					ByteLength: 24,
 				},
 			},
 		},
@@ -57,9 +59,11 @@ func TestGroupLines(t *testing.T) {
 			lines: lorem,
 			groups: []LineGroup{
 				{
-					Start: 0,
-					End:   8,
-					Skip:  true,
+					Start:      0,
+					End:        8,
+					Skip:       true,
+					ByteOffset: 0,
+					ByteLength: 437,
 				},
 			},
 		},
@@ -72,9 +76,11 @@ func TestGroupLines(t *testing.T) {
 			},
 			groups: []LineGroup{
 				{
-					Start: 0,
-					End:   11,
-					Skip:  false,
+					Start:      0,
+					End:        11,
+					Skip:       false,
+					ByteOffset: 0,
+					ByteLength: 55,
 				},
 			},
 		},
@@ -87,19 +93,25 @@ func TestGroupLines(t *testing.T) {
 			},
 			groups: []LineGroup{
 				{
-					Start: 0,
-					End:   4,
-					Skip:  false,
+					Start:      0,
+					End:        4,
+					Skip:       false,
+					ByteOffset: 0,
+					ByteLength: 7,
 				},
 				{
-					Start: 4,
-					End:   15,
-					Skip:  false,
+					Start:      4,
+					End:        15,
+					Skip:       false,
+					ByteOffset: 8,
+					ByteLength: 55,
 				},
 				{
-					Start: 15,
-					End:   20,
-					Skip:  true,
+					Start:      15,
+					End:        20,
+					Skip:       true,
+					ByteOffset: 64,
+					ByteLength: 9,
 				},
 			},
 		},
@@ -114,9 +126,11 @@ func TestGroupLines(t *testing.T) {
 			},
 			groups: []LineGroup{
 				{
-					Start: 0,
-					End:   11,
-					Skip:  false,
+					Start:      0,
+					End:        11,
+					Skip:       false,
+					ByteOffset: 0,
+					ByteLength: 41,
 				},
 			},
 		},
@@ -133,19 +147,25 @@ func TestGroupLines(t *testing.T) {
 			},
 			groups: []LineGroup{
 				{
-					Start: 0,
-					End:   9,
-					Skip:  false,
+					Start:      0,
+					End:        9,
+					Skip:       false,
+					ByteOffset: 0,
+					ByteLength: 27,
 				},
 				{
-					Start: 9,
-					End:   12,
-					Skip:  false,
+					Start:      9,
+					End:        12,
+					Skip:       false,
+					ByteOffset: 28,
+					ByteLength: 5,
 				},
 				{
-					Start: 12,
-					End:   21,
-					Skip:  false,
+					Start:      12,
+					End:        21,
+					Skip:       false,
+					ByteOffset: 34,
+					ByteLength: 27,
 				},
 			},
 		},
@@ -162,6 +182,12 @@ func TestGroupLines(t *testing.T) {
 				}
 				if got[j].Skip != exp.Skip {
 					t.Errorf("Lines [%d, %d) expected Skip = %t", exp.Start, exp.End, exp.Skip)
+				}
+				if got[j].ByteOffset != exp.ByteOffset {
+					t.Errorf("Group %d expected ByteOffset %d, got %d.", j, exp.ByteOffset, got[j].ByteOffset)
+				}
+				if got[j].ByteLength != exp.ByteLength {
+					t.Errorf("Group %d expected ByteLength %d, got %d.", j, exp.ByteLength, got[j].ByteLength)
 				}
 			}
 		})

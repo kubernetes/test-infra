@@ -58,7 +58,7 @@ async function handleShowSkipped(this: HTMLDivElement, e: MouseEvent) {
   const log = document.getElementById(`${artifact}-content`)!;
   const skipped = log.querySelectorAll<HTMLElement>(".show-skipped");
   if (skipped.length === 0) {
-    const button = log.querySelector('button.show-all-button')!;
+    const button = document.querySelector('button.show-all-button')!;
     button.parentNode!.removeChild(button);
   }
   spyglass.contentUpdated();
