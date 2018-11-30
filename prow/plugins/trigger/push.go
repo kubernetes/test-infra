@@ -43,6 +43,10 @@ func listPushEventChanges(pe github.PushEvent) []string {
 }
 
 func handlePE(c client, pe github.PushEvent) error {
+	if pe.Deleted {
+		// we should not trigger jobs for a branch deletion
+		return nil
+	}
 	for _, j := range c.Config.Postsubmits[pe.Repo.FullName] {
 		if !j.RunsAgainstBranch(pe.Branch()) {
 			continue

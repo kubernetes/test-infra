@@ -26,41 +26,22 @@ import (
 )
 
 func TestHandlePE(t *testing.T) {
-	g := &fakegithub.FakeClient{}
-	kc := &fkc{}
-	c := client{
-		GitHubClient: g,
-		KubeClient:   kc,
-		Config:       &config.Config{},
-		Logger:       logrus.WithField("plugin", pluginName),
-	}
-	postsubmits := map[string][]config.Postsubmit{
-		"org/repo": {
-			{
-				JobBase: config.JobBase{
-					Name: "pass-butter",
-				},
-				RegexpChangeMatcher: config.RegexpChangeMatcher{
-					RunIfChanged: "\\.sh$",
-				},
-			},
-		},
-		"org2/repo2": {
-			{
-				JobBase: config.JobBase{
-					Name: "pass-salt",
-				},
-			},
-		},
-	}
-	if err := c.Config.SetPostsubmits(postsubmits); err != nil {
-		t.Fatalf("failed to set postsubmits: %v", err)
-	}
 	testCases := []struct {
 		name      string
 		pe        github.PushEvent
 		jobsToRun int
 	}{
+		{
+			name: "branch deleted",
+			pe: github.PushEvent{
+				Ref: "master",
+				Repo: github.Repo{
+					FullName: "org/repo",
+				},
+				Deleted: true,
+			},
+			jobsToRun: 0,
+		},
 		{
 			name: "no matching files",
 			pe: github.PushEvent{
@@ -108,6 +89,36 @@ func TestHandlePE(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
+		g := &fakegithub.FakeClient{}
+		kc := &fkc{}
+		c := client{
+			GitHubClient: g,
+			KubeClient:   kc,
+			Config:       &config.Config{},
+			Logger:       logrus.WithField("plugin", pluginName),
+		}
+		postsubmits := map[string][]config.Postsubmit{
+			"org/repo": {
+				{
+					JobBase: config.JobBase{
+						Name: "pass-butter",
+					},
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						RunIfChanged: "\\.sh$",
+					},
+				},
+			},
+			"org2/repo2": {
+				{
+					JobBase: config.JobBase{
+						Name: "pass-salt",
+					},
+				},
+			},
+		}
+		if err := c.Config.SetPostsubmits(postsubmits); err != nil {
+			t.Fatalf("failed to set postsubmits: %v", err)
+		}
 		err := handlePE(c, tc.pe)
 		if err != nil {
 			t.Errorf("test %q: handlePE returned unexpected error %v", tc.name, err)
