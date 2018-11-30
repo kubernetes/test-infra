@@ -273,6 +273,46 @@ func TestLintCodeSuggestion(t *testing.T) {
 			},
 			comment: "",
 		},
+		{
+			name:       "Check loop range: omit values",
+			codeChange: "@@ -0,0 +1,10 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+for _ = range m {\n+}\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nfor _ = range m {\n}\n}\n"),
+			},
+			comment: "```suggestion\nfor range m {\n```\nGolint range-loop: should omit values from range; this loop is equivalent to `for range ...`. <!-- golint -->",
+		},
+		{
+			name:       "Check loop range: omit two values",
+			codeChange: "@@ -0,0 +1,10 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+for _, _ = range m {\n+}\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nfor _, _ = range m {\n}\n}\n"),
+			},
+			comment: "```suggestion\nfor range m {\n```\nGolint range-loop: should omit values from range; this loop is equivalent to `for range ...`. <!-- golint -->",
+		},
+		{
+			name:       "Check loop range: omit 2nd value with =",
+			codeChange: "@@ -0,0 +1,11 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+var y = 0\n+for y, _ = range m {\n+}\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nvar y = 0\nfor y, _ = range m {\n}\n}\n"),
+			},
+			comment: "```suggestion\nfor y = range m {\n```\nGolint range-loop: should omit 2nd value from range; this loop is equivalent to `for y = range ...`. <!-- golint -->",
+		},
+		{
+			name:       "Check loop range: omit 2nd value with :=",
+			codeChange: "@@ -0,0 +1,10 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+for y, _ := range m {\n+}\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nfor y, _ := range m {\n}\n}\n"),
+			},
+			comment: "```suggestion\nfor y := range m {\n```\nGolint range-loop: should omit 2nd value from range; this loop is equivalent to `for y := range ...`. <!-- golint -->",
+		},
+		{
+			name:       "Check loop range: no error",
+			codeChange: "@@ -0,0 +1,10 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+for y := range m {\n+}\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nfor y := range m {\n}\n}\n"),
+			},
+			comment: "",
+		},
 	}
 
 	lg, c, err := localgit.New()
