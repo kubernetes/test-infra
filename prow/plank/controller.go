@@ -374,8 +374,17 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 
 		case kube.PodFailed:
 			if pod.Status.Reason == kube.Evicted {
+				// Pod was evicted.
+				if pj.Spec.ErrorOnEviction {
+					// ErrorOnEviction is enabled, complete the PJ and mark it as errored.
+					pj.SetComplete()
+					pj.Status.State = kube.ErrorState
+					pj.Status.Description = "Job pod was evicted by the cluster."
+					break
+				}
+				// ErrorOnEviction is disabled. Delete the pod now and recreate it in
+				// the next resync.
 				c.incrementNumPendingJobs(pj.Spec.Job)
-				// Pod was evicted. We will recreate it in the next resync.
 				client, ok := c.pkcs[pj.ClusterAlias()]
 				if !ok {
 					return fmt.Errorf("Unknown cluster alias %q.", pj.ClusterAlias())

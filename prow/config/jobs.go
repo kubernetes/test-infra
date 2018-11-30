@@ -95,6 +95,11 @@ type JobBase struct {
 	//   nil: results in config.PodNamespace (aka pod default)
 	//   empty: results in config.ProwJobNamespace (aka same as prowjob)
 	Namespace *string `json:"namespace,omitempty"`
+	// ErrorOnEviction indicates that the ProwJob should be completed and given
+	// the ErrorState status if the pod that is executing the job is evicted.
+	// If this field is unspecified or false, a new pod will be created to replace
+	// the evicted one.
+	ErrorOnEviction bool `json:"error_on_eviction,omitempty"`
 	// SourcePath contains the path where this job is defined
 	SourcePath string `json:"-"`
 	// Spec is the Kubernetes pod spec used if Agent is kubernetes.

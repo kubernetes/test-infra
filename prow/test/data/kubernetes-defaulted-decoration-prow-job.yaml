@@ -31,6 +31,7 @@ spec:
       initupload: initupload:default
       sidecar: sidecar:default
   job: kubernetes-defaulted-decoration
+  namespace: default
   pod_spec:
     containers:
     - args:

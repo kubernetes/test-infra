@@ -1006,6 +1006,8 @@ func validateAgent(v JobBase, podNamespace string) error {
 	case v.DecorationConfig != nil && agent != k:
 		// TODO(fejta): support decoration
 		return fmt.Errorf("decoration requires agent: %s (found %q)", k, agent)
+	case v.ErrorOnEviction && agent != k:
+		return fmt.Errorf("error_on_eviction only applies to agent: %s (found %q)", k, agent)
 	case v.Namespace == nil || *v.Namespace == "":
 		return fmt.Errorf("failed to default namespace")
 	case *v.Namespace != podNamespace && agent != b:
@@ -1144,6 +1146,9 @@ func (c *ProwConfig) defaultJobBase(base *JobBase) {
 	if base.Namespace == nil || *base.Namespace == "" {
 		s := c.PodNamespace
 		base.Namespace = &s
+	}
+	if base.Cluster == "" {
+		base.Cluster = kube.DefaultClusterAlias
 	}
 }
 
