@@ -652,3 +652,5 @@ func (g *gkeDeployer) GetClusterCreated(gcpProject string) (time.Time, error) {
 	}
 	return created, nil
 }
+
+func (_ *gkeDeployer) KubectlCommand() (*exec.Cmd, error) { return nil, nil }

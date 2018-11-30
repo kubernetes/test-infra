@@ -4,13 +4,19 @@ presets:
   # URL to download the latest 'aws-k8s-tester' release
   - name: AWS_K8S_TESTER_EKS_AWS_K8S_TESTER_DOWNLOAD_URL
     value: https://github.com/aws/aws-k8s-tester/releases/download/0.1.3/aws-k8s-tester-0.1.3-linux-amd64
+  - name: AWS_K8S_TESTER_EKS_AWS_K8S_TESTER_DOWNLOAD_PATH
+    value: /tmp/aws-k8s-tester/aws-k8s-tester
   # URL to download 'kubectl', required for 'kubectl' calls to EKS
   # TODO: use upstream 'kubectl'
   - name: AWS_K8S_TESTER_EKS_KUBECTL_DOWNLOAD_URL
     value: https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/kubectl
+  - name: AWS_K8S_TESTER_EKS_KUBECTL_DOWNLOAD_PATH
+    value: /tmp/aws-k8s-tester/kubectl
   # URL to download 'aws-iam-authenticator', required for 'kubectl' calls to EKS
   - name: AWS_K8S_TESTER_EKS_AWS_IAM_AUTHENTICATOR_DOWNLOAD_URL
     value: https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator
+  - name: AWS_K8S_TESTER_EKS_AWS_IAM_AUTHENTICATOR_DOWNLOAD_PATH
+    value: /tmp/aws-k8s-tester/aws-iam-authenticator
   # test mode is either "embedded" or "aws-cli" ("embedded" uses native AWS Go client, "aws-cli" will use 'aws')
   - name: AWS_K8S_TESTER_EKS_TEST_MODE
     value: "embedded"

@@ -26,14 +26,12 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
-	"path/filepath"
+	osexec "os/exec"
 	"syscall"
 	"time"
 
 	"github.com/aws/aws-k8s-tester/eksconfig"
 	"github.com/aws/aws-k8s-tester/ekstester"
-
 	"k8s.io/test-infra/kubetest/process"
 	"k8s.io/test-infra/kubetest/util"
 )
@@ -42,10 +40,9 @@ import (
 // Satisfies "k8s.io/test-infra/kubetest/main.go" 'deployer' and 'publisher" interfaces.
 // Reference https://github.com/kubernetes/test-infra/blob/master/kubetest/main.go.
 type deployer struct {
-	stopc            chan struct{}
-	cfg              *eksconfig.Config
-	awsK8sTesterPath string
-	ctrl             *process.Control
+	stopc chan struct{}
+	cfg   *eksconfig.Config
+	ctrl  *process.Control
 }
 
 // NewDeployer creates a new EKS deployer.
@@ -56,15 +53,13 @@ func NewDeployer(timeout time.Duration, verbose bool) (ekstester.Deployer, error
 		return nil, err
 	}
 	var f *os.File
-	f, err = ioutil.TempFile(os.TempDir(), "aws-k8s-tester")
+	f, err = ioutil.TempFile(os.TempDir(), "aws-k8s-tester-config")
 	if err != nil {
 		return nil, err
 	}
-	outputPath := f.Name()
-	f.Close()
-	cfg.ConfigPath, err = filepath.Abs(outputPath)
-	if err != nil {
-		return nil, err
+	cfg.ConfigPath = f.Name()
+	if err = f.Close(); err != nil {
+		return nil, fmt.Errorf("failed to close aws-k8s-tester-config file %v", err)
 	}
 	if err = cfg.Sync(); err != nil {
 		return nil, err
@@ -81,22 +76,22 @@ func NewDeployer(timeout time.Duration, verbose bool) (ekstester.Deployer, error
 		),
 	}
 
-	dp.awsK8sTesterPath, err = exec.LookPath("aws-k8s-tester")
+	if err = os.RemoveAll(cfg.AWSK8sTesterPath); err != nil {
+		return nil, err
+	}
+	f, err = os.Create(cfg.AWSK8sTesterPath)
 	if err != nil {
-		var f *os.File
-		f, err = ioutil.TempFile(os.TempDir(), "aws-k8s-tester")
-		if err != nil {
-			return nil, fmt.Errorf("failed to create %q (%v)", dp.awsK8sTesterPath, err)
-		}
-		dp.awsK8sTesterPath = f.Name()
-		dp.awsK8sTesterPath, _ = filepath.Abs(dp.awsK8sTesterPath)
-		if err = httpRead(cfg.AWSK8sTesterDownloadURL, f); err != nil {
-			return nil, err
-		}
-		f.Close()
-		if err = util.EnsureExecutable(dp.awsK8sTesterPath); err != nil {
-			return nil, err
-		}
+		return nil, fmt.Errorf("failed to create %q (%v)", cfg.AWSK8sTesterPath, err)
+	}
+	cfg.AWSK8sTesterPath = f.Name()
+	if err = httpRead(cfg.AWSK8sTesterDownloadURL, f); err != nil {
+		return nil, err
+	}
+	if err = f.Close(); err != nil {
+		return nil, fmt.Errorf("failed to close aws-k8s-tester file %v", err)
+	}
+	if err = util.EnsureExecutable(cfg.AWSK8sTesterPath); err != nil {
+		return nil, err
 	}
 	return dp, nil
 }
@@ -106,8 +101,8 @@ func (dp *deployer) Up() (err error) {
 	// "create cluster" command outputs cluster information
 	// in the configuration file (e.g. VPC ID, ALB DNS names, etc.)
 	// this needs be reloaded for other deployer method calls
-	createCmd := exec.Command(
-		dp.awsK8sTesterPath,
+	createCmd := osexec.Command(
+		dp.cfg.AWSK8sTesterPath,
 		"eks",
 		"--path="+dp.cfg.ConfigPath,
 		"create",
@@ -134,8 +129,8 @@ func (dp *deployer) Down() (err error) {
 	if _, err = dp.LoadConfig(); err != nil {
 		return err
 	}
-	_, err = dp.ctrl.Output(exec.Command(
-		dp.awsK8sTesterPath,
+	_, err = dp.ctrl.Output(osexec.Command(
+		dp.cfg.AWSK8sTesterPath,
 		"eks",
 		"--path="+dp.cfg.ConfigPath,
 		"delete",
@@ -150,8 +145,8 @@ func (dp *deployer) IsUp() (err error) {
 	if _, err = dp.LoadConfig(); err != nil {
 		return err
 	}
-	_, err = dp.ctrl.Output(exec.Command(
-		dp.awsK8sTesterPath,
+	_, err = dp.ctrl.Output(osexec.Command(
+		dp.cfg.AWSK8sTesterPath,
 		"eks",
 		"--path="+dp.cfg.ConfigPath,
 		"check",
@@ -191,8 +186,8 @@ func (dp *deployer) GetWorkerNodeLogs() (err error) {
 	if _, err = dp.LoadConfig(); err != nil {
 		return err
 	}
-	_, err = dp.ctrl.Output(exec.Command(
-		dp.awsK8sTesterPath,
+	_, err = dp.ctrl.Output(osexec.Command(
+		dp.cfg.AWSK8sTesterPath,
 		"eks",
 		"--path="+dp.cfg.ConfigPath,
 		"test", "get-worker-node-logs",
@@ -208,8 +203,8 @@ func (dp *deployer) DumpClusterLogs(artifactDir, _ string) (err error) {
 	if _, err = dp.LoadConfig(); err != nil {
 		return err
 	}
-	_, err = dp.ctrl.Output(exec.Command(
-		dp.awsK8sTesterPath,
+	_, err = dp.ctrl.Output(osexec.Command(
+		dp.cfg.AWSK8sTesterPath,
 		"eks",
 		"--path="+dp.cfg.ConfigPath,
 		"test", "get-worker-node-logs",
@@ -217,14 +212,23 @@ func (dp *deployer) DumpClusterLogs(artifactDir, _ string) (err error) {
 	if err != nil {
 		return err
 	}
-	_, err = dp.ctrl.Output(exec.Command(
-		dp.awsK8sTesterPath,
+	_, err = dp.ctrl.Output(osexec.Command(
+		dp.cfg.AWSK8sTesterPath,
 		"eks",
 		"--path="+dp.cfg.ConfigPath,
 		"test", "dump-cluster-logs",
 		artifactDir,
 	))
 	return err
+}
+
+// KubectlCommand returns "kubectl" command object for API reachability tests.
+func (dp *deployer) KubectlCommand() (*osexec.Cmd, error) {
+	// reload configuration from disk to read the latest configuration
+	if _, err := dp.LoadConfig(); err != nil {
+		return nil, err
+	}
+	return osexec.Command(dp.cfg.KubectlPath, "--kubeconfig="+dp.cfg.KubeConfigPath), nil
 }
 
 // Stop stops ongoing operations.

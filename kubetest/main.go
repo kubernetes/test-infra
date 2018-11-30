@@ -226,6 +226,7 @@ type deployer interface {
 	TestSetup() error
 	Down() error
 	GetClusterCreated(gcpProject string) (time.Time, error)
+	KubectlCommand() (*exec.Cmd, error)
 }
 
 // publisher is implemented by deployers that want to publish status on success

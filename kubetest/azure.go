@@ -604,3 +604,5 @@ func (c Cluster) TestSetup() error {
 func (c Cluster) IsUp() error {
 	return isUp(c)
 }
+
+func (_ Cluster) KubectlCommand() (*exec.Cmd, error) { return nil, nil }

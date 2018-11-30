@@ -17,9 +17,8 @@ import (
 
 	"github.com/aws/aws-k8s-tester/ec2config"
 	"github.com/aws/aws-k8s-tester/pkg/awsapi/ec2"
-
-	gyaml "github.com/ghodss/yaml"
 	"k8s.io/client-go/util/homedir"
+	"sigs.k8s.io/yaml"
 )
 
 // Config defines EKS test configuration.
@@ -39,27 +38,17 @@ type Config struct {
 	// Only required when ALB Ingress "TestMode" is "ingress-test-server".
 	AWSK8sTesterImage string `json:"aws-k8s-tester-image,omitempty"`
 
-	// AWSK8sTesterDownloadURL is the URL to download the "aws-k8s-tester" from.
+	// AWSK8sTesterPath is the path to download the "aws-k8s-tester".
 	// This is required for Kubernetes kubetest plugin.
+	AWSK8sTesterPath        string `json:"aws-k8s-tester-path,omitempty"`
 	AWSK8sTesterDownloadURL string `json:"aws-k8s-tester-download-url,omitempty"`
-	// KubectlDownloadURL is the URL to download the "kubectl" from.
+	// KubectlPath is the path to download the "kubectl".
+	KubectlPath        string `json:"kubectl-path,omitempty"`
 	KubectlDownloadURL string `json:"kubectl-download-url,omitempty"`
-	// AWSIAMAuthenticatorDownloadURL is the URL to download the "aws-iam-authenticator" from.
+	// AWSIAMAuthenticatorPath is the path to download the "aws-iam-authenticator".
 	// This is required for Kubernetes kubetest plugin.
+	AWSIAMAuthenticatorPath        string `json:"aws-iam-authenticator-path,omitempty"`
 	AWSIAMAuthenticatorDownloadURL string `json:"aws-iam-authenticator-download-url,omitempty"`
-
-	// WaitBeforeDown is the duration to sleep before cluster tear down.
-	WaitBeforeDown time.Duration `json:"wait-before-down,omitempty"`
-	// Down is true to automatically tear down cluster in "test".
-	// Deployer implementation should not call "Down" inside "Up" method.
-	// This is meant to be used as a flag for test.
-	Down bool `json:"down"`
-
-	// EnableWorkerNodeSSH is true to enable SSH access to worker nodes.
-	EnableWorkerNodeSSH bool `json:"enable-worker-node-ssh"`
-	// EnableWorkerNodeHA is true to use all 3 subnets to create worker nodes.
-	// Note that at least 2 subnets are required for EKS cluster.
-	EnableWorkerNodeHA bool `json:"enable-worker-node-ha"`
 
 	// ConfigPath is the configuration file path.
 	// Must be left empty, and let deployer auto-populate this field.
@@ -76,6 +65,19 @@ type Config struct {
 	KubeConfigPath       string `json:"kubeconfig-path,omitempty"`        // read-only to user
 	KubeConfigPathBucket string `json:"kubeconfig-path-bucket,omitempty"` // read-only to user
 	KubeConfigPathURL    string `json:"kubeconfig-path-url,omitempty"`    // read-only to user
+
+	// WaitBeforeDown is the duration to sleep before cluster tear down.
+	WaitBeforeDown time.Duration `json:"wait-before-down,omitempty"`
+	// Down is true to automatically tear down cluster in "test".
+	// Deployer implementation should not call "Down" inside "Up" method.
+	// This is meant to be used as a flag for test.
+	Down bool `json:"down"`
+
+	// EnableWorkerNodeSSH is true to enable SSH access to worker nodes.
+	EnableWorkerNodeSSH bool `json:"enable-worker-node-ssh"`
+	// EnableWorkerNodeHA is true to use all 3 subnets to create worker nodes.
+	// Note that at least 2 subnets are required for EKS cluster.
+	EnableWorkerNodeHA bool `json:"enable-worker-node-ha"`
 
 	// VPCID is the VPC ID.
 	VPCID string `json:"vpc-id"`
@@ -110,10 +112,10 @@ type Config struct {
 	WorkerNodeAMI string `json:"worker-node-ami,omitempty"`
 	// WorkerNodeInstanceType is the EC2 instance type for worker nodes.
 	WorkerNodeInstanceType string `json:"worker-node-instance-type,omitempty"`
-	// WorkderNodeASGMin is the minimum number of nodes in worker node ASG.
-	WorkderNodeASGMin int `json:"worker-node-asg-min,omitempty"`
-	// WorkderNodeASGMax is the maximum number of nodes in worker node ASG.
-	WorkderNodeASGMax int `json:"worker-node-asg-max,omitempty"`
+	// WorkerNodeASGMin is the minimum number of nodes in worker node ASG.
+	WorkerNodeASGMin int `json:"worker-node-asg-min,omitempty"`
+	// WorkerNodeASGMax is the maximum number of nodes in worker node ASG.
+	WorkerNodeASGMax int `json:"worker-node-asg-max,omitempty"`
 	// WorkerNodeVolumeSizeGB is the maximum number of nodes in worker node ASG.
 	// If empty, set default value.
 	WorkerNodeVolumeSizeGB int `json:"worker-node-volume-size-gb,omitempty"`
@@ -396,8 +398,11 @@ var defaultConfig = Config{
 	TestMode: "embedded",
 
 	AWSK8sTesterDownloadURL:        "https://github.com/aws/aws-k8s-tester/releases/download/0.1.2/aws-k8s-tester-0.1.2-linux-amd64",
+	AWSK8sTesterPath:               "/tmp/aws-k8s-tester/aws-k8s-tester",
 	KubectlDownloadURL:             "https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/kubectl",
+	KubectlPath:                    "/tmp/aws-k8s-tester/kubectl",
 	AWSIAMAuthenticatorDownloadURL: "https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator",
+	AWSIAMAuthenticatorPath:        "/tmp/aws-k8s-tester/aws-iam-authenticator",
 
 	// enough time for ALB access log
 	WaitBeforeDown: time.Minute,
@@ -416,8 +421,8 @@ var defaultConfig = Config{
 	WorkerNodeAMI: "ami-0f54a2f7d2e9c88b3",
 
 	WorkerNodeInstanceType: "m5.large",
-	WorkderNodeASGMin:      1,
-	WorkderNodeASGMax:      1,
+	WorkerNodeASGMin:       1,
+	WorkerNodeASGMax:       1,
 	WorkerNodeVolumeSizeGB: 20,
 
 	KubernetesVersion: "1.10",
@@ -476,7 +481,7 @@ func Load(p string) (cfg *Config, err error) {
 		return nil, err
 	}
 	cfg = new(Config)
-	if err = gyaml.Unmarshal(d, cfg); err != nil {
+	if err = yaml.Unmarshal(d, cfg); err != nil {
 		return nil, err
 	}
 
@@ -517,7 +522,7 @@ func (cfg *Config) Sync() (err error) {
 	}
 	cfg.UpdatedAt = time.Now().UTC()
 	var d []byte
-	d, err = gyaml.Marshal(cfg)
+	d, err = yaml.Marshal(cfg)
 	if err != nil {
 		return err
 	}
@@ -600,25 +605,25 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 		return fmt.Errorf("EKS WorkerNodeInstanceType %q is not valid", cfg.WorkerNodeInstanceType)
 	}
 	if cfg.ALBIngressController != nil && cfg.ALBIngressController.TestServerReplicas > 0 {
-		if !checkMaxPods(cfg.WorkerNodeInstanceType, cfg.WorkderNodeASGMax, cfg.ALBIngressController.TestServerReplicas) {
+		if !checkMaxPods(cfg.WorkerNodeInstanceType, cfg.WorkerNodeASGMax, cfg.ALBIngressController.TestServerReplicas) {
 			return fmt.Errorf(
 				"EKS WorkerNodeInstanceType %q only supports %d pods per node (ASG Max %d, allowed up to %d, test server replicas %d)",
 				cfg.WorkerNodeInstanceType,
 				ec2.InstanceTypes[cfg.WorkerNodeInstanceType].MaxPods,
-				cfg.WorkderNodeASGMax,
-				ec2.InstanceTypes[cfg.WorkerNodeInstanceType].MaxPods*int64(cfg.WorkderNodeASGMax),
+				cfg.WorkerNodeASGMax,
+				ec2.InstanceTypes[cfg.WorkerNodeInstanceType].MaxPods*int64(cfg.WorkerNodeASGMax),
 				cfg.ALBIngressController.TestServerReplicas,
 			)
 		}
 	}
-	if cfg.WorkderNodeASGMin == 0 {
-		return errors.New("EKS WorkderNodeASGMin is not specified")
+	if cfg.WorkerNodeASGMin == 0 {
+		return errors.New("EKS WorkerNodeASGMin is not specified")
 	}
-	if cfg.WorkderNodeASGMax == 0 {
-		return errors.New("EKS WorkderNodeASGMax is not specified")
+	if cfg.WorkerNodeASGMax == 0 {
+		return errors.New("EKS WorkerNodeASGMax is not specified")
 	}
-	if !checkWorkderNodeASG(cfg.WorkderNodeASGMin, cfg.WorkderNodeASGMax) {
-		return fmt.Errorf("EKS WorkderNodeASG %d and %d is not valid", cfg.WorkderNodeASGMin, cfg.WorkderNodeASGMax)
+	if !checkWorkderNodeASG(cfg.WorkerNodeASGMin, cfg.WorkerNodeASGMax) {
+		return fmt.Errorf("EKS WorkderNodeASG %d and %d is not valid", cfg.WorkerNodeASGMin, cfg.WorkerNodeASGMax)
 	}
 	if cfg.WorkerNodeVolumeSizeGB == 0 {
 		cfg.WorkerNodeVolumeSizeGB = defaultWorkderNodeVolumeSizeGB
@@ -667,7 +672,8 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 	}
 	cfg.LogOutputToUploadPathBucket = filepath.Join(cfg.ClusterName, "awsk8stester-eks.log")
 
-	cfg.KubeConfigPath = fmt.Sprintf("%s.%s.kubeconfig.generated.yaml", cfg.ConfigPath, cfg.ClusterName)
+	// cfg.KubeConfigPath = fmt.Sprintf("%s.%s.kubeconfig.generated.yaml", cfg.ConfigPath, cfg.ClusterName)
+	cfg.KubeConfigPath = "/tmp/aws-k8s-tester/kubeconfig"
 	cfg.KubeConfigPathBucket = filepath.Join(cfg.ClusterName, "kubeconfig")
 
 	cfg.ALBIngressController.IngressTestServerDeploymentServiceSpecPath = fmt.Sprintf(

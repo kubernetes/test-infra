@@ -15,8 +15,7 @@ import (
 
 	"github.com/aws/aws-k8s-tester/ec2config/plugins"
 	ec2types "github.com/aws/aws-k8s-tester/pkg/awsapi/ec2"
-
-	gyaml "github.com/ghodss/yaml"
+	"sigs.k8s.io/yaml"
 )
 
 // Config defines EC2 configuration.
@@ -119,7 +118,7 @@ type Config struct {
 	// If empty, it will fetch subnets from a given or created VPC.
 	// And randomly assign them to instances.
 	SubnetIDs                  []string          `json:"subnet-ids,omitempty"`
-	SubnetIDToAvailibilityZone map[string]string `json:"subnet-id-to-availability-zone,omitempty"` // read-only to user
+	SubnetIDToAvailabilityZone map[string]string `json:"subnet-id-to-availability-zone,omitempty"` // read-only to user
 
 	// IngressRulesTCP is a map from TCP port range to CIDR to allow via security groups.
 	IngressRulesTCP map[string]string `json:"ingress-rules-tcp,omitempty"`
@@ -136,6 +135,9 @@ type Config struct {
 
 	// Wait is true to wait until all EC2 instances are ready.
 	Wait bool `json:"wait"`
+
+	// InstanceProfileName is the name of an instance profile with permissions to manage EC2 instances.
+	InstanceProfileName string `json:"instance-profile-name,omitempty"`
 }
 
 // Instance represents an EC2 instance.
@@ -448,7 +450,7 @@ func Load(p string) (cfg *Config, err error) {
 		return nil, err
 	}
 	cfg = new(Config)
-	if err = gyaml.Unmarshal(d, cfg); err != nil {
+	if err = yaml.Unmarshal(d, cfg); err != nil {
 		return nil, err
 	}
 
@@ -485,7 +487,7 @@ func (cfg *Config) Sync() (err error) {
 	}
 	cfg.UpdatedAt = time.Now().UTC()
 	var d []byte
-	d, err = gyaml.Marshal(cfg)
+	d, err = yaml.Marshal(cfg)
 	if err != nil {
 		return err
 	}
