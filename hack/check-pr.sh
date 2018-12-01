@@ -21,6 +21,13 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
+if [[ "$#" -ne 1 ]]; then
+    echo "Usage: check-pr [ref]"
+    exit 1
+fi
+
+cd `git rev-parse --show-toplevel`
+
 dirs=()
 tests=()
 ref="${1:-HEAD}"
