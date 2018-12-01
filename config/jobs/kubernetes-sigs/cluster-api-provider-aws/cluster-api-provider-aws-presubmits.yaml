@@ -1,5 +1,15 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-aws:
+  - name: pull-cluster-api-provider-aws-bazel-verify
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181129-33929460d-1.12
+        command:
+        - "./hack/verify-bazel.sh"
   - name: pull-cluster-api-provider-aws-bazel-test
     always_run: true
     optional: false
