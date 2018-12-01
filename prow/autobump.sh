@@ -34,7 +34,7 @@ color-version() { # Bold blue
 cd "$(dirname "${BASH_SOURCE}")"
 
 if [[ $# -lt 2 ]]; then
-    echo "Usage: $(basename "$0") <github-login> </path/to/github/token> [default-name] [default-email]" >&2
+    echo "Usage: $(basename "$0") <github-login> </path/to/github/token> [git-name] [git-email]" >&2
     exit 1
 fi
 user=$1
@@ -42,14 +42,14 @@ token=$2
 shift
 shift
 ensure-config() {
-  git config user.name &>/dev/null && git config user.email &>/dev/null && return 0
-  if [[ $# -lt 2 ]]; then
-      echo "ERROR: git config user.name, user.email unset. No defaults provided" >&2
-      return 1
+  if [[ $# -eq 2 ]]; then
+    echo "git config user.name=$1 user.email=$2..." >&2
+    git config user.name "$1"
+    git config user.email "$2"
   fi
-  echo "git config user.name=$1 user.email=$2..." >&2
-  git config user.name "$1"
-  git config user.email "$2"
+  git config user.name &>/dev/null && git config user.email &>/dev/null && return 0
+  echo "ERROR: git config user.name, user.email unset. No defaults provided" >&2
+  return 1
 }
 ensure-config "$@"
 
