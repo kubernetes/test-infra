@@ -86,7 +86,7 @@ the `exta_refs` field.
   decoration_config:
     ssh_key_secrets:
     - ssh-secret
-  clone_uri: "git@github.com:{{.Org}}/{{.Repo}}.git"
+  clone_uri: "git@github.com:<YOUR_ORG>/<YOUR_REPO>.git"
   extra_refs:
   - org: kubernetes
     repo: other-repo
