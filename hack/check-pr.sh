@@ -21,18 +21,20 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-if [[ "$#" -ne 1 ]]; then
-    echo "Usage: check-pr [ref]"
-    exit 1
-fi
-
 cd `git rev-parse --show-toplevel`
 
 dirs=()
 tests=()
 ref="${1:-HEAD}"
 echo -n "Packages changed since $ref: "
-for d in $(git diff --name-only "$ref" | xargs -n 1 dirname | sort -u); do
+
+changed=$(git diff --name-only "$ref")
+if [[ ${#changed} == 0 ]]; then
+    echo NONE
+    exit 0
+fi
+
+for d in $(echo -n $changed | xargs -n 1 dirname | sort -u); do
     if ! ls "./$d/"*.go &> /dev/null; then
         continue
     fi
