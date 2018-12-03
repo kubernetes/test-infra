@@ -353,7 +353,7 @@ func TestFulfillOne(t *testing.T) {
 		fulfillment: common.TypeToResources{},
 	}
 	if err = m.fulfillOne(context.Background(), &req); err != nil {
-		t.Errorf("could not satisty requirements ")
+		t.Errorf("could not satisfy requirements ")
 	}
 	if len(req.fulfillment) != 1 {
 		t.Errorf("there should be only one type")
