@@ -19,11 +19,10 @@ package dco
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/sirupsen/logrus"
-
-	"regexp"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -106,7 +105,7 @@ func checkCommitMessages(gc gitHubClient, l *logrus.Entry, org, repo string, num
 	if err != nil {
 		return nil, fmt.Errorf("error listing commits for pull request: %v", err)
 	}
-	l.Infof("Found %d commits in PR", len(allCommits))
+	l.Debugf("Found %d commits in PR", len(allCommits))
 
 	var commitsMissingDCO []github.GitCommit
 	for _, commit := range allCommits {
@@ -117,7 +116,7 @@ func checkCommitMessages(gc gitHubClient, l *logrus.Entry, org, repo string, num
 		}
 	}
 
-	l.Infof("All commits in PR have DCO signoff: %t", len(commitsMissingDCO) == 0)
+	l.Debugf("All commits in PR have DCO signoff: %t", len(commitsMissingDCO) == 0)
 	return commitsMissingDCO, nil
 }
 
@@ -137,7 +136,7 @@ func checkExistingStatus(gc gitHubClient, l *logrus.Entry, org, repo, sha string
 		existingStatus = status.State
 		break
 	}
-	l.Infof("Existing DCO status context status is %q", existingStatus)
+	l.Debugf("Existing DCO status context status is %q", existingStatus)
 	return existingStatus, nil
 }
 
@@ -165,10 +164,6 @@ func checkExistingLabels(gc gitHubClient, l *logrus.Entry, org, repo string, num
 // current state.
 func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo string, pr github.PullRequest, commitsMissingDCO []github.GitCommit, existingStatus string, hasYesLabel, hasNoLabel, addComment bool) error {
 	targetURL := fmt.Sprintf("https://github.com/%s/%s/blob/master/CONTRIBUTING.md", org, repo)
-	botName, err := gc.BotName()
-	if err != nil {
-		return fmt.Errorf("failed to get bot name: %v", err)
-	}
 
 	signedOff := len(commitsMissingDCO) == 0
 
@@ -176,21 +171,21 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 	// TODO: clean-up old comments?
 	if signedOff {
 		if hasNoLabel {
-			l.Infof("Removing %q label", dcoNoLabel)
+			l.Debugf("Removing %q label", dcoNoLabel)
 			// remove 'dco-signoff: no' label
 			if err := gc.RemoveLabel(org, repo, pr.Number, dcoNoLabel); err != nil {
 				return fmt.Errorf("error removing label: %v", err)
 			}
 		}
 		if !hasYesLabel {
-			l.Infof("Adding %q label", dcoYesLabel)
+			l.Debugf("Adding %q label", dcoYesLabel)
 			// add 'dco-signoff: yes' label
 			if err := gc.AddLabel(org, repo, pr.Number, dcoYesLabel); err != nil {
 				return fmt.Errorf("error adding label: %v", err)
 			}
 		}
 		if existingStatus != github.StatusSuccess {
-			l.Infof("Setting DCO status context to succeeded")
+			l.Debugf("Setting DCO status context to succeeded")
 			if err := gc.CreateStatus(org, repo, pr.Head.SHA, github.Status{
 				Context:     dcoContextName,
 				State:       github.StatusSuccess,
@@ -201,27 +196,27 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 			}
 		}
 
-		cp.PruneComments(shouldPrune(l, botName))
+		cp.PruneComments(shouldPrune(l))
 		return nil
 	}
 
 	// handle the 'not all commits signed off' case
 	if !hasNoLabel {
-		l.Infof("Adding %q label", dcoNoLabel)
+		l.Debugf("Adding %q label", dcoNoLabel)
 		// add 'dco-signoff: no' label
 		if err := gc.AddLabel(org, repo, pr.Number, dcoNoLabel); err != nil {
 			return fmt.Errorf("error adding label: %v", err)
 		}
 	}
 	if hasYesLabel {
-		l.Infof("Removing %q label", dcoYesLabel)
+		l.Debugf("Removing %q label", dcoYesLabel)
 		// remove 'dco-signoff: yes' label
 		if err := gc.RemoveLabel(org, repo, pr.Number, dcoYesLabel); err != nil {
 			return fmt.Errorf("error removing label: %v", err)
 		}
 	}
 	if existingStatus != github.StatusFailure {
-		l.Infof("Setting DCO status context to failed")
+		l.Debugf("Setting DCO status context to failed")
 		if err := gc.CreateStatus(org, repo, pr.Head.SHA, github.Status{
 			Context:     dcoContextName,
 			State:       github.StatusFailure,
@@ -233,10 +228,10 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 	}
 
 	if addComment {
-		// we only prune and recreate the comment on *synchronize* events to
-		// prevent us commenting every time a label is added/deleted.
-		cp.PruneComments(shouldPrune(l, botName))
-		l.Infof("Commenting on PR to advise users of DCO check")
+		// prune any old comments and add a new one with the latest list of
+		// failing commits
+		cp.PruneComments(shouldPrune(l))
+		l.Debugf("Commenting on PR to advise users of DCO check")
 		if err := gc.CreateComment(org, repo, pr.Number, fmt.Sprintf(dcoNotFoundMessage, targetURL, markdownSHAList(org, repo, commitsMissingDCO), plugins.AboutThisBot)); err != nil {
 			l.WithError(err).Warning("Could not create DCO not found comment.")
 		}
@@ -297,7 +292,7 @@ func markdownSHAList(org, repo string, list []github.GitCommit) string {
 }
 
 // shouldPrune finds comments left by this plugin.
-func shouldPrune(log *logrus.Entry, botName string) func(github.IssueComment) bool {
+func shouldPrune(log *logrus.Entry) func(github.IssueComment) bool {
 	return func(comment github.IssueComment) bool {
 		return strings.Contains(comment.Body, dcoMsgPruneMatch)
 	}
@@ -314,9 +309,7 @@ func handlePullRequest(gc gitHubClient, cp commentPruner, log *logrus.Entry, pe 
 	// we only reprocess on label, unlabel, open, reopen and synchronize events
 	// this will reduce our API token usage and save processing of unrelated events
 	switch pe.Action {
-	case github.PullRequestActionLabeled,
-		github.PullRequestActionUnlabeled,
-		github.PullRequestActionOpened,
+	case github.PullRequestActionOpened,
 		github.PullRequestActionReopened,
 		github.PullRequestActionSynchronize:
 	default:
@@ -324,8 +317,7 @@ func handlePullRequest(gc gitHubClient, cp commentPruner, log *logrus.Entry, pe 
 	}
 
 	shouldComment := pe.Action == github.PullRequestActionSynchronize ||
-		pe.Action == github.PullRequestActionOpened ||
-		pe.Action == github.PullRequestActionReopened
+		pe.Action == github.PullRequestActionOpened
 
 	return handle(gc, cp, log, org, repo, pe.PullRequest, shouldComment)
 }
