@@ -24,7 +24,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=80m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181129-33929460d-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181203-a441fa430-master
 
 - name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu-v100
   interval: 12h #expensive test
@@ -51,4 +51,4 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=80m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181129-33929460d-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181203-a441fa430-master
