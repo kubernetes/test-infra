@@ -287,8 +287,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-canary
 - name: ci-kubernetes-coverage-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-coverage-conformance
+  short_text_metric: coverage
 - name: ci-kubernetes-coverage-e2e-gci-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-coverage-e2e-gci-gce
+  short_text_metric: coverage
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu
   alert_stale_results_hours: 24
