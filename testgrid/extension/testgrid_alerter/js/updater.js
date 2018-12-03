@@ -131,7 +131,7 @@ var Updater = (function() {
   /**
    * Updates selectedDashboards if selectedDashboards changes elsewhere.
    *
-   * Calls updateAlerts() if selectedDashboards chagnes from what is currently
+   * Calls updateAlerts() if selectedDashboards changes from what is currently
    * stored.
    */
   chrome.storage.onChanged.addListener(function(changes, areaName) {
