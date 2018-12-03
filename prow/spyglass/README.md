@@ -91,7 +91,7 @@ In the `init` method, call `lenses.RegisterLens()` with an instance of your impl
 Spyglass should now be aware of your lens.
 
 Additionally, some front-end TypeScript code can be provided. Configure your BUILD.bazel to build it, then emit a
-<script> tag with a relative reference to it in your `Header()` implementation. See `buildlog/BUILD.bazel` for an
+\<script> tag with a relative reference to it in your `Header()` implementation. See `buildlog/BUILD.bazel` for an
 example.
 
 In your typescript code, a global `spyglass` object will be available, providing the following interface:
