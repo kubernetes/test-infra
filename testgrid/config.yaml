@@ -382,12 +382,18 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-coredns
 - name: ci-kubernetes-e2e-gci-gce-kube-dns
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-kube-dns
+- name: ci-kubernetes-e2e-gci-gce-coredns-nodecache
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-coredns-nodecache
+- name: ci-kubernetes-e2e-gci-gce-kube-dns-nodecache
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-kube-dns-nodecache
 - name: ci-kubernetes-e2e-gce-alpha-api
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-api
 - name: ci-kubernetes-e2e-gci-gce-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial
 - name: ci-kubernetes-e2e-gci-gce-serial-kube-dns
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-kube-dns
+- name: ci-kubernetes-e2e-gci-gce-serial-kube-dns-nodecache
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-kube-dns-nodecache
 - name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-serial-sig-cli
 - name: ci-kubernetes-e2e-gke-gci-serial-sig-cli
@@ -3267,6 +3273,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-coredns-performance
 - name: ci-kubernetes-e2e-gce-kubedns-performance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-kubedns-performance
+- name: ci-kubernetes-e2e-gce-coredns-performance-nodecache
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-coredns-performance-nodecache
+- name: ci-kubernetes-e2e-gce-kubedns-performance-nodecache
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-kubedns-performance-nodecache
 
 # GCE windows test groups.
 - name: ci-kubernetes-e2e-windows-gce-poc
@@ -6094,10 +6104,22 @@ dashboards:
     description: network gci-gce tests with CoreDNS
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+  - name: gci-gce-coredns-nodecache
+    test_group_name: ci-kubernetes-e2e-gci-gce-coredns-nodecache
+    base_options: include-filter-by-regex=\[sig-network\]
+    description: network gci-gce tests with CoreDNS and nodelocaldns cache enabled
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: gci-gce-kube-dns
     test_group_name: ci-kubernetes-e2e-gci-gce-kube-dns
     base_options: include-filter-by-regex=\[sig-network\]
     description: network gci-gce tests with kube-dns
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+  - name: gci-gce-kube-dns-nodecache
+    test_group_name: ci-kubernetes-e2e-gci-gce-kube-dns-nodecache
+    base_options: include-filter-by-regex=\[sig-network\]
+    description: network gci-gce tests with kube-dns and nodelocaldns cache enabled
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: gce-alpha-api
@@ -6128,6 +6150,12 @@ dashboards:
     description: network gci-gce with kube-dns serial e2e tests for master branch
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+  - name: gci-gce-serial-kube-dns-nodecache
+    test_group_name: ci-kubernetes-e2e-gci-gce-serial-kube-dns-nodecache
+    base_options: include-filter-by-regex=\[sig-network\]
+    description: network gci-gce with kube-dns and nodelocaldns cache serial e2e tests for master branch
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: gci-gce-alpha-features
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
     base_options: include-filter-by-regex=\[sig-network\]
@@ -6140,8 +6168,12 @@ dashboards:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: gce-coredns-performance
     test_group_name: ci-kubernetes-e2e-gce-coredns-performance
+  - name: gce-coredns-performance-nodecache
+    test_group_name: ci-kubernetes-e2e-gce-coredns-performance-nodecache
   - name: gce-kubedns-performance
     test_group_name: ci-kubernetes-e2e-gce-kubedns-performance
+  - name: gce-kubedns-performance-nodecache
+    test_group_name: ci-kubernetes-e2e-gce-kubedns-performance-nodecache
 
 - name: sig-network-gke
   dashboard_tab:
