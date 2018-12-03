@@ -90,3 +90,35 @@ presubmits:
         - make
         - test-unit
 
+periodics:
+- interval: 12h
+  name: ci-cloud-provider-azure-master
+  labels:
+    preset-service-account: "true"
+    preset-cloud-provider-azure-account: "true"
+    preset-dind-enabled: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-azure
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-azure
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181120-dea0825e3-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - test-e2e
+      - SUITE=default
+      - "SUBJECT=${PULL_NUMBER}"
+      env:
+      - name: K8S_BRANCH
+        value: master
+      - name: TEST_MANIFEST
+        value: linux-kcm
+      securityContext:
+        privileged: true
