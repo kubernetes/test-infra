@@ -23,26 +23,25 @@ load(
 
 ## prow_image is a macro for creating :app and :image targets
 def prow_image(
-    name, # use "image"
-    base = None,
-    stamp = True,  # stamp by default, but allow overrides
-    **kwargs):
-  go_image(
-      name = "app",
-      base = base,
-      embed = [":go_default_library"],
-      goarch = "amd64",
-      goos = "linux",
-      pure = "on",
-  )
+        name,  # use "image"
+        base = None,
+        stamp = True,  # stamp by default, but allow overrides
+        **kwargs):
+    go_image(
+        name = "app",
+        base = base,
+        embed = [":go_default_library"],
+        goarch = "amd64",
+        goos = "linux",
+        pure = "on",
+    )
 
-  container_image(
-      name = name,
-      base = ":app",
-      stamp = stamp,
-      **kwargs)
-
-
+    container_image(
+        name = name,
+        base = ":app",
+        stamp = stamp,
+        **kwargs
+    )
 
 MULTI_KIND = None
 CORE_CLUSTER = "{STABLE_PROW_CLUSTER}"  # For components like hook
@@ -51,16 +50,16 @@ BUILD_CLUSTER = "{STABLE_BUILD_CLUSTER}"  # For untrusted test code
 # image returns the image prefix for the command.
 #
 # Concretely, image("foo") returns "{STABLE_PROW_REPO}/foo"
-# which usually becomes gcr.io/k8s-prow/foo
+# which usually becomes gcr.io/lololololol-eggplant/foo
 # (See hack/print-workspace-status.sh)
 def prefix(cmd):
-  return "{STABLE_PROW_REPO}/%s" % cmd
+    return "{STABLE_PROW_REPO}/%s" % cmd
 
 # target returns the image target for the command.
 #
 # Concretely, target("foo") returns "//prow/cmd/foo:image"
 def target(cmd):
-  return "//prow/cmd/%s:image" % cmd
+    return "//prow/cmd/%s:image" % cmd
 
 # tags returns a {image: target} map for each cmd.
 #
@@ -69,23 +68,23 @@ def target(cmd):
 #
 # Concretely, tags("hook", "plank") will output the following:
 #   {
-#     "gcr.io/k8s-prow/hook:20180203-deadbeef": "//prow/cmd/hook:image",
-#     "gcr.io/k8s-prow/hook:latest": "//prow/cmd/hook:image",
-#     "gcr.io/k8s-prow/hook:latest-fejta": "//prow/cmd/hook:image",
-#     "gcr.io/k8s-prow/plank:20180203-deadbeef": "//prow/cmd/plank:image",
-#     "gcr.io/k8s-prow/plank:latest": "//prow/cmd/plank:image",
-#     "gcr.io/k8s-prow/plank:latest-fejta": "//prow/cmd/plank:image",
+#     "gcr.io/lololololol-eggplant/hook:20180203-deadbeef": "//prow/cmd/hook:image",
+#     "gcr.io/lololololol-eggplant/hook:latest": "//prow/cmd/hook:image",
+#     "gcr.io/lololololol-eggplant/hook:latest-fejta": "//prow/cmd/hook:image",
+#     "gcr.io/lololololol-eggplant/plank:20180203-deadbeef": "//prow/cmd/plank:image",
+#     "gcr.io/lololololol-eggplant/plank:latest": "//prow/cmd/plank:image",
+#     "gcr.io/lololololol-eggplant/plank:latest-fejta": "//prow/cmd/plank:image",
 #   }
 def tags(*cmds):
-  # Create :YYYYmmdd-commitish :latest :latest-USER tags
-  return _docker_tags(**{prefix(cmd): target(cmd) for cmd in cmds})
+    # Create :YYYYmmdd-commitish :latest :latest-USER tags
+    return _docker_tags(**{prefix(cmd): target(cmd) for cmd in cmds})
 
-def object(name, cluster=CORE_CLUSTER, **kwargs):
-  k8s_object(
-      name = name,
-      cluster = cluster,
-      **kwargs
-  )
+def object(name, cluster = CORE_CLUSTER, **kwargs):
+    k8s_object(
+        name = name,
+        cluster = cluster,
+        **kwargs
+    )
 
 # component generates k8s_object rules and returns a {kind: [targets]} map.
 #
@@ -103,22 +102,22 @@ def object(name, cluster=CORE_CLUSTER, **kwargs):
 #     "deployment": [":hook_deployment"],
 #   }
 def component(cmd, *kinds, **kwargs):
-  targets = {}
-  for k in kinds:
-      if k == MULTI_KIND:
-        n = cmd
-      else:
-        n = "%s_%s" % (cmd, k)
-      kwargs["name"] = n
-      kwargs["kind"] = k
-      kwargs["template"] = ":%s.yaml" % n
-      object(**kwargs)
-      tgt = ":%s" % n
-      targets.setdefault("all",[]).append(tgt)
-      if k != MULTI_KIND:
-        targets.setdefault(cmd,[]).append(tgt)
-        targets.setdefault(k,[]).append(tgt)
-  return targets
+    targets = {}
+    for k in kinds:
+        if k == MULTI_KIND:
+            n = cmd
+        else:
+            n = "%s_%s" % (cmd, k)
+        kwargs["name"] = n
+        kwargs["kind"] = k
+        kwargs["template"] = ":%s.yaml" % n
+        object(**kwargs)
+        tgt = ":%s" % n
+        targets.setdefault("all", []).append(tgt)
+        if k != MULTI_KIND:
+            targets.setdefault(cmd, []).append(tgt)
+            targets.setdefault(k, []).append(tgt)
+    return targets
 
 # release packages multiple components into a release.
 #
@@ -142,20 +141,20 @@ def component(cmd, *kinds, **kwargs):
 #   k8s_objects(name = "service", objects=[":hook_service"])
 #   k8s_objects(name = "staging", objects=[":hook_deployment", ":hook_service", ":plank_deployment"])
 def release(name, *components):
-  targets = {}
-  objs = []
-  for cs in components:
-    for (n, ts) in cs.items():
-      if n == "all":
-        objs.extend(ts)
-      else:
-        targets.setdefault(n, []).extend(ts)
-  for (piece, ts) in targets.items():
+    targets = {}
+    objs = []
+    for cs in components:
+        for (n, ts) in cs.items():
+            if n == "all":
+                objs.extend(ts)
+            else:
+                targets.setdefault(n, []).extend(ts)
+    for (piece, ts) in targets.items():
+        k8s_objects(
+            name = piece,
+            objects = ts,
+        )
     k8s_objects(
-        name = piece,
-        objects = ts,
+        name = name,
+        objects = objs,
     )
-  k8s_objects(
-      name = name,
-      objects=objs,
-  )

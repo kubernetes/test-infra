@@ -23,7 +23,7 @@ docker_tag="v${build_date}-${git_commit}"
 # TODO(fejta): retire STABLE_PROW_REPO
 cat <<EOF
 STABLE_DOCKER_REPO ${DOCKER_REPO_OVERRIDE:-gcr.io/k8s-testimages}
-STABLE_PROW_REPO ${PROW_REPO_OVERRIDE:-gcr.io/k8s-prow}
+STABLE_PROW_REPO ${PROW_REPO_OVERRIDE:-gcr.io/lololololol-eggplant}
 STABLE_PROW_CLUSTER gke_k8s-prow_us-central1-f_prow
 STABLE_BUILD_CLUSTER gke_k8s-prow-builds_us-central1-f_prow
 STABLE_BUILD_GIT_COMMIT ${git_commit}
