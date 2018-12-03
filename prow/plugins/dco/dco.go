@@ -298,8 +298,13 @@ func shouldPrune(log *logrus.Entry) func(github.IssueComment) bool {
 	}
 }
 
-func handlePullRequestEvent(pc plugins.PluginClient, pe github.PullRequestEvent) error {
-	return handlePullRequest(pc.GitHubClient, pc.CommentPruner, pc.Logger, pe)
+func handlePullRequestEvent(pc plugins.Agent, pe github.PullRequestEvent) error {
+	cp, err := pc.CommentPruner()
+	if err != nil {
+		return err
+	}
+
+	return handlePullRequest(pc.GitHubClient, cp, pc.Logger, pe)
 }
 
 func handlePullRequest(gc gitHubClient, cp commentPruner, log *logrus.Entry, pe github.PullRequestEvent) error {
@@ -322,8 +327,13 @@ func handlePullRequest(gc gitHubClient, cp commentPruner, log *logrus.Entry, pe 
 	return handle(gc, cp, log, org, repo, pe.PullRequest, shouldComment)
 }
 
-func handleCommentEvent(pc plugins.PluginClient, ce github.GenericCommentEvent) error {
-	return handleComment(pc.GitHubClient, pc.CommentPruner, pc.Logger, ce)
+func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
+	cp, err := pc.CommentPruner()
+	if err != nil {
+		return err
+	}
+
+	return handleComment(pc.GitHubClient, cp, pc.Logger, ce)
 }
 
 func handleComment(gc gitHubClient, cp commentPruner, log *logrus.Entry, ce github.GenericCommentEvent) error {

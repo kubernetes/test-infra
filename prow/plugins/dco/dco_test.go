@@ -66,9 +66,9 @@ func TestHandlePullRequest(t *testing.T) {
 			},
 		},
 		{
-			name: "should add 'no' label & status context and add a comment if no commits have sign off. should not add a comment.",
+			name: "should add 'no' label & status context and add a comment if no commits have sign off",
 			pullRequestEvent: github.PullRequestEvent{
-				Action:      github.PullRequestActionLabeled,
+				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
 			commits: []github.RepositoryCommit{
@@ -80,6 +80,21 @@ func TestHandlePullRequest(t *testing.T) {
 
 			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
 			expectedStatus: github.StatusFailure,
+			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
+
+:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+
+Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
+
+**The list of commits missing DCO signoff**:
+
+- [sha](https://github.com///commits/sha) not a sign off
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+`,
 		},
 		{
 			name: "should add 'no' label & status context, remove old labels and add a comment if no commits have sign off",
@@ -222,10 +237,10 @@ Instructions for interacting with me using PR comments are available [here](http
 				},
 			}
 			if tc.hasDCOYes {
-				fc.LabelsAdded = append(fc.LabelsAdded, fmt.Sprintf("/#3:%s", dcoYesLabel))
+				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", dcoYesLabel))
 			}
 			if tc.hasDCONo {
-				fc.LabelsAdded = append(fc.LabelsAdded, fmt.Sprintf("/#3:%s", dcoNoLabel))
+				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", dcoNoLabel))
 			}
 			if tc.status != "" {
 				fc.CreatedStatuses["sha"] = []github.Status{
@@ -237,7 +252,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}
 			ok := tc.addedLabel == ""
 			if !ok {
-				for _, label := range fc.LabelsAdded {
+				for _, label := range fc.IssueLabelsAdded {
 					if reflect.DeepEqual(tc.addedLabel, label) {
 						ok = true
 						break
@@ -245,11 +260,11 @@ Instructions for interacting with me using PR comments are available [here](http
 				}
 			}
 			if !ok {
-				t.Errorf("Expected to add: %#v, Got %#v in case %s.", tc.addedLabel, fc.LabelsAdded, tc.name)
+				t.Errorf("Expected to add: %#v, Got %#v in case %s.", tc.addedLabel, fc.IssueLabelsAdded, tc.name)
 			}
 			ok = tc.removedLabel == ""
 			if !ok {
-				for _, label := range fc.LabelsRemoved {
+				for _, label := range fc.IssueLabelsRemoved {
 					if reflect.DeepEqual(tc.removedLabel, label) {
 						ok = true
 						break
@@ -257,7 +272,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				}
 			}
 			if !ok {
-				t.Errorf("Expected to remove: %#v, Got %#v in case %s.", tc.removedLabel, fc.LabelsRemoved, tc.name)
+				t.Errorf("Expected to remove: %#v, Got %#v in case %s.", tc.removedLabel, fc.IssueLabelsRemoved, tc.name)
 			}
 
 			// check status is set as expected
@@ -378,10 +393,10 @@ Instructions for interacting with me using PR comments are available [here](http
 				},
 			}
 			if tc.hasDCOYes {
-				fc.LabelsAdded = append(fc.LabelsAdded, fmt.Sprintf("/#3:%s", dcoYesLabel))
+				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", dcoYesLabel))
 			}
 			if tc.hasDCONo {
-				fc.LabelsAdded = append(fc.LabelsAdded, fmt.Sprintf("/#3:%s", dcoNoLabel))
+				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", dcoNoLabel))
 			}
 			if tc.status != "" {
 				fc.CreatedStatuses["sha"] = []github.Status{
@@ -393,7 +408,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}
 			ok := tc.addedLabel == ""
 			if !ok {
-				for _, label := range fc.LabelsAdded {
+				for _, label := range fc.IssueLabelsAdded {
 					if reflect.DeepEqual(tc.addedLabel, label) {
 						ok = true
 						break
@@ -401,11 +416,11 @@ Instructions for interacting with me using PR comments are available [here](http
 				}
 			}
 			if !ok {
-				t.Errorf("Expected to add: %#v, Got %#v in case %s.", tc.addedLabel, fc.LabelsAdded, tc.name)
+				t.Errorf("Expected to add: %#v, Got %#v in case %s.", tc.addedLabel, fc.IssueLabelsAdded, tc.name)
 			}
 			ok = tc.removedLabel == ""
 			if !ok {
-				for _, label := range fc.LabelsRemoved {
+				for _, label := range fc.IssueLabelsRemoved {
 					if reflect.DeepEqual(tc.removedLabel, label) {
 						ok = true
 						break
@@ -413,7 +428,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				}
 			}
 			if !ok {
-				t.Errorf("Expected to remove: %#v, Got %#v in case %s.", tc.removedLabel, fc.LabelsRemoved, tc.name)
+				t.Errorf("Expected to remove: %#v, Got %#v in case %s.", tc.removedLabel, fc.IssueLabelsRemoved, tc.name)
 			}
 
 			// check status is set as expected
