@@ -86,6 +86,27 @@ func TestRequestRateLimit(t *testing.T) {
 	}
 }
 
+func TestAbuseRateLimit(t *testing.T) {
+	tc := &testTime{now: time.Now()}
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if tc.slept == 0 {
+			w.Header().Set("Retry-After", "1")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	c.time = tc
+	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
+	if err != nil {
+		t.Errorf("Error from request: %v", err)
+	} else if resp.StatusCode != 200 {
+		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
+	} else if tc.slept < time.Second {
+		t.Errorf("Expected to sleep for at least a second, got %v", tc.slept)
+	}
+}
+
 func TestRetry404(t *testing.T) {
 	tc := &testTime{now: time.Now()}
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

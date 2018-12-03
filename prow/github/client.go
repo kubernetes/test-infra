@@ -386,6 +386,26 @@ func (c *Client) requestRetry(method, path, accept string, body interface{}) (*h
 						resp.Body.Close()
 						break
 					}
+				} else if rawTime := resp.Header.Get("Retry-After"); rawTime != "" && rawTime != "0" {
+					// If we are getting abuse rate limited, we need to wait or
+					// else we risk continuing to make the situation worse
+					var t int
+					if t, err = strconv.Atoi(rawTime); err == nil {
+						// Sleep an extra second plus how long GitHub wants us to
+						// sleep. If it's going to take too long, then break.
+						sleepTime := time.Duration(t+1) * time.Second
+						if sleepTime < maxSleepTime {
+							c.time.Sleep(sleepTime)
+						} else {
+							err = fmt.Errorf("sleep time for abuse rate limit exceeds max sleep time (%v > %v)", sleepTime, maxSleepTime)
+							resp.Body.Close()
+							break
+						}
+					} else {
+						err = fmt.Errorf("failed to parse abuse rate limit wait time %q: %v", rawTime, err)
+						resp.Body.Close()
+						break
+					}
 				} else if oauthScopes := resp.Header.Get("X-Accepted-OAuth-Scopes"); len(oauthScopes) > 0 {
 					err = fmt.Errorf("is the account using at least one of the following oauth scopes?: %s", oauthScopes)
 					resp.Body.Close()
