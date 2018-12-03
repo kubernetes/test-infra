@@ -77,11 +77,12 @@ func LabelsAndAnnotationsForSpec(spec kube.ProwJobSpec, extraLabels, extraAnnota
 	if len(jobNameForLabel) > validation.LabelValueMaxLength {
 		// TODO(fejta): consider truncating middle rather than end.
 		jobNameForLabel = strings.TrimRight(spec.Job[:validation.LabelValueMaxLength], "-")
-		logrus.Warnf("Cannot use full job name '%s' for '%s' label, will be truncated to '%s'",
-			spec.Job,
-			kube.ProwJobAnnotation,
-			jobNameForLabel,
-		)
+		logrus.WithFields(logrus.Fields{
+			"job":       spec.Job,
+			"key":       kube.ProwJobAnnotation,
+			"value":     spec.Job,
+			"truncated": jobNameForLabel,
+		}).Info("Cannot use full job name, will truncate.")
 	}
 	labels := map[string]string{
 		kube.CreatedByProw:     "true",
@@ -109,7 +110,11 @@ func LabelsAndAnnotationsForSpec(spec kube.ProwJobSpec, extraLabels, extraAnnota
 				labels[key] = base
 				continue
 			}
-			logrus.Warnf("Removing invalid label: key - %s, value - %s, error: %s", key, value, errs)
+			logrus.WithFields(logrus.Fields{
+				"key":    key,
+				"value":  value,
+				"errors": errs,
+			}).Warn("Removing invalid label")
 			delete(labels, key)
 		}
 	}
