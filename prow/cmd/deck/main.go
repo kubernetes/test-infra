@@ -746,7 +746,16 @@ func handleLog(lc logClient) http.HandlerFunc {
 		log, err := lc.GetJobLog(job, id)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
-			logger.WithError(err).Warning("Log not found.")
+			logger := logger.WithError(err)
+			msg := "Log not found."
+			if strings.Contains(err.Error(), "PodInitializing") {
+				// PodInitializing is really common and not something
+				// that has any actionable items for administrators
+				// monitoring logs, so we should log it as information
+				logger.Info(msg)
+			} else {
+				logger.Warning(msg)
+			}
 			return
 		}
 		if _, err = w.Write(log); err != nil {
