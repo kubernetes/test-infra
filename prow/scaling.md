@@ -45,7 +45,12 @@ allowing multiple files to loaded into a single configmap under different keys
 [`ghproxy`](/ghproxy/) is a reverse proxy HTTP cache optimized for the GitHub API.
 It takes advantage of how GitHub responds to E-tags in order to fulfill repeated
 requests without spending additional API tokens. Check out this tool if you find
-that your GitHub bot is consuming or approaching it's token limit.
+that your GitHub bot is consuming or approaching it's token limit. Similarly,
+re-deploying Prow components may trigger a large amount of API requests to GitHub
+which may trip the abuse detection mechanisms. At scale, the `tide` deployment
+itself may create enough API throughput to trigger this on its own. Deploying the
+GitHub proxy cache is critical to ensuring that Prow does not trip this mechanism
+when operating at scale.
 
 ### Config Driven GitHub Org Management
 
