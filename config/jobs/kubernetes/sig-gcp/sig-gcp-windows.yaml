@@ -34,7 +34,7 @@ periodics:
       - --test-cmd=$GOPATH/src/k8s.io/kubernetes/hack/run-e2e.sh
       - --test-cmd-args=--ginkgo.focus=\[Conformance\] --minStartupPods=8
       - --timeout=720m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181129-33929460d-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181203-a441fa430-master
       resources:
         requests:
           memory: "8Gi"
