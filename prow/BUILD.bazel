@@ -13,6 +13,7 @@ container_bundle(
     images = tags(
         "artifact-uploader",
         "branchprotector",
+        "build",
         "clonerefs",
         "deck",
         "entrypoint",
