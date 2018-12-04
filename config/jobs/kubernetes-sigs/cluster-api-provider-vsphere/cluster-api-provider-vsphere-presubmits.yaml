@@ -82,12 +82,6 @@ presubmits:
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
-    # TODO: move this to clusterapi-vsphere main repo 
-    extra_refs:
-    - org: figo
-      repo: cluster-api-provider-vsphere-ci
-      base_ref: master
-      path_alias: figo/cluster-api-provider-vsphere-ci
     max_concurrency: 1
     spec:
       containers:
@@ -95,7 +89,7 @@ presubmits:
         command:
         - runner.sh
         args:
-        - ./../../figo/cluster-api-provider-vsphere-ci/prow/e2e.sh
+        - ./scripts/e2e/e2e.sh
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
