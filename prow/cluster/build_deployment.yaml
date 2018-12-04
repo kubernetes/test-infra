@@ -1,0 +1,21 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: prow-build
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # replace, do not scale up
+  selector:
+    matchLabels:
+      app: prow-build
+  template:
+    metadata:
+      labels:
+        app: prow-build
+    spec:
+      serviceAccount: prow-build # build_rbac.yaml
+      containers:
+      - name: build
+        image: gcr.io/k8s-prow/build:v20181204-b6b53d02b

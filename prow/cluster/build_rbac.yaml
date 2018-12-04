@@ -1,0 +1,47 @@
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: prow-build
+  namespace: default
+---
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: prow-build
+rules:
+- apiGroups:
+  - build.knative.dev
+  resources:
+  - builds
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
+  - prow.k8s.io
+  resources:
+  - prowjobs
+  - prowjobs/status
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: prow-build
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prow-build
+subjects:
+- kind: ServiceAccount
+  name: prow-build
+  namespace: default
