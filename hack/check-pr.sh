@@ -58,7 +58,7 @@ tests=()
 ref="${1:-HEAD}"
 
 changed=$(git diff --name-only "$ref")
-if [[ ${#changed} == 0 ]]; then
+if [[ -z "$changed" ]]; then
     echo "No files changed since $ref"
     quit
 fi
