@@ -29,7 +29,6 @@ presubmits:
         - --extract=local
         - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
         - --gcp-node-image=gci
-        - --gcp-project=k8s-jkns-pr-gci-gke
         - --gcp-zone=us-central1-f
         - --ginkgo-parallel=30
         - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard
@@ -72,7 +71,6 @@ presubmits:
         - --extract=local
         - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
         - --gcp-node-image=gci
-        - --gcp-project=k8s-jkns-pr-gci-gke
         - --gcp-zone=us-central1-f
         - --ginkgo-parallel=30
         - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard
@@ -115,7 +113,6 @@ presubmits:
         - --extract=local
         - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
         - --gcp-node-image=gci
-        - --gcp-project=k8s-jkns-pr-gci-gke
         - --gcp-zone=us-central1-f
         - --ginkgo-parallel=30
         - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard
