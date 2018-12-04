@@ -1,5 +1,5 @@
 presubmits:
-  github.com/kubernetes-csi/csi-lib-utils:
+  kubernetes-csi/csi-lib-utils:
   - name: pull-sig-storage-csi-lib-utils
     always_run: true
     decorate: true
