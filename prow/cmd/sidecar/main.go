@@ -38,6 +38,6 @@ func main() {
 	)
 
 	if err := o.Run(); err != nil {
-		logrus.WithError(err).Fatal("Failed to report job status")
+		logrus.WithError(err).Error("Failed to report job status")
 	}
 }
