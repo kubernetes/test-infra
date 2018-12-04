@@ -27,21 +27,26 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
 )
 
 var (
-	configPath  = flag.String("config", "config.yaml", "Path to init resource file")
-	storagePath = flag.String("storage", "", "Path to persistent volume to load the state")
+	configPath        = flag.String("config", "config.yaml", "Path to init resource file")
+	storagePath       = flag.String("storage", "", "Path to persistent volume to load the state")
+	kubeClientOptions crds.KubernetesClientOptions
 )
 
 func main() {
+	kubeClientOptions.AddFlags(flag.CommandLine)
 	flag.Parse()
+	kubeClientOptions.Validate()
+
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 
-	rc, err := crds.NewResourceClient()
+	rc, err := kubeClientOptions.Client(crds.ResourceType)
 	if err != nil {
 		logrus.WithError(err).Fatal("unable to create a CRD client")
 	}
