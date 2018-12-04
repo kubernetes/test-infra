@@ -3,7 +3,7 @@ presets:
 - env:
   # URL to download the latest 'aws-k8s-tester' release
   - name: AWS_K8S_TESTER_EKS_AWS_K8S_TESTER_DOWNLOAD_URL
-    value: https://github.com/aws/aws-k8s-tester/releases/download/0.1.3/aws-k8s-tester-0.1.3-linux-amd64
+    value: https://github.com/aws/aws-k8s-tester/releases/download/0.1.4/aws-k8s-tester-0.1.4-linux-amd64
   - name: AWS_K8S_TESTER_EKS_AWS_K8S_TESTER_DOWNLOAD_PATH
     value: /tmp/aws-k8s-tester/aws-k8s-tester
   # URL to download 'kubectl', required for 'kubectl' calls to EKS
