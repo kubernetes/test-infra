@@ -2416,6 +2416,8 @@ test_groups:
   num_columns_recent: 30
 - name: kubeflow-arena-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_arena/kubeflow-arena-postsubmit
+- name: kubeflow-pipeline-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_pipeline/kubeflow-pipeline-postsubmit
 - name: tf-minigo-periodic
   gcs_prefix: kubernetes-jenkins/logs/tf-minigo-periodic
 - name: tf-minigo-presubmit
