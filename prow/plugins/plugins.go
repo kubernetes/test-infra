@@ -452,6 +452,13 @@ type Heart struct {
 	// Adorees is a list of GitHub logins for members
 	// for whom we will add emojis to comments
 	Adorees []string `json:"adorees,omitempty"`
+	// CommentRegexp is the regular expression for comments
+	// made by adorees that the plugin adds emojis to.
+	// If not specified, the plugin will not add emojis to
+	// any comments.
+	// Compiles into CommentRe during config load.
+	CommentRegexp string         `json:"commentregexp,omitempty"`
+	CommentRe     *regexp.Regexp `json:"-"`
 }
 
 // Milestone contains the configuration options for the milestone and
@@ -914,6 +921,12 @@ func compileRegexpsAndDurations(pc *Configuration) error {
 		return err
 	}
 	pc.CherryPickUnapproved.BranchRe = branchRe
+
+	commentRe, err := regexp.Compile(pc.Heart.CommentRegexp)
+	if err != nil {
+		return err
+	}
+	pc.Heart.CommentRe = commentRe
 
 	rs := pc.RequireMatchingLabel
 	for i := range rs {

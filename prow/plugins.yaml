@@ -149,9 +149,6 @@ blunderbuss:
 
 cat:
   key_path: /etc/cat-api/api-key
-heart:
-  adorees:
-  - k8s-merge-robot
 
 slack:
   mergewarnings:
