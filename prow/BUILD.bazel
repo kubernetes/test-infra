@@ -27,6 +27,7 @@ container_bundle(
         "plank",
         "sidecar",
         "sinker",
+        "status-reconciler",
         "tide",
         "tot",
     ) + image_tags(**{
@@ -90,6 +91,7 @@ filegroup(
         "//prow/cmd/plank:all-srcs",
         "//prow/cmd/sidecar:all-srcs",
         "//prow/cmd/sinker:all-srcs",
+        "//prow/cmd/status-reconciler:all-srcs",
         "//prow/cmd/tide:all-srcs",
         "//prow/cmd/tot:all-srcs",
         "//prow/cmd/util:all-srcs",
@@ -137,6 +139,7 @@ filegroup(
         "//prow/sidecar:all-srcs",
         "//prow/slack:all-srcs",
         "//prow/spyglass:all-srcs",
+        "//prow/statusreconciler:all-srcs",
         "//prow/test:all-srcs",
         "//prow/tide:all-srcs",
     ],

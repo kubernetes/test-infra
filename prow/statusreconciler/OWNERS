@@ -1,0 +1,4 @@
+approvers:
+- stevekuznetsov
+labels:
+ - area/prow/status-reconciler
