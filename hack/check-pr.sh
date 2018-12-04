@@ -21,33 +21,8 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-cd `git rev-parse --show-toplevel`
-
-dirs=()
-tests=()
-ref="${1:-HEAD}"
-echo -n "Packages changed since $ref: "
-
-changed=$(git diff --name-only "$ref")
-if [[ ${#changed} == 0 ]]; then
-    echo NONE
-    exit 0
-fi
-
-for d in $(echo -n $changed | xargs -n 1 dirname | sort -u); do
-    if ! ls "./$d/"*.go &> /dev/null; then
-        continue
-    fi
-    echo -n "$d "
-    dirs+=("./$d")
-    tests+=("//$d:all")
-done
-
-if [[ ${#dirs[@]} == 0 ]]; then
-    echo NONE
-    exit 0
-fi
-echo
+cd $(git rev-parse --show-toplevel)
+failing=()
 
 # step <name> <command ...> runs command and prints the output if it fails.
 step() {
@@ -65,16 +40,47 @@ step() {
     return 0
 }
 
-failing=()
-step hack/verify-bazel.sh hack/verify-bazel.sh || failing+=("bazel")
+quit() {
+    if [[ "${#failing[@]}" != 0 ]]; then
+        echo "FAILURE: ${#failing[@]} steps failed: ${failing[@]}"
+        exit 1
+    fi
+    echo "SUCCESS"
+    exit 0
+}
+
+step hack/verify-bazel.sh hack/verify-bazel.sh || failing+=("verify-bazel")
 step hack/verify-gofmt.sh hack/verify-gofmt.sh || failing+=("gofmt")
-step //:golint bazel run //:golint -- "${dirs[@]}" || failing+=("golint")
-step //:govet bazel run //:govet -- "${dirs[@]}" || failing+=("govet")
-step "bazel test" bazel test --build_tests_only "${tests[@]}" || failing+=("bazel test")
 step hack/verify_boilerplate.py hack/verify_boilerplate.py || failing+=("boilerplate")
 
-if [[ "${#failing[@]}" != 0 ]]; then
-    echo "FAILURE: ${#failing[@]} steps failed: ${failing[@]}"
-    exit 1
+dirs=()
+tests=()
+ref="${1:-HEAD}"
+
+changed=$(git diff --name-only "$ref")
+if [[ ${#changed} == 0 ]]; then
+    echo "No files changed since $ref"
+    quit
 fi
-echo "SUCCESS"
+
+echo -n "Packages changed since $ref: "
+for d in $(echo -n "$changed" | xargs -n 1 dirname | sort -u); do
+    if ! ls "./$d/"*.go &> /dev/null; then
+        continue
+    fi
+    echo -n "$d "
+    dirs+=("./$d")
+    tests+=("//$d:all")
+done
+
+if [[ ${#dirs[@]} == 0 ]]; then
+    echo NONE
+    quit
+fi
+echo
+
+step //:golint bazel run //:golint -- "${dirs[@]}" || failing+=("golint")
+step //:govet bazel run //:govet -- "${dirs[@]}" || failing+=("govet")
+step "bazel-test" bazel test --build_tests_only "${tests[@]}" || failing+=("bazel-test")
+
+quit
