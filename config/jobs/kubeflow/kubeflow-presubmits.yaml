@@ -223,29 +223,13 @@ presubmits:
         containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20181203-a441fa430-1.10
           command:
-          - ./test/presubmit-tests.sh
-          args:
-          - --workflow_file
-          - e2e_test_gke.yaml
-          - --test_result_folder
-          - e2e_test
-    - name: presubmit-e2e-test-v2
-      always_run: true
-      decorate: true
-      skip_report: true
-      labels:
-        preset-service-account: "true"
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20181203-a441fa430-1.10
-          command:
           - ./test/presubmit-tests-with-pipeline-deployment.sh
           args:
           - --workflow_file
           - e2e_test_gke_v2.yaml
           - --test_result_folder
           - e2e_test
-    - name: presubmit-sample-test-v2
+    - name: presubmit-sample-test
       always_run: true
       decorate: true
       skip_report: true
@@ -279,7 +263,7 @@ presubmits:
           - e2e_test_gke.yaml
           - --test_result_folder
           - e2e_test_gke
-    - name: presubmit-sample-test
+    - name: presubmit-sample-test-to-be-deprecated
       always_run: true
       decorate: true
       skip_report: true
