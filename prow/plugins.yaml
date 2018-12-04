@@ -459,6 +459,9 @@ plugins:
   - wip
   - yuks
 
+  kubernetes-csi/csi-lib-utils:
+  - trigger
+
   kubernetes-incubator:
   - approve
   - assign
