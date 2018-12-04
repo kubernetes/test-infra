@@ -25,7 +25,7 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-var okToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
+var okToTestRe = regexp.MustCompile(`(?m)^/ok-to-test|/okay-to-test\s*$`)
 var testAllRe = regexp.MustCompile(`(?m)^/test all,?($|\s.*)`)
 var retestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
 
