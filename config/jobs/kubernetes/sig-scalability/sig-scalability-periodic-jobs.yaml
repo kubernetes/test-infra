@@ -52,7 +52,7 @@ periodics:
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8 --vmodule=request=4 --node-killer=true --node-killer-jitter-factor=25
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8 --vmodule=request=4 --node-killer=true --node-killer-jitter-factor=10
       - --timeout=120m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181203-a441fa430-master
