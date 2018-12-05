@@ -27,6 +27,7 @@ import (
 	"net/http"
 	"os"
 	osexec "os/exec"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -77,6 +78,9 @@ func NewDeployer(timeout time.Duration, verbose bool) (ekstester.Deployer, error
 	}
 
 	if err = os.RemoveAll(cfg.AWSK8sTesterPath); err != nil {
+		return nil, err
+	}
+	if err = os.MkdirAll(filepath.Dir(cfg.AWSK8sTesterPath), 0700); err != nil {
 		return nil, err
 	}
 	f, err = os.Create(cfg.AWSK8sTesterPath)
