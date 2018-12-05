@@ -263,7 +263,7 @@ presubmits:
           - e2e_test_gke.yaml
           - --test_result_folder
           - e2e_test_gke
-    - name: sample-test-to-be-deprecatedpresubmit-presubmit
+    - name: sample-test-to-be-deprecated-presubmit
       always_run: true
       decorate: true
       skip_report: true
