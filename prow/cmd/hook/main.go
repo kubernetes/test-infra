@@ -218,6 +218,9 @@ func main() {
 	http.Handle("/hook", server)
 	// Serve plugin help information from /plugin-help.
 	http.Handle("/plugin-help", pluginhelp.NewHelpAgent(pluginAgent, githubClient))
+	// Improbable: add our own repo-owner endpoint handler.
+	http.Handle("/owners", &repoowners.OwnersServer{OwnersClient: ownersClient})
+	// end-of-Improbable: add our own repo-owner endpoint handler
 
 	httpServer := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
 
