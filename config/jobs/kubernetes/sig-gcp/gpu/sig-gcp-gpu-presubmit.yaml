@@ -28,7 +28,7 @@ presubmits:
       preset-pull-gce-device-plugin-gpu: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181203-a441fa430-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -72,7 +72,7 @@ presubmits:
       preset-pull-gce-device-plugin-gpu: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181203-a441fa430-1.13
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-1.13
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -116,7 +116,7 @@ presubmits:
       preset-pull-gce-device-plugin-gpu: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181203-a441fa430-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -160,7 +160,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181203-a441fa430-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -205,7 +205,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181203-a441fa430-1.13
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-1.13
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -250,7 +250,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181203-a441fa430-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
