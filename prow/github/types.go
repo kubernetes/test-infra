@@ -779,3 +779,23 @@ type Milestone struct {
 	Title  string `json:"title"`
 	Number int    `json:"number"`
 }
+
+// RepositoryCommit represents a commit in a repo.
+// Note that it's wrapping a GitCommit, so author/committer information is in two places,
+// but contain different details about them: in RepositoryCommit "github details", in GitCommit - "git details".
+type RepositoryCommit struct {
+	SHA         string    `json:"sha"`
+	Commit      GitCommit `json:"commit"`
+	Author      User      `json:"author"`
+	Committer   User      `json:"committer"`
+	Parents     []Commit  `json:"parents,omitempty"`
+	HTMLURL     string    `json:"html_url"`
+	URL         string    `json:"url"`
+	CommentsURL string    `json:"comments_url"`
+}
+
+// GitCommit represents a GitHub commit.
+type GitCommit struct {
+	SHA     string `json:"sha,omitempty"`
+	Message string `json:"message,omitempty"`
+}

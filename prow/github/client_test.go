@@ -1647,3 +1647,20 @@ func TestListMilestones(t *testing.T) {
 		t.Errorf("Didn't expect error: %v", err)
 	}
 }
+
+func TestListPRCommits(t *testing.T) {
+	ts := simpleTestServer(t, "/repos/theorg/therepo/pulls/3/commits",
+		[]RepositoryCommit{
+			{SHA: "sha"},
+			{SHA: "sha2"},
+		})
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if commits, err := c.ListPRCommits("theorg", "therepo", 3); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else {
+		if len(commits) != 2 {
+			t.Errorf("Expected 2 commits to be returned, but got %d", len(commits))
+		}
+	}
+}

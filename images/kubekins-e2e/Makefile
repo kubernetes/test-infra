@@ -40,7 +40,7 @@ endif
 
 ifeq ($(K8S), 1.12)
 	GO = 1.10.4
-	BAZEL = 0.16.1
+	BAZEL = 0.18.1
 	CFSSL = R1.2
 endif
 

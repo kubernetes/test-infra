@@ -6,7 +6,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181203-a441fa430-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"

@@ -69,6 +69,10 @@ type FakeClient struct {
 	Milestone    int
 	MilestoneMap map[string]int
 
+	// list of commits for each PR
+	// org/repo#number:[]commit
+	CommitMap map[string][]github.RepositoryCommit
+
 	// Fake remote git storage. File name are keys
 	// and values map SHA to content
 	RemoteFiles map[string]map[string]string
@@ -391,4 +395,10 @@ func (f *FakeClient) ListMilestones(org, repo string) ([]github.Milestone, error
 		milestones = append(milestones, github.Milestone{Title: k, Number: v})
 	}
 	return milestones, nil
+}
+
+// ListPRCommits lists commits for a given PR.
+func (f *FakeClient) ListPRCommits(org, repo string, prNumber int) ([]github.RepositoryCommit, error) {
+	k := fmt.Sprintf("%s/%s#%d", org, repo, prNumber)
+	return f.CommitMap[k], nil
 }

@@ -1,0 +1,46 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("//prow:def.bzl", "prow_image")
+
+prow_image(
+    name = "image",
+    base = "@alpine-base//image",
+)
+
+go_binary(
+    name = "status-reconciler",
+    embed = [":go_default_library"],
+    pure = "on",
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/prow/cmd/status-reconciler",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//pkg/flagutil:go_default_library",
+        "//prow/config:go_default_library",
+        "//prow/flagutil:go_default_library",
+        "//prow/hook:go_default_library",
+        "//prow/logrusutil:go_default_library",
+        "//prow/plugins:go_default_library",
+        "//prow/statusreconciler:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

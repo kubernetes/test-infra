@@ -1,0 +1,51 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "controller.go",
+        "doc.go",
+    ],
+    importpath = "k8s.io/test-infra/prow/statusreconciler",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//maintenance/migratestatus/migrator:go_default_library",
+        "//prow/config:go_default_library",
+        "//prow/errorutil:go_default_library",
+        "//prow/github:go_default_library",
+        "//prow/kube:go_default_library",
+        "//prow/pjutil:go_default_library",
+        "//prow/plugins:go_default_library",
+        "//prow/plugins/trigger:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["controller_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//prow/config:go_default_library",
+        "//prow/github:go_default_library",
+        "//prow/kube:go_default_library",
+        "//prow/pjutil:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

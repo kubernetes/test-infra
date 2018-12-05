@@ -105,17 +105,12 @@ func resolveSymLink(bkt *storage.BucketHandle, symLink string) (string, error) {
 	return prefixRe.ReplaceAllString(u, ""), nil
 }
 
-func spyglassLink(bkt *storage.BucketHandle, root, id string) (string, error) {
-	bAttrs, err := bkt.Attrs(context.Background())
-	if err != nil {
-		return "", fmt.Errorf("failed to get bucket name: %v", err)
-	}
-	bktName := bAttrs.Name
+func spyglassLink(bkt *storage.BucketHandle, bucketName, root, id string) (string, error) {
 	p, err := getPath(bkt, root, id, "")
 	if err != nil {
 		return "", fmt.Errorf("failed to get path: %v", err)
 	}
-	return path.Join(spyglassPrefix, bktName, p), nil
+	return path.Join(spyglassPrefix, bucketName, p), nil
 }
 
 func getPath(bkt *storage.BucketHandle, root, id, fname string) (string, error) {
@@ -269,13 +264,13 @@ func linkID(url *url.URL, id int64) string {
 	return u.String()
 }
 
-func getBuildData(bkt *storage.BucketHandle, root string, buildID int64, index int) (buildData, error) {
+func getBuildData(bkt *storage.BucketHandle, bucketName, root string, buildID int64, index int) (buildData, error) {
 	b := buildData{
 		index:  index,
 		ID:     strconv.FormatInt(buildID, 10),
 		Result: "Unknown",
 	}
-	link, err := spyglassLink(bkt, root, b.ID)
+	link, err := spyglassLink(bkt, bucketName, root, b.ID)
 	if err != nil {
 		return b, fmt.Errorf("failed to get spyglass link: %v", err)
 	}
@@ -379,7 +374,7 @@ func getJobHistory(url *url.URL, config *config.Config, gcsClient *storage.Clien
 	bch := make(chan buildData)
 	for i, buildID := range shownIDs {
 		go func(i int, buildID int64) {
-			bd, err := getBuildData(bkt, root, buildID, i)
+			bd, err := getBuildData(bkt, bucketName, root, buildID, i)
 			if err != nil {
 				logrus.Warningf("build %d information incomplete: %v", buildID, err)
 			}

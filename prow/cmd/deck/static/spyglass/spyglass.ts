@@ -53,13 +53,13 @@ window.addEventListener('message', async (e) => {
         break;
       case "request": {
         const req = await fetch(urlForLensRequest(lens, 'callback'),
-          {body: message.data, method: 'POST', credentials: 'omit'});
+          {body: message.data, method: 'POST'});
         respond(await req.text());
         break;
       }
       case "requestPage": {
         const req = await fetch(urlForLensRequest(lens, 'rerender'),
-          {body: message.data, method: 'POST', credentials: 'omit'});
+          {body: message.data, method: 'POST'});
         respond(await req.text());
         break;
       }
@@ -68,7 +68,7 @@ window.addEventListener('message', async (e) => {
         frame.style.visibility = 'visible';
         spinner.style.display = 'block';
         const req = await fetch(urlForLensRequest(lens, 'rerender'),
-          {body: message.data, method: 'POST', credentials: 'omit'});
+          {body: message.data, method: 'POST'});
         respond(await req.text());
         break;
       }

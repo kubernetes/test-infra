@@ -1,0 +1,17 @@
+presubmits:
+  kubernetes-csi/csi-lib-utils:
+  - name: pull-sig-storage-csi-lib-utils
+    always_run: true
+    decorate: true
+    skip_report: false
+    spec:
+      containers:
+      # This image was chosen over the more often used kubekins-e2e because
+      # it is smaller and has everything we need (basically just a Go environment).
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20180927-6b4facbe6
+        command:
+        - make
+        args:
+        - -k # report as many failures as possible (if any) before finally failing
+        - all # build...
+        - test # ... and test

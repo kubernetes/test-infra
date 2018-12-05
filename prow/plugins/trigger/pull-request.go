@@ -51,7 +51,7 @@ func handlePR(c client, trigger *plugins.Trigger, pr github.PullRequestEvent) er
 	case github.PullRequestActionReopened:
 		// When a PR is reopened, check that the user is in the org or that an org
 		// member had said "/ok-to-test" before building, resulting in label ok-to-test.
-		l, trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, nil)
+		l, trusted, err := TrustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, nil)
 		if err != nil {
 			return fmt.Errorf("could not validate PR: %s", err)
 		} else if trusted {
@@ -92,7 +92,7 @@ func handlePR(c client, trigger *plugins.Trigger, pr github.PullRequestEvent) er
 	case github.PullRequestActionLabeled:
 		// When a PR is LGTMd, if it is untrusted then build it once.
 		if pr.Label.Name == labels.LGTM {
-			_, trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, nil)
+			_, trusted, err := TrustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, nil)
 			if err != nil {
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
@@ -120,7 +120,7 @@ func buildAllIfTrusted(c client, trigger *plugins.Trigger, pr github.PullRequest
 	org, repo, a := orgRepoAuthor(pr.PullRequest)
 	author := string(a)
 	num := pr.PullRequest.Number
-	l, trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, nil)
+	l, trusted, err := TrustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, nil)
 	if err != nil {
 		return fmt.Errorf("could not validate PR: %s", err)
 	} else if trusted {
@@ -195,9 +195,9 @@ I understand the commands that are listed [here](https://go.k8s.io/bot-commands)
 	return nil
 }
 
-// trustedPullRequest returns whether or not the given PR should be tested.
+// TrustedPullRequest returns whether or not the given PR should be tested.
 // It first checks if the author is in the org, then looks for "ok-to-test" label.
-func trustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org, repo string, num int, l []github.Label) ([]github.Label, bool, error) {
+func TrustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org, repo string, num int, l []github.Label) ([]github.Label, bool, error) {
 	// First check if the author is a member of the org.
 	if orgMember, err := TrustedUser(ghc, trigger, author, org, repo); err != nil {
 		return l, false, fmt.Errorf("error checking %s for trust: %v", author, err)
