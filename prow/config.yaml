@@ -27,13 +27,12 @@ deck:
   spyglass:
     size_limit: 500000000 # 500MB
     viewers:
-      # TODO(Katharine, #10274): These names are deprecated, rename after deploy.
       "started.json|finished.json":
-      - "metadata-viewer"
+      - "metadata"
       "build-log.txt":
-      - "build-log-viewer"
+      - "buildlog"
       "artifacts/junit.*\\.xml":
-      - "junit-viewer"
+      - "junit"
   tide_update_period: 1s
   hidden_repos:
   - kubernetes-security
