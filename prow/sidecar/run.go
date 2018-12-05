@@ -33,6 +33,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
@@ -144,6 +145,18 @@ func (o Options) Run() error {
 	return o.doUpload(spec, passed, aborted, metadata)
 }
 
+func getRevisionFromRef(refs *kube.Refs) string {
+	if len(refs.Pulls) > 0 {
+		return refs.Pulls[0].SHA
+	}
+
+	if refs.BaseSHA != "" {
+		return refs.BaseSHA
+	}
+
+	return refs.BaseRef
+}
+
 func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool, metadata map[string]interface{}) error {
 	uploadTargets := map[string]gcs.UploadFunc{
 		"build-log.txt": gcs.FileUpload(o.WrapperOptions.ProcessLog),
@@ -174,12 +187,9 @@ func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool, metad
 	}
 
 	if spec.Refs != nil {
-		finished.Revision = spec.Refs.BaseSHA
-		if len(spec.Refs.Pulls) > 0 {
-			finished.Revision = spec.Refs.Pulls[0].SHA
-		}
+		finished.Revision = getRevisionFromRef(spec.Refs)
 	} else if len(spec.ExtraRefs) > 0 {
-		finished.Revision = spec.ExtraRefs[0].BaseSHA
+		finished.Revision = getRevisionFromRef(&spec.ExtraRefs[0])
 	}
 
 	finishedData, err := json.Marshal(&finished)
