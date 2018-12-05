@@ -295,7 +295,11 @@ func addedBlockingPresubmits(old, new map[string][]config.Presubmit) map[string]
 		}
 	}
 
-	logrus.Infof("Identified %d added blocking presubmits.", len(added))
+	var numAdded int
+	for _, presubmits := range added {
+		numAdded += len(presubmits)
+	}
+	logrus.Infof("Identified %d added blocking presubmits.", numAdded)
 	return added
 }
 
@@ -329,7 +333,11 @@ func removedBlockingPresubmits(old, new map[string][]config.Presubmit) map[strin
 		}
 	}
 
-	logrus.Infof("Identified %d removed blocking presubmits.", len(removed))
+	var numRemoved int
+	for _, presubmits := range removed {
+		numRemoved += len(presubmits)
+	}
+	logrus.Infof("Identified %d removed blocking presubmits.", numRemoved)
 	return removed
 }
 
@@ -365,6 +373,10 @@ func migratedBlockingPresubmits(old, new map[string][]config.Presubmit) map[stri
 		}
 	}
 
-	logrus.Infof("Identified %d migrated blocking presubmits.", len(migrated))
+	var numMigrated int
+	for _, presubmits := range migrated {
+		numMigrated += len(presubmits)
+	}
+	logrus.Infof("Identified %d migrated blocking presubmits.", numMigrated)
 	return migrated
 }
