@@ -42,6 +42,11 @@ func TestWriteMetadata(t *testing.T) {
 			version: "v1.8.0-alpha.2.251+ba2bdb1aead615",
 		},
 		{
+			sources: nil,
+			key:     "revision",
+			version: "v1.8.0-alpha.2.251+ba2bdb1aead615",
+		},
+		{
 			sources: map[string]mdata{"images.json": {"imgkey": "imgval"}},
 			key:     "imgkey",
 			version: "v1.8.0-alpha.2.251+ba2bdb1aead615",
