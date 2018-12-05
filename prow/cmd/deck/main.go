@@ -501,7 +501,8 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent, o options) h
 		page, err := renderSpyglass(sg, ca, src, o)
 		if err != nil {
 			logrus.WithError(err).Error("error rendering spyglass page")
-			http.Error(w, "error getting views for job", http.StatusInternalServerError)
+			message := fmt.Sprintf("error rendering spyglass page: %v", err)
+			http.Error(w, message, http.StatusInternalServerError)
 			return
 		}
 
@@ -521,6 +522,9 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, o optio
 	artifactNames, err := sg.ListArtifacts(src)
 	if err != nil {
 		return "", fmt.Errorf("error listing artifacts: %v", err)
+	}
+	if len(artifactNames) == 0 {
+		return "", fmt.Errorf("found no artifacts for %s", src)
 	}
 
 	viewerCache := map[string][]string{}
