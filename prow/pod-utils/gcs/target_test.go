@@ -63,7 +63,7 @@ func TestPathForSpec(t *testing.T) {
 				Type:    kube.PresubmitJob,
 				Job:     "job",
 				BuildID: "number",
-				Refs: kube.Refs{
+				Refs: &kube.Refs{
 					Org:  "org",
 					Repo: "repo",
 					Pulls: []kube.Pull{
@@ -82,7 +82,7 @@ func TestPathForSpec(t *testing.T) {
 				Type:    kube.PresubmitJob,
 				Job:     "job",
 				BuildID: "number",
-				Refs: kube.Refs{
+				Refs: &kube.Refs{
 					Org:  "org",
 					Repo: "repo",
 					Pulls: []kube.Pull{
@@ -101,7 +101,7 @@ func TestPathForSpec(t *testing.T) {
 				Type:    kube.PresubmitJob,
 				Job:     "job",
 				BuildID: "number",
-				Refs: kube.Refs{
+				Refs: &kube.Refs{
 					Org:  "org",
 					Repo: "repo",
 					Pulls: []kube.Pull{
@@ -174,7 +174,7 @@ func TestLatestBuildForSpec(t *testing.T) {
 			spec: &downwardapi.JobSpec{
 				Type: kube.PresubmitJob,
 				Job:  "pull-kubernetes-unit",
-				Refs: kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
+				Refs: &kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
 			},
 			expected: []string{"pr-logs/directory/pull-kubernetes-unit/latest-build.txt"},
 		},
@@ -183,7 +183,7 @@ func TestLatestBuildForSpec(t *testing.T) {
 			spec: &downwardapi.JobSpec{
 				Type: kube.PresubmitJob,
 				Job:  "pull-kubernetes-unit",
-				Refs: kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
+				Refs: &kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
 			},
 			builder: NewExplicitRepoPathBuilder(),
 			expected: []string{
@@ -196,7 +196,7 @@ func TestLatestBuildForSpec(t *testing.T) {
 			spec: &downwardapi.JobSpec{
 				Type: kube.PresubmitJob,
 				Job:  "pull-kubernetes-unit",
-				Refs: kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
+				Refs: &kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
 			},
 			builder: NewLegacyRepoPathBuilder("kubernetes", "test-infra"),
 			expected: []string{
@@ -209,7 +209,7 @@ func TestLatestBuildForSpec(t *testing.T) {
 			spec: &downwardapi.JobSpec{
 				Type: kube.PresubmitJob,
 				Job:  "pull-kubernetes-unit",
-				Refs: kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
+				Refs: &kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
 			},
 			builder: NewSingleDefaultRepoPathBuilder("defaultorg", "defaultrepo"),
 			expected: []string{

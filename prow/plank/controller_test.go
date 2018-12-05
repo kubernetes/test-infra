@@ -801,6 +801,7 @@ func TestSyncPendingJob(t *testing.T) {
 				Spec: kube.ProwJobSpec{
 					Type:    kube.PostsubmitJob,
 					PodSpec: &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
+					Refs:    &kube.Refs{Org: "fejtaverse"},
 				},
 				Status: kube.ProwJobStatus{
 					State:   kube.PendingState,
@@ -853,6 +854,7 @@ func TestSyncPendingJob(t *testing.T) {
 						Type:    kube.PeriodicJob,
 						PodSpec: &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
 					}},
+					Refs: &kube.Refs{Org: "fejtaverse"},
 				},
 				Status: kube.ProwJobStatus{
 					State:   kube.PendingState,
@@ -1051,6 +1053,7 @@ func TestSyncPendingJob(t *testing.T) {
 					Job:     "boop",
 					Type:    kube.PostsubmitJob,
 					PodSpec: &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
+					Refs:    &kube.Refs{Org: "fejtaverse"},
 				},
 				Status: kube.ProwJobStatus{
 					State: kube.PendingState,
@@ -1355,6 +1358,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 						Type:           kube.PostsubmitJob,
 						MaxConcurrency: 1,
 						PodSpec:        &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
+						Refs:           &kube.Refs{Org: "fejtaverse"},
 					},
 					Status: kube.ProwJobStatus{
 						State: kube.TriggeredState,
@@ -1366,6 +1370,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 						Type:           kube.PostsubmitJob,
 						MaxConcurrency: 1,
 						PodSpec:        &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
+						Refs:           &kube.Refs{Org: "fejtaverse"},
 					},
 					Status: kube.ProwJobStatus{
 						State: kube.TriggeredState,
@@ -1384,6 +1389,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 						Type:           kube.PostsubmitJob,
 						MaxConcurrency: 2,
 						PodSpec:        &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
+						Refs:           &kube.Refs{Org: "fejtaverse"},
 					},
 					Status: kube.ProwJobStatus{
 						State: kube.TriggeredState,
@@ -1395,6 +1401,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 						Type:           kube.PostsubmitJob,
 						MaxConcurrency: 2,
 						PodSpec:        &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
+						Refs:           &kube.Refs{Org: "fejtaverse"},
 					},
 					Status: kube.ProwJobStatus{
 						State: kube.TriggeredState,
@@ -1413,6 +1420,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 						Type:           kube.PostsubmitJob,
 						MaxConcurrency: 5,
 						PodSpec:        &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
+						Refs:           &kube.Refs{Org: "fejtaverse"},
 					},
 					Status: kube.ProwJobStatus{
 						State: kube.TriggeredState,
@@ -1424,6 +1432,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 						Type:           kube.PostsubmitJob,
 						MaxConcurrency: 5,
 						PodSpec:        &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
+						Refs:           &kube.Refs{Org: "fejtaverse"},
 					},
 					Status: kube.ProwJobStatus{
 						State: kube.TriggeredState,
