@@ -27,8 +27,6 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/pjutil"
 )
 
 func TestAddedBlockingPresubmits(t *testing.T) {
@@ -478,24 +476,38 @@ func (m *fakeMigrator) migrate(org, repo, from, to string) error {
 	return nil
 }
 
-func newfakeKubeClient() fakeKubeClient {
-	return fakeKubeClient{
-		errors:  sets.NewString(),
-		created: []kube.ProwJobSpec{},
+func newfakeProwJobTriggerer() fakeProwJobTriggerer {
+	return fakeProwJobTriggerer{
+		errors:  map[prKey]sets.String{},
+		created: map[prKey]sets.String{},
 	}
 }
 
-type fakeKubeClient struct {
-	errors  sets.String
-	created []kube.ProwJobSpec
+type prKey struct {
+	org, repo string
+	num       int
 }
 
-func (c *fakeKubeClient) CreateProwJob(j kube.ProwJob) (kube.ProwJob, error) {
-	if c.errors.Has(j.Name) {
-		return j, errors.New("failed to create prow job")
+type fakeProwJobTriggerer struct {
+	errors  map[prKey]sets.String
+	created map[prKey]sets.String
+}
+
+func (c *fakeProwJobTriggerer) runOrSkip(pr *github.PullRequest, requestedJobs []config.Presubmit) error {
+	names := sets.NewString()
+	key := prKey{org: pr.Base.Repo.Owner.Login, repo: pr.Base.Repo.Name, num: pr.Number}
+	for _, job := range requestedJobs {
+		if jobErrors, exists := c.errors[key]; exists && jobErrors.Has(job.Name) {
+			return errors.New("failed to trigger prow job")
+		}
+		names.Insert(job.Name)
 	}
-	c.created = append(c.created, j.Spec)
-	return j, nil
+	if current, exists := c.created[key]; exists {
+		c.created[key] = current.Union(names)
+	} else {
+		c.created[key] = names
+	}
+	return nil
 }
 
 func newFakeGitHubClient(key orgRepo) fakeGitHubClient {
@@ -597,6 +609,7 @@ func TestControllerReconcile(t *testing.T) {
 	prNumber := 1
 	author := "user"
 	prAuthorKey := prAuthor{author: author, pr: prNumber}
+	prOrgRepoKey := prKey{org: org, repo: repo, num: prNumber}
 	baseRef := "base"
 	baseSha := "abc"
 	pr := github.PullRequest{
@@ -627,7 +640,7 @@ func TestControllerReconcile(t *testing.T) {
 		{
 			name: "no errors and trusted PR means we should see a trigger, retire and migrate",
 			generator: func() (Controller, func(*testing.T)) {
-				fkc := newfakeKubeClient()
+				fpjt := newfakeProwJobTriggerer()
 				fghc := newFakeGitHubClient(orgRepoKey)
 				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
 				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
@@ -635,13 +648,10 @@ func TestControllerReconcile(t *testing.T) {
 				ftc := newFakeTrustedChecker(orgRepoKey)
 				ftc.trusted[orgRepoKey][prAuthorKey] = true
 				return Controller{
-						continueOnError: true, kubeClient: &fkc, githubClient: &fghc, statusMigrator: &fsm, trustedChecker: &ftc,
+						continueOnError: true, prowJobTriggerer: &fpjt, githubClient: &fghc, statusMigrator: &fsm, trustedChecker: &ftc,
 					}, func(t *testing.T) {
-						expectedProwJob := pjutil.NewPresubmit(pr, baseSha, config.Presubmit{
-							JobBase: config.JobBase{Name: "new-required-job"},
-							Context: "new-required-context",
-						}, "none").Spec
-						if actual, expected := fkc.created, []kube.ProwJobSpec{expectedProwJob}; !reflect.DeepEqual(actual, expected) {
+						expectedProwJob := map[prKey]sets.String{prOrgRepoKey: sets.NewString("new-required-job")}
+						if actual, expected := fpjt.created, expectedProwJob; !reflect.DeepEqual(actual, expected) {
 							t.Errorf("did not create expected ProwJob: %s", diff.ObjectReflectDiff(actual, expected))
 						}
 						if actual, expected := fsm.retired, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}; !reflect.DeepEqual(actual, expected) {
@@ -656,7 +666,7 @@ func TestControllerReconcile(t *testing.T) {
 		{
 			name: "no errors and untrusted PR means we should see no trigger, a retire and a migrate",
 			generator: func() (Controller, func(*testing.T)) {
-				fkc := newfakeKubeClient()
+				fpjt := newfakeProwJobTriggerer()
 				fghc := newFakeGitHubClient(orgRepoKey)
 				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
 				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
@@ -664,9 +674,9 @@ func TestControllerReconcile(t *testing.T) {
 				ftc := newFakeTrustedChecker(orgRepoKey)
 				ftc.trusted[orgRepoKey][prAuthorKey] = false
 				return Controller{
-						continueOnError: true, kubeClient: &fkc, githubClient: &fghc, statusMigrator: &fsm, trustedChecker: &ftc,
+						continueOnError: true, prowJobTriggerer: &fpjt, githubClient: &fghc, statusMigrator: &fsm, trustedChecker: &ftc,
 					}, func(t *testing.T) {
-						if actual, expected := fkc.created, []kube.ProwJobSpec{}; !reflect.DeepEqual(actual, expected) {
+						if actual, expected := fpjt.created, map[prKey]sets.String{}; !reflect.DeepEqual(actual, expected) {
 							t.Errorf("did not create expected ProwJob: %s", diff.ObjectReflectDiff(actual, expected))
 						}
 						if actual, expected := fsm.retired, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}; !reflect.DeepEqual(actual, expected) {
@@ -681,7 +691,7 @@ func TestControllerReconcile(t *testing.T) {
 		{
 			name: "trust check error means we should see no trigger, a retire and a migrate",
 			generator: func() (Controller, func(*testing.T)) {
-				fkc := newfakeKubeClient()
+				fpjt := newfakeProwJobTriggerer()
 				fghc := newFakeGitHubClient(orgRepoKey)
 				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
 				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
@@ -689,9 +699,36 @@ func TestControllerReconcile(t *testing.T) {
 				ftc := newFakeTrustedChecker(orgRepoKey)
 				ftc.errors = map[orgRepo]prAuthorSet{orgRepoKey: {prAuthorKey: nil}}
 				return Controller{
-						continueOnError: true, kubeClient: &fkc, githubClient: &fghc, statusMigrator: &fsm, trustedChecker: &ftc,
+						continueOnError: true, prowJobTriggerer: &fpjt, githubClient: &fghc, statusMigrator: &fsm, trustedChecker: &ftc,
 					}, func(t *testing.T) {
-						if actual, expected := fkc.created, []kube.ProwJobSpec{}; !reflect.DeepEqual(actual, expected) {
+						if actual, expected := fpjt.created, map[prKey]sets.String{}; !reflect.DeepEqual(actual, expected) {
+							t.Errorf("did not create expected ProwJob: %s", diff.ObjectReflectDiff(actual, expected))
+						}
+						if actual, expected := fsm.retired, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}; !reflect.DeepEqual(actual, expected) {
+							t.Errorf("did not retire correct statuses: %s", diff.ObjectReflectDiff(actual, expected))
+						}
+						if actual, expected := fsm.migrated, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}}; !reflect.DeepEqual(actual, expected) {
+							t.Errorf("did not migrate correct statuses: %s", diff.ObjectReflectDiff(actual, expected))
+						}
+					}
+			},
+			expectErr: true,
+		},
+		{
+			name: "trigger error means we should see no trigger, a retire and a migrate",
+			generator: func() (Controller, func(*testing.T)) {
+				fpjt := newfakeProwJobTriggerer()
+				fpjt.errors[prOrgRepoKey] = sets.NewString("new-required-job")
+				fghc := newFakeGitHubClient(orgRepoKey)
+				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
+				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
+				fsm := newFakeMigrator(orgRepoKey)
+				ftc := newFakeTrustedChecker(orgRepoKey)
+				ftc.errors = map[orgRepo]prAuthorSet{orgRepoKey: {prAuthorKey: nil}}
+				return Controller{
+						continueOnError: true, prowJobTriggerer: &fpjt, githubClient: &fghc, statusMigrator: &fsm, trustedChecker: &ftc,
+					}, func(t *testing.T) {
+						if actual, expected := fpjt.created, map[prKey]sets.String{}; !reflect.DeepEqual(actual, expected) {
 							t.Errorf("did not create expected ProwJob: %s", diff.ObjectReflectDiff(actual, expected))
 						}
 						if actual, expected := fsm.retired, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}; !reflect.DeepEqual(actual, expected) {
@@ -707,7 +744,7 @@ func TestControllerReconcile(t *testing.T) {
 		{
 			name: "retire errors and trusted PR means we should see a trigger and migrate",
 			generator: func() (Controller, func(*testing.T)) {
-				fkc := newfakeKubeClient()
+				fpjt := newfakeProwJobTriggerer()
 				fghc := newFakeGitHubClient(orgRepoKey)
 				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
 				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
@@ -716,13 +753,10 @@ func TestControllerReconcile(t *testing.T) {
 				ftc := newFakeTrustedChecker(orgRepoKey)
 				ftc.trusted[orgRepoKey][prAuthorKey] = true
 				return Controller{
-						continueOnError: true, kubeClient: &fkc, githubClient: &fghc, statusMigrator: &fsm, trustedChecker: &ftc,
+						continueOnError: true, prowJobTriggerer: &fpjt, githubClient: &fghc, statusMigrator: &fsm, trustedChecker: &ftc,
 					}, func(t *testing.T) {
-						expectedProwJob := pjutil.NewPresubmit(pr, baseSha, config.Presubmit{
-							JobBase: config.JobBase{Name: "new-required-job"},
-							Context: "new-required-context",
-						}, "none").Spec
-						if actual, expected := fkc.created, []kube.ProwJobSpec{expectedProwJob}; !reflect.DeepEqual(actual, expected) {
+						expectedProwJob := map[prKey]sets.String{prOrgRepoKey: sets.NewString("new-required-job")}
+						if actual, expected := fpjt.created, expectedProwJob; !reflect.DeepEqual(actual, expected) {
 							t.Errorf("did not create expected ProwJob: %s", diff.ObjectReflectDiff(actual, expected))
 						}
 						if actual, expected := fsm.retired, map[orgRepo]sets.String{orgRepoKey: sets.NewString()}; !reflect.DeepEqual(actual, expected) {
@@ -738,7 +772,7 @@ func TestControllerReconcile(t *testing.T) {
 		{
 			name: "migrate errors and trusted PR means we should see a trigger and retire",
 			generator: func() (Controller, func(*testing.T)) {
-				fkc := newfakeKubeClient()
+				fpjt := newfakeProwJobTriggerer()
 				fghc := newFakeGitHubClient(orgRepoKey)
 				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
 				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
@@ -747,13 +781,10 @@ func TestControllerReconcile(t *testing.T) {
 				ftc := newFakeTrustedChecker(orgRepoKey)
 				ftc.trusted[orgRepoKey][prAuthorKey] = true
 				return Controller{
-						continueOnError: true, kubeClient: &fkc, githubClient: &fghc, statusMigrator: &fsm, trustedChecker: &ftc,
+						continueOnError: true, prowJobTriggerer: &fpjt, githubClient: &fghc, statusMigrator: &fsm, trustedChecker: &ftc,
 					}, func(t *testing.T) {
-						expectedProwJob := pjutil.NewPresubmit(pr, baseSha, config.Presubmit{
-							JobBase: config.JobBase{Name: "new-required-job"},
-							Context: "new-required-context",
-						}, "none").Spec
-						if actual, expected := fkc.created, []kube.ProwJobSpec{expectedProwJob}; !reflect.DeepEqual(actual, expected) {
+						expectedProwJob := map[prKey]sets.String{prOrgRepoKey: sets.NewString("new-required-job")}
+						if actual, expected := fpjt.created, expectedProwJob; !reflect.DeepEqual(actual, expected) {
 							t.Errorf("did not create expected ProwJob: %s", diff.ObjectReflectDiff(actual, expected))
 						}
 						if actual, expected := fsm.retired, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}; !reflect.DeepEqual(actual, expected) {
