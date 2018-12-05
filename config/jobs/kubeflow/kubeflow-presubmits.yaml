@@ -200,7 +200,7 @@ presubmits:
         imagePullPolicy: Always
 
   kubeflow/pipelines:
-  - name: build-image
+  - name: kubeflow-pipeline-build-image
     always_run: true
     decorate: true
     labels:
@@ -214,7 +214,7 @@ presubmits:
         - --workflow_file
         - build_image.yaml
     run_after_success:
-    - name: e2e-test-presubmit
+    - name: kubeflow-pipeline-e2e-test
       always_run: true
       decorate: true
       labels:
@@ -229,7 +229,7 @@ presubmits:
           - e2e_test_gke_v2.yaml
           - --test_result_folder
           - e2e_test
-    - name: sample-test-presubmit
+    - name: kubeflow-pipeline-sample-test
       always_run: true
       decorate: true
       skip_report: true
@@ -247,7 +247,7 @@ presubmits:
           - sample_test
           - --timeout
           - "3600"
-    - name: e2e-test-gce-minikube-presubmit
+    - name: kubeflow-pipeline-e2e-test-gce-minikube
       always_run: true
       decorate: true
       skip_report: true
@@ -263,7 +263,7 @@ presubmits:
           - e2e_test_gke.yaml
           - --test_result_folder
           - e2e_test_gke
-    - name: sample-test-to-be-deprecated-presubmit
+    - name: kubeflow-pipeline-sample-test-to-be-deprecated
       always_run: true
       decorate: true
       skip_report: true
@@ -281,7 +281,7 @@ presubmits:
           - sample_test
           - --timeout
           - "3600"
-  - name: unit-test-presubmit
+  - name: kubeflow-pipeline-unit-test
     always_run: true
     decorate: true
     labels:
