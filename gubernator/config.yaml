@@ -38,3 +38,4 @@ jobs:
   - pull-kubernetes-typecheck
   - pull-kubernetes-verify
 recursive_artifacts: false
+spyglass: false
