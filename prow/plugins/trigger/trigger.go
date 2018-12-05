@@ -106,7 +106,7 @@ type kubeClient interface {
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
 }
 
-type client struct {
+type Client struct {
 	GitHubClient githubClient
 	KubeClient   kubeClient
 	Config       *config.Config
@@ -118,8 +118,8 @@ type trustedUserClient interface {
 	IsMember(org, user string) (bool, error)
 }
 
-func getClient(pc plugins.Agent) client {
-	return client{
+func getClient(pc plugins.Agent) Client {
+	return Client{
 		GitHubClient: pc.GitHubClient,
 		Config:       pc.Config,
 		KubeClient:   pc.KubeClient,
@@ -203,7 +203,7 @@ func allContexts(parent config.Presubmit) []string {
 	return contexts
 }
 
-func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts map[string]bool, body, eventGUID string) error {
+func RunOrSkipRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts map[string]bool, body, eventGUID string) error {
 	org := pr.Base.Repo.Owner.Login
 	repo := pr.Base.Repo.Name
 	number := pr.Number

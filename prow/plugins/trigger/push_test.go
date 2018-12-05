@@ -91,7 +91,7 @@ func TestHandlePE(t *testing.T) {
 	for _, tc := range testCases {
 		g := &fakegithub.FakeClient{}
 		kc := &fkc{}
-		c := client{
+		c := Client{
 			GitHubClient: g,
 			KubeClient:   kc,
 			Config:       &config.Config{},
