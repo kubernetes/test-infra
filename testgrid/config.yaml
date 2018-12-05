@@ -808,6 +808,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-12
 - name: ci-kubernetes-bazel-test-1-13
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-13
+- name: ci-test-infra-build-smoke
+  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-build-smoke
 - name: ci-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-bazel
 # Ubuntu node e2e tests (contact: @kubernetes/ubuntu-image on github)
@@ -6760,6 +6762,11 @@ dashboards:
   - name: deploy-prow
     description: deploys the configured version of prow by running prow/deploy.sh
     test_group_name: post-test-infra-deploy-prow
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: build-smoke
+    description: basic job to ensure build controller works correctly
+    test_group_name: ci-test-infra-build-smoke
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 
