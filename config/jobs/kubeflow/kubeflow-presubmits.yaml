@@ -214,7 +214,7 @@ presubmits:
         - --workflow_file
         - build_image.yaml
     run_after_success:
-    - name: presubmit-e2e-test
+    - name: e2e-test-presubmit
       always_run: true
       decorate: true
       labels:
@@ -229,7 +229,7 @@ presubmits:
           - e2e_test_gke_v2.yaml
           - --test_result_folder
           - e2e_test
-    - name: presubmit-sample-test
+    - name: sample-test-presubmit
       always_run: true
       decorate: true
       skip_report: true
@@ -247,7 +247,7 @@ presubmits:
           - sample_test
           - --timeout
           - "3600"
-    - name: presubmit-e2e-test-gce-minikube
+    - name: e2e-test-gce-minikube-presubmit
       always_run: true
       decorate: true
       skip_report: true
@@ -263,7 +263,7 @@ presubmits:
           - e2e_test_gke.yaml
           - --test_result_folder
           - e2e_test_gke
-    - name: presubmit-sample-test-to-be-deprecated
+    - name: sample-test-to-be-deprecatedpresubmit-presubmit
       always_run: true
       decorate: true
       skip_report: true
@@ -281,7 +281,7 @@ presubmits:
           - sample_test
           - --timeout
           - "3600"
-  - name: presubmit-unit-test
+  - name: unit-test-presubmit
     always_run: true
     decorate: true
     labels:
