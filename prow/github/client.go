@@ -2271,6 +2271,31 @@ func (c *Client) ListMilestones(org, repo string) ([]Milestone, error) {
 	return milestones, nil
 }
 
+// ListPRCommits lists the commits in a pull request.
+//
+// GitHub API docs: https://developer.github.com/v3/pulls/#list-commits-on-a-pull-request
+func (c *Client) ListPRCommits(org, repo string, number int) ([]RepositoryCommit, error) {
+	c.log("ListPRCommits", org, repo, number)
+	if c.fake {
+		return nil, nil
+	}
+	var commits []RepositoryCommit
+	err := c.readPaginatedResults(
+		fmt.Sprintf("/repos/%v/%v/pulls/%d/commits", org, repo, number),
+		acceptNone,
+		func() interface{} { // newObj returns a pointer to the type of object to create
+			return &[]RepositoryCommit{}
+		},
+		func(obj interface{}) { // accumulate is the accumulation function for paginated results
+			commits = append(commits, *(obj.(*[]RepositoryCommit))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return commits, nil
+}
+
 // newReloadingTokenSource creates a reloadingTokenSource.
 func newReloadingTokenSource(getToken func() []byte) *reloadingTokenSource {
 	return &reloadingTokenSource{
