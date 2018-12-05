@@ -676,7 +676,10 @@ presubmits:
           value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181203-a441fa430-master
         name: ""
-        resources: {}
+        resources:
+          requests:
+            cpu: "2"
+            memory: 9000Mi
         securityContext:
           privileged: true
         volumeMounts:
