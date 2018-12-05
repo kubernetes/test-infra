@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -316,12 +315,12 @@ type Cluster struct {
 	Endpoint string `json:"endpoint"`
 	// Base64-encoded public cert used by clients to authenticate to the
 	// cluster endpoint.
-	ClientCertificate string `json:"clientCertificate"`
+	ClientCertificate []byte `json:"clientCertificate"`
 	// Base64-encoded private key used by clients..
-	ClientKey string `json:"clientKey"`
+	ClientKey []byte `json:"clientKey"`
 	// Base64-encoded public certificate that is the root of trust for the
 	// cluster.
-	ClusterCACertificate string `json:"clusterCaCertificate"`
+	ClusterCACertificate []byte `json:"clusterCaCertificate"`
 }
 
 // NewClientFromFile reads a Cluster object at clusterPath and returns an
@@ -391,18 +390,11 @@ func ClientMapFromFile(clustersPath, namespace string) (map[string]*Client, erro
 
 // NewClient returns an authenticated Client using the keys in the Cluster.
 func NewClient(c *Cluster, namespace string) (*Client, error) {
-	cc, err := base64.StdEncoding.DecodeString(c.ClientCertificate)
-	if err != nil {
-		return nil, err
-	}
-	ck, err := base64.StdEncoding.DecodeString(c.ClientKey)
-	if err != nil {
-		return nil, err
-	}
-	ca, err := base64.StdEncoding.DecodeString(c.ClusterCACertificate)
-	if err != nil {
-		return nil, err
-	}
+	// Relies on json encoding/decoding []byte as base64
+	// https://golang.org/pkg/encoding/json/#Marshal
+	cc := c.ClientCertificate
+	ck := c.ClientKey
+	ca := c.ClusterCACertificate
 
 	cert, err := tls.X509KeyPair(cc, ck)
 	if err != nil {

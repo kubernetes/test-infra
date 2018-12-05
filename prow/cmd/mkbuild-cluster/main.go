@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"encoding/base64"
 	"errors"
 	"flag"
 	"fmt"
@@ -34,10 +33,6 @@ import (
 
 const (
 	useClientCertEnv = "CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE"
-)
-
-var (
-	coder = base64.StdEncoding
 )
 
 type options struct {
@@ -60,9 +55,9 @@ type describe struct {
 }
 
 type describeAuth struct {
-	ClientCertificate    string `json:"clientCertificate"`
-	ClientKey            string `json:"clientKey"`
-	ClusterCACertificate string `json:"clusterCaCertificate"`
+	ClientCertificate    []byte `json:"clientCertificate"`
+	ClientKey            []byte `json:"clientKey"`
+	ClusterCACertificate []byte `json:"clusterCaCertificate"`
 }
 
 func parseOptions() options {
@@ -203,38 +198,18 @@ func describeCluster(o options) (*describe, error) {
 	if d.Endpoint == "" {
 		return nil, errors.New("empty endpoint")
 	}
-	if d.Auth.ClusterCACertificate == "" {
+	if len(d.Auth.ClusterCACertificate) == 0 {
 		return nil, errors.New("empty clusterCaCertificate")
 	}
-	if d.Auth.ClusterCACertificate, err = decode(d.Auth.ClusterCACertificate); err != nil {
-		return nil, fmt.Errorf("decode clusterCaCertificate")
-	}
 
-	if d.Auth.ClientKey == "" {
+	if len(d.Auth.ClientKey) == 0 {
 		return nil, errors.New("empty clientKey, consider running with --get-client-cert")
 	}
-	if d.Auth.ClientKey, err = decode(d.Auth.ClientKey); err != nil {
-		return nil, fmt.Errorf("decode clientKey: %v", err)
-	}
-	if d.Auth.ClientCertificate == "" {
+	if len(d.Auth.ClientCertificate) == 0 {
 		return nil, errors.New("empty clientCertificate, consider running with --get-client-cert")
-	}
-	if d.Auth.ClientCertificate, err = decode(d.Auth.ClientCertificate); err != nil {
-		return nil, fmt.Errorf("decode clientCertificate: %v", err)
 	}
 
 	return &d, nil
-}
-
-// decode returns the string encoded as the base64 in string.
-func decode(in string) (string, error) {
-	out, err := coder.DecodeString(in)
-	return string(out), err
-}
-
-// decode returns in string encoded as a base64 string.
-func encode(in string) string {
-	return coder.EncodeToString([]byte(in))
 }
 
 // do will get creds for the specified cluster and add them to the stdin secret
@@ -252,9 +227,9 @@ func do(o options) error {
 	}
 	newCluster := kube.Cluster{
 		Endpoint:             "https://" + d.Endpoint,
-		ClusterCACertificate: encode(d.Auth.ClusterCACertificate),
-		ClientKey:            encode(d.Auth.ClientKey),
-		ClientCertificate:    encode(d.Auth.ClientCertificate),
+		ClusterCACertificate: d.Auth.ClusterCACertificate,
+		ClientKey:            d.Auth.ClientKey,
+		ClientCertificate:    d.Auth.ClientCertificate,
 	}
 
 	// Try to use this entry

@@ -22,7 +22,6 @@ import (
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
@@ -410,9 +409,9 @@ func TestNewClient(t *testing.T) {
 	certPool.AppendCertsFromPEM(rootCertPEM)
 
 	clus := &Cluster{
-		ClientCertificate:    base64.StdEncoding.EncodeToString(clientCertPEM),
-		ClientKey:            base64.StdEncoding.EncodeToString(clientKeyPEM),
-		ClusterCACertificate: base64.StdEncoding.EncodeToString(rootCertPEM),
+		ClientCertificate:    clientCertPEM,
+		ClientKey:            clientKeyPEM,
+		ClusterCACertificate: rootCertPEM,
 	}
 	s := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("{}")) }))
 	s.TLS = &tls.Config{
