@@ -444,8 +444,9 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 	)
 
 	wrapperOptions := wrapper.Options{
-		ProcessLog: fmt.Sprintf("%s/process-log.txt", logMountPath),
-		MarkerFile: fmt.Sprintf("%s/marker-file.txt", logMountPath),
+		ProcessLog:   fmt.Sprintf("%s/process-log.txt", logMountPath),
+		MarkerFile:   fmt.Sprintf("%s/marker-file.txt", logMountPath),
+		MetadataFile: fmt.Sprintf("%s/metadata.json", artifactsPath),
 	}
 	// TODO(fejta): use flags
 	entrypointConfigEnv, err := entrypoint.Encode(entrypoint.Options{

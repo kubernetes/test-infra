@@ -160,7 +160,7 @@ func TestOptions_AssembleTargets(t *testing.T) {
 			spec := &downwardapi.JobSpec{
 				Job:  "job",
 				Type: testCase.jobType,
-				Refs: kube.Refs{
+				Refs: &kube.Refs{
 					Org:  "org",
 					Repo: "repo",
 					Pulls: []kube.Pull{
