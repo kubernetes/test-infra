@@ -220,3 +220,108 @@ func TestLintStutter(t *testing.T) {
 		}
 	}
 }
+
+func TestLintPackageComments(t *testing.T) {
+	var testcases = []struct {
+		problem            lint.Problem
+		expectedSuggestion string
+	}{
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should omit values from range; this loop is equivalent to `for range ...`",
+				Link:       "",
+				Category:   "range-loop",
+				LineText:   "for _ = range m {",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\nfor range m {```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should omit values from range; this loop is equivalent to `for range ...`",
+				Link:       "",
+				Category:   "range-loop",
+				LineText:   "for _, _ = range m {",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\nfor range m {```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should omit 2nd value from range; this loop is equivalent to `for y = range ...`",
+				Link:       "",
+				Category:   "range-loop",
+				LineText:   "for y, _ = range m {",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\nfor y = range m {```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should omit 2nd value from range; this loop is equivalent to `for yVar1 = range ...`",
+				Link:       "",
+				Category:   "range-loop",
+				LineText:   "for yVar1, _ = range m {",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\nfor yVar1 = range m {```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should omit 2nd value from range; this loop is equivalent to `for y := range ...`",
+				Link:       "",
+				Category:   "range-loop",
+				LineText:   "for y, _ := range m {",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\nfor y := range m {```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should omit values from range; this loop is equivalent to `for range ...`",
+				Link:       "",
+				Category:   "range-loop",
+				LineText:   "for range m {",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should omit 2nd value from range; this loop is equivalent to `for y = range ...`",
+				Link:       "",
+				Category:   "range-loop",
+				LineText:   "for y = range m {",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "",
+		},
+	}
+	for _, test := range testcases {
+		suggestion := SuggestCodeChange(test.problem)
+		if suggestion != test.expectedSuggestion {
+			t.Errorf("Excepted code suggestion %s but got %s for LineText %s", test.expectedSuggestion, suggestion, test.problem.LineText)
+		}
+	}
+}

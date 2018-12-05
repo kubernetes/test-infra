@@ -25,13 +25,15 @@ import (
 var (
 	lintNamesUnderscoreRegex = regexp.MustCompile("don't use underscores in Go names; (.*) should be (.*)")
 	lintNamesAllCapsRegex    = regexp.MustCompile("don't use ALL_CAPS in Go names; use CamelCase")
-	lintStutter              = regexp.MustCompile("name will be used as [^.]+\\.(.*) by other packages, and that stutters; consider calling this (.*)")
+	lintStutterRegex         = regexp.MustCompile("name will be used as [^.]+\\.(.*) by other packages, and that stutters; consider calling this (.*)")
+	lintRangesRegex          = regexp.MustCompile("should omit (?:2nd )?values? from range; this loop is equivalent to \\x60(for .*) ...\\x60")
 )
 
 var lintHandlers = [...]func(lint.Problem) string{
 	fixNameUnderscore,
 	fixNameAllCaps,
 	fixStutter,
+	fixRanges,
 }
 
 // SuggestCodeChange returns code suggestions for a given lint.Problem
@@ -79,11 +81,28 @@ func fixNameAllCaps(p lint.Problem) string {
 }
 
 func fixStutter(p lint.Problem) string {
-	matches := lintStutter.FindStringSubmatch(p.Text)
+	matches := lintStutterRegex.FindStringSubmatch(p.Text)
 	if len(matches) < 3 {
 		return ""
 	}
 	suggestion := strings.Replace(p.LineText, matches[1], matches[2], -1)
+	if suggestion == p.LineText {
+		return ""
+	}
+	return suggestion
+}
+
+func fixRanges(p lint.Problem) string {
+	matches := lintRangesRegex.FindStringSubmatch(p.Text)
+	if len(matches) != 2 {
+		return ""
+	}
+	reValuesToOmit := regexp.MustCompile(`for (([ [A-Za-z0-9]+[,]?]?(, _ :?= ))|(_ = )|(_, _ = ))range`)
+	valuesToOmit := reValuesToOmit.FindStringSubmatch(p.LineText)
+	if len(valuesToOmit) == 0 {
+		return ""
+	}
+	suggestion := strings.Replace(p.LineText, valuesToOmit[0], matches[1], -1)
 	if suggestion == p.LineText {
 		return ""
 	}
