@@ -26,6 +26,7 @@ import (
 )
 
 var (
+	// ResourcesConfigType is the ResourceObject CRD type
 	ResourcesConfigType = Type{
 		Kind:       reflect.TypeOf(ResourcesConfigObject{}).Name(),
 		ListKind:   reflect.TypeOf(ResourcesConfigCollection{}).Name(),

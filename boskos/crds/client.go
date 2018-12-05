@@ -39,19 +39,21 @@ const (
 	version = "v1"
 )
 
+// KubernetesClientOptions are flag options used to create a kube client.
 type KubernetesClientOptions struct {
 	inMemory   bool
 	kubeConfig string
 	namespace  string
 }
 
+// AddFlags adds kube client flags to existing FlagSet.
 func (o *KubernetesClientOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.namespace, "namespace", v1.NamespaceDefault, "namespace to install on")
 	fs.StringVar(&o.kubeConfig, "kubeconfig", "", "absolute path to the kubeConfig file")
 	fs.BoolVar(&o.inMemory, "in_memory", false, "Use in memory client instead of CRD")
 }
 
-// Validate validates Kubernetes options.
+// Validate validates Kubernetes client options.
 func (o *KubernetesClientOptions) Validate() error {
 	if o.kubeConfig != "" {
 		if _, err := os.Stat(o.kubeConfig); err != nil {
@@ -61,6 +63,7 @@ func (o *KubernetesClientOptions) Validate() error {
 	return nil
 }
 
+// Client returns a ClientInterface based on the flags provided.
 func (o *KubernetesClientOptions) Client(t Type) (ClientInterface, error) {
 	if o.inMemory {
 		return newDummyClient(t), nil
