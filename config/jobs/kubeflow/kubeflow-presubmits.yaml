@@ -263,24 +263,6 @@ presubmits:
           - e2e_test_gke.yaml
           - --test_result_folder
           - e2e_test_gke
-    - name: kubeflow-pipeline-sample-test-to-be-deprecated
-      always_run: true
-      decorate: true
-      skip_report: true
-      labels:
-        preset-service-account: "true"
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20181203-a441fa430-1.10
-          command:
-          - ./test/presubmit-tests.sh
-          args:
-          - --workflow_file
-          - sample_test.yaml
-          - --test_result_folder
-          - sample_test
-          - --timeout
-          - "3600"
   - name: kubeflow-pipeline-unit-test
     always_run: true
     decorate: true
