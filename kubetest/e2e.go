@@ -48,15 +48,21 @@ func argFields(args, dump, ipRange string) []string {
 }
 
 func run(deploy deployer, o options) error {
-	if o.checkSkew {
-		os.Setenv("KUBECTL", "./cluster/kubectl.sh --match-server-version")
-	} else {
-		os.Setenv("KUBECTL", "./cluster/kubectl.sh")
+	cmd, err := deploy.KubectlCommand()
+	if err != nil {
+		return err
 	}
+	if cmd == nil {
+		cmd = exec.Command("./cluster/kubectl.sh")
+	}
+	if o.checkSkew {
+		cmd.Args = append(cmd.Args, "--match-server-version")
+	}
+	os.Setenv("KUBECTL", strings.Join(cmd.Args, " "))
+
 	os.Setenv("KUBE_CONFIG_FILE", "config-test.sh")
 	os.Setenv("KUBE_RUNTIME_CONFIG", o.runtimeConfig)
 
-	var err error
 	var errs []error
 
 	dump, err := util.OptionalAbsPath(o.dump)
@@ -150,7 +156,7 @@ func run(deploy deployer, o options) error {
 			errs = util.AppendError(errs, control.XMLWrap(&suite, "Check APIReachability", func() error { return getKubectlVersion(deploy) }))
 			if dump != "" {
 				errs = util.AppendError(errs, control.XMLWrap(&suite, "list nodes", func() error {
-					return listNodes(dump)
+					return listNodes(deploy, dump)
 				}))
 			}
 		}
@@ -381,16 +387,32 @@ func dumpRemoteLogs(deploy deployer, o options, path, reason string) []error {
 	return errs
 }
 
-func listNodes(dump string) error {
-	b, err := control.Output(exec.Command("./cluster/kubectl.sh", "--match-server-version=false", "get", "nodes", "-oyaml"))
+func listNodes(dp deployer, dump string) error {
+	cmd, err := dp.KubectlCommand()
+	if err != nil {
+		return err
+	}
+	if cmd == nil {
+		cmd = exec.Command("./cluster/kubectl.sh")
+	}
+	cmd.Args = append(cmd.Args, "--match-server-version=false", "get", "nodes", "-oyaml")
+	b, err := control.Output(cmd)
 	if err != nil {
 		return err
 	}
 	return ioutil.WriteFile(filepath.Join(dump, "nodes.yaml"), b, 0644)
 }
 
-func listKubemarkNodes(dump string) error {
-	b, err := control.Output(exec.Command("./cluster/kubectl.sh", "--match-server-version=false", "--kubeconfig=./test/kubemark/resources/kubeconfig.kubemark", "get", "nodes", "-oyaml"))
+func listKubemarkNodes(dp deployer, dump string) error {
+	cmd, err := dp.KubectlCommand()
+	if err != nil {
+		return err
+	}
+	if cmd == nil {
+		cmd = exec.Command("./cluster/kubectl.sh")
+	}
+	cmd.Args = append(cmd.Args, "--match-server-version=false", "--kubeconfig=./test/kubemark/resources/kubeconfig.kubemark", "get", "nodes", "-oyaml")
+	b, err := control.Output(cmd)
 	if err != nil {
 		return err
 	}
@@ -628,7 +650,7 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 	// Check kubemark apiserver reachability by listing all nodes.
 	if dump != "" {
 		control.XMLWrap(&suite, "list kubemark nodes", func() error {
-			return listKubemarkNodes(dump)
+			return listKubemarkNodes(deploy, dump)
 		})
 	}
 
