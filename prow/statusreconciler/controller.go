@@ -24,6 +24,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/maintenance/migratestatus/migrator"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
@@ -96,7 +98,7 @@ func (t *kubeProwJobTriggerer) runOrSkip(pr *github.PullRequest, requestedJobs [
 			Config:       t.configAgent.Config(),
 			Logger:       logrus.WithField("client", "trigger"),
 		},
-		pr, requestedJobs, map[string]bool{}, "", "none",
+		pr, requestedJobs, sets.NewString(), "", "none",
 	)
 }
 

@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"net/url"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/github"
@@ -224,5 +226,5 @@ func buildAll(c Client, pr *github.PullRequest, eventGUID string) error {
 			matchingJobs = append(matchingJobs, job)
 		}
 	}
-	return RunOrSkipRequested(c, pr, matchingJobs, nil, "", eventGUID)
+	return RunOrSkipRequested(c, pr, matchingJobs, sets.NewString(), "", eventGUID)
 }

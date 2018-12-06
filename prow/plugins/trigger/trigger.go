@@ -198,11 +198,11 @@ func fileChangesGetter(ghc githubClient, org, repo string, num int) func() ([]st
 	}
 }
 
-func shouldRun(fileChangesGetter func() ([]string, error), job config.Presubmit, baseRef string, forceRunContexts map[string]bool, body string) (bool, error) {
+func shouldRun(fileChangesGetter func() ([]string, error), job config.Presubmit, baseRef string, forceRunContexts sets.String, body string) (bool, error) {
 	if !job.RunsAgainstBranch(baseRef) {
 		return false, nil
 	}
-	if job.RunIfChanged == "" || forceRunContexts[job.Context] || job.TriggerMatches(body) {
+	if job.RunIfChanged == "" || forceRunContexts.Has(job.Context) || job.TriggerMatches(body) {
 		return true, nil
 	}
 	changes, err := fileChangesGetter()
@@ -214,7 +214,7 @@ func shouldRun(fileChangesGetter func() ([]string, error), job config.Presubmit,
 
 // RunOrSkipRequested evaluates requestJobs to determine which config.Presubmits to
 // run and which ones to skip and once execute the ones that should be ran.
-func RunOrSkipRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts map[string]bool, body, eventGUID string) error {
+func RunOrSkipRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts sets.String, body, eventGUID string) error {
 	org := pr.Base.Repo.Owner.Login
 	repo := pr.Base.Repo.Name
 	number := pr.Number

@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"regexp"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
@@ -126,20 +128,20 @@ func handleGenericComment(c Client, trigger *plugins.Trigger, gc github.GenericC
 	}
 
 	// Do we have to run some tests?
-	var forceRunContexts map[string]bool
+	forceRunContexts := sets.NewString()
 	if shouldRetestFailed {
 		combinedStatus, err := c.GitHubClient.GetCombinedStatus(org, repo, pr.Head.SHA)
 		if err != nil {
 			return err
 		}
-		skipContexts := make(map[string]bool)    // these succeeded or are running
-		forceRunContexts = make(map[string]bool) // these failed and should be re-run
+		skipContexts := sets.NewString()    // these succeeded or are running
+		forceRunContexts = sets.NewString() // these failed and should be re-run
 		for _, status := range combinedStatus.Statuses {
 			state := status.State
 			if state == github.StatusSuccess || state == github.StatusPending {
-				skipContexts[status.Context] = true
+				skipContexts.Insert(status.Context)
 			} else if state == github.StatusError || state == github.StatusFailure {
-				forceRunContexts[status.Context] = true
+				forceRunContexts.Insert(status.Context)
 			}
 		}
 		retests := c.Config.RetestPresubmits(gc.Repo.FullName, skipContexts, forceRunContexts)

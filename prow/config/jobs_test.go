@@ -23,6 +23,7 @@ import (
 	"regexp"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -256,34 +257,34 @@ func TestCommentBodyMatches(t *testing.T) {
 
 func TestRetestPresubmits(t *testing.T) {
 	var testcases = []struct {
-		skipContexts     map[string]bool
-		runContexts      map[string]bool
+		skipContexts     sets.String
+		runContexts      sets.String
 		expectedContexts []string
 	}{
 		{
-			map[string]bool{},
-			map[string]bool{},
-			[]string{"gce", "unit"},
+			skipContexts:     sets.NewString(),
+			runContexts:      sets.NewString(),
+			expectedContexts: []string{"gce", "unit"},
 		},
 		{
-			map[string]bool{"gce": true},
-			map[string]bool{},
-			[]string{"unit"},
+			skipContexts:     sets.NewString("gce"),
+			runContexts:      sets.NewString(),
+			expectedContexts: []string{"unit"},
 		},
 		{
-			map[string]bool{},
-			map[string]bool{"federation": true, "nonexistent": true},
-			[]string{"gce", "unit", "federation"},
+			skipContexts:     sets.NewString(),
+			runContexts:      sets.NewString("federation", "nonexistent"),
+			expectedContexts: []string{"gce", "unit", "federation"},
 		},
 		{
-			map[string]bool{},
-			map[string]bool{"gke": true},
-			[]string{"gce", "unit", "gke"},
+			skipContexts:     sets.NewString(),
+			runContexts:      sets.NewString("gke"),
+			expectedContexts: []string{"gce", "unit", "gke"},
 		},
 		{
-			map[string]bool{"gce": true},
-			map[string]bool{"gce": true}, // should never happen
-			[]string{"unit"},
+			skipContexts:     sets.NewString("gce"),
+			runContexts:      sets.NewString("gce"), // should never happ)n
+			expectedContexts: []string{"unit"},
 		},
 	}
 	c := &Config{

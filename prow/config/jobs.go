@@ -332,14 +332,14 @@ type UtilityConfig struct {
 
 // RetestPresubmits returns all presubmits that should be run given a /retest command.
 // This is the set of all presubmits intersected with ((alwaysRun + runContexts) - skipContexts)
-func (c *JobConfig) RetestPresubmits(fullRepoName string, skipContexts, runContexts map[string]bool) []Presubmit {
+func (c *JobConfig) RetestPresubmits(fullRepoName string, skipContexts, runContexts sets.String) []Presubmit {
 	var result []Presubmit
 	if jobs, ok := c.Presubmits[fullRepoName]; ok {
 		for _, job := range jobs {
-			if skipContexts[job.Context] {
+			if skipContexts.Has(job.Context) {
 				continue
 			}
-			if job.AlwaysRun || job.RunIfChanged != "" || runContexts[job.Context] {
+			if job.AlwaysRun || job.RunIfChanged != "" || runContexts.Has(job.Context) {
 				result = append(result, job)
 			}
 		}
