@@ -67,7 +67,7 @@
 			<tr><td>{{k}}<td>{{v|maybe_linkify}}
 			% endfor
 		% endif
-		% if finished and 'metadata' in finished
+		% if finished and 'metadata' in finished and finished['metadata']
 			% for k, v in finished['metadata']|dictsort
 			<tr><td>{{k}}<td>{{v|maybe_linkify}}
 			% endfor
