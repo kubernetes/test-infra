@@ -202,8 +202,12 @@ func shouldRun(fileChangesGetter func() ([]string, error), job config.Presubmit,
 	if !job.RunsAgainstBranch(baseRef) {
 		return false, nil
 	}
-	if job.RunIfChanged == "" || forceRunContexts.Has(job.Context) || job.TriggerMatches(body) {
+	if job.AlwaysRun || forceRunContexts.Has(job.Context) || job.TriggerMatches(body) {
 		return true, nil
+	}
+	if job.RunIfChanged == "" {
+		// no need to check files
+		return false, nil
 	}
 	changes, err := fileChangesGetter()
 	if err != nil {
