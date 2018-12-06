@@ -61,3 +61,13 @@ presubmits:
         hostPath:
           path: /sys/fs/cgroup
           type: Directory
+  - name: pull-cluster-api-provider-aws-verify-boilerplate
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181203-a441fa430-master
+        command:
+        - "./hack/verify_boilerplate.py"
