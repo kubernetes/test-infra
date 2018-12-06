@@ -35,6 +35,7 @@ import (
 	prowjoblisters "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
+	duckv1alpha1 "github.com/knative/pkg/apis/duck/v1alpha1"
 
 	untypedcorev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -380,7 +381,7 @@ func finalState(status prowjobv1.ProwJobState) bool {
 }
 
 // description computes the ProwJobStatus description for this condition or falling back to a default if none is provided.
-func description(cond buildv1alpha1.BuildCondition, fallback string) string {
+func description(cond duckv1alpha1.Condition, fallback string) string {
 	switch {
 	case cond.Message != "":
 		return cond.Message
