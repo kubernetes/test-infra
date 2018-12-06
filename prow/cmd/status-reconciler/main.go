@@ -114,6 +114,6 @@ func main() {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 
-	c := statusreconciler.NewController(o.continueOnError, kubeClient, githubClient, pluginAgent)
+	c := statusreconciler.NewController(o.continueOnError, kubeClient, githubClient, configAgent, pluginAgent)
 	c.Run(sig, changes)
 }

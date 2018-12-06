@@ -42,7 +42,7 @@ func listPushEventChanges(pe github.PushEvent) []string {
 	return changedFiles
 }
 
-func handlePE(c client, pe github.PushEvent) error {
+func handlePE(c Client, pe github.PushEvent) error {
 	if pe.Deleted {
 		// we should not trigger jobs for a branch deletion
 		return nil

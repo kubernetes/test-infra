@@ -27,7 +27,7 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-func handlePR(c client, trigger *plugins.Trigger, pr github.PullRequestEvent) error {
+func handlePR(c Client, trigger *plugins.Trigger, pr github.PullRequestEvent) error {
 	org, repo, a := orgRepoAuthor(pr.PullRequest)
 	author := string(a)
 	num := pr.PullRequest.Number
@@ -113,7 +113,7 @@ func orgRepoAuthor(pr github.PullRequest) (string, string, login) {
 	return org, repo, login(author)
 }
 
-func buildAllIfTrusted(c client, trigger *plugins.Trigger, pr github.PullRequestEvent) error {
+func buildAllIfTrusted(c Client, trigger *plugins.Trigger, pr github.PullRequestEvent) error {
 	// When a PR is updated, check that the user is in the org or that an org
 	// member has said "/ok-to-test" before building. There's no need to ask
 	// for "/ok-to-test" because we do that once when the PR is created.
@@ -240,12 +240,12 @@ func TrustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org,
 	return l, false, nil
 }
 
-func buildAll(c client, pr *github.PullRequest, eventGUID string) error {
+func buildAll(c Client, pr *github.PullRequest, eventGUID string) error {
 	var matchingJobs []config.Presubmit
 	for _, job := range c.Config.Presubmits[pr.Base.Repo.FullName] {
 		if job.AlwaysRun || job.RunIfChanged != "" {
 			matchingJobs = append(matchingJobs, job)
 		}
 	}
-	return runOrSkipRequested(c, pr, matchingJobs, nil, "", eventGUID)
+	return RunOrSkipRequested(c, pr, matchingJobs, nil, "", eventGUID)
 }

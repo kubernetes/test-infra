@@ -277,7 +277,7 @@ func TestHandlePullRequest(t *testing.T) {
 			},
 		}
 		kc := &fkc{}
-		c := client{
+		c := Client{
 			GitHubClient: g,
 			KubeClient:   kc,
 			Config:       &config.Config{},
