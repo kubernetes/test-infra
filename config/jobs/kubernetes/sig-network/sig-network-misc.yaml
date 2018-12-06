@@ -132,7 +132,7 @@ periodics:
       - --
       - --cluster=gce-coredns-perf-cache
       - --env=CLUSTER_DNS_CORE_DNS=true
-      - --env=ENABLE_NODELOCAL_DNS=true
+      - --env=KUBE_ENABLE_NODELOCAL_DNS=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -158,7 +158,7 @@ periodics:
       - --
       - --cluster=gce-kubedns-perf-cache
       - --env=CLUSTER_DNS_CORE_DNS=false
-      - --env=ENABLE_NODELOCAL_DNS=true
+      - --env=KUBE_ENABLE_NODELOCAL_DNS=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -185,7 +185,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --env=CLUSTER_DNS_CORE_DNS=true
-      - --env=ENABLE_NODELOCAL_DNS=true
+      - --env=KUBE_ENABLE_NODELOCAL_DNS=true
       - --extract=ci/latest
       - --gcp-zone=us-central1-f
       - --ginkgo-parallel=30
@@ -331,7 +331,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --env=CLUSTER_DNS_CORE_DNS=false
-      - --env=ENABLE_NODELOCAL_DNS=true
+      - --env=KUBE_ENABLE_NODELOCAL_DNS=true
       - --extract=ci/latest
       - --gcp-zone=us-central1-f
       - --ginkgo-parallel=30
@@ -379,7 +379,7 @@ periodics:
       - --check-leaked-resources
       - --env=NODE_LOCAL_SSDS_EXT=1,scsi,fs
       - --env=CLUSTER_DNS_CORE_DNS=false
-      - --env=ENABLE_NODELOCAL_DNS=true
+      - --env=KUBE_ENABLE_NODELOCAL_DNS=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
