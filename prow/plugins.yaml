@@ -599,6 +599,19 @@ plugins:
   - size
   - welcome
 
+  GoogleCloudPlatform/netd:
+  - trigger
+  - lgtm
+  - golint
+  - approve
+  - verify-owners
+  - size
+  - assign
+  - help
+  - hold
+  - cat
+  - dog
+
   client-go/unofficial-docs:
   - approve
   - assign
