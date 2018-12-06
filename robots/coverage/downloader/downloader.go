@@ -20,6 +20,7 @@ package downloader
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"path"
@@ -32,8 +33,8 @@ import (
 )
 
 const (
-	//covProfileCompletionMarker is the file name of the completion marker for coverage profiling
-	covProfileCompletionMarker = "profile-completed"
+	//statusJSON is the JSON file that stores build success info
+	statusJSON = "finished.json"
 )
 
 //listGcsObjects get the slice of gcs objects under a given path
@@ -63,19 +64,8 @@ func listGcsObjects(ctx context.Context, client *storage.Client, bucketName, pre
 	return objects, nil
 }
 
-// doesObjectExist checks whether an object exists in GCS bucket
-func doesObjectExist(ctx context.Context, client *storage.Client, bucket, object string) bool {
-	_, err := client.Bucket(bucket).Object(object).Attrs(ctx)
-	if err != nil {
-		logrus.Infof("Error getting attrs from object '%s': %v", object, err)
-		return false
-	}
-	return true
-}
-
-func getProfile(ctx context.Context, client *storage.Client, bucket, object string) ([]byte, error) {
-	logrus.Infof("Running ProfileReader on bucket '%s', object='%s'\n",
-		bucket, object)
+func readGcsObject(ctx context.Context, client *storage.Client, bucket, object string) ([]byte, error) {
+	logrus.Infof("Trying to read gcs object '%s' in bucket '%s'\n", object, bucket)
 	o := client.Bucket(bucket).Object(object)
 	reader, err := o.NewReader(ctx)
 	if err != nil {
@@ -99,9 +89,14 @@ func FindBaseProfile(ctx context.Context, client *storage.Client, bucket, prowJo
 	builds := sortBuilds(strBuilds)
 	profilePath := ""
 	for _, build := range builds {
-		artifactsDirPath := path.Join(dirOfJob, strconv.Itoa(build), artifactsDirName)
-		dirOfCompletionMarker := path.Join(artifactsDirPath, covProfileCompletionMarker)
-		if doesObjectExist(ctx, client, bucket, dirOfCompletionMarker) {
+		buildDirPath := path.Join(dirOfJob, strconv.Itoa(build))
+		dirOfStatusJSON := path.Join(buildDirPath, statusJSON)
+
+		statusText, err := readGcsObject(ctx, client, bucket, dirOfStatusJSON)
+		if err != nil {
+			logrus.Infof("Cannot read finished.json (%s) in bucket '%s'", dirOfStatusJSON, bucket)
+		} else if isBuildSucceeded(statusText) {
+			artifactsDirPath := path.Join(buildDirPath, artifactsDirName)
 			profilePath = path.Join(artifactsDirPath, covProfileName)
 			break
 		}
@@ -109,7 +104,7 @@ func FindBaseProfile(ctx context.Context, client *storage.Client, bucket, prowJo
 	if profilePath == "" {
 		return nil, fmt.Errorf("no healthy build found for job '%s' in bucket '%s'; total # builds = %v", dirOfJob, bucket, len(builds))
 	}
-	return getProfile(ctx, client, bucket, profilePath)
+	return readGcsObject(ctx, client, bucket, profilePath)
 }
 
 // sortBuilds converts all build from str to int and sorts all builds in descending order and
@@ -125,6 +120,16 @@ func sortBuilds(strBuilds []string) []int {
 		}
 	}
 	sort.Sort(sort.Reverse(sort.IntSlice(res)))
-	logrus.Infof("Sorted Builds: %v\n", res)
 	return res
+}
+
+type finishedStatus struct {
+	Timestamp int
+	Passed    bool
+}
+
+func isBuildSucceeded(jsonText []byte) bool {
+	var status finishedStatus
+	err := json.Unmarshal(jsonText, &status)
+	return err == nil && status.Passed
 }
