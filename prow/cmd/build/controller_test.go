@@ -23,6 +23,7 @@ import (
 	"time"
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
+	duckv1alpha1 "github.com/knative/pkg/apis/duck/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -366,7 +367,7 @@ func TestReconcile(t *testing.T) {
 				if err != nil {
 					panic(err)
 				}
-				b.Status.SetCondition(&buildv1alpha1.BuildCondition{
+				b.Status.SetCondition(&duckv1alpha1.Condition{
 					Type:    buildv1alpha1.BuildSucceeded,
 					Message: "hello",
 				})
@@ -404,7 +405,7 @@ func TestReconcile(t *testing.T) {
 				if err != nil {
 					panic(err)
 				}
-				b.Status.SetCondition(&buildv1alpha1.BuildCondition{
+				b.Status.SetCondition(&duckv1alpha1.Condition{
 					Type:    buildv1alpha1.BuildSucceeded,
 					Status:  corev1.ConditionTrue,
 					Message: "hello",
@@ -445,7 +446,7 @@ func TestReconcile(t *testing.T) {
 				if err != nil {
 					panic(err)
 				}
-				b.Status.SetCondition(&buildv1alpha1.BuildCondition{
+				b.Status.SetCondition(&duckv1alpha1.Condition{
 					Type:    buildv1alpha1.BuildSucceeded,
 					Status:  corev1.ConditionFalse,
 					Message: "hello",
@@ -493,7 +494,7 @@ func TestReconcile(t *testing.T) {
 				if err != nil {
 					panic(err)
 				}
-				b.Status.SetCondition(&buildv1alpha1.BuildCondition{
+				b.Status.SetCondition(&duckv1alpha1.Condition{
 					Type:    buildv1alpha1.BuildSucceeded,
 					Status:  corev1.ConditionTrue,
 					Message: "hello",
@@ -573,7 +574,7 @@ func TestReconcile(t *testing.T) {
 				if err != nil {
 					panic(err)
 				}
-				b.Status.SetCondition(&buildv1alpha1.BuildCondition{
+				b.Status.SetCondition(&duckv1alpha1.Condition{
 					Type:    buildv1alpha1.BuildSucceeded,
 					Status:  corev1.ConditionTrue,
 					Message: "hello",
@@ -924,7 +925,7 @@ func TestDescription(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		bc := buildv1alpha1.BuildCondition{
+		bc := duckv1alpha1.Condition{
 			Message: tc.message,
 			Reason:  tc.reason,
 		}
@@ -952,7 +953,7 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "truly succeeded state returns success",
 			input: buildv1alpha1.BuildStatus{
-				Conditions: []buildv1alpha1.BuildCondition{
+				Conditions: []duckv1alpha1.Condition{
 					{
 						Type:    buildv1alpha1.BuildSucceeded,
 						Status:  corev1.ConditionTrue,
@@ -967,7 +968,7 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "falsely succeeded state returns failure",
 			input: buildv1alpha1.BuildStatus{
-				Conditions: []buildv1alpha1.BuildCondition{
+				Conditions: []duckv1alpha1.Condition{
 					{
 						Type:    buildv1alpha1.BuildSucceeded,
 						Status:  corev1.ConditionFalse,
@@ -982,7 +983,7 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "unstarted job returns triggered/initializing",
 			input: buildv1alpha1.BuildStatus{
-				Conditions: []buildv1alpha1.BuildCondition{
+				Conditions: []duckv1alpha1.Condition{
 					{
 						Type:    buildv1alpha1.BuildSucceeded,
 						Status:  corev1.ConditionUnknown,
@@ -998,7 +999,7 @@ func TestProwJobStatus(t *testing.T) {
 			name: "unfinished job returns running",
 			input: buildv1alpha1.BuildStatus{
 				StartTime: now,
-				Conditions: []buildv1alpha1.BuildCondition{
+				Conditions: []duckv1alpha1.Condition{
 					{
 						Type:    buildv1alpha1.BuildSucceeded,
 						Status:  corev1.ConditionUnknown,
@@ -1015,7 +1016,7 @@ func TestProwJobStatus(t *testing.T) {
 			input: buildv1alpha1.BuildStatus{
 				StartTime:      now,
 				CompletionTime: later,
-				Conditions: []buildv1alpha1.BuildCondition{
+				Conditions: []duckv1alpha1.Condition{
 					{
 						Type:    buildv1alpha1.BuildSucceeded,
 						Status:  corev1.ConditionUnknown,
@@ -1045,7 +1046,7 @@ func TestProwJobStatus(t *testing.T) {
 			tc.name += " [fallback]"
 			cond := tc.input.Conditions[0]
 			cond.Message = ""
-			tc.input.Conditions = []buildv1alpha1.BuildCondition{cond}
+			tc.input.Conditions = []duckv1alpha1.Condition{cond}
 			cases = append(cases, tc)
 		}
 	}

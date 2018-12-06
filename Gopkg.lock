@@ -1623,6 +1623,7 @@
     "github.com/knative/build/pkg/client/clientset/versioned",
     "github.com/knative/build/pkg/client/informers/externalversions",
     "github.com/knative/build/pkg/client/informers/externalversions/build/v1alpha1",
+    "github.com/knative/pkg/apis/duck/v1alpha1",
     "github.com/kubernetes/repo-infra/kazel",
     "github.com/mattn/go-zglob",
     "github.com/pelletier/go-toml",
