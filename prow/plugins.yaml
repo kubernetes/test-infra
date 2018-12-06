@@ -609,6 +609,8 @@ plugins:
   - assign
   - help
   - hold
+  - cat
+  - dog
 
   client-go/unofficial-docs:
   - approve
