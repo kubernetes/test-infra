@@ -1,2 +1,10 @@
 labels:
 - area/prow/bump
+approvers:
+- amwat
+- bentheelder
+- cjwagner
+- fejta
+- ixdy
+- katharine
+- krzyzacy
