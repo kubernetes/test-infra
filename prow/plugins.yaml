@@ -16,7 +16,6 @@ triggers:
 - repos:
   - google/cadvisor
   - GoogleCloudPlatform/k8s-multicluster-ingress
-  - GoogleCloudPlatform/netd
   trusted_org: kubernetes
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
 - repos:
