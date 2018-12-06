@@ -42,6 +42,12 @@ required = [
   name = "github.com/prometheus/client_golang"
   version = "0.8.0"
 
+# Hey bitbucket: join the modern world and allow https like everyone else in existence
+[[override]]
+  name = "bitbucket.org/ww/goautoneg"
+  revision = "a547fc61f48d567d5b4ec6f8aee5573d8efce11d"
+  source = "https://github.com/munnerz/goautoneg.git"
+
 # Need override because release-1.12 and kubernetes-1.12.0 are not semver compliant
 [[override]]
   name = "k8s.io/api"
