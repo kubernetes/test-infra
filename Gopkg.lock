@@ -6,7 +6,8 @@
   name = "bitbucket.org/ww/goautoneg"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "'75cd24fc2f2c2a2088577d12123ddee5f54e0675'"
+  revision = "a547fc61f48d567d5b4ec6f8aee5573d8efce11d"
+  source = "https://github.com/munnerz/goautoneg.git"
 
 [[projects]]
   digest = "1:dd347b7b19de2af0821d1396de518b857a5c739164ba813e5fae2d9a3370aca0"
