@@ -22,6 +22,7 @@ import (
 	"time"
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
+	"k8s.io/test-infra/prow/github"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -250,6 +251,19 @@ func (br Brancher) Intersects(other Brancher) bool {
 	return other.Intersects(br)
 }
 
+// ShouldRun determines if we can know for certain that the job should run based on the matcher
+// and whether or not the job should run
+func (cm RegexpChangeMatcher) ShouldRun(changes ChangedFilesProvider) (bool, bool, error) {
+	if cm.RunIfChanged != "" {
+		changeList, err := changes()
+		if err != nil {
+			return true, false, err
+		}
+		return true, cm.RunsAgainstChanges(changeList), nil
+	}
+	return false, false, nil
+}
+
 // RunsAgainstChanges returns true if any of the changed input paths match the run_if_changed regex.
 func (cm RegexpChangeMatcher) RunsAgainstChanges(changes []string) bool {
 	for _, change := range changes {
@@ -258,6 +272,44 @@ func (cm RegexpChangeMatcher) RunsAgainstChanges(changes []string) bool {
 		}
 	}
 	return false
+}
+
+// ShouldRun determines if the postsubmit should run against a specific
+// base ref, or in response to a set of changes. The latter mechanism
+// is evaluated lazily, if necessary.
+func (ps Postsubmit) ShouldRun(baseRef string, changes ChangedFilesProvider) (bool, error) {
+	if !ps.RunsAgainstBranch(baseRef) {
+		return false, nil
+	}
+	if determined, shouldRun, err := ps.RegexpChangeMatcher.ShouldRun(changes); err != nil {
+		return false, err
+	} else if determined {
+		return shouldRun, nil
+	}
+	// Postsubmits default to always run
+	return true, nil
+}
+
+// ShouldRun determines if the presubmit should run against a specific
+// base ref, in response to a comment body or a set of changes. The latter
+// two mechanisms are evaluated lazily, if necessary.
+func (ps Presubmit) ShouldRun(baseRef string, body string, changes ChangedFilesProvider) (bool, error) {
+	if !ps.RunsAgainstBranch(baseRef) {
+		return false, nil
+	}
+	if ps.AlwaysRun {
+		return true, nil
+	}
+	if ps.Trigger != "" && ps.TriggerMatches(body) {
+		return true, nil
+	}
+	if determined, shouldRun, err := ps.RegexpChangeMatcher.ShouldRun(changes); err != nil {
+		return false, err
+	} else if determined {
+		return shouldRun, nil
+	}
+	// Presubmits default to not run
+	return false, nil
 }
 
 // TriggerMatches returns true if the comment body should trigger this presubmit.
@@ -277,6 +329,24 @@ func (ps Presubmit) ContextRequired() bool {
 
 // ChangedFilesProvider returns a slice of modified files.
 type ChangedFilesProvider func() ([]string, error)
+
+type githubClient interface {
+	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+}
+
+func NewGitHubDeferredChangedFilesProvider(client githubClient, org, repo string, num int) ChangedFilesProvider {
+	return func() ([]string, error) {
+		changes, err := client.GetPullRequestChanges(org, repo, num)
+		if err != nil {
+			return nil, fmt.Errorf("error getting pull request changes: %v", err)
+		}
+		var changedFiles []string
+		for _, change := range changes {
+			changedFiles = append(changedFiles, change.Filename)
+		}
+		return changedFiles, nil
+	}
+}
 
 func matching(j Presubmit, body string, testAll bool) []Presubmit {
 	// When matching ignore whether the job runs for the branch or whether the job runs for the

@@ -86,17 +86,6 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 	}
 
-	changesFull, err := gc.GetPullRequestChanges(org, repo, number)
-	if err != nil {
-		resp := fmt.Sprintf("Cannot get changes for PR #%d in %s/%s: %v", number, org, repo, err)
-		log.Warn(resp)
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
-	}
-	var changes []string
-	for _, change := range changesFull {
-		changes = append(changes, change.Filename)
-	}
-
 	statuses, err := gc.ListStatuses(org, repo, pr.Head.SHA)
 	if err != nil {
 		resp := fmt.Sprintf("Cannot get commit statuses for PR #%d in %s/%s: %v", number, org, repo, err)
@@ -105,14 +94,17 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	}
 
 	for _, job := range presubmits {
-		// Ignore blocking jobs.
-		if !job.SkipReport && job.AlwaysRun {
+		// Ignore jobs that report and should run.
+		shouldRun, err := job.ShouldRun(pr.Base.Ref, e.Body, config.NewGitHubDeferredChangedFilesProvider(gc, org, repo, number))
+		if err != nil {
+			resp := fmt.Sprintf("Cannot get changes for PR #%d in %s/%s: %v", number, org, repo, err)
+			log.Warn(resp)
+			return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
+		}
+		if job.ContextRequired() && shouldRun {
 			continue
 		}
-		// Ignore jobs that need to run against the PR changes.
-		if !job.SkipReport && job.RunIfChanged != "" && job.RunsAgainstChanges(changes) {
-			continue
-		}
+
 		// Ignore jobs that don't have a status yet.
 		if !statusExists(job, statuses) {
 			continue

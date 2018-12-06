@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -770,5 +771,267 @@ func TestMergePreset(t *testing.T) {
 				t.Errorf("For test \"%s\": wrong number of env vars. Got %d, expected %d.", tc.name, len(c.Env), tc.numEnv)
 			}
 		}
+	}
+}
+
+func TestPresubmitShouldRun(t *testing.T) {
+	var testCases = []struct {
+		name        string
+		fileChanges []string
+		fileError   error
+		job         Presubmit
+		ref         string
+		body        string
+		expectedRun bool
+		expectedErr bool
+	}{
+		{
+			name: "job skipped on the branch won't run",
+			job: Presubmit{
+				Brancher: Brancher{
+					SkipBranches: []string{"master"},
+				},
+			},
+			ref:         "master",
+			expectedRun: false,
+		},
+		{
+			name: "job enabled on the branch will run",
+			job: Presubmit{
+				Brancher: Brancher{
+					Branches: []string{"something"},
+				},
+				AlwaysRun: true,
+			},
+			ref:         "something",
+			expectedRun: true,
+		},
+		{
+			name: "job running only on other branches won't run",
+			job: Presubmit{
+				Brancher: Brancher{
+					Branches: []string{"master"},
+				},
+			},
+			ref:         "release-1.11",
+			expectedRun: false,
+		},
+		{
+			name: "job on a branch that's not skipped will run",
+			job: Presubmit{
+				Brancher: Brancher{
+					SkipBranches: []string{"master"},
+				},
+				AlwaysRun: true,
+			},
+			ref:         "other",
+			expectedRun: true,
+		},
+		{
+			name: "job with always_run: true should run",
+			job: Presubmit{
+				AlwaysRun: true,
+			},
+			ref:         "master",
+			expectedRun: true,
+		},
+		{
+			name: "job with body matching trigger should run",
+			job: Presubmit{
+				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
+				RerunCommand: "/test foo",
+			},
+			ref:         "master",
+			body:        "/test foo",
+			expectedRun: true,
+		},
+		{
+			name: "job with always_run: false and no run_if_changed should not run",
+			job: Presubmit{
+				AlwaysRun:    false,
+				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
+				RerunCommand: "/test foo",
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged: "",
+				},
+			},
+			ref:         "master",
+			expectedRun: false,
+		},
+		{
+			name: "job with run_if_changed but file get errors should not run",
+			job: Presubmit{
+				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
+				RerunCommand: "/test foo",
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged: "file",
+				},
+			},
+			ref:         "master",
+			fileError:   errors.New("oops"),
+			expectedRun: false,
+			expectedErr: true,
+		},
+		{
+			name: "job with run_if_changed not matching should not run",
+			job: Presubmit{
+				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
+				RerunCommand: "/test foo",
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged: "^file$",
+				},
+			},
+			ref:         "master",
+			fileChanges: []string{"something"},
+			expectedRun: false,
+		},
+		{
+			name: "job with run_if_changed matching should run",
+			job: Presubmit{
+				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
+				RerunCommand: "/test foo",
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged: "^file$",
+				},
+			},
+			ref:         "master",
+			fileChanges: []string{"file"},
+			expectedRun: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			jobs := []Presubmit{testCase.job}
+			if err := SetPresubmitRegexes(jobs); err != nil {
+				t.Fatalf("%s: failed to set presubmit regexes: %v", testCase.name, err)
+			}
+			jobShouldRun, err := jobs[0].ShouldRun(testCase.ref, testCase.body, func() ([]string, error) {
+				return testCase.fileChanges, testCase.fileError
+			})
+			if err == nil && testCase.expectedErr {
+				t.Errorf("%s: expected an error and got none", testCase.name)
+			}
+			if err != nil && !testCase.expectedErr {
+				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
+			}
+			if jobShouldRun != testCase.expectedRun {
+				t.Errorf("%s: did not determine if job should run correctly, expected %v but got %v", testCase.name, testCase.expectedRun, jobShouldRun)
+			}
+		})
+	}
+}
+
+func TestPostsubmitShouldRun(t *testing.T) {
+	var testCases = []struct {
+		name        string
+		fileChanges []string
+		fileError   error
+		job         Postsubmit
+		ref         string
+		expectedRun bool
+		expectedErr bool
+	}{
+		{
+			name: "job skipped on the branch won't run",
+			job: Postsubmit{
+				Brancher: Brancher{
+					SkipBranches: []string{"master"},
+				},
+			},
+			ref:         "master",
+			expectedRun: false,
+		},
+		{
+			name: "job enabled on the branch will run",
+			job: Postsubmit{
+				Brancher: Brancher{
+					Branches: []string{"something"},
+				},
+			},
+			ref:         "something",
+			expectedRun: true,
+		},
+		{
+			name: "job running only on other branches won't run",
+			job: Postsubmit{
+				Brancher: Brancher{
+					Branches: []string{"master"},
+				},
+			},
+			ref:         "release-1.11",
+			expectedRun: false,
+		},
+		{
+			name: "job on a branch that's not skipped will run",
+			job: Postsubmit{
+				Brancher: Brancher{
+					SkipBranches: []string{"master"},
+				},
+			},
+			ref:         "other",
+			expectedRun: true,
+		},
+		{
+			name:        "job with no run_if_changed should run",
+			job:         Postsubmit{},
+			ref:         "master",
+			expectedRun: true,
+		},
+		{
+			name: "job with run_if_changed but file get errors should not run",
+			job: Postsubmit{
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged: "file",
+				},
+			},
+			ref:         "master",
+			fileError:   errors.New("oops"),
+			expectedRun: false,
+			expectedErr: true,
+		},
+		{
+			name: "job with run_if_changed not matching should not run",
+			job: Postsubmit{
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged: "^file$",
+				},
+			},
+			ref:         "master",
+			fileChanges: []string{"something"},
+			expectedRun: false,
+		},
+		{
+			name: "job with run_if_changed matching should run",
+			job: Postsubmit{
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged: "^file$",
+				},
+			},
+			ref:         "master",
+			fileChanges: []string{"file"},
+			expectedRun: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			jobs := []Postsubmit{testCase.job}
+			if err := SetPostsubmitRegexes(jobs); err != nil {
+				t.Fatalf("%s: failed to set presubmit regexes: %v", testCase.name, err)
+			}
+			jobShouldRun, err := jobs[0].ShouldRun(testCase.ref, func() ([]string, error) {
+				return testCase.fileChanges, testCase.fileError
+			})
+			if err == nil && testCase.expectedErr {
+				t.Errorf("%s: expected an error and got none", testCase.name)
+			}
+			if err != nil && !testCase.expectedErr {
+				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
+			}
+			if jobShouldRun != testCase.expectedRun {
+				t.Errorf("%s: did not determine if job should run correctly, expected %v but got %v", testCase.name, testCase.expectedRun, jobShouldRun)
+			}
+		})
 	}
 }

@@ -32,6 +32,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/errorutil"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
@@ -879,15 +880,38 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	return nil
 }
 
+func aggregateChangeProvider(providers []config.ChangedFilesProvider) config.ChangedFilesProvider {
+	return func() ([]string, error) {
+		changes := sets.NewString()
+		var errs []error
+		for _, provider := range providers {
+			specificChanges, specificErr := provider()
+			changes.Insert(specificChanges...)
+			errs = append(errs, specificErr)
+		}
+		return changes.UnsortedList(), errorutil.NewAggregate(errs...)
+	}
+}
+
 func (c *Controller) trigger(sp subpool, presubmitContexts map[int]sets.String, prs []PullRequest) error {
 	requiredContexts := sets.NewString()
 	for _, pr := range prs {
 		requiredContexts = requiredContexts.Union(presubmitContexts[int(pr.Number)])
 	}
 
-	// TODO(cjwagner): DRY this out when generalizing triggering code (and code to determine required and to-run jobs).
 	for _, ps := range c.config().Presubmits[sp.org+"/"+sp.repo] {
-		if ps.SkipReport || !ps.RunsAgainstBranch(sp.branch) || !requiredContexts.Has(ps.Context) {
+		if !requiredContexts.Has(ps.Context) || !ps.ContextRequired() {
+			continue
+		}
+		var providers []config.ChangedFilesProvider
+		for _, pr := range prs {
+			providers = append(providers, config.NewGitHubDeferredChangedFilesProvider(c.ghc, sp.org, sp.repo, int(pr.Number)))
+		}
+		shouldRun, err := ps.ShouldRun(sp.branch, "", aggregateChangeProvider(providers))
+		if err != nil {
+			return err
+		}
+		if !shouldRun {
 			continue
 		}
 
@@ -975,47 +999,49 @@ type changeCacheKey struct {
 
 // prChanges gets the files changed by the PR, either from the cache or by
 // querying GitHub.
-func (c *changedFilesAgent) prChanges(pr *PullRequest) ([]string, error) {
-	cacheKey := changeCacheKey{
-		org:    string(pr.Repository.Owner.Login),
-		repo:   string(pr.Repository.Name),
-		number: int(pr.Number),
-		sha:    string(pr.HeadRefOID),
-	}
+func (c *changedFilesAgent) prChanges(pr *PullRequest) config.ChangedFilesProvider {
+	return func() ([]string, error) {
+		cacheKey := changeCacheKey{
+			org:    string(pr.Repository.Owner.Login),
+			repo:   string(pr.Repository.Name),
+			number: int(pr.Number),
+			sha:    string(pr.HeadRefOID),
+		}
 
-	c.RLock()
-	changedFiles, ok := c.changeCache[cacheKey]
-	if ok {
+		c.RLock()
+		changedFiles, ok := c.changeCache[cacheKey]
+		if ok {
+			c.RUnlock()
+			c.Lock()
+			c.nextChangeCache[cacheKey] = changedFiles
+			c.Unlock()
+			return changedFiles, nil
+		}
+		if changedFiles, ok = c.nextChangeCache[cacheKey]; ok {
+			c.RUnlock()
+			return changedFiles, nil
+		}
 		c.RUnlock()
+
+		// We need to query the changes from GitHub.
+		changes, err := c.ghc.GetPullRequestChanges(
+			string(pr.Repository.Owner.Login),
+			string(pr.Repository.Name),
+			int(pr.Number),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error getting PR changes for #%d: %v", int(pr.Number), err)
+		}
+		changedFiles = make([]string, 0, len(changes))
+		for _, change := range changes {
+			changedFiles = append(changedFiles, change.Filename)
+		}
+
 		c.Lock()
 		c.nextChangeCache[cacheKey] = changedFiles
 		c.Unlock()
 		return changedFiles, nil
 	}
-	if changedFiles, ok = c.nextChangeCache[cacheKey]; ok {
-		c.RUnlock()
-		return changedFiles, nil
-	}
-	c.RUnlock()
-
-	// We need to query the changes from GitHub.
-	changes, err := c.ghc.GetPullRequestChanges(
-		string(pr.Repository.Owner.Login),
-		string(pr.Repository.Name),
-		int(pr.Number),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("error getting PR changes for #%d: %v", int(pr.Number), err)
-	}
-	changedFiles = make([]string, 0, len(changes))
-	for _, change := range changes {
-		changedFiles = append(changedFiles, change.Filename)
-	}
-
-	c.Lock()
-	c.nextChangeCache[cacheKey] = changedFiles
-	c.Unlock()
-	return changedFiles, nil
 }
 
 // prune removes any cached file changes that were not used since the last prune.
@@ -1037,25 +1063,15 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int]sets.String, error) 
 	}
 
 	for _, ps := range c.config().Presubmits[sp.org+"/"+sp.repo] {
-		if !ps.ContextRequired() || !ps.RunsAgainstBranch(sp.branch) {
+		if !ps.ContextRequired() {
 			continue
 		}
 
-		if ps.AlwaysRun {
-			// Every PR requires this job.
-			for _, pr := range sp.prs {
+		for _, pr := range sp.prs {
+			if shouldRun, err := ps.ShouldRun(sp.branch, "", c.changedFiles.prChanges(&pr)); err != nil {
+				return nil, err
+			} else if shouldRun {
 				record(int(pr.Number), ps.Context)
-			}
-		} else if ps.RunIfChanged != "" {
-			// This is a run if changed job so we need to check if each PR requires it.
-			for _, pr := range sp.prs {
-				changedFiles, err := c.changedFiles.prChanges(&pr)
-				if err != nil {
-					return nil, err
-				}
-				if ps.RunsAgainstChanges(changedFiles) {
-					record(int(pr.Number), ps.Context)
-				}
 			}
 		}
 	}

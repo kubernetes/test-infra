@@ -66,6 +66,7 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 			},
 		},
 		{
+			AlwaysRun: true,
 			JobBase: config.JobBase{
 				Name: "test-bazel-test",
 			},

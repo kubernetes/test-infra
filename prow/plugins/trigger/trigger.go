@@ -185,35 +185,14 @@ func fileChangesGetter(ghc githubClient, org, repo string, num int) func() ([]st
 	return func() ([]string, error) {
 		// Fetch the changed files from github at most once.
 		if changedFiles == nil {
-			changes, err := ghc.GetPullRequestChanges(org, repo, num)
+			var err error
+			changedFiles, err = config.NewGitHubDeferredChangedFilesProvider(ghc, org, repo, num)()
 			if err != nil {
-				return nil, fmt.Errorf("error getting pull request changes: %v", err)
-			}
-			changedFiles = []string{}
-			for _, change := range changes {
-				changedFiles = append(changedFiles, change.Filename)
+				return nil, err
 			}
 		}
 		return changedFiles, nil
 	}
-}
-
-func shouldRun(fileChangesGetter func() ([]string, error), job config.Presubmit, baseRef string, forceRunContexts sets.String, body string) (bool, error) {
-	if !job.RunsAgainstBranch(baseRef) {
-		return false, nil
-	}
-	if job.AlwaysRun || forceRunContexts.Has(job.Context) || job.TriggerMatches(body) {
-		return true, nil
-	}
-	if job.RunIfChanged == "" {
-		// no need to check files
-		return false, nil
-	}
-	changes, err := fileChangesGetter()
-	if err != nil {
-		return false, err
-	}
-	return job.RunsAgainstChanges(changes), nil
 }
 
 // RunOrSkipRequested evaluates requestJobs to determine which config.Presubmits to
@@ -246,9 +225,12 @@ func RunOrSkipRequested(c Client, pr *github.PullRequest, requestedJobs []config
 	toRun := sets.NewString()
 	toSkip := sets.NewString()
 	for _, job := range requestedJobs {
-		runs, err := shouldRun(getChanges, job, pr.Base.Ref, forceRunContexts, body)
-		if err != nil {
-			return err
+		runs := forceRunContexts.Has(job.Context)
+		if !runs {
+			runs, err = job.ShouldRun(pr.Base.Ref, body, getChanges)
+			if err != nil {
+				return err
+			}
 		}
 		if runs {
 			toRunJobs = append(toRunJobs, job)

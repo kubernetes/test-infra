@@ -184,13 +184,15 @@ func makeCloneURI(instance, project string) (*url.URL, error) {
 }
 
 // listChangedFiles lists (in lexicographic order) the files changed as part of a Gerrit patchset
-func listChangedFiles(changeInfo client.ChangeInfo) []string {
-	changed := []string{}
-	revision := changeInfo.Revisions[changeInfo.CurrentRevision]
-	for file := range revision.Files {
-		changed = append(changed, file)
+func listChangedFiles(changeInfo client.ChangeInfo) config.ChangedFilesProvider {
+	return func() ([]string, error) {
+		var changed []string
+		revision := changeInfo.Revisions[changeInfo.CurrentRevision]
+		for file := range revision.Files {
+			changed = append(changed, file)
+		}
+		return changed, nil
 	}
-	return changed
 }
 
 // ProcessChange creates new presubmit prowjobs base off the gerrit changes
@@ -244,7 +246,9 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		postsubmits := c.config().Postsubmits[cloneURI.String()]
 		postsubmits = append(postsubmits, c.config().Postsubmits[cloneURI.Host+"/"+cloneURI.Path]...)
 		for _, postsubmit := range postsubmits {
-			if postsubmit.RunsAgainstBranch(change.Branch) && postsubmit.RunIfChanged == "" || postsubmit.RunsAgainstChanges(changedFiles) {
+			if shouldRun, err := postsubmit.ShouldRun(change.Branch, changedFiles); err != nil {
+				return fmt.Errorf("failed to determine if postsubmit %q should run: %v", postsubmit.Name, err)
+			} else if shouldRun {
 				jobSpecs = append(jobSpecs, jobSpec{
 					spec:   pjutil.PostsubmitSpec(postsubmit, kr),
 					labels: postsubmit.Labels,
@@ -255,7 +259,9 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		presubmits := c.config().Presubmits[cloneURI.String()]
 		presubmits = append(presubmits, c.config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
 		for _, presubmit := range presubmits {
-			if presubmit.AlwaysRun || presubmit.RunsAgainstBranch(change.Branch) && presubmit.RunIfChanged != "" && presubmit.RunsAgainstChanges(changedFiles) {
+			if shouldRun, err := presubmit.ShouldRun(change.Branch, "", changedFiles); err != nil {
+				return fmt.Errorf("failed to determine if presubmit %q should run: %v", presubmit.Name, err)
+			} else if shouldRun {
 				jobSpecs = append(jobSpecs, jobSpec{
 					spec:   pjutil.PresubmitSpec(presubmit, kr),
 					labels: presubmit.Labels,
