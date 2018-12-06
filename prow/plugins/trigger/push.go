@@ -51,9 +51,11 @@ func handlePE(c Client, pe github.PushEvent) error {
 		if !j.RunsAgainstBranch(pe.Branch()) {
 			continue
 		}
-		changedFiles := listPushEventChanges(pe)
-		if !j.RunsAgainstChanges(changedFiles) {
-			continue
+		if j.RunIfChanged != "" {
+			changedFiles := listPushEventChanges(pe)
+			if !j.RunsAgainstChanges(changedFiles) {
+				continue
+			}
 		}
 		kr := kube.Refs{
 			Org:     pe.Repo.Owner.Name,

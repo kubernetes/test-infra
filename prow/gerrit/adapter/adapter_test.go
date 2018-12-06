@@ -289,6 +289,7 @@ func TestProcessChange(t *testing.T) {
 				JobBase: config.JobBase{
 					Name: "test-foo",
 				},
+				AlwaysRun: true,
 			},
 			{
 				JobBase: config.JobBase{
@@ -329,6 +330,7 @@ func TestProcessChange(t *testing.T) {
 								JobBase: config.JobBase{
 									Name: "other-test",
 								},
+								AlwaysRun: true,
 							},
 						},
 					},
