@@ -563,6 +563,19 @@
   revision = "cc6329d4279e3f025a53a83c397d2339b5705c45"
 
 [[projects]]
+  digest = "1:2e3c336fc7fde5c984d2841455a658a6d626450b1754a854b3b32e7a8f49a07a"
+  name = "github.com/google/go-cmp"
+  packages = [
+    "cmp",
+    "cmp/internal/diff",
+    "cmp/internal/function",
+    "cmp/internal/value",
+  ]
+  pruneopts = "NUT"
+  revision = "3af367b6b30c263d47e8895973edcca9a49cf029"
+  version = "v0.2.0"
+
+[[projects]]
   digest = "1:76f0090ca1093da462503c6a1559f721d88dfb8282927caab715d1c239042fb1"
   name = "github.com/google/go-github"
   packages = ["github"]
@@ -759,7 +772,7 @@
   revision = "6025e8de665b31fa74ab1a66f2cddd8c0abf887e"
 
 [[projects]]
-  digest = "1:4d7edaf520821b226caaae747c5d87a3c6324794fd73207d1427f01b07ad6f04"
+  digest = "1:84745e51bea6dad51559c51eed3402d11329a4e05d390438fb49036effa85975"
   name = "github.com/knative/build"
   packages = [
     "pkg/apis/build",
@@ -774,8 +787,21 @@
     "pkg/client/listers/build/v1alpha1",
   ]
   pruneopts = "NUT"
-  revision = "5c1d8c8469d1ed34b2aecf4c2305b3a57fff2ee3"
-  version = "v0.1.0"
+  revision = "94859753e2c6724df2be86f6a254f810895fa3eb"
+  version = "v0.2.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:f7da9e46e110b889a0075675c14935b3e8d86bdb7ddf83c98c22125f8c54f759"
+  name = "github.com/knative/pkg"
+  packages = [
+    "apis",
+    "apis/duck",
+    "apis/duck/v1alpha1",
+    "kmeta",
+  ]
+  pruneopts = "NUT"
+  revision = "0e41760cea1d1ce16f4cc311c2d6bd3525bb3da7"
 
 [[projects]]
   branch = "master"
@@ -796,6 +822,14 @@
   ]
   pruneopts = "NUT"
   revision = "32fa128f234d041f196a9f3e0fea5ac9772c08e1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:0e9bfc47ab9941ecc3344e580baca5deb4091177e84dd9773b48b38ec26b93d5"
+  name = "github.com/mattbaird/jsonpatch"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "81af80346b1a01caae0cbc27fd3c1ba5b11e189f"
 
 [[projects]]
   digest = "1:3bc3ecf5b2db10bcb4591dd70f1a48e1dd86cae9633e9a3a32d979de906df100"
@@ -1371,11 +1405,12 @@
   revision = "49ce2735e5074ffc3f8190c8406cf51a96302dad"
 
 [[projects]]
-  digest = "1:a075582c39a262e5f23f1be8268d1ab3be74051ccd7fe24d3da7da76f5616561"
+  digest = "1:34df66519afa7708dcfa77d011a38235d7204622119c4fb6645295963f8f4447"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
     "discovery/fake",
+    "dynamic",
     "kubernetes",
     "kubernetes/scheme",
     "kubernetes/typed/admissionregistration/v1alpha1",
