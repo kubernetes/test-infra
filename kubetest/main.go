@@ -545,7 +545,8 @@ func writeMetadata(path, metadataSources string) error {
 	}
 
 	ver := findVersion()
-	m["job-version"] = ver
+	m["job-version"] = ver // TODO(krzyzacy): retire
+	m["revision"] = ver
 	re := regexp.MustCompile(`^BUILD_METADATA_(.+)$`)
 	for _, e := range os.Environ() {
 		p := strings.SplitN(e, "=", 2)
