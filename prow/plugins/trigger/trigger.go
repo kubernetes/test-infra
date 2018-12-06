@@ -198,6 +198,20 @@ func fileChangesGetter(ghc githubClient, org, repo string, num int) func() ([]st
 	}
 }
 
+func shouldRun(fileChangesGetter func() ([]string, error), job config.Presubmit, baseRef string, forceRunContexts map[string]bool, body string) (bool, error) {
+	if !job.RunsAgainstBranch(baseRef) {
+		return false, nil
+	}
+	if job.RunIfChanged == "" || forceRunContexts[job.Context] || job.TriggerMatches(body) {
+		return true, nil
+	}
+	changes, err := fileChangesGetter()
+	if err != nil {
+		return false, err
+	}
+	return job.RunsAgainstChanges(changes), nil
+}
+
 // RunOrSkipRequested evaluates requestJobs to determine which config.Presubmits to
 // run and which ones to skip and once execute the ones that should be ran.
 func RunOrSkipRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts map[string]bool, body, eventGUID string) error {
@@ -215,20 +229,6 @@ func RunOrSkipRequested(c Client, pr *github.PullRequest, requestedJobs []config
 	// job that is not being force run (due to a `/retest` after a failure or
 	// because it is explicitly triggered with `/test foo`).
 	getChanges := fileChangesGetter(c.GitHubClient, org, repo, number)
-	// shouldRun indicates if a job should actually run.
-	shouldRun := func(j config.Presubmit) (bool, error) {
-		if !j.RunsAgainstBranch(pr.Base.Ref) {
-			return false, nil
-		}
-		if j.RunIfChanged == "" || forceRunContexts[j.Context] || j.TriggerMatches(body) {
-			return true, nil
-		}
-		changes, err := getChanges()
-		if err != nil {
-			return false, err
-		}
-		return j.RunsAgainstChanges(changes), nil
-	}
 
 	// For each job determine if any sharded version of the job runs.
 	// This in turn determines which jobs to run and which contexts to mark as "Skipped".
@@ -242,7 +242,7 @@ func RunOrSkipRequested(c Client, pr *github.PullRequest, requestedJobs []config
 	toRun := sets.NewString()
 	toSkip := sets.NewString()
 	for _, job := range requestedJobs {
-		runs, err := shouldRun(job)
+		runs, err := shouldRun(getChanges, job, pr.Base.Ref, forceRunContexts, body)
 		if err != nil {
 			return err
 		}
