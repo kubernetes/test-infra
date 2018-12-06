@@ -17,14 +17,17 @@ limitations under the License.
 package crds
 
 import (
+	"reflect"
+
+	"k8s.io/test-infra/boskos/common"
+
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/test-infra/boskos/common"
-	"reflect"
 )
 
 var (
-	resourcesConfigType = Type{
+	// ResourcesConfigType is the ResourceObject CRD type
+	ResourcesConfigType = Type{
 		Kind:       reflect.TypeOf(ResourcesConfigObject{}).Name(),
 		ListKind:   reflect.TypeOf(ResourcesConfigCollection{}).Name(),
 		Singular:   "resourcesconfig",
@@ -34,14 +37,9 @@ var (
 	}
 )
 
-// NewResourceConfigClient creates a CRD rest client for common.Resource
-func NewResourceConfigClient() (ClientInterface, error) {
-	return newClientFromFlags(resourcesConfigType)
-}
-
 // NewTestResourceConfigClient creates a fake CRD rest client for common.Resource
 func NewTestResourceConfigClient() ClientInterface {
-	return newDummyClient(resourcesConfigType)
+	return newDummyClient(ResourcesConfigType)
 }
 
 // ResourcesConfigObject holds generalized configuration information about how the
