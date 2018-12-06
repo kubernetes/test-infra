@@ -177,8 +177,8 @@ func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool, metad
 		Timestamp int64                  `json:"timestamp"`
 		Passed    bool                   `json:"passed"`
 		Result    string                 `json:"result"`
-		Metadata  map[string]interface{} `json:"metadata,omit_empty"`
-		Revision  string                 `json:"revision,omit_empty"`
+		Metadata  map[string]interface{} `json:"metadata,omitempty"`
+		Revision  string                 `json:"revision,omitempty"`
 	}{
 		Timestamp: time.Now().Unix(),
 		Passed:    passed,
