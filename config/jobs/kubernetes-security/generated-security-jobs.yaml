@@ -3,6 +3,49 @@
 presubmits:
   kubernetes-security/kubernetes:
   - agent: kubernetes
+    always_run: false
+    cluster: security
+    context: pull-security-kubernetes-e2e-1-10-aws-eks-1-10-prod-conformance
+    labels:
+      preset-eks-common: "true"
+      preset-kubernetes-e2e-aws-eks-1-10: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-e2e-1-10-aws-eks-1-10-prod-conformance
+    rerun_command: /test pull-security-kubernetes-e2e-1-10-aws-eks-1-10-prod-conformance
+    skip_report: true
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --timeout=200
+        - --bare
+        - --scenario=kubernetes_e2e
+        - --
+        - --check-version-skew=false
+        - --deployment=eks
+        - --provider=eks
+        - --gce-ssh=
+        - --extract=local
+        - --ginkgo-parallel=30
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+          --minStartupPods=8
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-1-10-aws-eks-1-10-prod-conformance
+        - --timeout=180m
+        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-1-10-aws-eks-1-10-prod-conformance
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+        name: ""
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-1-10-aws-eks-1-10-prod-conformance,?($|\s.*)
+  - agent: kubernetes
     always_run: true
     cluster: security
     context: pull-security-kubernetes-e2e-kops-aws
