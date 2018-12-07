@@ -2243,6 +2243,8 @@ test_groups:
 - name: ci-perf-tests-kubemark-100-benchmark
   gcs_prefix: kubernetes-jenkins/logs/ci-perf-tests-kubemark-100-benchmark
 # benchmarks
+- name: ci-benchmark-kube-dns-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-benchmark-kube-dns-master
 - name: ci-benchmark-scheduler-master
   gcs_prefix: kubernetes-jenkins/logs/ci-benchmark-scheduler-master
 - name: ci-kubernetes-e2e-gce-cos-k8sstable2-default
@@ -6550,6 +6552,8 @@ dashboards:
   dashboard_tab:
   - name: scheduler
     test_group_name: ci-benchmark-scheduler-master
+  - name: kube-dns
+    test_group_name: ci-benchmark-kube-dns-master
 
 - name: sig-scheduling
   dashboard_tab:

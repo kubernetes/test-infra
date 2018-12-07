@@ -685,3 +685,35 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+
+- name: ci-benchmark-kube-dns-master
+  interval: 2h
+  tags:
+  - "perfDashPrefix: kube-dns benchmark"
+  - "perfDashJobType: dnsBenchmark"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=140
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=kube-dns-benchmark
+      - --extract=ci/latest
+      - --gcp-nodes=3
+      - --gcp-zone=us-east1-b
+      - --provider=gce
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=kube-dns
+      - --test-cmd-args=/workspace/_artifacts/out
+      - --test-cmd-args=/workspace/_artifacts
+      - --test-cmd-name=KubeDnsBenchmark
+      - --timeout=120m
