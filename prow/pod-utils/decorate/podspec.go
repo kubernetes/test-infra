@@ -76,7 +76,7 @@ func LabelsAndAnnotationsForSpec(spec kube.ProwJobSpec, extraLabels, extraAnnota
 	jobNameForLabel := spec.Job
 	if len(jobNameForLabel) > validation.LabelValueMaxLength {
 		// TODO(fejta): consider truncating middle rather than end.
-		jobNameForLabel = strings.TrimRight(spec.Job[:validation.LabelValueMaxLength], "-")
+		jobNameForLabel = strings.TrimRight(spec.Job[:validation.LabelValueMaxLength], ".-")
 		logrus.WithFields(logrus.Fields{
 			"job":       spec.Job,
 			"key":       kube.ProwJobAnnotation,
