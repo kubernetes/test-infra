@@ -100,7 +100,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20181206-da5a5e4
+        image: gcr.io/k8s-prow/hook:v20181207-201eb76
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -166,7 +166,7 @@ spec:
       serviceAccountName: "plank"
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20181206-da5a5e4
+        image: gcr.io/k8s-prow/plank:v20181207-201eb76
         args:
         - --dry-run=false
         volumeMounts:
@@ -201,7 +201,7 @@ spec:
       serviceAccountName: "sinker"
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:v20181206-da5a5e4
+        image: gcr.io/k8s-prow/sinker:v20181207-201eb76
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -234,7 +234,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20181206-da5a5e4
+        image: gcr.io/k8s-prow/deck:v20181207-201eb76
         args:
         - --tide-url=http://tide/
         - --hook-url=http://hook:8888/plugin-help
@@ -283,7 +283,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20181206-da5a5e4
+        image: gcr.io/k8s-prow/horologium:v20181207-201eb76
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -312,7 +312,7 @@ spec:
       serviceAccountName: "tide"
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20181206-da5a5e4
+        image: gcr.io/k8s-prow/tide:v20181207-201eb76
         args:
         - --dry-run=false
         ports:
