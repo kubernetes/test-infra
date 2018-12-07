@@ -1292,11 +1292,18 @@ func (c *Client) DeleteRepoLabel(org, repo, label string) error {
 func (c *Client) GetCombinedStatus(org, repo, ref string) (*CombinedStatus, error) {
 	c.log("GetCombinedStatus", org, repo, ref)
 	var combinedStatus CombinedStatus
-	_, err := c.request(&request{
-		method:    http.MethodGet,
-		path:      fmt.Sprintf("/repos/%s/%s/commits/%s/status", org, repo, ref),
-		exitCodes: []int{200},
-	}, &combinedStatus)
+	err := c.readPaginatedResults(
+		fmt.Sprintf("/repos/%s/%s/commits/%s/status", org, repo, ref),
+		"",
+		func() interface{} {
+			return &CombinedStatus{}
+		},
+		func(obj interface{}) {
+			cs := *(obj.(*CombinedStatus))
+			cs.Statuses = append(combinedStatus.Statuses, cs.Statuses...)
+			combinedStatus = cs
+		},
+	)
 	return &combinedStatus, err
 }
 
