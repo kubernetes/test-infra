@@ -4,8 +4,8 @@ For a brief overview of how Prow runs jobs take a look at ["Life of a Prow Job"]
 
 ## How to configure new jobs
 
-To configure a new job you'll need to add an entry into [config.yaml](config.yaml).
-If you have [update-config](plugins/updateconfig) plugin deployed then the
+To configure a new job you'll need to add an entry into [config.yaml](/prow/config.yaml).
+If you have [update-config](/prow/plugins/updateconfig) plugin deployed then the
 config will be automatically updated once the PR is merged, else you will need
 to run `make update-config`. This does not require redeploying any binaries,
 and will take effect within a minute.
