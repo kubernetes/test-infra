@@ -86,6 +86,9 @@ func (o Owners) GetAllPotentialApprovers() []string {
 		}
 	}
 	sort.Strings(approversOnly)
+	if len(approversOnly) == 0 {
+		o.log.Debug("No potential approvers exist. Does the repo have OWNERS files?")
+	}
 	return approversOnly
 }
 
@@ -130,6 +133,9 @@ func (o Owners) temporaryUnapprovedFiles(approvers sets.String) sets.String {
 // KeepCoveringApprovers finds who we should keep as suggested approvers given a pre-selection
 // knownApprovers must be a subset of potentialApprovers.
 func (o Owners) KeepCoveringApprovers(reverseMap map[string]sets.String, knownApprovers sets.String, potentialApprovers []string) sets.String {
+	if len(potentialApprovers) == 0 {
+		o.log.Debug("No potential approvers exist to filter for relevance. Does this repo have OWNERS files?")
+	}
 	keptApprovers := sets.NewString()
 
 	unapproved := o.temporaryUnapprovedFiles(knownApprovers)
@@ -336,6 +342,9 @@ func (ap Approvers) GetCurrentApproversSet() sets.String {
 		currentApprovers.Insert(approver)
 	}
 
+	if len(currentApprovers) == 0 {
+		ap.owners.log.Debug("There are no current approvers, but approvers were requested. Does this repo have OWNERS files?")
+	}
 	return currentApprovers
 }
 
@@ -347,6 +356,9 @@ func (ap Approvers) GetCurrentApproversSetCased() sets.String {
 		currentApprovers.Insert(approval.Login)
 	}
 
+	if len(currentApprovers) == 0 {
+		ap.owners.log.Debug("There are no current approvers, but approvers were requested. Does this repo have OWNERS files?")
+	}
 	return currentApprovers
 }
 
@@ -445,8 +457,8 @@ func (ap Approvers) GetFiles(org, project, branch string) []File {
 // it works:
 // - We find suggested approvers from all potential approvers, but
 // remove those that are not useful considering current approvers and
-// assignees. This only uses leave approvers to find approvers the
-// closest to the changes.
+// assignees. This only uses leaf approvers to find the closest
+// approvers to the changes.
 // - We find a subset of suggested approvers from current
 // approvers, suggested approvers and assignees, but we remove those
 // that are not useful considering suggested approvers and current
