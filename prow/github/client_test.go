@@ -1664,3 +1664,47 @@ func TestListPRCommits(t *testing.T) {
 		}
 	}
 }
+
+func TestCombinedStatus(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path == "/repos/k8s/kuber/commits/SHA/status" {
+			statuses := CombinedStatus{
+				SHA:      "SHA",
+				Statuses: []Status{{Context: "foo"}},
+			}
+			b, err := json.Marshal(statuses)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/someotherpath>; rel="next"`, r.Host))
+			fmt.Fprint(w, string(b))
+		} else if r.URL.Path == "/someotherpath" {
+			statuses := CombinedStatus{
+				SHA:      "SHA",
+				Statuses: []Status{{Context: "bar"}},
+			}
+			b, err := json.Marshal(statuses)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			fmt.Fprint(w, string(b))
+		} else {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	combined, err := c.GetCombinedStatus("k8s", "kuber", "SHA")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if combined.SHA != "SHA" {
+		t.Errorf("Expected SHA 'SHA', found %s", combined.SHA)
+	} else if len(combined.Statuses) != 2 {
+		t.Errorf("Expected two statuses, found %d: %v", len(combined.Statuses), combined.Statuses)
+	} else if combined.Statuses[0].Context != "foo" || combined.Statuses[1].Context != "bar" {
+		t.Errorf("Wrong review IDs: %v", combined.Statuses)
+	}
+}
