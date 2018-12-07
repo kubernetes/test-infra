@@ -410,6 +410,18 @@ tide:
     - needs-kind
     - needs-rebase
     - needs-sig
+  - repos:
+    -  GoogleCloudPlatform/netd
+    labels:
+    - lgtm
+    - approved
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/hold
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/work-in-progress
+
   merge_method:
     helm/charts: squash
     kubeflow: squash
