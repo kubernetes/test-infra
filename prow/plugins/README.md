@@ -14,8 +14,8 @@ For an alternate view, please see https://prow.k8s.io/command-help to see all of
 
 ## How to enable a plugin on a repo
 
-Add an entry to [plugins.yaml](plugins.yaml). If you misspell the name then a
-unit test will fail. If you have [update-config](plugins/updateconfig) plugin
+Add an entry to [plugins.yaml](/prow/plugins.yaml). If you misspell the name then a
+unit test will fail. If you have [update-config](/prow/plugins/updateconfig) plugin
 deployed then the config will be automatically updated once the PR is merged,
 else you will need to run `make update-plugins`. This does not require
 redeploying the binaries, and will take effect within a minute.
