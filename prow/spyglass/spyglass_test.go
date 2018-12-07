@@ -576,19 +576,29 @@ func TestFetchArtifactsPodLog(t *testing.T) {
 	fakeGCSClient := fakeGCSServer.Client()
 
 	sg := New(fakeJa, fakeConfigAgent, fakeGCSClient)
+	testKeys := []string{
+		"prowjob/job/123",
+		"gcs/kubernetes-jenkins/logs/job/123/",
+		"gcs/kubernetes-jenkins/logs/job/123",
+	}
 
-	result, err := sg.FetchArtifacts("prowjob/job/123", "", 500e6, []string{"build-log.txt"})
-	if err != nil {
-		t.Fatalf("Unexpected error grabbing pod log: %v", err)
-	}
-	if len(result) != 1 {
-		t.Fatalf("Expected 1 result, got %d", len(result))
-	}
-	content, err := result[0].ReadAll()
-	if err != nil {
-		t.Fatalf("Unexpected error reading pod log: %v", err)
-	}
-	if string(content) != "clusterA" {
-		t.Fatalf("Bad pod log content: %q (expected 'clusterA')", content)
+	for _, key := range testKeys {
+		result, err := sg.FetchArtifacts(key, "", 500e6, []string{"build-log.txt"})
+		if err != nil {
+			t.Errorf("Unexpected error grabbing pod log for %s: %v", key, err)
+			continue
+		}
+		if len(result) != 1 {
+			t.Errorf("Expected 1 artifact for %s, got %d", key, len(result))
+			continue
+		}
+		content, err := result[0].ReadAll()
+		if err != nil {
+			t.Errorf("Unexpected error reading pod log for %s: %v", key, err)
+			continue
+		}
+		if string(content) != "clusterA" {
+			t.Errorf("Bad pod log content for %s: %q (expected 'clusterA')", key, content)
+		}
 	}
 }

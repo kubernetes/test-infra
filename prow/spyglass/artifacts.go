@@ -18,10 +18,11 @@ package spyglass
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/spyglass/lenses"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
 // ListArtifacts gets the names of all artifacts available from the given source
@@ -30,30 +31,30 @@ func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
 	if err != nil {
 		return []string{}, fmt.Errorf("error parsing src: %v", err)
 	}
+	gcsKey := ""
 	switch keyType {
 	case gcsKeyType:
-		return s.GCSArtifactFetcher.artifacts(key)
+		gcsKey = key
 	case prowKeyType:
-		gcsKey, err := s.prowToGCS(key)
-		if err != nil {
+		if gcsKey, err = s.prowToGCS(key); err != nil {
 			logrus.Warningf("Failed to get gcs source for prow job: %v", err)
-			return []string{}, nil
 		}
-		artifactNames, err := s.GCSArtifactFetcher.artifacts(gcsKey)
-		logFound := false
-		for _, name := range artifactNames {
-			if name == "build-log.txt" {
-				logFound = true
-				break
-			}
-		}
-		if err != nil || !logFound {
-			artifactNames = append(artifactNames, "build-log.txt")
-		}
-		return artifactNames, nil
 	default:
 		return nil, fmt.Errorf("Unrecognized key type for src: %v", src)
 	}
+
+	artifactNames, err := s.GCSArtifactFetcher.artifacts(gcsKey)
+	logFound := false
+	for _, name := range artifactNames {
+		if name == "build-log.txt" {
+			logFound = true
+			break
+		}
+	}
+	if err != nil || !logFound {
+		artifactNames = append(artifactNames, "build-log.txt")
+	}
+	return artifactNames, nil
 }
 
 // prowToGCS returns the GCS key corresponding to the given prow key
@@ -87,50 +88,60 @@ func (s *Spyglass) FetchArtifacts(src string, podName string, sizeLimit int64, a
 	if err != nil {
 		return arts, fmt.Errorf("error parsing src: %v", err)
 	}
+	gcsKey := ""
+	jobName := ""
+	buildID := ""
 	switch keyType {
 	case gcsKeyType:
-		for _, name := range artifactNames {
-			art, err := s.GCSArtifactFetcher.artifact(key, name, sizeLimit)
-			if err != nil {
-				logrus.Errorf("Failed to fetch artifact %s: %v", name, err)
-				continue
-			}
-			arts = append(arts, art)
+		gcsKey = strings.TrimSuffix(key, "/")
+		parts := strings.Split(gcsKey, "/")
+		if len(parts) < 2 {
+			logrus.WithField("gcs key", gcsKey).Warningf("invalid gcs key")
+		} else {
+			jobName = parts[len(parts)-2]
+			buildID = parts[len(parts)-1]
 		}
 	case prowKeyType:
-		podLogNeeded := false
-		if gcsKey, err := s.prowToGCS(key); err == nil {
-			for _, name := range artifactNames {
-				art, err := s.GCSArtifactFetcher.artifact(gcsKey, name, sizeLimit)
-				if err == nil {
-					// Actually try making a request, because calling GCSArtifactFetcher.artifact does no I/O.
-					// (these files are being explicitly requested and so will presumably soon be accessed, so
-					// the extra network I/O should not be too problematic).
-					_, err = art.Size()
-				}
-				if err != nil {
-					if name == "build-log.txt" {
-						podLogNeeded = true
-					} else {
-						logrus.Errorf("Failed to fetch artifact %s: %v", name, err)
-					}
-					continue
-				}
-				arts = append(arts, art)
-			}
-		} else {
-			logrus.Warningln(err)
+		parts := strings.Split(key, "/")
+		if len(parts) != 2 {
+			return arts, fmt.Errorf("key %q incorrectly formatted", key)
 		}
-		if podLogNeeded {
-			art, err := s.PodLogArtifactFetcher.artifact(key, sizeLimit)
-			if err != nil {
-				logrus.Errorf("Failed to fetch pod log: %v", err)
-			} else {
-				arts = append(arts, art)
-			}
+		jobName = parts[0]
+		buildID = parts[1]
+		if gcsKey, err = s.prowToGCS(key); err != nil {
+			logrus.Warningln(err)
 		}
 	default:
 		return nil, fmt.Errorf("Invalid src: %v", src)
+	}
+
+	podLogNeeded := false
+	for _, name := range artifactNames {
+		art, err := s.GCSArtifactFetcher.artifact(gcsKey, name, sizeLimit)
+		if err == nil {
+			// Actually try making a request, because calling GCSArtifactFetcher.artifact does no I/O.
+			// (these files are being explicitly requested and so will presumably soon be accessed, so
+			// the extra network I/O should not be too problematic).
+			_, err = art.Size()
+		}
+		if err != nil {
+			if name == "build-log.txt" {
+				podLogNeeded = true
+			} else {
+				logrus.Errorf("Failed to fetch artifact %s: %v", name, err)
+			}
+			continue
+		}
+		arts = append(arts, art)
+	}
+
+	if podLogNeeded {
+		art, err := s.PodLogArtifactFetcher.artifact(jobName, buildID, sizeLimit)
+		if err != nil {
+			logrus.Errorf("Failed to fetch pod log: %v", err)
+		} else {
+			arts = append(arts, art)
+		}
 	}
 
 	logrus.WithField("duration", time.Since(artStart)).Infof("Retrieved artifacts for %v", src)
