@@ -301,9 +301,9 @@ bazel run //prow/cmd/mkbuild-cluster -- \
 kubectl create secret generic build-cluster --from-file=cluster.yaml
 ```
 
-Mount this secret into the prow components that need it and set
-the `--build-cluster` flag to the location you mount it at. For instance, you
-will need to merge the following into the plank deployment:
+Mount this secret into the prow components that need it (at minimum: `plank`,
+`sinker` and `deck`) and set the `--build-cluster` flag to the location you mount it at. For
+instance, you will need to merge the following into the plank deployment:
 
 ```yaml
 spec:
@@ -327,7 +327,7 @@ The above example `cluster.yaml` defines two clusters: `default` and `other` to 
 ```yaml
 periodics:
 - name: cluster-unspecified
-  # cluster: 
+  # cluster:
   interval: 10m
   decorate: true
   spec:
