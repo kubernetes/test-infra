@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # Dump coverage files from a kind node.
-# Usage:
+# Usage: kind-coverage-dump.sh [cluster name] [destination folder]
 
 # Executes a command inside the node running the kind cluster named ${cluster}.
 exec_in_node() {
