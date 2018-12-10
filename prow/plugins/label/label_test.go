@@ -55,6 +55,7 @@ func TestLabel(t *testing.T) {
 		expectedBotComment    bool
 		repoLabels            []string
 		issueLabels           []string
+		labelAliases          map[string]map[string]string
 	}
 	testcases := []testCase{
 		{
@@ -426,6 +427,34 @@ func TestLabel(t *testing.T) {
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 		},
+		{
+			name:                  "Can add a SIG label using an alias",
+			body:                  "/sig contribex",
+			repoLabels:            []string{"sig/contributor-experience"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels("sig/contributor-experience"),
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+			labelAliases: map[string]map[string]string{
+				"sig": {
+					"contribex": "contributor-experience",
+				},
+			},
+		},
+		{
+			name:                  "Aliases as case-insensitive",
+			body:                  "/sig ContribEx",
+			repoLabels:            []string{"sig/contributor-experience"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels("sig/contributor-experience"),
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+			labelAliases: map[string]map[string]string{
+				"sig": {
+					"contribex": "contributor-experience",
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -450,7 +479,7 @@ func TestLabel(t *testing.T) {
 			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 			User:   github.User{Login: tc.commenter},
 		}
-		err := handle(fakeClient, logrus.WithField("plugin", pluginName), tc.extraLabels, e)
+		err := handle(fakeClient, logrus.WithField("plugin", pluginName), tc.extraLabels, tc.labelAliases, e)
 		if err != nil {
 			t.Errorf("didn't expect error from label test: %v", err)
 			continue

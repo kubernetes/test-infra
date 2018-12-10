@@ -255,6 +255,11 @@ require_matching_label:
   prs: true
   regexp: ^kind/
 
+label:
+  label_aliases:
+    sig:
+      contribex: contributor-experience
+
 
 plugins:
   # Enable the following for any bazelbuild repo (rules_k8s, rules_docker) that sends prow webhooks

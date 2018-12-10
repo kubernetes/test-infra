@@ -59,10 +59,12 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 
 func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	var labels []string
+	var labelAliases map[string]map[string]string
 	if pc.PluginConfig.Label != nil {
 		labels = pc.PluginConfig.Label.AdditionalLabels
+		labelAliases = pc.PluginConfig.Label.LabelAliases
 	}
-	return handle(pc.GitHubClient, pc.Logger, labels, &e)
+	return handle(pc.GitHubClient, pc.Logger, labels, labelAliases, &e)
 }
 
 type githubClient interface {
@@ -74,9 +76,15 @@ type githubClient interface {
 }
 
 // Get Labels from Regexp matches
-func getLabelsFromREMatches(matches [][]string) (labels []string) {
+func getLabelsFromREMatches(matches [][]string, labelAliases map[string]map[string]string) (labels []string) {
 	for _, match := range matches {
 		for _, label := range strings.Split(match[0], " ")[1:] {
+			// Check if there is an alias for this value.
+			if aliases, ok := labelAliases[match[1]]; ok {
+				if aliasValue, ok := aliases[strings.ToLower(strings.TrimSpace(label))]; ok {
+					label = aliasValue
+				}
+			}
 			label = strings.ToLower(match[1] + "/" + strings.TrimSpace(label))
 			labels = append(labels, label)
 		}
@@ -105,7 +113,7 @@ func getLabelsFromGenericMatches(matches [][]string, additionalLabels []string) 
 	return labels
 }
 
-func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *github.GenericCommentEvent) error {
+func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, labelAliases map[string]map[string]string, e *github.GenericCommentEvent) error {
 	labelMatches := labelRegex.FindAllStringSubmatch(e.Body, -1)
 	removeLabelMatches := removeLabelRegex.FindAllStringSubmatch(e.Body, -1)
 	customLabelMatches := customLabelRegex.FindAllStringSubmatch(e.Body, -1)
@@ -138,8 +146,8 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 	)
 
 	// Get labels to add and labels to remove from regexp matches
-	labelsToAdd = append(getLabelsFromREMatches(labelMatches), getLabelsFromGenericMatches(customLabelMatches, additionalLabels)...)
-	labelsToRemove = append(getLabelsFromREMatches(removeLabelMatches), getLabelsFromGenericMatches(customRemoveLabelMatches, additionalLabels)...)
+	labelsToAdd = append(getLabelsFromREMatches(labelMatches, labelAliases), getLabelsFromGenericMatches(customLabelMatches, additionalLabels)...)
+	labelsToRemove = append(getLabelsFromREMatches(removeLabelMatches, labelAliases), getLabelsFromGenericMatches(customRemoveLabelMatches, additionalLabels)...)
 
 	// Add labels
 	for _, labelToAdd := range labelsToAdd {

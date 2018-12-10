@@ -428,6 +428,9 @@ type Label struct {
 	// AdditionalLabels is a set of additional labels enabled for use
 	// on top of the existing "kind/*", "priority/*", and "area/*" labels.
 	AdditionalLabels []string `json:"additional_labels"`
+	// LabelAliases is a mapping of the form {"labeltype": {"short": "long"}} for
+	// expanding short or alternate names for some labels.
+	LabelAliases map[string]map[string]string `json:"label_aliases"`
 }
 
 type Trigger struct {
