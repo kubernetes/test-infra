@@ -342,9 +342,6 @@ func (ap Approvers) GetCurrentApproversSet() sets.String {
 		currentApprovers.Insert(approver)
 	}
 
-	if len(currentApprovers) == 0 {
-		ap.owners.log.Debug("There are no current approvers, but approvers were requested. Does this repo have OWNERS files?")
-	}
 	return currentApprovers
 }
 
@@ -356,9 +353,6 @@ func (ap Approvers) GetCurrentApproversSetCased() sets.String {
 		currentApprovers.Insert(approval.Login)
 	}
 
-	if len(currentApprovers) == 0 {
-		ap.owners.log.Debug("There are no current approvers, but approvers were requested. Does this repo have OWNERS files?")
-	}
 	return currentApprovers
 }
 
