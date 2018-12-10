@@ -2457,3 +2457,97 @@ func (s *reloadingTokenSource) Token() (*oauth2.Token, error) {
 		AccessToken: string(s.getToken()),
 	}, nil
 }
+
+// TODO Currently Get*Projects return only open projects, is this best? should there be an arg to choose?
+
+// GetRepoProjects returns the list of projects in this repo.
+//
+// See https://developer.github.com/v3/projects/#list-repository-projects
+func (c *Client) GetRepoProjects(owner, repo string) ([]Project, error) {
+	c.log("GetOrgProjects", owner, repo)
+	path := (fmt.Sprintf("/repos/%s/%s/projects", owner, repo))
+	var projects []Project
+	err := c.readPaginatedResults(
+		path,
+		"application/vnd.github.inertia-preview+json",
+		func() interface{} {
+			return &[]Project{}
+		},
+		func(obj interface{}) {
+			projects = append(projects, *(obj.(*[]Project))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return projects, nil
+}
+
+// GetOrgProjects returns the list of projects in this org.
+//
+// See https://developer.github.com/v3/projects/#list-organization-projects
+func (c *Client) GetOrgProjects(org string) ([]Project, error) {
+	c.log("GetOrgProjects", org)
+	path := (fmt.Sprintf("/orgs/%s/projects", org))
+	var projects []Project
+	err := c.readPaginatedResults(
+		path,
+		"application/vnd.github.inertia-preview+json",
+		func() interface{} {
+			return &[]Project{}
+		},
+		func(obj interface{}) {
+			projects = append(projects, *(obj.(*[]Project))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return projects, nil
+}
+
+// GetProjectColumns returns the list of columns in a project.
+//
+// See https://developer.github.com/v3/projects/columns/#list-project-columns
+func (c *Client) GetProjectColumns(projectID int) ([]ProjectColumn, error) {
+	c.log("GetProjectColumns", projectID)
+	path := (fmt.Sprintf("/projects/%d/columns", projectID))
+	var projectColumns []ProjectColumn
+	err := c.readPaginatedResults(
+		path,
+		"application/vnd.github.inertia-preview+json",
+		func() interface{} {
+			return &[]ProjectColumn{}
+		},
+		func(obj interface{}) {
+			projectColumns = append(projectColumns, *(obj.(*[]ProjectColumn))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return projectColumns, nil
+}
+
+// CreateProjectCard adds a project card to the specified project column.
+//
+// See https://developer.github.com/v3/projects/cards/#create-a-project-card
+func (c *Client) CreateProjectCard(columnID int, projectCard ProjectCard) (*ProjectCard, error) {
+	c.log("CreateProjectCard", columnID, projectCard)
+	if (projectCard.ContentType != "Issue") && (projectCard.ContentType != "PullRequest") {
+		return nil, errors.New("projectCard.ContentType must be either Issue or PullRequest")
+	}
+	if c.dry {
+		return &projectCard, nil
+	}
+	path := fmt.Sprintf("/projects/columns/%d/cards", columnID)
+	var retProjectCard ProjectCard
+	_, err := c.request(&request{
+		method:      http.MethodPost,
+		path:        path,
+		accept:      "application/vnd.github.inertia-preview+json",
+		requestBody: &projectCard,
+		exitCodes:   []int{200},
+	}, &retProjectCard)
+	return &retProjectCard, err
+}
