@@ -71,6 +71,7 @@ type Configuration struct {
 	Size                       *Size                  `json:"size,omitempty"`
 	Triggers                   []Trigger              `json:"triggers,omitempty"`
 	Welcome                    []Welcome              `json:"welcome,omitempty"`
+	ProjectManager             ProjectManager         `json:"project_manager,omitempty"`
 }
 
 // Golint holds configuration for the golint plugin
@@ -491,6 +492,34 @@ type RequireMatchingLabel struct {
 	// Defaults to '5s'.
 	GracePeriod         string        `json:"grace_period,omitempty"`
 	GracePeriodDuration time.Duration `json:"-"`
+}
+
+// ProjectManager represents the config for the ProjectManager plugin, holding top
+// level config options and a list of Projects
+type ProjectManager struct {
+	OrgRepos map[string]ManagedOrgRepo `json:"org/repos,omitempty"`
+}
+
+// ManagedOrgRepo is used by the ProjectManager plugin to represent an Organisation
+// or Repository with a list of Projects
+type ManagedOrgRepo struct {
+	Projects map[string]ManagedProject `json:"projects,omitempty"`
+}
+
+// ManagedProject is used by the ProjectManager plugin to represent a Project
+// with a list of Columns
+type ManagedProject struct {
+	Columns []ManagedColumn `json:"columns,omitempty"`
+}
+
+// ManagedColumn is used by the ProjectQueries plugin to represent a project column
+// and the conditions to add a PR to that column
+type ManagedColumn struct {
+	ID     int      `json:"id,omitempty"`
+	Name   string   `json:"name,omitempty"`
+	State  string   `json:"state,omitempty"`
+	Labels []string `json:"labels,omitempty"`
+	Org    string   `json:"org,omitempty"`
 }
 
 // validate checks the following properties:
