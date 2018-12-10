@@ -16,7 +16,7 @@ Prow has a microservice architecture implemented as a collection of container im
 
 #### Merge Automation
 
-* [`tide`](/prow/cmd/tide) manages retesting and merging PRs once they meet the configured merge criteria. See [its README](./cmd/tide/README.md) for more information.
+* [`tide`](/prow/cmd/tide) manages retesting and merging PRs once they meet the configured merge criteria. See [its README](./tide/README.md) for more information.
 
 #### Auxiliary Components
 
