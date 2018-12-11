@@ -326,6 +326,9 @@ func loadRepos(org string, gc client) ([]string, error) {
 	}
 	var rl []string
 	for _, r := range repos {
+		if r.Archived == true {
+			continue
+		}
 		rl = append(rl, r.Name)
 	}
 	return rl, nil
