@@ -1,4 +1,6 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
+load("@build_bazel_rules_typescript//:defs.bzl", "ts_library")
 
 go_library(
     name = "go_default_library",
@@ -12,6 +14,22 @@ go_library(
     ],
 )
 
+ts_library(
+    name = "script",
+    srcs = ["metadata.ts"],
+    deps = [
+        "//prow/spyglass/lenses:lens_api",
+    ],
+)
+
+rollup_bundle(
+    name = "script_bundle",
+    entry_point = "prow/spyglass/lenses/metadata/metadata",
+    deps = [
+        ":script",
+    ],
+)
+
 filegroup(
     name = "template",
     srcs = ["template.html"],
@@ -20,7 +38,10 @@ filegroup(
 
 filegroup(
     name = "resources",
-    srcs = ["style.css"],
+    srcs = [
+        "style.css",
+        ":script_bundle",
+    ],
     visibility = ["//visibility:public"],
 )
 
