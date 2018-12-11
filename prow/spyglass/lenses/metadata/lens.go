@@ -23,11 +23,12 @@ import (
 	"time"
 
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"html/template"
+	"path/filepath"
+
+	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/spyglass/lenses"
-	"path/filepath"
 )
 
 const (
@@ -76,58 +77,56 @@ func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data 
 	return ""
 }
 
-// Derived contains metadata derived from provided metadata for insertion into the template
-type Derived struct {
-	StartTime        time.Time
-	FinishedTime     time.Time
-	Elapsed          time.Duration
-	Done             bool
-	Status           string
-	GCSArtifactsLink string
-}
-
 // Body creates a view for prow job metadata.
-// TODO: os image,
 func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string) string {
 	var buf bytes.Buffer
 	type MetadataViewData struct {
-		Started  jobs.Started
-		Finished jobs.Finished
-		Derived  Derived
+		Status       string
+		StartTime    time.Time
+		FinishedTime time.Time
+		Elapsed      time.Duration
+		Metadata     map[string]string
 	}
-	var metadataViewData MetadataViewData
+	metadataViewData := MetadataViewData{Status: "Pending"}
+	started := jobs.Started{}
+	finished := jobs.Finished{}
 	for _, a := range artifacts {
 		read, err := a.ReadAll()
 		if err != nil {
 			logrus.WithError(err).Error("Failed reading from artifact.")
 		}
 		if a.JobPath() == "started.json" {
-			s := jobs.Started{}
-			if err = json.Unmarshal(read, &s); err != nil {
+			if err = json.Unmarshal(read, &started); err != nil {
 				logrus.WithError(err).Error("Error unmarshaling started.json")
 			}
-			metadataViewData.Derived.StartTime = time.Unix(s.Timestamp, 0)
-			metadataViewData.Started = s
-
+			metadataViewData.StartTime = time.Unix(started.Timestamp, 0)
 		} else if a.JobPath() == "finished.json" {
-			metadataViewData.Derived.Done = true
-			f := jobs.Finished{}
-			if err = json.Unmarshal(read, &f); err != nil {
+			if err = json.Unmarshal(read, &finished); err != nil {
 				logrus.WithError(err).Error("Error unmarshaling finished.json")
 			}
-			metadataViewData.Derived.FinishedTime = time.Unix(f.Timestamp, 0)
-			metadataViewData.Finished = f
+			metadataViewData.FinishedTime = time.Unix(finished.Timestamp, 0)
+			metadataViewData.Status = finished.Result
 		}
-
 	}
 
-	if metadataViewData.Derived.Done {
-		metadataViewData.Derived.Status = metadataViewData.Finished.Result
-		metadataViewData.Derived.Elapsed =
-			metadataViewData.Derived.FinishedTime.Sub(metadataViewData.Derived.StartTime)
-	} else {
-		metadataViewData.Derived.Status = "In Progress"
-		metadataViewData.Derived.Elapsed = time.Now().Sub(metadataViewData.Derived.StartTime)
+	if !metadataViewData.StartTime.IsZero() {
+		if metadataViewData.FinishedTime.IsZero() {
+			metadataViewData.Elapsed = time.Now().Sub(metadataViewData.StartTime)
+		} else {
+			metadataViewData.Elapsed =
+				metadataViewData.FinishedTime.Sub(metadataViewData.StartTime)
+		}
+	}
+
+	metadataViewData.Metadata = map[string]string{
+		"Node":         started.Node,
+		"Repo":         finished.Metadata.Repo,
+		"Repo Commit":  finished.Metadata.RepoCommit,
+		"Infra Commit": finished.Metadata.InfraCommit,
+		"Pod":          finished.Metadata.Pod,
+	}
+	for pkg, version := range finished.Metadata.Repos {
+		metadataViewData.Metadata[pkg] = version
 	}
 
 	metadataTemplate, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))

@@ -12,6 +12,7 @@
 }
 .mdl-data-table .metadata-header th {
     font-size: 1.2em;
+    color: black;
 }
 .metadata-table {
     height: unset;
@@ -24,5 +25,4 @@
     border-radius: 2px;
     box-shadow: 0 0 4px #e0e0e0;
     border-collapse: collapse;
-    width: 100%;
 }
