@@ -667,7 +667,7 @@ periodics:
   tags:
   - "perfDashPrefix: scheduler-benchmark"
   - "perfDashJobType: benchmark"
-  interval: 1h
+  interval: 2h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -676,7 +676,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
       args:
       - --repo=k8s.io/kubernetes=master
-      - --timeout=40
+      - --timeout=55
       - --root=/go/src
       - --scenario=execute
       - --
@@ -686,7 +686,7 @@ periodics:
       - name: GOPATH
         value: /go
       - name: KUBE_TIMEOUT
-        value: --timeout 20m
+        value: --timeout 40m
 
 - name: ci-benchmark-kube-dns-master
   interval: 2h
