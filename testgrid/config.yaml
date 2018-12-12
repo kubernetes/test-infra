@@ -2238,8 +2238,6 @@ test_groups:
 # perf tests
 - name: ci-perf-tests-e2e-gce-clusterloader
   gcs_prefix: kubernetes-jenkins/logs/ci-perf-tests-e2e-gce-clusterloader
-- name: ci-perf-tests-e2e-gce-clusterloader2
-  gcs_prefix: kubernetes-jenkins/logs/ci-perf-tests-e2e-gce-clusterloader2
 - name: ci-perf-tests-kubemark-100-benchmark
   gcs_prefix: kubernetes-jenkins/logs/ci-perf-tests-kubemark-100-benchmark
 # benchmarks
@@ -6545,8 +6543,6 @@ dashboards:
     test_group_name: ci-perf-tests-kubemark-100-benchmark
   - name: cluster-loader
     test_group_name: ci-perf-tests-e2e-gce-clusterloader
-  - name: cluster-loader2
-    test_group_name: ci-perf-tests-e2e-gce-clusterloader2
 
 - name: sig-scalability-benchmarks
   dashboard_tab:
