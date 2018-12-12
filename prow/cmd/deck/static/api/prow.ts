@@ -21,5 +21,12 @@ export interface Job {
   url: string;
   pod_name: string;
   agent: string;
+  pr_refs: number[];
+  pr_ref_links: string[];
   prow_job: string;
+  repo_link: string;
+  pull_link: string;
+  pull_commit_link: string;
+  push_commit_link: string;
+  author_link: string;
 }

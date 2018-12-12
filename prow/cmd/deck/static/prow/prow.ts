@@ -502,11 +502,8 @@ function redraw(fz: FuzzySearch): void {
 
             if (build.type === "periodic") {
                 r.appendChild(createTextCell(""));
-            } else if (build.repo.startsWith("http://") || build.repo.startsWith("https://") ) {
-                r.appendChild(createLinkCell(build.repo, build.repo, ""));
             } else {
-                r.appendChild(createLinkCell(build.repo, "https://github.com/"
-                    + build.repo, ""));
+                r.appendChild(createLinkCell(build.repo, build.repo_link, ""));
             }
             if (build.type === "presubmit") {
                 r.appendChild(prRevisionCell(build));
@@ -698,15 +695,13 @@ function stateCell(state: JobState): HTMLTableDataCellElement {
 
 function batchRevisionCell(build: Job): HTMLTableDataCellElement {
     const c = document.createElement("td");
-    const prRefs = build.refs.split(",");
-    for (let i = 1; i < prRefs.length; i++) {
-        if (i != 1) {
+    for (let i = 0; i < build.pr_refs.length; i++) {
+        if (i != 0) {
             c.appendChild(document.createTextNode(", "));
         }
-        const pr = prRefs[i].split(":")[0];
         const l = document.createElement("a");
-        l.href = "https://github.com/" + build.repo + "/pull/" + pr;
-        l.text = pr;
+        l.href = build.pr_ref_links[i];
+        l.text = String(build.pr_refs[i]);
         c.appendChild(document.createTextNode("#"));
         c.appendChild(l);
     }
@@ -716,7 +711,7 @@ function batchRevisionCell(build: Job): HTMLTableDataCellElement {
 function pushRevisionCell(build: Job): HTMLTableDataCellElement {
     const c = document.createElement("td");
     const bl = document.createElement("a");
-    bl.href = "https://github.com/" + build.repo + "/commit/" + build.base_sha;
+    bl.href = build.push_commit_link;
     bl.text = build.base_ref + " (" + build.base_sha.slice(0, 7) + ")";
     c.appendChild(bl);
     return c;
@@ -726,18 +721,17 @@ function prRevisionCell(build: Job): HTMLTableDataCellElement {
     const c = document.createElement("td");
     c.appendChild(document.createTextNode("#"));
     const pl = document.createElement("a");
-    pl.href = "https://github.com/" + build.repo + "/pull/" + build.number;
+    pl.href = build.pull_link;
     pl.text = build.number.toString();
     c.appendChild(pl);
     c.appendChild(document.createTextNode(" ("));
     const cl = document.createElement("a");
-    cl.href = "https://github.com/" + build.repo + "/pull/" + build.number
-        + '/commits/' + build.pull_sha;
+    cl.href = build.pull_commit_link;
     cl.text = build.pull_sha.slice(0, 7);
     c.appendChild(cl);
     c.appendChild(document.createTextNode(") by "));
     const al = document.createElement("a");
-    al.href = "https://github.com/" + build.author;
+    al.href = build.author_link;
     al.text = build.author;
     c.appendChild(al);
     return c;
