@@ -1994,7 +1994,7 @@ presubmits:
     labels:
       preset-service-account: "true"
     name: pull-security-kubernetes-godeps
-    path_alias: k8s.io/test-infra
+    path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-godeps
     spec:
       containers:
