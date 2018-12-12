@@ -2,14 +2,6 @@
     font-weight: bold;
     font-size: 1.1em;
 }
-.failed-row {
-    background-color: #FF0000;
-    color: white;
-}
-.passed-row {
-    background-color:#00FF00;
-    color: black;
-}
 .mdl-data-table .metadata-header th {
     font-size: 1.2em;
     color: black;
@@ -29,4 +21,14 @@
 
 .hidden {
     visibility: collapse;
+}
+
+.mdl-data-table__cell--non-numeric {
+    font-family: monospace;
+    background-color: #212121;
+    color: #e8e8e8;
+}
+
+.mdl-data-table__cell--non-numeric.expander {
+    background-color: #333333;
 }
