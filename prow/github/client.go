@@ -531,6 +531,115 @@ func (c *Client) IsMember(org, user string) (bool, error) {
 	return false, fmt.Errorf("unexpected status: %d", code)
 }
 
+func (c *Client) listHooks(org string, repo *string) ([]Hook, error) {
+	var ret []Hook
+	var path string
+	if repo != nil {
+		path = fmt.Sprintf("/repos/%s/%s/hooks", org, *repo)
+	} else {
+		path = fmt.Sprintf("/orgs/%s/hooks", org)
+	}
+	err := c.readPaginatedResults(
+		path,
+		acceptNone,
+		func() interface{} {
+			return &[]Hook{}
+		},
+		func(obj interface{}) {
+			ret = append(ret, *(obj.(*[]Hook))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+// ListRepoHooks returns a list of hooks for the org.
+// https://developer.github.com/v3/orgs/hooks/#list-hooks
+func (c *Client) ListOrgHooks(org string) ([]Hook, error) {
+	c.log("ListOrgHooks", org)
+	return c.listHooks(org, nil)
+}
+
+// ListRepoHooks returns a list of hooks for the repo.
+// https://developer.github.com/v3/repos/hooks/#list-hooks
+func (c *Client) ListRepoHooks(org, repo string) ([]Hook, error) {
+	c.log("ListRepoHooks", org, repo)
+	return c.listHooks(org, &repo)
+}
+
+func (c *Client) editHook(org string, repo *string, id int, req HookRequest) error {
+	if c.dry {
+		return nil
+	}
+	var path string
+	if repo != nil {
+		path = fmt.Sprintf("/repos/%s/%s/hooks/%d", org, *repo, id)
+	} else {
+		path = fmt.Sprintf("/orgs/%s/hooks/%d", org, id)
+	}
+
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        path,
+		exitCodes:   []int{200},
+		requestBody: &req,
+	}, nil)
+	return err
+}
+
+// EditRepoHook updates an existing hook with new info (events/url/secret)
+// https://developer.github.com/v3/repos/hooks/#edit-a-hook
+func (c *Client) EditRepoHook(org, repo string, id int, req HookRequest) error {
+	c.log("EditRepoHook", org, repo, id)
+	return c.editHook(org, &repo, id, req)
+}
+
+// EditOrgHook updates an existing hook with new info (events/url/secret)
+// https://developer.github.com/v3/orgs/hooks/#edit-a-hook
+func (c *Client) EditOrgHook(org string, id int, req HookRequest) error {
+	c.log("EditOrgHook", org, id)
+	return c.editHook(org, nil, id, req)
+}
+
+func (c *Client) createHook(org string, repo *string, req HookRequest) (int, error) {
+	if c.dry {
+		return -1, nil
+	}
+	var path string
+	if repo != nil {
+		path = fmt.Sprintf("/repos/%s/%s/hooks", org, *repo)
+	} else {
+		path = fmt.Sprintf("/orgs/%s/hooks", org)
+	}
+	var ret Hook
+	_, err := c.request(&request{
+		method:      http.MethodPost,
+		path:        path,
+		exitCodes:   []int{201},
+		requestBody: &req,
+	}, &ret)
+	if err != nil {
+		return 0, err
+	}
+	return ret.Id, nil
+}
+
+// CreateOrgHook creates a new hook for the org
+// https://developer.github.com/v3/orgs/hooks/#create-a-hook
+func (c *Client) CreateOrgHook(org string, req HookRequest) (int, error) {
+	c.log("CreateOrgHook", org)
+	return c.createHook(org, nil, req)
+}
+
+// CreateRepoHook creates a new hook for the repo
+// https://developer.github.com/v3/repos/hooks/#create-a-hook
+func (c *Client) CreateRepoHook(org, repo string, req HookRequest) (int, error) {
+	c.log("CreateRepoHook", org, repo)
+	return c.createHook(org, &repo, req)
+}
+
 // GetOrg returns current metadata for the org
 //
 // https://developer.github.com/v3/orgs/#get-an-organization
