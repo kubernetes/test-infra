@@ -1973,6 +1973,51 @@ presubmits:
           secretName: ssh-security
     trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test,?($|\s.*)
   - agent: kubernetes
+    always_run: false
+    cluster: security
+    context: pull-security-kubernetes-godeps
+    decorate: true
+    decoration_config:
+      gcs_configuration:
+        bucket: kubernetes-jenkins
+        default_org: kubernetes
+        default_repo: kubernetes
+        path_strategy: legacy
+      gcs_credentials_secret: service-account
+      grace_period: 15000000000
+      timeout: 7200000000000
+      utility_images:
+        clonerefs: gcr.io/k8s-prow/clonerefs:v20181207-201eb76
+        entrypoint: gcr.io/k8s-prow/entrypoint:v20181207-201eb76
+        initupload: gcr.io/k8s-prow/initupload:v20181207-201eb76
+        sidecar: gcr.io/k8s-prow/sidecar:v20181207-201eb76
+    labels:
+      preset-service-account: "true"
+    name: pull-security-kubernetes-godeps
+    path_alias: k8s.io/test-infra
+    rerun_command: /test pull-security-kubernetes-godeps
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - verify
+        - WHAT="godeps staging-godeps godep-licenses"
+        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts
+        command:
+        - make
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
+        name: test
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-godeps,?($|\s.*)
+  - agent: kubernetes
     always_run: true
     cluster: security
     context: pull-security-kubernetes-integration
@@ -2430,6 +2475,11 @@ presubmits:
         - --
         - --branch=${PULL_BASE_REF}
         - --script=./hack/jenkins/verify-dockerized.sh
+        env:
+        - name: EXCLUDE_TYPECHECK
+          value: "Y"
+        - name: EXCLUDE_GODEPS
+          value: "N"
         image: gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
         name: ""
         resources:

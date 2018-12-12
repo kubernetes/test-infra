@@ -1,0 +1,19 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-godeps
+    path_alias: "k8s.io/test-infra"
+    decorate: true
+    always_run: false
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - name: test
+        command:
+        - make
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
+        args:
+        - verify
+        - WHAT="godeps staging-godeps godep-licenses"
+        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts
