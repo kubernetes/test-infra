@@ -19,6 +19,11 @@ presubmits:
         - "--branch=${PULL_BASE_REF}"
         - --script=./hack/jenkins/verify-dockerized.sh
         # docker-in-docker needs privileged mode
+        env:
+        - name: EXCLUDE_TYPECHECK
+          value: "Y"
+        - name: EXCLUDE_GODEPS
+          value: "N"
         securityContext:
           privileged: true
         resources:

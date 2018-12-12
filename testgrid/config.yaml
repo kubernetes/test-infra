@@ -2635,6 +2635,11 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
+- name: pull-kubernetes-godeps
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-godeps
+  num_columns_recent: 20
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 10
 - name: pull-publishing-bot-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-publishing-bot-build
   num_columns_recent: 20
@@ -7104,6 +7109,9 @@ dashboards:
       alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com
   - name: pull-kubernetes-typecheck
     test_group_name: pull-kubernetes-typecheck
+    base_options: width=10
+  - name: pull-kubernetes-godeps
+    test_group_name: pull-kubernetes-godeps
     base_options: width=10
 
 - name: presubmits-kubernetes-nonblocking
