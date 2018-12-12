@@ -25,8 +25,9 @@ import (
 
 	"fmt"
 	"html/template"
-	"k8s.io/test-infra/prow/spyglass/lenses"
 	"path/filepath"
+
+	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
 const (
@@ -127,6 +128,10 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		}
 		jvd.NumTests = len(jvd.Passed) + len(jvd.Failed) + len(jvd.Skipped)
 
+	}
+
+	if jvd.NumTests == 0 {
+		return "Failed to parse any JUnit test results"
 	}
 
 	junitTemplate, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
