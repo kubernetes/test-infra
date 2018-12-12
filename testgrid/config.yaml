@@ -231,6 +231,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-image-push
 - name: ci-ingress-gce-e2e
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e
+- name: ci-ingress-gce-e2e-multi-zone
+  gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-multi-zone
 - name: ci-ingress-gce-e2e-release-1-1
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-release-1-1
 - name: ci-ingress-gce-e2e-release-1-2
@@ -6263,6 +6265,10 @@ dashboards:
   dashboard_tab:
   - name: ingress-gce-e2e
     test_group_name: ci-ingress-gce-e2e
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+  - name: ingress-gce-e2e-multi-zone
+    test_group_name: ci-ingress-gce-e2e-multi-zone
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: ingress-gce-e2e-release-1.1

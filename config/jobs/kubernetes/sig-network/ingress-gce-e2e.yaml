@@ -96,6 +96,33 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
       - --timeout=320m
 
+- name: ci-ingress-gce-e2e-multi-zone
+  interval: 3h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
+      args:
+      - --timeout=340
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --env=MULTIZONE=true
+      # Where the nodes reside.  Master is in the first one.
+      - --env=E2E_ZONES=us-central1-a us-central1-b us-central1-f
+      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
+      - --extract=ci/latest
+      - --gcp-project-type=ingress-project
+      - --gcp-zone=us-central1-a
+      - --ginkgo-parallel=1
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\]
+      - --timeout=320m
+
 - name: ci-ingress-gce-e2e-release-1-1
   interval: 480m
   labels:
