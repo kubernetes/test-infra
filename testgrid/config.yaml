@@ -2448,6 +2448,8 @@ test_groups:
 #Arm arm64 test results
 - name: arm64-conformance
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64
+- name: arm64-conformance-aws-cluster
+  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-aws-cluster
 # kubernetes org jobs
 - name: ci-org-peribolos
   gcs_prefix: kubernetes-jenkins/logs/ci-org-peribolos
@@ -7576,6 +7578,13 @@ dashboards:
   - name: ci-test
     test_group_name: ci-structured-merge-diff-test
 
+# Arm dashboard
+- name: conformance-arm
+  dashboard_tab:
+  - name: "Arm64 AWS"
+    test_group_name: arm64-conformance-aws-cluster
+    description: Runs conformance tests by using kubetest against latest version of kubernetes on AWS"
+
 # sig-windows dashboard
 - name: sig-windows
   dashboard_tab:
@@ -7766,6 +7775,7 @@ dashboard_groups:
   - conformance-cloud-provider-baiducloud
   - conformance-gardener
   - conformance-hack-local-up-cluster
+  - conformance-arm
 
 - name: vmware
   dashboard_names:
