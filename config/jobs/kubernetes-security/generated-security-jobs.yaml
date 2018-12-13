@@ -1992,6 +1992,7 @@ presubmits:
         initupload: gcr.io/k8s-prow/initupload:v20181207-201eb76
         sidecar: gcr.io/k8s-prow/sidecar:v20181207-201eb76
     labels:
+      preset-dind-enabled: "true"
       preset-service-account: "true"
     name: pull-security-kubernetes-godeps
     path_alias: k8s.io/kubernetes
