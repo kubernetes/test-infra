@@ -2013,6 +2013,8 @@ presubmits:
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
         name: main
         resources: {}
+        securityContext:
+          privileged: true
         volumeMounts:
         - mountPath: /etc/ssh-security
           name: ssh-security
