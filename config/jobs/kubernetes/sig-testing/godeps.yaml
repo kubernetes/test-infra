@@ -13,6 +13,7 @@ presubmits:
       containers:
       - name: main
         command:
+        - runner.sh
         - make
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
         args:
