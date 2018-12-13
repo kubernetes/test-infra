@@ -17,6 +17,9 @@ presubmits:
         args:
         - verify
         - WHAT="godeps staging-godeps godep-licenses"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
         env:
         - name: KUBE_FORCE_VERIFY_CHECKS
           value: "Y"
