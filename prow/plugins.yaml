@@ -66,7 +66,6 @@ approve:
   - kubernetes/repo-infra
   - kubernetes/sig-release
   - kubernetes/steering
-  - kubernetes/test-infra
   - kubernetes/utils
   - kubernetes-incubator/ip-masq-agent
   implicit_self_approve: true
@@ -80,6 +79,8 @@ approve:
   implicit_self_approve: true
 - repos:
   - bazelbuild
+  - kubernetes/community
+  - kubernetes/test-infra
   implicit_self_approve: true
   review_acts_as_approve: true
 - repos:
