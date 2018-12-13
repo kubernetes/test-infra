@@ -1996,17 +1996,22 @@ presubmits:
     name: pull-security-kubernetes-godeps
     path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-godeps
+    run_if_changed: ^((build\/|Godeps\/|vendor\/|hack\/lib\/|hack\/.*godep|staging\/).*)$
     spec:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - verify
         - WHAT="godeps staging-godeps godep-licenses"
-        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts
         command:
         - make
+        env:
+        - name: KUBE_FORCE_VERIFY_CHECKS
+          value: "Y"
+        - name: KUBE_JUNIT_REPORT_DIR
+          value: ${WORKSPACE}/_artifacts
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
-        name: test
+        name: main
         resources: {}
         volumeMounts:
         - mountPath: /etc/ssh-security
