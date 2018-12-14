@@ -397,11 +397,11 @@ func genTag() string {
 var defaultConfig = Config{
 	TestMode: "embedded",
 
-	AWSK8sTesterDownloadURL:        "https://github.com/aws/aws-k8s-tester/releases/download/0.1.2/aws-k8s-tester-0.1.2-linux-amd64",
+	AWSK8sTesterDownloadURL:        "https://github.com/aws/aws-k8s-tester/releases/download/0.1.4/aws-k8s-tester-0.1.4-linux-amd64",
 	AWSK8sTesterPath:               "/tmp/aws-k8s-tester/aws-k8s-tester",
-	KubectlDownloadURL:             "https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/kubectl",
+	KubectlDownloadURL:             "https://amazon-eks.s3-us-west-2.amazonaws.com/1.11.5/2018-12-06/bin/linux/amd64/kubectl",
 	KubectlPath:                    "/tmp/aws-k8s-tester/kubectl",
-	AWSIAMAuthenticatorDownloadURL: "https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator",
+	AWSIAMAuthenticatorDownloadURL: "https://amazon-eks.s3-us-west-2.amazonaws.com/1.11.5/2018-12-06/bin/linux/amd64/aws-iam-authenticator",
 	AWSIAMAuthenticatorPath:        "/tmp/aws-k8s-tester/aws-iam-authenticator",
 
 	// enough time for ALB access log
@@ -418,14 +418,14 @@ var defaultConfig = Config{
 	AWSCustomEndpoint:        "",
 
 	// Amazon EKS-optimized AMI, https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
-	WorkerNodeAMI: "ami-0f54a2f7d2e9c88b3",
+	WorkerNodeAMI: "ami-094fa4044a2a3cf52",
 
 	WorkerNodeInstanceType: "m5.large",
 	WorkerNodeASGMin:       1,
 	WorkerNodeASGMax:       1,
 	WorkerNodeVolumeSizeGB: 20,
 
-	KubernetesVersion: "1.10",
+	KubernetesVersion: "1.11",
 
 	LogDebug: false,
 
@@ -575,7 +575,7 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 		return errors.New("EKS LogOutputs is not specified")
 	}
 	if cfg.KubernetesVersion == "" {
-		return errors.New("Kubernetes version is empty")
+		return errors.New("KubernetesVersion is empty")
 	}
 	if !checkKubernetesVersion(cfg.KubernetesVersion) {
 		return fmt.Errorf("EKS Kubernetes version %q is not valid", cfg.KubernetesVersion)
@@ -595,7 +595,7 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 	if cfg.WorkerNodeAMI == "" {
 		return errors.New("EKS WorkerNodeAMI is not specified")
 	}
-	if !checkAMI(cfg.AWSRegion, cfg.WorkerNodeAMI) {
+	if !checkAMI(cfg.KubernetesVersion, cfg.AWSRegion, cfg.WorkerNodeAMI) {
 		return fmt.Errorf("EKS WorkerNodeAMI %q is not valid", cfg.WorkerNodeAMI)
 	}
 	if cfg.WorkerNodeInstanceType == "" {
@@ -985,7 +985,7 @@ func (cfg *Config) UpdateFromEnvs() error {
 
 // supportedKubernetesVersions is a list of EKS supported Kubernets versions.
 var supportedKubernetesVersions = map[string]struct{}{
-	"1.10": {},
+	"1.11": {},
 }
 
 func checkKubernetesVersion(s string) (ok bool) {
@@ -996,10 +996,11 @@ func checkKubernetesVersion(s string) (ok bool) {
 // supportedRegions is a list of currently EKS supported AWS regions.
 // See https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services.
 var supportedRegions = map[string]struct{}{
-	"us-west-2": {},
-	"us-east-1": {},
-	"us-east-2": {},
-	"eu-west-1": {},
+	"us-west-2":  {},
+	"us-east-1":  {},
+	"us-east-2":  {},
+	"eu-west-1":  {},
+	"eu-north-1": {},
 }
 
 func checkRegion(s string) (ok bool) {
@@ -1009,27 +1010,43 @@ func checkRegion(s string) (ok bool) {
 
 // https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
 // https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
-var regionToAMICPU = map[string]string{
-	"us-west-2": "ami-0f54a2f7d2e9c88b3",
-	"us-east-1": "ami-0a0b913ef3249b655",
-	"us-east-2": "ami-0958a76db2d150238",
-	"eu-west-1": "ami-00c3b2d35bddd4f5c",
+var amiCPUs = map[string]map[string]string{
+	"1.11": {
+		"us-west-2":  "ami-094fa4044a2a3cf52",
+		"us-east-1":  "ami-0b4eb1d8782fc3aea",
+		"us-east-2":  "ami-053cbe66e0033ebcf",
+		"eu-west-1":  "ami-0a9006fb385703b54",
+		"eu-north-1": "ami-082e6cf1c07e60241",
+	},
 }
 
 // https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
 // https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
-var regionToAMIGPU = map[string]string{
-	"us-west-2": "ami-08156e8fd65879a13",
-	"us-east-1": "ami-0c974dde3f6d691a1",
-	"us-east-2": "ami-089849e811ace242f",
-	"eu-west-1": "ami-0c3479bcd739094f0",
+var amiGPUs = map[string]map[string]string{
+	"1.11": {
+		"us-west-2":  "ami-014f4e495a19d3e4f",
+		"us-east-1":  "ami-08a0bb74d1c9a5e2f",
+		"us-east-2":  "ami-04a758678ae5ebad5",
+		"eu-west-1":  "ami-050db3f5f9dbd4439",
+		"eu-north-1": "ami-69b03e17",
+	},
 }
 
-func checkAMI(region, imageID string) (ok bool) {
-	var id string
-	id, ok = regionToAMICPU[region]
+func checkAMI(ver, region, imageID string) (ok bool) {
+	var cpu map[string]string
+	cpu, ok = amiCPUs[ver]
 	if !ok {
-		id, ok = regionToAMIGPU[region]
+		return false
+	}
+	var id string
+	id, ok = cpu[region]
+	if !ok {
+		var gpu map[string]string
+		gpu, ok = amiGPUs[ver]
+		if !ok {
+			return false
+		}
+		id, ok = gpu[region]
 		if !ok {
 			return false
 		}
