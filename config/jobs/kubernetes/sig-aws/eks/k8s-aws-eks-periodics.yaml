@@ -3,18 +3,18 @@ presets:
 - env:
   # URL to download the latest 'aws-k8s-tester' release
   - name: AWS_K8S_TESTER_EKS_AWS_K8S_TESTER_DOWNLOAD_URL
-    value: https://github.com/aws/aws-k8s-tester/releases/download/0.1.4/aws-k8s-tester-0.1.4-linux-amd64
+    value: https://github.com/aws/aws-k8s-tester/releases/download/0.1.5/aws-k8s-tester-0.1.5-linux-amd64
   - name: AWS_K8S_TESTER_EKS_AWS_K8S_TESTER_DOWNLOAD_PATH
     value: /tmp/aws-k8s-tester/aws-k8s-tester
   # URL to download 'kubectl', required for 'kubectl' calls to EKS
   # TODO: use upstream 'kubectl'
   - name: AWS_K8S_TESTER_EKS_KUBECTL_DOWNLOAD_URL
-    value: https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/kubectl
+    value: https://amazon-eks.s3-us-west-2.amazonaws.com/1.11.5/2018-12-06/bin/linux/amd64/kubectl
   - name: AWS_K8S_TESTER_EKS_KUBECTL_DOWNLOAD_PATH
     value: /tmp/aws-k8s-tester/kubectl
   # URL to download 'aws-iam-authenticator', required for 'kubectl' calls to EKS
   - name: AWS_K8S_TESTER_EKS_AWS_IAM_AUTHENTICATOR_DOWNLOAD_URL
-    value: https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator
+    value: https://amazon-eks.s3-us-west-2.amazonaws.com/1.11.5/2018-12-06/bin/linux/amd64/aws-iam-authenticator
   - name: AWS_K8S_TESTER_EKS_AWS_IAM_AUTHENTICATOR_DOWNLOAD_PATH
     value: /tmp/aws-k8s-tester/aws-iam-authenticator
   # test mode is either "embedded" or "aws-cli" ("embedded" uses native AWS Go client, "aws-cli" will use 'aws')
@@ -22,7 +22,7 @@ presets:
     value: "embedded"
   # configure EKS Kubernetes version
   - name: AWS_K8S_TESTER_EKS_KUBERNETES_VERSION
-    value: "1.10"
+    value: "1.11"
   # duration to wait before destroying EKS cluster, useful to add wait time before collecting AWS ALB access logs
   - name: AWS_K8S_TESTER_EKS_WAIT_BEFORE_DOWN
     value: 1m0s
@@ -49,7 +49,7 @@ presets:
     value: "false"
   # Amazon EKS-optimized AMI (non-GPU, https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html)
   - name: AWS_K8S_TESTER_EKS_WORKER_NODE_AMI
-    value: ami-0f54a2f7d2e9c88b3
+    value: ami-094fa4044a2a3cf52
   # worker node EC2 instance type
   - name: AWS_K8S_TESTER_EKS_WORKER_NODE_INSTANCE_TYPE
     value: m3.xlarge
@@ -69,7 +69,7 @@ presets:
   - name: AWS_SHARED_CREDENTIALS_FILE
     value: /etc/eks-aws-credentials/eks-aws-credentials
   labels:
-    preset-ci-kubernetes-e2e-aws-eks-1-10: "true"
+    preset-ci-kubernetes-e2e-aws-eks-1-11: "true"
   volumeMounts:
   - mountPath: /etc/eks-aws-credentials
     name: eks-aws-credentials
@@ -80,12 +80,12 @@ presets:
       secretName: eks-aws-credentials
 
 periodics:
-# Run Kubernetes 1.10 branch e2e tests with EKS prod build 1.10
+# Run Kubernetes 1.11 branch e2e tests with EKS prod build 1.11
 - interval: 2h
-  name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod
+  name: ci-kubernetes-e2e-1-11-aws-eks-1-11-prod
   labels:
     preset-service-account: "true"
-    preset-ci-kubernetes-e2e-aws-eks-1-10: "true"
+    preset-ci-kubernetes-e2e-aws-eks-1-11: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
@@ -99,18 +99,18 @@ periodics:
       - --deployment=eks
       - --provider=eks
       - --gce-ssh=
-      - --extract=ci/latest-1.10
+      - --extract=ci/latest-1.11
       - --ginkgo-parallel=30
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=180m
 
-# Run Kubernetes 1.10 branch e2e tests with EKS prod build 1.10
+# Run Kubernetes 1.11 branch e2e tests with EKS prod build 1.11
 # run conformance tests
 - interval: 2h
-  name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod-conformance
+  name: ci-kubernetes-e2e-1-11-aws-eks-1-11-prod-conformance
   labels:
     preset-service-account: "true"
-    preset-ci-kubernetes-e2e-aws-eks-1-10: "true"
+    preset-ci-kubernetes-e2e-aws-eks-1-11: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
@@ -124,17 +124,17 @@ periodics:
       - --deployment=eks
       - --provider=eks
       - --gce-ssh=
-      - --extract=ci/latest-1.10
+      - --extract=ci/latest-1.11
       - --ginkgo-parallel=30
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=180m
 
-# Run Kubernetes stable e2e tests with EKS prod build 1.10
+# Run Kubernetes stable e2e tests with EKS prod build 1.11
 - interval: 2h
-  name: ci-kubernetes-e2e-stable-aws-eks-1-10-prod
+  name: ci-kubernetes-e2e-stable-aws-eks-1-11-prod
   labels:
     preset-service-account: "true"
-    preset-ci-kubernetes-e2e-aws-eks-1-10: "true"
+    preset-ci-kubernetes-e2e-aws-eks-1-11: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
@@ -153,12 +153,12 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=180m
 
-# Run Kubernetes latest e2e tests with EKS prod build 1.10
+# Run Kubernetes latest e2e tests with EKS prod build 1.11
 - interval: 2h
-  name: ci-kubernetes-e2e-latest-aws-eks-1-10-prod
+  name: ci-kubernetes-e2e-latest-aws-eks-1-11-prod
   labels:
     preset-service-account: "true"
-    preset-ci-kubernetes-e2e-aws-eks-1-10: "true"
+    preset-ci-kubernetes-e2e-aws-eks-1-11: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
