@@ -2176,14 +2176,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-manifest-lists
 
 # EKS e2e results
-- name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-1-10-aws-eks-1-10-prod
-- name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod-conformance
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-1-10-aws-eks-1-10-prod-conformance
-- name: ci-kubernetes-e2e-stable-aws-eks-1-10-prod
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-stable-aws-eks-1-10-prod
-- name: ci-kubernetes-e2e-latest-aws-eks-1-10-prod
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-latest-aws-eks-1-10-prod
+- name: ci-kubernetes-e2e-1-11-aws-eks-1-11-prod
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-1-11-aws-eks-1-11-prod
+- name: ci-kubernetes-e2e-1-11-aws-eks-1-11-prod-conformance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-1-11-aws-eks-1-11-prod-conformance
+- name: ci-kubernetes-e2e-stable-aws-eks-1-11-prod
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-stable-aws-eks-1-11-prod
+- name: ci-kubernetes-e2e-latest-aws-eks-1-11-prod
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-latest-aws-eks-1-11-prod
 
 # charts tests
 - name: ci-kubernetes-charts-gce
@@ -5794,23 +5794,23 @@ dashboards:
     test_group_name: pull-aws-ebs-csi-driver-sanity
     description: aws ebs csi driver sanity test
 
-- name: sig-aws-eks-ci-kubernetes-e2e-1-10
+- name: sig-aws-eks-ci-kubernetes-e2e-1-11
   dashboard_tab:
-  - name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod
-    test_group_name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod
-    description: Kubernetes 1.10 branch e2e tests with EKS prod build 1.10
-  - name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod-conformance
-    test_group_name: ci-kubernetes-e2e-1-10-aws-eks-1-10-prod-conformance
-    description: Kubernetes 1.10 branch e2e tests with EKS prod build 1.10, Conformance tests
+  - name: ci-kubernetes-e2e-1-11-aws-eks-1-11-prod
+    test_group_name: ci-kubernetes-e2e-1-11-aws-eks-1-11-prod
+    description: Kubernetes 1.11 branch e2e tests with EKS prod build 1.11
+  - name: ci-kubernetes-e2e-1-11-aws-eks-1-11-prod-conformance
+    test_group_name: ci-kubernetes-e2e-1-11-aws-eks-1-11-prod-conformance
+    description: Kubernetes 1.11 branch e2e tests with EKS prod build 1.11, Conformance tests
 - name: sig-aws-eks-ci-kubernetes-e2e-stable
   dashboard_tab:
-  - name: ci-kubernetes-e2e-stable-aws-eks-1-10-prod
-    test_group_name: ci-kubernetes-e2e-stable-aws-eks-1-10-prod
+  - name: ci-kubernetes-e2e-stable-aws-eks-1-11-prod
+    test_group_name: ci-kubernetes-e2e-stable-aws-eks-1-11-prod
     description: Kubernetes stable branch e2e tests with EKS prod build 1.10
 - name: sig-aws-eks-ci-kubernetes-e2e-latest
   dashboard_tab:
-  - name: ci-kubernetes-e2e-latest-aws-eks-1-10-prod
-    test_group_name: ci-kubernetes-e2e-latest-aws-eks-1-10-prod
+  - name: ci-kubernetes-e2e-latest-aws-eks-1-11-prod
+    test_group_name: ci-kubernetes-e2e-latest-aws-eks-1-11-prod
     description: Kubernetes latest branch e2e tests with EKS prod build 1.10
 
 - name: sig-cli-master
@@ -7673,7 +7673,7 @@ dashboard_groups:
   - sig-aws-alb-ingress-controller
   - sig-aws-cloud-provider-aws
   - sig-aws-ebs-csi-driver
-  - sig-aws-eks-ci-kubernetes-e2e-1-10
+  - sig-aws-eks-ci-kubernetes-e2e-1-11
   - sig-aws-eks-ci-kubernetes-e2e-stable
   - sig-aws-eks-ci-kubernetes-e2e-latest
 
