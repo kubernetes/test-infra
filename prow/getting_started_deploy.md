@@ -2,13 +2,43 @@
 
 This document will walk you through deploying your own Prow instance to a new Kubernetes cluster. If you encounter difficulties, please open an issue so that we can make this process easier.
 
-## How to turn up a new cluster
+Prow runs in any kubernetes cluster. Our `tackle` utility helps deploy it correctly, or you can perform each of the steps manually.
 
-Prow should run anywhere that Kubernetes runs. Here are the steps required to
-set up a basic prow cluster on [GKE](https://cloud.google.com/container-engine/).
-Prow will work on any Kubernetes cluster, so feel free to turn up a cluster
-some other way and skip the first step. You can set up a project on GCP using
-the [cloud console](https://console.cloud.google.com/).
+Both of these are focused on [Kubernetes Engine](https://cloud.google.com/kubernetes-engine/) but should work on any kubernetes distro with no/minimal changes.
+
+# Tackle deployment
+
+Prow's tackle utility walks you through deploying a new instance of prow in a couple minutes, try it out!
+
+You need three things:
+1) The prow tackle command.
+2) a [personal access token][1] for the github bot user you want to act as prow
+  - Prow uploads this token into a secret in your cluster
+3) Optionally, credentials to a kubernetes cluster
+  - Otherwise the tackle command can help you create one
+
+Then run the following and follow on-screen instructions:
+
+```bash
+# Ideally use https://bazel.build, alternatively try:
+#   go get -u k8s.io/test-infra/prow/cmd/tackle && tackle
+bazel run //prow/cmd/tackle
+```
+
+The will help you through the following steps:
+* Choosing a kubectl context (and creating a cluster / getting its credentials if necessary)
+* Deploying prow into that cluster
+* Configuring github to send prow webhooks for your repos
+
+See the Next Steps section after running this utility.
+
+# Manual deployment
+
+If you do not want to use the `tackle` utility above, here are the manual set of commands tackle will run.
+
+Prow runs in a kubernetes cluster, so first figure out which cluster you want to deploy prow into. If you already have a cluster, skip to the next step.
+
+You can use the [GCP cloud console](https://console.cloud.google.com/) to set up a project and [create a new Kubernetes Engine cluster](https://console.cloud.google.com/kubernetes).
 
 #### Create the cluster
 
@@ -75,7 +105,9 @@ that has read and write access to the bot account. Generate it from the
 [account's settings -> Personal access tokens -> Generate new token][1].
 
 ```sh
+# openssl rand -hex 20 > /path/to/hook/secret
 kubectl create secret generic hmac-token --from-file=hmac=/path/to/hook/secret
+# https://github.com/settings/tokens
 kubectl create secret generic oauth-token --from-file=oauth=/path/to/oauth/secret
 ```
 
@@ -87,9 +119,9 @@ ignored by some prow plugins. It is prudent to use a different bot account for
 other Github automation that prow should interact with to prevent events from
 being ignored unjustly.
 
-## Run the prow components in the cluster
+## Add the prow components to the cluster
 
-Run the following command to start up a basic set of prow components.
+Run the following command to deploy a basic set of prow components.
 
 ```sh
 kubectl apply -f prow/cluster/starter.yaml
@@ -108,6 +140,7 @@ sinker       1         1         1            1           1m
 tide         1         1         1            1           1m
 ```
 
+#### Get ingress IP address
 Find out your external address. It might take a couple minutes for the IP to
 show up.
 
@@ -123,13 +156,32 @@ to start receiving GitHub events!
 
 ## Add the webhook to GitHub
 
-On the GitHub repo you would like to use, go to Settings -> Webhooks -> Add
-webhook. You can also add org-level webhooks.
+Configure github to send your prow instance `application/json` webhooks
+for specific repos and/or whole orgs.
 
-Set the payload URL to `http://<IP-FROM-INGRESS>/hook`, the content type to
-`application/json`, the secret to your HMAC secret, and ask it to send everything.
-After you've created your webhook, GitHub will indicate that it successfully
-sent an event by putting a green checkmark under "Recent Deliveries."
+You can do this with the `add-hook` utility:
+```sh
+# Note /path/to/hook/secret from earlier secrets step
+# Note the an.ip.addr.ess from previous ingres step
+
+# Ideally use https://bazel.build, alternatively try:
+#   go get -u k8s.io/test-infra/experiment/add-hook && add-hook
+bazel run //experiment/add-hook -- \
+  --hmac-path=/path/to/hook/secret \
+  --hook-url http://an.ip.addr.ess/hook \
+  --repo my-org/my-repo \
+  --repo my-whole-org \
+  --confirm=false  # Remove =false to actually add hook
+```
+
+Now go to your org or repo and click `Settings -> Webhooks`.
+
+Look for the `http://an.ip.addr.ess/hook` you added above.
+A green check mark (for a ping event, if you click edit and view the details of the event) suggests everything is working!
+
+You can click `Add webhook` on the Webhooks page to add the hook manually
+if you do not want to use the `add-hook` utility.
+
 
 # Next steps
 
