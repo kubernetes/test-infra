@@ -18,6 +18,7 @@ package jobs
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
@@ -83,5 +84,30 @@ func githubRefData(job kube.ProwJob) RefData {
 }
 
 func gerritRefData(job kube.ProwJob) RefData {
-	return RefData{} // TODO(ibzib)
+	reviewHost := job.ObjectMeta.Annotations[client.GerritInstance]
+	parts := strings.SplitN(reviewHost, ".", 2)
+	codeHost := strings.TrimSuffix(parts[0], "-review")
+	if len(parts) > 1 {
+		codeHost += "." + parts[1]
+	}
+
+	ref := RefData{
+		Repo:    job.Spec.Refs.Repo,
+		Refs:    job.Spec.Refs.String(),
+		BaseRef: job.Spec.Refs.BaseRef,
+		BaseSHA: job.Spec.Refs.BaseSHA,
+	}
+	ref.RepoLink = fmt.Sprintf("%s/%s", codeHost, ref.Repo)
+	ref.PushCommitLink = fmt.Sprintf("%s/%s/+/%s", codeHost, ref.Repo, ref.BaseSHA)
+
+	if len(job.Spec.Refs.Pulls) == 1 {
+		ref.Number = job.Spec.Refs.Pulls[0].Number
+		ref.Author = job.Spec.Refs.Pulls[0].Author
+		ref.PullSHA = job.Spec.Refs.Pulls[0].SHA
+
+		ref.AuthorLink = fmt.Sprintf("mailto:%s", ref.Author)
+		ref.PullLink = fmt.Sprintf("%s/c/%s/+/%d", reviewHost, ref.Repo, ref.Number)
+		ref.PullCommitLink = fmt.Sprintf("%s/%s/+/%s", codeHost, ref.Repo, ref.PullSHA)
+	}
+	return ref
 }
