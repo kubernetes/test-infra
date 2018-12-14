@@ -53,7 +53,7 @@ func getOptions(fs *flag.FlagSet, args []string) (*options, error) {
 	o := options{}
 	o.AddFlags(fs)
 	o.events = flagutil.NewStrings(github.AllHookEvents...)
-	fs.Var(&o.events, "events", "Receive hooks for the following events, defaults to * for all events")
+	fs.Var(&o.events, "event", "Receive hooks for the following events, defaults to [\"*\"] (all events)")
 	fs.Var(&o.repo, "repo", "Add hooks for this org or org/repo")
 	fs.StringVar(&o.hookURL, "hook-url", "", "URL to send hooks")
 	fs.StringVar(&o.hmacPath, "hmac-path", "", "Path to hmac secret")
@@ -91,6 +91,34 @@ func findHook(hooks []github.Hook, url string) *int {
 	return nil
 }
 
+type changer struct {
+	lister  func(org string) ([]github.Hook, error)
+	editor  func(org string, id int, req github.HookRequest) error
+	creator func(org string, req github.HookRequest) (int, error)
+}
+
+func orgChanger(client *github.Client) changer {
+	return changer{
+		lister:  client.ListOrgHooks,
+		editor:  client.EditOrgHook,
+		creator: client.CreateOrgHook,
+	}
+}
+
+func repoChanger(client *github.Client, repo string) changer {
+	return changer{
+		lister: func(org string) ([]github.Hook, error) {
+			return client.ListRepoHooks(org, repo)
+		},
+		editor: func(org string, id int, req github.HookRequest) error {
+			return client.EditRepoHook(org, repo, id, req)
+		},
+		creator: func(org string, req github.HookRequest) (int, error) {
+			return client.CreateRepoHook(org, repo, req)
+		},
+	}
+}
+
 func main() {
 	o, err := getOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:])
 	if err != nil {
@@ -107,42 +135,43 @@ func main() {
 		logrus.Fatalf("Could not load hmac secret: %v", err)
 	}
 
+	yes := true
+	j := "json"
+	req := github.HookRequest{
+		Name:   "web",
+		Active: &yes,
+		Config: &github.HookConfig{
+			URL:         o.hookURL,
+			ContentType: &j,
+			Secret:      &hmac,
+		},
+		Events: o.events.Strings(),
+	}
 	for _, orgRepo := range o.repo.Strings() {
 		parts := strings.SplitN(orgRepo, "/", 2)
-		var hooks []github.Hook
+		var ch changer
 		if len(parts) == 1 {
-			hooks, err = client.ListOrgHooks(orgRepo)
+			ch = orgChanger(client)
 		} else {
-			hooks, err = client.ListRepoHooks(parts[0], parts[1])
+			ch = repoChanger(client, parts[1])
 		}
-		if err != nil {
-			logrus.Fatalf("Failed to list %s hooks: %v", orgRepo, err)
-		}
-		id := findHook(hooks, o.hookURL)
-		yes := true
-		j := "json"
-		req := github.HookRequest{
-			Name:   "web",
-			Active: &yes,
-			Config: &github.HookConfig{
-				URL:         o.hookURL,
-				ContentType: &j,
-				Secret:      &hmac,
-			},
-			Events: o.events.Strings(),
-		}
-		switch {
-		case id == nil && len(parts) == 1:
-			_, err = client.CreateOrgHook(parts[0], req)
-		case id == nil:
-			_, err = client.CreateRepoHook(parts[0], parts[1], req)
-		case len(parts) == 1:
-			err = client.EditOrgHook(parts[0], *id, req)
-		default:
-			err = client.EditRepoHook(parts[0], parts[1], *id, req)
-		}
-		if err != nil {
-			logrus.Fatalf("Could not apply %s hook: %v", orgRepo, err)
+
+		org := parts[0]
+		if err := reconcileHook(ch, org, req); err != nil {
+			logrus.Fatalf("Could not apply hook to %s: %v", orgRepo, err)
 		}
 	}
+}
+
+func reconcileHook(ch changer, org string, req github.HookRequest) error {
+	hooks, err := ch.lister(org)
+	if err != nil {
+		return fmt.Errorf("list: %v", err)
+	}
+	id := findHook(hooks, req.Config.URL)
+	if id == nil {
+		_, err := ch.creator(org, req)
+		return err
+	}
+	return ch.editor(org, *id, req)
 }
