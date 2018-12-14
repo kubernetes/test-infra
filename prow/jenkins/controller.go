@@ -472,9 +472,10 @@ func (c *Controller) RunAfterSuccessCanRun(parent, child *kube.ProwJob, ca confi
 	// TODO: Make sure that parent and child have always the same org/repo.
 	org := parent.Spec.Refs.Org
 	repo := parent.Spec.Refs.Repo
+	branch := parent.Spec.Refs.BaseRef
 	prNum := parent.Spec.Refs.Pulls[0].Number
 
-	ps := ca.Config().GetPresubmit(org+"/"+repo, child.Spec.Job)
+	ps := ca.Config().GetPresubmit(fmt.Sprintf("%s/%s", org, repo), branch, child.Spec.Job)
 	if ps == nil {
 		// The config has changed ever since we started the parent.
 		// Not sure what is more correct here. Run the child for now.

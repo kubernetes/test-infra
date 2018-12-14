@@ -352,11 +352,12 @@ func (c *JobConfig) RetestPresubmits(fullRepoName string, skipContexts, runConte
 }
 
 // GetPresubmit returns the presubmit job for the provided repo and job name.
-func (c *JobConfig) GetPresubmit(repo, jobName string) *Presubmit {
+func (c *JobConfig) GetPresubmit(repo, branch, jobName string) *Presubmit {
+
 	presubmits := c.AllPresubmits([]string{repo})
 	for i := range presubmits {
 		ps := presubmits[i]
-		if ps.Name == jobName {
+		if ps.Name == jobName && ps.RunsAgainstBranch(branch) {
 			return &ps
 		}
 	}
