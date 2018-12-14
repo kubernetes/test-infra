@@ -16,15 +16,17 @@ limitations under the License.
 
 package flagutil
 
-import "strings"
+import (
+	"strings"
+)
 
+// Strings represents the value of a flag that accept multiple strings.
 type Strings struct {
 	vals    []string
 	beenSet bool
 }
 
-// NewStrings returns a Strings struct that defaults to the value of def if left
-// unset.
+// NewStrings returns a Strings struct that defaults to the value of def if left unset.
 func NewStrings(def ...string) Strings {
 	return Strings{
 		vals:    def,
@@ -32,10 +34,12 @@ func NewStrings(def ...string) Strings {
 	}
 }
 
+// Strings returns the slice of strings set for this value instance.
 func (s *Strings) Strings() []string {
 	return s.vals
 }
 
+// String returns a concatenated string of all the values joined by commas.
 func (s *Strings) String() string {
 	return strings.Join(s.vals, ",")
 }

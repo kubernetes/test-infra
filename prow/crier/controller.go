@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// package crier reports finished prowjob status to git providers
+// Package crier reports finished prowjob status to git providers.
 package crier
 
 import (
@@ -28,12 +28,11 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	types "k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
-
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	clientset "k8s.io/test-infra/prow/client/clientset/versioned"
 	pjinformers "k8s.io/test-infra/prow/client/informers/externalversions/prowjobs/v1"
@@ -57,6 +56,7 @@ type Controller struct {
 	wg          *sync.WaitGroup
 }
 
+// NewController constructs a new instance of the crier controller.
 func NewController(
 	pjclientset clientset.Interface,
 	queue workqueue.RateLimitingInterface,
@@ -74,7 +74,7 @@ func NewController(
 	}
 }
 
-// Run is the main path of execution for the controller loop
+// Run is the main path of execution for the controller loop.
 func (c *Controller) Run(stopCh <-chan struct{}) {
 	// handle a panic with logging and exiting
 	defer utilruntime.HandleCrash()
@@ -124,13 +124,13 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 	logrus.Info("Shutting down workers")
 }
 
-// HasSynced allows us to satisfy the Controller interface
-// by wiring up the informer's HasSynced method to it
+// HasSynced allows us to satisfy the Controller interface by wiring up the informer's HasSynced
+// method to it.
 func (c *Controller) HasSynced() bool {
 	return c.informer.Informer().HasSynced()
 }
 
-// runWorker executes the loop to process new items added to the queue
+// runWorker executes the loop to process new items added to the queue.
 func (c *Controller) runWorker() {
 	c.wg.Add(1)
 	for c.processNextItem() {
@@ -181,9 +181,8 @@ func (c *Controller) updateReportState(pj *v1.ProwJob) error {
 	return err
 }
 
-// processNextItem retrieves each queued item and takes the
-// necessary handler action based off of if the item was
-// created or deleted
+// processNextItem retrieves each queued item and takes the necessary handler action based off of if
+// the item was created or deleted.
 func (c *Controller) processNextItem() bool {
 	key, quit := c.queue.Get()
 	if quit {

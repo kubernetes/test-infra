@@ -21,13 +21,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"html/template"
+	"path/filepath"
 	"regexp"
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"html/template"
 	"k8s.io/test-infra/prow/spyglass/lenses"
-	"path/filepath"
 )
 
 const (
@@ -68,7 +68,7 @@ func init() {
 	lenses.RegisterLens(Lens{})
 }
 
-// SubLine is a part of a LogLine, used so that error terms can be highlighted.
+// SubLine represents an substring within a LogLine. It it used so error terms can be highlighted.
 type SubLine struct {
 	Highlighted bool
 	Text        string
@@ -91,6 +91,8 @@ type LineGroup struct {
 	LogLines               []LogLine
 }
 
+// LineRequest represents a request for output lines from an artifact. If Offset is 0 and Length
+// is -1, all lines will be fetched.
 type LineRequest struct {
 	Artifact  string `json:"artifact"`
 	Offset    int64  `json:"offset"`

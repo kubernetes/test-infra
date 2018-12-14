@@ -342,7 +342,7 @@ type HookConfig struct {
 
 // Hook holds info about the webhook configuration.
 type Hook struct {
-	Id     int        `json:"id"`
+	ID     int        `json:"id"`
 	Name   string     `json:"name"`
 	Events []string   `json:"events"`
 	Active bool       `json:"active"`

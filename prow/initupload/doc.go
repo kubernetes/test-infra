@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package initupload determines the output status of clone
-// operations and posts that status along with artifacts and
-// logs to cloud storage
+// Package initupload determines the output status of clone operations and posts that status along
+// with artifacts and logs to cloud storage.
 package initupload

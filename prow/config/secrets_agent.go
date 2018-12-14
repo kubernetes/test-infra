@@ -14,8 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Implements an agent to read and reload the secrets.
 package config
+
+// Implements an agent to read and reload the secrets.
 
 import (
 	"os"

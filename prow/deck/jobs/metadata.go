@@ -16,7 +16,7 @@ limitations under the License.
 
 package jobs
 
-// Started is used to mirror the started.json artifact
+// Started is used to mirror the started.json artifact.
 type Started struct {
 	Timestamp int64             `json:"timestamp"`
 	Node      string            `json:"node"`
@@ -24,6 +24,7 @@ type Started struct {
 	Pull      string            `json:"pull"`
 }
 
+// Metadata is used to mirror the metadata in the finished.json artifact.
 type Metadata struct {
 	InfraCommit string            `json:"infra-commit"`
 	Pod         string            `json:"pod"`
@@ -32,7 +33,7 @@ type Metadata struct {
 	Repos       map[string]string `json:"repos"`
 }
 
-// Finished is used to mirror the finished.json artifact
+// Finished is used to mirror the finished.json artifact.
 type Finished struct {
 	Timestamp  int64  `json:"timestamp"`
 	Version    string `json:"version"`

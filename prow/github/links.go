@@ -16,7 +16,9 @@ limitations under the License.
 
 package github
 
-import "regexp"
+import (
+	"regexp"
+)
 
 var lre = regexp.MustCompile(`<([^>]*)>; *rel="([^"]*)"`)
 

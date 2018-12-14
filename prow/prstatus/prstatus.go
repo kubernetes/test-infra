@@ -51,8 +51,8 @@ type githubClient interface {
 
 // PullRequestQueryHandler defines an interface that query handlers should implement.
 type PullRequestQueryHandler interface {
-	HeadContexts(ghc githubClient, pr PullRequest) ([]Context, error)
 	QueryPullRequests(context.Context, githubClient, string) ([]PullRequest, error)
+	GetHeadContexts(ghc githubClient, pr PullRequest) ([]Context, error)
 	GetUser(*ghclient.Client) (*gogithub.User, error)
 }
 
@@ -61,17 +61,17 @@ type PullRequestQueryHandler interface {
 // user.
 type UserData struct {
 	Login                    bool
-	PullRequestsWithContexts []PullRequestWithContext
+	PullRequestsWithContexts []PullRequestWithContexts
 }
 
-// PullRequestWithContext contains a pull request with its latest context.
-type PullRequestWithContext struct {
+// PullRequestWithContexts contains a pull request with its latest commit contexts.
+type PullRequestWithContexts struct {
 	Contexts    []Context
 	PullRequest PullRequest
 }
 
-// Dashboard Agent is responsible for handling request to /pr-status endpoint. It will serve
-// list of open pull requests owned by the user.
+// DashboardAgent is responsible for handling request to /pr-status endpoint.
+// It will serve a list of open pull requests owned by the user.
 type DashboardAgent struct {
 	repos []string
 	goac  *config.GithubOAuthConfig
@@ -79,19 +79,20 @@ type DashboardAgent struct {
 	log *logrus.Entry
 }
 
+// Label represents a Github label.
 type Label struct {
 	ID   githubql.ID
 	Name githubql.String
 }
 
-// Context represent github contexts.
+// Context represent a Github status check context.
 type Context struct {
 	Context     string
 	Description string
 	State       string
 }
 
-// PullRequest holds graphql response data for github pull request.
+// PullRequest holds the GraphQL response data for a Github pull request.
 type PullRequest struct {
 	Number githubql.Int
 	Merged githubql.Boolean
@@ -122,6 +123,7 @@ type PullRequest struct {
 	Mergeable githubql.MergeableState
 }
 
+// UserLoginQuery holds the GraphQL query for the currently authenticated user.
 type UserLoginQuery struct {
 	Viewer struct {
 		Login githubql.String
@@ -144,7 +146,7 @@ type searchQuery struct {
 	} `graphql:"search(type: ISSUE, first: 100, after: $searchCursor, query: $query)"`
 }
 
-// Returns new user dashboard agent.
+// NewDashboardAgent creates a new user dashboard agent .
 func NewDashboardAgent(repos []string, config *config.GithubOAuthConfig, log *logrus.Entry) *DashboardAgent {
 	return &DashboardAgent{
 		repos: repos,
@@ -256,15 +258,15 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 				serverError("Error with querying user data.", err)
 				return
 			}
-			var pullRequestWithContexts []PullRequestWithContext
+			var pullRequestWithContexts []PullRequestWithContexts
 			for _, pr := range pullRequests {
-				prcontext, err := queryHandler.HeadContexts(ghc, pr)
+				prcontexts, err := queryHandler.GetHeadContexts(ghc, pr)
 				if err != nil {
 					serverError("Error with getting head context of pr", err)
 					continue
 				}
-				pullRequestWithContexts = append(pullRequestWithContexts, PullRequestWithContext{
-					Contexts:    prcontext,
+				pullRequestWithContexts = append(pullRequestWithContexts, PullRequestWithContexts{
+					Contexts:    prcontexts,
 					PullRequest: pr,
 				})
 			}
@@ -287,7 +289,7 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 	}
 }
 
-// Query function that returns a list of open pull requests owned by the user whose access token
+// QueryPullRequests is a query function that returns a list of open pull requests owned by the user whose access token
 // is consumed by the github client.
 func (da *DashboardAgent) QueryPullRequests(ctx context.Context, ghc githubClient, query string) ([]PullRequest, error) {
 	var prs []PullRequest
@@ -316,7 +318,8 @@ func (da *DashboardAgent) QueryPullRequests(ctx context.Context, ghc githubClien
 	return prs, nil
 }
 
-func (da *DashboardAgent) HeadContexts(ghc githubClient, pr PullRequest) ([]Context, error) {
+// GetHeadContexts returns the status checks' contexts of the head commit of the PR.
+func (da *DashboardAgent) GetHeadContexts(ghc githubClient, pr PullRequest) ([]Context, error) {
 	org := string(pr.Repository.Owner.Login)
 	repo := string(pr.Repository.Name)
 	combined, err := ghc.GetCombinedStatus(org, repo, string(pr.HeadRefOID))
@@ -337,10 +340,14 @@ func (da *DashboardAgent) HeadContexts(ghc githubClient, pr PullRequest) ([]Cont
 	return contexts, nil
 }
 
+// GetUser attempts to get the currently authenticated Github user.
 func (da *DashboardAgent) GetUser(client *ghclient.Client) (*gogithub.User, error) {
 	return client.GetUser("")
 }
 
+// ConstructSearchQuery returns the Github search query string for PRs that are open and authored
+// by the user passed. The search is scoped to repositories that are configured with either Prow or
+// Tide.
 func (da *DashboardAgent) ConstructSearchQuery(login string) string {
 	tokens := []string{"is:pr", "state:open", "author:" + login}
 	for i := range da.repos {
