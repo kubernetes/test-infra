@@ -87,7 +87,7 @@ bazel run //prow/cluster:production.apply # deploy everything
 bazel run //prow/cluster:hook.apply # just update hook
 
 # This is equivalent to doing the following with kubectl directly:
-kubectl use-context gke_my-project_my-zone_my-cluster
+kubectl config use-context gke_my-project_my-zone_my-cluster
 kubectl apply -f prow/cluster/*.yaml
 kubectl apply -f prow/cluster/hook_deployment.yaml
 ```
