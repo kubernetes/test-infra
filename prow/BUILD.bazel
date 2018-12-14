@@ -93,6 +93,7 @@ filegroup(
         "//prow/cmd/sidecar:all-srcs",
         "//prow/cmd/sinker:all-srcs",
         "//prow/cmd/status-reconciler:all-srcs",
+        "//prow/cmd/tackle:all-srcs",
         "//prow/cmd/tide:all-srcs",
         "//prow/cmd/tot:all-srcs",
         "//prow/cmd/util:all-srcs",
