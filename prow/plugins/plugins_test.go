@@ -18,7 +18,95 @@ package plugins
 
 import (
 	"testing"
+
+	"sigs.k8s.io/yaml"
 )
+
+func TestHasSelfApproval(t *testing.T) {
+	cases := []struct {
+		name     string
+		cfg      string
+		expected bool
+	}{
+		{
+			name:     "self approval by default",
+			expected: true,
+		},
+		{
+			name:     "has approval when implicit_self_approve true",
+			cfg:      `{"implicit_self_approve": true}`,
+			expected: true,
+		},
+		{
+			name: "reject approval when implicit_self_approve false",
+			cfg:  `{"implicit_self_approve": false}`,
+		},
+		{
+			name:     "reject approval when require_self_approval set",
+			cfg:      `{"require_self_approval": true}`,
+			expected: false,
+		},
+		{
+			name:     "has approval when require_self_approval set to false",
+			cfg:      `{"require_self_approval": false}`,
+			expected: true,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var a Approve
+			if err := yaml.Unmarshal([]byte(tc.cfg), &a); err != nil {
+				t.Fatalf("failed to unmarshal cfg: %v", err)
+			}
+			if actual := a.HasSelfApproval(); actual != tc.expected {
+				t.Errorf("%t != expected %t", actual, tc.expected)
+			}
+		})
+	}
+}
+
+func TestConsiderReviewState(t *testing.T) {
+	cases := []struct {
+		name     string
+		cfg      string
+		expected bool
+	}{
+		{
+			name:     "consider by default",
+			expected: true,
+		},
+		{
+			name:     "consider when draaa = true",
+			cfg:      `{"review_acts_as_approve": true}`,
+			expected: true,
+		},
+		{
+			name: "do not consider when draaa = false",
+			cfg:  `{"review_acts_as_approve": false}`,
+		},
+		{
+			name: "do not consider when irs = true",
+			cfg:  `{"ignore_review_state": true}`,
+		},
+		{
+			name:     "consider when irs = false",
+			cfg:      `{"ignore_review_state": false}`,
+			expected: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var a Approve
+			if err := yaml.Unmarshal([]byte(tc.cfg), &a); err != nil {
+				t.Fatalf("failed to unmarshal cfg: %v", err)
+			}
+			if actual := a.ConsiderReviewState(); actual != tc.expected {
+				t.Errorf("%t != expected %t", actual, tc.expected)
+			}
+		})
+	}
+}
 
 func TestGetPlugins(t *testing.T) {
 	var testcases = []struct {

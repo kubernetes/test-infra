@@ -1019,10 +1019,10 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			fr,
 			&plugins.Approve{
 				Repos:               []string{"org/repo"},
-				ImplicitSelfApprove: test.selfApprove,
+				RequireSelfApproval: !test.selfApprove,
 				IssueRequired:       test.needsIssue,
 				LgtmActsAsApprove:   test.lgtmActsAsApprove,
-				ReviewActsAsApprove: test.reviewActsAsApprove,
+				IgnoreReviewState:   !test.reviewActsAsApprove,
 			},
 			&state{
 				org:       "org",
@@ -1505,9 +1505,9 @@ func TestHandleReview(t *testing.T) {
 		test.reviewEvent.PullRequest = pr
 		config := &plugins.Configuration{}
 		config.Approve = append(config.Approve, plugins.Approve{
-			Repos:               []string{test.reviewEvent.Repo.Owner.Login},
-			LgtmActsAsApprove:   test.lgtmActsAsApprove,
-			ReviewActsAsApprove: test.reviewActsAsApprove,
+			Repos:             []string{test.reviewEvent.Repo.Owner.Login},
+			LgtmActsAsApprove: test.lgtmActsAsApprove,
+			IgnoreReviewState: !test.reviewActsAsApprove,
 		})
 		err := handleReview(
 			logrus.WithField("plugin", "approve"),
