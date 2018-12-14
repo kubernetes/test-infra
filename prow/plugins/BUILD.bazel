@@ -72,6 +72,7 @@ filegroup(
         "//prow/plugins/milestonestatus:all-srcs",
         "//prow/plugins/override:all-srcs",
         "//prow/plugins/owners-label:all-srcs",
+        "//prow/plugins/pony:all-srcs",
         "//prow/plugins/releasenote:all-srcs",
         "//prow/plugins/require-matching-label:all-srcs",
         "//prow/plugins/requiresig:all-srcs",
