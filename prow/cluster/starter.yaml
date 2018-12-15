@@ -139,7 +139,6 @@ kind: Service
 metadata:
   namespace: default
   name: hook
-  namespace: default
 spec:
   selector:
     app: hook
@@ -338,7 +337,6 @@ kind: Service
 metadata:
   namespace: default
   name: tide
-  namespace: default
 spec:
   selector:
     app: tide
@@ -356,7 +354,7 @@ spec:
   rules:
   - http:
       paths:
-      - path: /*
+      - path: /
         backend:
           serviceName: deck
           servicePort: 80
