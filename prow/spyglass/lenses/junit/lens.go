@@ -25,8 +25,9 @@ import (
 
 	"fmt"
 	"html/template"
-	"k8s.io/test-infra/prow/spyglass/lenses"
 	"path/filepath"
+
+	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
 const (
@@ -97,11 +98,17 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		NumTests: 0,
 	}
 
+	var err error
 	for _, a := range artifacts {
 		contents, err := a.ReadAll()
+		if err != nil {
+			logrus.WithError(err).Error("Error reading artifact")
+			continue
+		}
 		suites, err := junit.Ingest(contents)
 		if err != nil {
 			logrus.WithError(err).Error("Error parsing junit file.")
+			continue
 		}
 		for _, suite := range suites {
 			for _, test := range suite.Tests {
@@ -121,12 +128,20 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 						Link:  a.CanonicalLink(),
 					})
 				} else {
-					logrus.Error("Invalid test status string: ", test.Status)
+					err = fmt.Errorf("Invalid test status string: %s", test.Status)
+					logrus.Error(err)
 				}
 			}
 		}
 		jvd.NumTests = len(jvd.Passed) + len(jvd.Failed) + len(jvd.Skipped)
 
+	}
+
+	if jvd.NumTests == 0 {
+		if err != nil {
+			return fmt.Sprintf("Failed to parse JUnit test results: %v", err)
+		}
+		return "Found no JUnit tests"
 	}
 
 	junitTemplate, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
