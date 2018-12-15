@@ -587,19 +587,19 @@ func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.Ap
 	fullName := fmt.Sprintf("%s/%s", org, repo)
 
 	// First search for repo config
-	for i := range config.Approve {
-		if !strInSlice(fullName, config.Approve[i].Repos) {
+	for _, c := range config.Approve {
+		if !strInSlice(fullName, c.Repos) {
 			continue
 		}
-		return &config.Approve[i]
+		return &c
 	}
 
 	// If you don't find anything, loop again looking for an org config
-	for i := range config.Approve {
-		if !strInSlice(org, config.Approve[i].Repos) {
+	for _, c := range config.Approve {
+		if !strInSlice(org, c.Repos) {
 			continue
 		}
-		return &config.Approve[i]
+		return &c
 	}
 
 	// Return an empty config, and use plugin defaults
