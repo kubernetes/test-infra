@@ -356,7 +356,7 @@ spec:
   rules:
   - http:
       paths:
-      - path: /*
+      - path: /
         backend:
           serviceName: deck
           servicePort: 80
