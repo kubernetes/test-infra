@@ -585,13 +585,24 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments []*comm
 // optionsForRepo gets the plugins.Approve struct that is applicable to the indicated repo.
 func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.Approve {
 	fullName := fmt.Sprintf("%s/%s", org, repo)
-	for i := range config.Approve {
-		if !strInSlice(org, config.Approve[i].Repos) && !strInSlice(fullName, config.Approve[i].Repos) {
+
+	// First search for repo config
+	for _, c := range config.Approve {
+		if !strInSlice(fullName, c.Repos) {
 			continue
 		}
-		return &config.Approve[i]
+		return &c
 	}
-	// Default to no issue required and no implicit self approval.
+
+	// If you don't find anything, loop again looking for an org config
+	for _, c := range config.Approve {
+		if !strInSlice(org, c.Repos) {
+			continue
+		}
+		return &c
+	}
+
+	// Return an empty config, and use plugin defaults
 	return &plugins.Approve{}
 }
 
