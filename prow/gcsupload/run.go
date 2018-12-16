@@ -69,7 +69,9 @@ func (o Options) assembleTargets(spec *downwardapi.JobSpec, extra map[string]gcs
 	// job we're uploading artifacts for
 	if alias := gcs.AliasForSpec(spec); alias != "" {
 		fullBasePath := "gs://" + path.Join(o.Bucket, jobBasePath)
-		uploadTargets[alias] = gcs.DataUpload(strings.NewReader(fullBasePath))
+		uploadTargets[alias] = gcs.DataUploadWithMetadata(strings.NewReader(fullBasePath), map[string]string{
+			"x-goog-meta-link": fullBasePath,
+		})
 	}
 
 	if latestBuilds := gcs.LatestBuildForSpec(spec, builder); len(latestBuilds) > 0 {
