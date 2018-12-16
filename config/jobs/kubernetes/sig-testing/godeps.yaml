@@ -14,16 +14,20 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        - make
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
         args:
+        - make
         - verify
-        - WHAT="godeps staging-godeps godep-licenses"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         env:
+        # Force checks to run; we don't have remotes so we can't rely on the
+        # bash/git checks to work.
         - name: KUBE_FORCE_VERIFY_CHECKS
           value: "Y"
         - name: KUBE_JUNIT_REPORT_DIR
-          value: "${WORKSPACE}/_artifacts"
+          value: "/workspace/_artifacts"
+        # Space separated list of the checks to run
+        - name: WHAT
+          value: "godeps staging-godeps godep-licenses"

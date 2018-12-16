@@ -2002,16 +2002,17 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
+        - make
         - verify
-        - WHAT="godeps staging-godeps godep-licenses"
         command:
         - runner.sh
-        - make
         env:
         - name: KUBE_FORCE_VERIFY_CHECKS
           value: "Y"
         - name: KUBE_JUNIT_REPORT_DIR
-          value: ${WORKSPACE}/_artifacts
+          value: /workspace/_artifacts
+        - name: WHAT
+          value: godeps staging-godeps godep-licenses
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
         name: main
         resources: {}
