@@ -14,9 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package config
-
-// Implements an agent to read and reload the secrets.
+// Package secret implements an agent to read and reload the secrets.
+package secret
 
 import (
 	"os"
@@ -26,24 +25,24 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// SecretAgent watches a path and automatically loads the secrets stored.
-type SecretAgent struct {
+// Agent watches a path and automatically loads the secrets stored.
+type Agent struct {
 	sync.RWMutex
 	secretsMap map[string][]byte
 }
 
 // Start creates goroutines to monitor the files that contain the secret value.
-func (sa *SecretAgent) Start(paths []string) error {
+func (a *Agent) Start(paths []string) error {
 	secretsMap, err := LoadSecrets(paths)
 	if err != nil {
 		return err
 	}
 
-	sa.secretsMap = secretsMap
+	a.secretsMap = secretsMap
 
 	// Start one goroutine for each file to monitor and update the secret's values.
 	for secretPath := range secretsMap {
-		go sa.reloadSecret(secretPath)
+		go a.reloadSecret(secretPath)
 	}
 
 	return nil
@@ -52,7 +51,7 @@ func (sa *SecretAgent) Start(paths []string) error {
 // reloadSecret will begin polling the secret file at the path. If the first load
 // fails, Start with return the error and abort. Future load failures will log
 // the failure message but continue attempting to load.
-func (sa *SecretAgent) reloadSecret(secretPath string) {
+func (a *Agent) reloadSecret(secretPath string) {
 	var lastModTime time.Time
 	logger := logrus.NewEntry(logrus.StandardLogger())
 
@@ -79,28 +78,28 @@ func (sa *SecretAgent) reloadSecret(secretPath string) {
 			logger.WithField("secret-path: ", secretPath).
 				WithError(err).Error("Error loading secret.")
 		} else {
-			sa.setSecret(secretPath, secretValue)
+			a.setSecret(secretPath, secretValue)
 		}
 	}
 }
 
 // GetSecret returns the value of a secret stored in a map.
-func (sa *SecretAgent) GetSecret(secretPath string) []byte {
-	sa.RLock()
-	defer sa.RUnlock()
-	return sa.secretsMap[secretPath]
+func (a *Agent) GetSecret(secretPath string) []byte {
+	a.RLock()
+	defer a.RUnlock()
+	return a.secretsMap[secretPath]
 }
 
 // setSecret sets a value in a map of secrets.
-func (sa *SecretAgent) setSecret(secretPath string, secretValue []byte) {
-	sa.Lock()
-	defer sa.Unlock()
-	sa.secretsMap[secretPath] = secretValue
+func (a *Agent) setSecret(secretPath string, secretValue []byte) {
+	a.Lock()
+	defer a.Unlock()
+	a.secretsMap[secretPath] = secretValue
 }
 
 // GetTokenGenerator returns a function that gets the value of a given secret.
-func (sa *SecretAgent) GetTokenGenerator(secretPath string) func() []byte {
+func (a *Agent) GetTokenGenerator(secretPath string) func() []byte {
 	return func() []byte {
-		return sa.GetSecret(secretPath)
+		return a.GetSecret(secretPath)
 	}
 }

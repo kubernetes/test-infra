@@ -26,7 +26,7 @@ import (
 	"net/url"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 )
@@ -80,7 +80,7 @@ func main() {
 		log.Fatal("empty --token-path")
 	}
 
-	secretAgent := &config.SecretAgent{}
+	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start([]string{o.tokenPath}); err != nil {
 		log.Fatalf("Error starting secrets agent: %v", err)
 	}

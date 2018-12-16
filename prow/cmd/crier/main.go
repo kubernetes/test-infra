@@ -30,8 +30,8 @@ import (
 	"k8s.io/client-go/util/workqueue"
 
 	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
-
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/crier"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	gerritclient "k8s.io/test-infra/prow/gerrit/client"
@@ -182,7 +182,7 @@ func main() {
 	}
 
 	if o.githubWorkers > 0 {
-		secretAgent := &config.SecretAgent{}
+		secretAgent := &secret.Agent{}
 		if o.github.TokenPath != "" {
 			if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
 				logrus.WithError(err).Fatal("Error starting secrets agent")

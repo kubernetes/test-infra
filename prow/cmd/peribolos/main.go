@@ -23,15 +23,16 @@ import (
 	"os"
 	"strings"
 
-	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/config/org"
-	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/logrusutil"
-
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
+
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/config/org"
+	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/logrusutil"
 )
 
 const (
@@ -124,7 +125,7 @@ func main() {
 	)
 	o := parseOptions()
 
-	secretAgent := &config.SecretAgent{}
+	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}

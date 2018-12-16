@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//prow/client/clientset/versioned:go_default_library",
         "//prow/config:go_default_library",
+        "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/logrusutil:go_default_library",

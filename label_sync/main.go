@@ -36,10 +36,11 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/config"
+	"sigs.k8s.io/yaml"
+
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
-	"sigs.k8s.io/yaml"
 )
 
 const maxConcurrentWorkers = 20
@@ -646,7 +647,7 @@ func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, hosts ...s
 		return nil, errors.New("--token unset")
 	}
 
-	secretAgent := &config.SecretAgent{}
+	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start([]string{tokenPath}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}

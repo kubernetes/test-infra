@@ -25,14 +25,13 @@ import (
 	"testing"
 	"time"
 
-	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/kube"
-
+	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
-	//"k8s.io/apimachinery/pkg/api/equality"
-	//"k8s.io/apimachinery/pkg/util/diff"
-	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
+
+	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
@@ -1749,7 +1748,7 @@ func TestSecretAgentLoading(t *testing.T) {
 
 	tempSecrets := []string{firstTempSecret, secondTempSecret}
 	// Starting the agent and add the two temporary secrets.
-	secretAgent := &SecretAgent{}
+	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start(tempSecrets); err != nil {
 		t.Fatalf("Error starting secrets agent. %v", err)
 	}
