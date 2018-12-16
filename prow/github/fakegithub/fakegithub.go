@@ -197,7 +197,6 @@ func (f *FakeClient) GetRef(owner, repo, ref string) (string, error) {
 
 // DeleteRef returns an error indicating if deletion of the given ref was successful
 func (f *FakeClient) DeleteRef(owner, repo, ref string) error {
-	//f.RefsDeleted = append(f.RefsDeleted, fmt.Sprintf("%s/%s/%s", owner, repo, ref))
 	f.RefsDeleted = append(f.RefsDeleted, struct{ Org, Repo, Ref string }{Org: owner, Repo: repo, Ref: ref})
 	return nil
 }
