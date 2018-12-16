@@ -776,10 +776,12 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
-        description: Issues or PRs related to prow's artifact-uploader component
-        name: area/prow/artifact-uploader
+        description: Issues or PRs related to prow's artifactuploader component
+        name: area/prow/artifactuploader
         target: both
         addedBy: label
+        previously:
+          - name: area/prow/artifact-uploader
       - color: 0052cc
         description: Issues or PRs related to prow's branchprotector component
         name: area/prow/branchprotector

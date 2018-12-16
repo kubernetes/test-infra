@@ -11,7 +11,7 @@ load(
 container_bundle(
     name = "release",
     images = tags(
-        "artifact-uploader",
+        "artifactuploader",
         "branchprotector",
         "build",
         "clonerefs",
@@ -63,13 +63,13 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//prow/apis/prowjobs:all-srcs",
-        "//prow/artifact-uploader:all-srcs",
+        "//prow/artifactuploader:all-srcs",
         "//prow/client/clientset/versioned:all-srcs",
         "//prow/client/informers/externalversions:all-srcs",
         "//prow/client/listers/prowjobs/v1:all-srcs",
         "//prow/clonerefs:all-srcs",
         "//prow/cluster:all-srcs",
-        "//prow/cmd/artifact-uploader:all-srcs",
+        "//prow/cmd/artifactuploader:all-srcs",
         "//prow/cmd/branchprotector:all-srcs",
         "//prow/cmd/build:all-srcs",
         "//prow/cmd/checkconfig:all-srcs",

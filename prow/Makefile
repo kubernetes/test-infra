@@ -170,9 +170,9 @@ initupload-image: bazel-release-push
 gcsupload-image: bazel-release-push
 entrypoint-image: bazel-release-push
 sidecar-image: bazel-release-push
-artifact-uploader-image: bazel-release-push
+artifactuploader-image: bazel-release-push
 
-.PHONY: clonerefs-image initupload-image gcsupload-image entrypoint-image sidecar-image artifact-uploader-image
+.PHONY: clonerefs-image initupload-image gcsupload-image entrypoint-image sidecar-image artifactuploader-image
 
 needs-rebase-image: bazel-release-push
 

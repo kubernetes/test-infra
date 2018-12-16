@@ -4,10 +4,10 @@ load("//prow:def.bzl", "prow_image")
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "k8s.io/test-infra/prow/cmd/artifact-uploader",
+    importpath = "k8s.io/test-infra/prow/cmd/artifactuploader",
     visibility = ["//visibility:private"],
     deps = [
-        "//prow/artifact-uploader:go_default_library",
+        "//prow/artifactuploader:go_default_library",
         "//prow/gcsupload:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/logrusutil:go_default_library",
@@ -26,7 +26,7 @@ prow_image(
 )
 
 go_binary(
-    name = "artifact-uploader",
+    name = "artifactuploader",
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )

@@ -1,4 +1,4 @@
 approvers:
 - stevekuznetsov
 labels:
- - area/prow/artifact-uploader
+ - area/prow/artifactuploader

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package artifact_uploader
+package artifactuploader
 
 import (
 	"bytes"
@@ -50,9 +50,10 @@ type item struct {
 	namespace     string
 	podName       string
 	containerName string
-	prowJobId     string
+	prowJobID     string
 }
 
+// NewController creates a new Controller from the parameters.
 func NewController(client core.CoreV1Interface, prowJobClient *kube.Client, gcsConfig *gcsupload.Options) Controller {
 	queue := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 	optionsModifier := func(options *metav1.ListOptions) {
@@ -73,7 +74,7 @@ func NewController(client core.CoreV1Interface, prowJobClient *kube.Client, gcsC
 					namespace:     newPod.Namespace,
 					podName:       newPod.Name,
 					containerName: container,
-					prowJobId:     newPod.Labels[kube.ProwJobIDLabel],
+					prowJobID:     newPod.Labels[kube.ProwJobIDLabel],
 				})
 			}
 
@@ -110,6 +111,8 @@ func findFinishedContainers(old, new []api.ContainerStatus) []string {
 	return containerNames
 }
 
+// Controller represents the controller responsible for uploading logs and artifacts to GCS of
+// ProwJobs.
 type Controller struct {
 	queue    workqueue.RateLimitingInterface
 	indexer  cache.Indexer
@@ -121,6 +124,8 @@ type Controller struct {
 	gcsConfig *gcsupload.Options
 }
 
+// Run starts the execution of the Controller workers. It also handle crashes and stopping the
+// worker.
 func (c *Controller) Run(numWorkers int, stopCh chan struct{}) {
 	defer runtime.HandleCrash()
 	defer c.queue.ShutDown()
@@ -153,7 +158,7 @@ func (c *Controller) processNextItem() bool {
 
 	workItem := key.(item)
 
-	prowJob, err := c.prowJobClient.GetProwJob(workItem.prowJobId)
+	prowJob, err := c.prowJobClient.GetProwJob(workItem.prowJobID)
 	if err != nil {
 		c.handleErr(err, workItem)
 		return true
@@ -169,7 +174,7 @@ func (c *Controller) processNextItem() bool {
 	// error is checked above
 	log, _ := result.Raw()
 	var target string
-	if workItem.podName == workItem.prowJobId {
+	if workItem.podName == workItem.prowJobID {
 		target = path.Join(ContainerLogDir, fmt.Sprintf("%s.txt", workItem.containerName))
 	} else {
 		target = path.Join(ContainerLogDir, workItem.podName, fmt.Sprintf("%s.txt", workItem.containerName))
