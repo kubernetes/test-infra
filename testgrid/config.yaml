@@ -5633,6 +5633,9 @@ dashboards:
   - name: kubeflow-arena-presubmit
     description: Presubmit tests for kubeflow/arena.
     test_group_name: kubeflow-arena-presubmit
+  - name: kubeflow-pipeline-postsubmit
+    description: Postsubmit tests for kubeflow/pipeline.
+    test_group_name: kubeflow-pipeline-postsubmit
   - name: spark-periodic-default-gke
     description: Periodic builds and testing of Apache Spark on default version of GKE.
     test_group_name: spark-periodic-default-gke
