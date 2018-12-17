@@ -319,6 +319,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - pony
   - shrug
   - sigmention
   - size
@@ -433,6 +434,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - pony
   - shrug
   - size
   - skip
@@ -453,6 +455,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - pony
   - shrug
   - size
   - skip
@@ -476,6 +479,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - pony
   - shrug
   - size
   - skip
@@ -505,6 +509,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - pony
   - shrug
   - size
   - skip
