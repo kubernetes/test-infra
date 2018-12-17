@@ -549,46 +549,12 @@ test_groups:
   days_of_results: 60
   num_columns_recent: 3
   num_failures_to_alert: 1
-- name: ci-kubernetes-e2e-gci-gke-prod
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-prod
-- name: ci-kubernetes-e2e-gci-gke-prod-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-prod-parallel
-- name: ci-kubernetes-e2e-gci-gke-prod-smoke
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-prod-smoke
 - name: ci-kubernetes-e2e-gci-gke-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-reboot
 - name: ci-kubernetes-e2e-gce-ha-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ha-master
 - name: ci-kubernetes-e2e-gci-gke-sig-cli
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-sig-cli
-- name: ci-kubernetes-e2e-gke-staging-default-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-default-parallel
-- name: ci-kubernetes-e2e-gke-staging-default-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-default-serial
-- name: ci-kubernetes-e2e-gke-staging-beta-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-beta-parallel
-- name: ci-kubernetes-e2e-gke-staging-beta-cos-containerd-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-beta-cos-containerd-parallel
-- name: ci-kubernetes-e2e-gke-staging-beta-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-beta-serial
-- name: ci-kubernetes-e2e-gke-staging-beta-cos-containerd-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-beta-cos-containerd-serial
-- name: ci-kubernetes-e2e-gke-staging-stable1-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-stable1-parallel
-- name: ci-kubernetes-e2e-gke-staging-stable1-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-stable1-serial
-- name: ci-kubernetes-e2e-gke-staging-stable2-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-stable2-parallel
-- name: ci-kubernetes-e2e-gke-staging-stable2-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-stable2-serial
-- name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 4 # Runs every 2h. Alert when it's been failing for 8 hours.
-- name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu-v100
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu-v100
-  alert_stale_results_hours: 36
-  num_failures_to_alert: 3 # Runs every 12h. Alert when it's been failing for 36h
 - name: ci-kubernetes-e2e-gci-gke-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-updown
 - name: ci-kubernetes-e2e-gke-gci-ci-master
@@ -3080,23 +3046,6 @@ test_groups:
   num_failures_to_alert: 1
 - name: istio-periodic-e2e-gke-addon
   gcs_prefix: kubernetes-jenkins/logs/istio-periodic-e2e-gke-addon
-# TODO(krzyzacy): don't pin version here, try let the version flow
-- name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-master
-- name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-cluster
-- name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-regional-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-regional-cluster
-- name: ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-master
-- name: ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-cluster
-- name: ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-regional-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-regional-cluster
 - name: pull-kops-e2e-kubernetes-aws
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws
   num_columns_recent: 20
@@ -4520,58 +4469,6 @@ dashboards:
   - name: gke-sd-logging-ubuntu-1.12
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
 
-- name: google-gke-staging
-  dashboard_tab:
-  - name: gke-staging-default-parallel
-    test_group_name: ci-kubernetes-e2e-gke-staging-default-parallel
-  - name: gke-staging-default-serial
-    test_group_name: ci-kubernetes-e2e-gke-staging-default-serial
-  - name: gke-staging-1.13-parallel
-    test_group_name: ci-kubernetes-e2e-gke-staging-beta-parallel
-  - name: gke-staging-1.13-serial
-    test_group_name: ci-kubernetes-e2e-gke-staging-beta-serial
-  - name: gke-staging-1.13-cos-containerd-parallel
-    test_group_name: ci-kubernetes-e2e-gke-staging-beta-cos-containerd-parallel
-  - name: gke-staging-1.13-cos-containerd-serial
-    test_group_name: ci-kubernetes-e2e-gke-staging-beta-cos-containerd-serial
-  - name: gke-staging-1.12-parallel
-    test_group_name: ci-kubernetes-e2e-gke-staging-stable1-parallel
-  - name: gke-staging-1.12-serial
-    test_group_name: ci-kubernetes-e2e-gke-staging-stable1-serial
-  - name: gke-staging-1.11-parallel
-    test_group_name: ci-kubernetes-e2e-gke-staging-stable2-parallel
-  - name: gke-staging-1.11-serial
-    test_group_name: ci-kubernetes-e2e-gke-staging-stable2-serial
-  - name: gke-staging-latest-device-plugin-gpu
-    test_group_name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
-  - name: gke-staging-latest-device-plugin-gpu-v100
-    test_group_name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu-v100
-  - name: gke-staging-1.10-1.11-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-master
-  - name: gke-staging-1.10-1.11-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-cluster
-  - name: gke-staging-1.10-1.11-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-cluster-new
-  - name: gke-staging-1.10-1.11-upgrade-regional-cluster
-    test_group_name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-regional-cluster
-  - name: gke-staging-1.11-1.12-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-master
-  - name: gke-staging-1.11-1.12-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-cluster
-  - name: gke-staging-1.11-1.12-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-cluster-new
-  - name: gke-staging-1.11-1.12-upgrade-regional-cluster
-    test_group_name: ci-kubernetes-e2e-gke-staging-1-11-1-12-upgrade-regional-cluster
-
-- name: google-gke-prod
-  dashboard_tab:
-  - name: gci-gke-prod
-    test_group_name: ci-kubernetes-e2e-gci-gke-prod
-  - name: gci-gke-prod-parallel
-    test_group_name: ci-kubernetes-e2e-gci-gke-prod-parallel
-  - name: gci-gke-prod-smoke
-    test_group_name: ci-kubernetes-e2e-gci-gke-prod-smoke
-
 - name: google-soak
   dashboard_tab:
   - name: gce-gci
@@ -5387,16 +5284,6 @@ dashboards:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
   - name: gke-device-plugin-gpu-p100-1.10
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gke-staging-latest-device-plugin-gpu
-    test_group_name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
-    base_options: exclude-filter-by-regex=^BeforeSuite$
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gke-staging-latest-device-plugin-gpu-v100
-    test_group_name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu-v100
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
@@ -7634,8 +7521,6 @@ dashboard_groups:
   - google-gci
   - google-gce-compute-image-tools
   - google-gke
-  - google-gke-staging
-  - google-gke-prod
   - google-soak
   - google-unit
   - google-gke-stackdriver
