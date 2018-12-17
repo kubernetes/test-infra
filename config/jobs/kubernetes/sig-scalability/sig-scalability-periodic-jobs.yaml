@@ -223,7 +223,16 @@ periodics:
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=masteranddns --gather-metrics-at-teardown=master --vmodule=request=4
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=2000
+      - --test-cmd-args=--provider=gce
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/density/2000_nodes/override.yaml
+      - --test-cmd-name=ClusterLoaderV2
       - --timeout=510m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
