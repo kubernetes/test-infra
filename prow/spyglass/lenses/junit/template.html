@@ -35,7 +35,6 @@
     <thead id="failed-theader" onclick="toggleExpansion('failed-tbody', 'failed-expander')">
     <tr>
       <td class="mdl-data-table__cell--non-numeric expander" style="color: #FF0000;" colspan="3"><h6>{{len .Failed}}/{{.NumTests}} Tests Failed.</h6></td>
-      <td class="mdl-data-table__cell--non-numeric expander"></td>
       <td class="mdl-data-table__cell--non-numeric expander"><i id="failed-expander" class="icon-button material-icons arrow-icon noselect">expand_less</i></td>
     </tr>
     </thead>
@@ -46,7 +45,6 @@
       <td class="mdl-data-table__cell--non-numeric" style="color: #FF0000">{{$test.Junit.Status}}</td>
       <td class="mdl-data-table__cell--non-numeric">{{$test.Junit.Duration}}</td>
       <td class="mdl-data-table__cell--non-numeric">{{$test.Junit.Error.Message}}</td>
-      <td class="mdl-data-table__cell--non-numeric"></td>
     </tr>
     {{end}}
     </tbody>
@@ -55,7 +53,6 @@
     <thead id="passed-theader" onclick="toggleExpansion('passed-tbody', 'passed-expander')">
     <tr>
       <td class="mdl-data-table__cell--non-numeric expander" style="color: #00FF00" colspan="3"><h6>{{len .Passed}}/{{.NumTests}} Tests Passed!</h6></td>
-      <td class="mdl-data-table__cell--non-numeric expander"></td>
       <td class="mdl-data-table__cell--non-numeric expander"><i id="passed-expander" class="icon-button material-icons arrow-icon noselect">expand_more</i></td>
     </tr>
     </thead>
@@ -66,7 +63,6 @@
       <td class="mdl-data-table__cell--non-numeric" style="color: #00FF00">{{.Junit.Status}}</td>
       <td class="mdl-data-table__cell--non-numeric">{{.Junit.Duration}}</td>
       <td class="mdl-data-table__cell--non-numeric"></td>
-      <td class="mdl-data-table__cell--non-numeric"></td>
     </tr>
     {{end}}
     </tbody>
@@ -75,7 +71,6 @@
     <thead id="skipped-theader" onclick="toggleExpansion('skipped-tbody', 'skipped-expander')">
     <tr>
       <td class="mdl-data-table__cell--non-numeric expander" style="color: rgba(255, 224, 0, 1.0);" colspan="3"><h6>{{len .Skipped}}/{{.NumTests}} Tests Skipped.</h6></td>
-      <td class="mdl-data-table__cell--non-numeric expander"></td>
       <td class="mdl-data-table__cell--non-numeric expander"><i id="skipped-expander" class="icon-button material-icons arrow-icon noselect">expand_more</i></td>
     </tr>
     </thead>
@@ -85,7 +80,6 @@
       <td class="mdl-data-table__cell--non-numeric"><a href="{{.Link}}">{{.Junit.Name}}</a></td>
       <td class="mdl-data-table__cell--non-numeric" style="color: rgba(255, 224, 0, 1.0);">{{.Junit.Status}}</td>
       <td class="mdl-data-table__cell--non-numeric">{{.Junit.Duration}}</td>
-      <td class="mdl-data-table__cell--non-numeric"></td>
       <td class="mdl-data-table__cell--non-numeric"></td>
     </tr>
     {{end}}
