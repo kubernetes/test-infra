@@ -2388,6 +2388,8 @@ test_groups:
   num_columns_recent: 30
 - name: kubeflow-arena-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_arena/kubeflow-arena-postsubmit
+- name: kubeflow-pipeline-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_pipeline/kubeflow-pipeline-postsubmit
 - name: tf-minigo-periodic
   gcs_prefix: kubernetes-jenkins/logs/tf-minigo-periodic
 - name: tf-minigo-presubmit
@@ -5577,6 +5579,9 @@ dashboards:
   - name: kubeflow-arena-presubmit
     description: Presubmit tests for kubeflow/arena.
     test_group_name: kubeflow-arena-presubmit
+  - name: kubeflow-pipeline-postsubmit
+    description: Postsubmit tests for kubeflow/pipeline.
+    test_group_name: kubeflow-pipeline-postsubmit
   - name: spark-periodic-default-gke
     description: Periodic builds and testing of Apache Spark on default version of GKE.
     test_group_name: spark-periodic-default-gke
