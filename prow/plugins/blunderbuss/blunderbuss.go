@@ -32,7 +32,7 @@ import (
 )
 
 const (
-	// PluginName is the name for this plugin
+	// PluginName defines this plugin's registered name.
 	PluginName = "blunderbuss"
 )
 

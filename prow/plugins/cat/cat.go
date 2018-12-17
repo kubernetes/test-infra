@@ -126,15 +126,15 @@ func (cr catResult) Format() (string, error) {
 	return fmt.Sprintf("[![cat image](%s)](%s)", img, src), nil
 }
 
-func (r *realClowder) Url(category string, movieCat bool) string {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
-	uri := string(r.url)
+func (c *realClowder) URL(category string, movieCat bool) string {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	uri := string(c.url)
 	if category != "" {
 		uri += "&category=" + url.QueryEscape(category)
 	}
-	if r.key != "" {
-		uri += "&api_key=" + url.QueryEscape(r.key)
+	if c.key != "" {
+		uri += "&api_key=" + url.QueryEscape(c.key)
 	}
 	if movieCat {
 		uri += "&mime_types=gif"
@@ -142,8 +142,8 @@ func (r *realClowder) Url(category string, movieCat bool) string {
 	return uri
 }
 
-func (r *realClowder) readCat(category string, movieCat bool) (string, error) {
-	uri := r.Url(category, movieCat)
+func (c *realClowder) readCat(category string, movieCat bool) (string, error) {
+	uri := c.URL(category, movieCat)
 	resp, err := http.Get(uri)
 	if err != nil {
 		return "", fmt.Errorf("could not read cat from %s: %v", uri, err)

@@ -31,14 +31,13 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/commentpruner"
-	"k8s.io/test-infra/prow/repoowners"
-
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
+	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
 )
 
@@ -58,63 +57,82 @@ var (
 	statusEventHandlers        = map[string]StatusEventHandler{}
 )
 
+// HelpProvider defines the function type that construct a pluginhelp.PluginHelp for enabled
+// plugins. It takes into account the plugins configuration and enabled repositories.
 type HelpProvider func(config *Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error)
 
+// HelpProviders returns the map of registered plugins with their associated HelpProvider.
 func HelpProviders() map[string]HelpProvider {
 	return pluginHelp
 }
 
+// IssueHandler defines the function contract for a github.IssueEvent handler.
 type IssueHandler func(Agent, github.IssueEvent) error
 
+// RegisterIssueHandler registers a plugin's github.IssueEvent handler.
 func RegisterIssueHandler(name string, fn IssueHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	issueHandlers[name] = fn
 }
 
+// IssueCommentHandler defines the function contract for a github.IssueCommentEvent handler.
 type IssueCommentHandler func(Agent, github.IssueCommentEvent) error
 
+// RegisterIssueCommentHandler registers a plugin's github.IssueCommentEvent handler.
 func RegisterIssueCommentHandler(name string, fn IssueCommentHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	issueCommentHandlers[name] = fn
 }
 
+// PullRequestHandler defines the function contract for a github.PullRequestEvent handler.
 type PullRequestHandler func(Agent, github.PullRequestEvent) error
 
+// RegisterPullRequestHandler registers a plugin's github.PullRequestEvent handler.
 func RegisterPullRequestHandler(name string, fn PullRequestHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	pullRequestHandlers[name] = fn
 }
 
+// StatusEventHandler defines the function contract for a github.StatusEvent handler.
 type StatusEventHandler func(Agent, github.StatusEvent) error
 
+// RegisterStatusEventHandler registers a plugin's github.StatusEvent handler.
 func RegisterStatusEventHandler(name string, fn StatusEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	statusEventHandlers[name] = fn
 }
 
+// PushEventHandler defines the function contract for a github.PushEvent handler.
 type PushEventHandler func(Agent, github.PushEvent) error
 
+// RegisterPushEventHandler registers a plugin's github.PushEvent handler.
 func RegisterPushEventHandler(name string, fn PushEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	pushEventHandlers[name] = fn
 }
 
+// ReviewEventHandler defines the function contract for a github.ReviewEvent handler.
 type ReviewEventHandler func(Agent, github.ReviewEvent) error
 
+// RegisterReviewEventHandler registers a plugin's github.ReviewEvent handler.
 func RegisterReviewEventHandler(name string, fn ReviewEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	reviewEventHandlers[name] = fn
 }
 
+// ReviewCommentEventHandler defines the function contract for a github.ReviewCommentEvent handler.
 type ReviewCommentEventHandler func(Agent, github.ReviewCommentEvent) error
 
+// RegisterReviewCommentEventHandler registers a plugin's github.ReviewCommentEvent handler.
 func RegisterReviewCommentEventHandler(name string, fn ReviewCommentEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	reviewCommentEventHandlers[name] = fn
 }
 
+// GenericCommentHandler defines the function contract for a github.GenericCommentEvent handler.
 type GenericCommentHandler func(Agent, github.GenericCommentEvent) error
 
+// RegisterGenericCommentHandler registers a plugin's github.GenericCommentEvent handler.
 func RegisterGenericCommentHandler(name string, fn GenericCommentHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	genericCommentHandlers[name] = fn
@@ -141,6 +159,7 @@ type Agent struct {
 	commentPruner *commentpruner.EventClient
 }
 
+// NewAgent bootstraps a new config.Agent struct from the passed dependencies.
 func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientAgent *ClientAgent, logger *logrus.Entry) Agent {
 	prowConfig := configAgent.Config()
 	pluginConfig := pluginConfigAgent.Config()
@@ -160,6 +179,8 @@ func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientA
 	}
 }
 
+// InitializeCommentPruner attaches a commentpruner.EventClient to the agent to handle
+// pruning comments.
 func (a *Agent) InitializeCommentPruner(org, repo string, pr int) {
 	a.commentPruner = commentpruner.NewEventClient(
 		a.GitHubClient, a.Logger.WithField("client", "commentpruner"),
@@ -167,6 +188,8 @@ func (a *Agent) InitializeCommentPruner(org, repo string, pr int) {
 	)
 }
 
+// CommentPruner will return the commentpruner.EventClient attached to the agent or an error
+// if one is not attached.
 func (a *Agent) CommentPruner() (*commentpruner.EventClient, error) {
 	if a.commentPruner == nil {
 		return nil, errors.New("comment pruner client never initialized")
@@ -174,6 +197,7 @@ func (a *Agent) CommentPruner() (*commentpruner.EventClient, error) {
 	return a.commentPruner, nil
 }
 
+// ClientAgent contains the various clients that are attached to the Agent.
 type ClientAgent struct {
 	GitHubClient *github.Client
 	KubeClient   *kube.Client
@@ -181,13 +205,13 @@ type ClientAgent struct {
 	SlackClient  *slack.Client
 }
 
+// ConfigAgent contains the agent mutex and the Agent configuration.
 type ConfigAgent struct {
 	mut           sync.Mutex
 	configuration *Configuration
 }
 
-// Configuration is the top-level serialization
-// target for plugin Configuration
+// Configuration is the top-level serialization target for plugin Configuration.
 type Configuration struct {
 	// Plugins is a map of repositories (eg "k/k") to lists of
 	// plugin names.
@@ -245,6 +269,7 @@ type ExternalPlugin struct {
 	Events []string `json:"events,omitempty"`
 }
 
+// Blunderbuss defines configuration for the blunderbuss plugin.
 type Blunderbuss struct {
 	// ReviewerCount is the minimum number of reviewers to request
 	// reviews from. Defaults to requesting reviews from 2 reviewers
@@ -292,6 +317,9 @@ type Owners struct {
 	LabelsBlackList []string `json:"labels_blacklist,omitempty"`
 }
 
+// MDYAMLEnabled returns a boolean denoting if the passed repo supports YAML OWNERS config headers
+// at the top of markdown (*.md) files. These function like OWNERS files but only apply to the file
+// itself.
 func (c *Configuration) MDYAMLEnabled(org, repo string) bool {
 	full := fmt.Sprintf("%s/%s", org, repo)
 	for _, elem := range c.Owners.MDYAMLRepos {
@@ -302,6 +330,8 @@ func (c *Configuration) MDYAMLEnabled(org, repo string) bool {
 	return false
 }
 
+// SkipCollaborators returns a boolean denoting if collaborator cross-checks are enabled for
+// the passed repo. If it's true, approve and lgtm plugins rely solely on OWNERS files.
 func (c *Configuration) SkipCollaborators(org, repo string) bool {
 	full := fmt.Sprintf("%s/%s", org, repo)
 	for _, elem := range c.Owners.SkipCollaborators {
@@ -349,30 +379,9 @@ type Size struct {
 	Xxl int `json:"xxl"`
 }
 
-/*
-  Blockade specifies a configuration for a single blockade.blockade. The configuration for the
-  blockade plugin is defined as a list of these structures. Here is an example of a complete
-  yaml config for the blockade plugin that is composed of 2 Blockade structs:
-
-	blockades:
-	- repos:
-	  - kubernetes-incubator
-	  - kubernetes/kubernetes
-	  - kubernetes/test-infra
-	  blockregexps:
-	  - 'docs/.*'
-	  - 'other-docs/.*'
-	  exceptionregexps:
-	  - '.*OWNERS'
-	  explanation: "Files in the 'docs' directory should not be modified except for OWNERS files"
-	- repos:
-	  - kubernetes/test-infra
-	  blockregexps:
-	  - 'mungegithub/.*'
-	  exceptionregexps:
-	  - 'mungegithub/DeprecationWarning.md'
-	  explanation: "Don't work on mungegithub! Work on Prow!"
-*/
+// Blockade specifies a configuration for a single blockade.
+//
+// The configuration for the blockade plugin is defined as a list of these structures.
 type Blockade struct {
 	// Repos are either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
@@ -385,6 +394,9 @@ type Blockade struct {
 	Explanation string `json:"explanation,omitempty"`
 }
 
+// Approve specifies a configuration for a single approve.
+//
+// The configuration for the approve plugin is defined as a list of these structures.
 type Approve struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
@@ -402,6 +414,8 @@ type Approve struct {
 	ReviewActsAsApprove bool `json:"review_acts_as_approve,omitempty"`
 }
 
+// Lgtm specifies a configuration for a single lgtm.
+// The configuration for the lgtm plugin is defined as a list of these structures.
 type Lgtm struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
@@ -419,17 +433,22 @@ type Lgtm struct {
 	StickyLgtmTeam string `json:"trusted_team_for_sticky_lgtm,omitempty"`
 }
 
+// Cat contains the configuration for the cat plugin.
 type Cat struct {
 	// Path to file containing an api key for thecatapi.com
 	KeyPath string `json:"key_path,omitempty"`
 }
 
+// Label contains the configuration for the label plugin.
 type Label struct {
 	// AdditionalLabels is a set of additional labels enabled for use
 	// on top of the existing "kind/*", "priority/*", and "area/*" labels.
 	AdditionalLabels []string `json:"additional_labels"`
 }
 
+// Trigger specifies a configuration for a single trigger.
+//
+// The configuration for the trigger plugin is defined as a list of these structures.
 type Trigger struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
@@ -448,6 +467,7 @@ type Trigger struct {
 	IgnoreOkToTest bool `json:"ignore_ok_to_test,omitempty"`
 }
 
+// Heart contains the configuration for the heart plugin.
 type Heart struct {
 	// Adorees is a list of GitHub logins for members
 	// for whom we will add emojis to comments
@@ -472,12 +492,14 @@ type Milestone struct {
 	MaintainersTeam string `json:"maintainers_team,omitempty"`
 }
 
+// Slack contains the configuration for the slack plugin.
 type Slack struct {
 	MentionChannels []string       `json:"mentionchannels,omitempty"`
 	MergeWarnings   []MergeWarning `json:"mergewarnings,omitempty"`
 }
 
-// ConfigMapSpec contains configuration options for the configMap being updated by the ConfigUpdater plugin
+// ConfigMapSpec contains configuration options for the configMap being updated
+// by the config-updater plugin.
 type ConfigMapSpec struct {
 	// Name of ConfigMap
 	Name string `json:"name"`
@@ -489,6 +511,7 @@ type ConfigMapSpec struct {
 	Namespace string `json:"namespace,omitempty"`
 }
 
+// ConfigUpdater contains the configuration for the config-updater plugin.
 type ConfigUpdater struct {
 	// A map of filename => ConfigMapSpec.
 	// Whenever a commit changes filename, prow will update the corresponding configmap.
@@ -509,9 +532,9 @@ type ConfigUpdater struct {
 	PluginFile string `json:"plugin_file,omitempty"`
 }
 
-// MergeWarning is a config for the slackevents plugin's manual merge warings.
-// If a PR is pushed to any of the repos listed in the config
-// then send messages to the all the slack channels listed if pusher is NOT in the whitelist.
+// MergeWarning is a config for the slackevents plugin's manual merge warnings.
+// If a PR is pushed to any of the repos listed in the config then send messages
+// to the all the slack channels listed if pusher is NOT in the whitelist.
 type MergeWarning struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
@@ -523,7 +546,7 @@ type MergeWarning struct {
 	BranchWhiteList map[string][]string `json:"branch_whitelist,omitempty"`
 }
 
-// Welcome is config for the welcome plugin
+// Welcome is config for the welcome plugin.
 type Welcome struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
@@ -774,6 +797,7 @@ func (pa *ConfigAgent) Load(path string) error {
 	return nil
 }
 
+// Config returns the agent current Configuration.
 func (pa *ConfigAgent) Config() *Configuration {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
@@ -1102,6 +1126,7 @@ func (pa *ConfigAgent) getPlugins(owner, repo string) []string {
 	return plugins
 }
 
+// EventsForPlugin returns the registered events for the passed plugin.
 func EventsForPlugin(name string) []string {
 	var events []string
 	if _, ok := issueHandlers[name]; ok {
@@ -1131,6 +1156,7 @@ func EventsForPlugin(name string) []string {
 	return events
 }
 
+// EnabledReposForPlugin returns the orgs and repos that have enabled the passed plugin.
 func (c *Configuration) EnabledReposForPlugin(plugin string) (orgs, repos []string) {
 	for repo, plugins := range c.Plugins {
 		found := false
@@ -1151,6 +1177,8 @@ func (c *Configuration) EnabledReposForPlugin(plugin string) (orgs, repos []stri
 	return
 }
 
+// EnabledReposForExternalPlugin returns the orgs and repos that have enabled the passed
+// external plugin.
 func (c *Configuration) EnabledReposForExternalPlugin(plugin string) (orgs, repos []string) {
 	for repo, plugins := range c.ExternalPlugins {
 		found := false

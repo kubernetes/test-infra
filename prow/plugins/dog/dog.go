@@ -83,6 +83,7 @@ type dogResult struct {
 	URL string `json:"url"`
 }
 
+// FormatURL will return the GH markdown to show the image for a specific dogURL.
 func FormatURL(dogURL string) (string, error) {
 	if dogURL == "" {
 		return "", errors.New("empty url")

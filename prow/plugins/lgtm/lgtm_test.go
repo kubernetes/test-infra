@@ -42,7 +42,7 @@ func (f *fakeOwnersClient) LoadRepoAliases(org, repo, base string) (repoowners.R
 	return nil, nil
 }
 
-func (f *fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerInterface, error) {
+func (f *fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
 	return &fakeRepoOwners{approvers: f.approvers, reviewers: f.reviewers}, nil
 }
 
@@ -64,7 +64,7 @@ func (fp *fakePruner) PruneComments(shouldPrune func(github.IssueComment) bool) 
 	}
 }
 
-var _ repoowners.RepoOwnerInterface = &fakeRepoOwners{}
+var _ repoowners.RepoOwner = &fakeRepoOwners{}
 
 func (f *fakeRepoOwners) FindApproverOwnersForFile(path string) string  { return "" }
 func (f *fakeRepoOwners) FindReviewersOwnersForFile(path string) string { return "" }
