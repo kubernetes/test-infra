@@ -2583,8 +2583,8 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
-- name: pull-kubernetes-integration-prow
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-integration-prow
+- name: pull-kubernetes-integration-podutil
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-integration-podutil
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
@@ -2593,8 +2593,8 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
-- name: pull-kubernetes-verify-prow
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-verify-prow
+- name: pull-kubernetes-verify-podutil
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-verify-podutil
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
@@ -6734,10 +6734,10 @@ dashboards:
     test_group_name: pull-kubernetes-bazel-test-canary
   - name: bazel-test-integration-canary
     test_group_name: pull-kubernetes-bazel-test-integration-canary
-  - name: pull-kubernetes-verify-prow
-    test_group_name: pull-kubernetes-verify-prow
-  - name: pull-kubernetes-integration-prow
-    test_group_name: pull-kubernetes-integration-prow
+  - name: pull-kubernetes-verify-podutil
+    test_group_name: pull-kubernetes-verify-podutil
+  - name: pull-kubernetes-integration-podutil
+    test_group_name: pull-kubernetes-integration-podutil
   - name: ci-kubernetes-coverage-conformance
     test_group_name: ci-kubernetes-coverage-conformance
     description: build instrumented kubernetes, run conformance tests, generate line coverage using gopherage
