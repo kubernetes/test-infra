@@ -139,6 +139,8 @@ index 1ea52dc..5bd70a9 100644
  }
 `)
 
+var body = "This PR updates the magic number.\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
+
 func TestCherryPickIC(t *testing.T) {
 	lg, c, err := localgit.New()
 	if err != nil {
@@ -169,6 +171,7 @@ func TestCherryPickIC(t *testing.T) {
 			},
 			Merged: true,
 			Title:  "This is a fix for X",
+			Body:   body,
 		},
 		isMember:   true,
 		createdNum: 3,
@@ -199,7 +202,7 @@ func TestCherryPickIC(t *testing.T) {
 	botName := "ci-robot"
 	expectedRepo := "foo/bar"
 	expectedTitle := "[stage] This is a fix for X"
-	expectedBody := "This is an automated cherry-pick of #2\n\n/assign wiseguy"
+	expectedBody := "This is an automated cherry-pick of #2\n\n/assign wiseguy\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
 	expectedBase := "stage"
 	expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, expectedBase)
 	expected := fmt.Sprintf(expectedFmt, expectedRepo, expectedTitle, expectedBody, expectedHead, expectedBase, true)
