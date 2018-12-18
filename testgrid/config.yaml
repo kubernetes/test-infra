@@ -3347,6 +3347,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-ebs-csi-driver-sanity
   num_columns_recent: 30
 
+# OpenShift
+- name: release-openshift-origin-installer-e2e-aws-4.0
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-4.0
+
 #
 # Start dashboards
 #
@@ -7498,6 +7502,14 @@ dashboards:
     description: Runs conformance tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
     test_group_name: ci-cloud-provider-azure-master
 
+# openshift dashboard
+- name: redhat-openshift-release-blocking
+  dashboard_tab:
+  - name: redhat-release-openshift-origin-installer-e2e-aws-4.0
+    description: Runs Kubernetes e2e tests against an OpenShift 4.0 cluster.
+    test_group_name: release-openshift-origin-installer-e2e-aws-4.0
+    base_options: width=10
+
 #
 # Start dashboard groups
 #
@@ -7684,3 +7696,7 @@ dashboard_groups:
 - name: sig-azure
   dashboard_names:
   - sig-azure-master
+
+- name: redhat
+  dashboard_names:
+  - redhat-openshift-release-blocking
