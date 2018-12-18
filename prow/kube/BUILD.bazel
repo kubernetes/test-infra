@@ -20,6 +20,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "client.go",
+        "cluster.go",
         "metrics.go",
         "prowjob.go",
         "types.go",
@@ -27,11 +28,16 @@ go_library(
     importpath = "k8s.io/test-infra/prow/kube",
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/client/clientset/versioned:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/client-go/kubernetes:go_default_library",
+        "//vendor/k8s.io/client-go/plugin/pkg/client/auth:go_default_library",
+        "//vendor/k8s.io/client-go/rest:go_default_library",
+        "//vendor/k8s.io/client-go/tools/clientcmd:go_default_library",
         "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
