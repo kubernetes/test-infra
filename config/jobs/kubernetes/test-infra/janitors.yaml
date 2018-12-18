@@ -1,19 +1,14 @@
 periodics:
 - interval: 1h
   name: maintenance-ci-aws-janitor
+  decorate: true
   labels:
     preset-service-account: "true"
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=60
-      - --service-account=/etc/service-account/service-account.json
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=execute
-      - --
+    - command:
       - /aws-janitor
-      - --
+      args:
       - --ttl=2h30m
       - --path=s3://k8s-kops-prow/objs.json
       env:
@@ -61,15 +56,12 @@ periodics:
   name: maintenance-pull-janitor
   labels:
     preset-service-account: "true"
+  decorate: true
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=30
-      - --service-account=/etc/service-account/service-account.json
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=kubernetes_janitor
-      - --
+    - command:
+      - ./workspace/scenarios/kubernetes_janitor.py
+      args:
       - --mode=pr
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-experimental
@@ -82,15 +74,12 @@ periodics:
   name: maintenance-pull-scale-janitor
   labels:
     preset-service-account: "true"
+  decorate: true
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=60
-      - --service-account=/etc/service-account/service-account.json
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=kubernetes_janitor
-      - --
+    - command:
+      - ./workspace/scenarios/kubernetes_janitor.py
+      args:
       - --mode=scale
       - --ratelimit=5
       env:
