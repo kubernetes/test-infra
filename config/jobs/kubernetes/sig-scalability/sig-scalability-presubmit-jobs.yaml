@@ -37,7 +37,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         resources:
           requests:
             memory: "6Gi"
@@ -79,7 +79,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         resources:
           requests:
             memory: "6Gi"
@@ -120,7 +120,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         resources:
           requests:
             memory: "6Gi"
@@ -142,7 +142,7 @@ presubmits:
       preset-e2e-kubemark-gce-big: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -195,7 +195,7 @@ presubmits:
       preset-e2e-kubemark-gce-big: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-1.13
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.13
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -248,7 +248,7 @@ presubmits:
       preset-e2e-kubemark-gce-big: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -300,7 +300,7 @@ presubmits:
       preset-e2e-kubemark-gce-scale: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181205-915278e90-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
