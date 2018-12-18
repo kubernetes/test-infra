@@ -2054,27 +2054,22 @@ presubmits:
   - agent: kubernetes
     always_run: false
     cluster: security
-    context: pull-security-kubernetes-integration-prow
+    context: pull-security-kubernetes-integration-podutil
+    decorate: true
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    name: pull-security-kubernetes-integration-prow
-    rerun_command: /test pull-security-kubernetes-integration-prow
+    name: pull-security-kubernetes-integration-podutil
+    path_alias: k8s.io/kubernetes
+    rerun_command: /test pull-security-kubernetes-integration-podutil
     spec:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=60
-        - --scenario=kubernetes_verify
-        - --
-        - --branch=${PULL_BASE_REF}
-        - --prow
-        image: gcr.io/k8s-testimages/bootstrap:latest
-        imagePullPolicy: Always
+        - ./hack/jenkins/test-dockerized.sh
+        command:
+        - runner.sh
+        image: gcr.io/k8s-testimages/kubekins-test:1.13-v20181105-ceed87206
         name: ""
         resources:
           requests:
@@ -2089,7 +2084,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-integration-prow,?($|\s.*)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-integration-podutil,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
@@ -2495,28 +2490,22 @@ presubmits:
   - agent: kubernetes
     always_run: false
     cluster: security
-    context: pull-security-kubernetes-verify-prow
+    context: pull-security-kubernetes-verify-podutil
+    decorate: true
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    name: pull-security-kubernetes-verify-prow
-    rerun_command: /test pull-security-kubernetes-verify-prow
+    name: pull-security-kubernetes-verify-podutil
+    path_alias: k8s.io/kubernetes
+    rerun_command: /test pull-security-kubernetes-verify-podutil
     spec:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --scenario=kubernetes_verify
-        - --
-        - --branch=${PULL_BASE_REF}
-        - --prow
-        - --script=./hack/jenkins/verify-dockerized.sh
-        image: gcr.io/k8s-testimages/bootstrap:latest
-        imagePullPolicy: Always
+        - ./hack/jenkins/verify-dockerized.sh
+        command:
+        - runner.sh
+        image: gcr.io/k8s-testimages/kubekins-test:1.13-v20181105-ceed87206
         name: ""
         resources:
           requests:
@@ -2531,4 +2520,4 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-verify-prow,?($|\s.*)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-verify-podutil,?($|\s.*)

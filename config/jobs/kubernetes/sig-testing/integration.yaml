@@ -24,25 +24,32 @@ presubmits:
         resources:
           requests:
             cpu: 4
-  - name: pull-kubernetes-integration-prow
+
+  # TODO(krzyzacy): add branches once this works
+  # TODO(krzyzacy): Consider combine kubekins-e2e and kubekins-test
+  - name: pull-kubernetes-integration-podutil
     always_run: false
+    decorate: true
+    branch:
+    - master
+    path_alias: k8s.io/kubernetes
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:latest
-        imagePullPolicy: Always
+      - image: gcr.io/k8s-testimages/kubekins-test:1.13-v20181105-ceed87206
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=60"
-        - --scenario=kubernetes_verify
-        - --
-        - "--branch=${PULL_BASE_REF}"
-        - --prow
+        - ./hack/jenkins/test-dockerized.sh
+        envs:
+        - name: KUBE_FORCE_VERIFY_CHECKS
+          value: "n"
+        - name: KUBE_VERIFY_GIT_BRANCH
+          value: master
+        - name: REPO_DIR
+          value: /workspace/k8s.io/kubernetes
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
