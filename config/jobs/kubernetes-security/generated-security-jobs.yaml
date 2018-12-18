@@ -2069,7 +2069,7 @@ presubmits:
         - ./hack/jenkins/test-dockerized.sh
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-test:1.13-v20181105-ceed87206
+        image: gcr.io/k8s-testimages/kubekins-test:1.13-v20181218-db74ab3f4
         name: ""
         resources:
           requests:
@@ -2505,7 +2505,7 @@ presubmits:
         - ./hack/jenkins/verify-dockerized.sh
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-test:1.13-v20181105-ceed87206
+        image: gcr.io/k8s-testimages/kubekins-test:1.13-v20181218-db74ab3f4
         name: ""
         resources:
           requests:
