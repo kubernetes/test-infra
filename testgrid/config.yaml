@@ -2144,6 +2144,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-manifest-lists
 
 # EKS e2e results
+- name: pull-kubernetes-e2e-aws-eks-1-11-prod-conformance
+  gcs_prefix: kubernetes-jenkins/logs/pull-kubernetes-e2e-aws-eks-1-11-prod-conformance
 - name: ci-kubernetes-e2e-1-11-aws-eks-1-11-prod
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-1-11-aws-eks-1-11-prod
 - name: ci-kubernetes-e2e-1-11-aws-eks-1-11-prod-conformance
@@ -5692,6 +5694,11 @@ dashboards:
     test_group_name: pull-aws-ebs-csi-driver-sanity
     description: aws ebs csi driver sanity test
 
+- name: sig-aws-eks-presubmits
+  dashboard_tab:
+  - name: k8s-eks-1-11-prod-conformance
+    test_group_name: pull-kubernetes-e2e-aws-eks-1-11-prod-conformance
+    description: Kubernetes e2e tests with EKS prod build, Conformance tests
 - name: sig-aws-eks-ci-kubernetes-e2e-1-11
   dashboard_tab:
   - name: ci-kubernetes-e2e-1-11-aws-eks-1-11-prod

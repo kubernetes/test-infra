@@ -1,0 +1,33 @@
+presubmits:
+  # Run Kubernetes e2e tests with EKS prod build
+  # run conformance tests
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-aws-eks-1-11-prod-conformance
+    # run tests from master branch (for now)
+    branches:
+    - master
+    # NON-BLOCKING; only triggered manually, use this for debug test script
+    always_run: false
+    skip_report: true
+    labels:
+      preset-service-account: "true"
+      preset-kubernetes-e2e-aws-eks-common: "true"
+      preset-kubernetes-e2e-aws-eks-1-11: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+        args:
+          - --timeout=200
+          - --bare
+          - --scenario=kubernetes_e2e
+          - --
+          - --check-version-skew=false
+          - --deployment=eks
+          - --provider=eks
+          - --gce-ssh=
+          - --extract=local
+          - --ginkgo-parallel=30
+          - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+          - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-aws-eks-1-11-prod-conformance
+          - --timeout=180m
