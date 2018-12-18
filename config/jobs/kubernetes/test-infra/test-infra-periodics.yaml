@@ -1,4 +1,15 @@
 periodics:
+- name: ci-test-infra-build-smoke
+  interval: 2h
+  agent: knative-build
+  build_spec:
+    steps:
+    - name: first
+      image: busybox
+      args: ["echo", "hello"]
+    - name: second
+      image: busybox
+      args: ["echo", "world"]
 - name: ci-test-infra-bazel
   interval: 1h
   labels:

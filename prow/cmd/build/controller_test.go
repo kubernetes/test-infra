@@ -58,17 +58,36 @@ func (r *fakeReconciler) now() metav1.Time {
 	return r.nows
 }
 
-func (r *fakeReconciler) getProwJob(namespace, name string) (*prowjobv1.ProwJob, error) {
-	if namespace == errorGetProwJob {
-		return nil, errors.New("injected create build error")
+const fakePJCtx = "prow-context"
+const fakePJNS = "prow-job"
+
+func (r *fakeReconciler) getProwJob(name string) (*prowjobv1.ProwJob, error) {
+	if name == errorGetProwJob {
+		return nil, errors.New("injected get prowjob error")
 	}
-	k := key("", namespace, name)
+	k := key(fakePJCtx, fakePJNS, name)
 	pj, present := r.jobs[k]
 	if !present {
 		return nil, apierrors.NewNotFound(prowjobv1.Resource("ProwJob"), name)
 	}
 	return &pj, nil
 }
+
+func (r *fakeReconciler) updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
+	if pj.Name == errorUpdateProwJob {
+		return nil, errors.New("injected update prowjob error")
+	}
+	if pj == nil {
+		return nil, errors.New("nil prowjob")
+	}
+	k := key(fakePJCtx, fakePJNS, pj.Name)
+	if _, present := r.jobs[k]; !present {
+		return nil, apierrors.NewNotFound(prowjobv1.Resource("ProwJob"), pj.Name)
+	}
+	r.jobs[k] = *pj
+	return pj, nil
+}
+
 func (r *fakeReconciler) getBuild(context, namespace, name string) (*buildv1alpha1.Build, error) {
 	if namespace == errorGetBuild {
 		return nil, errors.New("injected create build error")
@@ -105,21 +124,6 @@ func (r *fakeReconciler) createBuild(context, namespace string, b *buildv1alpha1
 	}
 	r.builds[k] = *b
 	return b, nil
-}
-
-func (r *fakeReconciler) updateProwJob(namespace string, pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
-	if pj == nil {
-		return nil, errors.New("nil prowjob")
-	}
-	if namespace == errorUpdateProwJob {
-		return nil, errors.New("injected update prowjob error")
-	}
-	k := key("", namespace, pj.Name)
-	if _, present := r.jobs[k]; !present {
-		return nil, apierrors.NewNotFound(prowjobv1.Resource("ProwJob"), pj.Name)
-	}
-	r.jobs[k] = *pj
-	return pj, nil
 }
 
 func (r *fakeReconciler) buildID(pj prowjobv1.ProwJob) (string, error) {
@@ -587,8 +591,15 @@ func TestReconcile(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			const name = "the-object-name"
-			k := key(tc.context, tc.namespace, name)
+			name := "the-object-name"
+			// prowjobs all live in the same ns, so use name for injecting errors
+			if tc.namespace == errorGetProwJob {
+				name = errorGetProwJob
+			} else if tc.namespace == errorUpdateProwJob {
+				name = errorUpdateProwJob
+			}
+			bk := key(tc.context, tc.namespace, name)
+			jk := key(fakePJCtx, fakePJNS, name)
 			r := &fakeReconciler{
 				jobs:   map[string]prowjobv1.ProwJob{},
 				builds: map[string]buildv1alpha1.Build{},
@@ -597,21 +608,21 @@ func TestReconcile(t *testing.T) {
 			if j := tc.observedJob; j != nil {
 				j.Name = name
 				j.Spec.Type = prowjobv1.PeriodicJob
-				r.jobs[k] = *j
+				r.jobs[jk] = *j
 			}
 			if b := tc.observedBuild; b != nil {
 				b.Name = name
-				r.builds[k] = *b
+				r.builds[bk] = *b
 			}
 			expectedJobs := map[string]prowjobv1.ProwJob{}
 			if j := tc.expectedJob; j != nil {
-				expectedJobs[k] = j(r.jobs[k], r.builds[k])
+				expectedJobs[jk] = j(r.jobs[jk], r.builds[bk])
 			}
 			expectedBuilds := map[string]buildv1alpha1.Build{}
 			if b := tc.expectedBuild; b != nil {
-				expectedBuilds[k] = b(r.jobs[k], r.builds[k])
+				expectedBuilds[bk] = b(r.jobs[jk], r.builds[bk])
 			}
-			err := reconcile(r, k)
+			err := reconcile(r, bk)
 			switch {
 			case err != nil:
 				if !tc.err {
