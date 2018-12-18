@@ -19,16 +19,19 @@ package main
 import (
 	"crypto/rand"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"net/url"
 	"os"
 	"os/exec"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 
 	"github.com/sirupsen/logrus"
@@ -96,44 +99,48 @@ func projects(max int) ([]string, error) {
 }
 
 // selectProject returns the user-selected project, defaulting to the current gcloud one.
-func selectProject() (string, error) {
+func selectProject(choice string) (string, error) {
+	fmt.Print("Getting active GCP account...")
 	who, err := currentAccount()
 	if err != nil {
 		logrus.Warn("Run gcloud auth login to initialize gcloud")
 		return "", err
 	}
+	fmt.Println(who)
 
-	fmt.Printf("Projects available to %s:", who)
-	fmt.Println()
-	const max = 20
-	projs, err := projects(max)
-	for _, proj := range projs {
-		fmt.Println("  *", proj)
-	}
-	if err != nil {
-		return "", fmt.Errorf("list projects: %v", err)
-	}
-	if len(projs) == 0 {
-		fmt.Println("Create a project at https://console.cloud.google.com/")
-		return "", errors.New("no projects")
-	}
-	if len(projs) == max {
-		fmt.Println("  ... Wow, that is a lot of projects!")
-		fmt.Println("Type the name of any project, including ones not in this truncated list")
-	}
+	var projs []string
 
-	def, err := currentProject()
-	if err != nil {
-		return "", fmt.Errorf("get current project: %v", err)
-	}
-
-	fmt.Printf("Select project [%s]: ", def)
-	var choice string
-	fmt.Scanln(&choice)
-
-	// use default project
 	if choice == "" {
-		return def, nil
+		fmt.Printf("Projects available to %s:", who)
+		fmt.Println()
+		const max = 20
+		projs, err = projects(max)
+		for _, proj := range projs {
+			fmt.Println("  *", proj)
+		}
+		if err != nil {
+			return "", fmt.Errorf("list projects: %v", err)
+		}
+		if len(projs) == 0 {
+			fmt.Println("Create a project at https://console.cloud.google.com/")
+			return "", errors.New("no projects")
+		}
+		if len(projs) == max {
+			fmt.Println("  ... Wow, that is a lot of projects!")
+			fmt.Println("Type the name of any project, including ones not in this truncated list")
+		}
+
+		def, err := currentProject()
+		if err != nil {
+			return "", fmt.Errorf("get current project: %v", err)
+		}
+		fmt.Printf("Select project [%s]: ", def)
+		fmt.Scanln(&choice)
+
+		// use default project
+		if choice == "" {
+			return def, nil
+		}
 	}
 
 	// is this a project from the list?
@@ -142,6 +149,9 @@ func selectProject() (string, error) {
 			return choice, nil
 		}
 	}
+
+	fmt.Printf("Ensuring %s has access to %s...", who, choice)
+	fmt.Println()
 
 	// no, make sure user has access to it
 	if err = exec.Command("gcloud", "projects", "describe", choice).Run(); err != nil {
@@ -170,9 +180,12 @@ func currentClusters(proj string) (map[string]cluster, error) {
 	}
 	options := map[string]cluster{}
 	for _, line := range strings.Split(clusters, "\n") {
+		if len(line) == 0 {
+			continue
+		}
 		parts := strings.Split(line, "\t")
 		if len(parts) != 2 {
-			return nil, fmt.Errorf("bad line: %s", line)
+			return nil, fmt.Errorf("bad line: %q", line)
 		}
 		c := cluster{name: parts[0], zone: parts[1], project: proj}
 		options[c.name] = c
@@ -181,13 +194,14 @@ func currentClusters(proj string) (map[string]cluster, error) {
 }
 
 // createCluster causes gcloud to create a cluster in project, returning the context name
-func createCluster(proj string) (*cluster, error) {
+func createCluster(proj, choice string) (*cluster, error) {
 	const def = "prow"
-	fmt.Printf("Cluster name [%s]: ", def)
-	var choice string
-	fmt.Scanln(&choice)
 	if choice == "" {
-		choice = def
+		fmt.Printf("Cluster name [%s]: ", def)
+		fmt.Scanln(&choice)
+		if choice == "" {
+			choice = def
+		}
 	}
 
 	cmd := exec.Command("gcloud", "container", "clusters", "create", choice)
@@ -211,12 +225,13 @@ func createCluster(proj string) (*cluster, error) {
 }
 
 // createContext has the user create a context.
-func createContext() (string, error) {
-	proj, err := selectProject()
+func createContext(co contextOptions) (string, error) {
+	proj, err := selectProject(co.project)
 	if err != nil {
 		logrus.Info("Run gcloud auth login to initialize gcloud")
 		return "", fmt.Errorf("get current project: %v", err)
 	}
+
 	fmt.Printf("Existing GKE clusters in %s:", proj)
 	fmt.Println()
 	clusters, err := currentClusters(proj)
@@ -226,12 +241,28 @@ func createContext() (string, error) {
 	for name := range clusters {
 		fmt.Println("  *", name)
 	}
-
-	fmt.Print("Get credentials for existing cluster or create [new]: ")
+	if len(clusters) == 0 {
+		fmt.Println("  No clusters")
+	}
 	var choice string
-	fmt.Scanln(&choice)
+	create := co.create
+	reuse := co.reuse
+	switch {
+	case create != "" && reuse != "":
+		return "", errors.New("Cannot use both --create and --reuse")
+	case create != "":
+		fmt.Println("Creating new " + create + " cluster...")
+		choice = "new"
+	case reuse != "":
+		fmt.Println("Reusing existing " + reuse + " cluster...")
+		choice = reuse
+	default:
+		fmt.Print("Get credentials for existing cluster or [create new]: ")
+		fmt.Scanln(&choice)
+	}
+
 	if choice == "" || choice == "new" {
-		cluster, err := createCluster(proj)
+		cluster, err := createCluster(proj, create)
 		if err != nil {
 			return "", fmt.Errorf("create cluster in %s: %v", proj, err)
 		}
@@ -270,32 +301,45 @@ func contextConfig() (clientcmd.ClientConfigLoader, *clientcmdapi.Config, error)
 
 // selectContext allows the user to choose a context
 // This may involve creating a cluster
-func selectContext(cfg *clientcmdapi.Config) (string, error) {
+func selectContext(co contextOptions) (string, error) {
+	fmt.Println("Existing kubernetes contexts:")
+	// get cluster context
+	_, cfg, err := contextConfig()
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to load ~/.kube/config from any obvious location")
+	}
 	// list contexts and ask to user to choose a context
 	options := map[int]string{}
-	idx := 0
-	var def string
 
-	fmt.Println("Existing kubectl contexts:")
+	var ctxs []string
 	for ctx := range cfg.Contexts {
-		if def == "" || ctx == cfg.CurrentContext {
-			def = ctx
-		}
+		ctxs = append(ctxs, ctx)
+	}
+	sort.Strings(ctxs)
+	for idx, ctx := range ctxs {
 		options[idx] = ctx
-		fmt.Printf("  %d: %s", idx, ctx)
+		if ctx == cfg.CurrentContext {
+			fmt.Printf("* %d: %s (current)", idx, ctx)
+		} else {
+			fmt.Printf("  %d: %s", idx, ctx)
+		}
 		fmt.Println()
-		idx++
 	}
 	fmt.Println()
-	fmt.Printf("Choose (or create) context [%s]: ", def)
-	var choice string
-	fmt.Scanln(&choice)
-	if choice == "" {
-		choice = def
+	choice := co.context
+	switch {
+	case choice != "":
+		fmt.Println("Reuse " + choice + " context...")
+	case co.create != "" || co.reuse != "":
+		choice = "create"
+		fmt.Println("Create new context...")
+	default:
+		fmt.Print("Choose context or [create new]: ")
+		fmt.Scanln(&choice)
 	}
 
-	if choice == "create" {
-		ctx, err := createContext()
+	if choice == "create" || choice == "" || choice == "create new" || choice == "new" {
+		ctx, err := createContext(co)
 		if err != nil {
 			return "", fmt.Errorf("create context: %v", err)
 		}
@@ -306,8 +350,8 @@ func selectContext(cfg *clientcmdapi.Config) (string, error) {
 		return choice, nil
 	}
 
-	var err error
-	if idx, err = strconv.Atoi(choice); err != nil {
+	idx, err := strconv.Atoi(choice)
+	if err != nil {
 		return "", fmt.Errorf("invalid context: %q", choice)
 	}
 
@@ -354,7 +398,6 @@ func apply(ctx string, in io.Reader) error {
 }
 
 func applyRoleBinding(context string) error {
-	fmt.Println("Applying role binding...")
 	who, err := currentAccount()
 	if err != nil {
 		return fmt.Errorf("current account: %v", err)
@@ -362,11 +405,40 @@ func applyRoleBinding(context string) error {
 	return applyCreate(context, "clusterrolebinding", "prow-admin", "--clusterrole=cluster-admin", "--user="+who)
 }
 
-func githubToken() (string, error) {
-	fmt.Print("Input /path/to/github/token: ")
-	var path string
-	fmt.Scanln(&path)
-	path = os.ExpandEnv(path)
+type options struct {
+	githubTokenPath string
+	starter         string
+	repos           flagutil.Strings
+	contextOptions
+	confirm bool
+}
+
+type contextOptions struct {
+	context string
+	create  string
+	reuse   string
+	project string
+}
+
+func addFlags(fs *flag.FlagSet) *options {
+	var o options
+	fs.StringVar(&o.githubTokenPath, "github-token-path", "", "Path to github token")
+	fs.StringVar(&o.starter, "starter", "", "Apply starter.yaml from the following path or URL (use upstream for latest)")
+	fs.Var(&o.repos, "repo", "Send prow webhooks for these orgs or org/repos (repeat as necessary)")
+	fs.StringVar(&o.context, "context", "", "Choose kubeconfig context to use")
+	fs.StringVar(&o.create, "create", "", "name of cluster to create in --project")
+	fs.StringVar(&o.reuse, "reuse", "", "Reuse existing cluster in --project")
+	fs.StringVar(&o.project, "project", "", "GCP project to get/create cluster")
+	fs.BoolVar(&o.confirm, "confirm", false, "Overwrite existing prow deployments without asking if set")
+	return &o
+}
+
+func githubToken(choice string) (string, error) {
+	if choice == "" {
+		fmt.Print("Input /path/to/github/token to upload into cluster: ")
+		fmt.Scanln(&choice)
+	}
+	path := os.ExpandEnv(choice)
 	if _, err := os.Stat(path); err != nil {
 		return "", fmt.Errorf("open %s: %v", path, err)
 	}
@@ -390,13 +462,31 @@ func applySecret(ctx, name, key, path string) error {
 	return applyCreate(ctx, "secret", "generic", name, "--from-file="+key+"="+path)
 }
 
-func applyStarter(ctx string) error {
-	fmt.Print("Apply starter.yaml from [github]: ")
-	var choice string
-	fmt.Scanln(&choice)
-	if choice == "" || choice == "github" {
+func applyStarter(kc *kubernetes.Clientset, ns, choice, ctx string, overwrite bool) error {
+	if choice == "" {
+		fmt.Print("Apply starter.yaml from [github upstream]: ")
+		fmt.Scanln(&choice)
+	}
+	if choice == "" || choice == "github" || choice == "upstream" || choice == "github upstream" {
 		choice = "https://raw.githubusercontent.com/kubernetes/test-infra/master/prow/cluster/starter.yaml"
 		fmt.Println("Loading from", choice)
+	}
+	_, err := kc.AppsV1().Deployments(ns).Get("plank", metav1.GetOptions{})
+	switch {
+	case err != nil && apierrors.IsNotFound(err):
+		// Great, new clean namespace to deploy!
+	case err != nil: // unexpected error
+		return fmt.Errorf("get plank: %v", err)
+	case !overwrite: // already a plank, confirm overwrite
+		fmt.Printf("Prow is already deployed to %s in %s, overwrite? [no]: ", ns, ctx)
+		var choice string
+		fmt.Scanln(&choice)
+		switch choice {
+		case "y", "Y", "yes":
+			// carry on, then
+		default:
+			return errors.New("prow already deployed")
+		}
 	}
 	apply := exec.Command("kubectl", "--context="+ctx, "apply", "-f", choice)
 	apply.Stderr = os.Stderr
@@ -413,7 +503,7 @@ func clientConfig(context string) (*rest.Config, error) {
 	return clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, loader).ClientConfig()
 }
 
-func ingress(kc *kubernetes.Clientset, ns string) (url.URL, error) {
+func ingress(kc *kubernetes.Clientset, ns, service string) (url.URL, error) {
 	for {
 		ings, err := kc.Extensions().Ingresses(ns).List(metav1.ListOptions{})
 		if err != nil {
@@ -432,7 +522,7 @@ func ingress(kc *kubernetes.Clientset, ns string) (url.URL, error) {
 					continue
 				}
 				for _, p := range h.Paths {
-					if p.Backend.ServiceName != "hook" {
+					if p.Backend.ServiceName != service {
 						continue
 					}
 					maybe.Scheme = "http"
@@ -560,16 +650,25 @@ func ensureHmac(kc *kubernetes.Clientset, ns string) (string, error) {
 	return hmac, nil
 }
 
-func enableHooks(client *github.Client, loc url.URL, secret string) ([]string, error) {
+func enableHooks(client *github.Client, loc url.URL, secret string, repos ...string) ([]string, error) {
 	var enabled []string
 	locStr := loc.String()
+	hasFlagValues := len(repos) > 0
 	for {
-		if len(enabled) > 0 {
-			fmt.Println("Enabled so far:", strings.Join(enabled, ", "))
-		}
-		fmt.Print("Enable which org or org/repo [quit]: ")
 		var choice string
-		fmt.Scanln(&choice)
+		switch {
+		case !hasFlagValues:
+			if len(enabled) > 0 {
+				fmt.Println("Enabled so far:", strings.Join(enabled, ", "))
+			}
+			fmt.Print("Enable which org or org/repo [quit]: ")
+			fmt.Scanln(&choice)
+		case len(repos) > 0:
+			choice = repos[0]
+			repos = repos[1:]
+		default:
+			choice = ""
+		}
 		if choice == "" || choice == "quit" {
 			return enabled, nil
 		}
@@ -648,29 +747,12 @@ func ensureConfigMap(kc *kubernetes.Clientset, ns, name, key string) error {
 }
 
 func main() {
-	fmt.Println("Checking github credentials...")
-	// create github client
-	token, err := githubToken()
-	if err != nil {
-		logrus.WithError(err).Fatal("Failed to get github token")
-	}
-	client, err := githubClient(token, false)
-	if err != nil {
-		logrus.WithError(err).Fatal("Failed to create github client")
-	}
-	who, err := client.BotName()
-	if err != nil {
-		logrus.WithError(err).Fatal("Cannot access github account name")
-	}
-	fmt.Println("Prow will act as", who, "on github")
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	skipGithub := fs.Bool("skip-github", false, "Do not add github webhooks if set")
+	opt := addFlags(fs)
+	fs.Parse(os.Args[1:])
 
-	fmt.Println("Getting cluster context...")
-	// get cluster context
-	_, cfg, err := contextConfig()
-	if err != nil {
-		logrus.WithError(err).Fatal("Failed to load ~/.kube/config from any obvious location")
-	}
-	ctx, err := selectContext(cfg)
+	ctx, err := selectContext(opt.contextOptions)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to select context")
 	}
@@ -690,19 +772,7 @@ func main() {
 		logrus.WithError(err).Fatalf("Failed to apply cluster role binding to %s", ctx)
 	}
 
-	// create github secrets
-	fmt.Println("Applying token into oauth-token secret...")
-	if err := applySecret(ctx, "oauth-token", "oauth", token); err != nil {
-		logrus.WithError(err).Fatal("Could not apply github oauth token secret")
-	}
-
 	const ns = "default"
-	fmt.Println("Ensuring hmac secret exists at hmac-token...")
-	hmac, err := ensureHmac(kc, ns)
-	if err != nil {
-		logrus.WithError(err).Fatal("Failed to ensure hmac-token exists")
-	}
-
 	// configure plugins.yaml and config.yaml
 	// TODO(fejta): throw up an editor
 	if err = ensureConfigMap(kc, ns, "config", "config.yaml"); err != nil {
@@ -713,23 +783,59 @@ func main() {
 	}
 
 	fmt.Println("Deploying prow...")
-	if err := applyStarter(ctx); err != nil {
+	if err := applyStarter(kc, ns, opt.starter, ctx, opt.confirm); err != nil {
 		logrus.WithError(err).Fatal("Could not deploy prow")
 	}
 
-	fmt.Println("Looking for prow's hook ingress URL...")
-	url, err := ingress(kc, ns)
-	if err != nil {
-		logrus.WithError(err).Fatal("Could not determine webhook ingress URL")
+	if !*skipGithub {
+		fmt.Println("Checking github credentials...")
+		// create github client
+		token, err := githubToken(opt.githubTokenPath)
+		if err != nil {
+			logrus.WithError(err).Fatal("Failed to get github token")
+		}
+		client, err := githubClient(token, false)
+		if err != nil {
+			logrus.WithError(err).Fatal("Failed to create github client")
+		}
+		who, err := client.BotName()
+		if err != nil {
+			logrus.WithError(err).Fatal("Cannot access github account name")
+		}
+		fmt.Println("Prow will act as", who, "on github")
+
+		// create github secrets
+		fmt.Print("Applying github token into oauth-token secret...")
+		if err := applySecret(ctx, "oauth-token", "oauth", token); err != nil {
+			logrus.WithError(err).Fatal("Could not apply github oauth token secret")
+		}
+
+		fmt.Print("Ensuring hmac secret exists at hmac-token...")
+		hmac, err := ensureHmac(kc, ns)
+		if err != nil {
+			logrus.WithError(err).Fatal("Failed to ensure hmac-token exists")
+		}
+		fmt.Println("exists")
+
+		fmt.Print("Looking for prow's hook ingress URL... ")
+		url, err := ingress(kc, ns, "hook")
+		if err != nil {
+			logrus.WithError(err).Fatal("Could not determine webhook ingress URL")
+		}
+		fmt.Println(url.String())
+
+		// TODO(fejta): ensure plugins are enabled for all these repos
+		_, err = enableHooks(client, url, hmac, opt.repos.Strings()...)
+		if err != nil {
+			logrus.WithError(err).Fatalf("Could not configure repos to send %s webhooks.", url.String())
+		}
 	}
 
-	// TODO(fejta): ensure plugins are enabled for all these repos
-	_, err = enableHooks(client, url, hmac)
+	deck, err := ingress(kc, ns, "deck")
 	if err != nil {
-		logrus.WithError(err).Fatalf("Could not configure repos to send %s webhooks.", url.String())
+		logrus.WithError(err).Fatalf("Could not find deck URL")
 	}
-
-	url.Path = "/"
-	fmt.Printf("Enjoy your %s prow instance at: %s!", ctx, url.String())
+	deck.Path = strings.TrimRight(deck.Path, "*")
+	fmt.Printf("Enjoy your %s prow instance at: %s!", ctx, deck.String())
 	fmt.Println()
 }
