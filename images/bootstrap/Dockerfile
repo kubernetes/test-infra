@@ -38,6 +38,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     mercurial \
     openssh-client \
     pkg-config \
+    procps \
     python \
     python-dev \
     python-openssl \
