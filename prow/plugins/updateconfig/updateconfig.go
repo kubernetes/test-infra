@@ -62,7 +62,8 @@ type githubClient interface {
 	GetFile(org, repo, filepath, commit string) ([]byte, error)
 }
 
-type kubeClient interface {
+// KubeClient knows how to interact with ConfigMaps on a cluster
+type KubeClient interface {
 	GetConfigMap(name, namespace string) (kube.ConfigMap, error)
 	ReplaceConfigMap(name string, config kube.ConfigMap) (kube.ConfigMap, error)
 	CreateConfigMap(content kube.ConfigMap) (kube.ConfigMap, error)
@@ -76,7 +77,8 @@ func maps(pc plugins.Agent) map[string]plugins.ConfigMapSpec {
 	return pc.PluginConfig.ConfigUpdater.Maps
 }
 
-type fileGetter interface {
+// FileGetter knows how to get the contents of a file by name
+type FileGetter interface {
 	GetFile(filename string) ([]byte, error)
 }
 
@@ -89,7 +91,8 @@ func (g *gitHubFileGetter) GetFile(filename string) ([]byte, error) {
 	return g.client.GetFile(g.org, g.repo, filename, g.commit)
 }
 
-func update(fg fileGetter, kc kubeClient, name, namespace string, updates map[string]string) error {
+// Update updates the configmap with the data from the identified files
+func Update(fg FileGetter, kc KubeClient, name, namespace string, updates map[string]string) error {
 	currentContent, getErr := kc.GetConfigMap(name, namespace)
 	_, isNotFound := getErr.(kube.NotFoundError)
 	if getErr != nil && !isNotFound {
@@ -134,12 +137,15 @@ func update(fg fileGetter, kc kubeClient, name, namespace string, updates map[st
 	return nil
 }
 
-type configMapID struct {
-	name, namespace string
+// ConfigMapID is a name/namespace combination that identifies a config map
+type ConfigMapID struct {
+	Name, Namespace string
 }
 
-func filterChanges(configMaps map[string]plugins.ConfigMapSpec, changes []github.PullRequestChange, log *logrus.Entry) map[configMapID]map[string]string {
-	toUpdate := map[configMapID]map[string]string{}
+// FilterChanges determines which of the changes are relevant for config updating, returning mapping of
+// config map to key to filename to update that key from.
+func FilterChanges(configMaps map[string]plugins.ConfigMapSpec, changes []github.PullRequestChange, log *logrus.Entry) map[ConfigMapID]map[string]string {
+	toUpdate := map[ConfigMapID]map[string]string{}
 	for _, change := range changes {
 		var cm plugins.ConfigMapSpec
 		found := false
@@ -164,7 +170,7 @@ func filterChanges(configMaps map[string]plugins.ConfigMapSpec, changes []github
 		}
 
 		// Yes, update the configmap with the contents of this file
-		id := configMapID{name: cm.Name, namespace: cm.Namespace}
+		id := ConfigMapID{Name: cm.Name, Namespace: cm.Namespace}
 		if _, ok := toUpdate[id]; !ok {
 			toUpdate[id] = map[string]string{}
 		}
@@ -186,7 +192,7 @@ func filterChanges(configMaps map[string]plugins.ConfigMapSpec, changes []github
 	return toUpdate
 }
 
-func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRequestEvent, configMaps map[string]plugins.ConfigMapSpec) error {
+func handle(gc githubClient, kc KubeClient, log *logrus.Entry, pre github.PullRequestEvent, configMaps map[string]plugins.ConfigMapSpec) error {
 	// Only consider newly merged PRs
 	if pre.Action != github.PullRequestActionClosed {
 		return nil
@@ -224,7 +230,7 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 	}
 
 	// Are any of the changes files ones that define a configmap we want to update?
-	toUpdate := filterChanges(configMaps, changes, log)
+	toUpdate := FilterChanges(configMaps, changes, log)
 
 	var updated []string
 	indent := " " // one space
@@ -232,10 +238,10 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 		indent = "   " // three spaces for sub bullets
 	}
 	for cm, data := range toUpdate {
-		if err := update(&gitHubFileGetter{org: org, repo: repo, commit: *pr.MergeSHA, client: gc}, kc, cm.name, cm.namespace, data); err != nil {
+		if err := Update(&gitHubFileGetter{org: org, repo: repo, commit: *pr.MergeSHA, client: gc}, kc, cm.Name, cm.Namespace, data); err != nil {
 			return err
 		}
-		updated = append(updated, message(cm.name, cm.namespace, data, indent))
+		updated = append(updated, message(cm.Name, cm.Namespace, data, indent))
 	}
 
 	var msg string
