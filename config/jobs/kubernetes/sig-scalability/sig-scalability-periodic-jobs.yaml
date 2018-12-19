@@ -295,7 +295,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=gce-scale-cluster
-      - --env=ENABLE_APISERVER_ADVANCED_AUDIT=false
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-16
       - --env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell
       - --extract=ci/latest
