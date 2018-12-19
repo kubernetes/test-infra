@@ -2668,6 +2668,33 @@ test_groups:
 - name: pull-test-infra-verify-codegen
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-codegen
   num_columns_recent: 20
+- name: pull-test-infra-verify-govet-podutil
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-govet-podutil
+  num_columns_recent: 20
+- name: pull-test-infra-verify-config-podutil
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-config-podutil
+  num_columns_recent: 20
+- name: pull-test-infra-verify-gofmt-podutil
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-gofmt-podutil
+  num_columns_recent: 20
+- name: pull-test-infra-lint-podutil
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-lint-podutil
+  num_columns_recent: 20
+- name: pull-test-infra-verify-labels-podutil
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-labels-podutil
+  num_columns_recent: 20
+- name: pull-test-infra-gubernator-podutil
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-gubernator-podutil
+  num_columns_recent: 20
+- name: pull-test-infra-verify-deps-podutil
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-deps-podutil
+  num_columns_recent: 20
+- name: pull-test-infra-verify-bazel-podutil
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-bazel-podutil
+  num_columns_recent: 20
+- name: pull-test-infra-bazel-podutil
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-bazel-podutil
+  num_columns_recent: 20
 - name: pull-cloud-provider-vsphere-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-test
   num_columns_recent: 20
@@ -7153,6 +7180,27 @@ dashboards:
   - name: verify-codegen
     test_group_name: pull-test-infra-verify-codegen
     base_options: width=10
+
+- name: presubmits-test-infra-podutil
+  dashboard_tab:
+  - name: bazel-podutil
+    test_group_name: pull-test-infra-bazel-podutil
+  - name: lint-podutil
+    test_group_name: pull-test-infra-lint-podutil
+  - name: gubernator-podutil
+    test_group_name: pull-test-infra-gubernator-podutil
+  - name: verify-bazel-podutil
+    test_group_name: pull-test-infra-verify-bazel-podutil
+  - name: verify-govet-podutil
+    test_group_name: pull-test-infra-verify-govet-podutil
+  - name: verify-gofmt-podutil
+    test_group_name: pull-test-infra-verify-gofmt-podutil
+  - name: verify-config-podutil
+    test_group_name: pull-test-infra-verify-config-podutil
+  - name: verify-deps-podutil
+    test_group_name: pull-test-infra-verify-deps-podutil
+  - name: verify-labels-podutil
+    test_group_name: pull-test-infra-verify-labels-podutil
 
 - name: presubmits-cluster-registry
   dashboard_tab:
