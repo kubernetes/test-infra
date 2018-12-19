@@ -17,6 +17,20 @@ Testgrid is composed of:
 * A list of dashboards that are composed of tabs that display a test group
 * A list of dashboard groups of related dashboards.
 
+## Tip and Tricks
+
+We have a short [video] from the testgrid session at the 2018 contributor summit.
+
+The video demos power features of testgrid, including:
+* Sorting
+* Filtering
+* Graphing
+* Grouping
+* Dashboard groups
+* Summaries
+
+Please have a look!
+
 ## Configuration
 Open [`config.yaml`] in your favorite editor and:
 1. Configure the test groups
@@ -383,3 +397,4 @@ bazel run //testgrid/cmd/config -- \
 
 [`config.proto`]: ./config.proto
 [`config.yaml`]: ./config.yaml
+[video]: https://www.youtube.com/watch?v=jm2l2SLq_yE
