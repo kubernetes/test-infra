@@ -134,6 +134,58 @@ func update(fg fileGetter, kc kubeClient, name, namespace string, updates map[st
 	return nil
 }
 
+type configMapID struct {
+	name, namespace string
+}
+
+func filterChanges(configMaps map[string]plugins.ConfigMapSpec, changes []github.PullRequestChange, log *logrus.Entry) map[configMapID]map[string]string {
+	toUpdate := map[configMapID]map[string]string{}
+	for _, change := range changes {
+		var cm plugins.ConfigMapSpec
+		found := false
+
+		for key, configMap := range configMaps {
+			var matchErr error
+			found, matchErr = zglob.Match(key, change.Filename)
+			if matchErr != nil {
+				// Should not happen, log matchErr and continue
+				log.WithError(matchErr).Info("key matching error")
+				continue
+			}
+
+			if found {
+				cm = configMap
+				break
+			}
+		}
+
+		if !found {
+			continue // This file does not define a configmap
+		}
+
+		// Yes, update the configmap with the contents of this file
+		id := configMapID{name: cm.Name, namespace: cm.Namespace}
+		if _, ok := toUpdate[id]; !ok {
+			toUpdate[id] = map[string]string{}
+		}
+		key := cm.Key
+		if key == "" {
+			key = path.Base(change.Filename)
+			// if the key changed, we need to remove the old key
+			if change.Status == github.PullRequestFileRenamed {
+				oldKey := path.Base(change.PreviousFilename)
+				toUpdate[id][oldKey] = ""
+			}
+		}
+		if change.Status == github.PullRequestFileRemoved {
+			toUpdate[id][key] = ""
+		} else {
+			toUpdate[id][key] = change.Filename
+		}
+	}
+	return toUpdate
+}
+
 func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRequestEvent, configMaps map[string]plugins.ConfigMapSpec) error {
 	// Only consider newly merged PRs
 	if pre.Action != github.PullRequestActionClosed {
@@ -172,54 +224,9 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 	}
 
 	// Are any of the changes files ones that define a configmap we want to update?
+	toUpdate := filterChanges(configMaps, changes, log)
+
 	var updated []string
-	type configMapID struct {
-		name, namespace string
-	}
-	toUpdate := map[configMapID]map[string]string{}
-	for _, change := range changes {
-		var cm plugins.ConfigMapSpec
-		found := false
-
-		for key, configMap := range configMaps {
-			found, err = zglob.Match(key, change.Filename)
-			if err != nil {
-				// Should not happen, log err and continue
-				log.WithError(err).Info("key matching error")
-				continue
-			}
-
-			if found {
-				cm = configMap
-				break
-			}
-		}
-
-		if !found {
-			continue // This file does not define a configmap
-		}
-
-		// Yes, update the configmap with the contents of this file
-		id := configMapID{name: cm.Name, namespace: cm.Namespace}
-		if _, ok := toUpdate[id]; !ok {
-			toUpdate[id] = map[string]string{}
-		}
-		key := cm.Key
-		if key == "" {
-			key = path.Base(change.Filename)
-			// if the key changed, we need to remove the old key
-			if change.Status == github.PullRequestFileRenamed {
-				oldKey := path.Base(change.PreviousFilename)
-				toUpdate[id][oldKey] = ""
-			}
-		}
-		if change.Status == github.PullRequestFileRemoved {
-			toUpdate[id][key] = ""
-		} else {
-			toUpdate[id][key] = change.Filename
-		}
-	}
-
 	indent := " " // one space
 	if len(toUpdate) > 1 {
 		indent = "   " // three spaces for sub bullets
