@@ -29,7 +29,7 @@ presubmits:
         # podutils will set $ARTIFACTS, so we just need to set the junit report
         # variable to use it too.
         - name: KUBE_JUNIT_REPORT_DIR
-          value: "$(ARTIFACTS)"
+          value: "/logs/artifacts"
         # Space separated list of the checks to run
         - name: WHAT
           value: "godeps staging-godeps godep-licenses"
