@@ -105,7 +105,7 @@ func gerritRefData(job kube.ProwJob) RefData {
 		ref.Author = job.Spec.Refs.Pulls[0].Author
 		ref.PullSHA = job.Spec.Refs.Pulls[0].SHA
 
-		ref.AuthorLink = fmt.Sprintf("mailto:%s", ref.Author)
+		ref.AuthorLink = fmt.Sprintf("%s/q/%s", reviewHost, ref.Author)
 		ref.PullLink = fmt.Sprintf("%s/c/%s/+/%d", reviewHost, ref.Repo, ref.Number)
 		ref.PullCommitLink = fmt.Sprintf("%s/%s/+/%s", codeHost, ref.Repo, ref.PullSHA)
 	}

@@ -145,7 +145,7 @@ func TestGetRefData(t *testing.T) {
 				PullLink:       "https://fhqwhgads-review.example.com/c/trogdor/dragonman/+/23",
 				PullCommitLink: "https://fhqwhgads.example.com/trogdor/dragonman/+/99999",
 				PushCommitLink: "https://fhqwhgads.example.com/trogdor/dragonman/+/12345",
-				AuthorLink:     "mailto:strongbad@example.com",
+				AuthorLink:     "https://fhqwhgads-review.example.com/q/strongbad@example.com",
 			},
 		},
 	}
