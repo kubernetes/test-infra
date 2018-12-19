@@ -48,12 +48,19 @@ import (
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
-	"k8s.io/client-go/util/workqueue"
 )
 
 const (
 	controllerName = "prow-build-crd"
 )
+
+type limiter interface {
+	ShutDown()
+	Get() (interface{}, bool)
+	Done(interface{})
+	Forget(interface{})
+	AddRateLimited(interface{})
+}
 
 type controller struct {
 	pjNamespace string
@@ -64,7 +71,7 @@ type controller struct {
 	pjLister   prowjoblisters.ProwJobLister
 	pjInformer cache.SharedIndexInformer
 
-	workqueue workqueue.RateLimitingInterface
+	workqueue limiter
 
 	recorder record.EventRecorder
 
@@ -108,7 +115,7 @@ func (c *controller) hasSynced() bool {
 	return true // Everyone is synced
 }
 
-func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjobinfov1.ProwJobInformer, buildConfigs map[string]buildConfig, totURL, pjNamespace string, rl workqueue.RateLimiter) *controller {
+func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjobinfov1.ProwJobInformer, buildConfigs map[string]buildConfig, totURL, pjNamespace string, rl limiter) *controller {
 	// Log to events
 	prowjobscheme.AddToScheme(scheme.Scheme)
 	eventBroadcaster := record.NewBroadcaster()
@@ -122,7 +129,7 @@ func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjo
 		builds:      buildConfigs,
 		pjLister:    pji.Lister(),
 		pjInformer:  pji.Informer(),
-		workqueue:   workqueue.NewNamedRateLimitingQueue(rl, controllerName),
+		workqueue:   rl,
 		recorder:    recorder,
 		totURL:      totURL,
 		pjNamespace: pjNamespace,
@@ -219,8 +226,8 @@ func (c *controller) runWorker() {
 }
 
 // toKey returns context/namespace/name
-func toKey(ctx string, obj metav1.ObjectMeta) string {
-	return strings.Join([]string{ctx, obj.Namespace, obj.Name}, "/")
+func toKey(ctx, namespace, name string) string {
+	return strings.Join([]string{ctx, namespace, name}, "/")
 }
 
 // fromKey converts toKey back into its parts
@@ -234,18 +241,15 @@ func fromKey(key string) (string, string, string, error) {
 
 // enqueueKey schedules an item for reconciliation.
 func (c *controller) enqueueKey(ctx string, obj interface{}) {
-	var meta metav1.ObjectMeta
 	switch o := obj.(type) {
 	case *prowjobv1.ProwJob:
-		meta = o.ObjectMeta
+		c.workqueue.AddRateLimited(toKey(ctx, o.Spec.Namespace, o.Name))
 	case *buildv1alpha1.Build:
-		meta = o.ObjectMeta
+		c.workqueue.AddRateLimited(toKey(ctx, o.Namespace, o.Name))
 	default:
 		logrus.Warnf("cannot enqueue unknown type %T: %v", o, obj)
 		return
 	}
-
-	c.workqueue.AddRateLimited(toKey(ctx, meta))
 }
 
 type reconciler interface {
