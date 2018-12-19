@@ -19,3 +19,23 @@ spec:
       containers:
       - name: build
         image: gcr.io/k8s-prow/build:v20181218-8eb6f41
+        args:
+        - --all-contexts
+        - --tot-url=http://tot
+        - --config=/etc/prow-config/config.yaml
+        - --build-cluster=/etc/build-cluster/cluster
+        volumeMounts:
+        - mountPath: /etc/build-cluster
+          name: build-cluster
+          readOnly: true
+        - mountPath: /etc/prow-config
+          name: prow-config
+          readOnly: true
+      volumes:
+      - name: build-cluster
+        secret:
+          defaultMode: 420
+          secretName: build-cluster
+      - name: prow-config
+        configMap:
+          name: config
