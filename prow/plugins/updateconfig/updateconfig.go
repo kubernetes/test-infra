@@ -208,12 +208,12 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 		if key == "" {
 			key = path.Base(change.Filename)
 			// if the key changed, we need to remove the old key
-			if change.Status == "renamed" {
+			if change.Status == github.PullRequestFileRenamed {
 				oldKey := path.Base(change.PreviousFilename)
 				toUpdate[id][oldKey] = ""
 			}
 		}
-		if change.Status == "removed" {
+		if change.Status == github.PullRequestFileRemoved {
 			toUpdate[id][key] = ""
 		} else {
 			toUpdate[id][key] = change.Filename
