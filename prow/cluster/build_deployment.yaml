@@ -18,7 +18,7 @@ spec:
       serviceAccount: prow-build # build_rbac.yaml
       containers:
       - name: build
-        image: gcr.io/k8s-prow/build:v20181218-8eb6f41
+        image: gcr.io/k8s-prow/build:v20181219-932f7b14e
         args:
         - --all-contexts
         - --tot-url=http://tot
