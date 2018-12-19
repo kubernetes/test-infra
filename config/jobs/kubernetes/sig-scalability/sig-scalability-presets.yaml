@@ -47,7 +47,7 @@ presets:
   # Increase throughput in Load test.
   - name: LOAD_TEST_THROUGHPUT
     value: "50"
-### kubemark-gce-big
+### kubemark-gce-scale
 - labels:
     preset-e2e-kubemark-gce-scale: "true"
   env:
@@ -81,6 +81,9 @@ presets:
   # Use IP-aliases for scalability tests.
   - name: KUBE_GCE_ENABLE_IP_ALIASES
     value: "true"
+  # Ensure good enough architecture for master machines.
+  - name: MASTER_MIN_CPU_ARCHITECTURE
+    value: "Intel Broadwell"
   # Turn on profiling for various components and
   # increase throughput in master components.
   - name: ETCD_EXTRA_ARGS
@@ -112,16 +115,6 @@ presets:
   # Increase size of default subnetworks to enable large clusters.
   - name: ENABLE_BIG_CLUSTER_SUBNETS
     value: "true"
-# Create a project k8s-e2e-gce-scalability-release and move this test there
-- labels:
-    preset-e2e-gci-gce-scalability-stable: "true"
-  env:
-  # Bump COS version to avoid kernel panics soflookups
-  # after last security patch: pr.k8s.io/61047
-  # TODO: This is needed only in release 1.9.
-  # Remove once these releases are no longer supported.
-  - name: KUBE_GCI_VERSION
-    value: "cos-stable-63-10032-71-0"
 # Create a project k8s-jenkins-scalability-head and move this test there
 - labels:
     preset-e2e-gci-gce-scalability: "true"
