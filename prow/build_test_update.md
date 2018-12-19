@@ -55,6 +55,9 @@ just go run mkpj like:
 go run k8s.io/test-infra/prow/cmd/mkpj --job=JOB_NAME --config-path=path/to/config.yaml
 ```
 
+Alternatively, if you have jobs defined in a separate `job-config`, you can
+specify the config by adding the flag `--job-config-path=path/to/job/config.yaml`.
+
 This will print the ProwJob YAML to stdout. You may pipe it into `kubectl`.
 Depending on the job, you will need to specify more information such as PR
 number.
