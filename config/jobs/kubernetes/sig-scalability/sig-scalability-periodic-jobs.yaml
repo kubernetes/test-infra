@@ -52,11 +52,15 @@ periodics:
     preset-e2e-gci-gce-scalability: "true"
   spec:
     containers:
-    - args:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
       - --timeout=140
-      - --bare
       - --scenario=kubernetes_e2e
       - --
+      - --check-leaked-resources
       - --cluster=e2e-big
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -64,10 +68,19 @@ periodics:
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8 --vmodule=request=4 --node-killer=true --node-killer-jitter-factor=10
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=100
+      - --test-cmd-args=--provider=gce
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/density/100_nodes/override.yaml
+      - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
+      - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
 
 - cron: "0 */6 * * *" # every six hours
   name: ci-kubernetes-e2e-gci-gce-scalability-beta
