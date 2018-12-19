@@ -2156,6 +2156,11 @@ type UnauthorizedToPushError string
 
 func (e UnauthorizedToPushError) Error() string { return string(e) }
 
+// MergeCommitsForbiddenError happens when the repo disallows the merge strategy configured for the repo in Tide.
+type MergeCommitsForbiddenError string
+
+func (e MergeCommitsForbiddenError) Error() string { return string(e) }
+
 // Merge merges a PR.
 //
 // See https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button
@@ -2177,6 +2182,9 @@ func (c *Client) Merge(org, repo string, pr int, details MergeDetails) error {
 		}
 		if strings.Contains(ge.Message, "You're not authorized to push to this branch") {
 			return UnauthorizedToPushError(ge.Message)
+		}
+		if strings.Contains(ge.Message, "Merge commits are not allowed on this repository") {
+			return MergeCommitsForbiddenError(ge.Message)
 		}
 		return UnmergablePRError(ge.Message)
 	} else if ec == 409 {
