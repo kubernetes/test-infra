@@ -1009,9 +1009,9 @@ func validateAgent(v JobBase, podNamespace string) error {
 		return fmt.Errorf("job build_specs require agent: %s (found %q)", b, agent)
 	case agent == b && v.BuildSpec == nil:
 		return errors.New("knative-build jobs require a build_spec")
-	case v.DecorationConfig != nil && agent != k:
-		// TODO(fejta): support decoration
-		return fmt.Errorf("decoration requires agent: %s (found %q)", k, agent)
+	case v.DecorationConfig != nil && agent != k && agent != b:
+		// TODO(fejta): only source decoration supported...
+		return fmt.Errorf("decoration requires agent: %s or %s (found %q)", k, b, agent)
 	case v.ErrorOnEviction && agent != k:
 		return fmt.Errorf("error_on_eviction only applies to agent: %s (found %q)", k, agent)
 	case v.Namespace == nil || *v.Namespace == "":
