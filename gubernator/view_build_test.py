@@ -207,7 +207,7 @@ class BuildTest(main_test.TestBase):
     def test_show_metadata(self):
         write(self.BUILD_DIR + 'started.json',
             {
-                'version': 'v1+56',
+                'revision': 'v1+56',
                 'timestamp': 1406535800,
                 'node': 'agent-light-7',
                 'pull': 'master:1234,35:abcd,72814',
