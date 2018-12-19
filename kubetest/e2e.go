@@ -230,6 +230,12 @@ func run(deploy deployer, o options) error {
 		}
 	}
 
+	if o.kubemark {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "Kubemark Overall", func() error {
+			return kubemarkTest(testArgs, dump, o, deploy)
+		}))
+	}
+
 	if o.testCmd != "" {
 		if err := control.XMLWrap(&suite, "test setup", deploy.TestSetup); err != nil {
 			errs = util.AppendError(errs, err)
@@ -246,9 +252,6 @@ func run(deploy deployer, o options) error {
 	var kubemarkWg sync.WaitGroup
 	var kubemarkDownErr error
 	if o.kubemark {
-		errs = util.AppendError(errs, control.XMLWrap(&suite, "Kubemark Overall", func() error {
-			return kubemarkTest(testArgs, dump, o, deploy)
-		}))
 		kubemarkWg.Add(1)
 		go kubemarkDown(&kubemarkDownErr, &kubemarkWg)
 	}
