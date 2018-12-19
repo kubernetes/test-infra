@@ -90,3 +90,17 @@ func DataUpload(src io.Reader) UploadFunc {
 		return errorutil.NewAggregate(copyErr, closeErr)
 	}
 }
+
+// DataUploadWithMetadata returns an UploadFunc which copies all
+// data from src reader into GCS and also sets the provided metadata
+// fields onto the object.
+func DataUploadWithMetadata(src io.Reader, metadata map[string]string) UploadFunc {
+	return func(obj *storage.ObjectHandle) error {
+		writer := obj.NewWriter(context.Background())
+		writer.Metadata = metadata
+		_, copyErr := io.Copy(writer, src)
+		closeErr := writer.Close()
+
+		return errorutil.NewAggregate(copyErr, closeErr)
+	}
+}
