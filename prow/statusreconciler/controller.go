@@ -133,7 +133,7 @@ type Controller struct {
 
 // Run monitors the incoming configuration changes to determine when statuses need to be
 // reconciled on PRs in flight when blocking presubmits change
-func (c *Controller) Run(stop <-chan os.Signal, changes <-chan config.ConfigDelta) {
+func (c *Controller) Run(stop <-chan os.Signal, changes <-chan config.Delta) {
 	for {
 		select {
 		case change := <-changes:
@@ -149,7 +149,7 @@ func (c *Controller) Run(stop <-chan os.Signal, changes <-chan config.ConfigDelt
 	}
 }
 
-func (c *Controller) reconcile(delta config.ConfigDelta) error {
+func (c *Controller) reconcile(delta config.Delta) error {
 	var errors []error
 	if err := c.triggerNewPresubmits(addedBlockingPresubmits(delta.Before.Presubmits, delta.After.Presubmits)); err != nil {
 		errors = append(errors, err)

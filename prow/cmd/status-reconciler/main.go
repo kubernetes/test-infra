@@ -86,7 +86,7 @@ func main() {
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
-	changes := make(chan config.ConfigDelta)
+	changes := make(chan config.Delta)
 	configAgent.Subscribe(changes)
 
 	secretAgent := &config.SecretAgent{}

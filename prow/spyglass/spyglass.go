@@ -18,16 +18,18 @@ limitations under the License.
 package spyglass
 
 import (
-	"cloud.google.com/go/storage"
 	"fmt"
+	"path"
+	"sort"
+	"strings"
+
+	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/spyglass/lenses"
-	"path"
-	"sort"
-	"strings"
 )
 
 // Key types specify the way Spyglass will fetch artifact handles

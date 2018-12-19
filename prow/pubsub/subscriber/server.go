@@ -197,7 +197,7 @@ func (s *PullServer) handlePulls(ctx context.Context, projectSubscriptions confi
 // Run will block listening to all subscriptions and return once the context is cancelled
 // or one of the subscription has a unrecoverable error.
 func (s *PullServer) Run(ctx context.Context) error {
-	configEvent := make(chan config.ConfigDelta, 2)
+	configEvent := make(chan config.Delta, 2)
 	s.Subscriber.ConfigAgent.Subscribe(configEvent)
 
 	var err error

@@ -47,7 +47,7 @@ func (mh *MockQueryHandler) QueryPullRequests(ctx context.Context, ghc githubCli
 	return mh.prs, nil
 }
 
-func (mh *MockQueryHandler) HeadContexts(ghc githubClient, pr PullRequest) ([]Context, error) {
+func (mh *MockQueryHandler) GetHeadContexts(ghc githubClient, pr PullRequest) ([]Context, error) {
 	return mh.contextMap[int(pr.Number)], nil
 }
 
@@ -222,7 +222,7 @@ func TestHandlePrStatusWithLogin(t *testing.T) {
 			},
 			expectedData: UserData{
 				Login: true,
-				PullRequestsWithContexts: []PullRequestWithContext{
+				PullRequestsWithContexts: []PullRequestWithContexts{
 					{
 						PullRequest: PullRequest{
 							Number: 0,
@@ -306,7 +306,7 @@ func TestHandlePrStatusWithLogin(t *testing.T) {
 	}
 }
 
-func TestHeadContexts(t *testing.T) {
+func TestGetHeadContexts(t *testing.T) {
 	repos := []string{"mock/repo", "kubernetes/test-infra", "foo/bar"}
 	mockCookieStore := sessions.NewCookieStore([]byte("secret-key"))
 	mockConfig := &config.GithubOAuthConfig{
@@ -365,7 +365,7 @@ func TestHeadContexts(t *testing.T) {
 	}
 	for id, testcase := range testCases {
 		t.Logf("Test %d:", id)
-		contexts, err := mockAgent.HeadContexts(&fgc{
+		contexts, err := mockAgent.GetHeadContexts(&fgc{
 			combinedStatus: testcase.combinedStatus,
 		}, testcase.pr)
 		if err != nil {

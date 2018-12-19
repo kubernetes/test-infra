@@ -85,7 +85,7 @@ func (o options) hmac() (string, error) {
 func findHook(hooks []github.Hook, url string) *int {
 	for _, h := range hooks {
 		if h.Config.URL == url {
-			return &h.Id
+			return &h.ID
 		}
 	}
 	return nil

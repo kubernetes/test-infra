@@ -555,7 +555,7 @@ func (c *Client) listHooks(org string, repo *string) ([]Hook, error) {
 	return ret, nil
 }
 
-// ListRepoHooks returns a list of hooks for the org.
+// ListOrgHooks returns a list of hooks for the org.
 // https://developer.github.com/v3/orgs/hooks/#list-hooks
 func (c *Client) ListOrgHooks(org string) ([]Hook, error) {
 	c.log("ListOrgHooks", org)
@@ -623,7 +623,7 @@ func (c *Client) createHook(org string, repo *string, req HookRequest) (int, err
 	if err != nil {
 		return 0, err
 	}
-	return ret.Id, nil
+	return ret.ID, nil
 }
 
 // CreateOrgHook creates a new hook for the org

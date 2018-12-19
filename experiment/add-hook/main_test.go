@@ -145,7 +145,7 @@ func TestFindHook(t *testing.T) {
 		{
 			name: "return matched id",
 			hooks: []github.Hook{{
-				Id: number,
+				ID: number,
 				Config: github.HookConfig{
 					URL: goal,
 				},
@@ -205,7 +205,7 @@ func TestReconcileHook(t *testing.T) {
 			name: "create when no match",
 			hooks: []github.Hook{
 				{
-					Id: targetId + 6666,
+					ID: targetId + 6666,
 					Config: github.HookConfig{
 						URL: "http://random-url",
 					},
@@ -217,7 +217,7 @@ func TestReconcileHook(t *testing.T) {
 			name: "edit exiting item",
 			hooks: []github.Hook{
 				{
-					Id: targetId,
+					ID: targetId,
 					Config: github.HookConfig{
 						URL: goal,
 					},

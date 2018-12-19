@@ -37,11 +37,13 @@ func init() {
 	prometheus.MustRegister(responseCounter)
 }
 
+// Metrics is a set of metrics gathered by hook.
 type Metrics struct {
 	WebhookCounter  *prometheus.CounterVec
 	ResponseCounter *prometheus.CounterVec
 }
 
+// NewMetrics creates a new set of metrics for the hook server.
 func NewMetrics() *Metrics {
 	return &Metrics{
 		WebhookCounter:  webhookCounter,

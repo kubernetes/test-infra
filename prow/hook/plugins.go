@@ -16,10 +16,10 @@ limitations under the License.
 
 package hook
 
-// All enabled plugins. We need to empty import them like this so that they
-// will be linked into any hook binary.
+// We need to empty import all enabled plugins so that they will be linked into
+// any hook binary.
 import (
-	_ "k8s.io/test-infra/prow/plugins/approve"
+	_ "k8s.io/test-infra/prow/plugins/approve" // Import all enabled plugins.
 	_ "k8s.io/test-infra/prow/plugins/assign"
 	_ "k8s.io/test-infra/prow/plugins/blockade"
 	_ "k8s.io/test-infra/prow/plugins/blunderbuss"

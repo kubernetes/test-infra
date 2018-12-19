@@ -703,12 +703,12 @@ func enableHooks(client *github.Client, loc url.URL, secret string, repos ...str
 			fmt.Println()
 		} else {
 			if repo == "" {
-				err = client.EditOrgHook(org, hook.Id, req)
+				err = client.EditOrgHook(org, hook.ID, req)
 			} else {
-				err = client.EditRepoHook(org, repo, hook.Id, req)
+				err = client.EditRepoHook(org, repo, hook.ID, req)
 			}
 			if err != nil {
-				return enabled, fmt.Errorf("edit %s hook %d in %s: %v", locStr, hook.Id, choice, err)
+				return enabled, fmt.Errorf("edit %s hook %d in %s: %v", locStr, hook.ID, choice, err)
 			}
 		}
 		enabled = append(enabled, choice)

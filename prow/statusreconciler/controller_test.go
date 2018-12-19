@@ -602,7 +602,7 @@ func TestControllerReconcile(t *testing.T) {
 	if err := yaml.Unmarshal([]byte(newConfigData), &newConfig); err != nil {
 		t.Fatalf("could not unmarshal new config: %v", err)
 	}
-	delta := config.ConfigDelta{Before: oldConfig, After: newConfig}
+	delta := config.Delta{Before: oldConfig, After: newConfig}
 	migrate := migration{from: "other-required-job", to: "new-context"}
 	org, repo := "org", "repo"
 	orgRepoKey := orgRepo{org: org, repo: repo}

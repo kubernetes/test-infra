@@ -24,51 +24,50 @@ import (
 )
 
 const (
-	// JSONConfigEnvVar is the environment variable that
-	// utilities expect to find a full JSON configuration
-	// in when run.
+	// JSONConfigEnvVar is the environment variable where utilities expect to find a full JSON
+	// configuration.
 	JSONConfigEnvVar = "INITUPLOAD_OPTIONS"
 )
 
-// NewOptions returns an empty Options with no nil fields
+// NewOptions returns an empty Options with no nil fields.
 func NewOptions() *Options {
 	return &Options{
 		Options: gcsupload.NewOptions(),
 	}
 }
 
+// Options holds the GCS options and the log file of clone records.
 type Options struct {
 	*gcsupload.Options
 
-	// Log is the log file to which clone records are written.
-	// If unspecified, no clone records are uploaded.
+	// Log is the log file to which clone records are written. If unspecified, no clone records
+	// are uploaded.
 	Log string `json:"log,omitempty"`
 }
 
-// ConfigVar exposes the environment variable used
-// to store serialized configuration
+// ConfigVar exposes the environment variable used to store serialized configuration.
 func (o *Options) ConfigVar() string {
 	return JSONConfigEnvVar
 }
 
-// LoadConfig loads options from serialized config
+// LoadConfig loads options from serialized config.
 func (o *Options) LoadConfig(config string) error {
 	return json.Unmarshal([]byte(config), o)
 }
 
-// AddFlags binds flags to options
+// AddFlags binds flags to options.
 func (o *Options) AddFlags(flags *flag.FlagSet) {
 	flags.StringVar(&o.Log, "clone-log", "", "Path to the clone records log")
 	o.Options.AddFlags(flags)
 }
 
-// Complete internalizes command line arguments
+// Complete internalizes command line arguments.
 func (o *Options) Complete(args []string) {
 	o.Options.Complete(args)
 }
 
-// Encode will encode the set of options in the format
-// that is expected for the configuration environment variable
+// Encode will encode the set of options in the format that is expected for the configuration
+// environment variable.
 func Encode(options Options) (string, error) {
 	encoded, err := json.Marshal(options)
 	return string(encoded), err
