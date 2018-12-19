@@ -453,9 +453,10 @@ func prowJobStatus(bs buildv1alpha1.BuildStatus) (prowjobv1.ProwJobState, string
 		return prowjobv1.FailureState, description(cond, descFailed)
 	case started.IsZero():
 		return prowjobv1.TriggeredState, description(cond, descInitializing)
-	case finished.IsZero():
+	case cond.Status == untypedcorev1.ConditionUnknown, finished.IsZero():
 		return prowjobv1.PendingState, description(cond, descRunning)
 	}
+	logrus.Warnf("Unknown condition %#v", cond)
 	return prowjobv1.ErrorState, description(cond, descUnknown) // shouldn't happen
 }
 
