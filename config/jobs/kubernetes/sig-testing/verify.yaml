@@ -55,6 +55,10 @@ presubmits:
           value: master
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
+        - name: KUBE_JUNIT_REPORT_DIR
+          value: $(ARTIFACTS)
+        - name: ARTIFACTS_DIR
+          value: $(ARTIFACTS)
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
