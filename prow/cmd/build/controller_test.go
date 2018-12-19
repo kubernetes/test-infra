@@ -1023,7 +1023,7 @@ func TestProwJobStatus(t *testing.T) {
 			fallback: descRunning,
 		},
 		{
-			name: "expect a finished job to have a success status",
+			name: "builds with unknown success status are still running",
 			input: buildv1alpha1.BuildStatus{
 				StartTime:      now,
 				CompletionTime: later,
@@ -1035,12 +1035,12 @@ func TestProwJobStatus(t *testing.T) {
 					},
 				},
 			},
-			state:    prowjobv1.ErrorState,
+			state:    prowjobv1.PendingState,
 			desc:     "hola",
-			fallback: descUnknown,
+			fallback: descRunning,
 		},
 		{
-			name: "expect a finished job to have a condition",
+			name: "completed builds without a succeeded condition end in error",
 			input: buildv1alpha1.BuildStatus{
 				StartTime:      now,
 				CompletionTime: later,
