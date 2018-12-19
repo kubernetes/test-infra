@@ -1133,7 +1133,6 @@ presubmits:
     context: pull-security-kubernetes-e2e-gce-100-performance
     labels:
       preset-bazel-scratch-dir: "true"
-      preset-e2e-gci-gce-scalability: "true"
       preset-e2e-scalability-common: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
