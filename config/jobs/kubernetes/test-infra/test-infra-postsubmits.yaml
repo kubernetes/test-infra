@@ -17,7 +17,6 @@ postsubmits:
   - name: ci-test-infra-bazel
     branches:
     - master
-    decorate: true
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -25,10 +24,13 @@ postsubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-experimental
-        command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_bazel.py
         args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/logs
+        - --scenario=kubernetes_bazel
+        - -- # end bootstrap args, scenario args below
         - --build=//...
         - --install=gubernator/test_requirements.txt
         - --test=//...
@@ -45,12 +47,17 @@ postsubmits:
     - master
     labels:
       preset-service-account: "true"
-    decorate: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-experimental
-        command:
-        - boskos/update_prow_config.sh
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/logs
+        - --scenario=execute
+        - --
+        - ./boskos/update_prow_config.sh
         env:
         - name: PROW_SERVICE_ACCOUNT
           value: /etc/prow-build-service/prow-build-service.json
@@ -66,15 +73,20 @@ postsubmits:
   - name: maintenance-ci-testgrid-config-upload
     branches:
     - master
-    decorate: true
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-experimental
-        command:
-        - testgrid/config-upload.sh
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/logs
+        - --scenario=execute
+        - --
+        - ./testgrid/config-upload.sh
         resources:
           requests:
             memory: "1Gi"

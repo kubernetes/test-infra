@@ -18,15 +18,8 @@ periodics:
     - name: third
       image: busybox
       args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-periodics.yaml"]
-
 - name: ci-test-infra-bazel
   interval: 1h
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -34,14 +27,17 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-experimental
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_bazel.py
       args:
-      - --build=//...
-      - --install=gubernator/test_requirements.txt
-      - --test=//...
-      - --test-args=--test_output=errors
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/test-infra=master"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--scenario=kubernetes_bazel"
+      - "--" # end bootstrap args, scenario args below
+      - "--build=//..."
+      - "--install=gubernator/test_requirements.txt"
+      - "--test=//..."
+      - "--test-args=--test_output=errors"
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
@@ -76,13 +72,14 @@ periodics:
 
 - name: metrics-bigquery
   interval: 24h
-  decorate: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bigquery:v20180330-f723e8d3f
-      command:
-      - metrics/bigquery.py
       args:
+      - --scenario=execute
+      - --
+      - test-infra/metrics/bigquery.py
+      - --
       - --bucket=gs://k8s-metrics
       - --backfill-days=90
       env:
@@ -107,13 +104,14 @@ periodics:
 
 - name: metrics-kettle
   interval: 1h
-  decorate: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bigquery:v20180330-f723e8d3f
-      command:
-      - kettle/monitor.py
       args:
+      - --scenario=execute
+      - --
+      - test-infra/kettle/monitor.py
+      - --
       - --stale=6
       - --table
       - k8s-gubernator:build.all
