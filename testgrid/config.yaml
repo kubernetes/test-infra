@@ -6587,49 +6587,11 @@ dashboards:
     base_options: include-filter-by-regex=Volume%7Cstorage
     description: storage gke regional slow e2e tests for master branch
 
-- name: sig-testing-misc
+- name: sig-testing-maintenance
   dashboard_tab:
-  - name: bazel
-    description: Runs bazel test //... on the test-infra repo.
-    test_group_name: ci-test-infra-bazel
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: boskos-config-upload
     description: Update boskos configmap on test-infra pushes
     test_group_name: maintenance-boskos-config-upload
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: testgrid-config-upload
-    description: Compiles and uploads testgrid config on test-infra pushes
-    test_group_name: maintenance-ci-testgrid-config-upload
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
-  - name: triage
-    description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
-    test_group_name: ci-test-infra-triage
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
-  - name: metrics-bigquery
-    description: Runs BigQuery queries to generate data for metrics.
-    test_group_name: metrics-bigquery
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: metrics-kettle
-    description: Monitors Kettle's BigQuery database freshness.
-    test_group_name: metrics-kettle
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
-  - name: maintenance-aws-janitor
-    description: Deletes old resources from AWS projects
-    test_group_name: maintenance-ci-aws-janitor
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: ci-janitor
@@ -6637,24 +6599,9 @@ dashboards:
     test_group_name: maintenance-ci-janitor
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: ci-kubernetes-local-e2e
-    description: Runs conformance tests using kubetest with local-up-cluster
-    test_group_name: ci-kubernetes-local-e2e
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: ci-kubernetes-local-e2e-containerized
-    description: Runs conformance tests using kubetest with local-up-cluster (containerized kubelet)
-    test_group_name: ci-kubernetes-local-e2e-containerized
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: pull-kubernetes-local-e2e
-    description: Runs conformance tests using kubetest with local-up-cluster
-    test_group_name: pull-kubernetes-local-e2e
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: pull-kubernetes-local-e2e-containerized
-    description: Runs conformance tests using kubetest with local-up-cluster (containerized kubelet)
-    test_group_name: pull-kubernetes-local-e2e-containerized
+  - name: maintenance-aws-janitor
+    description: Deletes old resources from AWS projects
+    test_group_name: maintenance-ci-aws-janitor
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: pull-janitor
@@ -6667,6 +6614,15 @@ dashboards:
     test_group_name: maintenance-pull-scale-janitor
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: testgrid-config-upload
+    description: Compiles and uploads testgrid config on test-infra pushes
+    test_group_name: maintenance-ci-testgrid-config-upload
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    alert_options:
+      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
+- name: sig-testing-fejtabot
+  dashboard_tab:
   - name: retester
     description: Automatically /retest for approved PRs that failed retesting
     test_group_name: periodic-test-infra-retester
@@ -6692,6 +6648,9 @@ dashboards:
     test_group_name: issue-creator
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+
+- name: sig-testing-prow
+  dashboard_tab:
   - name: push-prow
     description: builds and pushes all prow on each commit by running prow/push.sh
     test_group_name: post-test-infra-push-prow
@@ -6710,6 +6669,55 @@ dashboards:
   - name: build-smoke
     description: basic job to ensure build controller works correctly
     test_group_name: ci-test-infra-build-smoke
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+
+- name: sig-testing-misc
+  dashboard_tab:
+  - name: bazel
+    description: Runs bazel test //... on the test-infra repo.
+    test_group_name: ci-test-infra-bazel
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: triage
+    description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
+    test_group_name: ci-test-infra-triage
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
+    alert_options:
+      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
+  - name: metrics-bigquery
+    description: Runs BigQuery queries to generate data for metrics.
+    test_group_name: metrics-bigquery
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: metrics-kettle
+    description: Monitors Kettle's BigQuery database freshness.
+    test_group_name: metrics-kettle
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
+    alert_options:
+      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
+  - name: ci-kubernetes-local-e2e
+    description: Runs conformance tests using kubetest with local-up-cluster
+    test_group_name: ci-kubernetes-local-e2e
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: ci-kubernetes-local-e2e-containerized
+    description: Runs conformance tests using kubetest with local-up-cluster (containerized kubelet)
+    test_group_name: ci-kubernetes-local-e2e-containerized
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: pull-kubernetes-local-e2e
+    description: Runs conformance tests using kubetest with local-up-cluster
+    test_group_name: pull-kubernetes-local-e2e
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: pull-kubernetes-local-e2e-containerized
+    description: Runs conformance tests using kubetest with local-up-cluster (containerized kubelet)
+    test_group_name: pull-kubernetes-local-e2e-containerized
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 
@@ -7661,8 +7669,11 @@ dashboard_groups:
   dashboard_names:
   - sig-testing-misc
   - sig-testing-canaries
-  - sig-testing-org
+  - sig-testing-fejtabot
   - sig-testing-kind
+  - sig-testing-maintenance
+  - sig-testing-org
+  - sig-testing-prow
 
 - name: sig-gcp
   dashboard_names:
