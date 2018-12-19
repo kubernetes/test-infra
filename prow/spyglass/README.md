@@ -36,21 +36,21 @@ Lens names are unique, and must much the package name for the lens.
 ### Built-in Viewers
 Spyglass comes with some built-in viewers for commonly produced artifacts.
 
-- Prow Metadata  
+- Prow Metadata
   ```
   Name: metadata
   Title: Metadata
   Match: finished.json|started.json
   Priority: 0
   ```
-- JUnit  
+- JUnit
   ```
   Name: junit
   Title: JUnit
   Matches: artifacts/junit.*\.xml
   Priority: 5
   ```
-- Logs  
+- Logs
   ```
   Name: buildlog
   Title: Build Log
@@ -145,11 +145,11 @@ more details and examples.
 Spyglass is currently disabled by default. To enable it, add the `--spyglass` arg to your
 [deck deployment](https://github.com/kubernetes/test-infra/blob/e9e544733854d54403aa1dfd84ca009fd9b942f0/prow/cluster/starter.yaml#L236).
 
-Spyglass config takes the following form:
+To provide any use, Spyglass must by configured. Its config takes the following form:
 ```yaml
 deck:
   spyglass:
-    size_limit: 500e6
+    size_limit: 500e+6 # 500MB
     viewers:
       "started.json|finished.json": ["metadata-viewer"]
       "build-log.txt": ["build-log-viewer"]
