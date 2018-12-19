@@ -76,7 +76,20 @@ func maps(pc plugins.Agent) map[string]plugins.ConfigMapSpec {
 	return pc.PluginConfig.ConfigUpdater.Maps
 }
 
-func update(gc githubClient, kc kubeClient, org, repo, commit, name, namespace string, updates map[string]string) error {
+type fileGetter interface {
+	GetFile(filename string) ([]byte, error)
+}
+
+type gitHubFileGetter struct {
+	org, repo, commit string
+	client            githubClient
+}
+
+func (g *gitHubFileGetter) GetFile(filename string) ([]byte, error) {
+	return g.client.GetFile(g.org, g.repo, filename, g.commit)
+}
+
+func update(fg fileGetter, kc kubeClient, name, namespace string, updates map[string]string) error {
 	currentContent, getErr := kc.GetConfigMap(name, namespace)
 	_, isNotFound := getErr.(kube.NotFoundError)
 	if getErr != nil && !isNotFound {
@@ -94,7 +107,7 @@ func update(gc githubClient, kc kubeClient, org, repo, commit, name, namespace s
 			continue
 		}
 
-		content, err := gc.GetFile(org, repo, filename, commit)
+		content, err := fg.GetFile(filename)
 		if err != nil {
 			return fmt.Errorf("get file err: %v", err)
 		}
@@ -212,7 +225,7 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 		indent = "   " // three spaces for sub bullets
 	}
 	for cm, data := range toUpdate {
-		if err := update(gc, kc, org, repo, *pr.MergeSHA, cm.name, cm.namespace, data); err != nil {
+		if err := update(&gitHubFileGetter{org: org, repo: repo, commit: *pr.MergeSHA, client: gc}, kc, cm.name, cm.namespace, data); err != nil {
 			return err
 		}
 		updated = append(updated, message(cm.name, cm.namespace, data, indent))
