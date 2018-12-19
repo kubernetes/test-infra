@@ -813,6 +813,12 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 					// push to a specific branch.
 					log.WithError(err).Error("Merge failed: Branch needs to be configured to allow this robot to push.")
 					break
+				} else if _, ok = err.(github.MergeCommitsForbiddenError); ok {
+					// Github let us know that the merge method configured for this repo
+					// is not allowed by other repo settings, so we should let the admins
+					// know that the configuration needs to be updated.
+					log.WithError(err).Error("Merge failed: Tide needs to be configured to use the 'rebase' merge method for this repo or the repo needs to allow merge commits.")
+					break
 				} else if _, ok = err.(github.UnmergablePRError); ok {
 					log.WithError(err).Error("Merge failed: PR is unmergable. How did it pass tests?!")
 					break
