@@ -19,6 +19,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
@@ -49,10 +50,6 @@ type fakeReconciler struct {
 	nows   metav1.Time
 }
 
-func key(context, namespace, name string) string {
-	return toKey(context, metav1.ObjectMeta{Namespace: namespace, Name: name})
-}
-
 func (r *fakeReconciler) now() metav1.Time {
 	fmt.Println(r.nows)
 	return r.nows
@@ -65,7 +62,7 @@ func (r *fakeReconciler) getProwJob(name string) (*prowjobv1.ProwJob, error) {
 	if name == errorGetProwJob {
 		return nil, errors.New("injected get prowjob error")
 	}
-	k := key(fakePJCtx, fakePJNS, name)
+	k := toKey(fakePJCtx, fakePJNS, name)
 	pj, present := r.jobs[k]
 	if !present {
 		return nil, apierrors.NewNotFound(prowjobv1.Resource("ProwJob"), name)
@@ -80,7 +77,7 @@ func (r *fakeReconciler) updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJo
 	if pj == nil {
 		return nil, errors.New("nil prowjob")
 	}
-	k := key(fakePJCtx, fakePJNS, pj.Name)
+	k := toKey(fakePJCtx, fakePJNS, pj.Name)
 	if _, present := r.jobs[k]; !present {
 		return nil, apierrors.NewNotFound(prowjobv1.Resource("ProwJob"), pj.Name)
 	}
@@ -92,7 +89,7 @@ func (r *fakeReconciler) getBuild(context, namespace, name string) (*buildv1alph
 	if namespace == errorGetBuild {
 		return nil, errors.New("injected create build error")
 	}
-	k := key(context, namespace, name)
+	k := toKey(context, namespace, name)
 	b, present := r.builds[k]
 	if !present {
 		return nil, apierrors.NewNotFound(buildv1alpha1.Resource("Build"), name)
@@ -103,7 +100,7 @@ func (r *fakeReconciler) deleteBuild(context, namespace, name string) error {
 	if namespace == errorDeleteBuild {
 		return errors.New("injected create build error")
 	}
-	k := key(context, namespace, name)
+	k := toKey(context, namespace, name)
 	if _, present := r.builds[k]; !present {
 		return apierrors.NewNotFound(buildv1alpha1.Resource("Build"), name)
 	}
@@ -118,7 +115,7 @@ func (r *fakeReconciler) createBuild(context, namespace string, b *buildv1alpha1
 	if namespace == errorCreateBuild {
 		return nil, errors.New("injected create build error")
 	}
-	k := key(context, namespace, b.Name)
+	k := toKey(context, namespace, b.Name)
 	if _, alreadyExists := r.builds[k]; alreadyExists {
 		return nil, apierrors.NewAlreadyExists(prowjobv1.Resource("ProwJob"), b.Name)
 	}
@@ -128,6 +125,73 @@ func (r *fakeReconciler) createBuild(context, namespace string, b *buildv1alpha1
 
 func (r *fakeReconciler) buildID(pj prowjobv1.ProwJob) (string, error) {
 	return "7777777777", nil
+}
+
+type fakeLimiter struct {
+	added string
+}
+
+func (fl *fakeLimiter) ShutDown() {}
+func (fl *fakeLimiter) Get() (interface{}, bool) {
+	return "not implemented", true
+}
+func (fl *fakeLimiter) Done(interface{})   {}
+func (fl *fakeLimiter) Forget(interface{}) {}
+func (fl *fakeLimiter) AddRateLimited(a interface{}) {
+	fl.added = a.(string)
+}
+
+func TestEnqueueKey(t *testing.T) {
+	cases := []struct {
+		name     string
+		context  string
+		obj      interface{}
+		expected string
+	}{
+		{
+			name:    "enqueue build directly",
+			context: "hey",
+			obj: &buildv1alpha1.Build{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "foo",
+					Name:      "bar",
+				},
+			},
+			expected: toKey("hey", "foo", "bar"),
+		},
+		{
+			name:    "enqueue prowjob's spec namespace",
+			context: "rolo",
+			obj: &prowjobv1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "default",
+					Name:      "dude",
+				},
+				Spec: prowjobv1.ProwJobSpec{
+					Namespace: "tomassi",
+				},
+			},
+			expected: toKey("rolo", "tomassi", "dude"),
+		},
+		{
+			name:    "ignore random object",
+			context: "foo",
+			obj:     "bar",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var fl fakeLimiter
+			c := controller{
+				workqueue: &fl,
+			}
+			c.enqueueKey(tc.context, tc.obj)
+			if !reflect.DeepEqual(fl.added, tc.expected) {
+				t.Errorf("%q != expected %q", fl.added, tc.expected)
+			}
+		})
+	}
 }
 
 func TestReconcile(t *testing.T) {
@@ -598,8 +662,8 @@ func TestReconcile(t *testing.T) {
 			} else if tc.namespace == errorUpdateProwJob {
 				name = errorUpdateProwJob
 			}
-			bk := key(tc.context, tc.namespace, name)
-			jk := key(fakePJCtx, fakePJNS, name)
+			bk := toKey(tc.context, tc.namespace, name)
+			jk := toKey(fakePJCtx, fakePJNS, name)
 			r := &fakeReconciler{
 				jobs:   map[string]prowjobv1.ProwJob{},
 				builds: map[string]buildv1alpha1.Build{},

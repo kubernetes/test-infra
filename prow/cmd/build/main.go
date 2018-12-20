@@ -229,11 +229,12 @@ func newBuildConfig(cfg rest.Config, stop chan struct{}) (*buildConfig, error) {
 	}, nil
 }
 
-func limiter() workqueue.RateLimiter {
-	return workqueue.NewMaxOfRateLimiter(
+func rateLimiter() limiter {
+	rl := workqueue.NewMaxOfRateLimiter(
 		workqueue.NewItemExponentialFailureRateLimiter(5*time.Millisecond, 120*time.Second),
 		&workqueue.BucketRateLimiter{Limiter: rate.NewLimiter(rate.Limit(1000), 50000)},
 	)
+	return workqueue.NewNamedRateLimitingQueue(rl, controllerName)
 }
 
 func main() {
@@ -293,7 +294,7 @@ func main() {
 		go runServer(o.cert, o.privateKey)
 	}
 
-	controller := newController(kc, pjc, pjif.Prow().V1().ProwJobs(), buildConfigs, o.totURL, pjNamespace, limiter())
+	controller := newController(kc, pjc, pjif.Prow().V1().ProwJobs(), buildConfigs, o.totURL, pjNamespace, rateLimiter())
 	if err := controller.Run(2, stop); err != nil {
 		logrus.WithError(err).Fatal("Error running controller")
 	}
