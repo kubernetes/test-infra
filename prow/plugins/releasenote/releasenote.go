@@ -48,9 +48,9 @@ var (
 	releaseNoteBody       = fmt.Sprintf(releaseNoteFormat, ReleaseNoteLabelNeeded)
 	parentReleaseNoteBody = fmt.Sprintf(parentReleaseNoteFormat, releaseNote, releaseNoteActionRequired)
 
-	noteMatcherRE = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
+	NoteMatcherRe = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
 	cpRe          = regexp.MustCompile(`Cherry pick of #([[:digit:]]+) on release-([[:digit:]]+\.[[:digit:]]+).`)
-	noneRe        = regexp.MustCompile(`(?i)^\W*NONE\W*$`)
+	NoneRe        = regexp.MustCompile(`(?i)^\W*NONE\W*$`)
 
 	allRNLabels = []string{
 		releaseNoteNone,
@@ -307,7 +307,7 @@ func determineReleaseNoteLabel(body string) string {
 	if composedReleaseNote == "" {
 		return ReleaseNoteLabelNeeded
 	}
-	if noneRe.MatchString(composedReleaseNote) {
+	if NoneRe.MatchString(composedReleaseNote) {
 		return releaseNoteNone
 	}
 	if strings.Contains(composedReleaseNote, actionRequiredNote) {
@@ -319,7 +319,7 @@ func determineReleaseNoteLabel(body string) string {
 // getReleaseNote returns the release note from a PR body
 // assumes that the PR body followed the PR template
 func getReleaseNote(body string) string {
-	potentialMatch := noteMatcherRE.FindStringSubmatch(body)
+	potentialMatch := NoteMatcherRe.FindStringSubmatch(body)
 	if potentialMatch == nil {
 		return ""
 	}

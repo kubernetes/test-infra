@@ -34,12 +34,12 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/releasenote"
 )
 
 const pluginName = "cherrypick"
 
 var cherryPickRe = regexp.MustCompile(`(?m)^/cherrypick\s+(.+)$`)
-var releaseNoteRe = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
 
 type githubClient interface {
 	AssignIssue(org, repo string, number int, logins []string) error
@@ -56,7 +56,7 @@ type githubClient interface {
 
 func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: `The cherrypick plugin is used for cherrypicking PRs across branches. For every successful cherrypick invocation a new PR is opened against the target branch and assigned to the requester. If the parent PR contains a release note, it is copied to the cherrypick PR.`,
+		Description: "The cherrypick plugin is used for cherrypicking PRs across branches. For every successful cherrypick invocation a new PR is opened against the target branch and assigned to the requester. If the parent PR contains a release note that is not `NONE`, it is copied to the cherrypick PR.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/cherrypick [branch]",
@@ -501,13 +501,18 @@ func normalize(input string) string {
 	return strings.Replace(input, "/", "-", -1)
 }
 
-// releaseNoteNoteFromParentPR gets the release note from the
+// releaseNoteFromParentPR gets the release note from the
 // parent PR and formats it as per the PR template so that
 // it can be copied to the cherry-pick PR.
+// Note: if the release note is NONE, it is not copied.
 func releaseNoteFromParentPR(body string) string {
-	potentialMatch := releaseNoteRe.FindStringSubmatch(body)
+	potentialMatch := releasenote.NoteMatcherRe.FindStringSubmatch(body)
 	if potentialMatch == nil {
 		return ""
 	}
-	return fmt.Sprintf("```release-note\n%s\n```", strings.TrimSpace(potentialMatch[1]))
+	note := strings.TrimSpace(potentialMatch[1])
+	if releasenote.NoneRe.MatchString(note) {
+		return ""
+	}
+	return fmt.Sprintf("```release-note\n%s\n```", note)
 }

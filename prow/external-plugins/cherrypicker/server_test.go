@@ -139,7 +139,7 @@ index 1ea52dc..5bd70a9 100644
  }
 `)
 
-var body = "This PR updates the magic number.\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
+const body = "This PR updates the magic number.\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
 
 func TestCherryPickIC(t *testing.T) {
 	lg, c, err := localgit.New()
@@ -324,6 +324,7 @@ func TestCherryPickPR(t *testing.T) {
 			Merged:   true,
 			MergeSHA: new(string),
 			Title:    "This is a fix for Y",
+			Body:     "This is a fix for Y.\n\n```release-note\nNONE\n```",
 		},
 	}
 
