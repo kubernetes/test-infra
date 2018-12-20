@@ -14,7 +14,6 @@ presubmits:
       preset-service-account: "true"
     name: pull-security-kubernetes-e2e-aws-eks-1-11-prod-conformance
     rerun_command: /test pull-security-kubernetes-e2e-aws-eks-1-11-prod-conformance
-    skip_report: true
     spec:
       containers:
       - args:

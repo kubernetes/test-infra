@@ -8,7 +8,6 @@ presubmits:
     - master
     # NON-BLOCKING; only triggered manually, use this for debug test script
     always_run: false
-    skip_report: true
     labels:
       preset-service-account: "true"
       preset-kubernetes-e2e-aws-eks-common: "true"
