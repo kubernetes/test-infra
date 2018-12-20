@@ -211,6 +211,10 @@ periodics:
 - name: periodic-secping
   interval: 24h
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
   spec:
     containers:
     # image contains tools versioned with k/k master
