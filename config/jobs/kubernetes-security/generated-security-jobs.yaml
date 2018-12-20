@@ -2092,8 +2092,6 @@ presubmits:
         env:
         - name: KUBE_FORCE_VERIFY_CHECKS
           value: "Y"
-        - name: KUBE_JUNIT_REPORT_DIR
-          value: /logs/artifacts
         - name: WHAT
           value: godeps staging-godeps godep-licenses
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
@@ -2567,7 +2565,7 @@ presubmits:
         - name: EXCLUDE_TYPECHECK
           value: "Y"
         - name: EXCLUDE_GODEPS
-          value: "N"
+          value: "Y"
         image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
         name: ""
         resources:

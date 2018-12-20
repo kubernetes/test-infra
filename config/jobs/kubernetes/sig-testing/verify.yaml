@@ -23,7 +23,7 @@ presubmits:
         - name: EXCLUDE_TYPECHECK
           value: "Y"
         - name: EXCLUDE_GODEPS
-          value: "N"
+          value: "Y"
         securityContext:
           privileged: true
         resources:
