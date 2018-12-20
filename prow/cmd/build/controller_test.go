@@ -893,6 +893,43 @@ func TestInjectSource(t *testing.T) {
 	}
 }
 
+func TestBuildMeta(t *testing.T) {
+	cases := []struct {
+		name     string
+		pj       prowjobv1.ProwJob
+		expected func(prowjobv1.ProwJob, *metav1.ObjectMeta)
+	}{
+		{
+			name: "Use pj.Spec.Namespace for build namespace",
+			pj: prowjobv1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "whatever",
+					Namespace: "wrong",
+				},
+				Spec: prowjobv1.ProwJobSpec{
+					Namespace: "correct",
+				},
+			},
+			expected: func(pj prowjobv1.ProwJob, meta *metav1.ObjectMeta) {
+				meta.Name = pj.Name
+				meta.Namespace = pj.Spec.Namespace
+				meta.Labels, meta.Annotations = decorate.LabelsAndAnnotationsForJob(pj)
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var expected metav1.ObjectMeta
+			tc.expected(tc.pj, &expected)
+			actual := buildMeta(tc.pj)
+			if !equality.Semantic.DeepEqual(actual, expected) {
+				t.Errorf("build meta does not match:\n%s", diff.ObjectReflectDiff(expected, actual))
+			}
+		})
+	}
+}
+
 func TestMakeBuild(t *testing.T) {
 	cases := []struct {
 		name string
