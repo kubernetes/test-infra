@@ -24,6 +24,8 @@ ENV KUBETEST_IN_DOCKER="true"
 # Go standard envs
 ENV GOPATH /go
 ENV PATH /usr/local/go/bin:$PATH
+
+RUN mkdir -p /go/bin
 ENV PATH $GOPATH/bin:$PATH
 
 # setup k8s repo symlink
