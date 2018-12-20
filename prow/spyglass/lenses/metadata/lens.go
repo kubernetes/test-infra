@@ -86,6 +86,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		FinishedTime time.Time
 		Elapsed      time.Duration
 		Metadata     map[string]string
+		MetadataLen  int
 	}
 	metadataViewData := MetadataViewData{Status: "Pending"}
 	started := jobs.Started{}
@@ -127,6 +128,11 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 	}
 	for pkg, version := range finished.Metadata.Repos {
 		metadataViewData.Metadata[pkg] = version
+	}
+	for _, v := range metadataViewData.Metadata {
+		if v != "" {
+			metadataViewData.MetadataLen++
+		}
 	}
 
 	metadataTemplate, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
