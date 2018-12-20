@@ -22,7 +22,7 @@ presubmits:
         env:
         - name: EXCLUDE_TYPECHECK
           value: "Y"
-        - name: EXCLUDE_GODEPS
+        - name: EXCLUDE_GODEP
           value: "Y"
         securityContext:
           privileged: true
