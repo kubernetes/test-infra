@@ -25,7 +25,7 @@ presubmits:
         - --
         - --build=bazel
         - --deployment=local
-        - --ginkgo-parallel=1
+        - --ginkgo-parallel
         - --provider=local
         - --test_args=--ginkgo.focus=\[Conformance\]|\[Containerized\] --ginkgo.skip=\[Disruptive\]
         - --timeout=120m
@@ -61,7 +61,7 @@ periodics:
       - --deployment=local
       - --extract=ci/latest
       - --extract-source
-      - --ginkgo-parallel=1
+      - --ginkgo-parallel
       - --provider=local
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Containerized\] --ginkgo.skip=\[Disruptive\]
       - --timeout=120m
