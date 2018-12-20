@@ -202,7 +202,7 @@ func TestCherryPickIC(t *testing.T) {
 	botName := "ci-robot"
 	expectedRepo := "foo/bar"
 	expectedTitle := "[stage] This is a fix for X"
-	expectedBody := "This is an automated cherry-pick of #2\n\n/assign wiseguy\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
+	expectedBody := "This is an automated cherry-pick of #2 on stage\n\n/assign wiseguy\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
 	expectedBase := "stage"
 	expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, expectedBase)
 	expected := fmt.Sprintf(expectedFmt, expectedRepo, expectedTitle, expectedBody, expectedHead, expectedBase, true)
@@ -353,7 +353,7 @@ func TestCherryPickPR(t *testing.T) {
 	var expectedFn = func(branch string) string {
 		expectedRepo := "foo/bar"
 		expectedTitle := fmt.Sprintf("[%s] This is a fix for Y", branch)
-		expectedBody := "This is an automated cherry-pick of #2"
+		expectedBody := fmt.Sprintf("This is an automated cherry-pick of #2 on %s", branch)
 		expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, branch)
 		return fmt.Sprintf(expectedFmt, expectedRepo, expectedTitle, expectedBody, expectedHead, branch, true)
 	}

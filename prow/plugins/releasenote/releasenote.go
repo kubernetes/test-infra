@@ -49,7 +49,7 @@ var (
 	parentReleaseNoteBody = fmt.Sprintf(parentReleaseNoteFormat, releaseNote, releaseNoteActionRequired)
 
 	NoteMatcherRe = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
-	cpRe          = regexp.MustCompile(`Cherry pick of #([[:digit:]]+) on release-([[:digit:]]+\.[[:digit:]]+).`)
+	cpRe          = regexp.MustCompile(`(?:Cherry pick|cherry-pick) of #([[:digit:]]+) on release-([[:digit:]]+\.[[:digit:]]+).`)
 	NoneRe        = regexp.MustCompile(`(?i)^\W*NONE\W*$`)
 
 	allRNLabels = []string{

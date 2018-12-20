@@ -389,7 +389,7 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment github.IssueC
 
 	// Open a PR in Github.
 	title = fmt.Sprintf("[%s] %s", targetBranch, title)
-	cherryPickBody := fmt.Sprintf("This is an automated cherry-pick of #%d", num)
+	cherryPickBody := fmt.Sprintf("This is an automated cherry-pick of #%d on %s", num, targetBranch)
 	if s.prowAssignments {
 		cherryPickBody = fmt.Sprintf("%s\n\n/assign %s", cherryPickBody, requestor)
 	}
