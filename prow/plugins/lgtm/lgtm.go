@@ -422,22 +422,14 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 		}
 	}
 
-	var labelNotFound bool
 	if err := gc.RemoveLabel(org, repo, number, LGTMLabel); err != nil {
-		if _, labelNotFound = err.(*github.LabelNotFound); !labelNotFound {
-			return fmt.Errorf("failed removing lgtm label: %v", err)
-		}
-		// If the error is indeed *github.LabelNotFound, consider it a success.
+		return fmt.Errorf("failed removing lgtm label: %v", err)
 	}
 
 	// Create a comment to inform participants that LGTM label is removed due to new
 	// pull request changes.
-	if !labelNotFound {
-		log.Infof("Commenting with an LGTM removed notification to %s/%s#%d with a message: %s", org, repo, number, removeLGTMLabelNoti)
-		return gc.CreateComment(org, repo, number, removeLGTMLabelNoti)
-	}
-
-	return nil
+	log.Infof("Commenting with an LGTM removed notification to %s/%s#%d with a message: %s", org, repo, number, removeLGTMLabelNoti)
+	return gc.CreateComment(org, repo, number, removeLGTMLabelNoti)
 }
 
 func skipCollaborators(config *plugins.Configuration, org, repo string) bool {
