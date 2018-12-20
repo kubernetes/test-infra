@@ -13,6 +13,7 @@ presubmits:
       preset-kubernetes-e2e-aws-eks-common: "true"
       preset-service-account: "true"
     name: pull-security-kubernetes-e2e-aws-eks-1-11-prod-conformance
+    optional: true
     rerun_command: /test pull-security-kubernetes-e2e-aws-eks-1-11-prod-conformance
     spec:
       containers:
