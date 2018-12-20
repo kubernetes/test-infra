@@ -1,0 +1,48 @@
+presubmits:
+  kubernetes-sigs/sig-storage-local-static-provisioner:
+  - name: pull-sig-storage-local-static-provisioner
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+        command:
+        - runner.sh
+        args:
+        - make
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+  - name: pull-sig-storage-local-static-provisioner-verify
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - verify
+  - name: pull-sig-storage-local-static-provisioner-test
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
