@@ -488,7 +488,7 @@ func buildMeta(pj prowjobv1.ProwJob) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
 		Annotations: annotations,
 		Name:        pj.Name,
-		Namespace:   pj.Namespace, // TODO(fejta): use pj.Spec.Namespace
+		Namespace:   pj.Spec.Namespace,
 		Labels:      podLabels,
 	}
 }
