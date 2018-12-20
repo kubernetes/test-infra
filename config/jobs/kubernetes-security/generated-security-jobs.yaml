@@ -19,10 +19,15 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
+        - --root=/go/src
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=200
-        - --bare
         - --scenario=kubernetes_e2e
         - --
+        - --build=bazel
+        - --cluster=
         - --check-version-skew=false
         - --deployment=eks
         - --provider=eks
