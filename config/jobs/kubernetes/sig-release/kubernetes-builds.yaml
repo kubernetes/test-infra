@@ -85,6 +85,7 @@ periodics:
           cpu: 4
           memory: "8Gi"
 
+<<<<<<< HEAD
 - interval: 2h
   name: ci-kubernetes-build-debian-unstable
   labels:
@@ -108,6 +109,8 @@ periodics:
           cpu: 4
           memory: "8Gi"
 
+=======
+>>>>>>> Reshuffled sig-release-master tests into blocking and informing.  See PR for extensive detail.
 # manual-release-bump-required
 - interval: 1h
   name: ci-kubernetes-build-beta

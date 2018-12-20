@@ -711,8 +711,6 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-kops-build
-  gcs_prefix: kubernetes-jenkins/logs/ci-kops-build
 - name: maintenance-boskos-config-upload
   gcs_prefix: kubernetes-jenkins/logs/maintenance-boskos-config-upload
 - name: maintenance-ci-testgrid-config-upload
@@ -724,8 +722,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/maintenance-pull-janitor
 - name: maintenance-pull-scale-janitor
   gcs_prefix: kubernetes-jenkins/logs/maintenance-pull-scale-janitor
-- name: ci-kubernetes-build-debian-unstable
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-debian-unstable
 - name: ci-kubernetes-e2e-gce-taint-evict
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-taint-evict
 - name: ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures
@@ -4655,6 +4651,8 @@ dashboards:
     test_group_name: ci-kubernetes-bazel-build
   - name: bazel-test-master
     test_group_name: ci-kubernetes-bazel-test
+  - name: cross-build
+    test_group_name: ci-kubernetes-cross-build
   - name: verify-master
     test_group_name: ci-kubernetes-verify-master
   - name: node-kubelet-master
@@ -4663,6 +4661,27 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce
   - name: kops-aws-master
     test_group_name: ci-kubernetes-e2e-kops-aws
+  - name: gce-device-plugin-gpu-master
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
+  - name: gce-cos-master-slow
+    test_group_name: ci-kubernetes-e2e-gci-gce-slow
+  - name: gce-cos-master-serial
+    test_group_name: ci-kubernetes-e2e-gci-gce-serial
+  - name: gce-cos-master-alpha-features
+    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
+  - name: gce-cos-master-scalability-100
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability
+  - name: gce-cos-master-ingress
+    test_group_name: ci-kubernetes-e2e-gci-gce-ingress
+  - name: gce-cos-master-reboot
+    test_group_name: ci-kubernetes-e2e-gci-gce-reboot
+  - name: kubeadm-gce-master
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-master
+  - name: kubeadm-gce-stable-on-master
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
+
+- name: sig-release-master-informing
+  dashboard_tab:
   - name: Conformance - GCE
     description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
     test_group_name: ci-kubernetes-gce-conformance
@@ -4675,28 +4694,10 @@ dashboards:
   - name: Conformance - vSphere
     description: Runs conformance tests using e2e.test against latest kubernetes master with in-tree vSphere
     test_group_name: ci-periodic-vsphere-test-e2e-conformance
-  - name: gce-device-plugin-gpu-master
-    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
-  - name: gce-cos-master-slow
-    test_group_name: ci-kubernetes-e2e-gci-gce-slow
-  - name: gce-cos-master-serial
-    test_group_name: ci-kubernetes-e2e-gci-gce-serial
-  - name: gce-cos-master-alpha-features
-    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
-  - name: gce-cos-master-scalability-100
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability
   - name: gce-master-scale-correctness
     test_group_name: ci-kubernetes-e2e-gce-scale-correctness
   - name: gce-master-scale-performance
     test_group_name: ci-kubernetes-e2e-gce-scale-performance
-  - name: gce-cos-master-ingress
-    test_group_name: ci-kubernetes-e2e-gci-gce-ingress
-  - name: gce-cos-master-reboot
-    test_group_name: ci-kubernetes-e2e-gci-gce-reboot
-  - name: kubeadm-gce-master
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-master
-  - name: kubeadm-gce-stable-on-master
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
   - name: packages-pushed-master
     test_group_name: periodic-kubernetes-e2e-packages-pushed
 
@@ -5052,15 +5053,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster
   - name: gke-gci-1.12-gci-1.11-downgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
-
-- name: sig-release-misc
-  dashboard_tab:
-  - name: cross-build
-    test_group_name: ci-kubernetes-cross-build
-  - name: kops-build
-    test_group_name: ci-kops-build
-  - name: debian-unstable
-    test_group_name: ci-kubernetes-build-debian-unstable
 
 - name: sig-release-1.11-all
   dashboard_tab:
@@ -7673,7 +7665,6 @@ dashboard_groups:
   - sig-release-1.11-blocking
   - sig-release-1.10-all
   - sig-release-1.10-blocking
-  - sig-release-misc
   - sig-release-publishing-bot
 
 - name: sig-scalability
