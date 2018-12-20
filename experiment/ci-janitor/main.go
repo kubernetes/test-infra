@@ -137,25 +137,31 @@ func main() {
 	failed := []string{}
 
 	for _, v := range conf.AllPresubmits(nil) {
-		if project, ttl := findProject(v.Spec); project != "" {
-			if err := clean(project, o.janitorPath, ttl); err != nil {
-				failed = append(failed, project)
+		if v.Spec != nil {
+			if project, ttl := findProject(v.Spec); project != "" {
+				if err := clean(project, o.janitorPath, ttl); err != nil {
+					failed = append(failed, project)
+				}
 			}
 		}
 	}
 
 	for _, v := range conf.AllPostsubmits(nil) {
-		if project, ttl := findProject(v.Spec); project != "" {
-			if err := clean(project, o.janitorPath, ttl); err != nil {
-				failed = append(failed, project)
+		if v.Spec != nil {
+			if project, ttl := findProject(v.Spec); project != "" {
+				if err := clean(project, o.janitorPath, ttl); err != nil {
+					failed = append(failed, project)
+				}
 			}
 		}
 	}
 
 	for _, v := range conf.AllPeriodics() {
-		if project, ttl := findProject(v.Spec); project != "" {
-			if err := clean(project, o.janitorPath, ttl); err != nil {
-				failed = append(failed, project)
+		if v.Spec != nil {
+			if project, ttl := findProject(v.Spec); project != "" {
+				if err := clean(project, o.janitorPath, ttl); err != nil {
+					failed = append(failed, project)
+				}
 			}
 		}
 	}
