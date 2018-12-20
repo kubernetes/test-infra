@@ -857,6 +857,7 @@ func TestInjectSource(t *testing.T) {
 				if err != nil {
 					t.Fatalf("failed to make clonerefs container: %v", err)
 				}
+				src.Name = ""
 				b.Spec.Volumes = append(b.Spec.Volumes, cloneVolumes...)
 				b.Spec.Source = &buildv1alpha1.SourceSpec{
 					Custom: src,
