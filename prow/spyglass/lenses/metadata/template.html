@@ -1,92 +1,46 @@
 {{define "header"}}
 <link rel="stylesheet" href="style.css">
+<script type="text/javascript" src="script_bundle.min.js"></script>
 {{end}}
 
 {{define "body"}}
-{{$passed := eq .Finished.Result "SUCCESS"}}
-{{$failed := eq .Finished.Result "FAILURE" "FAILED"}}
-<div class="mdl-grid">
-  <div class="mdl-cell mdl-cell--6-col">
-    <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp metadata-table">
-      <thead class="metadata-header">
+{{$passed := eq .Status "SUCCESS"}}
+{{$failed := eq .Status "FAILURE" "FAILED"}}
+{{$length := len .Metadata}}
+<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp metadata-table">
+  <thead>
+    <tr class="test-row">
+      <td class="mdl-data-table__cell--non-numeric">Status</td>
+      <td class="mdl-data-table__cell--non-numeric" style="color: {{if $passed}}#00FF00{{else if $failed}}#FF0000{{end}}">{{.Status}}</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">Started</td>
+      <td class="mdl-data-table__cell--non-numeric">{{.StartTime}}</td>
+    </tr>
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">Elapsed</td>
+      <td class="mdl-data-table__cell--non-numeric">{{.Elapsed}}</td>
+    </tr>
+    <tbody id="supplementary_data" class="{{if gt $length 1}}hidden{{end}}">
+    {{range $key, $value := .Metadata}}
+    {{if $value}}
       <tr>
-        <th class="mdl-data-table__cell--non-numeric">Prow Metadata</td>
-        <th class="mdl-data-table__cell--non-numeric">&nbsp</td>
+        <td class="mdl-data-table__cell--non-numeric">{{$key}}</td>
+        <td class="mdl-data-table__cell--non-numeric">{{$value}}</td>
       </tr>
-      </thead>
-      <tbody>
-      {{if $passed}}
-      <tr class="test-row passed-row">
-      {{else if $failed}}
-      <tr class="test-row failed-row">
-      {{else}}
-      <tr class="test-row">
-      {{end}}
-        <td class="mdl-data-table__cell--non-numeric">Status</td>
-        <td class="mdl-data-table__cell--non-numeric">{{.Derived.Status}}</td>
+    {{end}}
+    {{end}}
+    </tbody>
+    {{if gt $length 1}}
+    <tr class="expander" onclick="toggleExpansion('supplementary_data', 'expand_text', 'expand_icon')">
+      <td id="expand_text" class="mdl-data-table__cell--non-numeric expander">Show more</td>
+      <td class="mdl-data-table__cell--non-numeric expander">
+        <i id="expand_icon" class="icon-button material-icons arrow-icon">expand_more</i>
+      </td>
       </tr>
-      <tr>
-        <td class="mdl-data-table__cell--non-numeric">Started</td>
-        <td class="mdl-data-table__cell--non-numeric">{{.Derived.StartTime}}</td>
-      </tr>
-      <tr>
-        <td class="mdl-data-table__cell--non-numeric">Elapsed</td>
-        <td class="mdl-data-table__cell--non-numeric">{{.Derived.Elapsed}}</td>
-      </tr>
-      <tr>
-        <td class="mdl-data-table__cell--non-numeric">Node</td>
-        <td class="mdl-data-table__cell--non-numeric">{{.Started.Node}}</td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
-{{if .Derived.Done}}
-  <div class="mdl-cell mdl-cell--6-col">
-    <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" style="height:unset;">
-      <thead class="metadata-header">
-      <tr>
-        <th class="mdl-data-table__cell--non-numeric">Job-Provided Metadata</td>
-        <th class="mdl-data-table__cell--non-numeric">&nbsp</td>
-      </tr>
-      </thead>
-      <tbody>
-      <tr>
-        <td class="mdl-data-table__cell--non-numeric">Repo</td>
-        <td class="mdl-data-table__cell--non-numeric">{{.Finished.Metadata.Repo}}</td>
-      </tr>
-      <tr>
-        <td class="mdl-data-table__cell--non-numeric">Repo Commit</td>
-        <td class="mdl-data-table__cell--non-numeric">{{.Finished.Metadata.RepoCommit}}</td>
-      </tr>
-      <tr>
-        <td class="mdl-data-table__cell--non-numeric">Infra Commit</td>
-        <td class="mdl-data-table__cell--non-numeric">{{.Finished.Metadata.InfraCommit}}</td>
-      </tr>
-      <tr>
-        <td class="mdl-data-table__cell--non-numeric">Pod</td>
-        <td class="mdl-data-table__cell--non-numeric">{{.Finished.Metadata.Pod}}</td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="mdl-cell mdl-cell--6-col">
-    <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" style="height:unset;">
-      <thead class="metadata-header">
-      <tr>
-        <th class="mdl-data-table__cell--non-numeric">Package</td>
-        <th class="mdl-data-table__cell--non-numeric">Version</td>
-      </tr>
-      </thead>
-      <tbody>
-      {{range $k, $v := .Finished.Metadata.Repos}}
-      <tr>
-        <td class="mdl-data-table__cell--non-numeric">{{$k}}</td>
-        <td class="mdl-data-table__cell--non-numeric">{{$v}}</td>
-      </tr>
-      {{end}}
-      </tbody>
-    </table>
-  </div>
-{{end}}
-</div>
+    {{end}}
+  </tbody>
+</table>
 {{end}}
