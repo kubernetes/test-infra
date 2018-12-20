@@ -10,7 +10,6 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
-    preset-e2e-gci-gce-scalability: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
@@ -49,7 +48,6 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
-    preset-e2e-gci-gce-scalability: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
