@@ -202,6 +202,7 @@ func TestCommentBodyMatches(t *testing.T) {
 						JobBase: JobBase{
 							Name: "gce",
 						},
+						Trigger:   "/test gce",
 						re:        regexp.MustCompile(`/test (gce|all)`),
 						AlwaysRun: true,
 					},
@@ -209,6 +210,7 @@ func TestCommentBodyMatches(t *testing.T) {
 						JobBase: JobBase{
 							Name: "unit",
 						},
+						Trigger:   "/test unit",
 						re:        regexp.MustCompile(`/test (unit|all)`),
 						AlwaysRun: true,
 					},
@@ -216,6 +218,7 @@ func TestCommentBodyMatches(t *testing.T) {
 						JobBase: JobBase{
 							Name: "gke",
 						},
+						Trigger:   "/test gke",
 						re:        regexp.MustCompile(`/test (gke|all)`),
 						AlwaysRun: false,
 					},
@@ -223,6 +226,7 @@ func TestCommentBodyMatches(t *testing.T) {
 						JobBase: JobBase{
 							Name: "federation",
 						},
+						Trigger:   "/test federation",
 						re:        regexp.MustCompile(`/test federation`),
 						AlwaysRun: false,
 					},

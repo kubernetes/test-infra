@@ -94,8 +94,10 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	}
 
 	for _, job := range presubmits {
-		// Ignore jobs that report and should run.
-		shouldRun, err := job.ShouldRun(pr.Base.Ref, e.Body, config.NewGitHubDeferredChangedFilesProvider(gc, org, repo, number))
+		// Ignore jobs that report and should run. Ignore any that match the body as
+		// that will be handled by the trigger plugin in case someone adds test commands
+		// into the same comment as their skip command
+		shouldRun, err := job.ShouldRun(pr.Base.Ref, "", config.NewGitHubDeferredChangedFilesProvider(gc, org, repo, number))
 		if err != nil {
 			resp := fmt.Sprintf("Cannot get changes for PR #%d in %s/%s: %v", number, org, repo, err)
 			log.Warn(resp)

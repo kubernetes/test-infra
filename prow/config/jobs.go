@@ -300,7 +300,7 @@ func (ps Presubmit) ShouldRun(baseRef string, body string, changes ChangedFilesP
 	if ps.AlwaysRun {
 		return true, nil
 	}
-	if ps.Trigger != "" && ps.TriggerMatches(body) {
+	if ps.TriggerMatches(body) {
 		return true, nil
 	}
 	if determined, shouldRun, err := ps.RegexpChangeMatcher.ShouldRun(changes); err != nil {
@@ -316,7 +316,7 @@ func (ps Presubmit) ShouldRun(baseRef string, body string, changes ChangedFilesP
 //
 // This is usually a /test foo string.
 func (ps Presubmit) TriggerMatches(body string) bool {
-	return ps.re.MatchString(body)
+	return ps.Trigger != "" && ps.re.MatchString(body)
 }
 
 // ContextRequired checks whether a context is required from github points of view (required check).
@@ -334,15 +334,22 @@ type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
+// NewGitHubDeferredChangedFilesProvider uses a closure to lazily retrieve the file changes only if they are needed.
+// We only have to fetch the changes if there is at least one RunIfChanged job that is not being force run (due to
+// a `/retest` after a failure or because it is explicitly triggered with `/test foo`).
 func NewGitHubDeferredChangedFilesProvider(client githubClient, org, repo string, num int) ChangedFilesProvider {
+	var changedFiles []string
 	return func() ([]string, error) {
-		changes, err := client.GetPullRequestChanges(org, repo, num)
-		if err != nil {
-			return nil, fmt.Errorf("error getting pull request changes: %v", err)
-		}
-		var changedFiles []string
-		for _, change := range changes {
-			changedFiles = append(changedFiles, change.Filename)
+		// Fetch the changed files from github at most once.
+		if changedFiles == nil {
+			changes, err := client.GetPullRequestChanges(org, repo, num)
+			if err != nil {
+				return nil, fmt.Errorf("error getting pull request changes: %v", err)
+			}
+			for _, change := range changes {
+				changedFiles = append(changedFiles, change.Filename)
+			}
+			return changedFiles, nil
 		}
 		return changedFiles, nil
 	}

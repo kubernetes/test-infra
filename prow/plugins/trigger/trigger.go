@@ -180,21 +180,6 @@ func TrustedUser(ghc trustedUserClient, trigger *plugins.Trigger, user, org, rep
 	return member, nil
 }
 
-func fileChangesGetter(ghc githubClient, org, repo string, num int) func() ([]string, error) {
-	var changedFiles []string
-	return func() ([]string, error) {
-		// Fetch the changed files from github at most once.
-		if changedFiles == nil {
-			var err error
-			changedFiles, err = config.NewGitHubDeferredChangedFilesProvider(ghc, org, repo, num)()
-			if err != nil {
-				return nil, err
-			}
-		}
-		return changedFiles, nil
-	}
-}
-
 // RunOrSkipRequested evaluates requestJobs to determine which config.Presubmits to
 // run and which ones to skip and once execute the ones that should be ran.
 func RunOrSkipRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts sets.String, body, eventGUID string) error {
@@ -206,12 +191,6 @@ func RunOrSkipRequested(c Client, pr *github.PullRequest, requestedJobs []config
 	if err != nil {
 		return err
 	}
-
-	// Use a closure to lazily retrieve the file changes only if they are needed.
-	// We only have to fetch the changes if there is at least one RunIfChanged
-	// job that is not being force run (due to a `/retest` after a failure or
-	// because it is explicitly triggered with `/test foo`).
-	getChanges := fileChangesGetter(c.GitHubClient, org, repo, number)
 
 	// For each job determine if any sharded version of the job runs.
 	// This in turn determines which jobs to run and which contexts to mark as "Skipped".
@@ -225,9 +204,12 @@ func RunOrSkipRequested(c Client, pr *github.PullRequest, requestedJobs []config
 	toRun := sets.NewString()
 	toSkip := sets.NewString()
 	for _, job := range requestedJobs {
-		runs := forceRunContexts.Has(job.Context)
+		// jobs that don't run on the branch in question are in the forced list as
+		// that is how branch sharding is implemented, so we need to do that check
+		// twice
+		runs := job.RunsAgainstBranch(pr.Base.Ref) && forceRunContexts.Has(job.Context)
 		if !runs {
-			runs, err = job.ShouldRun(pr.Base.Ref, body, getChanges)
+			runs, err = job.ShouldRun(pr.Base.Ref, body, config.NewGitHubDeferredChangedFilesProvider(c.GitHubClient, org, repo, number))
 			if err != nil {
 				return err
 			}
