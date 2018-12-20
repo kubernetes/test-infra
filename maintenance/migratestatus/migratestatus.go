@@ -22,8 +22,9 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/maintenance/migratestatus/migrator"
-	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/logrusutil"
 )
@@ -102,7 +103,7 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "migratestatus"}),
 	)
 
-	secretAgent := &config.SecretAgent{}
+	secretAgent := &secret.Agent{}
 	if o.github.TokenPath != "" {
 		if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
 			logrus.WithError(err).Fatal("Error starting secrets agent.")

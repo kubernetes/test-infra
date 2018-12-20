@@ -21,6 +21,7 @@ go_library(
     deps = [
         "//pkg/flagutil:go_default_library",
         "//prow/config:go_default_library",
+        "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/jenkins:go_default_library",
         "//prow/kube:go_default_library",

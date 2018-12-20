@@ -22,7 +22,8 @@ import (
 	"net/url"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/config"
+
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 )
@@ -63,7 +64,7 @@ func (o *GitHubOptions) Validate(dryRun bool) error {
 }
 
 // GitHubClient returns a GitHub client.
-func (o *GitHubOptions) GitHubClient(secretAgent *config.SecretAgent, dryRun bool) (client *github.Client, err error) {
+func (o *GitHubOptions) GitHubClient(secretAgent *secret.Agent, dryRun bool) (client *github.Client, err error) {
 	var generator *func() []byte
 	if o.TokenPath == "" {
 		generatorFunc := func() []byte {
@@ -85,7 +86,7 @@ func (o *GitHubOptions) GitHubClient(secretAgent *config.SecretAgent, dryRun boo
 }
 
 // GitClient returns a Git client.
-func (o *GitHubOptions) GitClient(secretAgent *config.SecretAgent, dryRun bool) (client *git.Client, err error) {
+func (o *GitHubOptions) GitClient(secretAgent *secret.Agent, dryRun bool) (client *git.Client, err error) {
 	client, err = git.NewClient()
 	if err != nil {
 		return nil, err

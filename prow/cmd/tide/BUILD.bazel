@@ -15,6 +15,7 @@ go_library(
     deps = [
         "//pkg/flagutil:go_default_library",
         "//prow/config:go_default_library",
+        "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//prow/metrics:go_default_library",
