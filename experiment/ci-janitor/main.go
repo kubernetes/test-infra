@@ -21,7 +21,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"os"
 	"os/exec"
 	"strings"
 
@@ -84,10 +83,25 @@ func gatherOptions() options {
 	return o
 }
 
-func findProject(spec *v1.PodSpec) (string, int) {
+func containers(jb config.JobBase) []v1.Container {
+	var containers []v1.Container
+	if jb.Spec != nil {
+		containers = append(containers, jb.Spec.Containers...)
+		containers = append(containers, jb.Spec.InitContainers...)
+	}
+	if jb.BuildSpec != nil {
+		containers = append(containers, jb.BuildSpec.Steps...)
+		if jb.BuildSpec.Source != nil && jb.BuildSpec.Source.Custom != nil {
+			containers = append(containers, *jb.BuildSpec.Source.Custom)
+		}
+	}
+	return containers
+}
+
+func findProject(jb config.JobBase) (string, int) {
 	project := ""
 	ttl := defaultTTL
-	for _, container := range spec.Containers {
+	for _, container := range containers(jb) {
 		for _, arg := range container.Args {
 			if strings.HasPrefix(arg, "--gcp-project=") {
 				project = strings.TrimPrefix(arg, "--gcp-project=")
@@ -136,35 +150,30 @@ func main() {
 
 	failed := []string{}
 
+	var jobs []config.JobBase
+
 	for _, v := range conf.AllPresubmits(nil) {
-		if project, ttl := findProject(v.Spec); project != "" {
-			if err := clean(project, o.janitorPath, ttl); err != nil {
-				failed = append(failed, project)
-			}
-		}
+		jobs = append(jobs, v.JobBase)
 	}
-
 	for _, v := range conf.AllPostsubmits(nil) {
-		if project, ttl := findProject(v.Spec); project != "" {
-			if err := clean(project, o.janitorPath, ttl); err != nil {
-				failed = append(failed, project)
-			}
-		}
+		jobs = append(jobs, v.JobBase)
 	}
-
 	for _, v := range conf.AllPeriodics() {
-		if project, ttl := findProject(v.Spec); project != "" {
+		jobs = append(jobs, v.JobBase)
+	}
+
+	for _, j := range jobs {
+		if project, ttl := findProject(j); project != "" {
 			if err := clean(project, o.janitorPath, ttl); err != nil {
+				logrus.WithError(err).Errorf("failed to clean %q", project)
 				failed = append(failed, project)
 			}
 		}
 	}
 
-	if len(failed) == 0 {
-		logrus.Info("Successfully cleaned up all projects!")
-		os.Exit(0)
+	if len(failed) > 0 {
+		logrus.Fatalf("Failed clean %d projects: %v", len(failed), failed)
 	}
 
-	logrus.Warnf("Failed clean %d projects: %v", len(failed), failed)
-	os.Exit(1)
+	logrus.Info("Successfully cleaned up all projects!")
 }
