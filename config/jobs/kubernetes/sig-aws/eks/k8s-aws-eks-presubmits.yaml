@@ -18,10 +18,15 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
         imagePullPolicy: Always
         args:
+          - --root=/go/src
+          - --repo=k8s.io/kubernetes=$(PULL_REFS)
+          - --repo=k8s.io/release
+          - --upload=gs://kubernetes-jenkins/pr-logs
           - --timeout=200
-          - --bare
           - --scenario=kubernetes_e2e
           - --
+          - --build=bazel
+          - --cluster=
           - --check-version-skew=false
           - --deployment=eks
           - --provider=eks
