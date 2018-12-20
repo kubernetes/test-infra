@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -152,8 +153,7 @@ func TestGetRefData(t *testing.T) {
 	for _, tc := range cases {
 		refData := getRefData(tc.job)
 		if !reflect.DeepEqual(refData, tc.exp) {
-			t.Errorf("%s\nexpected: %v\n"+
-				"got:      %v", tc.name, tc.exp, refData)
+			t.Errorf("ref data mismatch:\n%s", diff.ObjectReflectDiff(tc.exp, refData))
 		}
 	}
 }
