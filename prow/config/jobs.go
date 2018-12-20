@@ -516,3 +516,15 @@ func (c *JobConfig) AllPeriodics() []Periodic {
 
 	return listPeriodic(c.Periodics)
 }
+
+// ClearCompiledRegexes removes compiled regexes from the presubmits,
+// useful for testing when deep equality is needed between presubmits
+func ClearCompiledRegexes(presubmits []Presubmit) {
+	for i := range presubmits {
+		presubmits[i].re = nil
+		presubmits[i].Brancher.re = nil
+		presubmits[i].Brancher.reSkip = nil
+		presubmits[i].RegexpChangeMatcher.reChanges = nil
+		ClearCompiledRegexes(presubmits[i].RunAfterSuccess)
+	}
+}
