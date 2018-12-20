@@ -6,6 +6,8 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+      command:
+      - /commenter
       args:
       - |-
         --query=org:kubernetes
@@ -37,6 +39,8 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+      command:
+      - /commenter
       args:
       - |-
         --query=is:pr
@@ -80,6 +84,8 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+      command:
+      - /commenter
       args:
       - |-
         --query=org:kubernetes
@@ -114,6 +120,8 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+      command:
+      - /commenter
       args:
       - |-
         --query=org:kubernetes
@@ -150,6 +158,8 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/issue-creator:v20170907-5240cca5
+      command:
+      - /issue-creator
       args:
       - --dry-run=false
       - --alsologtostderr
@@ -174,6 +184,8 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+      command:
+      - /commenter
       args:
       - |-
         --query=repo:kubernetes/enhancements
