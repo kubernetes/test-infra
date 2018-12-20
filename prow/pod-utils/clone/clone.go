@@ -191,7 +191,7 @@ func (g *gitCtx) commandsForPullRefs(refs kube.Refs, fakeTimestamp int) []cloneC
 			prCheckout = "FETCH_HEAD"
 		}
 		fakeTimestamp++
-		gitMergeCommand := g.gitCommand("merge", prCheckout)
+		gitMergeCommand := g.gitCommand("merge", "--no-ff", prCheckout)
 		gitMergeCommand.env = append(gitMergeCommand.env, gitTimestampEnvs(fakeTimestamp)...)
 		commands = append(commands, gitMergeCommand)
 	}

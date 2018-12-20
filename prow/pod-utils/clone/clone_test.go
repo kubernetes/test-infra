@@ -265,7 +265,7 @@ func TestCommandsForRefs(t *testing.T) {
 			},
 			expectedPull: []cloneCommand{
 				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "pull/1/head"}},
-				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "FETCH_HEAD"}, env: gitTimestampEnvs(fakeTimestamp + 1)},
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "--no-ff", "FETCH_HEAD"}, env: gitTimestampEnvs(fakeTimestamp + 1)},
 				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
 			},
 		},
@@ -291,7 +291,7 @@ func TestCommandsForRefs(t *testing.T) {
 			},
 			expectedPull: []cloneCommand{
 				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "pull-me"}},
-				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "FETCH_HEAD"}, env: gitTimestampEnvs(fakeTimestamp + 1)},
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "--no-ff", "FETCH_HEAD"}, env: gitTimestampEnvs(fakeTimestamp + 1)},
 				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
 			},
 		},
@@ -317,7 +317,7 @@ func TestCommandsForRefs(t *testing.T) {
 			},
 			expectedPull: []cloneCommand{
 				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "pull/1/head"}},
-				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "abcdef"}, env: gitTimestampEnvs(fakeTimestamp + 1)},
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "--no-ff", "abcdef"}, env: gitTimestampEnvs(fakeTimestamp + 1)},
 				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
 			},
 		},
@@ -344,9 +344,9 @@ func TestCommandsForRefs(t *testing.T) {
 			},
 			expectedPull: []cloneCommand{
 				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "pull/1/head"}},
-				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "FETCH_HEAD"}, env: gitTimestampEnvs(fakeTimestamp + 1)},
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "--no-ff", "FETCH_HEAD"}, env: gitTimestampEnvs(fakeTimestamp + 1)},
 				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "pull/2/head"}},
-				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "FETCH_HEAD"}, env: gitTimestampEnvs(fakeTimestamp + 2)},
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "--no-ff", "FETCH_HEAD"}, env: gitTimestampEnvs(fakeTimestamp + 2)},
 				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
 			},
 		},
