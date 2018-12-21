@@ -85,32 +85,6 @@ periodics:
           cpu: 4
           memory: "8Gi"
 
-<<<<<<< HEAD
-- interval: 2h
-  name: ci-kubernetes-build-debian-unstable
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
-      args:
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=50
-      - --scenario=execute
-      - --
-      - ./debian/jenkins.sh
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          cpu: 4
-          memory: "8Gi"
-
-=======
->>>>>>> Reshuffled sig-release-master tests into blocking and informing.  See PR for extensive detail.
 # manual-release-bump-required
 - interval: 1h
   name: ci-kubernetes-build-beta
