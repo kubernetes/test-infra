@@ -74,6 +74,7 @@ filegroup(
         "//prow/cmd/build:all-srcs",
         "//prow/cmd/checkconfig:all-srcs",
         "//prow/cmd/clonerefs:all-srcs",
+        "//prow/cmd/config-bootstrapper:all-srcs",
         "//prow/cmd/crier:all-srcs",
         "//prow/cmd/deck:all-srcs",
         "//prow/cmd/entrypoint:all-srcs",
