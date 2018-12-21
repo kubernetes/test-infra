@@ -2503,12 +2503,9 @@ presubmits:
         - --scenario=kubernetes_verify
         - --
         - --branch=${PULL_BASE_REF}
+        - --exclude-typecheck
+        - --exclude-godep
         - --script=./hack/jenkins/verify-dockerized.sh
-        env:
-        - name: EXCLUDE_TYPECHECK
-          value: "Y"
-        - name: EXCLUDE_GODEP
-          value: "Y"
         image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
         name: ""
         resources:
