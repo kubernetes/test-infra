@@ -493,9 +493,6 @@ func TestRemoveLabelFailsOnOtherThan404(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error but got none")
 	}
-	if _, ok := err.(*LabelNotFound); ok {
-		t.Fatalf("Expected error not to be a 404: %v", err)
-	}
 }
 
 func TestRemoveLabelNotFound(t *testing.T) {
@@ -506,12 +503,8 @@ func TestRemoveLabelNotFound(t *testing.T) {
 	c := getClient(ts.URL)
 	err := c.RemoveLabel("any", "old", 3, "label")
 
-	if err == nil {
-		t.Fatalf("RemoveLabel expected an error, got none")
-	}
-
-	if _, ok := err.(*LabelNotFound); !ok {
-		t.Fatalf("RemoveLabel expected LabelNotFound error, got %v", err)
+	if err != nil {
+		t.Fatalf("RemoveLabel expected no error, got one: %v", err)
 	}
 }
 

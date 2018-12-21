@@ -211,12 +211,8 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 	} else {
 		// Don't bother checking if it has the label...it's a race, and we'll have
 		// to handle failure due to not being labeled anyway.
-		labelNotFound := true
 		if err := ghc.RemoveLabel(org, repo, pre.Number, labels.InvalidOwners); err != nil {
-			if _, labelNotFound = err.(*github.LabelNotFound); !labelNotFound {
-				return fmt.Errorf("failed removing %s label: %v", labels.InvalidOwners, err)
-			}
-			// If the error is indeed *github.LabelNotFound, consider it a success.
+			return fmt.Errorf("failed removing %s label: %v", labels.InvalidOwners, err)
 		}
 	}
 	return nil
