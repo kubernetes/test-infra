@@ -176,7 +176,6 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-highspeed-common: "true"
   spec:
     containers:
     - args:
@@ -213,7 +212,6 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-highspeed-common: "true"
   spec:
     containers:
     - args:
@@ -254,7 +252,6 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-highspeed-common: "true"
   spec:
     containers:
     - args:
@@ -291,7 +288,6 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-highspeed-common: "true"
   spec:
     containers:
     - args:
@@ -327,7 +323,6 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-highspeed-common: "true"
   spec:
     containers:
     - args:

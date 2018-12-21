@@ -1240,7 +1240,6 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-highspeed-common: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 1
@@ -1298,7 +1297,6 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-highspeed-common: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 1
