@@ -3063,6 +3063,15 @@ test_groups:
 - name: pull-kops-e2e-kubernetes-aws
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws
   num_columns_recent: 20
+- name: pull-kops-e2e-kubernetes-aws-stable1
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws-stable1
+  num_columns_recent: 20
+- name: pull-kops-e2e-kubernetes-aws-stable2
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws-stable2
+  num_columns_recent: 20
+- name: pull-kops-e2e-kubernetes-aws-stable3
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws-stable3
+  num_columns_recent: 20
 - name: pull-kops-bazel-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-bazel-build
   num_columns_recent: 20
@@ -7175,6 +7184,12 @@ dashboards:
   dashboard_tab:
   - name: e2e
     test_group_name: pull-kops-e2e-kubernetes-aws
+  - name: e2e-stable1
+    test_group_name: pull-kops-e2e-kubernetes-aws-stable1
+  - name: e2e-stable2
+    test_group_name: pull-kops-e2e-kubernetes-aws-stable2
+  - name: e2e-stable3
+    test_group_name: pull-kops-e2e-kubernetes-aws-stable3
   - name: verify-bazel
     test_group_name: pull-kops-verify-bazel
   - name: bazel-build
