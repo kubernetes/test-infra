@@ -51,7 +51,6 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-highspeed-common: "true"
     spec:
       containers:
       - args:
@@ -93,7 +92,6 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-highspeed-common: "true"
     spec:
       containers:
       - args:

@@ -110,10 +110,3 @@ presets:
   # Increase delete collection parallelism.
   - name: TEST_CLUSTER_DELETE_COLLECTION_WORKERS
     value: --delete-collection-workers=16
-### Common env variables for all high-speed scalability suites.
-- labels:
-    preset-e2e-scalability-highspeed-common: "true"
-  env:
-  # Increase size of default subnetworks to enable large clusters.
-  - name: ENABLE_BIG_CLUSTER_SUBNETS
-    value: "true"
