@@ -13,4 +13,10 @@ function toggleExpansion(dataId: string, textId: string, iconId: string): void {
   spyglass.contentUpdated();
 }
 
+function getLocalStartTime(): void {
+  const elem = document.getElementById("start_time")!;
+  elem.innerText = (new Date(elem.innerText)).toString();
+}
+
 (window as any).toggleExpansion = toggleExpansion;
+window.onload = getLocalStartTime;
