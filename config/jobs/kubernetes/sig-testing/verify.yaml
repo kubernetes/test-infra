@@ -17,13 +17,10 @@ presubmits:
         - --scenario=kubernetes_verify
         - --
         - "--branch=${PULL_BASE_REF}"
+        - --exclude-typecheck
+        - --exclude-godep
         - --script=./hack/jenkins/verify-dockerized.sh
         # docker-in-docker needs privileged mode
-        env:
-        - name: EXCLUDE_TYPECHECK
-          value: "Y"
-        - name: EXCLUDE_GODEP
-          value: "Y"
         securityContext:
           privileged: true
         resources:
