@@ -22,8 +22,6 @@ import (
 	"sort"
 	"testing"
 
-	"k8s.io/test-infra/prow/plugins"
-
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -239,13 +237,7 @@ func TestHandleWithExcludeApproversOnlyReviewers(t *testing.T) {
 			PullRequest: github.PullRequest{Number: 5, User: github.User{Login: "author"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
-		config := plugins.Blunderbuss{
-			ReviewerCount:    &tc.reviewerCount,
-			MaxReviewerCount: tc.maxReviewerCount,
-			FileWeightCount:  nil,
-			ExcludeApprovers: true,
-		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", PluginName), config, &pre.Repo, &pre.PullRequest); err != nil {
+		if err := handle(fghc, foc, logrus.WithField("plugin", PluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, true, &pre.Repo, &pre.PullRequest); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}
@@ -283,13 +275,7 @@ func TestHandleWithoutExcludeApproversNoReviewers(t *testing.T) {
 			PullRequest: github.PullRequest{Number: 5, User: github.User{Login: "author"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
-		config := plugins.Blunderbuss{
-			ReviewerCount:    &tc.reviewerCount,
-			MaxReviewerCount: tc.maxReviewerCount,
-			FileWeightCount:  nil,
-			ExcludeApprovers: false,
-		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", PluginName), config, &pre.Repo, &pre.PullRequest); err != nil {
+		if err := handle(fghc, foc, logrus.WithField("plugin", PluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, false, &pre.Repo, &pre.PullRequest); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}
@@ -406,13 +392,7 @@ func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
 			PullRequest: github.PullRequest{Number: 5, User: github.User{Login: "author"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
-		config := plugins.Blunderbuss{
-			ReviewerCount:    &tc.reviewerCount,
-			MaxReviewerCount: tc.maxReviewerCount,
-			FileWeightCount:  nil,
-			ExcludeApprovers: false,
-		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", PluginName), config, &pre.Repo, &pre.PullRequest); err != nil {
+		if err := handle(fghc, foc, logrus.WithField("plugin", PluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, false, &pre.Repo, &pre.PullRequest); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}
@@ -510,13 +490,7 @@ func TestHandleOld(t *testing.T) {
 			PullRequest: github.PullRequest{Number: 5, User: github.User{Login: "AUTHOR"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
-		config := plugins.Blunderbuss{
-			ReviewerCount:    nil,
-			MaxReviewerCount: 0,
-			FileWeightCount:  &tc.reviewerCount,
-			ExcludeApprovers: false,
-		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", PluginName), config, &pre.Repo, &pre.PullRequest); err != nil {
+		if err := handle(fghc, foc, logrus.WithField("plugin", PluginName), nil, &tc.reviewerCount, 0, false, &pre.Repo, &pre.PullRequest); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}

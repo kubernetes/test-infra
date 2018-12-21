@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"regexp"
 	"sort"
 
 	"github.com/sirupsen/logrus"
@@ -34,6 +35,10 @@ import (
 const (
 	// PluginName defines this plugin's registered name.
 	PluginName = "blunderbuss"
+)
+
+var (
+	match = regexp.MustCompile(`(?mi)^/auto-cc\s*$`)
 )
 
 func init() {
@@ -116,8 +121,12 @@ func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error
 
 	return handle(
 		pc.GitHubClient,
-		oc, pc.Logger,
-		pc.PluginConfig.Blunderbuss,
+		oc,
+		pc.Logger,
+		pc.PluginConfig.Blunderbuss.ReviewerCount,
+		pc.PluginConfig.Blunderbuss.FileWeightCount,
+		pc.PluginConfig.Blunderbuss.MaxReviewerCount,
+		pc.PluginConfig.Blunderbuss.ExcludeApprovers,
 		&pre.Repo,
 		&pre.PullRequest,
 	)
@@ -128,27 +137,34 @@ func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) 
 		return nil
 	}
 
-	pr, err := pc.GitHubClient.GetPullRequest(ce.Repo.Owner.Login, ce.Repo.Name, ce.Number)
-	if err != nil {
-		return err
+	if !match.MatchString(ce.Body) {
+		return nil
 	}
 
-	ro, err := pc.OwnersClient.LoadRepoOwners(ce.Repo.Owner.Login, ce.Repo.Name, pr.Base.Ref)
+	pr, err := pc.GitHubClient.GetPullRequest(ce.Repo.Owner.Login, ce.Repo.Name, ce.Number)
+	if err != nil {
+		return fmt.Errorf("error loading PullRequest: %v", err)
+	}
+
+	oc, err := pc.OwnersClient.LoadRepoOwners(ce.Repo.Owner.Login, ce.Repo.Name, pr.Base.Ref)
 	if err != nil {
 		return fmt.Errorf("error loading RepoOwners: %v", err)
 	}
 
 	return handle(
 		pc.GitHubClient,
-		ro,
+		oc,
 		pc.Logger,
-		pc.PluginConfig.Blunderbuss,
+		pc.PluginConfig.Blunderbuss.ReviewerCount,
+		pc.PluginConfig.Blunderbuss.FileWeightCount,
+		pc.PluginConfig.Blunderbuss.MaxReviewerCount,
+		pc.PluginConfig.Blunderbuss.ExcludeApprovers,
 		&ce.Repo,
 		pr,
 	)
 }
 
-func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, config plugins.Blunderbuss, repo *github.Repo, pr *github.PullRequest) error {
+func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount, oldReviewCount *int, maxReviewers int, excludeApprovers bool, repo *github.Repo, pr *github.PullRequest) error {
 	changes, err := ghc.GetPullRequestChanges(repo.Owner.Login, repo.Name, pr.Number)
 	if err != nil {
 		return fmt.Errorf("error getting PR changes: %v", err)
@@ -157,38 +173,38 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, config plugins
 	var reviewers []string
 	var requiredReviewers []string
 	switch {
-	case config.FileWeightCount != nil:
-		reviewers = getReviewersOld(log, oc, pr.User.Login, changes, *config.FileWeightCount)
-	case config.ReviewerCount != nil:
-		reviewers, requiredReviewers, err = getReviewers(oc, pr.User.Login, changes, *config.ReviewerCount)
+	case oldReviewCount != nil:
+		reviewers = getReviewersOld(log, oc, pr.User.Login, changes, *oldReviewCount)
+	case reviewerCount != nil:
+		reviewers, requiredReviewers, err = getReviewers(oc, pr.User.Login, changes, *reviewerCount)
 		if err != nil {
 			return err
 		}
-		if missing := *config.ReviewerCount - len(reviewers); missing > 0 {
-			if !config.ExcludeApprovers {
+		if missing := *reviewerCount - len(reviewers); missing > 0 {
+			if !excludeApprovers {
 				// Attempt to use approvers as additional reviewers. This must use
 				// reviewerCount instead of missing because owners can be both reviewers
 				// and approvers and the search might stop too early if it finds
 				// duplicates.
 				frc := fallbackReviewersClient{ownersClient: oc}
-				approvers, _, err := getReviewers(frc, pr.User.Login, changes, *config.ReviewerCount)
+				approvers, _, err := getReviewers(frc, pr.User.Login, changes, *reviewerCount)
 				if err != nil {
 					return err
 				}
 				combinedReviewers := sets.NewString(reviewers...)
 				combinedReviewers.Insert(approvers...)
-				log.Infof("Added %d approvers as reviewers. %d/%d reviewers found.", combinedReviewers.Len()-len(reviewers), combinedReviewers.Len(), *config.ReviewerCount)
+				log.Infof("Added %d approvers as reviewers. %d/%d reviewers found.", combinedReviewers.Len()-len(reviewers), combinedReviewers.Len(), *reviewerCount)
 				reviewers = combinedReviewers.List()
 			}
 		}
-		if missing := *config.ReviewerCount - len(reviewers); missing > 0 {
-			log.Warnf("Not enough reviewers found in OWNERS files for files touched by this PR. %d/%d reviewers found.", len(reviewers), *config.ReviewerCount)
+		if missing := *reviewerCount - len(reviewers); missing > 0 {
+			log.Warnf("Not enough reviewers found in OWNERS files for files touched by this PR. %d/%d reviewers found.", len(reviewers), *reviewerCount)
 		}
 	}
 
-	if config.MaxReviewerCount > 0 && len(reviewers) > config.MaxReviewerCount {
-		log.Infof("Limiting request of %d reviewers to %d maxReviewers.", len(reviewers), config.MaxReviewerCount)
-		reviewers = reviewers[:config.MaxReviewerCount]
+	if maxReviewers > 0 && len(reviewers) > maxReviewers {
+		log.Infof("Limiting request of %d reviewers to %d maxReviewers.", len(reviewers), maxReviewers)
+		reviewers = reviewers[:maxReviewers]
 	}
 
 	// add required reviewers if any
