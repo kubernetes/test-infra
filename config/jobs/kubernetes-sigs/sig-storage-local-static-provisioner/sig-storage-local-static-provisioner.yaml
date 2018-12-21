@@ -4,7 +4,6 @@ presubmits:
     always_run: true
     decorate: true
     labels:
-      preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
@@ -19,8 +18,6 @@ presubmits:
   - name: pull-sig-storage-local-static-provisioner-verify
     always_run: true
     decorate: true
-    labels:
-      preset-service-account: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
@@ -33,7 +30,6 @@ presubmits:
     always_run: true
     decorate: true
     labels:
-      preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
