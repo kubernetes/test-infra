@@ -32,7 +32,10 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const PluginName = "hold"
+const (
+	// PluginName defines this plugin's registered name.
+	PluginName = "hold"
+)
 
 var (
 	labelRe       = regexp.MustCompile(`(?mi)^/hold\s*$`)

@@ -36,6 +36,7 @@ import (
 )
 
 const (
+	// PluginName defines this plugin's registered name.
 	PluginName     = "verify-owners"
 	ownersFileName = "OWNERS"
 )
@@ -52,7 +53,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 }
 
 type ownersClient interface {
-	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerInterface, error)
+	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error)
 }
 
 type githubClient interface {

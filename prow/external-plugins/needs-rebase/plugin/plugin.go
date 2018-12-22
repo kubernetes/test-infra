@@ -55,6 +55,8 @@ type commentPruner interface {
 	PruneComments(shouldPrune func(github.IssueComment) bool)
 }
 
+// HelpProvider constructs the PluginHelp for this plugin that takes into account enabled repositories.
+// HelpProvider defines the type for function that construct the PluginHelp for plugins.
 func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	return &pluginhelp.PluginHelp{
 			Description: `The needs-rebase plugin manages the '` + labels.NeedsRebase + `' label by removing it from Pull Requests that are mergeable and adding it to those which are not.
@@ -63,6 +65,9 @@ The plugin reacts to commit changes on PRs in addition to periodically scanning 
 		nil
 }
 
+// HandleEvent handles a Github PR event to determine if the "needs-rebase"
+// label needs to be added or removed. It depends on Github mergeability check
+// to decide the need for a rebase.
 func HandleEvent(log *logrus.Entry, ghc githubClient, pre *github.PullRequestEvent) error {
 	if pre.Action != github.PullRequestActionOpened && pre.Action != github.PullRequestActionSynchronize && pre.Action != github.PullRequestActionReopened {
 		return nil
@@ -90,6 +95,9 @@ func HandleEvent(log *logrus.Entry, ghc githubClient, pre *github.PullRequestEve
 	return takeAction(log, ghc, org, repo, number, pre.PullRequest.User.Login, hasLabel, mergeable)
 }
 
+// HandleAll checks all orgs and repos that enabled this plugin for open PRs to
+// determine if the "needs-rebase" label needs to be added or removed. It
+// depends on Github's mergeability check to decide the need for a rebase.
 func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuration) error {
 	log.Info("Checking all PRs.")
 	orgs, repos := config.EnabledReposForExternalPlugin(PluginName)
@@ -148,6 +156,9 @@ func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuratio
 	return nil
 }
 
+// takeAction adds or removes the "needs-rebase" label based on the current
+// state of the PR (hasLabel and mergeable). It also handles adding and
+// removing Github comments notifying the PR author that a rebase is needed.
 func takeAction(log *logrus.Entry, ghc githubClient, org, repo string, num int, author string, hasLabel, mergeable bool) error {
 	if !mergeable && !hasLabel {
 		if err := ghc.AddLabel(org, repo, num, labels.NeedsRebase); err != nil {

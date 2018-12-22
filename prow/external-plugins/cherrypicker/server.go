@@ -54,6 +54,7 @@ type githubClient interface {
 	ListOrgMembers(org, role string) ([]github.TeamMember, error)
 }
 
+// HelpProvider construct the pluginhelp.PluginHelp for this plugin.
 func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The cherrypick plugin is used for cherrypicking PRs across branches. For every successful cherrypick invocation a new PR is opened against the target branch and assigned to the requester. If the parent PR contains a release note, it is copied to the cherrypick PR.`,

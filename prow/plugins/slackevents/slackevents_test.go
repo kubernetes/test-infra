@@ -37,7 +37,7 @@ func (fk *FakeClient) WriteMessage(text string, channel string) error {
 }
 
 func TestPush(t *testing.T) {
-	var pushStr string = `{
+	var pushStr = `{
   "ref": "refs/heads/master",
   "before": "d73a75b4b1ddb63870954b9a60a63acaa4cb1ca5",
   "after": "045a6dca07840efaf3311450b615e19b5c75f787",

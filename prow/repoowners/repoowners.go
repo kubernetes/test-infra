@@ -87,7 +87,7 @@ type cacheEntry struct {
 // Interface is an interface to work with OWNERS files.
 type Interface interface {
 	LoadRepoAliases(org, repo, base string) (RepoAliases, error)
-	LoadRepoOwners(org, repo, base string) (RepoOwnerInterface, error)
+	LoadRepoOwners(org, repo, base string) (RepoOwner, error)
 }
 
 // Client is an implementation of the Interface.
@@ -132,8 +132,8 @@ func NewClient(
 // RepoAliases defines groups of people to be used in OWNERS files
 type RepoAliases map[string]sets.String
 
-// RepoOwnerInterface is an interface to work with repoowners
-type RepoOwnerInterface interface {
+// RepoOwner is an interface to work with repoowners
+type RepoOwner interface {
 	FindApproverOwnersForFile(path string) string
 	FindReviewersOwnersForFile(path string) string
 	FindLabelsForFile(path string) sets.String
@@ -145,10 +145,9 @@ type RepoOwnerInterface interface {
 	RequiredReviewers(path string) sets.String
 }
 
-// RepoOwners implements RepoOwnerInterface
-var _ RepoOwnerInterface = &RepoOwners{}
+var _ RepoOwner = &RepoOwners{}
 
-// RepoOwners contains the parsed OWNERS config
+// RepoOwners contains the parsed OWNERS config.
 type RepoOwners struct {
 	RepoAliases
 
@@ -202,7 +201,7 @@ func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
 
 // LoadRepoOwners returns an up-to-date RepoOwners struct for the specified repo.
 // Note: The returned *RepoOwners should be treated as read only.
-func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwnerInterface, error) {
+func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	log := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "base": base})
 	cloneRef := fmt.Sprintf("%s/%s", org, repo)
 	fullName := fmt.Sprintf("%s:%s", cloneRef, base)

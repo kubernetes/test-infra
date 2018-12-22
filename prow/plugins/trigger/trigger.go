@@ -106,6 +106,9 @@ type kubeClient interface {
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
 }
 
+// Client holds the necessary structures to work with prow via logging, github, kubernetes and its configuration.
+//
+// TODO(fejta): consider exporting an interface rather than a struct
 type Client struct {
 	GitHubClient githubClient
 	KubeClient   kubeClient
@@ -203,6 +206,8 @@ func allContexts(parent config.Presubmit) []string {
 	return contexts
 }
 
+// RunOrSkipRequested evaluates requestJobs to determine which config.Presubmits to
+// run and which ones to skip and once execute the ones that should be ran.
 func RunOrSkipRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts map[string]bool, body, eventGUID string) error {
 	org := pr.Base.Repo.Owner.Login
 	repo := pr.Base.Repo.Name

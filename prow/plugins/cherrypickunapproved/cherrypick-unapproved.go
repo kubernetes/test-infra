@@ -32,7 +32,10 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const PluginName = "cherry-pick-unapproved"
+const (
+	// PluginName defines this plugin's registered name.
+	PluginName = "cherry-pick-unapproved"
+)
 
 func init() {
 	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)

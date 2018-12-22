@@ -67,6 +67,7 @@ type Help struct {
 	ExternalPluginHelp map[string]PluginHelp
 }
 
+// AddCommand registers new help text for a bot command.
 func (pluginHelp *PluginHelp) AddCommand(command Command) {
 	pluginHelp.Commands = append(pluginHelp.Commands, command)
 }

@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// buildifier defines a Prow plugin that runs buildifier over modified BUILD,
-// WORKSPACE, and skylark (.bzl) files in pull requests.
+// Package buildifier defines a Prow plugin that runs buildifier over modified
+// BUILD, WORKSPACE, and skylark (.bzl) files in pull requests.
 package buildifier
 
 import (
