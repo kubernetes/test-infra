@@ -212,21 +212,30 @@ periodics:
   interval: 24h
   decorate: true
   extra_refs:
-  - org: kubernetes
-    repo: test-infra
+  - base_ref: master
+    org: jessfraz
+    repo: secping
+  - org: fejta
+    repo: go-github
     base_ref: master
+    path_alias: github.com/jessfraz/go-github # https://github.com/google/go-github/pull/1076
   spec:
     containers:
-    # image contains tools versioned with k/k master
-    # secping needs go and make in particular
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
-      command: 
-      - ./experiment/secping.sh
-      args:
-      - --token=/etc/token
+    - command:
+      - go
+      - run
+      - .
+      - -d
+      - --confirm
+      - --token-path=/etc/token/bot-github-token
+      - --skip-emails
+      image: golang:1.11
       volumeMounts:
       - name: token
         mountPath: /etc/token
+      env:
+      - name: GO111MODULE
+        value: "on"
     volumes:
     - name: token
       secret:
