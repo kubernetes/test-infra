@@ -14,17 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package eks implements 'kubetest' deployer interface.
+// Package main / eks.go implements kubetest deployer interface for EKS.
 // It uses 'aws-k8s-tester' and 'kubectl' binaries, rather than importing internal packages.
 // All underlying implementation and external dependencies are compiled into one binary.
-package eks
+package main
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
-	"log"
-	"net/http"
 	"os"
 	osexec "os/exec"
 	"path/filepath"
@@ -37,17 +34,17 @@ import (
 	"k8s.io/test-infra/kubetest/util"
 )
 
-// deployer implements EKS deployer interface using "aws-k8s-tester" binary.
+// eksDeployer implements EKS deployer interface using "aws-k8s-tester" binary.
 // Satisfies "k8s.io/test-infra/kubetest/main.go" 'deployer' and 'publisher" interfaces.
 // Reference https://github.com/kubernetes/test-infra/blob/master/kubetest/main.go.
-type deployer struct {
+type eksDeployer struct {
 	stopc chan struct{}
 	cfg   *eksconfig.Config
 	ctrl  *process.Control
 }
 
-// NewDeployer creates a new EKS deployer.
-func NewDeployer(timeout time.Duration, verbose bool) (ekstester.Deployer, error) {
+// newEKS creates a new EKS deployer.
+func newEKS(timeout time.Duration, verbose bool) (ekstester.Deployer, error) {
 	cfg := eksconfig.NewDefault()
 	err := cfg.UpdateFromEnvs()
 	if err != nil {
@@ -66,7 +63,7 @@ func NewDeployer(timeout time.Duration, verbose bool) (ekstester.Deployer, error
 		return nil, err
 	}
 
-	dp := &deployer{
+	dp := &eksDeployer{
 		stopc: make(chan struct{}),
 		cfg:   cfg,
 		ctrl: process.NewControl(
@@ -76,32 +73,14 @@ func NewDeployer(timeout time.Duration, verbose bool) (ekstester.Deployer, error
 			verbose,
 		),
 	}
-
-	if err = os.RemoveAll(cfg.AWSK8sTesterPath); err != nil {
-		return nil, err
-	}
-	if err = os.MkdirAll(filepath.Dir(cfg.AWSK8sTesterPath), 0700); err != nil {
-		return nil, err
-	}
-	f, err = os.Create(cfg.AWSK8sTesterPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create %q (%v)", cfg.AWSK8sTesterPath, err)
-	}
-	cfg.AWSK8sTesterPath = f.Name()
-	if err = httpRead(cfg.AWSK8sTesterDownloadURL, f); err != nil {
-		return nil, err
-	}
-	if err = f.Close(); err != nil {
-		return nil, fmt.Errorf("failed to close aws-k8s-tester file %v", err)
-	}
-	if err = util.EnsureExecutable(cfg.AWSK8sTesterPath); err != nil {
-		return nil, err
+	if err := dp.fetchAWSK8sTester(); err != nil {
+		return nil, fmt.Errorf("failed to fetch aws-k8s-tester: %v", err)
 	}
 	return dp, nil
 }
 
 // Up creates a new EKS cluster.
-func (dp *deployer) Up() (err error) {
+func (dp *eksDeployer) Up() (err error) {
 	// "create cluster" command outputs cluster information
 	// in the configuration file (e.g. VPC ID, ALB DNS names, etc.)
 	// this needs be reloaded for other deployer method calls
@@ -128,7 +107,7 @@ func (dp *deployer) Up() (err error) {
 }
 
 // Down tears down the existing EKS cluster.
-func (dp *deployer) Down() (err error) {
+func (dp *eksDeployer) Down() (err error) {
 	// reload configuration from disk to read the latest configuration
 	if _, err = dp.LoadConfig(); err != nil {
 		return err
@@ -144,7 +123,7 @@ func (dp *deployer) Down() (err error) {
 }
 
 // IsUp returns an error if the cluster is not up and running.
-func (dp *deployer) IsUp() (err error) {
+func (dp *eksDeployer) IsUp() (err error) {
 	// reload configuration from disk to read the latest configuration
 	if _, err = dp.LoadConfig(); err != nil {
 		return err
@@ -172,12 +151,12 @@ func (dp *deployer) IsUp() (err error) {
 }
 
 // TestSetup checks if EKS testing cluster has been set up or not.
-func (dp *deployer) TestSetup() error {
+func (dp *eksDeployer) TestSetup() error {
 	return dp.IsUp()
 }
 
 // GetClusterCreated returns EKS cluster creation time and error (if any).
-func (dp *deployer) GetClusterCreated(v string) (time.Time, error) {
+func (dp *eksDeployer) GetClusterCreated(v string) (time.Time, error) {
 	err := dp.IsUp()
 	if err != nil {
 		return time.Time{}, err
@@ -185,7 +164,7 @@ func (dp *deployer) GetClusterCreated(v string) (time.Time, error) {
 	return dp.cfg.ClusterState.Created, nil
 }
 
-func (dp *deployer) GetWorkerNodeLogs() (err error) {
+func (dp *eksDeployer) GetWorkerNodeLogs() (err error) {
 	// reload configuration from disk to read the latest configuration
 	if _, err = dp.LoadConfig(); err != nil {
 		return err
@@ -202,7 +181,7 @@ func (dp *deployer) GetWorkerNodeLogs() (err error) {
 // DumpClusterLogs dumps all logs to artifact directory.
 // Let default kubetest log dumper handle all artifact uploads.
 // See https://github.com/kubernetes/test-infra/pull/9811/files#r225776067.
-func (dp *deployer) DumpClusterLogs(artifactDir, _ string) (err error) {
+func (dp *eksDeployer) DumpClusterLogs(artifactDir, _ string) (err error) {
 	// reload configuration from disk to read the latest configuration
 	if _, err = dp.LoadConfig(); err != nil {
 		return err
@@ -227,7 +206,7 @@ func (dp *deployer) DumpClusterLogs(artifactDir, _ string) (err error) {
 }
 
 // KubectlCommand returns "kubectl" command object for API reachability tests.
-func (dp *deployer) KubectlCommand() (*osexec.Cmd, error) {
+func (dp *eksDeployer) KubectlCommand() (*osexec.Cmd, error) {
 	// reload configuration from disk to read the latest configuration
 	if _, err := dp.LoadConfig(); err != nil {
 		return nil, err
@@ -239,37 +218,38 @@ func (dp *deployer) KubectlCommand() (*osexec.Cmd, error) {
 // This is useful for local development.
 // For example, one may run "Up" but have to cancel ongoing "Up"
 // operation. Then, it can just send syscall.SIGINT to trigger "Stop".
-func (dp *deployer) Stop() {
+func (dp *eksDeployer) Stop() {
 	close(dp.stopc)
 }
 
 // LoadConfig reloads configuration from disk to read the latest
 // cluster configuration and its states.
-func (dp *deployer) LoadConfig() (eksconfig.Config, error) {
+func (dp *eksDeployer) LoadConfig() (eksconfig.Config, error) {
 	var err error
 	dp.cfg, err = eksconfig.Load(dp.cfg.ConfigPath)
 	return *dp.cfg, err
 }
 
-var httpTransport *http.Transport
-
-func init() {
-	httpTransport = new(http.Transport)
-	httpTransport.RegisterProtocol("file", http.NewFileTransport(http.Dir("/")))
-}
-
-// curl -L [URL] | writer
-func httpRead(u string, wr io.Writer) error {
-	log.Printf("curl %s", u)
-	cli := &http.Client{Transport: httpTransport}
-	r, err := cli.Get(u)
-	if err != nil {
+func (dp *eksDeployer) fetchAWSK8sTester() error {
+	if err := os.RemoveAll(dp.cfg.AWSK8sTesterPath); err != nil {
 		return err
 	}
-	defer r.Body.Close()
-	if r.StatusCode >= 400 {
-		return fmt.Errorf("%v returned %d", u, r.StatusCode)
+	if err := os.MkdirAll(filepath.Dir(dp.cfg.AWSK8sTesterPath), 0700); err != nil {
+		return err
 	}
-	_, err = io.Copy(wr, r.Body)
-	return err
+	f, err := os.Create(dp.cfg.AWSK8sTesterPath)
+	if err != nil {
+		return fmt.Errorf("failed to create %q (%v)", dp.cfg.AWSK8sTesterPath, err)
+	}
+	dp.cfg.AWSK8sTesterPath = f.Name()
+	if err = httpRead(dp.cfg.AWSK8sTesterDownloadURL, f); err != nil {
+		return err
+	}
+	if err = f.Close(); err != nil {
+		return fmt.Errorf("failed to close aws-k8s-tester file %v", err)
+	}
+	if err = util.EnsureExecutable(dp.cfg.AWSK8sTesterPath); err != nil {
+		return err
+	}
+	return nil
 }
