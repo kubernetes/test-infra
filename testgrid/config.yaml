@@ -2159,6 +2159,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-stable-aws-eks-1-11-prod
 - name: ci-kubernetes-e2e-latest-aws-eks-1-11-prod
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-latest-aws-eks-1-11-prod
+- name: ci-kubernetes-e2e-aws-eks-1-11-scalability
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aws-eks-1-11-scalability
 
 # charts tests
 - name: ci-kubernetes-charts-gce
@@ -5728,12 +5730,15 @@ dashboards:
   dashboard_tab:
   - name: ci-kubernetes-e2e-stable-aws-eks-1-11-prod
     test_group_name: ci-kubernetes-e2e-stable-aws-eks-1-11-prod
-    description: Kubernetes stable branch e2e tests with EKS prod build 1.10
+    description: Kubernetes stable branch e2e tests with EKS prod build 1.11
 - name: sig-aws-eks-ci-kubernetes-e2e-latest
   dashboard_tab:
   - name: ci-kubernetes-e2e-latest-aws-eks-1-11-prod
     test_group_name: ci-kubernetes-e2e-latest-aws-eks-1-11-prod
-    description: Kubernetes latest branch e2e tests with EKS prod build 1.10
+    description: Kubernetes latest branch e2e tests with EKS prod build 1.11
+  - name: ci-kubernetes-e2e-aws-eks-1-11-scalability
+    test_group_name: ci-kubernetes-e2e-aws-eks-1-11-scalability
+    description: Kubernetes performance e2e tests with EKS prod build 1.11
 
 - name: sig-cli-master
   dashboard_tab:
