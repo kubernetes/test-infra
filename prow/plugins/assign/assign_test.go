@@ -222,6 +222,18 @@ func TestAssignAndReview(t *testing.T) {
 			assigned:  []string{"bert", "ernie"},
 		},
 		{
+			name:      "assign >10 users",
+			body:      "/assign @user1 @user2 @user3 @user4 @user5 @user6 @user7 @user8 @user9 @user10 @user11",
+			commenter: "rando",
+			assigned:  []string{"user1", "user2", "user3", "user4", "user5", "user6", "user7", "user8", "user9", "user10", "user11"},
+		},
+		{
+			name:       "assign >10 users",
+			body:       "/unassign @user1 @user2 @user3 @user4 @user5 @user6 @user7 @user8 @user9 @user10 @user11",
+			commenter:  "rando",
+			unassigned: []string{"user1", "user2", "user3", "user4", "user5", "user6", "user7", "user8", "user9", "user10", "user11"},
+		},
+		{
 			name:       "unassign buddies",
 			body:       "/unassign @ashitaka @eboshi",
 			commenter:  "san",
