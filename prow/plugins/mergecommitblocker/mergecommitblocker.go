@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package mergecommitblock adds a do-not-merge label to pull requests which contain merge commits
+// Package mergecommitblocker adds a do-not-merge label to pull requests which contain merge commits
 // Merge commits are defined as commits that contain more than one parent commit SHA
 
-package mergecommitblock
+package mergecommitblocker
 
-const pluginName = "block-mc"
+const pluginName = "mergecommitblocker"
 // init registers out plugin as a pull request handler
 func init(){
 
