@@ -19,33 +19,100 @@ limitations under the License.
 
 package mergecommitblocker
 
+import (
+	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/plugins"
+)
+
 const pluginName = "mergecommitblocker"
+
 // init registers out plugin as a pull request handler
-func init(){
+func init() {
 
 }
+
 // helpProvider provides information on the plugin
-func helpProvider(){
+func helpProvider() {
 
 }
-// handlePullRequest returns the result of handlePR
-func handlePullRequest(){
 
+func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
+	return handlePR(pc.GitHubClient, pc.Logger, pe)
 }
-// githubClient defines what *github.Client methods we can use
-type githubClient interface{
 
+// Strict subset of *github.Client methods.
+type githubClient interface {
+	AddLabel(owner, repo string, number int, label string) error
+	RemoveLabel(owner, repo string, number int, label string) error
+	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	GetFile(org, repo, filepath, commit string) ([]byte, error)
+	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	ListPRCommits(org, repo string, number int) ([]github.RepositoryCommit, error)
 }
+
 // handlePR takes a github client, a pull request event and applies, or removes applicable labels
-func handlePR(){
-		// Store all info about the owner, repo, num, and base sha of pull request
-		// Use github client to get the commits in the pull request
-		// Iterate through them and check for parent commits
-		// If a commit is identified as a merge commit, store it somewhere
-		// Once finished iterating, Label if merge commits were identified, and report back to end user what commits are merge commits
-}
-// TODO : (alisondy) Identify Usage
-// isPRChanged  takes a github Pull request event and returns a boolean value, which indicates if code diffs have changed
-func isPRChanged(){
+func handlePR(gc githubClient, le *logrus.Entry, pe github.PullRequestEvent) error {
 
+	if !isPRChanged(pe) {
+		return nil
+	}
+	// Store all info about the owner, repo, num, and base sha of pull request
+	var (
+		owner = pe.PullRequest.Base.Repo.Owner.Login
+		repo  = pe.PullRequest.Base.Repo.Name
+		num   = pe.PullRequest.Number
+	)
+
+	// Use github client to get the commits in the pull request
+	commits, err := gc.ListPRCommits(owner, repo, num)
+	if err != nil {
+
+	}
+	// Iterate through them and check for parent commits
+	var needsLabel bool = false
+
+	for _, commit := range commits {
+		if len(commit.Parents) > 1 {
+			needsLabel = true
+			continue
+		}
+	}
+
+	// Once finished iterating, Label if merge commits were identified
+	issueLabels, err := gc.GetIssueLabels(owner, repo, num)
+	if err != nil {
+		le.Warnf("while retrieving labels, error: %v", err)
+	}
+
+	f := func(label string, labels []github.Label) bool {
+		return github.HasLabel(label, labels)
+	}
+	hasLabel := f(labels.MergeCommits, issueLabels)
+
+	if hasLabel && !needsLabel {
+		le.Infof("Removing %q Label for %s/%s#%d", labels.MergeCommits, owner, repo, num)
+		return gc.RemoveLabel(owner, repo, num, labels.MergeCommits)
+	} else if !hasLabel && needsLabel {
+		le.Infof("Adding %q Label for %s/%s#%d", labels.MergeCommits, owner, repo, num)
+		return gc.AddLabel(owner, repo, num, labels.MergeCommits)
+	}
+	return nil
+}
+
+// isPRChanged takes a github Pull request event and returns a boolean value, which indicates if code diffs have changed
+func isPRChanged(pe github.PullRequestEvent) bool {
+	switch pe.Action {
+	case github.PullRequestActionOpened:
+		return true
+	case github.PullRequestActionReopened:
+		return true
+	case github.PullRequestActionSynchronize:
+		return true
+	case github.PullRequestActionEdited:
+		return true
+	default:
+		return false
+	}
 }
