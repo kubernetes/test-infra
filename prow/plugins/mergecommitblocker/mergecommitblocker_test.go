@@ -17,7 +17,11 @@ limitations under the License.
 package mergecommitblocker
 
 import (
+	"fmt"
+	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/github/fakegithub"
+	"reflect"
 	"testing"
 )
 const (
@@ -34,13 +38,13 @@ type ghc struct {
 	getFileErr, getPullRequestChangesErr error
 }
 
-func testHandlePR(t * testing.T) {
+func TestHandlePR(t *testing.T) {
 	var testcases = []struct {
 		name string
 		pullRequestEvent github.PullRequestEvent
 		commits          []github.RepositoryCommit
 		initialLabels  []string
-
+		addedLabel string
 	}{
 		{
 			name: "should label with do-not-merge/contains-merge-commits when merge commits present",
@@ -60,6 +64,7 @@ func testHandlePR(t * testing.T) {
 				}},
 			},
 			initialLabels: []string{helpWanted},
+			addedLabel: fmt.Sprintf("/#3:%s", mergeCommit),
 		},
 		{
 			name: "should not label with do-not-merge/contains-merge-commits when there are no merge commits present",
@@ -70,7 +75,29 @@ func testHandlePR(t * testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-
+			fc := &fakegithub.FakeClient{
+				CreatedStatuses: make(map[string][]github.Status),
+				PullRequests:    map[int]*github.PullRequest{tc.pullRequestEvent.PullRequest.Number: &tc.pullRequestEvent.PullRequest},
+				IssueComments:   make(map[int][]github.IssueComment),
+				CommitMap: map[string][]github.RepositoryCommit{
+					"/#3": tc.commits,
+				},
+			}
+			if err := handlePR(fc,logrus.WithField("plugin", pluginName),tc.pullRequestEvent); err != nil {
+				t.Errorf("For case %s, didn't expect error from mergecommitblocker	 plugin: %v", tc.name, err)
+			}
+			ok := tc.addedLabel == ""
+			if !ok {
+				for _, label := range fc.IssueLabelsAdded {
+					if reflect.DeepEqual(tc.addedLabel, label) {
+						ok = true
+						break
+					}
+				}
+			}
+			if !ok {
+				t.Errorf("Expected to add: %#v, Got %#v in case %s.", tc.addedLabel, fc.IssueLabelsAdded, tc.name)
+			}
 		})
 	}
 }
