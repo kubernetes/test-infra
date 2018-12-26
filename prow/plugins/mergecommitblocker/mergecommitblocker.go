@@ -20,9 +20,11 @@ limitations under the License.
 package mergecommitblocker
 
 import (
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -30,12 +32,15 @@ const pluginName = "mergecommitblocker"
 
 // init registers out plugin as a pull request handler
 func init() {
-
+	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
 }
 
 // helpProvider provides information on the plugin
-func helpProvider() {
-
+func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
+	return &pluginhelp.PluginHelp{
+		Description: fmt.Sprintf(`The merge commit blocker plugin adds the do-not-merge/contains-merge-commit label to pull requests that contain merge commits`),
+	}, nil
 }
 
 func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
