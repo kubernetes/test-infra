@@ -51,6 +51,9 @@ func (c *fakeClient) AssignIssue(owner, repo string, number int, assignees []str
 		for _, who := range assignees[10:] {
 			missing.Users = append(missing.Users, who)
 		}
+		for _, who := range assignees[:10] {
+			c.assigned[who]++
+		}
 	} else {
 		for _, who := range assignees {
 			if who != "evil" {
@@ -230,10 +233,11 @@ func TestAssignAndReview(t *testing.T) {
 			assigned:  []string{"bert", "ernie"},
 		},
 		{
-			name:      "assign >10 users",
+			name:      "assign greater than 10 users",
 			body:      "/assign @user1 @user2 @user3 @user4 @user5 @user6 @user7 @user8 @user9 @user10 @user11 @user12 @user13",
 			commenter: "rando",
 			commented: true,
+			assigned:  []string{"user12", "user13", "user6", "user1", "user11", "user2", "user3", "user4", "user5", "user10"},
 		},
 		{
 			name:       "unassign buddies",
