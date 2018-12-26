@@ -1,6 +1,6 @@
 periodics:
 # Run Kubernetes 1.11 branch e2e tests with EKS prod build 1.11
-- interval: 2h
+- interval: 3h
   name: ci-kubernetes-e2e-1-11-aws-eks-1-11-prod
   labels:
     preset-service-account: "true"
@@ -26,7 +26,7 @@ periodics:
 
 # Run Kubernetes 1.11 branch e2e tests with EKS prod build 1.11
 # run conformance tests
-- interval: 2h
+- interval: 3h
   name: ci-kubernetes-e2e-1-11-aws-eks-1-11-prod-conformance
   labels:
     preset-service-account: "true"
@@ -51,7 +51,7 @@ periodics:
       - --timeout=180m
 
 # Run Kubernetes stable e2e tests with EKS prod build 1.11
-- interval: 2h
+- interval: 3h
   name: ci-kubernetes-e2e-stable-aws-eks-1-11-prod
   labels:
     preset-service-account: "true"
@@ -76,7 +76,7 @@ periodics:
       - --timeout=180m
 
 # Run Kubernetes latest e2e tests with EKS prod build 1.11
-- interval: 2h
+- interval: 3h
   name: ci-kubernetes-e2e-latest-aws-eks-1-11-prod
   labels:
     preset-service-account: "true"
