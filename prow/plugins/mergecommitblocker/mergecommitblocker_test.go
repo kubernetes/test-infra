@@ -80,9 +80,6 @@ func TestHandlePR(t *testing.T) {
 			initialLabels: []string{fmt.Sprintf("/#3:%s", mergeCommit)},
 			removedLabel: fmt.Sprintf("/#3:%s", mergeCommit),
 		},
-		{
-			name: "should not label with do-not-merge/contains-merge-commits when there are no merge commits present",
-		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {

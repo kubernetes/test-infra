@@ -63,7 +63,7 @@ func handlePR(gc githubClient, le *logrus.Entry, pe github.PullRequestEvent) err
 	if !isPRChanged(pe) {
 		return nil
 	}
-	// Store all info about the owner, repo, num, and base sha of pull request
+	// Store all info about the owner, repo, and num of pull request
 	var (
 		owner = pe.PullRequest.Base.Repo.Owner.Login
 		repo  = pe.PullRequest.Base.Repo.Name
