@@ -221,7 +221,73 @@ func TestLintStutter(t *testing.T) {
 	}
 }
 
-func TestLintPackageComments(t *testing.T) {
+func TestLintErrorf(t *testing.T) {
+	var testcases = []struct {
+		problem            lint.Problem
+		expectedSuggestion string
+	}{
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should replace errors.New(fmt.Sprintf(...)) with fmt.Errorf(...)",
+				Link:       "",
+				Category:   "error",
+				LineText:   "        return errors.New(fmt.Sprintf(\"something %d\", x))",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\n        return fmt.Errorf(\"something %d\", x)```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should replace errors.New(fmt.Sprintf(...)) with fmt.Errorf(...)",
+				Link:       "",
+				Category:   "error",
+				LineText:   "        return errors.New(fmt.Sprintf(\"something %s %d\", fooFunc(foo), bar))",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\n        return fmt.Errorf(\"something %s %d\", fooFunc(foo), bar)```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should replace errors.New(fmt.Sprintf(...)) with fmt.Errorf(...)",
+				Link:       "",
+				Category:   "error",
+				LineText:   "        return errors.New(fmt.Sprintf(\"something %s %d\", fooFunc(barFunc(foo), string(x)), bar))",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\n        return fmt.Errorf(\"something %s %d\", fooFunc(barFunc(foo), string(x)), bar)```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should replace errors.New(fmt.Sprintf(...)) with fmt.Errorf(...)",
+				Link:       "",
+				Category:   "error",
+				LineText:   "        return fmt.Errorf(\"something %d\", x)",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "",
+		},
+	}
+	for _, test := range testcases {
+		suggestion := SuggestCodeChange(test.problem)
+		if suggestion != test.expectedSuggestion {
+			t.Errorf("Excepted code suggestion %s but got %s for LineText %s", test.expectedSuggestion, suggestion, test.problem.LineText)
+		}
+	}
+}
+
+func TestLintLoopRanges(t *testing.T) {
 	var testcases = []struct {
 		problem            lint.Problem
 		expectedSuggestion string
