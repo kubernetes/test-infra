@@ -193,7 +193,7 @@ class BuildTest(main_test.TestBase):
         self.assertIn('Error Goes Here', response)
         self.assertIn('test.go#L123">', response)  # stacktrace link works
 
-    def test_finished_has_version(self):
+    def test_finished_has_revision(self):
         """Test that metadata with version in finished works."""
         init_build(self.BUILD_DIR, finished_has_version=True)
         self.test_build()
