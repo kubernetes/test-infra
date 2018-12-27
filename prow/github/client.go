@@ -1840,6 +1840,19 @@ func (c *Client) GetRef(org, repo, ref string) (string, error) {
 	return res.Object["sha"], err
 }
 
+// DeleteRef deletes the given ref
+//
+// See https://developer.github.com/v3/git/refs/#delete-a-reference
+func (c *Client) DeleteRef(org, repo, ref string) error {
+	c.log("DeleteRef", org, repo, ref)
+	_, err := c.request(&request{
+		method:    http.MethodDelete,
+		path:      fmt.Sprintf("/repos/%s/%s/git/refs/%s", org, repo, ref),
+		exitCodes: []int{204},
+	}, nil)
+	return err
+}
+
 // FindIssues uses the GitHub search API to find issues which match a particular query.
 //
 // Input query the same way you would into the website.

@@ -54,6 +54,7 @@ filegroup(
         "//prow/plugins/assign:all-srcs",
         "//prow/plugins/blockade:all-srcs",
         "//prow/plugins/blunderbuss:all-srcs",
+        "//prow/plugins/branchcleaner:all-srcs",
         "//prow/plugins/buildifier:all-srcs",
         "//prow/plugins/cat:all-srcs",
         "//prow/plugins/cherrypickunapproved:all-srcs",
