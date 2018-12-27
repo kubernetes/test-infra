@@ -383,7 +383,7 @@ periodics:
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-a
       - --gke-command-group=beta
-      - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19
+      - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19 --timeout=2700
       - --gke-environment=test
       - '--gke-shape={"default":{"Nodes":1999,"MachineType":"n1-standard-1"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-8"}}'
       - --provider=gke
@@ -419,7 +419,7 @@ periodics:
       - --gcp-project=kubernetes-scale
       - --gcp-region=us-east1
       - --gke-command-group=beta
-      - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet-regional --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19
+      - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet-regional --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19 --timeout=2700
       - --gke-environment=staging
       - --gke-node-locations=us-east1-a
       - '--gke-shape={"default":{"Nodes":1999,"MachineType":"n1-standard-1"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-8"}}'
