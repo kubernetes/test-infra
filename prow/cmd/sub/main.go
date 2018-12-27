@@ -27,13 +27,13 @@ import (
 	"syscall"
 	"time"
 
-	"golang.org/x/sync/errgroup"
-
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 
 	"k8s.io/test-infra/prow/client/clientset/versioned"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -103,7 +103,7 @@ func main() {
 		var tokens []string
 		tokens = append(tokens, flagOptions.pushSecretFile)
 
-		secretAgent := &config.SecretAgent{}
+		secretAgent := &secret.Agent{}
 		if err := secretAgent.Start(tokens); err != nil {
 			logrus.WithError(err).Fatal("Error starting secrets agent.")
 		}

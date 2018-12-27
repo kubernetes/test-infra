@@ -128,7 +128,7 @@ func TestUrl(t *testing.T) {
 			url: tc.url,
 			key: tc.key,
 		}
-		url := rc.Url(tc.category, tc.movie)
+		url := rc.URL(tc.category, tc.movie)
 		for _, r := range tc.require {
 			if !strings.Contains(url, r) {
 				t.Errorf("%s: %s does not contain %s", tc.name, url, r)

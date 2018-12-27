@@ -32,8 +32,10 @@ import (
 	"k8s.io/test-infra/prow/repoowners"
 )
 
-// PluginName is the registered plugin name
-const PluginName = labels.LGTM
+const (
+	// PluginName defines this plugin's registered name.
+	PluginName = labels.LGTM
+)
 
 var (
 	addLGTMLabelNotification   = "LGTM label has been added.  <details>Git tree hash: %s</details>"
@@ -422,22 +424,14 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 		}
 	}
 
-	var labelNotFound bool
 	if err := gc.RemoveLabel(org, repo, number, LGTMLabel); err != nil {
-		if _, labelNotFound = err.(*github.LabelNotFound); !labelNotFound {
-			return fmt.Errorf("failed removing lgtm label: %v", err)
-		}
-		// If the error is indeed *github.LabelNotFound, consider it a success.
+		return fmt.Errorf("failed removing lgtm label: %v", err)
 	}
 
 	// Create a comment to inform participants that LGTM label is removed due to new
 	// pull request changes.
-	if !labelNotFound {
-		log.Infof("Commenting with an LGTM removed notification to %s/%s#%d with a message: %s", org, repo, number, removeLGTMLabelNoti)
-		return gc.CreateComment(org, repo, number, removeLGTMLabelNoti)
-	}
-
-	return nil
+	log.Infof("Commenting with an LGTM removed notification to %s/%s#%d with a message: %s", org, repo, number, removeLGTMLabelNoti)
+	return gc.CreateComment(org, repo, number, removeLGTMLabelNoti)
 }
 
 func skipCollaborators(config *plugins.Configuration, org, repo string) bool {
@@ -450,7 +444,7 @@ func skipCollaborators(config *plugins.Configuration, org, repo string) bool {
 	return false
 }
 
-func loadRepoOwners(gc githubClient, ownersClient repoowners.Interface, org, repo string, number int) (repoowners.RepoOwnerInterface, error) {
+func loadRepoOwners(gc githubClient, ownersClient repoowners.Interface, org, repo string, number int) (repoowners.RepoOwner, error) {
 	pr, err := gc.GetPullRequest(org, repo, number)
 	if err != nil {
 		return nil, err
@@ -473,7 +467,7 @@ func getChangedFiles(gc githubClient, org, repo string, number int) ([]string, e
 
 // loadReviewers returns all reviewers and approvers from all OWNERS files that
 // cover the provided filenames.
-func loadReviewers(ro repoowners.RepoOwnerInterface, filenames []string) sets.String {
+func loadReviewers(ro repoowners.RepoOwner, filenames []string) sets.String {
 	reviewers := sets.String{}
 	for _, filename := range filenames {
 		reviewers = reviewers.Union(ro.Approvers(filename)).Union(ro.Reviewers(filename))

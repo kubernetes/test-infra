@@ -555,6 +555,9 @@ plugins:
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - trigger
 
+  kubernetes-sigs/sig-storage-local-static-provisioner:
+  - trigger
+
   kubernetes-sigs/gcp-filestore-csi-driver:
   - trigger
 

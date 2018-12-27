@@ -25,11 +25,11 @@ import (
 	"os"
 	"strings"
 
-	"k8s.io/test-infra/prow/config"
+	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
-
-	"github.com/sirupsen/logrus"
 )
 
 type options struct {
@@ -42,11 +42,11 @@ type options struct {
 }
 
 func (o options) githubClient() (*github.Client, error) {
-	agent := config.SecretAgent{}
+	agent := &secret.Agent{}
 	if err := agent.Start([]string{o.TokenPath}); err != nil {
 		return nil, fmt.Errorf("start %s: %v", o.TokenPath, err)
 	}
-	return o.GitHubClient(&agent, !o.confirm)
+	return o.GitHubClient(agent, !o.confirm)
 }
 
 func getOptions(fs *flag.FlagSet, args []string) (*options, error) {

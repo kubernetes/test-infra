@@ -1468,18 +1468,6 @@ func (c *Client) AddLabel(org, repo string, number int, label string) error {
 	return err
 }
 
-// LabelNotFound indicates that a label is not attached to an issue. For example, removing a
-// label from an issue, when the issue does not have that label.
-type LabelNotFound struct {
-	Owner, Repo string
-	Number      int
-	Label       string
-}
-
-func (e *LabelNotFound) Error() string {
-	return fmt.Sprintf("label %q does not exist on %s/%s/%d", e.Label, e.Owner, e.Repo, e.Number)
-}
-
 type githubError struct {
 	Message string `json:"message,omitempty"`
 }
@@ -1515,14 +1503,10 @@ func (c *Client) RemoveLabel(org, repo string, number int, label string) error {
 		return err
 	}
 
-	// If the error was because the label was not found, annotate that error with type information.
+	// If the error was because the label was not found, we don't really
+	// care since the label won't exist anyway.
 	if ge.Message == "Label does not exist" {
-		return &LabelNotFound{
-			Owner:  org,
-			Repo:   repo,
-			Number: number,
-			Label:  label,
-		}
+		return nil
 	}
 
 	// Otherwise we got some other 404 error.

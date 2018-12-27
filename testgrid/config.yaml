@@ -361,6 +361,8 @@ test_groups:
   days_of_results: 60
   num_columns_recent: 3
   num_failures_to_alert: 1
+- name: ci-kubernetes-e2e-gce-scale-performance-cl
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scale-performance-cl
 - name: ci-kubernetes-e2e-gci-gce-es-logging
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-es-logging
 - name: ci-kubernetes-e2e-gci-gce-sd-logging
@@ -716,8 +718,6 @@ test_groups:
 - name: maintenance-ci-testgrid-config-upload
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-testgrid-config-upload
   num_failures_to_alert: 2
-- name: maintenance-ci-aws-janitor
-  gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-aws-janitor
 - name: maintenance-ci-janitor
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-janitor
 - name: maintenance-pull-janitor
@@ -2159,6 +2159,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-stable-aws-eks-1-11-prod
 - name: ci-kubernetes-e2e-latest-aws-eks-1-11-prod
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-latest-aws-eks-1-11-prod
+- name: ci-kubernetes-e2e-aws-eks-1-11-scalability
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aws-eks-1-11-scalability
 
 # charts tests
 - name: ci-kubernetes-charts-gce
@@ -3062,6 +3064,15 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/istio-periodic-e2e-gke-addon
 - name: pull-kops-e2e-kubernetes-aws
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws
+  num_columns_recent: 20
+- name: pull-kops-e2e-kubernetes-aws-stable1
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws-stable1
+  num_columns_recent: 20
+- name: pull-kops-e2e-kubernetes-aws-stable2
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws-stable2
+  num_columns_recent: 20
+- name: pull-kops-e2e-kubernetes-aws-stable3
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws-stable3
   num_columns_recent: 20
 - name: pull-kops-bazel-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-bazel-build
@@ -5719,12 +5730,15 @@ dashboards:
   dashboard_tab:
   - name: ci-kubernetes-e2e-stable-aws-eks-1-11-prod
     test_group_name: ci-kubernetes-e2e-stable-aws-eks-1-11-prod
-    description: Kubernetes stable branch e2e tests with EKS prod build 1.10
+    description: Kubernetes stable branch e2e tests with EKS prod build 1.11
 - name: sig-aws-eks-ci-kubernetes-e2e-latest
   dashboard_tab:
   - name: ci-kubernetes-e2e-latest-aws-eks-1-11-prod
     test_group_name: ci-kubernetes-e2e-latest-aws-eks-1-11-prod
-    description: Kubernetes latest branch e2e tests with EKS prod build 1.10
+    description: Kubernetes latest branch e2e tests with EKS prod build 1.11
+  - name: ci-kubernetes-e2e-aws-eks-1-11-scalability
+    test_group_name: ci-kubernetes-e2e-aws-eks-1-11-scalability
+    description: Kubernetes performance e2e tests with EKS prod build 1.11
 
 - name: sig-cli-master
   dashboard_tab:
@@ -6469,6 +6483,8 @@ dashboards:
     test_group_name: ci-perf-tests-kubemark-100-benchmark
   - name: cluster-loader
     test_group_name: ci-perf-tests-e2e-gce-clusterloader
+  - name: ci-kubernetes-e2e-gce-scale-performance-cl
+    test_group_name: ci-kubernetes-e2e-gce-scale-performance-cl
 
 - name: sig-scalability-benchmarks
   dashboard_tab:
@@ -6609,11 +6625,6 @@ dashboards:
   - name: ci-janitor
     description: Deletes old GCP resources from periodic jobs
     test_group_name: maintenance-ci-janitor
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: maintenance-aws-janitor
-    description: Deletes old resources from AWS projects
-    test_group_name: maintenance-ci-aws-janitor
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: pull-janitor
@@ -7178,6 +7189,12 @@ dashboards:
   dashboard_tab:
   - name: e2e
     test_group_name: pull-kops-e2e-kubernetes-aws
+  - name: e2e-stable1
+    test_group_name: pull-kops-e2e-kubernetes-aws-stable1
+  - name: e2e-stable2
+    test_group_name: pull-kops-e2e-kubernetes-aws-stable2
+  - name: e2e-stable3
+    test_group_name: pull-kops-e2e-kubernetes-aws-stable3
   - name: verify-bazel
     test_group_name: pull-kops-verify-bazel
   - name: bazel-build

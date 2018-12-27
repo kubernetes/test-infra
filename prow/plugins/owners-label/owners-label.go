@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	// PluginName is the name of this plugin
+	// PluginName defines this plugin's registered name.
 	PluginName = "owners-label"
 )
 

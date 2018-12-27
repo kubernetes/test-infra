@@ -21,6 +21,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/config/secret:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/labels:go_default_library",
@@ -41,7 +42,6 @@ go_library(
         "config.go",
         "githuboauth.go",
         "jobs.go",
-        "secrets_agent.go",
         "tide.go",
     ],
     importpath = "k8s.io/test-infra/prow/config",
@@ -78,6 +78,7 @@ filegroup(
         ":package-srcs",
         "//prow/config/jobtests:all-srcs",
         "//prow/config/org:all-srcs",
+        "//prow/config/secret:all-srcs",
     ],
     tags = ["automanaged"],
 )

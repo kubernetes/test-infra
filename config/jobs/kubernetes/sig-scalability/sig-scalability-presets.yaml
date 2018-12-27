@@ -81,6 +81,8 @@ presets:
   # Use IP-aliases for scalability tests.
   - name: KUBE_GCE_ENABLE_IP_ALIASES
     value: "true"
+  - name: CREATE_CUSTOM_NETWORK
+    value: "true"
   # Ensure good enough architecture for master machines.
   - name: MASTER_MIN_CPU_ARCHITECTURE
     value: "Intel Broadwell"
@@ -108,18 +110,3 @@ presets:
   # Increase delete collection parallelism.
   - name: TEST_CLUSTER_DELETE_COLLECTION_WORKERS
     value: --delete-collection-workers=16
-### Common env variables for all high-speed scalability suites.
-- labels:
-    preset-e2e-scalability-highspeed-common: "true"
-  env:
-  # Increase size of default subnetworks to enable large clusters.
-  - name: ENABLE_BIG_CLUSTER_SUBNETS
-    value: "true"
-# Create a project k8s-jenkins-scalability-head and move this test there
-- labels:
-    preset-e2e-gci-gce-scalability: "true"
-  env:
-  # Override GCE defaults.
-  - name: CREATE_CUSTOM_NETWORK
-    value: "true"
-   

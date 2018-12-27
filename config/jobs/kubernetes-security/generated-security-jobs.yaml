@@ -13,24 +13,27 @@ presubmits:
       preset-kubernetes-e2e-aws-eks-common: "true"
       preset-service-account: "true"
     name: pull-security-kubernetes-e2e-aws-eks-1-11-prod-conformance
+    optional: true
     rerun_command: /test pull-security-kubernetes-e2e-aws-eks-1-11-prod-conformance
-    skip_report: true
     spec:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
+        - --root=/go/src
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=200
-        - --bare
         - --scenario=kubernetes_e2e
         - --
+        - --build=bazel
+        - --cluster=
         - --check-version-skew=false
         - --deployment=eks
         - --provider=eks
         - --gce-ssh=
         - --extract=local
-        - --ginkgo-parallel=30
-        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-          --minStartupPods=8
+        - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-aws-eks-1-11-prod-conformance
         - --timeout=180m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-aws-eks-1-11-prod-conformance
@@ -1178,7 +1181,6 @@ presubmits:
     context: pull-security-kubernetes-e2e-gce-100-performance
     labels:
       preset-bazel-scratch-dir: "true"
-      preset-e2e-gci-gce-scalability: "true"
       preset-e2e-scalability-common: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
@@ -1236,7 +1238,6 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-highspeed-common: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 1
@@ -1294,7 +1295,6 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-highspeed-common: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 1
@@ -2094,8 +2094,6 @@ presubmits:
         env:
         - name: KUBE_FORCE_VERIFY_CHECKS
           value: "Y"
-        - name: KUBE_JUNIT_REPORT_DIR
-          value: /logs/artifacts
         - name: WHAT
           value: godeps staging-godeps godep-licenses
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
@@ -2354,12 +2352,11 @@ presubmits:
     always_run: true
     cluster: security
     context: pull-security-kubernetes-typecheck
-    labels:
-      preset-service-account: "true"
+    decorate: true
     name: pull-security-kubernetes-typecheck
+    path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-typecheck
     skip_branches:
-    - release-1.10
     - release-1.11
     - release-1.12
     - release-1.13
@@ -2367,20 +2364,14 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --root=/go/src
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --scenario=execute
-        - --
-        - make
         - verify
-        - WHAT=typecheck
-        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts
+        command:
+        - make
+        env:
+        - name: WHAT
+          value: typecheck
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
-        name: ""
+        name: main
         resources: {}
         volumeMounts:
         - mountPath: /etc/ssh-security
@@ -2397,28 +2388,22 @@ presubmits:
     - release-1.13
     cluster: security
     context: pull-security-kubernetes-typecheck
-    labels:
-      preset-service-account: "true"
+    decorate: true
     name: pull-security-kubernetes-typecheck
+    path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-typecheck
     spec:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --root=/go/src
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --scenario=execute
-        - --
-        - make
         - verify
-        - WHAT=typecheck
-        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts
+        command:
+        - make
+        env:
+        - name: WHAT
+          value: typecheck
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.13
-        name: ""
+        name: main
         resources: {}
         volumeMounts:
         - mountPath: /etc/ssh-security
@@ -2435,28 +2420,22 @@ presubmits:
     - release-1.12
     cluster: security
     context: pull-security-kubernetes-typecheck
-    labels:
-      preset-service-account: "true"
+    decorate: true
     name: pull-security-kubernetes-typecheck
+    path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-typecheck
     spec:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --root=/go/src
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --scenario=execute
-        - --
-        - make
         - verify
-        - WHAT=typecheck
-        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts
+        command:
+        - make
+        env:
+        - name: WHAT
+          value: typecheck
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.12
-        name: ""
+        name: main
         resources: {}
         volumeMounts:
         - mountPath: /etc/ssh-security
@@ -2473,66 +2452,22 @@ presubmits:
     - release-1.11
     cluster: security
     context: pull-security-kubernetes-typecheck
-    labels:
-      preset-service-account: "true"
+    decorate: true
     name: pull-security-kubernetes-typecheck
+    path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-typecheck
     spec:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --root=/go/src
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --scenario=execute
-        - --
-        - make
         - verify
-        - WHAT=typecheck
-        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts
+        command:
+        - make
+        env:
+        - name: WHAT
+          value: typecheck
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.11
-        name: ""
-        resources: {}
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-typecheck,?($|\s.*)
-  - agent: kubernetes
-    always_run: true
-    branches:
-    - release-1.10
-    cluster: security
-    context: pull-security-kubernetes-typecheck
-    labels:
-      preset-service-account: "true"
-    name: pull-security-kubernetes-typecheck
-    rerun_command: /test pull-security-kubernetes-typecheck
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --root=/go/src
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --scenario=execute
-        - --
-        - make
-        - verify
-        - WHAT=typecheck
-        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.10
-        name: ""
+        name: main
         resources: {}
         volumeMounts:
         - mountPath: /etc/ssh-security
@@ -2564,12 +2499,9 @@ presubmits:
         - --scenario=kubernetes_verify
         - --
         - --branch=${PULL_BASE_REF}
+        - --exclude-typecheck
+        - --exclude-godep
         - --script=./hack/jenkins/verify-dockerized.sh
-        env:
-        - name: EXCLUDE_TYPECHECK
-          value: "Y"
-        - name: EXCLUDE_GODEPS
-          value: "N"
         image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
         name: ""
         resources:

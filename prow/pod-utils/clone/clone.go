@@ -20,7 +20,9 @@ import (
 	"bytes"
 	"fmt"
 	"os/exec"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/kube"
@@ -31,20 +33,37 @@ import (
 func Run(refs kube.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env []string) Record {
 	logrus.WithFields(logrus.Fields{"refs": refs}).Info("Cloning refs")
 	record := Record{Refs: refs}
-	for _, command := range commandsForRefs(refs, dir, gitUserName, gitUserEmail, cookiePath, env) {
-		formattedCommand, output, err := command.run()
-		logrus.WithFields(logrus.Fields{"command": formattedCommand, "output": output, "error": err}).Info("Ran command")
-		message := ""
-		if err != nil {
-			message = err.Error()
-			record.Failed = true
+
+	// This function runs the provided commands in order, logging them as they run,
+	// aborting early and returning if any command fails.
+	runCommands := func(commands []cloneCommand) error {
+		for _, command := range commands {
+			formattedCommand, output, err := command.run()
+			logrus.WithFields(logrus.Fields{"command": formattedCommand, "output": output, "error": err}).Info("Ran command")
+			message := ""
+			if err != nil {
+				message = err.Error()
+				record.Failed = true
+			}
+			record.Commands = append(record.Commands, Command{Command: formattedCommand, Output: output, Error: message})
+			if err != nil {
+				return err
+			}
 		}
-		record.Commands = append(record.Commands, Command{Command: formattedCommand, Output: output, Error: message})
-		if err != nil {
-			break
-		}
+		return nil
 	}
 
+	g := gitCtxForRefs(refs, dir, env)
+	if err := runCommands(g.commandsForBaseRef(refs, gitUserName, gitUserEmail, cookiePath)); err != nil {
+		return record
+	}
+	timestamp, err := g.gitHeadTimestamp()
+	if err != nil {
+		timestamp = int(time.Now().Unix())
+	}
+	if err := runCommands(g.commandsForPullRefs(refs, timestamp)); err != nil {
+		return record
+	}
 	return record
 }
 
@@ -60,30 +79,48 @@ func PathForRefs(baseDir string, refs kube.Refs) string {
 	return fmt.Sprintf("%s/src/%s", baseDir, clonePath)
 }
 
-func commandsForRefs(refs kube.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env []string) []cloneCommand {
-	repositoryURI := fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo)
+// gitCtx collects a few common values needed for all git commands.
+type gitCtx struct {
+	cloneDir      string
+	env           []string
+	repositoryURI string
+}
+
+// gitCtxForRefs creates a gitCtx based on the provide refs and baseDir.
+func gitCtxForRefs(refs kube.Refs, baseDir string, env []string) gitCtx {
+	g := gitCtx{
+		cloneDir:      PathForRefs(baseDir, refs),
+		env:           env,
+		repositoryURI: fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo),
+	}
 	if refs.CloneURI != "" {
-		repositoryURI = refs.CloneURI
+		g.repositoryURI = refs.CloneURI
 	}
-	cloneDir := PathForRefs(dir, refs)
+	return g
+}
 
-	commands := []cloneCommand{{"/", env, "mkdir", []string{"-p", cloneDir}}}
+func (g *gitCtx) gitCommand(args ...string) cloneCommand {
+	return cloneCommand{dir: g.cloneDir, env: g.env, command: "git", args: args}
+}
 
-	gitCommand := func(args ...string) cloneCommand {
-		return cloneCommand{dir: cloneDir, env: env, command: "git", args: args}
-	}
-	commands = append(commands, gitCommand("init"))
+// commandsForBaseRef returns the list of commands needed to initialize and
+// configure a local git directory, as well as fetch and check out the provided
+// base ref.
+func (g *gitCtx) commandsForBaseRef(refs kube.Refs, gitUserName, gitUserEmail, cookiePath string) []cloneCommand {
+	commands := []cloneCommand{{dir: "/", env: g.env, command: "mkdir", args: []string{"-p", g.cloneDir}}}
+
+	commands = append(commands, g.gitCommand("init"))
 	if gitUserName != "" {
-		commands = append(commands, gitCommand("config", "user.name", gitUserName))
+		commands = append(commands, g.gitCommand("config", "user.name", gitUserName))
 	}
 	if gitUserEmail != "" {
-		commands = append(commands, gitCommand("config", "user.email", gitUserEmail))
+		commands = append(commands, g.gitCommand("config", "user.email", gitUserEmail))
 	}
 	if cookiePath != "" {
-		commands = append(commands, gitCommand("config", "http.cookiefile", cookiePath))
+		commands = append(commands, g.gitCommand("config", "http.cookiefile", cookiePath))
 	}
-	commands = append(commands, gitCommand("fetch", repositoryURI, "--tags", "--prune"))
-	commands = append(commands, gitCommand("fetch", repositoryURI, refs.BaseRef))
+	commands = append(commands, g.gitCommand("fetch", g.repositoryURI, "--tags", "--prune"))
+	commands = append(commands, g.gitCommand("fetch", g.repositoryURI, refs.BaseRef))
 
 	var target string
 	if refs.BaseSHA != "" {
@@ -97,28 +134,71 @@ func commandsForRefs(refs kube.Refs, dir, gitUserName, gitUserEmail, cookiePath 
 	// are on the branch we are syncing, we check out the SHA
 	// first and reset the branch second, then check out the
 	// branch we just reset to be in the correct final state
-	commands = append(commands, gitCommand("checkout", target))
-	commands = append(commands, gitCommand("branch", "--force", refs.BaseRef, target))
-	commands = append(commands, gitCommand("checkout", refs.BaseRef))
+	commands = append(commands, g.gitCommand("checkout", target))
+	commands = append(commands, g.gitCommand("branch", "--force", refs.BaseRef, target))
+	commands = append(commands, g.gitCommand("checkout", refs.BaseRef))
 
+	return commands
+}
+
+// gitHeadTimestamp returns the timestamp of the HEAD commit as seconds from the
+// UNIX epoch. If unable to read the timestamp for any reason (such as missing
+// the git, or not using a git repo), it returns 0 and an error.
+func (g *gitCtx) gitHeadTimestamp() (int, error) {
+	gitShowCommand := g.gitCommand("show", "-s", "--format=format:%ct", "HEAD")
+	_, gitOutput, err := gitShowCommand.run()
+	if err != nil {
+		logrus.WithError(err).Debug("Could not obtain timestamp of git HEAD")
+		return 0, err
+	}
+	timestamp, convErr := strconv.Atoi(string(gitOutput))
+	if convErr != nil {
+		logrus.WithError(convErr).Errorf("Failed to parse timestamp %q", gitOutput)
+		return 0, convErr
+	}
+	return timestamp, nil
+}
+
+// gitTimestampEnvs returns the list of environment variables needed to override
+// git's author and commit timestamps when creating new commits.
+func gitTimestampEnvs(timestamp int) []string {
+	return []string{
+		fmt.Sprintf("GIT_AUTHOR_DATE=%d", timestamp),
+		fmt.Sprintf("GIT_COMMITTER_DATE=%d", timestamp),
+	}
+}
+
+// commandsForPullRefs returns the list of commands needed to fetch and
+// merge any pull refs as well as submodules. These commands should be run only
+// after the commands provided by commandsForBaseRef have been run
+// successfully.
+// Each merge commit will be created at sequential seconds after fakeTimestamp.
+// It's recommended that fakeTimestamp be set to the timestamp of the base ref.
+// This enables reproducible timestamps and git tree digests every time the same
+// set of base and pull refs are used.
+func (g *gitCtx) commandsForPullRefs(refs kube.Refs, fakeTimestamp int) []cloneCommand {
+	var commands []cloneCommand
 	for _, prRef := range refs.Pulls {
 		ref := fmt.Sprintf("pull/%d/head", prRef.Number)
 		if prRef.Ref != "" {
 			ref = prRef.Ref
 		}
-		commands = append(commands, gitCommand("fetch", repositoryURI, ref))
+		commands = append(commands, g.gitCommand("fetch", g.repositoryURI, ref))
 		var prCheckout string
 		if prRef.SHA != "" {
 			prCheckout = prRef.SHA
 		} else {
 			prCheckout = "FETCH_HEAD"
 		}
-		commands = append(commands, gitCommand("merge", prCheckout))
+		fakeTimestamp++
+		gitMergeCommand := g.gitCommand("merge", "--no-ff", prCheckout)
+		gitMergeCommand.env = append(gitMergeCommand.env, gitTimestampEnvs(fakeTimestamp)...)
+		commands = append(commands, gitMergeCommand)
 	}
 
 	// unless the user specifically asks us not to, init submodules
 	if !refs.SkipSubmodules {
-		commands = append(commands, gitCommand("submodule", "update", "--init", "--recursive"))
+		commands = append(commands, g.gitCommand("submodule", "update", "--init", "--recursive"))
 	}
 
 	return commands

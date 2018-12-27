@@ -138,7 +138,6 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
-    preset-e2e-gci-gce-scalability: "true"
   decorate: true
   decoration_config:
     timeout: 14000000000000 # 140m

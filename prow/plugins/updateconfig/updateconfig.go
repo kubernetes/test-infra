@@ -62,7 +62,8 @@ type githubClient interface {
 	GetFile(org, repo, filepath, commit string) ([]byte, error)
 }
 
-type kubeClient interface {
+// KubeClient knows how to interact with ConfigMaps on a cluster
+type KubeClient interface {
 	GetConfigMap(name, namespace string) (kube.ConfigMap, error)
 	ReplaceConfigMap(name string, config kube.ConfigMap) (kube.ConfigMap, error)
 	CreateConfigMap(content kube.ConfigMap) (kube.ConfigMap, error)
@@ -76,7 +77,22 @@ func maps(pc plugins.Agent) map[string]plugins.ConfigMapSpec {
 	return pc.PluginConfig.ConfigUpdater.Maps
 }
 
-func update(gc githubClient, kc kubeClient, org, repo, commit, name, namespace string, updates map[string]string) error {
+// FileGetter knows how to get the contents of a file by name
+type FileGetter interface {
+	GetFile(filename string) ([]byte, error)
+}
+
+type gitHubFileGetter struct {
+	org, repo, commit string
+	client            githubClient
+}
+
+func (g *gitHubFileGetter) GetFile(filename string) ([]byte, error) {
+	return g.client.GetFile(g.org, g.repo, filename, g.commit)
+}
+
+// Update updates the configmap with the data from the identified files
+func Update(fg FileGetter, kc KubeClient, name, namespace string, updates map[string]string) error {
 	currentContent, getErr := kc.GetConfigMap(name, namespace)
 	_, isNotFound := getErr.(kube.NotFoundError)
 	if getErr != nil && !isNotFound {
@@ -94,7 +110,7 @@ func update(gc githubClient, kc kubeClient, org, repo, commit, name, namespace s
 			continue
 		}
 
-		content, err := gc.GetFile(org, repo, filename, commit)
+		content, err := fg.GetFile(filename)
 		if err != nil {
 			return fmt.Errorf("get file err: %v", err)
 		}
@@ -121,7 +137,62 @@ func update(gc githubClient, kc kubeClient, org, repo, commit, name, namespace s
 	return nil
 }
 
-func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRequestEvent, configMaps map[string]plugins.ConfigMapSpec) error {
+// ConfigMapID is a name/namespace combination that identifies a config map
+type ConfigMapID struct {
+	Name, Namespace string
+}
+
+// FilterChanges determines which of the changes are relevant for config updating, returning mapping of
+// config map to key to filename to update that key from.
+func FilterChanges(configMaps map[string]plugins.ConfigMapSpec, changes []github.PullRequestChange, log *logrus.Entry) map[ConfigMapID]map[string]string {
+	toUpdate := map[ConfigMapID]map[string]string{}
+	for _, change := range changes {
+		var cm plugins.ConfigMapSpec
+		found := false
+
+		for key, configMap := range configMaps {
+			var matchErr error
+			found, matchErr = zglob.Match(key, change.Filename)
+			if matchErr != nil {
+				// Should not happen, log matchErr and continue
+				log.WithError(matchErr).Info("key matching error")
+				continue
+			}
+
+			if found {
+				cm = configMap
+				break
+			}
+		}
+
+		if !found {
+			continue // This file does not define a configmap
+		}
+
+		// Yes, update the configmap with the contents of this file
+		id := ConfigMapID{Name: cm.Name, Namespace: cm.Namespace}
+		if _, ok := toUpdate[id]; !ok {
+			toUpdate[id] = map[string]string{}
+		}
+		key := cm.Key
+		if key == "" {
+			key = path.Base(change.Filename)
+			// if the key changed, we need to remove the old key
+			if change.Status == github.PullRequestFileRenamed {
+				oldKey := path.Base(change.PreviousFilename)
+				toUpdate[id][oldKey] = ""
+			}
+		}
+		if change.Status == github.PullRequestFileRemoved {
+			toUpdate[id][key] = ""
+		} else {
+			toUpdate[id][key] = change.Filename
+		}
+	}
+	return toUpdate
+}
+
+func handle(gc githubClient, kc KubeClient, log *logrus.Entry, pre github.PullRequestEvent, configMaps map[string]plugins.ConfigMapSpec) error {
 	// Only consider newly merged PRs
 	if pre.Action != github.PullRequestActionClosed {
 		return nil
@@ -159,63 +230,18 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 	}
 
 	// Are any of the changes files ones that define a configmap we want to update?
+	toUpdate := FilterChanges(configMaps, changes, log)
+
 	var updated []string
-	type configMapID struct {
-		name, namespace string
-	}
-	toUpdate := map[configMapID]map[string]string{}
-	for _, change := range changes {
-		var cm plugins.ConfigMapSpec
-		found := false
-
-		for key, configMap := range configMaps {
-			found, err = zglob.Match(key, change.Filename)
-			if err != nil {
-				// Should not happen, log err and continue
-				log.WithError(err).Info("key matching error")
-				continue
-			}
-
-			if found {
-				cm = configMap
-				break
-			}
-		}
-
-		if !found {
-			continue // This file does not define a configmap
-		}
-
-		// Yes, update the configmap with the contents of this file
-		id := configMapID{name: cm.Name, namespace: cm.Namespace}
-		if _, ok := toUpdate[id]; !ok {
-			toUpdate[id] = map[string]string{}
-		}
-		key := cm.Key
-		if key == "" {
-			key = path.Base(change.Filename)
-			// if the key changed, we need to remove the old key
-			if change.Status == "renamed" {
-				oldKey := path.Base(change.PreviousFilename)
-				toUpdate[id][oldKey] = ""
-			}
-		}
-		if change.Status == "removed" {
-			toUpdate[id][key] = ""
-		} else {
-			toUpdate[id][key] = change.Filename
-		}
-	}
-
 	indent := " " // one space
 	if len(toUpdate) > 1 {
 		indent = "   " // three spaces for sub bullets
 	}
 	for cm, data := range toUpdate {
-		if err := update(gc, kc, org, repo, *pr.MergeSHA, cm.name, cm.namespace, data); err != nil {
+		if err := Update(&gitHubFileGetter{org: org, repo: repo, commit: *pr.MergeSHA, client: gc}, kc, cm.Name, cm.Namespace, data); err != nil {
 			return err
 		}
-		updated = append(updated, message(cm.name, cm.namespace, data, indent))
+		updated = append(updated, message(cm.Name, cm.Namespace, data, indent))
 	}
 
 	var msg string

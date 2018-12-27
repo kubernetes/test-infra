@@ -37,6 +37,7 @@ import (
 )
 
 const (
+	// PluginName defines this plugin's registered name.
 	PluginName = "blockade"
 )
 

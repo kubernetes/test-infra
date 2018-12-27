@@ -32,7 +32,7 @@ go_library(
     srcs = ["main.go"],
     importpath = "k8s.io/test-infra/robots/pr-labeler",
     deps = [
-        "//prow/config:go_default_library",
+        "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",

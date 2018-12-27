@@ -30,10 +30,6 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/github"
-
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -42,6 +38,10 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+
+	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/github"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // for gcp auth provider
 )
@@ -446,7 +446,7 @@ func githubToken(choice string) (string, error) {
 }
 
 func githubClient(tokenPath string, dry bool) (*github.Client, error) {
-	secretAgent := config.SecretAgent{}
+	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start([]string{tokenPath}); err != nil {
 		return nil, fmt.Errorf("start agent: %v", err)
 	}

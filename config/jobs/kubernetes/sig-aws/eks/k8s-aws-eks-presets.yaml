@@ -1,12 +1,28 @@
 presets:
 - env:
+  # to prevent ginkgo-e2e.sh from using the cluster/eks functions
+  - name: KUBERNETES_CONFORMANCE_TEST
+    value: yes
+  - name: KUBERNETES_CONFORMANCE_PROVIDER
+    value: eks
+  # configure worker node private key path to "~/.ssh/kube_aws_rsa"
+  # see https://godoc.org/k8s.io/kubernetes/test/e2e/framework#GetSigner
+  - name: AWS_SSH_KEY
+    value: kube_aws_rsa
   # URL to download the latest 'aws-k8s-tester' release
   - name: AWS_K8S_TESTER_EKS_AWS_K8S_TESTER_DOWNLOAD_URL
-    value: https://github.com/aws/aws-k8s-tester/releases/download/0.1.7/aws-k8s-tester-0.1.7-linux-amd64
+    value: https://github.com/aws/aws-k8s-tester/releases/download/0.1.9/aws-k8s-tester-0.1.9-linux-amd64
   - name: AWS_K8S_TESTER_EKS_AWS_K8S_TESTER_DOWNLOAD_PATH
     value: /tmp/aws-k8s-tester/aws-k8s-tester
   - name: AWS_K8S_TESTER_EKS_KUBECTL_DOWNLOAD_PATH
     value: /tmp/aws-k8s-tester/kubectl
+  - name: AWS_K8S_TESTER_EKS_KUBECONFIG_PATH
+    value: /tmp/aws-k8s-tester/kubeconfig
+  - name: KUBECONFIG
+    value: /tmp/aws-k8s-tester/kubeconfig
+  # upstream "kubernetes/kubernetes/hack/ginkgo-e2e.sh" requires this via "cluster/kubectl.sh"
+  - name: KUBECTL
+    value: "/tmp/aws-k8s-tester/kubectl --kubeconfig=/tmp/aws-k8s-tester/kubeconfig"
   - name: AWS_K8S_TESTER_EKS_AWS_IAM_AUTHENTICATOR_DOWNLOAD_PATH
     value: /tmp/aws-k8s-tester/aws-iam-authenticator
   # test mode is either "embedded" or "aws-cli" ("embedded" uses native AWS Go client, "aws-cli" will use 'aws')
@@ -36,6 +52,9 @@ presets:
   # use it for debug, dump cluster log already handles worker node logs
   - name: AWS_K8S_TESTER_EKS_UPLOAD_WORKER_NODE_LOGS
     value: "false"
+  # "2" to add S3 bucket lifecycle of 2 days; let bucket be deleted in 2 days
+  - name: AWS_K8S_TESTER_EKS_UPLOAD_BUCKET_EXPIRE_DAYS
+    value: "2"
   # worker node auto-scaling group minimum number of nodes
   - name: AWS_K8S_TESTER_EKS_WORKER_NODE_ASG_MIN
     value: "1"

@@ -23,11 +23,11 @@ import (
 	"os"
 	"strings"
 
-	"k8s.io/test-infra/prow/config"
+	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
-
-	"github.com/sirupsen/logrus"
 )
 
 type options struct {
@@ -88,12 +88,12 @@ func main() {
 		logrus.WithError(err).Fatal("bad flags")
 	}
 
-	var jamesBond config.SecretAgent
+	jamesBond := &secret.Agent{}
 	if err := jamesBond.Start([]string{o.github.TokenPath}); err != nil {
 		logrus.WithError(err).Fatal("Failed to start secrets agent")
 	}
 
-	gc, err := o.github.GitHubClient(&jamesBond, !o.confirm)
+	gc, err := o.github.GitHubClient(jamesBond, !o.confirm)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to create github client")
 	}
