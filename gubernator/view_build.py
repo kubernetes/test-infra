@@ -265,9 +265,9 @@ class BuildHandler(view_base.BaseHandler):
                 build_log, build_log_src = get_running_build_log(job, build,
                                                                  external_config["prow_url"])
 
-        # 'version' might be in either started or finished.
+        # 'revision' might be in either started or finished.
         # prefer finished.
-        version = finished and finished.get('version') or started and started.get('version')
+        version = finished and finished.get('revision') or started and started.get('revision')
         commit = version and version.split('+')[-1]
 
         refs = []
