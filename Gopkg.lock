@@ -136,7 +136,7 @@
   revision = "1fca145dffbcaa8fe914309b1ec0cfc67500fe61"
 
 [[projects]]
-  digest = "1:1e744d58451fcd1bb6451e05f618bb30b93c925b5449c7a61c06610e7783e1c2"
+  digest = "1:79a49cb93127245e85837e30f2c0af775a00ec57b43c91044c99051d2f655b5b"
   name = "github.com/aws/aws-k8s-tester"
   packages = [
     "ec2config",
@@ -148,8 +148,8 @@
     "pkg/awsapi/ec2",
   ]
   pruneopts = "NUT"
-  revision = "d63a00ba4fa0cc51bbb5bd6ef775d2a9e8b0b6ca"
-  version = "0.1.5"
+  revision = "b0403885b795108f00de4d1d463655503971721f"
+  version = "0.1.9"
 
 [[projects]]
   digest = "1:cc8dfe19a45c277f194744e8528aba0fa03208e6612723a5afd7ce343d27fe5a"
