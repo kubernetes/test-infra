@@ -19,6 +19,8 @@ package gcsupload
 import (
 	"context"
 	"fmt"
+	"k8s.io/test-infra/traiana"
+	"k8s.io/test-infra/traiana/prow/awsupload"
 	"os"
 	"path"
 	"path/filepath"
@@ -40,6 +42,10 @@ import (
 // operate relative to the base of the GCS dir.
 func (o Options) Run(spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc) error {
 	uploadTargets := o.assembleTargets(spec, extra)
+
+	if traiana.AWS {
+		return awsupload.Run(o, uploadTargets)
+	}
 
 	if !o.DryRun {
 		ctx := context.Background()
