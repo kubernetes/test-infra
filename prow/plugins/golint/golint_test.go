@@ -274,6 +274,22 @@ func TestLintCodeSuggestion(t *testing.T) {
 			comment: "",
 		},
 		{
+			name:       "Check errorf with errors",
+			codeChange: "@@ -0,0 +1,14 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+import (\n+        \"errors\"\n+        \"fmt\"\n+)\n+\n+func f(x int) error {\n+        return errors.New(fmt.Sprintf(\"something %d\", x))\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nimport (\n        \"errors\"\n        \"fmt\"\n)\n\nfunc f(x int) error {\n        return errors.New(fmt.Sprintf(\"something %d\", x))\n}\n"),
+			},
+			comment: "```suggestion\n        return fmt.Errorf(\"something %d\", x)\n```\nGolint errors: should replace errors.New(fmt.Sprintf(...)) with fmt.Errorf(...). <!-- golint -->",
+		},
+		{
+			name:       "Check errorf: no error",
+			codeChange: "@@ -0,0 +1,14 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+import (\n+        \"errors\"\n+        \"fmt\"\n+)\n+\n+func f(x int) error {\n+        return fmt.Errorf(\"something %!d(MISSING)\", x)\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nimport (\n        \"errors\"\n        \"fmt\"\n)\n\nfunc f(x int) error {        return fmt.Errorf(\"something %!d(MISSING)\", x)\n}\n"),
+			},
+			comment: "",
+		},
+		{
 			name:       "Check loop range: omit values",
 			codeChange: "@@ -0,0 +1,10 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+for _ = range m {\n+}\n+}\n+",
 			pullFiles: map[string][]byte{

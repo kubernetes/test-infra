@@ -17,12 +17,15 @@ limitations under the License.
 package suggestion
 
 import (
+	"fmt"
 	"github.com/golang/lint"
+	"github.com/sirupsen/logrus"
 	"regexp"
 	"strings"
 )
 
 var (
+	lintErrorfRegex          = regexp.MustCompile(`should replace errors\.New\(fmt\.Sprintf\(\.\.\.\)\) with fmt\.Errorf\(\.\.\.\)`)
 	lintNamesUnderscoreRegex = regexp.MustCompile("don't use underscores in Go names; (.*) should be (.*)")
 	lintNamesAllCapsRegex    = regexp.MustCompile("don't use ALL_CAPS in Go names; use CamelCase")
 	lintStutterRegex         = regexp.MustCompile("name will be used as [^.]+\\.(.*) by other packages, and that stutters; consider calling this (.*)")
@@ -30,6 +33,7 @@ var (
 )
 
 var lintHandlers = [...]func(lint.Problem) string{
+	fixErrorf,
 	fixNameUnderscore,
 	fixNameAllCaps,
 	fixStutter,
@@ -86,6 +90,43 @@ func fixStutter(p lint.Problem) string {
 		return ""
 	}
 	suggestion := strings.Replace(p.LineText, matches[1], matches[2], -1)
+	if suggestion == p.LineText {
+		return ""
+	}
+	return suggestion
+}
+
+func fixErrorf(p lint.Problem) string {
+	matches := lintErrorfRegex.FindStringSubmatch(p.Text)
+	if len(matches) != 1 {
+		return ""
+	}
+	parameterText := ""
+	count := 0
+	parameterTextBeginning := "errors.New(fmt.Sprintf("
+	parameterTextBeginningInd := strings.Index(p.LineText, parameterTextBeginning)
+	if parameterTextBeginningInd < 0 {
+		logrus.Infof("Cannot find \"errors.New(fmt.Sprintf(\" in problem line text %s", p.LineText)
+		return ""
+	}
+	for _, char := range p.LineText[parameterTextBeginningInd+len(parameterTextBeginning):] {
+		if char == '(' {
+			count++
+		}
+		if char == ')' {
+			count--
+			if count < 0 {
+				break
+			}
+		}
+		parameterText += string(char)
+	}
+	if count > 0 {
+		return ""
+	}
+	toReplace := fmt.Sprintf("errors.New(fmt.Sprintf(%s))", parameterText)
+	replacement := fmt.Sprintf("fmt.Errorf(%s)", parameterText)
+	suggestion := strings.Replace(p.LineText, toReplace, replacement, -1)
 	if suggestion == p.LineText {
 		return ""
 	}
