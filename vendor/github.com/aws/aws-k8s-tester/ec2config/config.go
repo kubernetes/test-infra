@@ -46,6 +46,10 @@ type Config struct {
 	// UploadTesterLogs is true to auto-upload log files.
 	UploadTesterLogs bool `json:"upload-tester-logs"`
 
+	// UploadBucketExpireDays is the number of days for objects in S3 bucket to expire.
+	// Set 0 to not expire.
+	UploadBucketExpireDays int `json:"upload-bucket-expire-days"`
+
 	// Tag is the tag used for all cloudformation stacks.
 	Tag string `json:"tag,omitempty"`
 	// ClusterName is an unique ID for cluster.
@@ -221,8 +225,9 @@ var defaultConfig = Config{
 
 	// default, stderr, stdout, or file name
 	// log file named with cluster name will be added automatically
-	LogOutputs:       []string{"stderr"},
-	UploadTesterLogs: false,
+	LogOutputs:             []string{"stderr"},
+	UploadTesterLogs:       false,
+	UploadBucketExpireDays: 2,
 
 	// Amazon Linux 2 AMI (HVM), SSD Volume Type
 	ImageID:  "ami-061e7ebbc234015fe",
