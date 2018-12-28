@@ -343,6 +343,7 @@ tide:
     - kubernetes/cloud-provider-azure
     - kubernetes/cloud-provider-gcp
     - kubernetes/cloud-provider-openstack
+    - kubernetes/cloud-provider-sample
     - kubernetes/cloud-provider-vsphere
     - kubernetes/cluster-registry
     - kubernetes/community
