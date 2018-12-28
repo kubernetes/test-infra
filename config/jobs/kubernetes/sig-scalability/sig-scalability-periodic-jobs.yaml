@@ -341,7 +341,7 @@ periodics:
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-b
       - --provider=gce
-       - --test=false
+      - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=5000
