@@ -161,13 +161,14 @@ for specific repos and/or whole orgs.
 
 You can do this with the `add-hook` utility:
 ```sh
-# Note /path/to/hook/secret from earlier secrets step
+# Note /path/to/hook/secret and /path/to/oauth/secret from earlier secrets step
 # Note the an.ip.addr.ess from previous ingres step
 
 # Ideally use https://bazel.build, alternatively try:
 #   go get -u k8s.io/test-infra/experiment/add-hook && add-hook
 bazel run //experiment/add-hook -- \
   --hmac-path=/path/to/hook/secret \
+  --github-token-path=/path/to/oauth/secret \
   --hook-url http://an.ip.addr.ess/hook \
   --repo my-org/my-repo \
   --repo my-whole-org \
