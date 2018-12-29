@@ -13,9 +13,12 @@ Prow's tackle utility walks you through deploying a new instance of prow in a co
 You need three things:
 1) The prow tackle command.
 2) a [personal access token][1] for the github bot user you want to act as prow
-  - Prow uploads this token into a secret in your cluster
+
+   - Prow uploads this token into a secret in your cluster
+
 3) Optionally, credentials to a kubernetes cluster
-  - Otherwise the tackle command can help you create one
+
+   - Otherwise the tackle command can help you create one
 
 Then run the following and follow on-screen instructions:
 
@@ -26,6 +29,7 @@ bazel run //prow/cmd/tackle
 ```
 
 The will help you through the following steps:
+
 * Choosing a kubectl context (and creating a cluster / getting its credentials if necessary)
 * Deploying prow into that cluster
 * Configuring github to send prow webhooks for your repos
@@ -58,20 +62,24 @@ gcloud container --project "${PROJECT}" clusters create prow \
 ```
 
 ### Create cluster role bindings
+
 As of 1.8 Kubernetes uses [Role-Based Access Control (“RBAC”)](https://kubernetes.io/docs/admin/authorization/rbac/) to drive authorization decisions, allowing `cluster-admin` to dynamically configure policies.
 To create cluster resources you need to grant a user `cluster-admin` role in all namespaces for the cluster.
 
 For Prow on GCP, you can use the following command.
+
 ```sh
 kubectl create clusterrolebinding cluster-admin-binding \
   --clusterrole cluster-admin --user $(gcloud config get-value account)
 ```
 
 For Prow on other platforms, the following command will likely work.
+
 ```sh
 kubectl create clusterrolebinding cluster-admin-binding-"${USER}" \
   --clusterrole=cluster-admin --user="${USER}"
 ```
+
 On some platforms the `USER` variable may not map correctly to the user
 in-cluster. If you see an error of the following form, this is likely the case.
 
@@ -87,14 +95,13 @@ APIGroups:["prow.k8s.io"], Verbs:["list"]}] user=&{<CLUSTER_USER>
 
 Run the previous command substituting `USER` with `CLUSTER_USER` from the error
 message above to solve this issue.
+
 ```sh
 kubectl create clusterrolebinding cluster-admin-binding-"<CLUSTER_USER>" \
   --clusterrole=cluster-admin --user="<CLUSTER_USER>"
 ```
 
 There are [relevant docs on Kubernetes Authentication](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#authentication-strategies) that may help if neither of the above work.
-
-
 
 ### Create the GitHub secrets
 
@@ -141,6 +148,7 @@ tide         1         1         1            1           1m
 ```
 
 #### Get ingress IP address
+
 Find out your external address. It might take a couple minutes for the IP to
 show up.
 
@@ -160,6 +168,7 @@ Configure github to send your prow instance `application/json` webhooks
 for specific repos and/or whole orgs.
 
 You can do this with the `add-hook` utility:
+
 ```sh
 # Note /path/to/hook/secret and /path/to/oauth/secret from earlier secrets step
 # Note the an.ip.addr.ess from previous ingres step
@@ -182,7 +191,6 @@ A green check mark (for a ping event, if you click edit and view the details of 
 
 You can click `Add webhook` on the Webhooks page to add the hook manually
 if you do not want to use the `add-hook` utility.
-
 
 ## Next steps
 
@@ -346,6 +354,7 @@ other:
 ```
 
 Use [mkbuild-cluster][5] to determine these values:
+
 ```sh
 bazel run //prow/cmd/mkbuild-cluster -- \
   --project=P --zone=Z --cluster=C \
@@ -377,6 +386,7 @@ spec:
 
 Configure jobs to use the non-default cluster with the `cluster:` field.
 The above example `cluster.yaml` defines two clusters: `default` and `other` to schedule jobs, which we can use as follows:
+
 ```yaml
 periodics:
 - name: cluster-unspecified
@@ -406,6 +416,7 @@ periodics:
 ```
 
 This results in:
+
 * The `cluster-unspecified` and `default-cluster` jobs run in the `default` cluster.
 * The `cluster-other` job runs in the `other` cluster.
 
@@ -421,7 +432,7 @@ See [how to configure tide][7] for more details.
 
 #### Setup PR status dashboard
 
-To setup a PR status dashboard like https://prow.k8s.io/pr, follow the
+To setup a PR status dashboard like [prow.k8s.io/pr](https://prow.k8s.io/pr), follow the
 instructions in [`pr_status_setup.md`](https://github.com/kubernetes/test-infra/blob/master/prow/docs/pr_status_setup.md).
 
 ### Configure SSL
