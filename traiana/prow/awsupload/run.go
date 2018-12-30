@@ -1,32 +1,31 @@
 package awsupload
 
 import (
-	"cloud.google.com/go/storage"
-	"context"
 	"fmt"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/api/option"
-	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
+	"k8s.io/test-infra/traiana/prow/awsapi"
+	"k8s.io/test-infra/traiana/prow/pod-utils/aws"
 )
 
-func Run(o gcsupload.Options, uploadTargets map[string]gcs.UploadFunc) error {
-	if !o.DryRun {
-		ctx := context.Background()
-		gcsClient, err := storage.NewClient(ctx, option.WithCredentialsFile(o.GcsCredentialsFile))
+func Run(uploadTargets map[string]gcs.UploadFunc, dryRun bool) error {
+	if !dryRun {
+		//ctx := context.Background()
+
+		session, err := awsapi.NewSession()
+
 		if err != nil {
-			return fmt.Errorf("could not connect to GCS: %v", err)
+			return fmt.Errorf("could not connect to AWS: %v", err)
 		}
 
-		if err := gcs.Upload(gcsClient.Bucket(o.Bucket), uploadTargets); err != nil {
-			return fmt.Errorf("failed to upload to GCS: %v", err)
-		}
+		aws.Upload(session, nil)
+
 	} else {
 		for destination := range uploadTargets {
 			logrus.WithField("dest", destination).Info("Would upload")
 		}
 	}
 
-	logrus.Info("Finished upload to GCS")
+	logrus.Info("Finished upload to AWS")
 	return nil
 }
