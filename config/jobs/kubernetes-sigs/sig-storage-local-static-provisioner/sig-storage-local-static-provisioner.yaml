@@ -42,3 +42,22 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+  - name: pull-sig-storage-local-static-provisioner-e2e
+    always_run: true
+    decorate: true
+    skip_report: true # Remove it after job is tested successfully.
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
