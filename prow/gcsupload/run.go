@@ -43,8 +43,8 @@ import (
 func (o Options) Run(spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc) error {
 	uploadTargets := o.assembleTargets(spec, extra)
 
-	if traiana.AWS {
-		return awsupload.Run(o, uploadTargets)
+	if traiana.Traiana {
+		return awsupload.Run(uploadTargets, o.DryRun)
 	}
 
 	if !o.DryRun {

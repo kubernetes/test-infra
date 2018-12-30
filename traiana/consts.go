@@ -1,3 +1,3 @@
 package traiana
 
-const AWS = true
+const Traiana = true
