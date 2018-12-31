@@ -52,28 +52,5 @@ func (w *BucketWriter) S3Put(reader io.Reader) error {
 		Key:    aws.String(w.key),
 	})
 
-	//file, err := os.Open(filename)
-	//////if err != nil {
-	//return errors.WithMessage(err, "Failed to open file "+filename)
-	//}
-	//defer file.Close()
-
-	//fileInfo, _ := file.Stat()
-	//var size= fileInfo.Size()
-	//buffer := make([]byte, size)
-	//file.Read(buffer)
-
-	/*output, err := s3.New(b.session).PutObject(&s3.PutObjectInput{
-		Bucket:               aws.String(b.bucket),
-		Key:                  aws.String("delme/yarn.lock"),
-		ACL:                  aws.String("private"),
-		Body:                 bytes.NewReader(buffer),
-		//ContentLength:        aws.Int64(size),
-		//ContentType:          aws.String(http.DetectContentType(buffer)),
-		ContentDisposition:   aws.String("attachment"),
-		ServerSideEncryption: aws.String("AES256"),
-	})*/
-	//_ = output
-
 	return err
 }
