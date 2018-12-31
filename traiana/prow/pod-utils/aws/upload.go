@@ -1,92 +1,68 @@
 package aws
 
 import (
-	"bytes"
 	"fmt"
-	sdk "github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/pkg/errors"
-	"net/http"
+	"k8s.io/test-infra/traiana/prow/awsapi"
+	"github.com/sirupsen/logrus"
+	"io"
+	"k8s.io/test-infra/prow/errorutil"
 	"os"
+	"sync"
 )
 
-type UploadTarget struct {
-	Sourcepath string
-	Bucket     string
-	Dest       string
-	//acl            ACLHandle
-	//gen            int64 // a negative value indicates latest
-	//conds          *Conditions
-	//encryptionKey  []byte // AES-256 key
-	//userProject    string // for requester-pays buckets
-	//readCompressed bool   // Accept-Encoding: gzip
-}
+type UploadFunc func(obj *awsapi.BucketWriter) error
 
-func Upload(session *session.Session, targets []UploadTarget) error {
+func Upload(handle *awsapi.BucketHandle, uploadTargets map[string]UploadFunc) error {
+	errCh := make(chan error, len(uploadTargets))
+	group := &sync.WaitGroup{}
+	group.Add(len(uploadTargets))
+	for dest, upload := range uploadTargets {
 
-	for _, target := range targets {
+		var writer *awsapi.BucketWriter = awsapi.NewBucketWriter(handle, dest)
 
-		file, err := os.Open(filename)
-		if err != nil {
-			return errors.WithMessage(err, "Failed to open file "+filename)
-		}
-		defer file.Close()
-
-		fileInfo, _ := file.Stat()
-		var size= fileInfo.Size()
-		buffer := make([]byte, size)
-		file.Read(buffer)
-
-		output, err := s3.New(session).PutObject(&s3.PutObjectInput{
-			Bucket:               sdk.String(bucket111),
-			Key:                  sdk.String("delme/yarn.lock"),
-			ACL:                  sdk.String("private"),
-			Body:                 bytes.NewReader(buffer),
-			ContentLength:        sdk.Int64(size),
-			ContentType:          sdk.String(http.DetectContentType(buffer)),
-			ContentDisposition:   sdk.String("attachment"),
-			ServerSideEncryption: sdk.String("AES256"),
-		})
-	}
-
-	if err != nil {
-		return fmt.Errorf("failed to upload to AWS: %v", err)
-	}
-
-	//TODO: print output based on verbosity
-	_ = output
-
-
-	/*if false {
-		errCh := make(chan error, len(uploadTargets))
-		group := &sync.WaitGroup{}
-		group.Add(len(uploadTargets))
-		for dest, upload := range uploadTargets {
-
-			//bucket *storage.BucketHandle
-			//obj := bucket.Object(dest)
-			var obj *storage.ObjectHandle = nil
-
-			logrus.WithField("dest", dest).Info("Queued for upload")
-			go func(f UploadFunc, obj *storage.ObjectHandle, name string) {
-				defer group.Done()
-				if err := f(obj); err != nil {
-					errCh <- err
-				}
-				logrus.WithField("dest", name).Info("Finished upload")
-			}(upload, obj, dest)
-		}
-		group.Wait()
-		close(errCh)
-		if len(errCh) != 0 {
-			var uploadErrors []error
-			for err := range errCh {
-				uploadErrors = append(uploadErrors, err)
+		logrus.WithField("dest", dest).Info("Queued for upload")
+		go func(f UploadFunc, obj *awsapi.BucketWriter, name string) {
+			defer group.Done()
+			if err := f(obj); err != nil {
+				errCh <- err
 			}
-			return fmt.Errorf("encountered errors during upload: %v", uploadErrors)
+			logrus.WithField("dest", name).Info("Finished upload")
+		}(upload, writer, dest)
+	}
+	group.Wait()
+	close(errCh)
+	if len(errCh) != 0 {
+		var uploadErrors []error
+		for err := range errCh {
+			uploadErrors = append(uploadErrors, err)
 		}
-	}*/
+		return fmt.Errorf("encountered errors during upload: %v", uploadErrors)
+	}
 
 	return nil
+}
+
+// FileUpload returns an UploadFunc which copies all
+// data from the file on disk to S3
+func FileUpload(file string) UploadFunc {
+	return func(writer *awsapi.BucketWriter) error {
+		reader, err := os.Open(file)
+		if err != nil {
+			return err
+		}
+
+		uploadErr := DataUpload(reader)(writer)
+		closeErr := reader.Close()
+
+		return errorutil.NewAggregate(uploadErr, closeErr)
+	}
+}
+
+// DataUpload returns an UploadFunc which copies all
+// data from src reader into S3
+func DataUpload(src io.Reader) UploadFunc {
+	return func(writer *awsapi.BucketWriter) error {
+		_, copyErr := writer.ReadFrom(src)
+		return copyErr
+	}
 }

@@ -41,11 +41,16 @@ import (
 // to their destination in GCS, so the caller can
 // operate relative to the base of the GCS dir.
 func (o Options) Run(spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc) error {
-	uploadTargets := o.assembleTargets(spec, extra)
 
 	if traiana.Traiana {
-		return awsupload.Run(uploadTargets, o.DryRun)
+		if len(extra) > 0 {
+			return fmt.Errorf("Extra is not implemented for AWS")
+		}
+
+		return awsupload.Run(spec, o.DryRun, o.GCSConfiguration, o.Items, o.SubDir)
 	}
+
+	uploadTargets := o.assembleTargets(spec, extra)
 
 	if !o.DryRun {
 		ctx := context.Background()
