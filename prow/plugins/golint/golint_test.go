@@ -329,6 +329,46 @@ func TestLintCodeSuggestion(t *testing.T) {
 			},
 			comment: "",
 		},
+		{
+			name:       "Check variable declaration: should drop type",
+			codeChange: "@@ -0,0 +1,9 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+var myInt int = 7\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nvar myInt int = 7\n}\n"),
+			},
+			comment: "```suggestion\nvar myInt = 7\n```\nGolint type-inference: should omit type int from declaration of var myInt; it will be inferred from the right-hand side. <!-- golint -->",
+		},
+		{
+			name:       "Check variable declaration: should drop value (int)",
+			codeChange: "@@ -0,0 +1,9 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+var myZeroInt int = 0\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nvar myZeroInt int = 0\n}\n"),
+			},
+			comment: "```suggestion\nvar myZeroInt int\n```\nGolint zero-value: should drop = 0 from declaration of var myZeroInt; it is the zero value. <!-- golint -->",
+		},
+		{
+			name:       "Check variable declaration: should drop value (float32)",
+			codeChange: "@@ -0,0 +1,9 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+var myZeroFlt float32 = 0.\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nvar myZeroFlt float32 = 0.\n}\n"),
+			},
+			comment: "```suggestion\nvar myZeroFlt float32\n```\nGolint zero-value: should drop = 0. from declaration of var myZeroFlt; it is the zero value. <!-- golint -->",
+		},
+		{
+			name:       "Check variable declaration: no value suggestion",
+			codeChange: "@@ -0,0 +1,9 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+var myZeroRune2 rune\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nvar myZeroRune2 rune\n}\n"),
+			},
+			comment: "",
+		},
+		{
+			name:       "Check variable declaration: no type suggestion",
+			codeChange: "@@ -0,0 +1,9 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+var myInt = 7\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nvar myInt = 7\n}\n"),
+			},
+			comment: "",
+		},
 	}
 
 	lg, c, err := localgit.New()
