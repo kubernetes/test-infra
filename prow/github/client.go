@@ -2227,15 +2227,24 @@ func (c *Client) IsCollaborator(org, repo, user string) (bool, error) {
 
 // ListCollaborators gets a list of all users who have access to a repo (and
 // can become assignees or requested reviewers).
+// If specified, affiliation can be one of "outside", "direct" or "all".
+// Default affiliation is "all".
 //
 // See 'IsCollaborator' for more details.
 // See https://developer.github.com/v3/repos/collaborators/
-func (c *Client) ListCollaborators(org, repo string) ([]User, error) {
+func (c *Client) ListCollaborators(org, repo, affiliation string) ([]User, error) {
 	c.log("ListCollaborators", org, repo)
 	if c.fake {
 		return nil, nil
 	}
+
 	path := fmt.Sprintf("/repos/%s/%s/collaborators", org, repo)
+	if len(affiliation) != 0 {
+		if affiliation != string(AffiliationAll) && affiliation != string(AffiliationDirect) && affiliation != string(AffiliationOutside) {
+			return nil, fmt.Errorf("affiliation needs to be empty or one of \"all\", \"direct\" or \"outside\"")
+		}
+		path = fmt.Sprintf("/repos/%s/%s/collaborators?affiliation=%s", org, repo, affiliation)
+	}
 	var users []User
 	err := c.readPaginatedResults(
 		path,
@@ -2253,6 +2262,128 @@ func (c *Client) ListCollaborators(org, repo string) ([]User, error) {
 		return nil, err
 	}
 	return users, nil
+}
+
+// UpdateCollaborator adds or updates a user as a collaborator to the repo with the specified permission level.
+//
+// https://developer.github.com/v3/repos/collaborators/#add-user-as-a-collaborator
+func (c *Client) UpdateCollaborator(org, repo, user, permission string) error {
+	c.log("UpdateCollaborator", org, repo, user, permission)
+	if c.fake {
+		return nil
+	}
+
+	// default is push
+	if permission == "" {
+		permission = "push"
+	}
+	if permission != "pull" && permission != "push" && permission != "admin" {
+		return errors.New("permission needs to be one of \"pull\", \"push\" or \"admin\"")
+	}
+
+	var perm struct {
+		Perm string `json:"permission"`
+	}
+	perm.Perm = permission
+
+	path := fmt.Sprintf("/repos/%s/%s/collaborators/%s", org, repo, user)
+	_, err := c.request(&request{
+		method:      http.MethodPost,
+		path:        path,
+		requestBody: &perm,
+		exitCodes:   []int{201, 204},
+	}, nil)
+	return err
+}
+
+// RemoveCollaborator removes the user as a collaborator from the repo.
+//
+// https://developer.github.com/v3/repos/collaborators/#remove-user-as-a-collaborator
+func (c *Client) RemoveCollaborator(org, repo, user string) error {
+	c.log("RemoveCollaborator", org, repo, user)
+	if c.fake {
+		return nil
+	}
+	_, err := c.request(&request{
+		method:    http.MethodDelete,
+		path:      fmt.Sprintf("/repos/%s/%s/collaborators/%s", org, repo, user),
+		exitCodes: []int{204},
+	}, nil)
+	return err
+}
+
+// ListTeamsForRepo gets a list of teams having access to the repo.
+//
+// https://developer.github.com/v3/repos/#list-teams
+func (c *Client) ListTeamsForRepo(org, repo string) ([]Team, error) {
+	c.log("ListTeamsForRepo", org, repo)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/repos/%s/%s/teams", org, repo)
+	var teams []Team
+	err := c.readPaginatedResults(
+		path,
+		acceptNone,
+		func() interface{} {
+			return &[]Team{}
+		},
+		func(obj interface{}) {
+			teams = append(teams, *(obj.(*[]Team))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return teams, nil
+}
+
+// UpdateTeamForRepo adds a repository to a team or updates the team's permission on a repository.
+// If no permission is specified, the team's permission attribute will be used to determine
+// what permission to grant the team on this repository.
+//
+// https://developer.github.com/v3/teams/#add-or-update-team-repository
+func (c *Client) UpdateTeamForRepo(org, repo, permission string, id int) error {
+	c.log("UpdateTeamForRepo", org, repo, id, permission)
+	if c.fake {
+		return nil
+	}
+
+	if permission != "" && permission != "pull" && permission != "push" && permission != "admin" {
+		return errors.New("permission needs to be empty or one of \"pull\", \"push\" or \"admin\"")
+	}
+	var perm struct {
+		Perm string `json:"permission"`
+	}
+	perm.Perm = permission
+
+	path := fmt.Sprintf("/teams/%d/repos/%s/%s", id, org, repo)
+	_, err := c.request(&request{
+		method: http.MethodPost,
+		// This accept header enables the nested teams preview.
+		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
+		accept:      "application/vnd.github.hellcat-preview+json",
+		path:        path,
+		requestBody: &perm,
+		exitCodes:   []int{204, 422},
+	}, nil)
+	return err
+}
+
+// RemoveTeamFromRepo removes the repo from the team.
+//
+// https://developer.github.com/v3/teams/#remove-team-repository
+func (c *Client) RemoveTeamFromRepo(org, repo string, id int) error {
+	c.log("RemoveTeamFromRepo", org, repo, id)
+	if c.fake {
+		return nil
+	}
+	_, err := c.request(&request{
+		method:    http.MethodDelete,
+		path:      fmt.Sprintf("/teams/%d/repos/%s/%s", id, org, repo),
+		exitCodes: []int{204},
+	}, nil)
+	return err
 }
 
 // CreateFork creates a fork for the authenticated user. Forking a repository

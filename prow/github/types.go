@@ -701,6 +701,7 @@ type Team struct {
 	Name         string `json:"name"`
 	Description  string `json:"description,omitempty"`
 	Privacy      string `json:"privacy,omitempty"`
+	Permission   string `json:"permission,omitempty"`
 	Parent       *Team  `json:"parent,omitempty"`         // Only present in responses
 	ParentTeamID *int   `json:"parent_team_id,omitempty"` // Only valid in creates/edits
 }
@@ -765,6 +766,15 @@ type OrgInvitation struct {
 	Email   string     `json:"email"`
 	Inviter TeamMember `json:"inviter"`
 }
+
+const (
+	// AffiliationAll lists all collaborators for a repo.
+	AffiliationAll = "all"
+	// AffiliationOutside lists all outside collaborators for a repo.
+	AffiliationOutside = "outside"
+	// AffiliationDirect lists all direct collaborators with permissions to a repo, regardless of organization membership status.
+	AffiliationDirect = "direct"
+)
 
 // GenericCommentEventAction coerces multiple actions into its generic equivalent.
 type GenericCommentEventAction string

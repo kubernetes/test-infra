@@ -39,9 +39,10 @@ type Metadata struct {
 // Config declares org metadata as well as its people and teams.
 type Config struct {
 	Metadata
-	Teams   map[string]Team `json:"teams,omitempty"`
-	Members []string        `json:"members,omitempty"`
 	Admins  []string        `json:"admins,omitempty"`
+	Members []string        `json:"members,omitempty"`
+	Teams   map[string]Team `json:"teams,omitempty"`
+	Repos   map[string]Repo `json:"repos,omitempty"`
 }
 
 // TeamMetadata declares metadata about the github team.
@@ -60,6 +61,21 @@ type Team struct {
 	Children    map[string]Team `json:"teams,omitempty"`
 
 	Previously []string `json:"previously,omitempty"`
+}
+
+// Repo declares metadata about who has access to a repo.
+// Members denotes members of the organization with direct collaborator access.
+type Repo struct {
+	Members              UserPermissionLevel `json:"members,omitempty"`
+	OutsideCollaborators UserPermissionLevel `json:"outside_collaborators,omitempty"`
+	Teams                UserPermissionLevel `json:"teams,omitempty"`
+}
+
+// UserPermissionLevel declares the level of access to a repo.
+type UserPermissionLevel struct {
+	Admin []string `json:"admin,omitempty"`
+	Write []string `json:"write,omitempty"`
+	Read  []string `json:"read,omitempty"`
 }
 
 // RepoPermissionLevel is admin, write, read or none.

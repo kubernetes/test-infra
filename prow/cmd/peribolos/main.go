@@ -43,21 +43,24 @@ const (
 )
 
 type options struct {
-	config         string
-	confirm        bool
-	dump           string
-	jobConfig      string
-	maximumDelta   float64
-	minAdmins      int
-	requireSelf    bool
-	requiredAdmins flagutil.Strings
-	fixOrg         bool
-	fixOrgMembers  bool
-	fixTeamMembers bool
-	fixTeams       bool
-	github         flagutil.GitHubOptions
-	tokenBurst     int
-	tokensPerHour  int
+	config               string
+	confirm              bool
+	dump                 string
+	dumpRepos            bool
+	repos                string
+	jobConfig            string
+	maximumDelta         float64
+	minAdmins            int
+	requireSelf          bool
+	requiredAdmins       flagutil.Strings
+	fixOrg               bool
+	fixOrgMembers        bool
+	fixTeamMembers       bool
+	fixTeams             bool
+	fixRepoCollaborators bool
+	github               flagutil.GitHubOptions
+	tokenBurst           int
+	tokensPerHour        int
 }
 
 func parseOptions() options {
@@ -80,10 +83,13 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
 	flags.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
 	flags.StringVar(&o.dump, "dump", "", "Output current config of this org if set")
+	flags.BoolVar(&o.dumpRepos, "dump-repos", false, "Output current config of repos under the org if set")
+	flags.StringVar(&o.repos, "repos", "", "Add/remove/update/dump collaborators of only these comma separated repos. If empty, all repos are updated")
 	flags.BoolVar(&o.fixOrg, "fix-org", false, "Change org metadata if set")
 	flags.BoolVar(&o.fixOrgMembers, "fix-org-members", false, "Add/remove org members if set")
 	flags.BoolVar(&o.fixTeams, "fix-teams", false, "Create/delete/update teams if set")
 	flags.BoolVar(&o.fixTeamMembers, "fix-team-members", false, "Add/remove team members if set")
+	flags.BoolVar(&o.fixRepoCollaborators, "fix-repo-collaborators", false, "Add/update/remove repo collaborators if set")
 	o.github.AddFlags(flags)
 	if err := flags.Parse(args); err != nil {
 		return err
@@ -110,6 +116,10 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	}
 	if o.config != "" && o.dump != "" {
 		return fmt.Errorf("--config-path=%s and --dump=%s cannot both be set", o.config, o.dump)
+	}
+
+	if o.dumpRepos && o.dump == "" {
+		return fmt.Errorf("--dump-repos requires --dump")
 	}
 
 	if o.fixTeamMembers && !o.fixTeams {
@@ -139,7 +149,7 @@ func main() {
 	}
 
 	if o.dump != "" {
-		ret, err := dumpOrgConfig(githubClient, o.dump)
+		ret, err := dumpOrgConfig(githubClient, o.dump, o.repos, o.dumpRepos)
 		if err != nil {
 			logrus.WithError(err).Fatalf("Dump %s failed to collect current data.", o.dump)
 		}
@@ -166,12 +176,16 @@ func main() {
 
 type dumpClient interface {
 	GetOrg(name string) (*github.Organization, error)
+	GetRepos(org string, isUser bool) ([]github.Repo, error)
+	GetUserPermission(org, repo, user string) (string, error)
 	ListOrgMembers(org, role string) ([]github.TeamMember, error)
 	ListTeams(org string) ([]github.Team, error)
 	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
+	ListTeamsForRepo(org, repo string) ([]github.Team, error)
+	ListCollaborators(org, repo, affiliation string) ([]github.User, error)
 }
 
-func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
+func dumpOrgConfig(client dumpClient, orgName, repos string, dumpRepos bool) (*org.Config, error) {
 	out := org.Config{}
 	meta, err := client.GetOrg(orgName)
 	if err != nil {
@@ -210,6 +224,22 @@ func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
 		return nil, fmt.Errorf("failed to list teams: %v", err)
 	}
 
+	out.Teams, err = createTeamConfig(client, teams)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create team config: %v", err)
+	}
+
+	if dumpRepos {
+		out.Repos, err = createRepoConfig(client, orgName, repos)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create repo config: %v", err)
+		}
+	}
+
+	return &out, nil
+}
+
+func createTeamConfig(client dumpClient, teams []github.Team) (map[string]org.Team, error) {
 	names := map[int]string{}   // what's the name of a team?
 	idMap := map[int]org.Team{} // metadata for a team
 	children := map[int][]int{} // what children does it have
@@ -262,12 +292,119 @@ func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
 		return t
 	}
 
-	out.Teams = make(map[string]org.Team, len(tops))
+	result := make(map[string]org.Team, len(tops))
 	for _, id := range tops {
-		out.Teams[names[id]] = makeChild(id)
+		result[names[id]] = makeChild(id)
 	}
 
-	return &out, nil
+	return result, nil
+}
+
+func createRepoConfig(client dumpClient, orgName, repoList string) (map[string]org.Repo, error) {
+	repos := strings.Split(repoList, ",")
+	if len(repos) == 0 {
+		// get all repos
+		allRepos, err := client.GetRepos(orgName, false)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get repos: %v", err)
+		}
+
+		for _, r := range allRepos {
+			repos = append(repos, r.Name)
+		}
+	}
+
+	result := make(map[string]org.Repo, len(repos))
+	for _, repo := range repos {
+		// get outside collaborators
+		oc, err := client.ListCollaborators(orgName, repo, github.AffiliationOutside)
+		if err != nil {
+			return nil, err
+		}
+		var outsideCollaborators []string
+		for _, u := range oc {
+			outsideCollaborators = append(outsideCollaborators, u.Login)
+		}
+
+		var ocAdmin, ocWrite, ocRead []string
+		for _, user := range outsideCollaborators {
+			permission, err := client.GetUserPermission(orgName, repo, user)
+			if err != nil {
+				return nil, err
+			}
+			switch permission {
+			case string(org.Admin):
+				ocAdmin = append(ocAdmin, user)
+			case string(org.Write):
+				ocWrite = append(ocWrite, user)
+			case string(org.Read):
+				ocRead = append(ocRead, user)
+			}
+		}
+
+		// get members with direct collaborator access
+		dc, err := client.ListCollaborators(orgName, repo, github.AffiliationDirect)
+		if err != nil {
+			return nil, err
+		}
+		var directCollaborators []string
+		for _, u := range dc {
+			directCollaborators = append(directCollaborators, u.Login)
+		}
+		directMembers := sets.NewString(directCollaborators...).Difference(sets.NewString(outsideCollaborators...))
+
+		var membersAdmin, membersWrite, membersRead []string
+		members := directMembers.List()
+		for _, user := range members {
+			permission, err := client.GetUserPermission(orgName, repo, user)
+			if err != nil {
+				return nil, err
+			}
+			switch permission {
+			case string(org.Admin):
+				membersAdmin = append(membersAdmin, user)
+			case string(org.Write):
+				membersWrite = append(membersWrite, user)
+			case string(org.Read):
+				membersRead = append(membersRead, user)
+			}
+		}
+
+		// get all teams who have access to this repo
+		teams, err := client.ListTeamsForRepo(orgName, repo)
+		if err != nil {
+			return nil, err
+		}
+		var teamAdmin, teamWrite, teamRead []string
+		for _, team := range teams {
+			switch team.Permission {
+			case string(org.Admin):
+				teamAdmin = append(teamAdmin, team.Name)
+			case string("push"):
+				teamWrite = append(teamWrite, team.Name)
+			case string("pull"):
+				teamRead = append(teamRead, team.Name)
+			}
+		}
+		result[repo] = org.Repo{
+			Members: org.UserPermissionLevel{
+				Admin: membersAdmin,
+				Write: membersWrite,
+				Read:  membersRead,
+			},
+			OutsideCollaborators: org.UserPermissionLevel{
+				Admin: ocAdmin,
+				Write: ocWrite,
+				Read:  ocRead,
+			},
+			Teams: org.UserPermissionLevel{
+				Admin: teamAdmin,
+				Write: teamWrite,
+				Read:  teamRead,
+			},
+		}
+	}
+	return result, nil
 }
 
 type orgClient interface {
@@ -704,21 +841,27 @@ func configureOrg(opt options, client *github.Client, orgName string, orgConfig 
 
 	if !opt.fixTeams {
 		logrus.Infof("Skipping team and team member configuration")
-		return nil
-	}
-
-	// Find the id and current state of each declared team (create/delete as necessary)
-	githubTeams, err := configureTeams(client, orgName, orgConfig, opt.maximumDelta)
-	if err != nil {
-		return fmt.Errorf("failed to configure %s teams: %v", orgName, err)
-	}
-
-	for name, team := range orgConfig.Teams {
-		err := configureTeamAndMembers(client, opt.fixTeamMembers, githubTeams, name, orgName, team, invitees, nil)
+	} else {
+		// Find the id and current state of each declared team (create/delete as necessary)
+		githubTeams, err := configureTeams(client, orgName, orgConfig, opt.maximumDelta)
 		if err != nil {
 			return fmt.Errorf("failed to configure %s teams: %v", orgName, err)
 		}
+
+		for name, team := range orgConfig.Teams {
+			err := configureTeamAndMembers(client, opt.fixTeamMembers, githubTeams, name, orgName, team, invitees, nil)
+			if err != nil {
+				return fmt.Errorf("failed to configure %s teams: %v", orgName, err)
+			}
+		}
 	}
+
+	if !opt.fixRepoCollaborators {
+		logrus.Infof("Skipping repo collaborator configuration")
+	} else if err := configureRepoCollaborators(opt, client, orgName, orgConfig, invitees); err != nil {
+		return fmt.Errorf("failed to configure repo collaborators for repos in the %s org: %v", orgName, err)
+	}
+
 	return nil
 }
 
@@ -869,4 +1012,331 @@ func configureTeamMembers(client teamMembersClient, id int, team org.Team, invit
 	want := memberships{members: wantMembers, super: wantMaintainers}
 	have := memberships{members: haveMembers, super: haveMaintainers}
 	return configureMembers(have, want, invitees, adder, remover)
+}
+
+type repoClient interface {
+	ListCollaborators(org, repo, affiliation string) ([]github.User, error)
+	UpdateCollaborator(org, repo, user, permission string) error
+	RemoveCollaborator(org, repo, user string) error
+	GetUserPermission(org, repo, user string) (string, error)
+
+	ListTeams(org string) ([]github.Team, error)
+	ListTeamsForRepo(org, repo string) ([]github.Team, error)
+	UpdateTeamForRepo(org, repo, permission string, id int) error
+	RemoveTeamFromRepo(org, repo string, id int) error
+}
+
+type permissionLevels struct {
+	admin sets.String
+	write sets.String
+	read  sets.String
+}
+
+func (p permissionLevels) all() sets.String {
+	return p.admin.Union(p.write).Union(p.read)
+}
+
+func (p *permissionLevels) normalize() {
+	p.admin = normalize(p.admin)
+	p.write = normalize(p.write)
+	p.read = normalize(p.read)
+}
+
+func configureRepoCollaborators(opt options, client repoClient, orgName string, orgConfig org.Config, invitees sets.String) error {
+	if orgConfig.Repos == nil {
+		return nil
+	}
+
+	members := sets.NewString(orgConfig.Members...)
+	repos := strings.Split(opt.repos, ",")
+	if len(repos) == 0 {
+		for r := range orgConfig.Repos {
+			repos = append(repos, r)
+		}
+	}
+
+	var errs []error
+	for _, repo := range repos {
+		config, ok := orgConfig.Repos[repo]
+		if !ok {
+			errs = append(errs, fmt.Errorf("config for the %s repo does not exist, retry with --dump-repos", repo))
+			continue
+		}
+		if err := validateRepoCollaborators(config); err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		if err := configureUserCollaborators(opt, client, orgName, repo, github.AffiliationDirect, config.Members, invitees, members); err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		if err := configureUserCollaborators(opt, client, orgName, repo, github.AffiliationOutside, config.OutsideCollaborators, invitees, members); err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		if err := configureTeamCollaborators(opt, client, orgName, repo, config.Teams, invitees); err != nil {
+			errs = append(errs, err)
+			continue
+		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf("could not update all repos: %v", errs)
+	}
+	return nil
+}
+
+func configureUserCollaborators(opt options, client repoClient, orgName, repo, affiliation string, config org.UserPermissionLevel, invitees, members sets.String) error {
+	// get desired state
+	wantAdmin := sets.NewString(config.Admin...)
+	wantWrite := sets.NewString(config.Write...)
+	wantRead := sets.NewString(config.Read...)
+
+	// get current state
+	var users []string
+	var haveAdmin, haveWrite, haveRead sets.String
+
+	collaborators, err := client.ListCollaborators(orgName, repo, affiliation)
+	if err != nil {
+		return err
+	}
+	for _, u := range collaborators {
+		users = append(users, u.Login)
+	}
+	if affiliation == string(github.AffiliationDirect) {
+		users = sets.NewString(users...).Intersection(members).List()
+	}
+	for _, user := range users {
+		permission, err := client.GetUserPermission(orgName, repo, user)
+		if err != nil {
+			return err
+		}
+		switch permission {
+		case string(org.Admin):
+			haveAdmin.Insert(user)
+		case string(org.Write):
+			haveWrite.Insert(user)
+		case string(org.Read):
+			haveRead.Insert(user)
+		}
+	}
+
+	have := permissionLevels{admin: haveAdmin, write: haveWrite, read: haveRead}
+	want := permissionLevels{admin: wantAdmin, write: wantWrite, read: wantRead}
+	have.normalize()
+	want.normalize()
+
+	// figure out who to remove
+	remove := have.all().Difference(want.all())
+
+	// sanity check changes
+	if d := float64(len(remove)) / float64(len(have.all())); d > opt.maximumDelta {
+		return fmt.Errorf("cannot delete %d repo collaborators or %.3f of %s/%s (exceeds limit of %.3f)", len(remove), d, orgName, repo, opt.maximumDelta)
+	}
+
+	adder := func(user, permission string) error {
+		if invitees.Has(user) { // Do not add them, as this causes another invite.
+			logrus.Infof("Waiting for %s to accept invitation as a collaborator to %s/%s", user, orgName, repo)
+			return nil
+		}
+
+		isMember := members.Has(user)
+		if isMember && affiliation == string(github.AffiliationOutside) {
+			logrus.Infof("Cannot add/update %s as outside collaborator to %s/%s since they are a member", user, orgName, repo)
+			return nil
+		}
+
+		if !isMember && affiliation == string(github.AffiliationDirect) {
+			logrus.Infof("%s is not a member of the org %s, retry as an outside collaborator or apply for membership", user, orgName)
+			return nil
+		}
+
+		err := client.UpdateCollaborator(orgName, repo, user, permission)
+		if err != nil {
+			logrus.WithError(err).Warnf("UpdateCollaborator(%s, %s, %s, %s) failed", orgName, repo, user, permission)
+		} else {
+			logrus.Infof("Set %s with %s access to %s/%s", user, permission, orgName, repo)
+		}
+		return err
+	}
+
+	remover := func(user string) error {
+		err := client.RemoveCollaborator(orgName, repo, user)
+		if err != nil {
+			logrus.WithError(err).Warnf("RemoveCollaborator(%s, %s, %s) failed", orgName, repo, user)
+		}
+		return err
+	}
+
+	return configureCollaborators(have, want, invitees, adder, remover)
+}
+
+func configureTeamCollaborators(opt options, client repoClient, orgName, repo string, config org.UserPermissionLevel, invitees sets.String) error {
+	// get desired state
+	wantAdmin := sets.NewString(config.Admin...)
+	wantWrite := sets.NewString(config.Write...)
+	wantRead := sets.NewString(config.Read...)
+
+	// get current state
+	teams, err := client.ListTeamsForRepo(orgName, repo)
+	if err != nil {
+		return err
+	}
+	var haveAdmin, haveWrite, haveRead sets.String
+	namesToID := map[string]int{}
+	for _, team := range teams {
+		namesToID[team.Name] = team.ID
+		switch team.Permission {
+		case string(org.Admin):
+			haveAdmin.Insert(team.Name)
+		case string("push"):
+			haveWrite.Insert(team.Name)
+		case string("pull"):
+			haveRead.Insert(team.Name)
+		}
+	}
+
+	have := permissionLevels{admin: haveAdmin, write: haveWrite, read: haveRead}
+	want := permissionLevels{admin: wantAdmin, write: wantWrite, read: wantRead}
+	have.normalize()
+	want.normalize()
+
+	// figure out who to remove
+	remove := have.all().Difference(want.all())
+
+	// sanity check changes
+	if d := float64(len(remove)) / float64(len(have.all())); d > opt.maximumDelta {
+		return fmt.Errorf("cannot delete %d teams as collaborators or %.3f of %s/%s (exceeds limit of %.3f)", len(remove), d, orgName, repo, opt.maximumDelta)
+	}
+
+	adder := func(team, permission string) error {
+		var teamID int
+		teamID, ok := namesToID[team]
+		if !ok {
+			// this means we are adding a new team to the repo
+			// list all teams to get its ID
+			allTeams, err := client.ListTeams(orgName)
+			if err != nil {
+				return fmt.Errorf("failed to list teams: %v", err)
+			}
+
+			for _, t := range allTeams {
+				if _, ok := namesToID[t.Name]; !ok {
+					namesToID[t.Name] = t.ID
+				}
+			}
+
+			// look for the ID again
+			id, ok := namesToID[team]
+			if !ok {
+				return fmt.Errorf("invalid team name %s", team)
+			}
+			teamID = id
+		}
+
+		err := client.UpdateTeamForRepo(orgName, repo, permission, teamID)
+		if err != nil {
+			logrus.WithError(err).Warnf("UpdateTeamForRepo(%s, %s, %s, %s) failed", orgName, repo, team, permission)
+		} else {
+			logrus.Infof("Set %s with the permission \"%s\" to %s/%s", team, permission, orgName, repo)
+		}
+		return err
+	}
+
+	remover := func(team string) error {
+		teamID, ok := namesToID[team]
+		if !ok {
+			return fmt.Errorf("invalid team name %s specified to be removed", team)
+		}
+
+		err := client.RemoveTeamFromRepo(orgName, repo, teamID)
+		if err != nil {
+			logrus.WithError(err).Warnf("RemoveTeamFromRepo(%s, %s, %s) failed", orgName, repo, team)
+		}
+		return err
+	}
+
+	return configureCollaborators(have, want, invitees, adder, remover)
+}
+
+func configureCollaborators(have, want permissionLevels, invitees sets.String, adder func(user, permission string) error, remover func(user string) error) error {
+	have.normalize()
+	want.normalize()
+
+	// make sure a user is not mentioned in more than one role
+	if err := validatePermissionLevels(have, want); err != nil {
+		return err
+	}
+
+	havePlusInvites := have.all().Union(invitees)
+	remove := havePlusInvites.Difference(want.all())
+	admin := want.admin.Difference(have.admin)
+	write := want.write.Difference(have.write)
+	read := want.read.Difference(have.read)
+
+	var errs []error
+	for u := range admin {
+		if err := adder(u, "admin"); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	for u := range write {
+		if err := adder(u, "push"); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	for u := range read {
+		if err := adder(u, "pull"); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	for u := range remove {
+		if err := remover(u); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if n := len(errs); n > 0 {
+		return fmt.Errorf("%d errors: %v", n, errs)
+	}
+	return nil
+}
+
+// validateRepoCollaborators returns an error if any names are used multiples in the config..
+func validateRepoCollaborators(config org.Repo) error {
+	members := sets.NewString(config.Members.Admin...).Union(sets.NewString(config.Members.Write...)).Union(sets.NewString(config.Members.Read...))
+	oc := sets.NewString(config.OutsideCollaborators.Admin...).Union(sets.NewString(config.OutsideCollaborators.Write...)).Union(sets.NewString(config.OutsideCollaborators.Read...))
+	teams := sets.NewString(config.Teams.Admin...).Union(sets.NewString(config.Teams.Write...)).Union(sets.NewString(config.Teams.Read...))
+
+	if all := members.Intersection(oc).Intersection(teams); len(all) > 0 {
+		return fmt.Errorf("users in all of members, outside_collaborators and teams: %s", strings.Join(all.List(), ", "))
+	}
+	if both := members.Intersection(oc); len(both) > 0 {
+		return fmt.Errorf("users in both members and outside_collaborators: %s", strings.Join(both.List(), ", "))
+	}
+	if both := members.Intersection(teams); len(both) > 0 {
+		return fmt.Errorf("users in both members and teams: %s", strings.Join(both.List(), ", "))
+	}
+	if both := teams.Intersection(oc); len(both) > 0 {
+		return fmt.Errorf("users in both teams and outside_collaborators: %s", strings.Join(both.List(), ", "))
+	}
+	return nil
+}
+
+// validatePermissionLevels returns an error if any names are used multiple times in the config.
+func validatePermissionLevels(have, want permissionLevels) error {
+	if all := want.admin.Intersection(want.write).Intersection(want.read); len(all) > 0 {
+		return fmt.Errorf("users in all of admin, write and read: %s", strings.Join(all.List(), ", "))
+	}
+	if both := want.admin.Intersection(want.write); len(both) > 0 {
+		return fmt.Errorf("users in both admin and write: %s", strings.Join(both.List(), ", "))
+	}
+	if both := want.admin.Intersection(want.read); len(both) > 0 {
+		return fmt.Errorf("users in both admin and read: %s", strings.Join(both.List(), ", "))
+	}
+	if both := want.write.Intersection(want.read); len(both) > 0 {
+		return fmt.Errorf("users in both write and read: %s", strings.Join(both.List(), ", "))
+	}
+	return nil
 }

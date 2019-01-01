@@ -40,7 +40,7 @@ type client interface {
 	AddLabel(org, repo string, number int, label string) error
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 	GetPullRequests(org, repo string) ([]github.PullRequest, error)
-	ListCollaborators(org, repo string) ([]github.User, error)
+	ListCollaborators(org, repo, affiliation string) ([]github.User, error)
 	ListOrgMembers(org, role string) ([]github.TeamMember, error)
 }
 
@@ -120,7 +120,7 @@ func main() {
 
 	// eventually also skip collaborators
 	if o.trustCollaborators {
-		collaborators, err := c.ListCollaborators(o.org, o.repo)
+		collaborators, err := c.ListCollaborators(o.org, o.repo, "")
 		if err != nil {
 			log.Fatal(err)
 		}

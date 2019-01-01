@@ -107,6 +107,10 @@ func TestOptions(t *testing.T) {
 			args: []string{"--config-path=foo", "--dump=frogger"},
 		},
 		{
+			name: "reject --dump-repos without --dump",
+			args: []string{"--dump-repos"},
+		},
+		{
 			name: "reject --fix-team-members without --fix-teams",
 			args: []string{"--config-path=foo", "--fix-team-members"},
 		},
@@ -148,19 +152,21 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "full",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--github-endpoint=weird://url", "--confirm=true", "--require-self=false", "--tokens=5", "--token-burst=2", "--dump=", "--fix-org", "--fix-org-members", "--fix-teams", "--fix-team-members"},
+			args: []string{"--config-path=foo", "--github-token-path=bar", "--github-endpoint=weird://url", "--confirm=true", "--require-self=false", "--tokens=5", "--token-burst=2", "--dump=", "--fix-org", "--fix-org-members", "--fix-teams", "--fix-team-members", "--fix-repo-collaborators", "--repos=foo,bar,baz"},
 			expected: &options{
-				config:         "foo",
-				confirm:        true,
-				requireSelf:    false,
-				minAdmins:      defaultMinAdmins,
-				maximumDelta:   defaultDelta,
-				tokensPerHour:  5,
-				tokenBurst:     2,
-				fixOrg:         true,
-				fixOrgMembers:  true,
-				fixTeams:       true,
-				fixTeamMembers: true,
+				config:               "foo",
+				confirm:              true,
+				requireSelf:          false,
+				minAdmins:            defaultMinAdmins,
+				maximumDelta:         defaultDelta,
+				tokensPerHour:        5,
+				tokenBurst:           2,
+				fixOrg:               true,
+				fixOrgMembers:        true,
+				fixTeams:             true,
+				fixTeamMembers:       true,
+				fixRepoCollaborators: true,
+				repos:                "foo,bar,baz",
 			},
 		},
 	}
@@ -1640,6 +1646,159 @@ func TestConfigureOrgMeta(t *testing.T) {
 	}
 }
 
+func TestConfigureCollaborators(t *testing.T) {
+	cases := []struct {
+		name     string
+		invitees sets.String
+		have     permissionLevels
+		want     permissionLevels
+		removed  sets.String
+		newAdmin sets.String
+		newWrite sets.String
+		newRead  sets.String
+		err      bool
+	}{
+		{
+			name: "forgot to remove duplicate entry",
+			want: permissionLevels{
+				admin: sets.NewString("me"),
+				write: sets.NewString("me"),
+				read:  sets.NewString("me"),
+			},
+			err: true,
+		},
+		{
+			name: "removal fails",
+			have: permissionLevels{
+				admin: sets.NewString("fail"),
+			},
+			err: true,
+		},
+		{
+			name: "adding admin fails",
+			want: permissionLevels{
+				admin: sets.NewString("fail"),
+			},
+			err: true,
+		},
+		{
+			name: "promote from write to admin access",
+			have: permissionLevels{
+				write: sets.NewString("promote"),
+			},
+			want: permissionLevels{
+				admin: sets.NewString("promote"),
+			},
+			newAdmin: sets.NewString("promote"),
+		},
+		{
+			name: "downgrade from admin to write access",
+			have: permissionLevels{
+				admin: sets.NewString("downgrade"),
+			},
+			want: permissionLevels{
+				write: sets.NewString("downgrade"),
+			},
+			newWrite: sets.NewString("downgrade"),
+		},
+		{
+			name: "some of everything",
+			have: permissionLevels{
+				admin: sets.NewString("keep-admin", "drop-admin"),
+				write: sets.NewString("keep-write", "drop-write"),
+				read:  sets.NewString("keep-read", "drop-read"),
+			},
+			want: permissionLevels{
+				admin: sets.NewString("keep-admin", "new-admin"),
+				write: sets.NewString("keep-write", "new-write"),
+				read:  sets.NewString("keep-read", "new-read"),
+			},
+			removed:  sets.NewString("drop-admin", "drop-write", "drop-read"),
+			newAdmin: sets.NewString("new-admin"),
+			newWrite: sets.NewString("new-write"),
+			newRead:  sets.NewString("new-read"),
+		},
+		{
+			name: "ensure case insensitivity",
+			have: permissionLevels{
+				admin: sets.NewString("lower"),
+				write: sets.NewString("UPPER"),
+				read:  sets.NewString("lowerAndUPPER"),
+			},
+			want: permissionLevels{
+				admin: sets.NewString("Lower"),
+				write: sets.NewString("UpPeR"),
+				read:  sets.NewString("LowerAndupper"),
+			},
+		},
+		{
+			name: "remove invites for those not in config",
+			have: permissionLevels{
+				write: sets.NewString("member-one", "member-two"),
+			},
+			want: permissionLevels{
+				write: sets.NewString("member-one", "member-two"),
+			},
+			removed:  sets.NewString("member-three"),
+			invitees: sets.NewString("member-three"),
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			removed := sets.String{}
+			newAdmin := sets.String{}
+			newWrite := sets.String{}
+			newRead := sets.String{}
+
+			adder := func(user, permission string) error {
+				if user == "fail" {
+					return fmt.Errorf("injected adder failure for %s", user)
+				}
+				switch permission {
+				case "admin":
+					newAdmin.Insert(user)
+				case "push":
+					newWrite.Insert(user)
+				case "pull":
+					newRead.Insert(user)
+				}
+				return nil
+			}
+
+			remover := func(user string) error {
+				if user == "fail" {
+					return fmt.Errorf("injected remover failure for %s", user)
+				}
+				removed.Insert(user)
+				return nil
+			}
+
+			err := configureCollaborators(tc.have, tc.want, tc.invitees, adder, remover)
+			switch {
+			case err != nil:
+				if !tc.err {
+					t.Errorf("Unexpected error: %v", err)
+				}
+			case tc.err:
+				t.Errorf("Failed to receive error")
+			default:
+				if err := cmpLists(tc.removed.List(), removed.List()); err != nil {
+					t.Errorf("Wrong users removed: %v", err)
+				} else if err := cmpLists(tc.newAdmin.List(), newAdmin.List()); err != nil {
+					t.Errorf("Wrong users with admin access added: %v", err)
+				} else if err := cmpLists(tc.newWrite.List(), newWrite.List()); err != nil {
+					t.Errorf("Wrong users with write access added: %v", err)
+				} else if err := cmpLists(tc.newRead.List(), newRead.List()); err != nil {
+					t.Errorf("Wrong users with read access added: %v", err)
+				}
+			}
+		})
+	}
+}
+
+// TODO: add more tests for repo collaborators here
+
 func TestDumpOrgConfig(t *testing.T) {
 	empty := ""
 	hello := "Hello"
@@ -1657,6 +1816,7 @@ func TestDumpOrgConfig(t *testing.T) {
 		teams       []github.Team
 		teamMembers map[int][]string
 		maintainers map[int][]string
+		repos       map[string]org.Repo
 		expected    org.Config
 		err         bool
 	}{
@@ -1697,12 +1857,17 @@ func TestDumpOrgConfig(t *testing.T) {
 				MembersCanCreateRepositories: yes,
 				DefaultRepositoryPermission:  string(perm),
 			},
-			members: []string{"george", "jungle", "banana"},
+			members: []string{"george", "phippy", "goldie"},
 			admins:  []string{"james", "giant", "peach"},
 			teams: []github.Team{
 				{
+					ID:          4,
+					Name:        "repo-admins",
+					Description: details,
+				},
+				{
 					ID:          5,
-					Name:        "friends",
+					Name:        "repo-maintainers",
 					Description: details,
 				},
 				{
@@ -1719,14 +1884,37 @@ func TestDumpOrgConfig(t *testing.T) {
 				},
 			},
 			teamMembers: map[int][]string{
-				5: {"george", "james"},
-				6: {"george"},
+				4: {"george", "james"},
+				5: {"phippy"},
+				6: {"peach"},
 				7: {},
 			},
 			maintainers: map[int][]string{
+				4: {},
 				5: {},
-				6: {"giant", "jungle"},
-				7: {"banana"},
+				6: {"giant"},
+				7: {"peach"},
+			},
+			repos: map[string]org.Repo{
+				"awesomerepo": {
+					Members: org.UserPermissionLevel{
+						Admin: []string{"phippy"},
+						Write: []string{"goldie"},
+					},
+					OutsideCollaborators: org.UserPermissionLevel{
+						Admin: []string{"captain-kube"},
+						Write: []string{"zee"},
+					},
+					Teams: org.UserPermissionLevel{
+						Admin: []string{"repo-admins"},
+						Write: []string{"repo-maintainers"},
+					},
+				},
+				"badrepo": {
+					Teams: org.UserPermissionLevel{
+						Admin: []string{"enemies"},
+					},
+				},
 			},
 			expected: org.Config{
 				Metadata: org.Metadata{
@@ -1742,7 +1930,7 @@ func TestDumpOrgConfig(t *testing.T) {
 					MembersCanCreateRepositories: &yes,
 				},
 				Teams: map[string]org.Team{
-					"friends": {
+					"repo-admins": {
 						TeamMetadata: org.TeamMetadata{
 							Description: &details,
 							Privacy:     &pub,
@@ -1751,13 +1939,22 @@ func TestDumpOrgConfig(t *testing.T) {
 						Maintainers: []string{},
 						Children:    map[string]org.Team{},
 					},
+					"repo-maintainers": {
+						TeamMetadata: org.TeamMetadata{
+							Description: &details,
+							Privacy:     &pub,
+						},
+						Members:     []string{"phippy"},
+						Maintainers: []string{},
+						Children:    map[string]org.Team{},
+					},
 					"enemies": {
 						TeamMetadata: org.TeamMetadata{
 							Description: &empty,
 							Privacy:     &pub,
 						},
-						Members:     []string{"george"},
-						Maintainers: []string{"giant", "jungle"},
+						Members:     []string{"peach"},
+						Maintainers: []string{"giant"},
 						Children: map[string]org.Team{
 							"archenemies": {
 								TeamMetadata: org.TeamMetadata{
@@ -1765,13 +1962,29 @@ func TestDumpOrgConfig(t *testing.T) {
 									Privacy:     &pub,
 								},
 								Members:     []string{},
-								Maintainers: []string{"banana"},
+								Maintainers: []string{"peach"},
 								Children:    map[string]org.Team{},
 							},
 						},
 					},
 				},
-				Members: []string{"george", "jungle", "banana"},
+				Repos: map[string]org.Repo{
+					"awesomerepo": {
+						Members: org.UserPermissionLevel{
+							Admin: []string{"phippy"},
+							Write: []string{"goldie"},
+						},
+						OutsideCollaborators: org.UserPermissionLevel{
+							Admin: []string{"captain-kube"},
+							Write: []string{"zee"},
+						},
+						Teams: org.UserPermissionLevel{
+							Admin: []string{"repo-admins"},
+							Write: []string{"repo-maintainers"},
+						},
+					},
+				},
+				Members: []string{"george", "phippy", "goldie"},
 				Admins:  []string{"james", "giant", "peach"},
 			},
 		},
@@ -1791,8 +2004,9 @@ func TestDumpOrgConfig(t *testing.T) {
 				teams:       tc.teams,
 				teamMembers: tc.teamMembers,
 				maintainers: tc.maintainers,
+				repos:       tc.repos,
 			}
-			actual, err := dumpOrgConfig(fc, orgName)
+			actual, err := dumpOrgConfig(fc, orgName, "awesomerepo", true)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -1822,6 +2036,7 @@ type fakeDumpClient struct {
 	teams       []github.Team
 	teamMembers map[int][]string
 	maintainers map[int][]string
+	repos       map[string]org.Repo
 }
 
 func (c fakeDumpClient) GetOrg(name string) (*github.Organization, error) {
@@ -1832,6 +2047,30 @@ func (c fakeDumpClient) GetOrg(name string) (*github.Organization, error) {
 		return nil, errors.New("injected GetOrg error")
 	}
 	return &c.meta, nil
+}
+
+func (c fakeDumpClient) GetRepos(org string, isUser bool) ([]github.Repo, error) {
+	var ret []github.Repo
+	if org != c.name {
+		return nil, fmt.Errorf("bad org: %s", org)
+	}
+	for repo := range c.repos {
+		ret = append(ret, github.Repo{Name: repo})
+	}
+	return ret, nil
+}
+
+func (c fakeDumpClient) GetUserPermission(orgName, repo, user string) (string, error) {
+	if orgName != c.name {
+		return "", fmt.Errorf("bad org: %s", orgName)
+	}
+	switch user {
+	case "phippy", "captain-kube":
+		return string(org.Admin), nil
+	case "goldie", "zee":
+		return string(org.Write), nil
+	}
+	return string(org.Read), nil // default is usually read access
 }
 
 func (c fakeDumpClient) makeMembers(people []string) ([]github.TeamMember, error) {
@@ -1887,6 +2126,64 @@ func (c fakeDumpClient) ListTeamMembers(id int, role string) ([]github.TeamMembe
 		return nil, fmt.Errorf("team does not exist: %d", id)
 	}
 	return c.makeMembers(people)
+}
+
+func (c fakeDumpClient) ListCollaborators(org, repo, affiliation string) ([]github.User, error) {
+	if org != c.name {
+		return nil, fmt.Errorf("bad org: %s", org)
+	}
+	repoConfig := c.repos[repo]
+	var result []github.User
+
+	var outsideCollaborators []string
+	users := [][]string{repoConfig.OutsideCollaborators.Admin, repoConfig.OutsideCollaborators.Write, repoConfig.OutsideCollaborators.Read}
+	for _, u := range users {
+		outsideCollaborators = append(outsideCollaborators, u...)
+	}
+	for _, u := range outsideCollaborators {
+		result = append(result, github.User{Login: u})
+	}
+
+	if affiliation == string(github.AffiliationOutside) {
+		return result, nil
+	}
+
+	if affiliation == string(github.AffiliationDirect) {
+		var members []string
+		users := [][]string{repoConfig.Members.Admin, repoConfig.Members.Write, repoConfig.Members.Read}
+		for _, u := range users {
+			members = append(members, u...)
+		}
+		for _, u := range members {
+			result = append(result, github.User{Login: u})
+		}
+		return result, nil
+	}
+
+	return nil, nil
+}
+
+func (c fakeDumpClient) ListTeamsForRepo(orgName, repo string) ([]github.Team, error) {
+	if orgName != c.name {
+		return nil, fmt.Errorf("bad org: %s", orgName)
+	}
+	repoConfig := c.repos[repo]
+	var result []github.Team
+	var id int
+
+	for _, t := range repoConfig.Teams.Admin {
+		result = append(result, github.Team{ID: id, Name: t, Permission: string(org.Admin)})
+		id++
+	}
+	for _, t := range repoConfig.Teams.Write {
+		result = append(result, github.Team{ID: id, Name: t, Permission: "push"})
+		id++
+	}
+	for _, t := range repoConfig.Teams.Read {
+		result = append(result, github.Team{ID: id, Name: t, Permission: "pull"})
+		id++
+	}
+	return result, nil
 }
 
 func fixup(ret *org.Config) {

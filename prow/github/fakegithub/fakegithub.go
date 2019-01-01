@@ -374,7 +374,7 @@ func (f *FakeClient) IsCollaborator(org, repo, login string) (bool, error) {
 }
 
 // ListCollaborators lists the collaborators.
-func (f *FakeClient) ListCollaborators(org, repo string) ([]github.User, error) {
+func (f *FakeClient) ListCollaborators(org, repo, affiliation string) ([]github.User, error) {
 	result := make([]github.User, 0, len(f.Collaborators))
 	for _, login := range f.Collaborators {
 		result = append(result, github.User{Login: login})

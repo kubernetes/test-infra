@@ -1243,6 +1243,7 @@ func TestCreateTeam(t *testing.T) {
 		team.Name = "hello"
 		team.Description = "world"
 		team.Privacy = "special"
+		team.Permission = "admin"
 		b, err = json.Marshal(team)
 		if err != nil {
 			t.Fatalf("Didn't expect error: %v", err)
@@ -1264,6 +1265,8 @@ func TestCreateTeam(t *testing.T) {
 		t.Errorf("bad description: %s", team.Description)
 	case team.Privacy != "special":
 		t.Errorf("bad privacy: %s", team.Privacy)
+	case team.Permission != "admin":
+		t.Errorf("bad permission: %s", team.Permission)
 	}
 }
 
@@ -1351,7 +1354,7 @@ func TestListCollaborators(t *testing.T) {
 	ts := simpleTestServer(t, "/repos/org/repo/collaborators", []User{{Login: "foo"}, {Login: "bar"}})
 	defer ts.Close()
 	c := getClient(ts.URL)
-	users, err := c.ListCollaborators("org", "repo")
+	users, err := c.ListCollaborators("org", "repo", "")
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	} else if len(users) != 2 {
@@ -1363,6 +1366,120 @@ func TestListCollaborators(t *testing.T) {
 	}
 	if users[1].Login != "bar" {
 		t.Errorf("Wrong user login for index 1: %v", users[1])
+	}
+}
+
+func TestUpdateCollaborator(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/org/foo/collaborators/person" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var perm struct {
+			Perm string `json:"permission"`
+		}
+		if err := json.Unmarshal(b, &perm); err != nil {
+			t.Errorf("Could not unmarshal request: %v", err)
+		}
+		perm.Perm = "push"
+		b, err = json.Marshal(perm)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		w.WriteHeader(http.StatusCreated)
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.UpdateCollaborator("org", "foo", "person", "push"); err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestRemoveCollaborator(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/org/foo/collaborators/person" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		http.Error(w, "204 No Content", http.StatusNoContent)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.RemoveCollaborator("org", "foo", "person"); err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+}
+
+func TestListTeamsForRepo(t *testing.T) {
+	ts := simpleTestServer(t, "/repos/org/foo/teams", []Team{{ID: 1}})
+	defer ts.Close()
+	c := getClient(ts.URL)
+	teams, err := c.ListTeamsForRepo("org", "foo")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(teams) != 1 {
+		t.Errorf("Expected one team, found %d: %v", len(teams), teams)
+	} else if teams[0].ID != 1 {
+		t.Errorf("Wrong team names: %v", teams)
+	}
+}
+
+func TestUpdateTeamForRepo(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/teams/1/repos/org/foo" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var perm struct {
+			Perm string `json:"permission"`
+		}
+		if err := json.Unmarshal(b, &perm); err != nil {
+			t.Errorf("Could not unmarshal request: %v", err)
+		}
+		perm.Perm = "push"
+		b, err = json.Marshal(perm)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		w.WriteHeader(http.StatusNoContent)
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.UpdateTeamForRepo("org", "foo", "push", 1); err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestRemoveTeamFromRepo(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/teams/1/repos/org/foo" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		http.Error(w, "204 No Content", http.StatusNoContent)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.RemoveTeamFromRepo("org", "foo", 1); err != nil {
+		t.Errorf("Unexpected error: %v", err)
 	}
 }
 
