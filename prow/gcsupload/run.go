@@ -21,12 +21,12 @@ import (
 	"fmt"
 	"k8s.io/test-infra/traiana"
 	"k8s.io/test-infra/traiana/prow/awsupload"
+	"k8s.io/test-infra/traiana/storage"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
 

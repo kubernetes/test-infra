@@ -23,10 +23,9 @@ import (
 	"os"
 	"sync"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/test-infra/prow/errorutil"
+	"k8s.io/test-infra/traiana/storage"
 )
 
 // UploadFunc knows how to upload into an object
