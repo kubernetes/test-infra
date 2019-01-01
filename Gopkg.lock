@@ -152,7 +152,7 @@
   version = "0.1.5"
 
 [[projects]]
-  digest = "1:cc8dfe19a45c277f194744e8528aba0fa03208e6612723a5afd7ce343d27fe5a"
+  digest = "1:4c3768acc56db0318533aa3ae6c5259ba6e4ce9035dd0c642959792a7b36ff92"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -184,6 +184,8 @@
     "service/iam",
     "service/route53",
     "service/s3",
+    "service/s3/s3iface",
+    "service/s3/s3manager",
     "service/sts",
   ]
   pruneopts = "NUT"
@@ -618,7 +620,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a0a46e135233a4e537e2f905103cebe4e89ed7d4bb904860e0379e5c52af7dc4"
+  digest = "1:8c039c640746e902ff82c2be7372c41bc82436746a7c3f026bf4df39b83af3d1"
   name = "github.com/gophercloud/gophercloud"
   packages = [
     ".",
@@ -628,6 +630,7 @@
     "openstack/identity/v3/tokens",
     "openstack/utils",
     "pagination",
+    "testhelper",
   ]
   pruneopts = "NUT"
   revision = "bdd8b1ecd793ffb03d43314c66565be3d6a7a582"
@@ -1610,6 +1613,7 @@
     "github.com/aws/aws-sdk-go/service/iam",
     "github.com/aws/aws-sdk-go/service/route53",
     "github.com/aws/aws-sdk-go/service/s3",
+    "github.com/aws/aws-sdk-go/service/s3/s3manager",
     "github.com/bazelbuild/bazel-gazelle/cmd/gazelle",
     "github.com/bazelbuild/buildtools/build",
     "github.com/bwmarrin/snowflake",
@@ -1631,6 +1635,7 @@
     "github.com/golang/mock/gomock",
     "github.com/golang/protobuf/proto",
     "github.com/google/go-github/github",
+    "github.com/gophercloud/gophercloud/testhelper",
     "github.com/gorilla/securecookie",
     "github.com/gorilla/sessions",
     "github.com/gregjones/httpcache",

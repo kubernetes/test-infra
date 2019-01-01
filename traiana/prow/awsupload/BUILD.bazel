@@ -2,38 +2,29 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "doc.go",
-        "options.go",
-        "run.go",
-    ],
-    importpath = "k8s.io/test-infra/prow/gcsupload",
+    srcs = ["run.go"],
+    importpath = "k8s.io/test-infra/traiana/prow/awsupload",
     visibility = ["//visibility:public"],
     deps = [
         "//prow/kube:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",
         "//prow/pod-utils/gcs:go_default_library",
-        "//testgrid/util/gcs:go_default_library",
-        "//traiana:go_default_library",
-        "//traiana/prow/awsupload:go_default_library",
-        "//vendor/cloud.google.com/go/storage:go_default_library",
+        "//traiana/prow/awsapi:go_default_library",
+        "//traiana/prow/pod-utils/aws:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
-        "//vendor/google.golang.org/api/option:go_default_library",
     ],
 )
 
 go_test(
     name = "go_default_test",
-    srcs = [
-        "options_test.go",
-        "run_test.go",
-    ],
+    srcs = ["run_test.go"],
+    data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",
-        "//prow/pod-utils/gcs:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/testhelper:go_default_library",
     ],
 )
 
