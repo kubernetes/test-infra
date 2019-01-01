@@ -104,6 +104,7 @@ filegroup(
         "//robots/pr-labeler:all-srcs",
         "//scenarios:all-srcs",
         "//testgrid:all-srcs",
+        "//traiana:all-srcs",
         "//triage:all-srcs",
         "//velodrome:all-srcs",
         "//vendor:all-srcs",

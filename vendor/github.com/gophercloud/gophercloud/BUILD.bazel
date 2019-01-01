@@ -31,6 +31,7 @@ filegroup(
         ":package-srcs",
         "//vendor/github.com/gophercloud/gophercloud/openstack:all-srcs",
         "//vendor/github.com/gophercloud/gophercloud/pagination:all-srcs",
+        "//vendor/github.com/gophercloud/gophercloud/testhelper:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
