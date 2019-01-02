@@ -336,6 +336,7 @@ periodics:
       - --
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-16
+      - --env=CLUSTER_DNS_CORE_DNS=false
       - --extract=ci/latest
       - --gcp-nodes=5000
       - --gcp-project=kubernetes-scale
