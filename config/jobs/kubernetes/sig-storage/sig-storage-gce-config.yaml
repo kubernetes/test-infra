@@ -2,6 +2,7 @@ presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-gce-csi-serial
     always_run: false
+    optional: true
     branches:
     - master
     labels:
