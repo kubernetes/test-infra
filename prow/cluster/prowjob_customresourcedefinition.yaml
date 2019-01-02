@@ -48,3 +48,36 @@ spec:
                   - "aborted"
           - required:
             - completionTime
+  additionalPrinterColumns:
+  - name: Job
+    type: string
+    description: The name of the job being run.
+    JSONPath: .spec.job
+  - name: BuildId
+    type: string
+    description: The ID of the job being run.
+    JSONPath: .status.build_id
+  - name: Type
+    type: string
+    description: The type of job being run.
+    JSONPath: .spec.type
+  - name: Org
+    type: string
+    description: The org for which the job is running.
+    JSONPath: .spec.refs.org
+  - name: Repo
+    type: string
+    description: The repo for which the job is running.
+    JSONPath: .spec.refs.repo
+  - name: Pulls
+    type: string
+    description: The pulls for which the job is running.
+    JSONPath: ".spec.refs.pulls[*].number"
+  - name: StartTime
+    type: date
+    description: When the job started running.
+    JSONPath: .status.startTime
+  - name: CompletionTime
+    type: date
+    description: When the job finished running.
+    JSONPath: .status.completionTime
