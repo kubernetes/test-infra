@@ -39,6 +39,8 @@ import (
 	pluginhelp "k8s.io/test-infra/prow/pluginhelp/hook"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/slack"
+
+	"k8s.io/test-infra/traiana/okro"
 )
 
 type options struct {
@@ -55,6 +57,8 @@ type options struct {
 
 	webhookSecretFile string
 	slackTokenFile    string
+
+	okroURL string
 }
 
 func (o *options) Validate() error {
@@ -84,6 +88,9 @@ func gatherOptions() options {
 
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to the file containing the Slack token to use.")
+
+	fs.StringVar(&o.okroURL, "okro-url", "", "okro server's URL")
+
 	fs.Parse(os.Args[1:])
 	return o
 }
@@ -141,11 +148,13 @@ func main() {
 		slackClient = slack.NewFakeClient()
 	}
 
+	okroClient := okro.NewClient(o.okroURL)
 	clientAgent := &plugins.ClientAgent{
 		GitHubClient: githubClient,
 		KubeClient:   kubeClient,
 		GitClient:    gitClient,
 		SlackClient:  slackClient,
+		OkroClient:   okroClient,
 	}
 
 	pluginAgent := &plugins.ConfigAgent{}

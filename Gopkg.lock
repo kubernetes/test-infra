@@ -440,6 +440,14 @@
   revision = "cf0bdb963811675a4d7e74901cefc7411a1df939"
 
 [[projects]]
+  digest = "1:b0c2267c6f0d0a704553e381075ba9ec66c2826472116142331424ca71fddad1"
+  name = "github.com/go-ozzo/ozzo-validation"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "106681dbb37bfa3e7683c4c8129cb7f5925ea3e9"
+  version = "v3.5.0"
+
+[[projects]]
   digest = "1:41ba0e37dd6745a091f2aa66b4ee1cd2ea47254a81fa7ae7fec671ca24fb40a5"
   name = "github.com/go-sql-driver/mysql"
   packages = ["."]
@@ -1057,6 +1065,17 @@
   revision = "7aff26db30c1be810f9de5038ec5ef96ac41fd7c"
 
 [[projects]]
+  branch = "master"
+  digest = "1:fb46fad2cac6aa77a3fd7072da0e546254af35be5ed80f4d0069a351e58144db"
+  name = "github.com/traiana/okro"
+  packages = [
+    "okro/api/v1beta1",
+    "okro/pkg/util/errorx",
+  ]
+  pruneopts = "NUT"
+  revision = "8f05cbbe697c3c2bdc84ac4d6bd1a9d640af46e2"
+
+[[projects]]
   digest = "1:da10b6d96618e7ac047f7122f501a0841e0df547fac1c0a9a90b7078ae93d1ee"
   name = "go.opencensus.io"
   packages = [
@@ -1626,6 +1645,7 @@
     "github.com/evanphx/json-patch",
     "github.com/fsnotify/fsnotify",
     "github.com/fsouza/fake-gcs-server/fakestorage",
+    "github.com/ghodss/yaml",
     "github.com/go-openapi/spec",
     "github.com/gogo/protobuf/vanity/command",
     "github.com/golang/dep/cmd/dep",
@@ -1665,6 +1685,7 @@
     "github.com/sirupsen/logrus",
     "github.com/spf13/cobra",
     "github.com/spf13/pflag",
+    "github.com/traiana/okro/okro/api/v1beta1",
     "golang.org/x/crypto/ssh",
     "golang.org/x/net/context",
     "golang.org/x/net/xsrftoken",
