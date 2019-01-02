@@ -134,6 +134,7 @@ type client interface {
 	RemoveBranchProtection(org, repo, branch string) error
 	UpdateBranchProtection(org, repo, branch string, config github.BranchProtectionRequest) error
 	GetBranches(org, repo string, onlyProtected bool) ([]github.Branch, error)
+	GetRepo(owner, name string) (github.Repo, error)
 	GetRepos(org string, user bool) ([]github.Repo, error)
 }
 
@@ -236,6 +237,15 @@ func (p *protector) UpdateOrg(orgName string, org config.Org) error {
 // UpdateRepo updates all branches in the repo with the specified defaults
 func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo) error {
 	p.completedRepos[orgName+"/"+repoName] = true
+
+	githubRepo, err := p.client.GetRepo(orgName, repoName)
+	if err != nil {
+		return fmt.Errorf("could not get repo to check for archival: %v", err)
+	}
+	if githubRepo.Archived {
+		// nothing to do
+		return nil
+	}
 
 	branches := map[string]github.Branch{}
 	for _, onlyProtected := range []bool{false, true} { // put true second so b.Protected is set correctly
