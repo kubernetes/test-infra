@@ -1,34 +1,31 @@
 package awsapi
 
 import (
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"io"
-	"k8s.io/test-infra/traiana/prow/awsapi"
 )
 
 // S3Writer is a wrapper around S3Put. This way we can write to S3 using io.Copy
 type S3Writer struct {
 	source *S3Source
+	handle *BucketHandle
+	key string
 }
 
 func (w *S3Writer) Write(bytes []byte) (n int, err error) {
 	// on first call to Write open a new s3Source to help channelling the next Writes into S3Put (S3Put doesn't implement io.Writer)
 	if w.source == nil {
-		session, err := awsapi.NewSession()
-
 		if err != nil {
 			return 0, err
 		}
-
-		bw := awsapi.NewBucketWriter(
-			awsapi.Bucket("dev-okro-io", session),
-			"lala")
 
 		w.source = &S3Source {
 			buffer: make(chan []byte, 1),
 			error: make(chan error, 1),
 		}
 
-		go s3put(bw, w.source)
+		go s3Put(w.source, w.handle, w.key)
 	}
 
 	w.source.buffer <- bytes
@@ -46,8 +43,15 @@ func (w S3Writer) Close() error {
 	return err
 }
 
-func s3put(bw *awsapi.BucketWriter, src *S3Source) {
-	err := bw.S3Put(src)
+func s3Put(src *S3Source, handle *BucketHandle, key string) {
+	uploader := s3manager.NewUploader(handle.client.session)
+
+	_, err := uploader.Upload(&s3manager.UploadInput{
+		Body:   src,
+		Bucket: aws.String(handle.bucket),
+		Key:    aws.String(key),
+	})
+
 	src.error <- err
 }
 

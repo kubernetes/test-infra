@@ -96,7 +96,7 @@ func DataUpload(src io.Reader) UploadFunc {
 func DataUploadWithMetadata(src io.Reader, metadata map[string]string) UploadFunc {
 	return func(obj *storage.ObjectHandle) error {
 		writer := obj.NewWriter(context.Background())
-		writer.Metadata = metadata
+		writer.SetMetadata(metadata)
 		_, copyErr := io.Copy(writer, src)
 		closeErr := writer.Close()
 

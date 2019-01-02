@@ -9,7 +9,12 @@ import (
 )
 
 func Test_S3Writer(t *testing.T) {
-	s3Writer := &S3Writer{}
+	client, err := NewClient()
+
+	s3Writer := &S3Writer{
+		handle: Bucket("dev-okro-io", client),
+		key: "lala",
+	}
 
 	/*dat, err := ioutil.ReadFile("/Users/Traiana/alexa/file.txt")
 	rs := strings.NewReader(string(dat))

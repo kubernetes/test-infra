@@ -5,10 +5,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 )
 
-//import "github.com/aws/aws-sdk-go/service/s3"
+type Client struct {
+	session *session.Session
+}
 
-func NewSession() (*session.Session, error) {
-
+func NewClient() (*Client, error) {
 	//sess, err := session.NewSession(&aws.Config{Region: aws.String("us-west-1")})
 	//	_, err := sess.Config.Credentials.Get()
 
@@ -23,5 +24,12 @@ func NewSession() (*session.Session, error) {
 	//logger.Println("Request: %s/%s, Payload: %s",
 	//	r.ClientInfo.ServiceName, r.Operation, r.Params)
 
-	return session, err
+	return &Client {session }, err
+}
+
+func (c *Client) Bucket(name string) *BucketHandle {
+	return &BucketHandle{
+		client: c,
+		bucket: name,
+	}
 }
