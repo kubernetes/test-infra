@@ -380,46 +380,48 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 
 	opts := optionsForRepo(config, org, repo)
 	if stickyLgtm(log, gc, config, opts, pe.PullRequest.User.Login, org, repo) {
-		// If the author is trusted,, skip tree hash verification and LGTM removal.
+		// If the author is trusted, skip tree hash verification and LGTM removal.
 		return nil
 	}
-	if opts.StoreTreeHash {
-		// Check if we have LGTM label
-		labels, err := gc.GetIssueLabels(org, repo, number)
-		if err != nil {
-			log.WithError(err).Error("Failed to get labels.")
-		}
 
-		if github.HasLabel(LGTMLabel, labels) {
-			// Check if we have a tree-hash comment
-			var lastLgtmTreeHash string
-			botname, err := gc.BotName()
+	// If we don't have the lgtm label, we don't need to check anything
+	labels, err := gc.GetIssueLabels(org, repo, number)
+	if err != nil {
+		log.WithError(err).Error("Failed to get labels.")
+	}
+	if !github.HasLabel(LGTMLabel, labels) {
+		return nil
+	}
+
+	if opts.StoreTreeHash {
+		// Check if we have a tree-hash comment
+		var lastLgtmTreeHash string
+		botname, err := gc.BotName()
+		if err != nil {
+			return err
+		}
+		comments, err := gc.ListIssueComments(org, repo, number)
+		if err != nil {
+			log.WithError(err).Error("Failed to get issue comments.")
+		}
+		for _, comment := range comments {
+			m := addLGTMLabelNotificationRe.FindStringSubmatch(comment.Body)
+			if comment.User.Login == botname && m != nil && comment.UpdatedAt.Equal(comment.CreatedAt) {
+				lastLgtmTreeHash = m[1]
+				break
+			}
+		}
+		if lastLgtmTreeHash != "" {
+			// Get the current tree-hash
+			commit, err := gc.GetSingleCommit(org, repo, pe.PullRequest.Head.SHA)
 			if err != nil {
-				return err
+				log.WithField("sha", pe.PullRequest.Head.SHA).WithError(err).Error("Failed to get commit.")
 			}
-			comments, err := gc.ListIssueComments(org, repo, number)
-			if err != nil {
-				log.WithError(err).Error("Failed to get issue comments.")
-			}
-			for _, comment := range comments {
-				m := addLGTMLabelNotificationRe.FindStringSubmatch(comment.Body)
-				if comment.User.Login == botname && m != nil && comment.UpdatedAt.Equal(comment.CreatedAt) {
-					lastLgtmTreeHash = m[1]
-					break
-				}
-			}
-			if lastLgtmTreeHash != "" {
-				// Get the current tree-hash
-				commit, err := gc.GetSingleCommit(org, repo, pe.PullRequest.Head.SHA)
-				if err != nil {
-					log.WithField("sha", pe.PullRequest.Head.SHA).WithError(err).Error("Failed to get commit.")
-				}
-				treeHash := commit.Commit.Tree.SHA
-				if treeHash == lastLgtmTreeHash {
-					// Don't remove the label, PR code hasn't changed
-					log.Infof("Keeping LGTM label as the tree-hash remained the same: %s", treeHash)
-					return nil
-				}
+			treeHash := commit.Commit.Tree.SHA
+			if treeHash == lastLgtmTreeHash {
+				// Don't remove the label, PR code hasn't changed
+				log.Infof("Keeping LGTM label as the tree-hash remained the same: %s", treeHash)
+				return nil
 			}
 		}
 	}
