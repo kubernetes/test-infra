@@ -20,13 +20,13 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"k8s.io/test-infra/traiana"
 	"os"
 	"sync"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/test-infra/prow/errorutil"
+	"k8s.io/test-infra/traiana/storage"
 )
 
 // UploadFunc knows how to upload into an object
@@ -97,7 +97,13 @@ func DataUpload(src io.Reader) UploadFunc {
 func DataUploadWithMetadata(src io.Reader, metadata map[string]string) UploadFunc {
 	return func(obj *storage.ObjectHandle) error {
 		writer := obj.NewWriter(context.Background())
+
 		writer.Metadata = metadata
+
+		if traiana.Traiana {
+			writer.SetMetadata()
+		}
+
 		_, copyErr := io.Copy(writer, src)
 		closeErr := writer.Close()
 

@@ -22,7 +22,7 @@ import (
 	"sync"
 	"testing"
 
-	"cloud.google.com/go/storage"
+	"k8s.io/test-infra/traiana/storage"
 )
 
 func TestUploadToGcs(t *testing.T) {

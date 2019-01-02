@@ -19,14 +19,12 @@ package gcsupload
 import (
 	"context"
 	"fmt"
-	"k8s.io/test-infra/traiana"
-	"k8s.io/test-infra/traiana/prow/awsupload"
+	"k8s.io/test-infra/traiana/storage"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
 
@@ -41,15 +39,6 @@ import (
 // to their destination in GCS, so the caller can
 // operate relative to the base of the GCS dir.
 func (o Options) Run(spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc) error {
-
-	if traiana.Traiana {
-		if len(extra) > 0 {
-			return fmt.Errorf("Extra is not implemented for AWS")
-		}
-
-		return awsupload.Run(spec, o.DryRun, o.GCSConfiguration, o.Items, o.SubDir)
-	}
-
 	uploadTargets := o.assembleTargets(spec, extra)
 
 	if !o.DryRun {
