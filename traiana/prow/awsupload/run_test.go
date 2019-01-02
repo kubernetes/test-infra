@@ -3,6 +3,7 @@ package awsupload
 import (
 	"github.com/gophercloud/gophercloud/testhelper"
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"testing"
@@ -39,9 +40,14 @@ func Test_Run(t *testing.T) {
 		"testdata/artifact1",
 	}
 
-	subDir := ""
+	opt := gcsupload.Options {
+		GCSConfiguration: conf,
+		Items: items,
+		SubDir: "",
+		DryRun: false,
+	}
 
-	err := Run(spec, false, conf, items, subDir)
+	err := opt.Run(spec, nil)
 
 	testhelper.AssertNoErr(t, err)
 }
