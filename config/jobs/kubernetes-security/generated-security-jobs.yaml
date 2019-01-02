@@ -1565,6 +1565,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-security-kubernetes-e2e-gce-csi-serial
+    optional: true
     rerun_command: /test pull-security-kubernetes-e2e-gce-csi-serial
     spec:
       containers:
