@@ -15,7 +15,7 @@ type BucketHandle struct {
 }
 
 func (b *BucketHandle) initIfNeeded() {
-	if traiana.Traiana {
+	if traiana.Aws {
 		if b.aws == nil {
 			b.aws = &awsapi.BucketHandle{}
 		}
@@ -29,7 +29,7 @@ func (b *BucketHandle) initIfNeeded() {
 func (b *BucketHandle) Object(name string) *ObjectHandle {
 	b.initIfNeeded()
 
-	if traiana.Traiana {
+	if traiana.Aws {
 		return &ObjectHandle{
 			aws: b.aws.Object(name),
 		}

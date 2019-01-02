@@ -16,11 +16,19 @@ type Client struct {
 }
 
 func NewClient(ctx context.Context, opts ...option.ClientOption) (*Client, error) {
-	gcs, err := storage.NewClient(ctx, opts...)
+	if traiana.Aws {
+		aws, err := awsapi.NewClient()
 
-	return &Client{
-		gcs: gcs,
-	}, err
+		return &Client{
+			aws: aws,
+		}, err
+	} else {
+		gcs, err := storage.NewClient(ctx, opts...)
+
+		return &Client{
+			gcs: gcs,
+		}, err
+	}
 }
 
 type ObjectHandle struct {
@@ -29,7 +37,7 @@ type ObjectHandle struct {
 }
 
 func (c *Client) Bucket(name string) *BucketHandle {
-	if traiana.Traiana {
+	if traiana.Aws {
 		return &BucketHandle{
 			aws: c.aws.Bucket(name),
 		}
@@ -43,32 +51,32 @@ func (c *Client) Bucket(name string) *BucketHandle {
 type StorageWriter struct {
 	gcs      *storage.Writer
 	aws      *awsapi.S3Writer
+	Metadata map[string]string // You must call SetMetadata() after setting this field
 }
 
 func (sw *StorageWriter) Write(p []byte) (n int, err error) {
-	if traiana.Traiana {
+	if traiana.Aws {
 		return sw.aws.Write(p)
 	} else {
 		return sw.gcs.Write(p)
 	}
 }
 func (sw *StorageWriter) Close() error {
-	if traiana.Traiana {
+	if traiana.Aws {
 		return sw.aws.Close()
 	} else {
 		return sw.gcs.Close()
 
 	}
 }
-func (sw *StorageWriter) SetMetadata(metadata map[string]string) {
-	if traiana.Traiana {
-	} else {
-		sw.gcs.Metadata = metadata
+func (sw *StorageWriter) SetMetadata() {
+	if !traiana.Aws {
+		sw.gcs.Metadata = sw.Metadata
 	}
 }
 
 func (o *ObjectHandle) NewWriter(ctx context.Context) *StorageWriter {
-	if traiana.Traiana {
+	if traiana.Aws {
 		return &StorageWriter{
 			aws: o.aws.NewWriter(ctx),
 		}
