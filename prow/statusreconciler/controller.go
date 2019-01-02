@@ -296,6 +296,13 @@ func addedBlockingPresubmits(old, new map[string][]config.Presubmit) map[string]
 							"name": oldPresubmit.Name,
 						}).Debug("Identified a newly-reporting blocking presubmit.")
 					}
+					if oldPresubmit.RunIfChanged != newPresubmit.RunIfChanged {
+						added[repo] = append(added[repo], newPresubmit)
+						logrus.WithFields(logrus.Fields{
+							"repo": repo,
+							"name": oldPresubmit.Name,
+						}).Debug("Identified a blocking presubmit running over a different set of files.")
+					}
 					found = true
 					break
 				}
