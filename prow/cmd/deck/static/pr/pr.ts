@@ -67,7 +67,7 @@ class TideQuery {
         const isMatched =
             (this.repos && this.repos.indexOf(pr.Repository.NameWithOwner) !== -1) ||
             ((this.orgs && this.orgs.indexOf(pr.Repository.Owner.Login) !== -1) &&
-            (this.excludedRepos && this.excludedRepos.indexOf(pr.Repository.NameWithOwner) === -1));
+            (!this.excludedRepos || this.excludedRepos.indexOf(pr.Repository.NameWithOwner) === -1));
 
         if (!isMatched) {
             return false;
