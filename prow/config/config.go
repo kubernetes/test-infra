@@ -287,7 +287,7 @@ type Branding struct {
 	HeaderColor string `json:"header_color,omitempty"`
 }
 
-// PubSubSubscriptions maps GCP projects to a list of Topics.
+// PubsubSubscriptions maps GCP projects to a list of Topics.
 type PubsubSubscriptions map[string][]string
 
 // Load loads and parses the config at path.
