@@ -1,10 +1,9 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 approvers:
-- ibzib
-- Katharine
-- rmmh
-- stevekuznetsov
+- bentheelder
+- ixdy
+- krzyzacy
 
 labels:
-- area/gubernator
+- area/images
