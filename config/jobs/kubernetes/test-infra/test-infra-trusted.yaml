@@ -93,7 +93,7 @@ periodics:
     - name: github
       secret:
         secretName: oauth-token
-- interval: 24h
+- cron: "05 15 * * 1-5"  # Run at 7:05 PST (15:05 UTC) Mon-Fri
   name: ci-test-infra-autobump-prow
   cluster: test-infra-trusted
   decorate: true
