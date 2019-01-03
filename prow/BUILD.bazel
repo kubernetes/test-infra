@@ -118,6 +118,7 @@ filegroup(
         "//prow/gerrit/client:all-srcs",
         "//prow/gerrit/reporter:all-srcs",
         "//prow/git:all-srcs",
+        "//prow/gitattributes:all-srcs",
         "//prow/github:all-srcs",
         "//prow/githuboauth:all-srcs",
         "//prow/hook:all-srcs",
