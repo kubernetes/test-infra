@@ -23,8 +23,8 @@ spec:
       default_repo: kubernetes
       path_strategy: explicit
     gcs_credentials_secret: explicit-service-account
-    grace_period: 1
-    timeout: 1
+    grace_period: 1ns
+    timeout: 1ns
     utility_images:
       clonerefs: clonerefs:explicit
       entrypoint: entrypoint:explicit

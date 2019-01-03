@@ -157,13 +157,17 @@ type ProwJobSpec struct {
 // This is primarily used to provide automatic integration with gubernator
 // and testgrid.
 type DecorationConfig struct {
+	// TimeoutString compiles into Timeout at load time
+	TimeoutString string `json:"timeout,omitempty"`
 	// Timeout is how long the pod utilities will wait
 	// before aborting a job with SIGINT.
-	Timeout time.Duration `json:"timeout,omitempty"`
+	Timeout time.Duration `json:"-"`
+	// GracePeriodString compiles into GracePeriod at load time
+	GracePeriodString string `json:"grace_period,omitempty"`
 	// GracePeriod is how long the pod utilities will wait
 	// after sending SIGINT to send SIGKILL when aborting
 	// a job. Only applicable if decorating the PodSpec.
-	GracePeriod time.Duration `json:"grace_period,omitempty"`
+	GracePeriod time.Duration `json:"-"`
 	// UtilityImages holds pull specs for utility container
 	// images used to decorate a PodSpec.
 	UtilityImages *UtilityImages `json:"utility_images,omitempty"`
@@ -229,6 +233,23 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	}
 
 	return &merged
+}
+
+// CompileDurations compiles time strings in the DecorationConfig to durations
+func (d *DecorationConfig) CompileDurations() error {
+	duration, err := time.ParseDuration(d.TimeoutString)
+	if err != nil {
+		return fmt.Errorf("cannot parse timeout for decoration_config: %v", err)
+	}
+	d.Timeout = duration
+
+	duration, err = time.ParseDuration(d.GracePeriodString)
+	if err != nil {
+		fmt.Println(duration)
+		return fmt.Errorf("cannot parse grace_period for decoration_config: %v", err)
+	}
+	d.GracePeriod = duration
+	return nil
 }
 
 // Validate ensures all the values set in the DecorationConfig are valid.

@@ -298,8 +298,8 @@ periodics:
 			rawConfig: `
 plank:
   default_decoration_config:
-    timeout: 7200000000000 # 2h
-    grace_period: 15000000000 # 15s
+    timeout: 2h
+    grace_period: 15s
     utility_images:
       clonerefs: "clonerefs:default"
       initupload: "initupload:default"
@@ -324,8 +324,10 @@ periodics:
       - "test"
       - "./..."`,
 			expected: &kube.DecorationConfig{
-				Timeout:     2 * time.Hour,
-				GracePeriod: 15 * time.Second,
+				TimeoutString:     "2h",
+				Timeout:           2 * time.Hour,
+				GracePeriodString: "15s",
+				GracePeriod:       15 * time.Second,
 				UtilityImages: &kube.UtilityImages{
 					CloneRefs:  "clonerefs:default",
 					InitUpload: "initupload:default",
@@ -346,8 +348,8 @@ periodics:
 			rawConfig: `
 plank:
   default_decoration_config:
-    timeout: 7200000000000 # 2h
-    grace_period: 15000000000 # 15s
+    timeout: 2h
+    grace_period: 15s
     utility_images:
       clonerefs: "clonerefs:default"
       initupload: "initupload:default"
@@ -366,8 +368,8 @@ periodics:
   always_run: true
   decorate: true
   decoration_config:
-    timeout: 1
-    grace_period: 1
+    timeout: 1ns
+    grace_period: 1ns
     utility_images:
       clonerefs: "clonerefs:explicit"
       initupload: "initupload:explicit"
@@ -384,8 +386,10 @@ periodics:
       - "test"
       - "./..."`,
 			expected: &kube.DecorationConfig{
-				Timeout:     1 * time.Nanosecond,
-				GracePeriod: 1 * time.Nanosecond,
+				TimeoutString:     "1ns",
+				GracePeriodString: "1ns",
+				Timeout:           1 * time.Nanosecond,
+				GracePeriod:       1 * time.Nanosecond,
 				UtilityImages: &kube.UtilityImages{
 					CloneRefs:  "clonerefs:explicit",
 					InitUpload: "initupload:explicit",

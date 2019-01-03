@@ -727,6 +727,16 @@ func parseProwConfig(c *Config) error {
 		return fmt.Errorf("validating plank config: %v", err)
 	}
 
+	if c.Plank.DefaultDecorationConfig != nil {
+		c.Plank.DefaultDecorationConfig.CompileDurations()
+	}
+
+	for _, p := range c.Periodics {
+		if p.DecorationConfig != nil {
+			p.DecorationConfig.CompileDurations()
+		}
+	}
+
 	if c.Plank.PodPendingTimeoutString == "" {
 		c.Plank.PodPendingTimeout = 24 * time.Hour
 	} else {
