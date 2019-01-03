@@ -213,7 +213,7 @@ func (c *Controller) processNextItem() bool {
 	pj, err := c.informer.Lister().ProwJobs(namespace).Get(name)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			logrus.WithField("prowjob", keyRaw).Infof("object no longer exist")
+			logrus.WithField("prowjob", keyRaw).Info("object no longer exist")
 			c.queue.Forget(key)
 			return true
 		}
@@ -234,6 +234,7 @@ func (c *Controller) processNextItem() bool {
 
 	// already reported current state
 	if pj.Status.PrevReportStates[c.reporter.GetName()] == pj.Status.State {
+		logrus.WithField("prowjob", keyRaw).Info("Already reported")
 		c.queue.Forget(key)
 		return true
 	}
