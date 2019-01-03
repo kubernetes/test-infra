@@ -104,7 +104,6 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-experimental
-        args:
         command:
         - runner.sh
         args:
