@@ -140,7 +140,7 @@ periodics:
     preset-e2e-scalability-common: "true"
   decorate: true
   decoration_config:
-    timeout: 14000000000000 # 140m
+    timeout: 233m
   spec:
     containers:
     - command:
@@ -193,7 +193,7 @@ periodics:
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 14000000000000 # 140m
+    timeout: 233m
   spec:
     containers:
     - command:
@@ -222,7 +222,7 @@ periodics:
     preset-k8s-ssh: "true"
   decorate: true
   decoration_config:
-    timeout: 14000000000000 # 140m
+    timeout: 233m
   spec:
     containers:
     - command:
@@ -281,7 +281,7 @@ periodics:
     preset-e2e-kubemark-common: "true"
   decorate: true
   decoration_config:
-    timeout: 26000000000000 # 260m
+    timeout: 433m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
