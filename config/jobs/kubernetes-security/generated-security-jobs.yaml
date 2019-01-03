@@ -1620,7 +1620,7 @@ presubmits:
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=90
+        - --timeout=150
         - --scenario=kubernetes_e2e
         - --
         - --build=bazel
@@ -1633,7 +1633,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-csi-serial
         - --test_args=--ginkgo.focus=CSI.*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|gcePD-external
           --minStartupPods=8
-        - --timeout=65m
+        - --timeout=120m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-csi-serial
         - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
