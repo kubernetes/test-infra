@@ -27,6 +27,7 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//prow/genfiles:go_default_library",
+        "//prow/gitattributes:go_default_library",
         "//prow/github:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
