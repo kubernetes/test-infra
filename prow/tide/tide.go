@@ -32,7 +32,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/errorutil"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
@@ -887,19 +886,6 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 		}
 	}
 	return nil
-}
-
-func aggregateChangeProvider(providers []config.ChangedFilesProvider) config.ChangedFilesProvider {
-	return func() ([]string, error) {
-		changes := sets.NewString()
-		var errs []error
-		for _, provider := range providers {
-			specificChanges, specificErr := provider()
-			changes.Insert(specificChanges...)
-			errs = append(errs, specificErr)
-		}
-		return changes.UnsortedList(), errorutil.NewAggregate(errs...)
-	}
 }
 
 func (c *Controller) trigger(sp subpool, presubmits map[int][]config.Presubmit, prs []PullRequest) error {
