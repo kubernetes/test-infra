@@ -407,6 +407,7 @@ plugins:
 
   kubernetes/sig-release:
   - blockade
+  - milestone
   - owners-label
   - stage
 
