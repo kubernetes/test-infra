@@ -3369,6 +3369,9 @@ test_groups:
 - name: pull-aws-ebs-csi-driver-sanity
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-ebs-csi-driver-sanity
   num_columns_recent: 30
+- name: pull-aws-ebs-csi-driver-integration
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-ebs-csi-driver-integration
+  num_columns_recent: 30
 
 # OpenShift
 - name: release-openshift-origin-installer-e2e-aws-4.0
@@ -5717,6 +5720,9 @@ dashboards:
   - name: sanity-test
     test_group_name: pull-aws-ebs-csi-driver-sanity
     description: aws ebs csi driver sanity test
+  - name: integration-test
+    test_group_name: pull-aws-ebs-csi-driver-integration
+    description: aws ebs csi driver integration test
 
 - name: sig-aws-eks-presubmits
   dashboard_tab:

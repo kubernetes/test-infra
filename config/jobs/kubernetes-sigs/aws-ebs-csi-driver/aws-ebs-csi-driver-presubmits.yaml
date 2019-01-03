@@ -38,3 +38,16 @@ presubmits:
         args:
         - make
         - test-sanity
+  - name: pull-aws-ebs-csi-driver-integration
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+        command:
+          - runner.sh
+        args:
+          - make
+          - test-integration
