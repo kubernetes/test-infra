@@ -678,6 +678,11 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 		if err := os.Setenv("KUBE_MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
 			return err
 		}
+		// MASTER_IP variable is required by the clusterloader. It requires to have master ip provided,
+		// due to master being unregistered.
+		if err := os.Setenv("MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
+			return err
+		}
 
 		if os.Getenv("ENABLE_KUBEMARK_CLUSTER_AUTOSCALER") == "true" {
 			testArgs = append(testArgs, "--kubemark-external-kubeconfig="+os.Getenv("DEFAULT_KUBECONFIG"))
@@ -685,6 +690,10 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 
 		cwd, err := os.Getwd()
 		if err != nil {
+			return err
+		}
+
+		if err := os.Setenv("KUBECONFIG", fmt.Sprintf("%s/test/kubemark/resources/kubeconfig.kubemark", cwd)); err != nil {
 			return err
 		}
 
@@ -697,7 +706,6 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 			os.Environ(),
 			"KUBERNETES_PROVIDER=kubemark",
 			"KUBE_CONFIG_FILE=config-default.sh",
-			fmt.Sprintf("KUBECONFIG=%s/test/kubemark/resources/kubeconfig.kubemark", cwd),
 			"KUBE_MASTER_URL=https://"+os.Getenv("KUBE_MASTER_IP"),
 		)
 
