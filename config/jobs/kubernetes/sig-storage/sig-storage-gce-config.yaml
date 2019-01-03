@@ -3,6 +3,7 @@ presubmits:
   - name: pull-kubernetes-e2e-gce-csi-serial
     always_run: false
     optional: true
+    skip_report: true # remove after job is tested successfully
     branches:
     - master
     labels:

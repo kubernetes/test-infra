@@ -1567,6 +1567,7 @@ presubmits:
     name: pull-security-kubernetes-e2e-gce-csi-serial
     optional: true
     rerun_command: /test pull-security-kubernetes-e2e-gce-csi-serial
+    skip_report: true
     spec:
       containers:
       - args:
