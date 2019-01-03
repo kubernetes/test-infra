@@ -45,7 +45,6 @@ presubmits:
   - name: pull-sig-storage-local-static-provisioner-e2e
     always_run: true
     decorate: true
-    skip_report: true # Remove it after job is tested successfully.
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
