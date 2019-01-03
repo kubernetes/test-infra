@@ -53,6 +53,7 @@ DEMOLISH_ORDER = [
     Resource('', 'compute', 'networks', 'subnets', 'region', None, True, True),
     Resource('', 'compute', 'networks', None, '', None, False, True),
     Resource('', 'compute', 'routes', None, None, None, False, True),
+    Resource('', 'compute', 'tpus', None, 'zone', None, False, True),
 
     # logging resources
     Resource('', 'logging', 'sinks', None, None, None, False, False),
