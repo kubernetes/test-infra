@@ -30,6 +30,23 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *Jan 3, 2019* To unify the UX, the type of `timeout` and `grace_period`
+   in `decoration_config` has changed from `time.Duration` to `string`, e.g. from
+    ```yaml
+    - name: job-foo
+      decorate: true
+      decoration_config:
+        timeout: 1
+        grace_period: 1
+    ```
+    to
+    ```yaml
+    - name: job-foo
+      decorate: true
+      decoration_config:
+        timeout: 1ns
+        grace_period: 1ns
+    ```
  - *November 29, 2018* `plank` will no longer default jobs with `decorate: true`
    to have `automountServiceAccountToken: false` in their PodSpec if unset, if the
    job explicitly sets `serviceAccountName`
