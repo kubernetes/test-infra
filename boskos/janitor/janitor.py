@@ -25,38 +25,39 @@ import subprocess
 import sys
 
 
+CREATION_TIMESTAMP_FIELD_NAME = "creationTimestamp"
 # A resource that need to be cleared.
 Resource = collections.namedtuple(
-    'Resource', 'api_version group name subgroup condition managed tolerate bulk_delete')
+    'Resource', 'service_name api_version group name subgroup condition managed tolerate bulk_delete creation_timestamp_field_name')
 DEMOLISH_ORDER = [
     # [WARNING FROM KRZYZACY] : TOUCH THIS WITH CARE!
     # ORDER REALLY MATTERS HERE!
 
     # compute resources
-    Resource('', 'compute', 'instances', None, 'zone', None, False, True),
-    Resource('', 'compute', 'addresses', None, 'region', None, False, True),
-    Resource('', 'compute', 'disks', None, 'zone', None, False, True),
-    Resource('', 'compute', 'firewall-rules', None, None, None, False, True),
-    Resource('', 'compute', 'routes', None, None, None, False, True),
-    Resource('', 'compute', 'forwarding-rules', None, 'region', None, False, True),
-    Resource('', 'compute', 'target-http-proxies', None, None, None, False, True),
-    Resource('', 'compute', 'target-https-proxies', None, None, None, False, True),
-    Resource('', 'compute', 'url-maps', None, None, None, False, True),
-    Resource('', 'compute', 'backend-services', None, 'region', None, False, True),
-    Resource('', 'compute', 'target-pools', None, 'region', None, False, True),
-    Resource('', 'compute', 'health-checks', None, None, None, False, True),
-    Resource('', 'compute', 'http-health-checks', None, None, None, False, True),
-    Resource('', 'compute', 'instance-groups', None, 'zone', 'Yes', False, True),
-    Resource('', 'compute', 'instance-groups', None, 'zone', 'No', False, True),
-    Resource('', 'compute', 'instance-templates', None, None, None, False, True),
-    Resource('beta', 'compute', 'network-endpoint-groups', None, None, None, True, False),
-    Resource('', 'compute', 'networks', 'subnets', 'region', None, True, True),
-    Resource('', 'compute', 'networks', None, '', None, False, True),
-    Resource('', 'compute', 'routes', None, None, None, False, True),
-    Resource('', 'compute', 'tpus', None, 'zone', None, False, True),
+    Resource(None, '', 'compute', 'instances', None, 'zone', None, False, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, '', 'compute', 'addresses', None, 'region', None, False, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, '', 'compute', 'disks', None, 'zone', None, False, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, '', 'compute', 'firewall-rules', None, None, None, False, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, '', 'compute', 'routes', None, None, None, False, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, '', 'compute', 'forwarding-rules', None, 'region', None, False, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, '', 'compute', 'target-http-proxies', None, None, None, False, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, '', 'compute', 'target-https-proxies', None, None, None, False, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, '', 'compute', 'url-maps', None, None, None, False, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, '', 'compute', 'backend-services', None, 'region', None, False, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, '', 'compute', 'target-pools', None, 'region', None, False, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, '', 'compute', 'health-checks', None, None, None, False, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, '', 'compute', 'http-health-checks', None, None, None, False, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, '', 'compute', 'instance-groups', None, 'zone', 'Yes', False, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, '', 'compute', 'instance-groups', None, 'zone', 'No', False, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, '', 'compute', 'instance-templates', None, None, None, False, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, 'beta', 'compute', 'network-endpoint-groups', None, None, None, True, False, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, '', 'compute', 'networks', 'subnets', 'region', None, True, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, '', 'compute', 'networks', None, '', None, False, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource(None, '', 'compute', 'routes', None, None, None, False, True, CREATION_TIMESTAMP_FIELD_NAME),
+    Resource('tpu.googleapis.com', '', 'compute', 'tpus', None, 'zone', None, False, True, 'createTime'),
 
     # logging resources
-    Resource('', 'logging', 'sinks', None, None, None, False, False),
+    Resource(None, '', 'logging', 'sinks', None, None, None, False, False, CREATION_TIMESTAMP_FIELD_NAME),
 ]
 
 def log(message):
@@ -102,17 +103,17 @@ def validate_item(item, age, resource, clear_all):
         if resource.managed != item['isManaged']:
             return False
 
-    # clears everything without checking creationTimestamp
+    # clears everything without checking creation timestamp
     if clear_all:
         return True
 
-    if 'creationTimestamp' not in item:
-        raise ValueError('missing key: creationTimestamp - %r' % item)
+    if resource.creation_timestamp_field_name not in item:
+        raise ValueError('missing key: %r - %r' % (resource.creation_timestamp_field_name, item))
 
     # Unify datetime to use utc timezone.
-    created = datetime.datetime.strptime(item['creationTimestamp'], '%Y-%m-%dT%H:%M:%S')
+    created = datetime.datetime.strptime(item[resource.creation_timestamp_field_name], '%Y-%m-%dT%H:%M:%S')
     log('Found %r(%r), %r, created time = %r' %
-        (resource.name, resource.subgroup, item['name'], item['creationTimestamp']))
+        (resource.name, resource.subgroup, item['name'], item[resource.creation_timestamp_field_name]))
     if created < age:
         log('Added to janitor list: %r(%r), %r' %
             (resource.name, resource.subgroup, item['name']))
@@ -120,10 +121,11 @@ def validate_item(item, age, resource, clear_all):
     return False
 
 
-def collect(project, age, resource, filt, clear_all):
+def collect(enabled_services, project, age, resource, filt, clear_all):
     """ Collect a list of resources for each condition (zone or region).
 
     Args:
+        enabled_services: The list of enabled services.
         project: The name of a gcp project.
         age: Time cutoff from the creation of a resource.
         resource: Definition of a type of gcloud resource.
@@ -138,6 +140,11 @@ def collect(project, age, resource, filt, clear_all):
 
     col = collections.defaultdict(list)
 
+    # Skip this resource if its service is not enabled in this project.
+    if resource.service_name and resource.service_name not in enabled_services:
+        log('Skipping resource %s as its service %s is disabled' % (resource.name, resource.service_name))
+        return col
+
     # TODO(krzyzacy): logging sink does not have timestamp
     #                 don't even bother listing it if not clear_all
     if resource.name == 'sinks' and not clear_all:
@@ -146,7 +153,7 @@ def collect(project, age, resource, filt, clear_all):
     cmd = base_command(resource)
     cmd.extend([
         'list',
-        '--format=json(name,creationTimestamp.date(tz=UTC),zone,region,isManaged)',
+        '--format=json(name,%s.date(tz=UTC),zone,region,isManaged)' % resource.creation_timestamp_field_name,
         '--filter=%s' % filt,
         '--project=%s' % project])
     log('%r' % cmd)
@@ -284,6 +291,9 @@ def clean_gke_cluster(project, age, filt):
             if created < age:
                 log('Found stale gke cluster %r in %r, created time = %r' %
                     (item['name'], endpoint, item['createTime']))
+                if ARGS.dryrun:
+                    log('gke cluster %r in %r to be deleted' % (item['name'], endpoint))
+                    continue
                 delete = [
                     'gcloud', 'container', '-q', 'clusters', 'delete',
                     item['name'],
@@ -298,6 +308,25 @@ def clean_gke_cluster(project, age, filt):
                     print >>sys.stderr, 'Error try to delete cluster %s: %r' % (item['name'], exc)
 
     return err
+
+def get_enabled_services(project):
+    """Return a set of enabled services in the project"""
+
+    cmd = [
+        'gcloud', 'services', '-q', 'list',
+        '--project=%s' % project,
+        '--format=json(config.name)'
+        ]
+    log('running %s' % cmd)
+
+    output = subprocess.check_output(cmd)
+
+    enabled_services = set()
+    for item in json.loads(output):
+        enabled_services.add(item['config']['name'])
+    log('enabled services: %r' % enabled_services)
+
+    return enabled_services
 
 def main(project, days, hours, filt, rate_limit):
     """ Clean up resources from a gcp project based on it's creation time
@@ -315,10 +344,17 @@ def main(project, days, hours, filt, rate_limit):
     err = 0
     age = datetime.datetime.utcnow() - datetime.timedelta(days=days, hours=hours)
     clear_all = (days is 0 and hours is 0)
+
+    try:
+      enabled_services = get_enabled_services(project)
+    except subprocess.CalledProcessError:
+      print >>sys.stderr, 'Fail to list enabled services from project %r' % project
+      sys.exit(err)
+
     for res in DEMOLISH_ORDER:
         log('Try to search for %r with condition %r' % (res.name, res.condition))
         try:
-            col = collect(project, age, res, filt, clear_all)
+            col = collect(enabled_services, project, age, res, filt, clear_all)
             if col:
                 err |= clear_resources(project, col, res, rate_limit)
         except (subprocess.CalledProcessError, ValueError):
