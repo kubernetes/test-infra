@@ -3,6 +3,7 @@ presubmits:
   - name: pull-sig-storage-local-static-provisioner
     always_run: true
     decorate: true
+    path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
     labels:
       preset-dind-enabled: "true"
     spec:
@@ -18,6 +19,7 @@ presubmits:
   - name: pull-sig-storage-local-static-provisioner-verify
     always_run: true
     decorate: true
+    path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
@@ -29,6 +31,7 @@ presubmits:
   - name: pull-sig-storage-local-static-provisioner-test
     always_run: true
     decorate: true
+    path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
     labels:
       preset-dind-enabled: "true"
     spec:
@@ -45,6 +48,7 @@ presubmits:
   - name: pull-sig-storage-local-static-provisioner-e2e
     always_run: true
     decorate: true
+    path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
