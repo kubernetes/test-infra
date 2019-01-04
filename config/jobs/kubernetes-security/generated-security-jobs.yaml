@@ -2167,7 +2167,8 @@ presubmits:
         - ./hack/jenkins/test-dockerized.sh
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
         name: ""
         resources:
           requests:
@@ -2537,7 +2538,8 @@ presubmits:
         - ./hack/jenkins/verify-dockerized.sh
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
         name: ""
         resources:
           requests:

@@ -38,7 +38,8 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
         command:
         - runner.sh
         args:
