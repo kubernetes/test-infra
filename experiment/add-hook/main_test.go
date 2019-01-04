@@ -164,7 +164,7 @@ func TestFindHook(t *testing.T) {
 
 func TestReconcileHook(t *testing.T) {
 	const goal = "http://goal-url"
-	const targetId = 1000
+	const targetID = 1000
 	secret := "ingredient"
 	j := "json"
 	cases := []struct {
@@ -205,7 +205,7 @@ func TestReconcileHook(t *testing.T) {
 			name: "create when no match",
 			hooks: []github.Hook{
 				{
-					ID: targetId + 6666,
+					ID: targetID + 6666,
 					Config: github.HookConfig{
 						URL: "http://random-url",
 					},
@@ -217,7 +217,7 @@ func TestReconcileHook(t *testing.T) {
 			name: "edit exiting item",
 			hooks: []github.Hook{
 				{
-					ID: targetId,
+					ID: targetID,
 					Config: github.HookConfig{
 						URL: goal,
 					},
@@ -240,8 +240,8 @@ func TestReconcileHook(t *testing.T) {
 				if org == "edit-error" {
 					return errors.New("inject edit error")
 				}
-				if id != targetId {
-					return fmt.Errorf("id %d != expected %d", id, targetId)
+				if id != targetID {
+					return fmt.Errorf("id %d != expected %d", id, targetID)
 				}
 				edited = &req
 				return nil
@@ -254,7 +254,7 @@ func TestReconcileHook(t *testing.T) {
 					return 0, errors.New("already created")
 				}
 				created = &req
-				return targetId, nil
+				return targetID, nil
 			},
 		}
 		req := github.HookRequest{

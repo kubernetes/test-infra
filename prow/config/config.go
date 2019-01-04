@@ -105,7 +105,7 @@ type ProwConfig struct {
 	OwnersDirBlacklist OwnersDirBlacklist `json:"owners_dir_blacklist,omitempty"`
 
 	// Pub/Sub Subscriptions that we want to listen to
-	PubSubSubscriptions PubsubSubscriptions `json:"pubsub_subscriptions,omitempty"`
+	PubSubSubscriptions PubSubSubscriptions `json:"pubsub_subscriptions,omitempty"`
 }
 
 // OwnersDirBlacklist is used to configure which directories to ignore when
@@ -288,7 +288,7 @@ type Branding struct {
 }
 
 // PubSubSubscriptions maps GCP projects to a list of Topics.
-type PubsubSubscriptions map[string][]string
+type PubSubSubscriptions map[string][]string
 
 // Load loads and parses the config at path.
 func Load(prowConfig, jobConfig string) (c *Config, err error) {

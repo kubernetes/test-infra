@@ -40,7 +40,7 @@ type testDelegate struct {
 
 func (t *testDelegate) RoundTrip(req *http.Request) (*http.Response, error) {
 	t.hitsLock.Lock()
-	t.hits[req.URL.Path] += 1
+	t.hits[req.URL.Path]++
 	t.hitsLock.Unlock()
 
 	if req.Header.Get("test-immediate-response") == "" {

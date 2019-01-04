@@ -65,14 +65,14 @@ func gatherOptions() options {
 
 func (o *options) Validate() error {
 	if o.org == "" {
-		return errors.New("'--org' must be set.\n")
+		return errors.New("'--org' must be set")
 	}
 	if o.repo == "" {
-		return errors.New("'--repo' must be set.\n")
+		return errors.New("'--repo' must be set")
 	}
 
 	if o.destContext == "" && o.retireContext == "" {
-		return errors.New("'--dest' is required unless using '--retire' mode.\n")
+		return errors.New("'--dest' is required unless using '--retire' mode")
 	}
 
 	if o.descriptionURL != "" && o.copyContext != "" {
@@ -90,7 +90,7 @@ func (o *options) Validate() error {
 		optionCount++
 	}
 	if optionCount != 1 {
-		return errors.New("Exactly one mode must be specified [--copy|--retire|--move].")
+		return errors.New("exactly one mode must be specified [--copy|--retire|--move]")
 	}
 
 	if err := o.github.Validate(o.dryRun); err != nil {

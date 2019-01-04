@@ -291,7 +291,7 @@ func (k *kubernetesAnywhere) GetClusterCreated(gcpProject string) (time.Time, er
 	return time.Time{}, errors.New("not implemented")
 }
 
-func (_ *kubernetesAnywhere) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
+func (*kubernetesAnywhere) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
 
 const defaultConfigFile = ".config"
 
@@ -432,4 +432,4 @@ func (k *kubernetesAnywhereMultiCluster) Down() error {
 	return control.FinishRunningParallel(cmds...)
 }
 
-func (_ *kubernetesAnywhereMultiCluster) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
+func (*kubernetesAnywhereMultiCluster) KubectlCommand() (*exec.Cmd, error) { return nil, nil }

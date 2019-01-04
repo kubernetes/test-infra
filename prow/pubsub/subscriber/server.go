@@ -162,7 +162,7 @@ func (c *pubSubClient) subscription(id string) subscriptionInterface {
 }
 
 // handlePulls pull for Pub/Sub subscriptions and handle them.
-func (s *PullServer) handlePulls(ctx context.Context, projectSubscriptions config.PubsubSubscriptions) (*errgroup.Group, context.Context, error) {
+func (s *PullServer) handlePulls(ctx context.Context, projectSubscriptions config.PubSubSubscriptions) (*errgroup.Group, context.Context, error) {
 	// Since config might change we need be able to cancel the current run
 	errGroup, derivedCtx := errgroup.WithContext(ctx)
 	for project, subscriptions := range projectSubscriptions {

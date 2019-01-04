@@ -98,12 +98,12 @@ func (c *Client) CreateStatus(owner, repo, ref string, status *github.RepoStatus
 	return result, err
 }
 
-type PRMungeFunc func(*github.PullRequest) error
+type mungePRFunc func(*github.PullRequest) error
 
 // ForEachPR iterates over all PRs that fit the specified criteria, calling the munge function on every PR.
 // If the munge function returns a non-nil error, ForEachPR will return immediately with a non-nil
 // error unless continueOnError is true in which case an error will be logged and the remaining PRs will be munged.
-func (c *Client) ForEachPR(owner, repo string, opts *github.PullRequestListOptions, continueOnError bool, mungePR PRMungeFunc) error {
+func (c *Client) ForEachPR(owner, repo string, opts *github.PullRequestListOptions, continueOnError bool, mungePR mungePRFunc) error {
 	var lastPage int
 	// Munge each page as we get it (or in other words, wait until we are ready to munge the next
 	// page of issues before getting it). We use depaginate to make the calls, but don't care about

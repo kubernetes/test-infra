@@ -653,7 +653,7 @@ func (k kops) Publish() error {
 	})
 }
 
-func (_ kops) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
+func (kops) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
 
 // getRandomAWSZones looks up all regions, and the availability zones for those regions.  A random
 // region is then chosen and the AZ's for that region is returned. At least masterCount zones will be

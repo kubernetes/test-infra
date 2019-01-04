@@ -20,14 +20,12 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/client-go/kubernetes"
+	_ "k8s.io/client-go/plugin/pkg/client/auth" // Load client-go auth plugins.
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
 	prowjobclientset "k8s.io/test-infra/prow/client/clientset/versioned"
-
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
 // loadClusterConfig loads connection configuration
@@ -70,8 +68,6 @@ func GetKubernetesClient(masterURL, kubeConfig string) (kubernetes.Interface, er
 	return client, nil
 }
 
-// GetKubernetesClient retrieves the Kubernetes cluster
-// client from within the cluster
 func GetProwJobClient(masterURL, kubeConfig string) (prowjobclientset.Interface, error) {
 	config, err := loadClusterConfig(masterURL, kubeConfig)
 	if err != nil {

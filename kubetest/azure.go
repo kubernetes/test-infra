@@ -45,14 +45,14 @@ var (
 	acsResourceName        = flag.String("acsengine-resource-name", "", "Azure Resource Name")
 	acsResourceGroupName   = flag.String("acsengine-resourcegroup-name", "", "Azure Resource Group Name")
 	acsLocation            = flag.String("acsengine-location", "westus2", "Azure ACS location")
-	acsMasterVmSize        = flag.String("acsengine-mastervmsize", "Standard_D2s_v3", "Azure Master VM size")
-	acsAgentVmSize         = flag.String("acsengine-agentvmsize", "Standard_D2s_v3", "Azure Agent VM size")
+	acsMasterVMSize        = flag.String("acsengine-mastervmsize", "Standard_D2s_v3", "Azure Master VM size")
+	acsAgentVMSize         = flag.String("acsengine-agentvmsize", "Standard_D2s_v3", "Azure Agent VM size")
 	acsAdminUsername       = flag.String("acsengine-admin-username", "", "Admin username")
 	acsAdminPassword       = flag.String("acsengine-admin-password", "", "Admin password")
 	acsAgentPoolCount      = flag.Int("acsengine-agentpoolcount", 2, "Azure Agent Pool Count")
 	acsAgentOSType         = flag.String("acsengine-agentOSType", "Windows", "OS Type of Agent Nodes. Options: Windows|Linux")
 	acsTemplatePath        = flag.String("acsengine-template", "", "Azure Template Name")
-	acsDnsPrefix           = flag.String("acsengine-dnsprefix", "", "Azure K8s Master DNS Prefix")
+	acsDNSPrefix           = flag.String("acsengine-dnsprefix", "", "Azure K8s Master DNS Prefix")
 	acsEngineURL           = flag.String("acsengine-download-url", "", "Download URL for ACS engine")
 	acsEngineMD5           = flag.String("acsengine-md5-sum", "", "Checksum for acs engine download")
 	acsSSHPublicKeyPath    = flag.String("acsengine-public-key", "", "Path to SSH Public Key")
@@ -124,8 +124,8 @@ func checkParams() error {
 	if *acsResourceGroupName == "" {
 		*acsResourceGroupName = *acsResourceName + "-rg"
 	}
-	if *acsDnsPrefix == "" {
-		*acsDnsPrefix = *acsResourceName
+	if *acsDNSPrefix == "" {
+		*acsDNSPrefix = *acsResourceName
 	}
 	if *acsSSHPublicKeyPath == "" {
 		*acsSSHPublicKeyPath = os.Getenv("HOME") + "/.ssh/id_rsa.pub"
@@ -134,7 +134,7 @@ func checkParams() error {
 		return fmt.Errorf("error parsing flags. No admin username specified")
 	}
 	if *acsAdminPassword == "" {
-		return fmt.Errorf("error parting flags. No admin password specified.")
+		return fmt.Errorf("error parting flags. No admin password specified")
 	}
 	return nil
 }
@@ -153,7 +153,7 @@ func newAcsEngine() (*Cluster, error) {
 		ctx:                     context.Background(),
 		apiModelPath:            *acsTemplatePath,
 		name:                    *acsResourceName,
-		dnsPrefix:               *acsDnsPrefix,
+		dnsPrefix:               *acsDNSPrefix,
 		location:                *acsLocation,
 		resourceGroup:           *acsResourceGroupName,
 		outputDir:               tempdir,
@@ -196,7 +196,7 @@ func (c *Cluster) generateTemplate() error {
 			MasterProfile: &MasterProfile{
 				Count:          1,
 				DNSPrefix:      c.dnsPrefix,
-				VMSize:         *acsMasterVmSize,
+				VMSize:         *acsMasterVMSize,
 				IPAddressCount: 200,
 				Extensions: []map[string]string{
 					{
@@ -207,7 +207,7 @@ func (c *Cluster) generateTemplate() error {
 			AgentPoolProfiles: []*AgentPoolProfile{
 				{
 					Name:                "agentpool0",
-					VMSize:              *acsAgentVmSize,
+					VMSize:              *acsAgentVMSize,
 					Count:               *acsAgentPoolCount,
 					OSType:              *acsAgentOSType,
 					AvailabilityProfile: "AvailabilitySet",
@@ -314,7 +314,7 @@ func (c *Cluster) getAcsEngine(retry int) error {
 		if err := httpRead(*acsEngineURL, f); err == nil {
 			break
 		}
-		err = fmt.Errorf("url=%s failed get %v: %v.", *acsEngineURL, downloadPath, err)
+		err = fmt.Errorf("url=%s failed get %v: %v", *acsEngineURL, downloadPath, err)
 		if i == retry-1 {
 			return err
 		}
@@ -329,13 +329,13 @@ func (c *Cluster) getAcsEngine(retry int) error {
 			return err
 		}
 		if strings.Split(string(o), " ")[0] != *acsEngineMD5 {
-			return fmt.Errorf("wrong md5 sum for acs-engine.")
+			return fmt.Errorf("wrong md5 sum for acs-engine")
 		}
 	}
 
 	cwd, err := os.Getwd()
 	if err != nil {
-		return fmt.Errorf("unable to get current directory: %v .", err)
+		return fmt.Errorf("unable to get current directory: %v", err)
 	}
 	log.Printf("Extracting tar file %v into directory %v .", f.Name(), cwd)
 
@@ -349,7 +349,7 @@ func (c *Cluster) getAcsEngine(retry int) error {
 
 func (c Cluster) generateARMTemplates() error {
 	if err := control.FinishRunning(exec.Command(c.acsEngineBinaryPath, "generate", c.apiModelPath, "--output-directory", c.outputDir)); err != nil {
-		return fmt.Errorf("failed to generate ARM templates: %v.", err)
+		return fmt.Errorf("failed to generate ARM templates: %v", err)
 	}
 	return nil
 }
@@ -358,7 +358,7 @@ func (c *Cluster) loadARMTemplates() error {
 	var err error
 	template, err := ioutil.ReadFile(path.Join(c.outputDir, "azuredeploy.json"))
 	if err != nil {
-		return fmt.Errorf("error reading ARM template file: %v.", err)
+		return fmt.Errorf("error reading ARM template file: %v", err)
 	}
 	c.templateJSON = make(map[string]interface{})
 	err = json.Unmarshal(template, &c.templateJSON)
@@ -424,7 +424,6 @@ func (c *Cluster) createCluster() error {
 }
 
 func (c *Cluster) buildHyperKube() error {
-
 	os.Setenv("VERSION", fmt.Sprintf("win-e2e-%v", os.Getenv("BUILD_ID")))
 
 	cwd, _ := os.Getwd()
@@ -484,7 +483,7 @@ func getZipBuildScript(buildScriptURL string, retry int) (string, error) {
 		if err := httpRead(buildScriptURL, f); err == nil {
 			break
 		}
-		err = fmt.Errorf("url=%s failed get %v: %v.", buildScriptURL, downloadPath, err)
+		err = fmt.Errorf("url=%s failed get %v: %v", buildScriptURL, downloadPath, err)
 		if i == retry-1 {
 			return "", err
 		}
@@ -571,12 +570,10 @@ func (c Cluster) GetClusterCreated(clusterName string) (time.Time, error) {
 }
 
 func (c Cluster) TestSetup() error {
-
 	// Download repo-list that defines repositories for Windows test images.
-
-	downloadUrl, ok := os.LookupEnv("KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION")
+	downloadURL, ok := os.LookupEnv("KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION")
 	if !ok {
-		// Env value for downloadUrl is not set, nothing to do
+		// Env value for downloadURL is not set, nothing to do
 		log.Printf("KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION not set. Using default test image repos.")
 		return nil
 	}
@@ -588,11 +585,11 @@ func (c Cluster) TestSetup() error {
 	}
 	defer f.Close()
 
-	log.Printf("downloading %v from %v.", downloadPath, downloadUrl)
-	err = httpRead(downloadUrl, f)
+	log.Printf("downloading %v from %v.", downloadPath, downloadURL)
+	err = httpRead(downloadURL, f)
 
 	if err != nil {
-		return fmt.Errorf("url=%s failed get %v: %v.", downloadUrl, downloadPath, err)
+		return fmt.Errorf("url=%s failed get %v: %v", downloadURL, downloadPath, err)
 	}
 	f.Chmod(0744)
 	if err := os.Setenv("KUBE_TEST_REPO_LIST", downloadPath); err != nil {
@@ -605,4 +602,4 @@ func (c Cluster) IsUp() error {
 	return isUp(c)
 }
 
-func (_ Cluster) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
+func (Cluster) KubectlCommand() (*exec.Cmd, error) { return nil, nil }

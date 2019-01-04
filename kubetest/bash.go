@@ -102,7 +102,7 @@ func (b *bashDeployer) GetClusterCreated(gcpProject string) (time.Time, error) {
 	return created, nil
 }
 
-func (_ *bashDeployer) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
+func (*bashDeployer) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
 
 // Calculates the cluster IP range based on the no. of nodes in the cluster.
 // Note: This mimics the function get-cluster-ip-range used by kube-up script.
