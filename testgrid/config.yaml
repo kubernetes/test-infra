@@ -2232,6 +2232,8 @@ test_groups:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
+- name: kops-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kops-postsubmit
 - name: ci-kubernetes-e2e-kops-aws-channelalpha
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-channelalpha
 - name: ci-kubernetes-e2e-kops-aws-ena-nvme
@@ -7498,6 +7500,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-gce-channelalpha
   - name: kops-gce-ha
     test_group_name: ci-kubernetes-e2e-kops-gce-ha
+  - name: kops-postsubmit
+    test_group_name: kops-postsubmit
 
 # Gardener Dashboard
 - name: conformance-gardener
