@@ -3,7 +3,6 @@ presubmits:
   # manual-release-bump-required
   - name: pull-kubernetes-e2e-gke
     always_run: false
-    run_if_changed: '^(cluster/gce|cluster/addons).*$'
     # TODO(bentheelder): enforce this pattern (skip all releases) or implement
     # something better like https://github.com/kubernetes/test-infra/pull/4918
     skip_branches:
@@ -48,7 +47,6 @@ presubmits:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gke
     always_run: false
-    run_if_changed: '^(cluster/gce|cluster/addons).*$'
     branches:
     - release-1.13 # per-release image
     labels:
@@ -90,7 +88,6 @@ presubmits:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gke
     always_run: false
-    run_if_changed: '^(cluster/gce|cluster/addons).*$'
     branches:
     - release-1.10 # per-release image
     labels:
