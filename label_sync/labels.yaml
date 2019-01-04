@@ -632,6 +632,11 @@ repos:
         name: area/conformance
         target: both
         addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to deflaking kubernetes tests
+        name: area/deflake
+        target: both
+        addedBy: label
       - color: cc99ff
         description: Categorizes issues related to KEPs and PRs modifying the KEP directory
         name: kind/kep
@@ -661,6 +666,11 @@ repos:
       - color: 0052cc
         description: Issues or PRs related to kubernetes conformance tests
         name: area/conformance
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to deflaking kubernetes tests
+        name: area/deflake
         target: both
         addedBy: label
       - color: ededed
@@ -701,6 +711,11 @@ repos:
       - color: 0052cc
         description: Issues or PRs related to kubernetes conformance tests
         name: area/conformance
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to deflaking kubernetes tests
+        name: area/deflake
         target: both
         addedBy: label
       - color: 0052cc
