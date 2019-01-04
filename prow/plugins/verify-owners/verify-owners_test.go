@@ -265,10 +265,19 @@ func TestHandle(t *testing.T) {
 		if err := lg.AddCommit("org", "repo", pullFiles); err != nil {
 			t.Fatalf("Adding PR commit: %v", err)
 		}
+		sha, err := lg.RevParse("org", "repo", "HEAD")
+		if err != nil {
+			t.Fatalf("Getting commit SHA: %v", err)
+		}
 		pre := &github.PullRequestEvent{
-			Number:      pr,
-			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
-			Repo:        github.Repo{FullName: "org/repo"},
+			Number: pr,
+			PullRequest: github.PullRequest{
+				User: github.User{Login: "author"},
+				Head: github.PullRequestBranch{
+					SHA: sha,
+				},
+			},
+			Repo: github.Repo{FullName: "org/repo"},
 		}
 		fghc := newFakeGithubClient(test.filesChanged, pr)
 		if err := handle(fghc, c, logrus.WithField("plugin", PluginName), pre, []string{labels.Approved, labels.LGTM}); err != nil {

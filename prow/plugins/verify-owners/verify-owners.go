@@ -111,6 +111,12 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 	if err := r.CheckoutPullRequest(pre.Number); err != nil {
 		return err
 	}
+	// If we have a specific SHA, use it.
+	if pre.PullRequest.Head.SHA != "" {
+		if err := r.Checkout(pre.PullRequest.Head.SHA); err != nil {
+			return err
+		}
+	}
 
 	// Check each OWNERS file.
 	for _, c := range modifiedOwnersFiles {
@@ -118,7 +124,7 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 		path := filepath.Join(r.Dir, c.Filename)
 		b, err := ioutil.ReadFile(path)
 		if err != nil {
-			log.WithError(err).Errorf("Failed to read %s.", path)
+			log.WithError(err).Warningf("Failed to read %s.", path)
 			return nil
 		}
 		var approvers []string
