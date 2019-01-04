@@ -384,9 +384,8 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-a
-      - --gke-command-group=beta
       - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19
-      - --gke-environment=test
+      - --gke-environment=staging
       - '--gke-shape={"default":{"Nodes":1999,"MachineType":"n1-standard-1"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-8"}}'
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:Performance\]
@@ -421,7 +420,6 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-project=kubernetes-scale
       - --gcp-region=us-east1
-      - --gke-command-group=beta
       - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet-regional --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19
       - --gke-environment=staging
       - --gke-node-locations=us-east1-a
@@ -457,9 +455,8 @@ periodics:
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-a
       - --ginkgo-parallel=30
-      - --gke-command-group=beta
       - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/11 --services-ipv4-cidr=/18 --timeout=2700
-      - --gke-environment=test
+      - --gke-environment=staging
       - '--gke-shape={"default":{"Nodes":4999,"MachineType":"g1-small"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-16"}}'
       - --provider=gke
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8
