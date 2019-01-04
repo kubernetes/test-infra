@@ -97,7 +97,7 @@ size:
   xxl: 1000
 
 label:
-  additionalLabels:
+  additional_labels:
     # These labels are used by Kubeflow
     # TODO(https://github.com/kubernetes/test-infra/issues/8648): Switch
     # to configuring prefixes and not individual labels once  that's supported.
