@@ -282,6 +282,24 @@ func (c *fakeClient) ListTeamMembers(id int, role string) ([]github.TeamMember, 
 	}
 }
 
+func (c *fakeClient) ListTeamInvitations(id int) ([]github.OrgInvitation, error) {
+	if id != teamID {
+		return nil, fmt.Errorf("only team 66 supported, not %d", id)
+	}
+	var ret []github.OrgInvitation
+	for p := range c.invitees {
+		if p == "fail" {
+			return nil, errors.New("injected list org invitations failure")
+		}
+		ret = append(ret, github.OrgInvitation{
+			TeamMember: github.TeamMember{
+				Login: p,
+			},
+		})
+	}
+	return ret, nil
+}
+
 const teamID = 66
 
 func (c *fakeClient) UpdateTeamMembership(id int, user string, maintainer bool) (*github.TeamMembership, error) {
@@ -1263,6 +1281,16 @@ func TestConfigureTeamMembers(t *testing.T) {
 			invitees:       sets.NewString("invited-maintainer", "invited-member"),
 			addMaintainers: sets.NewString("newbie"),
 		},
+		{
+			name: "do not remove pending invitees",
+			team: org.Team{
+				Maintainers: []string{"keep-maintainer"},
+				Members:     []string{"invited-member"},
+			},
+			maintainers: sets.NewString("keep-maintainer"),
+			invitees:    sets.NewString("invited-member"),
+			remove:      sets.String{},
+		},
 	}
 
 	for _, tc := range cases {
@@ -1273,11 +1301,12 @@ func TestConfigureTeamMembers(t *testing.T) {
 			fc := &fakeClient{
 				admins:     sets.StringKeySet(tc.maintainers),
 				members:    sets.StringKeySet(tc.members),
+				invitees:   sets.StringKeySet(tc.invitees),
 				removed:    sets.String{},
 				newAdmins:  sets.String{},
 				newMembers: sets.String{},
 			}
-			err := configureTeamMembers(fc, tc.id, tc.team, tc.invitees)
+			err := configureTeamMembers(fc, tc.id, tc.team)
 			switch {
 			case err != nil:
 				if !tc.err {
