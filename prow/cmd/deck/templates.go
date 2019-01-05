@@ -19,6 +19,7 @@ package main
 import (
 	"github.com/sirupsen/logrus"
 	"html/template"
+	"k8s.io/test-infra/prow/cmd/deck/version"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"net/http"
@@ -66,6 +67,7 @@ func prepareBaseTemplate(o options, ca jobs.ConfigAgent, t *template.Template) (
 		"sections":         getConcreteSectionFunction(o),
 		"mobileFriendly":   func() bool { return true },
 		"mobileUnfriendly": func() bool { return false },
+		"deckVersion":      func() string { return version.Version },
 	}).ParseFiles(path.Join(o.templateFilesLocation, "base.html"))
 }
 

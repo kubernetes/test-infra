@@ -87,6 +87,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/cmd/deck",
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/cmd/deck/version:go_default_library",
         "//prow/config:go_default_library",
         "//prow/deck/jobs:go_default_library",
         "//prow/gcsupload:go_default_library",
@@ -128,6 +129,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//prow/cmd/deck/static:all-srcs",
+        "//prow/cmd/deck/version:all-srcs",
     ],
     tags = ["automanaged"],
 )
