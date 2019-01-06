@@ -312,13 +312,13 @@ default:
       addedBy: prow
     - color: c2e0c6
       description: Denotes a PR that introduces potentially breaking changes that require user action. # These actions will be specifically called out when it comes time to generate release notes.
-      name: release-note-action-required
+      name: release-note/action-required
       target: prs
       prowPlugin: releasenote
       addedBy: prow
     - color: c2e0c6
       description: Denotes a PR that doesn't merit a release note. # will be ignored when it comes time to generate release notes.
-      name: release-note-none
+      name: release-note/none
       target: prs
       prowPlugin: releasenote
       addedBy: prow or member or author
