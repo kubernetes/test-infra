@@ -5233,6 +5233,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-slow
   - name: soak-gci-gce-1.10
     test_group_name: ci-kubernetes-soak-gci-gce-stable3
+  - name: gci-gce-scalability-1.10
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable3
 
 - name: sig-release-1.10-blocking
   dashboard_tab:
@@ -5259,6 +5261,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-slow
   - name: kops-aws-1.10
     test_group_name: ci-kubernetes-e2e-kops-aws-stable3
+  - name: gci-gce-scalability-1.10
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable3
 
 - name: sig-release-publishing-bot
   dashboard_tab:
