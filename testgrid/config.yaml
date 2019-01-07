@@ -4319,11 +4319,11 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-reboot
   - name: gci-gce-scalability
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
-  - name: gci-gce-scalability-1.12
+  - name: gci-gce-scalability-1.13
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable1
-  - name: gci-gce-scalability-1.11
+  - name: gci-gce-scalability-1.12
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable2
-  - name: gci-gce-scalability-1.10
+  - name: gci-gce-scalability-1.11
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable3
   - name: gci-gce-ip-alias
     test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
