@@ -95,6 +95,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        component-base:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         dashboard:
           required_pull_request_reviews:
             required_approving_review_count: 1
