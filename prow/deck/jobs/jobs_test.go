@@ -20,6 +20,10 @@ import (
 	"fmt"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/api/equality"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/diff"
+	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -179,5 +183,53 @@ func TestProwJobs(t *testing.T) {
 	}
 	if expect, got := "kubernetes", pjs[0].Spec.Refs.Org; expect != got {
 		t.Errorf("Expected prowjob to have org %q, but got %q.", expect, got)
+	}
+}
+
+func TestDeckJobs(t *testing.T) {
+	kc := fkc{
+		kube.ProwJob{
+			ObjectMeta: kube.ObjectMeta{
+				Annotations: map[string]string{
+					client.GerritID:       "abcdef",
+					client.GerritInstance: "https://super-secret-review.googlesource.com",
+				},
+				Labels: map[string]string{
+					client.GerritRevision: "fedcba",
+				},
+			},
+			Spec: kube.ProwJobSpec{
+				Refs: &kube.Refs{
+					Org:  "super-secret-review.googlesource.com",
+					Repo: "ravioli-formuoli",
+				},
+			},
+			Status: kube.ProwJobStatus{
+				StartTime: metav1.Unix(0, 0),
+			},
+		},
+	}
+	expected := Job{
+		HostType:   "gerrit",
+		ReviewHost: "https://super-secret-review.googlesource.com",
+		CodeHost:   "https://super-secret.googlesource.com",
+		Repo:       "ravioli-formuoli",
+		Refs:       ":", // bleh
+		Started:    "0", // bleh
+	}
+	ja := &JobAgent{
+		kc:   kc,
+		pkcs: map[string]PodLogClient{kube.DefaultClusterAlias: fpkc("")},
+	}
+	if err := ja.update(); err != nil {
+		t.Fatalf("Updating: %v", err)
+	}
+	jobs := ja.Jobs()
+	if expect, got := 1, len(jobs); expect != got {
+		t.Errorf("Expected %d jobs, but got %d.", expect, got)
+	}
+	got := jobs[0]
+	if !equality.Semantic.DeepEqual(expected, got) {
+		t.Errorf("Incorrect job data:\n%s", diff.ObjectReflectDiff(expected, got))
 	}
 }

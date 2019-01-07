@@ -1,5 +1,6 @@
 export type JobType = "presubmit" | "postsubmit" | "batch" | "periodic";
 export type JobState = "triggered" | "pending" | "success" | "failure" | "aborted" | "error" | "unknown" | "";
+export type HostType = "github" | "gerrit" | "";
 
 export interface Job {
   type: JobType;
@@ -22,4 +23,7 @@ export interface Job {
   pod_name: string;
   agent: string;
   prow_job: string;
+  host_type: HostType;
+  code_host: string;
+  review_host: string;
 }

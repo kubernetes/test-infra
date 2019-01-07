@@ -89,18 +89,21 @@ export namespace cell {
 		}
 	};
 
-	export function commitRevision(repo: string, ref: string, SHA: string): HTMLTableDataCellElement {
+	export function commitRevision(repo: string, ref: string, SHA: string, hostType: string, codeHost: string): HTMLTableDataCellElement {
 		const c = document.createElement("td");
 		const bl = document.createElement("a");
 		bl.href = "https://github.com/" + repo + "/commit/" + SHA;
+		if (hostType === "gerrit") {
+			bl.href = codeHost + "/" + repo + "/+/" + SHA;
+		}
 		bl.text = ref + " (" + SHA.slice(0, 7) + ")";
 		c.appendChild(bl);
 		return c;
 	}
 
-	export function prRevision(repo: string, num: number, author: string, title: string, SHA: string): HTMLTableDataCellElement {
+	export function prRevision(repo: string, num: number, author: string, title: string, SHA: string, hostType: string, codeHost: string, reviewHost: string): HTMLTableDataCellElement {
 		const td = document.createElement("td");
-		addPRRevision(td, repo, num, author, title, SHA);
+		addPRRevision(td, repo, num, author, title, SHA, hostType, codeHost, reviewHost);
 		return td;
 	}
 
@@ -110,10 +113,13 @@ export namespace cell {
 	  return "tipID-" + String(idCounter);
 	};
 
-	export function addPRRevision(elem: Node, repo: string, num: number, author: string, title: string, SHA: string): void {
+	export function addPRRevision(elem: Node, repo: string, num: number, author: string, title: string, SHA: string, hostType: string, codeHost: string, reviewHost: string): void {
 		elem.appendChild(document.createTextNode("#"));
 		const pl = document.createElement("a");
 		pl.href = "https://github.com/" + repo + "/pull/" + num;
+		if (hostType === "gerrit") {
+			pl.href = reviewHost + "/c/" + repo + "/+/" + num;
+		}
 		pl.text = num.toString();
 		if (title) {
 			pl.id = "pr-" + repo + "-" + num + "-" + nextID();
@@ -126,6 +132,9 @@ export namespace cell {
 			const cl = document.createElement("a");
 			cl.href = "https://github.com/" + repo + "/pull/" + num
 					+ '/commits/' + SHA;
+			if (hostType === "gerrit") {
+				cl.href = codeHost + "/" + repo + "/+/" + SHA;
+			}
 			cl.text = SHA.slice(0, 7);
 			elem.appendChild(cl);
 			elem.appendChild(document.createTextNode(")"));
@@ -134,6 +143,9 @@ export namespace cell {
 			elem.appendChild(document.createTextNode(" by "))
 			const al = document.createElement("a");
 			al.href = "https://github.com/" + author;
+			if (hostType === "gerrit") {
+				al.href = reviewHost + "/q/" + author;
+			}		
 			al.text = author;
 			elem.appendChild(al);
 		}

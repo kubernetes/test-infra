@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"regexp"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -32,6 +33,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -66,6 +68,9 @@ type Job struct {
 	PodName     string            `json:"pod_name"`
 	Agent       kube.ProwJobAgent `json:"agent"`
 	ProwJob     string            `json:"prow_job"`
+	HostType    string            `json:"host_type"`
+	CodeHost    string            `json:"code_host"`
+	ReviewHost  string            `json:"review_host"`
 
 	st time.Time
 	ft time.Time
@@ -294,8 +299,22 @@ func (ja *JobAgent) update() error {
 			duration -= duration % time.Second // strip fractional seconds
 			nj.Duration = duration.String()
 		}
+		if j.ObjectMeta.Annotations[client.GerritID] != "" &&
+			j.ObjectMeta.Annotations[client.GerritInstance] != "" &&
+			j.ObjectMeta.Labels[client.GerritRevision] != "" {
+			nj.HostType = "gerrit"
+			nj.ReviewHost = j.ObjectMeta.Annotations[client.GerritInstance]
+			parts := strings.SplitN(nj.ReviewHost, ".", 2)
+			nj.CodeHost = strings.TrimSuffix(parts[0], "-review")
+			if len(parts) > 1 {
+				nj.CodeHost += "." + parts[1]
+			}
+		}
 		if j.Spec.Refs != nil {
 			nj.Repo = fmt.Sprintf("%s/%s", j.Spec.Refs.Org, j.Spec.Refs.Repo)
+			if nj.HostType == "gerrit" {
+				nj.Repo = j.Spec.Refs.Repo
+			}
 			nj.Refs = j.Spec.Refs.String()
 			nj.BaseRef = j.Spec.Refs.BaseRef
 			nj.BaseSHA = j.Spec.Refs.BaseSHA

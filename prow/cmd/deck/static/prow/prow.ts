@@ -496,15 +496,20 @@ function redraw(fz: FuzzySearch): void {
             } else if (build.repo.startsWith("http://") || build.repo.startsWith("https://") ) {
                 r.appendChild(cell.link(build.repo, build.repo));
             } else {
-                r.appendChild(cell.link(build.repo, "https://github.com/"
-                    + build.repo));
+                let link = "https://github.com/" + build.repo;
+                if (build.host_type === "gerrit") {
+                    link = build.code_host + "/" + build.repo;
+                }
+                r.appendChild(cell.link(build.repo, link));
             }
             if (build.type === "presubmit") {
-                r.appendChild(cell.prRevision(build.repo, build.number, build.author, "", build.pull_sha));
+                r.appendChild(cell.prRevision(build.repo, build.number, build.author, "", build.pull_sha,
+                    build.host_type, build.code_host, build.review_host));
             } else if (build.type === "batch") {
                 r.appendChild(batchRevisionCell(build));
             } else if (build.type === "postsubmit") {
-                r.appendChild(cell.commitRevision(build.repo, build.base_ref, build.base_sha));
+                r.appendChild(cell.commitRevision(build.repo, build.base_ref, build.base_sha,
+                    build.host_type, build.code_host));
             } else if (build.type === "periodic") {
                 r.appendChild(cell.text(""));
             }

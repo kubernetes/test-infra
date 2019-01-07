@@ -288,13 +288,13 @@ function targetCell(rec: FilteredRecord): HTMLTableDataCellElement {
       return cell.text("");
     case 1:
       let pr = target[0];
-      return cell.prRevision(rec.repo, pr.num, pr.author, pr.title, pr.SHA);
+      return cell.prRevision(rec.repo, pr.num, pr.author, pr.title, pr.SHA, "", "", "");
     default:
       // Multiple PRs in 'target'. Add them all to the cell, but on separate lines.
       let td = document.createElement("td");
       td.style.whiteSpace = "pre";
       for (const pr of target) {
-        cell.addPRRevision(td, rec.repo, pr.num, pr.author, pr.title, pr.SHA);
+        cell.addPRRevision(td, rec.repo, pr.num, pr.author, pr.title, pr.SHA, "", "", "");
         td.appendChild(document.createTextNode("\n"));
       }
       return td;

@@ -223,7 +223,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		Pulls: []kube.Pull{
 			{
 				Number: change.Number,
-				Author: rev.Commit.Author.Name,
+				Author: rev.Commit.Author.Email,
 				SHA:    change.CurrentRevision,
 				Ref:    rev.Ref,
 			},
