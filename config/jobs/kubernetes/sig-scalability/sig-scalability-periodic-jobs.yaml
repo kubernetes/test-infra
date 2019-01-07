@@ -108,7 +108,7 @@ periodics:
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
 
-- cron: "0 0/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable2
+- cron: "0 0/12 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable2 and ci-kubernetes-e2e-gci-gce-scalability-stable3
   name: ci-kubernetes-e2e-gci-gce-scalability-stable1
   tags:
   - "perfDashPrefix: gce-100Nodes-stable1"
@@ -139,7 +139,7 @@ periodics:
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
 
-- cron: "0 3-21/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable1
+- cron: "0 4-16/12 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable1 and ci-kubernetes-e2e-gci-gce-scalability-stable3
   name: ci-kubernetes-e2e-gci-gce-scalability-stable2
   tags:
   - "perfDashPrefix: gce-100Nodes-stable2"
@@ -160,6 +160,37 @@ periodics:
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling
       - --env=SCHEDULER_TEST_ARGS=--profiling
       - --extract=ci/k8s-stable2
+      - --gcp-node-image=gci
+      - --gcp-nodes=100
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
+      - --timeout=120m
+      - --use-logexporter
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+
+- cron: "0 8-20/12 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable1 and ci-kubernetes-e2e-gci-gce-scalability-stable2
+  name: ci-kubernetes-e2e-gci-gce-scalability-stable3
+  tags:
+  - "perfDashPrefix: gce-100Nodes-stable3"
+  - "perfDashJobType: performance"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=e2e-big-stable2
+      # Use default kube-qps and kube-api-burst flag values.
+      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling
+      - --env=SCHEDULER_TEST_ARGS=--profiling
+      - --extract=ci/k8s-stable3
       - --gcp-node-image=gci
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project

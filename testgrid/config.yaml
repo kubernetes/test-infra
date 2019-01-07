@@ -2717,6 +2717,9 @@ test_groups:
 - name: ci-kubernetes-e2e-gci-gce-scalability-stable2
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-stable2
   num_failures_to_alert: 1
+- name: ci-kubernetes-e2e-gci-gce-scalability-stable3
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-stable3
+  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
 - name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
@@ -4324,6 +4327,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable1
   - name: gci-gce-scalability-1.11
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable2
+  - name: gci-gce-scalability-1.10
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable3
   - name: gci-gce-ip-alias
     test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
   - name: gce-alpha-api
@@ -6461,6 +6466,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
   - name: gci-gce-scalability-killer
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-killer
+  - name: gci-gce-scalability-1.10
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable3
   - name: gci-gce-scalability-1.11
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable2
   - name: gci-gce-scalability-1.12
