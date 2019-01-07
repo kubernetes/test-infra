@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/pkg/errors"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -368,5 +369,68 @@ func makeStatus(context, state, description, targetURL string) github.Status {
 		State:       state,
 		Description: description,
 		TargetURL:   url,
+	}
+}
+
+type refID struct {
+	org, repo, ref string
+}
+
+type fakeGitHubClient struct {
+	statusesRetrieved map[refID]interface{}
+}
+
+func (c *fakeGitHubClient) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error) {
+	c.statusesRetrieved[refID{org: org, repo: repo, ref: ref}] = nil
+	return nil, errors.New("return error to stop execution early")
+}
+
+func (c *fakeGitHubClient) CreateStatus(org, repo, SHA string, s github.Status) error {
+	return nil
+}
+
+func (c *fakeGitHubClient) GetPullRequests(org, repo string) ([]github.PullRequest, error) {
+	return []github.PullRequest{}, nil
+}
+
+func TestProcessPR(t *testing.T) {
+	var testCases = []struct {
+		name    string
+		matches bool
+	}{
+		{
+			name:    "branch matching filter should proceed",
+			matches: true,
+		},
+		{
+			name:    "branch not matching filter should not proceed",
+			matches: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		client := fakeGitHubClient{statusesRetrieved: map[refID]interface{}{}}
+		var filteredBranch string
+		migrator := Migrator{
+			org:  "org",
+			repo: "repo",
+			targetBranchFilter: func(branch string) bool {
+				filteredBranch = branch
+				return testCase.matches
+			},
+			client: &client,
+		}
+		migrator.processPR(github.PullRequest{Base: github.PullRequestBranch{Ref: "branch"}, Head: github.PullRequestBranch{SHA: "fake"}})
+		if filteredBranch != "branch" {
+			t.Errorf("%s: failed to use filter on branch", testCase.name)
+		}
+
+		_, retrieved := client.statusesRetrieved[refID{org: "org", repo: "repo", ref: "fake"}]
+		if testCase.matches && !retrieved {
+			t.Errorf("%s: failed to process a PR that matched", testCase.name)
+		}
+		if !testCase.matches && retrieved {
+			t.Errorf("%s: processed a PR that didn't match", testCase.name)
+		}
 	}
 }
