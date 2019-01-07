@@ -60,3 +60,63 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+
+periodics:
+- name: ci-sig-storage-local-static-provisioner-master-gce-latest
+  interval: 4h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: sig-storage-local-static-provisioner
+    base_ref: master
+    path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - e2e
+      env:
+      - name: PROVIDER
+        value: gce
+      - name: EXTRACT_STRATEGY
+        value: ci/latest
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+- name: ci-sig-storage-local-static-provisioner-master-gke-default
+  interval: 4h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: sig-storage-local-static-provisioner
+    base_ref: master
+    path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - e2e
+      env:
+      - name: PROVIDER
+        value: gke
+      - name: GKE_ENVIRONMENT
+        value: prod
+      - name: EXTRACT_STRATEGY
+        value: gke-default
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
