@@ -714,7 +714,7 @@ func configureOrg(opt options, client *github.Client, orgName string, orgConfig 
 	}
 
 	for name, team := range orgConfig.Teams {
-		err := configureTeamAndMembers(client, opt.fixTeamMembers, githubTeams, name, orgName, team, invitees, nil)
+		err := configureTeamAndMembers(opt, client, githubTeams, name, orgName, team, nil)
 		if err != nil {
 			return fmt.Errorf("failed to configure %s teams: %v", orgName, err)
 		}
@@ -722,7 +722,7 @@ func configureOrg(opt options, client *github.Client, orgName string, orgConfig 
 	return nil
 }
 
-func configureTeamAndMembers(client *github.Client, fixMembers bool, githubTeams map[string]github.Team, name, orgName string, team org.Team, invitees sets.String, parent *int) error {
+func configureTeamAndMembers(opt options, client *github.Client, githubTeams map[string]github.Team, name, orgName string, team org.Team, parent *int) error {
 	gt, ok := githubTeams[name]
 	if !ok { // configureTeams is buggy if this is the case
 		return fmt.Errorf("%s not found in id list", name)
@@ -735,14 +735,14 @@ func configureTeamAndMembers(client *github.Client, fixMembers bool, githubTeams
 	}
 
 	// Configure team members
-	if !fixMembers {
+	if !opt.fixTeamMembers {
 		logrus.Infof("Skipping %s member configuration", name)
-	} else if err = configureTeamMembers(client, gt.ID, team, invitees); err != nil {
+	} else if err = configureTeamMembers(client, gt.ID, team); err != nil {
 		return fmt.Errorf("failed to update %s members: %v", name, err)
 	}
 
 	for childName, childTeam := range team.Children {
-		err = configureTeamAndMembers(client, fixMembers, githubTeams, childName, orgName, childTeam, invitees, &gt.ID)
+		err = configureTeamAndMembers(opt, client, githubTeams, childName, orgName, childTeam, &gt.ID)
 		if err != nil {
 			return fmt.Errorf("failed to update %s child teams: %v", name, err)
 		}
@@ -806,12 +806,28 @@ func configureTeam(client editTeamClient, orgName, teamName string, team org.Tea
 // teamMembersClient can list/remove/update people to a team.
 type teamMembersClient interface {
 	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
+	ListTeamInvitations(id int) ([]github.OrgInvitation, error)
 	RemoveTeamMembership(id int, user string) error
 	UpdateTeamMembership(id int, user string, maintainer bool) (*github.TeamMembership, error)
 }
 
+func teamInvitations(client teamMembersClient, teamID int) (sets.String, error) {
+	invitees := sets.String{}
+	is, err := client.ListTeamInvitations(teamID)
+	if err != nil {
+		return nil, err
+	}
+	for _, i := range is {
+		if i.Login == "" {
+			continue
+		}
+		invitees.Insert(github.NormLogin(i.Login))
+	}
+	return invitees, nil
+}
+
 // configureTeamMembers will add/update people to the appropriate role on the team, and remove anyone else.
-func configureTeamMembers(client teamMembersClient, id int, team org.Team, invitees sets.String) error {
+func configureTeamMembers(client teamMembersClient, id int, team org.Team) error {
 	// Get desired state
 	wantMaintainers := sets.NewString(team.Maintainers...)
 	wantMembers := sets.NewString(team.Members...)
@@ -834,6 +850,11 @@ func configureTeamMembers(client teamMembersClient, id int, team org.Team, invit
 	}
 	for _, m := range maintainers {
 		haveMaintainers.Insert(m.Login)
+	}
+
+	invitees, err := teamInvitations(client, id)
+	if err != nil {
+		return fmt.Errorf("failed to list %d invitees: %v", id, err)
 	}
 
 	adder := func(user string, super bool) error {
