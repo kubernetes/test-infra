@@ -171,7 +171,7 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount,
 }
 
 func getReviewers(rc reviewersClient, author string, files []github.PullRequestChange, minReviewers int) ([]string, []string, error) {
-	authorSet := sets.NewString(author)
+	authorSet := sets.NewString(github.NormLogin(author))
 	reviewers := sets.NewString()
 	requiredReviewers := sets.NewString()
 	leafReviewers := sets.NewString()
@@ -260,7 +260,7 @@ func getPotentialReviewers(owners ownersClient, author string, files []github.Pu
 		}
 
 		for _, owner := range fileOwners.List() {
-			if owner == author {
+			if owner == github.NormLogin(author) {
 				continue
 			}
 			potentialReviewers[owner] = potentialReviewers[owner] + fileWeight
