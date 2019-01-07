@@ -35,11 +35,11 @@ func CreateInstallScript(ver string) (s string, err error) {
 		IsPR:         isPR,
 		GitBranch:    ver,
 		InstallScript: `./build
-sudo cp ./bin/etcd /usr/local/bin/etcd
-sudo cp ./bin/etcdctl /usr/local/bin/etcdctl
+sudo cp ./bin/etcd /usr/bin/etcd
+sudo cp ./bin/etcdctl /usr/bin/etcdctl
 
-/usr/local/bin/etcd --version
-ETCDCTL_API=3 /usr/local/bin/etcdctl version`,
+/usr/bin/etcd --version
+ETCDCTL_API=3 /usr/bin/etcdctl version`,
 	})
 }
 
@@ -76,11 +76,11 @@ curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/
 tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /tmp/etcd-download-test --strip-components=1
 rm -f /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
 
-sudo cp /tmp/etcd-download-test/etcd /usr/local/bin/etcd
-sudo cp /tmp/etcd-download-test/etcdctl /usr/local/bin/etcdctl
+sudo cp /tmp/etcd-download-test/etcd /usr/bin/etcd
+sudo cp /tmp/etcd-download-test/etcdctl /usr/bin/etcdctl
 
-/usr/local/bin/etcd --version
-ETCDCTL_API=3 /usr/local/bin/etcdctl version
+/usr/bin/etcd --version
+ETCDCTL_API=3 /usr/bin/etcdctl version
 
 ##################################
 

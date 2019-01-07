@@ -35,6 +35,7 @@ filegroup(
         "//vendor/github.com/aws/aws-k8s-tester/ekstester:all-srcs",
         "//vendor/github.com/aws/aws-k8s-tester/etcdconfig/plugins:all-srcs",
         "//vendor/github.com/aws/aws-k8s-tester/kubeadmconfig/plugins:all-srcs",
+        "//vendor/github.com/aws/aws-k8s-tester/kubernetesconfig/plugins:all-srcs",
         "//vendor/github.com/aws/aws-k8s-tester/pkg/awsapi/ec2:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/aws:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/internal/shareddefaults:all-srcs",

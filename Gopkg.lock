@@ -136,7 +136,7 @@
   revision = "1fca145dffbcaa8fe914309b1ec0cfc67500fe61"
 
 [[projects]]
-  digest = "1:79a49cb93127245e85837e30f2c0af775a00ec57b43c91044c99051d2f655b5b"
+  digest = "1:15435e75ebf7566506c595c9bb885c8ace277174963c38354a6506c3b755b9d4"
   name = "github.com/aws/aws-k8s-tester"
   packages = [
     "ec2config",
@@ -145,11 +145,12 @@
     "ekstester",
     "etcdconfig/plugins",
     "kubeadmconfig/plugins",
+    "kubernetesconfig/plugins",
     "pkg/awsapi/ec2",
   ]
   pruneopts = "NUT"
-  revision = "b0403885b795108f00de4d1d463655503971721f"
-  version = "0.1.9"
+  revision = "fa1941d96965dced79b8c63472dff0b3182e8c4a"
+  version = "0.2.0"
 
 [[projects]]
   digest = "1:cc8dfe19a45c277f194744e8528aba0fa03208e6612723a5afd7ce343d27fe5a"
