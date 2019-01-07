@@ -6,16 +6,19 @@ Prow runs in any kubernetes cluster. Our `tackle` utility helps deploy it correc
 
 Both of these are focused on [Kubernetes Engine](https://cloud.google.com/kubernetes-engine/) but should work on any kubernetes distro with no/minimal changes.
 
-# Tackle deployment
+## Tackle deployment
 
 Prow's tackle utility walks you through deploying a new instance of prow in a couple minutes, try it out!
 
 You need three things:
 1) The prow tackle command.
 2) a [personal access token][1] for the github bot user you want to act as prow
-  - Prow uploads this token into a secret in your cluster
+
+   - Prow uploads this token into a secret in your cluster
+
 3) Optionally, credentials to a kubernetes cluster
-  - Otherwise the tackle command can help you create one
+
+   - Otherwise the tackle command can help you create one
 
 Then run the following and follow on-screen instructions:
 
@@ -26,13 +29,14 @@ bazel run //prow/cmd/tackle
 ```
 
 The will help you through the following steps:
+
 * Choosing a kubectl context (and creating a cluster / getting its credentials if necessary)
 * Deploying prow into that cluster
 * Configuring github to send prow webhooks for your repos
 
 See the Next Steps section after running this utility.
 
-# Manual deployment
+## Manual deployment
 
 If you do not want to use the `tackle` utility above, here are the manual set of commands tackle will run.
 
@@ -40,7 +44,7 @@ Prow runs in a kubernetes cluster, so first figure out which cluster you want to
 
 You can use the [GCP cloud console](https://console.cloud.google.com/) to set up a project and [create a new Kubernetes Engine cluster](https://console.cloud.google.com/kubernetes).
 
-#### Create the cluster
+### Create the cluster
 
 I'm assuming that `PROJECT` and `ZONE` environment variables are set.
 
@@ -57,21 +61,25 @@ gcloud container --project "${PROJECT}" clusters create prow \
   --zone "${ZONE}" --machine-type n1-standard-4 --num-nodes 2
 ```
 
-#### Create cluster role bindings
+### Create cluster role bindings
+
 As of 1.8 Kubernetes uses [Role-Based Access Control (“RBAC”)](https://kubernetes.io/docs/admin/authorization/rbac/) to drive authorization decisions, allowing `cluster-admin` to dynamically configure policies.
 To create cluster resources you need to grant a user `cluster-admin` role in all namespaces for the cluster.
 
 For Prow on GCP, you can use the following command.
+
 ```sh
 kubectl create clusterrolebinding cluster-admin-binding \
   --clusterrole cluster-admin --user $(gcloud config get-value account)
 ```
 
 For Prow on other platforms, the following command will likely work.
+
 ```sh
 kubectl create clusterrolebinding cluster-admin-binding-"${USER}" \
   --clusterrole=cluster-admin --user="${USER}"
 ```
+
 On some platforms the `USER` variable may not map correctly to the user
 in-cluster. If you see an error of the following form, this is likely the case.
 
@@ -87,6 +95,7 @@ APIGroups:["prow.k8s.io"], Verbs:["list"]}] user=&{<CLUSTER_USER>
 
 Run the previous command substituting `USER` with `CLUSTER_USER` from the error
 message above to solve this issue.
+
 ```sh
 kubectl create clusterrolebinding cluster-admin-binding-"<CLUSTER_USER>" \
   --clusterrole=cluster-admin --user="<CLUSTER_USER>"
@@ -94,9 +103,7 @@ kubectl create clusterrolebinding cluster-admin-binding-"<CLUSTER_USER>" \
 
 There are [relevant docs on Kubernetes Authentication](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#authentication-strategies) that may help if neither of the above work.
 
-
-
-## Create the GitHub secrets
+### Create the GitHub secrets
 
 You will need two secrets to talk to GitHub. The `hmac-token` is the token that
 you give to GitHub for validating webhooks. Generate it using any reasonable
@@ -119,7 +126,7 @@ ignored by some prow plugins. It is prudent to use a different bot account for
 other Github automation that prow should interact with to prevent events from
 being ignored unjustly.
 
-## Add the prow components to the cluster
+### Add the prow components to the cluster
 
 Run the following command to deploy a basic set of prow components.
 
@@ -141,6 +148,7 @@ tide         1         1         1            1           1m
 ```
 
 #### Get ingress IP address
+
 Find out your external address. It might take a couple minutes for the IP to
 show up.
 
@@ -160,14 +168,16 @@ Configure github to send your prow instance `application/json` webhooks
 for specific repos and/or whole orgs.
 
 You can do this with the `add-hook` utility:
+
 ```sh
-# Note /path/to/hook/secret from earlier secrets step
+# Note /path/to/hook/secret and /path/to/oauth/secret from earlier secrets step
 # Note the an.ip.addr.ess from previous ingres step
 
 # Ideally use https://bazel.build, alternatively try:
 #   go get -u k8s.io/test-infra/experiment/add-hook && add-hook
 bazel run //experiment/add-hook -- \
   --hmac-path=/path/to/hook/secret \
+  --github-token-path=/path/to/oauth/secret \
   --hook-url http://an.ip.addr.ess/hook \
   --repo my-org/my-repo \
   --repo my-whole-org \
@@ -182,13 +192,12 @@ A green check mark (for a ping event, if you click edit and view the details of 
 You can click `Add webhook` on the Webhooks page to add the hook manually
 if you do not want to use the `add-hook` utility.
 
-
-# Next steps
+## Next steps
 
 You now have a working Prow cluster (Woohoo!), but it isn't doing anything interesting yet.
 This section will help you configure your first plugin and job, and complete any additional setup that your instance may need.
 
-## Enable some plugins by modifying `plugins.yaml`
+### Enable some plugins by modifying `plugins.yaml`
 
 Create a file called `plugins.yaml` and add the following to it:
 
@@ -239,7 +248,7 @@ label. When you make a change to the plugin config and push it with `make
 update-plugins`, you do not need to redeploy any of your cluster components.
 They will pick up the change within a few minutes.
 
-## Add more jobs by modifying `config.yaml`
+### Add more jobs by modifying `config.yaml`
 
 Add the following to `config.yaml`:
 
@@ -306,7 +315,7 @@ When you push or merge a new change to the git repo, the postsubmit job will run
 
 For more information on the job environment, see [`jobs.md`](/prow/jobs.md)
 
-## Run test pods in a different namespace
+### Run test pods in a different namespace
 
 You may choose to keep prowjobs or run tests in a different namespace. First
 create the namespace by `kubectl create -f`ing this:
@@ -326,7 +335,7 @@ can do.
 fields after deploying the prow components, you will need to redeploy them
 so that they pick up the change.
 
-## Run test pods in different clusters
+### Run test pods in different clusters
 
 You may choose to run test pods in a separate cluster entirely. This is a good practice to keep testing isolated from Prow's service components and secrets. It can also be used to furcate job execution to different clusters.
 Create a secret containing a `{"cluster-name": {cluster-details}}` map like this:
@@ -345,6 +354,7 @@ other:
 ```
 
 Use [mkbuild-cluster][5] to determine these values:
+
 ```sh
 bazel run //prow/cmd/mkbuild-cluster -- \
   --project=P --zone=Z --cluster=C \
@@ -376,6 +386,7 @@ spec:
 
 Configure jobs to use the non-default cluster with the `cluster:` field.
 The above example `cluster.yaml` defines two clusters: `default` and `other` to schedule jobs, which we can use as follows:
+
 ```yaml
 periodics:
 - name: cluster-unspecified
@@ -405,12 +416,13 @@ periodics:
 ```
 
 This results in:
+
 * The `cluster-unspecified` and `default-cluster` jobs run in the `default` cluster.
 * The `cluster-other` job runs in the `other` cluster.
 
 See [mkbuild-cluster][5] for more details about how to create/update `cluster.yaml`.
 
-## Enable merge automation using Tide
+### Enable merge automation using Tide
 
 PRs satisfying a set of predefined criteria can be configured to be
 automatically merged by [Tide][6].
@@ -418,12 +430,12 @@ automatically merged by [Tide][6].
 Tide can be enabled by modifying `config.yaml`.
 See [how to configure tide][7] for more details.
 
-### Setup PR status dashboard
+#### Setup PR status dashboard
 
-To setup a PR status dashboard like https://prow.k8s.io/pr, follow the
+To setup a PR status dashboard like [prow.k8s.io/pr](https://prow.k8s.io/pr), follow the
 instructions in [`pr_status_setup.md`](https://github.com/kubernetes/test-infra/blob/master/prow/docs/pr_status_setup.md).
 
-## Configure SSL
+### Configure SSL
 
 Use [cert-manager][3] for automatic LetsEncrypt integration. If you
 already have a cert then follow the [official docs][4] to set up HTTPS
@@ -439,7 +451,7 @@ for naming is `prow.org.io`, but of course that's not a requirement.
 Then, install cert-manager as described in its readme. You don't need to run it in
 a separate namespace.
 
-# Further reading
+## Further reading
 
 * [Developing for Prow](/prow/getting_started_develop.md)
 * [Getting more out of Prow](/prow/more_prow.md)
