@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -196,12 +197,12 @@ func logLinesAll(artifact lenses.Artifact) ([]string, error) {
 func logLines(artifact lenses.Artifact, offset, length int64) ([]string, error) {
 	b := make([]byte, length)
 	_, err := artifact.ReadAt(b, offset)
-	if err != nil {
+	if err != nil && err != io.EOF {
 		if err != lenses.ErrGzipOffsetRead {
 			return nil, fmt.Errorf("couldn't read requested bytes: %v", err)
 		}
 		moreBytes, err := artifact.ReadAtMost(offset + length)
-		if err != nil {
+		if err != nil && err != io.EOF {
 			return nil, fmt.Errorf("couldn't handle reading gzipped file: %v", err)
 		}
 		b = moreBytes[offset:]
