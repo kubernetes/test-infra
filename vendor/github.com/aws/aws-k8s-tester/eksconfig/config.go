@@ -40,14 +40,17 @@ type Config struct {
 
 	// AWSK8sTesterPath is the path to download the "aws-k8s-tester".
 	// This is required for Kubernetes kubetest plugin.
-	AWSK8sTesterPath        string `json:"aws-k8s-tester-path,omitempty"`
+	AWSK8sTesterPath string `json:"aws-k8s-tester-path,omitempty"`
+	// AWSK8sTesterDownloadURL is the download URL to download "aws-k8s-tester" binary from.
 	AWSK8sTesterDownloadURL string `json:"aws-k8s-tester-download-url,omitempty"`
 	// KubectlPath is the path to download the "kubectl".
-	KubectlPath        string `json:"kubectl-path,omitempty"`
+	KubectlPath string `json:"kubectl-path,omitempty"`
+	// KubectlDownloadURL is the download URL to download "kubectl" binary from.
 	KubectlDownloadURL string `json:"kubectl-download-url,omitempty"`
 	// AWSIAMAuthenticatorPath is the path to download the "aws-iam-authenticator".
 	// This is required for Kubernetes kubetest plugin.
-	AWSIAMAuthenticatorPath        string `json:"aws-iam-authenticator-path,omitempty"`
+	AWSIAMAuthenticatorPath string `json:"aws-iam-authenticator-path,omitempty"`
+	// AWSIAMAuthenticatorDownloadURL is the download URL to download "aws-iam-authenticator" binary from.
 	AWSIAMAuthenticatorDownloadURL string `json:"aws-iam-authenticator-download-url,omitempty"`
 
 	// ConfigPath is the configuration file path.
@@ -55,14 +58,16 @@ type Config struct {
 	// Deployer is expected to update this file with latest status,
 	// and to make a backup of original configuration
 	// with the filename suffix ".backup.yaml" in the same directory.
-	ConfigPath       string `json:"config-path,omitempty"`
+	ConfigPath string `json:"config-path,omitempty"`
+	// ConfigPathBucket is the path inside S3 bucket.
 	ConfigPathBucket string `json:"config-path-bucket,omitempty"` // read-only to user
 	ConfigPathURL    string `json:"config-path-url,omitempty"`    // read-only to user
 
 	// KubeConfigPath is the file path of KUBECONFIG for the EKS cluster.
 	// If empty, auto-generate one.
 	// Deployer is expected to delete this on cluster tear down.
-	KubeConfigPath       string `json:"kubeconfig-path,omitempty"`        // read-only to user
+	KubeConfigPath string `json:"kubeconfig-path,omitempty"` // read-only to user
+	// KubeConfigPathBucket is the path inside S3 bucket.
 	KubeConfigPathBucket string `json:"kubeconfig-path-bucket,omitempty"` // read-only to user
 	KubeConfigPathURL    string `json:"kubeconfig-path-url,omitempty"`    // read-only to user
 
@@ -153,6 +158,8 @@ type Config struct {
 
 	// UploadTesterLogs is true to auto-upload log files.
 	UploadTesterLogs bool `json:"upload-tester-logs"`
+	// UploadKubeConfig is true to auto-upload KUBECONFIG file.
+	UploadKubeConfig bool `json:"upload-kubeconfig"`
 	// UploadWorkerNodeLogs is true to auto-upload worker node log files.
 	UploadWorkerNodeLogs bool `json:"upload-worker-node-logs"`
 	// UploadBucketExpireDays is the number of days for a S3 bucket to expire.
@@ -380,6 +387,7 @@ func init() {
 	defaultConfig.Tag = genTag()
 	defaultConfig.ClusterName = defaultConfig.Tag + "-" + randString(7)
 	if runtime.GOOS == "darwin" {
+		defaultConfig.AWSK8sTesterDownloadURL = strings.Replace(defaultConfig.AWSK8sTesterDownloadURL, "linux", "darwin", -1)
 		defaultConfig.KubectlDownloadURL = strings.Replace(defaultConfig.KubectlDownloadURL, "linux", "darwin", -1)
 		defaultConfig.AWSIAMAuthenticatorDownloadURL = strings.Replace(defaultConfig.AWSIAMAuthenticatorDownloadURL, "linux", "darwin", -1)
 	}
@@ -394,7 +402,7 @@ func init() {
 func genTag() string {
 	// use UTC time for everything
 	now := time.Now().UTC()
-	return fmt.Sprintf("awsk8stester-eks-%d%02d%02d", now.Year(), now.Month(), now.Day())
+	return fmt.Sprintf("a8t-eks-%d%x%x", now.Year()-2000, int(now.Month()), now.Day())
 }
 
 // defaultConfig is the default configuration.
@@ -404,7 +412,7 @@ func genTag() string {
 var defaultConfig = Config{
 	TestMode: "embedded",
 
-	AWSK8sTesterDownloadURL:        "https://github.com/aws/aws-k8s-tester/releases/download/0.1.4/aws-k8s-tester-0.1.4-linux-amd64",
+	AWSK8sTesterDownloadURL:        "https://github.com/aws/aws-k8s-tester/releases/download/0.2.0/aws-k8s-tester-0.2.0-linux-amd64",
 	AWSK8sTesterPath:               "/tmp/aws-k8s-tester/aws-k8s-tester",
 	KubectlDownloadURL:             "https://amazon-eks.s3-us-west-2.amazonaws.com/1.11.5/2018-12-06/bin/linux/amd64/kubectl",
 	KubectlPath:                    "/tmp/aws-k8s-tester/kubectl",
@@ -425,8 +433,7 @@ var defaultConfig = Config{
 	EnableWorkerNodeHA:  true,
 	EnableWorkerNodeSSH: true,
 
-	// keep in-sync with the default value of
-	// https://godoc.org/k8s.io/kubernetes/test/e2e/framework#GetSigner
+	// keep in-sync with the default value in https://godoc.org/k8s.io/kubernetes/test/e2e/framework#GetSigner
 	WorkerNodePrivateKeyPath: filepath.Join(homedir.HomeDir(), ".ssh", "kube_aws_rsa"),
 
 	// Amazon EKS-optimized AMI, https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
@@ -445,6 +452,7 @@ var defaultConfig = Config{
 	LogOutputs:             []string{"stderr"},
 	LogAccess:              false,
 	UploadTesterLogs:       false,
+	UploadKubeConfig:       false,
 	UploadWorkerNodeLogs:   false,
 	UploadBucketExpireDays: 2,
 
@@ -577,9 +585,6 @@ const (
 func (cfg *Config) ValidateAndSetDefaults() error {
 	switch cfg.TestMode {
 	case "embedded":
-	case "aws-cli":
-		// TODO: remove this
-		return errors.New("TestMode 'aws-cli' is not implemented yet")
 	default:
 		return fmt.Errorf("TestMode %q unknown", cfg.TestMode)
 	}
@@ -662,7 +667,7 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 	////////////////////////////////////////////////////////////////////////
 	// populate all paths on disks and on remote storage
 	if cfg.ConfigPath == "" {
-		f, err := ioutil.TempFile(os.TempDir(), "awsk8stester-eksconfig")
+		f, err := ioutil.TempFile(os.TempDir(), "a8t-eksconfig")
 		if err != nil {
 			return err
 		}
@@ -670,7 +675,7 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 		f.Close()
 		os.RemoveAll(cfg.ConfigPath)
 	}
-	cfg.ConfigPathBucket = filepath.Join(cfg.ClusterName, "awsk8stester-eksconfig.yaml")
+	cfg.ConfigPathBucket = filepath.Join(cfg.ClusterName, "a8t-eksconfig.yaml")
 
 	cfg.LogOutputToUploadPath = filepath.Join(os.TempDir(), fmt.Sprintf("%s.log", cfg.ClusterName))
 	logOutputExist := false
@@ -684,7 +689,7 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 		// auto-insert generated log output paths to zap logger output list
 		cfg.LogOutputs = append(cfg.LogOutputs, cfg.LogOutputToUploadPath)
 	}
-	cfg.LogOutputToUploadPathBucket = filepath.Join(cfg.ClusterName, "awsk8stester-eks.log")
+	cfg.LogOutputToUploadPathBucket = filepath.Join(cfg.ClusterName, "a8t-eks.log")
 
 	cfg.KubeConfigPathBucket = filepath.Join(cfg.ClusterName, "kubeconfig")
 
@@ -995,13 +1000,18 @@ func (cfg *Config) UpdateFromEnvs() error {
 	return nil
 }
 
+func checkKubernetesVersion(s string) (ok bool) {
+	_, ok = supportedKubernetesVersions[s]
+	return ok
+}
+
 // supportedKubernetesVersions is a list of EKS supported Kubernets versions.
 var supportedKubernetesVersions = map[string]struct{}{
 	"1.11": {},
 }
 
-func checkKubernetesVersion(s string) (ok bool) {
-	_, ok = supportedKubernetesVersions[s]
+func checkRegion(s string) (ok bool) {
+	_, ok = supportedRegions[s]
 	return ok
 }
 
@@ -1013,11 +1023,6 @@ var supportedRegions = map[string]struct{}{
 	"us-east-2":  {},
 	"eu-west-1":  {},
 	"eu-north-1": {},
-}
-
-func checkRegion(s string) (ok bool) {
-	_, ok = supportedRegions[s]
-	return ok
 }
 
 // https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html

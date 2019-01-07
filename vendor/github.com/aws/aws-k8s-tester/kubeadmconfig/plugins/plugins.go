@@ -6,11 +6,11 @@ import (
 	"text/template"
 )
 
-// CreateInstallStart creates kubeadm install init script.
-func CreateInstallStart(ver string) (string, error) {
-	tpl := template.Must(template.New("installStartKubeadmAmazonLinux2Template").Parse(installStartKubeadmAmazonLinux2Template))
+// CreateInstall creates kubeadm install script.
+func CreateInstall(ver string) (string, error) {
+	tpl := template.Must(template.New("installKubeadmAmazonLinux2Template").Parse(installKubeadmAmazonLinux2Template))
 	buf := bytes.NewBuffer(nil)
-	kv := kubeadmInfo{Version: ver}
+	kv := kubeadmInfo{Version: ver, KubeletPath: "/usr/bin/kubelet"}
 	if err := tpl.Execute(buf, kv); err != nil {
 		return "", err
 	}
@@ -18,11 +18,12 @@ func CreateInstallStart(ver string) (string, error) {
 }
 
 type kubeadmInfo struct {
-	Version string
+	Version     string
+	KubeletPath string
 }
 
 // https://kubernetes.io/docs/setup/independent/install-kubeadm/
-const installStartKubeadmAmazonLinux2Template = `
+const installKubeadmAmazonLinux2Template = `
 
 ################################## install kubeadm on Amazon Linux 2
 
@@ -60,47 +61,35 @@ sudo rm -f /usr/bin/{kubeadm,kubelet,kubectl}
 sudo curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${RELEASE}/bin/linux/amd64/{kubeadm,kubelet,kubectl}
 sudo chmod +x {kubeadm,kubelet,kubectl}
 
-curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/kubelet.service" > /tmp/kubelet.service
-cat /tmp/kubelet.service
+sudo systemctl stop kubelet.service || true
+sudo mkdir -p /var/lib/kubelet/
 
-# curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/10-kubeadm.conf" > /tmp/10-kubeadm.conf
-# sudo sed -i 's/cgroup-driver=cgroupfs/cgroup-driver=systemd/' /tmp/10-kubeadm.conf
+rm -f /tmp/kubelet.service
+cat <<EOF > /tmp/kubelet.service
+[Unit]
+Description=kubelet
+Documentation=http://kubernetes.io/docs/
+After=docker.service
 
-# delete cni binary
-# https://github.com/coreos/coreos-kubernetes/issues/874
-cat << EOT > /tmp/10-kubeadm.conf
 [Service]
-Environment="KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf"
-Environment="KUBELET_SYSTEM_PODS_ARGS=--pod-manifest-path=/etc/kubernetes/manifests --allow-privileged=true"
-Environment="KUBELET_NETWORK_ARGS="
-Environment="KUBELET_DNS_ARGS=--cluster-dns=10.96.0.10 --cluster-domain=cluster.local"
-Environment="KUBELET_AUTHZ_ARGS=--authorization-mode=Webhook --client-ca-file=/etc/kubernetes/pki/ca.crt"
-# Value should match Docker daemon settings.
-# Defaults are "cgroupfs" for Debian/Ubuntu/OpenSUSE and "systemd" for Fedora/CentOS/RHEL
-Environment="KUBELET_CGROUP_ARGS=--cgroup-driver=systemd"
-Environment="KUBELET_CADVISOR_ARGS=--cadvisor-port=0"
-Environment="KUBELET_CERTIFICATE_ARGS=--rotate-certificates=true"
-ExecStart=
-ExecStart=/usr/bin/kubelet __KUBELET_KUBECONFIG_ARGS __KUBELET_SYSTEM_PODS_ARGS __KUBELET_NETWORK_ARGS __KUBELET_DNS_ARGS __KUBELET_AUTHZ_ARGS __KUBELET_CGROUP_ARGS __KUBELET_CADVISOR_ARGS __KUBELET_CERTIFICATE_ARGS __KUBELET_EXTRA_ARGS
-EOT
-cat /tmp/10-kubeadm.conf
-sed -i.bak 's|__KUBELET|\$KUBELET|g' /tmp/10-kubeadm.conf
-cat /tmp/10-kubeadm.conf
+EnvironmentFile=/etc/sysconfig/kubelet
+ExecStart={{ .KubeletPath }} "\$KUBELET_FLAGS"
+Restart=always
+RestartSec=2s
+StartLimitInterval=0
+KillMode=process
+User=root
+
+[Install]
+WantedBy=multi-user.target
+EOF
+cat /tmp/kubelet.service
 
 sudo mkdir -p /etc/systemd/system/kubelet.service.d
 sudo cp /tmp/kubelet.service /etc/systemd/system/kubelet.service
-sudo cp /tmp/10-kubeadm.conf /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
 sudo systemctl daemon-reload
 sudo systemctl cat kubelet.service
-sudo systemctl enable kubelet && sudo systemctl restart kubelet
-sudo systemctl status kubelet --full --no-pager || true
-sudo journalctl --no-pager --output=cat -u kubelet
-
-kubeadm version
-kubelet --version
-kubectl version --client
-crictl --version
 
 ##################################
 

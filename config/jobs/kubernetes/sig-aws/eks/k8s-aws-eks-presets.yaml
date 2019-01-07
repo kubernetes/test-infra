@@ -11,7 +11,7 @@ presets:
     value: kube_aws_rsa
   # URL to download the latest 'aws-k8s-tester' release
   - name: AWS_K8S_TESTER_EKS_AWS_K8S_TESTER_DOWNLOAD_URL
-    value: https://github.com/aws/aws-k8s-tester/releases/download/0.1.9/aws-k8s-tester-0.1.9-linux-amd64
+    value: https://github.com/aws/aws-k8s-tester/releases/download/0.2.0/aws-k8s-tester-0.2.0-linux-amd64
   - name: AWS_K8S_TESTER_EKS_AWS_K8S_TESTER_DOWNLOAD_PATH
     value: /tmp/aws-k8s-tester/aws-k8s-tester
   - name: AWS_K8S_TESTER_EKS_KUBECTL_DOWNLOAD_PATH
