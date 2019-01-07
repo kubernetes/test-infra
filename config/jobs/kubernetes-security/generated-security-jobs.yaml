@@ -7,14 +7,14 @@ presubmits:
     branches:
     - master
     cluster: security
-    context: pull-security-kubernetes-e2e-aws-eks-1-11-prod-conformance
+    context: pull-security-kubernetes-e2e-aws-eks-1-11-correctness
     labels:
       preset-kubernetes-e2e-aws-eks-1-11: "true"
       preset-kubernetes-e2e-aws-eks-common: "true"
       preset-service-account: "true"
-    name: pull-security-kubernetes-e2e-aws-eks-1-11-prod-conformance
+    name: pull-security-kubernetes-e2e-aws-eks-1-11-correctness
     optional: true
-    rerun_command: /test pull-security-kubernetes-e2e-aws-eks-1-11-prod-conformance
+    rerun_command: /test pull-security-kubernetes-e2e-aws-eks-1-11-correctness
     spec:
       containers:
       - args:
@@ -34,9 +34,9 @@ presubmits:
         - --gce-ssh=
         - --extract=local
         - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-aws-eks-1-11-prod-conformance
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-aws-eks-1-11-correctness
         - --timeout=180m
-        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-aws-eks-1-11-prod-conformance
+        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-aws-eks-1-11-correctness
         image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
         imagePullPolicy: Always
         name: ""
@@ -49,7 +49,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-aws-eks-1-11-prod-conformance,?($|\s.*)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-aws-eks-1-11-correctness,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
