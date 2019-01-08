@@ -1,6 +1,7 @@
 import {FuzzySearch} from './fuzzy-search';
 import {Job, JobState, JobType} from "../api/prow";
 import {cell} from "../common/common";
+import moment from "moment";
 
 
 
@@ -536,7 +537,7 @@ function redraw(fz: FuzzySearch): void {
             r.appendChild(cell.link(build.job, build.url));
         }
 
-        r.appendChild(cell.time(i.toString(), parseInt(build.started)));
+        r.appendChild(cell.time(i.toString(), moment.unix(parseInt(build.started))));
         r.appendChild(cell.text(build.duration));
         builds.appendChild(r);
     }

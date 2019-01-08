@@ -23,6 +23,7 @@ ts_library(
     deps = [
         ":api",
         ":common",
+        "@npm//:moment",
     ],
 )
 
@@ -93,6 +94,7 @@ ts_library(
     deps = [
         ":api",
         ":common",
+        "@npm//:moment",
     ],
 )
 
