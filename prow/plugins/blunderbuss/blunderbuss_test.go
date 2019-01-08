@@ -122,6 +122,7 @@ var (
 
 		"e.go":  sets.NewString("erick", "evan"),
 		"ee.go": sets.NewString("erick", "evan"),
+		"f.go":  sets.NewString("author", "non-author"),
 	}
 	requiredReviewers = map[string]sets.String{
 		"a.go": sets.NewString("ben"),
@@ -136,6 +137,7 @@ var (
 
 		"e.go":  sets.NewString("erick", "ellen"),
 		"ee.go": sets.NewString("erick", "ellen"),
+		"f.go":  sets.NewString("author"),
 	}
 	testcases = []struct {
 		name                       string
@@ -209,6 +211,12 @@ var (
 			expectedRequested:          []string{"alice", "ben"},
 			alternateExpectedRequested: []string{"ben", "bob"},
 		},
+		{
+			name:              "exclude author",
+			filesChanged:      []string{"f.go"},
+			reviewerCount:     1,
+			expectedRequested: []string{"non-author"},
+		},
 	}
 )
 
@@ -227,7 +235,7 @@ func TestHandleWithExcludeApproversOnlyReviewers(t *testing.T) {
 		fghc := newFakeGithubClient(tc.filesChanged)
 		pre := &github.PullRequestEvent{
 			Number:      5,
-			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
+			PullRequest: github.PullRequest{User: github.User{Login: "AUTHOR"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
 		if err := handle(fghc, foc, logrus.WithField("plugin", PluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, true, pre); err != nil {
@@ -266,7 +274,7 @@ func TestHandleWithoutExcludeApproversNoReviewers(t *testing.T) {
 		fghc := newFakeGithubClient(tc.filesChanged)
 		pre := &github.PullRequestEvent{
 			Number:      5,
-			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
+			PullRequest: github.PullRequest{User: github.User{Login: "AUTHOR"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
 		if err := handle(fghc, foc, logrus.WithField("plugin", PluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, false, pre); err != nil {
@@ -413,12 +421,14 @@ func TestHandleOld(t *testing.T) {
 			"c.go": sets.NewString("charles"),
 			"d.go": sets.NewString("dan"),
 			"e.go": sets.NewString("erick", "evan"),
+			"f.go": sets.NewString("author", "non-author"),
 		},
 		leafReviewers: map[string]sets.String{
 			"a.go": sets.NewString("alice"),
 			"b.go": sets.NewString("bob"),
 			"c.go": sets.NewString("cole", "carl", "chad"),
 			"e.go": sets.NewString("erick"),
+			"f.go": sets.NewString("author"),
 		},
 	}
 
@@ -470,12 +480,18 @@ func TestHandleOld(t *testing.T) {
 			reviewerCount:     2,
 			expectedRequested: []string{"erick", "evan"},
 		},
+		{
+			name:              "exclude author",
+			filesChanged:      []string{"f.go"},
+			reviewerCount:     1,
+			expectedRequested: []string{"non-author"},
+		},
 	}
 	for _, tc := range testcases {
 		fghc := newFakeGithubClient(tc.filesChanged)
 		pre := &github.PullRequestEvent{
 			Number:      5,
-			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
+			PullRequest: github.PullRequest{User: github.User{Login: "AUTHOR"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
 		if err := handle(fghc, foc, logrus.WithField("plugin", PluginName), nil, &tc.reviewerCount, 0, false, pre); err != nil {
