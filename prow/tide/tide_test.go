@@ -34,6 +34,7 @@ import (
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/tide/history"
 )
 
 func testPullsMatchList(t *testing.T, test string, actual []PullRequest, expected []int) {
@@ -1076,6 +1077,7 @@ func TestServeHTTP(t *testing.T) {
 				Action:     Merge,
 			},
 		},
+		History: history.New(100),
 	}
 	s := httptest.NewServer(c)
 	defer s.Close()
@@ -1309,6 +1311,7 @@ func TestSync(t *testing.T) {
 				ghc:             fgc,
 				nextChangeCache: make(map[changeCacheKey][]string),
 			},
+			History: history.New(100),
 		}
 
 		if err := c.Sync(); err != nil {

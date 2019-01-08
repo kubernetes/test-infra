@@ -27,13 +27,19 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/tide"
+	"k8s.io/test-infra/prow/tide/history"
 )
 
-type tideData struct {
+type tidePools struct {
 	Queries     []string
 	TideQueries []config.TideQuery
 	Pools       []tide.Pool
+}
+
+type tideHistory struct {
+	History map[string][]history.Record
 }
 
 type tideAgent struct {
@@ -46,63 +52,149 @@ type tideAgent struct {
 	hiddenOnly  bool
 
 	sync.Mutex
-	pools []tide.Pool
+	pools   []tide.Pool
+	history map[string][]history.Record
 }
 
 func (ta *tideAgent) start() {
-	startTime := time.Now()
-	if err := ta.update(); err != nil {
-		ta.log.WithError(err).Error("Updating pool for the first time.")
+	startTimePool := time.Now()
+	if err := ta.updatePools(); err != nil {
+		ta.log.WithError(err).Error("Updating pools the first time.")
 	}
+	startTimeHistory := time.Now()
+	if err := ta.updateHistory(); err != nil {
+		ta.log.WithError(err).Error("Updating history the first time.")
+	}
+
 	go func() {
 		for {
-			time.Sleep(time.Until(startTime.Add(ta.updatePeriod())))
-			startTime = time.Now()
-			if err := ta.update(); err != nil {
-				ta.log.WithError(err).Error("Updating pool.")
+			time.Sleep(time.Until(startTimePool.Add(ta.updatePeriod())))
+			startTimePool = time.Now()
+			if err := ta.updatePools(); err != nil {
+				ta.log.WithError(err).Error("Updating pools.")
+			}
+		}
+	}()
+	go func() {
+		for {
+			time.Sleep(time.Until(startTimeHistory.Add(ta.updatePeriod())))
+			startTimeHistory = time.Now()
+			if err := ta.updateHistory(); err != nil {
+				ta.log.WithError(err).Error("Updating history.")
 			}
 		}
 	}()
 }
 
-func (ta *tideAgent) update() error {
-	var pools []tide.Pool
-	var resp *http.Response
+func fetchTideData(log *logrus.Entry, path string, data interface{}) error {
+	var prevErrs []error
 	var err error
-	for i := 0; i < 3; i++ {
+	backoff := 5 * time.Second
+	for i := 0; i < 4; i++ {
+		var resp *http.Response
 		if err != nil {
-			ta.log.WithError(err).Warning("Tide request failed. Retrying.")
-			time.Sleep(5 * time.Second)
+			prevErrs = append(prevErrs, err)
+			time.Sleep(backoff)
+			backoff *= 4
 		}
-		resp, err = http.Get(ta.path)
+		resp, err = http.Get(path)
 		if err == nil {
 			defer resp.Body.Close()
 			if resp.StatusCode < 200 || resp.StatusCode > 299 {
 				err = fmt.Errorf("response has status code %d", resp.StatusCode)
 				continue
 			}
-			if err := json.NewDecoder(resp.Body).Decode(&pools); err != nil {
-				return err
+			if err = json.NewDecoder(resp.Body).Decode(data); err != nil {
+				break
 			}
 			break
 		}
 	}
+
+	// Either combine previous errors with the returned error, or if we succeeded
+	// warn once about any errors we saw before succeeding.
+	prevErr := errorutil.NewAggregate(prevErrs...)
 	if err != nil {
+		return errorutil.NewAggregate(err, prevErr)
+	}
+	if prevErr != nil {
+		log.WithError(prevErr).Warnf(
+			"Failed %d retries fetching Tide data before success: %v.",
+			len(prevErrs),
+			prevErr,
+		)
+	}
+	return nil
+}
+
+func (ta *tideAgent) updatePools() error {
+	var pools []tide.Pool
+	if err := fetchTideData(ta.log, ta.path, &pools); err != nil {
 		return err
 	}
+	pools = ta.filterHiddenPools(pools)
+
 	ta.Lock()
 	defer ta.Unlock()
 	ta.pools = pools
 	return nil
 }
 
-func (ta *tideAgent) filterHidden(tideQueries []config.TideQuery, pools []tide.Pool) ([]config.TideQuery, []tide.Pool) {
+func (ta *tideAgent) updateHistory() error {
+	path := strings.TrimSuffix(ta.path, "/") + "/history"
+	var history map[string][]history.Record
+	if err := fetchTideData(ta.log, path, &history); err != nil {
+		return err
+	}
+	history = ta.filterHiddenHistory(history)
+
+	ta.Lock()
+	defer ta.Unlock()
+	ta.history = history
+	return nil
+}
+
+func (ta *tideAgent) filterHiddenPools(pools []tide.Pool) []tide.Pool {
 	if len(ta.hiddenRepos) == 0 {
-		return tideQueries, pools
+		return pools
 	}
 
-	filteredTideQueries := make([]config.TideQuery, 0, len(tideQueries))
-	for _, qc := range tideQueries {
+	filtered := make([]tide.Pool, 0, len(pools))
+	for _, pool := range pools {
+		needsHide := matches(pool.Org+"/"+pool.Repo, ta.hiddenRepos)
+		if needsHide == ta.hiddenOnly {
+			filtered = append(filtered, pool)
+		} else {
+			ta.log.Debugf("Ignoring pool for %s.", pool.Org+"/"+pool.Repo)
+		}
+	}
+	return filtered
+}
+
+func (ta *tideAgent) filterHiddenHistory(hist map[string][]history.Record) map[string][]history.Record {
+	if len(ta.hiddenRepos) == 0 {
+		return hist
+	}
+
+	filtered := make(map[string][]history.Record, len(hist))
+	for pool, records := range hist {
+		needsHide := matches(strings.Split(pool, ":")[0], ta.hiddenRepos)
+		if needsHide == ta.hiddenOnly {
+			filtered[pool] = records
+		} else {
+			ta.log.Debugf("Ignoring history for %s.", pool)
+		}
+	}
+	return filtered
+}
+
+func (ta *tideAgent) filterHiddenQueries(queries []config.TideQuery) []config.TideQuery {
+	if len(ta.hiddenRepos) == 0 {
+		return queries
+	}
+
+	filtered := make([]config.TideQuery, 0, len(queries))
+	for _, qc := range queries {
 		includesHidden := false
 		// This will exclude the query even if a single
 		// repo in the query is included in hiddenRepos.
@@ -112,26 +204,13 @@ func (ta *tideAgent) filterHidden(tideQueries []config.TideQuery, pools []tide.P
 				break
 			}
 		}
-		if (includesHidden && ta.hiddenOnly) ||
-			(!includesHidden && !ta.hiddenOnly) {
-			filteredTideQueries = append(filteredTideQueries, qc)
+		if includesHidden == ta.hiddenOnly {
+			filtered = append(filtered, qc)
 		} else {
-			ta.log.Debugf("Ignoring query: %v", qc.Query())
+			ta.log.Debugf("Ignoring query: %s", qc.Query())
 		}
 	}
-
-	filteredPools := make([]tide.Pool, 0, len(pools))
-	for _, pool := range pools {
-		needsHide := matches(pool.Org+"/"+pool.Repo, ta.hiddenRepos)
-		if (needsHide && ta.hiddenOnly) ||
-			(!needsHide && !ta.hiddenOnly) {
-			filteredPools = append(filteredPools, pool)
-		} else {
-			ta.log.Debugf("Ignoring pool for %s", pool.Org+"/"+pool.Repo)
-		}
-	}
-
-	return filteredTideQueries, filteredPools
+	return filtered
 }
 
 // matches returns whether the provided repo intersects

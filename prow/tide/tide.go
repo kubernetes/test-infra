@@ -40,6 +40,7 @@ import (
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/tide/blockers"
+	"k8s.io/test-infra/prow/tide/history"
 )
 
 type kubeClient interface {
@@ -79,6 +80,8 @@ type Controller struct {
 	// changedFiles caches the names of files changed by PRs.
 	// Cache entries expire if they are not used during a sync loop.
 	changedFiles *changedFilesAgent
+
+	History *history.History
 }
 
 // Action represents what actions the controller can take. It will take
@@ -94,6 +97,15 @@ const (
 	MergeBatch          = "MERGE_BATCH"
 	PoolBlocked         = "BLOCKED"
 )
+
+// recordableActions is the subset of actions that we keep historical record of.
+// Ignore idle actions to avoid flooding the records with useless data.
+var recordableActions = map[Action]bool{
+	Trigger:      true,
+	TriggerBatch: true,
+	Merge:        true,
+	MergeBatch:   true,
+}
 
 // Pool represents information about a tide pool. There is one for every
 // org/repo/branch combination that has PRs in the pool.
@@ -116,6 +128,7 @@ type Pool struct {
 	Action   Action
 	Target   []PullRequest
 	Blockers []blockers.Blocker
+	Error    string
 }
 
 // Prometheus Metrics
@@ -204,6 +217,7 @@ func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, ca *confi
 			ghc:             ghcSync,
 			nextChangeCache: make(map[changeCacheKey][]string),
 		},
+		History: history.New(1000),
 	}
 }
 
@@ -314,12 +328,11 @@ func (c *Controller) Sync() error {
 		c.ca.Config().Tide.MaxGoroutines,
 		filteredPools,
 		func(sp *subpool) {
-			spBlocks := blocks.GetApplicable(sp.org, sp.repo, sp.branch)
-			if pool, err := c.syncSubpool(*sp, spBlocks); err != nil {
+			pool, err := c.syncSubpool(*sp, blocks.GetApplicable(sp.org, sp.repo, sp.branch))
+			if err != nil {
 				sp.log.WithError(err).Errorf("Error syncing subpool.")
-			} else {
-				poolChan <- pool
 			}
+			poolChan <- pool
 		},
 	)
 
@@ -387,7 +400,7 @@ func (c *Controller) filterSubpools(goroutines int, raw map[string]*subpool) map
 				sp.log.WithError(err).Error("Error initializing subpool.")
 				return
 			}
-			key := fmt.Sprintf("%s/%s %s", sp.org, sp.repo, sp.branch)
+			key := poolKey(sp.org, sp.repo, sp.branch)
 			if spFiltered := filterSubpool(c.ghc, sp); spFiltered != nil {
 				sp.log.WithField("key", key).WithField("pool", spFiltered).Debug("filtered sub-pool")
 
@@ -759,18 +772,30 @@ func (c *Controller) pickBatch(sp subpool, cc contextChecker) ([]PullRequest, er
 }
 
 func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
-	successCount := 0
+	var merged []int
 	defer func() {
-		if successCount == 0 {
+		if len(merged) == 0 {
 			return
 		}
-		tideMetrics.merges.WithLabelValues(sp.org, sp.repo, sp.branch).Observe(float64(successCount))
+		tideMetrics.merges.WithLabelValues(sp.org, sp.repo, sp.branch).Observe(float64(len(merged)))
 	}()
 
+	augmentError := func(e error, pr PullRequest) error {
+		var batch string
+		if len(prs) > 1 {
+			batch = fmt.Sprintf(" from batch %v", prNumbers(prs))
+			if len(merged) > 0 {
+				batch = fmt.Sprintf("%s, partial merge %v", batch, merged)
+			}
+		}
+		return fmt.Errorf("failed merging #%d%s: %v", int(pr.Number), batch, e)
+	}
+
+	log := sp.log.WithField("merge-targets", prNumbers(prs))
 	maxRetries := 3
 	for i, pr := range prs {
 		backoff := time.Second * 4
-		log := sp.log.WithFields(pr.logFields())
+		log := log.WithFields(pr.logFields())
 		mergeMethod := c.ca.Config().Tide.MergeMethod(sp.org, sp.repo)
 		if squashLabel := c.ca.Config().Tide.SquashLabel; squashLabel != "" {
 			for _, prlabel := range pr.Labels.Nodes {
@@ -785,6 +810,14 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 				SHA:         string(pr.HeadRefOID),
 				MergeMethod: string(mergeMethod),
 			}); err != nil {
+				// TODO: Add a config option to abort batches if a PR in the batch
+				// cannot be merged for any reason. This would skip merging
+				// not just the changed PR, but also the other PRs in the batch.
+				// This shouldn't be the default behavior as merging batches is high
+				// priority and this is unlikely to be problematic.
+				// Note: We would also need to be able to roll back any merges for the
+				// batch that were already successfully completed before the failure.
+				// Ref: https://github.com/kubernetes/test-infra/issues/10621
 				if _, ok := err.(github.ModifiedHeadError); ok {
 					// This is a possible source of incorrect behavior. If someone
 					// modifies their PR as we try to merge it in a batch then we
@@ -812,23 +845,25 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 					// overzealous branch protection setting will not allow the robot to
 					// push to a specific branch.
 					log.WithError(err).Error("Merge failed: Branch needs to be configured to allow this robot to push.")
-					break
+					// We won't be able to merge the other PRs.
+					return augmentError(err, pr)
 				} else if _, ok = err.(github.MergeCommitsForbiddenError); ok {
 					// Github let us know that the merge method configured for this repo
 					// is not allowed by other repo settings, so we should let the admins
 					// know that the configuration needs to be updated.
 					log.WithError(err).Error("Merge failed: Tide needs to be configured to use the 'rebase' merge method for this repo or the repo needs to allow merge commits.")
-					break
+					// We won't be able to merge the other PRs.
+					return augmentError(err, pr)
 				} else if _, ok = err.(github.UnmergablePRError); ok {
-					log.WithError(err).Error("Merge failed: PR is unmergable. How did it pass tests?!")
+					log.WithError(err).Error("Merge failed: PR is unmergable. Do the Tide merge requirements match the GitHub settings for the repo?")
 					break
 				} else {
 					log.WithError(err).Error("Merge failed.")
-					return err
+					return augmentError(err, pr)
 				}
 			} else {
 				log.Info("Merged.")
-				successCount++
+				merged = append(merged, int(pr.Number))
 				// If we have more PRs to merge, sleep to give Github time to recalculate
 				// mergeability.
 				if i+1 < len(prs) {
@@ -877,7 +912,7 @@ func (c *Controller) trigger(sp subpool, presubmitContexts map[int]sets.String, 
 		}
 		pj := pjutil.NewProwJob(spec, ps.Labels)
 		if _, err := c.kc.CreateProwJob(pj); err != nil {
-			return err
+			return fmt.Errorf("failed to create a ProwJob for job: %q, PRs: %v: %v", spec.Job, prNumbers(prs), err)
 		}
 	}
 	return nil
@@ -1039,10 +1074,23 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 	var act Action
 	var targets []PullRequest
 	var err error
+	var errorString string
 	if len(blocks) > 0 {
 		act = PoolBlocked
 	} else {
 		act, targets, err = c.takeAction(sp, batchPending, successes, pendings, nones, batchMerge)
+		if err != nil {
+			errorString = err.Error()
+		}
+		if recordableActions[act] {
+			c.History.Record(
+				poolKey(sp.org, sp.repo, sp.branch),
+				string(act),
+				sp.sha,
+				errorString,
+				prMeta(targets...),
+			)
+		}
 	}
 
 	sp.log.WithFields(logrus.Fields{
@@ -1065,8 +1113,22 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 			Action:   act,
 			Target:   targets,
 			Blockers: blocks,
+			Error:    errorString,
 		},
 		err
+}
+
+func prMeta(prs ...PullRequest) []history.PRMeta {
+	var res []history.PRMeta
+	for _, pr := range prs {
+		res = append(res, history.PRMeta{
+			Num:    int(pr.Number),
+			Author: string(pr.Author.Login),
+			Title:  string(pr.Title),
+			SHA:    string(pr.HeadRefOID),
+		})
+	}
+	return res
 }
 
 func sortPools(pools []Pool) {
@@ -1105,6 +1167,10 @@ type subpool struct {
 	presubmitContexts map[int]sets.String
 }
 
+func poolKey(org, repo, branch string) string {
+	return fmt.Sprintf("%s/%s:%s", org, repo, branch)
+}
+
 // dividePool splits up the list of pull requests and prow jobs into a group
 // per repo and branch. It only keeps ProwJobs that match the latest branch.
 func (c *Controller) dividePool(pool map[string]PullRequest, pjs []kube.ProwJob) (map[string]*subpool, error) {
@@ -1114,7 +1180,7 @@ func (c *Controller) dividePool(pool map[string]PullRequest, pjs []kube.ProwJob)
 		repo := string(pr.Repository.Name)
 		branch := string(pr.BaseRef.Name)
 		branchRef := string(pr.BaseRef.Prefix) + string(pr.BaseRef.Name)
-		fn := fmt.Sprintf("%s/%s %s", org, repo, branch)
+		fn := poolKey(org, repo, branch)
 		if sps[fn] == nil {
 			sha, err := c.ghc.GetRef(org, repo, strings.TrimPrefix(branchRef, "refs/"))
 			if err != nil {
@@ -1139,7 +1205,7 @@ func (c *Controller) dividePool(pool map[string]PullRequest, pjs []kube.ProwJob)
 		if pj.Spec.Type != kube.PresubmitJob && pj.Spec.Type != kube.BatchJob {
 			continue
 		}
-		fn := fmt.Sprintf("%s/%s %s", pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.BaseRef)
+		fn := poolKey(pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.BaseRef)
 		if sps[fn] == nil || pj.Spec.Refs.BaseSHA != sps[fn].sha {
 			continue
 		}

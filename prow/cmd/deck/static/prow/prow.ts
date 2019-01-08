@@ -1,6 +1,7 @@
 import {FuzzySearch} from './fuzzy-search';
 import {Job, JobState, JobType} from "../api/prow";
-import moment from "moment";
+import {cell} from "../common/common";
+
 
 
 declare const allBuilds: Job[];
@@ -11,17 +12,6 @@ function getParameterByName(name: string): string | null {
     const match = RegExp('[?&]' + name + '=([^&/]*)').exec(
         window.location.search);
     return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
-}
-
-function updateQueryStringParameter(uri: string, key: string,
-                                    value: string): string {
-    const re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
-    const separator = uri.indexOf('?') !== -1 ? "&" : "?";
-    if (uri.match(re)) {
-        return uri.replace(re, '$1' + key + "=" + value + '$2');
-    } else {
-        return uri + separator + key + "=" + value;
-    }
 }
 
 function shortenBuildRefs(buildRef: string): string {
@@ -482,7 +472,7 @@ function redraw(fz: FuzzySearch): void {
             continue;
         }
         const r = document.createElement("tr");
-        r.appendChild(stateCell(build.state));
+        r.appendChild(cell.state(build.state));
         if (build.pod_name) {
             const icon = createIcon("description", "Build log");
             icon.href = "log?job=" + build.job + "&id=" + build.build_id;
@@ -491,7 +481,7 @@ function redraw(fz: FuzzySearch): void {
             cell.appendChild(icon);
             r.appendChild(cell);
         } else {
-            r.appendChild(createTextCell(""));
+            r.appendChild(cell.text(""));
         }
         r.appendChild(createRerunCell(modal, rerun_command, build.prow_job));
         const key = groupKey(build);
@@ -501,26 +491,26 @@ function redraw(fz: FuzzySearch): void {
             r.className = "changed";
 
             if (build.type === "periodic") {
-                r.appendChild(createTextCell(""));
+                r.appendChild(cell.text(""));
             } else if (build.repo.startsWith("http://") || build.repo.startsWith("https://") ) {
-                r.appendChild(createLinkCell(build.repo, build.repo, ""));
+                r.appendChild(cell.link(build.repo, build.repo));
             } else {
-                r.appendChild(createLinkCell(build.repo, "https://github.com/"
-                    + build.repo, ""));
+                r.appendChild(cell.link(build.repo, "https://github.com/"
+                    + build.repo));
             }
             if (build.type === "presubmit") {
-                r.appendChild(prRevisionCell(build));
+                r.appendChild(cell.prRevision(build.repo, build.number, build.author, "", build.pull_sha));
             } else if (build.type === "batch") {
                 r.appendChild(batchRevisionCell(build));
             } else if (build.type === "postsubmit") {
-                r.appendChild(pushRevisionCell(build));
+                r.appendChild(cell.commitRevision(build.repo, build.base_ref, build.base_sha));
             } else if (build.type === "periodic") {
-                r.appendChild(createTextCell(""));
+                r.appendChild(cell.text(""));
             }
         } else {
             // Don't render identical cells for the same PR/commit.
-            r.appendChild(createTextCell(""));
-            r.appendChild(createTextCell(""));
+            r.appendChild(cell.text(""));
+            r.appendChild(cell.text(""));
         }
         if (spyglass) {
             if (build.state == 'pending') {
@@ -530,7 +520,7 @@ function redraw(fz: FuzzySearch): void {
             } else {
                 const buildIndex = build.url.indexOf('/build/');
                 if (buildIndex === -1) {
-                    r.appendChild(createTextCell(''));
+                    r.appendChild(cell.text(''));
                 } else {
                     let url = window.location.origin + '/view/gcs/' +
                         build.url.substring(buildIndex + '/build/'.length);
@@ -538,68 +528,21 @@ function redraw(fz: FuzzySearch): void {
                 }
             }
         } else {
-            r.appendChild(createTextCell(''));
+            r.appendChild(cell.text(''));
         }
         if (build.url === "") {
-            r.appendChild(createTextCell(build.job));
+            r.appendChild(cell.text(build.job));
         } else {
-            r.appendChild(createLinkCell(build.job, build.url, ""));
+            r.appendChild(cell.link(build.job, build.url));
         }
 
-        r.appendChild(createTimeCell(i, parseInt(build.started)));
-        r.appendChild(createTextCell(build.duration));
+        r.appendChild(cell.time(i.toString(), parseInt(build.started)));
+        r.appendChild(cell.text(build.duration));
         builds.appendChild(r);
     }
     const jobCount = document.getElementById("job-count")!;
     jobCount.textContent = "Showing " + Math.min(totalJob, 500) + "/" + totalJob + " jobs";
     drawJobBar(totalJob, jobCountMap);
-}
-
-function createSpyglassCell(url: string): HTMLTableDataCellElement {
-    const icon = createIcon('visibility', 'View in Spyglass');
-    icon.href = url;
-    const cell = document.createElement('td');
-    cell.classList.add('icon-cell');
-    cell.appendChild(icon);
-    return cell;
-}
-
-function createTextCell(text: string): HTMLTableDataCellElement {
-    const c = document.createElement("td");
-    c.appendChild(document.createTextNode(text));
-    return c;
-}
-
-function createTimeCell(id: number, time: number): HTMLTableDataCellElement {
-    const momentTime = moment.unix(time);
-    const tid = "time-cell-" + id;
-    const main = document.createElement("div");
-    const isADayOld = momentTime.isBefore(moment().startOf('day'));
-    main.textContent = momentTime.format(isADayOld ? 'MMM DD HH:mm:ss' : 'HH:mm:ss');
-    main.id = tid;
-
-    const tooltip = document.createElement("div");
-    tooltip.textContent = momentTime.format('MMM DD YYYY, HH:mm:ss [UTC]ZZ');
-    tooltip.setAttribute("data-mdl-for", tid);
-    tooltip.classList.add("mdl-tooltip", "mdl-tooltip--large");
-
-    const c = document.createElement("td");
-    c.appendChild(main);
-    c.appendChild(tooltip);
-
-    return c;
-}
-
-function createLinkCell(text: string, url: string, title: string): HTMLTableDataCellElement {
-    const c = document.createElement("td");
-    const a = document.createElement("a");
-    a.href = url;
-    if (title !== "") {
-        a.title = title;
-    }
-    a.appendChild(document.createTextNode(text));
-    c.appendChild(a);
-    return c;
 }
 
 function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob: string): HTMLTableDataCellElement {
@@ -656,46 +599,6 @@ function copyToClipboardWithToast(text: string): void {
     toast.MaterialSnackbar.showSnackbar({message: "Copied to clipboard"});
 }
 
-function stateCell(state: JobState): HTMLTableDataCellElement {
-    const c = document.createElement("td");
-    if (!state) {
-        c.appendChild(document.createTextNode(""));
-        return c;
-    }
-    c.classList.add("icon-cell");
-
-    let displayState = stateToAdj(state);
-    displayState = displayState[0].toUpperCase() + displayState.slice(1);
-    let displayIcon = "";
-    switch (state) {
-        case "triggered":
-            displayIcon = "schedule";
-            break;
-        case "pending":
-            displayIcon = "watch_later";
-            break;
-        case "success":
-            displayIcon = "check_circle";
-            break;
-        case "failure":
-            displayIcon = "error";
-            break;
-        case "aborted":
-            displayIcon = "remove_circle";
-            break;
-        case "error":
-            displayIcon = "warning";
-            break;
-    }
-    const stateIndicator = document.createElement("i");
-    stateIndicator.classList.add("material-icons", "state", state);
-    stateIndicator.innerText = displayIcon;
-    c.appendChild(stateIndicator);
-    c.title = displayState;
-
-    return c;
-}
-
 function batchRevisionCell(build: Job): HTMLTableDataCellElement {
     const c = document.createElement("td");
     const prRefs = build.refs.split(",");
@@ -710,36 +613,6 @@ function batchRevisionCell(build: Job): HTMLTableDataCellElement {
         c.appendChild(document.createTextNode("#"));
         c.appendChild(l);
     }
-    return c;
-}
-
-function pushRevisionCell(build: Job): HTMLTableDataCellElement {
-    const c = document.createElement("td");
-    const bl = document.createElement("a");
-    bl.href = "https://github.com/" + build.repo + "/commit/" + build.base_sha;
-    bl.text = build.base_ref + " (" + build.base_sha.slice(0, 7) + ")";
-    c.appendChild(bl);
-    return c;
-}
-
-function prRevisionCell(build: Job): HTMLTableDataCellElement {
-    const c = document.createElement("td");
-    c.appendChild(document.createTextNode("#"));
-    const pl = document.createElement("a");
-    pl.href = "https://github.com/" + build.repo + "/pull/" + build.number;
-    pl.text = build.number.toString();
-    c.appendChild(pl);
-    c.appendChild(document.createTextNode(" ("));
-    const cl = document.createElement("a");
-    cl.href = "https://github.com/" + build.repo + "/pull/" + build.number
-        + '/commits/' + build.pull_sha;
-    cl.text = build.pull_sha.slice(0, 7);
-    c.appendChild(cl);
-    c.appendChild(document.createTextNode(") by "));
-    const al = document.createElement("a");
-    al.href = "https://github.com/" + build.author;
-    al.text = build.author;
-    c.appendChild(al);
     return c;
 }
 
@@ -782,6 +655,15 @@ function stateToAdj(state: JobState): string {
         default:
             return state;
     }
+}
+
+function createSpyglassCell(url: string): HTMLTableDataCellElement {
+    const icon = createIcon('visibility', 'View in Spyglass');
+    icon.href = url;
+    const cell = document.createElement('td');
+    cell.classList.add('icon-cell');
+    cell.appendChild(icon);
+    return cell;
 }
 
 function createIcon(iconString: string, tooltip: string = ""): HTMLAnchorElement {
