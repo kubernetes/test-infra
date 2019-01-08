@@ -104,6 +104,9 @@ type Config struct {
 	// EnableWorkerNodeHA is true to use all 3 subnets to create worker nodes.
 	// Note that at least 2 subnets are required for EKS cluster.
 	EnableWorkerNodeHA bool `json:"enable-worker-node-ha"`
+	// EnableWorkerNodePrivilegedPortAccess is true to allow control plane to
+	// talk to worker nodes through their privileged ports (i.e ports 1-1024).
+	EnableWorkerNodePrivilegedPortAccess bool `json:"enable-worker-node-privileged-port-access"`
 
 	// VPCID is the VPC ID.
 	VPCID string `json:"vpc-id"`
@@ -430,8 +433,9 @@ var defaultConfig = Config{
 	AWSRegion:                "us-west-2",
 	AWSCustomEndpoint:        "",
 
-	EnableWorkerNodeHA:  true,
-	EnableWorkerNodeSSH: true,
+	EnableWorkerNodeHA:                   true,
+	EnableWorkerNodeSSH:                  true,
+	EnableWorkerNodePrivilegedPortAccess: true,
 
 	// keep in-sync with the default value in https://godoc.org/k8s.io/kubernetes/test/e2e/framework#GetSigner
 	WorkerNodePrivateKeyPath: filepath.Join(homedir.HomeDir(), ".ssh", "kube_aws_rsa"),
