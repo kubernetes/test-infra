@@ -55,8 +55,8 @@ func NewController(continueOnError bool, kubeClient *kube.Client, githubClient *
 }
 
 type statusMigrator interface {
-	retire(org, repo, context string) error
-	migrate(org, repo, from, to string) error
+	retire(org, repo, context string, targetBranchFilter func(string) bool) error
+	migrate(org, repo, from, to string, targetBranchFilter func(string) bool) error
 }
 
 type gitHubMigrator struct {
@@ -64,17 +64,17 @@ type gitHubMigrator struct {
 	continueOnError bool
 }
 
-func (m *gitHubMigrator) retire(org, repo, context string) error {
+func (m *gitHubMigrator) retire(org, repo, context string, targetBranchFilter func(string) bool) error {
 	return migrator.New(
 		*migrator.RetireMode(context, "", ""),
-		m.githubClient, org, repo, m.continueOnError,
+		m.githubClient, org, repo, targetBranchFilter, m.continueOnError,
 	).Migrate()
 }
 
-func (m *gitHubMigrator) migrate(org, repo, from, to string) error {
+func (m *gitHubMigrator) migrate(org, repo, from, to string, targetBranchFilter func(string) bool) error {
 	return migrator.New(
 		*migrator.MoveMode(from, to, ""),
-		m.githubClient, org, repo, m.continueOnError,
+		m.githubClient, org, repo, targetBranchFilter, m.continueOnError,
 	).Migrate()
 }
 
@@ -236,7 +236,7 @@ func (c *Controller) retireRemovedContexts(retiredPresubmits map[string][]config
 				"repo":    repo,
 				"context": presubmit.Context,
 			}).Info("Retiring context.")
-			if err := c.statusMigrator.retire(org, repo, presubmit.Context); err != nil {
+			if err := c.statusMigrator.retire(org, repo, presubmit.Context, presubmit.Brancher.RunsAgainstBranch); err != nil {
 				if c.continueOnError {
 					retireErrors = append(retireErrors, err)
 					continue
@@ -260,7 +260,7 @@ func (c *Controller) updateMigratedContexts(migrations map[string][]presubmitMig
 				"from": migration.from.Context,
 				"to":   migration.to.Context,
 			}).Info("Migrating context.")
-			if err := c.statusMigrator.migrate(org, repo, migration.from.Context, migration.to.Context); err != nil {
+			if err := c.statusMigrator.migrate(org, repo, migration.from.Context, migration.to.Context, migration.from.Brancher.RunsAgainstBranch); err != nil {
 				if c.continueOnError {
 					migrateErrors = append(migrateErrors, err)
 					continue

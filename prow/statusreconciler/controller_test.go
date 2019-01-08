@@ -555,7 +555,7 @@ type fakeMigrator struct {
 	migrated map[orgRepo]migrationSet
 }
 
-func (m *fakeMigrator) retire(org, repo, context string) error {
+func (m *fakeMigrator) retire(org, repo, context string, targetBranchFilter func(string) bool) error {
 	key := orgRepo{org: org, repo: repo}
 	if contexts, exist := m.retireErrors[key]; exist && contexts.Has(context) {
 		return errors.New("failed to retire context")
@@ -568,7 +568,7 @@ func (m *fakeMigrator) retire(org, repo, context string) error {
 	return nil
 }
 
-func (m *fakeMigrator) migrate(org, repo, from, to string) error {
+func (m *fakeMigrator) migrate(org, repo, from, to string, targetBranchFilter func(string) bool) error {
 	key := orgRepo{org: org, repo: repo}
 	item := migration{from: from, to: to}
 	if contexts, exist := m.migrateErrors[key]; exist && contexts.has(item) {
