@@ -512,7 +512,6 @@ periodics:
     preset-e2e-kubemark-common: "true"
   spec:
     containers:
-    # TODO(krzysied): unify kubekins-e2e versions across this file.
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190108-eadd44c98-master
       args:
       - --repo=k8s.io/kubernetes=master
