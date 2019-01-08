@@ -30,15 +30,17 @@ type configAgent interface {
 
 // Client is a github reporter client
 type Client struct {
-	gc report.GithubClient
-	ca configAgent
+	gc          report.GithubClient
+	ca          configAgent
+	reportAgent string
 }
 
 // NewReporter returns a reporter client
-func NewReporter(gc report.GithubClient, ca configAgent) *Client {
+func NewReporter(gc report.GithubClient, ca configAgent, reportAgent string) *Client {
 	return &Client{
-		gc: gc,
-		ca: ca,
+		gc:          gc,
+		ca:          ca,
+		reportAgent: reportAgent,
 	}
 }
 
@@ -52,6 +54,11 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 
 	if !pj.Spec.Report || pj.Spec.Type != v1.PresubmitJob {
 		// Only report presubmit github jobs for github reporter
+		return false
+	}
+
+	if c.reportAgent != "" && string(pj.Spec.Agent) != c.reportAgent {
+		// Only report for specified agent
 		return false
 	}
 
