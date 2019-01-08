@@ -123,9 +123,6 @@ func (n localCluster) Up() error {
 	cmd.Env = append(cmd.Env, "ENABLE_DAEMON=true")
 	cmd.Env = append(cmd.Env, fmt.Sprintf("LOG_DIR=%s", n.tempDir))
 
-	// Needed for at least one conformance e2e test. Please see issue #59978
-	cmd.Env = append(cmd.Env, "ALLOW_PRIVILEGED=true")
-
 	// when we are running in a DIND scenario, we should use the ip address of
 	// the docker0 network interface, This ensures that when the pods come up
 	// the health checks (for example for kubedns) succeed. If there is no
