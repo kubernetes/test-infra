@@ -652,6 +652,10 @@ periodics:
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
 
 - name: ci-kubernetes-kubemark-high-density-100-gce
   tags:
