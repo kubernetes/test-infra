@@ -10,16 +10,15 @@ export namespace cell {
 		return c;
 	};
 
-	export function time(id: string, time: number): HTMLTableDataCellElement {
-		const momentTime = moment.unix(time);
+	export function time(id: string, time: moment.Moment): HTMLTableDataCellElement {
 		const tid = "time-cell-" + id;
 		const main = document.createElement("div");
-		const isADayOld = momentTime.isBefore(moment().startOf('day'));
-		main.textContent = momentTime.format(isADayOld ? 'MMM DD HH:mm:ss' : 'HH:mm:ss');
+		const isADayOld = time.isBefore(moment().startOf('day'));
+		main.textContent = time.format(isADayOld ? 'MMM DD HH:mm:ss' : 'HH:mm:ss');
 		main.id = tid;
 
 		const tooltip = document.createElement("div");
-		tooltip.textContent = momentTime.format('MMM DD YYYY, HH:mm:ss [UTC]ZZ');
+		tooltip.textContent = time.format('MMM DD YYYY, HH:mm:ss [UTC]ZZ');
 		tooltip.setAttribute("data-mdl-for", tid);
 		tooltip.classList.add("mdl-tooltip", "mdl-tooltip--large");
 

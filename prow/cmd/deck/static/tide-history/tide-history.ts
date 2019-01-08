@@ -1,6 +1,7 @@
 import {cell} from "../common/common";
 import {JobState} from "../api/prow";
 import {HistoryData, Record, PRMeta} from "../api/tide-history";
+import moment from "moment";
 
 declare const tideHistory: HistoryData;
 
@@ -229,7 +230,7 @@ function redraw(): void {
     }
   }
   // Sort by descending time.
-  filteredRecs = filteredRecs.sort((a, b) => parseInt(b.time) - parseInt(a.time));
+  filteredRecs = filteredRecs.sort((a, b) => moment(b.time).unix() - moment(a.time).unix());
   redrawRecords(filteredRecs);
 }
 
@@ -272,7 +273,7 @@ function redrawRecords(recs: FilteredRecord[]): void {
     }
     r.appendChild(cell.text(rec.action));
     r.appendChild(targetCell(rec));
-    r.appendChild(cell.time(nextID(), parseInt(rec.time)));
+    r.appendChild(cell.time(nextID(), moment(rec.time)));
     r.appendChild(cell.text(rec.err || ""));
     records.appendChild(r);
   }
