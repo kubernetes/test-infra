@@ -92,7 +92,7 @@ func (g *gitHubFileGetter) GetFile(filename string) ([]byte, error) {
 }
 
 // Update updates the configmap with the data from the identified files
-func Update(fg FileGetter, kc KubeClient, name, namespace string, updates map[string]string) error {
+func Update(fg FileGetter, kc KubeClient, name, namespace string, updates map[string]string, logger *logrus.Entry) error {
 	currentContent, getErr := kc.GetConfigMap(name, namespace)
 	_, isNotFound := getErr.(kube.NotFoundError)
 	if getErr != nil && !isNotFound {
@@ -106,6 +106,7 @@ func Update(fg FileGetter, kc KubeClient, name, namespace string, updates map[st
 
 	for key, filename := range updates {
 		if filename == "" {
+			logger.WithField("key", key).Debug("Deleting key.")
 			delete(data, key)
 			continue
 		}
@@ -114,6 +115,7 @@ func Update(fg FileGetter, kc KubeClient, name, namespace string, updates map[st
 		if err != nil {
 			return fmt.Errorf("get file err: %v", err)
 		}
+		logger.WithFields(logrus.Fields{"key": key, "filename": filename}).Debug("Populating key.")
 		data[key] = string(content)
 	}
 
@@ -238,7 +240,8 @@ func handle(gc githubClient, kc KubeClient, log *logrus.Entry, pre github.PullRe
 		indent = "   " // three spaces for sub bullets
 	}
 	for cm, data := range toUpdate {
-		if err := Update(&gitHubFileGetter{org: org, repo: repo, commit: *pr.MergeSHA, client: gc}, kc, cm.Name, cm.Namespace, data); err != nil {
+		logger := log.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace}})
+		if err := Update(&gitHubFileGetter{org: org, repo: repo, commit: *pr.MergeSHA, client: gc}, kc, cm.Name, cm.Namespace, data, logger); err != nil {
 			return err
 		}
 		updated = append(updated, message(cm.Name, cm.Namespace, data, indent))

@@ -24,10 +24,18 @@ import (
 	"path/filepath"
 
 	"github.com/sirupsen/logrus"
+	v1api "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // support gcp users in .kube/config
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/test-infra/prow/kube"
 
 	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
+	_ "k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/updateconfig"
@@ -93,10 +101,22 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting plugin configuration agent.")
 	}
 
-	kubeClient, err := o.kubernetes.Client(configAgent.Config().ProwJobNamespace, o.dryRun)
+	credentials, err := clientcmd.NewDefaultClientConfigLoadingRules().Load()
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting kube client.")
+		logrus.WithError(err).Fatal("Could not load credentials from config.")
 	}
+
+	clusterConfig, err := clientcmd.NewDefaultClientConfig(*credentials, &clientcmd.ConfigOverrides{}).ClientConfig()
+	if err != nil {
+		logrus.WithError(err).Fatal("Could not load client configuration.")
+	}
+
+	client, err := kubernetes.NewForConfig(clusterConfig)
+	if err != nil {
+		logrus.WithError(err).Fatal("Could not create Kubernetes client.")
+	}
+
+	kubeClient := adapter{client: client.CoreV1(), defaultNamespace: configAgent.Config().ProwJobNamespace}
 
 	// act like the whole repo just got committed
 	var changes []github.PullRequestChange
@@ -109,7 +129,7 @@ func main() {
 		// this error as we can be certain it won't occur
 		if relPath, err := filepath.Rel(o.sourcePath, path); err == nil {
 			changes = append(changes, github.PullRequestChange{
-				Filename: filepath.Join(relPath, info.Name()),
+				Filename: relPath,
 				Status:   github.PullRequestFileAdded,
 			})
 		} else {
@@ -120,7 +140,7 @@ func main() {
 
 	for cm, data := range updateconfig.FilterChanges(pluginAgent.Config().ConfigUpdater.Maps, changes, logrus.NewEntry(logrus.StandardLogger())) {
 		logger := logrus.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace}})
-		if err := updateconfig.Update(&osFileGetter{root: o.sourcePath}, kubeClient, cm.Name, cm.Namespace, data); err != nil {
+		if err := updateconfig.Update(&osFileGetter{root: o.sourcePath}, &kubeClient, cm.Name, cm.Namespace, data, logger); err != nil {
 			logger.WithError(err).Error("failed to update config on cluster")
 		}
 	}
@@ -132,4 +152,38 @@ type osFileGetter struct {
 
 func (g *osFileGetter) GetFile(filename string) ([]byte, error) {
 	return ioutil.ReadFile(filepath.Join(g.root, filename))
+}
+
+type adapter struct {
+	defaultNamespace string
+	client           corev1.CoreV1Interface
+}
+
+// GetConfigMap adapts the kube.Client GET method to the client-go equivalent
+func (a *adapter) GetConfigMap(name, namespace string) (kube.ConfigMap, error) {
+	if namespace == "" {
+		namespace = a.defaultNamespace
+	}
+	output, err := a.client.ConfigMaps(namespace).Get(name, metav1.GetOptions{})
+	return kube.ConfigMap(*output), err
+}
+
+// ReplaceConfigMap adapts the kube.Client PUT method to the client-go equivalent
+func (a *adapter) ReplaceConfigMap(name string, config kube.ConfigMap) (kube.ConfigMap, error) {
+	if config.Namespace == "" {
+		config.Namespace = a.defaultNamespace
+	}
+	input := v1api.ConfigMap(config)
+	output, err := a.client.ConfigMaps(input.Namespace).Update(&input)
+	return kube.ConfigMap(*output), err
+}
+
+// CreateConfigMap adapts the kube.Client POST method to the client-go equivalent
+func (a *adapter) CreateConfigMap(content kube.ConfigMap) (kube.ConfigMap, error) {
+	if content.Namespace == "" {
+		content.Namespace = a.defaultNamespace
+	}
+	input := v1api.ConfigMap(content)
+	output, err := a.client.ConfigMaps(input.Namespace).Create(&input)
+	return kube.ConfigMap(*output), err
 }
