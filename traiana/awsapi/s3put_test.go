@@ -1,37 +1,36 @@
 package awsapi
 
 import (
-	"fmt"
 	"io"
+	"k8s.io/test-infra/bazel-test-infra/external/go_sdk/src/context"
 	"os"
 	"testing"
 	"time"
 )
 
-func Test_S3Writer(t *testing.T) {
-	o := ClientOption {
+func Test_S3Put(t *testing.T) {
+	opt := ClientOption {
 			CredentialsFile: "/users/Traiana/alexa/.aws/credentials",
 	}
 
-	client, err := NewClient(o)
-
-	s3Writer := &S3Writer{
-			handle: Bucket("dev-okro-io", client),
-			key: "lala",
-	}
+	client, err := NewClient(opt)
+	b := client.Bucket("dev-okro-io")
+	o := b.Object("lala")
+	w := o.NewWriter(context.Background())
 
 	file, err := os.Open("/Users/Traiana/alexa/Downloads/f1.txt")
+
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		t.Error(err)
 	}
+
 	defer file.Close()
 
-	io.Copy(s3Writer, &SlowReader{file})
-	s3Writer.Close()
+	io.Copy(w, &SlowReader{file})
+	w.Close()
 }
 
-/*func Test_S3Put(t *testing.T) {
+/*func Test_S3Put___(t *testing.T) {
 	o := ClientOption {
 		CredentialsFile: "/users/Traiana/alexa/.aws/credentials",
 	}

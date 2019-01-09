@@ -49,7 +49,7 @@ func (c *Client) Bucket(name string) *BucketHandle {
 
 type StorageWriter struct {
 	gcs      *storage.Writer
-	aws      *awsapi.S3Writer
+	aws      *awsapi.Writer2Reader
 	Metadata map[string]string // You must call SetMetadata() after setting this field
 }
 
