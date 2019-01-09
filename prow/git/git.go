@@ -316,6 +316,14 @@ func (r *Repo) Config(key, value string) error {
 	return nil
 }
 
+func (r *Repo) Log(key, value string) error {
+	r.logger.Infof("Running git log %s %s", key, value)
+	if b, err := r.gitCommand("log", key, value).CombinedOutput(); err != nil {
+		return fmt.Errorf("git log %s %s failed: %v. output: %s",key,value,err, string(b))
+	}
+	return nil
+}
+
 // retryCmd will retry the command a few times with backoff. Use this for any
 // commands that will be talking to GitHub, such as clones or fetches.
 func retryCmd(l *logrus.Entry, dir, cmd string, arg ...string) ([]byte, error) {

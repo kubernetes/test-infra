@@ -18,15 +18,14 @@ package mergecommitblocker
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/github/fakegithub"
 	"reflect"
 	"testing"
-)
-const (
-	helpWanted = "help-wanted"
-	mergeCommit = "do-not-merge/contains-merge-commits"
+
+	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/labels"
 )
 type ghc struct {
 	*testing.T
@@ -64,8 +63,8 @@ func TestHandlePR(t *testing.T) {
 					},
 				}},
 			},
-			initialLabels: []string{helpWanted},
-			addedLabel: fmt.Sprintf("/#3:%s", mergeCommit),
+			initialLabels: []string{labels.Help},
+			addedLabel: fmt.Sprintf("/#3:%s", labels.MergeCommits),
 		},
 		{
 			name: "should remove label with do-not-merge/contains-merge-commits when merge commits have been removed",
@@ -77,8 +76,8 @@ func TestHandlePR(t *testing.T) {
 				{SHA: "sha", Commit: github.GitCommit{Message: "One Commit"}},
 				{SHA: "sha2", Commit: github.GitCommit{Message: "Two commit"}},
 			},
-			initialLabels: []string{fmt.Sprintf("/#3:%s", mergeCommit)},
-			removedLabel: fmt.Sprintf("/#3:%s", mergeCommit),
+			initialLabels: []string{fmt.Sprintf("/#3:%s", labels.MergeCommits)},
+			removedLabel: fmt.Sprintf("/#3:%s", labels.MergeCommits),
 		},
 	}
 	for _, tc := range testcases {

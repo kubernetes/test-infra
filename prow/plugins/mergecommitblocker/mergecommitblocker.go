@@ -21,7 +21,9 @@ package mergecommitblocker
 
 import (
 	"fmt"
+
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -76,12 +78,12 @@ func handlePR(gc githubClient, le *logrus.Entry, pe github.PullRequestEvent) err
 
 	}
 	// Iterate through them and check for parent commits
-	var needsLabel bool = false
+	needsLabel := false
 
 	for _, commit := range commits {
 		if len(commit.Parents) > 1 {
 			needsLabel = true
-			continue
+			break
 		}
 	}
 
@@ -91,10 +93,7 @@ func handlePR(gc githubClient, le *logrus.Entry, pe github.PullRequestEvent) err
 		le.Warnf("while retrieving labels, error: %v", err)
 	}
 
-	f := func(label string, labels []github.Label) bool {
-		return github.HasLabel(label, labels)
-	}
-	hasLabel := f(labels.MergeCommits, issueLabels)
+	hasLabel:= github.HasLabel(labels.MergeCommits, issueLabels)
 
 	if hasLabel && !needsLabel {
 		le.Infof("Removing %q Label for %s/%s#%d", labels.MergeCommits, owner, repo, num)
