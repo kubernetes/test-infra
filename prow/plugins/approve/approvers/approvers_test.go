@@ -715,7 +715,7 @@ If they are not already assigned, you can assign the PR to them by writing ` + "
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -757,7 +757,7 @@ This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Al
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -801,7 +801,7 @@ If they are not already assigned, you can assign the PR to them by writing ` + "
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -845,7 +845,7 @@ This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Al
 
 Associated issue: *#12345*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -888,7 +888,7 @@ This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Al
 
 Associated issue requirement bypassed by: *<a href="REFERENCE" title="Approved">Alice</a>*, *<a href="REFERENCE" title="Approved">Bill</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -933,7 +933,7 @@ If they are not already assigned, you can assign the PR to them by writing ` + "
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 

@@ -198,7 +198,7 @@ func TestHandle(t *testing.T) {
 
 This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -234,7 +234,7 @@ We suggest the following additional approver: **cjwagner**
 
 If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -268,7 +268,7 @@ This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
 
 Associated issue requirement bypassed by: *<a href="" title="Approved">Alice</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -303,7 +303,7 @@ This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
 
 Associated issue: *#42*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -348,7 +348,7 @@ This pull-request has been approved by: *<a href="" title="Approved">ALIcE</a>*,
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with `+"`/approve no-issue`"+`
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -401,7 +401,7 @@ If they are not already assigned, you can assign the PR to them by writing ` + "
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -485,7 +485,7 @@ This pull-request has been approved by: *<a href="" title="Approved">alice</a>*
 
 Associated issue: *#1*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -551,7 +551,7 @@ Approval requirements bypassed by manually added approval.
 
 This pull-request has been approved by:
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -598,7 +598,7 @@ We suggest the following additional approver: **alice**
 
 If they are not already assigned, you can assign the PR to them by writing `+"`/assign @alice`"+` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -641,7 +641,7 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 
 This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -677,7 +677,7 @@ We suggest the following additional approver: **cjwagner**
 
 If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -709,7 +709,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 
 This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -749,7 +749,7 @@ We suggest the following additional approver: **cjwagner**
 
 If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -790,7 +790,7 @@ We suggest the following additional approver: **cjwagner**
 
 If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -827,7 +827,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 
 This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -868,7 +868,7 @@ We suggest the following additional approver: **cjwagner**
 
 If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -906,7 +906,7 @@ We suggest the following additional approver: **cjwagner**
 
 If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -938,7 +938,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 
 This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -971,7 +971,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 
 This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
