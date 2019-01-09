@@ -9,6 +9,7 @@ load(
 go_test(
     name = "go_default_test",
     srcs = [
+        "config_test.go",
         "plugins_test.go",
         "respond_test.go",
     ],
@@ -19,6 +20,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = [
+        "config.go",
         "plugins.go",
         "respond.go",
     ],
