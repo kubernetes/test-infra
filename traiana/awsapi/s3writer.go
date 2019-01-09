@@ -1,9 +1,9 @@
 package awsapi
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"bufio"
 	"io"
+	"os"
 )
 
 // S3Writer is a wrapper around S3Put. This way we can write to S3 using io.Copy
@@ -25,7 +25,7 @@ func (w *S3Writer) Write(bytes []byte) (n int, err error) {
 			error: make(chan error, 1),
 		}
 
-		go s3Put(w.source, w.handle, w.key)
+		go s3PutFromSource(w.source, w.handle, w.key)
 	}
 
 	w.source.buffer <- bytes
@@ -43,16 +43,31 @@ func (w S3Writer) Close() error {
 	return err
 }
 
-func s3Put(src *S3Source, handle *BucketHandle, key string) {
-	uploader := s3manager.NewUploader(handle.client.session)
+func s3PutFromSource(src *S3Source, handle *BucketHandle, key string) {
+	err := s3Put(src, handle, key)
+
+	src.error <- err
+}
+
+func s3Put(reader io.Reader, handle *BucketHandle, key string) error {
+	/*uploader := s3manager.NewUploader(handle.client.session)
 
 	_, err := uploader.Upload(&s3manager.UploadInput{
-		Body:   src,
+		Body:   reader,
 		Bucket: aws.String(handle.bucket),
 		Key:    aws.String(key),
 	})
 
-	src.error <- err
+		return err
+
+*/
+	target, err := os.Create("/Users/Traiana/alexa/Downloads/fw.txt")
+	defer target.Close()
+
+	w := bufio.NewWriter(target)
+	io.Copy(w, reader)
+	w.Flush()
+	return err
 }
 
 type S3Source struct {
@@ -61,13 +76,16 @@ type S3Source struct {
 }
 
 func (s S3Source) Read(buffer []byte) (n int, err error) {
-	buffer = <-s.buffer
+	//TODO: bug - read up to max buffer size
+	buf := <-s.buffer
 
 	err = nil
 
-	if len(buffer) == 0 {
+	if len(buf) == 0 {
 		err = io.EOF
+	} else {
+		copy(buffer, buf)
 	}
 
-	return len(buffer), err
+	return len(buf), err
 }
