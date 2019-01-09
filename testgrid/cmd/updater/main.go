@@ -864,7 +864,7 @@ func (b Builds) Less(i, j int) bool {
 func listBuilds(ctx context.Context, client *storage.Client, path gcs.Path) (Builds, error) {
 	log.Printf("LIST: %s", path)
 	p := path.Object()
-	if p[len(p)-1] != '/' {
+	if !strings.HasSuffix(p, "/") {
 		p += "/"
 	}
 	bkt := client.Bucket(path.Bucket())
@@ -881,6 +881,30 @@ func listBuilds(ctx context.Context, client *storage.Client, path gcs.Path) (Bui
 		if err != nil {
 			return nil, fmt.Errorf("failed to list objects: %v", err)
 		}
+
+		// if this is a link under directory, resolve the build value
+		if link := objAttrs.Metadata["link"]; len(link) > 0 {
+			// links created by bootstrap.py have a space
+			link = strings.TrimSpace(link)
+			u, err := url.Parse(link)
+			if err != nil {
+				return nil, fmt.Errorf("could not parse link for key %s: %v", objAttrs.Name, err)
+			}
+			if !strings.HasSuffix(u.Path, "/") {
+				u.Path += "/"
+			}
+			var linkPath gcs.Path
+			if err := linkPath.SetURL(u); err != nil {
+				return nil, fmt.Errorf("could not make GCS path for key %s: %v", objAttrs.Name, err)
+			}
+			all = append(all, Build{
+				Bucket:  bkt,
+				Context: ctx,
+				Prefix:  linkPath.Object(),
+			})
+			continue
+		}
+
 		if len(objAttrs.Prefix) == 0 {
 			continue
 		}

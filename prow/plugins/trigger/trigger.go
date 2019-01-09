@@ -106,7 +106,10 @@ type kubeClient interface {
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
 }
 
-type client struct {
+// Client holds the necessary structures to work with prow via logging, github, kubernetes and its configuration.
+//
+// TODO(fejta): consider exporting an interface rather than a struct
+type Client struct {
 	GitHubClient githubClient
 	KubeClient   kubeClient
 	Config       *config.Config
@@ -118,8 +121,8 @@ type trustedUserClient interface {
 	IsMember(org, user string) (bool, error)
 }
 
-func getClient(pc plugins.PluginClient) client {
-	return client{
+func getClient(pc plugins.Agent) Client {
+	return Client{
 		GitHubClient: pc.GitHubClient,
 		Config:       pc.Config,
 		KubeClient:   pc.KubeClient,
@@ -127,16 +130,16 @@ func getClient(pc plugins.PluginClient) client {
 	}
 }
 
-func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
 	org, repo, _ := orgRepoAuthor(pr.PullRequest)
 	return handlePR(getClient(pc), pc.PluginConfig.TriggerFor(org, repo), pr)
 }
 
-func handleGenericCommentEvent(pc plugins.PluginClient, gc github.GenericCommentEvent) error {
+func handleGenericCommentEvent(pc plugins.Agent, gc github.GenericCommentEvent) error {
 	return handleGenericComment(getClient(pc), pc.PluginConfig.TriggerFor(gc.Repo.Owner.Login, gc.Repo.Name), gc)
 }
 
-func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {
+func handlePush(pc plugins.Agent, pe github.PushEvent) error {
 	return handlePE(getClient(pc), pe)
 }
 
@@ -203,7 +206,9 @@ func allContexts(parent config.Presubmit) []string {
 	return contexts
 }
 
-func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts map[string]bool, body, eventGUID string) error {
+// RunOrSkipRequested evaluates requestJobs to determine which config.Presubmits to
+// run and which ones to skip and once execute the ones that should be ran.
+func RunOrSkipRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts map[string]bool, body, eventGUID string) error {
 	org := pr.Base.Repo.Owner.Login
 	repo := pr.Base.Repo.Name
 	number := pr.Number

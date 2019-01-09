@@ -4,6 +4,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
   spec:
     containers:
     - args:
@@ -14,7 +15,6 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
       - --extract=ci/k8s-stable1
       - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
@@ -24,13 +24,14 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-master-upgrade
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
   spec:
     containers:
     - args:
@@ -41,7 +42,6 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
       - --extract=ci/k8s-stable1
       - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
@@ -51,13 +51,14 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUMasterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-gpu-stable1-beta-cluster-upgrade
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
   spec:
     containers:
     - args:
@@ -68,7 +69,6 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
       - --extract=ci/k8s-beta
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
@@ -78,13 +78,14 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterUpgrade\] --upgrade-target=ci/k8s-beta --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-gpu-stable1-beta-master-upgrade
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
   spec:
     containers:
     - args:
@@ -95,7 +96,6 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
       - --extract=ci/k8s-beta
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
@@ -105,13 +105,14 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUMasterUpgrade\] --upgrade-target=ci/k8s-beta --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
   spec:
     containers:
     - args:
@@ -122,7 +123,6 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
       - --extract=ci/latest
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
@@ -132,13 +132,14 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
   spec:
     containers:
     - args:
@@ -149,7 +150,6 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
       - --extract=ci/latest
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
@@ -159,13 +159,14 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUMasterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
   spec:
     containers:
     - args:
@@ -177,7 +178,6 @@ periodics:
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
       - --env=TEST_ETCD_VERSION=3.2.10
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
       - --extract=ci/k8s-stable1
       - --extract=ci/k8s-beta
       - --gcp-node-image=gci
@@ -187,13 +187,14 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterDowngrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
   spec:
     containers:
     - args:
@@ -205,7 +206,6 @@ periodics:
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
       - --env=TEST_ETCD_VERSION=3.2.10
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
       - --extract=ci/k8s-stable1
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -215,4 +215,4 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterDowngrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master

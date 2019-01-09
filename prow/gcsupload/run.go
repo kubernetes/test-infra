@@ -27,6 +27,7 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
+
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
@@ -69,7 +70,9 @@ func (o Options) assembleTargets(spec *downwardapi.JobSpec, extra map[string]gcs
 	// job we're uploading artifacts for
 	if alias := gcs.AliasForSpec(spec); alias != "" {
 		fullBasePath := "gs://" + path.Join(o.Bucket, jobBasePath)
-		uploadTargets[alias] = gcs.DataUpload(strings.NewReader(fullBasePath))
+		uploadTargets[alias] = gcs.DataUploadWithMetadata(strings.NewReader(fullBasePath), map[string]string{
+			"x-goog-meta-link": fullBasePath,
+		})
 	}
 
 	if latestBuilds := gcs.LatestBuildForSpec(spec, builder); len(latestBuilds) > 0 {

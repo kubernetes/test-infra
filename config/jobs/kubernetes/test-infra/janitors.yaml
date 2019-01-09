@@ -1,34 +1,4 @@
 periodics:
-- interval: 1h
-  name: maintenance-ci-aws-janitor
-  labels:
-    preset-service-account: "true"
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=60
-      - --service-account=/etc/service-account/service-account.json
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=execute
-      - --
-      - /aws-janitor
-      - --
-      - --ttl=2h30m
-      - --path=s3://k8s-kops-prow/objs.json
-      env:
-      - name: AWS_SHARED_CREDENTIALS_FILE
-        value: /workspace/.aws/credentials
-      image: gcr.io/k8s-test-infra-aws/aws-janitor:v20180606-bb012b637
-      volumeMounts:
-      - mountPath: /workspace/.aws
-        name: aws-cred
-        readOnly: true
-    volumes:
-    - name: aws-cred
-      secret:
-        defaultMode: 256
-        secretName: aws-cred-new
 
 - interval: 24h
   name: maintenance-ci-janitor
@@ -51,7 +21,7 @@ periodics:
       - --config-path=prow/config.yaml
       - --job-config-path=config/jobs
       - --janitor-path=boskos/janitor/janitor.py
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
       resources:
         requests:
           cpu: 5
@@ -72,7 +42,7 @@ periodics:
       - --
       - --mode=pr
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-experimental
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-experimental
       resources:
         requests:
           cpu: 5
@@ -94,7 +64,7 @@ periodics:
       - --mode=scale
       - --ratelimit=5
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-experimental
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-experimental
       resources:
         requests:
           cpu: 5

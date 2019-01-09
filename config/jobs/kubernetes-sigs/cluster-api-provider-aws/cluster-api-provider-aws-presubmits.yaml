@@ -1,5 +1,15 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-aws:
+  - name: pull-cluster-api-provider-aws-bazel-verify
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.12
+        command:
+        - "./hack/verify-bazel.sh"
   - name: pull-cluster-api-provider-aws-bazel-test
     always_run: true
     optional: false
@@ -7,7 +17,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.12
         command:
         - "./scripts/ci-bazel-test.sh"
   - name: pull-cluster-api-provider-aws-bazel-build
@@ -17,7 +27,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.12
         command:
         - "./scripts/ci-bazel-build.sh"
   - name: pull-cluster-api-provider-aws-bazel-e2e
@@ -29,7 +39,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master # needs bazel 0.18+
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master # needs bazel 0.18+
         command:
         - "runner.sh"
         - "./scripts/ci-bazel-e2e.sh"
@@ -51,3 +61,13 @@ presubmits:
         hostPath:
           path: /sys/fs/cgroup
           type: Directory
+  - name: pull-cluster-api-provider-aws-verify-boilerplate
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+        command:
+        - "./hack/verify_boilerplate.py"

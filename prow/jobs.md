@@ -4,8 +4,8 @@ For a brief overview of how Prow runs jobs take a look at ["Life of a Prow Job"]
 
 ## How to configure new jobs
 
-To configure a new job you'll need to add an entry into [config.yaml](config.yaml).
-If you have [update-config](plugins/updateconfig) plugin deployed then the
+To configure a new job you'll need to add an entry into [config.yaml](/prow/config.yaml).
+If you have [update-config](/prow/plugins/updateconfig) plugin deployed then the
 config will be automatically updated once the PR is merged, else you will need
 to run `make update-config`. This does not require redeploying any binaries,
 and will take effect within a minute.
@@ -14,7 +14,7 @@ Periodic config looks like so:
 
 ```yaml
 periodics:
-- name: foo-job         # Names need not be unique.
+- name: foo-job         # Names need not be unique, but must match the regex ^[A-Za-z0-9-._]+$
   decorate: true        # Enable Pod Utility decoration. (see below)
   interval: 1h          # Anything that can be parsed by time.ParseDuration.
   spec: {}              # Valid Kubernetes PodSpec.
@@ -29,10 +29,10 @@ postsubmits:
     decorate: true        # As for periodics.
     spec: {}              # As for periodics.
     max_concurrency: 10   # Run no more than this number concurrently.
-    branches:             # Only run against these branches.
-    - master
-    skip_branches:        # Do not run against these branches.
-    - release
+    branches:             # Regexps, only run against these branches.
+    - ^master$
+    skip_branches:        # Regexps, do not run against these branches.
+    - ^release-.*$
 ```
 
 Postsubmits are run when a push event happens on a repo, hence they are

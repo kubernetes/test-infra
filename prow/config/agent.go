@@ -28,18 +28,19 @@ import (
 // therein.
 type Agent struct {
 	sync.Mutex
-	c *Config
+	c             *Config
+	subscriptions []chan<- Delta
 }
 
 // Start will begin polling the config file at the path. If the first load
-// fails, Start with return the error and abort. Future load failures will log
+// fails, Start will return the error and abort. Future load failures will log
 // the failure message but continue attempting to load.
 func (ca *Agent) Start(prowConfig, jobConfig string) error {
 	c, err := Load(prowConfig, jobConfig)
 	if err != nil {
 		return err
 	}
-	ca.c = c
+	ca.Set(c)
 	go func() {
 		var lastModTime time.Time
 		// Rarely, if two changes happen in the same second, mtime will
@@ -83,13 +84,26 @@ func (ca *Agent) Start(prowConfig, jobConfig string) error {
 					WithError(err).Error("Error loading config.")
 			} else {
 				skips = 0
-				ca.Lock()
-				ca.c = c
-				ca.Unlock()
+				ca.Set(c)
 			}
 		}
 	}()
 	return nil
+}
+
+// Delta represents the before and after states of a Config change detected by the Agent.
+type Delta struct {
+	Before, After Config
+}
+
+// Subscribe registers the channel for messages on config reload.
+// The caller can expect a copy of the previous and current config
+// to be sent down the subscribed channel when a new configuration
+// is loaded.
+func (ca *Agent) Subscribe(subscription chan<- Delta) {
+	ca.Lock()
+	defer ca.Unlock()
+	ca.subscriptions = append(ca.subscriptions, subscription)
 }
 
 // Config returns the latest config. Do not modify the config.
@@ -103,5 +117,15 @@ func (ca *Agent) Config() *Config {
 func (ca *Agent) Set(c *Config) {
 	ca.Lock()
 	defer ca.Unlock()
+	var oldConfig Config
+	if ca.c != nil {
+		oldConfig = *ca.c
+	}
+	delta := Delta{oldConfig, *c}
+	for _, subscription := range ca.subscriptions {
+		// we can't let unbuffered channels for subscriptions lock us up
+		// here, so we will send events best-effort into the channels we have
+		go func(out chan<- Delta) { out <- delta }(subscription)
+	}
 	ca.c = c
 }

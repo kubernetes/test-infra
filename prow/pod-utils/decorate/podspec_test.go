@@ -583,7 +583,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
 								{Name: "BUILD_NUMBER", Value: "blabla"},
-								{Name: "ENTRYPOINT_OPTIONS", Value: `{"args":["/bin/thing","some","args"],"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}`},
+								{Name: "ENTRYPOINT_OPTIONS", Value: `{"args":["/bin/thing","some","args"],"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}`},
 								{Name: "GOPATH", Value: "/home/prow/go"},
 								{Name: "JOB_NAME", Value: "job-name"},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
@@ -618,7 +618,7 @@ func TestProwJobToPod(t *testing.T) {
 							Command: []string{"/sidecar"},
 							Env: []v1.EnvVar{
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
-								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"wrapper_options":{"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}}`},
+								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"wrapper_options":{"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}}`},
 							},
 							VolumeMounts: []v1.VolumeMount{
 								{
@@ -804,7 +804,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
 								{Name: "BUILD_NUMBER", Value: "blabla"},
-								{Name: "ENTRYPOINT_OPTIONS", Value: `{"args":["/bin/thing","some","args"],"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}`},
+								{Name: "ENTRYPOINT_OPTIONS", Value: `{"args":["/bin/thing","some","args"],"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}`},
 								{Name: "GOPATH", Value: "/home/prow/go"},
 								{Name: "JOB_NAME", Value: "job-name"},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
@@ -839,7 +839,7 @@ func TestProwJobToPod(t *testing.T) {
 							Command: []string{"/sidecar"},
 							Env: []v1.EnvVar{
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
-								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"wrapper_options":{"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}}`},
+								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"wrapper_options":{"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}}`},
 							},
 							VolumeMounts: []v1.VolumeMount{
 								{
@@ -1034,7 +1034,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
 								{Name: "BUILD_NUMBER", Value: "blabla"},
-								{Name: "ENTRYPOINT_OPTIONS", Value: `{"args":["/bin/thing","some","args"],"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}`},
+								{Name: "ENTRYPOINT_OPTIONS", Value: `{"args":["/bin/thing","some","args"],"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}`},
 								{Name: "GOPATH", Value: "/home/prow/go"},
 								{Name: "JOB_NAME", Value: "job-name"},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
@@ -1069,7 +1069,7 @@ func TestProwJobToPod(t *testing.T) {
 							Command: []string{"/sidecar"},
 							Env: []v1.EnvVar{
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
-								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"wrapper_options":{"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}}`},
+								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"wrapper_options":{"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}}`},
 							},
 							VolumeMounts: []v1.VolumeMount{
 								{
@@ -1280,7 +1280,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
 								{Name: "BUILD_NUMBER", Value: "blabla"},
-								{Name: "ENTRYPOINT_OPTIONS", Value: `{"args":["/bin/thing","some","args"],"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}`},
+								{Name: "ENTRYPOINT_OPTIONS", Value: `{"args":["/bin/thing","some","args"],"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}`},
 								{Name: "GOPATH", Value: "/home/prow/go"},
 								{Name: "JOB_NAME", Value: "job-name"},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
@@ -1315,7 +1315,7 @@ func TestProwJobToPod(t *testing.T) {
 							Command: []string{"/sidecar"},
 							Env: []v1.EnvVar{
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
-								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"wrapper_options":{"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}}`},
+								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"wrapper_options":{"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}}`},
 							},
 							VolumeMounts: []v1.VolumeMount{
 								{
@@ -1441,7 +1441,7 @@ func TestProwJobToPod(t *testing.T) {
 							Command: []string{"/initupload"},
 							Env: []v1.EnvVar{
 								{Name: "INITUPLOAD_OPTIONS", Value: `{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false}`},
-								{Name: "JOB_SPEC", Value: `{"type":"periodic","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{}}`},
+								{Name: "JOB_SPEC", Value: `{"type":"periodic","job":"job-name","buildid":"blabla","prowjobid":"pod"}`},
 							},
 							VolumeMounts: []kube.VolumeMount{
 								{
@@ -1481,10 +1481,10 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
 								{Name: "BUILD_NUMBER", Value: "blabla"},
-								{Name: "ENTRYPOINT_OPTIONS", Value: `{"args":["/bin/thing","some","args"],"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}`},
+								{Name: "ENTRYPOINT_OPTIONS", Value: `{"args":["/bin/thing","some","args"],"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}`},
 								{Name: "GOPATH", Value: "/home/prow/go"},
 								{Name: "JOB_NAME", Value: "job-name"},
-								{Name: "JOB_SPEC", Value: `{"type":"periodic","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{}}`},
+								{Name: "JOB_SPEC", Value: `{"type":"periodic","job":"job-name","buildid":"blabla","prowjobid":"pod"}`},
 								{Name: "JOB_TYPE", Value: "periodic"},
 								{Name: "PROW_JOB_ID", Value: "pod"},
 							},
@@ -1504,8 +1504,8 @@ func TestProwJobToPod(t *testing.T) {
 							Image:   "sidecar:tag",
 							Command: []string{"/sidecar"},
 							Env: []v1.EnvVar{
-								{Name: "JOB_SPEC", Value: `{"type":"periodic","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{}}`},
-								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"wrapper_options":{"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}}`},
+								{Name: "JOB_SPEC", Value: `{"type":"periodic","job":"job-name","buildid":"blabla","prowjobid":"pod"}`},
+								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"wrapper_options":{"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}}`},
 							},
 							VolumeMounts: []v1.VolumeMount{
 								{
@@ -1583,7 +1583,12 @@ func TestProwJobToPod(t *testing.T) {
 					}},
 					PathAlias: "somewhere/else",
 				},
-				ExtraRefs: []kube.Refs{},
+				ExtraRefs: []kube.Refs{
+					{
+						Org:  "extra-org",
+						Repo: "extra-repo",
+					},
+				},
 				PodSpec: &v1.PodSpec{
 					Containers: []v1.Container{
 						{
@@ -1624,7 +1629,7 @@ func TestProwJobToPod(t *testing.T) {
 							Command: []string{"/initupload"},
 							Env: []v1.EnvVar{
 								{Name: "INITUPLOAD_OPTIONS", Value: `{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false}`},
-								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
+								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"},"extra_refs":[{"org":"extra-org","repo":"extra-repo"}]}`},
 							},
 							VolumeMounts: []kube.VolumeMount{
 								{
@@ -1664,10 +1669,10 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
 								{Name: "BUILD_NUMBER", Value: "blabla"},
-								{Name: "ENTRYPOINT_OPTIONS", Value: `{"args":["/bin/thing","some","args"],"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}`},
+								{Name: "ENTRYPOINT_OPTIONS", Value: `{"args":["/bin/thing","some","args"],"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}`},
 								{Name: "GOPATH", Value: "/home/prow/go"},
 								{Name: "JOB_NAME", Value: "job-name"},
-								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
+								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"},"extra_refs":[{"org":"extra-org","repo":"extra-repo"}]}`},
 								{Name: "JOB_TYPE", Value: "presubmit"},
 								{Name: "PROW_JOB_ID", Value: "pod"},
 								{Name: "PULL_BASE_REF", Value: "base-ref"},
@@ -1694,8 +1699,8 @@ func TestProwJobToPod(t *testing.T) {
 							Image:   "sidecar:tag",
 							Command: []string{"/sidecar"},
 							Env: []v1.EnvVar{
-								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
-								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"wrapper_options":{"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}}`},
+								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"},"extra_refs":[{"org":"extra-org","repo":"extra-repo"}]}`},
+								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"wrapper_options":{"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}}`},
 							},
 							VolumeMounts: []v1.VolumeMount{
 								{

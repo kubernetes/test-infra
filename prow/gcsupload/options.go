@@ -25,7 +25,7 @@ import (
 	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
-// NewOptions returns an empty Options with no nil fields
+// NewOptions returns an empty Options with no nil fields.
 func NewOptions() *Options {
 	return &Options{
 		GCSConfiguration: &kube.GCSConfiguration{},
@@ -35,27 +35,27 @@ func NewOptions() *Options {
 // Options exposes the configuration necessary
 // for defining where in GCS an upload will land.
 type Options struct {
-	// Items are files or directories to upload
+	// Items are files or directories to upload.
 	Items []string `json:"items,omitempty"`
 
-	// SubDir is appended to the GCS path
+	// SubDir is appended to the GCS path.
 	SubDir string `json:"sub_dir,omitempty"`
 
 	*kube.GCSConfiguration
 
 	// GcsCredentialsFile is the path to the JSON
-	// credentials for pushing to GCS
+	// credentials for pushing to GCS.
 	GcsCredentialsFile string `json:"gcs_credentials_file,omitempty"`
 	DryRun             bool   `json:"dry_run"`
 
 	// gcsPath is used to store human-provided GCS
 	// paths that are parsed to get more granular
-	// fields
+	// fields.
 	gcsPath gcs.Path
 }
 
 // Validate ensures that the set of options are
-// self-consistent and valid
+// self-consistent and valid.
 func (o *Options) Validate() error {
 	if o.gcsPath.String() != "" {
 		o.Bucket = o.gcsPath.Bucket()
@@ -76,7 +76,7 @@ func (o *Options) Validate() error {
 }
 
 // ConfigVar exposes the environment variable used
-// to store serialized configuration
+// to store serialized configuration.
 func (o *Options) ConfigVar() string {
 	return JSONConfigEnvVar
 }
@@ -113,7 +113,7 @@ const (
 )
 
 // Encode will encode the set of options in the format that
-// is expected for the configuration environment variable
+// is expected for the configuration environment variable.
 func Encode(options Options) (string, error) {
 	encoded, err := json.Marshal(options)
 	return string(encoded), err

@@ -19,6 +19,7 @@ package trigger
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
@@ -27,7 +28,7 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-func handlePR(c client, trigger *plugins.Trigger, pr github.PullRequestEvent) error {
+func handlePR(c Client, trigger *plugins.Trigger, pr github.PullRequestEvent) error {
 	org, repo, a := orgRepoAuthor(pr.PullRequest)
 	author := string(a)
 	num := pr.PullRequest.Number
@@ -51,7 +52,7 @@ func handlePR(c client, trigger *plugins.Trigger, pr github.PullRequestEvent) er
 	case github.PullRequestActionReopened:
 		// When a PR is reopened, check that the user is in the org or that an org
 		// member had said "/ok-to-test" before building, resulting in label ok-to-test.
-		l, trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, nil)
+		l, trusted, err := TrustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, nil)
 		if err != nil {
 			return fmt.Errorf("could not validate PR: %s", err)
 		} else if trusted {
@@ -92,7 +93,7 @@ func handlePR(c client, trigger *plugins.Trigger, pr github.PullRequestEvent) er
 	case github.PullRequestActionLabeled:
 		// When a PR is LGTMd, if it is untrusted then build it once.
 		if pr.Label.Name == labels.LGTM {
-			_, trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, nil)
+			_, trusted, err := TrustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, nil)
 			if err != nil {
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
@@ -113,14 +114,14 @@ func orgRepoAuthor(pr github.PullRequest) (string, string, login) {
 	return org, repo, login(author)
 }
 
-func buildAllIfTrusted(c client, trigger *plugins.Trigger, pr github.PullRequestEvent) error {
+func buildAllIfTrusted(c Client, trigger *plugins.Trigger, pr github.PullRequestEvent) error {
 	// When a PR is updated, check that the user is in the org or that an org
 	// member has said "/ok-to-test" before building. There's no need to ask
 	// for "/ok-to-test" because we do that once when the PR is created.
 	org, repo, a := orgRepoAuthor(pr.PullRequest)
 	author := string(a)
 	num := pr.PullRequest.Number
-	l, trusted, err := trustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, nil)
+	l, trusted, err := TrustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, nil)
 	if err != nil {
 		return fmt.Errorf("could not validate PR: %s", err)
 	} else if trusted {
@@ -141,6 +142,7 @@ func welcomeMsg(ghc githubClient, trigger *plugins.Trigger, pr github.PullReques
 	var errors []error
 	org, repo, a := orgRepoAuthor(pr)
 	author := string(a)
+	encodedRepoFullName := url.QueryEscape(pr.Base.Repo.FullName)
 	var more string
 	if trigger != nil && trigger.TrustedOrg != "" && trigger.TrustedOrg != org {
 		more = fmt.Sprintf("or [%s](https://github.com/orgs/%s/people) ", trigger.TrustedOrg, trigger.TrustedOrg)
@@ -159,13 +161,13 @@ func welcomeMsg(ghc githubClient, trigger *plugins.Trigger, pr github.PullReques
 
 PRs from untrusted users cannot be marked as trusted with `+"`/ok-to-test`"+` in this repo meaning untrusted PR authors can never trigger tests themselves. Collaborators can still trigger tests on the PR using `+"`/test all`"+`.
 
-I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+I understand the commands that are listed [here](https://go.k8s.io/bot-commands?repo=%s).
 
 <details>
 
 %s
 </details>
-`, author, plugins.AboutThisBotWithoutCommands)
+`, author, encodedRepoFullName, plugins.AboutThisBotWithoutCommands)
 	} else {
 		comment = fmt.Sprintf(`Hi @%s. Thanks for your PR.
 
@@ -173,13 +175,13 @@ I'm waiting for a [%s](https://github.com/orgs/%s/people) %smember to verify tha
 
 Once the patch is verified, the new status will be reflected by the `+"`%s`"+` label.
 
-I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+I understand the commands that are listed [here](https://go.k8s.io/bot-commands?repo=%s).
 
 <details>
 
 %s
 </details>
-`, author, org, org, more, joinOrgURL, labels.OkToTest, plugins.AboutThisBotWithoutCommands)
+`, author, org, org, more, joinOrgURL, labels.OkToTest, encodedRepoFullName, plugins.AboutThisBotWithoutCommands)
 		if err := ghc.AddLabel(org, repo, pr.Number, labels.NeedsOkToTest); err != nil {
 			errors = append(errors, err)
 		}
@@ -195,9 +197,9 @@ I understand the commands that are listed [here](https://go.k8s.io/bot-commands)
 	return nil
 }
 
-// trustedPullRequest returns whether or not the given PR should be tested.
+// TrustedPullRequest returns whether or not the given PR should be tested.
 // It first checks if the author is in the org, then looks for "ok-to-test" label.
-func trustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org, repo string, num int, l []github.Label) ([]github.Label, bool, error) {
+func TrustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org, repo string, num int, l []github.Label) ([]github.Label, bool, error) {
 	// First check if the author is a member of the org.
 	if orgMember, err := TrustedUser(ghc, trigger, author, org, repo); err != nil {
 		return l, false, fmt.Errorf("error checking %s for trust: %v", author, err)
@@ -240,12 +242,12 @@ func trustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org,
 	return l, false, nil
 }
 
-func buildAll(c client, pr *github.PullRequest, eventGUID string) error {
+func buildAll(c Client, pr *github.PullRequest, eventGUID string) error {
 	var matchingJobs []config.Presubmit
 	for _, job := range c.Config.Presubmits[pr.Base.Repo.FullName] {
 		if job.AlwaysRun || job.RunIfChanged != "" {
 			matchingJobs = append(matchingJobs, job)
 		}
 	}
-	return runOrSkipRequested(c, pr, matchingJobs, nil, "", eventGUID)
+	return RunOrSkipRequested(c, pr, matchingJobs, nil, "", eventGUID)
 }

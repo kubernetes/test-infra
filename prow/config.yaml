@@ -7,10 +7,10 @@ plank:
     timeout: 7200000000000 # 2h
     grace_period: 15000000000 # 15s
     utility_images:
-      clonerefs: "gcr.io/k8s-prow/clonerefs:v20181119-ffa9de5"
-      initupload: "gcr.io/k8s-prow/initupload:v20181119-ffa9de5"
-      entrypoint: "gcr.io/k8s-prow/entrypoint:v20181119-ffa9de5"
-      sidecar: "gcr.io/k8s-prow/sidecar:v20181119-ffa9de5"
+      clonerefs: "gcr.io/k8s-prow/clonerefs:v20190108-6c7cbf7"
+      initupload: "gcr.io/k8s-prow/initupload:v20190108-6c7cbf7"
+      entrypoint: "gcr.io/k8s-prow/entrypoint:v20190108-6c7cbf7"
+      sidecar: "gcr.io/k8s-prow/sidecar:v20190108-6c7cbf7"
     gcs_configuration:
       bucket: "kubernetes-jenkins"
       path_strategy: "legacy"
@@ -28,11 +28,11 @@ deck:
     size_limit: 500000000 # 500MB
     viewers:
       "started.json|finished.json":
-      - "metadata-viewer"
+      - "metadata"
       "build-log.txt":
-      - "build-log-viewer"
+      - "buildlog"
       "artifacts/junit.*\\.xml":
-      - "junit-viewer"
+      - "junit"
   tide_update_period: 1s
   hidden_repos:
   - kubernetes-security
@@ -91,6 +91,11 @@ branch-protection:
             teams:
             - stage-bots
         code-generator:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        component-base:
           restrictions:
             users: []
             teams:
@@ -278,15 +283,7 @@ branch-protection:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
-        kubespray:
-          required_status_checks:
-            contexts:
-            - Kubespray CI Pipeline
         metrics-server:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
-        node-feature-discovery:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
@@ -297,6 +294,14 @@ branch-protection:
         - cla/linuxfoundation
       repos:
         kube-batch:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        kubespray:
+          required_status_checks:
+            contexts:
+            - Kubespray CI Pipeline
+        node-feature-discovery:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
@@ -355,7 +360,6 @@ tide:
     - kubernetes/frakti
     - kubernetes/gengo
     - kubernetes/git-sync
-    - kubernetes/heapster
     - kubernetes/ingress-gce
     - kubernetes/ingress-nginx
     - kubernetes/k8s.io
@@ -396,53 +400,6 @@ tide:
     - needs-rebase
   - repos:
     - kubernetes/kubernetes
-    milestone: v1.13
-    includedBranches:
-    - master
-    - release-1.13
-    labels:
-    - lgtm
-    - approved
-    - "cncf-cla: yes"
-    - priority/critical-urgent
-    - kind/bug
-    missingLabels:
-    - do-not-merge
-    - do-not-merge/blocked-paths
-    - do-not-merge/cherry-pick-not-approved
-    - do-not-merge/hold
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/release-note-label-needed
-    - do-not-merge/work-in-progress
-    - needs-rebase
-    - needs-sig
-  - repos:
-    - kubernetes/kubernetes
-    milestone: v1.13
-    includedBranches:
-    - master
-    - release-1.13
-    labels:
-    - lgtm
-    - approved
-    - "cncf-cla: yes"
-    - priority/critical-urgent
-    - kind/failing-test
-    missingLabels:
-    - do-not-merge
-    - do-not-merge/blocked-paths
-    - do-not-merge/cherry-pick-not-approved
-    - do-not-merge/hold
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/release-note-label-needed
-    - do-not-merge/work-in-progress
-    - needs-rebase
-    - needs-sig
-  - repos:
-    - kubernetes/kubernetes
-    excludedBranches:
-    - master
-    - release-1.13
     labels:
     - lgtm
     - approved
@@ -458,19 +415,32 @@ tide:
     - needs-kind
     - needs-rebase
     - needs-sig
+  - repos:
+    -  GoogleCloudPlatform/netd
+    labels:
+    - lgtm
+    - approved
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/hold
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/work-in-progress
+
   merge_method:
     helm/charts: squash
     kubeflow: squash
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
     kubernetes-incubator/service-catalog: squash
-    kubernetes-incubator/kubespray: squash
+    kubernetes-sigs/cluster-api: squash
     kubernetes-sigs/cluster-api-provider-aws: squash
+    kubernetes-sigs/cluster-api-provider-azure: squash
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
     kubernetes-sigs/cluster-api-provider-gcp: squash
     kubernetes-sigs/cluster-api-provider-openstack: squash
     kubernetes-sigs/cluster-api-provider-vsphere: squash
-    kubernetes-sigs/cluster-api: squash
+    kubernetes-sigs/kubespray: squash
     kubernetes/dashboard: squash
     kubernetes/kube-deploy: squash
     kubernetes/website: squash

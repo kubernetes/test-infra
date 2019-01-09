@@ -11,7 +11,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -39,7 +39,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -57,6 +57,8 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-kops-e2e-kubernetes-aws
+    branches:
+    - master
     always_run: true
     labels:
       preset-service-account: "true"
@@ -66,7 +68,7 @@ presubmits:
       preset-e2e-platform-aws: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         args:
         - --root=/go/src
         - --job=$(JOB_NAME)
@@ -93,6 +95,123 @@ presubmits:
           requests:
             memory: "6Gi"
 
+  - name: pull-kops-e2e-kubernetes-aws-stable1
+    branches:
+    - release-1.12
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+        args:
+        - --root=/go/src
+        - --job=$(JOB_NAME)
+        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=90
+        - --scenario=kubernetes_e2e
+        - --
+        - --aws
+        - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --check-leaked-resources=false
+        - --cluster=
+        - --extract=ci/k8s-stable1
+        - --ginkgo-parallel
+        - --kops-build
+        - --provider=aws
+        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+        - --timeout=55m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+
+  - name: pull-kops-e2e-kubernetes-aws-stable2
+    branches:
+    - release-1.11
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+        args:
+        - --root=/go/src
+        - --job=$(JOB_NAME)
+        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=90
+        - --scenario=kubernetes_e2e
+        - --
+        - --aws
+        - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --check-leaked-resources=false
+        - --cluster=
+        - --extract=ci/k8s-stable2
+        - --ginkgo-parallel
+        - --kops-build
+        - --provider=aws
+        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+        - --timeout=55m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+
+  - name: pull-kops-e2e-kubernetes-aws-stable3
+    branches:
+    - release-1.10
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-platform-aws: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+        args:
+        - --root=/go/src
+        - --job=$(JOB_NAME)
+        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=90
+        - --scenario=kubernetes_e2e
+        - --
+        - --aws
+        - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --check-leaked-resources=false
+        - --cluster=
+        - --extract=ci/k8s-stable3
+        - --ginkgo-parallel
+        - --kops-build
+        - --provider=aws
+        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+        - --timeout=55m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+
   - name: pull-kops-verify-bazel
     branches:
     - master
@@ -101,7 +220,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20180927-6b4facbe6
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -118,7 +237,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20180927-6b4facbe6
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -135,7 +254,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20180927-6b4facbe6
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -152,7 +271,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20180927-6b4facbe6
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -170,7 +289,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20180927-6b4facbe6
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -187,7 +306,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
       args:
       - --repo=k8s.io/kops
       - --repo=k8s.io/release
@@ -201,3 +320,34 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+
+postsubmits:
+  kubernetes/kops:
+  - name: kops-postsubmit
+    branches:
+    - master
+    skip_report: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-experimental
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        - "--timeout=60"
+        - "--scenario=kubernetes_execute_bazel"
+        - "--" # end bootstrap args, scenario args below
+        - "make"
+        - "prow-postsubmit"
+        - "UPLOAD_DEST=gs://kubernetes-release-dev/kops/ci"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "2Gi"

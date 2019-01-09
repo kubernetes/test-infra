@@ -5,7 +5,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         command:
         - make
         - test
@@ -18,9 +18,10 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -35,3 +36,6 @@ presubmits:
         - --test=false
         - --test-cmd=../test/e2e/test-cmd.sh
         - --timeout=50m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true

@@ -22,20 +22,20 @@ import (
 	"strings"
 	"time"
 
+	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowjobset "k8s.io/test-infra/prow/client/clientset/versioned"
+	prowjobscheme "k8s.io/test-infra/prow/client/clientset/versioned/scheme"
+	prowjobinfov1 "k8s.io/test-infra/prow/client/informers/externalversions/prowjobs/v1"
+	prowjoblisters "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/clone"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 
-	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowjobset "k8s.io/test-infra/prow/client/clientset/versioned"
-	prowjobscheme "k8s.io/test-infra/prow/client/clientset/versioned/scheme"
-	prowjobinfov1 "k8s.io/test-infra/prow/client/informers/externalversions/prowjobs/v1"
-	prowjoblisters "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
-
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
-
+	duckv1alpha1 "github.com/knative/pkg/apis/duck/v1alpha1"
+	"github.com/sirupsen/logrus"
 	untypedcorev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -48,42 +48,74 @@ import (
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
-	"k8s.io/client-go/util/workqueue"
-
-	"github.com/sirupsen/logrus"
 )
 
 const (
 	controllerName = "prow-build-crd"
 )
 
+type limiter interface {
+	ShutDown()
+	Get() (interface{}, bool)
+	Done(interface{})
+	Forget(interface{})
+	AddRateLimited(interface{})
+}
+
 type controller struct {
-	pjc    prowjobset.Interface
-	builds map[string]buildConfig
-	totURL string
+	pjNamespace string
+	pjc         prowjobset.Interface
+	builds      map[string]buildConfig
+	totURL      string
 
 	pjLister   prowjoblisters.ProwJobLister
 	pjInformer cache.SharedIndexInformer
 
-	workqueue workqueue.RateLimitingInterface
+	workqueue limiter
 
 	recorder record.EventRecorder
+
+	prowJobsDone bool
+	buildsDone   map[string]bool
+	wait         string
 }
 
 // hasSynced returns true when every prowjob and build informer has synced.
 func (c *controller) hasSynced() bool {
 	if !c.pjInformer.HasSynced() {
+		if c.wait != "prowjobs" {
+			c.wait = "prowjobs"
+			ns := c.pjNamespace
+			if ns == "" {
+				ns = "controller's"
+			}
+			logrus.Infof("Waiting on prowjobs in %s namespace...", ns)
+		}
 		return false // still syncing prowjobs
 	}
-	for _, cfg := range c.builds {
+	if !c.prowJobsDone {
+		c.prowJobsDone = true
+		logrus.Info("Synced prow jobs")
+	}
+	if c.buildsDone == nil {
+		c.buildsDone = map[string]bool{}
+	}
+	for n, cfg := range c.builds {
 		if !cfg.informer.Informer().HasSynced() {
+			if c.wait != n {
+				c.wait = n
+				logrus.Infof("Waiting on %s builds...", n)
+			}
 			return false // still syncing builds in at least one cluster
+		} else if !c.buildsDone[n] {
+			c.buildsDone[n] = true
+			logrus.Infof("Synced %s builds", n)
 		}
 	}
 	return true // Everyone is synced
 }
 
-func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjobinfov1.ProwJobInformer, buildConfigs map[string]buildConfig, totURL string) *controller {
+func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjobinfov1.ProwJobInformer, buildConfigs map[string]buildConfig, totURL, pjNamespace string, rl limiter) *controller {
 	// Log to events
 	prowjobscheme.AddToScheme(scheme.Scheme)
 	eventBroadcaster := record.NewBroadcaster()
@@ -93,13 +125,14 @@ func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjo
 
 	// Create struct
 	c := &controller{
-		pjc:        pjc,
-		builds:     buildConfigs,
-		pjLister:   pji.Lister(),
-		pjInformer: pji.Informer(),
-		workqueue:  workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), controllerName),
-		recorder:   recorder,
-		totURL:     totURL,
+		pjc:         pjc,
+		builds:      buildConfigs,
+		pjLister:    pji.Lister(),
+		pjInformer:  pji.Informer(),
+		workqueue:   rl,
+		recorder:    recorder,
+		totURL:      totURL,
+		pjNamespace: pjNamespace,
 	}
 
 	logrus.Info("Setting up event handlers")
@@ -107,7 +140,7 @@ func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjo
 	// Reconcile whenever a prowjob changes
 	pji.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
-			pj, ok := obj.(prowjobv1.ProwJob)
+			pj, ok := obj.(*prowjobv1.ProwJob)
 			if !ok {
 				logrus.Warnf("Ignoring bad prowjob add: %v", obj)
 				return
@@ -115,7 +148,7 @@ func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjo
 			c.enqueueKey(pj.Spec.Cluster, pj)
 		},
 		UpdateFunc: func(old, new interface{}) {
-			pj, ok := new.(prowjobv1.ProwJob)
+			pj, ok := new.(*prowjobv1.ProwJob)
 			if !ok {
 				logrus.Warnf("Ignoring bad prowjob update: %v", new)
 				return
@@ -123,7 +156,7 @@ func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjo
 			c.enqueueKey(pj.Spec.Cluster, pj)
 		},
 		DeleteFunc: func(obj interface{}) {
-			pj, ok := obj.(prowjobv1.ProwJob)
+			pj, ok := obj.(*prowjobv1.ProwJob)
 			if !ok {
 				logrus.Warnf("Ignoring bad prowjob delete: %v", obj)
 				return
@@ -134,12 +167,16 @@ func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjo
 
 	for ctx, cfg := range buildConfigs {
 		// Reconcile whenever a build changes.
+		ctx := ctx // otherwise it will change
 		cfg.informer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				c.enqueueKey(ctx, obj)
 			},
 			UpdateFunc: func(old, new interface{}) {
 				c.enqueueKey(ctx, new)
+			},
+			DeleteFunc: func(obj interface{}) {
+				c.enqueueKey(ctx, obj)
 			},
 		})
 	}
@@ -189,8 +226,8 @@ func (c *controller) runWorker() {
 }
 
 // toKey returns context/namespace/name
-func toKey(ctx string, obj metav1.ObjectMeta) string {
-	return strings.Join([]string{ctx, obj.Namespace, obj.Name}, "/")
+func toKey(ctx, namespace, name string) string {
+	return strings.Join([]string{ctx, namespace, name}, "/")
 }
 
 // fromKey converts toKey back into its parts
@@ -204,32 +241,34 @@ func fromKey(key string) (string, string, string, error) {
 
 // enqueueKey schedules an item for reconciliation.
 func (c *controller) enqueueKey(ctx string, obj interface{}) {
-	var meta metav1.ObjectMeta
 	switch o := obj.(type) {
-	case prowjobv1.ProwJob:
-		meta = o.ObjectMeta
-	case buildv1alpha1.Build:
-		meta = o.ObjectMeta
+	case *prowjobv1.ProwJob:
+		c.workqueue.AddRateLimited(toKey(ctx, o.Spec.Namespace, o.Name))
+	case *buildv1alpha1.Build:
+		c.workqueue.AddRateLimited(toKey(ctx, o.Namespace, o.Name))
 	default:
-		logrus.Warnf("cannot enqueue unknown type %v: %v", o, obj)
+		logrus.Warnf("cannot enqueue unknown type %T: %v", o, obj)
 		return
 	}
-
-	c.workqueue.AddRateLimited(toKey(ctx, meta))
 }
 
 type reconciler interface {
-	getProwJob(namespace, name string) (*prowjobv1.ProwJob, error)
+	getProwJob(name string) (*prowjobv1.ProwJob, error)
 	getBuild(context, namespace, name string) (*buildv1alpha1.Build, error)
 	deleteBuild(context, namespace, name string) error
 	createBuild(context, namespace string, b *buildv1alpha1.Build) (*buildv1alpha1.Build, error)
-	updateProwJob(namespace string, pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error)
+	updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error)
 	now() metav1.Time
 	buildID(prowjobv1.ProwJob) (string, error)
 }
 
-func (c *controller) getProwJob(namespace, name string) (*prowjobv1.ProwJob, error) {
-	return c.pjLister.ProwJobs(namespace).Get(name)
+func (c *controller) getProwJob(name string) (*prowjobv1.ProwJob, error) {
+	return c.pjLister.ProwJobs(c.pjNamespace).Get(name)
+}
+
+func (c *controller) updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
+	logrus.Debugf("updateProwJob(%s)", pj.Name)
+	return c.pjc.ProwV1().ProwJobs(c.pjNamespace).Update(pj)
 }
 
 func (c *controller) getBuild(context, namespace, name string) (*buildv1alpha1.Build, error) {
@@ -240,6 +279,7 @@ func (c *controller) getBuild(context, namespace, name string) (*buildv1alpha1.B
 	return b.informer.Lister().Builds(namespace).Get(name)
 }
 func (c *controller) deleteBuild(context, namespace, name string) error {
+	logrus.Debugf("deleteBuild(%s,%s,%s)", context, namespace, name)
 	b, ok := c.builds[context]
 	if !ok {
 		return errors.New("context not found")
@@ -247,16 +287,13 @@ func (c *controller) deleteBuild(context, namespace, name string) error {
 	return b.client.BuildV1alpha1().Builds(namespace).Delete(name, &metav1.DeleteOptions{})
 }
 func (c *controller) createBuild(context, namespace string, b *buildv1alpha1.Build) (*buildv1alpha1.Build, error) {
+	logrus.Debugf("createBuild(%s,%s,%s)", context, namespace, b.Name)
 	bc, ok := c.builds[context]
 	if !ok {
 		return nil, errors.New("context not found")
 	}
 	return bc.client.BuildV1alpha1().Builds(namespace).Create(b)
 }
-func (c *controller) updateProwJob(namespace string, pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
-	return c.pjc.ProwV1().ProwJobs(namespace).Update(pj)
-}
-
 func (c *controller) now() metav1.Time {
 	return metav1.Now()
 }
@@ -283,8 +320,7 @@ func reconcile(c reconciler, key string) error {
 
 	var wantBuild bool
 
-	// TODO(fejta): only consider prowjob namespace
-	pj, err := c.getProwJob(namespace, name)
+	pj, err := c.getProwJob(name)
 	switch {
 	case apierrors.IsNotFound(err):
 		// Do not want build
@@ -307,7 +343,7 @@ func reconcile(c reconciler, key string) error {
 	case apierrors.IsNotFound(err):
 		// Do not have a build
 	case err != nil:
-		return fmt.Errorf("get build: %v", err)
+		return fmt.Errorf("get build %s: %v", key, err)
 	case b.DeletionTimestamp == nil:
 		haveBuild = true
 	}
@@ -316,7 +352,9 @@ func reconcile(c reconciler, key string) error {
 	switch {
 	case !wantBuild:
 		if !haveBuild {
-			logrus.Infof("Observed deleted %s", key)
+			if pj != nil && pj.Spec.Agent == prowjobv1.KnativeBuildAgent {
+				logrus.Infof("Observed deleted %s", key)
+			}
 			return nil
 		}
 		switch v, ok := b.Labels[kube.CreatedByProw]; {
@@ -363,7 +401,7 @@ func reconcile(c reconciler, key string) error {
 		npj.Status.State = wantState
 		npj.Status.Description = wantMsg
 		logrus.Infof("Update prowjobs/%s", key)
-		if _, err = c.updateProwJob(namespace, npj); err != nil {
+		if _, err = c.updateProwJob(npj); err != nil {
 			return fmt.Errorf("update prow status: %v", err)
 		}
 	}
@@ -380,7 +418,7 @@ func finalState(status prowjobv1.ProwJobState) bool {
 }
 
 // description computes the ProwJobStatus description for this condition or falling back to a default if none is provided.
-func description(cond buildv1alpha1.BuildCondition, fallback string) string {
+func description(cond duckv1alpha1.Condition, fallback string) string {
 	switch {
 	case cond.Message != "":
 		return cond.Message
@@ -419,9 +457,10 @@ func prowJobStatus(bs buildv1alpha1.BuildStatus) (prowjobv1.ProwJobState, string
 		return prowjobv1.FailureState, description(cond, descFailed)
 	case started.IsZero():
 		return prowjobv1.TriggeredState, description(cond, descInitializing)
-	case finished.IsZero():
+	case cond.Status == untypedcorev1.ConditionUnknown, finished.IsZero():
 		return prowjobv1.PendingState, description(cond, descRunning)
 	}
+	logrus.Warnf("Unknown condition %#v", cond)
 	return prowjobv1.ErrorState, description(cond, descUnknown) // shouldn't happen
 }
 
@@ -449,7 +488,7 @@ func buildMeta(pj prowjobv1.ProwJob) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
 		Annotations: annotations,
 		Name:        pj.Name,
-		Namespace:   pj.Namespace, // TODO(fejta): use pj.Spec.Namespace
+		Namespace:   pj.Spec.Namespace,
 		Labels:      podLabels,
 	}
 }
@@ -515,6 +554,8 @@ func injectSource(b *buildv1alpha1.Build, pj prowjobv1.ProwJob) error {
 	}
 	if srcContainer == nil {
 		return nil
+	} else {
+		srcContainer.Name = "" // knative-build requirement
 	}
 
 	b.Spec.Source = &buildv1alpha1.SourceSpec{

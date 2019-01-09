@@ -24,6 +24,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"k8s.io/test-infra/prow/git"
 )
@@ -80,6 +81,16 @@ func runCmd(cmd, dir string, arg ...string) error {
 	return nil
 }
 
+func runCmdOutput(cmd, dir string, arg ...string) (string, error) {
+	c := exec.Command(cmd, arg...)
+	c.Dir = dir
+	b, err := c.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("%s %v: %v, %s", cmd, arg, err, string(b))
+	}
+	return strings.TrimSpace(string(b)), nil
+}
+
 // MakeFakeRepo creates the given repo and makes an initial commit.
 func (lg *LocalGit) MakeFakeRepo(org, repo string) error {
 	rdir := filepath.Join(lg.Dir, org, repo)
@@ -134,4 +145,10 @@ func (lg *LocalGit) CheckoutNewBranch(org, repo, branch string) error {
 func (lg *LocalGit) Checkout(org, repo, commitlike string) error {
 	rdir := filepath.Join(lg.Dir, org, repo)
 	return runCmd(lg.Git, rdir, "checkout", commitlike)
+}
+
+// RevParse does git rev-parse.
+func (lg *LocalGit) RevParse(org, repo, commitlike string) (string, error) {
+	rdir := filepath.Join(lg.Dir, org, repo)
+	return runCmdOutput(lg.Git, rdir, "rev-parse", commitlike)
 }

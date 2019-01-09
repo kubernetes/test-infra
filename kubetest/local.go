@@ -234,3 +234,5 @@ func (n localCluster) Down() error {
 func (n localCluster) GetClusterCreated(gcpProject string) (time.Time, error) {
 	return time.Time{}, errors.New("GetClusterCreated not implemented in localCluster")
 }
+
+func (_ localCluster) KubectlCommand() (*exec.Cmd, error) { return nil, nil }

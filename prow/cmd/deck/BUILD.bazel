@@ -24,8 +24,19 @@ container_image(
 
 prow_image(
     name = "image",
-    base = ":asset-base",
+    base = ":spyglass-lenses",
     visibility = ["//visibility:public"],
+)
+
+container_image(
+    name = "spyglass-lenses",
+    base = ":asset-base",
+    data_path = "/prow/spyglass/lenses",
+    directory = "/lenses",
+    files = [
+        "//prow/spyglass/lenses:resources",
+        "//prow/spyglass/lenses:templates",
+    ],
 )
 
 go_binary(
@@ -33,6 +44,8 @@ go_binary(
     data = [
         ":templates",
         "//prow/cmd/deck/static",
+        "//prow/spyglass/lenses:resources",
+        "//prow/spyglass/lenses:templates",
     ],
     embed = [":go_default_library"],
     pure = "on",
@@ -44,6 +57,7 @@ go_test(
         "badge_test.go",
         "job_history_test.go",
         "main_test.go",
+        "pr_history_test.go",
         "tide_test.go",
     ],
     embed = [":go_default_library"],
@@ -52,9 +66,11 @@ go_test(
         "//prow/kube:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/tide:go_default_library",
-        "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//prow/tide/history:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
 
@@ -65,33 +81,42 @@ go_library(
         "job_history.go",
         "main.go",
         "pluginhelp.go",
+        "pr_history.go",
         "templates.go",
         "tide.go",
     ],
     importpath = "k8s.io/test-infra/prow/cmd/deck",
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/cmd/deck/version:go_default_library",
         "//prow/config:go_default_library",
         "//prow/deck/jobs:go_default_library",
+        "//prow/errorutil:go_default_library",
+        "//prow/gcsupload:go_default_library",
         "//prow/githuboauth:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//prow/pjutil:go_default_library",
         "//prow/pluginhelp:go_default_library",
+        "//prow/pod-utils/downwardapi:go_default_library",
         "//prow/prstatus:go_default_library",
         "//prow/spyglass:go_default_library",
-        "//prow/spyglass/viewers/buildlog:go_default_library",
-        "//prow/spyglass/viewers/junit:go_default_library",
-        "//prow/spyglass/viewers/metadata:go_default_library",
+        "//prow/spyglass/lenses:go_default_library",
+        "//prow/spyglass/lenses/buildlog:go_default_library",
+        "//prow/spyglass/lenses/junit:go_default_library",
+        "//prow/spyglass/lenses/metadata:go_default_library",
         "//prow/tide:go_default_library",
+        "//prow/tide/history:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/NYTimes/gziphandler:go_default_library",
-        "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/gorilla/sessions:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/golang.org/x/oauth2:go_default_library",
         "//vendor/golang.org/x/oauth2/github:go_default_library",
         "//vendor/google.golang.org/api/iterator:go_default_library",
         "//vendor/google.golang.org/api/option:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
 
@@ -107,6 +132,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//prow/cmd/deck/static:all-srcs",
+        "//prow/cmd/deck/version:all-srcs",
     ],
     tags = ["automanaged"],
 )

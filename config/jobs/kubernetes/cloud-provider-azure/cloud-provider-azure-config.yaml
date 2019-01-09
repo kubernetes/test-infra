@@ -37,7 +37,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -57,7 +57,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -80,7 +80,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -90,3 +90,35 @@ presubmits:
         - make
         - test-unit
 
+periodics:
+- interval: 12h
+  name: ci-cloud-provider-azure-master
+  labels:
+    preset-service-account: "true"
+    preset-cloud-provider-azure-account: "true"
+    preset-dind-enabled: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-azure
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-azure
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - test-e2e
+      - SUITE=default
+      - "SUBJECT=${PULL_NUMBER}"
+      env:
+      - name: K8S_BRANCH
+        value: master
+      - name: TEST_MANIFEST
+        value: linux-kcm
+      securityContext:
+        privileged: true

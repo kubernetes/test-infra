@@ -1,0 +1,45 @@
+{{define "header"}}
+<link rel="stylesheet" href="buildlog.css">
+<script type="text/javascript" src="script_bundle.min.js"></script>
+{{end}}
+{{define "body"}}
+<div style="font-family:monospace;">
+{{range $log := .LogViews}}
+  <div>
+    <h4 style="margin: 0;">
+      <a href="{{$log.ArtifactLink}}">{{$log.ArtifactName}}<i class="material-icons" style="font-size: 1em; vertical-align: middle;">link</i></a>
+      <button class="show-all-button" data-artifact="{{$log.ArtifactName}}">Show all hidden lines</button>
+    </h4>
+    <table class="loglines" id="{{$log.ArtifactName}}-content">
+    {{range $g := $log.LineGroups}}
+    {{if $g.Skip}}
+      <tbody class="show-skipped" data-artifact="{{$log.ArtifactName}}" data-offset="{{$g.ByteOffset}}" data-length="{{$g.ByteLength}}" data-start-line="{{$g.Start}}">
+      <tr>
+        <td></td>
+        <td><button>Show {{$g.LinesSkipped}} hidden lines</button></td>
+      </tr>
+      </tbody>
+    {{else}}
+      <tbody class="shown">
+      {{template "line group" $g.LogLines}}
+      </tbody>
+    {{end}}
+    {{end}}
+    </table>
+  </div>
+{{end}}
+</div>
+{{end}}
+
+{{define "line group"}}
+  {{range .}}
+    <tr>
+      <td class="linenum">{{.Number}}</td>
+      <td>
+        <span {{if .Highlighted}}class="line-highlighted"{{end}}>
+          {{- range .SubLines -}}<span {{if .Highlighted}}class="match-highlighted"{{end}}>{{.Text}}</span>{{- end -}}
+        </span>
+      </td>
+    </tr>
+  {{end}}
+{{end}}

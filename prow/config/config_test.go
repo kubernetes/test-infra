@@ -25,14 +25,13 @@ import (
 	"testing"
 	"time"
 
-	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/kube"
-
+	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
-	//"k8s.io/apimachinery/pkg/api/equality"
-	//"k8s.io/apimachinery/pkg/util/diff"
-	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
+
+	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
@@ -42,6 +41,7 @@ func TestDefaultJobBase(t *testing.T) {
 	filled := JobBase{
 		Agent:     "foo",
 		Namespace: &bar,
+		Cluster:   "build",
 	}
 	cases := []struct {
 		name     string
@@ -90,6 +90,15 @@ func TestDefaultJobBase(t *testing.T) {
 				j.Namespace = &p
 			},
 		},
+		{
+			name: "empty cluster becomes DefaultClusterAlias",
+			base: func(j *JobBase) {
+				j.Cluster = ""
+			},
+			expected: func(j *JobBase) {
+				j.Cluster = kube.DefaultClusterAlias
+			},
+		},
 	}
 
 	for _, tc := range cases {
@@ -124,7 +133,34 @@ func TestSpyglassConfig(t *testing.T) {
 			spyglassConfig: `
 deck:
   spyglass:
-    size_limit: 500e6
+    size_limit: 500e+6
+    viewers:
+      "started.json|finished.json":
+      - "metadata"
+      "build-log.txt":
+      - "buildlog"
+      "artifacts/junit.*\\.xml":
+      - "junit"
+`,
+			expectedViewers: map[string][]string{
+				"started.json|finished.json": {"metadata"},
+				"build-log.txt":              {"buildlog"},
+				"artifacts/junit.*\\.xml":    {"junit"},
+			},
+			expectedRegexMatches: map[string][]string{
+				"started.json|finished.json": {"started.json", "finished.json"},
+				"build-log.txt":              {"build-log.txt"},
+				"artifacts/junit.*\\.xml":    {"artifacts/junit01.xml", "artifacts/junit_runner.xml"},
+			},
+			expectedSizeLimit: 500e6,
+			expectError:       false,
+		},
+		{
+			name: "Backwards compatibility",
+			spyglassConfig: `
+deck:
+  spyglass:
+    size_limit: 500e+6
     viewers:
       "started.json|finished.json":
       - "metadata-viewer"
@@ -134,14 +170,9 @@ deck:
       - "junit-viewer"
 `,
 			expectedViewers: map[string][]string{
-				"started.json|finished.json": {"metadata-viewer"},
-				"build-log.txt":              {"build-log-viewer"},
-				"artifacts/junit.*\\.xml":    {"junit-viewer"},
-			},
-			expectedRegexMatches: map[string][]string{
-				"started.json|finished.json": {"started.json", "finished.json"},
-				"build-log.txt":              {"build-log.txt"},
-				"artifacts/junit.*\\.xml":    {"artifacts/junit01.xml", "artifacts/junit_runner.xml"},
+				"started.json|finished.json": {"metadata"},
+				"build-log.txt":              {"buildlog"},
+				"artifacts/junit.*\\.xml":    {"junit"},
 			},
 			expectedSizeLimit: 500e6,
 			expectError:       false,
@@ -519,6 +550,20 @@ func TestValidateAgent(t *testing.T) {
 			},
 			pass: true,
 		},
+		{
+			name: "error_on_eviction requires kubernetes agent",
+			base: func(j *JobBase) {
+				j.Agent = b
+				j.ErrorOnEviction = true
+			},
+		},
+		{
+			name: "error_on_eviction allowed for kubernetes agent",
+			base: func(j *JobBase) {
+				j.ErrorOnEviction = true
+			},
+			pass: true,
+		},
 	}
 
 	for _, tc := range cases {
@@ -816,6 +861,7 @@ func TestValidateJobBase(t *testing.T) {
 		{
 			name: "valid kubernetes job",
 			base: JobBase{
+				Name:      "name",
 				Agent:     ka,
 				Spec:      &goodSpec,
 				Namespace: &ns,
@@ -825,6 +871,7 @@ func TestValidateJobBase(t *testing.T) {
 		{
 			name: "valid build job",
 			base: JobBase{
+				Name:      "name",
 				Agent:     ba,
 				BuildSpec: &buildv1alpha1.BuildSpec{},
 				Namespace: &ns,
@@ -834,6 +881,7 @@ func TestValidateJobBase(t *testing.T) {
 		{
 			name: "valid jenkins job",
 			base: JobBase{
+				Name:      "name",
 				Agent:     ja,
 				Namespace: &ns,
 			},
@@ -842,6 +890,7 @@ func TestValidateJobBase(t *testing.T) {
 		{
 			name: "invalid concurrency",
 			base: JobBase{
+				Name:           "name",
 				MaxConcurrency: -1,
 				Agent:          ka,
 				Spec:           &goodSpec,
@@ -851,6 +900,7 @@ func TestValidateJobBase(t *testing.T) {
 		{
 			name: "invalid agent",
 			base: JobBase{
+				Name:      "name",
 				Agent:     ba,
 				Spec:      &goodSpec, // want BuildSpec
 				Namespace: &ns,
@@ -859,6 +909,7 @@ func TestValidateJobBase(t *testing.T) {
 		{
 			name: "invalid pod spec",
 			base: JobBase{
+				Name:      "name",
 				Agent:     ka,
 				Namespace: &ns,
 				Spec:      &v1.PodSpec{}, // no containers
@@ -867,6 +918,7 @@ func TestValidateJobBase(t *testing.T) {
 		{
 			name: "invalid decoration",
 			base: JobBase{
+				Name:  "name",
 				Agent: ka,
 				Spec:  &goodSpec,
 				UtilityConfig: UtilityConfig{
@@ -878,6 +930,7 @@ func TestValidateJobBase(t *testing.T) {
 		{
 			name: "invalid labels",
 			base: JobBase{
+				Name:  "name",
 				Agent: ka,
 				Spec:  &goodSpec,
 				Labels: map[string]string{
@@ -885,6 +938,26 @@ func TestValidateJobBase(t *testing.T) {
 				},
 				Namespace: &ns,
 			},
+		},
+		{
+			name: "invalid name",
+			base: JobBase{
+				Name:      "a/b",
+				Agent:     ka,
+				Spec:      &goodSpec,
+				Namespace: &ns,
+			},
+			pass: false,
+		},
+		{
+			name: "valid complex name",
+			base: JobBase{
+				Name:      "a-b.c",
+				Agent:     ka,
+				Spec:      &goodSpec,
+				Namespace: &ns,
+			},
+			pass: true,
 		},
 	}
 
@@ -1675,7 +1748,7 @@ func TestSecretAgentLoading(t *testing.T) {
 
 	tempSecrets := []string{firstTempSecret, secondTempSecret}
 	// Starting the agent and add the two temporary secrets.
-	secretAgent := &SecretAgent{}
+	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start(tempSecrets); err != nil {
 		t.Fatalf("Error starting secrets agent. %v", err)
 	}

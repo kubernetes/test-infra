@@ -31,13 +31,13 @@ import (
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	pluginhelp "k8s.io/test-infra/prow/pluginhelp/hook"
 	"k8s.io/test-infra/prow/plugins"
-	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
 )
 
@@ -111,7 +111,7 @@ func main() {
 		tokens = append(tokens, o.slackTokenFile)
 	}
 
-	secretAgent := &config.SecretAgent{}
+	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start(tokens); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
@@ -141,22 +141,14 @@ func main() {
 		slackClient = slack.NewFakeClient()
 	}
 
-	pluginAgent := &plugins.PluginAgent{}
-
-	ownersClient := repoowners.NewClient(
-		gitClient, githubClient,
-		configAgent, pluginAgent.MDYAMLEnabled,
-		pluginAgent.SkipCollaborators,
-	)
-
-	pluginAgent.PluginClient = plugins.PluginClient{
+	clientAgent := &plugins.ClientAgent{
 		GitHubClient: githubClient,
 		KubeClient:   kubeClient,
 		GitClient:    gitClient,
 		SlackClient:  slackClient,
-		OwnersClient: ownersClient,
-		Logger:       logrus.WithField("agent", "plugin"),
 	}
+
+	pluginAgent := &plugins.ConfigAgent{}
 	if err := pluginAgent.Start(o.pluginConfig); err != nil {
 		logrus.WithError(err).Fatal("Error starting plugins.")
 	}
@@ -170,6 +162,7 @@ func main() {
 	}
 
 	server := &hook.Server{
+		ClientAgent:    clientAgent,
 		ConfigAgent:    configAgent,
 		Plugins:        pluginAgent,
 		Metrics:        promMetrics,

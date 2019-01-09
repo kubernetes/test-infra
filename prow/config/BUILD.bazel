@@ -21,6 +21,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/config/secret:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/labels:go_default_library",
@@ -41,7 +42,6 @@ go_library(
         "config.go",
         "githuboauth.go",
         "jobs.go",
-        "secrets_agent.go",
         "tide.go",
     ],
     importpath = "k8s.io/test-infra/prow/config",
@@ -52,7 +52,6 @@ go_library(
         "//prow/kube:go_default_library",
         "//prow/pod-utils/decorate:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",
-        "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/gorilla/sessions:go_default_library",
         "//vendor/github.com/knative/build/pkg/apis/build/v1alpha1:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
@@ -62,6 +61,7 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/validation:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
 
@@ -78,6 +78,7 @@ filegroup(
         ":package-srcs",
         "//prow/config/jobtests:all-srcs",
         "//prow/config/org:all-srcs",
+        "//prow/config/secret:all-srcs",
     ],
     tags = ["automanaged"],
 )

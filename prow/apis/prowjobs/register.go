@@ -17,5 +17,6 @@ limitations under the License.
 package prowjobs
 
 const (
+	// GroupName defines the API group identifier for prow types.
 	GroupName = "prow.k8s.io"
 )

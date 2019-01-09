@@ -29,7 +29,7 @@ var okToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
 var testAllRe = regexp.MustCompile(`(?m)^/test all,?($|\s.*)`)
 var retestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
 
-func handleGenericComment(c client, trigger *plugins.Trigger, gc github.GenericCommentEvent) error {
+func handleGenericComment(c Client, trigger *plugins.Trigger, gc github.GenericCommentEvent) error {
 	org := gc.Repo.Owner.Login
 	repo := gc.Repo.Name
 	number := gc.Number
@@ -94,7 +94,7 @@ func handleGenericComment(c client, trigger *plugins.Trigger, gc github.GenericC
 	var l []github.Label
 	if !trusted {
 		// Skip untrusted PRs.
-		l, trusted, err = trustedPullRequest(c.GitHubClient, trigger, gc.IssueAuthor.Login, org, repo, number, nil)
+		l, trusted, err = TrustedPullRequest(c.GitHubClient, trigger, gc.IssueAuthor.Login, org, repo, number, nil)
 		if err != nil {
 			return err
 		}
@@ -106,7 +106,7 @@ func handleGenericComment(c client, trigger *plugins.Trigger, gc github.GenericC
 	}
 
 	// At this point we can trust the PR, so we eventually update labels.
-	// Ensure we have labels before test, because trustedPullRequest() won't be called
+	// Ensure we have labels before test, because TrustedPullRequest() won't be called
 	// when commentAuthor is trusted.
 	if l == nil {
 		l, err = c.GitHubClient.GetIssueLabels(org, repo, number)
@@ -146,5 +146,5 @@ func handleGenericComment(c client, trigger *plugins.Trigger, gc github.GenericC
 		requestedJobs = append(requestedJobs, retests...)
 	}
 
-	return runOrSkipRequested(c, pr, requestedJobs, forceRunContexts, gc.Body, gc.GUID)
+	return RunOrSkipRequested(c, pr, requestedJobs, forceRunContexts, gc.Body, gc.GUID)
 }

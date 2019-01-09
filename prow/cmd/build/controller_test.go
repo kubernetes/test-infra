@@ -19,10 +19,12 @@ package main
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
+	duckv1alpha1 "github.com/knative/pkg/apis/duck/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -48,31 +50,46 @@ type fakeReconciler struct {
 	nows   metav1.Time
 }
 
-func key(context, namespace, name string) string {
-	return toKey(context, metav1.ObjectMeta{Namespace: namespace, Name: name})
-}
-
 func (r *fakeReconciler) now() metav1.Time {
 	fmt.Println(r.nows)
 	return r.nows
 }
 
-func (r *fakeReconciler) getProwJob(namespace, name string) (*prowjobv1.ProwJob, error) {
-	if namespace == errorGetProwJob {
-		return nil, errors.New("injected create build error")
+const fakePJCtx = "prow-context"
+const fakePJNS = "prow-job"
+
+func (r *fakeReconciler) getProwJob(name string) (*prowjobv1.ProwJob, error) {
+	if name == errorGetProwJob {
+		return nil, errors.New("injected get prowjob error")
 	}
-	k := key("", namespace, name)
+	k := toKey(fakePJCtx, fakePJNS, name)
 	pj, present := r.jobs[k]
 	if !present {
 		return nil, apierrors.NewNotFound(prowjobv1.Resource("ProwJob"), name)
 	}
 	return &pj, nil
 }
+
+func (r *fakeReconciler) updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
+	if pj.Name == errorUpdateProwJob {
+		return nil, errors.New("injected update prowjob error")
+	}
+	if pj == nil {
+		return nil, errors.New("nil prowjob")
+	}
+	k := toKey(fakePJCtx, fakePJNS, pj.Name)
+	if _, present := r.jobs[k]; !present {
+		return nil, apierrors.NewNotFound(prowjobv1.Resource("ProwJob"), pj.Name)
+	}
+	r.jobs[k] = *pj
+	return pj, nil
+}
+
 func (r *fakeReconciler) getBuild(context, namespace, name string) (*buildv1alpha1.Build, error) {
 	if namespace == errorGetBuild {
 		return nil, errors.New("injected create build error")
 	}
-	k := key(context, namespace, name)
+	k := toKey(context, namespace, name)
 	b, present := r.builds[k]
 	if !present {
 		return nil, apierrors.NewNotFound(buildv1alpha1.Resource("Build"), name)
@@ -83,7 +100,7 @@ func (r *fakeReconciler) deleteBuild(context, namespace, name string) error {
 	if namespace == errorDeleteBuild {
 		return errors.New("injected create build error")
 	}
-	k := key(context, namespace, name)
+	k := toKey(context, namespace, name)
 	if _, present := r.builds[k]; !present {
 		return apierrors.NewNotFound(buildv1alpha1.Resource("Build"), name)
 	}
@@ -98,7 +115,7 @@ func (r *fakeReconciler) createBuild(context, namespace string, b *buildv1alpha1
 	if namespace == errorCreateBuild {
 		return nil, errors.New("injected create build error")
 	}
-	k := key(context, namespace, b.Name)
+	k := toKey(context, namespace, b.Name)
 	if _, alreadyExists := r.builds[k]; alreadyExists {
 		return nil, apierrors.NewAlreadyExists(prowjobv1.Resource("ProwJob"), b.Name)
 	}
@@ -106,23 +123,75 @@ func (r *fakeReconciler) createBuild(context, namespace string, b *buildv1alpha1
 	return b, nil
 }
 
-func (r *fakeReconciler) updateProwJob(namespace string, pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
-	if pj == nil {
-		return nil, errors.New("nil prowjob")
-	}
-	if namespace == errorUpdateProwJob {
-		return nil, errors.New("injected update prowjob error")
-	}
-	k := key("", namespace, pj.Name)
-	if _, present := r.jobs[k]; !present {
-		return nil, apierrors.NewNotFound(prowjobv1.Resource("ProwJob"), pj.Name)
-	}
-	r.jobs[k] = *pj
-	return pj, nil
-}
-
 func (r *fakeReconciler) buildID(pj prowjobv1.ProwJob) (string, error) {
 	return "7777777777", nil
+}
+
+type fakeLimiter struct {
+	added string
+}
+
+func (fl *fakeLimiter) ShutDown() {}
+func (fl *fakeLimiter) Get() (interface{}, bool) {
+	return "not implemented", true
+}
+func (fl *fakeLimiter) Done(interface{})   {}
+func (fl *fakeLimiter) Forget(interface{}) {}
+func (fl *fakeLimiter) AddRateLimited(a interface{}) {
+	fl.added = a.(string)
+}
+
+func TestEnqueueKey(t *testing.T) {
+	cases := []struct {
+		name     string
+		context  string
+		obj      interface{}
+		expected string
+	}{
+		{
+			name:    "enqueue build directly",
+			context: "hey",
+			obj: &buildv1alpha1.Build{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "foo",
+					Name:      "bar",
+				},
+			},
+			expected: toKey("hey", "foo", "bar"),
+		},
+		{
+			name:    "enqueue prowjob's spec namespace",
+			context: "rolo",
+			obj: &prowjobv1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "default",
+					Name:      "dude",
+				},
+				Spec: prowjobv1.ProwJobSpec{
+					Namespace: "tomassi",
+				},
+			},
+			expected: toKey("rolo", "tomassi", "dude"),
+		},
+		{
+			name:    "ignore random object",
+			context: "foo",
+			obj:     "bar",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var fl fakeLimiter
+			c := controller{
+				workqueue: &fl,
+			}
+			c.enqueueKey(tc.context, tc.obj)
+			if !reflect.DeepEqual(fl.added, tc.expected) {
+				t.Errorf("%q != expected %q", fl.added, tc.expected)
+			}
+		})
+	}
 }
 
 func TestReconcile(t *testing.T) {
@@ -366,7 +435,7 @@ func TestReconcile(t *testing.T) {
 				if err != nil {
 					panic(err)
 				}
-				b.Status.SetCondition(&buildv1alpha1.BuildCondition{
+				b.Status.SetCondition(&duckv1alpha1.Condition{
 					Type:    buildv1alpha1.BuildSucceeded,
 					Message: "hello",
 				})
@@ -404,7 +473,7 @@ func TestReconcile(t *testing.T) {
 				if err != nil {
 					panic(err)
 				}
-				b.Status.SetCondition(&buildv1alpha1.BuildCondition{
+				b.Status.SetCondition(&duckv1alpha1.Condition{
 					Type:    buildv1alpha1.BuildSucceeded,
 					Status:  corev1.ConditionTrue,
 					Message: "hello",
@@ -445,7 +514,7 @@ func TestReconcile(t *testing.T) {
 				if err != nil {
 					panic(err)
 				}
-				b.Status.SetCondition(&buildv1alpha1.BuildCondition{
+				b.Status.SetCondition(&duckv1alpha1.Condition{
 					Type:    buildv1alpha1.BuildSucceeded,
 					Status:  corev1.ConditionFalse,
 					Message: "hello",
@@ -493,7 +562,7 @@ func TestReconcile(t *testing.T) {
 				if err != nil {
 					panic(err)
 				}
-				b.Status.SetCondition(&buildv1alpha1.BuildCondition{
+				b.Status.SetCondition(&duckv1alpha1.Condition{
 					Type:    buildv1alpha1.BuildSucceeded,
 					Status:  corev1.ConditionTrue,
 					Message: "hello",
@@ -573,7 +642,7 @@ func TestReconcile(t *testing.T) {
 				if err != nil {
 					panic(err)
 				}
-				b.Status.SetCondition(&buildv1alpha1.BuildCondition{
+				b.Status.SetCondition(&duckv1alpha1.Condition{
 					Type:    buildv1alpha1.BuildSucceeded,
 					Status:  corev1.ConditionTrue,
 					Message: "hello",
@@ -586,8 +655,15 @@ func TestReconcile(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			const name = "the-object-name"
-			k := key(tc.context, tc.namespace, name)
+			name := "the-object-name"
+			// prowjobs all live in the same ns, so use name for injecting errors
+			if tc.namespace == errorGetProwJob {
+				name = errorGetProwJob
+			} else if tc.namespace == errorUpdateProwJob {
+				name = errorUpdateProwJob
+			}
+			bk := toKey(tc.context, tc.namespace, name)
+			jk := toKey(fakePJCtx, fakePJNS, name)
 			r := &fakeReconciler{
 				jobs:   map[string]prowjobv1.ProwJob{},
 				builds: map[string]buildv1alpha1.Build{},
@@ -596,21 +672,21 @@ func TestReconcile(t *testing.T) {
 			if j := tc.observedJob; j != nil {
 				j.Name = name
 				j.Spec.Type = prowjobv1.PeriodicJob
-				r.jobs[k] = *j
+				r.jobs[jk] = *j
 			}
 			if b := tc.observedBuild; b != nil {
 				b.Name = name
-				r.builds[k] = *b
+				r.builds[bk] = *b
 			}
 			expectedJobs := map[string]prowjobv1.ProwJob{}
 			if j := tc.expectedJob; j != nil {
-				expectedJobs[k] = j(r.jobs[k], r.builds[k])
+				expectedJobs[jk] = j(r.jobs[jk], r.builds[bk])
 			}
 			expectedBuilds := map[string]buildv1alpha1.Build{}
 			if b := tc.expectedBuild; b != nil {
-				expectedBuilds[k] = b(r.jobs[k], r.builds[k])
+				expectedBuilds[bk] = b(r.jobs[jk], r.builds[bk])
 			}
-			err := reconcile(r, k)
+			err := reconcile(r, bk)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -781,6 +857,7 @@ func TestInjectSource(t *testing.T) {
 				if err != nil {
 					t.Fatalf("failed to make clonerefs container: %v", err)
 				}
+				src.Name = ""
 				b.Spec.Volumes = append(b.Spec.Volumes, cloneVolumes...)
 				b.Spec.Source = &buildv1alpha1.SourceSpec{
 					Custom: src,
@@ -811,6 +888,43 @@ func TestInjectSource(t *testing.T) {
 				t.Error("failed to return expected error")
 			case !equality.Semantic.DeepEqual(actual, &expected):
 				t.Errorf("builds do not match:\n%s", diff.ObjectReflectDiff(&expected, actual))
+			}
+		})
+	}
+}
+
+func TestBuildMeta(t *testing.T) {
+	cases := []struct {
+		name     string
+		pj       prowjobv1.ProwJob
+		expected func(prowjobv1.ProwJob, *metav1.ObjectMeta)
+	}{
+		{
+			name: "Use pj.Spec.Namespace for build namespace",
+			pj: prowjobv1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "whatever",
+					Namespace: "wrong",
+				},
+				Spec: prowjobv1.ProwJobSpec{
+					Namespace: "correct",
+				},
+			},
+			expected: func(pj prowjobv1.ProwJob, meta *metav1.ObjectMeta) {
+				meta.Name = pj.Name
+				meta.Namespace = pj.Spec.Namespace
+				meta.Labels, meta.Annotations = decorate.LabelsAndAnnotationsForJob(pj)
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var expected metav1.ObjectMeta
+			tc.expected(tc.pj, &expected)
+			actual := buildMeta(tc.pj)
+			if !equality.Semantic.DeepEqual(actual, expected) {
+				t.Errorf("build meta does not match:\n%s", diff.ObjectReflectDiff(expected, actual))
 			}
 		})
 	}
@@ -924,7 +1038,7 @@ func TestDescription(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		bc := buildv1alpha1.BuildCondition{
+		bc := duckv1alpha1.Condition{
 			Message: tc.message,
 			Reason:  tc.reason,
 		}
@@ -952,7 +1066,7 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "truly succeeded state returns success",
 			input: buildv1alpha1.BuildStatus{
-				Conditions: []buildv1alpha1.BuildCondition{
+				Conditions: []duckv1alpha1.Condition{
 					{
 						Type:    buildv1alpha1.BuildSucceeded,
 						Status:  corev1.ConditionTrue,
@@ -967,7 +1081,7 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "falsely succeeded state returns failure",
 			input: buildv1alpha1.BuildStatus{
-				Conditions: []buildv1alpha1.BuildCondition{
+				Conditions: []duckv1alpha1.Condition{
 					{
 						Type:    buildv1alpha1.BuildSucceeded,
 						Status:  corev1.ConditionFalse,
@@ -982,7 +1096,7 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "unstarted job returns triggered/initializing",
 			input: buildv1alpha1.BuildStatus{
-				Conditions: []buildv1alpha1.BuildCondition{
+				Conditions: []duckv1alpha1.Condition{
 					{
 						Type:    buildv1alpha1.BuildSucceeded,
 						Status:  corev1.ConditionUnknown,
@@ -998,7 +1112,7 @@ func TestProwJobStatus(t *testing.T) {
 			name: "unfinished job returns running",
 			input: buildv1alpha1.BuildStatus{
 				StartTime: now,
-				Conditions: []buildv1alpha1.BuildCondition{
+				Conditions: []duckv1alpha1.Condition{
 					{
 						Type:    buildv1alpha1.BuildSucceeded,
 						Status:  corev1.ConditionUnknown,
@@ -1011,11 +1125,11 @@ func TestProwJobStatus(t *testing.T) {
 			fallback: descRunning,
 		},
 		{
-			name: "expect a finished job to have a success status",
+			name: "builds with unknown success status are still running",
 			input: buildv1alpha1.BuildStatus{
 				StartTime:      now,
 				CompletionTime: later,
-				Conditions: []buildv1alpha1.BuildCondition{
+				Conditions: []duckv1alpha1.Condition{
 					{
 						Type:    buildv1alpha1.BuildSucceeded,
 						Status:  corev1.ConditionUnknown,
@@ -1023,12 +1137,12 @@ func TestProwJobStatus(t *testing.T) {
 					},
 				},
 			},
-			state:    prowjobv1.ErrorState,
+			state:    prowjobv1.PendingState,
 			desc:     "hola",
-			fallback: descUnknown,
+			fallback: descRunning,
 		},
 		{
-			name: "expect a finished job to have a condition",
+			name: "completed builds without a succeeded condition end in error",
 			input: buildv1alpha1.BuildStatus{
 				StartTime:      now,
 				CompletionTime: later,
@@ -1045,7 +1159,7 @@ func TestProwJobStatus(t *testing.T) {
 			tc.name += " [fallback]"
 			cond := tc.input.Conditions[0]
 			cond.Message = ""
-			tc.input.Conditions = []buildv1alpha1.BuildCondition{cond}
+			tc.input.Conditions = []duckv1alpha1.Condition{cond}
 			cases = append(cases, tc)
 		}
 	}

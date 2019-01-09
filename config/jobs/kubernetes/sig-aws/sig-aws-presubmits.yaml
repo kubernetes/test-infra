@@ -16,7 +16,7 @@ presubmits:
       preset-e2e-platform-aws: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -30,7 +30,6 @@ presubmits:
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --build=bazel
-        - --check-leaked-resources=false
         - --cluster=
         - --env=KOPS_LATEST=latest-ci-green.txt
         - --env=KOPS_DEPLOY_LATEST_KUBE=n
@@ -62,7 +61,7 @@ presubmits:
       preset-e2e-platform-aws: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.13
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.13
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -76,7 +75,6 @@ presubmits:
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --build=bazel
-        - --check-leaked-resources=false
         - --cluster=
         - --env=KOPS_LATEST=latest-ci-green.txt
         - --env=KOPS_DEPLOY_LATEST_KUBE=n
@@ -108,7 +106,7 @@ presubmits:
       preset-e2e-platform-aws: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -122,7 +120,6 @@ presubmits:
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --build=bazel
-        - --check-leaked-resources=false
         - --cluster=
         - --env=KOPS_LATEST=latest-ci-green.txt
         - --env=KOPS_DEPLOY_LATEST_KUBE=n

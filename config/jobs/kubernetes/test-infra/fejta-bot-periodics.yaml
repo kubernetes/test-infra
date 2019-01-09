@@ -2,9 +2,12 @@
 periodics:
 - name: periodic-test-infra-close
   interval: 1h
+  decorate: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+      command:
+      - /commenter
       args:
       - |-
         --query=org:kubernetes
@@ -32,9 +35,12 @@ periodics:
 
 - name: periodic-test-infra-retester
   interval: 20m  # Retest at most 1 PR per 20m, which should not DOS the queue.
+  decorate: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+      command:
+      - /commenter
       args:
       - |-
         --query=is:pr
@@ -59,7 +65,7 @@ periodics:
 
         Review the [full test history](https://gubernator.k8s.io/pr/{{.Number}}) for this PR.
 
-        Silence the bot with an `/lgtm cancel` comment for consistent failures.
+        Silence the bot with an `/lgtm cancel` or `/hold` comment for consistent failures.
 
       - --template
       - --ceiling=1
@@ -74,9 +80,12 @@ periodics:
 
 - name: periodic-test-infra-rotten
   interval: 1h
+  decorate: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+      command:
+      - /commenter
       args:
       - |-
         --query=org:kubernetes
@@ -107,9 +116,12 @@ periodics:
 
 - name: periodic-test-infra-stale
   interval: 1h
+  decorate: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+      command:
+      - /commenter
       args:
       - |-
         --query=org:kubernetes
@@ -142,9 +154,12 @@ periodics:
   interval: 24h
   labels:
     preset-service-account: "true"
+  decorate: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/issue-creator:v20170907-5240cca5
+      command:
+      - /issue-creator
       args:
       - --dry-run=false
       - --alsologtostderr
@@ -165,9 +180,12 @@ periodics:
 
 - name: periodic-enhancements-unfreeze
   interval: 30m
+  decorate: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+      command:
+      - /commenter
       args:
       - |-
         --query=repo:kubernetes/enhancements
@@ -193,18 +211,31 @@ periodics:
 - name: periodic-secping
   interval: 24h
   decorate: true
+  extra_refs:
+  - base_ref: master
+    org: jessfraz
+    repo: secping
+  - org: fejta
+    repo: go-github
+    base_ref: master
+    path_alias: github.com/jessfraz/go-github # https://github.com/google/go-github/pull/1076
   spec:
     containers:
-    # image contains tools versioned with k/k master
-    # secping needs go and make in particular
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
-      command: 
-      - ./experiment/secping.sh
-      args:
-      - --token=/etc/token
+    - command:
+      - go
+      - run
+      - .
+      - -d
+      - --confirm
+      - --token-path=/etc/token/bot-github-token
+      - --skip-emails
+      image: golang:1.11
       volumeMounts:
       - name: token
         mountPath: /etc/token
+      env:
+      - name: GO111MODULE
+        value: "on"
     volumes:
     - name: token
       secret:

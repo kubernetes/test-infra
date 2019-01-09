@@ -21,6 +21,8 @@ metadata:
     app: tide
 spec:
   replicas: 1 # Do not scale up.
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -29,7 +31,7 @@ spec:
       # serviceAccountName: "tide" # Uncomment for use with RBAC
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20181119-ffa9de5
+        image: gcr.io/k8s-prow/tide:v20190108-6c7cbf7
         args:
         - --dry-run=false
         - --github-endpoint=http://ghproxy

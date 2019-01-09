@@ -53,9 +53,7 @@ postsubmits:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-bazel:v20181107-d88dbbf
         command:
-        - prow/bump.sh
-        args:
-        - --push
+        - prow/push.sh
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /creds/service-account.json
@@ -95,3 +93,35 @@ periodics:
     - name: github
       secret:
         secretName: oauth-token
+- cron: "05 15 * * 1-5"  # Run at 7:05 PST (15:05 UTC) Mon-Fri
+  name: ci-test-infra-autobump-prow
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:v20181117-55a41ad84-0.18.1
+      command:
+      - prow/autobump.sh
+      args:
+      - k8s-ci-robot
+      - /etc/github-token/oauth
+      - "Kubernetes Prow Robot"
+      - "k8s.ci.robot@gmail.com"
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+      - name: ssh
+        mountPath: /root/.ssh
+    volumes:
+    - name: github
+      secret:
+        secretName: oauth-token
+    - name: ssh
+      secret:
+        secretName: k8s-ci-robot-ssh-keys
+        defaultMode: 0400

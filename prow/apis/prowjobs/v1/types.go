@@ -128,6 +128,11 @@ type ProwJobSpec struct {
 	// MaxConcurrency restricts the total number of instances
 	// of this job that can run in parallel at once
 	MaxConcurrency int `json:"max_concurrency,omitempty"`
+	// ErrorOnEviction indicates that the ProwJob should be completed and given
+	// the ErrorState status if the pod that is executing the job is evicted.
+	// If this field is unspecified or false, a new pod will be created to replace
+	// the evicted one.
+	ErrorOnEviction bool `json:"error_on_eviction,omitempty"`
 
 	// PodSpec provides the basis for running the test under
 	// a Kubernetes agent
@@ -166,12 +171,12 @@ type DecorationConfig struct {
 	// artifacts to GCS from a job.
 	GCSConfiguration *GCSConfiguration `json:"gcs_configuration,omitempty"`
 	// GCSCredentialsSecret is the name of the Kubernetes secret
-	// that holds GCS push credentials
+	// that holds GCS push credentials.
 	GCSCredentialsSecret string `json:"gcs_credentials_secret,omitempty"`
 	// SSHKeySecrets are the names of Kubernetes secrets that contain
-	// SSK keys which should be used during the cloning process
+	// SSK keys which should be used during the cloning process.
 	SSHKeySecrets []string `json:"ssh_key_secrets,omitempty"`
-	// SSHHostFingerprints are the fingerprints of known ssh hosts
+	// SSHHostFingerprints are the fingerprints of known SSH hosts
 	// that the cloning process can trust.
 	// Create with ssh-keyscan [-t rsa] host
 	SSHHostFingerprints []string `json:"ssh_host_fingerprints,omitempty"`
@@ -183,6 +188,8 @@ type DecorationConfig struct {
 	CookiefileSecret string `json:"cookiefile_secret,omitempty"`
 }
 
+// ApplyDefault applies the defaults for the ProwJob decoration. If a field has a zero value, it
+// replaces that with the value set in def.
 func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig {
 	if d == nil && def == nil {
 		return nil
@@ -224,6 +231,7 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	return &merged
 }
 
+// Validate ensures all the values set in the DecorationConfig are valid.
 func (d *DecorationConfig) Validate() error {
 	if d.UtilityImages == nil {
 		return errors.New("utility image config is not specified")
@@ -270,6 +278,8 @@ type UtilityImages struct {
 	Sidecar string `json:"sidecar,omitempty"`
 }
 
+// ApplyDefault applies the defaults for the UtilityImages decorations. If a field has a zero value,
+// it replaces that with the value set in def.
 func (u *UtilityImages) ApplyDefault(def *UtilityImages) *UtilityImages {
 	if u == nil {
 		return def
@@ -320,6 +330,8 @@ type GCSConfiguration struct {
 	DefaultRepo string `json:"default_repo,omitempty"`
 }
 
+// ApplyDefault applies the defaults for GCSConfiguration decorations. If a field has a zero value,
+// it replaces that with the value set in def.
 func (g *GCSConfiguration) ApplyDefault(def *GCSConfiguration) *GCSConfiguration {
 	if g == nil && def == nil {
 		return nil
@@ -352,6 +364,7 @@ func (g *GCSConfiguration) ApplyDefault(def *GCSConfiguration) *GCSConfiguration
 	return &merged
 }
 
+// Validate ensures all the values set in the GCSConfiguration are valid.
 func (g *GCSConfiguration) Validate() error {
 	if g.PathStrategy != PathStrategyLegacy && g.PathStrategy != PathStrategyExplicit && g.PathStrategy != PathStrategySingle {
 		return fmt.Errorf("gcs_path_strategy must be one of %q, %q, or %q", PathStrategyLegacy, PathStrategyExplicit, PathStrategySingle)

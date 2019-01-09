@@ -36,6 +36,7 @@ import (
 )
 
 const (
+	// PluginName defines this plugin's registered name.
 	PluginName     = "verify-owners"
 	ownersFileName = "OWNERS"
 )
@@ -52,7 +53,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 }
 
 type ownersClient interface {
-	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerInterface, error)
+	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error)
 }
 
 type githubClient interface {
@@ -63,7 +64,7 @@ type githubClient interface {
 	RemoveLabel(owner, repo string, number int, label string) error
 }
 
-func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	if pre.Action != github.PullRequestActionOpened && pre.Action != github.PullRequestActionReopened && pre.Action != github.PullRequestActionSynchronize {
 		return nil
 	}
@@ -110,6 +111,12 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 	if err := r.CheckoutPullRequest(pre.Number); err != nil {
 		return err
 	}
+	// If we have a specific SHA, use it.
+	if pre.PullRequest.Head.SHA != "" {
+		if err := r.Checkout(pre.PullRequest.Head.SHA); err != nil {
+			return err
+		}
+	}
 
 	// Check each OWNERS file.
 	for _, c := range modifiedOwnersFiles {
@@ -117,7 +124,7 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 		path := filepath.Join(r.Dir, c.Filename)
 		b, err := ioutil.ReadFile(path)
 		if err != nil {
-			log.WithError(err).Errorf("Failed to read %s.", path)
+			log.WithError(err).Warningf("Failed to read %s.", path)
 			return nil
 		}
 		var approvers []string
@@ -211,12 +218,8 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 	} else {
 		// Don't bother checking if it has the label...it's a race, and we'll have
 		// to handle failure due to not being labeled anyway.
-		labelNotFound := true
 		if err := ghc.RemoveLabel(org, repo, pre.Number, labels.InvalidOwners); err != nil {
-			if _, labelNotFound = err.(*github.LabelNotFound); !labelNotFound {
-				return fmt.Errorf("failed removing %s label: %v", labels.InvalidOwners, err)
-			}
-			// If the error is indeed *github.LabelNotFound, consider it a success.
+			return fmt.Errorf("failed removing %s label: %v", labels.InvalidOwners, err)
 		}
 	}
 	return nil

@@ -9,10 +9,20 @@ ts_library(
 )
 
 ts_library(
+    name = "common",
+    srcs = glob(["common/*.ts"]),
+    deps = [
+        ":api",
+        "@npm//:moment",
+    ],
+)
+
+ts_library(
     name = "prow",
     srcs = glob(["prow/*.ts"]) + ["vendor.d.ts"],
     deps = [
         ":api",
+        ":common",
         "@npm//:moment",
     ],
 )
@@ -65,6 +75,7 @@ ts_library(
     srcs = glob(["tide/*.ts"]),
     deps = [
         ":api",
+        ":common",
     ],
 )
 
@@ -73,6 +84,26 @@ rollup_bundle(
     entry_point = "prow/cmd/deck/static/tide/tide",
     deps = [
         ":tide",
+        "@npm//:moment",
+    ],
+)
+
+ts_library(
+    name = "tide_history",
+    srcs = glob(["tide-history/*.ts"]),
+    deps = [
+        ":api",
+        ":common",
+        "@npm//:moment",
+    ],
+)
+
+rollup_bundle(
+    name = "tide_history_bundle",
+    entry_point = "prow/cmd/deck/static/tide-history/tide-history",
+    deps = [
+        ":tide_history",
+        "@npm//:moment",
     ],
 )
 
@@ -95,7 +126,23 @@ rollup_bundle(
 
 ts_library(
     name = "spyglass",
-    srcs = glob(["spyglass/*.ts"]),
+    srcs = ["spyglass/spyglass.ts"],
+    deps = [
+        ":spyglass_common",
+    ],
+)
+
+ts_library(
+    name = "spyglass_lens",
+    srcs = ["spyglass/lens.ts"],
+    deps = [
+        ":spyglass_common",
+    ],
+)
+
+ts_library(
+    name = "spyglass_common",
+    srcs = ["spyglass/common.ts"],
 )
 
 rollup_bundle(
@@ -103,6 +150,16 @@ rollup_bundle(
     entry_point = "prow/cmd/deck/static/spyglass/spyglass",
     deps = [
         ":spyglass",
+        ":spyglass_common",
+    ],
+)
+
+rollup_bundle(
+    name = "spyglass_lens_bundle",
+    entry_point = "prow/cmd/deck/static/spyglass/lens",
+    deps = [
+        ":spyglass_common",
+        ":spyglass_lens",
     ],
 )
 
@@ -122,7 +179,9 @@ filegroup(
         ":pr_bundle",
         ":prow_bundle",
         ":spyglass_bundle",
+        ":spyglass_lens_bundle",
         ":tide_bundle",
+        ":tide_history_bundle",
     ],
 )
 

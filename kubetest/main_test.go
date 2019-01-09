@@ -38,7 +38,12 @@ func TestWriteMetadata(t *testing.T) {
 	}{
 		{
 			sources: nil,
-			key:     "version",
+			key:     "job-version",
+			version: "v1.8.0-alpha.2.251+ba2bdb1aead615",
+		},
+		{
+			sources: nil,
+			key:     "revision",
 			version: "v1.8.0-alpha.2.251+ba2bdb1aead615",
 		},
 		{

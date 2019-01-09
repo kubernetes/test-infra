@@ -19,7 +19,6 @@ package main
 import (
 	"errors"
 	"flag"
-	"fmt"
 	"os"
 	"os/signal"
 	"sync"
@@ -28,15 +27,11 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/time/rate"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/workqueue"
 
-	prowjobclientset "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
-
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/crier"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	gerritclient "k8s.io/test-infra/prow/gerrit/client"
@@ -51,8 +46,7 @@ const (
 )
 
 type options struct {
-	masterURL      string
-	kubeConfig     string
+	client         prowflagutil.KubernetesClientOptions
 	cookiefilePath string
 	gerritProjects gerritclient.ProjectsFlag
 	github         prowflagutil.GitHubOptions
@@ -65,7 +59,8 @@ type options struct {
 	pubsubWorkers int
 	githubWorkers int
 
-	dryrun bool
+	dryrun      bool
+	reportAgent string
 }
 
 func (o *options) validate() error {
@@ -99,13 +94,12 @@ func (o *options) validate() error {
 }
 
 func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
-	fs.StringVar(&o.masterURL, "masterurl", "", "URL to k8s master")
-	fs.StringVar(&o.kubeConfig, "kubeconfig", "", "Cluster config for the cluster you want to connect to")
 	fs.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for anonymous")
 	fs.Var(&o.gerritProjects, "gerrit-projects", "Set of gerrit repos to monitor on a host example: --gerrit-host=https://android.googlesource.com=platform/build,toolchain/llvm, repeat flag for each host")
 	fs.IntVar(&o.gerritWorkers, "gerrit-workers", 0, "Number of gerrit report workers (0 means disabled)")
 	fs.IntVar(&o.pubsubWorkers, "pubsub-workers", 0, "Number of pubsub report workers (0 means disabled)")
 	fs.IntVar(&o.githubWorkers, "github-workers", 0, "Number of github report workers (0 means disabled)")
+	fs.StringVar(&o.reportAgent, "report-agent", "", "Only report specified agent - empty means report to all agents (effective for github only)")
 
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
@@ -114,6 +108,7 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.BoolVar(&o.dryrun, "dry-run", false, "Run in dry-run mode, not doing actual report (effective for github only)")
 
 	o.github.AddFlags(fs)
+	o.client.AddFlags(fs)
 
 	fs.Parse(args)
 
@@ -132,53 +127,6 @@ func parseOptions() options {
 	return o
 }
 
-// TODO(krzyzacy): copy & paste, refactor this
-// loadClusterConfig loads connection configuration
-// for the cluster we're deploying to. We prefer to
-// use in-cluster configuration if possible, but will
-// fall back to using default rules otherwise.
-func loadClusterConfig(masterURL, kubeConfig string) (*rest.Config, error) {
-	clusterConfig, err := clientcmd.BuildConfigFromFlags(masterURL, kubeConfig)
-	if err == nil {
-		return clusterConfig, nil
-	}
-
-	credentials, err := clientcmd.NewDefaultClientConfigLoadingRules().Load()
-	if err != nil {
-		return nil, fmt.Errorf("could not load credentials from config: %v", err)
-	}
-
-	clusterConfig, err = clientcmd.NewDefaultClientConfig(*credentials, &clientcmd.ConfigOverrides{}).ClientConfig()
-	if err != nil {
-		return nil, fmt.Errorf("could not load client configuration: %v", err)
-	}
-	return clusterConfig, nil
-}
-
-// TODO(krzyzacy): move this to kube???
-// getKubernetesClient retrieves the Kubernetes cluster
-// client from within the cluster
-func getKubernetesClient(masterURL, kubeConfig string) (kubernetes.Interface, prowjobclientset.Interface) {
-	config, err := loadClusterConfig(masterURL, kubeConfig)
-	if err != nil {
-		logrus.Fatalf("failed to load cluster config: %v", err)
-	}
-
-	// generate the client based off of the config
-	client, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		logrus.Fatalf("getClusterConfig: %v", err)
-	}
-
-	prowjobClient, err := prowjobclientset.NewForConfig(config)
-	if err != nil {
-		logrus.Fatalf("getClusterConfig: %v", err)
-	}
-
-	logrus.Info("Successfully constructed k8s client")
-	return client, prowjobClient
-}
-
 func main() {
 	o := parseOptions()
 
@@ -186,7 +134,10 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "crier"}),
 	)
 
-	_, prowjobClient := getKubernetesClient(o.masterURL, o.kubeConfig)
+	prowjobClient, err := o.client.ProwJobClient()
+	if err != nil {
+		logrus.WithError(err).Fatal("unable to create prow job client")
+	}
 
 	prowjobInformerFactory := prowjobinformer.NewSharedInformerFactory(prowjobClient, resync)
 
@@ -197,7 +148,7 @@ func main() {
 			&workqueue.BucketRateLimiter{Limiter: rate.NewLimiter(rate.Limit(10), 100)},
 		))
 
-	controllers := []*crier.Controller{}
+	var controllers []*crier.Controller
 
 	// track all worker status before shutdown
 	wg := &sync.WaitGroup{}
@@ -233,7 +184,7 @@ func main() {
 	}
 
 	if o.githubWorkers > 0 {
-		secretAgent := &config.SecretAgent{}
+		secretAgent := &secret.Agent{}
 		if o.github.TokenPath != "" {
 			if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
 				logrus.WithError(err).Fatal("Error starting secrets agent")
@@ -256,7 +207,7 @@ func main() {
 				prowjobClient,
 				queue,
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
-				githubreporter.NewReporter(githubClient, configAgent),
+				githubreporter.NewReporter(githubClient, configAgent, o.reportAgent),
 				o.githubWorkers,
 				wg))
 	}

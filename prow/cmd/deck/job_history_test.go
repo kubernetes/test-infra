@@ -67,7 +67,7 @@ func TestJobHistURL(t *testing.T) {
 	}
 	for _, tc := range cases {
 		u, _ := url.Parse(tc.address)
-		bktName, root, id, err := jobHistURL(u)
+		bktName, root, id, err := parseJobHistURL(u)
 		if tc.expErr {
 			if err == nil && tc.expErr {
 				t.Errorf("parsing %q: expected error", tc.address)

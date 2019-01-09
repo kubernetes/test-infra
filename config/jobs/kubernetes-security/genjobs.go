@@ -33,11 +33,12 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"strings"
 
-	"github.com/ghodss/yaml"
 	flag "github.com/spf13/pflag"
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -120,7 +121,7 @@ func undoPresubmitPresets(presets []config.Preset, presubmit *config.Presubmit) 
 // dropLabels should be a set of "k: v" strings
 // xref: prow/config/config_test.go replace(...)
 // it will return the same job mutated, or nil if the job should be removed
-func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, podNamespace string) *config.Presubmit {
+func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, defaultDecoration *kube.DecorationConfig, podNamespace string) *config.Presubmit {
 	// if a GKE job, disable it
 	if strings.Contains(j.Name, "gke") {
 		return nil
@@ -146,6 +147,9 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, podNam
 	j.Context = strings.Replace(j.Context, "pull-kubernetes", "pull-security-kubernetes", -1)
 	if j.Namespace != nil && *j.Namespace == podNamespace {
 		j.Namespace = nil
+	}
+	if j.DecorationConfig != nil && reflect.DeepEqual(j.DecorationConfig, defaultDecoration) {
+		j.DecorationConfig = nil
 	}
 
 	// handle k8s job args, volumes etc
@@ -259,7 +263,7 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, podNam
 	if len(j.RunAfterSuccess) > 0 {
 		filteredRunAfterSucces := []config.Presubmit{}
 		for i := range j.RunAfterSuccess {
-			newJob := convertJobToSecurityJob(&j.RunAfterSuccess[i], dropLabels, podNamespace)
+			newJob := convertJobToSecurityJob(&j.RunAfterSuccess[i], dropLabels, defaultDecoration, podNamespace)
 			if newJob != nil {
 				filteredRunAfterSucces = append(filteredRunAfterSucces, *newJob)
 			}
@@ -359,7 +363,7 @@ func main() {
 		// undo merged presets, this needs to occur first!
 		undoPresubmitPresets(parsed.Presets, job)
 		// now convert the job
-		job = convertJobToSecurityJob(job, dropLabels, parsed.PodNamespace)
+		job = convertJobToSecurityJob(job, dropLabels, parsed.Plank.DefaultDecorationConfig, parsed.PodNamespace)
 		if job == nil {
 			continue
 		}

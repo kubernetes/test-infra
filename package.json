@@ -6,6 +6,7 @@
   "devDependencies": {
     "@bazel/typescript": "^0.18.0",
     "@types/google.visualization": "^0.0.43",
+    "@types/jasmine": "~2.8.0",
     "jasmine": "~2.8.0",
     "typescript": ">=2.8 <2.9"
   }

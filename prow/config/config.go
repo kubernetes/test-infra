@@ -15,11 +15,9 @@ limitations under the License.
 */
 
 // Package config knows how to read and parse config.yaml.
-// It also implements an agent to read the secrets.
 package config
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -31,13 +29,13 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/robfig/cron.v2"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
+	"sigs.k8s.io/yaml"
 
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/org"
@@ -105,6 +103,9 @@ type ProwConfig struct {
 	// OwnersDirBlacklist is used to configure which directories to ignore when
 	// searching for OWNERS{,_ALIAS} files in a repo.
 	OwnersDirBlacklist OwnersDirBlacklist `json:"owners_dir_blacklist,omitempty"`
+
+	// Pub/Sub Subscriptions that we want to listen to
+	PubSubSubscriptions PubsubSubscriptions `json:"pubsub_subscriptions,omitempty"`
 }
 
 // OwnersDirBlacklist is used to configure which directories to ignore when
@@ -286,6 +287,9 @@ type Branding struct {
 	HeaderColor string `json:"header_color,omitempty"`
 }
 
+// PubSubSubscriptions maps GCP projects to a list of Topics.
+type PubsubSubscriptions map[string][]string
+
 // Load loads and parses the config at path.
 func Load(prowConfig, jobConfig string) (c *Config, err error) {
 	// we never want config loading to take down the prow components
@@ -398,29 +402,6 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 	}
 
 	return &nc, nil
-}
-
-// LoadSecrets loads multiple paths of secrets and add them in a map.
-func LoadSecrets(paths []string) (map[string][]byte, error) {
-	secretsMap := make(map[string][]byte, len(paths))
-
-	for _, path := range paths {
-		secretValue, err := LoadSingleSecret(path)
-		if err != nil {
-			return nil, err
-		}
-		secretsMap[path] = secretValue
-	}
-	return secretsMap, nil
-}
-
-// LoadSingleSecret reads and returns the value of a single file.
-func LoadSingleSecret(path string) ([]byte, error) {
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("error reading %s: %v", path, err)
-	}
-	return bytes.TrimSpace(b), nil
 }
 
 // yamlToConfig converts a yaml file into a Config object
@@ -629,7 +610,12 @@ func (c *Config) validateComponentConfig() error {
 	return nil
 }
 
+var jobNameRegex = regexp.MustCompile(`^[A-Za-z0-9-._]+$`)
+
 func validateJobBase(v JobBase, jobType kube.ProwJobType, podNamespace string) error {
+	if !jobNameRegex.MatchString(v.Name) {
+		return fmt.Errorf("name: must match regex %q", jobNameRegex.String())
+	}
 	// Ensure max_concurrency is non-negative.
 	if v.MaxConcurrency < 0 {
 		return fmt.Errorf("max_concurrency: %d must be a non-negative number", v.MaxConcurrency)
@@ -823,6 +809,22 @@ func parseProwConfig(c *Config) error {
 		c.Deck.Spyglass.RegexCache[k] = r
 	}
 
+	// Map old viewer names to the new ones for backwards compatibility.
+	// TODO(Katharine, #10274): remove this, eventually.
+	oldViewers := map[string]string{
+		"build-log-viewer": "buildlog",
+		"metadata-viewer":  "metadata",
+		"junit-viewer":     "junit",
+	}
+
+	for re, viewers := range c.Deck.Spyglass.Viewers {
+		for i, v := range viewers {
+			if rename, ok := oldViewers[v]; ok {
+				c.Deck.Spyglass.Viewers[re][i] = rename
+			}
+		}
+	}
+
 	if c.PushGateway.IntervalString == "" {
 		c.PushGateway.Interval = time.Minute
 	} else {
@@ -982,9 +984,11 @@ func validateAgent(v JobBase, podNamespace string) error {
 		return fmt.Errorf("job build_specs require agent: %s (found %q)", b, agent)
 	case agent == b && v.BuildSpec == nil:
 		return errors.New("knative-build jobs require a build_spec")
-	case v.DecorationConfig != nil && agent != k:
-		// TODO(fejta): support decoration
-		return fmt.Errorf("decoration requires agent: %s (found %q)", k, agent)
+	case v.DecorationConfig != nil && agent != k && agent != b:
+		// TODO(fejta): only source decoration supported...
+		return fmt.Errorf("decoration requires agent: %s or %s (found %q)", k, b, agent)
+	case v.ErrorOnEviction && agent != k:
+		return fmt.Errorf("error_on_eviction only applies to agent: %s (found %q)", k, agent)
 	case v.Namespace == nil || *v.Namespace == "":
 		return fmt.Errorf("failed to default namespace")
 	case *v.Namespace != podNamespace && agent != b:
@@ -1124,6 +1128,9 @@ func (c *ProwConfig) defaultJobBase(base *JobBase) {
 		s := c.PodNamespace
 		base.Namespace = &s
 	}
+	if base.Cluster == "" {
+		base.Cluster = kube.DefaultClusterAlias
+	}
 }
 
 func (c *ProwConfig) defaultPresubmitFields(js []Presubmit) {
@@ -1169,18 +1176,17 @@ func SetPresubmitRegexes(js []Presubmit) error {
 		if !js[i].re.MatchString(j.RerunCommand) {
 			return fmt.Errorf("for job %s, rerun command \"%s\" does not match trigger \"%s\"", j.Name, j.RerunCommand, j.Trigger)
 		}
-		if j.RunIfChanged != "" {
-			re, err := regexp.Compile(j.RunIfChanged)
-			if err != nil {
-				return fmt.Errorf("could not compile changes regex for %s: %v", j.Name, err)
-			}
-			js[i].reChanges = re
-		}
 		b, err := setBrancherRegexes(j.Brancher)
 		if err != nil {
 			return fmt.Errorf("could not set branch regexes for %s: %v", j.Name, err)
 		}
 		js[i].Brancher = b
+
+		c, err := setChangeRegexes(j.RegexpChangeMatcher)
+		if err != nil {
+			return fmt.Errorf("could not set change regexes for %s: %v", j.Name, err)
+		}
+		js[i].RegexpChangeMatcher = c
 
 		if err := SetPresubmitRegexes(j.RunAfterSuccess); err != nil {
 			return err
@@ -1209,6 +1215,17 @@ func setBrancherRegexes(br Brancher) (Brancher, error) {
 	return br, nil
 }
 
+func setChangeRegexes(cm RegexpChangeMatcher) (RegexpChangeMatcher, error) {
+	if cm.RunIfChanged != "" {
+		re, err := regexp.Compile(cm.RunIfChanged)
+		if err != nil {
+			return cm, fmt.Errorf("could not compile run_if_changed regex: %v", err)
+		}
+		cm.reChanges = re
+	}
+	return cm, nil
+}
+
 // SetPostsubmitRegexes compiles and validates all the regular expressions for
 // the provided postsubmits.
 func SetPostsubmitRegexes(ps []Postsubmit) error {
@@ -1218,6 +1235,11 @@ func SetPostsubmitRegexes(ps []Postsubmit) error {
 			return fmt.Errorf("could not set branch regexes for %s: %v", j.Name, err)
 		}
 		ps[i].Brancher = b
+		c, err := setChangeRegexes(j.RegexpChangeMatcher)
+		if err != nil {
+			return fmt.Errorf("could not set change regexes for %s: %v", j.Name, err)
+		}
+		ps[i].RegexpChangeMatcher = c
 		if err := SetPostsubmitRegexes(j.RunAfterSuccess); err != nil {
 			return err
 		}

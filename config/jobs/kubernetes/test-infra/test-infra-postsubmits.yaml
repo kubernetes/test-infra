@@ -1,5 +1,19 @@
 postsubmits:
   kubernetes/test-infra:
+  - name: post-test-infra-build-smoke
+    agent: knative-build
+    decorate: true
+    build_spec:
+      steps:
+      - name: first
+        image: busybox
+        args: ["echo", "hello"]
+      - name: second
+        image: busybox
+        args: ["echo", "world"]
+      - name: third
+        image: busybox
+        args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-postsubmits.yaml"]
   - name: ci-test-infra-bazel
     branches:
     - master
@@ -9,7 +23,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -35,7 +49,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -64,7 +78,7 @@ postsubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"

@@ -14,7 +14,7 @@
 
 # Includes basic workspace setup, with gcloud and a bootstrap runner
 
-FROM debian:jessie
+FROM debian:stretch
 LABEL maintainer="Sen Lu <senlu@google.com>"
 
 WORKDIR /workspace
@@ -38,6 +38,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     mercurial \
     openssh-client \
     pkg-config \
+    procps \
     python \
     python-dev \
     python-openssl \

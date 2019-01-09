@@ -5,8 +5,6 @@ package plugins
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -14,6 +12,7 @@ import (
 
 	etcdplugin "github.com/aws/aws-k8s-tester/etcdconfig/plugins"
 	kubeadmplugin "github.com/aws/aws-k8s-tester/kubeadmconfig/plugins"
+	kubernetesplugin "github.com/aws/aws-k8s-tester/kubernetesconfig/plugins"
 )
 
 // headerBash is the bash script header.
@@ -36,16 +35,16 @@ func (ss scripts) Less(i, j int) bool { return keyPriorities[ss[i].key] < keyPri
 var keyPriorities = map[string]int{ // in the order of:
 	"update-amazon-linux-2":                1,
 	"update-ubuntu":                        2,
-	"set-env-aws-cred":                     3, // TODO: use instance role instead
-	"mount-aws-cred":                       4, // TODO: use instance role instead
-	"install-go":                           5,
-	"install-csi":                          6,
-	"install-etcd":                         7,
-	"install-aws-k8s-tester":               8,
-	"install-wrk":                          9,
-	"install-alb":                          10,
-	"install-start-docker-amazon-linux-2":  11,
-	"install-start-kubeadm-amazon-linux-2": 12,
+	"install-go":                           3,
+	"install-go-amazon-linux-2":            4,
+	"install-csi":                          5,
+	"install-etcd":                         6,
+	"install-aws-k8s-tester":               7,
+	"install-wrk":                          8,
+	"install-alb":                          9,
+	"install-start-docker-amazon-linux-2":  10,
+	"install-kubeadm-amazon-linux-2": 11,
+	"install-kubernetes-amazon-linux-2":    12,
 }
 
 func convertToScript(userName, plugin string) (script, error) {
@@ -56,68 +55,25 @@ func convertToScript(userName, plugin string) (script, error) {
 	case plugin == "update-ubuntu":
 		return script{key: "update-ubuntu", data: updateUbuntu}, nil
 
-	case strings.HasPrefix(plugin, "set-env-aws-cred-"):
-		// TODO: use instance role instead
-		env := strings.Replace(plugin, "set-env-aws-cred-", "", -1)
-		if os.Getenv(env) == "" {
-			return script{}, fmt.Errorf("%q is not defined", env)
-		}
-		d, derr := ioutil.ReadFile(os.Getenv(env))
-		if derr != nil {
-			return script{}, derr
-		}
-		lines := strings.Split(string(d), "\n")
-		prevDefault := false
-		accessKey, accessSecret := "", ""
-		for _, line := range lines {
-			line = strings.TrimSpace(line)
-			if line == "" {
-				continue
-			}
-			if line == "[default]" {
-				prevDefault = true
-				continue
-			}
-			if prevDefault {
-				if strings.HasPrefix(line, "aws_access_key_id = ") {
-					accessKey = strings.Replace(line, "aws_access_key_id = ", "", -1)
-				}
-				if strings.HasPrefix(line, "aws_secret_access_key = ") {
-					accessSecret = strings.Replace(line, "aws_secret_access_key = ", "", -1)
-					break
-				}
-			}
+	case strings.HasPrefix(plugin, "install-go-amazon-linux-2-"):
+		goVer := strings.Replace(plugin, "install-go-amazon-linux-2-", "", -1)
+		gss := strings.Split(goVer, ".")
+		goVer = strings.Join(gss[:2], ".")
+		s, err := createInstallGoAmazonLinux2(goInfo{
+			UserName:  userName,
+			GoVersion: goVer,
+		})
+		if err != nil {
+			return script{}, err
 		}
 		return script{
-			key: "set-env-aws-cred",
-			data: fmt.Sprintf(`echo "export AWS_ACCESS_KEY_ID=%s" >> /home/%s/.bashrc
-echo "export AWS_SECRET_ACCESS_KEY=%s" >> /home/%s/.bashrc
-`, accessKey, userName, accessSecret, userName),
-		}, nil
-
-	case strings.HasPrefix(plugin, "mount-aws-cred-"):
-		// TODO: use instance role instead
-		env := strings.Replace(plugin, "mount-aws-cred-", "", -1)
-		if os.Getenv(env) == "" {
-			return script{}, fmt.Errorf("%q is not defined", env)
-		}
-		d, derr := ioutil.ReadFile(os.Getenv(env))
-		if derr != nil {
-			return script{}, derr
-		}
-		return script{
-			key: "mount-aws-cred",
-			data: fmt.Sprintf(`
-mkdir -p /home/%s/.aws/
-
-cat << EOT > /home/%s/.aws/credentials
-%s
-EOT`, userName, userName, string(d)),
+			key:  "install-go-amazon-linux-2",
+			data: s,
 		}, nil
 
 	case strings.HasPrefix(plugin, "install-go-"):
 		goVer := strings.Replace(plugin, "install-go-", "", -1)
-		s, err := createInstallGo(goInfo{
+		s, err := createInstallGoLinux(goInfo{
 			UserName:  userName,
 			GoVersion: goVer,
 		})
@@ -130,16 +86,14 @@ EOT`, userName, userName, string(d)),
 		}, nil
 
 	case strings.HasPrefix(plugin, "install-csi-"):
-		gitBranch := strings.Replace(plugin, "install-csi-", "", -1)
-		_, perr := strconv.ParseInt(gitBranch, 10, 64)
-		isPR := perr == nil
+		prNum := strings.Replace(plugin, "install-csi-", "", -1)
 		s, err := createInstallGit(gitInfo{
 			GitRepo:       "aws-ebs-csi-driver",
 			GitClonePath:  "${GOPATH}/src/github.com/kubernetes-sigs",
 			GitCloneURL:   "https://github.com/kubernetes-sigs/aws-ebs-csi-driver.git",
-			IsPR:          isPR,
-			GitBranch:     gitBranch,
-			InstallScript: `make aws-ebs-csi-driver && sudo cp ./bin/aws-ebs-csi-driver /usr/local/bin/aws-ebs-csi-driver`,
+			IsPR:          true,
+			GitBranch:     prNum,
+			InstallScript: `make aws-ebs-csi-driver && sudo cp ./bin/aws-ebs-csi-driver /usr/bin/aws-ebs-csi-driver`,
 		})
 		if err != nil {
 			return script{}, err
@@ -161,7 +115,7 @@ EOT`, userName, userName, string(d)),
 			GitCloneURL:   "https://github.com/aws/aws-k8s-tester.git",
 			IsPR:          false,
 			GitBranch:     "master",
-			InstallScript: `go build -v ./cmd/aws-k8s-tester && sudo cp ./aws-k8s-tester /usr/local/bin/aws-k8s-tester`,
+			InstallScript: `go build -v ./cmd/aws-k8s-tester && sudo cp ./aws-k8s-tester /usr/bin/aws-k8s-tester`,
 		})
 		if err != nil {
 			return script{}, err
@@ -199,20 +153,23 @@ make server
 			data: installStartDockerAmazonLinux2,
 		}, nil
 
-	case strings.HasPrefix(plugin, "install-start-kubeadm-amazon-linux-2-"):
-		id := strings.Replace(plugin, "install-start-kubeadm-amazon-linux-2-", "", -1)
-		s, err := kubeadmplugin.CreateInstallStart(id)
+	case strings.HasPrefix(plugin, "install-kubeadm-amazon-linux-2-"):
+		id := strings.Replace(plugin, "install-kubeadm-amazon-linux-2-", "", -1)
+		s, err := kubeadmplugin.CreateInstall(id)
 		if err != nil {
 			return script{}, err
 		}
-		return script{key: "install-start-kubeadm-amazon-linux-2", data: s}, nil
+		return script{key: "install-kubeadm-amazon-linux-2", data: s}, nil
+
+	case plugin == "install-kubernetes-amazon-linux-2":
+		return script{key: "install-kubernetes-amazon-linux-2", data: kubernetesplugin.CreateInstall()}, nil
 	}
 
 	return script{}, fmt.Errorf("unknown plugin %q", plugin)
 }
 
 // Create returns the plugin.
-func Create(userName string, plugins []string) (data string, err error) {
+func Create(userName, customScript string, plugins []string) (data string, err error) {
 	sts := make([]script, 0, len(plugins))
 	for _, plugin := range plugins {
 		if plugin == "update-ubuntu" {
@@ -232,6 +189,7 @@ func Create(userName string, plugins []string) (data string, err error) {
 	for _, s := range sts {
 		data += s.data
 	}
+	data += customScript
 	data += fmt.Sprintf("\n\necho %s\n\n", READY)
 	return data, nil
 }
@@ -314,8 +272,17 @@ apt-get -y update \
 
 `
 
-func createInstallGo(g goInfo) (string, error) {
-	tpl := template.Must(template.New("installGoTemplate").Parse(installGoTemplate))
+func createInstallGoAmazonLinux2(g goInfo) (string, error) {
+	tpl := template.Must(template.New("installGoAmazonLinux2Template").Parse(installGoAmazonLinux2Template))
+	buf := bytes.NewBuffer(nil)
+	if err := tpl.Execute(buf, g); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
+}
+
+func createInstallGoLinux(g goInfo) (string, error) {
+	tpl := template.Must(template.New("installGoLinuxTemplate").Parse(installGoLinuxTemplate))
 	buf := bytes.NewBuffer(nil)
 	if err := tpl.Execute(buf, g); err != nil {
 		return "", err
@@ -328,12 +295,45 @@ type goInfo struct {
 	GoVersion string
 }
 
-const installGoTemplate = `
+const installGoAmazonLinux2Template = `
+
+################################## install Go in Amazon Linux 2
+
+sudo amazon-linux-extras install golang{{ .GoVersion }} -y
+which go
+
+export GOPATH=/home/{{ .UserName }}/go
+mkdir -p ${GOPATH}/bin/
+mkdir -p ${GOPATH}/src/
+
+if grep -q GOPATH "${HOME}/.bashrc"; then
+  echo "bashrc already has GOPATH";
+else
+  echo "adding GOPATH to bashrc";
+  echo "export GOPATH=${HOME}/go" >> ${HOME}/.bashrc;
+  PATH_VAR=$PATH":/usr/local/go/bin:${HOME}/go/bin";
+  echo "export PATH=$(echo $PATH_VAR)" >> ${HOME}/.bashrc;
+  source ${HOME}/.bashrc;
+fi
+
+source ${HOME}/.bashrc
+export PATH=$PATH:/usr/local/go/bin:${HOME}/go/bin
+
+sudo echo PATH=${PATH} > /etc/environment
+sudo echo GOPATH=/home/{{ .UserName }}/go >> /etc/environment
+echo "source /etc/environment" >> ${HOME}/.bashrc;
+
+go version
+
+##################################
+
+`
+
+const installGoLinuxTemplate = `
 
 ################################## install Go
 
 export HOME=/home/{{ .UserName }}
-export GOPATH=/home/{{ .UserName }}/go
 
 GO_VERSION={{ .GoVersion }}
 GOOGLE_URL=https://storage.googleapis.com/golang
@@ -341,6 +341,7 @@ DOWNLOAD_URL=${GOOGLE_URL}
 
 sudo curl -s ${DOWNLOAD_URL}/go$GO_VERSION.linux-amd64.tar.gz | sudo tar -v -C /usr/local/ -xz
 
+export GOPATH=/home/{{ .UserName }}/go
 mkdir -p ${GOPATH}/bin/
 mkdir -p ${GOPATH}/src/
 
@@ -398,8 +399,8 @@ curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/
 tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /tmp/etcd-download-test --strip-components=1
 rm -f /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
 
-sudo cp /tmp/etcd-download-test/etcd /usr/local/bin/etcd
-sudo cp /tmp/etcd-download-test/etcdctl /usr/local/bin/etcdctl
+sudo cp /tmp/etcd-download-test/etcd /usr/bin/etcd
+sudo cp /tmp/etcd-download-test/etcdctl /usr/bin/etcdctl
 
 etcd --version
 ETCDCTL_API=3 etcdctl version
@@ -431,7 +432,7 @@ done
 
 cd ./wrk \
   && make all \
-  && sudo cp ./wrk /usr/local/bin/wrk \
+  && sudo cp ./wrk /usr/bin/wrk \
   && cd .. \
   && rm -rf ./wrk \
   && wrk --version || true && which wrk
@@ -516,6 +517,27 @@ const installStartDockerAmazonLinux2 = `
 
 ################################## install Docker on Amazon Linux 2
 
+sudo amazon-linux-extras install docker -y
+
+sudo systemctl daemon-reload
+sudo systemctl enable docker || true
+sudo systemctl start docker || true
+sudo systemctl restart docker || true
+
+sudo systemctl status docker --full --no-pager || true
+sudo usermod -aG docker ec2-user || true
+
+# su - ec2-user
+# or logout and login to use docker without 'sudo'
+id -nG
+sudo docker version
+sudo docker info
+
+##################################
+
+`
+
+/*
 sudo yum update -y
 sudo yum install -y docker
 sudo yum install -y yum-utils device-mapper-persistent-data lvm2
@@ -541,21 +563,4 @@ cat > /etc/docker/daemon.json <<EOF
 }
 EOF
 mkdir -p /etc/systemd/system/docker.service.d
-
-sudo systemctl daemon-reload
-sudo systemctl enable docker || true
-sudo systemctl start docker || true
-sudo systemctl restart docker || true
-
-sudo systemctl status docker --full --no-pager || true
-sudo usermod -aG docker ec2-user || true
-
-# su - ec2-user
-# or logout and login to use docker without 'sudo'
-id -nG
-sudo docker version
-sudo docker info
-
-##################################
-
-`
+*/

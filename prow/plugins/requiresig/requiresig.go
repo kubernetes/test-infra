@@ -56,6 +56,8 @@ type githubClient interface {
 	AddLabel(org, repo string, number int, label string) error
 	RemoveLabel(org, repo string, number int, label string) error
 	CreateComment(org, repo string, number int, content string) error
+	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
+	DeleteComment(org, repo string, id int) error
 }
 
 type commentPruner interface {
@@ -88,8 +90,12 @@ func helpProvider(config *plugins.Configuration, _ []string) (*pluginhelp.Plugin
 		nil
 }
 
-func handleIssue(pc plugins.PluginClient, ie github.IssueEvent) error {
-	return handle(pc.Logger, pc.GitHubClient, pc.CommentPruner, &ie, pc.PluginConfig.SigMention.Re)
+func handleIssue(pc plugins.Agent, ie github.IssueEvent) error {
+	cp, err := pc.CommentPruner()
+	if err != nil {
+		return err
+	}
+	return handle(pc.Logger, pc.GitHubClient, cp, &ie, pc.PluginConfig.SigMention.Re)
 }
 
 func isSigLabel(label string) bool {

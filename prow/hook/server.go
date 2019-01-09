@@ -37,7 +37,8 @@ import (
 // Server implements http.Handler. It validates incoming GitHub webhooks and
 // then dispatches them to the appropriate plugins.
 type Server struct {
-	Plugins        *plugins.PluginAgent
+	ClientAgent    *plugins.ClientAgent
+	Plugins        *plugins.ConfigAgent
 	ConfigAgent    *config.Agent
 	TokenGenerator func() []byte
 	Metrics        *Metrics
@@ -234,7 +235,8 @@ func (s *Server) dispatch(endpoint string, payload []byte, h http.Header) error 
 	return nil
 }
 
-// Implements a graceful shutdown protool. Handles all requests sent before receiving shutdown signal.
+// GracefulShutdown implements a graceful shutdown protocol. It handles all requests sent before
+// receiving the shutdown signal.
 func (s *Server) GracefulShutdown() {
 	s.wg.Wait() // Handle remaining requests
 	return

@@ -21,6 +21,7 @@ package client
 import (
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"strings"
 	"time"
 
@@ -44,14 +45,6 @@ const (
 	GerritRevision = "prow.k8s.io/gerrit-revision"
 	// GerritReportLabel is the gerrit label prow will cast vote on, fallback to CodeReview label if unset
 	GerritReportLabel = "prow.k8s.io/gerrit-report-label"
-
-	// TODO(krzyzacy): remove them after we don't have deployment uses deprecated labels
-	// DeprecatedGerritID is the deprecated version of GerritID
-	DeprecatedGerritID = "gerrit-id"
-	// DeprecatedGerritInstance is the deprecated version of GerritInstance
-	DeprecatedGerritInstance = "gerrit-instance"
-	// DeprecatedGerritRevision is the deprecated version of GerritRevision
-	DeprecatedGerritRevision = "gerrit-revision"
 
 	// Merged status indicates a Gerrit change has been merged
 	Merged = "MERGED"
@@ -125,6 +118,9 @@ type ChangeInfo = gerrit.ChangeInfo
 // RevisionInfo is a gerrit.RevisionInfo
 type RevisionInfo = gerrit.RevisionInfo
 
+// FileInfo is a gerrit.FileInfo
+type FileInfo = gerrit.FileInfo
+
 // NewClient returns a new gerrit client
 func NewClient(instances map[string][]string) (*Client, error) {
 	c := &Client{
@@ -188,7 +184,9 @@ func auth(c *Client, cookiefilePath string) {
 // Start will authenticate the client with gerrit periodically
 // Start must be called before user calls any client functions.
 func (c *Client) Start(cookiefilePath string) {
-	go auth(c, cookiefilePath)
+	if cookiefilePath != "" {
+		go auth(c, cookiefilePath)
+	}
 }
 
 // QueryChanges queries for all changes from all projects after lastUpdate time
@@ -231,7 +229,7 @@ func (c *Client) GetBranchRevision(instance, project, branch string) (string, er
 		return "", fmt.Errorf("not activated gerrit instance: %s", instance)
 	}
 
-	res, _, err := h.projectService.GetBranch(project, branch)
+	res, _, err := h.projectService.GetBranch(project, url.QueryEscape(branch))
 	if err != nil {
 		return "", err
 	}
@@ -261,7 +259,7 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 
 	opt := &gerrit.QueryChangeOptions{}
 	opt.Query = append(opt.Query, "project:"+project)
-	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT"}
+	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT", "CURRENT_FILES"}
 
 	start := 0
 

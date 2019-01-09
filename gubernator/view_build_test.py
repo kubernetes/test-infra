@@ -193,7 +193,7 @@ class BuildTest(main_test.TestBase):
         self.assertIn('Error Goes Here', response)
         self.assertIn('test.go#L123">', response)  # stacktrace link works
 
-    def test_finished_has_version(self):
+    def test_finished_has_revision(self):
         """Test that metadata with version in finished works."""
         init_build(self.BUILD_DIR, finished_has_version=True)
         self.test_build()
@@ -207,7 +207,7 @@ class BuildTest(main_test.TestBase):
     def test_show_metadata(self):
         write(self.BUILD_DIR + 'started.json',
             {
-                'version': 'v1+56',
+                'revision': 'v1+56',
                 'timestamp': 1406535800,
                 'node': 'agent-light-7',
                 'pull': 'master:1234,35:abcd,72814',

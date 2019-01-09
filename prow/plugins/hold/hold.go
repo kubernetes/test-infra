@@ -32,7 +32,10 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const PluginName = "hold"
+const (
+	// PluginName defines this plugin's registered name.
+	PluginName = "hold"
+)
 
 var (
 	labelRe       = regexp.MustCompile(`(?mi)^/hold\s*$`)
@@ -66,7 +69,7 @@ type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	hasLabel := func(label string, labels []github.Label) bool {
 		return github.HasLabel(label, labels)
 	}

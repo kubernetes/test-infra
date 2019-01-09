@@ -29,9 +29,12 @@ import (
 )
 
 const (
-	pubsubProjectLabel = "prow.k8s.io/pubsub-project"
-	pubsubTopicLabel   = "prow.k8s.io/pubsub-topic"
-	pubsubRunIDLabel   = "prow.k8s.io/pubsub-runID"
+	// PubSubProjectLabel annotation
+	PubSubProjectLabel = "prow.k8s.io/pubsub.project"
+	// PubSubTopicLabel annotation
+	PubSubTopicLabel = "prow.k8s.io/pubsub.topic"
+	// PubSubRunIDLabel annotation
+	PubSubRunIDLabel = "prow.k8s.io/pubsub.runID"
 )
 
 // ReportMessage is a message structure used to pass a prowjob status to Pub/Sub topic.s
@@ -63,7 +66,7 @@ func (c *Client) GetName() string {
 
 // ShouldReport tells if a prowjob should be reported by this reporter
 func (c *Client) ShouldReport(pj *kube.ProwJob) bool {
-	return pj.Labels[pubsubProjectLabel] != "" && pj.Labels[pubsubTopicLabel] != ""
+	return pj.Labels[PubSubProjectLabel] != "" && pj.Labels[PubSubTopicLabel] != ""
 }
 
 // Report takes a prowjob, and generate a pubsub ReportMessage and publish to specific Pub/Sub topic
@@ -97,9 +100,9 @@ func (c *Client) Report(pj *kube.ProwJob) error {
 }
 
 func generateMessageFromPJ(pj *kube.ProwJob) *ReportMessage {
-	projectName := pj.Labels[pubsubProjectLabel]
-	topicName := pj.Labels[pubsubTopicLabel]
-	runID := pj.GetLabels()[pubsubRunIDLabel]
+	projectName := pj.Labels[PubSubProjectLabel]
+	topicName := pj.Labels[PubSubTopicLabel]
+	runID := pj.GetLabels()[PubSubRunIDLabel]
 
 	psReport := &ReportMessage{
 		Project: projectName,

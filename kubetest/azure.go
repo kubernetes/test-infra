@@ -173,9 +173,6 @@ func newAcsEngine() (*Cluster, error) {
 	if err := os.Setenv("KUBERNETES_CONFORMANCE_TEST", "yes"); err != nil {
 		return nil, err
 	}
-	if err := os.Setenv("KUBERNETES_CONFORMANCE_PROVIDER", "azure"); err != nil {
-		return nil, err
-	}
 
 	return &c, nil
 }
@@ -607,3 +604,5 @@ func (c Cluster) TestSetup() error {
 func (c Cluster) IsUp() error {
 	return isUp(c)
 }
+
+func (_ Cluster) KubectlCommand() (*exec.Cmd, error) { return nil, nil }

@@ -26,7 +26,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
@@ -120,7 +120,7 @@ func main() {
 		tokens = append(tokens, o.jenkinsBearerTokenFile)
 	}
 
-	secretAgent := &config.SecretAgent{}
+	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start(tokens); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}

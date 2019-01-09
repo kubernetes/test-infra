@@ -1,4 +1,23 @@
 periodics:
+- name: ci-test-infra-build-smoke
+  interval: 2h
+  agent: knative-build
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  build_spec:
+    steps:
+    - name: first
+      image: busybox
+      args: ["echo", "hello"]
+    - name: second
+      image: busybox
+      args: ["echo", "world"]
+    - name: third
+      image: busybox
+      args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-periodics.yaml"]
 - name: ci-test-infra-bazel
   interval: 1h
   labels:
@@ -7,7 +26,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-experimental
       args:
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/test-infra=master"

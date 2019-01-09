@@ -43,9 +43,9 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test1",
 					Labels: map[string]string{
-						pubsubProjectLabel: testPubSubProjectName,
-						pubsubTopicLabel:   testPubSubTopicName,
-						pubsubRunIDLabel:   testPubSubRunID,
+						PubSubProjectLabel: testPubSubProjectName,
+						PubSubTopicLabel:   testPubSubTopicName,
+						PubSubRunIDLabel:   testPubSubRunID,
 					},
 				},
 				Status: kube.ProwJobStatus{
@@ -67,8 +67,8 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test-no-runID",
 					Labels: map[string]string{
-						pubsubProjectLabel: testPubSubProjectName,
-						pubsubTopicLabel:   testPubSubTopicName,
+						PubSubProjectLabel: testPubSubProjectName,
+						PubSubTopicLabel:   testPubSubTopicName,
 					},
 				},
 				Status: kube.ProwJobStatus{
@@ -106,9 +106,9 @@ func TestShouldReport(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test1",
 					Labels: map[string]string{
-						pubsubProjectLabel: testPubSubProjectName,
-						pubsubTopicLabel:   testPubSubTopicName,
-						pubsubRunIDLabel:   testPubSubRunID,
+						PubSubProjectLabel: testPubSubProjectName,
+						PubSubTopicLabel:   testPubSubTopicName,
+						PubSubRunIDLabel:   testPubSubRunID,
 					},
 				},
 				Status: kube.ProwJobStatus{
@@ -123,8 +123,8 @@ func TestShouldReport(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test-no-project",
 					Labels: map[string]string{
-						pubsubTopicLabel: testPubSubTopicName,
-						pubsubRunIDLabel: testPubSubRunID,
+						PubSubTopicLabel: testPubSubTopicName,
+						PubSubRunIDLabel: testPubSubRunID,
 					},
 				},
 				Status: kube.ProwJobStatus{
@@ -139,8 +139,8 @@ func TestShouldReport(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test-no-topic",
 					Labels: map[string]string{
-						pubsubProjectLabel: testPubSubProjectName,
-						pubsubRunIDLabel:   testPubSubRunID,
+						PubSubProjectLabel: testPubSubProjectName,
+						PubSubRunIDLabel:   testPubSubRunID,
 					},
 				},
 				Status: kube.ProwJobStatus{

@@ -6,10 +6,23 @@ package gps
 
 import (
 	"fmt"
+	"path"
+	"sort"
+	"strings"
 	"sync"
 
 	"github.com/golang/dep/gps/pkgtree"
 )
+
+// sourceCache is an interface for creating singleSourceCaches, and safely
+// releasing backing resources via close.
+type sourceCache interface {
+	// newSingleSourceCache creates a new singleSourceCache for id, which
+	// remains valid until close is called.
+	newSingleSourceCache(id ProjectIdentifier) singleSourceCache
+	// close releases background resources.
+	close() error
+}
 
 // singleSourceCache provides a method set for storing and retrieving data about
 // a single source.
@@ -26,7 +39,7 @@ type singleSourceCache interface {
 	setPackageTree(Revision, pkgtree.PackageTree)
 
 	// Get the PackageTree for a given revision.
-	getPackageTree(Revision) (pkgtree.PackageTree, bool)
+	getPackageTree(Revision, ProjectRoot) (pkgtree.PackageTree, bool)
 
 	// Indicate to the cache that an individual revision is known to exist.
 	markRevisionExists(r Revision)
@@ -60,19 +73,31 @@ type singleSourceCache interface {
 	toUnpaired(v Version) (UnpairedVersion, bool)
 }
 
+// memoryCache is a sourceCache which creates singleSourceCacheMemory instances.
+type memoryCache struct{}
+
+func (memoryCache) newSingleSourceCache(ProjectIdentifier) singleSourceCache {
+	return newMemoryCache()
+}
+
+func (memoryCache) close() error { return nil }
+
 type singleSourceCacheMemory struct {
-	mut    sync.RWMutex // protects all fields
-	infos  map[ProjectAnalyzerInfo]map[Revision]projectInfo
-	ptrees map[Revision]pkgtree.PackageTree
-	vList  []PairedVersion // replaced, never modified
-	vMap   map[UnpairedVersion]Revision
-	rMap   map[Revision][]UnpairedVersion
+	// Protects all fields.
+	mut   sync.RWMutex
+	infos map[ProjectAnalyzerInfo]map[Revision]projectInfo
+	// Replaced, never modified. Imports are *relative* (ImportRoot prefix trimmed).
+	ptrees map[Revision]map[string]pkgtree.PackageOrErr
+	// Replaced, never modified.
+	vList []PairedVersion
+	vMap  map[UnpairedVersion]Revision
+	rMap  map[Revision][]UnpairedVersion
 }
 
 func newMemoryCache() singleSourceCache {
 	return &singleSourceCacheMemory{
 		infos:  make(map[ProjectAnalyzerInfo]map[Revision]projectInfo),
-		ptrees: make(map[Revision]pkgtree.PackageTree),
+		ptrees: make(map[Revision]map[string]pkgtree.PackageOrErr),
 		vMap:   make(map[UnpairedVersion]Revision),
 		rMap:   make(map[Revision][]UnpairedVersion),
 	}
@@ -117,8 +142,14 @@ func (c *singleSourceCacheMemory) getManifestAndLock(r Revision, pai ProjectAnal
 }
 
 func (c *singleSourceCacheMemory) setPackageTree(r Revision, ptree pkgtree.PackageTree) {
+	// Make a copy, with relative import paths.
+	pkgs := pkgtree.CopyPackages(ptree.Packages, func(ip string, poe pkgtree.PackageOrErr) (string, pkgtree.PackageOrErr) {
+		poe.P.ImportPath = "" // Don't store this
+		return strings.TrimPrefix(ip, ptree.ImportRoot), poe
+	})
+
 	c.mut.Lock()
-	c.ptrees[r] = ptree
+	c.ptrees[r] = pkgs
 
 	// Ensure there's at least an entry in the rMap so that the rMap always has
 	// a complete picture of the revisions we know to exist
@@ -128,11 +159,28 @@ func (c *singleSourceCacheMemory) setPackageTree(r Revision, ptree pkgtree.Packa
 	c.mut.Unlock()
 }
 
-func (c *singleSourceCacheMemory) getPackageTree(r Revision) (pkgtree.PackageTree, bool) {
+func (c *singleSourceCacheMemory) getPackageTree(r Revision, pr ProjectRoot) (pkgtree.PackageTree, bool) {
 	c.mut.Lock()
-	ptree, has := c.ptrees[r]
+	rptree, has := c.ptrees[r]
 	c.mut.Unlock()
-	return ptree, has
+
+	if !has {
+		return pkgtree.PackageTree{}, false
+	}
+
+	// Return a copy, with full import paths.
+	pkgs := pkgtree.CopyPackages(rptree, func(rpath string, poe pkgtree.PackageOrErr) (string, pkgtree.PackageOrErr) {
+		ip := path.Join(string(pr), rpath)
+		if poe.Err == nil {
+			poe.P.ImportPath = ip
+		}
+		return ip, poe
+	})
+
+	return pkgtree.PackageTree{
+		ImportRoot: string(pr),
+		Packages:   pkgs,
+	}, true
 }
 
 func (c *singleSourceCacheMemory) setVersionMap(versionList []PairedVersion) {
@@ -223,4 +271,37 @@ func (c *singleSourceCacheMemory) toUnpaired(v Version) (UnpairedVersion, bool) 
 	default:
 		panic(fmt.Sprintf("unknown version type %T", v))
 	}
+}
+
+// TODO(sdboyer) remove once source caching can be moved into separate package
+func locksAreEq(l1, l2 Lock) bool {
+	ii1, ii2 := l1.InputImports(), l2.InputImports()
+	if len(ii1) != len(ii2) {
+		return false
+	}
+
+	ilen := len(ii1)
+	if ilen > 0 {
+		sort.Strings(ii1)
+		sort.Strings(ii2)
+		for i := 0; i < ilen; i++ {
+			if ii1[i] != ii2[i] {
+				return false
+			}
+		}
+	}
+
+	p1, p2 := l1.Projects(), l2.Projects()
+	if len(p1) != len(p2) {
+		return false
+	}
+
+	p1, p2 = sortLockedProjects(p1), sortLockedProjects(p2)
+
+	for k, lp := range p1 {
+		if !lp.Eq(p2[k]) {
+			return false
+		}
+	}
+	return true
 }

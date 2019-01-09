@@ -26,8 +26,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ghodss/yaml"
 	"k8s.io/api/core/v1"
+	"sigs.k8s.io/yaml"
 )
 
 type options struct {
@@ -38,7 +38,7 @@ type options struct {
 	output    string
 }
 
-// multiKeyValue allows --key=value --key=value
+// multiKeyValue allows --key=value --key=value2
 type multiKeyValue map[string]string
 
 func (mkv *multiKeyValue) String() string {

@@ -17,6 +17,7 @@ spec:
   cluster: default
   context: kubernetes-no-decoration
   job: kubernetes-no-decoration
+  namespace: default
   pod_spec:
     containers:
     - args:

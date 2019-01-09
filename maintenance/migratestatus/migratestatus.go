@@ -18,12 +18,15 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
+	"regexp"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/maintenance/migratestatus/migrator"
-	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/logrusutil"
 )
@@ -34,6 +37,8 @@ type options struct {
 	descriptionURL                                       string
 	continueOnError, dryRun                              bool
 	github                                               prowflagutil.GitHubOptions
+	branchFilterRaw                                      string
+	branchFilter                                         *regexp.Regexp
 }
 
 func gatherOptions() options {
@@ -50,6 +55,8 @@ func gatherOptions() options {
 	fs.StringVar(&o.retireContext, "retire", "", "Indicates retire mode and specifies the context to retire.")
 	fs.StringVar(&o.destContext, "dest", "", "The destination context to copy or move to. For retire mode this is the context that replaced the retired context.")
 	fs.StringVar(&o.descriptionURL, "description", "", "A URL to a page explaining why a context was migrated or retired. (Optional)")
+
+	fs.StringVar(&o.branchFilterRaw, "branch-filter", "", "A regular expression which the PR target branch must match to be modified. (Optional)")
 
 	o.github.AddFlags(fs)
 	fs.Parse(os.Args[1:])
@@ -89,6 +96,13 @@ func (o *options) Validate() error {
 	if err := o.github.Validate(o.dryRun); err != nil {
 		return err
 	}
+
+	expr, err := regexp.Compile(o.branchFilterRaw)
+	if err != nil {
+		return fmt.Errorf("invalid --branch-filter regular expression: %v", err)
+	}
+	o.branchFilter = expr
+
 	return nil
 }
 
@@ -102,7 +116,7 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "migratestatus"}),
 	)
 
-	secretAgent := &config.SecretAgent{}
+	secretAgent := &secret.Agent{}
 	if o.github.TokenPath != "" {
 		if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
 			logrus.WithError(err).Fatal("Error starting secrets agent.")
@@ -127,7 +141,7 @@ func main() {
 
 	// Note that continueOnError is false by default so that errors can be addressed when they occur
 	// instead of blindly continuing to the next PR, possibly continuing to error.
-	m := migrator.New(*mode, githubClient, o.org, o.repo, o.continueOnError)
+	m := migrator.New(*mode, githubClient, o.org, o.repo, o.branchFilter.MatchString, o.continueOnError)
 	if err := m.Migrate(); err != nil {
 		logrus.WithError(err).Fatal("Error during status migration")
 	}

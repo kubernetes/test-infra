@@ -76,12 +76,13 @@ func LabelsAndAnnotationsForSpec(spec kube.ProwJobSpec, extraLabels, extraAnnota
 	jobNameForLabel := spec.Job
 	if len(jobNameForLabel) > validation.LabelValueMaxLength {
 		// TODO(fejta): consider truncating middle rather than end.
-		jobNameForLabel = strings.TrimRight(spec.Job[:validation.LabelValueMaxLength], "-")
-		logrus.Warnf("Cannot use full job name '%s' for '%s' label, will be truncated to '%s'",
-			spec.Job,
-			kube.ProwJobAnnotation,
-			jobNameForLabel,
-		)
+		jobNameForLabel = strings.TrimRight(spec.Job[:validation.LabelValueMaxLength], ".-")
+		logrus.WithFields(logrus.Fields{
+			"job":       spec.Job,
+			"key":       kube.ProwJobAnnotation,
+			"value":     spec.Job,
+			"truncated": jobNameForLabel,
+		}).Info("Cannot use full job name, will truncate.")
 	}
 	labels := map[string]string{
 		kube.CreatedByProw:     "true",
@@ -109,7 +110,11 @@ func LabelsAndAnnotationsForSpec(spec kube.ProwJobSpec, extraLabels, extraAnnota
 				labels[key] = base
 				continue
 			}
-			logrus.Warnf("Removing invalid label: key - %s, value - %s, error: %s", key, value, errs)
+			logrus.WithFields(logrus.Fields{
+				"key":    key,
+				"value":  value,
+				"errors": errs,
+			}).Warn("Removing invalid label")
 			delete(labels, key)
 		}
 	}
@@ -149,9 +154,11 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 	spec.RestartPolicy = "Never"
 	spec.Containers[0].Name = kube.TestContainerName
 
-	// we treat this as false if unset, while kubernetes treats it as true if
-	// unset because it was added in v1.6
-	if spec.AutomountServiceAccountToken == nil {
+	// if the user has not provided a serviceaccount to use or explicitly
+	// requested mounting the default token, we treat the unset value as
+	// false, while kubernetes treats it as true if it is unset because
+	// it was added in v1.6
+	if spec.AutomountServiceAccountToken == nil && spec.ServiceAccountName == "" {
 		myFalse := false
 		spec.AutomountServiceAccountToken = &myFalse
 	}
@@ -437,8 +444,9 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 	)
 
 	wrapperOptions := wrapper.Options{
-		ProcessLog: fmt.Sprintf("%s/process-log.txt", logMountPath),
-		MarkerFile: fmt.Sprintf("%s/marker-file.txt", logMountPath),
+		ProcessLog:   fmt.Sprintf("%s/process-log.txt", logMountPath),
+		MarkerFile:   fmt.Sprintf("%s/marker-file.txt", logMountPath),
+		MetadataFile: fmt.Sprintf("%s/metadata.json", artifactsPath),
 	}
 	// TODO(fejta): use flags
 	entrypointConfigEnv, err := entrypoint.Encode(entrypoint.Options{

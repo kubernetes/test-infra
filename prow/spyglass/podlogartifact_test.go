@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/spyglass/viewers"
+	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
 // fakePodLogJAgent used for pod log artifact dependency injection
@@ -297,7 +297,7 @@ func TestReadAll_PodLog(t *testing.T) {
 			jobName:     "Fantastic Mr. Fox",
 			buildID:     "4",
 			sizeLimit:   5,
-			expectedErr: viewers.ErrFileTooLarge,
+			expectedErr: lenses.ErrFileTooLarge,
 			expected:    nil,
 		},
 	}

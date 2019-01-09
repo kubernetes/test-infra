@@ -37,7 +37,6 @@ import (
 
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/kubetest/conformance"
-	"k8s.io/test-infra/kubetest/eks"
 	"k8s.io/test-infra/kubetest/kubeadmdind"
 	"k8s.io/test-infra/kubetest/process"
 	"k8s.io/test-infra/kubetest/util"
@@ -226,6 +225,7 @@ type deployer interface {
 	TestSetup() error
 	Down() error
 	GetClusterCreated(gcpProject string) (time.Time, error)
+	KubectlCommand() (*exec.Cmd, error)
 }
 
 // publisher is implemented by deployers that want to publish status on success
@@ -243,7 +243,7 @@ func getDeployer(o *options) (deployer, error) {
 	case "gke":
 		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.gcpImageFamily, o.gcpImageProject, o.cluster, &o.testArgs, &o.upgradeArgs)
 	case "eks":
-		return eks.NewDeployer(timeout, verbose)
+		return newEKS(timeout, verbose)
 	case "kops":
 		return newKops(o.provider, o.gcpProject, o.cluster)
 	case "kubeadm-dind":
@@ -544,8 +544,8 @@ func writeMetadata(path, metadataSources string) error {
 	}
 
 	ver := findVersion()
-	m["version"] = ver // TODO(fejta): retire
-	m["job-version"] = ver
+	m["job-version"] = ver // TODO(krzyzacy): retire
+	m["revision"] = ver
 	re := regexp.MustCompile(`^BUILD_METADATA_(.+)$`)
 	for _, e := range os.Environ() {
 		p := strings.SplitN(e, "=", 2)

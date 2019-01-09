@@ -34,10 +34,11 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/config"
+	"sigs.k8s.io/yaml"
+
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 )
@@ -326,6 +327,9 @@ func loadRepos(org string, gc client) ([]string, error) {
 	}
 	var rl []string
 	for _, r := range repos {
+		if r.Archived {
+			continue
+		}
 		rl = append(rl, r.Name)
 	}
 	return rl, nil
@@ -643,7 +647,7 @@ func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, hosts ...s
 		return nil, errors.New("--token unset")
 	}
 
-	secretAgent := &config.SecretAgent{}
+	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start([]string{tokenPath}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}

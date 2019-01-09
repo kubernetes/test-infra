@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package cat adds cat images to issues in response to a /meow comment
+// Package cat adds cat images to an issue or PR in response to a /meow comment
 package cat
 
 import (
@@ -54,11 +54,11 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The cat plugin adds a cat image to an issue in response to the `/meow` command.",
+		Description: "The cat plugin adds a cat image to an issue or PR in response to the `/meow` command.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/meow(vie) [CATegory]",
-		Description: "Add a cat image to the issue",
+		Description: "Add a cat image to the issue or PR",
 		Featured:    false,
 		WhoCanUse:   "Anyone",
 		Examples:    []string{"/meow", "/meow caturday", "/meowvie clothes"},
@@ -126,15 +126,15 @@ func (cr catResult) Format() (string, error) {
 	return fmt.Sprintf("[![cat image](%s)](%s)", img, src), nil
 }
 
-func (r *realClowder) Url(category string, movieCat bool) string {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
-	uri := string(r.url)
+func (c *realClowder) URL(category string, movieCat bool) string {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	uri := string(c.url)
 	if category != "" {
 		uri += "&category=" + url.QueryEscape(category)
 	}
-	if r.key != "" {
-		uri += "&api_key=" + url.QueryEscape(r.key)
+	if c.key != "" {
+		uri += "&api_key=" + url.QueryEscape(c.key)
 	}
 	if movieCat {
 		uri += "&mime_types=gif"
@@ -142,8 +142,8 @@ func (r *realClowder) Url(category string, movieCat bool) string {
 	return uri
 }
 
-func (r *realClowder) readCat(category string, movieCat bool) (string, error) {
-	uri := r.Url(category, movieCat)
+func (c *realClowder) readCat(category string, movieCat bool) (string, error) {
+	uri := c.URL(category, movieCat)
 	resp, err := http.Get(uri)
 	if err != nil {
 		return "", fmt.Errorf("could not read cat from %s: %v", uri, err)
@@ -173,7 +173,7 @@ func (r *realClowder) readCat(category string, movieCat bool) (string, error) {
 	return a.Format()
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	return handle(
 		pc.GitHubClient,
 		pc.Logger,

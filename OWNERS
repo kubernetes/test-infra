@@ -1,13 +1,18 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
 approvers:
 - amwat
 - BenTheElder
 - cjwagner
 - fejta
 - ixdy
+- Katharine
 - krzyzacy
 - michelle192837
 - mithrav
-- rmmh
 - shyamjvs
 - spiffxp
 - stevekuznetsov
+
+labels:
+- sig/testing

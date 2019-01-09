@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -87,8 +86,12 @@ type commentPruner interface {
 	PruneComments(shouldPrune func(github.IssueComment) bool)
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, pc.CommentPruner, &e)
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+	cp, err := pc.CommentPruner()
+	if err != nil {
+		return err
+	}
+	return handle(pc.GitHubClient, pc.Logger, cp, &e)
 }
 
 func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.GenericCommentEvent) error {

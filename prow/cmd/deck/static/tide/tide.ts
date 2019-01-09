@@ -1,4 +1,5 @@
 import {PullRequest, TideData, TidePool} from '../api/tide';
+import {tooltip} from '../common/common';
 
 declare const tideData: TideData;
 
@@ -282,7 +283,7 @@ function createBatchCell(pool: TidePool): HTMLTableDataCellElement {
             text.appendChild(document.createTextNode("#" + String(pr.Number)));
             text.id = "pr-" + pool.Org + "-" + pool.Repo + "-" + pr.Number + "-" + nextID();
             if (pr.Title) {
-                const tip = toolTipForElem(text.id, document.createTextNode(pr.Title));
+                const tip = tooltip.forElem(text.id, document.createTextNode(pr.Title));
                 text.appendChild(tip);
             }
             link.appendChild(text);
@@ -305,7 +306,7 @@ function addPRsToElem(elem: HTMLElement, pool: TidePool, prs?: PullRequest[]): v
             a.appendChild(document.createTextNode("#" + prs[i].Number));
             a.id = "pr-" + pool.Org + "-" + pool.Repo + "-" + prs[i].Number + "-" + nextID();
             if (prs[i].Title) {
-                const tip = toolTipForElem(a.id, document.createTextNode(prs[i].Title));
+                const tip = tooltip.forElem(a.id, document.createTextNode(prs[i].Title));
                 a.appendChild(tip);
             }
             elem.appendChild(a);
@@ -329,7 +330,7 @@ function addBlockersToElem(elem: HTMLElement, pool: TidePool): void {
         a.href = b.URL;
         a.appendChild(document.createTextNode("#" + b.Number));
         a.id = "blocker-" + pool.Org + "-" + pool.Repo + "-" + b.Number + "-" + nextID();
-        a.appendChild(toolTipForElem(a.id, document.createTextNode(b.Title)));
+        a.appendChild(tooltip.forElem(a.id, document.createTextNode(b.Title)));
 
         elem.appendChild(a);
         // Add a space after each PR number except the last.
@@ -343,12 +344,4 @@ let idCounter = 0;
 function nextID(): String {
     idCounter++;
     return "elemID-" + String(idCounter);
-}
-
-function toolTipForElem(elemID: string, tipElem: Node): Node {
-    const tooltip = document.createElement("div");
-    tooltip.appendChild(tipElem);
-    tooltip.setAttribute("data-mdl-for", elemID);
-    tooltip.classList.add("mdl-tooltip", "mdl-tooltip--large");
-    return tooltip;
 }

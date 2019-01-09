@@ -25,8 +25,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/git"
@@ -84,14 +84,10 @@ type cacheEntry struct {
 	owners  *RepoOwners
 }
 
-type configGetter interface {
-	Config() *prowConf.Config
-}
-
 // Interface is an interface to work with OWNERS files.
 type Interface interface {
 	LoadRepoAliases(org, repo, base string) (RepoAliases, error)
-	LoadRepoOwners(org, repo, base string) (RepoOwnerInterface, error)
+	LoadRepoOwners(org, repo, base string) (RepoOwner, error)
 }
 
 // Client is an implementation of the Interface.
@@ -99,7 +95,7 @@ var _ Interface = &Client{}
 
 // Client is the repoowners client
 type Client struct {
-	configGetter configGetter
+	config *prowConf.Config
 
 	git    *git.Client
 	ghc    githubClient
@@ -116,7 +112,7 @@ type Client struct {
 func NewClient(
 	gc *git.Client,
 	ghc *github.Client,
-	configGetter *prowConf.Agent,
+	config *prowConf.Config,
 	mdYAMLEnabled func(org, repo string) bool,
 	skipCollaborators func(org, repo string) bool,
 ) *Client {
@@ -129,15 +125,15 @@ func NewClient(
 		mdYAMLEnabled:     mdYAMLEnabled,
 		skipCollaborators: skipCollaborators,
 
-		configGetter: configGetter,
+		config: config,
 	}
 }
 
 // RepoAliases defines groups of people to be used in OWNERS files
 type RepoAliases map[string]sets.String
 
-// RepoOwnerInterface is an interface to work with repoowners
-type RepoOwnerInterface interface {
+// RepoOwner is an interface to work with repoowners
+type RepoOwner interface {
 	FindApproverOwnersForFile(path string) string
 	FindReviewersOwnersForFile(path string) string
 	FindLabelsForFile(path string) sets.String
@@ -149,10 +145,9 @@ type RepoOwnerInterface interface {
 	RequiredReviewers(path string) sets.String
 }
 
-// RepoOwners implements RepoOwnerInterface
-var _ RepoOwnerInterface = &RepoOwners{}
+var _ RepoOwner = &RepoOwners{}
 
-// RepoOwners contains the parsed OWNERS config
+// RepoOwners contains the parsed OWNERS config.
 type RepoOwners struct {
 	RepoAliases
 
@@ -206,7 +201,7 @@ func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
 
 // LoadRepoOwners returns an up-to-date RepoOwners struct for the specified repo.
 // Note: The returned *RepoOwners should be treated as read only.
-func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwnerInterface, error) {
+func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	log := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "base": base})
 	cloneRef := fmt.Sprintf("%s/%s", org, repo)
 	fullName := fmt.Sprintf("%s:%s", cloneRef, base)
@@ -235,7 +230,7 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwnerInterface, err
 			entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
 		}
 
-		blacklistConfig := c.configGetter.Config().OwnersDirBlacklist
+		blacklistConfig := c.config.OwnersDirBlacklist
 
 		dirBlacklist := defaultDirBlacklist.Union(sets.NewString(blacklistConfig.Default...))
 		if bl, ok := blacklistConfig.Repos[org]; ok {

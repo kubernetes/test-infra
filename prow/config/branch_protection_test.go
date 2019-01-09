@@ -307,10 +307,12 @@ func TestJobRequirements(t *testing.T) {
 					SkipReport: false,
 				},
 				{
-					Context:      "run-if-changed",
-					RunIfChanged: "foo",
-					AlwaysRun:    false,
-					SkipReport:   false,
+					Context: "run-if-changed",
+					RegexpChangeMatcher: RegexpChangeMatcher{
+						RunIfChanged: "foo",
+					},
+					AlwaysRun:  false,
+					SkipReport: false,
 				},
 				{
 					Context:    "not-always",
@@ -351,10 +353,12 @@ func TestJobRequirements(t *testing.T) {
 					},
 				},
 				{
-					Context:      "run-if-changed",
-					RunIfChanged: "foo",
-					SkipReport:   true,
-					AlwaysRun:    false,
+					Context: "run-if-changed",
+					RegexpChangeMatcher: RegexpChangeMatcher{
+						RunIfChanged: "foo",
+					},
+					SkipReport: true,
+					AlwaysRun:  false,
 					RunAfterSuccess: []Presubmit{
 						{
 							Context: "me2",

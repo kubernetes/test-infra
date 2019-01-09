@@ -35,6 +35,7 @@ import (
 )
 
 const (
+	// PluginName defines this plugin's registered name.
 	PluginName = "approve"
 
 	approveCommand  = "APPROVE"
@@ -72,7 +73,7 @@ type githubClient interface {
 }
 
 type ownersClient interface {
-	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerInterface, error)
+	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error)
 }
 
 type state struct {
@@ -133,7 +134,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	return pluginHelp, nil
 }
 
-func handleGenericCommentEvent(pc plugins.PluginClient, ce github.GenericCommentEvent) error {
+func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
 	return handleGenericComment(
 		pc.Logger,
 		pc.GitHubClient,
@@ -188,7 +189,7 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, 
 
 // handleReviewEvent should only handle reviews that have no approval command.
 // Reviews with approval commands will be handled by handleGenericCommentEvent.
-func handleReviewEvent(pc plugins.PluginClient, re github.ReviewEvent) error {
+func handleReviewEvent(pc plugins.Agent, re github.ReviewEvent) error {
 	return handleReview(
 		pc.Logger,
 		pc.GitHubClient,
@@ -247,7 +248,7 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, config *
 
 }
 
-func handlePullRequestEvent(pc plugins.PluginClient, pre github.PullRequestEvent) error {
+func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
 	return handlePullRequest(
 		pc.Logger,
 		pc.GitHubClient,
@@ -325,7 +326,7 @@ func findAssociatedIssue(body string) int {
 // - Iff all files have been approved, the bot will add the "approved" label.
 // - Iff a cancel command is found, that reviewer will be removed from the approverSet
 // 	and the munger will remove the approved label if it has been applied
-func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, opts *plugins.Approve, pr *state) error {
+func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, opts *plugins.Approve, pr *state) error {
 	fetchErr := func(context string, err error) error {
 		return fmt.Errorf("failed to get %s for %s/%s#%d: %v", context, pr.org, pr.repo, pr.number, err)
 	}
@@ -585,13 +586,24 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments []*comm
 // optionsForRepo gets the plugins.Approve struct that is applicable to the indicated repo.
 func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.Approve {
 	fullName := fmt.Sprintf("%s/%s", org, repo)
-	for i := range config.Approve {
-		if !strInSlice(org, config.Approve[i].Repos) && !strInSlice(fullName, config.Approve[i].Repos) {
+
+	// First search for repo config
+	for _, c := range config.Approve {
+		if !strInSlice(fullName, c.Repos) {
 			continue
 		}
-		return &config.Approve[i]
+		return &c
 	}
-	// Default to no issue required and no implicit self approval.
+
+	// If you don't find anything, loop again looking for an org config
+	for _, c := range config.Approve {
+		if !strInSlice(org, c.Repos) {
+			continue
+		}
+		return &c
+	}
+
+	// Return an empty config, and use plugin defaults
 	return &plugins.Approve{}
 }
 

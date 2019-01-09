@@ -72,7 +72,7 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	if e.Action != github.GenericCommentActionCreated {
 		return nil
 	}
@@ -188,7 +188,7 @@ type handler struct {
 func newAssignHandler(e github.GenericCommentEvent, gc githubClient, log *logrus.Entry) *handler {
 	org := e.Repo.Owner.Login
 	addFailureResponse := func(mu github.MissingUsers) string {
-		return fmt.Sprintf("GitHub didn't allow me to assign the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) and repo collaborators can be assigned. \nFor more information please see [the contributor guide](https://git.k8s.io/community/contributors/guide/#issue-assignment-in-github)", strings.Join(mu.Users, ", "), org, org)
+		return fmt.Sprintf("GitHub didn't allow me to assign the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) and repo collaborators can be assigned and that issues/PRs can only have 10 assignees at the same time.\nFor more information please see [the contributor guide](https://git.k8s.io/community/contributors/guide/#issue-assignment-in-github)", strings.Join(mu.Users, ", "), org, org)
 	}
 
 	return &handler{

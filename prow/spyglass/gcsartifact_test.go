@@ -180,17 +180,6 @@ func TestReadAtMost(t *testing.T) {
 	if err := zw.Close(); err != nil {
 		t.Fatalf("Failed to close gzip writer, err: %v", err)
 	}
-	gzippedLog := buf.Bytes()
-	var noReadBuf bytes.Buffer
-	zw = gzip.NewWriter(&noReadBuf)
-	_, err = zw.Write([]byte("unreadable contents"))
-	if err != nil {
-		t.Fatalf("Failed to gzip unreadable text, err: %v", err)
-	}
-	if err := zw.Close(); err != nil {
-		t.Fatalf("Failed to close gzip writer, err: %v", err)
-	}
-	noReadGzipped := noReadBuf.Bytes()
 	testCases := []struct {
 		name      string
 		n         int64
@@ -208,26 +197,12 @@ func TestReadAtMost(t *testing.T) {
 			expectErr: false,
 		},
 		{
-			name:      "ReadAtMost build log, gzipped",
-			n:         23,
-			contents:  gzippedLog,
-			encoding:  "gzip",
-			expected:  []byte("Oh wow\nlogs\nthis is\ncra"),
-			expectErr: false,
-		},
-		{
-			name:      "ReadAtMost build log, claimed gzipped but not actually gzipped",
-			n:         2333,
+			name:      "ReadAtMost build log, transparently gzipped",
+			n:         8,
 			contents:  []byte("Oh wow\nlogs\nthis is\ncrazy"),
+			expected:  []byte("Oh wow\nl"),
 			encoding:  "gzip",
-			expectErr: true,
-		},
-		{
-			name:      "ReadAtMost unreadable gzipped contents",
-			n:         2,
-			contents:  noReadGzipped,
-			encoding:  "gzip",
-			expectErr: true,
+			expectErr: false,
 		},
 		{
 			name:      "ReadAtMost unreadable contents",
@@ -246,15 +221,6 @@ func TestReadAtMost(t *testing.T) {
 			n:         2222,
 			contents:  []byte("Oh wow\nlogs\nthis is\ncrazy"),
 			expected:  []byte("Oh wow\nlogs\nthis is\ncrazy"),
-			expectErr: true,
-			expectEOF: true,
-		},
-		{
-			name:      "ReadAtMost N>size of build log, gzipped",
-			n:         2222,
-			contents:  gzippedLog,
-			expected:  []byte("Oh wow\nlogs\nthis is\ncrazy"),
-			encoding:  "gzip",
 			expectErr: true,
 			expectEOF: true,
 		},

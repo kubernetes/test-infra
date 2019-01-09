@@ -198,28 +198,42 @@ func (m Mode) processStatuses(combStatus *github.CombinedStatus) []github.Status
 	return m.actions(combStatus.Statuses, combStatus.SHA)
 }
 
+type githubClient interface {
+	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
+	CreateStatus(org, repo, SHA string, s github.Status) error
+	GetPullRequests(org, repo string) ([]github.PullRequest, error)
+}
+
 // Migrator will search github for PRs with a given context and migrate/retire/move them.
 type Migrator struct {
-	org             string
-	repo            string
+	org  string
+	repo string
+
+	targetBranchFilter func(string) bool
+
 	continueOnError bool
 
-	client *github.Client
+	client githubClient
 	Mode
 }
 
 // New creates a new migrator with specified options and client.
-func New(mode Mode, client *github.Client, org, repo string, continueOnError bool) *Migrator {
+func New(mode Mode, client *github.Client, org, repo string, targetBranchFilter func(string) bool, continueOnError bool) *Migrator {
 	return &Migrator{
-		org:             org,
-		repo:            repo,
-		continueOnError: continueOnError,
-		client:          client,
-		Mode:            mode,
+		org:                org,
+		repo:               repo,
+		targetBranchFilter: targetBranchFilter,
+		continueOnError:    continueOnError,
+		client:             client,
+		Mode:               mode,
 	}
 }
 
 func (m *Migrator) processPR(pr github.PullRequest) error {
+	if !m.targetBranchFilter(pr.Base.Ref) {
+		return nil
+	}
+
 	combined, err := m.client.GetCombinedStatus(m.org, m.repo, pr.Head.SHA)
 	if err != nil {
 		return err

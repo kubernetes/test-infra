@@ -26,6 +26,7 @@ import (
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	pjlister "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/kube"
 )
 
 type gerritClient interface {
@@ -61,49 +62,33 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 
 	if pj.Status.State == v1.TriggeredState || pj.Status.State == v1.PendingState {
 		// not done yet
+		logrus.WithField("prowjob", pj.ObjectMeta.Name).Info("PJ not finished")
 		return false
 	}
 
-	hasGerritMeta := false
 	// has gerrit metadata (scheduled by gerrit adapter)
-	if pj.ObjectMeta.Annotations[client.GerritID] != "" &&
-		pj.ObjectMeta.Annotations[client.GerritInstance] != "" &&
-		pj.ObjectMeta.Labels[client.GerritRevision] != "" {
-		hasGerritMeta = true
-	}
-
-	// TODO(krzyzacy): remove after we clean up deprecated labels
-	if pj.ObjectMeta.Annotations[client.DeprecatedGerritID] != "" &&
-		pj.ObjectMeta.Annotations[client.DeprecatedGerritInstance] != "" &&
-		pj.ObjectMeta.Labels[client.DeprecatedGerritRevision] != "" {
-		hasGerritMeta = true
-	}
-
-	if !hasGerritMeta {
+	if pj.ObjectMeta.Annotations[client.GerritID] == "" ||
+		pj.ObjectMeta.Annotations[client.GerritInstance] == "" ||
+		pj.ObjectMeta.Labels[client.GerritRevision] == "" {
+		logrus.WithField("prowjob", pj.ObjectMeta.Name).Info("Not a gerrit job")
 		return false
 	}
 
-	// Only report when all other jobs on the same revision finished
-	selector := labels.Set{client.GerritRevision: pj.ObjectMeta.Labels[client.GerritRevision]}
+	// Only report when all jobs of the same type on the same revision finished
+	selector := labels.Set{
+		client.GerritRevision: pj.ObjectMeta.Labels[client.GerritRevision],
+		kube.ProwJobTypeLabel: pj.ObjectMeta.Labels[kube.ProwJobTypeLabel],
+	}
 	pjs, err := c.lister.List(selector.AsSelector())
 	if err != nil {
 		logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
 		return false
 	}
 
-	// TODO(krzyzacy): remove after we clean up deprecated labels
-	if len(pjs) == 0 {
-		selector := labels.Set{client.DeprecatedGerritRevision: pj.ObjectMeta.Labels[client.DeprecatedGerritRevision]}
-		pjs, err = c.lister.List(selector.AsSelector())
-		if err != nil {
-			logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
-			return false
-		}
-	}
-
 	for _, pj := range pjs {
 		if pj.Status.State == v1.TriggeredState || pj.Status.State == v1.PendingState {
 			// other jobs are still running on this revision, skip report
+			logrus.WithField("prowjob", pj.ObjectMeta.Name).Info("Other jobs are still running on this revision")
 			return false
 		}
 	}
@@ -118,28 +103,17 @@ func (c *Client) Report(pj *v1.ProwJob) error {
 	clientGerritRevision := client.GerritRevision
 	clientGerritID := client.GerritID
 	clientGerritInstance := client.GerritInstance
+	pjTypeLabel := kube.ProwJobTypeLabel
 
-	// list all prowjobs in the patchset
-	selector := labels.Set{clientGerritRevision: pj.ObjectMeta.Labels[clientGerritRevision]}
+	// list all prowjobs in the patchset matching pj's type (pre- or post-submit)
+	selector := labels.Set{
+		clientGerritRevision: pj.ObjectMeta.Labels[clientGerritRevision],
+		pjTypeLabel:          pj.ObjectMeta.Labels[pjTypeLabel],
+	}
 	pjsOnRevision, err := c.lister.List(selector.AsSelector())
 	if err != nil {
 		logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
 		return err
-	}
-
-	// TODO(krzyzacy): remove after we clean up deprecated labels
-	if len(pjsOnRevision) == 0 {
-		logrus.Warn("Please use latest gerrit adapter deployment!")
-		clientGerritRevision = client.DeprecatedGerritRevision
-		clientGerritID = client.DeprecatedGerritID
-		clientGerritInstance = client.DeprecatedGerritInstance
-
-		selector := labels.Set{clientGerritRevision: pj.ObjectMeta.Labels[clientGerritRevision]}
-		pjsOnRevision, err = c.lister.List(selector.AsSelector())
-		if err != nil {
-			logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
-			return err
-		}
 	}
 
 	// generate an aggregated report:

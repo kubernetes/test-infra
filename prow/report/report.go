@@ -34,6 +34,8 @@ const (
 	commentTag = "<!-- test report -->"
 )
 
+// GithubClient provides a client interface to report job status updates
+// through Github comments.
 type GithubClient interface {
 	BotName() (string, error)
 	CreateStatus(org, repo, ref string, s github.Status) error

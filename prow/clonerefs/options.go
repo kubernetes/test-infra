@@ -152,7 +152,7 @@ func (o *Options) AddFlags(fs *flag.FlagSet) {
 	fs.Var(&o.clonePath, "clone-alias", "Format string for the path to clone to")
 	fs.Var(&o.cloneURI, "uri-prefix", "Format string for the URI prefix to clone from")
 	fs.IntVar(&o.MaxParallelWorkers, "max-workers", 0, "Maximum number of parallel workers, unset for unlimited.")
-	fs.StringVar(&o.CookiePath, "cookiefile", "", "Path to git http.coookiefile")
+	fs.StringVar(&o.CookiePath, "cookiefile", "", "Path to git http.cookiefile")
 }
 
 type gitRefs struct {

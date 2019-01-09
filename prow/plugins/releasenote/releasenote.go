@@ -30,9 +30,13 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const PluginName = "release-note"
-
 const (
+	// PluginName defines this plugin's registered name.
+	PluginName = "release-note"
+)
+const (
+	// ReleaseNoteLabelNeeded defines the label used when a missing release-note label is blocking the
+	// merge.
 	ReleaseNoteLabelNeeded    = "do-not-merge/release-note-label-needed"
 	releaseNote               = "release-note"
 	releaseNoteNone           = "release-note-none"
@@ -99,7 +103,7 @@ type githubClient interface {
 	BotName() (string, error)
 }
 
-func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
+func handleIssueComment(pc plugins.Agent, ic github.IssueCommentEvent) error {
 	return handleComment(pc.GitHubClient, pc.Logger, ic)
 }
 
@@ -191,7 +195,7 @@ func removeOtherLabels(remover func(string) error, label string, labelSet []stri
 	return nil
 }
 
-func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
 	return handlePR(pc.GitHubClient, pc.Logger, &pr)
 }
 

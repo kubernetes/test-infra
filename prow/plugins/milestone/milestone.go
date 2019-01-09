@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package setmilestone implements the `/milestone` command which allows members of the milestone
+// Package milestone implements the `/milestone` command which allows members of the milestone
 // maintainers team to specify a milestone to be applied to an Issue or PR.
 package milestone
 
@@ -78,7 +78,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	return pluginHelp, nil
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.RepoMilestone)
 }
 

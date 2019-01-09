@@ -70,7 +70,7 @@ type lifecycleClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
-func lifecycleHandleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func lifecycleHandleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	gc := pc.GitHubClient
 	log := pc.Logger
 	if err := handleReopen(gc, log, &e); err != nil {

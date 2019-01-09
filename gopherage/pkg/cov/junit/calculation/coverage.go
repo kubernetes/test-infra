@@ -16,17 +16,17 @@ limitations under the License.
 
 package calculation
 
-// coverage stores test coverage summary data for one file
-type coverage struct {
-	Name          string
-	nCoveredStmts int
-	nAllStmts     int
+// Coverage stores test coverage summary data for one file
+type Coverage struct {
+	Name            string
+	NumCoveredStmts int
+	NumAllStmts     int
 }
 
 // Ratio returns the percentage of statements that are covered
-func (c *coverage) Ratio() float32 {
-	if c.nAllStmts == 0 {
+func (c *Coverage) Ratio() float32 {
+	if c.NumAllStmts == 0 {
 		return 1
 	}
-	return float32(c.nCoveredStmts) / float32(c.nAllStmts)
+	return float32(c.NumCoveredStmts) / float32(c.NumAllStmts)
 }

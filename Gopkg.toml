@@ -42,36 +42,46 @@ required = [
   name = "github.com/prometheus/client_golang"
   version = "0.8.0"
 
-# Need override because release-1.11 and kubernetes-1.11.0 are not semver compliant
+# Hey bitbucket: join the modern world and allow https like everyone else in existence
+[[override]]
+  name = "bitbucket.org/ww/goautoneg"
+  revision = "a547fc61f48d567d5b4ec6f8aee5573d8efce11d"
+  source = "https://github.com/munnerz/goautoneg.git"
+
+# Need override because release-1.12 and kubernetes-1.12.0 are not semver compliant
 [[override]]
   name = "k8s.io/api"
-  branch = "release-1.11"
+  branch = "release-1.12"
 
 [[override]]
   name = "k8s.io/apiserver"
-  branch = "release-1.11"
+  branch = "release-1.12"
+
+[[override]]
+  name = "k8s.io/apiextensions-apiserver"
+  branch = "release-1.12"
 
 [[override]]
   name = "k8s.io/apimachinery"
-  branch = "release-1.11"
+  branch = "release-1.12"
 
 [[override]]
   name = "k8s.io/code-generator"
-  branch = "release-1.11"
+  branch = "release-1.12"
 
 [[override]]
   name = "k8s.io/client-go"
-  version = "v8.0.0"
+  version = "v9.0.0"
 
 [[constraint]]
   name = "github.com/docker/docker"
   # https://github.com/docker/docker-ce/blob/17.12/components/cli/vendor.conf
-  # to update this check https://github.com/docker/docker-ce/blob/<tag>/components/cli/vendor.conf 
+  # to update this check https://github.com/docker/docker-ce/blob/<tag>/components/cli/vendor.conf
   revision = "5e5fadb3c0201553929d4a6ea8dc8f9d8a1e56fe"
 
 [[constraint]]
   name = "github.com/golang/dep"
-  version = "v0.4.1"
+  version = "v0.5.0"
 
 [[constraint]]
   name = "cloud.google.com/go"
@@ -102,3 +112,8 @@ required = [
   name = "github.com/jteeuwen/go-bindata"
   # latest, unlikely to change as go-bindata is no longer maintained
   revision = "6025e8de665b31fa74ab1a66f2cddd8c0abf887e"
+
+[[constraint]]
+  name = "gopkg.in/yaml.v2"
+  # ensure we're using an updated version, as sigs.k8s.io/yaml depends on it
+  version = "2.2.1"

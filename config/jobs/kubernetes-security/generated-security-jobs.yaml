@@ -3,6 +3,54 @@
 presubmits:
   kubernetes-security/kubernetes:
   - agent: kubernetes
+    always_run: false
+    branches:
+    - master
+    cluster: security
+    context: pull-security-kubernetes-e2e-aws-eks-1-11-correctness
+    labels:
+      preset-kubernetes-e2e-aws-eks-1-11: "true"
+      preset-kubernetes-e2e-aws-eks-common: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-e2e-aws-eks-1-11-correctness
+    optional: true
+    rerun_command: /test pull-security-kubernetes-e2e-aws-eks-1-11-correctness
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --root=/go/src
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=200
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --check-version-skew=false
+        - --deployment=eks
+        - --provider=eks
+        - --gce-ssh=
+        - --extract=local
+        - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-aws-eks-1-11-correctness
+        - --timeout=180m
+        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-aws-eks-1-11-correctness
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+        name: ""
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-aws-eks-1-11-correctness,?($|\s.*)
+  - agent: kubernetes
     always_run: true
     cluster: security
     context: pull-security-kubernetes-e2e-kops-aws
@@ -34,7 +82,6 @@ presubmits:
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --build=bazel
-        - --check-leaked-resources=false
         - --cluster=
         - --env=KOPS_LATEST=latest-ci-green.txt
         - --env=KOPS_DEPLOY_LATEST_KUBE=n
@@ -47,7 +94,7 @@ presubmits:
         - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
         - --timeout=55m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         name: ""
         resources:
           requests:
@@ -94,7 +141,6 @@ presubmits:
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --build=bazel
-        - --check-leaked-resources=false
         - --cluster=
         - --env=KOPS_LATEST=latest-ci-green.txt
         - --env=KOPS_DEPLOY_LATEST_KUBE=n
@@ -107,7 +153,7 @@ presubmits:
         - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
         - --timeout=55m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.13
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.13
         name: ""
         resources:
           requests:
@@ -154,7 +200,6 @@ presubmits:
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --build=bazel
-        - --check-leaked-resources=false
         - --cluster=
         - --env=KOPS_LATEST=latest-ci-green.txt
         - --env=KOPS_DEPLOY_LATEST_KUBE=n
@@ -167,7 +212,7 @@ presubmits:
         - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
         - --timeout=55m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.10
         name: ""
         resources:
           requests:
@@ -190,6 +235,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
+      preset-pull-gce-device-plugin-gpu: "true"
+      preset-pull-kubernetes-e2e: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
@@ -213,8 +260,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce-device-plugin-gpu.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-nodes=4
@@ -227,7 +272,7 @@ presubmits:
         - --timeout=60m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         name: ""
         resources:
           requests:
@@ -252,6 +297,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
+      preset-pull-gce-device-plugin-gpu: "true"
+      preset-pull-kubernetes-e2e: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
@@ -272,8 +319,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce-device-plugin-gpu.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-nodes=4
@@ -286,7 +331,7 @@ presubmits:
         - --timeout=60m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.13
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.13
         name: ""
         resources:
           requests:
@@ -311,6 +356,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
+      preset-pull-gce-device-plugin-gpu: "true"
+      preset-pull-kubernetes-e2e: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
@@ -331,8 +378,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce-device-plugin-gpu.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-nodes=4
@@ -345,7 +390,7 @@ presubmits:
         - --timeout=60m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.10
         name: ""
         resources:
           requests:
@@ -368,6 +413,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-security-kubernetes-e2e-gce
     rerun_command: /test pull-security-kubernetes-e2e-gce
@@ -387,8 +434,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-central1-f
@@ -401,7 +446,7 @@ presubmits:
         - --timeout=65m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         name: ""
         resources:
           requests:
@@ -426,6 +471,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-security-kubernetes-e2e-gce
     rerun_command: /test pull-security-kubernetes-e2e-gce
@@ -442,8 +489,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-central1-f
@@ -456,7 +501,7 @@ presubmits:
         - --timeout=65m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.13
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.13
         name: ""
         resources:
           requests:
@@ -481,6 +526,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-security-kubernetes-e2e-gce
     rerun_command: /test pull-security-kubernetes-e2e-gce
@@ -497,8 +544,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-central1-f
@@ -511,7 +556,7 @@ presubmits:
         - --timeout=65m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.10
         name: ""
         resources:
           requests:
@@ -536,6 +581,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-security-kubernetes-e2e-gce-alpha-features
     rerun_command: /test pull-security-kubernetes-e2e-gce-alpha-features
@@ -552,8 +599,6 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce.env
         - --env=KUBE_FEATURE_GATES=AllAlpha=true
         - --extract=local
         - --gcp-node-image=gci
@@ -561,12 +606,12 @@ presubmits:
         - --provider=gce
         - --runtime-config=api/all=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-alpha-features
-        - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes|VolumeSubpathEnvExpansion|RunAsGroup|TTLAfterFinished|NodeLease|CSIDriverRegistry|CSISkipAttach)\]|Networking
+        - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes|VolumeSubpathEnvExpansion|RunAsGroup|TTLAfterFinished|NodeLease|CSINodeInfo|CSIDriverRegistry|CSISkipAttach)\]|Networking
           --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes|gcePD-external --minStartupPods=8
         - --timeout=180m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-alpha-features
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         name: ""
         resources:
           requests:
@@ -592,6 +637,8 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-e2e-containerd: "true"
       preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-security-kubernetes-e2e-containerd-gce
     rerun_command: /test pull-security-kubernetes-e2e-containerd-gce
@@ -611,8 +658,6 @@ presubmits:
         - --cluster=
         - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/go/src/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env
         - --env=KUBE_NODE_EXTRA_METADATA=user-data=/go/src/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env
-        - --env-file=jobs/env/pull-kubernetes-e2e.env
-        - --env-file=jobs/env/pull-kubernetes-e2e-gce.env
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-project=k8s-c8d-pr-e2e
@@ -626,7 +671,7 @@ presubmits:
         - --timeout=65m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-containerd-gce
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         name: ""
         resources:
           requests:
@@ -677,7 +722,7 @@ presubmits:
         env:
         - name: DOCKERIZE_KUBELET
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         name: ""
         resources: {}
         securityContext:
@@ -729,7 +774,7 @@ presubmits:
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         name: ""
         resources:
           requests:
@@ -778,7 +823,7 @@ presubmits:
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.13
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.13
         name: ""
         resources:
           requests:
@@ -827,7 +872,7 @@ presubmits:
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.12
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.12
         name: ""
         resources:
           requests:
@@ -876,7 +921,7 @@ presubmits:
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.11
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.11
         name: ""
         resources:
           requests:
@@ -925,7 +970,7 @@ presubmits:
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.10
         name: ""
         resources:
           requests:
@@ -978,7 +1023,7 @@ presubmits:
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         name: ""
         resources:
           requests:
@@ -1028,7 +1073,7 @@ presubmits:
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         name: ""
         resources:
           requests:
@@ -1068,7 +1113,7 @@ presubmits:
         - --env=KUBE_RELEASE_RUN_TESTS=n
         - make
         - release
-        image: gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
+        image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
         name: ""
         resources:
           requests:
@@ -1111,7 +1156,7 @@ presubmits:
         - --env=KUBE_RELEASE_RUN_TESTS=n
         - make
         - release
-        image: gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
+        image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
         name: ""
         resources:
           requests:
@@ -1136,7 +1181,6 @@ presubmits:
     context: pull-security-kubernetes-e2e-gce-100-performance
     labels:
       preset-bazel-scratch-dir: "true"
-      preset-e2e-gci-gce-scalability: "true"
       preset-e2e-scalability-common: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
@@ -1169,7 +1213,7 @@ presubmits:
         - --use-logexporter
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-100-performance
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         name: ""
         resources:
           requests:
@@ -1194,7 +1238,6 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-highspeed-common: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 1
@@ -1227,7 +1270,7 @@ presubmits:
         - --use-logexporter
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-big-performance
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         name: ""
         resources:
           requests:
@@ -1252,7 +1295,6 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
-      preset-e2e-scalability-highspeed-common: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 1
@@ -1284,7 +1326,7 @@ presubmits:
         - --use-logexporter
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-large-performance
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         name: ""
         resources:
           requests:
@@ -1349,7 +1391,7 @@ presubmits:
         - --timeout=100m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         name: ""
         resources:
           requests:
@@ -1413,7 +1455,7 @@ presubmits:
         - --timeout=100m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.13
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.13
         name: ""
         resources:
           requests:
@@ -1477,7 +1519,7 @@ presubmits:
         - --timeout=100m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.10
         name: ""
         resources:
           requests:
@@ -1539,7 +1581,7 @@ presubmits:
         - --timeout=1200m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-scale
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         name: ""
         resources:
           requests:
@@ -1555,6 +1597,61 @@ presubmits:
           defaultMode: 256
           secretName: ssh-security
     trigger: (?m)^/test( | .* )pull-security-kubernetes-kubemark-e2e-gce-scale,?($|\s.*)
+  - agent: kubernetes
+    always_run: false
+    branches:
+    - master
+    cluster: security
+    context: pull-security-kubernetes-e2e-gce-csi-serial
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-e2e-gce-csi-serial
+    optional: true
+    rerun_command: /test pull-security-kubernetes-e2e-gce-csi-serial
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --root=/go/src
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=150
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --gcp-node-image=gci
+        - --gcp-zone=us-central1-f
+        - --provider=gce
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-csi-serial
+        - --test_args=--ginkgo.focus=CSI.*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|gcePD-external
+          --minStartupPods=8
+        - --timeout=120m
+        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-csi-serial
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-csi-serial,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -1606,7 +1703,7 @@ presubmits:
           env:
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
-          image: gcr.io/k8s-testimages/e2e-kubeadm:v20181122-3648a2bf2
+          image: gcr.io/k8s-testimages/e2e-kubeadm:v20181218-693c7d272
           name: ""
           resources: {}
           volumeMounts:
@@ -1636,7 +1733,7 @@ presubmits:
         - --release=//build/release-tars
         - --gcs=gs://kubernetes-security-prow/ci/pull-security-kubernetes-bazel-build
         - --gcs-shared=gs://kubernetes-security-prow/bazel
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         name: ""
         resources:
           requests:
@@ -1704,7 +1801,7 @@ presubmits:
           env:
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
-          image: gcr.io/k8s-testimages/e2e-kubeadm:v20181122-3648a2bf2
+          image: gcr.io/k8s-testimages/e2e-kubeadm:v20181218-693c7d272
           name: ""
           resources: {}
           volumeMounts:
@@ -1731,7 +1828,7 @@ presubmits:
         - --release=//build/release-tars
         - --gcs=gs://kubernetes-security-prow/ci/pull-security-kubernetes-bazel-build
         - --gcs-shared=gs://kubernetes-security-prow/bazel
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.13
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.13
         name: ""
         resources:
           requests:
@@ -1799,7 +1896,7 @@ presubmits:
           env:
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
-          image: gcr.io/k8s-testimages/e2e-kubeadm:v20181122-3648a2bf2
+          image: gcr.io/k8s-testimages/e2e-kubeadm:v20181218-693c7d272
           name: ""
           resources: {}
           volumeMounts:
@@ -1826,7 +1923,7 @@ presubmits:
         - --release=//build/release-tars
         - --gcs=gs://kubernetes-security-prow/ci/pull-security-kubernetes-bazel-build
         - --gcs-shared=gs://kubernetes-security-prow/bazel
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.10
         name: ""
         resources:
           requests:
@@ -1871,7 +1968,7 @@ presubmits:
         - --test-args=--build_tag_filters=-e2e,-integration
         - --test-args=--test_tag_filters=-e2e,-integration
         - --test-args=--flaky_test_attempts=3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         name: ""
         resources:
           requests:
@@ -1915,7 +2012,7 @@ presubmits:
         - --test-args=--build_tag_filters=-e2e,-integration
         - --test-args=--test_tag_filters=-e2e,-integration
         - --test-args=--flaky_test_attempts=3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.13
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.13
         name: ""
         resources:
           requests:
@@ -1959,7 +2056,7 @@ presubmits:
         - --test-args=--build_tag_filters=-e2e,-integration
         - --test-args=--test_tag_filters=-e2e,-integration
         - --test-args=--flaky_test_attempts=3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.10
         name: ""
         resources:
           requests:
@@ -1975,6 +2072,45 @@ presubmits:
           defaultMode: 256
           secretName: ssh-security
     trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test,?($|\s.*)
+  - agent: kubernetes
+    always_run: false
+    cluster: security
+    context: pull-security-kubernetes-godeps
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-godeps
+    path_alias: k8s.io/kubernetes
+    rerun_command: /test pull-security-kubernetes-godeps
+    run_if_changed: ^((build\/|Godeps\/|vendor\/|hack\/lib\/|hack\/.*godep|staging\/).*)$
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - make
+        - verify
+        command:
+        - runner.sh
+        env:
+        - name: KUBE_FORCE_VERIFY_CHECKS
+          value: "Y"
+        - name: WHAT
+          value: godeps staging-godeps godep-licenses
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+        name: main
+        resources: {}
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-godeps,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -1997,7 +2133,7 @@ presubmits:
         - --
         - --branch=${PULL_BASE_REF}
         - --prow
-        image: gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
+        image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
         name: ""
         resources:
           requests:
@@ -2016,26 +2152,22 @@ presubmits:
   - agent: kubernetes
     always_run: false
     cluster: security
-    context: pull-security-kubernetes-integration-prow
+    context: pull-security-kubernetes-integration-podutil
+    decorate: true
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    name: pull-security-kubernetes-integration-prow
-    rerun_command: /test pull-security-kubernetes-integration-prow
+    name: pull-security-kubernetes-integration-podutil
+    path_alias: k8s.io/kubernetes
+    rerun_command: /test pull-security-kubernetes-integration-podutil
     spec:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=60
-        - --scenario=kubernetes_verify
-        - --
-        - --branch=${PULL_BASE_REF}
-        - --prow
-        image: gcr.io/k8s-testimages/bootstrap:latest
+        - ./hack/jenkins/test-dockerized.sh
+        command:
+        - runner.sh
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
         imagePullPolicy: Always
         name: ""
         resources:
@@ -2051,7 +2183,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-integration-prow,?($|\s.*)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-integration-podutil,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
@@ -2204,7 +2336,7 @@ presubmits:
         - --provider=local
         - --test_args=--ginkgo.focus=\[Conformance\]
         - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
         name: ""
         resources: {}
         securityContext:
@@ -2222,12 +2354,11 @@ presubmits:
     always_run: true
     cluster: security
     context: pull-security-kubernetes-typecheck
-    labels:
-      preset-service-account: "true"
+    decorate: true
     name: pull-security-kubernetes-typecheck
+    path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-typecheck
     skip_branches:
-    - release-1.10
     - release-1.11
     - release-1.12
     - release-1.13
@@ -2235,20 +2366,14 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --root=/go/src
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --scenario=execute
-        - --
-        - make
         - verify
-        - WHAT=typecheck
-        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-master
-        name: ""
+        command:
+        - make
+        env:
+        - name: WHAT
+          value: typecheck
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+        name: main
         resources: {}
         volumeMounts:
         - mountPath: /etc/ssh-security
@@ -2265,28 +2390,22 @@ presubmits:
     - release-1.13
     cluster: security
     context: pull-security-kubernetes-typecheck
-    labels:
-      preset-service-account: "true"
+    decorate: true
     name: pull-security-kubernetes-typecheck
+    path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-typecheck
     spec:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --root=/go/src
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --scenario=execute
-        - --
-        - make
         - verify
-        - WHAT=typecheck
-        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.13
-        name: ""
+        command:
+        - make
+        env:
+        - name: WHAT
+          value: typecheck
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.13
+        name: main
         resources: {}
         volumeMounts:
         - mountPath: /etc/ssh-security
@@ -2303,28 +2422,22 @@ presubmits:
     - release-1.12
     cluster: security
     context: pull-security-kubernetes-typecheck
-    labels:
-      preset-service-account: "true"
+    decorate: true
     name: pull-security-kubernetes-typecheck
+    path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-typecheck
     spec:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --root=/go/src
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --scenario=execute
-        - --
-        - make
         - verify
-        - WHAT=typecheck
-        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.12
-        name: ""
+        command:
+        - make
+        env:
+        - name: WHAT
+          value: typecheck
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.12
+        name: main
         resources: {}
         volumeMounts:
         - mountPath: /etc/ssh-security
@@ -2341,66 +2454,22 @@ presubmits:
     - release-1.11
     cluster: security
     context: pull-security-kubernetes-typecheck
-    labels:
-      preset-service-account: "true"
+    decorate: true
     name: pull-security-kubernetes-typecheck
+    path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-typecheck
     spec:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --root=/go/src
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --scenario=execute
-        - --
-        - make
         - verify
-        - WHAT=typecheck
-        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.11
-        name: ""
-        resources: {}
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-typecheck,?($|\s.*)
-  - agent: kubernetes
-    always_run: true
-    branches:
-    - release-1.10
-    cluster: security
-    context: pull-security-kubernetes-typecheck
-    labels:
-      preset-service-account: "true"
-    name: pull-security-kubernetes-typecheck
-    rerun_command: /test pull-security-kubernetes-typecheck
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --root=/go/src
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --scenario=execute
-        - --
+        command:
         - make
-        - verify
-        - WHAT=typecheck
-        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181122-a5bf59311-1.10
-        name: ""
+        env:
+        - name: WHAT
+          value: typecheck
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.11
+        name: main
         resources: {}
         volumeMounts:
         - mountPath: /etc/ssh-security
@@ -2432,8 +2501,10 @@ presubmits:
         - --scenario=kubernetes_verify
         - --
         - --branch=${PULL_BASE_REF}
+        - --exclude-typecheck
+        - --exclude-godep
         - --script=./hack/jenkins/verify-dockerized.sh
-        image: gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
+        image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
         name: ""
         resources:
           requests:
@@ -2452,27 +2523,22 @@ presubmits:
   - agent: kubernetes
     always_run: false
     cluster: security
-    context: pull-security-kubernetes-verify-prow
+    context: pull-security-kubernetes-verify-podutil
+    decorate: true
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    name: pull-security-kubernetes-verify-prow
-    rerun_command: /test pull-security-kubernetes-verify-prow
+    name: pull-security-kubernetes-verify-podutil
+    path_alias: k8s.io/kubernetes
+    rerun_command: /test pull-security-kubernetes-verify-podutil
     spec:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --scenario=kubernetes_verify
-        - --
-        - --branch=${PULL_BASE_REF}
-        - --prow
-        - --script=./hack/jenkins/verify-dockerized.sh
-        image: gcr.io/k8s-testimages/bootstrap:latest
+        - ./hack/jenkins/verify-dockerized.sh
+        command:
+        - runner.sh
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
         imagePullPolicy: Always
         name: ""
         resources:
@@ -2488,4 +2554,4 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-verify-prow,?($|\s.*)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-verify-podutil,?($|\s.*)

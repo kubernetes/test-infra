@@ -86,6 +86,27 @@ func TestRequestRateLimit(t *testing.T) {
 	}
 }
 
+func TestAbuseRateLimit(t *testing.T) {
+	tc := &testTime{now: time.Now()}
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if tc.slept == 0 {
+			w.Header().Set("Retry-After", "1")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	c.time = tc
+	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
+	if err != nil {
+		t.Errorf("Error from request: %v", err)
+	} else if resp.StatusCode != 200 {
+		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
+	} else if tc.slept < time.Second {
+		t.Errorf("Expected to sleep for at least a second, got %v", tc.slept)
+	}
+}
+
 func TestRetry404(t *testing.T) {
 	tc := &testTime{now: time.Now()}
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -320,6 +341,23 @@ func TestGetRef(t *testing.T) {
 	}
 }
 
+func TestDeleteRef(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/git/refs/heads/my-feature" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		http.Error(w, "204 No Content", http.StatusNoContent)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.DeleteRef("k8s", "kuber", "heads/my-feature"); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
 func TestGetSingleCommit(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -472,9 +510,6 @@ func TestRemoveLabelFailsOnOtherThan404(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error but got none")
 	}
-	if _, ok := err.(*LabelNotFound); ok {
-		t.Fatalf("Expected error not to be a 404: %v", err)
-	}
 }
 
 func TestRemoveLabelNotFound(t *testing.T) {
@@ -485,12 +520,8 @@ func TestRemoveLabelNotFound(t *testing.T) {
 	c := getClient(ts.URL)
 	err := c.RemoveLabel("any", "old", 3, "label")
 
-	if err == nil {
-		t.Fatalf("RemoveLabel expected an error, got none")
-	}
-
-	if _, ok := err.(*LabelNotFound); !ok {
-		t.Fatalf("RemoveLabel expected LabelNotFound error, got %v", err)
+	if err != nil {
+		t.Fatalf("RemoveLabel expected no error, got one: %v", err)
 	}
 }
 
@@ -1624,5 +1655,66 @@ func TestListMilestones(t *testing.T) {
 	c := getClient(ts.URL)
 	if err, _ := c.ListMilestones("k8s", "kuber"); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestListPRCommits(t *testing.T) {
+	ts := simpleTestServer(t, "/repos/theorg/therepo/pulls/3/commits",
+		[]RepositoryCommit{
+			{SHA: "sha"},
+			{SHA: "sha2"},
+		})
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if commits, err := c.ListPRCommits("theorg", "therepo", 3); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else {
+		if len(commits) != 2 {
+			t.Errorf("Expected 2 commits to be returned, but got %d", len(commits))
+		}
+	}
+}
+
+func TestCombinedStatus(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path == "/repos/k8s/kuber/commits/SHA/status" {
+			statuses := CombinedStatus{
+				SHA:      "SHA",
+				Statuses: []Status{{Context: "foo"}},
+			}
+			b, err := json.Marshal(statuses)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/someotherpath>; rel="next"`, r.Host))
+			fmt.Fprint(w, string(b))
+		} else if r.URL.Path == "/someotherpath" {
+			statuses := CombinedStatus{
+				SHA:      "SHA",
+				Statuses: []Status{{Context: "bar"}},
+			}
+			b, err := json.Marshal(statuses)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			fmt.Fprint(w, string(b))
+		} else {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	combined, err := c.GetCombinedStatus("k8s", "kuber", "SHA")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if combined.SHA != "SHA" {
+		t.Errorf("Expected SHA 'SHA', found %s", combined.SHA)
+	} else if len(combined.Statuses) != 2 {
+		t.Errorf("Expected two statuses, found %d: %v", len(combined.Statuses), combined.Statuses)
+	} else if combined.Statuses[0].Context != "foo" || combined.Statuses[1].Context != "bar" {
+		t.Errorf("Wrong review IDs: %v", combined.Statuses)
 	}
 }

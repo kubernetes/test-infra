@@ -7,7 +7,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
+      - image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -17,6 +17,8 @@ presubmits:
         - --scenario=kubernetes_verify
         - --
         - "--branch=${PULL_BASE_REF}"
+        - --exclude-typecheck
+        - --exclude-godep
         - --script=./hack/jenkins/verify-dockerized.sh
         # docker-in-docker needs privileged mode
         securityContext:
@@ -25,26 +27,32 @@ presubmits:
           requests:
             cpu: 4
 
-  - name: pull-kubernetes-verify-prow
+  # TODO(krzyzacy): add branches once this works
+  # TODO(krzyzacy): Consider combine kubekins-e2e and kubekins-test
+  - name: pull-kubernetes-verify-podutil
     always_run: false
+    decorate: true
+    branch:
+    - master
+    path_alias: k8s.io/kubernetes
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:latest
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
         imagePullPolicy: Always
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=75"
-        - --scenario=kubernetes_verify
-        - --
-        - "--branch=${PULL_BASE_REF}"
-        - --prow
-        - --script=./hack/jenkins/verify-dockerized.sh
+        - ./hack/jenkins/verify-dockerized.sh
+        envs:
+        - name: KUBE_FORCE_VERIFY_CHECKS
+          value: "n"
+        - name: KUBE_VERIFY_GIT_BRANCH
+          value: master
+        - name: REPO_DIR
+          value: /workspace/k8s.io/kubernetes
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -60,7 +68,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
+    - image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
       args:
       - --repo=k8s.io/kubernetes
       - --timeout=75
@@ -84,7 +92,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
+    - image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
       args:
       - --repo=k8s.io/kubernetes=release-1.13
       - --timeout=75
@@ -108,7 +116,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
+    - image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
       args:
       - --repo=k8s.io/kubernetes=release-1.12
       - --timeout=75
@@ -132,7 +140,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
+    - image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
       args:
       - --repo=k8s.io/kubernetes=release-1.11
       - --timeout=75
@@ -156,7 +164,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180912-f97e35a46
+    - image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
       args:
       - --repo=k8s.io/kubernetes=release-1.10
       - --timeout=75

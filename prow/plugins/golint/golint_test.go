@@ -220,11 +220,13 @@ func TestLint(t *testing.T) {
 func TestLintCodeSuggestion(t *testing.T) {
 
 	var testcases = []struct {
+		name       string
 		codeChange string
 		pullFiles  map[string][]byte
 		comment    string
 	}{
 		{
+			name:       "Check names with underscore",
 			codeChange: "@@ -0,0 +1,7 @@\n+// Package bar comment\n+package bar\n+\n+// Qux_1 comment\n+func Qux_1_Func() error {\n+   return nil\n+}",
 			pullFiles: map[string][]byte{
 				"qux.go": []byte("// Package bar comment\npackage bar\n\n// Qux_1 comment\nfunc Qux_1() error {\n	return nil\n}\n"),
@@ -232,6 +234,7 @@ func TestLintCodeSuggestion(t *testing.T) {
 			comment: "```suggestion\nfunc Qux1() error {\n```\nGolint naming: don't use underscores in Go names; func Qux_1 should be Qux1. [More info](http://golang.org/doc/effective_go.html#mixed-caps). <!-- golint -->",
 		},
 		{
+			name:       "Check names with all caps",
 			codeChange: "@@ -0,0 +1,7 @@\n+// Package bar comment\n+package bar\n+\n+// QUX_FUNC comment\n+func QUX_FUNC() error {\n+   return nil\n+}",
 			pullFiles: map[string][]byte{
 				"qux.go": []byte("// Package bar comment\npackage bar\n\n// QUX_FUNC comment\nfunc QUX_FUNC() error {\n       return nil\n}\n"),
@@ -239,9 +242,130 @@ func TestLintCodeSuggestion(t *testing.T) {
 			comment: "```suggestion\nfunc QuxFunc() error {\n```\nGolint naming: don't use ALL_CAPS in Go names; use CamelCase. [More info](https://golang.org/wiki/CodeReviewComments#mixed-caps). <!-- golint -->",
 		},
 		{
+			name:       "Correct function name",
 			codeChange: "@@ -0,0 +1,7 @@\n+// Package bar comment\n+package bar\n+\n+// QuxFunc comment\n+func QuxFunc() error {\n+   return nil\n+}",
 			pullFiles: map[string][]byte{
 				"qux.go": []byte("// Package bar comment\npackage bar\n\n// QuxFunc comment\nfunc QuxFunc() error {\n       return nil\n}\n"),
+			},
+			comment: "",
+		},
+		{
+			name:       "Check stutter in function names",
+			codeChange: "@@ -0,0 +1,9 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+// BarFunc comment\n+func BarFunc() error {\n+   return nil\n+}",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\n// BarFunc comment\nfunc BarFunc() error {\n   return nil\n}"),
+			},
+			comment: "```suggestion\nfunc Func() error {\n```\nGolint naming: func name will be used as bar.BarFunc by other packages, and that stutters; consider calling this Func. [More info](https://golang.org/wiki/CodeReviewComments#package-names). <!-- golint -->",
+		},
+		{
+			name:       "Check stutter in type names",
+			codeChange: "@@ -0,0 +1,8 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+// BarMaker comment\n+type BarMaker struct{}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\n// BarMaker comment\ntype BarMaker struct{}\n"),
+			},
+			comment: "```suggestion\ntype Maker struct{}\n```\nGolint naming: type name will be used as bar.BarMaker by other packages, and that stutters; consider calling this Maker. [More info](https://golang.org/wiki/CodeReviewComments#package-names). <!-- golint -->",
+		},
+		{
+			name:       "Check stutter: no stutter",
+			codeChange: "@@ -0,0 +1,8 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+// barMaker comment\n+type barMaker struct{}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\n// barMaker comment\ntype barMaker struct{}\n"),
+			},
+			comment: "",
+		},
+		{
+			name:       "Check errorf with errors",
+			codeChange: "@@ -0,0 +1,14 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+import (\n+        \"errors\"\n+        \"fmt\"\n+)\n+\n+func f(x int) error {\n+        return errors.New(fmt.Sprintf(\"something %d\", x))\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nimport (\n        \"errors\"\n        \"fmt\"\n)\n\nfunc f(x int) error {\n        return errors.New(fmt.Sprintf(\"something %d\", x))\n}\n"),
+			},
+			comment: "```suggestion\n        return fmt.Errorf(\"something %d\", x)\n```\nGolint errors: should replace errors.New(fmt.Sprintf(...)) with fmt.Errorf(...). <!-- golint -->",
+		},
+		{
+			name:       "Check errorf: no error",
+			codeChange: "@@ -0,0 +1,14 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+import (\n+        \"errors\"\n+        \"fmt\"\n+)\n+\n+func f(x int) error {\n+        return fmt.Errorf(\"something %!d(MISSING)\", x)\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nimport (\n        \"errors\"\n        \"fmt\"\n)\n\nfunc f(x int) error {        return fmt.Errorf(\"something %!d(MISSING)\", x)\n}\n"),
+			},
+			comment: "",
+		},
+		{
+			name:       "Check loop range: omit values",
+			codeChange: "@@ -0,0 +1,10 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+for _ = range m {\n+}\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nfor _ = range m {\n}\n}\n"),
+			},
+			comment: "```suggestion\nfor range m {\n```\nGolint range-loop: should omit values from range; this loop is equivalent to `for range ...`. <!-- golint -->",
+		},
+		{
+			name:       "Check loop range: omit two values",
+			codeChange: "@@ -0,0 +1,10 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+for _, _ = range m {\n+}\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nfor _, _ = range m {\n}\n}\n"),
+			},
+			comment: "```suggestion\nfor range m {\n```\nGolint range-loop: should omit values from range; this loop is equivalent to `for range ...`. <!-- golint -->",
+		},
+		{
+			name:       "Check loop range: omit 2nd value with =",
+			codeChange: "@@ -0,0 +1,11 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+var y = 0\n+for y, _ = range m {\n+}\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nvar y = 0\nfor y, _ = range m {\n}\n}\n"),
+			},
+			comment: "```suggestion\nfor y = range m {\n```\nGolint range-loop: should omit 2nd value from range; this loop is equivalent to `for y = range ...`. <!-- golint -->",
+		},
+		{
+			name:       "Check loop range: omit 2nd value with :=",
+			codeChange: "@@ -0,0 +1,10 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+for y, _ := range m {\n+}\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nfor y, _ := range m {\n}\n}\n"),
+			},
+			comment: "```suggestion\nfor y := range m {\n```\nGolint range-loop: should omit 2nd value from range; this loop is equivalent to `for y := range ...`. <!-- golint -->",
+		},
+		{
+			name:       "Check loop range: no error",
+			codeChange: "@@ -0,0 +1,10 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+for y := range m {\n+}\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nfor y := range m {\n}\n}\n"),
+			},
+			comment: "",
+		},
+		{
+			name:       "Check variable declaration: should drop type",
+			codeChange: "@@ -0,0 +1,9 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+var myInt int = 7\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nvar myInt int = 7\n}\n"),
+			},
+			comment: "```suggestion\nvar myInt = 7\n```\nGolint type-inference: should omit type int from declaration of var myInt; it will be inferred from the right-hand side. <!-- golint -->",
+		},
+		{
+			name:       "Check variable declaration: should drop value (int)",
+			codeChange: "@@ -0,0 +1,9 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+var myZeroInt int = 0\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nvar myZeroInt int = 0\n}\n"),
+			},
+			comment: "```suggestion\nvar myZeroInt int\n```\nGolint zero-value: should drop = 0 from declaration of var myZeroInt; it is the zero value. <!-- golint -->",
+		},
+		{
+			name:       "Check variable declaration: should drop value (float32)",
+			codeChange: "@@ -0,0 +1,9 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+var myZeroFlt float32 = 0.\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nvar myZeroFlt float32 = 0.\n}\n"),
+			},
+			comment: "```suggestion\nvar myZeroFlt float32\n```\nGolint zero-value: should drop = 0. from declaration of var myZeroFlt; it is the zero value. <!-- golint -->",
+		},
+		{
+			name:       "Check variable declaration: no value suggestion",
+			codeChange: "@@ -0,0 +1,9 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+var myZeroRune2 rune\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nvar myZeroRune2 rune\n}\n"),
+			},
+			comment: "",
+		},
+		{
+			name:       "Check variable declaration: no type suggestion",
+			codeChange: "@@ -0,0 +1,9 @@\n+/*\n+Package bar comment\n+*/\n+package bar\n+\n+func f() {\n+var myInt = 7\n+}\n+",
+			pullFiles: map[string][]byte{
+				"qux.go": []byte("/*\nPackage bar comment\n*/\npackage bar\n\nfunc f() {\nvar myInt = 7\n}\n"),
 			},
 			comment: "",
 		},
@@ -270,6 +394,7 @@ func TestLintCodeSuggestion(t *testing.T) {
 	}
 
 	for _, test := range testcases {
+		t.Logf("Running test case %q...", test.name)
 		if err := lg.AddCommit("foo", "bar", test.pullFiles); err != nil {
 			t.Fatalf("Adding PR commit: %v", err)
 		}
@@ -294,7 +419,7 @@ func TestLintCodeSuggestion(t *testing.T) {
 				t.Fatalf("Expected one comments, got %d: %v.", len(gh.comment.Comments), gh.comment.Comments)
 			}
 			if test.comment != gh.comment.Comments[0].Body {
-				t.Fatalf("Expected " + test.comment + "\n but not able to find matching code suggestion comment for " + test.codeChange)
+				t.Fatalf("Expected\n" + test.comment + "\n but got\n" + gh.comment.Comments[0].Body)
 			}
 		}
 	}
@@ -311,7 +436,7 @@ func TestAddedLines(t *testing.T) {
 			lines: map[int]int{1: 1, 2: 2, 3: 3, 4: 4, 5: 5},
 		},
 		{
-			patch: "@@ -29,12 +29,14 @@ import (\n \t\"github.com/sirupsen/logrus\"\n \t\"github.com/ghodss/yaml\"\n \n+\t\"k8s.io/test-infra/prow/config\"\n \t\"k8s.io/test-infra/prow/jenkins\"\n \t\"k8s.io/test-infra/prow/kube\"\n \t\"k8s.io/test-infra/prow/plank\"\n )\n \n var (\n+\tconfigPath   = flag.String(\"config-path\", \"/etc/config/config\", \"Path to config.yaml.\")\n \tbuildCluster = flag.String(\"build-cluster\", \"\", \"Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.\")\n \n \tjenkinsURL       = flag.String(\"jenkins-url\", \"\", \"Jenkins URL\")\n@@ -47,18 +49,22 @@ var objReg = regexp.MustCompile(`^[\\w-]+$`)\n \n func main() {\n \tflag.Parse()\n-\n \tlogrus.SetFormatter(&logrus.JSONFormatter{})\n \n-\tkc, err := kube.NewClientInCluster(kube.ProwNamespace)\n+\tconfigAgent := &config.Agent{}\n+\tif err := configAgent.Start(*configPath); err != nil {\n+\t\tlogrus.WithError(err).Fatal(\"Error starting config agent.\")\n+\t}\n+\n+\tkc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)\n \tif err != nil {\n \t\tlogrus.WithError(err).Fatal(\"Error getting client.\")\n \t}\n \tvar pkc *kube.Client\n \tif *buildCluster == \"\" {\n-\t\tpkc = kc.Namespace(kube.TestPodNamespace)\n+\t\tpkc = kc.Namespace(configAgent.Config().PodNamespace)\n \t} else {\n-\t\tpkc, err = kube.NewClientFromFile(*buildCluster, kube.TestPodNamespace)\n+\t\tpkc, err = kube.NewClientFromFile(*buildCluster, configAgent.Config().PodNamespace)\n \t\tif err != nil {\n \t\t\tlogrus.WithError(err).Fatal(\"Error getting kube client to build cluster.\")\n \t\t}",
+			patch: "@@ -29,12 +29,14 @@ import (\n \t\"github.com/sirupsen/logrus\"\n \t\"sigs.k8s.io/yaml\"\n \n+\t\"k8s.io/test-infra/prow/config\"\n \t\"k8s.io/test-infra/prow/jenkins\"\n \t\"k8s.io/test-infra/prow/kube\"\n \t\"k8s.io/test-infra/prow/plank\"\n )\n \n var (\n+\tconfigPath   = flag.String(\"config-path\", \"/etc/config/config\", \"Path to config.yaml.\")\n \tbuildCluster = flag.String(\"build-cluster\", \"\", \"Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.\")\n \n \tjenkinsURL       = flag.String(\"jenkins-url\", \"\", \"Jenkins URL\")\n@@ -47,18 +49,22 @@ var objReg = regexp.MustCompile(`^[\\w-]+$`)\n \n func main() {\n \tflag.Parse()\n-\n \tlogrus.SetFormatter(&logrus.JSONFormatter{})\n \n-\tkc, err := kube.NewClientInCluster(kube.ProwNamespace)\n+\tconfigAgent := &config.Agent{}\n+\tif err := configAgent.Start(*configPath); err != nil {\n+\t\tlogrus.WithError(err).Fatal(\"Error starting config agent.\")\n+\t}\n+\n+\tkc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)\n \tif err != nil {\n \t\tlogrus.WithError(err).Fatal(\"Error getting client.\")\n \t}\n \tvar pkc *kube.Client\n \tif *buildCluster == \"\" {\n-\t\tpkc = kc.Namespace(kube.TestPodNamespace)\n+\t\tpkc = kc.Namespace(configAgent.Config().PodNamespace)\n \t} else {\n-\t\tpkc, err = kube.NewClientFromFile(*buildCluster, kube.TestPodNamespace)\n+\t\tpkc, err = kube.NewClientFromFile(*buildCluster, configAgent.Config().PodNamespace)\n \t\tif err != nil {\n \t\t\tlogrus.WithError(err).Fatal(\"Error getting kube client to build cluster.\")\n \t\t}",
 			lines: map[int]int{4: 32, 11: 39, 23: 54, 24: 55, 25: 56, 26: 57, 27: 58, 28: 59, 35: 65, 38: 67},
 		},
 		{

@@ -157,6 +157,7 @@ larger set of contributors to apply/remove them.
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
 | <a id="area/conformance" href="#area/conformance">`area/conformance`</a> | Issues or PRs related to kubernetes conformance tests| label | |
+| <a id="area/deflake" href="#area/deflake">`area/deflake`</a> | Issues or PRs related to deflaking kubernetes tests| label | |
 | <a id="kind/kep" href="#kind/kep">`kind/kep`</a> | Categorizes issues related to KEPs and PRs modifying the KEP directory| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 
 ## Labels that apply to kubernetes/enhancements, for both issues and PRs
@@ -170,6 +171,7 @@ larger set of contributors to apply/remove them.
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
 | <a id="area/conformance" href="#area/conformance">`area/conformance`</a> | Issues or PRs related to kubernetes conformance tests| label | |
+| <a id="area/deflake" href="#area/deflake">`area/deflake`</a> | Issues or PRs related to deflaking kubernetes tests| label | |
 
 ## Labels that apply to kubernetes/kubernetes, only for issues
 
@@ -199,6 +201,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/boskos" href="#area/boskos">`area/boskos`</a> | Issues or PRs related to code in /boskos| label | |
 | <a id="area/config" href="#area/config">`area/config`</a> | Issues or PRs related to code in /config| label | |
 | <a id="area/conformance" href="#area/conformance">`area/conformance`</a> | Issues or PRs related to kubernetes conformance tests| label | |
+| <a id="area/deflake" href="#area/deflake">`area/deflake`</a> | Issues or PRs related to deflaking kubernetes tests| label | |
 | <a id="area/ghproxy" href="#area/ghproxy">`area/ghproxy`</a> | Issues or PRs related to code in /ghproxy| label | |
 | <a id="area/gopherage" href="#area/gopherage">`area/gopherage`</a> | Issues or PRs related to code in /gopherage| humans | |
 | <a id="area/greenhouse" href="#area/greenhouse">`area/greenhouse`</a> | Issues or PRs related to code in /greenhouse (our remote bazel cache)| label | |
@@ -210,6 +213,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/prow" href="#area/prow">`area/prow`</a> | Issues or PRs related to prow| label | |
 | <a id="area/prow/artifact-uploader" href="#area/prow/artifact-uploader">`area/prow/artifact-uploader`</a> | Issues or PRs related to prow's artifact-uploader component| label | |
 | <a id="area/prow/branchprotector" href="#area/prow/branchprotector">`area/prow/branchprotector`</a> | Issues or PRs related to prow's branchprotector component| label | |
+| <a id="area/prow/bump" href="#area/prow/bump">`area/prow/bump`</a> | Updates to the k8s prow cluster| label | |
 | <a id="area/prow/clonerefs" href="#area/prow/clonerefs">`area/prow/clonerefs`</a> | Issues or PRs related to prow's clonerefs component| label | |
 | <a id="area/prow/deck" href="#area/prow/deck">`area/prow/deck`</a> | Issues or PRs related to prow's deck component| label | |
 | <a id="area/prow/entrypoint" href="#area/prow/entrypoint">`area/prow/entrypoint`</a> | Issues or PRs related to prow's entrypoint component| label | |

@@ -333,6 +333,38 @@ type Restrictions struct {
 	Teams *[]string `json:"teams,omitempty"`
 }
 
+// HookConfig holds the endpoint and its secret.
+type HookConfig struct {
+	URL         string  `json:"url"`
+	ContentType *string `json:"content_type,omitempty"`
+	Secret      *string `json:"secret,omitempty"`
+}
+
+// Hook holds info about the webhook configuration.
+type Hook struct {
+	ID     int        `json:"id"`
+	Name   string     `json:"name"`
+	Events []string   `json:"events"`
+	Active bool       `json:"active"`
+	Config HookConfig `json:"config"`
+}
+
+// HookRequest can create and/or edit a webhook.
+//
+// AddEvents and RemoveEvents are only valid during an edit, and only for a repo
+type HookRequest struct {
+	Name         string      `json:"name,omitempty"` // must be web or "", only create
+	Active       *bool       `json:"active,omitempty"`
+	AddEvents    []string    `json:"add_events,omitempty"` // only repo edit
+	Config       *HookConfig `json:"config,omitempty"`
+	Events       []string    `json:"events,omitempty"`
+	RemoveEvents []string    `json:"remove_events,omitempty"` // only repo edit
+}
+
+// AllHookEvents causes github to send all events.
+// https://developer.github.com/v3/activity/events/types/
+var AllHookEvents = []string{"*"}
+
 // IssueEventAction enumerates the triggers for this
 // webhook payload type. See also:
 // https://developer.github.com/v3/activity/events/types/#issuesevent
@@ -778,4 +810,24 @@ type GenericCommentEvent struct {
 type Milestone struct {
 	Title  string `json:"title"`
 	Number int    `json:"number"`
+}
+
+// RepositoryCommit represents a commit in a repo.
+// Note that it's wrapping a GitCommit, so author/committer information is in two places,
+// but contain different details about them: in RepositoryCommit "github details", in GitCommit - "git details".
+type RepositoryCommit struct {
+	SHA         string    `json:"sha"`
+	Commit      GitCommit `json:"commit"`
+	Author      User      `json:"author"`
+	Committer   User      `json:"committer"`
+	Parents     []Commit  `json:"parents,omitempty"`
+	HTMLURL     string    `json:"html_url"`
+	URL         string    `json:"url"`
+	CommentsURL string    `json:"comments_url"`
+}
+
+// GitCommit represents a GitHub commit.
+type GitCommit struct {
+	SHA     string `json:"sha,omitempty"`
+	Message string `json:"message,omitempty"`
 }

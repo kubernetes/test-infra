@@ -8,9 +8,9 @@ go_library(
     deps = [
         "//prow/kube:go_default_library",
         "//prow/pod-utils/decorate:go_default_library",
-        "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
 

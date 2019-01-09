@@ -3,23 +3,24 @@
 {{define "scripts"}}
 <script type="text/javascript">
   var src = {{.Source}};
-  var viewerCache = {{ .ViewerCache}};
-  var views = {{ .Views }};
+  var lensArtifacts = {{.LensArtifacts}};
+  var lenses = {{.LensNames}};
 </script>
 <script type="text/javascript" src="/static/spyglass_bundle.min.js"></script>
 {{end}}
 
 {{define "content"}}
+{{$source:=.Source}}
 {{if .JobHistLink}}
 <h4>&nbsp;<a href="{{.JobHistLink}}">Job History</a></h4>
 {{end}}
 <div id="lens-container">
-  {{range .Views}}
+  {{range .Lenses}}
   <div class="mdl-card mdl-shadow--2dp lens-card">
   <div class="mdl-card__title lens-title"><h3 class="mdl-card__title-text">{{.Title}}</h3></div>
   <div id="{{.Name}}-view-container" class="lens-view-content mdl-card__supporting-text">
     <div class="mdl-spinner mdl-js-spinner is-active lens-card-loading" id="{{.Name}}-loading"></div>
-      <div id="{{.Name}}-view"></div>
+      <iframe class="lens-container" style="visibility: hidden;" id="iframe-{{.Name}}" sandbox="allow-scripts allow-top-navigation" data-lens="{{.Name}}"></iframe>
     </div>
   </div>
   {{end}}

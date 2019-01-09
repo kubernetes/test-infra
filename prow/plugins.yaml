@@ -49,11 +49,9 @@ approve:
   - kubernetes/examples
   - kubernetes/federation
   - kubernetes/gengo
-  - kubernetes/heapster
   - kubernetes/ingress-gce
   - kubernetes/ingress-nginx
   - kubernetes/klog
-  - kubernetes/kops
   - kubernetes/kube-deploy
   - kubernetes/kubeadm
   - kubernetes/kubectl
@@ -67,12 +65,12 @@ approve:
   - kubernetes/repo-infra
   - kubernetes/sig-release
   - kubernetes/steering
-  - kubernetes/test-infra
   - kubernetes/utils
   - kubernetes-incubator/ip-masq-agent
   implicit_self_approve: true
   lgtm_acts_as_approve: true
 - repos:
+  - kubernetes/kops
   - kubernetes/kubernetes
   - kubernetes-client
   - kubernetes-csi
@@ -81,6 +79,8 @@ approve:
   implicit_self_approve: true
 - repos:
   - bazelbuild
+  - kubernetes/community
+  - kubernetes/test-infra
   implicit_self_approve: true
   review_acts_as_approve: true
 - repos:
@@ -95,6 +95,22 @@ size:
   l:   100
   xl:  500
   xxl: 1000
+
+label:
+  additional_labels:
+    # These labels are used by Kubeflow
+    # TODO(https://github.com/kubernetes/test-infra/issues/8648): Switch
+    # to configuring prefixes and not individual labels once  that's supported.
+    - community/discussion
+    - community/maintenance
+    - community/question
+    - cuj/build-train-deploy
+    - cuj/multi-user
+    - platform/aws
+    - platform/azure
+    - platform/gcp
+    - platform/minikube
+    - platform/other
 
 lgtm:
 - repos:
@@ -139,15 +155,17 @@ blockades:
   - ^events/elections/2017
   - ^events/elections/2018
   explanation: "These files are historical, and from events that have already occurred."
+- repos:
+  - kubernetes/community
+  blockregexps:
+  - ^keps/
+  explanation: "KEPs have been relocated to [kubernetes/enhancements](https://git.k8s.io/enhancements/)! Please submit any updates there."
 
 blunderbuss:
   max_request_count: 2
 
 cat:
   key_path: /etc/cat-api/api-key
-heart:
-  adorees:
-  - k8s-merge-robot
 
 slack:
   mergewarnings:
@@ -317,6 +335,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - pony
   - shrug
   - sigmention
   - size
@@ -376,9 +395,6 @@ plugins:
   kubernetes/federation:
   - trigger
 
-  kubernetes/heapster:
-  - trigger
-
   kubernetes/kops:
   - trigger
 
@@ -407,6 +423,7 @@ plugins:
 
   kubernetes/sig-release:
   - blockade
+  - milestone
   - owners-label
   - stage
 
@@ -434,6 +451,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - pony
   - shrug
   - size
   - skip
@@ -454,12 +472,16 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - pony
   - shrug
   - size
   - skip
   - verify-owners
   - wip
   - yuks
+
+  kubernetes-csi/csi-lib-utils:
+  - trigger
 
   kubernetes-incubator:
   - approve
@@ -474,6 +496,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - pony
   - shrug
   - size
   - skip
@@ -503,6 +526,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - pony
   - shrug
   - size
   - skip
@@ -529,6 +553,9 @@ plugins:
   kubernetes-sigs/cluster-api-provider-aws:
   - trigger
 
+  kubernetes-sigs/cluster-api-provider-azure:
+  - trigger
+
   kubernetes-sigs/cluster-api-provider-digitalocean:
   - trigger
 
@@ -546,6 +573,9 @@ plugins:
   - welcome
 
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
+  - trigger
+
+  kubernetes-sigs/sig-storage-local-static-provisioner:
   - trigger
 
   kubernetes-sigs/gcp-filestore-csi-driver:
@@ -597,6 +627,20 @@ plugins:
   - lgtm
   - size
   - welcome
+
+  GoogleCloudPlatform/netd:
+  - trigger
+  - lgtm
+  - golint
+  - approve
+  - verify-owners
+  - size
+  - assign
+  - help
+  - hold
+  - cat
+  - dog
+  - wip
 
   client-go/unofficial-docs:
   - approve
@@ -650,6 +694,10 @@ external_plugins:
     events:
       - pull_request
   kubernetes-sigs/contributor-playground:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes-sigs/cluster-api-provider-azure:
   - name: needs-rebase
     events:
       - pull_request

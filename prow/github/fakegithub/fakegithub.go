@@ -69,9 +69,16 @@ type FakeClient struct {
 	Milestone    int
 	MilestoneMap map[string]int
 
+	// list of commits for each PR
+	// org/repo#number:[]commit
+	CommitMap map[string][]github.RepositoryCommit
+
 	// Fake remote git storage. File name are keys
 	// and values map SHA to content
 	RemoteFiles map[string]map[string]string
+
+	// A list of refs that got deleted via DeleteRef
+	RefsDeleted []struct{ Org, Repo, Ref string }
 }
 
 // BotName returns authenticated login.
@@ -186,6 +193,12 @@ func (f *FakeClient) GetPullRequestChanges(org, repo string, number int) ([]gith
 // GetRef returns the hash of a ref.
 func (f *FakeClient) GetRef(owner, repo, ref string) (string, error) {
 	return "abcde", nil
+}
+
+// DeleteRef returns an error indicating if deletion of the given ref was successful
+func (f *FakeClient) DeleteRef(owner, repo, ref string) error {
+	f.RefsDeleted = append(f.RefsDeleted, struct{ Org, Repo, Ref string }{Org: owner, Repo: repo, Ref: ref})
+	return nil
 }
 
 // GetSingleCommit returns a single commit.
@@ -391,4 +404,10 @@ func (f *FakeClient) ListMilestones(org, repo string) ([]github.Milestone, error
 		milestones = append(milestones, github.Milestone{Title: k, Number: v})
 	}
 	return milestones, nil
+}
+
+// ListPRCommits lists commits for a given PR.
+func (f *FakeClient) ListPRCommits(org, repo string, prNumber int) ([]github.RepositoryCommit, error) {
+	k := fmt.Sprintf("%s/%s#%d", org, repo, prNumber)
+	return f.CommitMap[k], nil
 }

@@ -29,6 +29,7 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 
+// Run will start the initupload job to upload the artifacts, logs and clone status.
 func (o Options) Run() error {
 	spec, err := downwardapi.ResolveSpecFromEnv()
 	if err != nil {
@@ -75,9 +76,8 @@ func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (b
 	if err = json.Unmarshal(data, &cloneRecords); err != nil {
 		return true, fmt.Errorf("could not unmarshal clone records: %v", err)
 	}
-	// Do not read from cloneLog directly.
-	// Instead create multiple readers from cloneLog so it can be uploaded to
-	// both clone-log.txt and build-log.txt on failure.
+	// Do not read from cloneLog directly. Instead create multiple readers from cloneLog so it can
+	// be uploaded to both clone-log.txt and build-log.txt on failure.
 	cloneLog := bytes.Buffer{}
 	failed := false
 	for _, record := range cloneRecords {

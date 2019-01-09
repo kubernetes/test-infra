@@ -17,9 +17,8 @@ import (
 
 	"github.com/aws/aws-k8s-tester/ec2config"
 	"github.com/aws/aws-k8s-tester/pkg/awsapi/ec2"
-
-	gyaml "github.com/ghodss/yaml"
 	"k8s.io/client-go/util/homedir"
+	"sigs.k8s.io/yaml"
 )
 
 // Config defines EKS test configuration.
@@ -39,14 +38,38 @@ type Config struct {
 	// Only required when ALB Ingress "TestMode" is "ingress-test-server".
 	AWSK8sTesterImage string `json:"aws-k8s-tester-image,omitempty"`
 
-	// AWSK8sTesterDownloadURL is the URL to download the "aws-k8s-tester" from.
+	// AWSK8sTesterPath is the path to download the "aws-k8s-tester".
 	// This is required for Kubernetes kubetest plugin.
+	AWSK8sTesterPath string `json:"aws-k8s-tester-path,omitempty"`
+	// AWSK8sTesterDownloadURL is the download URL to download "aws-k8s-tester" binary from.
 	AWSK8sTesterDownloadURL string `json:"aws-k8s-tester-download-url,omitempty"`
-	// KubectlDownloadURL is the URL to download the "kubectl" from.
+	// KubectlPath is the path to download the "kubectl".
+	KubectlPath string `json:"kubectl-path,omitempty"`
+	// KubectlDownloadURL is the download URL to download "kubectl" binary from.
 	KubectlDownloadURL string `json:"kubectl-download-url,omitempty"`
-	// AWSIAMAuthenticatorDownloadURL is the URL to download the "aws-iam-authenticator" from.
+	// AWSIAMAuthenticatorPath is the path to download the "aws-iam-authenticator".
 	// This is required for Kubernetes kubetest plugin.
+	AWSIAMAuthenticatorPath string `json:"aws-iam-authenticator-path,omitempty"`
+	// AWSIAMAuthenticatorDownloadURL is the download URL to download "aws-iam-authenticator" binary from.
 	AWSIAMAuthenticatorDownloadURL string `json:"aws-iam-authenticator-download-url,omitempty"`
+
+	// ConfigPath is the configuration file path.
+	// Must be left empty, and let deployer auto-populate this field.
+	// Deployer is expected to update this file with latest status,
+	// and to make a backup of original configuration
+	// with the filename suffix ".backup.yaml" in the same directory.
+	ConfigPath string `json:"config-path,omitempty"`
+	// ConfigPathBucket is the path inside S3 bucket.
+	ConfigPathBucket string `json:"config-path-bucket,omitempty"` // read-only to user
+	ConfigPathURL    string `json:"config-path-url,omitempty"`    // read-only to user
+
+	// KubeConfigPath is the file path of KUBECONFIG for the EKS cluster.
+	// If empty, auto-generate one.
+	// Deployer is expected to delete this on cluster tear down.
+	KubeConfigPath string `json:"kubeconfig-path,omitempty"` // read-only to user
+	// KubeConfigPathBucket is the path inside S3 bucket.
+	KubeConfigPathBucket string `json:"kubeconfig-path-bucket,omitempty"` // read-only to user
+	KubeConfigPathURL    string `json:"kubeconfig-path-url,omitempty"`    // read-only to user
 
 	// WaitBeforeDown is the duration to sleep before cluster tear down.
 	WaitBeforeDown time.Duration `json:"wait-before-down,omitempty"`
@@ -54,35 +77,6 @@ type Config struct {
 	// Deployer implementation should not call "Down" inside "Up" method.
 	// This is meant to be used as a flag for test.
 	Down bool `json:"down"`
-
-	// EnableWorkerNodeSSH is true to enable SSH access to worker nodes.
-	EnableWorkerNodeSSH bool `json:"enable-worker-node-ssh"`
-	// EnableWorkerNodeHA is true to use all 3 subnets to create worker nodes.
-	// Note that at least 2 subnets are required for EKS cluster.
-	EnableWorkerNodeHA bool `json:"enable-worker-node-ha"`
-
-	// ConfigPath is the configuration file path.
-	// Must be left empty, and let deployer auto-populate this field.
-	// Deployer is expected to update this file with latest status,
-	// and to make a backup of original configuration
-	// with the filename suffix ".backup.yaml" in the same directory.
-	ConfigPath       string `json:"config-path,omitempty"`
-	ConfigPathBucket string `json:"config-path-bucket,omitempty"` // read-only to user
-	ConfigPathURL    string `json:"config-path-url,omitempty"`    // read-only to user
-
-	// KubeConfigPath is the file path of KUBECONFIG for the EKS cluster.
-	// If empty, auto-generate one.
-	// Deployer is expected to delete this on cluster tear down.
-	KubeConfigPath       string `json:"kubeconfig-path,omitempty"`        // read-only to user
-	KubeConfigPathBucket string `json:"kubeconfig-path-bucket,omitempty"` // read-only to user
-	KubeConfigPathURL    string `json:"kubeconfig-path-url,omitempty"`    // read-only to user
-
-	// VPCID is the VPC ID.
-	VPCID string `json:"vpc-id"`
-	// SubnetIDs is the subnet IDs.
-	SubnetIDs []string `json:"subnet-ids"`
-	// SecurityGroupID is the default security group ID.
-	SecurityGroupID string `json:"security-group-id"`
 
 	// AWSAccountID is the AWS account ID.
 	AWSAccountID string `json:"aws-account-id,omitempty"`
@@ -105,15 +99,35 @@ type Config struct {
 	// TODO: define custom endpoints for CloudFormation, EC2, STS
 	AWSCustomEndpoint string `json:"aws-custom-endpoint,omitempty"`
 
+	// EnableWorkerNodeSSH is true to enable SSH access to worker nodes.
+	EnableWorkerNodeSSH bool `json:"enable-worker-node-ssh"`
+	// EnableWorkerNodeHA is true to use all 3 subnets to create worker nodes.
+	// Note that at least 2 subnets are required for EKS cluster.
+	EnableWorkerNodeHA bool `json:"enable-worker-node-ha"`
+	// EnableWorkerNodePrivilegedPortAccess is true to allow control plane to
+	// talk to worker nodes through their privileged ports (i.e ports 1-1024).
+	EnableWorkerNodePrivilegedPortAccess bool `json:"enable-worker-node-privileged-port-access"`
+
+	// VPCID is the VPC ID.
+	VPCID string `json:"vpc-id"`
+	// SubnetIDs is the subnet IDs.
+	SubnetIDs []string `json:"subnet-ids"`
+	// SecurityGroupID is the default security group ID.
+	SecurityGroupID string `json:"security-group-id"`
+
+	// WorkerNodePrivateKeyPath is the file path to store node group key pair private key.
+	// Thus, deployer must delete the private key right after node group creation.
+	// MAKE SURE PRIVATE KEY NEVER GETS UPLOADED TO CLOUD STORAGE AND DLETE AFTER USE!!!
+	WorkerNodePrivateKeyPath string `json:"worker-node-private-key-path,omitempty"`
 	// WorkerNodeAMI is the Amazon EKS worker node AMI ID for the specified Region.
 	// Reference https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html.
 	WorkerNodeAMI string `json:"worker-node-ami,omitempty"`
 	// WorkerNodeInstanceType is the EC2 instance type for worker nodes.
 	WorkerNodeInstanceType string `json:"worker-node-instance-type,omitempty"`
-	// WorkderNodeASGMin is the minimum number of nodes in worker node ASG.
-	WorkderNodeASGMin int `json:"worker-node-asg-min,omitempty"`
-	// WorkderNodeASGMax is the maximum number of nodes in worker node ASG.
-	WorkderNodeASGMax int `json:"worker-node-asg-max,omitempty"`
+	// WorkerNodeASGMin is the minimum number of nodes in worker node ASG.
+	WorkerNodeASGMin int `json:"worker-node-asg-min,omitempty"`
+	// WorkerNodeASGMax is the maximum number of nodes in worker node ASG.
+	WorkerNodeASGMax int `json:"worker-node-asg-max,omitempty"`
 	// WorkerNodeVolumeSizeGB is the maximum number of nodes in worker node ASG.
 	// If empty, set default value.
 	WorkerNodeVolumeSizeGB int `json:"worker-node-volume-size-gb,omitempty"`
@@ -147,8 +161,13 @@ type Config struct {
 
 	// UploadTesterLogs is true to auto-upload log files.
 	UploadTesterLogs bool `json:"upload-tester-logs"`
+	// UploadKubeConfig is true to auto-upload KUBECONFIG file.
+	UploadKubeConfig bool `json:"upload-kubeconfig"`
 	// UploadWorkerNodeLogs is true to auto-upload worker node log files.
 	UploadWorkerNodeLogs bool `json:"upload-worker-node-logs"`
+	// UploadBucketExpireDays is the number of days for a S3 bucket to expire.
+	// Set 0 to not expire.
+	UploadBucketExpireDays int `json:"upload-bucket-expire-days"`
 
 	// UpdatedAt is the timestamp when the configuration has been updated.
 	// Read only to 'Config' struct users.
@@ -222,10 +241,6 @@ type ClusterState struct {
 	CFStackWorkerNodeGroupStatus string `json:"cf-stack-worker-node-group-status,omitempty"`
 	// CFStackWorkerNodeGroupKeyPairName is required for node group creation.
 	CFStackWorkerNodeGroupKeyPairName string `json:"cf-stack-worker-node-group-key-pair-name,omitempty"`
-	// CFStackWorkerNodeGroupKeyPairPrivateKeyPath is the file path to store node group key pair private key.
-	// Thus, deployer must delete the private key right after node group creation.
-	// MAKE SURE PRIVATE KEY NEVER GETS UPLOADED TO CLOUD STORAGE AND DLETE AFTER USE!!!
-	CFStackWorkerNodeGroupKeyPairPrivateKeyPath string `json:"cf-stack-worker-node-group-key-pair-private-key-path,omitempty"`
 	// CFStackWorkerNodeGroupSecurityGroupID is the security group ID
 	// that worker node cloudformation stack created.
 	CFStackWorkerNodeGroupSecurityGroupID string `json:"cf-stack-worker-node-group-security-group-id,omitempty"`
@@ -375,8 +390,13 @@ func init() {
 	defaultConfig.Tag = genTag()
 	defaultConfig.ClusterName = defaultConfig.Tag + "-" + randString(7)
 	if runtime.GOOS == "darwin" {
+		defaultConfig.AWSK8sTesterDownloadURL = strings.Replace(defaultConfig.AWSK8sTesterDownloadURL, "linux", "darwin", -1)
 		defaultConfig.KubectlDownloadURL = strings.Replace(defaultConfig.KubectlDownloadURL, "linux", "darwin", -1)
 		defaultConfig.AWSIAMAuthenticatorDownloadURL = strings.Replace(defaultConfig.AWSIAMAuthenticatorDownloadURL, "linux", "darwin", -1)
+	}
+	sshDir := filepath.Join(homedir.HomeDir(), ".ssh")
+	if err := os.MkdirAll(sshDir, 0700); err != nil {
+		panic(fmt.Errorf("failed to mkdir %q (%v)", sshDir, err))
 	}
 }
 
@@ -385,7 +405,7 @@ func init() {
 func genTag() string {
 	// use UTC time for everything
 	now := time.Now().UTC()
-	return fmt.Sprintf("awsk8stester-eks-%d%02d%02d", now.Year(), now.Month(), now.Day())
+	return fmt.Sprintf("a8t-eks-%d%x%x", now.Year()-2000, int(now.Month()), now.Day())
 }
 
 // defaultConfig is the default configuration.
@@ -395,16 +415,17 @@ func genTag() string {
 var defaultConfig = Config{
 	TestMode: "embedded",
 
-	AWSK8sTesterDownloadURL:        "https://github.com/aws/aws-k8s-tester/releases/download/0.1.2/aws-k8s-tester-0.1.2-linux-amd64",
-	KubectlDownloadURL:             "https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/kubectl",
-	AWSIAMAuthenticatorDownloadURL: "https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator",
+	AWSK8sTesterDownloadURL:        "https://github.com/aws/aws-k8s-tester/releases/download/0.2.0/aws-k8s-tester-0.2.0-linux-amd64",
+	AWSK8sTesterPath:               "/tmp/aws-k8s-tester/aws-k8s-tester",
+	KubectlDownloadURL:             "https://amazon-eks.s3-us-west-2.amazonaws.com/1.11.5/2018-12-06/bin/linux/amd64/kubectl",
+	KubectlPath:                    "/tmp/aws-k8s-tester/kubectl",
+	KubeConfigPath:                 "/tmp/aws-k8s-tester/kubeconfig",
+	AWSIAMAuthenticatorDownloadURL: "https://amazon-eks.s3-us-west-2.amazonaws.com/1.11.5/2018-12-06/bin/linux/amd64/aws-iam-authenticator",
+	AWSIAMAuthenticatorPath:        "/tmp/aws-k8s-tester/aws-iam-authenticator",
 
 	// enough time for ALB access log
 	WaitBeforeDown: time.Minute,
 	Down:           true,
-
-	EnableWorkerNodeHA:  true,
-	EnableWorkerNodeSSH: true,
 
 	AWSAccountID: "",
 	// to be overwritten by AWS_SHARED_CREDENTIALS_FILE
@@ -412,24 +433,32 @@ var defaultConfig = Config{
 	AWSRegion:                "us-west-2",
 	AWSCustomEndpoint:        "",
 
-	// Amazon EKS-optimized AMI, https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
-	WorkerNodeAMI: "ami-0f54a2f7d2e9c88b3",
+	EnableWorkerNodeHA:                   true,
+	EnableWorkerNodeSSH:                  true,
+	EnableWorkerNodePrivilegedPortAccess: true,
 
+	// keep in-sync with the default value in https://godoc.org/k8s.io/kubernetes/test/e2e/framework#GetSigner
+	WorkerNodePrivateKeyPath: filepath.Join(homedir.HomeDir(), ".ssh", "kube_aws_rsa"),
+
+	// Amazon EKS-optimized AMI, https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
+	WorkerNodeAMI:          "ami-094fa4044a2a3cf52",
 	WorkerNodeInstanceType: "m5.large",
-	WorkderNodeASGMin:      1,
-	WorkderNodeASGMax:      1,
+	WorkerNodeASGMin:       1,
+	WorkerNodeASGMax:       1,
 	WorkerNodeVolumeSizeGB: 20,
 
-	KubernetesVersion: "1.10",
+	KubernetesVersion: "1.11",
 
 	LogDebug: false,
 
 	// default, stderr, stdout, or file name
 	// log file named with cluster name will be added automatically
-	LogOutputs:           []string{"stderr"},
-	LogAccess:            false,
-	UploadTesterLogs:     false,
-	UploadWorkerNodeLogs: false,
+	LogOutputs:             []string{"stderr"},
+	LogAccess:              false,
+	UploadTesterLogs:       false,
+	UploadKubeConfig:       false,
+	UploadWorkerNodeLogs:   false,
+	UploadBucketExpireDays: 2,
 
 	ClusterState: &ClusterState{},
 	ALBIngressController: &ALBIngressController{
@@ -476,7 +505,7 @@ func Load(p string) (cfg *Config, err error) {
 		return nil, err
 	}
 	cfg = new(Config)
-	if err = gyaml.Unmarshal(d, cfg); err != nil {
+	if err = yaml.Unmarshal(d, cfg); err != nil {
 		return nil, err
 	}
 
@@ -517,7 +546,7 @@ func (cfg *Config) Sync() (err error) {
 	}
 	cfg.UpdatedAt = time.Now().UTC()
 	var d []byte
-	d, err = gyaml.Marshal(cfg)
+	d, err = yaml.Marshal(cfg)
 	if err != nil {
 		return err
 	}
@@ -560,9 +589,6 @@ const (
 func (cfg *Config) ValidateAndSetDefaults() error {
 	switch cfg.TestMode {
 	case "embedded":
-	case "aws-cli":
-		// TODO: remove this
-		return errors.New("TestMode 'aws-cli' is not implemented yet")
 	default:
 		return fmt.Errorf("TestMode %q unknown", cfg.TestMode)
 	}
@@ -570,7 +596,7 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 		return errors.New("EKS LogOutputs is not specified")
 	}
 	if cfg.KubernetesVersion == "" {
-		return errors.New("Kubernetes version is empty")
+		return errors.New("KubernetesVersion is empty")
 	}
 	if !checkKubernetesVersion(cfg.KubernetesVersion) {
 		return fmt.Errorf("EKS Kubernetes version %q is not valid", cfg.KubernetesVersion)
@@ -590,7 +616,7 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 	if cfg.WorkerNodeAMI == "" {
 		return errors.New("EKS WorkerNodeAMI is not specified")
 	}
-	if !checkAMI(cfg.AWSRegion, cfg.WorkerNodeAMI) {
+	if !checkAMI(cfg.KubernetesVersion, cfg.AWSRegion, cfg.WorkerNodeAMI) {
 		return fmt.Errorf("EKS WorkerNodeAMI %q is not valid", cfg.WorkerNodeAMI)
 	}
 	if cfg.WorkerNodeInstanceType == "" {
@@ -600,25 +626,25 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 		return fmt.Errorf("EKS WorkerNodeInstanceType %q is not valid", cfg.WorkerNodeInstanceType)
 	}
 	if cfg.ALBIngressController != nil && cfg.ALBIngressController.TestServerReplicas > 0 {
-		if !checkMaxPods(cfg.WorkerNodeInstanceType, cfg.WorkderNodeASGMax, cfg.ALBIngressController.TestServerReplicas) {
+		if !checkMaxPods(cfg.WorkerNodeInstanceType, cfg.WorkerNodeASGMax, cfg.ALBIngressController.TestServerReplicas) {
 			return fmt.Errorf(
 				"EKS WorkerNodeInstanceType %q only supports %d pods per node (ASG Max %d, allowed up to %d, test server replicas %d)",
 				cfg.WorkerNodeInstanceType,
 				ec2.InstanceTypes[cfg.WorkerNodeInstanceType].MaxPods,
-				cfg.WorkderNodeASGMax,
-				ec2.InstanceTypes[cfg.WorkerNodeInstanceType].MaxPods*int64(cfg.WorkderNodeASGMax),
+				cfg.WorkerNodeASGMax,
+				ec2.InstanceTypes[cfg.WorkerNodeInstanceType].MaxPods*int64(cfg.WorkerNodeASGMax),
 				cfg.ALBIngressController.TestServerReplicas,
 			)
 		}
 	}
-	if cfg.WorkderNodeASGMin == 0 {
-		return errors.New("EKS WorkderNodeASGMin is not specified")
+	if cfg.WorkerNodeASGMin == 0 {
+		return errors.New("EKS WorkerNodeASGMin is not specified")
 	}
-	if cfg.WorkderNodeASGMax == 0 {
-		return errors.New("EKS WorkderNodeASGMax is not specified")
+	if cfg.WorkerNodeASGMax == 0 {
+		return errors.New("EKS WorkerNodeASGMax is not specified")
 	}
-	if !checkWorkderNodeASG(cfg.WorkderNodeASGMin, cfg.WorkderNodeASGMax) {
-		return fmt.Errorf("EKS WorkderNodeASG %d and %d is not valid", cfg.WorkderNodeASGMin, cfg.WorkderNodeASGMax)
+	if !checkWorkderNodeASG(cfg.WorkerNodeASGMin, cfg.WorkerNodeASGMax) {
+		return fmt.Errorf("EKS WorkderNodeASG %d and %d is not valid", cfg.WorkerNodeASGMin, cfg.WorkerNodeASGMax)
 	}
 	if cfg.WorkerNodeVolumeSizeGB == 0 {
 		cfg.WorkerNodeVolumeSizeGB = defaultWorkderNodeVolumeSizeGB
@@ -634,16 +660,18 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 	cfg.ClusterState.CFStackVPCName = genCFStackVPC(cfg.ClusterName)
 	cfg.ClusterState.CFStackWorkerNodeGroupKeyPairName = genNodeGroupKeyPairName(cfg.ClusterName)
 	// SECURITY NOTE: MAKE SURE PRIVATE KEY NEVER GETS UPLOADED TO CLOUD STORAGE AND DLETE AFTER USE!!!
-	cfg.ClusterState.CFStackWorkerNodeGroupKeyPairPrivateKeyPath = filepath.Join(
-		os.TempDir(),
-		cfg.ClusterState.CFStackWorkerNodeGroupKeyPairName+".private.key",
-	)
+	if cfg.WorkerNodePrivateKeyPath == "" {
+		cfg.WorkerNodePrivateKeyPath = filepath.Join(
+			os.TempDir(),
+			cfg.ClusterState.CFStackWorkerNodeGroupKeyPairName+".private.key",
+		)
+	}
 	cfg.ClusterState.CFStackWorkerNodeGroupName = genCFStackWorkerNodeGroup(cfg.ClusterName)
 
 	////////////////////////////////////////////////////////////////////////
 	// populate all paths on disks and on remote storage
 	if cfg.ConfigPath == "" {
-		f, err := ioutil.TempFile(os.TempDir(), "awsk8stester-eksconfig")
+		f, err := ioutil.TempFile(os.TempDir(), "a8t-eksconfig")
 		if err != nil {
 			return err
 		}
@@ -651,7 +679,7 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 		f.Close()
 		os.RemoveAll(cfg.ConfigPath)
 	}
-	cfg.ConfigPathBucket = filepath.Join(cfg.ClusterName, "awsk8stester-eksconfig.yaml")
+	cfg.ConfigPathBucket = filepath.Join(cfg.ClusterName, "a8t-eksconfig.yaml")
 
 	cfg.LogOutputToUploadPath = filepath.Join(os.TempDir(), fmt.Sprintf("%s.log", cfg.ClusterName))
 	logOutputExist := false
@@ -665,9 +693,8 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 		// auto-insert generated log output paths to zap logger output list
 		cfg.LogOutputs = append(cfg.LogOutputs, cfg.LogOutputToUploadPath)
 	}
-	cfg.LogOutputToUploadPathBucket = filepath.Join(cfg.ClusterName, "awsk8stester-eks.log")
+	cfg.LogOutputToUploadPathBucket = filepath.Join(cfg.ClusterName, "a8t-eks.log")
 
-	cfg.KubeConfigPath = fmt.Sprintf("%s.%s.kubeconfig.generated.yaml", cfg.ConfigPath, cfg.ClusterName)
 	cfg.KubeConfigPathBucket = filepath.Join(cfg.ClusterName, "kubeconfig")
 
 	cfg.ALBIngressController.IngressTestServerDeploymentServiceSpecPath = fmt.Sprintf(
@@ -977,23 +1004,14 @@ func (cfg *Config) UpdateFromEnvs() error {
 	return nil
 }
 
-// supportedKubernetesVersions is a list of EKS supported Kubernets versions.
-var supportedKubernetesVersions = map[string]struct{}{
-	"1.10": {},
-}
-
 func checkKubernetesVersion(s string) (ok bool) {
 	_, ok = supportedKubernetesVersions[s]
 	return ok
 }
 
-// supportedRegions is a list of currently EKS supported AWS regions.
-// See https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services.
-var supportedRegions = map[string]struct{}{
-	"us-west-2": {},
-	"us-east-1": {},
-	"us-east-2": {},
-	"eu-west-1": {},
+// supportedKubernetesVersions is a list of EKS supported Kubernets versions.
+var supportedKubernetesVersions = map[string]struct{}{
+	"1.11": {},
 }
 
 func checkRegion(s string) (ok bool) {
@@ -1001,29 +1019,55 @@ func checkRegion(s string) (ok bool) {
 	return ok
 }
 
-// https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
-// https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
-var regionToAMICPU = map[string]string{
-	"us-west-2": "ami-0f54a2f7d2e9c88b3",
-	"us-east-1": "ami-0a0b913ef3249b655",
-	"us-east-2": "ami-0958a76db2d150238",
-	"eu-west-1": "ami-00c3b2d35bddd4f5c",
+// supportedRegions is a list of currently EKS supported AWS regions.
+// See https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services.
+var supportedRegions = map[string]struct{}{
+	"us-west-2":  {},
+	"us-east-1":  {},
+	"us-east-2":  {},
+	"eu-west-1":  {},
+	"eu-north-1": {},
 }
 
 // https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
 // https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
-var regionToAMIGPU = map[string]string{
-	"us-west-2": "ami-08156e8fd65879a13",
-	"us-east-1": "ami-0c974dde3f6d691a1",
-	"us-east-2": "ami-089849e811ace242f",
-	"eu-west-1": "ami-0c3479bcd739094f0",
+var amiCPUs = map[string]map[string]string{
+	"1.11": {
+		"us-west-2":  "ami-094fa4044a2a3cf52",
+		"us-east-1":  "ami-0b4eb1d8782fc3aea",
+		"us-east-2":  "ami-053cbe66e0033ebcf",
+		"eu-west-1":  "ami-0a9006fb385703b54",
+		"eu-north-1": "ami-082e6cf1c07e60241",
+	},
 }
 
-func checkAMI(region, imageID string) (ok bool) {
-	var id string
-	id, ok = regionToAMICPU[region]
+// https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
+// https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
+var amiGPUs = map[string]map[string]string{
+	"1.11": {
+		"us-west-2":  "ami-014f4e495a19d3e4f",
+		"us-east-1":  "ami-08a0bb74d1c9a5e2f",
+		"us-east-2":  "ami-04a758678ae5ebad5",
+		"eu-west-1":  "ami-050db3f5f9dbd4439",
+		"eu-north-1": "ami-69b03e17",
+	},
+}
+
+func checkAMI(ver, region, imageID string) (ok bool) {
+	var cpu map[string]string
+	cpu, ok = amiCPUs[ver]
 	if !ok {
-		id, ok = regionToAMIGPU[region]
+		return false
+	}
+	var id string
+	id, ok = cpu[region]
+	if !ok {
+		var gpu map[string]string
+		gpu, ok = amiGPUs[ver]
+		if !ok {
+			return false
+		}
+		id, ok = gpu[region]
 		if !ok {
 			return false
 		}

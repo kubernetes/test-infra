@@ -518,5 +518,8 @@ resources:
   - k8s-jenkins-gci-scalability-2
   - k8s-jenkins-kubemark
   - k8s-jenkins-scalability-2
+  - k8s-jenkins-scalability-3
+  - k8s-jenkins-scalability-4
+  - k8s-jenkins-scalability-5
   state: dirty
   type: scalability-project

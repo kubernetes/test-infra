@@ -42,7 +42,7 @@ func TestEnvironmentForSpec(t *testing.T) {
 				"BUILD_ID":    "0",
 				"PROW_JOB_ID": "prowjob",
 				"JOB_TYPE":    "periodic",
-				"JOB_SPEC":    `{"type":"periodic","job":"job-name","buildid":"0","prowjobid":"prowjob","refs":{}}`,
+				"JOB_SPEC":    `{"type":"periodic","job":"job-name","buildid":"0","prowjobid":"prowjob"}`,
 			},
 		},
 		{
@@ -52,7 +52,7 @@ func TestEnvironmentForSpec(t *testing.T) {
 				Job:       "job-name",
 				BuildID:   "0",
 				ProwJobID: "prowjob",
-				Refs: kube.Refs{
+				Refs: &kube.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
@@ -79,7 +79,7 @@ func TestEnvironmentForSpec(t *testing.T) {
 				Job:       "job-name",
 				BuildID:   "0",
 				ProwJobID: "prowjob",
-				Refs: kube.Refs{
+				Refs: &kube.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
@@ -115,7 +115,7 @@ func TestEnvironmentForSpec(t *testing.T) {
 				Job:       "job-name",
 				BuildID:   "0",
 				ProwJobID: "prowjob",
-				Refs: kube.Refs{
+				Refs: &kube.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
@@ -157,7 +157,7 @@ func TestEnvironmentForSpec(t *testing.T) {
 				"PROW_JOB_ID":  "prowjob",
 				"BUILD_NUMBER": "0",
 				"JOB_TYPE":     "periodic",
-				"JOB_SPEC":     `{"type":"periodic","job":"job-name","buildid":"0","prowjobid":"prowjob","refs":{}}`,
+				"JOB_SPEC":     `{"type":"periodic","job":"job-name","buildid":"0","prowjobid":"prowjob"}`,
 			},
 		},
 		{
@@ -174,7 +174,7 @@ func TestEnvironmentForSpec(t *testing.T) {
 				"BUILD_ID":    "0",
 				"PROW_JOB_ID": "prowjob",
 				"JOB_TYPE":    "periodic",
-				"JOB_SPEC":    `{"type":"periodic","job":"job-name","buildid":"0","prowjobid":"prowjob","refs":{}}`,
+				"JOB_SPEC":    `{"type":"periodic","job":"job-name","buildid":"0","prowjobid":"prowjob"}`,
 			},
 		},
 	}

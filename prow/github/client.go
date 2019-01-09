@@ -386,6 +386,26 @@ func (c *Client) requestRetry(method, path, accept string, body interface{}) (*h
 						resp.Body.Close()
 						break
 					}
+				} else if rawTime := resp.Header.Get("Retry-After"); rawTime != "" && rawTime != "0" {
+					// If we are getting abuse rate limited, we need to wait or
+					// else we risk continuing to make the situation worse
+					var t int
+					if t, err = strconv.Atoi(rawTime); err == nil {
+						// Sleep an extra second plus how long GitHub wants us to
+						// sleep. If it's going to take too long, then break.
+						sleepTime := time.Duration(t+1) * time.Second
+						if sleepTime < maxSleepTime {
+							c.time.Sleep(sleepTime)
+						} else {
+							err = fmt.Errorf("sleep time for abuse rate limit exceeds max sleep time (%v > %v)", sleepTime, maxSleepTime)
+							resp.Body.Close()
+							break
+						}
+					} else {
+						err = fmt.Errorf("failed to parse abuse rate limit wait time %q: %v", rawTime, err)
+						resp.Body.Close()
+						break
+					}
 				} else if oauthScopes := resp.Header.Get("X-Accepted-OAuth-Scopes"); len(oauthScopes) > 0 {
 					err = fmt.Errorf("is the account using at least one of the following oauth scopes?: %s", oauthScopes)
 					resp.Body.Close()
@@ -509,6 +529,115 @@ func (c *Client) IsMember(org, user string) (bool, error) {
 	}
 	// Should be unreachable.
 	return false, fmt.Errorf("unexpected status: %d", code)
+}
+
+func (c *Client) listHooks(org string, repo *string) ([]Hook, error) {
+	var ret []Hook
+	var path string
+	if repo != nil {
+		path = fmt.Sprintf("/repos/%s/%s/hooks", org, *repo)
+	} else {
+		path = fmt.Sprintf("/orgs/%s/hooks", org)
+	}
+	err := c.readPaginatedResults(
+		path,
+		acceptNone,
+		func() interface{} {
+			return &[]Hook{}
+		},
+		func(obj interface{}) {
+			ret = append(ret, *(obj.(*[]Hook))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+// ListOrgHooks returns a list of hooks for the org.
+// https://developer.github.com/v3/orgs/hooks/#list-hooks
+func (c *Client) ListOrgHooks(org string) ([]Hook, error) {
+	c.log("ListOrgHooks", org)
+	return c.listHooks(org, nil)
+}
+
+// ListRepoHooks returns a list of hooks for the repo.
+// https://developer.github.com/v3/repos/hooks/#list-hooks
+func (c *Client) ListRepoHooks(org, repo string) ([]Hook, error) {
+	c.log("ListRepoHooks", org, repo)
+	return c.listHooks(org, &repo)
+}
+
+func (c *Client) editHook(org string, repo *string, id int, req HookRequest) error {
+	if c.dry {
+		return nil
+	}
+	var path string
+	if repo != nil {
+		path = fmt.Sprintf("/repos/%s/%s/hooks/%d", org, *repo, id)
+	} else {
+		path = fmt.Sprintf("/orgs/%s/hooks/%d", org, id)
+	}
+
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        path,
+		exitCodes:   []int{200},
+		requestBody: &req,
+	}, nil)
+	return err
+}
+
+// EditRepoHook updates an existing hook with new info (events/url/secret)
+// https://developer.github.com/v3/repos/hooks/#edit-a-hook
+func (c *Client) EditRepoHook(org, repo string, id int, req HookRequest) error {
+	c.log("EditRepoHook", org, repo, id)
+	return c.editHook(org, &repo, id, req)
+}
+
+// EditOrgHook updates an existing hook with new info (events/url/secret)
+// https://developer.github.com/v3/orgs/hooks/#edit-a-hook
+func (c *Client) EditOrgHook(org string, id int, req HookRequest) error {
+	c.log("EditOrgHook", org, id)
+	return c.editHook(org, nil, id, req)
+}
+
+func (c *Client) createHook(org string, repo *string, req HookRequest) (int, error) {
+	if c.dry {
+		return -1, nil
+	}
+	var path string
+	if repo != nil {
+		path = fmt.Sprintf("/repos/%s/%s/hooks", org, *repo)
+	} else {
+		path = fmt.Sprintf("/orgs/%s/hooks", org)
+	}
+	var ret Hook
+	_, err := c.request(&request{
+		method:      http.MethodPost,
+		path:        path,
+		exitCodes:   []int{201},
+		requestBody: &req,
+	}, &ret)
+	if err != nil {
+		return 0, err
+	}
+	return ret.ID, nil
+}
+
+// CreateOrgHook creates a new hook for the org
+// https://developer.github.com/v3/orgs/hooks/#create-a-hook
+func (c *Client) CreateOrgHook(org string, req HookRequest) (int, error) {
+	c.log("CreateOrgHook", org)
+	return c.createHook(org, nil, req)
+}
+
+// CreateRepoHook creates a new hook for the repo
+// https://developer.github.com/v3/repos/hooks/#create-a-hook
+func (c *Client) CreateRepoHook(org, repo string, req HookRequest) (int, error) {
+	c.log("CreateRepoHook", org, repo)
+	return c.createHook(org, &repo, req)
 }
 
 // GetOrg returns current metadata for the org
@@ -955,6 +1084,39 @@ func (c *Client) CreatePullRequest(org, repo, title, body, head, base string, ca
 	return resp.Num, nil
 }
 
+// UpdatePullRequest modifies the title, body, open state
+func (c *Client) UpdatePullRequest(org, repo string, number int, title, body *string, open *bool, branch *string, canModify *bool) error {
+	c.log("UpdatePullRequest", org, repo, title)
+	data := struct {
+		State *string `json:"state,omitempty"`
+		Title *string `json:"title,omitempty"`
+		Body  *string `json:"body,omitempty"`
+		Base  *string `json:"base,omitempty"`
+		// MaintainerCanModify allows maintainers of the repo to modify this
+		// pull request, eg. push changes to it before merging.
+		MaintainerCanModify *bool `json:"maintainer_can_modify,omitempty"`
+	}{
+		Title:               title,
+		Body:                body,
+		Base:                branch,
+		MaintainerCanModify: canModify,
+	}
+	if open != nil && *open {
+		op := "open"
+		data.State = &op
+	} else if open != nil {
+		cl := "clossed"
+		data.State = &cl
+	}
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d", org, repo, number),
+		requestBody: &data,
+		exitCodes:   []int{200},
+	}, nil)
+	return err
+}
+
 // GetPullRequestChanges gets a list of files modified in a pull request.
 //
 // See https://developer.github.com/v3/pulls/#list-pull-requests-files
@@ -1239,11 +1401,18 @@ func (c *Client) DeleteRepoLabel(org, repo, label string) error {
 func (c *Client) GetCombinedStatus(org, repo, ref string) (*CombinedStatus, error) {
 	c.log("GetCombinedStatus", org, repo, ref)
 	var combinedStatus CombinedStatus
-	_, err := c.request(&request{
-		method:    http.MethodGet,
-		path:      fmt.Sprintf("/repos/%s/%s/commits/%s/status", org, repo, ref),
-		exitCodes: []int{200},
-	}, &combinedStatus)
+	err := c.readPaginatedResults(
+		fmt.Sprintf("/repos/%s/%s/commits/%s/status", org, repo, ref),
+		"",
+		func() interface{} {
+			return &CombinedStatus{}
+		},
+		func(obj interface{}) {
+			cs := *(obj.(*CombinedStatus))
+			cs.Statuses = append(combinedStatus.Statuses, cs.Statuses...)
+			combinedStatus = cs
+		},
+	)
 	return &combinedStatus, err
 }
 
@@ -1299,18 +1468,6 @@ func (c *Client) AddLabel(org, repo string, number int, label string) error {
 	return err
 }
 
-// LabelNotFound indicates that a label is not attached to an issue. For example, removing a
-// label from an issue, when the issue does not have that label.
-type LabelNotFound struct {
-	Owner, Repo string
-	Number      int
-	Label       string
-}
-
-func (e *LabelNotFound) Error() string {
-	return fmt.Sprintf("label %q does not exist on %s/%s/%d", e.Label, e.Owner, e.Repo, e.Number)
-}
-
 type githubError struct {
 	Message string `json:"message,omitempty"`
 }
@@ -1346,14 +1503,10 @@ func (c *Client) RemoveLabel(org, repo string, number int, label string) error {
 		return err
 	}
 
-	// If the error was because the label was not found, annotate that error with type information.
+	// If the error was because the label was not found, we don't really
+	// care since the label won't exist anyway.
 	if ge.Message == "Label does not exist" {
-		return &LabelNotFound{
-			Owner:  org,
-			Repo:   repo,
-			Number: number,
-			Label:  label,
-		}
+		return nil
 	}
 
 	// Otherwise we got some other 404 error.
@@ -1687,6 +1840,19 @@ func (c *Client) GetRef(org, repo, ref string) (string, error) {
 	return res.Object["sha"], err
 }
 
+// DeleteRef deletes the given ref
+//
+// See https://developer.github.com/v3/git/refs/#delete-a-reference
+func (c *Client) DeleteRef(org, repo, ref string) error {
+	c.log("DeleteRef", org, repo, ref)
+	_, err := c.request(&request{
+		method:    http.MethodDelete,
+		path:      fmt.Sprintf("/repos/%s/%s/git/refs/%s", org, repo, ref),
+		exitCodes: []int{204},
+	}, nil)
+	return err
+}
+
 // FindIssues uses the GitHub search API to find issues which match a particular query.
 //
 // Input query the same way you would into the website.
@@ -1953,6 +2119,33 @@ func (c *Client) ListTeamMembers(id int, role string) ([]TeamMember, error) {
 	return teamMembers, nil
 }
 
+// ListTeamInvitations gets a list of team members with pending invitations for the
+// given team id
+//
+// https://developer.github.com/v3/teams/members/#list-pending-team-invitations
+func (c *Client) ListTeamInvitations(id int) ([]OrgInvitation, error) {
+	c.log("ListTeamInvites", id)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/teams/%d/invitations", id)
+	var ret []OrgInvitation
+	err := c.readPaginatedResults(
+		path,
+		acceptNone,
+		func() interface{} {
+			return &[]OrgInvitation{}
+		},
+		func(obj interface{}) {
+			ret = append(ret, *(obj.(*[]OrgInvitation))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
 // MergeDetails contains desired properties of the merge.
 //
 // See https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button
@@ -1987,6 +2180,11 @@ type UnauthorizedToPushError string
 
 func (e UnauthorizedToPushError) Error() string { return string(e) }
 
+// MergeCommitsForbiddenError happens when the repo disallows the merge strategy configured for the repo in Tide.
+type MergeCommitsForbiddenError string
+
+func (e MergeCommitsForbiddenError) Error() string { return string(e) }
+
 // Merge merges a PR.
 //
 // See https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button
@@ -2008,6 +2206,9 @@ func (c *Client) Merge(org, repo string, pr int, details MergeDetails) error {
 		}
 		if strings.Contains(ge.Message, "You're not authorized to push to this branch") {
 			return UnauthorizedToPushError(ge.Message)
+		}
+		if strings.Contains(ge.Message, "Merge commits are not allowed on this repository") {
+			return MergeCommitsForbiddenError(ge.Message)
 		}
 		return UnmergablePRError(ge.Message)
 	} else if ec == 409 {
@@ -2216,6 +2417,31 @@ func (c *Client) ListMilestones(org, repo string) ([]Milestone, error) {
 		return nil, err
 	}
 	return milestones, nil
+}
+
+// ListPRCommits lists the commits in a pull request.
+//
+// GitHub API docs: https://developer.github.com/v3/pulls/#list-commits-on-a-pull-request
+func (c *Client) ListPRCommits(org, repo string, number int) ([]RepositoryCommit, error) {
+	c.log("ListPRCommits", org, repo, number)
+	if c.fake {
+		return nil, nil
+	}
+	var commits []RepositoryCommit
+	err := c.readPaginatedResults(
+		fmt.Sprintf("/repos/%v/%v/pulls/%d/commits", org, repo, number),
+		acceptNone,
+		func() interface{} { // newObj returns a pointer to the type of object to create
+			return &[]RepositoryCommit{}
+		},
+		func(obj interface{}) { // accumulate is the accumulation function for paginated results
+			commits = append(commits, *(obj.(*[]RepositoryCommit))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return commits, nil
 }
 
 // newReloadingTokenSource creates a reloadingTokenSource.

@@ -3,6 +3,7 @@ default_external_services:
   gcs_bucket: kubernetes-jenkins/
   gcs_pull_prefix: kubernetes-jenkins/pr-logs/pull
   prow_url: prow.k8s.io
+  spyglass: true
 default_org: kubernetes
 default_repo: kubernetes
 external_services:

@@ -22,7 +22,7 @@ import (
 
 func TestRatio(t *testing.T) {
 	t.Run("regular", func(t *testing.T) {
-		c := &coverage{Name: "fake-coverage", nCoveredStmts: 105, nAllStmts: 210}
+		c := &Coverage{Name: "fake-coverage", NumCoveredStmts: 105, NumAllStmts: 210}
 		actualRatio := c.Ratio()
 		if actualRatio != float32(.5) {
 			t.Fatalf("incorrect coverage ratio: expected 0.5, got %f", actualRatio)
@@ -30,7 +30,7 @@ func TestRatio(t *testing.T) {
 	})
 
 	t.Run("no actual statements", func(t *testing.T) {
-		c := &coverage{Name: "fake-coverage", nCoveredStmts: 0, nAllStmts: 0}
+		c := &Coverage{Name: "fake-coverage", NumCoveredStmts: 0, NumAllStmts: 0}
 		if c.Ratio() != float32(1) {
 			t.Fatalf("incorrect coverage ratio: expected 1, got %f", c.Ratio())
 		}

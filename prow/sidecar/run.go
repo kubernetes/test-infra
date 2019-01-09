@@ -32,8 +32,9 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 
+	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 
@@ -58,7 +59,7 @@ func (o Options) Run() error {
 		select {
 		case s := <-interrupt:
 			logrus.Errorf("Received an interrupt: %s", s)
-			o.doUpload(spec, false, true)
+			o.doUpload(spec, false, true, nil)
 		}
 	}()
 
@@ -121,13 +122,46 @@ func (o Options) Run() error {
 		aborted = returnCode == 130
 	}
 
-	return o.doUpload(spec, passed, aborted)
+	metadataFile := o.WrapperOptions.MetadataFile
+	if _, err := os.Stat(metadataFile); err != nil {
+		if !os.IsNotExist(err) {
+			logrus.WithError(err).Errorf("Failed to stat %s", metadataFile)
+		}
+		return o.doUpload(spec, passed, aborted, nil)
+	}
+
+	metadataRaw, err := ioutil.ReadFile(metadataFile)
+	if err != nil {
+		logrus.WithError(err).Errorf("cannot read %s", metadataFile)
+		return o.doUpload(spec, passed, aborted, nil)
+	}
+
+	metadata := map[string]interface{}{}
+	if err := json.Unmarshal(metadataRaw, &metadata); err != nil {
+		logrus.WithError(err).Errorf("Failed to unmarshal %s", metadataFile)
+		return o.doUpload(spec, passed, aborted, nil)
+	}
+
+	return o.doUpload(spec, passed, aborted, metadata)
 }
 
-func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool) error {
+func getRevisionFromRef(refs *kube.Refs) string {
+	if len(refs.Pulls) > 0 {
+		return refs.Pulls[0].SHA
+	}
+
+	if refs.BaseSHA != "" {
+		return refs.BaseSHA
+	}
+
+	return refs.BaseRef
+}
+
+func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool, metadata map[string]interface{}) error {
 	uploadTargets := map[string]gcs.UploadFunc{
 		"build-log.txt": gcs.FileUpload(o.WrapperOptions.ProcessLog),
 	}
+
 	var result string
 	switch {
 	case passed:
@@ -138,15 +172,26 @@ func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool) error
 		result = "FAILURE"
 	}
 
+	// TODO(krzyzacy): Unify with downstream spyglass definition
 	finished := struct {
-		Timestamp int64  `json:"timestamp"`
-		Passed    bool   `json:"passed"`
-		Result    string `json:"result"`
+		Timestamp int64                  `json:"timestamp"`
+		Passed    bool                   `json:"passed"`
+		Result    string                 `json:"result"`
+		Metadata  map[string]interface{} `json:"metadata,omitempty"`
+		Revision  string                 `json:"revision,omitempty"`
 	}{
 		Timestamp: time.Now().Unix(),
 		Passed:    passed,
 		Result:    result,
+		Metadata:  metadata,
 	}
+
+	if spec.Refs != nil {
+		finished.Revision = getRevisionFromRef(spec.Refs)
+	} else if len(spec.ExtraRefs) > 0 {
+		finished.Revision = getRevisionFromRef(&spec.ExtraRefs[0])
+	}
+
 	finishedData, err := json.Marshal(&finished)
 	if err != nil {
 		logrus.WithError(err).Warn("Could not marshal finishing data")

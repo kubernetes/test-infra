@@ -32,26 +32,30 @@ import (
 )
 
 const (
-	ownersFileName           = "OWNERS"
+	ownersFileName = "OWNERS"
+	// ApprovalNotificationName defines the name used in the title for the approval notifications.
 	ApprovalNotificationName = "ApprovalNotifier"
 )
 
-type RepoInterface interface {
+// Repo allows querying and interacting with OWNERS information in a repo.
+type Repo interface {
 	Approvers(path string) sets.String
 	LeafApprovers(path string) sets.String
 	FindApproverOwnersForFile(file string) string
 	IsNoParentOwners(path string) bool
 }
 
+// Owners provides functionality related to owners of a specific code change.
 type Owners struct {
 	filenames []string
-	repo      RepoInterface
+	repo      Repo
 	seed      int64
 
 	log *logrus.Entry
 }
 
-func NewOwners(log *logrus.Entry, filenames []string, r RepoInterface, s int64) Owners {
+// NewOwners consturcts a new Owners instance. filenames is the slice of files changed.
+func NewOwners(log *logrus.Entry, filenames []string, r Repo, s int64) Owners {
 	return Owners{filenames: filenames, repo: r, seed: s, log: log}
 }
 
@@ -86,6 +90,9 @@ func (o Owners) GetAllPotentialApprovers() []string {
 		}
 	}
 	sort.Strings(approversOnly)
+	if len(approversOnly) == 0 {
+		o.log.Debug("No potential approvers exist. Does the repo have OWNERS files?")
+	}
 	return approversOnly
 }
 
@@ -130,6 +137,9 @@ func (o Owners) temporaryUnapprovedFiles(approvers sets.String) sets.String {
 // KeepCoveringApprovers finds who we should keep as suggested approvers given a pre-selection
 // knownApprovers must be a subset of potentialApprovers.
 func (o Owners) KeepCoveringApprovers(reverseMap map[string]sets.String, knownApprovers sets.String, potentialApprovers []string) sets.String {
+	if len(potentialApprovers) == 0 {
+		o.log.Debug("No potential approvers exist to filter for relevance. Does this repo have OWNERS files?")
+	}
 	keptApprovers := sets.NewString()
 
 	unapproved := o.temporaryUnapprovedFiles(knownApprovers)
@@ -169,7 +179,8 @@ func (o Owners) GetOwnersSet() sets.String {
 	return owners
 }
 
-// Shuffles the potential approvers so that we don't always suggest the same people
+// GetShuffledApprovers shuffles the potential approvers so that we don't
+// always suggest the same people.
 func (o Owners) GetShuffledApprovers() []string {
 	approversList := o.GetAllPotentialApprovers()
 	order := rand.New(rand.NewSource(o.seed)).Perm(len(approversList))
@@ -225,6 +236,8 @@ func (a Approval) String() string {
 	)
 }
 
+// Approvers is struct that provide functionality with regard to approvals of a specific
+// code change.
 type Approvers struct {
 	owners          Owners
 	approvers       map[string]Approval // The keys of this map are normalized to lowercase.
@@ -414,22 +427,22 @@ func (ap Approvers) UnapprovedFiles() sets.String {
 	return unapproved
 }
 
-// GetFiles returns owners files that still need approval
+// GetFiles returns owners files that still need approval.
 func (ap Approvers) GetFiles(org, project, branch string) []File {
 	allOwnersFiles := []File{}
 	filesApprovers := ap.GetFilesApprovers()
-	for _, fn := range ap.owners.GetOwnersSet().List() {
-		if len(filesApprovers[fn]) == 0 {
+	for _, file := range ap.owners.GetOwnersSet().List() {
+		if len(filesApprovers[file]) == 0 {
 			allOwnersFiles = append(allOwnersFiles, UnapprovedFile{
-				filepath: fn,
+				filepath: file,
 				org:      org,
 				project:  project,
 				branch:   branch,
 			})
 		} else {
 			allOwnersFiles = append(allOwnersFiles, ApprovedFile{
-				filepath:  fn,
-				approvers: filesApprovers[fn],
+				filepath:  file,
+				approvers: filesApprovers[file],
 				org:       org,
 				project:   project,
 				branch:    branch,
@@ -445,8 +458,8 @@ func (ap Approvers) GetFiles(org, project, branch string) []File {
 // it works:
 // - We find suggested approvers from all potential approvers, but
 // remove those that are not useful considering current approvers and
-// assignees. This only uses leave approvers to find approvers the
-// closest to the changes.
+// assignees. This only uses leaf approvers to find the closest
+// approvers to the changes.
 // - We find a subset of suggested approvers from current
 // approvers, suggested approvers and assignees, but we remove those
 // that are not useful considering suggested approvers and current
@@ -520,18 +533,22 @@ func (ap Approvers) ListNoIssueApprovals() []Approval {
 	return approvals
 }
 
+// File in an interface for files
 type File interface {
 	String() string
 }
 
+// ApprovedFile contains the information of a an approved file.
 type ApprovedFile struct {
-	filepath  string
+	filepath string
+	// approvers is the set of users that approved this file change.
 	approvers sets.String
 	org       string
 	project   string
 	branch    string
 }
 
+// UnapprovedFile contains the information of a an unapproved file.
 type UnapprovedFile struct {
 	filepath string
 	org      string

@@ -15,7 +15,7 @@
 # This file creates a build environment for building and running kubernetes
 # unit and integration tests
 
-FROM gcr.io/k8s-testimages/bootstrap:v20181010-45051ef05
+FROM gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
 LABEL maintainer "Sen Lu <senlu@google.com>"
 
 # hint to kubetest that it is in CI
@@ -24,6 +24,8 @@ ENV KUBETEST_IN_DOCKER="true"
 # Go standard envs
 ENV GOPATH /go
 ENV PATH /usr/local/go/bin:$PATH
+
+RUN mkdir -p /go/bin
 ENV PATH $GOPATH/bin:$PATH
 
 # setup k8s repo symlink

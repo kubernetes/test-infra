@@ -104,6 +104,15 @@ type SourceManager interface {
 	// provided version, to the provided directory.
 	ExportProject(context.Context, ProjectIdentifier, Version, string) error
 
+	// ExportPrunedProject writes out the tree corresponding to the provided
+	// LockedProject, the provided version, to the provided directory, applying
+	// the provided pruning options.
+	//
+	// The first return value is the hex-encoded string representation of the
+	// hash, including colon-separated leaders indicating the version of the
+	// hashing function used, and the prune options that were applied.
+	ExportPrunedProject(context.Context, LockedProject, PruneOptions, string) error
+
 	// DeduceProjectRoot takes an import path and deduces the corresponding
 	// project/source root.
 	DeduceProjectRoot(ip string) (ProjectRoot, error)
@@ -113,9 +122,9 @@ type SourceManager interface {
 	// In general, these URLs differ only by protocol (e.g. https vs. ssh), not path
 	SourceURLsForPath(ip string) ([]*url.URL, error)
 
-	// Release lets go of any locks held by the SourceManager. Once called, it is
-	// no longer safe to call methods against it; all method calls will
-	// immediately result in errors.
+	// Release lets go of any locks held by the SourceManager. Once called, it
+	// is no longer allowed to call methods of that SourceManager; all
+	// method calls will immediately result in errors.
 	Release()
 
 	// InferConstraint tries to puzzle out what kind of version is given in a string -
@@ -177,9 +186,10 @@ var ErrSourceManagerIsReleased = fmt.Errorf("this SourceManager has been release
 
 // SourceManagerConfig holds configuration information for creating SourceMgrs.
 type SourceManagerConfig struct {
-	Cachedir       string      // Where to store local instances of upstream sources.
-	Logger         *log.Logger // Optional info/warn logger. Discards if nil.
-	DisableLocking bool        // True if the SourceManager should NOT use a lock file to protect the Cachedir from multiple processes.
+	CacheAge       time.Duration // Maximum valid age of cached data. <=0: Don't cache.
+	Cachedir       string        // Where to store local instances of upstream sources.
+	Logger         *log.Logger   // Optional info/warn logger. Discards if nil.
+	DisableLocking bool          // True if the SourceManager should NOT use a lock file to protect the Cachedir from multiple processes.
 }
 
 // NewSourceManager produces an instance of gps's built-in SourceManager.
@@ -189,6 +199,10 @@ type SourceManagerConfig struct {
 // prior to invoking a solve run, it is recommended that they create this
 // SourceManager as early as possible and use it to their ends. That way, the
 // solver can benefit from any caches that may have already been warmed.
+//
+// A cacheEpoch is calculated from now()-cacheAge, and older persistent cache data
+// is discarded. When cacheAge is <= 0, the persistent cache is
+// not used.
 //
 // gps's SourceManager is intended to be threadsafe (if it's not, please file a
 // bug!). It should be safe to reuse across concurrent solving runs, even on
@@ -279,13 +293,25 @@ func NewSourceManager(c SourceManagerConfig) (*SourceMgr, error) {
 	superv := newSupervisor(ctx)
 	deducer := newDeductionCoordinator(superv)
 
+	var sc sourceCache
+	if c.CacheAge > 0 {
+		// Try to open the BoltDB cache from disk.
+		epoch := time.Now().Add(-c.CacheAge).Unix()
+		boltCache, err := newBoltCache(c.Cachedir, epoch, c.Logger)
+		if err != nil {
+			c.Logger.Println(errors.Wrapf(err, "failed to open persistent cache %q", c.Cachedir))
+		} else {
+			sc = newMultiCache(memoryCache{}, boltCache)
+		}
+	}
+
 	sm := &SourceMgr{
 		cachedir:    c.Cachedir,
 		lf:          lockfile,
 		suprvsr:     superv,
 		cancelAll:   cf,
 		deduceCoord: deducer,
-		srcCoord:    newSourceCoordinator(superv, deducer, c.Cachedir, c.Logger),
+		srcCoord:    newSourceCoordinator(superv, deducer, c.Cachedir, sc, c.Logger),
 		qch:         make(chan struct{}),
 	}
 
@@ -380,8 +406,8 @@ func (e CouldNotCreateLockError) Error() string {
 }
 
 // Release lets go of any locks held by the SourceManager. Once called, it is no
-// longer safe to call methods against it; all method calls will immediately
-// result in errors.
+// longer allowed to call methods of that SourceManager; all method calls will
+// immediately result in errors.
 func (sm *SourceMgr) Release() {
 	atomic.StoreInt32(&sm.releasing, 1)
 
@@ -492,7 +518,13 @@ func (sm *SourceMgr) SourceExists(id ProjectIdentifier) (bool, error) {
 	}
 
 	ctx := context.TODO()
-	return srcg.existsInCache(ctx) || srcg.existsUpstream(ctx), nil
+	if err := srcg.existsInCache(ctx); err == nil {
+		return true, nil
+	}
+	if err := srcg.existsUpstream(ctx); err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 // SyncSourceFor will ensure that all local caches and information about a
@@ -525,6 +557,21 @@ func (sm *SourceMgr) ExportProject(ctx context.Context, id ProjectIdentifier, v 
 	}
 
 	return srcg.exportVersionTo(ctx, v, to)
+}
+
+// ExportPrunedProject writes out a tree of the provided LockedProject, applying
+// provided pruning rules as appropriate.
+func (sm *SourceMgr) ExportPrunedProject(ctx context.Context, lp LockedProject, prune PruneOptions, to string) error {
+	if atomic.LoadInt32(&sm.releasing) == 1 {
+		return ErrSourceManagerIsReleased
+	}
+
+	srcg, err := sm.srcCoord.getSourceGatewayFor(ctx, lp.Ident())
+	if err != nil {
+		return err
+	}
+
+	return srcg.exportPrunedVersionTo(ctx, lp, prune, to)
 }
 
 // DeduceProjectRoot takes an import path and deduces the corresponding

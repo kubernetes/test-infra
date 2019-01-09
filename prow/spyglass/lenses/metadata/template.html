@@ -1,0 +1,45 @@
+{{define "header"}}
+<link rel="stylesheet" href="style.css">
+<script type="text/javascript" src="script_bundle.min.js"></script>
+{{end}}
+
+{{define "body"}}
+{{$passed := eq .Status "SUCCESS"}}
+{{$failed := eq .Status "FAILURE" "FAILED"}}
+<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp metadata-table">
+  <thead>
+    <tr class="test-row">
+      <td class="mdl-data-table__cell--non-numeric">Status</td>
+      <td class="mdl-data-table__cell--non-numeric" style="color: {{if $passed}}#00FF00{{else if $failed}}#FF0000{{end}}">{{.Status}}</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">Started</td>
+      <td class="mdl-data-table__cell--non-numeric" id="start_time">{{.StartTime}}</td>
+    </tr>
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">Elapsed</td>
+      <td class="mdl-data-table__cell--non-numeric">{{.Elapsed}}</td>
+    </tr>
+    <tbody id="supplementary_data" class="{{if gt .MetadataLen 1}}hidden{{end}}">
+    {{range $key, $value := .Metadata}}
+    {{if $value}}
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">{{$key}}</td>
+        <td class="mdl-data-table__cell--non-numeric">{{$value}}</td>
+      </tr>
+    {{end}}
+    {{end}}
+    </tbody>
+    {{if gt .MetadataLen 1}}
+    <tr class="expander" onclick="toggleExpansion('supplementary_data', 'expand_text', 'expand_icon')">
+      <td id="expand_text" class="mdl-data-table__cell--non-numeric expander">Show more</td>
+      <td class="mdl-data-table__cell--non-numeric expander">
+        <i id="expand_icon" class="icon-button material-icons arrow-icon">expand_more</i>
+      </td>
+      </tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}
