@@ -291,9 +291,11 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
+      - --gcp-nodes=4
       - --gcp-zone=us-central1-f
+      - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.flakeAttempts=1 --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.flakeAttempts=1 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
 
