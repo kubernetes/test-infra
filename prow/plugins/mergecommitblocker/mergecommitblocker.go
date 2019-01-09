@@ -75,7 +75,7 @@ func handlePR(gc githubClient, le *logrus.Entry, pe github.PullRequestEvent) err
 	// Use github client to get the commits in the pull request
 	commits, err := gc.ListPRCommits(owner, repo, num)
 	if err != nil {
-
+		return err
 	}
 	// Iterate through them and check for parent commits
 	needsLabel := false
