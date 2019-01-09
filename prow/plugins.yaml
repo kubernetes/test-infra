@@ -553,6 +553,9 @@ plugins:
   kubernetes-sigs/cluster-api-provider-aws:
   - trigger
 
+  kubernetes-sigs/cluster-api-provider-azure:
+  - trigger
+
   kubernetes-sigs/cluster-api-provider-digitalocean:
   - trigger
 
@@ -691,6 +694,10 @@ external_plugins:
     events:
       - pull_request
   kubernetes-sigs/contributor-playground:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes-sigs/cluster-api-provider-azure:
   - name: needs-rebase
     events:
       - pull_request
