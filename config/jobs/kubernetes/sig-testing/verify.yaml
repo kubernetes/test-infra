@@ -50,6 +50,10 @@ presubmits:
         envs:
         - name: KUBE_FORCE_VERIFY_CHECKS
           value: "n"
+        - name: EXCLUDE_TYPECHECK
+          value: "y"
+        - name: EXCLUDE_GODEP
+          value: "y"
         - name: KUBE_VERIFY_GIT_BRANCH
           value: master
         - name: REPO_DIR
@@ -67,17 +71,29 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190110-c23317e88
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
       args:
-      - --repo=k8s.io/kubernetes
-      - --timeout=75
-      - --scenario=kubernetes_verify
-      - --
-      - --branch=master
-      - --force
-      - --script=./hack/jenkins/verify-dockerized.sh
+      - ./hack/jenkins/verify-dockerized.sh
+      envs:
+      - name: KUBE_FORCE_VERIFY_CHECKS
+        value: "y"
+      - name: EXCLUDE_READONLY_PACKAGE
+        value: "y"
+      - name: KUBE_VERIFY_GIT_BRANCH
+        value: master
+      - name: REPO_DIR
+        value: /workspace/k8s.io/kubernetes
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
