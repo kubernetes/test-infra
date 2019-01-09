@@ -3,17 +3,19 @@ package awsapi
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 )
 
 type Client struct {
 	session *session.Session
 }
 
-func NewClient() (*Client, error) {
-	//sess, err := session.NewSession(&aws.Config{Region: aws.String("us-west-1")})
-	//	_, err := sess.Config.Credentials.Get()
+func NewClient(o ClientOption) (*Client, error) {
+	session, err := session.NewSession(&aws.Config{
+		Credentials: credentials.NewSharedCredentials(o.CredentialsFile, "default"),
+		Region: aws.String("eu-west-1"),
+	})
 
-	session, err := session.NewSession(&aws.Config{Region: aws.String("eu-west-1")})
 	if err != nil {
 		// Handle Session creation error
 		return nil, err
@@ -24,7 +26,7 @@ func NewClient() (*Client, error) {
 	//logger.Println("Request: %s/%s, Payload: %s",
 	//	r.ClientInfo.ServiceName, r.Operation, r.Params)
 
-	return &Client {session }, err
+	return &Client{session}, err
 }
 
 func (c *Client) Bucket(name string) *BucketHandle {
