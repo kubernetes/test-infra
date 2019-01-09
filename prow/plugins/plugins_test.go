@@ -163,8 +163,8 @@ func TestSetDefault_Maps(t *testing.T) {
 		{
 			name: "nothing",
 			expected: map[string]ConfigMapSpec{
-				"prow/config.yaml":  {Name: "config"},
-				"prow/plugins.yaml": {Name: "plugins"},
+				"prow/config.yaml":  {Name: "config", Namespaces: []string{""}},
+				"prow/plugins.yaml": {Name: "plugins", Namespaces: []string{""}},
 			},
 		},
 		{
@@ -176,8 +176,8 @@ func TestSetDefault_Maps(t *testing.T) {
 				},
 			},
 			expected: map[string]ConfigMapSpec{
-				"hello.yaml": {Name: "my-cm"},
-				"world.yaml": {Name: "you-cm"},
+				"hello.yaml": {Name: "my-cm", Namespaces: []string{""}},
+				"world.yaml": {Name: "you-cm", Namespaces: []string{""}},
 			},
 		},
 		{
@@ -186,8 +186,8 @@ func TestSetDefault_Maps(t *testing.T) {
 				ConfigFile: "foo.yaml",
 			},
 			expected: map[string]ConfigMapSpec{
-				"foo.yaml":          {Name: "config"},
-				"prow/plugins.yaml": {Name: "plugins"},
+				"foo.yaml":          {Name: "config", Namespaces: []string{""}},
+				"prow/plugins.yaml": {Name: "plugins", Namespaces: []string{""}},
 			},
 		},
 		{
@@ -196,8 +196,8 @@ func TestSetDefault_Maps(t *testing.T) {
 				PluginFile: "bar.yaml",
 			},
 			expected: map[string]ConfigMapSpec{
-				"bar.yaml":         {Name: "plugins"},
-				"prow/config.yaml": {Name: "config"},
+				"bar.yaml":         {Name: "plugins", Namespaces: []string{""}},
+				"prow/config.yaml": {Name: "config", Namespaces: []string{""}},
 			},
 		},
 		{
@@ -207,8 +207,8 @@ func TestSetDefault_Maps(t *testing.T) {
 				PluginFile: "bar.yaml",
 			},
 			expected: map[string]ConfigMapSpec{
-				"foo.yaml": {Name: "config"},
-				"bar.yaml": {Name: "plugins"},
+				"foo.yaml": {Name: "config", Namespaces: []string{""}},
+				"bar.yaml": {Name: "plugins", Namespaces: []string{""}},
 			},
 		},
 		{
@@ -223,9 +223,9 @@ func TestSetDefault_Maps(t *testing.T) {
 				PluginFile: "plugins.yaml",
 			},
 			expected: map[string]ConfigMapSpec{
-				"config.yaml":        {Name: "overwrite-config"},
-				"plugins.yaml":       {Name: "overwrite-plugins"},
-				"unconflicting.yaml": {Name: "ignored"},
+				"config.yaml":        {Name: "overwrite-config", Namespaces: []string{""}},
+				"plugins.yaml":       {Name: "overwrite-plugins", Namespaces: []string{""}},
+				"unconflicting.yaml": {Name: "ignored", Namespaces: []string{""}},
 			},
 		},
 	}
@@ -240,7 +240,7 @@ func TestSetDefault_Maps(t *testing.T) {
 			continue
 		}
 		for k, n := range tc.expected {
-			if an := actual[k]; an != n {
+			if an := actual[k]; !reflect.DeepEqual(an, n) {
 				t.Errorf("%s - %s: expected %s != actual %s", tc.name, k, n, an)
 			}
 		}

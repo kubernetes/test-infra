@@ -509,6 +509,12 @@ type ConfigMapSpec struct {
 	// Namespace in which the configMap needs to be deployed. If no namespace is specified
 	// it will be deployed to the ProwJobNamespace.
 	Namespace string `json:"namespace,omitempty"`
+	// Namespaces in which the configMap needs to be deployed, in addition to the above
+	// namespace provided, or the default if it is not set.
+	AdditionalNamespaces []string `json:"additional_namespaces,omitempty"`
+
+	// Namespaces is the fully resolved list of Namespaces to deploy the ConfigMap in
+	Namespaces []string `json:"-"`
 }
 
 // ConfigUpdater contains the configuration for the config-updater plugin.
@@ -687,21 +693,22 @@ func (c *Configuration) TriggerFor(org, repo string) *Trigger {
 	return nil
 }
 
-func (c *Configuration) setDefaults() {
-	if len(c.ConfigUpdater.Maps) == 0 {
-		cf := c.ConfigUpdater.ConfigFile
+// SetDefaults sets default options for config updating
+func (c *ConfigUpdater) SetDefaults() {
+	if len(c.Maps) == 0 {
+		cf := c.ConfigFile
 		if cf == "" {
 			cf = "prow/config.yaml"
 		} else {
 			logrus.Warnf(`config_file is deprecated, please switch to "maps": {"%s": "config"} before July 2018`, cf)
 		}
-		pf := c.ConfigUpdater.PluginFile
+		pf := c.PluginFile
 		if pf == "" {
 			pf = "prow/plugins.yaml"
 		} else {
 			logrus.Warnf(`plugin_file is deprecated, please switch to "maps": {"%s": "plugins"} before July 2018`, pf)
 		}
-		c.ConfigUpdater.Maps = map[string]ConfigMapSpec{
+		c.Maps = map[string]ConfigMapSpec{
 			cf: {
 				Name: "config",
 			},
@@ -710,6 +717,16 @@ func (c *Configuration) setDefaults() {
 			},
 		}
 	}
+
+	for name, spec := range c.Maps {
+		spec.Namespaces = append([]string{spec.Namespace}, spec.AdditionalNamespaces...)
+		c.Maps[name] = spec
+	}
+}
+
+func (c *Configuration) setDefaults() {
+	c.ConfigUpdater.SetDefaults()
+
 	for repo, plugins := range c.ExternalPlugins {
 		for i, p := range plugins {
 			if p.Endpoint != "" {

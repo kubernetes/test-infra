@@ -172,23 +172,25 @@ func FilterChanges(configMaps map[string]plugins.ConfigMapSpec, changes []github
 		}
 
 		// Yes, update the configmap with the contents of this file
-		id := ConfigMapID{Name: cm.Name, Namespace: cm.Namespace}
-		if _, ok := toUpdate[id]; !ok {
-			toUpdate[id] = map[string]string{}
-		}
-		key := cm.Key
-		if key == "" {
-			key = path.Base(change.Filename)
-			// if the key changed, we need to remove the old key
-			if change.Status == github.PullRequestFileRenamed {
-				oldKey := path.Base(change.PreviousFilename)
-				toUpdate[id][oldKey] = ""
+		for _, ns := range append(cm.Namespaces) {
+			id := ConfigMapID{Name: cm.Name, Namespace: ns}
+			if _, ok := toUpdate[id]; !ok {
+				toUpdate[id] = map[string]string{}
 			}
-		}
-		if change.Status == github.PullRequestFileRemoved {
-			toUpdate[id][key] = ""
-		} else {
-			toUpdate[id][key] = change.Filename
+			key := cm.Key
+			if key == "" {
+				key = path.Base(change.Filename)
+				// if the key changed, we need to remove the old key
+				if change.Status == github.PullRequestFileRenamed {
+					oldKey := path.Base(change.PreviousFilename)
+					toUpdate[id][oldKey] = ""
+				}
+			}
+			if change.Status == github.PullRequestFileRemoved {
+				toUpdate[id][key] = ""
+			} else {
+				toUpdate[id][key] = change.Filename
+			}
 		}
 	}
 	return toUpdate
