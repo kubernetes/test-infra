@@ -497,6 +497,16 @@ type IssueComment struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
+// IssueRequest is what we give GitHub when we want to create or edit an issue.
+// This is different than what we receive when we ask for an Issue.
+type IssueRequest struct {
+	Title     string   `json:"title"`
+	Body      string   `json:"body,omitempty"`
+	Labels    []string `json:"labels,omitempty"`
+	Assignees []string `json:"assignees,omitempty"`
+	Milestone *int     `json:"milestone,omitempty"`
+}
+
 // StatusEvent fires whenever a git commit changes.
 //
 // See https://developer.github.com/v3/activity/events/types/#statusevent

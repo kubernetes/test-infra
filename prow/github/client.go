@@ -1752,6 +1752,27 @@ func (c *Client) CloseIssue(org, repo string, number int) error {
 	return err
 }
 
+// CreateIssue creates a new issue and returns its number if
+// the creation is successful, otherwise any error that is encountered.
+//
+// https://developer.github.com/v3/issues/#create-an-issue
+func (c *Client) CreateIssue(org, repo string, issue IssueRequest) (int, error) {
+	c.log("CreateIssue", org, repo, issue)
+	var resp struct {
+		Num int `json:"number"`
+	}
+	_, err := c.request(&request{
+		method:      http.MethodPost,
+		path:        fmt.Sprintf("/repos/%s/%s/issues", org, repo),
+		requestBody: issue,
+		exitCodes:   []int{201},
+	}, &resp)
+	if err != nil {
+		return 0, err
+	}
+	return resp.Num, nil
+}
+
 // StateCannotBeChanged represents the "custom" GitHub API
 // error that occurs when a resource cannot be changed
 type StateCannotBeChanged struct {
