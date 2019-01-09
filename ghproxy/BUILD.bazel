@@ -1,18 +1,17 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
+load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
-docker_bundle(
+container_bundle(
     name = "bundle",
     images = {
         "{STABLE_DOCKER_REPO}/ghproxy:{DOCKER_TAG}": ":image",
         "{STABLE_DOCKER_REPO}/ghproxy:latest": ":image",
         "{STABLE_DOCKER_REPO}/ghproxy:latest-{BUILD_USER}": ":image",
     },
-    stamp = True,
 )
 
 docker_push(

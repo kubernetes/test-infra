@@ -13,7 +13,7 @@ ts_library(
     srcs = glob(["common/*.ts"]),
     deps = [
         ":api",
-        "@npm//:moment",
+        "@npm//moment",
     ],
 )
 
@@ -23,7 +23,7 @@ ts_library(
     deps = [
         ":api",
         ":common",
-        "@npm//:moment",
+        "@npm//moment",
     ],
 )
 
@@ -32,7 +32,7 @@ rollup_bundle(
     entry_point = "prow/cmd/deck/static/prow/prow",
     deps = [
         ":prow",
-        "@npm//:moment",
+        "@npm//moment",
     ],
 )
 
@@ -49,7 +49,7 @@ rollup_bundle(
     entry_point = "prow/cmd/deck/static/plugin-help/plugin-help",
     deps = [
         ":plugin_help",
-        "@npm//:dialog-polyfill",
+        "@npm//dialog-polyfill",
     ],
 )
 
@@ -66,7 +66,7 @@ rollup_bundle(
     entry_point = "prow/cmd/deck/static/pr/pr",
     deps = [
         ":pr",
-        "@npm//:dialog-polyfill",
+        "@npm//dialog-polyfill",
     ],
 )
 
@@ -84,7 +84,7 @@ rollup_bundle(
     entry_point = "prow/cmd/deck/static/tide/tide",
     deps = [
         ":tide",
-        "@npm//:moment",
+        "@npm//moment",
     ],
 )
 
@@ -94,7 +94,7 @@ ts_library(
     deps = [
         ":api",
         ":common",
-        "@npm//:moment",
+        "@npm//moment",
     ],
 )
 
@@ -103,7 +103,7 @@ rollup_bundle(
     entry_point = "prow/cmd/deck/static/tide-history/tide-history",
     deps = [
         ":tide_history",
-        "@npm//:moment",
+        "@npm//moment",
     ],
 )
 
@@ -120,7 +120,7 @@ rollup_bundle(
     entry_point = "prow/cmd/deck/static/command-help/command-help",
     deps = [
         ":command_help",
-        "@npm//:dialog-polyfill",
+        "@npm//dialog-polyfill",
     ],
 )
 

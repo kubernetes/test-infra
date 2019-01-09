@@ -6,10 +6,10 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 git_repository(
     name = "bazel_skylib",
     remote = "https://github.com/bazelbuild/bazel-skylib.git",
-    tag = "0.5.0",
+    tag = "0.6.0",
 )
 
-load("@bazel_skylib//:lib.bzl", "versions")
+load("@bazel_skylib//lib:versions.bzl", "versions")
 
 versions.check(minimum_bazel_version = "0.18.0")
 
@@ -27,9 +27,9 @@ go_register_toolchains(go_version = "1.11.4")
 
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "5235045774d2f40f37331636378f21fe11f69906c0386a790c5987a09211c3c4",
-    strip_prefix = "rules_docker-8010a50ef03d1e13f1bebabfc625478da075fa60",
-    urls = ["https://github.com/bazelbuild/rules_docker/archive/8010a50ef03d1e13f1bebabfc625478da075fa60.tar.gz"],
+    sha256 = "c0e9d27e6ca307e4ac0122d3dd1df001b9824373fb6fb8627cd2371068e51fef",
+    strip_prefix = "rules_docker-0.6.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.6.0.tar.gz"],
 )
 
 load(
@@ -39,11 +39,15 @@ load(
 
 _go_repositories()
 
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_pull", "docker_repositories")
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_pull",
+    container_repositories = "repositories",
+)
 
-docker_repositories()
+container_repositories()
 
-docker_pull(
+container_pull(
     name = "distroless-base",
     digest = "sha256:472206d4c501691d9e72cafca4362f2adbc610fecff3dfa42e5b345f9b7d05e5",  # 2018/10/25
     registry = "gcr.io",
@@ -51,7 +55,7 @@ docker_pull(
     tag = "latest",
 )
 
-docker_pull(
+container_pull(
     name = "alpine-base",
     digest = "sha256:bd327018b3effc802514b63cc90102bfcd92765f4486fc5abc28abf7eb9f1e4d",  # 2018/09/20
     registry = "gcr.io",
@@ -59,7 +63,7 @@ docker_pull(
     tag = "0.1",
 )
 
-docker_pull(
+container_pull(
     name = "gcloud-base",
     digest = "sha256:1dbdee42a553dd6a652d64df1902015ba36ef12d6c16df568a59843e410e270b",  # 2018/10/25
     registry = "gcr.io",
@@ -67,7 +71,7 @@ docker_pull(
     tag = "latest",
 )
 
-docker_pull(
+container_pull(
     name = "git-base",
     digest = "sha256:01b0f83fe91b782ec7ddf1e742ab7cc9a2261894fd9ab0760ebfd39af2d6ab28",  # 2018/07/02
     registry = "gcr.io",
@@ -75,7 +79,7 @@ docker_pull(
     tag = "0.2",
 )
 
-docker_pull(
+container_pull(
     name = "python",
     digest = "sha256:0888426cc407c5ce9f2d656d776757f8fdb31795e01f60df38a5bacb697a0db0",  # 2018/10/25
     registry = "index.docker.io",
@@ -83,11 +87,16 @@ docker_pull(
     tag = "2",
 )
 
-git_repository(
+http_archive(
     name = "io_bazel_rules_k8s",
-    commit = "9d2f6e8e21f1b5e58e721fc29b806957d9931930",
-    remote = "https://github.com/bazelbuild/rules_k8s.git",
+    sha256 = "91fef3e6054096a8947289ba0b6da3cba559ecb11c851d7bdfc9ca395b46d8d8",
+    strip_prefix = "rules_k8s-0.1",
+    urls = ["https://github.com/bazelbuild/rules_k8s/archive/v0.1.tar.gz"],
 )
+
+load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_repositories")
+
+k8s_repositories()
 
 git_repository(
     name = "io_kubernetes_build",
@@ -98,8 +107,12 @@ git_repository(
 git_repository(
     name = "build_bazel_rules_nodejs",
     remote = "https://github.com/bazelbuild/rules_nodejs.git",
-    tag = "0.14.0",
+    tag = "0.16.5",
 )
+
+load("@build_bazel_rules_nodejs//:package.bzl", "rules_nodejs_dependencies")
+
+rules_nodejs_dependencies()
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "yarn_install")
 
@@ -108,13 +121,15 @@ node_repositories(package_json = ["//:package.json"])
 yarn_install(
     name = "npm",
     package_json = "//:package.json",
+    quiet = True,
     yarn_lock = "//:yarn.lock",
 )
 
 http_archive(
     name = "build_bazel_rules_typescript",
-    strip_prefix = "rules_typescript-0.18.0",
-    url = "https://github.com/bazelbuild/rules_typescript/archive/0.18.0.zip",
+    sha256 = "136ba6be39b4ff934cc0f41f043912305e98cb62254d9e6af467e247daafcd34",
+    strip_prefix = "rules_typescript-0.22.0",
+    url = "https://github.com/bazelbuild/rules_typescript/archive/0.22.0.zip",
 )
 
 # Fetch our Bazel dependencies that aren't distributed on npm
@@ -460,7 +475,7 @@ py_appengine_repositories()
 
 git_repository(
     name = "io_bazel_rules_python",
-    commit = "f414af5ed85e451908b3fb873211e8f2939ea4e8",
+    commit = "cc4cbf2f042695f4d1d4198c22459b3dbe7f8e43",
     remote = "https://github.com/bazelbuild/rules_python.git",
 )
 
