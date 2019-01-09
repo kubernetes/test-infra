@@ -34,8 +34,7 @@ func (w *S3Writer) Write(bytes []byte) (n int, err error) {
 }
 
 func (w S3Writer) Close() error {
-	// send empty buffer to mark completion
-	w.source.buffer <- []byte{}
+	close(w.source.buffer)
 
 	// wait for completion
 	err := <- w.source.error
@@ -77,15 +76,11 @@ type S3Source struct {
 
 func (s S3Source) Read(buffer []byte) (n int, err error) {
 	//TODO: bug - read up to max buffer size
-	buf := <-s.buffer
+	buf, ok := <-s.buffer
 
-	err = nil
-
-	if len(buf) == 0 {
-		err = io.EOF
+	if ok {
+		return copy(buffer, buf), nil
 	} else {
-		copy(buffer, buf)
+		return 0, io.EOF
 	}
-
-	return len(buf), err
 }
