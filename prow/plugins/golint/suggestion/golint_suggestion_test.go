@@ -391,3 +391,173 @@ func TestLintLoopRanges(t *testing.T) {
 		}
 	}
 }
+
+func TestLintVarDecl(t *testing.T) {
+	var testcases = []struct {
+		problem            lint.Problem
+		expectedSuggestion string
+	}{
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should omit type int from declaration of var myInt; it will be inferred from the right-hand side",
+				Link:       "",
+				Category:   "type-inference",
+				LineText:   "var myInt int = 7",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\nvar myInt = 7```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should drop = 0 from declaration of var myZeroInt; it is the zero value",
+				Link:       "",
+				Category:   "zero-value",
+				LineText:   "var myZeroInt int = 0",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\nvar myZeroInt int```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should drop = 0. from declaration of var myZeroFlt; it is the zero value",
+				Link:       "",
+				Category:   "zero-value",
+				LineText:   "var myZeroFlt float32 = 0.",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\nvar myZeroFlt float32```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should drop = 0.0 from declaration of var myZeroF64; it is the zero value",
+				Link:       "",
+				Category:   "zero-value",
+				LineText:   "var myZeroF64 float64 = 0.0",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\nvar myZeroF64 float64```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should drop = 0i from declaration of var myZeroImg; it is the zero value",
+				Link:       "",
+				Category:   "zero-value",
+				LineText:   "var myZeroImg complex64 = 0i",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\nvar myZeroImg complex64```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should drop = \"\" from declaration of var myZeroStr; it is the zero value",
+				Link:       "",
+				Category:   "zero-value",
+				LineText:   "var myZeroStr string = \"\"",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\nvar myZeroStr string```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should drop = `` from declaration of var myZeroStr; it is the zero value",
+				Link:       "",
+				Category:   "zero-value",
+				LineText:   "var myZeroStr string = ``",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\nvar myZeroStr string```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should drop = nil from declaration of var myZeroPtr; it is the zero value",
+				Link:       "",
+				Category:   "zero-value",
+				LineText:   "var myZeroPtr *Q = nil",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\nvar myZeroPtr *Q```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should drop = '\\x00' from declaration of var myZeroRune; it is the zero value",
+				Link:       "",
+				Category:   "zero-value",
+				LineText:   "var myZeroRune rune = '\\x00'",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\nvar myZeroRune rune```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should drop = '\\000' from declaration of var myZeroRune2; it is the zero value",
+				Link:       "",
+				Category:   "zero-value",
+				LineText:   "var myZeroRune2 rune = '\\000'",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "```suggestion\nvar myZeroRune2 rune```\n",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should drop = `` from declaration of var myZeroStr; it is the zero value",
+				Link:       "",
+				Category:   "zero-value",
+				LineText:   "var myZeroStr string",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "",
+		},
+		{
+			problem: lint.Problem{
+				Position: token.Position{
+					Filename: "qux.go",
+				},
+				Text:       "should omit type int from declaration of var myInt; it will be inferred from the right-hand side",
+				Link:       "",
+				Category:   "type-inference",
+				LineText:   "var myInt = 7",
+				Confidence: 100.00,
+			},
+			expectedSuggestion: "",
+		},
+	}
+	for _, test := range testcases {
+		suggestion := SuggestCodeChange(test.problem)
+		if suggestion != test.expectedSuggestion {
+			t.Errorf("Excepted code suggestion %s but got %s for LineText %s", test.expectedSuggestion, suggestion, test.problem.LineText)
+		}
+	}
+}
