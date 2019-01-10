@@ -17,7 +17,10 @@ limitations under the License.
 package main
 
 import (
+	"context"
+
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pod-utils/options"
 	"k8s.io/test-infra/prow/sidecar"
@@ -37,7 +40,7 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "sidecar"}),
 	)
 
-	if err := o.Run(); err != nil {
+	if err := o.Run(context.Background()); err != nil {
 		logrus.WithError(err).Error("Failed to report job status")
 	}
 }
