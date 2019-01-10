@@ -23,6 +23,7 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
@@ -195,16 +196,16 @@ var testBucket = fakeBucket{
 	name: "chum-bucket",
 	objects: map[string]string{
 		"pr-logs/pull/123/build-snowman/456/started.json": `{
-			"timestamp": 55555,
-			"pull": "master:d0c3cd182cffb3e722b14322fd1ca854a8bf62b0,69848:1244ee66517bbe603d899bbd24458ebc0e185fd9"
+			"timestamp": 55555
 		}`,
 		"pr-logs/pull/123/build-snowman/456/finished.json": `{
 			"timestamp": 66666,
-			"result":    "SUCCESS"
+			"result":    "SUCCESS",
+			"revision":  "1244ee66517bbe603d899bbd24458ebc0e185fd9"
 		}`,
 		"pr-logs/pull/123/build-snowman/789/started.json": `{
 			"timestamp": 98765,
-			"pull": "master:d0c3cd182cffb3e722b14322fd1ca854a8bf62b0,69848:bbdebedaf24c03f9e2eeb88e8ea4bb10c9e1fbfc"
+			"revision": "bbdebedaf24c03f9e2eeb88e8ea4bb10c9e1fbfc"
 		}`,
 		"pr-logs/pull/765/eat-bread/999/started.json": `{
 			"timestamp": 12345,
@@ -295,9 +296,7 @@ func TestGetPRBuildData(t *testing.T) {
 	for _, build := range builds {
 		if expBuild, ok := expected[build.prefix]; ok {
 			if !reflect.DeepEqual(build, expBuild) {
-				t.Errorf("build %s\n"+
-					"expected: %v\n"+
-					"got:      %v", build.prefix, expBuild, build)
+				t.Errorf("build %s mismatch:\n%s", build.prefix, diff.ObjectReflectDiff(expBuild, build))
 			}
 		} else {
 			t.Errorf("found unexpected build %s", build.prefix)
@@ -381,7 +380,6 @@ func TestGetGCSDirsForPR(t *testing.T) {
 	}
 	for _, tc := range cases {
 		toSearch, err := getGCSDirsForPR(tc.config, tc.org, tc.repo, tc.pr)
-		fmt.Println(toSearch)
 		if (err != nil) != tc.expErr {
 			t.Errorf("%s: unexpected error %v", tc.name, err)
 		}

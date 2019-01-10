@@ -297,14 +297,18 @@ func getBuildData(bucket storageBucket, dir string) (buildData, error) {
 		return b, fmt.Errorf("failed to read started.json: %v", err)
 	}
 	b.Started = time.Unix(started.Timestamp, 0)
-	commitHash, err := getPullCommitHash(started.Pull)
-	if err == nil {
+	if started.Revision != "" {
+		b.commitHash = started.Revision
+	} else if commitHash, err := getPullCommitHash(started.Pull); err == nil {
 		b.commitHash = commitHash
 	}
 	finished := jobs.Finished{}
 	err = readJSON(bucket, path.Join(dir, "finished.json"), &finished)
 	if err != nil {
 		logrus.Infof("failed to read finished.json (job might be unfinished): %v", err)
+	}
+	if finished.Revision != "" {
+		b.commitHash = finished.Revision
 	}
 	if finished.Timestamp != 0 {
 		b.Duration = time.Unix(finished.Timestamp, 0).Sub(b.Started)
