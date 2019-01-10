@@ -15,7 +15,6 @@ go_library(
         "//prow/pod-utils/downwardapi:go_default_library",
         "//prow/pod-utils/gcs:go_default_library",
         "//prow/pod-utils/wrapper:go_default_library",
-        "//vendor/github.com/fsnotify/fsnotify:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )

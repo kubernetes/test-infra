@@ -17,8 +17,19 @@ limitations under the License.
 package wrapper
 
 import (
+	"context"
 	"errors"
 	"flag"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/fsnotify/fsnotify"
+	"github.com/sirupsen/logrus"
 )
 
 // Options exposes the configuration options
@@ -62,4 +73,51 @@ func (o *Options) Validate() error {
 	}
 
 	return nil
+}
+
+func (o *Options) WaitForMarker(ctx context.Context, path string) (int, error) {
+	// Only start watching file events if the file doesn't exist
+	// If the file exists, it means the main process already completed.
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		watcher, err := fsnotify.NewWatcher()
+		if err != nil {
+			return -1, fmt.Errorf("new fsnotify watch: %v", err)
+		}
+		defer watcher.Close()
+		dir := filepath.Dir(path)
+		if err := watcher.Add(dir); err != nil {
+			return -1, fmt.Errorf("add %s to fsnotify watch: %v", dir, err)
+		}
+
+		ticker := time.NewTicker(10 * time.Second)
+		defer ticker.Stop()
+		missing := true
+		for missing {
+			select {
+			case <-ctx.Done():
+				return -1, fmt.Errorf("cancelled: %v", ctx.Err())
+			case event := <-watcher.Events:
+				if event.Name == path && event.Op&fsnotify.Create == fsnotify.Create {
+					missing = false
+				}
+			case err := <-watcher.Errors:
+				logrus.WithError(err).Info("fsnotify watch error")
+			case <-ticker.C:
+				switch _, err := os.Stat(path); {
+				case err == nil, !os.IsNotExist(err):
+					missing = false
+				}
+			}
+		}
+	}
+
+	returnCodeData, err := ioutil.ReadFile(path)
+	if err != nil {
+		return -1, fmt.Errorf("bad read: %v", err)
+	}
+	returnCode, err := strconv.Atoi(strings.TrimSpace(string(returnCodeData)))
+	if err != nil {
+		return -1, fmt.Errorf("invalid return code: %v", err)
+	}
+	return returnCode, nil
 }

@@ -18,19 +18,15 @@ package sidecar
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/signal"
-	"path/filepath"
-	"strconv"
-	"strings"
-	"sync"
 	"syscall"
 	"time"
 
-	"github.com/fsnotify/fsnotify"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/kube"
@@ -41,11 +37,13 @@ import (
 // Run will watch for the process being wrapped to exit
 // and then post the status of that process and any artifacts
 // to cloud storage.
-func (o Options) Run() error {
+func (o Options) Run(ctx context.Context) error {
 	spec, err := downwardapi.ResolveSpecFromEnv()
 	if err != nil {
 		return fmt.Errorf("could not resolve job spec: %v", err)
 	}
+
+	ctx, cancel := context.WithCancel(ctx)
 
 	// If we are being asked to terminate by the kubelet but we have
 	// NOT seen the test process exit cleanly, we need a to start
@@ -58,69 +56,25 @@ func (o Options) Run() error {
 	go func() {
 		select {
 		case s := <-interrupt:
-			logrus.Errorf("Received an interrupt: %s", s)
-			o.doUpload(spec, false, true, nil)
+			logrus.Errorf("Received an interrupt: %s, cancelling...", s)
+			cancel()
 		}
 	}()
 
-	// Only start watching file events if the file doesn't exist
-	// If the file exists, it means the main process already completed.
-	if _, err := os.Stat(o.WrapperOptions.MarkerFile); os.IsNotExist(err) {
-		watcher, err := fsnotify.NewWatcher()
-		if err != nil {
-			return fmt.Errorf("could not begin fsnotify watch: %v", err)
-		}
-		defer watcher.Close()
-
-		ticker := time.NewTicker(30 * time.Second)
-		group := sync.WaitGroup{}
-		group.Add(1)
-		go func() {
-			defer group.Done()
-			for {
-				select {
-				case event := <-watcher.Events:
-					if event.Name == o.WrapperOptions.MarkerFile && event.Op&fsnotify.Create == fsnotify.Create {
-						return
-					}
-				case err := <-watcher.Errors:
-					logrus.WithError(err).Info("Encountered an error during fsnotify watch")
-				case <-ticker.C:
-					if _, err := os.Stat(o.WrapperOptions.MarkerFile); err == nil {
-						return
-					}
-				}
-			}
-		}()
-
-		dir := filepath.Dir(o.WrapperOptions.MarkerFile)
-		if err := watcher.Add(dir); err != nil {
-			return fmt.Errorf("could not add to fsnotify watch: %v", err)
-		}
-		group.Wait()
-		ticker.Stop()
+	returnCode, err := o.WrapperOptions.WaitForMarker(ctx, o.WrapperOptions.MarkerFile)
+	if err != nil {
+		logrus.WithError(err).Warn("Failed to parse process return code")
 	}
 
 	// If we are being asked to terminate by the kubelet but we have
 	// seen the test process exit cleanly, we need a chance to upload
 	// artifacts to GCS. The only valid way for this program to exit
-	// after a SIGINT or SIGTERM in this situation is to finish]
+	// after a SIGINT or SIGTERM in this situation is to finish
 	// uploading, so we ignore the signals.
 	signal.Ignore(os.Interrupt, syscall.SIGTERM)
 
-	passed := false
-	aborted := false
-	returnCodeData, err := ioutil.ReadFile(o.WrapperOptions.MarkerFile)
-	if err != nil {
-		logrus.WithError(err).Warn("Could not read return code from marker file")
-	} else {
-		returnCode, err := strconv.Atoi(strings.TrimSpace(string(returnCodeData)))
-		if err != nil {
-			logrus.WithError(err).Warn("Failed to parse process return code")
-		}
-		passed = returnCode == 0 && err == nil
-		aborted = returnCode == 130
-	}
+	passed := returnCode == 0 && err == nil
+	aborted := returnCode == 130
 
 	metadataFile := o.WrapperOptions.MetadataFile
 	if _, err := os.Stat(metadataFile); err != nil {
