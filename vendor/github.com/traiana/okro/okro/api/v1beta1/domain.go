@@ -12,10 +12,9 @@ type Domain struct {
 }
 
 type TenantDomain struct {
-	Meta      `json:",inline"`
-	Lookup    string   `json:"lookup"`
-	MainRealm string   `json:"main_realm"`
-	Realms    []*Realm `json:"realms"`
+	Meta   `json:",inline"`
+	Lookup string   `json:"lookup"`
+	Realms []*Realm `json:"realms"`
 }
 
 type Realm struct {
@@ -35,7 +34,7 @@ type AppProjection struct {
 
 type ModuleProjection struct {
 	Meta   `json:",inline"`
-	Binds  *Binds `json:"binds"`
+	Binds  *Binds `json:"binds,omitempty"`
 	Lookup string `json:"lookup,omitempty"`
 	// todo resources, monitoring, scale, etc..
 }
@@ -46,25 +45,30 @@ type Binds struct {
 }
 
 type APIBinding struct {
-	Lookup  string `json:"lookup,omitempty"`
-	Tenant  string `json:"tenant,omitempty"`
-	App     string `json:"app"`
-	API     string `json:"api"`
-	Version string `json:"version"`
-	At      struct {
-		Realm  string `json:"realm"`
-		Module string `json:"module"`
-	} `json:"at"`
+	Lookup  string                `json:"lookup,omitempty"`
+	Tenant  string                `json:"tenant,omitempty"`
+	App     string                `json:"app"`
+	API     string                `json:"api"`
+	Version string                `json:"version"`
+	At      *APIBindingResolution `json:"at,omitempty"`
+}
+
+type APIBindingResolution struct {
+	Realm  string `json:"realm"`
+	Module string `json:"module,omitempty"`
+	App    string `json:"app,omitempty"`
 }
 
 type TopicBinding struct {
-	Lookup string `json:"lookup,omitempty"`
-	Tenant string `json:"tenant,omitempty"`
-	Pubsub string `json:"pubsub"`
-	Topic  string `json:"topic"`
-	At     struct {
-		Realm string `json:"realm"`
-	} `json:"at"`
+	Lookup string                  `json:"lookup,omitempty"`
+	Tenant string                  `json:"tenant,omitempty"`
+	Pubsub string                  `json:"pubsub"`
+	Topic  string                  `json:"topic"`
+	At     *TopicBindingResolution `json:"at,omitempty"`
+}
+
+type TopicBindingResolution struct {
+	Realm string `json:"realm"`
 }
 
 type PubsubProjection struct {

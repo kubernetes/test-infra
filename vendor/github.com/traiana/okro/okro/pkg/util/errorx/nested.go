@@ -28,6 +28,11 @@ func (es Errors) InsertVar(err error, path ...interface{}) {
 	es.Insert(err, path)
 }
 
+// InsertRoot inserts an error at the root level.
+func (es Errors) InsertRoot(err error) {
+	es.InsertStr(err, []string{SelfKey})
+}
+
 // InsertStr inserts an error at nested path, creating child Errors as needed.
 func (es Errors) InsertStr(err error, path []string) {
 	if len(path) == 0 {

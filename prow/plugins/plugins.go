@@ -40,7 +40,7 @@ import (
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
 
-	"k8s.io/test-infra/traiana/okro"
+	okroclient "github.com/traiana/okro/okro/client"
 )
 
 const (
@@ -149,7 +149,7 @@ type Agent struct {
 
 	OwnersClient *repoowners.Client
 
-	OkroClient *okro.Client
+	OkroClient *okroclient.Client
 
 	// Config provides information about the jobs
 	// that we know how to run for repos.
@@ -177,7 +177,7 @@ func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientA
 			prowConfig, pluginConfig.MDYAMLEnabled,
 			pluginConfig.SkipCollaborators,
 		),
-		OkroClient: clientAgent.OkroClient,
+		OkroClient:   clientAgent.OkroClient,
 		Config:       prowConfig,
 		PluginConfig: pluginConfig,
 		Logger:       logger,
@@ -208,7 +208,7 @@ type ClientAgent struct {
 	KubeClient   *kube.Client
 	GitClient    *git.Client
 	SlackClient  *slack.Client
-	OkroClient   *okro.Client
+	OkroClient   *okroclient.Client
 }
 
 // ConfigAgent contains the agent mutex and the Agent configuration.

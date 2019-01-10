@@ -40,7 +40,7 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/slack"
 
-	"k8s.io/test-infra/traiana/okro"
+	okroclient "github.com/traiana/okro/okro/client"
 )
 
 type options struct {
@@ -148,7 +148,7 @@ func main() {
 		slackClient = slack.NewFakeClient()
 	}
 
-	okroClient := okro.NewClient(o.okroURL)
+	okroClient := okroclient.New(o.okroURL)
 	clientAgent := &plugins.ClientAgent{
 		GitHubClient: githubClient,
 		KubeClient:   kubeClient,

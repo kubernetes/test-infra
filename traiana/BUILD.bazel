@@ -19,7 +19,6 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//traiana/awsapi:all-srcs",
-        "//traiana/okro:all-srcs",
         "//traiana/prow/awsapi:all-srcs",
         "//traiana/prow/awsupload:all-srcs",
         "//traiana/prow/plugins/force-merge:all-srcs",

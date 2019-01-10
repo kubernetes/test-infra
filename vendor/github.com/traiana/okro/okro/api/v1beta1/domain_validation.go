@@ -26,7 +26,6 @@ func (td TenantDomain) Validate() error {
 	if err := valid.ValidateStruct(&td,
 		valid.Field(&td.Meta),
 		valid.Field(&td.Lookup, valid.Required, lookupRule), // required only in top level
-		valid.Field(&td.MainRealm, valid.Required, nameRule),
 		valid.Field(&td.Realms),
 	); err != nil {
 		return err
@@ -41,10 +40,8 @@ func (td TenantDomain) Validate() error {
 	}
 
 	// main realm exists
-	if !ddRealm.has(td.MainRealm) {
-		return errorx.Errors{
-			"main_realm": fmt.Errorf("unknown realm %q", td.MainRealm),
-		}
+	if !ddRealm.has(LookupMain) {
+		return errorx.New("must define main realm")
 	}
 
 	return nil

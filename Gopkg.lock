@@ -1066,14 +1066,15 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:fb46fad2cac6aa77a3fd7072da0e546254af35be5ed80f4d0069a351e58144db"
+  digest = "1:bde3f010e8a0e86797b371956cf1f12d996bae1f633a3ff0edce60a3726fadac"
   name = "github.com/traiana/okro"
   packages = [
     "okro/api/v1beta1",
+    "okro/client",
     "okro/pkg/util/errorx",
   ]
   pruneopts = "NUT"
-  revision = "8f05cbbe697c3c2bdc84ac4d6bd1a9d640af46e2"
+  revision = "150c28289fcf905587ffae8a8aca56af162bb62a"
 
 [[projects]]
   digest = "1:da10b6d96618e7ac047f7122f501a0841e0df547fac1c0a9a90b7078ae93d1ee"
@@ -1686,6 +1687,7 @@
     "github.com/spf13/cobra",
     "github.com/spf13/pflag",
     "github.com/traiana/okro/okro/api/v1beta1",
+    "github.com/traiana/okro/okro/client",
     "golang.org/x/crypto/ssh",
     "golang.org/x/net/context",
     "golang.org/x/net/xsrftoken",

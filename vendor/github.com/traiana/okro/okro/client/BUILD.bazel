@@ -3,7 +3,8 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["client.go"],
-    importpath = "k8s.io/test-infra/traiana/okro",
+    importmap = "k8s.io/test-infra/vendor/github.com/traiana/okro/okro/client",
+    importpath = "github.com/traiana/okro/okro/client",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/traiana/okro/okro/api/v1beta1:go_default_library"],
 )
