@@ -26,7 +26,6 @@ import (
 
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -99,19 +98,6 @@ func reportStatus(ghc GithubClient, pj v1.ProwJob, childDescription string) erro
 			TargetURL:   pj.Status.URL,
 		}); err != nil {
 			return err
-		}
-	}
-
-	// Updating Children
-	if pj.Status.State != v1.SuccessState {
-		for _, nj := range pj.Spec.RunAfterSuccess {
-			cpj := pjutil.NewProwJob(nj, pj.ObjectMeta.Labels)
-			cpj.Status.State = pj.Status.State
-			cpj.Status.Description = childDescription
-			cpj.Spec.Refs = refs
-			if err := reportStatus(ghc, cpj, childDescription); err != nil {
-				return err
-			}
 		}
 	}
 	return nil

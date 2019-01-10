@@ -249,27 +249,6 @@ func (gh fakeGhClient) EditComment(org, repo string, ID int, comment string) err
 	return nil
 }
 
-func createChildren(pj *kube.ProwJobSpec, d int) {
-	for i := 0; i < d; i++ {
-		npj := &kube.ProwJobSpec{
-			// TODO: Support testing this via defining expected behavior in TestReportStatus
-			Type:    kube.PresubmitJob,
-			Report:  true,
-			Context: fmt.Sprintf("%s/child_%d", pj.Context, i),
-			Refs: &kube.Refs{
-				Org:  "k8s",
-				Repo: "test-infra",
-				Pulls: []kube.Pull{{
-					Author: "me",
-					Number: 1,
-					SHA:    "abcdef",
-				}},
-			},
-		}
-		pj.RunAfterSuccess = append(pj.RunAfterSuccess, *npj)
-	}
-}
-
 func shout(i int) string {
 	if i == 0 {
 		return "start"
@@ -285,11 +264,9 @@ func TestReportStatus(t *testing.T) {
 	tests := []struct {
 		name string
 
-		// TODO: This should be the RunAfterSuccess spec and not a single int.
-		children int
-		state    kube.ProwJobState
-		report   bool
-		desc     string // override default msg
+		state  kube.ProwJobState
+		report bool
+		desc   string // override default msg
 
 		expectedStatuses []string
 		expectedDesc     string
@@ -297,40 +274,26 @@ func TestReportStatus(t *testing.T) {
 		{
 			name: "Successful prowjob with report true and children should set status for itself but not its children",
 
-			children: 3,
-			state:    kube.SuccessState,
-			report:   true,
+			state:  kube.SuccessState,
+			report: true,
 
 			expectedStatuses: []string{"success"},
 		},
 		{
 			name: "Successful prowjob with report false and children should not set status for itself and its children",
 
-			children: 3,
-			state:    kube.SuccessState,
-			report:   false,
+			state:  kube.SuccessState,
+			report: false,
 
 			expectedStatuses: []string{},
 		},
 		{
 			name: "Pending prowjob with report true and children should set status for itself and its children",
 
-			children: 3,
-			state:    kube.PendingState,
-			report:   true,
+			state:  kube.PendingState,
+			report: true,
 
-			expectedStatuses: []string{"pending", "pending", "pending", "pending"},
-		},
-		{
-			name: "Pending prowjob with report false and children should not set status for itself, but still cover children jobs",
-
-			children: 3,
-			state:    kube.PendingState,
-			report:   false,
-			desc:     "this should not report",
-
-			expectedStatuses: []string{"pending", "pending", "pending"},
-			expectedDesc:     childMsg,
+			expectedStatuses: []string{"pending"},
 		},
 		{
 			name: "Aborted prowjob with report true should set failure status",
@@ -391,7 +354,6 @@ func TestReportStatus(t *testing.T) {
 					},
 				},
 			}
-			createChildren(&pj.Spec, tc.children)
 			// Run
 			if err := reportStatus(ghc, pj, childMsg); err != nil {
 				t.Error(err)

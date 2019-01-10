@@ -146,10 +146,6 @@ type ProwJobSpec struct {
 	// DecorationConfig holds configuration options for
 	// decorating PodSpecs that users provide
 	DecorationConfig *DecorationConfig `json:"decoration_config,omitempty"`
-
-	// RunAfterSuccess are jobs that should be triggered if
-	// this job runs and does not fail
-	RunAfterSuccess []ProwJobSpec `json:"run_after_success,omitempty"`
 }
 
 // DecorationConfig specifies how to augment pods.

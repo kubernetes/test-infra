@@ -264,9 +264,6 @@ func checkContext(t *testing.T, repo string, p cfg.Presubmit) {
 	if !p.SkipReport && p.Name != p.Context {
 		t.Errorf("Context does not match job name: %s in %s", p.Name, repo)
 	}
-	for _, c := range p.RunAfterSuccess {
-		checkContext(t, repo, c)
-	}
 }
 
 func TestContextMatches(t *testing.T) {
@@ -283,7 +280,6 @@ func checkRetest(t *testing.T, repo string, presubmits []cfg.Presubmit) {
 		if p.RerunCommand != expected {
 			t.Errorf("%s in %s rerun_command: %s != expected: %s", repo, p.Name, p.RerunCommand, expected)
 		}
-		checkRetest(t, repo, p.RunAfterSuccess)
 	}
 }
 
@@ -303,9 +299,6 @@ func findRequired(t *testing.T, presubmits []cfg.Presubmit) []string {
 	for _, p := range presubmits {
 		if !p.AlwaysRun {
 			continue
-		}
-		for _, r := range findRequired(t, p.RunAfterSuccess) {
-			required = append(required, r)
 		}
 		if p.SkipReport {
 			continue

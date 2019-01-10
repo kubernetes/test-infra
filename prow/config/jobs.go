@@ -23,7 +23,7 @@ import (
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -134,9 +134,6 @@ type Presubmit struct {
 	// (Default: `/test <job name>`)
 	RerunCommand string `json:"rerun_command"`
 
-	// RunAfterSuccess is a list of jobs to run after successfully running this one.
-	RunAfterSuccess []Presubmit `json:"run_after_success,omitempty"`
-
 	Brancher
 
 	RegexpChangeMatcher
@@ -159,9 +156,6 @@ type Postsubmit struct {
 	// TODO(krzyzacy): opt-in for now - Consider make it default true like presubmits
 	// Report will comment and set status on GitHub.
 	Report bool `json:"report,omitempty"`
-
-	// Run these jobs after successfully running this one.
-	RunAfterSuccess []Postsubmit `json:"run_after_success,omitempty"`
 }
 
 // Periodic runs on a timer.
@@ -174,8 +168,6 @@ type Periodic struct {
 	Cron string `json:"cron"`
 	// Tags for config entries
 	Tags []string `json:"tags,omitempty"`
-	// Run these jobs after successfully running this one.
-	RunAfterSuccess []Periodic `json:"run_after_success,omitempty"`
 
 	interval time.Duration
 }
@@ -297,9 +289,6 @@ func matching(j Presubmit, body string, testAll bool) []Presubmit {
 	if (testAll && (j.AlwaysRun || j.RunIfChanged != "")) || j.TriggerMatches(body) {
 		result = append(result, j)
 	}
-	for _, child := range j.RunAfterSuccess {
-		result = append(result, matching(child, body, testAll)...)
-	}
 	return result
 }
 
@@ -398,16 +387,6 @@ func (c *JobConfig) SetPostsubmits(jobs map[string][]Postsubmit) error {
 	return nil
 }
 
-// listPresubmits list all the presubmit for a given repo including the run after success jobs.
-func listPresubmits(ps []Presubmit) []Presubmit {
-	var res []Presubmit
-	for _, p := range ps {
-		res = append(res, p)
-		res = append(res, listPresubmits(p.RunAfterSuccess)...)
-	}
-	return res
-}
-
 // AllPresubmits returns all prow presubmit jobs in repos.
 // if repos is empty, return all presubmits.
 func (c *JobConfig) AllPresubmits(repos []string) []Presubmit {
@@ -415,27 +394,17 @@ func (c *JobConfig) AllPresubmits(repos []string) []Presubmit {
 
 	for repo, v := range c.Presubmits {
 		if len(repos) == 0 {
-			res = append(res, listPresubmits(v)...)
+			res = append(res, v...)
 		} else {
 			for _, r := range repos {
 				if r == repo {
-					res = append(res, listPresubmits(v)...)
+					res = append(res, v...)
 					break
 				}
 			}
 		}
 	}
 
-	return res
-}
-
-// listPostsubmits list all the postsubmits for a given repo including the run after success jobs.
-func listPostsubmits(ps []Postsubmit) []Postsubmit {
-	var res []Postsubmit
-	for _, p := range ps {
-		res = append(res, p)
-		res = append(res, listPostsubmits(p.RunAfterSuccess)...)
-	}
 	return res
 }
 
@@ -446,11 +415,11 @@ func (c *JobConfig) AllPostsubmits(repos []string) []Postsubmit {
 
 	for repo, v := range c.Postsubmits {
 		if len(repos) == 0 {
-			res = append(res, listPostsubmits(v)...)
+			res = append(res, v...)
 		} else {
 			for _, r := range repos {
 				if r == repo {
-					res = append(res, listPostsubmits(v)...)
+					res = append(res, v...)
 					break
 				}
 			}
@@ -467,7 +436,6 @@ func (c *JobConfig) AllPeriodics() []Periodic {
 		var res []Periodic
 		for _, p := range ps {
 			res = append(res, p)
-			res = append(res, listPeriodic(p.RunAfterSuccess)...)
 		}
 		return res
 	}

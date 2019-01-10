@@ -307,10 +307,6 @@ func jobRequirements(jobs []Presubmit, branch string, after bool) ([]string, []s
 		} else {
 			optional = append(optional, j.Context)
 		}
-		// Check which children require contexts
-		r, o := jobRequirements(j.RunAfterSuccess, branch, true)
-		required = append(required, r...)
-		optional = append(optional, o...)
 	}
 	return required, optional
 }

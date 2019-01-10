@@ -368,15 +368,6 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 			pj.SetComplete()
 			pj.Status.State = kube.SuccessState
 			pj.Status.Description = "Jenkins job succeeded."
-			for _, nj := range pj.Spec.RunAfterSuccess {
-				child := pjutil.NewProwJob(nj, pj.ObjectMeta.Labels)
-				if !c.RunAfterSuccessCanRun(&pj, &child) {
-					continue
-				}
-				if _, err := c.kc.CreateProwJob(pjutil.NewProwJob(nj, pj.ObjectMeta.Labels)); err != nil {
-					return fmt.Errorf("error starting next prowjob: %v", err)
-				}
-			}
 
 		case jb.IsFailure():
 			pj.SetComplete()
@@ -457,41 +448,4 @@ func (c *Controller) getBuildID(name string) (string, error) {
 		return c.node.Generate().String(), nil
 	}
 	return pjutil.GetBuildID(name, c.totURL)
-}
-
-// RunAfterSuccessCanRun returns whether a child job (specified as run_after_success in the
-// prow config) can run once its parent job succeeds. The only case we will not run a child job
-// is when it is a presubmit job and has a run_if_changed regular expression specified which does
-// not match the changed filenames in the pull request the job was meant to run for.
-// TODO: Collapse with plank, impossible to reuse as is due to the interfaces.
-func (c *Controller) RunAfterSuccessCanRun(parent, child *kube.ProwJob) bool {
-	if parent.Spec.Type != kube.PresubmitJob {
-		return true
-	}
-
-	// TODO: Make sure that parent and child have always the same org/repo.
-	org := parent.Spec.Refs.Org
-	repo := parent.Spec.Refs.Repo
-	prNum := parent.Spec.Refs.Pulls[0].Number
-
-	ps := c.cfg().GetPresubmit(org+"/"+repo, child.Spec.Job)
-	if ps == nil {
-		// The config has changed ever since we started the parent.
-		// Not sure what is more correct here. Run the child for now.
-		return true
-	}
-	if ps.RunIfChanged == "" {
-		return true
-	}
-	changesFull, err := c.ghc.GetPullRequestChanges(org, repo, prNum)
-	if err != nil {
-		c.log.WithError(err).WithFields(pjutil.ProwJobFields(parent)).Warnf("Cannot get PR changes for #%d", prNum)
-		return true
-	}
-	// We only care about the filenames here
-	var changes []string
-	for _, change := range changesFull {
-		changes = append(changes, change.Filename)
-	}
-	return ps.RunsAgainstChanges(changes)
 }

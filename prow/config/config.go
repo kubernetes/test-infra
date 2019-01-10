@@ -30,8 +30,8 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"gopkg.in/robfig/cron.v2"
-	"k8s.io/api/core/v1"
+	cron "gopkg.in/robfig/cron.v2"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
@@ -424,9 +424,6 @@ func yamlToConfig(path string, nc interface{}) error {
 		var fix func(*Presubmit)
 		fix = func(job *Presubmit) {
 			job.SourcePath = path
-			for i := range job.RunAfterSuccess {
-				fix(&job.RunAfterSuccess[i])
-			}
 		}
 		for i := range jc.Presubmits[rep] {
 			fix(&jc.Presubmits[rep][i])
@@ -436,9 +433,6 @@ func yamlToConfig(path string, nc interface{}) error {
 		var fix func(*Postsubmit)
 		fix = func(job *Postsubmit) {
 			job.SourcePath = path
-			for i := range job.RunAfterSuccess {
-				fix(&job.RunAfterSuccess[i])
-			}
 		}
 		for i := range jc.Postsubmits[rep] {
 			fix(&jc.Postsubmits[rep][i])
@@ -448,9 +442,6 @@ func yamlToConfig(path string, nc interface{}) error {
 	var fix func(*Periodic)
 	fix = func(job *Periodic) {
 		job.SourcePath = path
-		for i := range job.RunAfterSuccess {
-			fix(&job.RunAfterSuccess[i])
-		}
 	}
 	for i := range jc.Periodics {
 		fix(&jc.Periodics[i])
@@ -507,29 +498,17 @@ func setPresubmitDecorationDefaults(c *Config, ps *Presubmit) {
 	if ps.Decorate {
 		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
 	}
-
-	for i := range ps.RunAfterSuccess {
-		setPresubmitDecorationDefaults(c, &ps.RunAfterSuccess[i])
-	}
 }
 
 func setPostsubmitDecorationDefaults(c *Config, ps *Postsubmit) {
 	if ps.Decorate {
 		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
 	}
-
-	for i := range ps.RunAfterSuccess {
-		setPostsubmitDecorationDefaults(c, &ps.RunAfterSuccess[i])
-	}
 }
 
 func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 	if ps.Decorate {
 		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
-	}
-
-	for i := range ps.RunAfterSuccess {
-		setPeriodicDecorationDefaults(c, &ps.RunAfterSuccess[i])
 	}
 }
 
@@ -647,7 +626,7 @@ func (c *Config) validateJobConfig() error {
 	// Checking that no duplicate job in prow config exists on the same org / repo / branch.
 	validPresubmits := map[orgRepoJobName][]Presubmit{}
 	for repo, jobs := range c.Presubmits {
-		for _, job := range listPresubmits(jobs) {
+		for _, job := range jobs {
 			repoJobName := orgRepoJobName{repo, job.Name}
 			for _, existingJob := range validPresubmits[repoJobName] {
 				if existingJob.Brancher.Intersects(job.Brancher) {
@@ -671,7 +650,7 @@ func (c *Config) validateJobConfig() error {
 	// Checking that no duplicate job in prow config exists on the same org / repo / branch.
 	validPostsubmits := map[orgRepoJobName][]Postsubmit{}
 	for repo, jobs := range c.Postsubmits {
-		for _, job := range listPostsubmits(jobs) {
+		for _, job := range jobs {
 			repoJobName := orgRepoJobName{repo, job.Name}
 			for _, existingJob := range validPostsubmits[repoJobName] {
 				if existingJob.Brancher.Intersects(job.Brancher) {
@@ -1147,14 +1126,12 @@ func (c *ProwConfig) defaultPresubmitFields(js []Presubmit) {
 			js[i].Trigger = DefaultTriggerFor(js[i].Name)
 			js[i].RerunCommand = DefaultRerunCommandFor(js[i].Name)
 		}
-		c.defaultPresubmitFields(js[i].RunAfterSuccess)
 	}
 }
 
 func (c *ProwConfig) defaultPostsubmitFields(js []Postsubmit) {
 	for i := range js {
 		c.defaultJobBase(&js[i].JobBase)
-		c.defaultPostsubmitFields(js[i].RunAfterSuccess)
 		if js[i].Context == "" {
 			js[i].Context = js[i].Name
 		}
@@ -1164,7 +1141,6 @@ func (c *ProwConfig) defaultPostsubmitFields(js []Postsubmit) {
 func (c *ProwConfig) defaultPeriodicFields(js []Periodic) {
 	for i := range js {
 		c.defaultJobBase(&js[i].JobBase)
-		c.defaultPeriodicFields(js[i].RunAfterSuccess)
 	}
 }
 
@@ -1191,10 +1167,6 @@ func SetPresubmitRegexes(js []Presubmit) error {
 			return fmt.Errorf("could not set change regexes for %s: %v", j.Name, err)
 		}
 		js[i].RegexpChangeMatcher = c
-
-		if err := SetPresubmitRegexes(j.RunAfterSuccess); err != nil {
-			return err
-		}
 	}
 	return nil
 }
@@ -1244,9 +1216,6 @@ func SetPostsubmitRegexes(ps []Postsubmit) error {
 			return fmt.Errorf("could not set change regexes for %s: %v", j.Name, err)
 		}
 		ps[i].RegexpChangeMatcher = c
-		if err := SetPostsubmitRegexes(j.RunAfterSuccess); err != nil {
-			return err
-		}
 	}
 	return nil
 }

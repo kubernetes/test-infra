@@ -102,9 +102,6 @@ func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 	pjs.RerunCommand = p.RerunCommand
 	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
 
-	for _, nextP := range p.RunAfterSuccess {
-		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, PresubmitSpec(nextP, refs))
-	}
 	return pjs
 }
 
@@ -116,9 +113,6 @@ func PostsubmitSpec(p config.Postsubmit, refs kube.Refs) kube.ProwJobSpec {
 	pjs.Report = p.Report
 	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
 
-	for _, nextP := range p.RunAfterSuccess {
-		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, PostsubmitSpec(nextP, refs))
-	}
 	return pjs
 }
 
@@ -127,9 +121,6 @@ func PeriodicSpec(p config.Periodic) kube.ProwJobSpec {
 	pjs := specFromJobBase(p.JobBase)
 	pjs.Type = kube.PeriodicJob
 
-	for _, nextP := range p.RunAfterSuccess {
-		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, PeriodicSpec(nextP))
-	}
 	return pjs
 }
 
@@ -140,9 +131,6 @@ func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 	pjs.Context = p.Context
 	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
 
-	for _, nextP := range p.RunAfterSuccess {
-		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, BatchSpec(nextP, refs))
-	}
 	return pjs
 }
 
