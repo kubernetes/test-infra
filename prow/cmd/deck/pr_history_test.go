@@ -196,12 +196,12 @@ var testBucket = fakeBucket{
 	name: "chum-bucket",
 	objects: map[string]string{
 		"pr-logs/pull/123/build-snowman/456/started.json": `{
-			"timestamp": 55555,
-			"pull": "master:d0c3cd182cffb3e722b14322fd1ca854a8bf62b0,69848:1244ee66517bbe603d899bbd24458ebc0e185fd9"
+			"timestamp": 55555
 		}`,
 		"pr-logs/pull/123/build-snowman/456/finished.json": `{
 			"timestamp": 66666,
-			"result":    "SUCCESS"
+			"result":    "SUCCESS",
+			"revision":  "1244ee66517bbe603d899bbd24458ebc0e185fd9"
 		}`,
 		"pr-logs/pull/123/build-snowman/789/started.json": `{
 			"timestamp": 98765,

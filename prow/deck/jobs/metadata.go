@@ -42,4 +42,5 @@ type Finished struct {
 	Passed     bool   `json:"passed"`
 	Result     string `json:"result"`
 	Metadata   `json:"metadata"`
+	Revision   string `json:"revision"`
 }
