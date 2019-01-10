@@ -717,7 +717,7 @@ presubmits:
         - --deployment=local
         - --ginkgo-parallel=1
         - --provider=local
-        - --test_args=--ginkgo.focus=\[Conformance\]|\[Containerized\] --ginkgo.skip=\[Disruptive\]
+        - --test_args=--ginkgo.focus=\[Conformance\]|\[Containerized\] --ginkgo.skip=\[Disruptive\]|\[sig\-apps\]\sDaemon\sset\s\[Serial\]\sshould\srollback\swithout\sunnecessary\srestarts\s\[Conformance\]
         - --timeout=120m
         env:
         - name: DOCKERIZE_KUBELET
@@ -2334,7 +2334,7 @@ presubmits:
         - --deployment=local
         - --ginkgo-parallel=1
         - --provider=local
-        - --test_args=--ginkgo.focus=\[Conformance\]
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[sig\-apps\]\sDaemon\sset\s\[Serial\]\sshould\srollback\swithout\sunnecessary\srestarts\s\[Conformance\]
         - --timeout=120m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190108-eadd44c98-master
         name: ""
