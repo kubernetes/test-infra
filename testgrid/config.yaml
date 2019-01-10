@@ -3386,6 +3386,14 @@ test_groups:
 - name: release-openshift-origin-installer-e2e-aws-4.0
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-4.0
 
+# sig-storage-local-static-provisioner
+- name: ci-sig-storage-local-static-provisioner-master-gce-latest
+  gcs_prefix: kubernetes-jenkins/logs/ci-sig-storage-local-static-provisioner-master-gce-latest
+
+- name: ci-sig-storage-local-static-provisioner-master-gke-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-sig-storage-local-static-provisioner-master-gke-default
+
+
 #
 # Start dashboards
 #
@@ -6632,6 +6640,17 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-regional-slow
     base_options: include-filter-by-regex=Volume%7Cstorage
     description: storage gke regional slow e2e tests for master branch
+  dashboard_names:
+  - sig-storage-local-static-provisioner
+
+- name: sig-storage-local-static-provisioner
+  dashboard_tab:
+  - name: master-gce-lastest
+    test_group_name: ci-sig-storage-local-static-provisioner-master-gce-latest
+    description: E2E tests against latest kubernetes on GCE
+  - name: master-gke-default
+    test_group_name: ci-sig-storage-local-static-provisioner-master-gke-default
+    description: E2E tests against default kubernetes on GKE
 
 - name: sig-testing-maintenance
   dashboard_tab:
