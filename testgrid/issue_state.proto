@@ -1,0 +1,19 @@
+// Backing state for issues associated with a TestGrid test group.
+
+syntax = "proto3";
+
+message IssueInfo {
+  string issue_id = 1;
+  string title = 2;  // Issue title or description.
+
+  reserved 3, 4;
+
+  repeated string row_ids = 5;  // Associated row IDs (mentioned in the issue).
+
+  reserved 6, 7;
+}
+
+message IssueState {
+  // List of collected info for bugs.
+  repeated IssueInfo issue_info = 1;
+}
