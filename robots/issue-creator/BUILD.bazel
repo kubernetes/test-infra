@@ -1,16 +1,15 @@
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
+load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 
-docker_bundle(
+container_bundle(
     name = "bundle",
     images = {
         "{STABLE_DOCKER_REPO}/issue-creator:{DOCKER_TAG}": ":issue-creator-image",
         "{STABLE_DOCKER_REPO}/issue-creator:latest": ":issue-creator-image",
         "{STABLE_DOCKER_REPO}/issue-creator:latest-{BUILD_USER}": ":issue-creator-image",
     },
-    stamp = True,
 )
 
 docker_push(

@@ -14,19 +14,18 @@
 
 load("//def:image.bzl", "tags")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
+load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
 load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 
 package(default_visibility = ["//testgrid:__subpackages__"])
 
 # TODO(fejta): move registry to a variable
-docker_bundle(
+container_bundle(
     name = "images",
     images = tags(**{
         "gcr.io/fejta-prod/testgrid/updater": ":updater",
         "gcr.io/fejta-prod/testgrid/configurator": ":configurator",
     }),
-    stamp = True,
 )
 
 docker_push(

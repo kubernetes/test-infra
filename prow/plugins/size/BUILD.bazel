@@ -12,7 +12,6 @@ go_test(
     name = "go_default_test",
     srcs = ["size_test.go"],
     embed = [":go_default_library"],
-    tags = ["automanaged"],
     deps = [
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",
@@ -24,7 +23,6 @@ go_library(
     name = "go_default_library",
     srcs = ["size.go"],
     importpath = "k8s.io/test-infra/prow/plugins/size",
-    tags = ["automanaged"],
     deps = [
         "//prow/genfiles:go_default_library",
         "//prow/github:go_default_library",

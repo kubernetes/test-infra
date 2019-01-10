@@ -22,7 +22,7 @@ cd $(git rev-parse --show-toplevel)
 deprecated-verify() {
   OUTPUT_GOBIN="./_output/bin"
   GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle
-  GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/kubernetes/repo-infra/kazel
+  GOBIN="${OUTPUT_GOBIN}" go install ./vendor/k8s.io/repo-infra/kazel
   gazelle_diff=$("${OUTPUT_GOBIN}/gazelle" fix \
     -external=vendored \
     -mode=diff)

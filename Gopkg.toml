@@ -2,10 +2,10 @@
 
 required = [
   "github.com/bazelbuild/bazel-gazelle/cmd/gazelle",
+  "k8s.io/repo-infra/kazel",
   "github.com/client9/misspell/cmd/misspell",
   "github.com/golang/dep/cmd/dep",
   "github.com/golang/lint/golint",
-  "github.com/kubernetes/repo-infra/kazel",
   "github.com/jteeuwen/go-bindata/go-bindata",
   # Force dep to vendor the code generators, which
   # aren't imported just used at dev time. Picking a
@@ -102,7 +102,7 @@ required = [
 
 [[constraint]]
   name = "github.com/bazelbuild/bazel-gazelle"
-  version = "0.15.0"
+  version = "0.16.0"
 
 [[constraint]]
   branch = "master"

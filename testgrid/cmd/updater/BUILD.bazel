@@ -20,7 +20,6 @@ go_binary(
     name = "updater",
     embed = [":go_default_library"],
     pure = "on",
-    tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
 

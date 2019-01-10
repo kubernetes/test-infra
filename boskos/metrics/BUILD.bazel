@@ -13,14 +13,12 @@ go_binary(
     name = "metrics",
     embed = [":go_default_library"],
     pure = "on",
-    tags = ["automanaged"],
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["metrics.go"],
     importpath = "k8s.io/test-infra/boskos/metrics",
-    tags = ["automanaged"],
     deps = [
         "//boskos/client:go_default_library",
         "//boskos/common:go_default_library",
