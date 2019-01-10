@@ -1,5 +1,7 @@
 # gazelle:prefix k8s.io/test-infra
 # gazelle:proto disable_global
+# gazelle:exclude vendor/k8s.io/code-generator/_examples/
+
 load("@io_kubernetes_build//defs:run_in_workspace.bzl", "workspace_binary")
 
 filegroup(
