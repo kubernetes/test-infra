@@ -15,6 +15,8 @@ You need three things:
 2) a [personal access token][1] for the github bot user you want to act as prow
 
    - Prow uploads this token into a secret in your cluster
+   - The token must be stored in a text file
+   - The token must grant prow write access the GitHub repos. More details on GitHub ACLs are available [here][8]. 
 
 3) Optionally, credentials to a kubernetes cluster
 
@@ -463,3 +465,4 @@ a separate namespace.
 [5]: /prow/cmd/mkbuild-cluster/
 [6]: /prow/cmd/tide/README.md
 [7]: /prow/cmd/tide/config.md
+[8]: https://github.com/kubernetes/test-infra/blob/master/prow/scaling.md#working-around-githubs-limited-acls
