@@ -11,3 +11,7 @@ When the set of blocking presubmits changes for a repository, one of three cases
 
 The `status-reconciler` watches the job configuration for Prow and ensures that the above actions
 are taken as necessary.
+
+Note that `status-reconciler` is edge driven (not level driven) so it can't be used retrospectively.
+To update statuses that were stale before deploying `status-reconciler`,
+you can use the [`migratestatus`](/maintenance/migratestatus) tool.
