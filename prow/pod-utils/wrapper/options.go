@@ -35,6 +35,9 @@ import (
 // Options exposes the configuration options
 // used when wrapping test execution
 type Options struct {
+	// Args is the process and args to run
+	Args []string `json:"args,omitempty"`
+
 	// ProcessLog will contain std{out,err} from the
 	// wrapped test process
 	ProcessLog string `json:"process_log"`
@@ -75,7 +78,7 @@ func (o *Options) Validate() error {
 	return nil
 }
 
-func (o *Options) WaitForMarker(ctx context.Context, path string) (int, error) {
+func WaitForMarker(ctx context.Context, path string) (int, error) {
 	// Only start watching file events if the file doesn't exist
 	// If the file exists, it means the main process already completed.
 	if _, err := os.Stat(path); os.IsNotExist(err) {

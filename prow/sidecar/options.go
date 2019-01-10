@@ -37,7 +37,18 @@ func NewOptions() *Options {
 // where in GCS an upload will land.
 type Options struct {
 	GcsOptions     *gcsupload.Options `json:"gcs_options"`
-	WrapperOptions *wrapper.Options   `json:"wrapper_options"`
+	WrapperOptions *wrapper.Options   `json:"wrapper_options,omitempty"`
+
+	// Additional entries to wait for if set
+	Entries []wrapper.Options `json:"entries,omitempty"`
+}
+
+func (o Options) entries() []wrapper.Options {
+	var e []wrapper.Options
+	if o.WrapperOptions != nil {
+		e = append(e, *o.WrapperOptions)
+	}
+	return append(e, o.Entries...)
 }
 
 // Validate ensures that the set of options are

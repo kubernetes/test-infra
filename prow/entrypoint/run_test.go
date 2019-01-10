@@ -103,10 +103,10 @@ func TestOptions_Run(t *testing.T) {
 			}()
 
 			options := Options{
-				Args:        testCase.args,
 				Timeout:     testCase.timeout,
 				GracePeriod: testCase.gracePeriod,
 				Options: &wrapper.Options{
+					Args:       testCase.args,
 					ProcessLog: path.Join(tmpDir, "process-log.txt"),
 					MarkerFile: path.Join(tmpDir, "marker-file.txt"),
 				},

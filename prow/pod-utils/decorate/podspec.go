@@ -444,13 +444,13 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 	)
 
 	wrapperOptions := wrapper.Options{
+		Args:         append(spec.Containers[0].Command, spec.Containers[0].Args...),
 		ProcessLog:   fmt.Sprintf("%s/process-log.txt", logMountPath),
 		MarkerFile:   fmt.Sprintf("%s/marker-file.txt", logMountPath),
 		MetadataFile: fmt.Sprintf("%s/metadata.json", artifactsPath),
 	}
 	// TODO(fejta): use flags
 	entrypointConfigEnv, err := entrypoint.Encode(entrypoint.Options{
-		Args:        append(spec.Containers[0].Command, spec.Containers[0].Args...),
 		Options:     &wrapperOptions,
 		Timeout:     pj.Spec.DecorationConfig.Timeout,
 		GracePeriod: pj.Spec.DecorationConfig.GracePeriod,
