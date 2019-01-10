@@ -48,14 +48,12 @@ go_test(
         "//label_sync:test_examples",
     ],
     embed = [":go_default_library"],
-    tags = ["automanaged"],
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
     importpath = "k8s.io/test-infra/label_sync",
-    tags = ["automanaged"],
     deps = [
         "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",

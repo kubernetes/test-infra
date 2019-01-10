@@ -12,7 +12,6 @@ go_test(
     name = "go_default_test",
     srcs = ["report_test.go"],
     embed = [":go_default_library"],
-    tags = ["automanaged"],
     deps = [
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
@@ -23,7 +22,6 @@ go_library(
     name = "go_default_library",
     srcs = ["report.go"],
     importpath = "k8s.io/test-infra/prow/report",
-    tags = ["automanaged"],
     deps = [
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
