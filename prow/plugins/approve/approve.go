@@ -115,7 +115,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
 		}
 		opts := optionsForRepo(config, parts[0], parts[1])
-		approveConfig[repo] = fmt.Sprintf("Pull requests %s require an associated issue.<br>Pull request authors %s implicitly approve their own PRs.<br>The /lgtm [cancel] command(s) %s act as approval.<br>A GitHub approved or changes requested review %s act as approval or cancel respectively.", doNot(opts.IssueRequired), doNot(opts.ImplicitSelfApprove), willNot(opts.LgtmActsAsApprove), willNot(opts.ReviewActsAsApprove))
+		approveConfig[repo] = fmt.Sprintf("Pull requests %s require an associated issue.<br>Pull request authors %s implicitly approve their own PRs.<br>The /lgtm [cancel] command(s) %s act as approval.<br>A GitHub approved or changes requested review %s act as approval or cancel respectively.", doNot(opts.IssueRequired), doNot(opts.HasSelfApproval()), willNot(opts.LgtmActsAsApprove), willNot(opts.ConsiderReviewState()))
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The approve plugin implements a pull request approval process that manages the '` + labels.Approved + `' label and an approval notification comment. Approval is achieved when the set of users that have approved the PR is capable of approving every file changed by the PR. A user is able to approve a file if their username or an alias they belong to is listed in the 'approvers' section of an OWNERS file in the directory of the file or higher in the directory tree.
@@ -220,7 +220,7 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, config *
 
 	// Check for an approval command via review state. If none exists, don't
 	// handle this event.
-	if !isApprovalState(botName, opts.ReviewActsAsApprove, &comment{Author: re.Review.User.Login, ReviewState: re.Review.State}) {
+	if !isApprovalState(botName, opts.ConsiderReviewState(), &comment{Author: re.Review.User.Login, ReviewState: re.Review.State}) {
 		return nil
 	}
 
@@ -380,7 +380,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, opts *plug
 	approversHandler.ManuallyApproved = humanAddedApproved(ghc, log, pr.org, pr.repo, pr.number, botName, hasApprovedLabel)
 
 	// Author implicitly approves their own PR if config allows it
-	if opts.ImplicitSelfApprove {
+	if opts.HasSelfApproval() {
 		approversHandler.AddAuthorSelfApprover(pr.author, pr.htmlURL+"#", false)
 	} else {
 		// Treat the author as an assignee, and suggest them if possible
@@ -393,8 +393,8 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, opts *plug
 	sort.SliceStable(comments, func(i, j int) bool {
 		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
 	})
-	approveComments := filterComments(comments, approvalMatcher(botName, opts.LgtmActsAsApprove, opts.ReviewActsAsApprove))
-	addApprovers(&approversHandler, approveComments, pr.author, opts.ReviewActsAsApprove)
+	approveComments := filterComments(comments, approvalMatcher(botName, opts.LgtmActsAsApprove, opts.ConsiderReviewState()))
+	addApprovers(&approversHandler, approveComments, pr.author, opts.ConsiderReviewState())
 
 	for _, user := range pr.assignees {
 		approversHandler.AddAssignees(user.Login)

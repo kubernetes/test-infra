@@ -22,6 +22,7 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -226,15 +227,65 @@ type Approve struct {
 	// IssueRequired indicates if an associated issue is required for approval in
 	// the specified repos.
 	IssueRequired bool `json:"issue_required,omitempty"`
-	// ImplicitSelfApprove indicates if authors implicitly approve their own PRs
-	// in the specified repos.
-	ImplicitSelfApprove bool `json:"implicit_self_approve,omitempty"`
+
+	// TODO(fejta): delete in June 2019
+	DeprecatedImplicitSelfApprove *bool `json:"implicit_self_approve,omitempty"`
+	// RequireSelfApproval requires PR authors to explicitly approve their PRs.
+	// Otherwise the plugin assumes the author of the PR approves the changes in the PR.
+	RequireSelfApproval bool `json:"require_self_approval,omitempty"`
+
 	// LgtmActsAsApprove indicates that the lgtm command should be used to
 	// indicate approval
 	LgtmActsAsApprove bool `json:"lgtm_acts_as_approve,omitempty"`
-	// ReviewActsAsApprove indicates that GitHub review state should be used to
-	// indicate approval.
-	ReviewActsAsApprove bool `json:"review_acts_as_approve,omitempty"`
+
+	// ReviewActsAsApprove should be replaced with its non-deprecated inverse: ignore_review_state.
+	// TODO(fejta): delete in June 2019
+	DeprecatedReviewActsAsApprove *bool `json:"review_acts_as_approve,omitempty"`
+	// IgnoreReviewState causes the approve plugin to ignore the GitHub review state. Otherwise:
+	// * an APPROVE github review is equivalent to leaving an "/approve" message.
+	// * A REQUEST_CHANGES github review is equivalent to leaving an /approve cancel" message.
+	IgnoreReviewState bool `json:"ignore_review_state,omitempty"`
+}
+
+var (
+	warnImplicitSelfApprove time.Time
+	warnReviewActsAsApprove time.Time
+	warnLock                sync.RWMutex // Rare updates and concurrent readers, so reuse the same lock
+)
+
+func warnDeprecated(last *time.Time, freq time.Duration, msg string) {
+	// have we warned within the last freq?
+	warnLock.RLock()
+	fresh := time.Now().Sub(*last) <= freq
+	warnLock.RUnlock()
+	if fresh { // we've warned recently
+		return
+	}
+	// Warning is stale, will we win the race to warn?
+	warnLock.Lock()
+	defer warnLock.Unlock()
+	now := time.Now()           // Recalculate now, we might wait awhile for the lock
+	if now.Sub(*last) <= freq { // Nope, we lost
+		return
+	}
+	*last = now
+	logrus.Warn(msg)
+}
+
+func (a Approve) HasSelfApproval() bool {
+	if a.DeprecatedImplicitSelfApprove != nil {
+		warnDeprecated(&warnImplicitSelfApprove, 5*time.Minute, "Please update plugins.yaml to use require_self_approval instead of the deprecated implicit_self_approve before June 2019")
+		return *a.DeprecatedImplicitSelfApprove
+	}
+	return !a.RequireSelfApproval
+}
+
+func (a Approve) ConsiderReviewState() bool {
+	if a.DeprecatedReviewActsAsApprove != nil {
+		warnDeprecated(&warnReviewActsAsApprove, 5*time.Minute, "Please update plugins.yaml to use ignore_review_state instead of the deprecated review_acts_as_approve before June 2019")
+		return *a.DeprecatedReviewActsAsApprove
+	}
+	return !a.IgnoreReviewState
 }
 
 // Lgtm specifies a configuration for a single lgtm.

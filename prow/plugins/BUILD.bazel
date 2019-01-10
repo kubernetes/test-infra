@@ -14,7 +14,10 @@ go_test(
         "respond_test.go",
     ],
     embed = [":go_default_library"],
-    deps = ["//prow/github:go_default_library"],
+    deps = [
+        "//prow/github:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
+    ],
 )
 
 go_library(
