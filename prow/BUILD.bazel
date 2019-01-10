@@ -38,6 +38,7 @@ container_bundle(
     }) + image_tags(**{
         prefix("refresh"): "//prow/external-plugins/refresh:image",
     }),
+    stamp = True,
 )
 
 docker_push(
