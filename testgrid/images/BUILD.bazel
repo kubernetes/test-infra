@@ -26,6 +26,7 @@ container_bundle(
         "gcr.io/fejta-prod/testgrid/updater": ":updater",
         "gcr.io/fejta-prod/testgrid/configurator": ":configurator",
     }),
+    stamp = True,
 )
 
 docker_push(

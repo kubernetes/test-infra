@@ -10,6 +10,7 @@ container_bundle(
         "{STABLE_DOCKER_REPO}/issue-creator:latest": ":issue-creator-image",
         "{STABLE_DOCKER_REPO}/issue-creator:latest-{BUILD_USER}": ":issue-creator-image",
     },
+    stamp = True,
 )
 
 docker_push(

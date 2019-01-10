@@ -37,9 +37,9 @@ gazelle_dependencies()
 
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "c0e9d27e6ca307e4ac0122d3dd1df001b9824373fb6fb8627cd2371068e51fef",
-    strip_prefix = "rules_docker-0.6.0",
-    urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.6.0.tar.gz"],
+    sha256 = "5235045774d2f40f37331636378f21fe11f69906c0386a790c5987a09211c3c4",
+    strip_prefix = "rules_docker-8010a50ef03d1e13f1bebabfc625478da075fa60",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/8010a50ef03d1e13f1bebabfc625478da075fa60.tar.gz"],
 )
 
 load(
