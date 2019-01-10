@@ -10,6 +10,8 @@ release(
     component("branchprotector", "cronjob"),
     component("build", "deployment"),
     component("build_rbac", MULTI_KIND),
+    component("crier", "deployment"),
+    component("crier_rbac", MULTI_KIND),
     component("deck", "service", "deployment"),
     component("gce-ssd-retain", "storageclass"),
     component("ghproxy", "service", "deployment"),
