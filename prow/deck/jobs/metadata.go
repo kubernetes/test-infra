@@ -22,6 +22,7 @@ type Started struct {
 	Node      string            `json:"node"`
 	Repos     map[string]string `json:"repos"`
 	Pull      string            `json:"pull"`
+	Revision  string            `json:"revision"`
 }
 
 // Metadata is used to mirror the metadata in the finished.json artifact.
