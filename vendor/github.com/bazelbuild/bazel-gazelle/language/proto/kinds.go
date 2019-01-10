@@ -13,15 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package proto
 
-import (
-	"github.com/bazelbuild/bazel-gazelle/language"
-	"github.com/bazelbuild/bazel-gazelle/language/go"
-	"github.com/bazelbuild/bazel-gazelle/language/proto"
-)
+import "github.com/bazelbuild/bazel-gazelle/rule"
 
-var languages = []language.Language{
-	proto.NewLanguage(),
-	golang.NewLanguage(),
+var protoKinds = map[string]rule.KindInfo{
+	"proto_library": {
+		NonEmptyAttrs:  map[string]bool{"srcs": true},
+		MergeableAttrs: map[string]bool{"srcs": true},
+		ResolveAttrs:   map[string]bool{"deps": true},
+	},
 }
+
+func (_ *protoLang) Kinds() map[string]rule.KindInfo { return protoKinds }
+func (_ *protoLang) Loads() []rule.LoadInfo          { return nil }

@@ -13,15 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package proto
 
 import (
-	"github.com/bazelbuild/bazel-gazelle/language"
-	"github.com/bazelbuild/bazel-gazelle/language/go"
-	"github.com/bazelbuild/bazel-gazelle/language/proto"
+	"github.com/bazelbuild/bazel-gazelle/config"
+	"github.com/bazelbuild/bazel-gazelle/rule"
 )
 
-var languages = []language.Language{
-	proto.NewLanguage(),
-	golang.NewLanguage(),
+func (_ *protoLang) Fix(c *config.Config, f *rule.File) {
 }

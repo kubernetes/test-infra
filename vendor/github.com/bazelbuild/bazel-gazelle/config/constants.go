@@ -1,4 +1,4 @@
-/* Copyright 2018 The Bazel Authors. All rights reserved.
+/* Copyright 2017 The Bazel Authors. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,15 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package config
 
-import (
-	"github.com/bazelbuild/bazel-gazelle/language"
-	"github.com/bazelbuild/bazel-gazelle/language/go"
-	"github.com/bazelbuild/bazel-gazelle/language/proto"
+const (
+	// RulesGoRepoName is the canonical name of the rules_go repository. It must
+	// match the workspace name in WORKSPACE.
+	// TODO(jayconrod): move to language/go.
+	RulesGoRepoName = "io_bazel_rules_go"
+
+	// GazelleImportsKey is an internal attribute that lists imported packages
+	// on generated rules. It is replaced with "deps" during import resolution.
+	GazelleImportsKey = "_gazelle_imports"
 )
-
-var languages = []language.Language{
-	proto.NewLanguage(),
-	golang.NewLanguage(),
-}
