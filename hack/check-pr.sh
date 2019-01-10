@@ -62,7 +62,7 @@ step hack/verify-gofmt.sh hack/verify-gofmt.sh || failing+=("gofmt")
 step //:golint bazel run //:golint -- "${dirs[@]}" || failing+=("golint")
 step //:govet bazel run //:govet -- "${dirs[@]}" || failing+=("govet")
 step "bazel test" bazel test --build_tests_only "${tests[@]}" || failing+=("bazel test")
-step hack/verify_boilerplate.py hack/verify_boilerplate.py || failing+=("boilerplate")
+step hack/verify-boilerplate.sh hack/verify-boilerplate.sh || failing+=("boilerplate")
 
 if [[ "${#failing[@]}" != 0 ]]; then
     echo "FAILURE: ${#failing[@]} steps failed: ${failing[@]}"

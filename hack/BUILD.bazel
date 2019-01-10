@@ -9,9 +9,9 @@ py_test(
     ],
 )
 
-py_test(
-    name = "verify_boilerplate",
-    srcs = ["verify_boilerplate.py"],
+sh_test(
+    name = "verify-boilerplate",
+    srcs = ["verify-boilerplate.sh"],
     data = ["//:all-srcs"],
     tags = ["lint"],
 )
@@ -41,8 +41,8 @@ test_suite(
     name = "verify-all",
     tags = ["lint"],
     tests = [
+        "verify-boilerplate",
         "verify-pylint",
-        "verify_boilerplate",
     ],
 )
 
@@ -70,7 +70,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//hack/boilerplate:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

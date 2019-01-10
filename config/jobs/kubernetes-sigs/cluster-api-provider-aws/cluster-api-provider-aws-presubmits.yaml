@@ -70,4 +70,4 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
         command:
-        - "./hack/verify_boilerplate.py"
+        - "./hack/verify-boilerplate.sh"
