@@ -32,7 +32,7 @@ spec:
         image: gcr.io/k8s-prow/crier:v20190109-716fe27
         args:
         - --github-workers=1
-        - --dryrun=true
+        - --dry-run=true
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         volumeMounts:
