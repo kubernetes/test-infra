@@ -46,7 +46,7 @@ workspace_binary(
     args = [
         "--cfg-path=./hack/.kazelcfg.json",
     ],
-    cmd = "//vendor/github.com/kubernetes/repo-infra/kazel",
+    cmd = "//vendor/k8s.io/repo-infra/kazel",
 )
 
 workspace_binary(
@@ -56,7 +56,7 @@ workspace_binary(
         "--print-diff",
         "--cfg-path=./hack/.kazelcfg.json",
     ],
-    cmd = "//vendor/github.com/kubernetes/repo-infra/kazel",
+    cmd = "//vendor/k8s.io/repo-infra/kazel",
 )
 
 workspace_binary(
