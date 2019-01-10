@@ -72,7 +72,7 @@ func Test_Writer2Reader_S3PutBigger_S3PutBiggerThanData_IoCopyTooSmall(t *testin
 func doReadWrite(input []byte, ioCopyBufSize int, s3PutBufSize int) ([]byte, []byte, string) {
 	var output []byte
 
-	target := NewWriter2Reader(func(reader io.Reader) error {
+	writeFunc := func(reader io.Reader) error {
 		buffer := make([]byte, s3PutBufSize)
 
 		for {
@@ -91,7 +91,9 @@ func doReadWrite(input []byte, ioCopyBufSize int, s3PutBufSize int) ([]byte, []b
 
 		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		//return io.EOF
-	})
+	}
+
+	target := NewWriter2Reader(writeFunc)
 
 	l := 0
 
