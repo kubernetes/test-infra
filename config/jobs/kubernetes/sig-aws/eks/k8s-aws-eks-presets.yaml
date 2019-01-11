@@ -14,6 +14,10 @@ presets:
     value: https://github.com/aws/aws-k8s-tester/releases/download/0.2.1/aws-k8s-tester-0.2.1-linux-amd64
   - name: AWS_K8S_TESTER_EKS_AWS_K8S_TESTER_DOWNLOAD_PATH
     value: /tmp/aws-k8s-tester/aws-k8s-tester
+  # URL to download 'kubectl', required for 'kubectl' calls to EKS (https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html)
+  # TODO: use upstream 'kubectl'
+  - name: AWS_K8S_TESTER_EKS_KUBECTL_DOWNLOAD_URL
+    value: https://amazon-eks.s3-us-west-2.amazonaws.com/1.11.5/2018-12-06/bin/linux/amd64/kubectl
   - name: AWS_K8S_TESTER_EKS_KUBECTL_DOWNLOAD_PATH
     value: /tmp/aws-k8s-tester/kubectl
   - name: AWS_K8S_TESTER_EKS_KUBECONFIG_PATH
@@ -23,6 +27,9 @@ presets:
   # upstream "kubernetes/kubernetes/hack/ginkgo-e2e.sh" requires this via "cluster/kubectl.sh"
   - name: KUBECTL
     value: "/tmp/aws-k8s-tester/kubectl --kubeconfig=/tmp/aws-k8s-tester/kubeconfig"
+  # URL to download 'aws-iam-authenticator', required for 'kubectl' calls to EKS (https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html)
+  - name: AWS_K8S_TESTER_EKS_AWS_IAM_AUTHENTICATOR_DOWNLOAD_URL
+    value: https://amazon-eks.s3-us-west-2.amazonaws.com/1.11.5/2018-12-06/bin/linux/amd64/aws-iam-authenticator
   - name: AWS_K8S_TESTER_EKS_AWS_IAM_AUTHENTICATOR_DOWNLOAD_PATH
     value: /tmp/aws-k8s-tester/aws-iam-authenticator
   # test mode is either "embedded" or "aws-cli" ("embedded" uses native AWS Go client, "aws-cli" will use 'aws')
@@ -55,6 +62,9 @@ presets:
   # "2" to add S3 bucket lifecycle of 2 days; let bucket be deleted in 2 days
   - name: AWS_K8S_TESTER_EKS_UPLOAD_BUCKET_EXPIRE_DAYS
     value: "2"
+  # worker node EC2 instance type
+  - name: AWS_K8S_TESTER_EKS_WORKER_NODE_INSTANCE_TYPE
+    value: m3.xlarge
   # worker node auto-scaling group minimum number of nodes
   - name: AWS_K8S_TESTER_EKS_WORKER_NODE_ASG_MIN
     value: "1"
@@ -87,16 +97,16 @@ presets:
     value: "1.11"
   # Amazon EKS-optimized AMI (non-GPU, https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html)
   - name: AWS_K8S_TESTER_EKS_WORKER_NODE_AMI
-    value: ami-094fa4044a2a3cf52
-  # URL to download 'kubectl', required for 'kubectl' calls to EKS (https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html)
-  # TODO: use upstream 'kubectl'
-  - name: AWS_K8S_TESTER_EKS_KUBECTL_DOWNLOAD_URL
-    value: https://amazon-eks.s3-us-west-2.amazonaws.com/1.11.5/2018-12-06/bin/linux/amd64/kubectl
-  # URL to download 'aws-iam-authenticator', required for 'kubectl' calls to EKS (https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html)
-  - name: AWS_K8S_TESTER_EKS_AWS_IAM_AUTHENTICATOR_DOWNLOAD_URL
-    value: https://amazon-eks.s3-us-west-2.amazonaws.com/1.11.5/2018-12-06/bin/linux/amd64/aws-iam-authenticator
-  # worker node EC2 instance type
-  - name: AWS_K8S_TESTER_EKS_WORKER_NODE_INSTANCE_TYPE
-    value: m3.xlarge
+    value: ami-0a2abab4107669c1b
   labels:
     preset-kubernetes-e2e-aws-eks-1-11: "true"
+
+- env:
+  # configure EKS Kubernetes version
+  - name: AWS_K8S_TESTER_EKS_KUBERNETES_VERSION
+    value: "1.10"
+  # Amazon EKS-optimized AMI (non-GPU, https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html)
+  - name: AWS_K8S_TESTER_EKS_WORKER_NODE_AMI
+    value: ami-09e1df3bad220af0b
+  labels:
+    preset-kubernetes-e2e-aws-eks-1-10: "true"
