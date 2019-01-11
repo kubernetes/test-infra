@@ -105,14 +105,15 @@ func TestHttpResponse(t *testing.T) {
 	validResponse := string(b)
 
 	type testcase struct {
-		name      string
-		comment   string
-		path      string
-		response  string
-		expected  string
-		expectTag string
-		isValid   bool
-		noPony    bool
+		name        string
+		comment     string
+		path        string
+		response    string
+		expected    string
+		expectTag   string
+		expectNoTag bool
+		isValid     bool
+		noPony      bool
 	}
 
 	var testcases = []testcase{
@@ -153,6 +154,14 @@ func TestHttpResponse(t *testing.T) {
 			expectTag: "peach hack",
 			response:  validResponse,
 		},
+		{
+			name:        "pony embedded in other commands",
+			comment:     "/meow\n/pony\n/woof\n\nTesting :)",
+			path:        "/embedded",
+			isValid:     true,
+			expectNoTag: true,
+			response:    validResponse,
+		},
 	}
 
 	// fake server for image urls
@@ -170,6 +179,9 @@ func TestHttpResponse(t *testing.T) {
 			q := r.URL.Query().Get("q")
 			if tc.expectTag != "" && q != tc.expectTag {
 				t.Errorf("Expected tag %q, but got %q", tc.expectTag, q)
+			}
+			if tc.expectNoTag && q != "" {
+				t.Errorf("Expected no tag, but got %q", q)
 			}
 			io.WriteString(w, tc.response)
 		} else {

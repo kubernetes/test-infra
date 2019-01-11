@@ -51,7 +51,7 @@ const (
 )
 
 var (
-	match = regexp.MustCompile(`(?mi)^/(?:pony)(?:\s+(.+?))?\s*$`)
+	match = regexp.MustCompile(`(?mi)^/(?:pony)(?: +(.+?))?\s*$`)
 )
 
 func init() {
