@@ -46,7 +46,7 @@ type ponyRepresentations struct {
 }
 
 const (
-	ponyURL    = realHerd("https://theponyapi.com/pony.json")
+	ponyURL    = realHerd("https://theponyapi.com/api/v1/ponies/random")
 	pluginName = "pony"
 )
 
@@ -90,12 +90,7 @@ func formatURLs(small, full string) string {
 }
 
 func (h realHerd) readPony(tags string) (string, error) {
-	// Omit webm video (the only video type) and anything too far off square.
-	q := "-webm, aspect_ratio:1~0.5"
-	if tags != "" {
-		q += ", " + tags
-	}
-	uri := string(h) + "?q=" + url.QueryEscape(q)
+	uri := string(h) + "?q=" + url.QueryEscape(tags)
 	resp, err := client.Get(uri)
 	if err != nil {
 		return "", fmt.Errorf("failed to make request: %v", err)
