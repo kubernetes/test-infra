@@ -5,6 +5,8 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
+    skip_branches:
+    - master # the podutils version below does this branch now
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20190110-c23317e88
@@ -26,13 +28,12 @@ presubmits:
         resources:
           requests:
             cpu: 4
-
   # TODO(krzyzacy): add branches once this works
   # TODO(krzyzacy): Consider combine kubekins-e2e and kubekins-test
-  - name: pull-kubernetes-verify-podutil
+  - name: pull-kubernetes-verify
     always_run: false
     decorate: true
-    branch:
+    branches:
     - master
     path_alias: k8s.io/kubernetes
     labels:
