@@ -529,7 +529,7 @@ go_repository(
 go_repository(
     name = "com_github_aws_aws_sdk_go",
     importpath = "github.com/aws/aws-sdk-go",
-    tag = "v1.16.18",
+    tag = "v1.16.22",
 )
 
 go_repository(
@@ -1508,4 +1508,10 @@ go_repository(
     name = "org_uber_go_zap",
     importpath = "go.uber.org/zap",
     tag = "v1.9.1",
+)
+
+go_repository(
+    name = "io_k8s_klog",
+    importpath = "k8s.io/klog",
+    tag = "v0.1.0",
 )
