@@ -2157,6 +2157,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aws-eks-1-11-conformance
 - name: ci-kubernetes-e2e-aws-eks-1-11-scalability
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aws-eks-1-11-scalability
+- name: ci-kubernetes-e2e-aws-eks-1-10-correctness
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aws-eks-1-10-correctness
+- name: ci-kubernetes-e2e-aws-eks-1-10-conformance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aws-eks-1-10-conformance
 
 # charts tests
 - name: ci-kubernetes-charts-gce
@@ -5754,6 +5758,7 @@ dashboards:
     description: Kubernetes e2e correctness tests against EKS 1.11 build
 - name: sig-aws-eks-periodics
   dashboard_tab:
+  # TODO(shyamjvs): Move these jobs out to the right dashboards later.
   - name: ci-kubernetes-e2e-aws-eks-1-11-correctness
     test_group_name: ci-kubernetes-e2e-aws-eks-1-11-correctness
     description: Kubernetes e2e correctness tests against EKS 1.11 build
@@ -5763,6 +5768,12 @@ dashboards:
   - name: ci-kubernetes-e2e-aws-eks-1-11-scalability
     test_group_name: ci-kubernetes-e2e-aws-eks-1-11-scalability
     description: Kubernetes performance e2e tests against EKS 1.11 build
+  - name: ci-kubernetes-e2e-aws-eks-1-10-correctness
+    test_group_name: ci-kubernetes-e2e-aws-eks-1-10-correctness
+    description: Kubernetes e2e correctness tests against EKS 1.10 build
+  - name: ci-kubernetes-e2e-aws-eks-1-10-conformance
+    test_group_name: ci-kubernetes-e2e-aws-eks-1-10-conformance
+    description: Kubernetes conformance e2e tests against EKS 1.10 build
 
 - name: sig-cli-master
   dashboard_tab:
