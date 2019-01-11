@@ -31,7 +31,7 @@ presubmits:
   # TODO(krzyzacy): add branches once this works
   # TODO(krzyzacy): Consider combine kubekins-e2e and kubekins-test
   - name: pull-kubernetes-verify
-    always_run: false
+    always_run: true
     decorate: true
     branches:
     - master
