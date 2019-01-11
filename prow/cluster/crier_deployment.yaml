@@ -42,6 +42,9 @@ spec:
         - name: job-config
           mountPath: /etc/job-config
           readOnly: true
+        - name: oauth
+          mountPath: /etc/github
+          readOnly: true
       volumes:
       - name: config
         configMap:
@@ -49,3 +52,6 @@ spec:
       - name: job-config
         configMap:
           name: job-config
+      - name: oauth
+        secret:
+          secretName: oauth-token
