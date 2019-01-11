@@ -15,7 +15,7 @@ presubmits:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190108-eadd44c98-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
         args:
         - verify
         env:
@@ -34,7 +34,7 @@ presubmits:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190108-eadd44c98-1.13
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.13
         args:
         - verify
         env:
@@ -53,7 +53,7 @@ presubmits:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190108-eadd44c98-1.12
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.12
         args:
         - verify
         env:
@@ -72,7 +72,7 @@ presubmits:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190108-eadd44c98-1.11
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.11
         args:
         - verify
         env:
