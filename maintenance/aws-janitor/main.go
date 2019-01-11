@@ -37,42 +37,6 @@ const defaultRegion = "us-east-1"
 var maxTTL = flag.Duration("ttl", 24*time.Hour, "Maximum time before we attempt deletion of a resource. Set to 0s to nuke all non-default resources.")
 var path = flag.String("path", "", "S3 path to store mark data in (required)")
 
-type awsResourceType interface {
-	// MarkAndSweep queries the resource in a specific region, using
-	// the provided session (which has account-number acct), calling
-	// res.Mark(<resource>) on each resource and deleting
-	// appropriately.
-	MarkAndSweep(sess *session.Session, acct string, region string, res *resources.Set) error
-}
-
-// AWS resource types known to this script, in dependency order.
-var awsResourceTypes = []awsResourceType{
-	resources.LoadBalancers{},
-	resources.AutoScalingGroups{},
-	resources.LaunchConfigurations{},
-	resources.Instances{},
-	// Addresses
-	// NetworkInterfaces
-	resources.Subnets{},
-	resources.SecurityGroups{},
-	// NetworkACLs
-	// VPN Connections
-	resources.InternetGateways{},
-	resources.RouteTables{},
-	resources.VPCs{},
-	resources.DHCPOptions{},
-	resources.Volumes{},
-	resources.Addresses{},
-}
-
-// Non-regional AWS resource types, in dependency order
-var globalAwsResourceTypes = []awsResourceType{
-	resources.IAMInstanceProfiles{},
-	resources.IAMRoles{},
-
-	resources.Route53ResourceRecordSets{},
-}
-
 // ARNs (used for uniquifying within our previous mark file)
 
 type arn struct {
@@ -164,7 +128,7 @@ func main() {
 		glog.Fatalf("error loading %q: %v", *path, err)
 	}
 	for _, region := range regions {
-		for _, typ := range awsResourceTypes {
+		for _, typ := range resources.RegionalTypeList {
 			if err := typ.MarkAndSweep(sess, acct, region, res); err != nil {
 				glog.Errorf("error sweeping %T: %v", typ, err)
 				return
@@ -172,7 +136,7 @@ func main() {
 		}
 	}
 
-	for _, typ := range globalAwsResourceTypes {
+	for _, typ := range resources.GlobalTypeList {
 		if err := typ.MarkAndSweep(sess, acct, "us-east-1", res); err != nil {
 			glog.Errorf("error sweeping %T: %v", typ, err)
 			return

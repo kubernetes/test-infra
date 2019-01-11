@@ -12,6 +12,7 @@ go_library(
         "instance.go",
         "internet_gateways.go",
         "launch_configs.go",
+        "list.go",
         "resource.go",
         "route53.go",
         "route_tables.go",
