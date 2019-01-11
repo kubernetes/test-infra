@@ -2542,7 +2542,7 @@ presubmits:
         - ./hack/jenkins/verify-dockerized.sh
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-c23317e88
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
         imagePullPolicy: Always
         name: ""
         resources:
