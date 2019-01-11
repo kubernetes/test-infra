@@ -80,8 +80,8 @@ func TestOptions_Run(t *testing.T) {
 		{
 			// Ensure that environment variables get passed through
 			name:           "$PATH is set",
-			args:           []string{"sh", "-c", "echo -n $PATH"},
-			expectedLog:    os.Getenv("PATH"),
+			args:           []string{"sh", "-c", "echo $PATH"},
+			expectedLog:    os.Getenv("PATH") + "\n",
 			expectedMarker: "0",
 		},
 	}
