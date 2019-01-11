@@ -542,6 +542,12 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to wg-k8s-infra.
+      name: wg/k8s-infra
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
       description: Categorizes an issue or PR as relevant to wg-kubeadm-adoption.
       name: wg/kubeadm-adoption
       target: both

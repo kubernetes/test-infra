@@ -107,6 +107,7 @@ larger set of contributors to apply/remove them.
 | <a id="wg/component-standard" href="#wg/component-standard">`wg/component-standard`</a> | Categorizes an issue or PR as relevant to wg-component-standard.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/container-identity" href="#wg/container-identity">`wg/container-identity`</a> | Categorizes an issue or PR as relevant to wg-container-identity.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/iot-edge" href="#wg/iot-edge">`wg/iot-edge`</a> | Categorizes an issue or PR as relevant to wg-iot-edge.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="wg/k8s-infra" href="#wg/k8s-infra">`wg/k8s-infra`</a> | Categorizes an issue or PR as relevant to wg-k8s-infra.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/kubeadm-adoption" href="#wg/kubeadm-adoption">`wg/kubeadm-adoption`</a> | Categorizes an issue or PR as relevant to wg-kubeadm-adoption.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/machine-learning" href="#wg/machine-learning">`wg/machine-learning`</a> | Categorizes an issue or PR as relevant to wg-machine-learning.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/multitenancy" href="#wg/multitenancy">`wg/multitenancy`</a> | Categorizes an issue or PR as relevant to wg-multitenancy.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
