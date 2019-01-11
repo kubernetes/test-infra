@@ -153,7 +153,7 @@
   version = "0.2.1"
 
 [[projects]]
-  digest = "1:cc8dfe19a45c277f194744e8528aba0fa03208e6612723a5afd7ce343d27fe5a"
+  digest = "1:632980db2cb8bf88d2ab1af08747d5d8eb7fb36cea7e25b48a7e902a30ceefd2"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -182,6 +182,7 @@
     "private/protocol/xml/xmlutil",
     "service/autoscaling",
     "service/ec2",
+    "service/elb",
     "service/iam",
     "service/route53",
     "service/s3",
@@ -1616,6 +1617,7 @@
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/autoscaling",
     "github.com/aws/aws-sdk-go/service/ec2",
+    "github.com/aws/aws-sdk-go/service/elb",
     "github.com/aws/aws-sdk-go/service/iam",
     "github.com/aws/aws-sdk-go/service/route53",
     "github.com/aws/aws-sdk-go/service/s3",

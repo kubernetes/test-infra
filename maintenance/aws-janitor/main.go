@@ -53,6 +53,7 @@ type awsResourceType interface {
 
 // AWS resource types known to this script, in dependency order.
 var awsResourceTypes = []awsResourceType{
+	loadBalancers{},
 	autoScalingGroups{},
 	launchConfigurations{},
 	instances{},
