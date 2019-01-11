@@ -2613,11 +2613,6 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
-- name: pull-kubernetes-verify-podutil
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-verify-podutil
-  num_columns_recent: 20
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 10
 - name: pull-kubernetes-typecheck
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-typecheck
   num_columns_recent: 20
@@ -6842,8 +6837,6 @@ dashboards:
     test_group_name: pull-kubernetes-bazel-test-canary
   - name: bazel-test-integration-canary
     test_group_name: pull-kubernetes-bazel-test-integration-canary
-  - name: pull-kubernetes-verify-podutil
-    test_group_name: pull-kubernetes-verify-podutil
   - name: pull-kubernetes-integration-podutil
     test_group_name: pull-kubernetes-integration-podutil
   - name: ci-kubernetes-coverage-conformance

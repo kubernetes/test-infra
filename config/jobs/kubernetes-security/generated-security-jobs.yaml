@@ -2489,6 +2489,8 @@ presubmits:
       preset-service-account: "true"
     name: pull-security-kubernetes-verify
     rerun_command: /test pull-security-kubernetes-verify
+    skip_branches:
+    - master
     spec:
       containers:
       - args:
@@ -2522,15 +2524,17 @@ presubmits:
     trigger: (?m)^/test( | .* )pull-security-kubernetes-verify,?($|\s.*)
   - agent: kubernetes
     always_run: false
+    branches:
+    - master
     cluster: security
-    context: pull-security-kubernetes-verify-podutil
+    context: pull-security-kubernetes-verify
     decorate: true
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    name: pull-security-kubernetes-verify-podutil
+    name: pull-security-kubernetes-verify
     path_alias: k8s.io/kubernetes
-    rerun_command: /test pull-security-kubernetes-verify-podutil
+    rerun_command: /test pull-security-kubernetes-verify
     spec:
       containers:
       - args:
@@ -2538,7 +2542,7 @@ presubmits:
         - ./hack/jenkins/verify-dockerized.sh
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
         imagePullPolicy: Always
         name: ""
         resources:
@@ -2554,4 +2558,4 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-verify-podutil,?($|\s.*)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-verify,?($|\s.*)
