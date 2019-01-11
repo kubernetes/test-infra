@@ -37,7 +37,7 @@ var (
 	milestoneRegex   = regexp.MustCompile(`(?m)^/milestone\s+(.+?)\s*$`)
 	mustBeSigLead    = "You must be a member of the [%s/%s](https://github.com/orgs/%s/teams/%s/members) github team to set the milestone."
 	invalidMilestone = "The provided milestone is not valid for this repository. Milestones in this repository: [%s]\n\nUse `/milestone %s` to clear the milestone."
-	milestoneTeamMsg = "The milestone maintainers team is the Github team with ID: %d."
+	milestoneTeamMsg = "The milestone maintainers team is the Github team %q with ID: %d."
 	clearKeyword     = "clear"
 )
 
@@ -54,6 +54,10 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	msgForTeam := func(team plugins.Milestone) string {
+		return fmt.Sprintf(milestoneTeamMsg, team.MaintainersTeam, team.MaintainersID)
+	}
+
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The milestone plugin allows members of a configurable GitHub team to set the milestone on an issue or pull request.",
 		Config: func(repos []string) map[string]string {
@@ -61,10 +65,10 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 			for _, repo := range repos {
 				team, exists := config.RepoMilestone[repo]
 				if exists {
-					configMap[repo] = fmt.Sprintf(milestoneTeamMsg, team)
+					configMap[repo] = msgForTeam(team)
 				}
 			}
-			configMap[""] = fmt.Sprintf(milestoneTeamMsg, config.RepoMilestone[""])
+			configMap[""] = msgForTeam(config.RepoMilestone[""])
 			return configMap
 		}(enabledRepos),
 	}
