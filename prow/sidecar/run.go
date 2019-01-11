@@ -162,14 +162,7 @@ func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool, metad
 		result = "FAILURE"
 	}
 
-	// TODO(krzyzacy): Unify with downstream spyglass definition
-	finished := struct {
-		Timestamp int64                  `json:"timestamp"`
-		Passed    bool                   `json:"passed"`
-		Result    string                 `json:"result"`
-		Metadata  map[string]interface{} `json:"metadata,omitempty"`
-		Revision  string                 `json:"revision,omitempty"`
-	}{
+	finished := gcs.Finished{
 		Timestamp: time.Now().Unix(),
 		Passed:    passed,
 		Result:    result,
