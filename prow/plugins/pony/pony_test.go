@@ -168,11 +168,8 @@ func TestHttpResponse(t *testing.T) {
 				return
 			}
 			q := r.URL.Query().Get("q")
-			if strings.HasSuffix(q, ",") {
-				t.Errorf("Expected query without trailing comma: %q", q)
-			}
-			if tc.expectTag != "" && !strings.HasSuffix(q, ", "+tc.expectTag) {
-				t.Errorf("Expected tag %q, but didn't find it in %q", tc.expectTag, q)
+			if tc.expectTag != "" && q != tc.expectTag {
+				t.Errorf("Expected tag %q, but got %q", tc.expectTag, q)
 			}
 			io.WriteString(w, tc.response)
 		} else {
