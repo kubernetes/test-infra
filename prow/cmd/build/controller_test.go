@@ -34,6 +34,8 @@ import (
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
+	"k8s.io/test-infra/prow/pod-utils/wrapper"
 )
 
 const (
@@ -893,7 +895,7 @@ func TestInjectSource(t *testing.T) {
 			}
 
 			actual := &tc.build
-			err := injectSource(actual, tc.pj)
+			_, err := injectSource(actual, tc.pj)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -995,6 +997,7 @@ func TestMakeBuild(t *testing.T) {
 				pj = tc.job(pj)
 			}
 			const randomBuildID = "so-many-builds"
+			originalSpec := pj.Spec.BuildSpec.DeepCopy()
 			actual, err := makeBuild(pj, randomBuildID)
 			if err != nil {
 				if !tc.err {
@@ -1006,19 +1009,230 @@ func TestMakeBuild(t *testing.T) {
 			}
 			expected := buildv1alpha1.Build{
 				ObjectMeta: buildMeta(pj),
-				Spec:       *pj.Spec.BuildSpec,
+				Spec:       *originalSpec,
 			}
 			env, err := buildEnv(pj, randomBuildID)
 			if err != nil {
 				t.Fatalf("failed to create expected build env: %v", err)
 			}
 			injectEnvironment(&expected, env)
-			err = injectSource(&expected, pj)
+			injected, err := injectSource(&expected, pj)
 			if err != nil {
 				t.Fatalf("failed to inject expected source: %v", err)
 			}
+			if pj.Spec.DecorationConfig != nil {
+				if err = decorateBuild(&expected.Spec, env[downwardapi.JobSpecEnv], *pj.Spec.DecorationConfig, injected); err != nil {
+					t.Fatalf("failed to decorate: %v", err)
+				}
+			}
 			if !equality.Semantic.DeepEqual(actual, &expected) {
 				t.Errorf("builds do not match:\n%s", diff.ObjectReflectDiff(&expected, actual))
+			}
+		})
+	}
+}
+
+func TestDecorateSteps(t *testing.T) {
+	var dc prowjobv1.DecorationConfig
+	dc.Timeout = 10 * time.Minute
+	dc.GracePeriod = 5 * time.Minute
+	_, tm := tools()
+	tm.Name += "not-static"
+	tm.MountPath += "fancy"
+	actual := []corev1.Container{
+		{
+			Name: "leave-name-alone",
+		},
+		{},
+		{
+			Name: "this-one-too",
+		},
+	}
+	entries, err := decorateSteps(actual, dc, tm)
+	expected := []corev1.Container{
+		{
+			Name: "leave-name-alone",
+		},
+		{},
+		{
+			Name: "this-one-too",
+		},
+	}
+	expected[1].Name = "step-1"
+	o1, err := decorate.InjectEntrypoint(&expected[0], dc.Timeout, dc.GracePeriod, expected[0].Name, "", true, logMount, tm)
+	if err != nil {
+		t.Fatalf("inject expected 0: %v", err)
+	}
+	o2, err := decorate.InjectEntrypoint(&expected[1], dc.Timeout, dc.GracePeriod, expected[1].Name, o1.MarkerFile, true, logMount, tm)
+	if err != nil {
+		t.Fatalf("inject expected 1: %v", err)
+	}
+	o3, err := decorate.InjectEntrypoint(&expected[2], dc.Timeout, dc.GracePeriod, expected[2].Name, o2.MarkerFile, true, logMount, tm)
+	if err != nil {
+		t.Fatalf("inject expected 2: %v", err)
+	}
+	expectedEntries := []wrapper.Options{*o1, *o2, *o3}
+	if !equality.Semantic.DeepEqual(expectedEntries, entries) {
+		t.Errorf("entries do not match:\n%s", diff.ObjectReflectDiff(expectedEntries, entries))
+	}
+	if !equality.Semantic.DeepEqual(expected, actual) {
+		t.Errorf("steps do not match:\n%s", diff.ObjectReflectDiff(expected, actual))
+	}
+}
+
+func TestInjectedSteps(t *testing.T) {
+	const ejs = "fake-job-spec"
+	dc := prowjobv1.DecorationConfig{
+		UtilityImages: &prowjobv1.UtilityImages{},
+	}
+	gcsVol, gcsMount, gcsOptions := decorate.GCSOptions(dc)
+	_, tm := tools()
+
+	cases := []struct {
+		name     string
+		src      bool
+		entries  []wrapper.Options
+		expected func(entries []wrapper.Options) ([]corev1.Container, *corev1.Container, *corev1.Volume, error)
+	}{
+		{
+			name: "add logMount to init upload when using source",
+			src:  true,
+			expected: func(entries []wrapper.Options) ([]corev1.Container, *corev1.Container, *corev1.Volume, error) {
+				iu, err := decorate.InitUpload(dc.UtilityImages.InitUpload, gcsOptions, gcsMount, &logMount, ejs)
+				if err != nil {
+					t.Fatalf("failed to create init upload: %v", err)
+				}
+				before := []corev1.Container{decorate.PlaceEntrypoint(dc.UtilityImages.Entrypoint, tm), *iu}
+				after, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, ejs, entries...)
+				if err != nil {
+					t.Fatalf("failed to create sidecar: %v", err)
+				}
+				return before, after, &gcsVol, nil
+			},
+		},
+		{
+			name: "do not add logMount to init upload when not using source",
+			expected: func(entries []wrapper.Options) ([]corev1.Container, *corev1.Container, *corev1.Volume, error) {
+				iu, err := decorate.InitUpload(dc.UtilityImages.InitUpload, gcsOptions, gcsMount, nil, ejs)
+				if err != nil {
+					t.Fatalf("failed to create init upload: %v", err)
+				}
+				before := []corev1.Container{decorate.PlaceEntrypoint(dc.UtilityImages.Entrypoint, tm), *iu}
+				after, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, ejs, entries...)
+				if err != nil {
+					t.Fatalf("failed to create sidecar: %v", err)
+				}
+				return before, after, &gcsVol, nil
+			},
+		},
+		{
+			name: "sidecar includes all entries",
+			entries: []wrapper.Options{
+				{
+					MarkerFile: "foo",
+				},
+				{
+					Args: []string{"bar"},
+				},
+				{
+					ProcessLog: "whatever",
+				},
+				{
+					MetadataFile: "something",
+				},
+			},
+			expected: func(entries []wrapper.Options) ([]corev1.Container, *corev1.Container, *corev1.Volume, error) {
+				iu, err := decorate.InitUpload(dc.UtilityImages.InitUpload, gcsOptions, gcsMount, nil, ejs)
+				if err != nil {
+					t.Fatalf("failed to create init upload: %v", err)
+				}
+				before := []corev1.Container{decorate.PlaceEntrypoint(dc.UtilityImages.Entrypoint, tm), *iu}
+				after, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, ejs, entries...)
+				if err != nil {
+					t.Fatalf("failed to create sidecar: %v", err)
+				}
+				return before, after, &gcsVol, nil
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			before, after, vol, err := injectedSteps(ejs, dc, tc.src, tm, tc.entries)
+			expectedBefore, expectedAfter, expectedVol, expectedErr := tc.expected(tc.entries)
+			if !equality.Semantic.DeepEqual(expectedBefore, before) {
+				t.Errorf("before does not match:\n%s", diff.ObjectReflectDiff(expectedBefore, before))
+			}
+			if !equality.Semantic.DeepEqual(expectedAfter, after) {
+				t.Errorf("after does not match:\n%s", diff.ObjectReflectDiff(expectedAfter, after))
+			}
+			if !equality.Semantic.DeepEqual(expectedVol, vol) {
+				t.Errorf("vol does not match:\n%s", diff.ObjectReflectDiff(expectedVol, vol))
+			}
+			if (err == nil) != (expectedErr == nil) {
+				t.Errorf("%v != expected %v", err, expectedErr)
+			}
+
+		})
+	}
+}
+
+func TestDecorateBuild_Timeout(t *testing.T) {
+	a := 5 * time.Minute
+	b := 10 * time.Hour
+
+	cases := []struct {
+		name             string
+		buildTimeout     *time.Duration
+		decoratedTimeout *time.Duration
+		expected         *time.Duration
+	}{
+		{
+			name: "do not change timeout when decorated unset",
+		},
+		{
+			name:         "do not change set timeout (decoration unset)",
+			buildTimeout: &a,
+			expected:     &a,
+		},
+		{
+			name:             "do not change set timeout",
+			buildTimeout:     &a,
+			decoratedTimeout: &b,
+			expected:         &a,
+		},
+		{
+			name:             "change timeout when unset and decorated set",
+			decoratedTimeout: &b,
+			expected:         &b,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var dur *metav1.Duration
+			if tc.buildTimeout != nil {
+				md := metav1.Duration{
+					Duration: *tc.buildTimeout,
+				}
+				dur = &md
+			}
+
+			dc := prowjobv1.DecorationConfig{
+				UtilityImages: &prowjobv1.UtilityImages{},
+			}
+			if tc.decoratedTimeout != nil {
+				dc.Timeout = *tc.decoratedTimeout
+			}
+			actual := buildv1alpha1.BuildSpec{Timeout: dur}
+			err := decorateBuild(&actual, "whatever", dc, true)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if (actual.Timeout == nil) != (tc.expected == nil) {
+				t.Errorf("%v != expected %v", actual.Timeout, tc.expected)
+			} else if actual.Timeout != nil && actual.Timeout.Duration != *tc.expected {
+				t.Errorf("%v != expected %v", actual.Timeout.Duration, *tc.expected)
 			}
 		})
 	}

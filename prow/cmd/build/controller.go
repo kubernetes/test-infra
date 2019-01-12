@@ -32,11 +32,12 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/clone"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
+	"k8s.io/test-infra/prow/pod-utils/wrapper"
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
 	duckv1alpha1 "github.com/knative/pkg/apis/duck/v1alpha1"
 	"github.com/sirupsen/logrus"
-	untypedcorev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -114,7 +115,7 @@ func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjo
 	eventBroadcaster := record.NewBroadcaster()
 	eventBroadcaster.StartLogging(logrus.Infof)
 	eventBroadcaster.StartRecordingToSink(&corev1.EventSinkImpl{Interface: kc.CoreV1().Events("")})
-	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, untypedcorev1.EventSource{Component: controllerName})
+	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, v1.EventSource{Component: controllerName})
 
 	// Create struct
 	c := &controller{
@@ -330,7 +331,6 @@ func reconcile(c reconciler, key string) error {
 
 	var haveBuild bool
 
-	// TODO(fejta): make trigger set the expected Namespace for the pod/build.
 	b, err := c.getBuild(ctx, namespace, name)
 	switch {
 	case apierrors.IsNotFound(err):
@@ -444,13 +444,13 @@ func prowJobStatus(bs buildv1alpha1.BuildStatus) (prowjobv1.ProwJobState, string
 	}
 	cond := *pcond
 	switch {
-	case cond.Status == untypedcorev1.ConditionTrue:
+	case cond.Status == v1.ConditionTrue:
 		return prowjobv1.SuccessState, description(cond, descSucceeded)
-	case cond.Status == untypedcorev1.ConditionFalse:
+	case cond.Status == v1.ConditionFalse:
 		return prowjobv1.FailureState, description(cond, descFailed)
 	case started.IsZero():
 		return prowjobv1.TriggeredState, description(cond, descInitializing)
-	case cond.Status == untypedcorev1.ConditionUnknown, finished.IsZero():
+	case cond.Status == v1.ConditionUnknown, finished.IsZero():
 		return prowjobv1.PendingState, description(cond, descRunning)
 	}
 	logrus.Warnf("Unknown condition %#v", cond)
@@ -466,11 +466,11 @@ const (
 )
 
 var (
-	codeMount = untypedcorev1.VolumeMount{
+	codeMount = v1.VolumeMount{
 		Name:      workspaceMountName,
 		MountPath: "/code-mount", // should be irrelevant
 	}
-	logMount = untypedcorev1.VolumeMount{
+	logMount = v1.VolumeMount{
 		Name:      homeMountName,
 		MountPath: "/var/prow-build-log", // should be irrelevant
 	}
@@ -497,25 +497,25 @@ func defaultArguments(t *buildv1alpha1.TemplateInstantiationSpec, rawEnv map[str
 	for _, arg := range t.Arguments {
 		keys.Insert(arg.Name)
 	}
-	for k, v := range rawEnv {
+	for _, k := range sets.StringKeySet(rawEnv).List() { // deterministic ordering
 		if keys.Has(k) {
 			continue
 		}
-		t.Arguments = append(t.Arguments, buildv1alpha1.ArgumentSpec{Name: k, Value: v})
+		t.Arguments = append(t.Arguments, buildv1alpha1.ArgumentSpec{Name: k, Value: rawEnv[k]})
 	}
 }
 
 // defaultEnv adds the map of environment variables to the container, except keys already defined.
-func defaultEnv(c *untypedcorev1.Container, rawEnv map[string]string) {
+func defaultEnv(c *v1.Container, rawEnv map[string]string) {
 	keys := sets.String{}
 	for _, arg := range c.Env {
 		keys.Insert(arg.Name)
 	}
-	for k, v := range rawEnv {
+	for _, k := range sets.StringKeySet(rawEnv).List() { // deterministic ordering
 		if keys.Has(k) {
 			continue
 		}
-		c.Env = append(c.Env, untypedcorev1.EnvVar{Name: k, Value: v})
+		c.Env = append(c.Env, v1.EnvVar{Name: k, Value: rawEnv[k]})
 	}
 }
 
@@ -536,17 +536,19 @@ func workDir(refs prowjobv1.Refs) buildv1alpha1.ArgumentSpec {
 
 // injectSource adds the custom source container to call clonerefs correctly.
 //
+// Returns true if it added this container
+//
 // Does nothing if the build spec predefines Source
-func injectSource(b *buildv1alpha1.Build, pj prowjobv1.ProwJob) error {
+func injectSource(b *buildv1alpha1.Build, pj prowjobv1.ProwJob) (bool, error) {
 	if b.Spec.Source != nil {
-		return nil
+		return false, nil
 	}
 	srcContainer, refs, cloneVolumes, err := decorate.CloneRefs(pj, codeMount, logMount)
 	if err != nil {
-		return fmt.Errorf("clone source error: %v", err)
+		return false, fmt.Errorf("clone source error: %v", err)
 	}
 	if srcContainer == nil {
-		return nil
+		return false, nil
 	} else {
 		srcContainer.Name = "" // knative-build requirement
 	}
@@ -569,6 +571,89 @@ func injectSource(b *buildv1alpha1.Build, pj prowjobv1.ProwJob) error {
 		b.Spec.Template.Arguments = append(b.Spec.Template.Arguments, wd)
 	}
 
+	return true, nil
+}
+
+func tools() (v1.Volume, v1.VolumeMount) {
+	const toolsName = "entrypoint-tools"
+	toolsVolume := v1.Volume{
+		Name: toolsName,
+		VolumeSource: v1.VolumeSource{
+			EmptyDir: &v1.EmptyDirVolumeSource{},
+		},
+	}
+
+	toolsMount := v1.VolumeMount{
+		Name:      toolsName,
+		MountPath: "/entrypoint-tools",
+	}
+	return toolsVolume, toolsMount
+}
+
+func decorateSteps(steps []v1.Container, dc prowjobv1.DecorationConfig, toolsMount v1.VolumeMount) ([]wrapper.Options, error) {
+	const alwaysPass = true
+	var entries []wrapper.Options
+	for i := range steps {
+		if steps[i].Name == "" {
+			steps[i].Name = fmt.Sprintf("step-%d", i)
+		}
+		var previousMarker string
+		if i > 0 {
+			previousMarker = entries[i-1].MarkerFile
+		}
+		// TODO(fejta): consider refactoring entrypoint to accept --expire=time.Now.Add(dc.Timeout) so we timeout each step correctly (assuming a good clock)
+		opt, err := decorate.InjectEntrypoint(&steps[i], dc.Timeout, dc.GracePeriod, steps[i].Name, previousMarker, alwaysPass, logMount, toolsMount)
+		if err != nil {
+			return nil, fmt.Errorf("inject entrypoint into %s: %v", steps[i].Name, err)
+		}
+		entries = append(entries, *opt)
+	}
+	return entries, nil
+}
+
+// injectedSteps returns initial containers, a final container and an additional volume.
+func injectedSteps(encodedJobSpec string, dc prowjobv1.DecorationConfig, injectedSource bool, toolsMount v1.VolumeMount, entries []wrapper.Options) ([]v1.Container, *v1.Container, *v1.Volume, error) {
+	gcsVol, gcsMount, gcsOptions := decorate.GCSOptions(dc)
+
+	sidecar, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, encodedJobSpec, entries...)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("inject sidecar: %v", err)
+	}
+
+	var cloneLogMount *kube.VolumeMount
+	if injectedSource {
+		cloneLogMount = &logMount
+	}
+	initUpload, err := decorate.InitUpload(dc.UtilityImages.InitUpload, gcsOptions, gcsMount, cloneLogMount, encodedJobSpec)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("inject initupload: %v", err)
+	}
+
+	placer := decorate.PlaceEntrypoint(dc.UtilityImages.Entrypoint, toolsMount)
+
+	return []v1.Container{placer, *initUpload}, sidecar, &gcsVol, nil
+}
+
+func decorateBuild(spec *buildv1alpha1.BuildSpec, encodedJobSpec string, dc prowjobv1.DecorationConfig, injectedSource bool) error {
+	toolsVolume, toolsMount := tools()
+
+	if spec.Timeout == nil && dc.Timeout > 0 {
+		spec.Timeout = &metav1.Duration{Duration: dc.Timeout}
+	}
+
+	entries, err := decorateSteps(spec.Steps, dc, toolsMount)
+	if err != nil {
+		return fmt.Errorf("decorate steps: %v", err)
+	}
+
+	befores, after, vol, err := injectedSteps(encodedJobSpec, dc, injectedSource, toolsMount, entries)
+	if err != nil {
+		return fmt.Errorf("add injected steps: %v", err)
+	}
+
+	spec.Steps = append(befores, spec.Steps...)
+	spec.Steps = append(spec.Steps, *after)
+	spec.Volumes = append(spec.Volumes, toolsVolume, *vol)
 	return nil
 }
 
@@ -586,7 +671,14 @@ func makeBuild(pj prowjobv1.ProwJob, buildID string) (*buildv1alpha1.Build, erro
 		return nil, fmt.Errorf("environment error: %v", err)
 	}
 	injectEnvironment(&b, rawEnv)
-	err = injectSource(&b, pj)
+	injectedSource, err := injectSource(&b, pj)
+	if pj.Spec.DecorationConfig != nil {
+		encodedJobSpec := rawEnv[downwardapi.JobSpecEnv]
+		err = decorateBuild(&b.Spec, encodedJobSpec, *pj.Spec.DecorationConfig, injectedSource)
+		if err != nil {
+			return nil, fmt.Errorf("decorate build: %v", err)
+		}
+	}
 
 	return &b, nil
 }
