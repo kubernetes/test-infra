@@ -20,6 +20,7 @@ limitations under the License.
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -34,6 +35,52 @@ import (
 	"k8s.io/test-infra/kubetest/util"
 )
 
+var (
+	eksKubectlPath      = flag.String("eks-kubectl-path", "/tmp/aws-k8s-tester/kubectl", "(eks only) Path to the kubectl binary to use.")
+	eksKubecfgPath      = flag.String("eks-kubeconfig-path", "/tmp/aws-k8s-tester/kubeconfig", "(eks only) Path to the kubeconfig file to use.")
+	eksNodes            = flag.String("eks-nodes", "1", "(eks only) Number of nodes in the EKS cluster.")
+	eksNodeInstanceType = flag.String("eks-node-instance-type", "m3.xlarge", "(eks only) Instance type to use for nodes.")
+)
+
+func migrateEKSOptions() error {
+	// Prevent ginkgo-e2e.sh from using the cluster/eks functions.
+	if err := os.Setenv("KUBERNETES_CONFORMANCE_TEST", "yes"); err != nil {
+		return err
+	}
+	if err := os.Setenv("KUBERNETES_CONFORMANCE_PROVIDER", "eks"); err != nil {
+		return err
+	}
+	return util.MigrateOptions([]util.MigratedOption{
+		// Env vars required by upstream ginkgo-e2e.sh.
+		{
+			Env:    "KUBECTL",
+			Option: eksKubectlPath,
+			Name:   "--eks-kubectl-path",
+		},
+		{
+			Env:    "KUBECONFIG",
+			Option: eksKubecfgPath,
+			Name:   "--eks-kubeconfig-path",
+		},
+		// Env vars specific to aws-k8s-tester.
+		{
+			Env:    "AWS_K8S_TESTER_EKS_WORKER_NODE_ASG_MIN",
+			Option: eksNodes,
+			Name:   "--eks-nodes",
+		},
+		{
+			Env:    "AWS_K8S_TESTER_EKS_WORKER_NODE_ASG_MAX",
+			Option: eksNodes,
+			Name:   "--eks-nodes",
+		},
+		{
+			Env:    "AWS_K8S_TESTER_EKS_WORKER_NODE_INSTANCE_TYPE",
+			Option: eksNodeInstanceType,
+			Name:   "--eks-node-instance-type",
+		},
+	})
+}
+
 // eksDeployer implements EKS deployer interface using "aws-k8s-tester" binary.
 // Satisfies "k8s.io/test-infra/kubetest/main.go" 'deployer' and 'publisher" interfaces.
 // Reference https://github.com/kubernetes/test-infra/blob/master/kubetest/main.go.
@@ -45,8 +92,12 @@ type eksDeployer struct {
 
 // newEKS creates a new EKS deployer.
 func newEKS(timeout time.Duration, verbose bool) (ekstester.Deployer, error) {
+	err := migrateEKSOptions()
+	if err != nil {
+		return nil, err
+	}
 	cfg := eksconfig.NewDefault()
-	err := cfg.UpdateFromEnvs()
+	err = cfg.UpdateFromEnvs()
 	if err != nil {
 		return nil, err
 	}
