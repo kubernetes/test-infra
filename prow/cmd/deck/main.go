@@ -457,6 +457,16 @@ func handleData(ja *jobs.JobAgent) http.HandlerFunc {
 	}
 }
 
+// handleBadge handles requests to get a badge for one or more jobs
+// The url must look like this, where `jobs` is a comma-separated
+// list of globs:
+//
+// /badge.svg?jobs=<glob>[,<glob2>]
+//
+// Examples:
+// - /badge.svg?jobs=pull-kubernetes-bazel-build
+// - /badge.svg?jobs=pull-kubernetes-*
+// - /badge.svg?jobs=pull-kubernetes-e2e*,pull-kubernetes-*,pull-kubernetes-integration-*
 func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
@@ -473,6 +483,20 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 	}
 }
 
+// handleJobHistory handles requests to get the history of a given job
+// The url must look like this for presubmits:
+//
+// /job-history/<gcs-bucket-name>/pr-logs/directory/<job-name>
+//
+// Example:
+// - /job-history/kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-gofmt
+//
+// For periodics or postsubmits, the url must look like this:
+//
+// /job-history/<gcs-bucket-name>/logs/<job-name>
+//
+// Example:
+// - /job-history/kubernetes-jenkins/logs/ci-kubernetes-e2e-prow-canary
 func handleJobHistory(o options, ca *config.Agent, gcsClient *storage.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
@@ -487,6 +511,10 @@ func handleJobHistory(o options, ca *config.Agent, gcsClient *storage.Client) ht
 	}
 }
 
+// handlePRHistory handles requests to get the test history if a given PR
+// The url must look like this:
+//
+// /pr-history/<org>/<repo>/<pr number>
 func handlePRHistory(o options, ca *config.Agent, gcsClient *storage.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
