@@ -35,7 +35,7 @@ const pluginName = "milestonestatus"
 var (
 	statusRegex      = regexp.MustCompile(`(?m)^/status\s+(.+)$`)
 	mustBeSigLead    = "You must be a member of the [%s/%s](https://github.com/orgs/%s/teams/%s/members) github team to add status labels."
-	milestoneTeamMsg = "The milestone maintainers team is the Github team with ID: %d."
+	milestoneTeamMsg = "The milestone maintainers team is the Github team %q with ID: %d."
 	statusMap        = map[string]string{
 		"approved-for-milestone": "status/approved-for-milestone",
 		"in-progress":            "status/in-progress",
@@ -54,6 +54,10 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	msgForTeam := func(team plugins.Milestone) string {
+		return fmt.Sprintf(milestoneTeamMsg, team.MaintainersTeam, team.MaintainersID)
+	}
+
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The milestonestatus plugin allows members of the milestone maintainers Github team to specify the 'status/*' label that should apply to a pull request.",
 		Config: func() map[string]string {
@@ -61,10 +65,10 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 			for _, repo := range enabledRepos {
 				team, exists := config.RepoMilestone[repo]
 				if exists {
-					configMap[repo] = fmt.Sprintf(milestoneTeamMsg, team)
+					configMap[repo] = msgForTeam(team)
 				}
 			}
-			configMap[""] = fmt.Sprintf(milestoneTeamMsg, config.RepoMilestone[""])
+			configMap[""] = msgForTeam(config.RepoMilestone[""])
 			return configMap
 		}(),
 	}
