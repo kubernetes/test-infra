@@ -22,6 +22,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	osexec "os/exec"
 	"path/filepath"
@@ -230,6 +231,19 @@ func (dp *eksDeployer) LoadConfig() (eksconfig.Config, error) {
 	return *dp.cfg, err
 }
 
+func getLatestAWSK8sTesterURL() (string, error) {
+	resp, err := http.Get("https://github.com/aws/aws-k8s-tester/releases/latest")
+	if err != nil {
+		return "", err
+	}
+	redirectURL := resp.Request.URL.String()
+	basepath, version := filepath.Split(redirectURL)
+	if basepath == "" {
+		return "", fmt.Errorf("Couldn't extract version from redirect URL")
+	}
+	return fmt.Sprintf("https://github.com/aws/aws-k8s-tester/releases/download/%s/aws-k8s-tester-%s-linux-amd64", version, version), nil
+}
+
 func (dp *eksDeployer) fetchAWSK8sTester() error {
 	if err := os.RemoveAll(dp.cfg.AWSK8sTesterPath); err != nil {
 		return err
@@ -242,7 +256,12 @@ func (dp *eksDeployer) fetchAWSK8sTester() error {
 		return fmt.Errorf("failed to create %q (%v)", dp.cfg.AWSK8sTesterPath, err)
 	}
 	dp.cfg.AWSK8sTesterPath = f.Name()
-	if err = httpRead(dp.cfg.AWSK8sTesterDownloadURL, f); err != nil {
+	var awsK8sTesterDownloadURL string
+	awsK8sTesterDownloadURL, err = getLatestAWSK8sTesterURL()
+	if err != nil {
+		return err
+	}
+	if err = httpRead(awsK8sTesterDownloadURL, f); err != nil {
 		return err
 	}
 	if err = f.Close(); err != nil {
