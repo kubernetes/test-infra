@@ -56,6 +56,10 @@ type Options struct {
 	// c) otherwise immediately write PreviousErrorCode to marker_file without running args
 	PreviousMarker string `json:"previous_marker,omitempty"`
 
+	// AlwaysZero will cause entrypoint to exit zero, regardless of the marker it writes.
+	// Primarily useful in case a subsequent entrypoint will read this entrypoint's marker
+	AlwaysZero bool `json:"always_zero,omitempty"`
+
 	*wrapper.Options
 }
 

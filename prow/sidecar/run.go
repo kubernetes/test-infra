@@ -73,6 +73,10 @@ func (o Options) Run(ctx context.Context) error {
 	passed := true
 	aborted := false
 
+	if o.WrapperOptions != nil {
+		// This only fires if the prowjob controller and sidecar are at different commits
+		logrus.Warnf("Using deprecated wrapper_options instead of entries. Please update prow/pod-utils/decorate before June 2019")
+	}
 	entries := o.entries()
 	for _, opt := range entries {
 		returnCode, err := wrapper.WaitForMarker(ctx, opt.MarkerFile)

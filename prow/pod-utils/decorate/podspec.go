@@ -23,6 +23,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
@@ -344,9 +345,131 @@ func CloneRefs(pj kube.ProwJob, codeMount, logMount kube.VolumeMount) (*kube.Con
 	return &container, refs, cloneVolumes, nil
 }
 
+func processLog(log kube.VolumeMount, prefix string) string {
+	if prefix == "" {
+		return filepath.Join(log.MountPath, "process-log.txt")
+	}
+	return filepath.Join(log.MountPath, fmt.Sprintf("%s-log.txt", prefix))
+}
+
+func markerFile(log kube.VolumeMount, prefix string) string {
+	if prefix == "" {
+		return filepath.Join(log.MountPath, "marker-file.txt")
+	}
+	return filepath.Join(log.MountPath, fmt.Sprintf("%s-marker.txt", prefix))
+}
+
+func metadataFile(log kube.VolumeMount, prefix string) string {
+	ad := artifactsDir(log)
+	if prefix == "" {
+		return filepath.Join(ad, "metadata.json")
+	}
+	return filepath.Join(ad, fmt.Sprintf("%s-metadata.json", prefix))
+}
+
+func artifactsDir(log kube.VolumeMount) string {
+	return filepath.Join(log.MountPath, "artifacts")
+}
+
+func entrypointLocation(tools kube.VolumeMount) string {
+	return filepath.Join(tools.MountPath, "entrypoint")
+}
+
+// InjectEntrypoint will make the entrypoint binary in the tools volume the container's entrypoint, which will output to the log volume.
+func InjectEntrypoint(c *kube.Container, timeout, gracePeriod time.Duration, prefix, previousMarker string, exitZero bool, log, tools kube.VolumeMount) (*wrapper.Options, error) {
+	wrapperOptions := &wrapper.Options{
+		Args:         append(c.Command, c.Args...),
+		ProcessLog:   processLog(log, prefix),
+		MarkerFile:   markerFile(log, prefix),
+		MetadataFile: metadataFile(log, prefix),
+	}
+	// TODO(fejta): use flags
+	entrypointConfigEnv, err := entrypoint.Encode(entrypoint.Options{
+		ArtifactDir:    artifactsDir(log),
+		GracePeriod:    gracePeriod,
+		Options:        wrapperOptions,
+		Timeout:        timeout,
+		AlwaysZero:     exitZero,
+		PreviousMarker: previousMarker,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	c.Command = []string{entrypointLocation(tools)}
+	c.Args = nil
+	c.Env = append(c.Env, kubeEnv(map[string]string{entrypoint.JSONConfigEnvVar: entrypointConfigEnv})...)
+	c.VolumeMounts = append(c.VolumeMounts, log, tools)
+	return wrapperOptions, nil
+}
+
+// PlaceEntrypoint will copy entrypoint from the entrypoint image to the tools volume
+func PlaceEntrypoint(image string, toolsMount kube.VolumeMount) kube.Container {
+	return kube.Container{
+		Name:         "place-entrypoint",
+		Image:        image,
+		Command:      []string{"/bin/cp"},
+		Args:         []string{"/entrypoint", entrypointLocation(toolsMount)},
+		VolumeMounts: []kube.VolumeMount{toolsMount},
+	}
+}
+
+func GCSOptions(dc kube.DecorationConfig) (kube.Volume, kube.VolumeMount, gcsupload.Options) {
+	vol := kube.Volume{
+		Name: gcsCredentialsMountName,
+		VolumeSource: kube.VolumeSource{
+			Secret: &kube.SecretSource{
+				SecretName: dc.GCSCredentialsSecret,
+			},
+		},
+	}
+	mount := kube.VolumeMount{
+		Name:      vol.Name,
+		MountPath: gcsCredentialsMountPath,
+	}
+	opt := gcsupload.Options{
+		// TODO: pass the artifact dir here too once we figure that out
+		GCSConfiguration:   dc.GCSConfiguration,
+		GcsCredentialsFile: fmt.Sprintf("%s/service-account.json", mount.MountPath),
+		DryRun:             false,
+	}
+
+	return vol, mount, opt
+}
+
+func InitUpload(image string, opt gcsupload.Options, creds kube.VolumeMount, cloneLogMount *kube.VolumeMount, encodedJobSpec string) (*kube.Container, error) {
+	// TODO(fejta): remove encodedJobSpec
+	initUploadOptions := initupload.Options{
+		Options: &opt,
+	}
+	var mounts []kube.VolumeMount
+	if cloneLogMount != nil {
+		initUploadOptions.Log = CloneLogPath(*cloneLogMount)
+		mounts = append(mounts, *cloneLogMount)
+	}
+	mounts = append(mounts, creds)
+	// TODO(fejta): use flags
+	initUploadConfigEnv, err := initupload.Encode(initUploadOptions)
+	if err != nil {
+		return nil, fmt.Errorf("could not encode initupload configuration as JSON: %v", err)
+	}
+	return &kube.Container{
+		Name:    "initupload",
+		Image:   image,
+		Command: []string{"/initupload"}, // TODO(fejta): remove this, use image's entrypoint and delete /initupload symlink
+		Env: kubeEnv(map[string]string{
+			downwardapi.JobSpecEnv:      encodedJobSpec,
+			initupload.JSONConfigEnvVar: initUploadConfigEnv,
+		}),
+		VolumeMounts: mounts,
+	}, nil
+}
+
 func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) error {
+	// TODO(fejta): we should pass around volume names rather than forcing particular mount paths.
+
 	rawEnv[artifactsEnv] = artifactsPath
-	rawEnv[gopathEnv] = codeMountPath
+	rawEnv[gopathEnv] = codeMountPath // TODO(fejta): remove this once we can assume go modules
 	logMount := kube.VolumeMount{
 		Name:      logMountName,
 		MountPath: logMountPath,
@@ -380,114 +503,48 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 		},
 	}
 
-	gcsCredentialsMount := kube.VolumeMount{
-		Name:      gcsCredentialsMountName,
-		MountPath: gcsCredentialsMountPath,
-	}
-	gcsCredentialsVolume := kube.Volume{
-		Name: gcsCredentialsMountName,
-		VolumeSource: kube.VolumeSource{
-			Secret: &kube.SecretSource{
-				SecretName: pj.Spec.DecorationConfig.GCSCredentialsSecret,
-			},
-		},
-	}
+	gcsVol, gcsMount, gcsOptions := GCSOptions(*pj.Spec.DecorationConfig)
 
 	cloner, refs, cloneVolumes, err := CloneRefs(*pj, codeMount, logMount)
 	if err != nil {
-		return fmt.Errorf("could not create clonerefs container: %v", err)
+		return fmt.Errorf("create clonerefs container: %v", err)
 	}
+	var cloneLogMount *kube.VolumeMount
 	if cloner != nil {
 		spec.InitContainers = append([]kube.Container{*cloner}, spec.InitContainers...)
+		cloneLogMount = &logMount
 	}
 
-	gcsOptions := gcsupload.Options{
-		// TODO: pass the artifact dir here too once we figure that out
-		GCSConfiguration:   pj.Spec.DecorationConfig.GCSConfiguration,
-		GcsCredentialsFile: fmt.Sprintf("%s/service-account.json", gcsCredentialsMountPath),
-		DryRun:             false,
-	}
-
-	initUploadOptions := initupload.Options{
-		Options: &gcsOptions,
-	}
-	if cloner != nil {
-		initUploadOptions.Log = CloneLogPath(logMount)
-	}
-
-	// TODO(fejta): use flags
-	initUploadConfigEnv, err := initupload.Encode(initUploadOptions)
+	encodedJobSpec := rawEnv[downwardapi.JobSpecEnv]
+	initUpload, err := InitUpload(pj.Spec.DecorationConfig.UtilityImages.InitUpload, gcsOptions, gcsMount, cloneLogMount, encodedJobSpec)
 	if err != nil {
-		return fmt.Errorf("could not encode initupload configuration as JSON: %v", err)
+		return fmt.Errorf("create initupload container: %v", err)
 	}
-
-	entrypointLocation := fmt.Sprintf("%s/entrypoint", toolsMountPath)
-
-	spec.InitContainers = append(spec.InitContainers,
-		kube.Container{
-			Name:    "initupload",
-			Image:   pj.Spec.DecorationConfig.UtilityImages.InitUpload,
-			Command: []string{"/initupload"},
-			Env: kubeEnv(map[string]string{
-				initupload.JSONConfigEnvVar: initUploadConfigEnv,
-				downwardapi.JobSpecEnv:      rawEnv[downwardapi.JobSpecEnv], // TODO: shouldn't need this?
-			}),
-			VolumeMounts: []kube.VolumeMount{logMount, gcsCredentialsMount},
-		},
-		kube.Container{
-			Name:         "place-tools",
-			Image:        pj.Spec.DecorationConfig.UtilityImages.Entrypoint,
-			Command:      []string{"/bin/cp"},
-			Args:         []string{"/entrypoint", entrypointLocation},
-			VolumeMounts: []kube.VolumeMount{toolsMount},
-		},
+	spec.InitContainers = append(
+		spec.InitContainers,
+		*initUpload,
+		PlaceEntrypoint(pj.Spec.DecorationConfig.UtilityImages.Entrypoint, toolsMount),
 	)
 
-	wrapperOptions := wrapper.Options{
-		Args:         append(spec.Containers[0].Command, spec.Containers[0].Args...),
-		ProcessLog:   fmt.Sprintf("%s/process-log.txt", logMountPath),
-		MarkerFile:   fmt.Sprintf("%s/marker-file.txt", logMountPath),
-		MetadataFile: fmt.Sprintf("%s/metadata.json", artifactsPath),
-	}
-	// TODO(fejta): use flags
-	entrypointConfigEnv, err := entrypoint.Encode(entrypoint.Options{
-		Options:     &wrapperOptions,
-		Timeout:     pj.Spec.DecorationConfig.Timeout,
-		GracePeriod: pj.Spec.DecorationConfig.GracePeriod,
-		ArtifactDir: artifactsPath,
-	})
+	spec.Containers[0].Env = append(spec.Containers[0].Env, kubeEnv(rawEnv)...)
+
+	const ( // these values may change when/if we support multiple containers
+		prefix   = "" // unique per container
+		previous = ""
+		exitZero = false
+	)
+	wrapperOptions, err := InjectEntrypoint(&spec.Containers[0], pj.Spec.DecorationConfig.Timeout, pj.Spec.DecorationConfig.GracePeriod, prefix, previous, exitZero, logMount, toolsMount)
 	if err != nil {
-		return fmt.Errorf("could not encode entrypoint configuration as JSON: %v", err)
+		return fmt.Errorf("wrap container: %v", err)
 	}
-	allEnv := rawEnv
-	allEnv[entrypoint.JSONConfigEnvVar] = entrypointConfigEnv
 
-	spec.Containers[0].Command = []string{entrypointLocation}
-	spec.Containers[0].Args = []string{}
-	spec.Containers[0].Env = append(spec.Containers[0].Env, kubeEnv(allEnv)...)
-	spec.Containers[0].VolumeMounts = append(spec.Containers[0].VolumeMounts, logMount, toolsMount)
-
-	gcsOptions.Items = append(gcsOptions.Items, artifactsPath)
-	// TODO(fejta): use flags
-	sidecarConfigEnv, err := sidecar.Encode(sidecar.Options{
-		GcsOptions:     &gcsOptions,
-		WrapperOptions: &wrapperOptions,
-	})
+	sidecar, err := Sidecar(pj.Spec.DecorationConfig.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, encodedJobSpec, *wrapperOptions)
 	if err != nil {
-		return fmt.Errorf("could not encode sidecar configuration as JSON: %v", err)
+		return fmt.Errorf("create sidecar: %v", err)
 	}
 
-	spec.Containers = append(spec.Containers, kube.Container{
-		Name:    "sidecar",
-		Image:   pj.Spec.DecorationConfig.UtilityImages.Sidecar,
-		Command: []string{"/sidecar"},
-		Env: kubeEnv(map[string]string{
-			sidecar.JSONConfigEnvVar: sidecarConfigEnv,
-			downwardapi.JobSpecEnv:   rawEnv[downwardapi.JobSpecEnv], // TODO: shouldn't need this?
-		}),
-		VolumeMounts: []kube.VolumeMount{logMount, gcsCredentialsMount},
-	})
-	spec.Volumes = append(spec.Volumes, logVolume, toolsVolume, gcsCredentialsVolume)
+	spec.Containers = append(spec.Containers, *sidecar)
+	spec.Volumes = append(spec.Volumes, logVolume, toolsVolume, gcsVol)
 
 	if len(refs) > 0 {
 		spec.Containers[0].WorkingDir = clone.PathForRefs(codeMount.MountPath, refs[0])
@@ -496,6 +553,29 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 	}
 
 	return nil
+}
+
+func Sidecar(image string, gcsOptions gcsupload.Options, gcsMount, logMount kube.VolumeMount, encodedJobSpec string, wrappers ...wrapper.Options) (*kube.Container, error) {
+	gcsOptions.Items = append(gcsOptions.Items, artifactsDir(logMount))
+	sidecarConfigEnv, err := sidecar.Encode(sidecar.Options{
+		GcsOptions: &gcsOptions,
+		Entries:    wrappers,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &kube.Container{
+		Name:    "sidecar",
+		Image:   image,
+		Command: []string{"/sidecar"}, // TODO(fejta): remove, use image's entrypoint
+		Env: kubeEnv(map[string]string{
+			sidecar.JSONConfigEnvVar: sidecarConfigEnv,
+			downwardapi.JobSpecEnv:   encodedJobSpec, // TODO: shouldn't need this?
+		}),
+		VolumeMounts: []kube.VolumeMount{logMount, gcsMount},
+	}, nil
+
 }
 
 // kubeEnv transforms a mapping of environment variables
