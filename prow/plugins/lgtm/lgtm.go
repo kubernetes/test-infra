@@ -60,9 +60,37 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	// The Config field is omitted because this plugin is not configurable.
+	willNot := func(b bool) string {
+		if b {
+			return "will"
+		}
+		return "will not"
+	}
+	definedNot := func(s string) string {
+		if s != "" {
+			return "(not defined)"
+		}
+		return s
+	}
+	lgtmConfig := map[string]string{}
+	for _, repo := range enabledRepos {
+		parts := strings.Split(repo, "/")
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
+		}
+		opts := optionsForRepo(config, parts[0], parts[1])
+		lgtmConfig[repo] = fmt.Sprintf("Github reviews %s act as adding or removing the LGTM label.<br>"+
+			"Tree hash %s be stored in a comment to detect squashed commits before removing LGTM label.<br>"+
+			"Sticky LGTM team is: %s",
+			willNot(opts.ReviewActsAsLgtm),
+			willNot(opts.StoreTreeHash),
+			definedNot(opts.StickyLgtmTeam),
+		)
+
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The lgtm plugin manages the application and removal of the 'lgtm' (Looks Good To Me) label which is typically used to gate merging.",
+		Config:      lgtmConfig,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/lgtm [cancel] or Github Review action",
