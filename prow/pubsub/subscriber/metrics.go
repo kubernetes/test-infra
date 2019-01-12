@@ -63,6 +63,7 @@ func init() {
 	prometheus.MustRegister(nackedMessagesCounter)
 }
 
+// Metrics is a set of metrics gathered by PubSub subscriber.
 type Metrics struct {
 	// Common
 	MessageCounter *prometheus.CounterVec
@@ -76,6 +77,7 @@ type Metrics struct {
 	ResponseCounter *prometheus.CounterVec
 }
 
+// NewMetrics creates a new set of metrics for the PubSub subscriber.
 func NewMetrics() *Metrics {
 	return &Metrics{
 		MessageCounter:     messageCounter,

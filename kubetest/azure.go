@@ -64,6 +64,7 @@ var (
 	acsNetworkPlugin       = flag.String("acsengine-networkPlugin", "azure", "Network pluging to use with acs-engine")
 )
 
+// Creds contains the acs credentials.
 type Creds struct {
 	ClientID           string
 	ClientSecret       string
@@ -73,6 +74,7 @@ type Creds struct {
 	StorageAccountKey  string
 }
 
+// Config is used to serialize the acs config file.
 type Config struct {
 	Creds Creds
 }

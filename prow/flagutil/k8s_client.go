@@ -65,6 +65,7 @@ func (o *KubernetesClientOptions) KubeClient() (kubernetes.Interface, error) {
 	return kube.GetKubernetesClient(o.masterURL, o.kubeConfig)
 }
 
+// ProwJobClient returns a ProwJob clientset.
 func (o *KubernetesClientOptions) ProwJobClient() (versioned.Interface, error) {
 	return kube.GetProwJobClient(o.masterURL, o.kubeConfig)
 }

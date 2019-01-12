@@ -26,6 +26,8 @@ import (
 )
 
 // SecurityGroups: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeSecurityGroups
+
+// SecurityGroups allows marking and sweeping security groups.
 type SecurityGroups struct{}
 
 type sgRef struct {
@@ -44,6 +46,9 @@ func addRefs(refs map[string][]*sgRef, id string, acct string, perms []*ec2.IpPe
 	}
 }
 
+// MarkAndSweep queries the resources in a specific region, using the provided
+// session (which has account-number acct), marking them as present in set and
+// deleting appropriately.
 func (SecurityGroups) MarkAndSweep(sess *session.Session, acct string, region string, set *Set) error {
 	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
 

@@ -24,8 +24,13 @@ import (
 )
 
 // LaunchConfigurations: http://docs.aws.amazon.com/sdk-for-go/api/service/autoscaling/#AutoScaling.DescribeLaunchConfigurations
+
+// LaunchConfigurations allows marking and sweeping launch configurations.
 type LaunchConfigurations struct{}
 
+// MarkAndSweep queries the resources in a specific region, using the provided
+// session (which has account-number acct), marking them as present in set and
+// deleting appropriately.
 func (LaunchConfigurations) MarkAndSweep(sess *session.Session, acct string, region string, set *Set) error {
 	svc := autoscaling.New(sess, &aws.Config{Region: aws.String(region)})
 

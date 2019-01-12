@@ -16,6 +16,8 @@ limitations under the License.
 
 package resources
 
+// Interface describes the AWS resource interface. It's used to identify
+// resources.
 type Interface interface {
 	// ARN returns the AWS ARN for the resource
 	// (c.f. http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html). This

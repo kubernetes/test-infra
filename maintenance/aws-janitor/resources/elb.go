@@ -25,8 +25,12 @@ import (
 
 // Clean-up ELBs
 
+// LoadBalancers allows marking and sweeping ELB resources.
 type LoadBalancers struct{}
 
+// MarkAndSweep queries the resources in a specific region, using the provided
+// session (which has account-number acct), marking them as present in set and
+// deleting appropriately.
 func (LoadBalancers) MarkAndSweep(sess *session.Session, account string, region string, set *Set) error {
 	svc := elb.New(sess, &aws.Config{Region: aws.String(region)})
 

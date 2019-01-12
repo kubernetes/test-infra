@@ -28,6 +28,7 @@ import (
 
 // IAM Roles
 
+// IAMRoles allows marking and sweeping IAM roles.
 type IAMRoles struct{}
 
 // roleIsManaged checks if the role should be managed (and thus deleted) by us
@@ -53,6 +54,9 @@ func roleIsManaged(role *iam.Role) bool {
 	return false
 }
 
+// MarkAndSweep queries the resources in a specific region, using the provided
+// session (which has account-number acct), marking them as present in set and
+// deleting appropriately.
 func (IAMRoles) MarkAndSweep(sess *session.Session, acct string, region string, set *Set) error {
 	svc := iam.New(sess, &aws.Config{Region: aws.String(region)})
 

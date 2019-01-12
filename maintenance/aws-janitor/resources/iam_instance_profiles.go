@@ -26,8 +26,13 @@ import (
 )
 
 // IAM Instance Profiles
+
+// IAMInstanceProfiles allows marking and sweeping IAM instance profiles.
 type IAMInstanceProfiles struct{}
 
+// MarkAndSweep queries the resources in a specific region, using the provided
+// session (which has account-number acct), marking them as present in set and
+// deleting appropriately.
 func (IAMInstanceProfiles) MarkAndSweep(sess *session.Session, acct string, region string, set *Set) error {
 	svc := iam.New(sess, &aws.Config{Region: aws.String(region)})
 

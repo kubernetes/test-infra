@@ -78,6 +78,11 @@ func (o *Options) Validate() error {
 	return nil
 }
 
+// WaitForMarker waits until the marker file at path exists and then attempts
+// to read the file to parse the return code.
+//
+// It is used to wait for other processes to complete and to get their return
+// code.
 func WaitForMarker(ctx context.Context, path string) (int, error) {
 	// Only start watching file events if the file doesn't exist
 	// If the file exists, it means the main process already completed.

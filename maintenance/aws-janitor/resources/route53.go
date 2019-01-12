@@ -27,6 +27,7 @@ import (
 
 // Route53
 
+// Route53ResourceRecordSets allows marking and sweeping Route53 resource record sets.
 type Route53ResourceRecordSets struct{}
 
 // zoneIsManaged checks if the zone should be managed (and thus have records deleted) by us
@@ -73,6 +74,9 @@ func resourceRecordSetIsManaged(rrs *route53.ResourceRecordSet) bool {
 	return false
 }
 
+// MarkAndSweep queries the resources in a specific region, using the provided
+// session (which has account-number acct), marking them as present in set and
+// deleting appropriately.
 func (Route53ResourceRecordSets) MarkAndSweep(sess *session.Session, acct string, region string, set *Set) error {
 	svc := route53.New(sess, &aws.Config{Region: aws.String(region)})
 

@@ -50,8 +50,7 @@ func loadClusterConfig(masterURL, kubeConfig string) (*rest.Config, error) {
 	return clusterConfig, nil
 }
 
-// GetKubernetesClient retrieves the Kubernetes cluster
-// client from within the cluster
+// GetKubernetesClient retrieves the Kubernetes client from within the cluster.
 func GetKubernetesClient(masterURL, kubeConfig string) (kubernetes.Interface, error) {
 	config, err := loadClusterConfig(masterURL, kubeConfig)
 	if err != nil {
@@ -68,6 +67,7 @@ func GetKubernetesClient(masterURL, kubeConfig string) (kubernetes.Interface, er
 	return client, nil
 }
 
+// GetProwJobClient retrieves the ProwJob Clientset from within the cluster.
 func GetProwJobClient(masterURL, kubeConfig string) (prowjobclientset.Interface, error) {
 	config, err := loadClusterConfig(masterURL, kubeConfig)
 	if err != nil {

@@ -25,8 +25,12 @@ import (
 
 // AutoScalingGroups: https://docs.aws.amazon.com/sdk-for-go/api/service/autoscaling/#AutoScaling.DescribeAutoScalingGroups
 
+// AutoScalingGroups allows marking and sweeping ASGs.
 type AutoScalingGroups struct{}
 
+// MarkAndSweep queries the resources in a specific region, using the provided
+// session (which has account-number acct), marking them as present in set and
+// deleting appropriately.
 func (AutoScalingGroups) MarkAndSweep(sess *session.Session, acct string, region string, set *Set) error {
 	svc := autoscaling.New(sess, &aws.Config{Region: aws.String(region)})
 

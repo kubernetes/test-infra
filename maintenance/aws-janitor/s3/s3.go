@@ -27,19 +27,21 @@ import (
 
 const defaultRegion = "us-east-1"
 
+// Path contains the location data for a specific object in S3.
 type Path struct {
 	Region string
 	Bucket string
 	Key    string
 }
 
+// GetPath parses s into a Path struct.
 func GetPath(sess *session.Session, s string) (*Path, error) {
 	url, err := url.Parse(s)
 	if err != nil {
 		return nil, err
 	}
 	if url.Scheme != "s3" {
-		return nil, fmt.Errorf("Scheme %q != 's3'", url.Scheme)
+		return nil, fmt.Errorf("scheme %q != 's3'", url.Scheme)
 	}
 	svc := s3.New(sess, &aws.Config{Region: aws.String(defaultRegion)})
 	resp, err := svc.GetBucketLocation(&s3.GetBucketLocationInput{Bucket: aws.String(url.Host)})

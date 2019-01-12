@@ -26,8 +26,13 @@ import (
 )
 
 // Subnets: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeSubnets
+
+// Subnets allows marking and sweeping VPC subnets.
 type Subnets struct{}
 
+// MarkAndSweep queries the resources in a specific region, using the provided
+// session (which has account-number acct), marking them as present in set and
+// deleting appropriately.
 func (Subnets) MarkAndSweep(sess *session.Session, acct string, region string, set *Set) error {
 	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
 

@@ -50,7 +50,7 @@ type item struct {
 	namespace     string
 	podName       string
 	containerName string
-	prowJobId     string
+	prowJobID     string
 }
 
 func NewController(client core.CoreV1Interface, prowJobClient *kube.Client, gcsConfig *gcsupload.Options) Controller {
@@ -73,7 +73,7 @@ func NewController(client core.CoreV1Interface, prowJobClient *kube.Client, gcsC
 					namespace:     newPod.Namespace,
 					podName:       newPod.Name,
 					containerName: container,
-					prowJobId:     newPod.Labels[kube.ProwJobIDLabel],
+					prowJobID:     newPod.Labels[kube.ProwJobIDLabel],
 				})
 			}
 
@@ -153,7 +153,7 @@ func (c *Controller) processNextItem() bool {
 
 	workItem := key.(item)
 
-	prowJob, err := c.prowJobClient.GetProwJob(workItem.prowJobId)
+	prowJob, err := c.prowJobClient.GetProwJob(workItem.prowJobID)
 	if err != nil {
 		c.handleErr(err, workItem)
 		return true
@@ -169,7 +169,7 @@ func (c *Controller) processNextItem() bool {
 	// error is checked above
 	log, _ := result.Raw()
 	var target string
-	if workItem.podName == workItem.prowJobId {
+	if workItem.podName == workItem.prowJobID {
 		target = path.Join(ContainerLogDir, fmt.Sprintf("%s.txt", workItem.containerName))
 	} else {
 		target = path.Join(ContainerLogDir, workItem.podName, fmt.Sprintf("%s.txt", workItem.containerName))

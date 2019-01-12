@@ -16,5 +16,6 @@ limitations under the License.
 
 package version
 
-// This is filled in by bazel at link time. If bazel is not used, it will be empty.
+// Version is the build version of deck. It is filled in by bazel at link time.
+// If bazel is not used, it will be empty.
 var Version string

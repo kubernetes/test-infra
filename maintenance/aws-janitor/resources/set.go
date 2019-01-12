@@ -39,6 +39,7 @@ type Set struct {
 	ttl       time.Duration
 }
 
+// LoadSet initiate an new Set and load it's data from S3.
 func LoadSet(sess *session.Session, p *s3path.Path, ttl time.Duration) (*Set, error) {
 	s := &Set{firstSeen: make(map[string]time.Time), marked: make(map[string]bool), ttl: ttl}
 	svc := s3.New(sess, &aws.Config{Region: aws.String(p.Region)})
@@ -56,6 +57,7 @@ func LoadSet(sess *session.Session, p *s3path.Path, ttl time.Duration) (*Set, er
 	return s, nil
 }
 
+// Save persists the Set firstSeen data to S3.
 func (s *Set) Save(sess *session.Session, p *s3path.Path) error {
 	b, err := json.MarshalIndent(s.firstSeen, "", "  ")
 	if err != nil {

@@ -20,6 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 )
 
+// Type describes an AWS resource type that can be marked and swept.
 type Type interface {
 	// MarkAndSweep queries the resource in a specific region, using
 	// the provided session (which has account-number acct), calling
@@ -28,7 +29,8 @@ type Type interface {
 	MarkAndSweep(sess *session.Session, acct string, region string, res *Set) error
 }
 
-// AWS resource types known to this script, in dependency order.
+// RegionalTypeList is the AWS resource types known to this script, listed in
+// dependency order.
 var RegionalTypeList = []Type{
 	LoadBalancers{},
 	AutoScalingGroups{},
@@ -48,7 +50,8 @@ var RegionalTypeList = []Type{
 	Addresses{},
 }
 
-// Non-regional AWS resource types, in dependency order
+// GlobalTypeList is the non-regional AWS resource types, listed in dependency
+// order.
 var GlobalTypeList = []Type{
 	IAMInstanceProfiles{},
 	IAMRoles{},
