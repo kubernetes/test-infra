@@ -2445,6 +2445,9 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-org-verify-all
   num_columns_recent: 30
 #presubmits
+- name: pull-cluster-api-bazel-verify
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-bazel-verify
+  num_columns_recent: 20
 - name: pull-cluster-api-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-build
   num_columns_recent: 20
@@ -5906,6 +5909,8 @@ dashboards:
     test_group_name: ci-cluster-api-test
   - name: pr-build
     test_group_name: pull-cluster-api-build
+  - name: verify-bazel
+    test_group_name: pull-cluster-api-bazel-verify
   - name: pr-make
     test_group_name: pull-cluster-api-make
   - name: pr-test
