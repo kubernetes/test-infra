@@ -63,23 +63,35 @@ func (wr *Writer2Reader) Read(buffer []byte) (n int, err error) {
 	}
 }
 
-func (wr *Writer2Reader) Write(bytes []byte) (n int, err error) {
+func (wr *Writer2Reader) Write(bytes []byte) (int, error) {
 	// on first call to Write open a new channel to help sending the next calls to Writer.Write into Reader.Read
 	if wr.firstWrite {
 		wr.firstWrite = false
 		go backgroundWriter(wr)
 	}
-	// must copy before send otherwise the caller of this function can change the content just before read on the other side
-	c := make([]byte, len(bytes))
-	copy(c, bytes)
-	wr.buffer <- c
+
+	send(wr, bytes)
 
 	// Write will never return an error. the error is returned upon a call to Close
 	return len(bytes), nil
 }
 
+func send(wr *Writer2Reader, bytes []byte) {
+	// must copy before send otherwise the caller of this function can change the content just before read on the other side
+	c := make([]byte, len(bytes))
+	copy(c, bytes)
+
+	// channel might be closed due to error in writeFunc, just recover (the error is "can't send to a closed channel")
+	defer func() {
+		recover()
+	}()
+
+	wr.buffer <- c
+}
+
 func backgroundWriter(wr *Writer2Reader) {
 	err := wr.writeFunc(wr)
+
 	wr.error <- err
 }
 

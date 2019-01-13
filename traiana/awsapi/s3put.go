@@ -16,13 +16,4 @@ func S3Put(reader io.Reader, handle *BucketHandle, key string) error {
 	})
 
 		return err
-
-
-/*	target, err := os.Create("/Users/Traiana/alexa/Downloads/fw.txt")
-	defer target.Close()
-
-	w := bufio.NewWriter(target)
-	io.Copy(w, reader)
-	w.Flush()
-	return err*/
 }
