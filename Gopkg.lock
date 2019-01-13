@@ -1065,6 +1065,14 @@
   revision = "7aff26db30c1be810f9de5038ec5ef96ac41fd7c"
 
 [[projects]]
+  digest = "1:42e8c2456d7ec0f31e182c20022e74324c4da2cb3bd9069ff9b131fe33466308"
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
+  pruneopts = "NUT"
+  revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
+  version = "v1.3.0"
+
+[[projects]]
   branch = "master"
   digest = "1:fb46fad2cac6aa77a3fd7072da0e546254af35be5ed80f4d0069a351e58144db"
   name = "github.com/traiana/okro"
@@ -1686,6 +1694,7 @@
     "github.com/sirupsen/logrus",
     "github.com/spf13/cobra",
     "github.com/spf13/pflag",
+    "github.com/stretchr/testify/assert",
     "github.com/traiana/okro/okro/api/v1beta1",
     "golang.org/x/crypto/ssh",
     "golang.org/x/net/context",

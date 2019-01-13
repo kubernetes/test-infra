@@ -6,7 +6,8 @@ go_library(
         "bucket.go",
         "client.go",
         "clientoption.go",
-        "s3writer.go",
+        "s3put.go",
+        "writer2reader.go",
     ],
     importpath = "k8s.io/test-infra/traiana/awsapi",
     visibility = ["//visibility:public"],
@@ -20,8 +21,15 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = ["s3writer_test.go"],
+    srcs = [
+        "s3put_test.go",
+        "writer2reader_test.go",
+    ],
     embed = [":go_default_library"],
+    deps = [
+        "//bazel-test-infra/external/go_sdk/src/context:go_default_library",
+        "//vendor/github.com/stretchr/testify/assert:go_default_library",
+    ],
 )
 
 filegroup(

@@ -14,35 +14,33 @@ import (
 // S3Put is calling Writer2Reader.Read which reads the data from the buffer channel
 
 type Writer2Reader struct {
-	buffer chan []byte // data channel
-	error chan error // return the error from the background func
-	writeFunc WriteFunc // the write function works in the background, taking the reader as a parameter and writing the data into S3
-	firstWrite bool // on the first call to Write, writeFunc is called in background, reading it's input using the buffer chan
-	leftOvers []byte // when read buffer is smaller than write buffer, we need this to keep the left overs until next read. Hopefully not too big ...
+	buffer    chan []byte // data channel
+	error     chan error  // return the error from the background func
+	writeFunc WriteFunc   // the write function works in the background, taking the reader as a parameter and writing the data into S3
+	inited    bool        // on the first call to Write, writeFunc is called in background, reading it's input using the buffer chan
+	leftOvers []byte      // when read buffer is smaller than write buffer, we need this to keep the left overs until next read. Hopefully not too big ...
 }
 
 type WriteFunc func(reader io.Reader) error
 
 func NewWriter2Reader(writeFunc WriteFunc) *Writer2Reader {
 	return &Writer2Reader{
-		buffer: make(chan []byte),
-		error: make(chan error),
+		buffer:    make(chan []byte),
+		error:     make(chan error),
 		writeFunc: writeFunc,
-		firstWrite: true,
+		inited:    false,
 	}
 }
 func (wr *Writer2Reader) Read(buffer []byte) (n int, err error) {
-	spaceLeft := len(buffer)
 	size := 0
 
 	if len(wr.leftOvers) > 0 {
 		size = copy(buffer, wr.leftOvers)
 		wr.leftOvers = wr.leftOvers[size:]
-		spaceLeft -= size
-	}
 
-	if spaceLeft == 0 {
-		return len(buffer), nil
+		if len(buffer) - size == 0 {
+			return len(buffer), nil
+		}
 	}
 
 	// read or block
@@ -64,8 +62,8 @@ func (wr *Writer2Reader) Read(buffer []byte) (n int, err error) {
 
 func (wr *Writer2Reader) Write(bytes []byte) (int, error) {
 	// on first call to Write open a new channel to help sending the next calls to Writer.Write into Reader.Read
-	if wr.firstWrite {
-		wr.firstWrite = false
+	if !wr.inited {
+		wr.inited = true
 		go backgroundWriter(wr)
 	}
 
