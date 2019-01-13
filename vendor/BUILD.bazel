@@ -189,6 +189,7 @@ filegroup(
         "//vendor/github.com/sirupsen/logrus:all-srcs",
         "//vendor/github.com/spf13/cobra:all-srcs",
         "//vendor/github.com/spf13/pflag:all-srcs",
+        "//vendor/github.com/stretchr/testify/assert:all-srcs",
         "//vendor/github.com/traiana/okro/okro/api/v1beta1:all-srcs",
         "//vendor/github.com/traiana/okro/okro/client:all-srcs",
         "//vendor/github.com/traiana/okro/okro/pkg/util/errorx:all-srcs",

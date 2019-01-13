@@ -20,13 +20,13 @@ import (
 	"context"
 	"fmt"
 	"k8s.io/test-infra/traiana/storage"
+	"k8s.io/test-infra/traiana/storage/option"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"google.golang.org/api/option"
 
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"

@@ -1065,6 +1065,14 @@
   revision = "7aff26db30c1be810f9de5038ec5ef96ac41fd7c"
 
 [[projects]]
+  digest = "1:42e8c2456d7ec0f31e182c20022e74324c4da2cb3bd9069ff9b131fe33466308"
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
+  pruneopts = "NUT"
+  revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
+  version = "v1.3.0"
+
+[[projects]]
   branch = "master"
   digest = "1:bde3f010e8a0e86797b371956cf1f12d996bae1f633a3ff0edce60a3726fadac"
   name = "github.com/traiana/okro"
@@ -1627,6 +1635,7 @@
     "github.com/aws/aws-k8s-tester/ekstester",
     "github.com/aws/aws-sdk-go/aws",
     "github.com/aws/aws-sdk-go/aws/awserr",
+    "github.com/aws/aws-sdk-go/aws/credentials",
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/autoscaling",
     "github.com/aws/aws-sdk-go/service/ec2",
@@ -1686,6 +1695,7 @@
     "github.com/sirupsen/logrus",
     "github.com/spf13/cobra",
     "github.com/spf13/pflag",
+    "github.com/stretchr/testify/assert",
     "github.com/traiana/okro/okro/api/v1beta1",
     "github.com/traiana/okro/okro/client",
     "golang.org/x/crypto/ssh",

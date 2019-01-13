@@ -3,27 +3,26 @@ package storage
 import (
 	"cloud.google.com/go/storage"
 	"context"
-	"google.golang.org/api/option"
 	"k8s.io/test-infra/traiana"
 	"k8s.io/test-infra/traiana/awsapi"
+	"k8s.io/test-infra/traiana/storage/option"
 )
 
 // Client wrapper - AWS or GCS
-
 type Client struct {
 	gcs *storage.Client
 	aws *awsapi.Client
 }
 
-func NewClient(ctx context.Context, opts ...option.ClientOption) (*Client, error) {
+func NewClient(ctx context.Context, opt option.ClientOption) (*Client, error) {
 	if traiana.Aws {
-		aws, err := awsapi.NewClient()
+		aws, err := awsapi.NewClient(opt.Aws)
 
 		return &Client{
 			aws: aws,
 		}, err
 	} else {
-		gcs, err := storage.NewClient(ctx, opts...)
+		gcs, err := storage.NewClient(ctx, opt.Gcs)
 
 		return &Client{
 			gcs: gcs,
@@ -50,7 +49,7 @@ func (c *Client) Bucket(name string) *BucketHandle {
 
 type StorageWriter struct {
 	gcs      *storage.Writer
-	aws      *awsapi.S3Writer
+	aws      *awsapi.Writer2Reader
 	Metadata map[string]string // You must call SetMetadata() after setting this field
 }
 

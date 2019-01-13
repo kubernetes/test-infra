@@ -2,6 +2,7 @@ package awsapi
 
 import (
 	"context"
+	"io"
 )
 
 type BucketHandle struct {
@@ -21,11 +22,12 @@ type ObjectHandle struct {
 	key string
 }
 
-func (h ObjectHandle) NewWriter(context context.Context) *S3Writer {
-	return &S3Writer{
-		handle: Bucket(h.b.bucket, h.b.client),
-		key: h.key,
-	}
+func (h ObjectHandle) NewWriter(context context.Context) *Writer2Reader {
+	b := Bucket(h.b.bucket, h.b.client)
+
+	return NewWriter2Reader(func(reader io.Reader) error {
+		return S3Put(reader, b, h.key)
+	})
 }
 
 func (b *BucketHandle) Object(name string) *ObjectHandle {
