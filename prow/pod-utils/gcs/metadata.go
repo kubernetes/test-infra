@@ -27,8 +27,6 @@ type Started struct {
 	Repos map[string]string `json:"repos"`
 	// Pull is deprecated.
 	Pull string `json:"pull"`
-	// Revision is deprecated.
-	Revision string `json:"revision"`
 }
 
 // Finished is used to mirror the finished.json artifact.

@@ -297,9 +297,7 @@ func getBuildData(bucket storageBucket, dir string) (buildData, error) {
 		return b, fmt.Errorf("failed to read started.json: %v", err)
 	}
 	b.Started = time.Unix(started.Timestamp, 0)
-	if started.Revision != "" {
-		b.commitHash = started.Revision
-	} else if commitHash, err := getPullCommitHash(started.Pull); err == nil {
+	if commitHash, err := getPullCommitHash(started.Pull); err == nil {
 		b.commitHash = commitHash
 	}
 	finished := gcs.Finished{}

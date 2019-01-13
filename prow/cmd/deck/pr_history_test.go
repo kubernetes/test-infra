@@ -205,7 +205,7 @@ var testBucket = fakeBucket{
 		}`,
 		"pr-logs/pull/123/build-snowman/789/started.json": `{
 			"timestamp": 98765,
-			"revision": "bbdebedaf24c03f9e2eeb88e8ea4bb10c9e1fbfc"
+			"pull": "master:d0c3cd182cffb3e722b14322fd1ca854a8bf62b0,69848:bbdebedaf24c03f9e2eeb88e8ea4bb10c9e1fbfc"
 		}`,
 		"pr-logs/pull/765/eat-bread/999/started.json": `{
 			"timestamp": 12345,
