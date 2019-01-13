@@ -13,7 +13,6 @@ import (
 // The data is sent to the background using the buffer chan to S3Put.
 // S3Put is calling Writer2Reader.Read which reads the data from the buffer channel
 
-
 type Writer2Reader struct {
 	buffer chan []byte // data channel
 	error chan error // return the error from the background func
@@ -91,15 +90,25 @@ func send(wr *Writer2Reader, bytes []byte) {
 
 func backgroundWriter(wr *Writer2Reader) {
 	err := wr.writeFunc(wr)
+	closeBufferSafe(wr.buffer)
 
 	wr.error <- err
 }
 
 func (wr Writer2Reader) Close() error {
-	close(wr.buffer)
+	closeBufferSafe(wr.buffer)
 
 	// wait for completion
 	err := <- wr.error
 
 	return err
+}
+
+func closeBufferSafe(buffer chan []byte) {
+	// channel might be closed due to error in writeFunc, just recover (the error is "close of a closed channel")
+	defer func() {
+		recover()
+	}()
+
+	close(buffer)
 }

@@ -8,9 +8,6 @@ import (
 	"testing"
 )
 
-// TODO:               ________________ TEST ERRORs during write
-
-
 // There r 2 critical buffer sizes that we test here:
 // 1. io.Copy read buffer size
 // 2. s3Put read buffer size
