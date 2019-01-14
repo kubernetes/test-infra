@@ -80,6 +80,7 @@ approve:
 - repos:
   - bazelbuild
   - kubernetes/community
+  - kubernetes/org
   - kubernetes/test-infra
   implicit_self_approve: true
   review_acts_as_approve: true
