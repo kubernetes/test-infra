@@ -15,6 +15,8 @@ You need three things:
 2) a [personal access token][1] for the github bot user you want to act as prow
 
    - Prow uploads this token into a secret in your cluster
+   - Bot user must have write access to the repo
+   - Token must have `public_repo` and `repo:status` scopes (and repo for private repos), more details [here][8].
 
 3) Optionally, credentials to a kubernetes cluster
 
@@ -107,13 +109,22 @@ There are [relevant docs on Kubernetes Authentication](https://kubernetes.io/doc
 
 You will need two secrets to talk to GitHub. The `hmac-token` is the token that
 you give to GitHub for validating webhooks. Generate it using any reasonable
-randomness-generator, eg `openssl rand -hex 20`. The `oauth-token` is an OAuth2 token
-that has read and write access to the bot account. Generate it from the
-[account's settings -> Personal access tokens -> Generate new token][1].
+randomness-generator, eg `openssl rand -hex 20`.
 
 ```sh
 # openssl rand -hex 20 > /path/to/hook/secret
 kubectl create secret generic hmac-token --from-file=hmac=/path/to/hook/secret
+```
+
+The `oauth-token` is an OAuth2 token that has read and write access to the bot account:
+
+- Bot user must have write access to the repo
+- Token must have `public_repo` and `repo:status` scopes (and repo for private repos), more details [here][8].
+
+Generate it from the
+[account's settings -> Personal access tokens -> Generate new token][1].
+
+```sh
 # https://github.com/settings/tokens
 kubectl create secret generic oauth-token --from-file=oauth=/path/to/oauth/secret
 ```
@@ -463,3 +474,4 @@ a separate namespace.
 [5]: /prow/cmd/mkbuild-cluster/
 [6]: /prow/cmd/tide/README.md
 [7]: /prow/cmd/tide/config.md
+[8]: https://github.com/kubernetes/test-infra/blob/master/prow/scaling.md#working-around-githubs-limited-acls
