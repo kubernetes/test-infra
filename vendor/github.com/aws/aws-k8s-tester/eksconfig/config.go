@@ -442,7 +442,7 @@ var defaultConfig = Config{
 
 	// Amazon EKS-optimized AMI, https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
 	WorkerNodeAMI:          "ami-0a2abab4107669c1b",
-	WorkerNodeInstanceType: "m5.large",
+	WorkerNodeInstanceType: "m3.xlarge",
 	WorkerNodeASGMin:       1,
 	WorkerNodeASGMax:       1,
 	WorkerNodeVolumeSizeGB: 20,
@@ -615,9 +615,6 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 	}
 	if cfg.WorkerNodeAMI == "" {
 		return errors.New("EKS WorkerNodeAMI is not specified")
-	}
-	if !checkAMI(cfg.KubernetesVersion, cfg.AWSRegion, cfg.WorkerNodeAMI) {
-		return fmt.Errorf("EKS WorkerNodeAMI %q is not valid", cfg.WorkerNodeAMI)
 	}
 	if cfg.WorkerNodeInstanceType == "" {
 		return errors.New("EKS WorkerNodeInstanceType is not specified")
@@ -1033,86 +1030,6 @@ var supportedRegions = map[string]struct{}{
 	"ap-northeast-2": {},
 	"ap-southeast-1": {},
 	"ap-southeast-2": {},
-}
-
-// https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
-// https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
-var amiCPUs = map[string]map[string]string{
-	"1.10": {
-		"us-west-2":      "ami-09e1df3bad220af0b",
-		"us-east-1":      "ami-04358410d28eaab63",
-		"us-east-2":      "ami-0b779e8ab57655b4b",
-		"eu-central-1":   "ami-08eb700778f03ea94",
-		"eu-north-1":     "ami-068b8a1efffd30eda",
-		"eu-west-1":      "ami-0de10c614955da932",
-		"ap-northeast-1": "ami-06398bdd37d76571d",
-		"ap-northeast-2": "ami-08a87e0a7c32fa649",
-		"ap-southeast-1": "ami-0ac3510e44b5bf8ef",
-		"ap-southeast-2": "ami-0d2c929ace88cfebe",
-	},
-	"1.11": {
-		"us-west-2":      "ami-0a2abab4107669c1b",
-		"us-east-1":      "ami-0c24db5df6badc35a",
-		"us-east-2":      "ami-0c2e8d28b1f854c68",
-		"eu-central-1":   "ami-010caa98bae9a09e2",
-		"eu-north-1":     "ami-06ee67302ab7cf838",
-		"eu-west-1":      "ami-01e08d22b9439c15a",
-		"ap-northeast-1": "ami-0f0e8066383e7a2cb",
-		"ap-northeast-2": "ami-0b7baa90de70f683f",
-		"ap-southeast-1": "ami-019966ed970c18502",
-		"ap-southeast-2": "ami-06ade0abbd8eca425",
-	},
-}
-
-// https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
-// https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
-var amiGPUs = map[string]map[string]string{
-	"1.10": {
-		"us-west-2":      "ami-0ebf0561e61a2be02",
-		"us-east-1":      "ami-0131c0ca222183def",
-		"us-east-2":      "ami-0abfb3be33c196cbf",
-		"eu-central-1":   "ami-000622b1016d2a5bf",
-		"eu-north-1":     "ami-cc149ab2",
-		"eu-west-1":      "ami-0dafd3a1dc43781f7",
-		"ap-northeast-1": "ami-0afc9d14b2fe11ad9",
-		"ap-northeast-2": "ami-0d75b9ab57bfc8c9a",
-		"ap-southeast-1": "ami-0ecce0670cb66d17b",
-		"ap-southeast-2": "ami-03b048bd9d3861ce9",
-	},
-	"1.11": {
-		"us-west-2":      "ami-0c9e5e2d8caa9fb5e",
-		"us-east-1":      "ami-0ff0241c02b279f50",
-		"us-east-2":      "ami-006a12f54eaafc2b1",
-		"eu-central-1":   "ami-0d6f0554fd4743a9d",
-		"eu-north-1":     "ami-0b159b75",
-		"eu-west-1":      "ami-097978e7acde1fd7c",
-		"ap-northeast-1": "ami-036b3969c5eb8d3cf",
-		"ap-northeast-2": "ami-0b7f163f7194396f7",
-		"ap-southeast-1": "ami-093f742654a955ee6",
-		"ap-southeast-2": "ami-05e09575123ff498b",
-	},
-}
-
-func checkAMI(ver, region, imageID string) (ok bool) {
-	var cpu map[string]string
-	cpu, ok = amiCPUs[ver]
-	if !ok {
-		return false
-	}
-	var id string
-	id, ok = cpu[region]
-	if !ok {
-		var gpu map[string]string
-		gpu, ok = amiGPUs[ver]
-		if !ok {
-			return false
-		}
-		id, ok = gpu[region]
-		if !ok {
-			return false
-		}
-	}
-	return id == imageID
 }
 
 func checkEC2InstanceType(s string) (ok bool) {
