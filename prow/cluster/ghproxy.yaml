@@ -50,7 +50,7 @@ spec:
     spec:
       containers:
       - name: ghproxy
-        image: gcr.io/k8s-testimages/ghproxy:latest
+        image: gcr.io/k8s-testimages/ghproxy:latest # TODO(fejta): tagged
         imagePullPolicy: Always
         args:
         - --cache-dir=/cache
@@ -73,3 +73,19 @@ spec:
         effect: "NoSchedule"
       nodeSelector:
         dedicated: "ghproxy"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: default
+  labels:
+    app: ghproxy
+  name: ghproxy
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8888
+  selector:
+    app: ghproxy
+  type: NodePort # TODO(fejta): remove this?
