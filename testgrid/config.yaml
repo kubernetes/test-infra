@@ -720,6 +720,8 @@ test_groups:
 - name: maintenance-ci-testgrid-config-upload
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-testgrid-config-upload
   num_failures_to_alert: 2
+- name: maintenance-ci-aws-janitor
+  gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-aws-janitor
 - name: maintenance-ci-janitor
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-janitor
 - name: maintenance-pull-janitor
@@ -6672,6 +6674,11 @@ dashboards:
   - name: ci-janitor
     description: Deletes old GCP resources from periodic jobs
     test_group_name: maintenance-ci-janitor
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: maintenance-aws-janitor
+    description: Deletes old resources from AWS projects
+    test_group_name: maintenance-ci-aws-janitor
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: pull-janitor
