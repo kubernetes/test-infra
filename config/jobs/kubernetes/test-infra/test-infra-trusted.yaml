@@ -13,6 +13,8 @@ postsubmits:
         - run
         - //admin:update
         - --
+        - --github-endpoint=ghproxy.default.svc.cluster.local
+        - --github-endpoint=https://api.github.com
         - --github-token-path=/etc/github-token/oauth
         - --confirm
         volumeMounts:
@@ -84,6 +86,8 @@ periodics:
       - run
       - //admin:update
       - --
+      - --github-endpoint=ghproxy.default.svc.cluster.local
+      - --github-endpoint=https://api.github.com
       - --github-token-path=/etc/github-token/oauth
       - --confirm
       volumeMounts:

@@ -14,7 +14,7 @@ release(
     component("crier_rbac", MULTI_KIND),
     component("deck", "service", "deployment"),
     component("gce-ssd-retain", "storageclass"),
-    component("ghproxy", "service", "deployment"),
+    component("ghproxy", MULTI_KIND),
     component(
         "grandmatriarch",
         MULTI_KIND,
