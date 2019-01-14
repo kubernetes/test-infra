@@ -363,6 +363,8 @@ test_groups:
   num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gce-scale-performance-cl
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scale-performance-cl
+- name: ci-kubernetes-e2e-gke-small-performance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-small-performance
 - name: ci-kubernetes-e2e-gci-gce-es-logging
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-es-logging
 - name: ci-kubernetes-e2e-gci-gce-sd-logging
@@ -6517,6 +6519,8 @@ dashboards:
     test_group_name: ci-perf-tests-e2e-gce-clusterloader
   - name: ci-kubernetes-e2e-gce-scale-performance-cl
     test_group_name: ci-kubernetes-e2e-gce-scale-performance-cl
+  - name: ci-kubernetes-e2e-gke-small-performance
+    test_group_name: ci-kubernetes-e2e-gke-small-performance
 
 - name: sig-scalability-benchmarks
   dashboard_tab:
