@@ -48,19 +48,12 @@ import (
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/util/workqueue"
 )
 
 const (
 	controllerName = "prow-build-crd"
 )
-
-type limiter interface {
-	ShutDown()
-	Get() (interface{}, bool)
-	Done(interface{})
-	Forget(interface{})
-	AddRateLimited(interface{})
-}
 
 type controller struct {
 	pjNamespace string
@@ -71,7 +64,7 @@ type controller struct {
 	pjLister   prowjoblisters.ProwJobLister
 	pjInformer cache.SharedIndexInformer
 
-	workqueue limiter
+	workqueue workqueue.RateLimitingInterface
 
 	recorder record.EventRecorder
 
@@ -115,7 +108,7 @@ func (c *controller) hasSynced() bool {
 	return true // Everyone is synced
 }
 
-func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjobinfov1.ProwJobInformer, buildConfigs map[string]buildConfig, totURL, pjNamespace string, rl limiter) *controller {
+func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjobinfov1.ProwJobInformer, buildConfigs map[string]buildConfig, totURL, pjNamespace string, rl workqueue.RateLimitingInterface) *controller {
 	// Log to events
 	prowjobscheme.AddToScheme(scheme.Scheme)
 	eventBroadcaster := record.NewBroadcaster()

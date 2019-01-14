@@ -132,6 +132,9 @@ type fakeLimiter struct {
 }
 
 func (fl *fakeLimiter) ShutDown() {}
+func (fl *fakeLimiter) ShuttingDown() bool {
+	return false
+}
 func (fl *fakeLimiter) Get() (interface{}, bool) {
 	return "not implemented", true
 }
@@ -139,6 +142,18 @@ func (fl *fakeLimiter) Done(interface{})   {}
 func (fl *fakeLimiter) Forget(interface{}) {}
 func (fl *fakeLimiter) AddRateLimited(a interface{}) {
 	fl.added = a.(string)
+}
+func (fl *fakeLimiter) Add(a interface{}) {
+	fl.added = a.(string)
+}
+func (fl *fakeLimiter) AddAfter(a interface{}, d time.Duration) {
+	fl.added = a.(string)
+}
+func (fl *fakeLimiter) Len() int {
+	return 0
+}
+func (fl *fakeLimiter) NumRequeues(item interface{}) int {
+	return 0
 }
 
 func TestEnqueueKey(t *testing.T) {

@@ -91,7 +91,7 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 				logrus.WithError(err).Error("Cannot get key from object meta")
 				return
 			}
-			c.queue.Add(key)
+			c.queue.AddRateLimited(key)
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
 			key, err := cache.MetaNamespaceKeyFunc(newObj)
@@ -100,7 +100,7 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 				logrus.WithError(err).Error("Cannot get key from object meta")
 				return
 			}
-			c.queue.Add(key)
+			c.queue.AddRateLimited(key)
 		},
 	})
 

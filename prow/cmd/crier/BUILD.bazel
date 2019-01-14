@@ -15,11 +15,10 @@ go_library(
         "//prow/gerrit/client:go_default_library",
         "//prow/gerrit/reporter:go_default_library",
         "//prow/github/reporter:go_default_library",
+        "//prow/kube:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//prow/pubsub/reporter:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
-        "//vendor/golang.org/x/time/rate:go_default_library",
-        "//vendor/k8s.io/client-go/util/workqueue:go_default_library",
     ],
 )
 
