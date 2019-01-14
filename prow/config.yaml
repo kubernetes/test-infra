@@ -106,6 +106,9 @@ branch-protection:
             teams:
             - stage-bots
         dashboard:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
           required_pull_request_reviews:
             required_approving_review_count: 1
         dns:
@@ -455,6 +458,12 @@ tide:
   context_options:
     optional-contexts:
     - "Submit Queue"
+    orgs:
+     kubernetes:
+      repos:
+        dashboard:
+          skip-unknown-contexts: true
+          from-branch-protection: true
 
 push_gateway:
   endpoint: pushgateway
