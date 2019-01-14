@@ -14,6 +14,7 @@
 - [Labels that apply to kubernetes/kubernetes, only for issues](#labels-that-apply-to-kuberneteskubernetes-only-for-issues)
 - [Labels that apply to kubernetes/kubernetes, only for PRs](#labels-that-apply-to-kuberneteskubernetes-only-for-prs)
 - [Labels that apply to kubernetes/org, only for issues](#labels-that-apply-to-kubernetesorg-only-for-issues)
+- [Labels that apply to kubernetes/sig-release, for both issues and PRs](#labels-that-apply-to-kubernetessig-release-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/test-infra, for both issues and PRs](#labels-that-apply-to-kubernetestest-infra-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/website, for both issues and PRs](#labels-that-apply-to-kuberneteswebsite-for-both-issues-and-prs)
 
@@ -160,6 +161,7 @@ larger set of contributors to apply/remove them.
 | ---- | ----------- | -------- | --- |
 | <a id="area/conformance" href="#area/conformance">`area/conformance`</a> | Issues or PRs related to kubernetes conformance tests| label | |
 | <a id="area/deflake" href="#area/deflake">`area/deflake`</a> | Issues or PRs related to deflaking kubernetes tests| label | |
+| <a id="area/release-team" href="#area/release-team">`area/release-team`</a> | Issues or PRs related to the release-team subproject| label | |
 | <a id="kind/kep" href="#kind/kep">`kind/kep`</a> | Categorizes issues related to KEPs and PRs modifying the KEP directory| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 
 ## Labels that apply to kubernetes/enhancements, for both issues and PRs
@@ -174,6 +176,7 @@ larger set of contributors to apply/remove them.
 | ---- | ----------- | -------- | --- |
 | <a id="area/conformance" href="#area/conformance">`area/conformance`</a> | Issues or PRs related to kubernetes conformance tests| label | |
 | <a id="area/deflake" href="#area/deflake">`area/deflake`</a> | Issues or PRs related to deflaking kubernetes tests| label | |
+| <a id="area/hyperkube" href="#area/hyperkube">`area/hyperkube`</a> | Issues or PRs related to the hyperkube subproject| label | |
 
 ## Labels that apply to kubernetes/kubernetes, only for issues
 
@@ -195,6 +198,12 @@ larger set of contributors to apply/remove them.
 | <a id="area/github-integration" href="#area/github-integration">`area/github-integration`</a> | Third-party integrations, webhooks, or GitHub Apps| label | |
 | <a id="area/github-membership" href="#area/github-membership">`area/github-membership`</a> | Requesting membership in a Kubernetes GitHub Organization or Team| label | |
 | <a id="area/github-repo" href="#area/github-repo">`area/github-repo`</a> | Creating, migrating or deleting a Kubernetes GitHub Repository| label | |
+
+## Labels that apply to kubernetes/sig-release, for both issues and PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="area/release-team" href="#area/release-team">`area/release-team`</a> | Issues or PRs related to the release-team subproject| label | |
 
 ## Labels that apply to kubernetes/test-infra, for both issues and PRs
 
