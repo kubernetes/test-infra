@@ -12,59 +12,88 @@ import (
 // 1. io.Copy read buffer size
 // 2. s3Put read buffer size
 
-func Test_Writer2Reader_EqualBufferSize_BothBuffersTooSmall(t *testing.T) {
-	input, output, msg := doReadWrite([]byte{1,2},1,1)
-	assert.Equal(t, output, input, msg)
-}
 
-func Test_Writer2Reader_EqualBufferSize_BothBuffersBigEnough(t *testing.T) {
-	input, output, msg := doReadWrite([]byte{1,2},3,3)
-	assert.Equal(t, output, input, msg)
-}
 
-func Test_Writer2Reader_EqualBufferSize_BothBuffersAreEqualToDataSize(t *testing.T) {
-	input, output, msg := doReadWrite([]byte{1,2},3,3)
-	assert.Equal(t, output, input, msg)
-}
 
-func Test_Writer2Reader_IoCopyBigger_BothBuffersBigEnough(t *testing.T) {
-	input, output, msg := doReadWrite([]byte{1,2},4,3)
-	assert.Equal(t, output, input, msg)
-}
 
-func Test_Writer2Reader_IoCopyBigger_BothBuffersTooSmall(t *testing.T) {
-	input, output, msg := doReadWrite([]byte{1,2,3},2,1)
-	assert.Equal(t, output, input, msg)
-}
-
-func Test_Writer2Reader_IoCopyBigger_3sPutTooSmall(t *testing.T) {
-	input, output, msg := doReadWrite([]byte{1,2},2,1)
-	assert.Equal(t, output, input, msg)
-}
-
-func Test_Writer2Reader_IoCopyBigger_IoCopyBiggerThanData_S3PutTooSmall(t *testing.T) {
-	input, output, msg := doReadWrite([]byte{1,2},3,1)
-	assert.Equal(t, output, input, msg)
-}
-
-func Test_Writer2Reader_S3PutBigger_BothBuffersBigEnough(t *testing.T) {
-	input, output, msg := doReadWrite([]byte{1,2},3,4)
-	assert.Equal(t, output, input, msg)
-}
-
-func Test_Writer2Reader_S3PutBigger_BothBuffersTooSmall(t *testing.T) {
-	input, output, msg := doReadWrite([]byte{1,2,3},1,2)
-	assert.Equal(t, output, input, msg)
-}
-
-func Test_Writer2Reader_S3PutBigger_IoCopyTooSmall(t *testing.T) {
-	input, output, msg := doReadWrite([]byte{1,2},1,2)
-	assert.Equal(t, output, input, msg)
-}
-
-func Test_Writer2Reader_S3PutBigger_S3PutBiggerThanData_IoCopyTooSmall(t *testing.T) {
-	input, output, msg := doReadWrite([]byte{1,2},1,3)
-	assert.Equal(t, output, input, msg)
+func TestWriter2Reader(t *testing.T) {
+	tests := []struct {
+		name                        string
+		input                       []byte
+		ioCopyBufSize, s3PutBufSize int
+	}{
+		{
+			name:          "equal buffer size, both buffers too small",
+			input:         []byte{1, 2},
+			ioCopyBufSize: 1,
+			s3PutBufSize:  1,
+		},
+		{
+			name:          "equal buffer size, both buffers big enough",
+			input:         []byte{1, 2},
+			ioCopyBufSize: 3,
+			s3PutBufSize:  3,
+		},
+		{
+			name:          "equal buffer size, both buffers are equal to data size",
+			input:         []byte{1, 2},
+			ioCopyBufSize: 2,
+			s3PutBufSize:  2,
+		},
+		{
+			name:          "IoCopy bigger, both buffers big enough",
+			input:         []byte{1, 2},
+			ioCopyBufSize: 4,
+			s3PutBufSize:  3,
+		},
+		{
+			name:          "IoCopy bigger, both buffers too small",
+			input:         []byte{1, 2, 3},
+			ioCopyBufSize: 2,
+			s3PutBufSize:  1,
+		},
+		{
+			name:          "IoCopy bigger, 3sPut too small",
+			input:         []byte{1, 2},
+			ioCopyBufSize: 2,
+			s3PutBufSize:  1,
+		},
+		{
+			name:          "IoCopy bigger, IoCopy bigger than data and S3Put too small",
+			input:         []byte{1, 2},
+			ioCopyBufSize: 3,
+			s3PutBufSize:  1,
+		},
+		{
+			name:          "S3Put bigger, both buffers big enough",
+			input:         []byte{1, 2},
+			ioCopyBufSize: 3,
+			s3PutBufSize:  4,
+		},
+		{
+			name:          "S3Put bigger, both buffers too small",
+			input:         []byte{1, 2, 3},
+			ioCopyBufSize: 1,
+			s3PutBufSize:  2,
+		},
+		{
+			name:          "S3Put bigger, IoCopy too small",
+			input:         []byte{1, 2},
+			ioCopyBufSize: 1,
+			s3PutBufSize:  2,
+		},
+		{
+			name:          "S3Put bigger, S3Put bigger than dataand IoCopy too small",
+			input:         []byte{1, 2},
+			ioCopyBufSize: 1,
+			s3PutBufSize:  3,
+		},
+	}
+	for _, tt := range tests {
+		output := doReadWrite(tt.input,tt.ioCopyBufSize,tt.s3PutBufSize)
+		msg := fmt.Sprintf("(input size: %v, io.Copy read buffer size: %v, s3Put read buffer size: %v)", len(tt.input), tt.ioCopyBufSize, tt.s3PutBufSize)
+		assert.Equal(t, tt.input, output, msg)
+	}
 }
 
 func Test_WriteError(t *testing.T) {
@@ -103,7 +132,7 @@ func Test_WriteError(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func doReadWrite(input []byte, ioCopyBufSize int, s3PutBufSize int) ([]byte, []byte, string) {
+func doReadWrite(input []byte, ioCopyBufSize int, s3PutBufSize int) ([]byte) {
 	var output []byte
 
 	// mock for S3Put, which takes a reader as input (see UploadInput.Body in aws-sdk-go/service/s3/s3manager/upload.go)
@@ -146,7 +175,7 @@ func doReadWrite(input []byte, ioCopyBufSize int, s3PutBufSize int) ([]byte, []b
 	myIoCopy(ioCopyBufSize, target, source)
 	target.Close()
 
-	return input, output, fmt.Sprintf("(input size: %v, io.Copy read buffer size: %v, s3Put read buffer size: %v)", len(input), ioCopyBufSize, s3PutBufSize)
+	return  output
 }
 
 type Read func([]byte) (int, error)
