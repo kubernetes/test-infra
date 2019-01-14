@@ -12,10 +12,6 @@ import (
 // 1. io.Copy read buffer size
 // 2. s3Put read buffer size
 
-
-
-
-
 func TestWriter2Reader(t *testing.T) {
 	tests := []struct {
 		name                        string
