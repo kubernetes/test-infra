@@ -85,7 +85,7 @@ periodics:
           cpu: 4
           memory: "8Gi"
 
-- interval: 2h
+- interval: 4h
   name: ci-kubernetes-build-debian-unstable
   labels:
     preset-service-account: "true"
@@ -96,7 +96,7 @@ periodics:
       args:
       - --repo=k8s.io/release
       - --root=/go/src
-      - --timeout=50
+      - --timeout=120
       - --scenario=execute
       - --
       - ./debian/jenkins.sh
