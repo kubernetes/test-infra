@@ -2359,6 +2359,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-typecheck
     skip_branches:
+    - release-1.10
     - release-1.11
     - release-1.12
     - release-1.13
@@ -2469,6 +2470,38 @@ presubmits:
         - name: WHAT
           value: typecheck
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.11
+        name: main
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-typecheck,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - release-1.10
+    cluster: security
+    context: pull-security-kubernetes-typecheck
+    decorate: true
+    name: pull-security-kubernetes-typecheck
+    path_alias: k8s.io/kubernetes
+    rerun_command: /test pull-security-kubernetes-typecheck
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - verify
+        command:
+        - make
+        env:
+        - name: WHAT
+          value: typecheck
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.10
         name: main
         resources: {}
         volumeMounts:
