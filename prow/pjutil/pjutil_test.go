@@ -29,6 +29,7 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -649,5 +650,50 @@ func TestJobURL(t *testing.T) {
 				t.Errorf("%s: expected URL to be %q but got %q", testCase.name, expected, actual)
 			}
 		})
+	}
+}
+
+func TestCreateRefs(t *testing.T) {
+	pr := github.PullRequest{
+		Number:  42,
+		HTMLURL: "https://github.example.com/kubernetes/Hello-World/pull/42",
+		Head: github.PullRequestBranch{
+			SHA: "123456",
+		},
+		Base: github.PullRequestBranch{
+			Ref: "master",
+			Repo: github.Repo{
+				Name:    "Hello-World",
+				HTMLURL: "https://github.example.com/kubernetes/Hello-World",
+				Owner: github.User{
+					Login: "kubernetes",
+				},
+			},
+		},
+		User: github.User{
+			Login:   "ibzib",
+			HTMLURL: "https://github.example.com/ibzib",
+		},
+	}
+	expected := prowapi.Refs{
+		Org:      "kubernetes",
+		Repo:     "Hello-World",
+		RepoLink: "https://github.example.com/kubernetes/Hello-World",
+		BaseRef:  "master",
+		BaseSHA:  "abcdef",
+		BaseLink: "https://github.example.com/kubernetes/Hello-World/commit/abcdef",
+		Pulls: []prowapi.Pull{
+			{
+				Number:     42,
+				Author:     "ibzib",
+				SHA:        "123456",
+				Link:       "https://github.example.com/kubernetes/Hello-World/pull/42",
+				AuthorLink: "https://github.example.com/ibzib",
+				CommitLink: "https://github.example.com/kubernetes/Hello-World/pull/42/commits/123456",
+			},
+		},
+	}
+	if actual := createRefs(pr, "abcdef"); !reflect.DeepEqual(expected, actual) {
+		t.Errorf("diff between expected and actual refs:%s", diff.ObjectReflectDiff(expected, actual))
 	}
 }

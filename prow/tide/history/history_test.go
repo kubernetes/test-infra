@@ -22,6 +22,8 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 func TestHistory(t *testing.T) {
@@ -36,9 +38,9 @@ func TestHistory(t *testing.T) {
 		return nowTime
 	}
 
-	testMeta := func(num int, author string) PRMeta {
-		return PRMeta{
-			Num:    num,
+	testMeta := func(num int, author string) prowapi.Pull {
+		return prowapi.Pull{
+			Number: num,
 			Title:  fmt.Sprintf("PR #%d", num),
 			SHA:    fmt.Sprintf("SHA for %d", num),
 			Author: author,
@@ -47,17 +49,17 @@ func TestHistory(t *testing.T) {
 
 	hist := New(logSizeLimit)
 	time1 := nextTime()
-	hist.Record("pool A", "TRIGGER", "sha A", "", []PRMeta{testMeta(1, "bob")})
+	hist.Record("pool A", "TRIGGER", "sha A", "", []prowapi.Pull{testMeta(1, "bob")})
 	nextTime()
-	hist.Record("pool B", "MERGE", "sha B1", "", []PRMeta{testMeta(2, "joe")})
+	hist.Record("pool B", "MERGE", "sha B1", "", []prowapi.Pull{testMeta(2, "joe")})
 	time3 := nextTime()
-	hist.Record("pool B", "MERGE", "sha B2", "", []PRMeta{testMeta(3, "jeff")})
+	hist.Record("pool B", "MERGE", "sha B2", "", []prowapi.Pull{testMeta(3, "jeff")})
 	time4 := nextTime()
-	hist.Record("pool B", "MERGE_BATCH", "sha B3", "", []PRMeta{testMeta(4, "joe"), testMeta(5, "jim")})
+	hist.Record("pool B", "MERGE_BATCH", "sha B3", "", []prowapi.Pull{testMeta(4, "joe"), testMeta(5, "jim")})
 	time5 := nextTime()
-	hist.Record("pool C", "TRIGGER_BATCH", "sha C1", "", []PRMeta{testMeta(6, "joe"), testMeta(8, "me")})
+	hist.Record("pool C", "TRIGGER_BATCH", "sha C1", "", []prowapi.Pull{testMeta(6, "joe"), testMeta(8, "me")})
 	time6 := nextTime()
-	hist.Record("pool B", "TRIGGER", "sha B4", "", []PRMeta{testMeta(7, "abe")})
+	hist.Record("pool B", "TRIGGER", "sha B4", "", []prowapi.Pull{testMeta(7, "abe")})
 
 	expected := map[string][]*Record{
 		"pool A": {
@@ -65,7 +67,7 @@ func TestHistory(t *testing.T) {
 				Time:    time1,
 				BaseSHA: "sha A",
 				Action:  "TRIGGER",
-				Target: []PRMeta{
+				Target: []prowapi.Pull{
 					testMeta(1, "bob"),
 				},
 			},
@@ -75,7 +77,7 @@ func TestHistory(t *testing.T) {
 				Time:    time6,
 				BaseSHA: "sha B4",
 				Action:  "TRIGGER",
-				Target: []PRMeta{
+				Target: []prowapi.Pull{
 					testMeta(7, "abe"),
 				},
 			},
@@ -83,7 +85,7 @@ func TestHistory(t *testing.T) {
 				Time:    time4,
 				BaseSHA: "sha B3",
 				Action:  "MERGE_BATCH",
-				Target: []PRMeta{
+				Target: []prowapi.Pull{
 					testMeta(4, "joe"),
 					testMeta(5, "jim"),
 				},
@@ -92,7 +94,7 @@ func TestHistory(t *testing.T) {
 				Time:    time3,
 				BaseSHA: "sha B2",
 				Action:  "MERGE",
-				Target: []PRMeta{
+				Target: []prowapi.Pull{
 					testMeta(3, "jeff"),
 				},
 			},
@@ -102,7 +104,7 @@ func TestHistory(t *testing.T) {
 				Time:    time5,
 				BaseSHA: "sha C1",
 				Action:  "TRIGGER_BATCH",
-				Target: []PRMeta{
+				Target: []prowapi.Pull{
 					testMeta(6, "joe"),
 					testMeta(8, "me"),
 				},

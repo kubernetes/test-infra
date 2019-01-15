@@ -26,6 +26,8 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 // Mock out time for unit testing.
@@ -43,19 +45,11 @@ type History struct {
 
 // Record is an entry describing one action that Tide has taken (e.g. TRIGGER or MERGE).
 type Record struct {
-	Time    time.Time `json:"time"`
-	Action  string    `json:"action"`
-	BaseSHA string    `json:"baseSHA,omitempty"`
-	Target  []PRMeta  `json:"target,omitempty"`
-	Err     string    `json:"err,omitempty"`
-}
-
-// PRMeta stores metadata about a PR at the time of the action.
-type PRMeta struct {
-	Num    int    `json:"num"`
-	Author string `json:"author"`
-	Title  string `json:"title"`
-	SHA    string `json:"SHA"`
+	Time    time.Time      `json:"time"`
+	Action  string         `json:"action"`
+	BaseSHA string         `json:"baseSHA,omitempty"`
+	Target  []prowapi.Pull `json:"target,omitempty"`
+	Err     string         `json:"err,omitempty"`
 }
 
 // New creates a new History struct with the specificed recordLog size limit.
@@ -67,7 +61,7 @@ func New(maxRecordsPerKey int) *History {
 }
 
 // Record appends an entry to the recordlog specified by the poolKey.
-func (h *History) Record(poolKey, action, baseSHA, err string, targets []PRMeta) {
+func (h *History) Record(poolKey, action, baseSHA, err string, targets []prowapi.Pull) {
 	t := now()
 	sort.Sort(ByNum(targets))
 
@@ -156,8 +150,8 @@ func (rl *recordLog) toSlice() []*Record {
 }
 
 // ByNum implements sort.Interface for []PRMeta to sort by ascending PR number.
-type ByNum []PRMeta
+type ByNum []prowapi.Pull
 
 func (prs ByNum) Len() int           { return len(prs) }
 func (prs ByNum) Swap(i, j int)      { prs[i], prs[j] = prs[j], prs[i] }
-func (prs ByNum) Less(i, j int) bool { return prs[i].Num < prs[j].Num }
+func (prs ByNum) Less(i, j int) bool { return prs[i].Number < prs[j].Number }

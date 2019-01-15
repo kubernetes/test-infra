@@ -48,13 +48,8 @@ var (
 // TODO(#5216): Remove this, and all associated machinery.
 type Job struct {
 	Type        string               `json:"type"`
-	Repo        string               `json:"repo"`
-	Refs        string               `json:"refs"`
-	BaseRef     string               `json:"base_ref"`
-	BaseSHA     string               `json:"base_sha"`
-	PullSHA     string               `json:"pull_sha"`
-	Number      int                  `json:"number"`
-	Author      string               `json:"author"`
+	Refs        prowapi.Refs         `json:"refs"`
+	RefsKey     string               `json:"refs_key"`
 	Job         string               `json:"job"`
 	BuildID     string               `json:"build_id"`
 	Context     string               `json:"context"`
@@ -236,15 +231,8 @@ func (ja *JobAgent) update() error {
 			nj.Duration = duration.String()
 		}
 		if j.Spec.Refs != nil {
-			nj.Repo = fmt.Sprintf("%s/%s", j.Spec.Refs.Org, j.Spec.Refs.Repo)
-			nj.Refs = j.Spec.Refs.String()
-			nj.BaseRef = j.Spec.Refs.BaseRef
-			nj.BaseSHA = j.Spec.Refs.BaseSHA
-			if len(j.Spec.Refs.Pulls) == 1 {
-				nj.Number = j.Spec.Refs.Pulls[0].Number
-				nj.Author = j.Spec.Refs.Pulls[0].Author
-				nj.PullSHA = j.Spec.Refs.Pulls[0].SHA
-			}
+			nj.Refs = *j.Spec.Refs
+			nj.RefsKey = j.Spec.Refs.String()
 		}
 		njs = append(njs, nj)
 		if nj.PodName != "" {
