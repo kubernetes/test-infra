@@ -3,9 +3,10 @@ package logrus
 import (
 	"bytes"
 	"fmt"
-	"runtime"
+	"os"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -14,30 +15,29 @@ const (
 	red     = 31
 	green   = 32
 	yellow  = 33
-	blue    = 34
+	blue    = 36
 	gray    = 37
 )
 
 var (
 	baseTimestamp time.Time
-	isTerminal    bool
+	emptyFieldMap FieldMap
 )
 
 func init() {
 	baseTimestamp = time.Now()
-	isTerminal = IsTerminal()
 }
 
-func miniTS() int {
-	return int(time.Since(baseTimestamp) / time.Second)
-}
-
+// TextFormatter formats logs into text
 type TextFormatter struct {
 	// Set to true to bypass checking for a TTY before outputting colors.
 	ForceColors bool
 
 	// Force disabling colors.
 	DisableColors bool
+
+	// Override coloring based on CLICOLOR and CLICOLOR_FORCE. - https://bixense.com/clicolors/
+	EnvironmentOverrideColors bool
 
 	// Disable timestamp logging. useful when output is redirected to logging
 	// system that already adds timestamps.
@@ -54,41 +54,125 @@ type TextFormatter struct {
 	// that log extremely frequently and don't use the JSON formatter this may not
 	// be desired.
 	DisableSorting bool
+
+	// The keys sorting function, when uninitialized it uses sort.Strings.
+	SortingFunc func([]string)
+
+	// Disables the truncation of the level text to 4 characters.
+	DisableLevelTruncation bool
+
+	// QuoteEmptyFields will wrap empty fields in quotes if true
+	QuoteEmptyFields bool
+
+	// Whether the logger's out is to a terminal
+	isTerminal bool
+
+	// FieldMap allows users to customize the names of keys for default fields.
+	// As an example:
+	// formatter := &TextFormatter{
+	//     FieldMap: FieldMap{
+	//         FieldKeyTime:  "@timestamp",
+	//         FieldKeyLevel: "@level",
+	//         FieldKeyMsg:   "@message"}}
+	FieldMap FieldMap
+
+	terminalInitOnce sync.Once
 }
 
+func (f *TextFormatter) init(entry *Entry) {
+	if entry.Logger != nil {
+		f.isTerminal = checkIfTerminal(entry.Logger.Out)
+
+		if f.isTerminal {
+			initTerminal(entry.Logger.Out)
+		}
+	}
+}
+
+func (f *TextFormatter) isColored() bool {
+	isColored := f.ForceColors || f.isTerminal
+
+	if f.EnvironmentOverrideColors {
+		if force, ok := os.LookupEnv("CLICOLOR_FORCE"); ok && force != "0" {
+			isColored = true
+		} else if ok && force == "0" {
+			isColored = false
+		} else if os.Getenv("CLICOLOR") == "0" {
+			isColored = false
+		}
+	}
+
+	return isColored && !f.DisableColors
+}
+
+// Format renders a single log entry
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
-	var keys []string = make([]string, 0, len(entry.Data))
+	prefixFieldClashes(entry.Data, f.FieldMap)
+
+	keys := make([]string, 0, len(entry.Data))
 	for k := range entry.Data {
 		keys = append(keys, k)
 	}
 
-	if !f.DisableSorting {
-		sort.Strings(keys)
+	fixedKeys := make([]string, 0, 4+len(entry.Data))
+	if !f.DisableTimestamp {
+		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyTime))
+	}
+	fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyLevel))
+	if entry.Message != "" {
+		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyMsg))
+	}
+	if entry.err != "" {
+		fixedKeys = append(fixedKeys, f.FieldMap.resolve(FieldKeyLogrusError))
 	}
 
-	b := &bytes.Buffer{}
+	if !f.DisableSorting {
+		if f.SortingFunc == nil {
+			sort.Strings(keys)
+			fixedKeys = append(fixedKeys, keys...)
+		} else {
+			if !f.isColored() {
+				fixedKeys = append(fixedKeys, keys...)
+				f.SortingFunc(fixedKeys)
+			} else {
+				f.SortingFunc(keys)
+			}
+		}
+	} else {
+		fixedKeys = append(fixedKeys, keys...)
+	}
 
-	prefixFieldClashes(entry.Data)
+	var b *bytes.Buffer
+	if entry.Buffer != nil {
+		b = entry.Buffer
+	} else {
+		b = &bytes.Buffer{}
+	}
 
-	isColorTerminal := isTerminal && (runtime.GOOS != "windows")
-	isColored := (f.ForceColors || isColorTerminal) && !f.DisableColors
+	f.terminalInitOnce.Do(func() { f.init(entry) })
 
 	timestampFormat := f.TimestampFormat
 	if timestampFormat == "" {
-		timestampFormat = DefaultTimestampFormat
+		timestampFormat = defaultTimestampFormat
 	}
-	if isColored {
+	if f.isColored() {
 		f.printColored(b, entry, keys, timestampFormat)
 	} else {
-		if !f.DisableTimestamp {
-			f.appendKeyValue(b, "time", entry.Time.Format(timestampFormat))
-		}
-		f.appendKeyValue(b, "level", entry.Level.String())
-		if entry.Message != "" {
-			f.appendKeyValue(b, "msg", entry.Message)
-		}
-		for _, key := range keys {
-			f.appendKeyValue(b, key, entry.Data[key])
+		for _, key := range fixedKeys {
+			var value interface{}
+			switch key {
+			case f.FieldMap.resolve(FieldKeyTime):
+				value = entry.Time.Format(timestampFormat)
+			case f.FieldMap.resolve(FieldKeyLevel):
+				value = entry.Level.String()
+			case f.FieldMap.resolve(FieldKeyMsg):
+				value = entry.Message
+			case f.FieldMap.resolve(FieldKeyLogrusError):
+				value = entry.err
+			default:
+				value = entry.Data[key]
+			}
+			f.appendKeyValue(b, key, value)
 		}
 	}
 
@@ -109,25 +193,38 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *Entry, keys []strin
 		levelColor = blue
 	}
 
-	levelText := strings.ToUpper(entry.Level.String())[0:4]
+	levelText := strings.ToUpper(entry.Level.String())
+	if !f.DisableLevelTruncation {
+		levelText = levelText[0:4]
+	}
 
-	if !f.FullTimestamp {
-		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, miniTS(), entry.Message)
+	// Remove a single newline if it already exists in the message to keep
+	// the behavior of logrus text_formatter the same as the stdlib log package
+	entry.Message = strings.TrimSuffix(entry.Message, "\n")
+
+	if f.DisableTimestamp {
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m %-44s ", levelColor, levelText, entry.Message)
+	} else if !f.FullTimestamp {
+		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%04d] %-44s ", levelColor, levelText, int(entry.Time.Sub(baseTimestamp)/time.Second), entry.Message)
 	} else {
 		fmt.Fprintf(b, "\x1b[%dm%s\x1b[0m[%s] %-44s ", levelColor, levelText, entry.Time.Format(timestampFormat), entry.Message)
 	}
 	for _, k := range keys {
 		v := entry.Data[k]
-		fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=%+v", levelColor, k, v)
+		fmt.Fprintf(b, " \x1b[%dm%s\x1b[0m=", levelColor, k)
+		f.appendValue(b, v)
 	}
 }
 
-func needsQuoting(text string) bool {
+func (f *TextFormatter) needsQuoting(text string) bool {
+	if f.QuoteEmptyFields && len(text) == 0 {
+		return true
+	}
 	for _, ch := range text {
 		if !((ch >= 'a' && ch <= 'z') ||
 			(ch >= 'A' && ch <= 'Z') ||
 			(ch >= '0' && ch <= '9') ||
-			ch == '-' || ch == '.') {
+			ch == '-' || ch == '.' || ch == '_' || ch == '/' || ch == '@' || ch == '^' || ch == '+') {
 			return true
 		}
 	}
@@ -135,27 +232,23 @@ func needsQuoting(text string) bool {
 }
 
 func (f *TextFormatter) appendKeyValue(b *bytes.Buffer, key string, value interface{}) {
-
+	if b.Len() > 0 {
+		b.WriteByte(' ')
+	}
 	b.WriteString(key)
 	b.WriteByte('=')
+	f.appendValue(b, value)
+}
 
-	switch value := value.(type) {
-	case string:
-		if !needsQuoting(value) {
-			b.WriteString(value)
-		} else {
-			fmt.Fprintf(b, "%q", value)
-		}
-	case error:
-		errmsg := value.Error()
-		if !needsQuoting(errmsg) {
-			b.WriteString(errmsg)
-		} else {
-			fmt.Fprintf(b, "%q", value)
-		}
-	default:
-		fmt.Fprint(b, value)
+func (f *TextFormatter) appendValue(b *bytes.Buffer, value interface{}) {
+	stringVal, ok := value.(string)
+	if !ok {
+		stringVal = fmt.Sprint(value)
 	}
 
-	b.WriteByte(' ')
+	if !f.needsQuoting(stringVal) {
+		b.WriteString(stringVal)
+	} else {
+		b.WriteString(fmt.Sprintf("%q", stringVal))
+	}
 }

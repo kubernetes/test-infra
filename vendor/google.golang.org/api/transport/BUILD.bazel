@@ -2,7 +2,11 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["dial.go"],
+    srcs = [
+        "dial.go",
+        "go19.go",
+        "not_go19.go",
+    ],
     importmap = "k8s.io/test-infra/vendor/google.golang.org/api/transport",
     importpath = "google.golang.org/api/transport",
     visibility = ["//visibility:public"],

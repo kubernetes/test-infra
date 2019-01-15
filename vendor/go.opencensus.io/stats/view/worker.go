@@ -49,8 +49,8 @@ var defaultWorker *worker
 
 var defaultReportingDuration = 10 * time.Second
 
-// Find returns a subscribed view associated with this name.
-// If no subscribed view is found, nil is returned.
+// Find returns a registered view associated with this name.
+// If no registered view is found, nil is returned.
 func Find(name string) (v *View) {
 	req := &getViewByNameReq{
 		name: name,
@@ -62,7 +62,7 @@ func Find(name string) (v *View) {
 }
 
 // Register begins collecting data for the given views.
-// Once a view is subscribed, it reports data to the registered exporters.
+// Once a view is registered, it reports data to the registered exporters.
 func Register(views ...*View) error {
 	for _, v := range views {
 		if err := v.canonicalize(); err != nil {
@@ -116,8 +116,12 @@ func record(tags *tag.Map, ms interface{}) {
 }
 
 // SetReportingPeriod sets the interval between reporting aggregated views in
-// the program. If duration is less than or
-// equal to zero, it enables the default behavior.
+// the program. If duration is less than or equal to zero, it enables the
+// default behavior.
+//
+// Note: each exporter makes different promises about what the lowest supported
+// duration is. For example, the Stackdriver exporter recommends a value no
+// lower than 1 minute. Consult each exporter per your needs.
 func SetReportingPeriod(d time.Duration) {
 	// TODO(acetechnologist): ensure that the duration d is more than a certain
 	// value. e.g. 1s
@@ -181,7 +185,7 @@ func (w *worker) tryRegisterView(v *View) (*viewInternal, error) {
 	}
 	if x, ok := w.views[vi.view.Name]; ok {
 		if !x.view.same(vi.view) {
-			return nil, fmt.Errorf("cannot subscribe view %q; a different view with the same name is already subscribed", v.Name)
+			return nil, fmt.Errorf("cannot register view %q; a different view with the same name is already registered", v.Name)
 		}
 
 		// the view is already registered so there is nothing to do and the
@@ -194,40 +198,30 @@ func (w *worker) tryRegisterView(v *View) (*viewInternal, error) {
 	return vi, nil
 }
 
-func (w *worker) reportUsage(now time.Time) {
-	for _, v := range w.views {
-		if !v.isSubscribed() {
-			continue
-		}
-		rows := v.collectedRows()
-		_, ok := w.startTimes[v]
-		if !ok {
-			w.startTimes[v] = now
-		}
-		// Make sure collector is never going
-		// to mutate the exported data.
-		rows = deepCopyRowData(rows)
-		viewData := &Data{
-			View:  v.view,
-			Start: w.startTimes[v],
-			End:   time.Now(),
-			Rows:  rows,
-		}
-		exportersMu.Lock()
-		for e := range exporters {
-			e.ExportView(viewData)
-		}
-		exportersMu.Unlock()
+func (w *worker) reportView(v *viewInternal, now time.Time) {
+	if !v.isSubscribed() {
+		return
 	}
+	rows := v.collectedRows()
+	_, ok := w.startTimes[v]
+	if !ok {
+		w.startTimes[v] = now
+	}
+	viewData := &Data{
+		View:  v.view,
+		Start: w.startTimes[v],
+		End:   time.Now(),
+		Rows:  rows,
+	}
+	exportersMu.Lock()
+	for e := range exporters {
+		e.ExportView(viewData)
+	}
+	exportersMu.Unlock()
 }
 
-func deepCopyRowData(rows []*Row) []*Row {
-	newRows := make([]*Row, 0, len(rows))
-	for _, r := range rows {
-		newRows = append(newRows, &Row{
-			Data: r.Data.clone(),
-			Tags: r.Tags,
-		})
+func (w *worker) reportUsage(now time.Time) {
+	for _, v := range w.views {
+		w.reportView(v, now)
 	}
-	return newRows
 }
