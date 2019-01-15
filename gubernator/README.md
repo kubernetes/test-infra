@@ -23,7 +23,7 @@ only updates after the webhook is added will be shown on the dashboard.
 # Development
 
 - Install the Google Cloud SDK: https://cloud.google.com/sdk/
-- Run locally using `dev_appserver.py` and visit http://localhost:8080
+- Run locally using `dev_appserver.py app.yaml` and visit http://localhost:8080
 - Test and lint using `./test-gubernator.sh`
 - Deploy with `make deploy` followed by `make migrate`
 
