@@ -649,12 +649,22 @@ repos:
         name: area/deflake
         target: both
         addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to the devstats subproject
+        name: area/devstats
+        target: both
+        addedBy: label
       - color: cc99ff
         description: Categorizes issues related to KEPs and PRs modifying the KEP directory
         name: kind/kep
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to the release-team subproject
+        name: area/release-team
+        target: both
+        addedBy: label
   kubernetes/enhancements:
     labels:
       - color: cc99ff
@@ -685,6 +695,11 @@ repos:
         name: area/deflake
         target: both
         addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to the hyperkube subproject
+        name: area/hyperkube
+        target: both
+        addedBy: label
       - color: ededed
         description: Indicates a PR lacks a `priority/foo` label and requires one.
         name: needs-priority
@@ -707,6 +722,13 @@ repos:
         description: Creating, migrating or deleting a Kubernetes GitHub Repository
         name: area/github-repo
         target: issues
+        addedBy: label
+  kubernetes/sig-release:
+    labels:
+      - color: 0052cc
+        description: Issues or PRs related to the release-team subproject
+        name: area/release-team
+        target: both
         addedBy: label
   kubernetes/test-infra:
     labels:
