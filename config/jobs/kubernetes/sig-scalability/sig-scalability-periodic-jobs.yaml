@@ -405,7 +405,9 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
       args:
-      - --bare
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
       - --timeout=140
       - --scenario=kubernetes_e2e
       - --
@@ -421,7 +423,15 @@ periodics:
       - --kubemark-nodes=500
       - --provider=gce
       - --test=false
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
+      - --test_args=--ginkgo.focus=xxxx
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=500
+      - --test-cmd-args=--provider=kubemark
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-name=ClusterLoaderV2
       - --timeout=70m
       # docker-in-docker needs privilged mode
       securityContext:
