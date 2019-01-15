@@ -6,7 +6,7 @@ import (
 	"io"
 )
 
-func S3Put(reader io.Reader, handle *BucketHandle, key string) error {
+func S3Upload(reader io.Reader, handle *BucketHandle, key string) error {
 	uploader := s3manager.NewUploader(handle.client.session)
 
 	_, err := uploader.Upload(&s3manager.UploadInput{

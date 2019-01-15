@@ -5,13 +5,13 @@ import (
 )
 
 // Writer2Reader implements both Writer and Reader interfaces.
-// It's used as a wrapper around S3Put so we can write to S3 using io.Copy.
+// It's used as a wrapper around S3Upload so we can write to S3 using io.Copy.
 // When Reader.Read is called, it is blocking until the first Writer.Write call.
 // The following Reader.Read operations are blocked until Writer is closed or Writer.Write is called again.
 // Flow:
 // io.Copy reads the source and writes the data to Writer2Reader.Write.
-// The data is sent to the background using the buffer chan to S3Put.
-// S3Put is calling Writer2Reader.Read which reads the data from the buffer channel
+// The data is sent to the background using the buffer chan to S3Upload.
+// S3Upload is calling Writer2Reader.Read which reads the data from the buffer channel
 
 type Writer2Reader struct {
 	buffer    chan []byte // data channel

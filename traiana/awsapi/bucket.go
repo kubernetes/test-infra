@@ -27,7 +27,7 @@ func (h ObjectHandle) NewWriter(context context.Context) *Writer2Reader {
 	b := Bucket(h.b.bucket, h.b.client)
 
 	return NewWriter2Reader(func(reader io.Reader) error {
-		return S3Put(reader, b, h.key)
+		return S3Upload(reader, b, h.key)
 	})
 }
 func (o ObjectHandle) NewReader(ctx context.Context) (*Reader, error) {

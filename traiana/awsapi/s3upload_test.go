@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func Test_S3Put(t *testing.T) {
+func Test_S3Upload(t *testing.T) {
 	opt := ClientOption {
 			CredentialsFile: "/users/Traiana/alexa/.aws/credentials",
 	}
