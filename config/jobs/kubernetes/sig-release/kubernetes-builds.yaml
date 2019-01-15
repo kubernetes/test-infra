@@ -96,7 +96,7 @@ periodics:
       args:
       - --repo=k8s.io/release
       - --root=/go/src
-      - --timeout=120
+      - --timeout=180
       - --scenario=execute
       - --
       - ./debian/jenkins.sh
