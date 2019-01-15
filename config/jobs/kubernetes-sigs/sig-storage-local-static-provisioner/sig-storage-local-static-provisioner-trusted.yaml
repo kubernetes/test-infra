@@ -18,13 +18,8 @@ postsubmits:
         - runner.sh
         args:
         - make
-        - e2e
         - release
         env:
-        - name: PROVIDER
-          value: gce
-        - name: EXTRACT_STRATEGY
-          value: ci/latest
         - name: VERSION
           value: canary
         - name: ALLOW_UNSTABLE
