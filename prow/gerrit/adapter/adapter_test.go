@@ -155,7 +155,7 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 1,
+			numPJ: 2,
 			pjRef: "refs/changes/00/1/1",
 		},
 		{
@@ -173,7 +173,7 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 1,
+			numPJ: 2,
 			pjRef: "refs/changes/00/2/2",
 		},
 		{
@@ -235,7 +235,7 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 2,
+			numPJ: 3,
 		},
 		{
 			name: "presubmit doesn't run when no files match run_if_changed",
@@ -251,6 +251,32 @@ func TestProcessChange(t *testing.T) {
 							"let-it-go.txt": {},
 						},
 					},
+				},
+			},
+			numPJ: 2,
+		},
+		{
+			name: "presubmit run when change against matched branch",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "pony",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {},
+				},
+			},
+			numPJ: 3,
+		},
+		{
+			name: "presubmit doesn't run when not against target branch",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "baz",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {},
 				},
 			},
 			numPJ: 1,
@@ -270,6 +296,22 @@ func TestProcessChange(t *testing.T) {
 				},
 				RegexpChangeMatcher: config.RegexpChangeMatcher{
 					RunIfChanged: "\\.go",
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name: "test-branch-pony",
+				},
+				Brancher: config.Brancher{
+					Branches: []string{"pony"},
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name: "test-skip-branch-baz",
+				},
+				Brancher: config.Brancher{
+					SkipBranches: []string{"baz"},
 				},
 			},
 		}
