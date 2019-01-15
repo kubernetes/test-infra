@@ -34,7 +34,7 @@ var (
 	helpRemoveRe               = regexp.MustCompile(`(?mi)^/remove-help\s*$`)
 	helpGoodFirstIssueRe       = regexp.MustCompile(`(?mi)^/good-first-issue\s*$`)
 	helpGoodFirstIssueRemoveRe = regexp.MustCompile(`(?mi)^/remove-good-first-issue\s*$`)
-	helpGuidelinesURL          = "https://git.k8s.io/community/contributors/devel/help-wanted.md"
+	helpGuidelinesURL          = "https://git.k8s.io/community/contributors/guide/help-wanted.md"
 	helpMsgPruneMatch          = "This request has been marked as needing help from a contributor."
 	helpMsg                    = `
 	This request has been marked as needing help from a contributor.
