@@ -188,7 +188,7 @@ periodics:
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-a
       - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19
-      - --gke-environment=staging
+      - --gke-environment=test
       - '--gke-shape={"default":{"Nodes":99,"MachineType":"n1-standard-1"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-2"}}'
       - --provider=gke
       - --test=false
