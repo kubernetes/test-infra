@@ -29,10 +29,30 @@ func (h ObjectHandle) NewWriter(context context.Context) *Writer2Reader {
 		return S3Put(reader, b, h.key)
 	})
 }
+func (h ObjectHandle) NewReader(ctx context.Context) interface{} {
+	panic("AbugovTODO")
+}
+
+func (h ObjectHandle) NewRangeReader(ctx context.Context, i int64, i2 int64) *ObjectHandle {
+	panic("AbugovTODO")
+}
 
 func (b *BucketHandle) Object(name string) *ObjectHandle {
 	return &ObjectHandle{
 		b: b,
 		key: name,
 	}
+}
+
+//AbugovTODO
+type ObjectIterator struct {
+	//bucket   *BucketHandle
+	//query    Query
+	//pageInfo *iterator.PageInfo
+	//nextFunc func() error
+	//items    []*ObjectAttrs
+}
+
+func (b *BucketHandle) Objects(delimiter string, prefix string, versions bool) *ObjectIterator {
+	panic("AbugovTODO")
 }

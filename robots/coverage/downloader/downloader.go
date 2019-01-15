@@ -27,7 +27,7 @@ import (
 	"sort"
 	"strconv"
 
-	"cloud.google.com/go/storage"
+	"k8s.io/test-infra/traiana/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 )

@@ -17,7 +17,7 @@ limitations under the License.
 package downloader
 
 import (
-	"cloud.google.com/go/storage"
+	"k8s.io/test-infra/traiana/storage"
 	"context"
 	"fmt"
 	"io"

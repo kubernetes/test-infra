@@ -23,7 +23,7 @@ import (
 	"sort"
 	"strings"
 
-	"cloud.google.com/go/storage"
+	"k8s.io/test-infra/traiana/storage"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"

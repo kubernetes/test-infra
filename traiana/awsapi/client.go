@@ -2,8 +2,8 @@ package awsapi
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 type Client struct {
@@ -11,10 +11,15 @@ type Client struct {
 }
 
 func NewClient(o ClientOption) (*Client, error) {
-	session, err := session.NewSession(&aws.Config{
-		Credentials: credentials.NewSharedCredentials(o.CredentialsFile, "default"),
-		Region: aws.String("eu-west-1"),
-	})
+	config := &aws.Config{
+		Region:      aws.String("eu-west-1"),
+	}
+
+	if o.CredentialsFile != "" {
+		config.Credentials = credentials.NewSharedCredentials(o.CredentialsFile, "default")
+	}
+
+	session, err := session.NewSession(config)
 
 	if err != nil {
 		// Handle Session creation error

@@ -101,7 +101,7 @@ func DataUploadWithMetadata(src io.Reader, metadata map[string]string) UploadFun
 		writer.Metadata = metadata
 
 		if traiana.Traiana {
-			writer.SetMetadata()
+			writer.CopyFields()
 		}
 
 		_, copyErr := io.Copy(writer, src)

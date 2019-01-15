@@ -26,7 +26,7 @@ import (
 	"strings"
 	"time"
 
-	"cloud.google.com/go/storage"
+	"k8s.io/test-infra/traiana/storage"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
