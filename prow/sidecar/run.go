@@ -130,7 +130,10 @@ func (o Options) Run(ctx context.Context) error {
 			metadata[k] = v // TODO(fejta): consider deeper merge
 		}
 	}
-	metadata["sidecar-errors"] = errors
+
+	if len(errors) > 0 {
+		metadata["sidecar-errors"] = errors
+	}
 
 	return o.doUpload(spec, passed, aborted, metadata, io.MultiReader(readers...))
 }
