@@ -244,7 +244,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		postsubmits := c.ca.Config().Postsubmits[cloneURI.String()]
 		postsubmits = append(postsubmits, c.ca.Config().Postsubmits[cloneURI.Host+"/"+cloneURI.Path]...)
 		for _, postsubmit := range postsubmits {
-			if postsubmit.RunsAgainstChanges(changedFiles) {
+			if postsubmit.RunsAgainstBranch(change.Branch) && postsubmit.RunsAgainstChanges(changedFiles) {
 				jobSpecs = append(jobSpecs, jobSpec{
 					spec:   pjutil.PostsubmitSpec(postsubmit, kr),
 					labels: postsubmit.Labels,
@@ -255,7 +255,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		presubmits := c.ca.Config().Presubmits[cloneURI.String()]
 		presubmits = append(presubmits, c.ca.Config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
 		for _, presubmit := range presubmits {
-			if presubmit.RunsAgainstChanges(changedFiles) {
+			if presubmit.RunsAgainstBranch(change.Branch) && presubmit.RunsAgainstChanges(changedFiles) {
 				jobSpecs = append(jobSpecs, jobSpec{
 					spec:   pjutil.PresubmitSpec(presubmit, kr),
 					labels: presubmit.Labels,
