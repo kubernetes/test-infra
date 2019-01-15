@@ -202,7 +202,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
 
 - cron: '1 8 * * 0' # Run at 00:01PST (8:01 UTC) on sunday
   name: ci-kubernetes-e2e-gke-large-performance
