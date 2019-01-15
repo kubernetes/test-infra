@@ -5,9 +5,11 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
+    skip_branches:
+    - master # the podutils version below does this branch now
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
+      - image: gcr.io/k8s-testimages/bootstrap:v20190110-c23317e88
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -26,13 +28,12 @@ presubmits:
         resources:
           requests:
             cpu: 4
-
   # TODO(krzyzacy): add branches once this works
   # TODO(krzyzacy): Consider combine kubekins-e2e and kubekins-test
-  - name: pull-kubernetes-verify-podutil
-    always_run: false
+  - name: pull-kubernetes-verify
+    always_run: true
     decorate: true
-    branch:
+    branches:
     - master
     path_alias: k8s.io/kubernetes
     labels:
@@ -40,7 +41,8 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+        imagePullPolicy: Always
         command:
         - runner.sh
         args:
@@ -48,6 +50,10 @@ presubmits:
         envs:
         - name: KUBE_FORCE_VERIFY_CHECKS
           value: "n"
+        - name: EXCLUDE_TYPECHECK
+          value: "y"
+        - name: EXCLUDE_GODEP
+          value: "y"
         - name: KUBE_VERIFY_GIT_BRANCH
           value: master
         - name: REPO_DIR
@@ -65,17 +71,29 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
       args:
-      - --repo=k8s.io/kubernetes
-      - --timeout=75
-      - --scenario=kubernetes_verify
-      - --
-      - --branch=master
-      - --force
-      - --script=./hack/jenkins/verify-dockerized.sh
+      - ./hack/jenkins/verify-dockerized.sh
+      envs:
+      - name: KUBE_FORCE_VERIFY_CHECKS
+        value: "y"
+      - name: EXCLUDE_READONLY_PACKAGE
+        value: "y"
+      - name: KUBE_VERIFY_GIT_BRANCH
+        value: master
+      - name: REPO_DIR
+        value: /workspace/k8s.io/kubernetes
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
@@ -91,7 +109,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
+    - image: gcr.io/k8s-testimages/bootstrap:v20190110-c23317e88
       args:
       - --repo=k8s.io/kubernetes=release-1.13
       - --timeout=75
@@ -115,7 +133,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
+    - image: gcr.io/k8s-testimages/bootstrap:v20190110-c23317e88
       args:
       - --repo=k8s.io/kubernetes=release-1.12
       - --timeout=75
@@ -139,7 +157,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
+    - image: gcr.io/k8s-testimages/bootstrap:v20190110-c23317e88
       args:
       - --repo=k8s.io/kubernetes=release-1.11
       - --timeout=75
@@ -163,7 +181,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20181219-899fabec7
+    - image: gcr.io/k8s-testimages/bootstrap:v20190110-c23317e88
       args:
       - --repo=k8s.io/kubernetes=release-1.10
       - --timeout=75

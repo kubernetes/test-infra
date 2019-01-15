@@ -7,10 +7,10 @@ plank:
     timeout: 7200000000000 # 2h
     grace_period: 15000000000 # 15s
     utility_images:
-      clonerefs: "gcr.io/k8s-prow/clonerefs:v20181220-899fabe"
-      initupload: "gcr.io/k8s-prow/initupload:v20181220-899fabe"
-      entrypoint: "gcr.io/k8s-prow/entrypoint:v20181220-899fabe"
-      sidecar: "gcr.io/k8s-prow/sidecar:v20181220-899fabe"
+      clonerefs: "gcr.io/k8s-prow/clonerefs:v20190114-e939941"
+      initupload: "gcr.io/k8s-prow/initupload:v20190114-e939941"
+      entrypoint: "gcr.io/k8s-prow/entrypoint:v20190114-e939941"
+      sidecar: "gcr.io/k8s-prow/sidecar:v20190114-e939941"
     gcs_configuration:
       bucket: "kubernetes-jenkins"
       path_strategy: "legacy"
@@ -95,7 +95,20 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        component-base:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        csi-translation-lib:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         dashboard:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
           required_pull_request_reviews:
             required_approving_review_count: 1
         dns:
@@ -428,12 +441,13 @@ tide:
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
     kubernetes-incubator/service-catalog: squash
+    kubernetes-sigs/cluster-api: squash
     kubernetes-sigs/cluster-api-provider-aws: squash
+    kubernetes-sigs/cluster-api-provider-azure: squash
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
     kubernetes-sigs/cluster-api-provider-gcp: squash
     kubernetes-sigs/cluster-api-provider-openstack: squash
     kubernetes-sigs/cluster-api-provider-vsphere: squash
-    kubernetes-sigs/cluster-api: squash
     kubernetes-sigs/kubespray: squash
     kubernetes/dashboard: squash
     kubernetes/kube-deploy: squash
@@ -444,6 +458,12 @@ tide:
   context_options:
     optional-contexts:
     - "Submit Queue"
+    orgs:
+     kubernetes:
+      repos:
+        dashboard:
+          skip-unknown-contexts: true
+          from-branch-protection: true
 
 push_gateway:
   endpoint: pushgateway

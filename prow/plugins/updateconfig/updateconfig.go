@@ -92,7 +92,7 @@ func (g *gitHubFileGetter) GetFile(filename string) ([]byte, error) {
 }
 
 // Update updates the configmap with the data from the identified files
-func Update(fg FileGetter, kc KubeClient, name, namespace string, updates map[string]string) error {
+func Update(fg FileGetter, kc KubeClient, name, namespace string, updates map[string]string, logger *logrus.Entry) error {
 	currentContent, getErr := kc.GetConfigMap(name, namespace)
 	_, isNotFound := getErr.(kube.NotFoundError)
 	if getErr != nil && !isNotFound {
@@ -106,6 +106,7 @@ func Update(fg FileGetter, kc KubeClient, name, namespace string, updates map[st
 
 	for key, filename := range updates {
 		if filename == "" {
+			logger.WithField("key", key).Debug("Deleting key.")
 			delete(data, key)
 			continue
 		}
@@ -114,6 +115,7 @@ func Update(fg FileGetter, kc KubeClient, name, namespace string, updates map[st
 		if err != nil {
 			return fmt.Errorf("get file err: %v", err)
 		}
+		logger.WithFields(logrus.Fields{"key": key, "filename": filename}).Debug("Populating key.")
 		data[key] = string(content)
 	}
 
@@ -170,23 +172,25 @@ func FilterChanges(configMaps map[string]plugins.ConfigMapSpec, changes []github
 		}
 
 		// Yes, update the configmap with the contents of this file
-		id := ConfigMapID{Name: cm.Name, Namespace: cm.Namespace}
-		if _, ok := toUpdate[id]; !ok {
-			toUpdate[id] = map[string]string{}
-		}
-		key := cm.Key
-		if key == "" {
-			key = path.Base(change.Filename)
-			// if the key changed, we need to remove the old key
-			if change.Status == github.PullRequestFileRenamed {
-				oldKey := path.Base(change.PreviousFilename)
-				toUpdate[id][oldKey] = ""
+		for _, ns := range append(cm.Namespaces) {
+			id := ConfigMapID{Name: cm.Name, Namespace: ns}
+			if _, ok := toUpdate[id]; !ok {
+				toUpdate[id] = map[string]string{}
 			}
-		}
-		if change.Status == github.PullRequestFileRemoved {
-			toUpdate[id][key] = ""
-		} else {
-			toUpdate[id][key] = change.Filename
+			key := cm.Key
+			if key == "" {
+				key = path.Base(change.Filename)
+				// if the key changed, we need to remove the old key
+				if change.Status == github.PullRequestFileRenamed {
+					oldKey := path.Base(change.PreviousFilename)
+					toUpdate[id][oldKey] = ""
+				}
+			}
+			if change.Status == github.PullRequestFileRemoved {
+				toUpdate[id][key] = ""
+			} else {
+				toUpdate[id][key] = change.Filename
+			}
 		}
 	}
 	return toUpdate
@@ -238,7 +242,8 @@ func handle(gc githubClient, kc KubeClient, log *logrus.Entry, pre github.PullRe
 		indent = "   " // three spaces for sub bullets
 	}
 	for cm, data := range toUpdate {
-		if err := Update(&gitHubFileGetter{org: org, repo: repo, commit: *pr.MergeSHA, client: gc}, kc, cm.Name, cm.Namespace, data); err != nil {
+		logger := log.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace}})
+		if err := Update(&gitHubFileGetter{org: org, repo: repo, commit: *pr.MergeSHA, client: gc}, kc, cm.Name, cm.Namespace, data, logger); err != nil {
 			return err
 		}
 		updated = append(updated, message(cm.Name, cm.Namespace, data, indent))

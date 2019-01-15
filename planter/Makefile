@@ -14,7 +14,7 @@
 
 # note: sync this with planter.sh!
 # this should be bazel version - planter sub version
-BAZEL_VERSION ?= 0.19.2
+BAZEL_VERSION ?= 0.21.0
 IMAGE_NAME ?= gcr.io/k8s-testimages/planter
 TAG = $(BAZEL_VERSION)
 

@@ -8,7 +8,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/spyglass/lenses/metadata",
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/deck/jobs:go_default_library",
+        "//prow/pod-utils/gcs:go_default_library",
         "//prow/spyglass/lenses:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],

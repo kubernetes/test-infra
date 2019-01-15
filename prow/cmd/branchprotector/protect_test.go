@@ -81,6 +81,19 @@ type fakeClient struct {
 	updated  map[string]github.BranchProtectionRequest
 }
 
+func (c fakeClient) GetRepo(org string, repo string) (github.Repo, error) {
+	r, ok := c.repos[org]
+	if !ok {
+		return github.Repo{}, fmt.Errorf("Unknown org: %s", org)
+	}
+	for _, item := range r {
+		if item.Name == repo {
+			return item, nil
+		}
+	}
+	return github.Repo{}, fmt.Errorf("Unknown repo: %s", repo)
+}
+
 func (c fakeClient) GetRepos(org string, user bool) ([]github.Repo, error) {
 	r, ok := c.repos[org]
 	if !ok {
@@ -252,6 +265,7 @@ func TestProtect(t *testing.T) {
 		branches         []string
 		startUnprotected bool
 		config           string
+		archived         string
 		expected         []requirements
 		errors           int
 	}{
@@ -430,6 +444,32 @@ branch-protection:
 					Repo:    "skip",
 					Branch:  "master",
 					Request: nil,
+				},
+			},
+		},
+		{
+			name:     "protect org but skip a repo due to archival",
+			branches: []string{"org/repo1=master", "org/repo1=branch", "org/skip=master"},
+			config: `
+branch-protection:
+  protect: false
+  orgs:
+    org:
+      protect: true
+`,
+			archived: "skip",
+			expected: []requirements{
+				{
+					Org:     "org",
+					Repo:    "repo1",
+					Branch:  "master",
+					Request: &github.BranchProtectionRequest{},
+				},
+				{
+					Org:     "org",
+					Repo:    "repo1",
+					Branch:  "branch",
+					Request: &github.BranchProtectionRequest{},
 				},
 			},
 		},
@@ -682,7 +722,7 @@ branch-protection:
 			}
 			for org, r := range repos {
 				for rname := range r {
-					fc.repos[org] = append(fc.repos[org], github.Repo{Name: rname, FullName: org + "/" + rname})
+					fc.repos[org] = append(fc.repos[org], github.Repo{Name: rname, FullName: org + "/" + rname, Archived: rname == tc.archived})
 				}
 			}
 

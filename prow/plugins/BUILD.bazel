@@ -9,16 +9,21 @@ load(
 go_test(
     name = "go_default_test",
     srcs = [
+        "config_test.go",
         "plugins_test.go",
         "respond_test.go",
     ],
     embed = [":go_default_library"],
-    deps = ["//prow/github:go_default_library"],
+    deps = [
+        "//prow/github:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
+    ],
 )
 
 go_library(
     name = "go_default_library",
     srcs = [
+        "config.go",
         "plugins.go",
         "respond.go",
     ],
@@ -55,6 +60,7 @@ filegroup(
         "//prow/plugins/assign:all-srcs",
         "//prow/plugins/blockade:all-srcs",
         "//prow/plugins/blunderbuss:all-srcs",
+        "//prow/plugins/branchcleaner:all-srcs",
         "//prow/plugins/buildifier:all-srcs",
         "//prow/plugins/cat:all-srcs",
         "//prow/plugins/cherrypickunapproved:all-srcs",

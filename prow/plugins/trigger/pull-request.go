@@ -19,6 +19,7 @@ package trigger
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
@@ -141,6 +142,7 @@ func welcomeMsg(ghc githubClient, trigger *plugins.Trigger, pr github.PullReques
 	var errors []error
 	org, repo, a := orgRepoAuthor(pr)
 	author := string(a)
+	encodedRepoFullName := url.QueryEscape(pr.Base.Repo.FullName)
 	var more string
 	if trigger != nil && trigger.TrustedOrg != "" && trigger.TrustedOrg != org {
 		more = fmt.Sprintf("or [%s](https://github.com/orgs/%s/people) ", trigger.TrustedOrg, trigger.TrustedOrg)
@@ -159,13 +161,13 @@ func welcomeMsg(ghc githubClient, trigger *plugins.Trigger, pr github.PullReques
 
 PRs from untrusted users cannot be marked as trusted with `+"`/ok-to-test`"+` in this repo meaning untrusted PR authors can never trigger tests themselves. Collaborators can still trigger tests on the PR using `+"`/test all`"+`.
 
-I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+I understand the commands that are listed [here](https://go.k8s.io/bot-commands?repo=%s).
 
 <details>
 
 %s
 </details>
-`, author, plugins.AboutThisBotWithoutCommands)
+`, author, encodedRepoFullName, plugins.AboutThisBotWithoutCommands)
 	} else {
 		comment = fmt.Sprintf(`Hi @%s. Thanks for your PR.
 
@@ -173,13 +175,13 @@ I'm waiting for a [%s](https://github.com/orgs/%s/people) %smember to verify tha
 
 Once the patch is verified, the new status will be reflected by the `+"`%s`"+` label.
 
-I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+I understand the commands that are listed [here](https://go.k8s.io/bot-commands?repo=%s).
 
 <details>
 
 %s
 </details>
-`, author, org, org, more, joinOrgURL, labels.OkToTest, plugins.AboutThisBotWithoutCommands)
+`, author, org, org, more, joinOrgURL, labels.OkToTest, encodedRepoFullName, plugins.AboutThisBotWithoutCommands)
 		if err := ghc.AddLabel(org, repo, pr.Number, labels.NeedsOkToTest); err != nil {
 			errors = append(errors, err)
 		}

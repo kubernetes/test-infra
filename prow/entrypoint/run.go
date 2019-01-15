@@ -17,6 +17,7 @@ limitations under the License.
 package entrypoint
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -30,15 +31,27 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/pod-utils/wrapper"
 )
 
 const (
+	// internalCode is greater than 256 to signify entrypoint
+	// chose the code rather than the command it ran
+	// http://tldp.org/LDP/abs/html/exitcodes.html
+	//
+	// TODO(fejta): consider making all entrypoint-chosen codes internal
+	internalCode = 1000
 	// InternalErrorCode is what we write to the marker file to
 	// indicate that we failed to start the wrapped command
 	InternalErrorCode = 127
 	// AbortedErrorCode is what we write to the marker file to
 	// indicate that we were terminated via a signal.
 	AbortedErrorCode = 130
+
+	// PreviousErrorCode indicates a previous step failed so we
+	// did not run this step.
+	PreviousErrorCode = internalCode + AbortedErrorCode
 
 	// DefaultTimeout is the default timeout for the test
 	// process before SIGINT is sent
@@ -90,6 +103,32 @@ func (o Options) ExecuteProcess() (int, error) {
 	logrus.SetOutput(output)
 	defer logrus.SetOutput(os.Stdout)
 
+	// if we get asked to terminate we need to forward
+	// that to the wrapped process as if it timed out
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+
+	if o.PreviousMarker != "" {
+		ctx, cancel := context.WithCancel(context.Background())
+		go func() {
+			select {
+			case s := <-interrupt:
+				logrus.Errorf("Received interrupt %s, cancelling...", s)
+				cancel()
+			case <-ctx.Done():
+			}
+		}()
+		code, err := wrapper.WaitForMarker(ctx, o.PreviousMarker)
+		cancel() // end previous go-routine when not interrupted
+		if err != nil {
+			return InternalErrorCode, fmt.Errorf("wait for previous marker %s: %v", o.PreviousMarker, err)
+		}
+		if code != 0 {
+			logrus.Infof("Skipping as previous step exited %d", code)
+			return PreviousErrorCode, nil
+		}
+	}
+
 	executable := o.Args[0]
 	var arguments []string
 	if len(o.Args) > 1 {
@@ -101,11 +140,6 @@ func (o Options) ExecuteProcess() (int, error) {
 	if err := command.Start(); err != nil {
 		return InternalErrorCode, fmt.Errorf("could not start the process: %v", err)
 	}
-
-	// if we get asked to terminate we need to forward
-	// that to the wrapped process as if it timed out
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
 	timeout := optionOrDefault(o.Timeout, DefaultTimeout)
 	gracePeriod := optionOrDefault(o.GracePeriod, DefaultGracePeriod)

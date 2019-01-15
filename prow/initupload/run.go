@@ -36,9 +36,7 @@ func (o Options) Run() error {
 		return fmt.Errorf("could not resolve job spec: %v", err)
 	}
 
-	started := struct {
-		Timestamp int64 `json:"timestamp"`
-	}{
+	started := gcs.Started{
 		Timestamp: time.Now().Unix(),
 	}
 	startedData, err := json.Marshal(&started)
@@ -90,11 +88,7 @@ func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (b
 	if failed {
 		uploadTargets["build-log.txt"] = gcs.DataUpload(bytes.NewReader(cloneLog.Bytes()))
 
-		finished := struct {
-			Timestamp int64  `json:"timestamp"`
-			Passed    bool   `json:"passed"`
-			Result    string `json:"result"`
-		}{
+		finished := gcs.Finished{
 			Timestamp: time.Now().Unix(),
 			Passed:    false,
 			Result:    "FAILURE",

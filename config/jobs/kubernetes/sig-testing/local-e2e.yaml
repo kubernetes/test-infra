@@ -14,7 +14,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -28,7 +28,7 @@ presubmits:
         - --deployment=local
         - --ginkgo-parallel=1
         - --provider=local
-        - --test_args=--ginkgo.focus=\[Conformance\]
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[sig\-apps\]\sDaemon\sset\s\[Serial\]\sshould\srollback\swithout\sunnecessary\srestarts\s\[Conformance\]
         - --timeout=120m
         # docker-in-docker needs privileged mode
         securityContext:
@@ -43,7 +43,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
       args:
       - "--timeout=140"
       - "--bare"
@@ -54,7 +54,7 @@ periodics:
       - --extract-source
       - --ginkgo-parallel=1
       - --provider=local
-      - --test_args=--ginkgo.focus=\[Conformance\]
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[sig\-apps\]\sDaemon\sset\s\[Serial\]\sshould\srollback\swithout\sunnecessary\srestarts\s\[Conformance\]
       - --timeout=120m
       # docker-in-docker needs privileged mode
       securityContext:

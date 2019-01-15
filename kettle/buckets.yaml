@@ -40,5 +40,5 @@ gs://k8s-conformance-openstack/:
   contact: "kiwik"
   prefix: "openstack:"
 gs://k8s-conformance-gardener:
-  contact: "rolpat"
+  contact: "OlegLoewen"
   prefix: "gardener:"

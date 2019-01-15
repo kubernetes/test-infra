@@ -149,6 +149,7 @@ func main() {
 	mux.Handle("/command-help", gziphandler.GzipHandler(handleSimpleTemplate(o, configAgent, "command-help.html", nil)))
 	mux.Handle("/plugin-help", http.RedirectHandler("/command-help", http.StatusMovedPermanently))
 	mux.Handle("/tide", gziphandler.GzipHandler(handleSimpleTemplate(o, configAgent, "tide.html", nil)))
+	mux.Handle("/tide-history", gziphandler.GzipHandler(handleSimpleTemplate(o, configAgent, "tide-history.html", nil)))
 	mux.Handle("/plugins", gziphandler.GzipHandler(handleSimpleTemplate(o, configAgent, "plugins.html", nil)))
 
 	indexHandler := handleSimpleTemplate(o, configAgent, "index.html", struct{ SpyglassEnabled bool }{o.spyglass})
@@ -245,7 +246,8 @@ func prodOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *htt
 			hiddenOnly:  o.hiddenOnly,
 		}
 		ta.start()
-		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTide(configAgent, ta)))
+		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTidePools(configAgent, ta)))
+		mux.Handle("/tide-history.js", gziphandler.GzipHandler(handleTideHistory(ta)))
 	}
 
 	// Enable Git OAuth feature if oauthURL is provided.
@@ -455,6 +457,16 @@ func handleData(ja *jobs.JobAgent) http.HandlerFunc {
 	}
 }
 
+// handleBadge handles requests to get a badge for one or more jobs
+// The url must look like this, where `jobs` is a comma-separated
+// list of globs:
+//
+// /badge.svg?jobs=<glob>[,<glob2>]
+//
+// Examples:
+// - /badge.svg?jobs=pull-kubernetes-bazel-build
+// - /badge.svg?jobs=pull-kubernetes-*
+// - /badge.svg?jobs=pull-kubernetes-e2e*,pull-kubernetes-*,pull-kubernetes-integration-*
 func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
@@ -471,6 +483,20 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 	}
 }
 
+// handleJobHistory handles requests to get the history of a given job
+// The url must look like this for presubmits:
+//
+// /job-history/<gcs-bucket-name>/pr-logs/directory/<job-name>
+//
+// Example:
+// - /job-history/kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-gofmt
+//
+// For periodics or postsubmits, the url must look like this:
+//
+// /job-history/<gcs-bucket-name>/logs/<job-name>
+//
+// Example:
+// - /job-history/kubernetes-jenkins/logs/ci-kubernetes-e2e-prow-canary
 func handleJobHistory(o options, ca *config.Agent, gcsClient *storage.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
@@ -485,6 +511,10 @@ func handleJobHistory(o options, ca *config.Agent, gcsClient *storage.Client) ht
 	}
 }
 
+// handlePRHistory handles requests to get the test history if a given PR
+// The url must look like this:
+//
+// /pr-history/<org>/<repo>/<pr number>
 func handlePRHistory(o options, ca *config.Agent, gcsClient *storage.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
@@ -688,21 +718,20 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, ca *config.Agent) http
 	}
 }
 
-func handleTide(ca *config.Agent, ta *tideAgent) http.HandlerFunc {
+func handleTidePools(ca *config.Agent, ta *tideAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
-		queryConfigs := ca.Config().Tide.Queries
-
-		ta.Lock()
-		defer ta.Unlock()
-		pools := ta.pools
-		queryConfigs, pools = ta.filterHidden(queryConfigs, pools)
+		queryConfigs := ta.filterHiddenQueries(ca.Config().Tide.Queries)
 		queries := make([]string, 0, len(queryConfigs))
 		for _, qc := range queryConfigs {
 			queries = append(queries, qc.Query())
 		}
 
-		payload := tideData{
+		ta.Lock()
+		pools := ta.pools
+		ta.Unlock()
+
+		payload := tidePools{
 			Queries:     queries,
 			TideQueries: queryConfigs,
 			Pools:       pools,
@@ -719,7 +748,32 @@ func handleTide(ca *config.Agent, ta *tideAgent) http.HandlerFunc {
 		} else {
 			fmt.Fprint(w, string(pd))
 		}
+	}
+}
 
+func handleTideHistory(ta *tideAgent) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		setHeadersNoCaching(w)
+
+		ta.Lock()
+		history := ta.history
+		ta.Unlock()
+
+		payload := tideHistory{
+			History: history,
+		}
+		pd, err := json.Marshal(payload)
+		if err != nil {
+			logrus.WithError(err).Error("Error marshaling payload.")
+			pd = []byte("{}")
+		}
+		// If we have a "var" query, then write out "var value = {...};".
+		// Otherwise, just write out the JSON.
+		if v := r.URL.Query().Get("var"); v != "" {
+			fmt.Fprintf(w, "var %s = %s;", v, string(pd))
+		} else {
+			fmt.Fprint(w, string(pd))
+		}
 	}
 }
 

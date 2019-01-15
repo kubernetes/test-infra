@@ -1,5 +1,7 @@
 # gazelle:prefix k8s.io/test-infra
 # gazelle:proto disable_global
+# gazelle:exclude vendor/k8s.io/code-generator/_examples/
+
 load("@io_kubernetes_build//defs:run_in_workspace.bzl", "workspace_binary")
 
 filegroup(
@@ -46,7 +48,7 @@ workspace_binary(
     args = [
         "--cfg-path=./hack/.kazelcfg.json",
     ],
-    cmd = "//vendor/github.com/kubernetes/repo-infra/kazel",
+    cmd = "//vendor/k8s.io/repo-infra/kazel",
 )
 
 workspace_binary(
@@ -56,7 +58,7 @@ workspace_binary(
         "--print-diff",
         "--cfg-path=./hack/.kazelcfg.json",
     ],
-    cmd = "//vendor/github.com/kubernetes/repo-infra/kazel",
+    cmd = "//vendor/k8s.io/repo-infra/kazel",
 )
 
 workspace_binary(

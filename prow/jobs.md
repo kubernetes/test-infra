@@ -29,10 +29,10 @@ postsubmits:
     decorate: true        # As for periodics.
     spec: {}              # As for periodics.
     max_concurrency: 10   # Run no more than this number concurrently.
-    branches:             # Only run against these branches.
-    - master
-    skip_branches:        # Do not run against these branches.
-    - release
+    branches:             # Regexps, only run against these branches.
+    - ^master$
+    skip_branches:        # Regexps, do not run against these branches.
+    - ^release-.*$
 ```
 
 Postsubmits are run when a push event happens on a repo, hence they are

@@ -27,7 +27,7 @@ import (
 	"path/filepath"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/deck/jobs"
+	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
@@ -86,11 +86,10 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		FinishedTime time.Time
 		Elapsed      time.Duration
 		Metadata     map[string]string
-		MetadataLen  int
 	}
 	metadataViewData := MetadataViewData{Status: "Pending"}
-	started := jobs.Started{}
-	finished := jobs.Finished{}
+	started := gcs.Started{}
+	finished := gcs.Finished{}
 	for _, a := range artifacts {
 		read, err := a.ReadAll()
 		if err != nil {
@@ -119,19 +118,10 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		}
 	}
 
-	metadataViewData.Metadata = map[string]string{
-		"Node":         started.Node,
-		"Repo":         finished.Metadata.Repo,
-		"Repo Commit":  finished.Metadata.RepoCommit,
-		"Infra Commit": finished.Metadata.InfraCommit,
-		"Pod":          finished.Metadata.Pod,
-	}
-	for pkg, version := range finished.Metadata.Repos {
-		metadataViewData.Metadata[pkg] = version
-	}
-	for _, v := range metadataViewData.Metadata {
-		if v != "" {
-			metadataViewData.MetadataLen++
+	metadataViewData.Metadata = map[string]string{"node": started.Node}
+	for k, v := range finished.Metadata {
+		if s, ok := v.(string); ok && v != "" {
+			metadataViewData.Metadata[k] = s
 		}
 	}
 
