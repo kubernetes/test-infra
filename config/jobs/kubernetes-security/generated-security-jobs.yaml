@@ -715,7 +715,7 @@ presubmits:
         - --
         - --build=bazel
         - --deployment=local
-        - --ginkgo-parallel=1
+        - --ginkgo-parallel
         - --provider=local
         - --test_args=--ginkgo.focus=\[Conformance\]|\[Containerized\] --ginkgo.skip=\[Disruptive\]|\[sig\-apps\]\sDaemon\sset\s\[Serial\]\sshould\srollback\swithout\sunnecessary\srestarts\s\[Conformance\]
         - --timeout=120m
@@ -724,7 +724,10 @@ presubmits:
           value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
         name: ""
-        resources: {}
+        resources:
+          requests:
+            cpu: "2"
+            memory: 9000Mi
         securityContext:
           privileged: true
         volumeMounts:
