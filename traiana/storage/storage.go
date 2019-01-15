@@ -70,7 +70,6 @@ func (sw *StorageWriter) Close() error {
 		return sw.aws.Close()
 	} else {
 		return sw.gcs.Close()
-
 	}
 }
 func (sw *StorageWriter) CopyFields() {
@@ -91,23 +90,30 @@ func (o *ObjectHandle) NewWriter(ctx context.Context) *StorageWriter {
 	}
 }
 
-type Reader struct {
+type StorageReader struct {
 	gcs      *storage.Reader
-	//AbugovTODO
-	aws      interface{} //*awsapi.Writer2Reader
+	aws      *awsapi.Reader
 }
 
-func (*Reader) Read(p []byte) (n int, err error) {
-	panic("AbugovTODO")
-}
-
-func (*Reader) Close() error {
-	panic("AbugovTODO")
-}
-
-func (o *ObjectHandle) NewReader(ctx context.Context) (r *Reader, err error) {
+func (sr *StorageReader) Read(p []byte) (n int, err error) {
 	if traiana.Aws {
-		r.aws = o.aws.NewReader(ctx)
+		return sr.aws.Read(p)
+	} else {
+		return sr.gcs.Read(p)
+	}
+}
+
+func (sr *StorageReader) Close() error {
+	if traiana.Aws {
+		return sr.aws.Close()
+	} else {
+		return sr.gcs.Close()
+	}
+}
+
+func (o *ObjectHandle) NewReader(ctx context.Context) (r *StorageReader, err error) {
+	if traiana.Aws {
+		r.aws, err = o.aws.NewReader(ctx)
 	} else {
 		r.gcs, err = o.gcs.NewReader(ctx)
 	}
@@ -115,9 +121,9 @@ func (o *ObjectHandle) NewReader(ctx context.Context) (r *Reader, err error) {
 	return r, err
 }
 
-func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64) (r *Reader, err error) {
+func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64) (r *StorageReader, err error) {
 	if traiana.Aws {
-		o.aws = o.aws.NewRangeReader(ctx, offset, length) //AbugovTODO
+		r.aws, err = o.aws.NewRangeReader(ctx, offset, length)
 	} else {
 		r.gcs, err = o.gcs.NewRangeReader(ctx, offset, length)
 	}
@@ -149,11 +155,33 @@ type Query struct {
 	Versions bool
 }
 
+func FromAws(atts *awsapi.ObjectAttrs) *ObjectAttrs {
+	return &ObjectAttrs{
+		Name:            atts.Name,
+		Size:            atts.Size,
+		Bucket:          atts.Bucket,
+		CRC32C:          atts.CRC32C,
+		Prefix:          atts.Prefix,
+		ContentEncoding: atts.ContentEncoding,
+	}
+}
+
+func FromGcs(atts *storage.ObjectAttrs) *ObjectAttrs {
+	return &ObjectAttrs{
+		Name:            atts.Name,
+		Size:            atts.Size,
+		Bucket:          atts.Bucket,
+		CRC32C:          atts.CRC32C,
+		Prefix:          atts.Prefix,
+		ContentEncoding: atts.ContentEncoding,
+	}
+}
+
 //AbugovTODO
 type ObjectAttrs struct {
 	// Bucket is the name of the bucket containing this GCS object.
 	// This field is read-only.
-	//Bucket string
+	Bucket string
 
 	// Name is the name of the object within the bucket.
 	// This field is read-only.

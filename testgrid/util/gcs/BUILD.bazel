@@ -10,8 +10,9 @@ go_library(
         "//testgrid:__subpackages__",
     ],
     deps = [
-        "//vendor/cloud.google.com/go/storage:go_default_library",
-        "//vendor/google.golang.org/api/option:go_default_library",
+        "//traiana:go_default_library",
+        "//traiana/storage:go_default_library",
+        "//traiana/storage/option:go_default_library",
     ],
 )
 

@@ -6,6 +6,7 @@ go_library(
         "bucket.go",
         "client.go",
         "clientoption.go",
+        "reader.go",
         "s3put.go",
         "writer2reader.go",
     ],

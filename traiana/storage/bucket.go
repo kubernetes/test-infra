@@ -62,12 +62,10 @@ type ObjectIterator struct {
 
 func (i ObjectIterator) Next() (*ObjectAttrs, error) {
 	if traiana.Aws {
-		return nil,nil //AbugovTODO
+		aws, err := i.aws.Next()
+		return FromAws(aws), err
 	} else {
-		n, err := i.gcs.Next()
-
-		return &ObjectAttrs{
-			Name: n.Name,
-		}, err
+		gcs, err := i.gcs.Next()
+		return FromGcs(gcs), err
 	}
 }

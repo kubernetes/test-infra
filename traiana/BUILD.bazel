@@ -22,7 +22,6 @@ filegroup(
         "//traiana/prow/awsapi:all-srcs",
         "//traiana/prow/awsupload:all-srcs",
         "//traiana/prow/plugins/force-merge:all-srcs",
-        "//traiana/prow/pod-utils/aws:all-srcs",
         "//traiana/storage:all-srcs",
     ],
     tags = ["automanaged"],
