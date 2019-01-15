@@ -22,6 +22,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
@@ -131,6 +132,7 @@ func parseBranches(str string) []string {
 }
 
 func search(ctx context.Context, ghc githubClient, log *logrus.Entry, q string) ([]Issue, error) {
+	requestStart := time.Now()
 	var ret []Issue
 	vars := map[string]interface{}{
 		"query":        githubql.String(q),
@@ -153,7 +155,9 @@ func search(ctx context.Context, ghc githubClient, log *logrus.Entry, q string) 
 		}
 		vars["searchCursor"] = githubql.NewString(sq.Search.PageInfo.EndCursor)
 	}
-	log.Debugf("Search for query \"%s\" cost %d point(s). %d remaining.", q, totalCost, remaining)
+	log.WithField(
+		"duration", time.Since(requestStart).String(),
+	).Debugf("Search for blocker query \"%s\" cost %d point(s). %d remaining.", q, totalCost, remaining)
 	return ret, nil
 }
 

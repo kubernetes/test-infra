@@ -435,6 +435,9 @@ func (sc *statusController) search() []PullRequest {
 			allPRs = append(allPRs, prs...)
 		}
 	}
+	sc.logger.WithField(
+		"duration", time.Since(queryStartTime).String(),
+	).Debugf("Found %d open PRs.", len(allPRs))
 
 	// We were able to find all open PRs so update the last successful query time.
 	sc.lastSuccessfulQueryStart = queryStartTime
