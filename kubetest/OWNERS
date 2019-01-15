@@ -3,6 +3,7 @@
 approvers:
 - BenTheElder
 - krzyzacy
+- shyamjvs
 
 labels:
 - area/kubetest
