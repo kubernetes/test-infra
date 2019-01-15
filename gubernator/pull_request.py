@@ -33,7 +33,7 @@ def builds_to_table(jobs):
             return started['pull'].split(':')[-1]
         if 'version' in started:
             return started['version'].split('+')[-1]
-        if 'revision' in finished:
+        if finished and 'revision' in finished:
             return finished['revision']
         return 'unknown'
 
