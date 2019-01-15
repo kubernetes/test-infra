@@ -15,6 +15,10 @@ body {
     font-size: small;
 }
 
+.mdl-navigation__link .material-icons {
+    font-size: 14px;
+}
+
 code {
     background-color: #EEEEEE;
     border-radius: 3px;
