@@ -14,6 +14,7 @@ container_bundle(
         "artifact-uploader",
         "branchprotector",
         "build",
+        "checkconfig",
         "clonerefs",
         "deck",
         "entrypoint",
