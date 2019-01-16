@@ -282,6 +282,9 @@ func (c *Controller) Sync() error {
 			prs[prKey(&pr)] = pr
 		}
 	}
+	c.logger.WithField(
+		"duration", time.Since(start).String(),
+	).Debugf("Found %d (unfiltered) pool PRs.", len(prs))
 
 	var pjs []kube.ProwJob
 	var blocks blockers.Blockers
