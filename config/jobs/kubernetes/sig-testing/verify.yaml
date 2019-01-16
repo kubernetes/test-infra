@@ -1,37 +1,5 @@
 presubmits:
   kubernetes/kubernetes:
-  - name: pull-kubernetes-verify
-    always_run: true
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    # the podutils version below does newer branches
-    branches:
-    - release-1.13
-    - release-1.12
-    - release-1.11
-    - release-1.10
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20190110-c23317e88
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=75"
-        - --scenario=kubernetes_verify
-        - --
-        - "--branch=${PULL_BASE_REF}"
-        - --exclude-typecheck
-        - --exclude-godep
-        - --script=./hack/jenkins/verify-dockerized.sh
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 4
   # TODO(krzyzacy): add branches once this works
   # TODO(krzyzacy): Consider combine kubekins-e2e and kubekins-test
   - name: pull-kubernetes-verify
@@ -65,6 +33,42 @@ presubmits:
           value: master
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
+        # TODO(bentheelder): remove bandaid once we have this metadata exposed
+        # properly, first-class
+        - name: METADATA_BANDAID
+          value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 4
+  - name: pull-kubernetes-verify
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    # the podutils version above does newer branches
+    branches:
+    - release-1.13
+    - release-1.12
+    - release-1.11
+    - release-1.10
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bootstrap:v20190110-c23317e88
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
+        - --scenario=kubernetes_verify
+        - --
+        - "--branch=${PULL_BASE_REF}"
+        - --exclude-typecheck
+        - --exclude-godep
+        - --script=./hack/jenkins/verify-dockerized.sh
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -101,6 +105,10 @@ periodics:
         value: master
       - name: REPO_DIR
         value: /workspace/k8s.io/kubernetes
+      # TODO(bentheelder): remove bandaid once we have this metadata exposed
+      # properly, first-class
+      - name: METADATA_BANDAID
+        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true

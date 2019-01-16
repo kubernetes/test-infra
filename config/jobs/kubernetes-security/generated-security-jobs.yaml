@@ -2518,6 +2518,46 @@ presubmits:
     trigger: (?m)^/test( | .* )pull-security-kubernetes-typecheck,?($|\s.*)
   - agent: kubernetes
     always_run: true
+    cluster: security
+    context: pull-security-kubernetes-verify
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-verify
+    path_alias: k8s.io/kubernetes
+    rerun_command: /test pull-security-kubernetes-verify
+    skip_branches:
+    - release-1.13
+    - release-1.12
+    - release-1.11
+    - release-1.10
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - ./hack/jenkins/verify-dockerized.sh
+        command:
+        - runner.sh
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-920f4053b-master
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            cpu: "4"
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-verify,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
     branches:
     - release-1.13
     - release-1.12
@@ -2546,46 +2586,6 @@ presubmits:
         - --exclude-godep
         - --script=./hack/jenkins/verify-dockerized.sh
         image: gcr.io/k8s-testimages/bootstrap:v20190110-c23317e88
-        name: ""
-        resources:
-          requests:
-            cpu: "4"
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-verify,?($|\s.*)
-  - agent: kubernetes
-    always_run: true
-    cluster: security
-    context: pull-security-kubernetes-verify
-    decorate: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-service-account: "true"
-    name: pull-security-kubernetes-verify
-    path_alias: k8s.io/kubernetes
-    rerun_command: /test pull-security-kubernetes-verify
-    skip_branches:
-    - release-1.13
-    - release-1.12
-    - release-1.11
-    - release-1.10
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - ./hack/jenkins/verify-dockerized.sh
-        command:
-        - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-920f4053b-master
-        imagePullPolicy: Always
         name: ""
         resources:
           requests:
