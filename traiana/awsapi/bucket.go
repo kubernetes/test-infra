@@ -155,7 +155,7 @@ func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64)
 	return &Reader{
 		body:            body,
 		size:            size,
-		remain:          remain,
+		offset:          remain,
 		contentType:     res.Header.Get("Content-Type"),
 		contentEncoding: res.Header.Get("Content-Encoding"),
 		cacheControl:    res.Header.Get("Cache-Control"),
