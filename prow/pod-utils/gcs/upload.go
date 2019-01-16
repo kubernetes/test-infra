@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"k8s.io/test-infra/traiana"
 	"os"
 	"sync"
 
@@ -99,10 +98,6 @@ func DataUploadWithMetadata(src io.Reader, metadata map[string]string) UploadFun
 		writer := obj.NewWriter(context.Background())
 
 		writer.Metadata = metadata
-
-		if traiana.Traiana {
-			writer.CopyFields()
-		}
 
 		_, copyErr := io.Copy(writer, src)
 		closeErr := writer.Close()

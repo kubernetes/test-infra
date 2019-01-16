@@ -48,57 +48,40 @@ func (c *Client) Bucket(name string) *BucketHandle {
 }
 
 type StorageWriter struct {
-	storage.ObjectAttrs
+	*storage.Writer
 
-	gcs *storage.Writer
 	aws *awsapi.Writer2Reader
-
-	// You must call CopyFields() after setting the following fields:
-	SendCRC32C   bool
-	ProgressFunc func(int64)
 }
 
 func (sw *StorageWriter) Write(p []byte) (n int, err error) {
 	if traiana.Aws {
 		return sw.aws.Write(p)
 	} else {
-		return sw.gcs.Write(p)
+		return sw.Writer.Write(p)
 	}
 }
 func (sw *StorageWriter) Close() error {
 	if traiana.Aws {
 		return sw.aws.Close()
 	} else {
-		return sw.gcs.Close()
-	}
-}
-func (sw *StorageWriter) CopyFields() {
-	if !traiana.Aws {
-		sw.gcs.Metadata = sw.Metadata
-		sw.gcs.SendCRC32C = sw.SendCRC32C
-		sw.gcs.ProgressFunc = sw.ProgressFunc
-		sw.gcs.ObjectAttrs = sw.ObjectAttrs
+		return sw.Writer.Close()
 	}
 }
 
 func (o *ObjectHandle) NewWriter(ctx context.Context) *StorageWriter {
-	 g := o.gcs.NewWriter(ctx)
-	w := &StorageWriter{}
-	w.ObjectAttrs = g.ObjectAttrs
-
 	if traiana.Aws {
 		return &StorageWriter{
 			aws: o.aws.NewWriter(ctx),
 		}
 	} else {
 		return &StorageWriter{
-			gcs: o.gcs.NewWriter(ctx),
+			Writer: o.gcs.NewWriter(ctx),
 		}
 	}
 }
 
 type StorageReader struct {
-	gcs      *storage.Reader
+	*storage.Reader
 	aws      *awsapi.Reader
 }
 
@@ -106,7 +89,7 @@ func (sr *StorageReader) Read(p []byte) (n int, err error) {
 	if traiana.Aws {
 		return sr.aws.Read(p)
 	} else {
-		return sr.gcs.Read(p)
+		return sr.Reader.Read(p)
 	}
 }
 
@@ -114,25 +97,29 @@ func (sr *StorageReader) Close() error {
 	if traiana.Aws {
 		return sr.aws.Close()
 	} else {
-		return sr.gcs.Close()
+		return sr.Reader.Close()
 	}
 }
 
 func (o *ObjectHandle) NewReader(ctx context.Context) (r *StorageReader, err error) {
+	r = &StorageReader{}
+
 	if traiana.Aws {
 		r.aws, err = o.aws.NewReader(ctx)
 	} else {
-		r.gcs, err = o.gcs.NewReader(ctx)
+		r.Reader, err = o.gcs.NewReader(ctx)
 	}
 
 	return r, err
 }
 
 func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64) (r *StorageReader, err error) {
+	r = &StorageReader{}
+
 	if traiana.Aws {
 		r.aws, err = o.aws.NewRangeReader(ctx, offset, length)
 	} else {
-		r.gcs, err = o.gcs.NewRangeReader(ctx, offset, length)
+		r.Reader, err = o.gcs.NewRangeReader(ctx, offset, length)
 	}
 
 	return r, err

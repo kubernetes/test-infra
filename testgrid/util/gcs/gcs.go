@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"hash/crc32"
-	"k8s.io/test-infra/traiana"
 	"log"
 	"net/url"
 	"strings"
@@ -121,10 +120,6 @@ func Upload(ctx context.Context, client *storage.Client, path Path, buf []byte) 
 	w.ObjectAttrs.CRC32C = crc
 	w.ProgressFunc = func(bytes int64) {
 		log.Printf("Uploading %s: %d/%d...", path, bytes, len(buf))
-	}
-
-	if traiana.Traiana {
-		w.CopyFields()
 	}
 
 	if n, err := w.Write(buf); err != nil {
