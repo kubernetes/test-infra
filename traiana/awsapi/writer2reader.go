@@ -75,6 +75,16 @@ func (w *Writer2Reader) Write(bytes []byte) (int, error) {
 	return len(bytes), nil
 }
 
+func (w *Writer2Reader) WriteAt(bytes []byte, offset int64) (n int, err error) {
+	if offset != 0 {
+		panic("crap")
+	}
+	sendToReader(w, bytes)
+
+	// Write will never return an error. the error is returned upon a call to Close
+	return len(bytes), nil
+}
+
 func sendToReader(w *Writer2Reader, bytes []byte) {
 	// must copy before send otherwise the caller of this function can change the content just before read on the other side
 	c := make([]byte, len(bytes))
@@ -87,6 +97,7 @@ func sendToReader(w *Writer2Reader, bytes []byte) {
 
 	w.buffer <- c
 }
+
 func (w *Writer2Reader) Close() error {
 	w.closeBufferSafe()
 

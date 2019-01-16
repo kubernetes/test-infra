@@ -36,12 +36,12 @@ func (o *ObjectHandle) NewReader(ctx context.Context) *Writer2Reader {
 }
 
 func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64) *Writer2Reader {
-	return nil
-	//b := Bucket(o.b.bucket, o.b.client)
+	b := Bucket(o.b.bucket, o.b.client)
 
-	//return NewReader2Writer(func(writer io.WriterAt) (int64, error) {
-	//	return S3Download(writer, b, o.key, offset, length)
-	//})
+	return NewWriter2Reader(func(wr *Writer2Reader) error {
+		_, err := S3Download(wr, b, o.key, offset, length)
+		return err
+	})
 }
 
 func (h *ObjectHandle) Attrs(ctx context.Context) (*ObjectAttrs, error) {

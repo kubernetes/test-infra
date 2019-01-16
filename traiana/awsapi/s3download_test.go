@@ -1,12 +1,11 @@
 package awsapi
 
 import (
+	"context"
 	"github.com/stretchr/testify/assert"
-	"os"
 	"testing"
 )
 
-/*
 func Test_S3Download(t *testing.T) {
 	opt := ClientOption {
 		CredentialsFile: "/users/Traiana/alexa/.aws/credentials",
@@ -18,8 +17,7 @@ func Test_S3Download(t *testing.T) {
 	b := client.Bucket("dev-okro-io")
 	o := b.Object("lala")
 
-	reader, err := o.NewRangeReader(context.Background(), 0, 5)
-	assert.NoError(t, err)
+	reader := o.NewRangeReader(context.Background(), 0, 5)
 
 	buf := make([]byte, 5)
 
@@ -27,9 +25,13 @@ func Test_S3Download(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, 5, n)
-}*/
 
-func Test_S3Download(t *testing.T) {
+	assert.NotEqual(t, []byte {0,0,0,0,0}, buf)
+
+
+}
+
+/*func Test_S3Download(t *testing.T) {
 	opt := ClientOption {
 		CredentialsFile: "/users/Traiana/alexa/.aws/credentials",
 	}
@@ -47,4 +49,4 @@ func Test_S3Download(t *testing.T) {
 	n, err := S3Download(file, b, "lala", 0, 2)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(2), n)
-}
+}*/
