@@ -125,9 +125,14 @@ func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64)
 	return r, err
 }
 
-func (o *ObjectHandle) Attrs(ctx context.Context) (*ObjectAttrs, error) {
-	panic("implement me")
+func (o *ObjectHandle) Attrs(ctx context.Context) (attrs *ObjectAttrs, err error) {
+	if traiana.Aws {
+		return o.aws.Attrs(ctx)
+	} else {
+		return o.gcs.Attrs(ctx)
+	}
 }
+
 
 type Query = storage.Query
 

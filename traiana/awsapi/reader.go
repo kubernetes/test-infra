@@ -16,7 +16,7 @@ type Reader struct {
 	*/
 }
 
-func (r Reader) Read(p []byte) (int, error) {
+func (r *Reader) Read(p []byte) (int, error) {
 	panic ("AbugovTODO")
 	/*n, err := r.readWithRetry(p)
 		if r.remain != -1 {
