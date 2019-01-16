@@ -3268,20 +3268,20 @@ test_groups:
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-gce-v1.12
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
-- name: ci-gardener-e2e-conformance-os-v1.11
-  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-os-v1.11
+- name: ci-gardener-e2e-conformance-openstack-v1.11
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-openstack-v1.11
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
-- name: ci-gardener-e2e-conformance-os-v1.12
-  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-os-v1.12
+- name: ci-gardener-e2e-conformance-openstack-v1.12
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-openstack-v1.12
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
-- name: ci-gardener-e2e-conformance-az-v1.11
-  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-az-v1.11
+- name: ci-gardener-e2e-conformance-azure-v1.11
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-azure-v1.11
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
-- name: ci-gardener-e2e-conformance-az-v1.12
-  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-az-v1.12
+- name: ci-gardener-e2e-conformance-azure-v1.12
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-azure-v1.12
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
 
@@ -3535,16 +3535,16 @@ dashboards:
     test_group_name: ci-gardener-e2e-conformance-gce-v1.12
   - name: Gardener, v1.11 OpenStack
     description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Openstack"
-    test_group_name: ci-gardener-e2e-conformance-os-v1.11
+    test_group_name: ci-gardener-e2e-conformance-openstack-v1.11
   - name: Gardener, v1.12 OpenStack
     description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Openstack"
-    test_group_name: ci-gardener-e2e-conformance-os-v1.12
+    test_group_name: ci-gardener-e2e-conformance-openstack-v1.12
   - name: Gardener, v1.11 Azure
     description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Microsoft Azure"
-    test_group_name: ci-gardener-e2e-conformance-az-v1.11
+    test_group_name: ci-gardener-e2e-conformance-azure-v1.11
   - name: Gardener, v1.12 Azure
     description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Microsoft Azure"
-    test_group_name: ci-gardener-e2e-conformance-az-v1.12
+    test_group_name: ci-gardener-e2e-conformance-azure-v1.12
 
 - name: conformance-gce
   dashboard_tab:
@@ -7589,22 +7589,22 @@ dashboards:
       alert_mail_to_addresses: oleg.loewen@sap.com
   - name: Gardener, v1.11 OpenStack
     description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Openstack"
-    test_group_name: ci-gardener-e2e-conformance-os-v1.11
+    test_group_name: ci-gardener-e2e-conformance-openstack-v1.11
     alert_options:
       alert_mail_to_addresses: oleg.loewen@sap.com
   - name: Gardener, v1.12 OpenStack
     description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Openstack"
-    test_group_name: ci-gardener-e2e-conformance-os-v1.12
+    test_group_name: ci-gardener-e2e-conformance-openstack-v1.12
     alert_options:
       alert_mail_to_addresses: oleg.loewen@sap.com
   - name: Gardener, v1.11 Azure
     description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Microsoft Azure"
-    test_group_name: ci-gardener-e2e-conformance-az-v1.11
+    test_group_name: ci-gardener-e2e-conformance-azure-v1.11
     alert_options:
       alert_mail_to_addresses: oleg.loewen@sap.com
   - name: Gardener, v1.12 Azure
     description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Microsoft Azure"
-    test_group_name: ci-gardener-e2e-conformance-az-v1.12
+    test_group_name: ci-gardener-e2e-conformance-azure-v1.12
     alert_options:
       alert_mail_to_addresses: oleg.loewen@sap.com
 
