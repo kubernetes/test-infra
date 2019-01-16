@@ -24,148 +24,23 @@ type ObjectHandle struct {
 	key string
 }
 
-func (h *ObjectHandle) NewWriter(context context.Context) *Writer2Reader {
-	b := Bucket(h.b.bucket, h.b.client)
+func (o *ObjectHandle) NewWriter(context context.Context) *Writer2Reader {
+	b := Bucket(o.b.bucket, o.b.client)
 
 	return NewWriter2Reader(func(reader io.Reader) error {
-		return S3Upload(reader, b, h.key)
+		return S3Upload(reader, b, o.key)
 	})
 }
-func (o *ObjectHandle) NewReader(ctx context.Context) (*Reader2Writer, error) {
+func (o *ObjectHandle) NewReader(ctx context.Context) *Reader2Writer {
 	return o.NewRangeReader(ctx, 0, -1)
 }
 
-func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64) (r *Reader2Writer, err error) {
-	//d := S3Download()
-	panic("AbugovTODO")
+func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64) *Reader2Writer {
+	b := Bucket(o.b.bucket, o.b.client)
 
-	/*
-	ctx = trace.StartSpan(ctx, "cloud.google.com/go/storage.Object.NewRangeReader")
-	defer func() { trace.EndSpan(ctx, err) }()
-
-	if err := o.validate(); err != nil {
-		return nil, err
-	}
-	if offset < 0 {
-		return nil, fmt.Errorf("storage: invalid offset %d < 0", offset)
-	}
-	if o.conds != nil {
-		if err := o.conds.validate("NewRangeReader"); err != nil {
-			return nil, err
-		}
-	}
-	u := &url.URL{
-		Scheme:   "https",
-		Host:     "storage.googleapis.com",
-		Path:     fmt.Sprintf("/%s/%s", o.bucket, o.object),
-		RawQuery: conditionsQuery(o.gen, o.conds),
-	}
-	verb := "GET"
-	if length == 0 {
-		verb = "HEAD"
-	}
-	req, err := http.NewRequest(verb, u.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-	req = withContext(req, ctx)
-	if o.userProject != "" {
-		req.Header.Set("X-Goog-User-Project", o.userProject)
-	}
-	if o.readCompressed {
-		req.Header.Set("Accept-Encoding", "gzip")
-	}
-	if err := setEncryptionHeaders(req.Header, o.encryptionKey, false); err != nil {
-		return nil, err
-	}
-
-	// Define a function that initiates a Read with offset and length, assuming we
-	// have already read seen bytes.
-	reopen := func(seen int64) (*http.Response, error) {
-		start := offset + seen
-		if length < 0 && start > 0 {
-			req.Header.Set("Range", fmt.Sprintf("bytes=%d-", start))
-		} else if length > 0 {
-			// The end character isn't affected by how many bytes we've seen.
-			req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", start, offset+length-1))
-		}
-		var res *http.Response
-		err = runWithRetry(ctx, func() error {
-			res, err = o.c.hc.Do(req)
-			if err != nil {
-				return err
-			}
-			if res.StatusCode == http.StatusNotFound {
-				res.Body.Close()
-				return ErrObjectNotExist
-			}
-			if res.StatusCode < 200 || res.StatusCode > 299 {
-				body, _ := ioutil.ReadAll(res.Body)
-				res.Body.Close()
-				return &googleapi.Error{
-					Code:   res.StatusCode,
-					Header: res.Header,
-					Body:   string(body),
-				}
-			}
-			if start > 0 && length != 0 && res.StatusCode != http.StatusPartialContent {
-				res.Body.Close()
-				return errors.New("storage: partial request not satisfied")
-			}
-			return nil
-		})
-		if err != nil {
-			return nil, err
-		}
-		return res, nil
-	}
-
-	res, err := reopen(0)
-	if err != nil {
-		return nil, err
-	}
-	var size int64 // total size of object, even if a range was requested.
-	if res.StatusCode == http.StatusPartialContent {
-		cr := strings.TrimSpace(res.Header.Get("Content-Range"))
-		if !strings.HasPrefix(cr, "bytes ") || !strings.Contains(cr, "/") {
-
-			return nil, fmt.Errorf("storage: invalid Content-Range %q", cr)
-		}
-		size, err = strconv.ParseInt(cr[strings.LastIndex(cr, "/")+1:], 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("storage: invalid Content-Range %q", cr)
-		}
-	} else {
-		size = res.ContentLength
-	}
-
-	remain := res.ContentLength
-	body := res.Body
-	if length == 0 {
-		remain = 0
-		body.Close()
-		body = emptyBody
-	}
-	var (
-		checkCRC bool
-		crc      uint32
-	)
-	// Even if there is a CRC header, we can't compute the hash on partial data.
-	if remain == size {
-		crc, checkCRC = parseCRC32c(res)
-	}
-	return &Reader{
-		body:            body,
-		size:            size,
-		offset:          remain,
-		contentType:     res.Header.Get("Content-Type"),
-		contentEncoding: res.Header.Get("Content-Encoding"),
-		cacheControl:    res.Header.Get("Cache-Control"),
-		wantCRC:         crc,
-		checkCRC:        checkCRC,
-		reopen:          reopen,
-	}, nil
-	 */
+	return NewReader2Writer(func(writer io.WriterAt) (int64, error) {
+		return S3Download(writer, b, o.key, offset, length)
+	})
 }
 
 func (h *ObjectHandle) Attrs(ctx context.Context) (*ObjectAttrs, error) {

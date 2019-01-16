@@ -105,7 +105,7 @@ func (o *ObjectHandle) NewReader(ctx context.Context) (r *StorageReader, err err
 	r = &StorageReader{}
 
 	if traiana.Aws {
-		r.aws, err = o.aws.NewReader(ctx)
+		r.aws = o.aws.NewReader(ctx)
 	} else {
 		r.Reader, err = o.gcs.NewReader(ctx)
 	}
@@ -117,7 +117,7 @@ func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64)
 	r = &StorageReader{}
 
 	if traiana.Aws {
-		r.aws, err = o.aws.NewRangeReader(ctx, offset, length)
+		r.aws = o.aws.NewRangeReader(ctx, offset, length)
 	} else {
 		r.Reader, err = o.gcs.NewRangeReader(ctx, offset, length)
 	}

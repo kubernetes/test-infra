@@ -17,7 +17,7 @@ type Writer2Reader struct {
 	buffer    chan []byte // data channel
 	error     chan error  // return the error from the background func
 	writeFunc WriteFunc   // the write function works in the background, taking the reader as a parameter and writing the data into S3
-	inited    bool        // on the first call to Write, writeFunc is called in background, reading it's input using the buffer chan
+	inited    bool        // on the first call to Write, writeFunc is called in background, getting it's input using the buffer chan
 	leftOvers []byte      // when read buffer is smaller than write buffer, we need this to keep the left overs until next read. Hopefully not too big ...
 }
 
@@ -31,12 +31,13 @@ func NewWriter2Reader(writeFunc WriteFunc) *Writer2Reader {
 		inited:    false,
 	}
 }
-func (wr *Writer2Reader) Read(buffer []byte) (n int, err error) {
+
+func (w *Writer2Reader) Read(buffer []byte) (n int, err error) {
 	size := 0
 
-	if len(wr.leftOvers) > 0 {
-		size = copy(buffer, wr.leftOvers)
-		wr.leftOvers = wr.leftOvers[size:]
+	if len(w.leftOvers) > 0 {
+		size = copy(buffer, w.leftOvers)
+		w.leftOvers = w.leftOvers[size:]
 
 		if len(buffer) - size == 0 {
 			return len(buffer), nil
@@ -44,14 +45,14 @@ func (wr *Writer2Reader) Read(buffer []byte) (n int, err error) {
 	}
 
 	// read or block
-	buf, ok := <-wr.buffer
+	buf, ok := <-w.buffer
 
 	if ok {
 
 		size = copy(buffer, buf)
 
 		if size < len(buf) {
-			wr.leftOvers = buf[size:]
+			w.leftOvers = buf[size:]
 		}
 
 		return size, nil
@@ -60,20 +61,20 @@ func (wr *Writer2Reader) Read(buffer []byte) (n int, err error) {
 	}
 }
 
-func (wr *Writer2Reader) Write(bytes []byte) (int, error) {
+func (w *Writer2Reader) Write(bytes []byte) (int, error) {
 	// on first call to Write open a new channel to help sending the next calls to Writer.Write into Reader.Read
-	if !wr.inited {
-		wr.inited = true
-		go backgroundWriter(wr)
+	if !w.inited {
+		w.inited = true
+		go backgroundWriter(w)
 	}
 
-	send(wr, bytes)
+	sendToWriter(w, bytes)
 
 	// Write will never return an error. the error is returned upon a call to Close
 	return len(bytes), nil
 }
 
-func send(wr *Writer2Reader, bytes []byte) {
+func sendToWriter(w *Writer2Reader, bytes []byte) {
 	// must copy before send otherwise the caller of this function can change the content just before read on the other side
 	c := make([]byte, len(bytes))
 	copy(c, bytes)
@@ -83,30 +84,30 @@ func send(wr *Writer2Reader, bytes []byte) {
 		recover()
 	}()
 
-	wr.buffer <- c
+	w.buffer <- c
 }
 
-func backgroundWriter(wr *Writer2Reader) {
-	err := wr.writeFunc(wr)
-	closeBufferSafe(wr.buffer)
+func backgroundWriter(w *Writer2Reader) {
+	err := w.writeFunc(w)
+	w.closeBufferSafe()
 
-	wr.error <- err
+	w.error <- err
 }
 
-func (wr Writer2Reader) Close() error {
-	closeBufferSafe(wr.buffer)
+func (w *Writer2Reader) Close() error {
+	w.closeBufferSafe()
 
 	// wait for completion
-	err := <- wr.error
+	err := <- w.error
 
 	return err
 }
 
-func closeBufferSafe(buffer chan []byte) {
+func (w *Writer2Reader) closeBufferSafe() {
 	// channel might be closed due to error in writeFunc, just recover (the error is "close of a closed channel")
 	defer func() {
 		recover()
 	}()
 
-	close(buffer)
+	close(w.buffer)
 }
