@@ -1,8 +1,8 @@
 package awsapi
 
 import (
+	"context"
 	"io"
-	"k8s.io/test-infra/bazel-test-infra/external/go_sdk/src/context"
 	"os"
 	"testing"
 	"time"

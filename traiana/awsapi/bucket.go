@@ -36,6 +36,7 @@ func (o *ObjectHandle) NewReader(ctx context.Context) (*Reader, error) {
 }
 
 func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64) (r *Reader, err error) {
+	//d := S3Download()
 	panic("AbugovTODO")
 
 	/*
@@ -242,10 +243,10 @@ func (b *BucketHandle) Objects(q *Query) *ObjectIterator {
 	return it*/
 }
 
+/*
 func (it *ObjectIterator) fetch(pageSize int, pageToken string) (string, error) {
-	panic("AbugovTODO")
 
-	/*req := it.bucket.c.raw.Objects.List(it.bucket.name)
+	req := it.bucket.c.raw.Objects.List(it.bucket.name)
 	setClientHeader(req.Header())
 	req.Projection("full")
 	req.Delimiter(it.query.Delimiter)
@@ -276,8 +277,9 @@ func (it *ObjectIterator) fetch(pageSize int, pageToken string) (string, error) 
 	for _, prefix := range resp.Prefixes {
 		it.items = append(it.items, &storage.ObjectAttrs{Prefix: prefix})
 	}
-	return resp.NextPageToken, nil*/
+	return resp.NextPageToken, nil
 }
+*/
 
 type ObjectAttrs = storage.ObjectAttrs
 
