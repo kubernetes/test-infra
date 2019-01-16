@@ -449,6 +449,7 @@ tide:
     kubernetes-sigs/cluster-api-provider-openstack: squash
     kubernetes-sigs/cluster-api-provider-vsphere: squash
     kubernetes-sigs/kubespray: squash
+    kubernetes/cloud-provider-openstack: squash
     kubernetes/dashboard: squash
     kubernetes/kube-deploy: squash
     kubernetes/website: squash
