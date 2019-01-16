@@ -82,7 +82,7 @@ func (o *ObjectHandle) NewWriter(ctx context.Context) *StorageWriter {
 
 type StorageReader struct {
 	*storage.Reader
-	aws      *awsapi.Reader
+	aws      *awsapi.Reader2Writer
 }
 
 func (sr *StorageReader) Read(p []byte) (n int, err error) {

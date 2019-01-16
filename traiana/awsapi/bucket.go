@@ -31,11 +31,11 @@ func (h *ObjectHandle) NewWriter(context context.Context) *Writer2Reader {
 		return S3Upload(reader, b, h.key)
 	})
 }
-func (o *ObjectHandle) NewReader(ctx context.Context) (*Reader, error) {
+func (o *ObjectHandle) NewReader(ctx context.Context) (*Reader2Writer, error) {
 	return o.NewRangeReader(ctx, 0, -1)
 }
 
-func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64) (r *Reader, err error) {
+func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64) (r *Reader2Writer, err error) {
 	//d := S3Download()
 	panic("AbugovTODO")
 

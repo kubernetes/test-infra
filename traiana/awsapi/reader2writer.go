@@ -2,7 +2,7 @@ package awsapi
 
 //var crc32cTable = crc32.MakeTable(crc32.Castagnoli)
 
-type Reader struct {
+type Reader2Writer struct {
 	/*body               io.ReadCloser
 	seen, remain, size int64
 	contentType        string
@@ -16,7 +16,7 @@ type Reader struct {
 	*/
 }
 
-func (r *Reader) Read(p []byte) (int, error) {
+func (r *Reader2Writer) Read(p []byte) (int, error) {
 	panic ("AbugovTODO")
 	/*n, err := r.readWithRetry(p)
 		if r.remain != -1 {
@@ -38,7 +38,7 @@ func (r *Reader) Read(p []byte) (int, error) {
 		return n, err
 		*/
 }
-func (r *Reader) readWithRetry(p []byte) (int, error) {
+func (r *Reader2Writer) readWithRetry(p []byte) (int, error) {
 	panic ("AbugovTODO")
 	/*n := 0
 		for len(p[n:]) > 0 {
@@ -61,7 +61,7 @@ func (r *Reader) readWithRetry(p []byte) (int, error) {
 		return n, nil
 		*/
 }
-func (r *Reader) Close() error {
+func (r *Reader2Writer) Close() error {
 	panic ("AbugovTODO")
 /*	n, err := r.readWithRetry(p)
 	if r.remain != -1 {
