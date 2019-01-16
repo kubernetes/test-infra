@@ -131,5 +131,4 @@ func (o *ObjectHandle) Attrs(ctx context.Context) (*ObjectAttrs, error) {
 
 type Query = storage.Query
 
-//AbugovTODO
 type ObjectAttrs = storage.ObjectAttrs
