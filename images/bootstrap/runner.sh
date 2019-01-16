@@ -102,6 +102,12 @@ fi
 # Use a reproducible build date based on the most recent git commit timestamp.
 export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct || true)
 
+# TODO(bentheelder): this is a band-aid! Delete this when we've exposed this data
+# in the pod-utils first-class.
+if [[ "${METADATA_BANDAID:-false}" == "true" ]]; then
+    echo "{\"job-version\": \"$(git rev-parse HEAD)\"}" >> "${ARTIFACTS}/metadata.json"
+fi
+
 # actually start bootstrap and the job
 "$@"
 EXIT_VALUE=$?
