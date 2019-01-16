@@ -1,6 +1,7 @@
 package awsapi
 
 import (
+	"cloud.google.com/go/storage"
 	"context"
 	"google.golang.org/api/iterator"
 	"io"
@@ -191,7 +192,7 @@ func (it *ObjectIterator) Next() (*ObjectAttrs, error) {
 	return item, nil
 }
 
-func (b *BucketHandle) Objects(delimiter string, prefix string, versions bool) *ObjectIterator {
+func (b *BucketHandle) Objects(q *Query) *ObjectIterator {
 	panic("AbugovTODO")
 
 	/*it := &ObjectIterator{
@@ -240,16 +241,11 @@ func (it *ObjectIterator) fetch(pageSize int, pageToken string) (string, error) 
 		it.items = append(it.items, newObject(item))
 	}
 	for _, prefix := range resp.Prefixes {
-		it.items = append(it.items, &ObjectAttrs{Prefix: prefix})
+		it.items = append(it.items, &storage.ObjectAttrs{Prefix: prefix})
 	}
 	return resp.NextPageToken, nil*/
 }
 
-type ObjectAttrs struct {
-	Name string
-	Bucket string
-	Size int64
-	ContentEncoding string
-	CRC32C uint32
-	Prefix string
-}
+type ObjectAttrs = storage.ObjectAttrs
+
+type Query = storage.Query

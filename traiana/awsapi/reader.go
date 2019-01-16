@@ -65,6 +65,27 @@ func (r *Reader) readWithRetry(p []byte) (int, error) {
 	}
 	return n, nil
 }
+func (r *Reader) Close() error {
+	panic ("AbugovTODO")
+/*	n, err := r.readWithRetry(p)
+	if r.remain != -1 {
+		r.remain -= int64(n)
+	}
+	if r.checkCRC {
+		r.gotCRC = crc32.Update(r.gotCRC, crc32cTable, p[:n])
+		// Check CRC here. It would be natural to check it in Close, but
+		// everybody defers Close on the assumption that it doesn't return
+		// anything worth looking at.
+		if r.remain == 0 { // Only check if we have Content-Length.
+			r.checkedCRC = true
+			if r.gotCRC != r.wantCRC {
+				return n, fmt.Errorf("storage: bad CRC on read: got %d, want %d",
+					r.gotCRC, r.wantCRC)
+			}
+		}
+	}
+	return n, err*/
+}
 
 //AbugovTODO
 func shouldRetryRead(err error) bool {

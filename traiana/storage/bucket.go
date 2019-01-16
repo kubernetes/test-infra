@@ -42,15 +42,11 @@ func (b *BucketHandle) Object(name string) *ObjectHandle {
 func (b *BucketHandle) Objects(ctx context.Context, q *Query) *ObjectIterator {
 	if traiana.Aws {
 		return &ObjectIterator{
-			aws: b.aws.Objects(q.Delimiter, q.Prefix, q.Versions),
+			aws: b.aws.Objects(q),
 		}
 	} else {
 		return &ObjectIterator{
-			gcs: b.gcs.Objects(ctx, &storage.Query{
-				Delimiter: q.Delimiter,
-				Prefix:    q.Prefix,
-				Versions:  q.Versions,
-			}),
+			gcs: b.gcs.Objects(ctx, q),
 		}
 	}
 }
@@ -62,10 +58,8 @@ type ObjectIterator struct {
 
 func (i ObjectIterator) Next() (*ObjectAttrs, error) {
 	if traiana.Aws {
-		aws, err := i.aws.Next()
-		return FromAws(aws), err
+		return i.aws.Next()
 	} else {
-		gcs, err := i.gcs.Next()
-		return FromGcs(gcs), err
+		return i.gcs.Next()
 	}
 }
