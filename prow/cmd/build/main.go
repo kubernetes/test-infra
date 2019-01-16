@@ -36,14 +36,12 @@ import (
 	buildinfo "github.com/knative/build/pkg/client/informers/externalversions"
 	buildinfov1alpha1 "github.com/knative/build/pkg/client/informers/externalversions/build/v1alpha1"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/time/rate"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"k8s.io/client-go/util/workqueue"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // support gcp users in .kube/config
 )
@@ -229,14 +227,6 @@ func newBuildConfig(cfg rest.Config, stop chan struct{}) (*buildConfig, error) {
 	}, nil
 }
 
-func rateLimiter() limiter {
-	rl := workqueue.NewMaxOfRateLimiter(
-		workqueue.NewItemExponentialFailureRateLimiter(5*time.Millisecond, 120*time.Second),
-		&workqueue.BucketRateLimiter{Limiter: rate.NewLimiter(rate.Limit(1000), 50000)},
-	)
-	return workqueue.NewNamedRateLimitingQueue(rl, controllerName)
-}
-
 func main() {
 	o := parseOptions()
 	logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "build"})
@@ -294,7 +284,7 @@ func main() {
 		go runServer(o.cert, o.privateKey)
 	}
 
-	controller := newController(kc, pjc, pjif.Prow().V1().ProwJobs(), buildConfigs, o.totURL, pjNamespace, rateLimiter())
+	controller := newController(kc, pjc, pjif.Prow().V1().ProwJobs(), buildConfigs, o.totURL, pjNamespace, kube.RateLimiter(controllerName))
 	if err := controller.Run(2, stop); err != nil {
 		logrus.WithError(err).Fatal("Error running controller")
 	}
