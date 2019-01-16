@@ -4,7 +4,6 @@ import (
 	"cloud.google.com/go/storage"
 	"context"
 	"google.golang.org/api/iterator"
-	"io"
 )
 
 type BucketHandle struct {
@@ -27,20 +26,22 @@ type ObjectHandle struct {
 func (o *ObjectHandle) NewWriter(context context.Context) *Writer2Reader {
 	b := Bucket(o.b.bucket, o.b.client)
 
-	return NewWriter2Reader(func(reader io.Reader) error {
-		return S3Upload(reader, b, o.key)
+	return NewWriter2Reader(func(wr *Writer2Reader) error {
+		return S3Upload(wr, b, o.key)
 	})
 }
-func (o *ObjectHandle) NewReader(ctx context.Context) *Reader2Writer {
+
+func (o *ObjectHandle) NewReader(ctx context.Context) *Writer2Reader {
 	return o.NewRangeReader(ctx, 0, -1)
 }
 
-func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64) *Reader2Writer {
-	b := Bucket(o.b.bucket, o.b.client)
+func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64) *Writer2Reader {
+	return nil
+	//b := Bucket(o.b.bucket, o.b.client)
 
-	return NewReader2Writer(func(writer io.WriterAt) (int64, error) {
-		return S3Download(writer, b, o.key, offset, length)
-	})
+	//return NewReader2Writer(func(writer io.WriterAt) (int64, error) {
+	//	return S3Download(writer, b, o.key, offset, length)
+	//})
 }
 
 func (h *ObjectHandle) Attrs(ctx context.Context) (*ObjectAttrs, error) {

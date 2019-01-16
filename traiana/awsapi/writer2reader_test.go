@@ -98,15 +98,15 @@ func Test_WriteError(t *testing.T) {
 
 	b := make([]byte, 1)
 
-	writeFunc := func(reader io.Reader) error {
+	bg := func(wr *Writer2Reader) error {
 		for i := 0; i < getCount; i++ {
-			reader.Read(b)
+			wr.Read(b)
 		}
 
 		return errors.New("write error!")
 	}
 
-	target := NewWriter2Reader(writeFunc)
+	target := NewWriter2Reader(bg)
 
 	reads := 0
 
@@ -132,11 +132,11 @@ func doReadWrite(input []byte, ioCopyBufSize int, s3UploadBufSize int) ([]byte) 
 	var output []byte
 
 	// mock for S3Upload, which takes a reader as input (see UploadInput.Body in aws-sdk-go/service/s3/s3manager/upload.go)
-	writeFunc := func(reader io.Reader) error {
+	bg := func(wr *Writer2Reader) error {
 		buffer := make([]byte, s3UploadBufSize)
 
 		for {
-			n, err := reader.Read(buffer)
+			n, err := wr.Read(buffer)
 
 			if n > 0 {
 				output = append(output, buffer[0:n]...)
@@ -150,7 +150,7 @@ func doReadWrite(input []byte, ioCopyBufSize int, s3UploadBufSize int) ([]byte) 
 		return nil
 	}
 
-	target := NewWriter2Reader(writeFunc)
+	target := NewWriter2Reader(bg)
 
 	l := 0
 
