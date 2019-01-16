@@ -2518,6 +2518,11 @@ presubmits:
     trigger: (?m)^/test( | .* )pull-security-kubernetes-typecheck,?($|\s.*)
   - agent: kubernetes
     always_run: true
+    branches:
+    - release-1.13
+    - release-1.12
+    - release-1.11
+    - release-1.10
     cluster: security
     context: pull-security-kubernetes-verify
     labels:
@@ -2525,8 +2530,6 @@ presubmits:
       preset-service-account: "true"
     name: pull-security-kubernetes-verify
     rerun_command: /test pull-security-kubernetes-verify
-    skip_branches:
-    - master
     spec:
       containers:
       - args:
@@ -2560,8 +2563,6 @@ presubmits:
     trigger: (?m)^/test( | .* )pull-security-kubernetes-verify,?($|\s.*)
   - agent: kubernetes
     always_run: true
-    branches:
-    - master
     cluster: security
     context: pull-security-kubernetes-verify
     decorate: true
@@ -2571,6 +2572,11 @@ presubmits:
     name: pull-security-kubernetes-verify
     path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-verify
+    skip_branches:
+    - release-1.13
+    - release-1.12
+    - release-1.11
+    - release-1.10
     spec:
       containers:
       - args:

@@ -5,8 +5,12 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-    skip_branches:
-    - master # the podutils version below does this branch now
+    # the podutils version below does newer branches
+    branches:
+    - release-1.13
+    - release-1.12
+    - release-1.11
+    - release-1.10
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20190110-c23317e88
@@ -33,8 +37,11 @@ presubmits:
   - name: pull-kubernetes-verify
     always_run: true
     decorate: true
-    branches:
-    - master
+    skip_branches:
+    - release-1.13
+    - release-1.12
+    - release-1.11
+    - release-1.10
     path_alias: k8s.io/kubernetes
     labels:
       preset-service-account: "true"
