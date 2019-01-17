@@ -74,7 +74,7 @@ func main() {
 	}
 
 	var job kube.ProwJob
-	if err := yaml.Unmarshal(rawJob, &job); err != nil {
+	if err := yaml.UnmarshalStrict(rawJob, &job); err != nil {
 		logrus.WithError(err).Fatal("Could not unmarshal ProwJob YAML.")
 	}
 
