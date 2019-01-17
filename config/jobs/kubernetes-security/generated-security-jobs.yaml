@@ -2341,7 +2341,10 @@ presubmits:
         - --timeout=120m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-8e0f20924-master
         name: ""
-        resources: {}
+        resources:
+          requests:
+            cpu: "2"
+            memory: 9000Mi
         securityContext:
           privileged: true
         volumeMounts:
