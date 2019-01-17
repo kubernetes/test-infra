@@ -2170,6 +2170,13 @@ presubmits:
         - ./hack/jenkins/test-dockerized.sh
         command:
         - runner.sh
+        env:
+        - name: KUBE_FORCE_VERIFY_CHECKS
+          value: "n"
+        - name: KUBE_VERIFY_GIT_BRANCH
+          value: master
+        - name: REPO_DIR
+          value: /workspace/k8s.io/kubernetes
         image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
         imagePullPolicy: Always
         name: ""
