@@ -194,19 +194,19 @@ images:
       - 'resource tracking for 105 pods per node \[Benchmark\]'
 
   ubuntustable2-resource1:
-    image: ubuntu-gke-1604-xenial-v20170816-1
+    image: ubuntu-gke-1804-d1703-0-v20181113
     project: ubuntu-os-gke-cloud
     machine: n1-standard-1
     tests:
       - 'resource tracking for 0 pods per node \[Benchmark\]'
   ubuntustable2-resource2:
-    image: ubuntu-gke-1604-xenial-v20170816-1
+    image: ubuntu-gke-1804-d1703-0-v20181113
     project: ubuntu-os-gke-cloud
     machine: n1-standard-1
     tests:
       - 'resource tracking for 35 pods per node \[Benchmark\]'
   ubuntustable2-resource3:
-    image: ubuntu-gke-1604-xenial-v20170816-1
+    image: ubuntu-gke-1804-d1703-0-v20181113
     project: ubuntu-os-gke-cloud
     machine: n1-standard-1
     tests:
