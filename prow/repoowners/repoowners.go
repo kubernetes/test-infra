@@ -42,7 +42,11 @@ const (
 	baseDirConvention = ""
 )
 
-var defaultDirBlacklist = sets.NewString(".git", "_output")
+var (
+	defaultDirBlacklist = sets.NewString(".git", "_output")
+	lock                sync.Mutex
+	cache               = make(map[string]cacheEntry)
+)
 
 type dirOptions struct {
 	NoParentOwners bool `json:"no_parent_owners,omitempty"`
@@ -103,9 +107,6 @@ type Client struct {
 
 	mdYAMLEnabled     func(org, repo string) bool
 	skipCollaborators func(org, repo string) bool
-
-	lock  sync.Mutex
-	cache map[string]cacheEntry
 }
 
 // NewClient is the constructor for Client
@@ -120,7 +121,6 @@ func NewClient(
 		git:    gc,
 		ghc:    ghc,
 		logger: logrus.WithField("client", "repoowners"),
-		cache:  make(map[string]cacheEntry),
 
 		mdYAMLEnabled:     mdYAMLEnabled,
 		skipCollaborators: skipCollaborators,
@@ -177,9 +177,9 @@ func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
 		return nil, fmt.Errorf("failed to get current SHA for %s: %v", fullName, err)
 	}
 
-	c.lock.Lock()
-	defer c.lock.Unlock()
-	entry, ok := c.cache[fullName]
+	lock.Lock()
+	defer lock.Unlock()
+	entry, ok := cache[fullName]
 	if !ok || entry.sha != sha {
 		// entry is non-existent or stale.
 		gitRepo, err := c.git.Clone(cloneRef)
@@ -193,7 +193,6 @@ func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
 
 		entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
 		entry.sha = sha
-		c.cache[fullName] = entry
 	}
 
 	return entry.aliases, nil
@@ -212,17 +211,39 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 		return nil, fmt.Errorf("failed to get current SHA for %s: %v", fullName, err)
 	}
 
-	c.lock.Lock()
-	defer c.lock.Unlock()
-	entry, ok := c.cache[fullName]
-	if !ok || entry.sha != sha || entry.owners == nil || entry.owners.enableMDYAML != mdYaml {
+	lock.Lock()
+	defer lock.Unlock()
+	entry, ok := cache[fullName]
+
+	syncEntry := func(doDiff bool) error {
 		gitRepo, err := c.git.Clone(cloneRef)
 		if err != nil {
-			return nil, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
+			return fmt.Errorf("failed to clone %s: %v", cloneRef, err)
 		}
 		defer gitRepo.Clean()
+
+		if doDiff {
+			changes, err := gitRepo.Diff(sha, entry.sha)
+			if err != nil {
+				return fmt.Errorf("failed to diff %s with %s", sha, entry.sha)
+			}
+			if func() bool {
+				for _, change := range changes {
+					if mdYaml && strings.HasSuffix(change, ".md") ||
+						strings.HasSuffix(change, aliasesFileName) ||
+						strings.HasSuffix(change, ownersFileName) {
+						return false
+					}
+				}
+				return true
+			}() {
+				entry.sha = sha
+				return nil
+			}
+		}
+
 		if err := gitRepo.Checkout(base); err != nil {
-			return nil, err
+			return err
 		}
 
 		if entry.aliases == nil || entry.sha != sha {
@@ -241,10 +262,22 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 		}
 		entry.owners, err = loadOwnersFrom(gitRepo.Dir, mdYaml, entry.aliases, dirBlacklist, log)
 		if err != nil {
-			return nil, fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
+			return fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
 		}
 		entry.sha = sha
-		c.cache[fullName] = entry
+		cache[fullName] = entry
+		return nil
+	}
+
+	if !ok || entry.sha != sha || entry.owners == nil || entry.owners.enableMDYAML != mdYaml {
+		if err := syncEntry(ok &&
+			entry.sha != "" &&
+			entry.sha != sha &&
+			entry.owners != nil &&
+			entry.owners.enableMDYAML == mdYaml &&
+			entry.aliases != nil); err != nil {
+			return nil, err
+		}
 	}
 
 	if c.skipCollaborators(org, repo) {

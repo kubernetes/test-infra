@@ -89,6 +89,13 @@ labels:
 	}
 )
 
+// clearCache is used to clear cache
+func clearCache() {
+	lock.Lock()
+	defer lock.Unlock()
+	cache = make(map[string]cacheEntry)
+}
+
 // regexpAll is used to construct a default {regexp -> values} mapping for ".*"
 func regexpAll(values ...string) map[*regexp.Regexp]sets.String {
 	return map[*regexp.Regexp]sets.String{nil: sets.NewString(values...)}
@@ -148,7 +155,6 @@ func getTestClient(
 			git:    git,
 			ghc:    &fakegithub.FakeClient{Collaborators: []string{"cjwagner", "k8s-ci-robot", "alice", "bob", "carl", "mml", "maggie"}},
 			logger: logrus.WithField("client", "repoowners"),
-			cache:  make(map[string]cacheEntry),
 
 			mdYAMLEnabled: func(org, repo string) bool {
 				return enableMdYaml
@@ -262,6 +268,7 @@ func TestOwnersDirBlacklist(t *testing.T) {
 	}
 
 	for name, conf := range tests {
+		clearCache()
 		t.Run(name, func(t *testing.T) {
 			ro := getRepoOwnersWithBlacklist(t, conf.blackistDefault, conf.blacklistByRepo)
 			conf.validator(t, ro)
@@ -270,6 +277,7 @@ func TestOwnersDirBlacklist(t *testing.T) {
 }
 
 func TestOwnersRegexpFiltering(t *testing.T) {
+	clearCache()
 	tests := map[string]sets.String{
 		"re/a/go.go":   sets.NewString("re/all", "re/go", "re/go-in-a"),
 		"re/a/md.md":   sets.NewString("re/all", "re/md-in-a"),
@@ -494,6 +502,7 @@ func TestLoadRepoOwners(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		clearCache()
 		t.Logf("Running scenario %q", test.name)
 		client, cleanup, err := getTestClient(testFiles, test.mdEnabled, test.skipCollaborators, test.aliasesFileExists, nil, nil, test.extraBranchesAndFiles)
 		if err != nil {
@@ -593,6 +602,7 @@ func TestLoadRepoAliases(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
+		clearCache()
 		client, cleanup, err := getTestClient(testFiles, false, false, test.aliasFileExists, nil, nil, test.extraBranchesAndFiles)
 		if err != nil {
 			t.Errorf("[%s] Error creating test client: %v.", test.name, err)
