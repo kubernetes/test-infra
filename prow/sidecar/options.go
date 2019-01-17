@@ -37,7 +37,7 @@ func NewOptions() *Options {
 // where in GCS an upload will land.
 type Options struct {
 	GcsOptions     *gcsupload.Options `json:"gcs_options"`
-	WrapperOptions *wrapper.Options   `json:"wrapper_options,omitempty"`
+	WrapperOptions *wrapper.Options   `json:"wrapper_options,omitempty"` // TODO(fejta): remove july 2019
 
 	// Additional entries to wait for if set
 	Entries []wrapper.Options `json:"entries,omitempty"`
