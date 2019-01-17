@@ -25,5 +25,4 @@ func S3Download(writer io.WriterAt, handle *BucketHandle, key string, offset, le
 	}
 
 	return downloader.Download(writer, in)
-	//downloader.DownloadWithIterator
 }

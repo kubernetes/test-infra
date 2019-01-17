@@ -76,9 +76,8 @@ func (w *Writer2Reader) Write(bytes []byte) (int, error) {
 }
 
 func (w *Writer2Reader) WriteAt(bytes []byte, offset int64) (n int, err error) {
-	if offset != 0 {
-		panic("crap")
-	}
+	// offset is not used since we write sync and don't use the same buffer
+
 	sendToReader(w, bytes)
 
 	// Write will never return an error. the error is returned upon a call to Close
