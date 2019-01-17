@@ -40,7 +40,7 @@ workspace_binary(
 
 workspace_binary(
     name = "golint",
-    cmd = "//vendor/github.com/golang/lint/golint",
+    cmd = "@com_github_golang_lint//golint",
 )
 
 load("@bazel_gazelle//:def.bzl", "gazelle")
