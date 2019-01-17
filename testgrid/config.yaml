@@ -6556,7 +6556,7 @@ dashboards:
     base_options: include-filter-by-regex=sig-scheduling
     description: scheduling gce statefulset e2e tests for master branch
 
-- name: sig-storage
+- name: sig-storage-kubernetes
   dashboard_tab:
   - name: gce
     test_group_name: ci-kubernetes-e2e-gci-gce
@@ -6646,8 +6646,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-regional-slow
     base_options: include-filter-by-regex=Volume%7Cstorage
     description: storage gke regional slow e2e tests for master branch
-  dashboard_names:
-  - sig-storage-local-static-provisioner
 
 - name: sig-storage-local-static-provisioner
   dashboard_tab:
@@ -7733,6 +7731,11 @@ dashboard_groups:
   - sig-autoscaling-cluster-autoscaler
   - sig-autoscaling-hpa
   - sig-autoscaling-vpa
+
+- name: sig-storage
+  dashboard_names:
+  - sig-storage-kubernetes
+  - sig-storage-local-static-provisioner
 
 - name: conformance
   dashboard_names:
