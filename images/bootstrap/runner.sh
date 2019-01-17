@@ -106,6 +106,7 @@ export SOURCE_DATE_EPOCH
 # TODO(bentheelder): this is a band-aid! Delete this when we've exposed this data
 # in the pod-utils first-class.
 if [[ "${METADATA_BANDAID:-false}" == "true" ]]; then
+    mkdir -p "${ARTIFACTS}"
     echo "{\"job-version\": \"$(git rev-parse HEAD)\"}" >> "${ARTIFACTS}/metadata.json"
 fi
 
