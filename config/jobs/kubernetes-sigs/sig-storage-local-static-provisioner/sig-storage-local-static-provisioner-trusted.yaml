@@ -4,7 +4,6 @@ postsubmits:
   - name: post-sig-storage-local-static-provisioner-build-canary
     branches:
     - master
-    always_run: true
     decorate: true
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
     labels:

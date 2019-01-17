@@ -22,7 +22,7 @@ presubmits:
         - runner.sh
         args:
         - ./hack/jenkins/verify-dockerized.sh
-        envs:
+        env:
         - name: KUBE_FORCE_VERIFY_CHECKS
           value: "n"
         - name: EXCLUDE_TYPECHECK
@@ -96,7 +96,7 @@ periodics:
       - runner.sh
       args:
       - ./hack/jenkins/verify-dockerized.sh
-      envs:
+      env:
       - name: KUBE_FORCE_VERIFY_CHECKS
         value: "y"
       - name: EXCLUDE_READONLY_PACKAGE

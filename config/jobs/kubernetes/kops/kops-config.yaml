@@ -326,7 +326,6 @@ postsubmits:
   - name: kops-postsubmit
     branches:
     - master
-    skip_report: true
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
