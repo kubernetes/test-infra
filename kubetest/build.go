@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"os/exec"
+	"runtime"
 
 	"k8s.io/test-infra/kubetest/util"
 )
@@ -42,7 +43,11 @@ func (b *buildStrategy) String() string {
 // Set to --build=B or buildDefault if just --build
 func (b *buildStrategy) Set(value string) error {
 	if value == "true" { // just --build, choose default
-		value = buildDefault
+		if runtime.GOARCH == "amd64" {
+			value = buildDefault
+		} else {
+			value = "host-go"
+		}
 	}
 	switch value {
 	case "bazel", "e2e", "host-go", "quick", "release":
