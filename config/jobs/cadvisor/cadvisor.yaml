@@ -25,7 +25,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-3b5b61060-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-8e0f20924-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/kubernetes"
@@ -54,7 +54,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190116-7fa56d935
+    - image: gcr.io/k8s-testimages/bootstrap:v20190116-8d7979e8b
       args:
       - --repo=github.com/google/cadvisor
       - --root=/go/src
@@ -75,7 +75,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-3b5b61060-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-8e0f20924-master
       args:
       - --job=$(JOB_NAME)
       - --root=/go/src

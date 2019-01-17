@@ -8,7 +8,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-3b5b61060-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-8e0f20924-master
         args:
         - "--repo=github.com/GoogleCloudPlatform/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -43,7 +43,7 @@ postsubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-3b5b61060-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-8e0f20924-master
         args:
         - "--repo=k8s.io/test-infra=master"
         - "--root=/go/src/"
@@ -66,7 +66,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-3b5b61060-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-8e0f20924-master
       args:
       - --repo=github.com/GoogleCloudPlatform/k8s-multicluster-ingress=master
       - --root=/go/src
