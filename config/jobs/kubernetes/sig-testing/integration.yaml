@@ -44,7 +44,7 @@ presubmits:
         - runner.sh
         args:
         - ./hack/jenkins/test-dockerized.sh
-        envs:
+        env:
         - name: KUBE_FORCE_VERIFY_CHECKS
           value: "n"
         - name: KUBE_VERIFY_GIT_BRANCH
