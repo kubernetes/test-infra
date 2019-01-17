@@ -39,7 +39,7 @@ periodics:
         value: "true"
       - name: KUBE_GCE_ENABLE_IP_ALIASES
         value: "true"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-8e0f20924-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190117-9a712c1e6-master
       resources:
         requests:
           memory: "8Gi"

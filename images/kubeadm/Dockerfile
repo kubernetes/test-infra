@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-testimages/kubekins-e2e:v20190116-8e0f20924-master
+FROM gcr.io/k8s-testimages/kubekins-e2e:v20190117-9a712c1e6-master
 LABEL maintainer "beacham@google.com"
 
 # add env we can debug with the image name:tag

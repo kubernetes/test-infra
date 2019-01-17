@@ -107,7 +107,7 @@ export SOURCE_DATE_EPOCH
 # in the pod-utils first-class.
 if [[ "${METADATA_BANDAID:-false}" == "true" ]]; then
     mkdir -p "${ARTIFACTS}"
-    echo "{\"job-version\": \"$(git rev-parse HEAD)\"}" >> "${ARTIFACTS}/metadata.json"
+    echo "{\"revision\": \"$(git rev-parse HEAD)\"}" >> "${ARTIFACTS}/metadata.json"
 fi
 
 # actually start bootstrap and the job
