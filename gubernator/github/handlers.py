@@ -57,7 +57,7 @@ class GithubHandler(webapp2.RequestHandler):
     processing.
     """
     def post(self):
-        event = self.request.headers.get('x-github-event')
+        event = self.request.headers.get('x-github-event', '')
         signature = self.request.headers.get('x-hub-signature', '')
         body = self.request.body
 
@@ -86,7 +86,13 @@ class GithubHandler(webapp2.RequestHandler):
 
         webhook = models.GithubWebhookRaw(
             parent=parent,
-            repo=repo, number=number, event=event, body=body, **kwargs)
+            repo=repo,
+            number=number,
+            event=event,
+            guid=self.request.headers.get('x-github-delivery', ''),
+            body=body,
+            **kwargs
+        )
         webhook.put()
 
         # Defer digest updates, so they'll retry on failure.
@@ -139,7 +145,9 @@ class Events(BaseHandler):
         events, next_cursor, more = q.fetch_page(count, start_cursor=cursor)
         out = []
         for event in events:
-            out.append({'repo': event.repo, 'event': event.event,
+            out.append({'repo': event.repo,
+                        'event': event.event,
+                        'guid': event.guid,
                         'timestamp': str(event.timestamp),
                         'body': json.loads(event.body)})
         resp = {'next': more and next_cursor.urlsafe(), 'calls': out}
@@ -207,8 +215,13 @@ class Timeline(BaseHandler):
             action = body_json.get('action')
             sender = body_json.get('sender', {}).get('login')
             self.response.write('<tr><td>%s\n' % '<td>'.join(str(x) for x in
-                [event.timestamp, event.event, action, sender,
-                 '<pre>' + cgi.escape(body)]))
+                [   # Table columns
+                    event.timestamp,
+                    '%s<br><code>%s</code>' % (event.event, event.guid),
+                    action,
+                    sender,
+                    '<pre>' + cgi.escape(body)
+                ]))
         return merged
 
     def get(self):
