@@ -141,8 +141,6 @@ func main() {
 
 	prowjobInformerFactory := prowjobinformer.NewSharedInformerFactory(prowjobClient, resync)
 
-	queue := kube.RateLimiter(controllerName)
-
 	var controllers []*crier.Controller
 
 	// track all worker status before shutdown
@@ -159,7 +157,7 @@ func main() {
 			controllers,
 			crier.NewController(
 				prowjobClient,
-				queue,
+				kube.RateLimiter(gerritReporter.GetName()),
 				informer,
 				gerritReporter,
 				o.gerritWorkers,
@@ -167,13 +165,14 @@ func main() {
 	}
 
 	if o.pubsubWorkers > 0 {
+		pubsubReporter := pubsubreporter.NewReporter()
 		controllers = append(
 			controllers,
 			crier.NewController(
 				prowjobClient,
-				queue,
+				kube.RateLimiter(pubsubReporter.GetName()),
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
-				pubsubreporter.NewReporter(),
+				pubsubReporter,
 				o.pubsubWorkers,
 				wg))
 	}
@@ -196,13 +195,14 @@ func main() {
 			logrus.WithError(err).Fatal("Error starting config agent.")
 		}
 
+		githubReporter := githubreporter.NewReporter(githubClient, configAgent, o.reportAgent)
 		controllers = append(
 			controllers,
 			crier.NewController(
 				prowjobClient,
-				queue,
+				kube.RateLimiter(githubReporter.GetName()),
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
-				githubreporter.NewReporter(githubClient, configAgent, o.reportAgent),
+				githubReporter,
 				o.githubWorkers,
 				wg))
 	}
