@@ -5,33 +5,37 @@ import (
 )
 
 // Writer2Reader implements both Writer and Reader interfaces.
-// It's used as a wrapper around S3Upload so we can write to S3 using io.Copy.
-// When Reader.Read is called, it is blocking until the first Writer.Write call.
-// The following Reader.Read operations are blocked until Writer is closed or Writer.Write is called again.
+// This class solves the problem of -
+// 1. prow downloads files using a reader, but S3Download takes a writer as input
+// 2. prow uploads files using a writer, but S3Upload takes a reader as input
+//
+// When Reader.Read is called, it is blocked until the next Writer.Write call.
+//
 // Flow:
-// io.Copy reads the source and writes the data to Writer2Reader.Write.
-// The data is sent to the background using the buffer chan to S3Upload.
-// S3Upload is calling Writer2Reader.Read which reads the data from the buffer channel
+// S3Upload is called in the background, calling Writer2Reader.Read which is blocked.
+// io.Copy reads the source bytes and sends them to Writer2Reader.Write.
+// The data is sent to the background using the data chan.
+// Writer2Reader.Read continues.
 
 type Writer2Reader struct {
-	buffer    chan []byte // data channel
+	data    chan []byte // data channel
 	error     chan error  // return the error from the background func
 	bgWorker BgWorker     // this function is run in the background, taking the Writer2Reader as param and waiting for input from the other side
-	leftOvers []byte      // when read buffer is smaller than write buffer, we need this to keep the left overs until next read. Hopefully not too big ...
+	leftOvers []byte      // when read data is smaller than write data, we need this to keep the left overs until next read. Hopefully not too big ...
 }
 
 type BgWorker func(wr *Writer2Reader) error
 
 func NewWriter2Reader(bgWorker BgWorker) *Writer2Reader {
 	wr := &Writer2Reader{
-		buffer:   make(chan []byte),
+		data:     make(chan []byte),
 		error:    make(chan error),
 		bgWorker: bgWorker,
 	}
 
 	bg := func(wr *Writer2Reader) {
 		err := wr.bgWorker(wr)
-		wr.closeBufferSafe()
+		wr.closeDataChanSafe()
 		wr.error <- err
 	}
 
@@ -40,23 +44,23 @@ func NewWriter2Reader(bgWorker BgWorker) *Writer2Reader {
 	return wr
 }
 
-func (w *Writer2Reader) Read(buffer []byte) (n int, err error) {
+func (w *Writer2Reader) Read(data []byte) (n int, err error) {
 	size := 0
 
 	if len(w.leftOvers) > 0 {
-		size = copy(buffer, w.leftOvers)
+		size = copy(data, w.leftOvers)
 		w.leftOvers = w.leftOvers[size:]
 
-		if len(buffer) - size == 0 {
-			return len(buffer), nil
+		if len(data) - size == 0 {
+			return len(data), nil
 		}
 	}
 
 	// read or block
-	buf, ok := <-w.buffer
+	buf, ok := <-w.data
 
 	if ok {
-		size = copy(buffer, buf)
+		size = copy(data, buf)
 
 		if size < len(buf) {
 			w.leftOvers = buf[size:]
@@ -76,7 +80,7 @@ func (w *Writer2Reader) Write(bytes []byte) (int, error) {
 }
 
 func (w *Writer2Reader) WriteAt(bytes []byte, offset int64) (n int, err error) {
-	// offset is not used since we write sync and don't use the same buffer
+	// offset is ignored since we write sync and incremental
 
 	sendToReader(w, bytes)
 
@@ -94,11 +98,11 @@ func sendToReader(w *Writer2Reader, bytes []byte) {
 		recover()
 	}()
 
-	w.buffer <- c
+	w.data <- c
 }
 
 func (w *Writer2Reader) Close() error {
-	w.closeBufferSafe()
+	w.closeDataChanSafe()
 
 	// wait for completion
 	err := <- w.error
@@ -106,11 +110,11 @@ func (w *Writer2Reader) Close() error {
 	return err
 }
 
-func (w *Writer2Reader) closeBufferSafe() {
+func (w *Writer2Reader) closeDataChanSafe() {
 	// channel might be closed due to error in writeFunc, just recover (the error is "close of a closed channel")
 	defer func() {
 		recover()
 	}()
 
-	close(w.buffer)
+	close(w.data)
 }
