@@ -40,6 +40,8 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *January 17, 2019* config loading now uses `UnmarshalStrict` to ensure that all
+   keys are for valid fields. This may break deployments using invalid prow configs.
  - *November 29, 2018* `plank` will no longer default jobs with `decorate: true`
    to have `automountServiceAccountToken: false` in their PodSpec if unset, if the
    job explicitly sets `serviceAccountName`
