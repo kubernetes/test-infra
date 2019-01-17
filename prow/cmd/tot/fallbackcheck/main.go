@@ -84,7 +84,7 @@ func main() {
 	}
 
 	cfg := &config.Config{}
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
+	if err := yaml.UnmarshalStrict(data, &cfg); err != nil {
 		logrus.Fatalf("cannot unmarshal data from prow: %v", err)
 	}
 
