@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/stretchr/testify/assert"
 	"fmt"
+	"io"
+	"errors"
 	"testing"
 )
 
@@ -19,16 +21,22 @@ func Test_S3DownloadWithRangeReader(t *testing.T) {
 	o := b.Object("f10m.txt")
 
 	size := int64(100000)
-	offset := int64(10000)
+	offset := int64(100000)
 
 	reader := o.NewRangeReader(context.Background(), offset, size)
 
 	buf := make([]byte, size)
+	var total int64
+	err = errors.New("")
 
-	n, err := reader.Read(buf)
-	assert.NoError(t, err)
+	for ; err != io.EOF; {
+		var n int
+		n, err = reader.Read(buf)
+		total += int64(n)
+	}
 
-	assert.Equal(t, size, n)
+	assert.Equal(t, io.EOF, err)
+	assert.Equal(t, size, total)
 	assert.NotEqual(t, make([]byte, size), buf)
 }
 
@@ -40,15 +48,16 @@ func Test_S3Download(t *testing.T) {
 	client, err := NewClient(opt)
 	assert.NoError(t, err)
 
-	s := int64(100000)
+	size := int64(100000)
+	offset := int64(10000)
 
 	b := client.Bucket("okro-prow-test")
-	m := MyTestWriter{ make([]byte, s)}
+	m := MyTestWriter{ make([]byte, size)}
 
-	n, err := S3Download(m, b, "f10m.txt", 10000, s)
+	n, err := S3Download(m, b, "f10m.txt", offset, size)
 	assert.NoError(t, err)
-	assert.Equal(t, s, n)
-	assert.NotEqual(t, make([]byte, s), m.buffer)
+	assert.Equal(t, size, n)
+	assert.NotEqual(t, make([]byte, size), m.buffer)
 
 }
 
