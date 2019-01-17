@@ -91,6 +91,8 @@ periodics:
         value: gce
       - name: EXTRACT_STRATEGY
         value: ci/latest
+      - NAME: PROVISIONER_E2E_IMAGE
+        value: quay.io/external_storage/local-volume-provisioner:canary
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
@@ -121,6 +123,8 @@ periodics:
         value: prod
       - name: EXTRACT_STRATEGY
         value: gke-default
+      - NAME: PROVISIONER_E2E_IMAGE
+        value: quay.io/external_storage/local-volume-provisioner:canary
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
