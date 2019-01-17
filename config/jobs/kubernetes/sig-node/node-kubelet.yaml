@@ -141,6 +141,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-920f4053b-master
@@ -162,6 +163,9 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
 
 - name: ci-kubernetes-node-kubelet-features
   interval: 1h
