@@ -2154,6 +2154,8 @@ presubmits:
     trigger: (?m)^/test( | .* )pull-security-kubernetes-integration,?($|\s.*)
   - agent: kubernetes
     always_run: false
+    branches:
+    - master
     cluster: security
     context: pull-security-kubernetes-integration-podutil
     decorate: true
@@ -2549,6 +2551,19 @@ presubmits:
         - ./hack/jenkins/verify-dockerized.sh
         command:
         - runner.sh
+        env:
+        - name: KUBE_FORCE_VERIFY_CHECKS
+          value: "n"
+        - name: EXCLUDE_TYPECHECK
+          value: "y"
+        - name: EXCLUDE_GODEP
+          value: "y"
+        - name: KUBE_VERIFY_GIT_BRANCH
+          value: master
+        - name: REPO_DIR
+          value: /workspace/k8s.io/kubernetes
+        - name: METADATA_BANDAID
+          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-8e0f20924-master
         imagePullPolicy: Always
         name: ""

@@ -30,7 +30,7 @@ presubmits:
   - name: pull-kubernetes-integration-podutil
     always_run: false
     decorate: true
-    branch:
+    branches:
     - master
     path_alias: k8s.io/kubernetes
     labels:

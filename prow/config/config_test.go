@@ -284,7 +284,6 @@ func TestDecorationRawYaml(t *testing.T) {
 periodics:
 - name: kubernetes-defaulted-decoration
   interval: 1h
-  always_run: true
   decorate: true
   spec:
     containers:
@@ -315,7 +314,6 @@ plank:
 periodics:
 - name: kubernetes-defaulted-decoration
   interval: 1h
-  always_run: true
   decorate: true
   spec:
     containers:
@@ -363,7 +361,6 @@ plank:
 periodics:
 - name: kubernetes-defaulted-decoration
   interval: 1h
-  always_run: true
   decorate: true
   decoration_config:
     timeout: 1
@@ -1307,7 +1304,6 @@ postsubmits:
   foo/bar:
   - agent: kubernetes
     name: postsubmit-bar
-    context: bar
     spec:
       containers:
       - image: alpine`,
@@ -1316,7 +1312,6 @@ postsubmits:
   foo/baz:
   - agent: kubernetes
     name: postsubmit-baz
-    context: baz
     spec:
       containers:
       - image: alpine`,
@@ -1331,13 +1326,11 @@ postsubmits:
   foo/bar:
   - agent: kubernetes
     name: postsubmit-bar
-    context: bar
     spec:
       containers:
       - image: alpine
   - agent: kubernetes
     name: postsubmit-bar
-    context: bar
     spec:
       containers:
       - image: alpine`,
@@ -1353,7 +1346,6 @@ postsubmits:
   foo/bar:
   - agent: kubernetes
     name: postsubmit-bar
-    context: bar
     spec:
       containers:
       - image: alpine`,
@@ -1361,23 +1353,12 @@ postsubmits:
 postsubmits:
   foo/bar:
   - agent: kubernetes
-    context: bar
     name: postsubmit-bar
     spec:
       containers:
       - image: alpine`,
 			},
 			expectError: true,
-		},
-		{
-			name: "overwrite PodNamespace",
-			prowConfig: `
-pod_namespace: test`,
-			jobConfigs: []string{
-				`
-pod_namespace: debug`,
-			},
-			expectPodNameSpace: "test",
 		},
 		{
 			name: "test valid presets in main config",
