@@ -7,7 +7,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-920f4053b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-3b5b61060-master
         command:
         - runner.sh
         args:
@@ -21,7 +21,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-920f4053b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190116-3b5b61060-master
         command:
         - runner.sh
         args:
