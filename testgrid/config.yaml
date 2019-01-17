@@ -3359,6 +3359,9 @@ test_groups:
 - name: ci-sig-storage-local-static-provisioner-master-gke-default
   gcs_prefix: kubernetes-jenkins/logs/ci-sig-storage-local-static-provisioner-master-gke-default
 
+- name: post-sig-storage-local-static-provisioner-build-canary
+  gcs_prefix: kubernetes-jenkins/logs/post-sig-storage-local-static-provisioner-build-canary
+
 
 #
 # Start dashboards
@@ -6654,6 +6657,9 @@ dashboards:
   - name: master-gke-default
     test_group_name: ci-sig-storage-local-static-provisioner-master-gke-default
     description: E2E tests against default kubernetes on GKE
+  - name: master-canary-build
+    test_group_name: post-sig-storage-local-static-provisioner-build-canary
+    description: Canary image build against latest master
 
 - name: sig-testing-maintenance
   dashboard_tab:

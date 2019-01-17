@@ -27,12 +27,14 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	cfg "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
@@ -343,6 +345,115 @@ func TestTrustedJobs(t *testing.T) {
 		}
 		if per.SourcePath != trustedPath {
 			t.Errorf("%s defined in %s may not run in trusted cluster", per.Name, per.SourcePath)
+		}
+	}
+}
+
+// Unit test only postsubmit/periodic jobs in config/jobs/<org>/<project>/<project>-trusted.yaml can use
+// secrets for <org>/<project> in default public cluster.
+func TestTrustedJobSecretsRestricted(t *testing.T) {
+	secretsRestricted := map[string]sets.String{
+		"kubernetes-sigs/sig-storage-local-static-provisioner": sets.NewString("sig-storage-local-static-provisioner-pusher"),
+	}
+	allSecrets := sets.String{}
+	for _, secrets := range secretsRestricted {
+		allSecrets.Insert(secrets.List()...)
+	}
+
+	isSecretUsedByContainer := func(secret string, container v1.Container) bool {
+		if container.EnvFrom == nil {
+			return false
+		}
+		for _, envFrom := range container.EnvFrom {
+			if envFrom.SecretRef != nil && envFrom.SecretRef.Name == secret {
+				return true
+			}
+		}
+		return false
+	}
+
+	isSecretUsed := func(secret string, job cfg.JobBase) bool {
+		if job.Spec == nil {
+			return false
+		}
+		if job.Spec.Volumes != nil {
+			for _, v := range job.Spec.Volumes {
+				if v.VolumeSource.Secret != nil {
+					if v.VolumeSource.Secret.SecretName == secret {
+						return true
+					}
+				}
+			}
+		}
+		if job.Spec.Containers != nil {
+			for _, c := range job.Spec.Containers {
+				if isSecretUsedByContainer(secret, c) {
+					return true
+				}
+			}
+		}
+		if job.Spec.InitContainers != nil {
+			for _, c := range job.Spec.InitContainers {
+				if isSecretUsedByContainer(secret, c) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+
+	// All presubmit jobs should not use any restricted secrets.
+	for _, job := range c.AllPresubmits(nil) {
+		if job.Cluster != kube.DefaultClusterAlias {
+			// check against default public cluster only
+			continue
+		}
+		for _, secret := range allSecrets.List() {
+			if isSecretUsed(secret, job.JobBase) {
+				t.Errorf("%q defined in %q may not use secret %q in %q cluster", job.Name, job.SourcePath, secret, job.Cluster)
+			}
+		}
+	}
+
+	secretsCanUseByPath := func(path string) sets.String {
+		cleanPath := strings.Trim(strings.TrimPrefix(path, *jobConfigPath), string(filepath.Separator))
+		seps := strings.Split(cleanPath, string(filepath.Separator))
+		if len(seps) <= 2 {
+			return nil
+		}
+		org := seps[0]
+		project := seps[1]
+		basename := seps[2]
+		if basename != fmt.Sprintf("%s-trusted.yaml", project) {
+			return nil
+		}
+		return secretsRestricted[fmt.Sprintf("%s/%s", org, project)]
+	}
+
+	// Postsubmit/periodic jobs defined in
+	// config/jobs/<org>/<project>/<project>-trusted.yaml can and only can use restricted
+	// secrets for <org>/repo>.
+	jobs := []cfg.JobBase{}
+	for _, job := range c.AllPostsubmits(nil) {
+		jobs = append(jobs, job.JobBase)
+	}
+	for _, job := range c.AllPeriodics() {
+		jobs = append(jobs, job.JobBase)
+	}
+	for _, job := range jobs {
+		if job.Cluster != kube.DefaultClusterAlias {
+			// check against default public cluster only
+			continue
+		}
+		secretsCanUse := secretsCanUseByPath(job.SourcePath)
+		for _, secret := range allSecrets.List() {
+			if secretsCanUse != nil && secretsCanUse.Has(secret) {
+				t.Logf("allow secret %v for job %s defined in %s", secret, job.Name, job.SourcePath)
+				continue
+			}
+			if isSecretUsed(secret, job) {
+				t.Errorf("%q defined in %q may not use secret %q in %q cluster", job.Name, job.SourcePath, secret, job.Cluster)
+			}
 		}
 	}
 }
