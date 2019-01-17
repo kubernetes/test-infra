@@ -18,9 +18,12 @@ package reporter
 
 import (
 	"reflect"
+	"sync"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -29,6 +32,17 @@ const (
 	testPubSubTopicName   = "test-topic"
 	testPubSubRunID       = "test-id"
 )
+
+type fca struct {
+	sync.Mutex
+	c *config.Config
+}
+
+func (f *fca) Config() *config.Config {
+	f.Lock()
+	defer f.Unlock()
+	return f.c
+}
 
 func TestGenerateMessageFromPJ(t *testing.T) {
 	var testcases = []struct {
@@ -59,6 +73,7 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 				RunID:   testPubSubRunID,
 				Status:  kube.SuccessState,
 				URL:     "guber/test1",
+				GCSPath: "gs://test1",
 			},
 		},
 		{
@@ -84,8 +99,20 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 		},
 	}
 
+	fca := &fca{
+		c: &config.Config{
+			ProwConfig: config.ProwConfig{
+				Plank: config.Plank{
+					JobURLPrefix: "guber/",
+				},
+			},
+		},
+	}
+
+	c := &Client{ca: fca}
+
 	for _, tc := range testcases {
-		m := generateMessageFromPJ(tc.pj)
+		m := c.generateMessageFromPJ(tc.pj)
 
 		if !reflect.DeepEqual(m, tc.expectedMessage) {
 			t.Errorf("Unexpected result from test: %s.\nExpected: %v\nGot: %v",
@@ -151,7 +178,7 @@ func TestShouldReport(t *testing.T) {
 		},
 	}
 
-	c := NewReporter()
+	c := NewReporter(&fca{})
 
 	for _, tc := range testcases {
 		r := c.ShouldReport(tc.pj)

@@ -22,9 +22,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"cloud.google.com/go/pubsub"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -35,6 +37,8 @@ const (
 	PubSubTopicLabel = "prow.k8s.io/pubsub.topic"
 	// PubSubRunIDLabel annotation
 	PubSubRunIDLabel = "prow.k8s.io/pubsub.runID"
+	// GCSPrefix is the prefix for a gcs path
+	GCSPrefix = "gs://"
 )
 
 // ReportMessage is a message structure used to pass a prowjob status to Pub/Sub topic.s
@@ -44,19 +48,21 @@ type ReportMessage struct {
 	RunID   string            `json:"runid"`
 	Status  kube.ProwJobState `json:"status"`
 	URL     string            `json:"url"`
+	GCSPath string            `json:"gcs_path"`
+}
+
+type configAgent interface {
+	Config() *config.Config
 }
 
 // Client is a reporter client fed to crier controller
 type Client struct {
-	// Empty structure because unlike github or gerrit client, one GCP Pub/Sub client is tied to one GCP project.
-	// While GCP project name is provided by the label in each prowjob.
-	// Which means we could create a Pub/Sub client only when we actually get a prowjob to do reporting,
-	// instead of creating a Pub/Sub client while initializing the reporter client.
+	ca configAgent
 }
 
 // NewReporter creates a new Pub/Sub reporter
-func NewReporter() *Client {
-	return &Client{}
+func NewReporter(ca configAgent) *Client {
+	return &Client{ca: ca}
 }
 
 // GetName returns the name of the reporter
@@ -72,7 +78,7 @@ func (c *Client) ShouldReport(pj *kube.ProwJob) bool {
 // Report takes a prowjob, and generate a pubsub ReportMessage and publish to specific Pub/Sub topic
 // based on Pub/Sub related labels if they exist in this prowjob
 func (c *Client) Report(pj *kube.ProwJob) error {
-	message := generateMessageFromPJ(pj)
+	message := c.generateMessageFromPJ(pj)
 
 	ctx := context.Background()
 	client, err := pubsub.NewClient(ctx, message.Project)
@@ -99,7 +105,7 @@ func (c *Client) Report(pj *kube.ProwJob) error {
 	return nil
 }
 
-func generateMessageFromPJ(pj *kube.ProwJob) *ReportMessage {
+func (c *Client) generateMessageFromPJ(pj *kube.ProwJob) *ReportMessage {
 	projectName := pj.Labels[PubSubProjectLabel]
 	topicName := pj.Labels[PubSubTopicLabel]
 	runID := pj.GetLabels()[PubSubRunIDLabel]
@@ -110,6 +116,7 @@ func generateMessageFromPJ(pj *kube.ProwJob) *ReportMessage {
 		RunID:   runID,
 		Status:  pj.Status.State,
 		URL:     pj.Status.URL,
+		GCSPath: strings.Replace(pj.Status.URL, c.ca.Config().Plank.JobURLPrefix, GCSPrefix, 1),
 	}
 
 	return psReport

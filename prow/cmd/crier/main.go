@@ -146,6 +146,11 @@ func main() {
 	// track all worker status before shutdown
 	wg := &sync.WaitGroup{}
 
+	configAgent := &config.Agent{}
+	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+		logrus.WithError(err).Fatal("Error starting config agent.")
+	}
+
 	if o.gerritWorkers > 0 {
 		informer := prowjobInformerFactory.Prow().V1().ProwJobs()
 		gerritReporter, err := gerritreporter.NewReporter(o.cookiefilePath, o.gerritProjects, informer.Lister())
@@ -165,7 +170,7 @@ func main() {
 	}
 
 	if o.pubsubWorkers > 0 {
-		pubsubReporter := pubsubreporter.NewReporter()
+		pubsubReporter := pubsubreporter.NewReporter(configAgent)
 		controllers = append(
 			controllers,
 			crier.NewController(
@@ -188,11 +193,6 @@ func main() {
 		githubClient, err := o.github.GitHubClient(secretAgent, o.dryrun)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting GitHub client.")
-		}
-
-		configAgent := &config.Agent{}
-		if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
-			logrus.WithError(err).Fatal("Error starting config agent.")
 		}
 
 		githubReporter := githubreporter.NewReporter(githubClient, configAgent, o.reportAgent)
