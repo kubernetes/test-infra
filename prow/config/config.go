@@ -1123,7 +1123,7 @@ func yamlToConfig(path string, nc interface{}) error {
 	if err != nil {
 		return fmt.Errorf("error reading %s: %v", path, err)
 	}
-	if err := yaml.Unmarshal(b, nc); err != nil {
+	if err := yaml.UnmarshalStrict(b, nc); err != nil {
 		return fmt.Errorf("error unmarshaling %s: %v", path, err)
 	}
 	var jc *JobConfig
