@@ -216,7 +216,9 @@ func (c *Client) requestRetry(r *request) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode == 409 {
+	if resp.StatusCode == 404 {
+		return nil, NewNotFoundError(fmt.Errorf("body: %s", string(rb)))
+	} else if resp.StatusCode == 409 {
 		return nil, NewConflictError(fmt.Errorf("body: %s", string(rb)))
 	} else if resp.StatusCode == 422 {
 		return nil, NewUnprocessableEntityError(fmt.Errorf("body: %s", string(rb)))

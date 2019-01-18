@@ -309,6 +309,42 @@ func TestCreatePod(t *testing.T) {
 	}
 }
 
+func TestGetConfigMap(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/api/v1/namespaces/ns/configmaps/abcd" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		fmt.Fprint(w, `{"metadata": {"name": "abcd"}}`)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if _, err := c.GetConfigMap("abcd", "ns"); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestGetNotFound(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/api/v1/namespaces/ns/configmaps/abcd" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		http.NotFound(w, r)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if _, err := c.GetConfigMap("abcd", "ns"); err == nil {
+		t.Error("Expected not found error but got none")
+	} else if _, isNotFound := err.(NotFoundError); !isNotFound {
+		t.Errorf("Expected a not found error, got: %v", err)
+	}
+}
+
 func TestCreateConfigMap(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
