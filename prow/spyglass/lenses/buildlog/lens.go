@@ -137,7 +137,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		}
 		lines, err := logLinesAll(a)
 		if err != nil {
-			logrus.WithError(err).Error("Error reading log.")
+			logrus.WithError(err).Info("Error reading log.")
 			continue
 		}
 		av.LineGroups = groupLines(highlightLines(lines, 0))
