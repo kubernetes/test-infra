@@ -330,6 +330,8 @@ periodics:
       - --
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-16
+      # TODO(https://github.com/kubernetes/kubernetes/issues/72976): Remove line below, change get-master-root-disk-size function if needed.
+      - --env=MASTER_ROOT_DISK_SIZE=1000GB
       - --extract=ci/latest
       - --gcp-nodes=5000
       - --gcp-project=kubernetes-scale
