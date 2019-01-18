@@ -73,6 +73,12 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
+    - color: c0ff4a
+      description: Denotes an issue or PR intended to be handled by the product security committee.
+      name: committee/product-security
+      target: both
+      prowPlugin: label
+      addedBy: anyone
     - color: e11d21
       description: Indicates the PR's author has not signed the CNCF CLA.
       name: 'cncf-cla: no'

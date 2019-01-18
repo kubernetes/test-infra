@@ -47,6 +47,7 @@ larger set of contributors to apply/remove them.
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
 | <a id="committee/conduct" href="#committee/conduct">`committee/conduct`</a> | Denotes an issue or PR intended to be handled by the code of conduct committee.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="committee/product-security" href="#committee/product-security">`committee/product-security`</a> | Denotes an issue or PR intended to be handled by the product security committee.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="committee/steering" href="#committee/steering">`committee/steering`</a> | Denotes an issue or PR intended to be handled by the steering committee.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="kind/api-change" href="#kind/api-change">`kind/api-change`</a> | Categorizes issue or PR as related to adding, removing, or otherwise changing an API <br><br> This was previously `kind/new-api`, | anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="kind/bug" href="#kind/bug">`kind/bug`</a> | Categorizes issue or PR as related to a bug. <br><br> This was previously `bug`, | anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
