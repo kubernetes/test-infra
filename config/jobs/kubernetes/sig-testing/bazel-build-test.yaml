@@ -38,7 +38,9 @@ presubmits:
       run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
       skip_branches:
       - release-1.13 # per-release job
-      - release-1.10 # different bazel version
+      - release-1.12 # per-release job
+      - release-1.11 # per-release job
+      - release-1.10 # per-release job
       labels:
         preset-service-account: "true"
         preset-k8s-ssh: "true"
