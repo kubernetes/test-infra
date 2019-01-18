@@ -189,6 +189,8 @@ presubmits:
     always_run: true
     skip_branches:
     - release-1.13 # per-release job
+    - release-1.12 # per-release job
+    - release-1.11 # per-release job
     - release-1.10 # different bazel version
     labels:
       preset-service-account: "true"
@@ -228,6 +230,68 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190117-9a712c1e6-1.13
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
+        - "--scenario=kubernetes_bazel"
+        - "--" # end bootstrap args, scenario args below
+        - "--test=//... -//build/... -//vendor/..."
+        - "--manual-test=//hack:verify-all"
+        - "--test-args=--config=unit"
+        - "--test-args=--build_tag_filters=-e2e,-integration"
+        - "--test-args=--test_tag_filters=-e2e,-integration"
+        - "--test-args=--flaky_test_attempts=3"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+  - name: pull-kubernetes-bazel-test
+    always_run: true
+    branches:
+    - release-1.12 # per-release job
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190117-9a712c1e6-1.12
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
+        - "--scenario=kubernetes_bazel"
+        - "--" # end bootstrap args, scenario args below
+        - "--test=//... -//build/... -//vendor/..."
+        - "--manual-test=//hack:verify-all"
+        - "--test-args=--config=unit"
+        - "--test-args=--build_tag_filters=-e2e,-integration"
+        - "--test-args=--test_tag_filters=-e2e,-integration"
+        - "--test-args=--flaky_test_attempts=3"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+  - name: pull-kubernetes-bazel-test
+    always_run: true
+    branches:
+    - release-1.11 # per-release job
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190117-9a712c1e6-1.11
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
