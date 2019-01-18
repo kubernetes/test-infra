@@ -3281,16 +3281,6 @@ test_groups:
 - name: pull-rules-k8s-e2e
   gcs_prefix: kubernetes-jenkins/logs/pull-rules-k8s-e2e
 
-# Alibaba Cloud Provider Test Groups
-- name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.11
-  gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.11
-
-- name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.10
-  gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.10
-
-- name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.9
-  gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.9
-
 # kube-storage-version-migrator
 - name: pull-kube-storage-version-migrator-test
   gcs_prefix: kubernetes-jenkins/pr-logs/pull-kube-storage-version-migrator-test
@@ -3301,22 +3291,6 @@ test_groups:
   num_columns_recent: 30
 - name: ci-structured-merge-diff-test
   gcs_prefix: kubernetes-jenkins/logs/ci-structured-merge-diff-test
-
-# DigitalOcean Test Groups
-- name: digitalocean-e2e-conformance
-  gcs_prefix: k8s-conformance-digitalocean/e2e-conformance
-- name: digitalocean-e2e-conformance-v1.10
-  gcs_prefix: k8s-conformance-digitalocean/e2e-conformance-v1.10
-- name: digitalocean-e2e-conformance-v1.11
-  gcs_prefix: k8s-conformance-digitalocean/e2e-conformance-v1.11
-- name: digitalocean-e2e-conformance-v1.12
-  gcs_prefix: k8s-conformance-digitalocean/e2e-conformance-v1.12
-
-# BaiduCloud Test Groups
-- name: baiducloud-e2e-conformance-v1.8
-  gcs_prefix: k8s-conformance-baiducloud/baiducloud-e2e-conformance-v1.8
-- name: baiducloud-e2e-conformance-v1.11
-  gcs_prefix: k8s-conformance-baiducloud/baiducloud-e2e-conformance-v1.11
 
 # GCP Compute Persistent Disk CSI Driver Test Groups
 - name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable
@@ -3468,24 +3442,6 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: cnx+e2e@vmware.com
 
-  - name: DigitalOcean Master
-    description: Runs conformance test using kubetest against latest kubernetes master on DigitalOcean
-    test_group_name: digitalocean-e2e-conformance
-  - name: DigitalOcean v1.10
-    description: Runs conformance test using kubetest against kubernetes v1.10 on DigitalOcean
-    test_group_name: digitalocean-e2e-conformance-v1.10
-  - name: DigitalOcean v1.11
-    description: Runs conformance test using kubetest against kubernetes v1.11 on DigitalOcean
-    test_group_name: digitalocean-e2e-conformance-v1.11
-  - name: DigitalOcean v1.12
-    description: Runs conformance test using kubetest against kubernetes v1.12 on DigitalOcean
-    test_group_name: digitalocean-e2e-conformance-v1.12
-  - name: BaiduCloud v1.8
-    description: Runs conformance test using kubetest against kubernetes v1.8 on BaiduCloud
-    test_group_name: baiducloud-e2e-conformance-v1.8
-  - name: BaiduCloud v1.11
-    description: Runs conformance test using kubetest against kubernetes v1.11 on BaiduCloud
-    test_group_name: baiducloud-e2e-conformance-v1.11
   - name: Gardener, v1.11 AWS
     description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)"
     test_group_name: ci-gardener-e2e-conformance-aws-v1.11
@@ -3712,45 +3668,6 @@ dashboards:
     test_group_name: pull-cluster-api-provider-vsphere-e2e
     alert_options:
       alert_mail_to_addresses: cnx+clusterapi@vmware.com
-
-# Alibaba Cloud Provider Dashboard
-- name: conformance-alibaba-cloud-provider
-  dashboard_tab:
-  - name: Alibaba Cloud Provider, v1.11
-    description: Runs conformance tests for cloud provier alibaba cloud on release v1.11
-    test_group_name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.11
-  - name: Alibaba Cloud Provider, v1.10
-    description: Runs conformance tests for cloud provier alibaba cloud on release v1.10
-    test_group_name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.10
-  - name: Alibaba Cloud Provider, v1.9
-    description: Runs conformance tests for cloud provier alibaba cloud on release v1.9
-    test_group_name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.9
-
-# DigitalOcean Dashboard
-- name: conformance-cloud-provider-digitalocean
-  dashboard_tab:
-  - name: DigitalOcean Master
-    description: Runs conformance test using kubetest against latest kubernetes master on DigitalOcean
-    test_group_name: digitalocean-e2e-conformance
-  - name: DigitalOcean v1.10
-    description: Runs conformance test using kubetest against kubernetes v1.10 on DigitalOcean
-    test_group_name: digitalocean-e2e-conformance-v1.10
-  - name: DigitalOcean v1.11
-    description: Runs conformance test using kubetest against kubernetes v1.11 on DigitalOcean
-    test_group_name: digitalocean-e2e-conformance-v1.11
-  - name: DigitalOcean v1.12
-    description: Runs conformance test using kubetest against kubernetes v1.12 on DigitalOcean
-    test_group_name: digitalocean-e2e-conformance-v1.12
-
-# BaiduCloud Dashboard
-- name: conformance-cloud-provider-baiducloud
-  dashboard_tab:
-  - name: BaiduCloud v1.8
-    description: Runs conformance test using kubetest against kubernetes v1.8 on BaiduCloud
-    test_group_name: baiducloud-e2e-conformance-v1.8
-  - name: BaiduCloud v1.11
-    description: Runs conformance test using kubetest against kubernetes v1.11 on BaiduCloud
-    test_group_name: baiducloud-e2e-conformance-v1.11
 
 - name: canonical-ubuntu1-k8sbeta
   dashboard_tab:
@@ -7745,9 +7662,6 @@ dashboard_groups:
   - conformance-cloud-provider-openstack
   - conformance-cloud-provider-vsphere
   - conformance-vsphere
-  - conformance-alibaba-cloud-provider
-  - conformance-cloud-provider-digitalocean
-  - conformance-cloud-provider-baiducloud
   - conformance-gardener
   - conformance-hack-local-up-cluster
   - conformance-arm
