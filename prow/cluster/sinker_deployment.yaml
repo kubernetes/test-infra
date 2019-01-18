@@ -18,7 +18,7 @@ spec:
         args:
         - --build-cluster=/etc/cluster/cluster
         - --job-config-path=/etc/job-config
-        image: gcr.io/k8s-prow/sinker:v20190117-81934b1
+        image: gcr.io/k8s-prow/sinker:v20190118-977be68
         volumeMounts:
         - mountPath: /etc/cluster
           name: cluster
