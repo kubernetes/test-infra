@@ -111,7 +111,6 @@ func TestPeriodicProwJobEvent_ToFromMessage(t *testing.T) {
 			"ENV2": "test2",
 		},
 		Name: "ProwJobName",
-		Type: periodicProwJobEvent,
 	}
 	m, err := pe.ToMessage()
 	if err != nil {
