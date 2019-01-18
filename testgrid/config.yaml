@@ -7548,6 +7548,18 @@ dashboards:
     test_group_name: arm64-conformance-aws-cluster
     description: Runs conformance tests by using kubetest against latest version of kubernetes on AWS"
 
+# EKS dashboard
+- name: conformance-eks
+  dashboard_tab:
+  - name: "periodic-v1.11"
+    test_group_name: ci-kubernetes-e2e-aws-eks-1-11-conformance
+    description: Runs conformance tests on a Kubernetes cluster provided by AWS EKS (https://docs.aws.amazon.com/eks)"
+    alert_mail_to_addresses: k8s-oss-test-alerts@amazon.com
+  - name: "periodic-v1.10"
+    test_group_name: ci-kubernetes-e2e-aws-eks-1-10-conformance
+    description: Runs conformance tests on a Kubernetes cluster provided by AWS EKS (https://docs.aws.amazon.com/eks)"
+    alert_mail_to_addresses: k8s-oss-test-alerts@amazon.com
+
 # sig-windows dashboard
 - name: sig-windows
   dashboard_tab:
@@ -7751,6 +7763,7 @@ dashboard_groups:
   - conformance-gardener
   - conformance-hack-local-up-cluster
   - conformance-arm
+  - conformance-eks
 
 - name: vmware
   dashboard_names:
