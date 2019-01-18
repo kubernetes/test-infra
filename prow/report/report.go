@@ -24,8 +24,8 @@ import (
 	"strings"
 	"text/template"
 
+	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -45,20 +45,39 @@ type GithubClient interface {
 	EditComment(org, repo string, ID int, comment string) error
 }
 
+// prowjobStateToGithubStatus maps prowjob status to github states.
+// Github states can be one of error, failure, pending, or success.
+// https://developer.github.com/v3/repos/statuses/#create-a-status
+func prowjobStateToGithubStatus(pjState v1.ProwJobState) (string, error) {
+	switch pjState {
+	case v1.TriggeredState:
+		return github.StatusPending, nil
+	case v1.PendingState:
+		return github.StatusPending, nil
+	case v1.SuccessState:
+		return github.StatusSuccess, nil
+	case v1.ErrorState:
+		return github.StatusError, nil
+	case v1.FailureState:
+		return github.StatusFailure, nil
+	case v1.AbortedState:
+		return github.StatusFailure, nil
+	}
+	return "", fmt.Errorf("Unknown prowjob state: %v", pjState)
+}
+
 // reportStatus should be called on status different from Success.
 // Once a parent ProwJob is pending, all children should be marked as Pending
 // Same goes for failed status.
-func reportStatus(ghc GithubClient, pj kube.ProwJob, childDescription string) error {
+func reportStatus(ghc GithubClient, pj v1.ProwJob, childDescription string) error {
 	refs := pj.Spec.Refs
 	if pj.Spec.Report {
-		contextState := pj.Status.State
-		if contextState == kube.AbortedState {
-			contextState = kube.FailureState
+		contextState, err := prowjobStateToGithubStatus(pj.Status.State)
+		if err != nil {
+			return err
 		}
 		if err := ghc.CreateStatus(refs.Org, refs.Repo, refs.Pulls[0].SHA, github.Status{
-			// The state of the status. Can be one of error, failure, pending, or success.
-			// https://developer.github.com/v3/repos/statuses/#create-a-status
-			State:       string(contextState),
+			State:       contextState,
 			Description: pj.Status.Description,
 			Context:     pj.Spec.Context,
 			TargetURL:   pj.Status.URL,
@@ -68,7 +87,7 @@ func reportStatus(ghc GithubClient, pj kube.ProwJob, childDescription string) er
 	}
 
 	// Updating Children
-	if pj.Status.State != kube.SuccessState {
+	if pj.Status.State != v1.SuccessState {
 		for _, nj := range pj.Spec.RunAfterSuccess {
 			cpj := pjutil.NewProwJob(nj, pj.ObjectMeta.Labels)
 			cpj.Status.State = pj.Status.State
@@ -84,7 +103,7 @@ func reportStatus(ghc GithubClient, pj kube.ProwJob, childDescription string) er
 
 // Report is creating/updating/removing reports in Github based on the state of
 // the provided ProwJob.
-func Report(ghc GithubClient, reportTemplate *template.Template, pj kube.ProwJob) error {
+func Report(ghc GithubClient, reportTemplate *template.Template, pj v1.ProwJob) error {
 	if ghc == nil {
 		return fmt.Errorf("trying to report pj %s, but found empty github client", pj.ObjectMeta.Name)
 	}
@@ -140,7 +159,7 @@ func Report(ghc GithubClient, reportTemplate *template.Template, pj kube.ProwJob
 // entries, and the ID of the comment to update. If there are no table entries
 // then don't make a new comment. Otherwise, if the comment to update is 0,
 // create a new comment.
-func parseIssueComments(pj kube.ProwJob, botName string, ics []github.IssueComment) ([]int, []string, int) {
+func parseIssueComments(pj v1.ProwJob, botName string, ics []github.IssueComment) ([]int, []string, int) {
 	var delete []int
 	var previousComments []int
 	var latestComment int
@@ -210,7 +229,7 @@ func parseIssueComments(pj kube.ProwJob, botName string, ics []github.IssueComme
 	return delete, newEntries, latestComment
 }
 
-func createEntry(pj kube.ProwJob) string {
+func createEntry(pj v1.ProwJob) string {
 	return strings.Join([]string{
 		pj.Spec.Context,
 		pj.Spec.Refs.Pulls[0].SHA,
@@ -222,7 +241,7 @@ func createEntry(pj kube.ProwJob) string {
 // createComment take a ProwJob and a list of entries generated with
 // createEntry and returns a nicely formatted comment. It may fail if template
 // execution fails.
-func createComment(reportTemplate *template.Template, pj kube.ProwJob, entries []string) (string, error) {
+func createComment(reportTemplate *template.Template, pj v1.ProwJob, entries []string) (string, error) {
 	plural := ""
 	if len(entries) > 1 {
 		plural = "s"
