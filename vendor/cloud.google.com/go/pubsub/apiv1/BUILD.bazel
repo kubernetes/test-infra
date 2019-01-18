@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "doc.go",
+        "iam.go",
         "path_funcs.go",
         "publisher_client.go",
         "subscriber_client.go",
@@ -14,6 +15,7 @@ go_library(
     deps = [
         "//vendor/cloud.google.com/go/iam:go_default_library",
         "//vendor/cloud.google.com/go/internal/version:go_default_library",
+        "//vendor/github.com/golang/protobuf/proto:go_default_library",
         "//vendor/github.com/googleapis/gax-go:go_default_library",
         "//vendor/golang.org/x/net/context:go_default_library",
         "//vendor/google.golang.org/api/iterator:go_default_library",

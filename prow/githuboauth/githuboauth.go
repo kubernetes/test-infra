@@ -55,7 +55,7 @@ type GithubClientGetter interface {
 // OAuthClient is an interface for a Github OAuth client.
 type OAuthClient interface {
 	// Exchanges code from Github OAuth redirect for user access token.
-	Exchange(ctx context.Context, code string) (*oauth2.Token, error)
+	Exchange(ctx context.Context, code string, opts ...oauth2.AuthCodeOption) (*oauth2.Token, error)
 	// Returns a URL to Github's OAuth 2.0 consent page. The state is a token to protect the user
 	// from an XSRF attack.
 	AuthCodeURL(state string, opts ...oauth2.AuthCodeOption) string

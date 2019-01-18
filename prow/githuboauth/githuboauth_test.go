@@ -38,7 +38,7 @@ const mockAccessToken = "justSomeRandomSecretToken"
 
 type MockOAuthClient struct{}
 
-func (c *MockOAuthClient) Exchange(ctx context.Context, code string) (*oauth2.Token, error) {
+func (c *MockOAuthClient) Exchange(ctx context.Context, code string, opts ...oauth2.AuthCodeOption) (*oauth2.Token, error) {
 	return &oauth2.Token{
 		AccessToken: mockAccessToken,
 	}, nil
