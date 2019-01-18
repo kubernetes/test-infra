@@ -30,6 +30,7 @@ container_bundle(
         "sidecar",
         "sinker",
         "status-reconciler",
+        "sub",
         "tide",
         "tot",
     ) + image_tags(**{
