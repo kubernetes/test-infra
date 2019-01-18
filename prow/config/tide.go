@@ -442,9 +442,7 @@ func (c Config) GetTideContextPolicy(org, repo, branch string) (*TideContextPoli
 		bp, err := c.GetBranchProtection(org, repo, branch)
 		if err != nil {
 			logrus.WithError(err).Warningf("Error getting branch protection for %s/%s+%s", org, repo, branch)
-		} else if bp == nil {
-			logrus.Warningf("branch protection not set for %s/%s+%s", org, repo, branch)
-		} else if bp.Protect != nil && *bp.Protect && bp.RequiredStatusChecks != nil {
+		} else if bp != nil && bp.Protect != nil && *bp.Protect && bp.RequiredStatusChecks != nil {
 			required.Insert(bp.RequiredStatusChecks.Contexts...)
 		}
 	}
