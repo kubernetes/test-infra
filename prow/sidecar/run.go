@@ -82,7 +82,7 @@ func (o Options) Run(ctx context.Context) error {
 		}
 	}()
 
-	if o.WrapperOptions != nil {
+	if o.DeprecatedWrapperOptions != nil {
 		// This only fires if the prowjob controller and sidecar are at different commits
 		logrus.Warnf("Using deprecated wrapper_options instead of entries. Please update prow/pod-utils/decorate before June 2019")
 	}

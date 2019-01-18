@@ -17,6 +17,7 @@ limitations under the License.
 package decorate
 
 import (
+	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -27,7 +28,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/diff"
 
 	"k8s.io/test-infra/prow/clonerefs"
+	"k8s.io/test-infra/prow/entrypoint"
+	"k8s.io/test-infra/prow/initupload"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/sidecar"
 )
 
 func cookieVolumeOnly(secret string) kube.Volume {
@@ -1735,6 +1739,50 @@ func TestProwJobToPod(t *testing.T) {
 		},
 	}
 
+	findContainer := func(name string, pod v1.Pod) *v1.Container {
+		for _, c := range pod.Spec.Containers {
+			if c.Name == name {
+				return &c
+			}
+		}
+		return nil
+	}
+	findEnv := func(key string, container v1.Container) *string {
+		for _, env := range container.Env {
+			if env.Name == key {
+				v := env.Value
+				return &v
+			}
+
+		}
+		return nil
+	}
+
+	type checker interface {
+		ConfigVar() string
+		LoadConfig(string) error
+		Validate() error
+	}
+
+	checkEnv := func(pod v1.Pod, name string, opt checker) error {
+		c := findContainer(name, pod)
+		if c == nil {
+			return nil
+		}
+		env := opt.ConfigVar()
+		val := findEnv(env, *c)
+		if val == nil {
+			return fmt.Errorf("missing %s env var", env)
+		}
+		if err := opt.LoadConfig(*val); err != nil {
+			return fmt.Errorf("load: %v", err)
+		}
+		if err := opt.Validate(); err != nil {
+			return fmt.Errorf("validate: %v", err)
+		}
+		return nil
+	}
+
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			pj := kube.ProwJob{ObjectMeta: metav1.ObjectMeta{Name: test.podName, Labels: test.labels}, Spec: test.pjSpec}
@@ -1744,6 +1792,21 @@ func TestProwJobToPod(t *testing.T) {
 			}
 			if !equality.Semantic.DeepEqual(got, test.expected) {
 				t.Errorf("unexpected pod diff:\n%s", diff.ObjectReflectDiff(test.expected, got))
+			}
+			if err := checkEnv(*got, "sidecar", sidecar.NewOptions()); err != nil {
+				t.Errorf("bad sidecar env: %v", err)
+			}
+			if err := checkEnv(*got, "initupload", initupload.NewOptions()); err != nil {
+				t.Errorf("bad clonerefs env: %v", err)
+			}
+			if err := checkEnv(*got, "clonerefs", &clonerefs.Options{}); err != nil {
+				t.Errorf("bad clonerefs env: %v", err)
+			}
+			if test.pjSpec.DecorationConfig != nil { // all jobs get a test container
+				// But only decorated jobs need valid entrypoint options
+				if err := checkEnv(*got, "test", entrypoint.NewOptions()); err != nil {
+					t.Errorf("bad test entrypoint: %v", err)
+				}
 			}
 		})
 	}
