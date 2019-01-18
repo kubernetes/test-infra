@@ -34,6 +34,7 @@ type fgc struct {
 	reportMessage string
 	reportLabel   map[string]string
 	instance      string
+	some bad code
 }
 
 func (f *fgc) SetReview(instance, id, revision, message string, labels map[string]string) error {
