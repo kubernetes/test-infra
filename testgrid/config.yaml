@@ -341,16 +341,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-prometheus
 - name: ci-kubernetes-e2e-gce-influxdb
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-influxdb
-- name: ci-kubernetes-e2e-gce-large-correctness
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-correctness
-  days_of_results: 60
-  num_columns_recent: 3
-  num_failures_to_alert: 1
-- name: ci-kubernetes-e2e-gce-large-performance
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-performance
-  days_of_results: 60
-  num_columns_recent: 3
-  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gce-scale-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scale-correctness
   days_of_results: 60
@@ -550,6 +540,11 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-regional-slow
 - name: ci-kubernetes-e2e-gke-scale-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-scale-correctness
+  days_of_results: 60
+  num_columns_recent: 3
+  num_failures_to_alert: 1
+- name: ci-kubernetes-e2e-gke-scale-performance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-scale-performance
   days_of_results: 60
   num_columns_recent: 3
   num_failures_to_alert: 1
@@ -6393,10 +6388,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable1
   - name: gci-gce-scalability-1.13
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
-  - name: gce-large-correctness
-    test_group_name: ci-kubernetes-e2e-gce-large-correctness
-  - name: gce-large-performance
-    test_group_name: ci-kubernetes-e2e-gce-large-performance
   - name: gce-scale-correctness
     test_group_name: ci-kubernetes-e2e-gce-scale-correctness
   - name: gce-scale-performance
@@ -6410,6 +6401,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-large-performance-regional
   - name: gke-scale-correctness
     test_group_name: ci-kubernetes-e2e-gke-scale-correctness
+  - name: gke-scale-performance
+    test_group_name: ci-kubernetes-e2e-gke-scale-performance
 
 - name: sig-scalability-kubemark
   dashboard_tab:
