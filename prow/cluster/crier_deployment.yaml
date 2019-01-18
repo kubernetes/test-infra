@@ -32,7 +32,7 @@ spec:
         image: gcr.io/k8s-prow/crier:v20190117-81934b1
         args:
         - --github-workers=1
-        - --dry-run=true
+        - --report-agent=knative-build
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         volumeMounts:
