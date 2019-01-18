@@ -157,109 +157,6 @@ func TestPostsubmits(t *testing.T) {
 	}
 }
 
-func TestCommentBodyMatches(t *testing.T) {
-	var testcases = []struct {
-		repo         string
-		body         string
-		expectedJobs []string
-	}{
-		{
-			"org/repo",
-			"this is a random comment",
-			[]string{},
-		},
-		{
-			"org/repo",
-			"/ok-to-test",
-			[]string{"gce", "unit"},
-		},
-		{
-			"org/repo",
-			"/test all",
-			[]string{"gce", "unit", "gke"},
-		},
-		{
-			"org/repo",
-			"/test unit",
-			[]string{"unit"},
-		},
-		{
-			"org/repo",
-			"/test federation",
-			[]string{"federation"},
-		},
-		{
-			"org/repo3",
-			"/test all",
-			[]string{},
-		},
-	}
-	c := &Config{
-		JobConfig: JobConfig{
-			Presubmits: map[string][]Presubmit{
-				"org/repo": {
-					{
-						JobBase: JobBase{
-							Name: "gce",
-						},
-						Trigger:   "/test gce",
-						re:        regexp.MustCompile(`/test (gce|all)`),
-						AlwaysRun: true,
-					},
-					{
-						JobBase: JobBase{
-							Name: "unit",
-						},
-						Trigger:   "/test unit",
-						re:        regexp.MustCompile(`/test (unit|all)`),
-						AlwaysRun: true,
-					},
-					{
-						JobBase: JobBase{
-							Name: "gke",
-						},
-						Trigger:   "/test gke",
-						re:        regexp.MustCompile(`/test (gke|all)`),
-						AlwaysRun: false,
-					},
-					{
-						JobBase: JobBase{
-							Name: "federation",
-						},
-						Trigger:   "/test federation",
-						re:        regexp.MustCompile(`/test federation`),
-						AlwaysRun: false,
-					},
-				},
-			},
-		},
-	}
-	for _, tc := range testcases {
-		actualJobs := c.MatchingPresubmits(tc.repo, tc.body, regexp.MustCompile(`/ok-to-test`).MatchString(tc.body))
-		match := true
-		if len(actualJobs) != len(tc.expectedJobs) {
-			match = false
-		} else {
-			for _, actualJob := range actualJobs {
-				found := false
-				for _, expectedJob := range tc.expectedJobs {
-					if expectedJob == actualJob.Name {
-						found = true
-						break
-					}
-				}
-				if !found {
-					match = false
-					break
-				}
-			}
-		}
-		if !match {
-			t.Errorf("Wrong jobs for body %s. Got %v, expected %v.", tc.body, actualJobs, tc.expectedJobs)
-		}
-	}
-}
-
 func TestRetestPresubmits(t *testing.T) {
 	var testcases = []struct {
 		skipContexts     sets.String
@@ -785,7 +682,6 @@ func TestPresubmitShouldRun(t *testing.T) {
 		fileError   error
 		job         Presubmit
 		ref         string
-		body        string
 		expectedRun bool
 		expectedErr bool
 	}{
@@ -837,16 +733,6 @@ func TestPresubmitShouldRun(t *testing.T) {
 				AlwaysRun: true,
 			},
 			ref:         "master",
-			expectedRun: true,
-		},
-		{
-			name: "job with body matching trigger should run",
-			job: Presubmit{
-				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
-				RerunCommand: "/test foo",
-			},
-			ref:         "master",
-			body:        "/test foo",
 			expectedRun: true,
 		},
 		{
@@ -910,9 +796,9 @@ func TestPresubmitShouldRun(t *testing.T) {
 			if err := SetPresubmitRegexes(jobs); err != nil {
 				t.Fatalf("%s: failed to set presubmit regexes: %v", testCase.name, err)
 			}
-			jobShouldRun, err := jobs[0].ShouldRun(testCase.ref, testCase.body, func() ([]string, error) {
+			jobShouldRun, err := jobs[0].ShouldRun(testCase.ref, func() ([]string, error) {
 				return testCase.fileChanges, testCase.fileError
-			})
+			}, false)
 			if err == nil && testCase.expectedErr {
 				t.Errorf("%s: expected an error and got none", testCase.name)
 			}

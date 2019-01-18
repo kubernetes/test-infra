@@ -22,8 +22,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/apimachinery/pkg/util/sets"
-
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -180,62 +178,15 @@ func TrustedUser(ghc trustedUserClient, trigger *plugins.Trigger, user, org, rep
 	return member, nil
 }
 
-// RunOrSkipRequested evaluates requestJobs to determine which config.Presubmits to
-// run and which ones to skip and once execute the ones that should be ran.
-func RunOrSkipRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts sets.String, body, eventGUID string) error {
-	org := pr.Base.Repo.Owner.Login
-	repo := pr.Base.Repo.Name
-	number := pr.Number
-
-	baseSHA, err := c.GitHubClient.GetRef(org, repo, "heads/"+pr.Base.Ref)
+// RunRequested executes the config.Presubmits that are requested
+func RunRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, eventGUID string) error {
+	baseSHA, err := c.GitHubClient.GetRef(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, "heads/"+pr.Base.Ref)
 	if err != nil {
 		return err
 	}
 
-	// For each job determine if any sharded version of the job runs.
-	// This in turn determines which jobs to run and which contexts to mark as "Skipped".
-	//
-	// Note: Job sharding is achieved with presubmit configurations that overlap on
-	// name, but run under disjoint circumstances. For example, a job 'foo' can be
-	// sharded to have different pod specs for different branches by
-	// creating 2 presubmit configurations with the name foo, but different pod
-	// specs, and specifying different branches for each job.
-	var toRunJobs []config.Presubmit
-	toRun := sets.NewString()
-	toSkip := sets.NewString()
-	for _, job := range requestedJobs {
-		// jobs that don't run on the branch in question are in the forced list as
-		// that is how branch sharding is implemented, so we need to do that check
-		// twice
-		runs := job.RunsAgainstBranch(pr.Base.Ref) && forceRunContexts.Has(job.Context)
-		if !runs {
-			runs, err = job.ShouldRun(pr.Base.Ref, body, config.NewGitHubDeferredChangedFilesProvider(c.GitHubClient, org, repo, number))
-			if err != nil {
-				return err
-			}
-		}
-		if runs {
-			toRunJobs = append(toRunJobs, job)
-			toRun.Insert(job.Context)
-		} else if !job.SkipReport {
-			// we need to post context statuses for all jobs
-			toSkip.Insert(job.Context)
-		}
-	}
-	// 'Skip' any context that is requested, but doesn't have any job shards that
-	// will run.
-	for _, context := range toSkip.Difference(toRun).List() {
-		if err := c.GitHubClient.CreateStatus(org, repo, pr.Head.SHA, github.Status{
-			State:       github.StatusSuccess,
-			Context:     context,
-			Description: "Skipped",
-		}); err != nil {
-			return err
-		}
-	}
-
 	var errors []error
-	for _, job := range toRunJobs {
+	for _, job := range requestedJobs {
 		c.Logger.Infof("Starting %s build.", job.Name)
 		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")

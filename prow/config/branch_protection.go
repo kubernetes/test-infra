@@ -248,8 +248,8 @@ func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) 
 func (c *Config) GetPolicy(org, repo, branch string, b Branch) (*Policy, error) {
 	policy := b.Policy
 
-	// Automatically require any required prow jobs
-	if prowContexts, _ := BranchRequirements(org, repo, branch, c.Presubmits); len(prowContexts) > 0 {
+	// Automatically require contexts from prow which must always be present
+	if prowContexts, _, _ := BranchRequirements(org, repo, branch, c.Presubmits); len(prowContexts) > 0 {
 		// Error if protection is disabled
 		if policy.Protect != nil && !*policy.Protect {
 			return nil, fmt.Errorf("required prow jobs require branch protection")
@@ -292,30 +292,34 @@ func (c *Config) GetPolicy(org, repo, branch string, b Branch) (*Policy, error) 
 	return &policy, nil
 }
 
-func jobRequirements(jobs []Presubmit, branch string, after bool) ([]string, []string) {
-	var required, optional []string
+// BranchRequirements partitions status contexts for a given org, repo branch into three buckets:
+//  - contexts that are always required to be present
+//  - contexts that are required, _if_ present
+//  - contexts that are always optional
+func BranchRequirements(org, repo, branch string, presubmits map[string][]Presubmit) ([]string, []string, []string) {
+	jobs, ok := presubmits[org+"/"+repo]
+	if !ok {
+		return nil, nil, nil
+	}
+	var required, requiredIfPresent, optional []string
 	for _, j := range jobs {
-		if !j.Brancher.RunsAgainstBranch(branch) {
+		if !j.CouldRun(branch) {
 			continue
 		}
-		// Does this job require a context or have kids that might need one?
-		if !after && !j.AlwaysRun && j.RunIfChanged == "" {
-			continue // No
-		}
-		if j.ContextRequired() { // This job needs a context
-			required = append(required, j.Context)
+
+		if j.ContextRequired() {
+			if j.NeedsExplicitTrigger() {
+				// jobs that trigger conditionally cannot be
+				// required as their status may not exist on PRs
+				requiredIfPresent = append(requiredIfPresent, j.Context)
+			} else {
+				// jobs that produce required contexts and will
+				// always run should be required at all times
+				required = append(required, j.Context)
+			}
 		} else {
 			optional = append(optional, j.Context)
 		}
 	}
-	return required, optional
-}
-
-// BranchRequirements returns required and optional presubmits prow jobs for a given org, repo branch.
-func BranchRequirements(org, repo, branch string, presubmits map[string][]Presubmit) ([]string, []string) {
-	p, ok := presubmits[org+"/"+repo]
-	if !ok {
-		return nil, nil
-	}
-	return jobRequirements(p, branch, false)
+	return required, requiredIfPresent, optional
 }

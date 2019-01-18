@@ -21,8 +21,6 @@ import (
 	"fmt"
 	"net/url"
 
-	"k8s.io/apimachinery/pkg/util/sets"
-
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/github"
@@ -222,9 +220,9 @@ func TrustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org,
 func buildAll(c Client, pr *github.PullRequest, eventGUID string) error {
 	var matchingJobs []config.Presubmit
 	for _, job := range c.Config.Presubmits[pr.Base.Repo.FullName] {
-		if job.AlwaysRun || job.RunIfChanged != "" {
+		if !job.NeedsExplicitTrigger() {
 			matchingJobs = append(matchingJobs, job)
 		}
 	}
-	return RunOrSkipRequested(c, pr, matchingJobs, sets.NewString(), "", eventGUID)
+	return RunRequested(c, pr, matchingJobs, eventGUID)
 }

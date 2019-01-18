@@ -601,7 +601,7 @@ type fakeProwJobTriggerer struct {
 	created map[prKey]sets.String
 }
 
-func (c *fakeProwJobTriggerer) runOrSkip(pr *github.PullRequest, requestedJobs []config.Presubmit) error {
+func (c *fakeProwJobTriggerer) run(pr *github.PullRequest, requestedJobs []config.Presubmit) error {
 	names := sets.NewString()
 	key := prKey{org: pr.Base.Repo.Owner.Login, repo: pr.Base.Repo.Name, num: pr.Number}
 	for _, job := range requestedJobs {
