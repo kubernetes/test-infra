@@ -408,6 +408,7 @@ plugins:
   - cherry-pick-unapproved
   - milestone
   - milestonestatus
+  - override
   - owners-label
   - release-note
   - require-matching-label
