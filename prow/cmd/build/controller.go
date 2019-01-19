@@ -664,7 +664,7 @@ func makeBuild(pj prowjobv1.ProwJob, buildID string) (*buildv1alpha1.Build, erro
 	}
 	b := buildv1alpha1.Build{
 		ObjectMeta: buildMeta(pj),
-		Spec:       *pj.Spec.BuildSpec,
+		Spec:       *pj.Spec.BuildSpec.DeepCopy(),
 	}
 	rawEnv, err := buildEnv(pj, buildID)
 	if err != nil {
