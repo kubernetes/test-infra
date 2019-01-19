@@ -997,7 +997,7 @@ func TestMakeBuild(t *testing.T) {
 				pj = tc.job(pj)
 			}
 			const randomBuildID = "so-many-builds"
-			originalSpec := pj.Spec.BuildSpec.DeepCopy()
+			originalSpec := pj.Spec.DeepCopy()
 			actual, err := makeBuild(pj, randomBuildID)
 			if err != nil {
 				if !tc.err {
@@ -1007,9 +1007,13 @@ func TestMakeBuild(t *testing.T) {
 			} else if tc.err {
 				t.Error("failed to receive expected error")
 			}
+			if !equality.Semantic.DeepEqual(pj.Spec, *originalSpec) {
+				t.Errorf("makeBuild changed the ProwJob spec:\n:%s", diff.ObjectReflectDiff(*originalSpec, pj.Spec))
+			}
+
 			expected := buildv1alpha1.Build{
 				ObjectMeta: buildMeta(pj),
-				Spec:       *originalSpec,
+				Spec:       *originalSpec.BuildSpec.DeepCopy(),
 			}
 			env, err := buildEnv(pj, randomBuildID)
 			if err != nil {
