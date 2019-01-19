@@ -26,7 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     bash-completion \
     git \
     wget && \
-    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 
 ENV TERRAFORM_VERSION=0.9.4 \
     KUBERNETES_PROVIDER=kubernetes-anywhere \

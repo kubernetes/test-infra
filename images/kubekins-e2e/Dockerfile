@@ -38,7 +38,8 @@ RUN mkdir -p /go/src/k8s.io/kubernetes \
 # - rpm for building RPMs with Bazel
 RUN apt-get install -y bc \
     graphviz \
-    rpm
+    rpm && \
+    rm -rf /var/lib/apt/lists/*
 # preinstall this for kops tests xref kubetest prepareAws(...)
 # TODO(bentheelder,krzyzacy,justisb,chrislovecnm): remove this
 RUN pip install awscli
@@ -73,6 +74,7 @@ RUN bash /install-bazel.sh
 ARG UPGRADE_DOCKER_ARG=false
 RUN [ "${UPGRADE_DOCKER_ARG}" = "true" ] && \
     apt-get install -y --no-install-recommends docker-ce && \
+    rm -rf /var/lib/apt/lists/* && \
     sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker || true
 
 # add env we can debug with the image name:tag

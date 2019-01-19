@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     zip \
     zlib1g-dev \
-    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
     && python -m pip install --upgrade pip setuptools wheel
 
 RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz && \

@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y \
     python \
     rsync \
     wget && \
-    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 
 # Install gcloud
 
