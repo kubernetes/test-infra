@@ -65,6 +65,7 @@ type Configuration struct {
 	Label                      Label                  `json:"label"`
 	Lgtm                       []Lgtm                 `json:"lgtm,omitempty"`
 	RepoMilestone              map[string]Milestone   `json:"repo_milestone,omitempty"`
+	Project                    ProjectConfig          `json:"project_config,omitempty"`
 	RequireMatchingLabel       []RequireMatchingLabel `json:"require_matching_label,omitempty"`
 	RequireSIG                 RequireSIG             `json:"requiresig,omitempty"`
 	Slack                      Slack                  `json:"slack,omitempty"`
@@ -421,6 +422,33 @@ type ConfigUpdater struct {
 	// github.com/kubernetes/test-infra/prow/plugins.yaml assuming the config-updater
 	// plugin is enabled for kubernetes/test-infra. Defaults to "prow/plugins.yaml".
 	PluginFile string `json:"plugin_file,omitempty"`
+}
+
+// ProjectConfig contains the configuration options for the project plugin
+type ProjectConfig struct {
+	// Org level configs for github projects; key is org name
+	Orgs map[string]ProjectOrgConfig `json:"project_org_configs,omitempty"`
+}
+
+// ProjectOrgConfig holds the github project config for an entire org.
+// This can be overridden by ProjectRepoConfig.
+type ProjectOrgConfig struct {
+	// ID of the github project maintainer team for a give project or org
+	MaintainerTeamID int `json:"org_maintainers_team_id,omitempty"`
+	// A map of project name to default column; an issue/PR will be added
+	// to the default column if column name is not provided in the command
+	ProjectColumnMap map[string]string `json:"org_default_column_map,omitempty"`
+	// Repo level configs for github projects; key is repo name
+	Repos map[string]ProjectRepoConfig `json:"project_repo_configs,omitempty"`
+}
+
+// ProjectRepoConfig holds the github project config for a github project.
+type ProjectRepoConfig struct {
+	// ID of the github project maintainer team for a give project or org
+	MaintainerTeamID int `json:"repo_maintainers_team_id,omitempty"`
+	// A map of project name to default column; an issue/PR will be added
+	// to the default column if column name is not provided in the command
+	ProjectColumnMap map[string]string `json:"repo_default_column_map,omitempty"`
 }
 
 // MergeWarning is a config for the slackevents plugin's manual merge warnings.
@@ -895,5 +923,43 @@ func (c *Configuration) Validate() error {
 		return err
 	}
 
+	return nil
+}
+
+func (pluginConfig *ProjectConfig) GetMaintainerTeam(org string, repo string) int {
+	for orgName, orgConfig := range pluginConfig.Orgs {
+		if org == orgName {
+			// look for repo level configs first because repo level config overrides org level configs
+			for repoName, repoConfig := range orgConfig.Repos {
+				if repo == repoName {
+					return repoConfig.MaintainerTeamID
+				}
+			}
+			return orgConfig.MaintainerTeamID
+		}
+	}
+	return -1
+}
+
+func (pluginConfig *ProjectConfig) GetColumnMap(org string, repo string) map[string]string {
+	for orgName, orgConfig := range pluginConfig.Orgs {
+		if org == orgName {
+			for repoName, repoConfig := range orgConfig.Repos {
+				if repo == repoName {
+					return repoConfig.ProjectColumnMap
+				}
+			}
+			return orgConfig.ProjectColumnMap
+		}
+	}
+	return nil
+}
+
+func (pluginConfig *ProjectConfig) GetOrgColumnMap(org string) map[string]string {
+	for orgName, orgConfig := range pluginConfig.Orgs {
+		if org == orgName {
+			return orgConfig.ProjectColumnMap
+		}
+	}
 	return nil
 }

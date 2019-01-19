@@ -2649,9 +2649,9 @@ func (c *Client) MoveProjectCard(projectCardID int, newColumnID int) error {
 	c.log("MoveProjectCard", projectCardID, newColumnID)
 	_, err := c.request(&request{
 		method:      http.MethodPost,
-		path:        fmt.Sprintf("/projects/columns/cards/:%s/moves", projectCardID),
+		path:        fmt.Sprintf("/projects/columns/cards/:%d/moves", projectCardID),
 		accept:      "application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
-		requestBody: Label{column_id: newColumnID},
+		requestBody: fmt.Sprintf("{column_id: %d}", newColumnID),
 		exitCodes:   []int{201},
 	}, nil)
 	return err
@@ -2665,8 +2665,23 @@ func (c *Client) DeleteProjectCard(projectCardID int) error {
 	_, err := c.request(&request{
 		method:    http.MethodDelete,
 		accept:    "application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
-		path:      fmt.Sprintf("/projects/columns/cards/:%s", projectCardID),
+		path:      fmt.Sprintf("/projects/columns/cards/:%d", projectCardID),
 		exitCodes: []int{204},
 	}, nil)
 	return err
+}
+
+// TeamHasMember checks if a user belongs to a team
+func (c *Client) TeamHasMember(teamID int, memberLogin string) (bool, error) {
+	c.log("TeamHasMember", teamID, memberLogin)
+	projectMaintainers, err := c.ListTeamMembers(teamID, RoleAll)
+	if err != nil {
+		return false, err
+	}
+	for _, person := range projectMaintainers {
+		if NormLogin(person.Login) == NormLogin(memberLogin) {
+			return true, nil
+		}
+	}
+	return false, nil
 }
