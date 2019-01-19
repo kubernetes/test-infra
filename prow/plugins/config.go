@@ -368,8 +368,9 @@ type Milestone struct {
 	// You can curl the following endpoint in order to determine the github ID of your team
 	// responsible for maintaining the milestones:
 	// curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
-	MaintainersID   int    `json:"maintainers_id,omitempty"`
-	MaintainersTeam string `json:"maintainers_team,omitempty"`
+	MaintainersID           int    `json:"maintainers_id,omitempty"`
+	MaintainersTeam         string `json:"maintainers_team,omitempty"`
+	MaintainersFriendlyName string `json:"maintainers_friendly_name,omitempty"`
 }
 
 // Slack contains the configuration for the slack plugin.
@@ -673,6 +674,11 @@ func (c *Configuration) setDefaults() {
 	}
 	if c.Owners.LabelsBlackList == nil {
 		c.Owners.LabelsBlackList = []string{labels.Approved, labels.LGTM}
+	}
+	for _, milestone := range c.RepoMilestone {
+		if milestone.MaintainersFriendlyName == "" {
+			milestone.MaintainersFriendlyName = "SIG Chairs/TLs"
+		}
 	}
 	if c.CherryPickUnapproved.BranchRegexp == "" {
 		c.CherryPickUnapproved.BranchRegexp = `^release-.*$`
