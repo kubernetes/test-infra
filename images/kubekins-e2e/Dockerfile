@@ -54,6 +54,13 @@ RUN wget -q -O cfssl "https://pkg.cfssl.org/${CFSSL_VERSION}/cfssl_linux-amd64" 
     mv cfssl cfssljson /usr/local/bin && \
     cfssl version
 
+# replace kubectl with one from K8S_RELEASE
+ARG K8S_RELEASE=latest
+RUN rm -f $(which kubectl) && \
+    export KUBECTL_VERSION=$(curl https://storage.googleapis.com/kubernetes-release/release/${K8S_RELEASE}.txt) && \
+    wget https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl -O /usr/local/bin/kubectl && \
+    chmod +x /usr/local/bin/kubectl
+
 # install go
 ARG GO_VERSION
 ENV GO_TARBALL "go${GO_VERSION}.linux-amd64.tar.gz"
