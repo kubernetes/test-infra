@@ -50,7 +50,6 @@ K8S=1.10 make -C "${TREE}/images/kubekins-e2e" push
 
 echo "TAG = ${TAG}"
 
-$SED -i "s/\\/kubekins-e2e:.*$/\\/kubekins-e2e:${TAG}-master/" "${TREE}/images/kubeadm/Dockerfile"
 $SED -i "s/\\/kubekins-e2e:v.*$/\\/kubekins-e2e:${TAG}-master/" "${TREE}/experiment/generate_tests.py"
 $SED -i "s/\\/kubekins-e2e:v.*-\\(.*\\)$/\\/kubekins-e2e:${TAG}-\\1/" "${TREE}/experiment/test_config.yaml"
 
@@ -63,12 +62,3 @@ bazel run //experiment:generate_tests -- \
 $SED -i "s/\\/kubekins-e2e:v.*-\\(.*\\)$/\\/kubekins-e2e:${TAG}-\\1/" "${TREE}/prow/config.yaml"
 find "${TREE}/config/jobs/" -type f -name \*.yaml -exec $SED -i "s/\\/kubekins-e2e:v.*-\\(.*\)$/\\/kubekins-e2e:${TAG}-\\1/" {} \;
 git commit -am "Bump to gcr.io/k8s-testimages/kubekins-e2e:${TAG}-(master|experimental|releases) (using generate_tests and manual)"
-
-# Bump kubeadm image
-
-TAG="${DATE}-$(git describe --tags --always --dirty)"
-make -C "${TREE}/images/kubeadm" push TAG="${TAG}"
-
-$SED -i "s/\\/e2e-kubeadm:v.*$/\\/e2e-kubeadm:${TAG}/" "${TREE}/prow/config.yaml"
-find "${TREE}/config/jobs/" -type f -name \*.yaml -exec $SED -i "s/\\/e2e-kubeadm:v.*-\\(.*\)$/\\/e2e-kubeadm:${TAG}/" {} \;
-git commit -am "Bump to e2e-kubeadm:${TAG}"
