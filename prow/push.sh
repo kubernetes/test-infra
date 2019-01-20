@@ -44,14 +44,14 @@ SED=sed
 if which gsed &>/dev/null; then
   SED=gsed
 fi
-if ! ($SED --version 2>&1 | grep -q GNU); then
+if ! (${SED} --version 2>&1 | grep -q GNU); then
   echo "!!! GNU sed is required.  If on OS X, use 'brew install gnu-sed'." >&2
   exit 1
 fi
 
 if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
   echo "Detected GOOGLE_APPLICATION_CREDENTIALS, activating..." >&2
-  gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
+  gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
   gcloud auth configure-docker
 fi
 
