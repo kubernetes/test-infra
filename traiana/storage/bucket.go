@@ -46,20 +46,20 @@ func (b *BucketHandle) Objects(ctx context.Context, q *Query) *ObjectIterator {
 		}
 	} else {
 		return &ObjectIterator{
-			gcs: b.gcs.Objects(ctx, q),
+			ObjectIterator: b.gcs.Objects(ctx, q),
 		}
 	}
 }
 
 type ObjectIterator struct {
+	*storage.ObjectIterator
 	aws *awsapi.ObjectIterator
-	gcs *storage.ObjectIterator
 }
 
 func (i ObjectIterator) Next() (*ObjectAttrs, error) {
 	if traiana.Aws {
 		return i.aws.Next()
 	} else {
-		return i.gcs.Next()
+		return i.Next()
 	}
 }

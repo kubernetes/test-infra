@@ -18,15 +18,15 @@ import (
 // Writer2Reader.Read continues.
 
 type Writer2Reader struct {
-	data    chan []byte // data channel
-	error     chan error  // return the error from the background func
-	bgWorker BgWorker     // this function is run in the background, taking the Writer2Reader as param and waiting for input from the other side
-	leftOvers []byte      // when read data is smaller than write data, we need this to keep the left overs until next read. Hopefully not too big ...
+	data      chan []byte           // data channel
+	error     chan error            // return the error from the background func
+	bgWorker  Writer2ReaderBgWorker // this function is run in the background, taking the Writer2Reader as param and waiting for input from the other side
+	leftOvers []byte                // when read data is smaller than write data, we need this to keep the left overs until next read. Hopefully not too big ...
 }
 
-type BgWorker func(wr *Writer2Reader) error
+type Writer2ReaderBgWorker func(wr *Writer2Reader) error
 
-func NewWriter2Reader(bgWorker BgWorker) *Writer2Reader {
+func NewWriter2Reader(bgWorker Writer2ReaderBgWorker) *Writer2Reader {
 	wr := &Writer2Reader{
 		data:     make(chan []byte),
 		error:    make(chan error),

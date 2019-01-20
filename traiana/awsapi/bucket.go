@@ -3,7 +3,6 @@ package awsapi
 import (
 	"cloud.google.com/go/storage"
 	"context"
-	"google.golang.org/api/iterator"
 )
 
 type BucketHandle struct {
@@ -84,78 +83,9 @@ func (b *BucketHandle) Object(name string) *ObjectHandle {
 	}
 }
 
-//AbugovTODO
-type ObjectIterator struct {
-	bucket   *BucketHandle
-	//query    Query
-	pageInfo *iterator.PageInfo
-	nextFunc func() error
-	items    []*ObjectAttrs
+func (b *BucketHandle) Objects(q *Query) *S3ObjectIterator {
+	return NewS3ObjectIterator(b, q)
 }
-
-func (it *ObjectIterator) Next() (*ObjectAttrs, error) {
-	if err := it.nextFunc(); err != nil {
-		return nil, err
-	}
-	item := it.items[0]
-	it.items = it.items[1:]
-	return item, nil
-}
-
-func (b *BucketHandle) Objects(q *Query) *ObjectIterator {
-	panic("AbugovTODO")
-
-	/*it := &ObjectIterator{
-		ctx:    ctx,
-		bucket: b,
-	}
-	it.pageInfo, it.nextFunc = iterator.NewPageInfo(
-		it.fetch,
-		func() int { return len(it.items) },
-		func() interface{} { b := it.items; it.items = nil; return b })
-	if q != nil {
-		it.query = *q
-	}
-	return it*/
-}
-
-/*
-func (it *ObjectIterator) fetch(pageSize int, pageToken string) (string, error) {
-
-	req := it.bucket.c.raw.Objects.List(it.bucket.name)
-	setClientHeader(req.Header())
-	req.Projection("full")
-	req.Delimiter(it.query.Delimiter)
-	req.Prefix(it.query.Prefix)
-	req.Versions(it.query.Versions)
-	req.PageToken(pageToken)
-	if it.bucket.userProject != "" {
-		req.UserProject(it.bucket.userProject)
-	}
-	if pageSize > 0 {
-		req.MaxResults(int64(pageSize))
-	}
-	var resp *raw.Objects
-	var err error
-	err = runWithRetry(it.ctx, func() error {
-		resp, err = req.Context(it.ctx).Do()
-		return err
-	})
-	if err != nil {
-		if e, ok := err.(*googleapi.Error); ok && e.Code == http.StatusNotFound {
-			err = ErrBucketNotExist
-		}
-		return "", err
-	}
-	for _, item := range resp.Items {
-		it.items = append(it.items, newObject(item))
-	}
-	for _, prefix := range resp.Prefixes {
-		it.items = append(it.items, &storage.ObjectAttrs{Prefix: prefix})
-	}
-	return resp.NextPageToken, nil
-}
-*/
 
 type ObjectAttrs = storage.ObjectAttrs
 
