@@ -16,7 +16,7 @@ presubmits:
       preset-e2e-platform-aws: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190117-9a712c1e6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190119-7f748595c-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -61,7 +61,7 @@ presubmits:
       preset-e2e-platform-aws: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190117-9a712c1e6-1.13
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190119-7f748595c-1.13
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -106,7 +106,7 @@ presubmits:
       preset-e2e-platform-aws: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190117-9a712c1e6-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190119-7f748595c-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
