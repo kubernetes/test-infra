@@ -17,7 +17,7 @@ func TestS3ObjectIterator(t *testing.T) {
 
 	b := client.Bucket("okro-prow-test")
 
-	it := b.Objects(&Query {Prefix: ""})
+	it := b.Objects(&Query {Prefix: "pr-logs", Delimiter:"/"})
 
 	for {
 		attrs, err := it.Next()
