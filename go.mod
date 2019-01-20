@@ -83,6 +83,7 @@ require (
 	golang.org/x/tools v0.0.0-20180828015842-6cd1fcedba52
 	google.golang.org/api v0.0.0-20181021000519-a2651947f503
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
+	gopkg.in/src-d/go-git.v4 v4.8.1
 	gopkg.in/yaml.v2 v2.2.1
 	k8s.io/api v0.0.0-20181128191700-6db15a15d2d3
 	k8s.io/apiextensions-apiserver v0.0.0-20181128195303-1f84094d7e8e

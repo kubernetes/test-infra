@@ -1016,7 +1016,7 @@ go_repository(
 go_repository(
     name = "com_github_kr_pty",
     importpath = "github.com/kr/pty",
-    tag = "v1.0.0",
+    tag = "v1.1.1",
 )
 
 go_repository(
@@ -1303,7 +1303,7 @@ go_repository(
 
 go_repository(
     name = "in_gopkg_check_v1",
-    commit = "20d25e280405",
+    commit = "788fd7840127",
     importpath = "gopkg.in/check.v1",
 )
 
@@ -1515,4 +1515,118 @@ go_repository(
     name = "org_uber_go_zap",
     importpath = "go.uber.org/zap",
     tag = "v1.9.1",
+)
+
+go_repository(
+    name = "com_github_alcortesm_tgz",
+    commit = "9c5fe88206d7",
+    importpath = "github.com/alcortesm/tgz",
+)
+
+go_repository(
+    name = "com_github_anmitsu_go_shlex",
+    commit = "648efa622239",
+    importpath = "github.com/anmitsu/go-shlex",
+)
+
+go_repository(
+    name = "com_github_emirpasic_gods",
+    importpath = "github.com/emirpasic/gods",
+    tag = "v1.9.0",
+)
+
+go_repository(
+    name = "com_github_flynn_go_shlex",
+    commit = "3f9db97f8568",
+    importpath = "github.com/flynn/go-shlex",
+)
+
+go_repository(
+    name = "com_github_gliderlabs_ssh",
+    importpath = "github.com/gliderlabs/ssh",
+    tag = "v0.1.1",
+)
+
+go_repository(
+    name = "com_github_jbenet_go_context",
+    commit = "d14ea06fba99",
+    importpath = "github.com/jbenet/go-context",
+)
+
+go_repository(
+    name = "com_github_jessevdk_go_flags",
+    importpath = "github.com/jessevdk/go-flags",
+    tag = "v1.4.0",
+)
+
+go_repository(
+    name = "com_github_kevinburke_ssh_config",
+    commit = "81db2a75821e",
+    importpath = "github.com/kevinburke/ssh_config",
+)
+
+go_repository(
+    name = "com_github_kr_pretty",
+    importpath = "github.com/kr/pretty",
+    tag = "v0.1.0",
+)
+
+go_repository(
+    name = "com_github_kr_text",
+    importpath = "github.com/kr/text",
+    tag = "v0.1.0",
+)
+
+go_repository(
+    name = "com_github_mitchellh_go_homedir",
+    importpath = "github.com/mitchellh/go-homedir",
+    tag = "v1.0.0",
+)
+
+go_repository(
+    name = "com_github_pelletier_go_buffruneio",
+    importpath = "github.com/pelletier/go-buffruneio",
+    tag = "v0.2.0",
+)
+
+go_repository(
+    name = "com_github_sergi_go_diff",
+    importpath = "github.com/sergi/go-diff",
+    tag = "v1.0.0",
+)
+
+go_repository(
+    name = "com_github_src_d_gcfg",
+    importpath = "github.com/src-d/gcfg",
+    tag = "v1.4.0",
+)
+
+go_repository(
+    name = "com_github_xanzy_ssh_agent",
+    importpath = "github.com/xanzy/ssh-agent",
+    tag = "v0.2.0",
+)
+
+go_repository(
+    name = "in_gopkg_src_d_go_billy_v4",
+    importpath = "gopkg.in/src-d/go-billy.v4",
+    tag = "v4.2.1",
+)
+
+go_repository(
+    name = "in_gopkg_src_d_go_git_fixtures_v3",
+    importpath = "gopkg.in/src-d/go-git-fixtures.v3",
+    tag = "v3.1.1",
+)
+
+go_repository(
+    name = "in_gopkg_src_d_go_git_v4",
+    importpath = "gopkg.in/src-d/go-git.v4",
+    tag = "v4.8.1",
+)
+
+go_repository(
+    name = "in_gopkg_warnings_v0",
+    importpath = "gopkg.in/warnings.v0",
+    tag = "v0.1.2",
 )
