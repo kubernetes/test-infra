@@ -38,7 +38,6 @@ const (
 // PeriodicProwJobEvent contains the minimum information required to start a ProwJob.
 type PeriodicProwJobEvent struct {
 	Name        string            `json:"name"`
-	Type        string            `json:"type"`
 	Envs        map[string]string `json:"envs,omitempty"`
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
