@@ -8,7 +8,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190117-9a712c1e6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190119-7f748595c-master
         args:
         - "--repo=github.com/helm/charts=$(PULL_REFS)"
         - "--root=/go/src/"
@@ -44,4 +44,4 @@ periodics:
       - --provider=gce
       - --test=false
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190117-9a712c1e6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190119-7f748595c-master
