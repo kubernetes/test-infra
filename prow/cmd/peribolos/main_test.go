@@ -1294,8 +1294,12 @@ func TestConfigureTeamMembers(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		if tc.id == 0 {
-			tc.id = teamID
+		gt := github.Team{
+			ID:   teamID,
+			Name: "whatev",
+		}
+		if tc.id != 0 {
+			gt.ID = tc.id
 		}
 		t.Run(tc.name, func(t *testing.T) {
 			fc := &fakeClient{
@@ -1306,7 +1310,7 @@ func TestConfigureTeamMembers(t *testing.T) {
 				newAdmins:  sets.String{},
 				newMembers: sets.String{},
 			}
-			err := configureTeamMembers(fc, tc.id, tc.team)
+			err := configureTeamMembers(fc, gt, tc.team)
 			switch {
 			case err != nil:
 				if !tc.err {
