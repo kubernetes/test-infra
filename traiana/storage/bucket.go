@@ -53,7 +53,7 @@ func (b *BucketHandle) Objects(ctx context.Context, q *Query) *ObjectIterator {
 
 type ObjectIterator struct {
 	*storage.ObjectIterator
-	aws *awsapi.ObjectIterator
+	aws *awsapi.S3ObjectIterator
 }
 
 func (i ObjectIterator) Next() (*ObjectAttrs, error) {

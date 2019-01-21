@@ -127,7 +127,7 @@ func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64)
 
 func (o *ObjectHandle) Attrs(ctx context.Context) (attrs *ObjectAttrs, err error) {
 	if traiana.Aws {
-		return o.aws.Attrs(ctx)
+		return o.aws.Attrs()
 	} else {
 		return o.gcs.Attrs(ctx)
 	}
