@@ -217,7 +217,9 @@ periodics:
     containers:
     - args:
       - --timeout=600
-      - --bare
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
       - --cluster=gke-scale-cluster
@@ -232,7 +234,15 @@ periodics:
       - --gke-environment=staging
       - '--gke-shape={"default":{"Nodes":1999,"MachineType":"n1-standard-1"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-8"}}'
       - --provider=gke
-      - --test_args=--ginkgo.focus=\[Feature:Performance\]
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=2000
+      - --test-cmd-args=--provider=gke
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-name=ClusterLoaderV2
       - --timeout=570m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190119-7f748595c-master
