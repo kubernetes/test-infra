@@ -165,6 +165,11 @@ blockades:
   blockregexps:
   - ^keps/
   explanation: "KEPs have been relocated to [kubernetes/enhancements](https://git.k8s.io/enhancements/)! Please submit any updates there."
+- repos:
+  - kubernetes/enhancements
+  blockregexps:
+  - ^keps/NEXT_KEP_NUMBER$
+  explanation: "KEP numbers are obsolete. Please remove any changes to `NEXT_KEP_NUMBER` from this PR and ensure the KEP filename is the draft date and KEP title e.g., `YYYYMMDD-pony-controller.md`"
 
 blunderbuss:
   max_request_count: 2
