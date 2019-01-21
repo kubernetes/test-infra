@@ -546,9 +546,9 @@ presets:
   env:
   - name: USER
     value: prow
-  - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
+  - name: AWS_SSH_PRIVATE_KEY_FILE
     value: /etc/aws-ssh/aws-ssh-private
-  - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
+  - name: AWS_SSH_PUBLIC_KEY_FILE
     value: /etc/aws-ssh/aws-ssh-public
   volumes:
   - name: aws-ssh
@@ -562,7 +562,7 @@ presets:
 - labels:
     preset-aws-credential: "true"
   env:
-  - name: JENKINS_AWS_CREDENTIALS_FILE
+  - name: AWS_SHARED_CREDENTIALS_FILE
     value: /etc/aws-cred/credentials
   volumes:
   - name: aws-cred
