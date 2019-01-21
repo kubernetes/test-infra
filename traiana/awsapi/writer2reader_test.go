@@ -10,84 +10,84 @@ import (
 
 // There r 2 critical buffer sizes that we test here:
 // 1. io.Copy read buffer size
-// 2. s3Put read buffer size
+// 2. s3Upload read buffer size
 
 func TestWriter2Reader(t *testing.T) {
 	tests := []struct {
 		name                        string
 		input                       []byte
-		ioCopyBufSize, s3PutBufSize int
+		ioCopyBufSize, s3UploadBufSize int
 	}{
 		{
 			name:          "equal buffer size, both buffers too small",
 			input:         []byte{1, 2},
 			ioCopyBufSize: 1,
-			s3PutBufSize:  1,
+			s3UploadBufSize:  1,
 		},
 		{
 			name:          "equal buffer size, both buffers big enough",
 			input:         []byte{1, 2},
 			ioCopyBufSize: 3,
-			s3PutBufSize:  3,
+			s3UploadBufSize:  3,
 		},
 		{
 			name:          "equal buffer size, both buffers are equal to data size",
 			input:         []byte{1, 2},
 			ioCopyBufSize: 2,
-			s3PutBufSize:  2,
+			s3UploadBufSize:  2,
 		},
 		{
 			name:          "IoCopy bigger, both buffers big enough",
 			input:         []byte{1, 2},
 			ioCopyBufSize: 4,
-			s3PutBufSize:  3,
+			s3UploadBufSize:  3,
 		},
 		{
 			name:          "IoCopy bigger, both buffers too small",
 			input:         []byte{1, 2, 3},
 			ioCopyBufSize: 2,
-			s3PutBufSize:  1,
+			s3UploadBufSize:  1,
 		},
 		{
 			name:          "IoCopy bigger, 3sPut too small",
 			input:         []byte{1, 2},
 			ioCopyBufSize: 2,
-			s3PutBufSize:  1,
+			s3UploadBufSize:  1,
 		},
 		{
-			name:          "IoCopy bigger, IoCopy bigger than data and S3Put too small",
+			name:          "IoCopy bigger, IoCopy bigger than data and S3Upload too small",
 			input:         []byte{1, 2},
 			ioCopyBufSize: 3,
-			s3PutBufSize:  1,
+			s3UploadBufSize:  1,
 		},
 		{
-			name:          "S3Put bigger, both buffers big enough",
+			name:          "S3Upload bigger, both buffers big enough",
 			input:         []byte{1, 2},
 			ioCopyBufSize: 3,
-			s3PutBufSize:  4,
+			s3UploadBufSize:  4,
 		},
 		{
-			name:          "S3Put bigger, both buffers too small",
+			name:          "S3Upload bigger, both buffers too small",
 			input:         []byte{1, 2, 3},
 			ioCopyBufSize: 1,
-			s3PutBufSize:  2,
+			s3UploadBufSize:  2,
 		},
 		{
-			name:          "S3Put bigger, IoCopy too small",
+			name:          "S3Upload bigger, IoCopy too small",
 			input:         []byte{1, 2},
 			ioCopyBufSize: 1,
-			s3PutBufSize:  2,
+			s3UploadBufSize:  2,
 		},
 		{
-			name:          "S3Put bigger, S3Put bigger than dataand IoCopy too small",
+			name:          "S3Upload bigger, S3Upload bigger than data and IoCopy too small",
 			input:         []byte{1, 2},
 			ioCopyBufSize: 1,
-			s3PutBufSize:  3,
+			s3UploadBufSize:  3,
 		},
 	}
 	for _, tt := range tests {
-		output := doReadWrite(tt.input,tt.ioCopyBufSize,tt.s3PutBufSize)
-		msg := fmt.Sprintf("(input size: %v, io.Copy read buffer size: %v, s3Put read buffer size: %v)", len(tt.input), tt.ioCopyBufSize, tt.s3PutBufSize)
+		output := doReadWrite(tt.input,tt.ioCopyBufSize,tt.s3UploadBufSize)
+		msg := fmt.Sprintf("(input size: %v, io.Copy read buffer size: %v, s3Upload read buffer size: %v)", len(tt.input), tt.ioCopyBufSize, tt.s3UploadBufSize)
 		assert.Equal(t, tt.input, output, msg)
 	}
 }
@@ -98,15 +98,15 @@ func Test_WriteError(t *testing.T) {
 
 	b := make([]byte, 1)
 
-	writeFunc := func(reader io.Reader) error {
+	bg := func(wr *Writer2Reader) error {
 		for i := 0; i < getCount; i++ {
-			reader.Read(b)
+			wr.Read(b)
 		}
 
 		return errors.New("write error!")
 	}
 
-	target := NewWriter2Reader(writeFunc)
+	target := NewWriter2Reader(bg)
 
 	reads := 0
 
@@ -128,15 +128,15 @@ func Test_WriteError(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func doReadWrite(input []byte, ioCopyBufSize int, s3PutBufSize int) ([]byte) {
+func doReadWrite(input []byte, ioCopyBufSize int, s3UploadBufSize int) ([]byte) {
 	var output []byte
 
-	// mock for S3Put, which takes a reader as input (see UploadInput.Body in aws-sdk-go/service/s3/s3manager/upload.go)
-	writeFunc := func(reader io.Reader) error {
-		buffer := make([]byte, s3PutBufSize)
+	// mock for S3Upload, which takes a reader as input (see UploadInput.Body in aws-sdk-go/service/s3/s3manager/upload.go)
+	bg := func(wr *Writer2Reader) error {
+		buffer := make([]byte, s3UploadBufSize)
 
 		for {
-			n, err := reader.Read(buffer)
+			n, err := wr.Read(buffer)
 
 			if n > 0 {
 				output = append(output, buffer[0:n]...)
@@ -150,7 +150,7 @@ func doReadWrite(input []byte, ioCopyBufSize int, s3PutBufSize int) ([]byte) {
 		return nil
 	}
 
-	target := NewWriter2Reader(writeFunc)
+	target := NewWriter2Reader(bg)
 
 	l := 0
 

@@ -25,8 +25,8 @@ import (
 	"net/url"
 	"strings"
 
-	"cloud.google.com/go/storage"
-	"google.golang.org/api/option"
+	"k8s.io/test-infra/traiana/storage"
+	"k8s.io/test-infra/traiana/storage/option"
 )
 
 // ClientWithCreds returns a storage client, optionally authenticated with the specified .json creds
@@ -121,6 +121,7 @@ func Upload(ctx context.Context, client *storage.Client, path Path, buf []byte) 
 	w.ProgressFunc = func(bytes int64) {
 		log.Printf("Uploading %s: %d/%d...", path, bytes, len(buf))
 	}
+
 	if n, err := w.Write(buf); err != nil {
 		return fmt.Errorf("writing %s failed: %v", path, err)
 	} else if n != len(buf) {

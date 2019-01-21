@@ -1,14 +1,14 @@
 package awsapi
 
 import (
+	"context"
 	"io"
-	"k8s.io/test-infra/bazel-test-infra/external/go_sdk/src/context"
 	"os"
 	"testing"
 	"time"
 )
 
-func Test_S3Put(t *testing.T) {
+func Test_S3Upload(t *testing.T) {
 	opt := ClientOption {
 			CredentialsFile: "/users/Traiana/alexa/.aws/credentials",
 	}

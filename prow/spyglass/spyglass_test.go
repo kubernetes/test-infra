@@ -22,7 +22,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fsouza/fake-gcs-server/fakestorage"
+	"k8s.io/test-infra/traiana/fakestorage"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"

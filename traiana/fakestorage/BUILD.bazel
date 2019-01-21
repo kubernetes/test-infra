@@ -2,9 +2,17 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["consts.go"],
-    importpath = "k8s.io/test-infra/traiana",
+    srcs = [
+        "object.go",
+        "server.go",
+    ],
+    importpath = "k8s.io/test-infra/traiana/fakestorage",
     visibility = ["//visibility:public"],
+    deps = [
+        "//traiana:go_default_library",
+        "//traiana/storage:go_default_library",
+        "//vendor/github.com/fsouza/fake-gcs-server/fakestorage:go_default_library",
+    ],
 )
 
 filegroup(
@@ -16,15 +24,7 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [
-        ":package-srcs",
-        "//traiana/awsapi:all-srcs",
-        "//traiana/fakestorage:all-srcs",
-        "//traiana/prow/awsapi:all-srcs",
-        "//traiana/prow/awsupload:all-srcs",
-        "//traiana/prow/plugins/force-merge:all-srcs",
-        "//traiana/storage:all-srcs",
-    ],
+    srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

@@ -14,15 +14,15 @@ type Client struct {
 	aws *awsapi.Client
 }
 
-func NewClient(ctx context.Context, opt option.ClientOption) (*Client, error) {
+func NewClient(ctx context.Context, opt ...option.ClientOption) (*Client, error) {
 	if traiana.Aws {
-		aws, err := awsapi.NewClient(opt.Aws)
+		aws, err := awsapi.NewClient(option.GetAws(opt))
 
 		return &Client{
 			aws: aws,
 		}, err
 	} else {
-		gcs, err := storage.NewClient(ctx, opt.Gcs)
+		gcs, err := storage.NewClient(ctx, option.GetGcs(opt)...)
 
 		return &Client{
 			gcs: gcs,
@@ -48,29 +48,23 @@ func (c *Client) Bucket(name string) *BucketHandle {
 }
 
 type StorageWriter struct {
-	gcs      *storage.Writer
-	aws      *awsapi.Writer2Reader
-	Metadata map[string]string // You must call SetMetadata() after setting this field
+	*storage.Writer
+
+	aws *awsapi.Writer2Reader
 }
 
 func (sw *StorageWriter) Write(p []byte) (n int, err error) {
 	if traiana.Aws {
 		return sw.aws.Write(p)
 	} else {
-		return sw.gcs.Write(p)
+		return sw.Writer.Write(p)
 	}
 }
 func (sw *StorageWriter) Close() error {
 	if traiana.Aws {
 		return sw.aws.Close()
 	} else {
-		return sw.gcs.Close()
-
-	}
-}
-func (sw *StorageWriter) SetMetadata() {
-	if !traiana.Aws {
-		sw.gcs.Metadata = sw.Metadata
+		return sw.Writer.Close()
 	}
 }
 
@@ -81,7 +75,65 @@ func (o *ObjectHandle) NewWriter(ctx context.Context) *StorageWriter {
 		}
 	} else {
 		return &StorageWriter{
-			gcs: o.gcs.NewWriter(ctx),
+			Writer: o.gcs.NewWriter(ctx),
 		}
 	}
 }
+
+type StorageReader struct {
+	*storage.Reader
+	aws      *awsapi.Writer2Reader
+}
+
+func (sr *StorageReader) Read(p []byte) (n int, err error) {
+	if traiana.Aws {
+		return sr.aws.Read(p)
+	} else {
+		return sr.Reader.Read(p)
+	}
+}
+
+func (sr *StorageReader) Close() error {
+	if traiana.Aws {
+		return sr.aws.Close()
+	} else {
+		return sr.Reader.Close()
+	}
+}
+
+func (o *ObjectHandle) NewReader(ctx context.Context) (r *StorageReader, err error) {
+	r = &StorageReader{}
+
+	if traiana.Aws {
+		r.aws = o.aws.NewReader(ctx)
+	} else {
+		r.Reader, err = o.gcs.NewReader(ctx)
+	}
+
+	return r, err
+}
+
+func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64) (r *StorageReader, err error) {
+	r = &StorageReader{}
+
+	if traiana.Aws {
+		r.aws = o.aws.NewRangeReader(ctx, offset, length)
+	} else {
+		r.Reader, err = o.gcs.NewRangeReader(ctx, offset, length)
+	}
+
+	return r, err
+}
+
+func (o *ObjectHandle) Attrs(ctx context.Context) (attrs *ObjectAttrs, err error) {
+	if traiana.Aws {
+		return o.aws.Attrs(ctx)
+	} else {
+		return o.gcs.Attrs(ctx)
+	}
+}
+
+
+type Query = storage.Query
+
+type ObjectAttrs = storage.ObjectAttrs

@@ -32,11 +32,11 @@ import (
 	"strings"
 	"time"
 
-	"cloud.google.com/go/storage"
+	"k8s.io/test-infra/traiana/storage"
 	"github.com/NYTimes/gziphandler"
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/api/option"
+	"k8s.io/test-infra/traiana/storage/option"
 	"sigs.k8s.io/yaml"
 
 	"golang.org/x/oauth2"

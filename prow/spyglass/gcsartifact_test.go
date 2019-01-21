@@ -24,7 +24,7 @@ import (
 	"io"
 	"testing"
 
-	"cloud.google.com/go/storage"
+	"k8s.io/test-infra/traiana/storage"
 )
 
 type ByteReadCloser struct {

@@ -6,29 +6,37 @@ go_library(
         "bucket.go",
         "client.go",
         "clientoption.go",
-        "s3put.go",
+        "s3download.go",
+        "s3listobjects.go",
+        "s3objectiterator.go",
+        "s3upload.go",
         "writer2reader.go",
     ],
     importpath = "k8s.io/test-infra/traiana/awsapi",
     visibility = ["//visibility:public"],
     deps = [
+        "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/credentials:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/s3:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/s3/s3manager:go_default_library",
+        "//vendor/google.golang.org/api/iterator:go_default_library",
     ],
 )
 
 go_test(
     name = "go_default_test",
     srcs = [
-        "s3put_test.go",
+        "s3download_test.go",
+        "s3objectiterator_test.go",
+        "s3upload_test.go",
         "writer2reader_test.go",
     ],
     embed = [":go_default_library"],
     deps = [
-        "//bazel-test-infra/external/go_sdk/src/context:go_default_library",
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
+        "//vendor/google.golang.org/api/iterator:go_default_library",
     ],
 )
 
