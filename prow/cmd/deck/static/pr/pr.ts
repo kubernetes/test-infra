@@ -233,6 +233,9 @@ function createMergeBlockingIssueAlert(tidePool: TidePool, blockers: Blocker[]):
  */
 function showAlerts(): void {
     const alertContainer = document.querySelector("#alert-container")!;
+    if (!tideData) {
+        return
+    }
     const tidePools = tideData.Pools ? tideData.Pools : [];
     for (let pool of tidePools) {
         const blockers = pool.Blockers ? pool.Blockers : [];
@@ -386,6 +389,9 @@ function getFullPRContext(builds: Job[], contexts: Context[]): UnifiedContext[] 
  */
 function loadPrStatus(prData: UserData): void {
     const tideQueries: TideQuery[] = [];
+    if (!tideData) {
+        return
+    }
     for (let query of tideData.TideQueries) {
         tideQueries.push(new TideQuery(query));
     }

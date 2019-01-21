@@ -111,7 +111,7 @@ function redrawQueries(): void {
     while (queries.firstChild)
         queries.removeChild(queries.firstChild);
 
-    if (!tideData.Queries) {
+    if (!tideData || !tideData.Queries) {
         return;
     }
     for (let i = 0; i < tideData.Queries.length; i++) {
@@ -218,7 +218,7 @@ function redrawPools(): void {
     while (pools.firstChild)
         pools.removeChild(pools.firstChild);
 
-    if (!tideData.Pools) {
+    if (!tideData || !tideData.Pools) {
         return;
     }
     for (let i = 0; i < tideData.Pools.length; i++) {
