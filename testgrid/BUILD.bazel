@@ -6,6 +6,11 @@ proto_library(
 )
 
 proto_library(
+    name = "issue_state_proto",
+    srcs = ["issue_state.proto"],
+)
+
+proto_library(
     name = "config_proto",
     srcs = ["config.proto"],
 )
@@ -14,6 +19,13 @@ go_proto_library(
     name = "state",
     importpath = "k8s.io/test-infra/testgrid/state",
     proto = ":state_proto",
+    visibility = ["//visibility:public"],
+)
+
+go_proto_library(
+    name = "issue_state",
+    importpath = "k8s.io/test-infra/testgrid/issue_state",
+    proto = ":issue_state_proto",
     visibility = ["//visibility:public"],
 )
 

@@ -6,16 +6,18 @@ presubmits:
     decorate: true
     always_run: true
     skip_report: false
+    # branched per release (older go versions)
     skip_branches:
-    - release-1.11 # older go
-    - release-1.12 # older go
-    - release-1.13 # per-release job
+    - release-1.10
+    - release-1.11
+    - release-1.12
+    - release-1.13
     spec:
       containers:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
         args:
         - verify
         env:
@@ -34,7 +36,7 @@ presubmits:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.13
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.13
         args:
         - verify
         env:
@@ -53,7 +55,7 @@ presubmits:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.12
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.12
         args:
         - verify
         env:
@@ -72,10 +74,30 @@ presubmits:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181218-134e718ec-1.11
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.11
         args:
         - verify
         env:
         # Space separated list of the checks to run
         - name: WHAT
           value: typecheck
+  - name: pull-kubernetes-typecheck
+    path_alias: "k8s.io/kubernetes"
+    decorate: true
+    always_run: true
+    skip_report: false
+    branches:
+    - release-1.10
+    spec:
+      containers:
+      - name: main
+        command:
+        - make
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.10
+        args:
+        - verify
+        env:
+        # Space separated list of the checks to run
+        - name: WHAT
+          value: typecheck
+

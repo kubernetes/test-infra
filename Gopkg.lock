@@ -136,7 +136,7 @@
   revision = "1fca145dffbcaa8fe914309b1ec0cfc67500fe61"
 
 [[projects]]
-  digest = "1:1e744d58451fcd1bb6451e05f618bb30b93c925b5449c7a61c06610e7783e1c2"
+  digest = "1:b401653f0d02d1befa923a92fe727d30e1c7fca43b6e82fe676081fa4a1876bf"
   name = "github.com/aws/aws-k8s-tester"
   packages = [
     "ec2config",
@@ -145,14 +145,15 @@
     "ekstester",
     "etcdconfig/plugins",
     "kubeadmconfig/plugins",
+    "kubernetesconfig/plugins",
     "pkg/awsapi/ec2",
   ]
   pruneopts = "NUT"
-  revision = "d63a00ba4fa0cc51bbb5bd6ef775d2a9e8b0b6ca"
-  version = "0.1.5"
+  revision = "b411acf57dfee3d4de813f0586091c56d13f9073"
+  version = "0.2.3"
 
 [[projects]]
-  digest = "1:4c3768acc56db0318533aa3ae6c5259ba6e4ce9035dd0c642959792a7b36ff92"
+  digest = "1:632980db2cb8bf88d2ab1af08747d5d8eb7fb36cea7e25b48a7e902a30ceefd2"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -181,6 +182,7 @@
     "private/protocol/xml/xmlutil",
     "service/autoscaling",
     "service/ec2",
+    "service/elb",
     "service/iam",
     "service/route53",
     "service/s3",
@@ -193,28 +195,28 @@
   version = "v1.12.53"
 
 [[projects]]
-  digest = "1:c9b852df5ce6e713a408023756d0090f2bb8a6328988775e6fb0099f50ab22ac"
+  digest = "1:45c51499db86b37b923d96fbecf22e52cdd54523ea6a60b10bbfcb7a3eadadb1"
   name = "github.com/bazelbuild/bazel-gazelle"
   packages = [
     "cmd/gazelle",
-    "internal/config",
-    "internal/flag",
-    "internal/label",
-    "internal/language",
-    "internal/language/go",
-    "internal/language/proto",
-    "internal/merger",
-    "internal/pathtools",
-    "internal/repos",
-    "internal/resolve",
-    "internal/rule",
+    "config",
+    "flag",
     "internal/version",
-    "internal/walk",
     "internal/wspace",
+    "label",
+    "language",
+    "language/go",
+    "language/proto",
+    "merger",
+    "pathtools",
+    "repo",
+    "resolve",
+    "rule",
+    "walk",
   ]
   pruneopts = "NUT"
-  revision = "c728ce9f663e2bff26361ba5978ec5c9e6816a3c"
-  version = "0.15.0"
+  revision = "cdeedbd624679ca4522da9670f2b3d02e9f8b84d"
+  version = "0.16.0"
 
 [[projects]]
   digest = "1:03679414789b10f815a33667d29e3c77e57c8096bd32457fd1682a4222f25806"
@@ -829,14 +831,6 @@
   ]
   pruneopts = "NUT"
   revision = "0e41760cea1d1ce16f4cc311c2d6bd3525bb3da7"
-
-[[projects]]
-  branch = "master"
-  digest = "1:b7cd41e387f9a942b31c2e7bf86ac61d447691d6cc74bcd41e638e56ae631ae5"
-  name = "github.com/kubernetes/repo-infra"
-  packages = ["kazel"]
-  pruneopts = "NUT"
-  revision = "06471ba92308f7bfff038aa0850f31cbb7254ea3"
 
 [[projects]]
   branch = "master"
@@ -1589,6 +1583,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:ee7e865e9151970164f5642eb23b61e6515d5534fd80e24f94e25c072a13803a"
+  name = "k8s.io/klog"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "3aab9e5c735f254e186a576b4c32702f6cf4c705"
+
+[[projects]]
+  branch = "master"
   digest = "1:72ebd1873445f862a522e1afeb2f6ffc0c1bfefee22721d89fedf931427f2257"
   name = "k8s.io/kube-openapi"
   packages = [
@@ -1601,6 +1603,14 @@
   ]
   pruneopts = "NUT"
   revision = "0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803"
+
+[[projects]]
+  branch = "master"
+  digest = "1:a8876470c247fe10d409c2c2b18a7ea3d7537347d0456b3e5b7c22b48590b4c2"
+  name = "k8s.io/repo-infra"
+  packages = ["kazel"]
+  pruneopts = "NUT"
+  revision = "796fd4636e54971f81cbbc663437d44c643159aa"
 
 [[projects]]
   digest = "1:8730e0150dfb2b7e173890c8b9868e7a273082ef8e39f4940e3506a481cf895c"
@@ -1639,6 +1649,7 @@
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/autoscaling",
     "github.com/aws/aws-sdk-go/service/ec2",
+    "github.com/aws/aws-sdk-go/service/elb",
     "github.com/aws/aws-sdk-go/service/iam",
     "github.com/aws/aws-sdk-go/service/route53",
     "github.com/aws/aws-sdk-go/service/s3",
@@ -1682,7 +1693,6 @@
     "github.com/knative/build/pkg/client/informers/externalversions",
     "github.com/knative/build/pkg/client/informers/externalversions/build/v1alpha1",
     "github.com/knative/pkg/apis/duck/v1alpha1",
-    "github.com/kubernetes/repo-infra/kazel",
     "github.com/mattn/go-zglob",
     "github.com/pelletier/go-toml",
     "github.com/peterbourgon/diskv",
@@ -1756,6 +1766,7 @@
     "k8s.io/code-generator/cmd/openapi-gen",
     "k8s.io/code-generator/cmd/set-gen",
     "k8s.io/gengo/args",
+    "k8s.io/repo-infra/kazel",
     "sigs.k8s.io/yaml",
     "vbom.ml/util/sortorder",
   ]

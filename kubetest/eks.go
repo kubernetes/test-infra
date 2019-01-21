@@ -20,8 +20,10 @@ limitations under the License.
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	osexec "os/exec"
 	"path/filepath"
@@ -34,6 +36,52 @@ import (
 	"k8s.io/test-infra/kubetest/util"
 )
 
+var (
+	eksKubectlPath      = flag.String("eks-kubectl-path", "/tmp/aws-k8s-tester/kubectl", "(eks only) Path to the kubectl binary to use.")
+	eksKubecfgPath      = flag.String("eks-kubeconfig-path", "/tmp/aws-k8s-tester/kubeconfig", "(eks only) Path to the kubeconfig file to use.")
+	eksNodes            = flag.String("eks-nodes", "1", "(eks only) Number of nodes in the EKS cluster.")
+	eksNodeInstanceType = flag.String("eks-node-instance-type", "m3.xlarge", "(eks only) Instance type to use for nodes.")
+)
+
+func migrateEKSOptions() error {
+	// Prevent ginkgo-e2e.sh from using the cluster/eks functions.
+	if err := os.Setenv("KUBERNETES_CONFORMANCE_TEST", "yes"); err != nil {
+		return err
+	}
+	if err := os.Setenv("KUBERNETES_CONFORMANCE_PROVIDER", "eks"); err != nil {
+		return err
+	}
+	return util.MigrateOptions([]util.MigratedOption{
+		// Env vars required by upstream ginkgo-e2e.sh.
+		{
+			Env:    "KUBECTL",
+			Option: eksKubectlPath,
+			Name:   "--eks-kubectl-path",
+		},
+		{
+			Env:    "KUBECONFIG",
+			Option: eksKubecfgPath,
+			Name:   "--eks-kubeconfig-path",
+		},
+		// Env vars specific to aws-k8s-tester.
+		{
+			Env:    "AWS_K8S_TESTER_EKS_WORKER_NODE_ASG_MIN",
+			Option: eksNodes,
+			Name:   "--eks-nodes",
+		},
+		{
+			Env:    "AWS_K8S_TESTER_EKS_WORKER_NODE_ASG_MAX",
+			Option: eksNodes,
+			Name:   "--eks-nodes",
+		},
+		{
+			Env:    "AWS_K8S_TESTER_EKS_WORKER_NODE_INSTANCE_TYPE",
+			Option: eksNodeInstanceType,
+			Name:   "--eks-node-instance-type",
+		},
+	})
+}
+
 // eksDeployer implements EKS deployer interface using "aws-k8s-tester" binary.
 // Satisfies "k8s.io/test-infra/kubetest/main.go" 'deployer' and 'publisher" interfaces.
 // Reference https://github.com/kubernetes/test-infra/blob/master/kubetest/main.go.
@@ -45,8 +93,12 @@ type eksDeployer struct {
 
 // newEKS creates a new EKS deployer.
 func newEKS(timeout time.Duration, verbose bool) (ekstester.Deployer, error) {
+	err := migrateEKSOptions()
+	if err != nil {
+		return nil, err
+	}
 	cfg := eksconfig.NewDefault()
-	err := cfg.UpdateFromEnvs()
+	err = cfg.UpdateFromEnvs()
 	if err != nil {
 		return nil, err
 	}
@@ -230,6 +282,19 @@ func (dp *eksDeployer) LoadConfig() (eksconfig.Config, error) {
 	return *dp.cfg, err
 }
 
+func getLatestAWSK8sTesterURL() (string, error) {
+	resp, err := http.Get("https://github.com/aws/aws-k8s-tester/releases/latest")
+	if err != nil {
+		return "", err
+	}
+	redirectURL := resp.Request.URL.String()
+	basepath, version := filepath.Split(redirectURL)
+	if basepath == "" {
+		return "", fmt.Errorf("Couldn't extract version from redirect URL")
+	}
+	return fmt.Sprintf("https://github.com/aws/aws-k8s-tester/releases/download/%s/aws-k8s-tester-%s-linux-amd64", version, version), nil
+}
+
 func (dp *eksDeployer) fetchAWSK8sTester() error {
 	if err := os.RemoveAll(dp.cfg.AWSK8sTesterPath); err != nil {
 		return err
@@ -242,7 +307,12 @@ func (dp *eksDeployer) fetchAWSK8sTester() error {
 		return fmt.Errorf("failed to create %q (%v)", dp.cfg.AWSK8sTesterPath, err)
 	}
 	dp.cfg.AWSK8sTesterPath = f.Name()
-	if err = httpRead(dp.cfg.AWSK8sTesterDownloadURL, f); err != nil {
+	var awsK8sTesterDownloadURL string
+	awsK8sTesterDownloadURL, err = getLatestAWSK8sTesterURL()
+	if err != nil {
+		return err
+	}
+	if err = httpRead(awsK8sTesterDownloadURL, f); err != nil {
 		return err
 	}
 	if err = f.Close(); err != nil {

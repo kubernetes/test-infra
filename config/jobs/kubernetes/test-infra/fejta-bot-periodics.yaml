@@ -65,7 +65,7 @@ periodics:
 
         Review the [full test history](https://gubernator.k8s.io/pr/{{.Number}}) for this PR.
 
-        Silence the bot with an `/lgtm cancel` comment for consistent failures.
+        Silence the bot with an `/lgtm cancel` or `/hold` comment for consistent failures.
 
       - --template
       - --ceiling=1

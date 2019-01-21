@@ -2,7 +2,13 @@
 <style>
     .hidden-tests {
         visibility: collapse;
+        display: none;
     }
+
+    table {
+      width: 100%;
+    }
+
     .mdl-data-table__cell--non-numeric {
       font-family: monospace;
       background-color: #212121;
@@ -16,6 +22,11 @@
       font-weight:bold;
       font-size:1.5em;
     }
+
+    .expander:last-of-type {
+      text-align: right;
+    }
+
     a {
       color: inherit;
       text-decoration: none;

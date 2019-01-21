@@ -700,30 +700,34 @@ func TestUpdateConfig(t *testing.T) {
 			maps: tc.existConfigMaps,
 		}
 
-		m := map[string]plugins.ConfigMapSpec{
-			"prow/config.yaml": {
-				Name: "config",
-			},
-			"prow/plugins.yaml": {
-				Name: "plugins",
-				Key:  "test-key",
-			},
-			"boskos/resources.yaml": {
-				Name:      "boskos-config",
-				Namespace: "boskos",
-			},
-			"config/foo.yaml": {
-				Name: "multikey-config",
-			},
-			"config/bar.yaml": {
-				Name: "multikey-config",
-			},
-			"dir/subdir/**/*.yaml": {
-				Name: "glob-config",
+		m := plugins.ConfigUpdater{
+			Maps: map[string]plugins.ConfigMapSpec{
+				"prow/config.yaml": {
+					Name: "config",
+				},
+				"prow/plugins.yaml": {
+					Name: "plugins",
+					Key:  "test-key",
+				},
+				"boskos/resources.yaml": {
+					Name:      "boskos-config",
+					Namespace: "boskos",
+				},
+				"config/foo.yaml": {
+					Name: "multikey-config",
+				},
+				"config/bar.yaml": {
+					Name: "multikey-config",
+				},
+				"dir/subdir/**/*.yaml": {
+					Name: "glob-config",
+				},
 			},
 		}
 
-		if err := handle(fgc, fkc, log, event, m); err != nil {
+		m.SetDefaults()
+
+		if err := handle(fgc, fkc, log, event, m.Maps); err != nil {
 			t.Errorf("tc: %s, err: %s", tc.name, err)
 		}
 

@@ -1861,6 +1861,19 @@ func (c *Client) GetRef(org, repo, ref string) (string, error) {
 	return res.Object["sha"], err
 }
 
+// DeleteRef deletes the given ref
+//
+// See https://developer.github.com/v3/git/refs/#delete-a-reference
+func (c *Client) DeleteRef(org, repo, ref string) error {
+	c.log("DeleteRef", org, repo, ref)
+	_, err := c.request(&request{
+		method:    http.MethodDelete,
+		path:      fmt.Sprintf("/repos/%s/%s/git/refs/%s", org, repo, ref),
+		exitCodes: []int{204},
+	}, nil)
+	return err
+}
+
 // FindIssues uses the GitHub search API to find issues which match a particular query.
 //
 // Input query the same way you would into the website.
@@ -2125,6 +2138,33 @@ func (c *Client) ListTeamMembers(id int, role string) ([]TeamMember, error) {
 		return nil, err
 	}
 	return teamMembers, nil
+}
+
+// ListTeamInvitations gets a list of team members with pending invitations for the
+// given team id
+//
+// https://developer.github.com/v3/teams/members/#list-pending-team-invitations
+func (c *Client) ListTeamInvitations(id int) ([]OrgInvitation, error) {
+	c.log("ListTeamInvites", id)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/teams/%d/invitations", id)
+	var ret []OrgInvitation
+	err := c.readPaginatedResults(
+		path,
+		acceptNone,
+		func() interface{} {
+			return &[]OrgInvitation{}
+		},
+		func(obj interface{}) {
+			ret = append(ret, *(obj.(*[]OrgInvitation))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
 }
 
 // MergeDetails contains desired properties of the merge.

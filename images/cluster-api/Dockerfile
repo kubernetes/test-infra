@@ -20,12 +20,12 @@ LABEL maintainer="krousey@google.com"
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
-ENV ETCD_VER=v3.3.0
-ENV ETCD_URL=https://storage.googleapis.com/etcd
+ENV DEP_VER=v0.5.0
+ENV DEP_CHECKSUM=287b08291e14f1fae8ba44374b26a2b12eb941af3497ed0ca649253e21ba2f83
 
-RUN wget ${ETCD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz && \
-    mkdir /etcd && \
-    tar xzf etcd-${ETCD_VER}-linux-amd64.tar.gz -C /etcd --strip-components=1 && \
-    rm -f etcd-${ETCD_VER}-linux-amd64.tar.gz
+RUN wget https://github.com/golang/dep/releases/download/${DEP_VER}/dep-linux-amd64 && \
+    bash -c "sha256sum -c <(echo ${DEP_CHECKSUM} dep-linux-amd64)" && \
+    mv dep-linux-amd64 /usr/local/bin/dep && \
+    chmod +x /usr/local/bin/dep
 
 ENV PATH "/etcd:${PATH}"

@@ -28,6 +28,16 @@
     color: #ffffff;
 }
 
+.areax00002fdeflake {
+    background-color: #0052cc;
+    color: #ffffff;
+}
+
+.areax00002fdevstats {
+    background-color: #0052cc;
+    color: #ffffff;
+}
+
 .areax00002fghproxy {
     background-color: #0052cc;
     color: #ffffff;
@@ -59,6 +69,11 @@
 }
 
 .areax00002fgubernator {
+    background-color: #0052cc;
+    color: #ffffff;
+}
+
+.areax00002fhyperkube {
     background-color: #0052cc;
     color: #ffffff;
 }
@@ -214,6 +229,11 @@
 }
 
 .areax00002fprowx00002ftot {
+    background-color: #0052cc;
+    color: #ffffff;
+}
+
+.areax00002freleasex00002dteam {
     background-color: #0052cc;
     color: #ffffff;
 }
@@ -683,12 +703,22 @@
     color: #000000;
 }
 
+.wgx00002fcomponentx00002dstandard {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
 .wgx00002fcontainerx00002didentity {
     background-color: #d2b48c;
     color: #000000;
 }
 
 .wgx00002fiotx00002dedge {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.wgx00002fk8sx00002dinfra {
     background-color: #d2b48c;
     color: #000000;
 }

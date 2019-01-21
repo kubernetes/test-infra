@@ -1,12 +1,10 @@
 presubmits:
-  # Run Kubernetes e2e tests with EKS prod build
-  # run conformance tests
+  # Kubernetes e2e correctness tests against EKS 1.11 build.
   kubernetes/kubernetes:
-  - name: pull-kubernetes-e2e-aws-eks-1-11-prod-conformance
-    # run tests from master branch (for now)
+  - name: pull-kubernetes-e2e-aws-eks-1-11-correctness
     branches:
     - master
-    # NON-BLOCKING; only triggered manually, use this for debug test script
+    # NON-BLOCKING; only triggered manually, used for debugging.
     always_run: false
     optional: true
     labels:
@@ -15,7 +13,7 @@ presubmits:
       preset-kubernetes-e2e-aws-eks-1-11: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
         imagePullPolicy: Always
         args:
           - --root=/go/src
@@ -32,7 +30,6 @@ presubmits:
           - --provider=eks
           - --gce-ssh=
           - --extract=local
-          - --ginkgo-parallel=30
-          - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-          - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-aws-eks-1-11-prod-conformance
+          - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8
+          - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-aws-eks-1-11-correctness
           - --timeout=180m

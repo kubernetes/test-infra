@@ -22,7 +22,7 @@ jasmine_node_test(
     srcs = ["script_test.js"],
     data = ["js-srcs"],
     deps = [
-        "@npm//:jasmine",
+        "@npm//jasmine",
     ],
 )
 

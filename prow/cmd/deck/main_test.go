@@ -38,6 +38,7 @@ import (
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/tide"
+	"k8s.io/test-infra/prow/tide/history"
 )
 
 func TestOptions_Validate(t *testing.T) {
@@ -271,7 +272,7 @@ func TestTide(t *testing.T) {
 		path:         s.URL,
 		updatePeriod: func() time.Duration { return time.Minute },
 	}
-	if err := ta.update(); err != nil {
+	if err := ta.updatePools(); err != nil {
 		t.Fatalf("Updating: %v", err)
 	}
 	if len(ta.pools) != 1 {
@@ -280,7 +281,7 @@ func TestTide(t *testing.T) {
 	if ta.pools[0].Org != "o" {
 		t.Errorf("Wrong org in pool. Got %s, expected o in %v", ta.pools[0].Org, ta.pools)
 	}
-	handler := handleTide(ca, &ta)
+	handler := handleTidePools(ca, &ta)
 	req, err := http.NewRequest(http.MethodGet, "/tide.js", nil)
 	if err != nil {
 		t.Fatalf("Error making request: %v", err)
@@ -296,8 +297,8 @@ func TestTide(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
-	res := tideData{}
-	if err := yaml.Unmarshal(body, &res); err != nil {
+	res := tidePools{}
+	if err := json.Unmarshal(body, &res); err != nil {
 		t.Fatalf("Error unmarshaling: %v", err)
 	}
 	if len(res.Pools) != 1 {
@@ -311,6 +312,56 @@ func TestTide(t *testing.T) {
 	}
 	if expected := "is:pr state:open repo:\"kubernetes/test-infra\""; res.Queries[0] != expected {
 		t.Errorf("Wrong query. Got %s, expected %s", res.Queries[0], expected)
+	}
+}
+
+func TestTideHistory(t *testing.T) {
+	testHist := map[string][]history.Record{
+		"o/r:b": {
+			{Action: "MERGE"}, {Action: "TRIGGER"},
+		},
+	}
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		b, err := json.Marshal(testHist)
+		if err != nil {
+			t.Fatalf("Marshaling: %v", err)
+		}
+		fmt.Fprintf(w, string(b))
+	}))
+
+	ta := tideAgent{
+		path:         s.URL,
+		updatePeriod: func() time.Duration { return time.Minute },
+	}
+	if err := ta.updateHistory(); err != nil {
+		t.Fatalf("Updating: %v", err)
+	}
+	if !reflect.DeepEqual(ta.history, testHist) {
+		t.Fatalf("Expected tideAgent history:\n%#v\n,but got:\n%#v\n", testHist, ta.history)
+	}
+
+	handler := handleTideHistory(&ta)
+	req, err := http.NewRequest(http.MethodGet, "/tide-history.js", nil)
+	if err != nil {
+		t.Fatalf("Error making request: %v", err)
+	}
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("Bad error code: %d", rr.Code)
+	}
+	resp := rr.Result()
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Error reading response body: %v", err)
+	}
+	var res tideHistory
+	if err := json.Unmarshal(body, &res); err != nil {
+		t.Fatalf("Error unmarshaling: %v", err)
+	}
+	if !reflect.DeepEqual(res.History, testHist) {
+		t.Fatalf("Expected /tide-history.js:\n%#v\n,but got:\n%#v\n", testHist, res.History)
 	}
 }
 

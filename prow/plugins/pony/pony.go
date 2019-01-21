@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package pony adds pony images to issues in response to a /pony comment
+// Package pony adds pony images to the issue or PR in response to a /pony comment
 package pony
 
 import (
@@ -46,12 +46,12 @@ type ponyRepresentations struct {
 }
 
 const (
-	ponyURL    = realHerd("https://theponyapi.com/pony.json")
+	ponyURL    = realHerd("https://theponyapi.com/api/v1/pony/random")
 	pluginName = "pony"
 )
 
 var (
-	match = regexp.MustCompile(`(?mi)^/(?:pony)(?:\s+(.+?))?\s*$`)
+	match = regexp.MustCompile(`(?mi)^/(?:pony)(?: +(.+?))?\s*$`)
 )
 
 func init() {
@@ -61,11 +61,11 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The pony plugin adds a pony image to an issue in response to the `/pony` command.",
+		Description: "The pony plugin adds a pony image to an issue or PR in response to the `/pony` command.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/(pony) [pony]",
-		Description: "Add a little pony image to the issue. A particular pony can optionally be named for a picture of that specific pony.",
+		Description: "Add a little pony image to the issue or PR. A particular pony can optionally be named for a picture of that specific pony.",
 		Featured:    false,
 		WhoCanUse:   "Anyone",
 		Examples:    []string{"/pony", "/pony Twilight Sparkle"},
@@ -90,12 +90,7 @@ func formatURLs(small, full string) string {
 }
 
 func (h realHerd) readPony(tags string) (string, error) {
-	// Omit webm video (the only video type) and anything too far off square.
-	q := "-webm, aspect_ratio:1~0.5"
-	if tags != "" {
-		q += ", " + tags
-	}
-	uri := string(h) + "?q=" + url.QueryEscape(q)
+	uri := string(h) + "?q=" + url.QueryEscape(tags)
 	resp, err := client.Get(uri)
 	if err != nil {
 		return "", fmt.Errorf("failed to make request: %v", err)

@@ -9,6 +9,7 @@ go_library(
     deps = [
         "//vendor/github.com/aws/aws-k8s-tester/etcdconfig/plugins:go_default_library",
         "//vendor/github.com/aws/aws-k8s-tester/kubeadmconfig/plugins:go_default_library",
+        "//vendor/github.com/aws/aws-k8s-tester/kubernetesconfig/plugins:go_default_library",
     ],
 )
 

@@ -77,6 +77,13 @@ func TestOptions_Run(t *testing.T) {
 			expectedLog:    "level=error msg=\"Process did not finish before 1s timeout\" \nlevel=error msg=\"Process did not exit before 1s grace period\" \n",
 			expectedMarker: strconv.Itoa(InternalErrorCode),
 		},
+		{
+			// Ensure that environment variables get passed through
+			name:           "$PATH is set",
+			args:           []string{"sh", "-c", "echo $PATH"},
+			expectedLog:    os.Getenv("PATH") + "\n",
+			expectedMarker: "0",
+		},
 	}
 
 	// we write logs to the process log if wrapping fails
@@ -96,10 +103,10 @@ func TestOptions_Run(t *testing.T) {
 			}()
 
 			options := Options{
-				Args:        testCase.args,
 				Timeout:     testCase.timeout,
 				GracePeriod: testCase.gracePeriod,
 				Options: &wrapper.Options{
+					Args:       testCase.args,
 					ProcessLog: path.Join(tmpDir, "process-log.txt"),
 					MarkerFile: path.Join(tmpDir, "marker-file.txt"),
 				},

@@ -31,7 +31,7 @@ REQUIRED=(
   //vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle:gazelle
   //vendor/github.com/golang/dep/cmd/dep:dep
   //vendor/github.com/client9/misspell/cmd/misspell:misspell
-  //vendor/github.com/kubernetes/repo-infra/kazel:kazel
+  //vendor/k8s.io/repo-infra/kazel:kazel
 )
 
 # darwin is great

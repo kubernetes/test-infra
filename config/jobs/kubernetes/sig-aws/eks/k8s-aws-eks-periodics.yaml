@@ -1,14 +1,14 @@
 periodics:
-# Run Kubernetes 1.11 branch e2e tests with EKS prod build 1.11
-- interval: 2h
-  name: ci-kubernetes-e2e-1-11-aws-eks-1-11-prod
+# Kubernetes e2e correctness tests against EKS 1.11 build.
+- interval: 3h
+  name: ci-kubernetes-e2e-aws-eks-1-11-correctness
   labels:
     preset-service-account: "true"
     preset-kubernetes-e2e-aws-eks-common: "true"
     preset-kubernetes-e2e-aws-eks-1-11: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
       imagePullPolicy: Always
       args:
       - --timeout=200
@@ -24,17 +24,16 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=180m
 
-# Run Kubernetes 1.11 branch e2e tests with EKS prod build 1.11
-# run conformance tests
-- interval: 2h
-  name: ci-kubernetes-e2e-1-11-aws-eks-1-11-prod-conformance
+# Kubernetes conformance e2e tests against EKS 1.11 build.
+- interval: 3h
+  name: ci-kubernetes-e2e-aws-eks-1-11-conformance
   labels:
     preset-service-account: "true"
     preset-kubernetes-e2e-aws-eks-common: "true"
     preset-kubernetes-e2e-aws-eks-1-11: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
       imagePullPolicy: Always
       args:
       - --timeout=200
@@ -50,57 +49,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=180m
 
-# Run Kubernetes stable e2e tests with EKS prod build 1.11
-- interval: 2h
-  name: ci-kubernetes-e2e-stable-aws-eks-1-11-prod
-  labels:
-    preset-service-account: "true"
-    preset-kubernetes-e2e-aws-eks-common: "true"
-    preset-kubernetes-e2e-aws-eks-1-11: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-      args:
-      - --timeout=200
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-version-skew=false
-      - --deployment=eks
-      - --provider=eks
-      - --gce-ssh=
-      - --extract=ci/k8s-stable1
-      - --ginkgo-parallel=30
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --timeout=180m
-
-# Run Kubernetes latest e2e tests with EKS prod build 1.11
-- interval: 2h
-  name: ci-kubernetes-e2e-latest-aws-eks-1-11-prod
-  labels:
-    preset-service-account: "true"
-    preset-kubernetes-e2e-aws-eks-common: "true"
-    preset-kubernetes-e2e-aws-eks-1-11: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-      args:
-      - --timeout=200
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-version-skew=false
-      - --deployment=eks
-      - --provider=eks
-      - --gce-ssh=
-      - --extract=ci/latest
-      - --ginkgo-parallel=30
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --timeout=180m
-
-# Run Kubernetes performance e2e tests with EKS prod build 1.11
+# Kubernetes performance e2e tests against EKS 1.11 build.
 - interval: 1h
   name: ci-kubernetes-e2e-aws-eks-1-11-scalability
   labels:
@@ -109,7 +58,7 @@ periodics:
     preset-kubernetes-e2e-aws-eks-1-11: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
       imagePullPolicy: Always
       args:
       - --timeout=200
@@ -122,4 +71,54 @@ periodics:
       - --gce-ssh=
       - --extract=ci/latest
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8
+      - --timeout=180m
+
+# Kubernetes e2e correctness tests against EKS 1.10 build.
+- interval: 3h
+  name: ci-kubernetes-e2e-aws-eks-1-10-correctness
+  labels:
+    preset-service-account: "true"
+    preset-kubernetes-e2e-aws-eks-common: "true"
+    preset-kubernetes-e2e-aws-eks-1-10: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      imagePullPolicy: Always
+      args:
+      - --timeout=200
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-version-skew=false
+      - --deployment=eks
+      - --provider=eks
+      - --gce-ssh=
+      - --extract=ci/latest-1.10
+      - --ginkgo-parallel=30
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=180m
+
+# Kubernetes conformance e2e tests against EKS 1.10 build.
+- interval: 3h
+  name: ci-kubernetes-e2e-aws-eks-1-10-conformance
+  labels:
+    preset-service-account: "true"
+    preset-kubernetes-e2e-aws-eks-common: "true"
+    preset-kubernetes-e2e-aws-eks-1-10: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      imagePullPolicy: Always
+      args:
+      - --timeout=200
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-version-skew=false
+      - --deployment=eks
+      - --provider=eks
+      - --gce-ssh=
+      - --extract=ci/latest-1.10
+      - --ginkgo-parallel=30
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=180m

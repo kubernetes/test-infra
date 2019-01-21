@@ -2,10 +2,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "jobs.go",
-        "metadata.go",
-    ],
+    srcs = ["jobs.go"],
     importpath = "k8s.io/test-infra/prow/deck/jobs",
     visibility = ["//visibility:public"],
     deps = [

@@ -126,6 +126,58 @@ func TestAddedBlockingPresubmits(t *testing.T) {
 			},
 		},
 		{
+			name: "required presubmit transitioning run_if_changed means added blocking jobs",
+			old: `"org/repo":
+- name: old-job
+  context: old-context
+  run_if_changed: old-changes`,
+			new: `"org/repo":
+- name: old-job
+  context: old-context
+  run_if_changed: new-changes`,
+			expected: map[string][]config.Presubmit{
+				"org/repo": {{
+					JobBase:             config.JobBase{Name: "old-job"},
+					Context:             "old-context",
+					RegexpChangeMatcher: config.RegexpChangeMatcher{RunIfChanged: "new-changes"},
+				}},
+			},
+		},
+		{
+			name: "optional presubmit transitioning run_if_changed means no added blocking jobs",
+			old: `"org/repo":
+- name: old-job
+  context: old-context
+  run_if_changed: old-changes
+  optional: true`,
+			new: `"org/repo":
+- name: old-job
+  context: old-context
+  run_if_changed: new-changes
+  optional: true`,
+			expected: map[string][]config.Presubmit{
+				"org/repo": {},
+			},
+		},
+		{
+			name: "optional presubmit transitioning to required run_if_changed means added blocking jobs",
+			old: `"org/repo":
+- name: old-job
+  context: old-context
+  optional: true`,
+			new: `"org/repo":
+- name: old-job
+  context: old-context
+  run_if_changed: changes`,
+			expected: map[string][]config.Presubmit{
+				"org/repo": {{
+					JobBase:             config.JobBase{Name: "old-job"},
+					Context:             "old-context",
+					RegexpChangeMatcher: config.RegexpChangeMatcher{RunIfChanged: "changes"},
+				}},
+			},
+		},
+		{
 			name: "required presubmit transitioning to new context means no added blocking jobs",
 			old: `"org/repo":
 - name: old-job
@@ -259,6 +311,34 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 				"org/repo": {},
 			},
 		},
+		{
+			name: "required presubmit transitioning run_if_changed means no removed blocking jobs",
+			old: `"org/repo":
+- name: old-job
+  context: old-context
+  run_if_changed: old-changes`,
+			new: `"org/repo":
+- name: old-job
+  context: old-context
+  run_if_changed: new-changes`,
+			expected: map[string][]config.Presubmit{
+				"org/repo": {},
+			},
+		},
+		{
+			name: "optional presubmit transitioning to required run_if_changed means no removed blocking jobs",
+			old: `"org/repo":
+- name: old-job
+  context: old-context
+  optional: true`,
+			new: `"org/repo":
+- name: old-job
+  context: old-context
+  run_if_changed: changes`,
+			expected: map[string][]config.Presubmit{
+				"org/repo": {},
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -384,6 +464,34 @@ func TestMigratedBlockingPresubmits(t *testing.T) {
 				}},
 			},
 		},
+		{
+			name: "required presubmit transitioning run_if_changed means no removed blocking jobs",
+			old: `"org/repo":
+- name: old-job
+  context: old-context
+  run_if_changed: old-changes`,
+			new: `"org/repo":
+- name: old-job
+  context: old-context
+  run_if_changed: new-changes`,
+			expected: map[string][]presubmitMigration{
+				"org/repo": {},
+			},
+		},
+		{
+			name: "optional presubmit transitioning to required run_if_changed means no removed blocking jobs",
+			old: `"org/repo":
+- name: old-job
+  context: old-context
+  optional: true`,
+			new: `"org/repo":
+- name: old-job
+  context: old-context
+  run_if_changed: changes`,
+			expected: map[string][]presubmitMigration{
+				"org/repo": {},
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -447,7 +555,7 @@ type fakeMigrator struct {
 	migrated map[orgRepo]migrationSet
 }
 
-func (m *fakeMigrator) retire(org, repo, context string) error {
+func (m *fakeMigrator) retire(org, repo, context string, targetBranchFilter func(string) bool) error {
 	key := orgRepo{org: org, repo: repo}
 	if contexts, exist := m.retireErrors[key]; exist && contexts.Has(context) {
 		return errors.New("failed to retire context")
@@ -460,7 +568,7 @@ func (m *fakeMigrator) retire(org, repo, context string) error {
 	return nil
 }
 
-func (m *fakeMigrator) migrate(org, repo, from, to string) error {
+func (m *fakeMigrator) migrate(org, repo, from, to string, targetBranchFilter func(string) bool) error {
 	key := orgRepo{org: org, repo: repo}
 	item := migration{from: from, to: to}
 	if contexts, exist := m.migrateErrors[key]; exist && contexts.has(item) {
