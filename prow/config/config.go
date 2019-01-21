@@ -469,14 +469,15 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 	// *** Presets ***
 	c.Presets = append(c.Presets, jc.Presets...)
 
-	// validate no duplicated presets
-	validLabels := map[string]string{}
+	// validate no duplicated preset key-value pairs
+	validLabels := map[string]bool{}
 	for _, preset := range c.Presets {
 		for label, val := range preset.Labels {
-			if _, ok := validLabels[label]; ok {
-				return fmt.Errorf("duplicated preset label : %s", label)
+			pair := label + ":" + val
+			if _, ok := validLabels[pair]; ok {
+				return fmt.Errorf("duplicated preset 'label:value' pair : %s", pair)
 			}
-			validLabels[label] = val
+			validLabels[pair] = true
 		}
 	}
 

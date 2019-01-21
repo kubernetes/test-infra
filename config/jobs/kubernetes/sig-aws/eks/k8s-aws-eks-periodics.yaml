@@ -4,7 +4,7 @@ periodics:
   name: ci-kubernetes-e2e-aws-eks-1-11-correctness
   labels:
     preset-service-account: "true"
-    preset-kubernetes-e2e-aws-eks-common: "true"
+    preset-aws-credential: "aws-oss-testing"
     preset-kubernetes-e2e-aws-eks-1-11: "true"
   spec:
     containers:
@@ -29,7 +29,7 @@ periodics:
   name: ci-kubernetes-e2e-aws-eks-1-11-conformance
   labels:
     preset-service-account: "true"
-    preset-kubernetes-e2e-aws-eks-common: "true"
+    preset-aws-credential: "aws-oss-testing"
     preset-kubernetes-e2e-aws-eks-1-11: "true"
   spec:
     containers:
@@ -54,7 +54,7 @@ periodics:
   name: ci-kubernetes-e2e-aws-eks-1-11-scalability
   labels:
     preset-service-account: "true"
-    preset-kubernetes-e2e-aws-eks-common: "true"
+    preset-aws-credential: "aws-oss-testing"
     preset-kubernetes-e2e-aws-eks-1-11: "true"
   spec:
     containers:
@@ -78,7 +78,7 @@ periodics:
   name: ci-kubernetes-e2e-aws-eks-1-10-correctness
   labels:
     preset-service-account: "true"
-    preset-kubernetes-e2e-aws-eks-common: "true"
+    preset-aws-credential: "aws-oss-testing"
     preset-kubernetes-e2e-aws-eks-1-10: "true"
   spec:
     containers:
@@ -103,7 +103,7 @@ periodics:
   name: ci-kubernetes-e2e-aws-eks-1-10-conformance
   labels:
     preset-service-account: "true"
-    preset-kubernetes-e2e-aws-eks-common: "true"
+    preset-aws-credential: "aws-oss-testing"
     preset-kubernetes-e2e-aws-eks-1-10: "true"
   spec:
     containers:

@@ -589,7 +589,7 @@ func TestLatestUsesImagePullPolicy(t *testing.T) {
 
 // checkKubekinsPresets returns an error if a spec references to kubekins-e2e|bootstrap image,
 // but doesn't use service preset or ssh preset
-func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels, validLabels map[string]string) error {
+func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels map[string]string, validLabels map[string]bool) error {
 	service := true
 	ssh := true
 
@@ -629,10 +629,9 @@ func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels, validLabels 
 	}
 
 	for key, val := range labels {
-		if validVal, ok := validLabels[key]; !ok {
-			return fmt.Errorf("label %s is not a valid preset label", key)
-		} else if validVal != val {
-			return fmt.Errorf("label %s does not have valid value, have %s, expect %s", key, val, validVal)
+		pair := key + ":" + val
+		if validVal, ok := validLabels[pair]; !ok || !validVal {
+			return fmt.Errorf("key-value pair %s is not found in list of valid presets list", pair)
 		}
 	}
 
@@ -642,18 +641,17 @@ func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels, validLabels 
 // TestValidPresets makes sure all presets name starts with 'preset-', all job presets are valid,
 // and jobs that uses kubekins-e2e image has the right service account preset
 func TestValidPresets(t *testing.T) {
-	validLabels := map[string]string{}
+	validLabels := map[string]bool{}
 	for _, preset := range c.Presets {
 		for label, val := range preset.Labels {
 			if !strings.HasPrefix(label, "preset-") {
 				t.Errorf("Preset label %s - label name should start with 'preset-'", label)
-			} else if val != "true" {
-				t.Errorf("Preset label %s - label value should be true", label)
 			}
-			if _, ok := validLabels[label]; ok {
-				t.Errorf("Duplicated preset label : %s", label)
+			pair := label + ":" + val
+			if _, ok := validLabels[pair]; ok {
+				t.Errorf("Duplicated preset 'label:value' pair : %s", pair)
 			} else {
-				validLabels[label] = val
+				validLabels[pair] = true
 			}
 		}
 	}
