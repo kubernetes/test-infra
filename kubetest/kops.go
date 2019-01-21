@@ -68,6 +68,7 @@ var (
 	kopsMasterSize   = flag.String("kops-master-size", kopsAWSMasterSize, "(kops only) master instance type")
 	kopsMasterCount  = flag.Int("kops-master-count", 1, "(kops only) Number of masters to run")
 	kopsEtcdVersion  = flag.String("kops-etcd-version", "", "(kops only) Etcd Version")
+	kopsNetworkMode  = flag.String("kops-network-mode", "", "(kops only) Networking mode to use. kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana, amazon-vpc-routed-eni, cilium.")
 
 	kopsMultipleZones = flag.Bool("kops-multiple-zones", false, "(kops only) run tests in multiple zones")
 
@@ -131,6 +132,9 @@ type kops struct {
 
 	// masterSize is the EC2 instance type for the master
 	masterSize string
+
+	// networkMode is the networking mode to use for the cluster (e.g kubenet)
+	networkMode string
 
 	// multipleZones denotes using more than one zone
 	multipleZones bool
@@ -335,6 +339,7 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		masterCount:   *kopsMasterCount,
 		etcdVersion:   *kopsEtcdVersion,
 		masterSize:    *kopsMasterSize,
+		networkMode:   *kopsNetworkMode,
 	}, nil
 }
 
@@ -398,6 +403,9 @@ func (k kops) Up() error {
 	} else {
 		// append cloud type to allow for use of new regions without updates
 		createArgs = append(createArgs, "--cloud", "aws")
+	}
+	if k.networkMode != "" {
+		createArgs = append(createArgs, "--networking", k.networkMode)
 	}
 	if k.args != "" {
 		createArgs = append(createArgs, strings.Split(k.args, " ")...)
