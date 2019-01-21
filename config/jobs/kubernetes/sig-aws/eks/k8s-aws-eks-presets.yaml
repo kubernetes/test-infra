@@ -1,28 +1,12 @@
 presets:
 - env:
-  # to prevent ginkgo-e2e.sh from using the cluster/eks functions
-  - name: KUBERNETES_CONFORMANCE_TEST
-    value: yes
-  - name: KUBERNETES_CONFORMANCE_PROVIDER
-    value: eks
-  # URL to download the latest 'aws-k8s-tester' release
-  - name: AWS_K8S_TESTER_EKS_AWS_K8S_TESTER_DOWNLOAD_URL
-    value: https://github.com/aws/aws-k8s-tester/releases/download/0.2.3/aws-k8s-tester-0.2.3-linux-amd64
   # URL to download 'kubectl', required for 'kubectl' calls to EKS (https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html)
   # TODO: use upstream 'kubectl'
   - name: AWS_K8S_TESTER_EKS_KUBECTL_DOWNLOAD_URL
     value: https://amazon-eks.s3-us-west-2.amazonaws.com/1.11.5/2018-12-06/bin/linux/amd64/kubectl
-  - name: KUBECONFIG
-    value: /tmp/aws-k8s-tester/kubeconfig
-  # upstream "kubernetes/kubernetes/hack/ginkgo-e2e.sh" requires this via "cluster/kubectl.sh"
-  - name: KUBECTL
-    value: "/tmp/aws-k8s-tester/kubectl --kubeconfig=/tmp/aws-k8s-tester/kubeconfig"
   # URL to download 'aws-iam-authenticator', required for 'kubectl' calls to EKS (https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html)
   - name: AWS_K8S_TESTER_EKS_AWS_IAM_AUTHENTICATOR_DOWNLOAD_URL
     value: https://amazon-eks.s3-us-west-2.amazonaws.com/1.11.5/2018-12-06/bin/linux/amd64/aws-iam-authenticator
-  # worker node EC2 instance type
-  - name: AWS_K8S_TESTER_EKS_WORKER_NODE_INSTANCE_TYPE
-    value: m3.xlarge
   # AWS test account credential mounted path, required for AWS API call
   - name: AWS_SHARED_CREDENTIALS_FILE
     value: /etc/eks-aws-credentials/eks-aws-credentials
