@@ -71,12 +71,13 @@ func (sw *StorageWriter) Close() error {
 func (o *ObjectHandle) NewWriter(ctx context.Context) *StorageWriter {
 	if traiana.Aws {
 		return &StorageWriter{
+			Writer: &storage.Writer{},
 			aws: o.aws.NewWriter(ctx),
 		}
 	} else {
 		return &StorageWriter{
 			Writer: o.gcs.NewWriter(ctx),
-		}
+	 	}
 	}
 }
 

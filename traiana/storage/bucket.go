@@ -42,6 +42,7 @@ func (b *BucketHandle) Object(name string) *ObjectHandle {
 func (b *BucketHandle) Objects(ctx context.Context, q *Query) *ObjectIterator {
 	if traiana.Aws {
 		return &ObjectIterator{
+			ObjectIterator: &storage.ObjectIterator{},
 			aws: b.aws.Objects(q),
 		}
 	} else {
