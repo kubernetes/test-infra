@@ -15,24 +15,33 @@ type S3ObjectIterator struct {
 func NewS3ObjectIterator(b *BucketHandle, q *Query) *S3ObjectIterator {
 	output, err := S3ListObjects(b, q.Prefix, q.Delimiter)
 
+	//AbugovTODO: might need to add the output.CommonPrefixes to the result in case prow expects folder names too
+
 	return &S3ObjectIterator{
 		err:    err,
 		output: output,
 	}
 }
 
-func (it *S3ObjectIterator) Next() (att *ObjectAttrs, err error) {
+func (it *S3ObjectIterator) Next() (*ObjectAttrs, error) {
 	if it.err != nil {
 		return nil, it.err
+	}
+
+	var att *ObjectAttrs
+	var err error
+
+	if it.current < len(it.output.Contents) {
+		att = it.objectToAttrs(it.output.Contents[it.current])
 	}
 
 	it.current++
 
 	if it.current >= len(it.output.Contents) {
-		return nil, iterator.Done
+		err = iterator.Done
 	}
 
-	return it.objectToAttrs(it.output.Contents[it.current]), err
+	return att, err
 }
 
 func (it *S3ObjectIterator) objectToAttrs(o *s3.Object) *ObjectAttrs {
