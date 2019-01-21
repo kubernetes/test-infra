@@ -83,12 +83,12 @@ class Bazel(object):
             changes = 'set(%s)' % ' '.join(changed_pkgs)
 
         query_pat = 'kind(%s, rdeps(%s, %s)) except attr(\'tags\', \'manual\', //...)'
-        return filter(None, self.check_output(
+        return [target for target in self.check_output(
             'query',
             '--keep_going',
             '--noshow_progress',
             query_pat % (kind, selection, changes)
-        ).split('\n'))
+        ).split('\n') if target.startswith("//")]
 
 
 def upload_string(gcs_path, text):

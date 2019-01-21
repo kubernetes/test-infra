@@ -15,7 +15,6 @@ go_library(
         "tot.go",
     ],
     importpath = "k8s.io/test-infra/prow/pjutil",
-    tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
@@ -49,7 +48,6 @@ go_test(
         "tot_test.go",
     ],
     embed = [":go_default_library"],
-    tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",

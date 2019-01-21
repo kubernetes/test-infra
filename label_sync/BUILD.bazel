@@ -13,10 +13,10 @@ load(
     "go_test",
 )
 load("@io_bazel_rules_docker//go:image.bzl", "go_image")
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
+load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 
-docker_bundle(
+container_bundle(
     name = "bundle",
     images = {
         "{STABLE_DOCKER_REPO}/label_sync:{DOCKER_TAG}": ":label_sync-image",
@@ -49,14 +49,12 @@ go_test(
         "//label_sync:test_examples",
     ],
     embed = [":go_default_library"],
-    tags = ["automanaged"],
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
     importpath = "k8s.io/test-infra/label_sync",
-    tags = ["automanaged"],
     deps = [
         "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",

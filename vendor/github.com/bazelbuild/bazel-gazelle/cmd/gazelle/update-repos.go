@@ -23,10 +23,10 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/bazelbuild/bazel-gazelle/internal/config"
-	"github.com/bazelbuild/bazel-gazelle/internal/merger"
-	"github.com/bazelbuild/bazel-gazelle/internal/repos"
-	"github.com/bazelbuild/bazel-gazelle/internal/rule"
+	"github.com/bazelbuild/bazel-gazelle/config"
+	"github.com/bazelbuild/bazel-gazelle/merger"
+	"github.com/bazelbuild/bazel-gazelle/repo"
+	"github.com/bazelbuild/bazel-gazelle/rule"
 )
 
 type updateReposFn func(c *updateReposConfig, oldFile *rule.File, kinds map[string]rule.KindInfo) error
@@ -157,8 +157,8 @@ FLAGS:
 }
 
 func updateImportPaths(c *updateReposConfig, f *rule.File, kinds map[string]rule.KindInfo) error {
-	rs := repos.ListRepositories(f)
-	rc := repos.NewRemoteCache(rs)
+	rs := repo.ListRepositories(f)
+	rc := repo.NewRemoteCache(rs)
 
 	genRules := make([]*rule.Rule, len(c.importPaths))
 	errs := make([]error, len(c.importPaths))
@@ -167,14 +167,14 @@ func updateImportPaths(c *updateReposConfig, f *rule.File, kinds map[string]rule
 	for i, imp := range c.importPaths {
 		go func(i int, imp string) {
 			defer wg.Done()
-			repo, err := repos.UpdateRepo(rc, imp)
+			r, err := repo.UpdateRepo(rc, imp)
 			if err != nil {
 				errs[i] = err
 				return
 			}
-			repo.Remote = "" // don't set these explicitly
-			repo.VCS = ""
-			rule := repos.GenerateRule(repo)
+			r.Remote = "" // don't set these explicitly
+			r.VCS = ""
+			rule := repo.GenerateRule(r)
 			genRules[i] = rule
 		}(i, imp)
 	}
@@ -190,7 +190,7 @@ func updateImportPaths(c *updateReposConfig, f *rule.File, kinds map[string]rule
 }
 
 func importFromLockFile(c *updateReposConfig, f *rule.File, kinds map[string]rule.KindInfo) error {
-	genRules, err := repos.ImportRepoRules(c.lockFilename)
+	genRules, err := repo.ImportRepoRules(c.lockFilename)
 	if err != nil {
 		return err
 	}

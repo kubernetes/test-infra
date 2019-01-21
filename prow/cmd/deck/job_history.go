@@ -33,7 +33,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/deck/jobs"
+	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 
 const (
@@ -291,20 +291,22 @@ func getBuildData(bucket storageBucket, dir string) (buildData, error) {
 		Result:     "Unknown",
 		commitHash: "Unknown",
 	}
-	started := jobs.Started{}
+	started := gcs.Started{}
 	err := readJSON(bucket, path.Join(dir, "started.json"), &started)
 	if err != nil {
 		return b, fmt.Errorf("failed to read started.json: %v", err)
 	}
 	b.Started = time.Unix(started.Timestamp, 0)
-	commitHash, err := getPullCommitHash(started.Pull)
-	if err == nil {
+	if commitHash, err := getPullCommitHash(started.Pull); err == nil {
 		b.commitHash = commitHash
 	}
-	finished := jobs.Finished{}
+	finished := gcs.Finished{}
 	err = readJSON(bucket, path.Join(dir, "finished.json"), &finished)
 	if err != nil {
 		logrus.Infof("failed to read finished.json (job might be unfinished): %v", err)
+	}
+	if finished.Revision != "" {
+		b.commitHash = finished.Revision
 	}
 	if finished.Timestamp != 0 {
 		b.Duration = time.Unix(finished.Timestamp, 0).Sub(b.Started)

@@ -12,7 +12,7 @@
 Every GitHub directory which is a unit of independent code contains a file named "OWNERS". The file lists reviewers and approvers for the directory. Approvers (or previously called assignees) are owners of the codes. 
 
 Approvers:
-* have contributed substantially to the project
+* have contributed substantially to the repo
 * can provide a final approval (`/approve`) indicating whether a change to a directory or subdirectory should be accepted
 * Approval is done on a per directory basis and subdirectories inherit their parents directory's approvers
 

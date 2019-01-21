@@ -132,7 +132,9 @@ func main() {
 
 	c := tide.NewController(githubSync, githubStatus, kubeClient, configAgent, gitClient, nil)
 	defer c.Shutdown()
-	server := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: c}
+	http.Handle("/", c)
+	http.Handle("/history", c.History)
+	server := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
 
 	// Push metrics to the configured prometheus pushgateway endpoint.
 	pushGateway := configAgent.Config().PushGateway

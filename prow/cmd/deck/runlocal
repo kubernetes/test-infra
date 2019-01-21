@@ -22,6 +22,7 @@ if [[ $1 == "openshift" ]]; then
 fi
 curl "$HOST/data.js?var=allBuilds" > data.js
 curl "$HOST/tide.js?var=tideData" > tide.js
+curl "$HOST/tide-history.js?var=tideHistory" > tide-history.js
 curl "$HOST/plugin-help.js?var=allHelp" > plugin-help.js
 curl "$HOST/pr-data.js" > pr-data.js
 bazel run //prow/cmd/deck:deck -- --pregenerated-data=${DIR}/localdata --static-files-location=./prow/cmd/deck/static --template-files-location=./prow/cmd/deck/template --spyglass-files-location=./prow/spyglass/lenses --config-path ${DIR}/../../config.yaml --spyglass

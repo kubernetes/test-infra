@@ -62,6 +62,7 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 
 	if pj.Status.State == v1.TriggeredState || pj.Status.State == v1.PendingState {
 		// not done yet
+		logrus.WithField("prowjob", pj.ObjectMeta.Name).Info("PJ not finished")
 		return false
 	}
 
@@ -69,6 +70,7 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 	if pj.ObjectMeta.Annotations[client.GerritID] == "" ||
 		pj.ObjectMeta.Annotations[client.GerritInstance] == "" ||
 		pj.ObjectMeta.Labels[client.GerritRevision] == "" {
+		logrus.WithField("prowjob", pj.ObjectMeta.Name).Info("Not a gerrit job")
 		return false
 	}
 
@@ -86,6 +88,7 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 	for _, pj := range pjs {
 		if pj.Status.State == v1.TriggeredState || pj.Status.State == v1.PendingState {
 			// other jobs are still running on this revision, skip report
+			logrus.WithField("prowjob", pj.ObjectMeta.Name).Info("Other jobs are still running on this revision")
 			return false
 		}
 	}

@@ -59,7 +59,8 @@ type options struct {
 	pubsubWorkers int
 	githubWorkers int
 
-	dryrun bool
+	dryrun      bool
+	reportAgent string
 }
 
 func (o *options) validate() error {
@@ -98,6 +99,7 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.IntVar(&o.gerritWorkers, "gerrit-workers", 0, "Number of gerrit report workers (0 means disabled)")
 	fs.IntVar(&o.pubsubWorkers, "pubsub-workers", 0, "Number of pubsub report workers (0 means disabled)")
 	fs.IntVar(&o.githubWorkers, "github-workers", 0, "Number of github report workers (0 means disabled)")
+	fs.StringVar(&o.reportAgent, "report-agent", "", "Only report specified agent - empty means report to all agents (effective for github only)")
 
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
@@ -205,7 +207,7 @@ func main() {
 				prowjobClient,
 				queue,
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
-				githubreporter.NewReporter(githubClient, configAgent),
+				githubreporter.NewReporter(githubClient, configAgent, o.reportAgent),
 				o.githubWorkers,
 				wg))
 	}

@@ -1,0 +1,15 @@
+presets:
+- env:
+  # AWS test account credential mounted path, required for AWS API call
+  - name: AWS_SHARED_CREDENTIALS_FILE
+    value: /etc/eks-aws-credentials/eks-aws-credentials
+  labels:
+    preset-aws-ebs-csi-driver-common: "true"
+  volumeMounts:
+  - mountPath: /etc/eks-aws-credentials
+    name: eks-aws-credentials
+    readOnly: true
+  volumes:
+  - name: eks-aws-credentials
+    secret:
+      secretName: eks-aws-credentials

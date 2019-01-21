@@ -435,6 +435,7 @@ func addFlags(fs *flag.FlagSet) *options {
 
 func githubToken(choice string) (string, error) {
 	if choice == "" {
+		fmt.Print("Store your GitHub token in a file e.g. echo $TOKEN > /path/to/github/token\n")
 		fmt.Print("Input /path/to/github/token to upload into cluster: ")
 		fmt.Scanln(&choice)
 	}

@@ -6,7 +6,6 @@ go_binary(
     name = "configurator",
     embed = [":go_default_library"],
     pure = "on",
-    tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
 
