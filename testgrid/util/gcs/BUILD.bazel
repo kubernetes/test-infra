@@ -10,7 +10,6 @@ go_library(
         "//testgrid:__subpackages__",
     ],
     deps = [
-        "//traiana:go_default_library",
         "//traiana/storage:go_default_library",
         "//traiana/storage/option:go_default_library",
     ],
