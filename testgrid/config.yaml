@@ -2317,6 +2317,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubeflow-periodic-0-3-branch
 - name: kubeflow-periodic-master
   gcs_prefix: kubernetes-jenkins/logs/kubeflow-periodic-master
+- name: kubeflow-periodic-examples
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow-periodic-examples
 - name: kubeflow-presubmit
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-presubmit
   num_columns_recent: 30
@@ -5440,6 +5442,9 @@ dashboards:
   - name: kubeflow-periodic-master
     description: Periodic testing of Kubeflow on the latest master branch.
     test_group_name: kubeflow-periodic-master
+  - name: kubeflow-periodic-examples
+    description: Periodic testing of Kubeflow examples
+    test_group_name: kubeflow-periodic-examples
   - name: kubeflow-postsubmit
     description: Postsubmit tests for Kubeflow.
     test_group_name: kubeflow-postsubmit
