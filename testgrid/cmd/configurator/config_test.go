@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -441,6 +442,41 @@ func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T)
 		if !valid {
 			badconfigs = append(badconfigs, testgroup)
 			t.Errorf("Testgrid group %v does not have a matching jenkins or prow job", testgroup)
+		}
+	}
+}
+func TestReleaseBlockingJobsMustHaveTestgridDescriptions(t *testing.T) {
+	// TODO(spiffxp): start with master, enforce for all release branches
+	re := regexp.MustCompile("^sig-release-master-(blocking|informing)$")
+	for _, dashboard := range cfg.Dashboards {
+		if !re.MatchString(dashboard.Name) {
+			continue
+		}
+		suffix := re.FindStringSubmatch(dashboard.Name)[1]
+		for _, dashboardtab := range dashboard.DashboardTab {
+			intro := fmt.Sprintf("dashboard_tab %v/%v is release-%v", dashboard.Name, dashboardtab.Name, suffix)
+			if dashboardtab.Name == "" {
+				t.Errorf("%v: - Must have a name", intro)
+			}
+			if dashboardtab.TestGroupName == "" {
+				t.Errorf("%v: - Must have a test_group_name", intro)
+			}
+			if dashboardtab.Description == "" {
+				t.Errorf("%v: - Must have a description", intro)
+			}
+			// TODO(spiffxp): enforce for informing as well
+			if suffix == "blocking" {
+				// TODO(spiffxp): remove this check when alert_options are populated
+				if !strings.HasPrefix(dashboardtab.Description, "OWNER: ") {
+					t.Errorf("%v: - Must have a description that starts with OWNER: ", intro)
+				}
+				// TODO(spiffxp): convert these from a warn to failure once alert_options are populated
+				if dashboardtab.AlertOptions == nil {
+					t.Logf("NOTICE: %v: - Must have alert_options", intro)
+				} else if dashboardtab.AlertOptions.AlertMailToAddresses == "" {
+					t.Logf("NOTICE: %v: - Must have alert_options.alert_mail_to_addresses", intro)
+				}
+			}
 		}
 	}
 }
