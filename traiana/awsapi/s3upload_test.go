@@ -14,7 +14,7 @@ func Test_S3Upload(t *testing.T) {
 	}
 
 	client, err := NewClient(opt)
-	b := client.Bucket("dev-okro-io")
+	b := client.Bucket("okro-prow-test")
 	o := b.Object("lala")
 	w := o.NewWriter(context.Background())
 

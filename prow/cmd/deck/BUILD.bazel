@@ -108,6 +108,7 @@ go_library(
         "//prow/spyglass/lenses/junit:go_default_library",
         "//prow/spyglass/lenses/metadata:go_default_library",
         "//prow/tide:go_default_library",
+        "//prow/tide/history:go_default_library",
         "//traiana/storage:go_default_library",
         "//traiana/storage/option:go_default_library",
         "//vendor/github.com/NYTimes/gziphandler:go_default_library",
