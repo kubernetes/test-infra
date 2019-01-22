@@ -279,7 +279,7 @@ func TestReportStatus(t *testing.T) {
 		expectedStatuses []string
 	}{
 		{
-			name: "successful_job-report_true",
+			name: "Successful prowjob with report true and children should set status for itself but not its children",
 
 			children: 3,
 			state:    kube.SuccessState,
@@ -288,7 +288,7 @@ func TestReportStatus(t *testing.T) {
 			expectedStatuses: []string{"success"},
 		},
 		{
-			name: "successful_job-report_false",
+			name: "Successful prowjob with report false and children should not set status for itself and its children",
 
 			children: 3,
 			state:    kube.SuccessState,
@@ -297,7 +297,7 @@ func TestReportStatus(t *testing.T) {
 			expectedStatuses: []string{},
 		},
 		{
-			name: "pending_job-report_true",
+			name: "Pending prowjob with report true and children should set status for itself and its children",
 
 			children: 3,
 			state:    kube.PendingState,
@@ -306,7 +306,7 @@ func TestReportStatus(t *testing.T) {
 			expectedStatuses: []string{"pending", "pending", "pending", "pending"},
 		},
 		{
-			name: "pending_job-report_false",
+			name: "Pending prowjob with report false and children should not set status for itself, but still cover children jobs",
 
 			children: 3,
 			state:    kube.PendingState,
@@ -315,12 +315,20 @@ func TestReportStatus(t *testing.T) {
 			expectedStatuses: []string{"pending", "pending", "pending"},
 		},
 		{
-			name: "aborted_job-report_true",
+			name: "Aborted prowjob with report true should set failure status",
 
 			state:  kube.AbortedState,
 			report: true,
 
 			expectedStatuses: []string{"failure"},
+		},
+		{
+			name: "Triggered prowjob with report true should set pending status",
+
+			state:  kube.TriggeredState,
+			report: true,
+
+			expectedStatuses: []string{"pending"},
 		},
 	}
 
