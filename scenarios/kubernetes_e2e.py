@@ -212,9 +212,9 @@ class LocalMode(object):
         shutil.copy(cred, aws_cred)
 
         self.add_environment(
-            'JENKINS_AWS_SSH_PRIVATE_KEY_FILE=%s' % priv,
-            'JENKINS_AWS_SSH_PUBLIC_KEY_FILE=%s' % pub,
-            'JENKINS_AWS_CREDENTIALS_FILE=%s' % cred,
+            'AWS_SSH_PRIVATE_KEY_FILE=%s' % priv,
+            'AWS_SSH_PUBLIC_KEY_FILE=%s' % pub,
+            'AWS_SHARED_CREDENTIALS_FILE=%s' % cred,
         )
 
     def add_aws_role(self, profile, arn):
@@ -690,15 +690,15 @@ def create_parser():
         help='Use --aws-profile to run as --aws-role-arn if set')
     parser.add_argument(
         '--aws-ssh',
-        default=os.environ.get('JENKINS_AWS_SSH_PRIVATE_KEY_FILE'),
+        default=os.environ.get('AWS_SSH_PRIVATE_KEY_FILE'),
         help='Path to private aws ssh keys')
     parser.add_argument(
         '--aws-pub',
-        default=os.environ.get('JENKINS_AWS_SSH_PUBLIC_KEY_FILE'),
+        default=os.environ.get('AWS_SSH_PUBLIC_KEY_FILE'),
         help='Path to pub aws ssh key')
     parser.add_argument(
         '--aws-cred',
-        default=os.environ.get('JENKINS_AWS_CREDENTIALS_FILE'),
+        default=os.environ.get('AWS_SHARED_CREDENTIALS_FILE'),
         help='Path to aws credential file')
     parser.add_argument(
         '--aws-cluster-domain', help='Domain of the aws cluster for aws-pr jobs')

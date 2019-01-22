@@ -828,11 +828,11 @@ def setup_magic_environment(job, call):
         os.path.join(home, '.ssh/google_compute_engine.pub'),
     )
     os.environ.setdefault(
-        'JENKINS_AWS_SSH_PRIVATE_KEY_FILE',
+        'AWS_SSH_PRIVATE_KEY_FILE',
         os.path.join(home, '.ssh/kube_aws_rsa'),
     )
     os.environ.setdefault(
-        'JENKINS_AWS_SSH_PUBLIC_KEY_FILE',
+        'AWS_SSH_PUBLIC_KEY_FILE',
         os.path.join(home, '.ssh/kube_aws_rsa.pub'),
     )
 
