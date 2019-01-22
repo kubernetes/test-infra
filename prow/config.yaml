@@ -559,20 +559,6 @@ presets:
   - name: aws-ssh
     mountPath: /etc/aws-ssh
     readOnly: true
-- labels:
-    preset-aws-credential: "true"
-  env:
-  - name: AWS_SHARED_CREDENTIALS_FILE
-    value: /etc/aws-cred/credentials
-  volumes:
-  - name: aws-cred
-    secret:
-      defaultMode: 0400
-      secretName: aws-cred-new
-  volumeMounts:
-  - name: aws-cred
-    mountPath: /etc/aws-cred
-    readOnly: true
 # storage / caching presets
 - labels:
     preset-bazel-scratch-dir: "true"
