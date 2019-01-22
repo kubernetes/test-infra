@@ -656,8 +656,18 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
+        description: Issues or PRs related to the contributor guide
+        name: area/contributor-guide
+        target: both
+        addedBy: label
+      - color: 0052cc
         description: Issues or PRs related to deflaking kubernetes tests
         name: area/deflake
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to the developer guide
+        name: area/developer-guide
         target: both
         addedBy: label
       - color: 0052cc
