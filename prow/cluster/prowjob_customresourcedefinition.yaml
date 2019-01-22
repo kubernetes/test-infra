@@ -81,3 +81,8 @@ spec:
     type: date
     description: When the job finished running.
     JSONPath: .status.completionTime
+  - name: State
+    description: The state of the job.
+    name: state
+    type: string
+    JSONPath: .status.state
