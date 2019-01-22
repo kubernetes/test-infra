@@ -22,11 +22,11 @@ type Started struct {
 	// Timestamp is the time in epoch seconds recorded when started.json is created.
 	Timestamp int64 `json:"timestamp"`
 	// Node is deprecated.
-	Node string `json:"node"`
+	Node string `json:"node,omitempty"`
 	// Repos is deprecated.
-	Repos map[string]string `json:"repos"`
+	Repos map[string]string `json:"repos,omitempty"`
 	// Pull is deprecated.
-	Pull string `json:"pull"`
+	Pull string `json:"pull,omitempty"`
 }
 
 // Finished is used to mirror the finished.json artifact.
@@ -35,10 +35,10 @@ type Finished struct {
 	Timestamp int64 `json:"timestamp"`
 	// Version is deprecated.
 	// TODO: Version should be removed in favor of Revision.
-	Version string `json:"version"`
+	Version string `json:"version,omitempty"`
 	// JobVersion is deprecated.
 	// TODO: JobVersion should be removed in favor of Revision.
-	JobVersion string `json:"job-version"`
+	JobVersion string `json:"job-version,omitempty"`
 	// Revision identifies the revision of the code the build tested.
 	// Revision can be either a SHA or a ref.
 	// TODO: resolve https://github.com/kubernetes/test-infra/issues/10359
