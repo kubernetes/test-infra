@@ -241,7 +241,11 @@ func (k *kubernetesAnywhere) writeConfig(configTemplate string) error {
 }
 
 func (k *kubernetesAnywhere) Up() error {
-	cmd := exec.Command("make", "-C", k.path, "WAIT_FOR_KUBECONFIG=y", "deploy")
+	cmd := exec.Command("make", "-C", k.path, "setup")
+	if err := control.FinishRunning(cmd); err != nil {
+		return err
+	}
+	cmd = exec.Command("make", "-C", k.path, "WAIT_FOR_KUBECONFIG=y", "deploy")
 	if err := control.FinishRunning(cmd); err != nil {
 		return err
 	}
