@@ -61,7 +61,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=gce-scale-cluster
-      - --env=HEAPSTER_MACHINE_TYPE=n1-standard-16
+      - --env=HEAPSTER_MACHINE_TYPE=n1-standard-32
       # TODO(https://github.com/kubernetes/kubernetes/issues/72976): Remove line below, change get-master-root-disk-size function if needed.
       - --env=MASTER_ROOT_DISK_SIZE=1000GB
       - --extract=ci/latest
@@ -223,7 +223,7 @@ periodics:
       - --ginkgo-parallel=30
       - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/11 --services-ipv4-cidr=/18 --timeout=2700
       - --gke-environment=staging
-      - '--gke-shape={"default":{"Nodes":4999,"MachineType":"g1-small"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-16"}}'
+      - '--gke-shape={"default":{"Nodes":4999,"MachineType":"g1-small"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-32"}}'
       - --provider=gke
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8
       - --timeout=210m
@@ -259,7 +259,7 @@ periodics:
       - --gcp-zone=us-east1-a
       - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/11 --services-ipv4-cidr=/18 --timeout=2700
       - --gke-environment=staging
-      - '--gke-shape={"default":{"Nodes":4999,"MachineType":"n1-standard-1"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-16"}}'
+      - '--gke-shape={"default":{"Nodes":4999,"MachineType":"n1-standard-1"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-32"}}'
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:Performance\]
       - --timeout=1030m
