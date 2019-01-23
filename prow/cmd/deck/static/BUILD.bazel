@@ -163,12 +163,25 @@ rollup_bundle(
     ],
 )
 
+genrule(
+    name = "labels_css",
+    srcs = [
+        "//label_sync:labels.css.tmpl",
+        "//label_sync:labels.yaml",
+    ],
+    outs = ["labels.css"],
+    cmd = "$(location //label_sync) --action=css --css-template=$(location //label_sync:labels.css.tmpl) --config=$(location //label_sync:labels.yaml) --css-output=$@",
+    tools = [
+        "//label_sync",
+    ],
+)
+
 filegroup(
     name = "resources",
     srcs = glob(
         ["**/*"],
         exclude = ["**/*.js"],
-    ) + glob(["extensions/*.js"]),
+    ) + glob(["extensions/*.js"]) + [":labels_css"],
 )
 
 filegroup(
