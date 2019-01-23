@@ -22,7 +22,7 @@ periodics:
       - --kubeadm=ci
       - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.11
       - --kubernetes-anywhere-kubernetes-version=ci/latest-1.11
-      - --provider=kubernetes-anywhere
+      - --provider=skeleton
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m
 
@@ -49,7 +49,7 @@ periodics:
       - --kubeadm=ci
       - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.12
       - --kubernetes-anywhere-kubernetes-version=ci/latest-1.12
-      - --provider=kubernetes-anywhere
+      - --provider=skeleton
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m
 
@@ -76,7 +76,7 @@ periodics:
       - --kubeadm=ci
       - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.13
       - --kubernetes-anywhere-kubernetes-version=ci/latest-1.13
-      - --provider=kubernetes-anywhere
+      - --provider=skeleton
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m
 
@@ -103,7 +103,7 @@ periodics:
       - --kubeadm=ci
       - --kubernetes-anywhere-kubelet-ci-version=latest-bazel
       - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
-      - --provider=kubernetes-anywhere
+      - --provider=skeleton
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m
 
