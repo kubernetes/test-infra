@@ -3,6 +3,7 @@ package storage
 import (
 	"cloud.google.com/go/storage"
 	"context"
+	"errors"
 	"k8s.io/test-infra/traiana"
 	"k8s.io/test-infra/traiana/awsapi"
 	"k8s.io/test-infra/traiana/storage/option"
@@ -103,6 +104,7 @@ func (sr *StorageReader) Close() error {
 }
 
 func (o *ObjectHandle) NewReader(ctx context.Context) (r *StorageReader, err error) {
+	err = nil
 	r = &StorageReader{}
 
 	if traiana.Aws {
@@ -115,6 +117,7 @@ func (o *ObjectHandle) NewReader(ctx context.Context) (r *StorageReader, err err
 }
 
 func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64) (r *StorageReader, err error) {
+	err = nil
 	r = &StorageReader{}
 
 	if traiana.Aws {

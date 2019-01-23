@@ -19,7 +19,8 @@ import (
 
 type Writer2Reader struct {
 	data      chan []byte           // data channel
-	error     chan error            // return the error from the background func
+	done	  chan bool
+	error     error            		// return the error from the background func
 	bgWorker  Writer2ReaderBgWorker // this function is run in the background, taking the Writer2Reader as param and waiting for input from the other side
 	leftOvers []byte                // when read data is smaller than write data, we need this to keep the left overs until next read. Hopefully not too big ...
 }
@@ -29,14 +30,14 @@ type Writer2ReaderBgWorker func(wr *Writer2Reader) error
 func NewWriter2Reader(bgWorker Writer2ReaderBgWorker) *Writer2Reader {
 	wr := &Writer2Reader{
 		data:     make(chan []byte),
-		error:    make(chan error),
+		done:     make(chan bool),
 		bgWorker: bgWorker,
 	}
 
-	bg := func(wr *Writer2Reader) {
-		err := wr.bgWorker(wr)
-		wr.closeDataChanSafe()
-		wr.error <- err
+	bg := func(w *Writer2Reader) {
+		w.error = w.bgWorker(w)
+		w.closeDataChanSafe()
+		w.done <- true
 	}
 
 	go bg(wr)
@@ -44,7 +45,7 @@ func NewWriter2Reader(bgWorker Writer2ReaderBgWorker) *Writer2Reader {
 	return wr
 }
 
-func (w *Writer2Reader) Read(data []byte) (n int, err error) {
+func (w *Writer2Reader) Read(data []byte) (int, error) {
 	size := 0
 
 	if len(w.leftOvers) > 0 {
@@ -68,7 +69,13 @@ func (w *Writer2Reader) Read(data []byte) (n int, err error) {
 
 		return size, nil
 	} else {
-		return size, io.EOF
+		err := io.EOF
+
+		if w.error != nil {
+			err = w.error
+		}
+
+		return size, err
 	}
 }
 
@@ -104,10 +111,9 @@ func sendToReader(w *Writer2Reader, bytes []byte) {
 func (w *Writer2Reader) Close() error {
 	w.closeDataChanSafe()
 
-	// wait for completion
-	err := <- w.error
+	_ = <- w.done
 
-	return err
+ 	return w.error
 }
 
 func (w *Writer2Reader) closeDataChanSafe() {

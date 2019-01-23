@@ -93,39 +93,55 @@ func TestWriter2Reader(t *testing.T) {
 }
 
 func Test_WriteError(t *testing.T) {
-	const sendCount = 3 // send data in 3 chunks
-	const getCount = 2  // get 2 chunks before returning an error
-
-	b := make([]byte, 1)
+	const loops = 3 // times to loop before error
 
 	bg := func(wr *Writer2Reader) error {
-		for i := 0; i < getCount; i++ {
-			wr.Read(b)
+		for i := 0; i < loops-1; i++ {
+			wr.Write([]byte {1})
 		}
 
 		return errors.New("write error!")
 	}
 
-	target := NewWriter2Reader(bg)
+	wr := NewWriter2Reader(bg)
+	var err error
 
-	reads := 0
+	for i := 0; i < loops; i++ {
+		b := []byte{0}
+		_, err = wr.Read(b)
 
-	source := MyReader{
-		read: func(bytes []byte) (int, error) {
-			reads += 1
-
-			if reads == sendCount {
-				return 1, io.EOF
-			}
-
-			return 1, nil
-		},
+		if err != nil {
+			break
+		}
 	}
 
-	myIoCopy(1, target, source)
-	err := target.Close()
+	assert.Error(t, err)
+	assert.NotEqual(t, io.EOF, err)
+}
+
+func Test_ReadError(t *testing.T) {
+	const loops = 3 // times to loop before error
+
+	b := make([]byte, 1)
+
+	bg := func(wr *Writer2Reader) error {
+		for i := 0; i < loops-1; i++ {
+			wr.Read(b)
+		}
+
+		return errors.New("read error!")
+	}
+
+	wr := NewWriter2Reader(bg)
+
+	for i := 0; i < loops; i++ {
+		wr.Write([]byte{1})
+	}
+
+	err := wr.Close()
 
 	assert.Error(t, err)
+	assert.NotEqual(t, io.EOF, err)
 }
 
 func doReadWrite(input []byte, ioCopyBufSize int, s3UploadBufSize int) ([]byte) {
@@ -182,6 +198,16 @@ type MyReader struct {
 
 func (r MyReader) Read(p []byte) (n int, err error) {
 	return r.read(p)
+}
+
+type Write func([]byte) (int, error)
+
+type MyWriter struct {
+	write Write
+}
+
+func (r MyWriter) Write(p []byte) (n int, err error) {
+	return r.write(p)
 }
 
 // Same logic as io.Copy
