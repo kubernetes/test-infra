@@ -441,6 +441,9 @@ plugins:
   - trigger
   - welcome
 
+  kubernetes/utils:
+  - override
+
   kubernetes/website:
   - owners-label
 
