@@ -22,7 +22,11 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/rest"
 
+	pjclientset "k8s.io/test-infra/prow/client/clientset/versioned"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -32,9 +36,6 @@ import (
 type kubeClient interface {
 	ListPods(selector string) ([]kube.Pod, error)
 	DeletePod(name string) error
-
-	ListProwJobs(selector string) ([]kube.ProwJob, error)
-	DeleteProwJob(name string) error
 }
 
 type configAgent interface {
@@ -68,6 +69,16 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
+	clusterConfig, err := rest.InClusterConfig()
+	if err != nil {
+		logrus.WithError(err).Fatal("Error loading cluster config.")
+	}
+
+	pjclient, err := pjclientset.NewForConfig(clusterConfig)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error creating ProwJob client.")
+	}
+
 	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
 		logrus.WithError(err).Error("Error getting client.")
@@ -91,10 +102,10 @@ func main() {
 		kubeClients[alias] = kubeClient(client)
 	}
 	c := controller{
-		logger:      logrus.NewEntry(logrus.StandardLogger()),
-		kc:          kc,
-		pkcs:        kubeClients,
-		configAgent: configAgent,
+		logger:        logrus.NewEntry(logrus.StandardLogger()),
+		prowJobClient: pjclient.ProwV1().ProwJobs(configAgent.Config().ProwJobNamespace),
+		pkcs:          kubeClients,
+		configAgent:   configAgent,
 	}
 
 	// Clean now and regularly from now on.
@@ -110,15 +121,15 @@ func main() {
 }
 
 type controller struct {
-	logger      *logrus.Entry
-	kc          kubeClient
-	pkcs        map[string]kubeClient
-	configAgent configAgent
+	logger        *logrus.Entry
+	prowJobClient prowv1.ProwJobInterface
+	pkcs          map[string]kubeClient
+	configAgent   configAgent
 }
 
 func (c *controller) clean() {
 	// Clean up old prow jobs first.
-	prowJobs, err := c.kc.ListProwJobs(kube.EmptySelector)
+	prowJobs, err := c.prowJobClient.List(metav1.ListOptions{})
 	if err != nil {
 		c.logger.WithError(err).Error("Error listing prow jobs.")
 		return
@@ -128,7 +139,7 @@ func (c *controller) clean() {
 	isFinished := make(map[string]bool)
 
 	maxProwJobAge := c.configAgent.Config().Sinker.MaxProwJobAge
-	for _, prowJob := range prowJobs {
+	for _, prowJob := range prowJobs.Items {
 		// Handle periodics separately.
 		if prowJob.Spec.Type == kube.PeriodicJob {
 			continue
@@ -140,7 +151,7 @@ func (c *controller) clean() {
 		if time.Since(prowJob.Status.StartTime.Time) <= maxProwJobAge {
 			continue
 		}
-		if err := c.kc.DeleteProwJob(prowJob.ObjectMeta.Name); err == nil {
+		if err := c.prowJobClient.Delete(prowJob.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
 			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
 		} else {
 			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
@@ -156,8 +167,8 @@ func (c *controller) clean() {
 
 	// Get the jobs that we need to retain so horologium can continue working
 	// as intended.
-	latestPeriodics := pjutil.GetLatestProwJobs(prowJobs, kube.PeriodicJob)
-	for _, prowJob := range prowJobs {
+	latestPeriodics := pjutil.GetLatestProwJobs(prowJobs.Items, kube.PeriodicJob)
+	for _, prowJob := range prowJobs.Items {
 		if prowJob.Spec.Type != kube.PeriodicJob {
 			continue
 		}
@@ -174,7 +185,7 @@ func (c *controller) clean() {
 		if time.Since(prowJob.Status.StartTime.Time) <= maxProwJobAge {
 			continue
 		}
-		if err := c.kc.DeleteProwJob(prowJob.ObjectMeta.Name); err == nil {
+		if err := c.prowJobClient.Delete(prowJob.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
 			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
 		} else {
 			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")

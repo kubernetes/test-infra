@@ -25,17 +25,19 @@ import (
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
+	clienttesting "k8s.io/client-go/testing"
 
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
 
 type fakeClient struct {
-	Pods     []kube.Pod
-	ProwJobs []kube.ProwJob
+	Pods []kube.Pod
 
-	DeletedPods     []kube.Pod
-	DeletedProwJobs []kube.ProwJob
+	DeletedPods []kube.Pod
 }
 
 func (c *fakeClient) ListPods(selector string) ([]kube.Pod, error) {
@@ -50,31 +52,6 @@ func (c *fakeClient) ListPods(selector string) ([]kube.Pod, error) {
 		}
 	}
 	return pl, nil
-}
-
-func (c *fakeClient) ListProwJobs(selector string) ([]kube.ProwJob, error) {
-	s, err := labels.Parse(selector)
-	if err != nil {
-		return nil, err
-	}
-	jl := make([]kube.ProwJob, 0, len(c.ProwJobs))
-	for _, j := range c.ProwJobs {
-		if s.Matches(labels.Set(j.ObjectMeta.Labels)) {
-			jl = append(jl, j)
-		}
-	}
-	return jl, nil
-}
-
-func (c *fakeClient) DeleteProwJob(name string) error {
-	for i, j := range c.ProwJobs {
-		if j.ObjectMeta.Name == name {
-			c.ProwJobs = append(c.ProwJobs[:i], c.ProwJobs[i+1:]...)
-			c.DeletedProwJobs = append(c.DeletedProwJobs, j)
-			return nil
-		}
-	}
-	return fmt.Errorf("prowjob %s not found", name)
 }
 
 func (c *fakeClient) DeletePod(name string) error {
@@ -243,119 +220,131 @@ func TestClean(t *testing.T) {
 		completed := metav1.NewTime(time.Now().Add(d))
 		return &completed
 	}
-	prowJobs := []kube.ProwJob{
-		{
+	prowJobs := []runtime.Object{
+		&prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "old-failed",
+				Name:      "old-failed",
+				Namespace: "ns",
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowv1.ProwJobStatus{
 				StartTime:      metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
 				CompletionTime: setComplete(-time.Second),
 			},
 		},
-		{
+		&prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "old-succeeded",
+				Name:      "old-succeeded",
+				Namespace: "ns",
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowv1.ProwJobStatus{
 				StartTime:      metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
 				CompletionTime: setComplete(-time.Second),
 			},
 		},
-		{
+		&prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "old-just-complete",
+				Name:      "old-just-complete",
+				Namespace: "ns",
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowv1.ProwJobStatus{
 				StartTime: metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
 			},
 		},
-		{
+		&prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "old-complete",
+				Name:      "old-complete",
+				Namespace: "ns",
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowv1.ProwJobStatus{
 				StartTime:      metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
 				CompletionTime: setComplete(-time.Second),
 			},
 		},
-		{
+		&prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "old-incomplete",
+				Name:      "old-incomplete",
+				Namespace: "ns",
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowv1.ProwJobStatus{
 				StartTime: metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
 			},
 		},
-		{
+		&prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "old-pending",
+				Name:      "old-pending",
+				Namespace: "ns",
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowv1.ProwJobStatus{
 				StartTime: metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
 			},
 		},
-		{
+		&prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "old-pending-abort",
+				Name:      "old-pending-abort",
+				Namespace: "ns",
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowv1.ProwJobStatus{
 				StartTime:      metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
 				CompletionTime: setComplete(-time.Second),
 			},
 		},
-		{
+		&prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "new",
+				Name:      "new",
+				Namespace: "ns",
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowv1.ProwJobStatus{
 				StartTime: metav1.NewTime(time.Now().Add(-time.Second)),
 			},
 		},
-		{
+		&prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "newer-periodic",
+				Name:      "newer-periodic",
+				Namespace: "ns",
 			},
 			Spec: kube.ProwJobSpec{
 				Type: kube.PeriodicJob,
 				Job:  "retester",
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowv1.ProwJobStatus{
 				StartTime:      metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
 				CompletionTime: setComplete(-time.Second),
 			},
 		},
-		{
+		&prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "older-periodic",
+				Name:      "older-periodic",
+				Namespace: "ns",
 			},
 			Spec: kube.ProwJobSpec{
 				Type: kube.PeriodicJob,
 				Job:  "retester",
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowv1.ProwJobStatus{
 				StartTime:      metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Minute)),
 				CompletionTime: setComplete(-time.Minute),
 			},
 		},
-		{
+		&prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "oldest-periodic",
+				Name:      "oldest-periodic",
+				Namespace: "ns",
 			},
 			Spec: kube.ProwJobSpec{
 				Type: kube.PeriodicJob,
 				Job:  "retester",
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowv1.ProwJobStatus{
 				StartTime:      metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Hour)),
 				CompletionTime: setComplete(-time.Hour),
 			},
 		},
-		{
+		&prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "old-failed-trusted",
+				Name:      "old-failed-trusted",
+				Namespace: "ns",
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowv1.ProwJobStatus{
 				StartTime:      metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
 				CompletionTime: setComplete(-time.Second),
 			},
@@ -386,24 +375,45 @@ func TestClean(t *testing.T) {
 	}
 	deletedPodsTrusted := []string{"old-failed-trusted"}
 
+	fpjc := fake.NewSimpleClientset(prowJobs...)
 	kc := &fakeClient{
-		Pods:     pods,
-		ProwJobs: prowJobs,
+		Pods: pods,
 	}
 	kcTrusted := &fakeClient{
-		Pods:     podsTrusted,
-		ProwJobs: nil,
+		Pods: podsTrusted,
 	}
 	// Run
 	c := controller{
-		logger:      logrus.WithField("component", "sinker"),
-		kc:          kc,
-		pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: kc, "trusted": kcTrusted},
-		configAgent: newFakeConfigAgent(),
+		logger:        logrus.WithField("component", "sinker"),
+		prowJobClient: fpjc.ProwV1().ProwJobs("ns"),
+		pkcs:          map[string]kubeClient{kube.DefaultClusterAlias: kc, "trusted": kcTrusted},
+		configAgent:   newFakeConfigAgent(),
 	}
 	c.clean()
+	var observedDeletedProwJobs []string
+	for _, action := range fpjc.Fake.Actions() {
+		switch action := action.(type) {
+		case clienttesting.DeleteActionImpl:
+			observedDeletedProwJobs = append(observedDeletedProwJobs, action.Name)
+		}
+	}
+	if len(deletedProwJobs) != len(observedDeletedProwJobs) {
+		t.Errorf("Deleted wrong number of prowjobs: got %d (%s), expected %d (%s)",
+			len(observedDeletedProwJobs), strings.Join(observedDeletedProwJobs, ", "), len(deletedProwJobs), strings.Join(deletedProwJobs, ", "))
+	}
+	for _, n := range deletedProwJobs {
+		found := false
+		for _, job := range observedDeletedProwJobs {
+			if job == n {
+				found = true
+			}
+		}
+		if !found {
+			t.Errorf("Did not delete prowjob %s", n)
+		}
+	}
 	// Check
-	check := func(kc *fakeClient, deletedPods, deletedProwJobs []string) {
+	check := func(kc *fakeClient, deletedPods []string) {
 		if len(deletedPods) != len(kc.DeletedPods) {
 			var got []string
 			for _, pj := range kc.DeletedPods {
@@ -423,26 +433,7 @@ func TestClean(t *testing.T) {
 				t.Errorf("Did not delete pod %s", n)
 			}
 		}
-		if len(deletedProwJobs) != len(kc.DeletedProwJobs) {
-			var got []string
-			for _, pj := range kc.DeletedProwJobs {
-				got = append(got, pj.ObjectMeta.Name)
-			}
-			t.Errorf("Deleted wrong number of prowjobs: got %d (%s), expected %d (%s)",
-				len(got), strings.Join(got, ", "), len(deletedProwJobs), strings.Join(deletedProwJobs, ", "))
-		}
-		for _, n := range deletedProwJobs {
-			found := false
-			for _, j := range kc.DeletedProwJobs {
-				if j.ObjectMeta.Name == n {
-					found = true
-				}
-			}
-			if !found {
-				t.Errorf("Did not delete prowjob %s", n)
-			}
-		}
 	}
-	check(kc, deletedPods, deletedProwJobs)
-	check(kcTrusted, deletedPodsTrusted, nil)
+	check(kc, deletedPods)
+	check(kcTrusted, deletedPodsTrusted)
 }
