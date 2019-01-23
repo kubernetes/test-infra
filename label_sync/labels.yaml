@@ -873,11 +873,6 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
-        description: Issues or PRs related to prow's spyglass UI
-        name: area/prow/spyglass
-        target: both
-        addedBy: label
-      - color: 0052cc
         description: Issues or PRs related to prow's entrypoint component
         name: area/prow/entrypoint
         target: both
@@ -910,6 +905,11 @@ repos:
       - color: 0052cc
         description: Issues or PRs related to prow's jenkins-operator component
         name: area/prow/jenkins-operator
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's knative-build controller component
+        name: area/prow/knative-build
         target: both
         addedBy: label
       - color: 0052cc
@@ -960,6 +960,11 @@ repos:
       - color: 0052cc
         description: Issues or PRs related to prow's splice component
         name: area/prow/splice
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's spyglass UI
+        name: area/prow/spyglass
         target: both
         addedBy: label
       - color: 0052cc

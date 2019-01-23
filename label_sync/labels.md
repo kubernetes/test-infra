@@ -249,6 +249,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/prow/horologium" href="#area/prow/horologium">`area/prow/horologium`</a> | Issues or PRs related to prow's horologium component| label | |
 | <a id="area/prow/initupload" href="#area/prow/initupload">`area/prow/initupload`</a> | Issues or PRs related to prow's initupload component| label | |
 | <a id="area/prow/jenkins-operator" href="#area/prow/jenkins-operator">`area/prow/jenkins-operator`</a> | Issues or PRs related to prow's jenkins-operator component| label | |
+| <a id="area/prow/knative-build" href="#area/prow/knative-build">`area/prow/knative-build`</a> | Issues or PRs related to prow's knative-build controller component| label | |
 | <a id="area/prow/mkbuild-cluster" href="#area/prow/mkbuild-cluster">`area/prow/mkbuild-cluster`</a> | Issues or PRs related to prow's mkbuild-cluster component| label | |
 | <a id="area/prow/mkpj" href="#area/prow/mkpj">`area/prow/mkpj`</a> | Issues or PRs related to prow's mkpj component| label | |
 | <a id="area/prow/mkpod" href="#area/prow/mkpod">`area/prow/mkpod`</a> | Issues or PRs related to prow's mkpod component| label | |

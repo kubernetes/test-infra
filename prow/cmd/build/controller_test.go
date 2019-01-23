@@ -125,8 +125,11 @@ func (r *fakeReconciler) createBuild(context, namespace string, b *buildv1alpha1
 	return b, nil
 }
 
-func (r *fakeReconciler) buildID(pj prowjobv1.ProwJob) (string, error) {
-	return "7777777777", nil
+const randomBuildID = "so-many-builds"
+const randomBuildURL = "random://url"
+
+func (r *fakeReconciler) buildID(pj prowjobv1.ProwJob) (string, string, error) {
+	return randomBuildID, randomBuildURL, nil
 }
 
 type fakeLimiter struct {
@@ -229,31 +232,35 @@ func TestReconcile(t *testing.T) {
 		expectedJob   func(prowjobv1.ProwJob, buildv1alpha1.Build) prowjobv1.ProwJob
 		expectedBuild func(prowjobv1.ProwJob, buildv1alpha1.Build) buildv1alpha1.Build
 		err           bool
-	}{{
-		name: "new prow job creates build",
-		observedJob: &prowjobv1.ProwJob{
-			Spec: prowjobv1.ProwJobSpec{
-				Agent:     prowjobv1.KnativeBuildAgent,
-				BuildSpec: &buildSpec,
+	}{
+		{
+			name: "new prow job creates build",
+			observedJob: &prowjobv1.ProwJob{
+				Spec: prowjobv1.ProwJobSpec{
+					Agent:     prowjobv1.KnativeBuildAgent,
+					BuildSpec: &buildSpec,
+				},
+			},
+			expectedJob: func(pj prowjobv1.ProwJob, _ buildv1alpha1.Build) prowjobv1.ProwJob {
+				pj.Status = prowjobv1.ProwJobStatus{
+					StartTime:   now,
+					State:       prowjobv1.TriggeredState,
+					Description: descScheduling,
+					BuildID:     randomBuildID,
+					URL:         randomBuildURL,
+				}
+				return pj
+			},
+			expectedBuild: func(pj prowjobv1.ProwJob, _ buildv1alpha1.Build) buildv1alpha1.Build {
+				pj.Spec.Type = prowjobv1.PeriodicJob
+				pj.Status.BuildID = randomBuildID
+				b, err := makeBuild(pj)
+				if err != nil {
+					panic(err)
+				}
+				return *b
 			},
 		},
-		expectedJob: func(pj prowjobv1.ProwJob, _ buildv1alpha1.Build) prowjobv1.ProwJob {
-			pj.Status = prowjobv1.ProwJobStatus{
-				StartTime:   now,
-				State:       prowjobv1.TriggeredState,
-				Description: descScheduling,
-			}
-			return pj
-		},
-		expectedBuild: func(pj prowjobv1.ProwJob, _ buildv1alpha1.Build) buildv1alpha1.Build {
-			pj.Spec.Type = prowjobv1.PeriodicJob
-			b, err := makeBuild(pj, "50")
-			if err != nil {
-				panic(err)
-			}
-			return *b
-		},
-	},
 		{
 			name: "do not create build for failed prowjob",
 			observedJob: &prowjobv1.ProwJob{
@@ -299,7 +306,8 @@ func TestReconcile(t *testing.T) {
 				pj := prowjobv1.ProwJob{}
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
-				b, err := makeBuild(pj, "7")
+				pj.Status.BuildID = randomBuildID
+				b, err := makeBuild(pj)
 				if err != nil {
 					panic(err)
 				}
@@ -312,7 +320,8 @@ func TestReconcile(t *testing.T) {
 				pj := prowjobv1.ProwJob{}
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
-				b, err := makeBuild(pj, "6")
+				pj.Status.BuildID = randomBuildID
+				b, err := makeBuild(pj)
 				b.DeletionTimestamp = &now
 				if err != nil {
 					panic(err)
@@ -327,7 +336,8 @@ func TestReconcile(t *testing.T) {
 				pj := prowjobv1.ProwJob{}
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
-				b, err := makeBuild(pj, "9999")
+				pj.Status.BuildID = randomBuildID
+				b, err := makeBuild(pj)
 				if err != nil {
 					panic(err)
 				}
@@ -358,7 +368,8 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
-				b, err := makeBuild(pj, "5")
+				pj.Status.BuildID = randomBuildID
+				b, err := makeBuild(pj)
 				if err != nil {
 					panic(err)
 				}
@@ -388,7 +399,8 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
-				b, err := makeBuild(pj, "5")
+				pj.Status.BuildID = randomBuildID
+				b, err := makeBuild(pj)
 				if err != nil {
 					panic(err)
 				}
@@ -418,7 +430,8 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
-				b, err := makeBuild(pj, "5")
+				pj.Status.BuildID = randomBuildID
+				b, err := makeBuild(pj)
 				if err != nil {
 					panic(err)
 				}
@@ -448,7 +461,8 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
-				b, err := makeBuild(pj, "1")
+				pj.Status.BuildID = randomBuildID
+				b, err := makeBuild(pj)
 				if err != nil {
 					panic(err)
 				}
@@ -486,7 +500,8 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
-				b, err := makeBuild(pj, "22")
+				pj.Status.BuildID = randomBuildID
+				b, err := makeBuild(pj)
 				if err != nil {
 					panic(err)
 				}
@@ -527,7 +542,8 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
-				b, err := makeBuild(pj, "21")
+				pj.Status.BuildID = randomBuildID
+				b, err := makeBuild(pj)
 				if err != nil {
 					panic(err)
 				}
@@ -575,7 +591,8 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
-				b, err := makeBuild(pj, "-72")
+				pj.Status.BuildID = randomBuildID
+				b, err := makeBuild(pj)
 				if err != nil {
 					panic(err)
 				}
@@ -597,7 +614,8 @@ func TestReconcile(t *testing.T) {
 				pj := prowjobv1.ProwJob{}
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
-				b, err := makeBuild(pj, "44")
+				pj.Status.BuildID = randomBuildID
+				b, err := makeBuild(pj)
 				if err != nil {
 					panic(err)
 				}
@@ -655,7 +673,8 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
-				b, err := makeBuild(pj, "42")
+				pj.Status.BuildID = randomBuildID
+				b, err := makeBuild(pj)
 				if err != nil {
 					panic(err)
 				}
@@ -668,7 +687,8 @@ func TestReconcile(t *testing.T) {
 				b.Status.StartTime = now
 				return b
 			}(),
-		}}
+		},
+	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -993,12 +1013,12 @@ func TestMakeBuild(t *testing.T) {
 			pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
 			pj.Spec.BuildSpec.Steps = append(pj.Spec.BuildSpec.Steps, corev1.Container{})
 			pj.Spec.BuildSpec.Template = &buildv1alpha1.TemplateInstantiationSpec{}
+			pj.Status.BuildID = randomBuildID
 			if tc.job != nil {
 				pj = tc.job(pj)
 			}
-			const randomBuildID = "so-many-builds"
 			originalSpec := pj.Spec.DeepCopy()
-			actual, err := makeBuild(pj, randomBuildID)
+			actual, err := makeBuild(pj)
 			if err != nil {
 				if !tc.err {
 					t.Errorf("unexpected error: %v", err)

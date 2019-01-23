@@ -231,13 +231,12 @@ func main() {
 	o := parseOptions()
 	logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "build"})
 
-	pjNamespace := ""
+	configAgent := &config.Agent{}
 	if o.config != "" {
-		pc, err := config.Load(o.config, "") // ignore jobConfig
-		if err != nil {
+		const ignoreJobConfig = ""
+		if err := configAgent.Start(o.config, ignoreJobConfig); err != nil {
 			logrus.WithError(err).Fatal("failed to load prow config")
 		}
-		pjNamespace = pc.ProwJobNamespace
 	}
 
 	configs, defaultContext, err := contextConfigs(o.kubeconfig, o.buildCluster)
@@ -284,7 +283,7 @@ func main() {
 		go runServer(o.cert, o.privateKey)
 	}
 
-	controller := newController(kc, pjc, pjif.Prow().V1().ProwJobs(), buildConfigs, o.totURL, pjNamespace, kube.RateLimiter(controllerName))
+	controller := newController(kc, pjc, pjif.Prow().V1().ProwJobs(), buildConfigs, o.totURL, configAgent.Config, kube.RateLimiter(controllerName))
 	if err := controller.Run(2, stop); err != nil {
 		logrus.WithError(err).Fatal("Error running controller")
 	}
