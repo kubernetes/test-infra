@@ -141,7 +141,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	kubeClient, err := o.kubernetes.Client(configAgent.Config().ProwJobNamespace, o.dryRun)
+	kubeClient, _, err := o.kubernetes.Client(configAgent.Config().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
