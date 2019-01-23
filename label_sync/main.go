@@ -694,7 +694,13 @@ func main() {
 
 	switch {
 	case *action == "docs":
-		writeDocsAndCSS(*docsTemplate, *docsOutput, *cssTemplate, *cssOutput, *config)
+		if err := writeDocs(*docsTemplate, *docsOutput, *config); err != nil {
+			logrus.WithError(err).Fatalf("failed to write docs using docs-template %s to docs-output %s", *docsTemplate, *docsOutput)
+		}
+	case *action == "css":
+		if err := writeCSS(*cssTemplate, *cssOutput, *config); err != nil {
+			logrus.WithError(err).Fatalf("failed to write css file using css-template %s to css-output %s", *cssTemplate, *cssOutput)
+		}
 	case *action == "sync":
 		githubClient, err := newClient(*token, *tokens, *tokenBurst, !*confirm, endpoint.Strings()...)
 		if err != nil {
@@ -771,15 +777,6 @@ func parseCommaDelimitedList(list string) (map[string][]string, error) {
 
 type labelData struct {
 	Description, Link, Labels interface{}
-}
-
-func writeDocsAndCSS(docTmpl, docOut, cssTmpl, cssOut string, config Configuration) {
-	if err := writeDocs(docTmpl, docOut, config); err != nil {
-		logrus.WithError(err).Fatalf("failed to write docs using docs-template %s to docs-output %s", docTmpl, docOut)
-	}
-	if err := writeCSS(cssTmpl, cssOut, config); err != nil {
-		logrus.WithError(err).Fatalf("failed to write css file using css-template %s to css-output %s", cssTmpl, cssOut)
-	}
 }
 
 func writeDocs(template string, output string, config Configuration) error {
