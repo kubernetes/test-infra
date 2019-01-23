@@ -27,6 +27,7 @@ import (
 	prowjobscheme "k8s.io/test-infra/prow/client/clientset/versioned/scheme"
 	prowjobinfov1 "k8s.io/test-infra/prow/client/informers/externalversions/prowjobs/v1"
 	prowjoblisters "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/clone"
@@ -56,11 +57,13 @@ const (
 	controllerName = "prow-build-crd"
 )
 
+type getConfig func() *config.Config
+
 type controller struct {
-	pjNamespace string
-	pjc         prowjobset.Interface
-	builds      map[string]buildConfig
-	totURL      string
+	config getConfig
+	pjc    prowjobset.Interface
+	builds map[string]buildConfig
+	totURL string
 
 	pjLister   prowjoblisters.ProwJobLister
 	pjInformer cache.SharedIndexInformer
@@ -74,12 +77,16 @@ type controller struct {
 	wait         string
 }
 
+func (c controller) pjNamespace() string {
+	return c.config().ProwJobNamespace
+}
+
 // hasSynced returns true when every prowjob and build informer has synced.
 func (c *controller) hasSynced() bool {
 	if !c.pjInformer.HasSynced() {
 		if c.wait != "prowjobs" {
 			c.wait = "prowjobs"
-			ns := c.pjNamespace
+			ns := c.pjNamespace()
 			if ns == "" {
 				ns = "controller's"
 			}
@@ -109,7 +116,7 @@ func (c *controller) hasSynced() bool {
 	return true // Everyone is synced
 }
 
-func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjobinfov1.ProwJobInformer, buildConfigs map[string]buildConfig, totURL, pjNamespace string, rl workqueue.RateLimitingInterface) *controller {
+func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjobinfov1.ProwJobInformer, buildConfigs map[string]buildConfig, totURL string, prowConfig getConfig, rl workqueue.RateLimitingInterface) *controller {
 	// Log to events
 	prowjobscheme.AddToScheme(scheme.Scheme)
 	eventBroadcaster := record.NewBroadcaster()
@@ -119,14 +126,14 @@ func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjo
 
 	// Create struct
 	c := &controller{
-		pjc:         pjc,
-		builds:      buildConfigs,
-		pjLister:    pji.Lister(),
-		pjInformer:  pji.Informer(),
-		workqueue:   rl,
-		recorder:    recorder,
-		totURL:      totURL,
-		pjNamespace: pjNamespace,
+		builds:     buildConfigs,
+		config:     prowConfig,
+		pjc:        pjc,
+		pjInformer: pji.Informer(),
+		pjLister:   pji.Lister(),
+		recorder:   recorder,
+		totURL:     totURL,
+		workqueue:  rl,
 	}
 
 	logrus.Info("Setting up event handlers")
@@ -253,16 +260,16 @@ type reconciler interface {
 	createBuild(context, namespace string, b *buildv1alpha1.Build) (*buildv1alpha1.Build, error)
 	updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error)
 	now() metav1.Time
-	buildID(prowjobv1.ProwJob) (string, error)
+	buildID(prowjobv1.ProwJob) (string, string, error)
 }
 
 func (c *controller) getProwJob(name string) (*prowjobv1.ProwJob, error) {
-	return c.pjLister.ProwJobs(c.pjNamespace).Get(name)
+	return c.pjLister.ProwJobs(c.pjNamespace()).Get(name)
 }
 
 func (c *controller) updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
 	logrus.Debugf("updateProwJob(%s)", pj.Name)
-	return c.pjc.ProwV1().ProwJobs(c.pjNamespace).Update(pj)
+	return c.pjc.ProwV1().ProwJobs(c.pjNamespace()).Update(pj)
 }
 
 func (c *controller) getBuild(context, namespace, name string) (*buildv1alpha1.Build, error) {
@@ -292,8 +299,13 @@ func (c *controller) now() metav1.Time {
 	return metav1.Now()
 }
 
-func (c *controller) buildID(pj prowjobv1.ProwJob) (string, error) {
-	return pjutil.GetBuildID(pj.Spec.Job, c.totURL)
+func (c *controller) buildID(pj prowjobv1.ProwJob) (string, string, error) {
+	id, err := pjutil.GetBuildID(pj.Spec.Job, c.totURL)
+	if err != nil {
+		return "", "", err
+	}
+	url := pjutil.JobURL(c.config().Plank, pj, logrus.NewEntry(logrus.StandardLogger()))
+	return id, url, nil
 }
 
 var (
@@ -341,6 +353,7 @@ func reconcile(c reconciler, key string) error {
 		haveBuild = true
 	}
 
+	var newBuildID bool
 	// Should we create or delete this build?
 	switch {
 	case !wantBuild:
@@ -365,11 +378,14 @@ func reconcile(c reconciler, key string) error {
 	case wantBuild && pj.Spec.BuildSpec == nil:
 		return errors.New("nil BuildSpec")
 	case wantBuild && !haveBuild:
-		id, err := c.buildID(*pj)
+		id, url, err := c.buildID(*pj)
 		if err != nil {
 			return fmt.Errorf("failed to get build id: %v", err)
 		}
-		if b, err = makeBuild(*pj, id); err != nil {
+		pj.Status.BuildID = id
+		pj.Status.URL = url
+		newBuildID = true
+		if b, err = makeBuild(*pj); err != nil {
 			return fmt.Errorf("make build: %v", err)
 		}
 		logrus.Infof("Create builds/%s", key)
@@ -382,7 +398,7 @@ func reconcile(c reconciler, key string) error {
 	haveState := pj.Status.State
 	haveMsg := pj.Status.Description
 	wantState, wantMsg := prowJobStatus(b.Status)
-	if haveState != wantState || haveMsg != wantMsg {
+	if newBuildID || haveState != wantState || haveMsg != wantMsg {
 		npj := pj.DeepCopy()
 		if npj.Status.StartTime.IsZero() {
 			npj.Status.StartTime = c.now()
@@ -658,9 +674,13 @@ func decorateBuild(spec *buildv1alpha1.BuildSpec, encodedJobSpec string, dc prow
 }
 
 // makeBuild creates a build from the prowjob, using the prowjob's buildspec.
-func makeBuild(pj prowjobv1.ProwJob, buildID string) (*buildv1alpha1.Build, error) {
+func makeBuild(pj prowjobv1.ProwJob) (*buildv1alpha1.Build, error) {
 	if pj.Spec.BuildSpec == nil {
-		return nil, errors.New("nil BuildSpec")
+		return nil, errors.New("nil BuildSpec in spec")
+	}
+	buildID := pj.Status.BuildID
+	if buildID == "" {
+		return nil, errors.New("empty BuildID in status")
 	}
 	b := buildv1alpha1.Build{
 		ObjectMeta: buildMeta(pj),
