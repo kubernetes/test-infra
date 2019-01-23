@@ -9,7 +9,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-aws-eks-1-11-correctness
     labels:
-      preset-aws-credential: aws-oss-testing
+      preset-aws-credential-aws-oss-testing: "true"
       preset-kubernetes-e2e-aws-eks-1-11: "true"
       preset-service-account: "true"
     name: pull-security-kubernetes-e2e-aws-eks-1-11-correctness
