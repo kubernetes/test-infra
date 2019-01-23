@@ -70,9 +70,23 @@ func (c *Client) GetName() string {
 	return "pubsub-reporter"
 }
 
+func findLabels(pj *kube.ProwJob, labels ...string) map[string]string {
+	// Support checking for both labels(deprecated) and annotations(new) for backward compatibility
+	pubSubMap := map[string]string{}
+	for _, label := range labels {
+		if pj.Annotations[label] != "" {
+			pubSubMap[label] = pj.Annotations[label]
+		} else {
+			pubSubMap[label] = pj.Labels[label]
+		}
+	}
+	return pubSubMap
+}
+
 // ShouldReport tells if a prowjob should be reported by this reporter
 func (c *Client) ShouldReport(pj *kube.ProwJob) bool {
-	return pj.Labels[PubSubProjectLabel] != "" && pj.Labels[PubSubTopicLabel] != ""
+	pubSubMap := findLabels(pj, PubSubProjectLabel, PubSubTopicLabel)
+	return pubSubMap[PubSubProjectLabel] != "" && pubSubMap[PubSubTopicLabel] != ""
 }
 
 // Report takes a prowjob, and generate a pubsub ReportMessage and publish to specific Pub/Sub topic
@@ -106,18 +120,13 @@ func (c *Client) Report(pj *kube.ProwJob) error {
 }
 
 func (c *Client) generateMessageFromPJ(pj *kube.ProwJob) *ReportMessage {
-	projectName := pj.Labels[PubSubProjectLabel]
-	topicName := pj.Labels[PubSubTopicLabel]
-	runID := pj.GetLabels()[PubSubRunIDLabel]
-
-	psReport := &ReportMessage{
-		Project: projectName,
-		Topic:   topicName,
-		RunID:   runID,
+	pubSubMap := findLabels(pj, PubSubProjectLabel, PubSubTopicLabel, PubSubRunIDLabel)
+	return &ReportMessage{
+		Project: pubSubMap[PubSubProjectLabel],
+		Topic:   pubSubMap[PubSubTopicLabel],
+		RunID:   pubSubMap[PubSubRunIDLabel],
 		Status:  pj.Status.State,
 		URL:     pj.Status.URL,
 		GCSPath: strings.Replace(pj.Status.URL, c.ca.Config().Plank.JobURLPrefix, GCSPrefix, 1),
 	}
-
-	return psReport
 }

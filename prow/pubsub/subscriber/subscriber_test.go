@@ -21,6 +21,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -29,14 +30,18 @@ import (
 	"time"
 
 	"cloud.google.com/go/pubsub"
+
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pubsub/reporter"
 )
 
 type kubeTestClient struct {
-	pj *kube.ProwJob
+	fails bool
+	pj    *kube.ProwJob
 }
 
 type pubSubTestClient struct {
@@ -95,8 +100,24 @@ func (c *pubSubTestClient) subscription(id string) subscriptionInterface {
 }
 
 func (c *kubeTestClient) CreateProwJob(job *kube.ProwJob) (*kube.ProwJob, error) {
+	if c.fails {
+		return nil, fmt.Errorf("failed to create prowjob")
+	}
 	c.pj = job
 	return job, nil
+}
+
+type fakeReporter struct {
+	reported bool
+}
+
+func (r *fakeReporter) Report(pj *v1.ProwJob) error {
+	r.reported = true
+	return nil
+}
+
+func (r *fakeReporter) ShouldReport(pj *v1.ProwJob) bool {
+	return pj.Annotations[reporter.PubSubProjectLabel] != "" && pj.Annotations[reporter.PubSubTopicLabel] != ""
 }
 
 func TestPeriodicProwJobEvent_ToFromMessage(t *testing.T) {
@@ -215,11 +236,13 @@ func TestHandleMessage(t *testing.T) {
 
 func TestHandlePeriodicJob(t *testing.T) {
 	for _, tc := range []struct {
-		name   string
-		pe     *PeriodicProwJobEvent
-		s      string
-		config *config.Config
-		err    string
+		name        string
+		pe          *PeriodicProwJobEvent
+		s           string
+		config      *config.Config
+		err         string
+		reported    bool
+		clientFails bool
 	}{
 		{
 			name: "PeriodicJobNoPubsub",
@@ -261,6 +284,31 @@ func TestHandlePeriodicJob(t *testing.T) {
 			},
 		},
 		{
+			name: "PeriodicJobPubsubSetCreationError",
+			pe: &PeriodicProwJobEvent{
+				Name: "test",
+				Annotations: map[string]string{
+					reporter.PubSubProjectLabel: "project",
+					reporter.PubSubRunIDLabel:   "runid",
+					reporter.PubSubTopicLabel:   "topic",
+				},
+			},
+			config: &config.Config{
+				JobConfig: config.JobConfig{
+					Periodics: []config.Periodic{
+						{
+							JobBase: config.JobBase{
+								Name: "test",
+							},
+						},
+					},
+				},
+			},
+			err:         "failed to create prowjob",
+			clientFails: true,
+			reported:    true,
+		},
+		{
 			name: "JobNotFound",
 			pe: &PeriodicProwJobEvent{
 				Name: "test",
@@ -268,15 +316,31 @@ func TestHandlePeriodicJob(t *testing.T) {
 			config: &config.Config{},
 			err:    "failed to find associated periodic job test",
 		},
+		{
+			name: "JobNotFoundReportNeeded",
+			pe: &PeriodicProwJobEvent{
+				Name: "test",
+				Annotations: map[string]string{
+					reporter.PubSubProjectLabel: "project",
+					reporter.PubSubRunIDLabel:   "runid",
+					reporter.PubSubTopicLabel:   "topic",
+				},
+			},
+			config:   &config.Config{},
+			err:      "failed to find associated periodic job test",
+			reported: true,
+		},
 	} {
 		t.Run(tc.name, func(t1 *testing.T) {
-			kc := &kubeTestClient{}
+			kc := &kubeTestClient{fails: tc.clientFails}
 			ca := &config.Agent{}
 			ca.Set(tc.config)
+			fr := fakeReporter{}
 			s := Subscriber{
 				Metrics:     NewMetrics(),
 				KubeClient:  kc,
 				ConfigAgent: ca,
+				Reporter:    &fr,
 			}
 			m, err := tc.pe.ToMessage()
 			if err != nil {
@@ -292,6 +356,9 @@ func TestHandlePeriodicJob(t *testing.T) {
 					}
 				}
 			}
+			if fr.reported != tc.reported {
+				t1.Errorf("Expected Reporting: %t, found: %t", tc.reported, fr.reported)
+			}
 		})
 	}
 }
@@ -303,6 +370,7 @@ func TestPushServer_ServeHTTP(t *testing.T) {
 			ConfigAgent: &config.Agent{},
 			Metrics:     NewMetrics(),
 			KubeClient:  kc,
+			Reporter:    &fakeReporter{},
 		},
 	}
 	for _, tc := range []struct {
