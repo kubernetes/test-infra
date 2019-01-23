@@ -57,16 +57,11 @@ type tideAgent struct {
 }
 
 func (ta *tideAgent) start() {
-	startTimePool := time.Now()
-	if err := ta.updatePools(); err != nil {
-		ta.log.WithError(err).Error("Updating pools the first time.")
-	}
-	startTimeHistory := time.Now()
-	if err := ta.updateHistory(); err != nil {
-		ta.log.WithError(err).Error("Updating history the first time.")
-	}
-
 	go func() {
+		startTimePool := time.Now()
+		if err := ta.updatePools(); err != nil {
+			ta.log.WithError(err).Error("Updating pools the first time.")
+		}
 		for {
 			time.Sleep(time.Until(startTimePool.Add(ta.updatePeriod())))
 			startTimePool = time.Now()
@@ -76,6 +71,10 @@ func (ta *tideAgent) start() {
 		}
 	}()
 	go func() {
+		startTimeHistory := time.Now()
+		if err := ta.updateHistory(); err != nil {
+			ta.log.WithError(err).Error("Updating history the first time.")
+		}
 		for {
 			time.Sleep(time.Until(startTimeHistory.Add(ta.updatePeriod())))
 			startTimeHistory = time.Now()
