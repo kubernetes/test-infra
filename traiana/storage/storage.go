@@ -3,7 +3,6 @@ package storage
 import (
 	"cloud.google.com/go/storage"
 	"context"
-	"errors"
 	"k8s.io/test-infra/traiana"
 	"k8s.io/test-infra/traiana/awsapi"
 	"k8s.io/test-infra/traiana/storage/option"

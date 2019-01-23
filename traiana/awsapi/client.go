@@ -11,7 +11,7 @@ type Client struct {
 }
 
 func NewClient(o ClientOption) (*Client, error) {
-	config := &aws.Config{
+	config := aws.Config{
 		Region:      aws.String("eu-west-1"),
 	}
 
@@ -19,7 +19,12 @@ func NewClient(o ClientOption) (*Client, error) {
 		config.Credentials = credentials.NewSharedCredentials(o.CredentialsFile, "default")
 	}
 
-	session, err := session.NewSession(config)
+	opts := session.Options {
+		Config: config,
+		SharedConfigState: session.SharedConfigEnable,
+	}
+
+	session, err := session.NewSessionWithOptions(opts)
 
 	if err != nil {
 		// Handle Session creation error
