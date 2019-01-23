@@ -9,7 +9,7 @@ presubmits:
     optional: true
     labels:
       preset-service-account: "true"
-      preset-aws-credential: "aws-oss-testing"
+      preset-aws-credential-aws-oss-testing: "true"
       preset-kubernetes-e2e-aws-eks-1-11: "true"
     spec:
       containers:
