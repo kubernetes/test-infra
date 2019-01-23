@@ -40,13 +40,13 @@ func checkOverlapBrancher(b1, b2 Brancher) bool {
 	}
 
 	for _, run1 := range b1.Branches {
-		if b2.RunsAgainstBranch(run1) {
+		if b2.ShouldRun(run1) {
 			return true
 		}
 	}
 
 	for _, run2 := range b2.Branches {
-		if b1.RunsAgainstBranch(run2) {
+		if b1.ShouldRun(run2) {
 			return true
 		}
 	}
@@ -489,14 +489,14 @@ func TestRunAgainstBranch(t *testing.T) {
 
 	for _, job := range jobs {
 		if job.Name == "default" {
-			if !job.RunsAgainstBranch("s") {
+			if !job.Brancher.ShouldRun("s") {
 				t.Errorf("Job %s should run branch s", job.Name)
 			}
-		} else if job.RunsAgainstBranch("s") {
+		} else if job.Brancher.ShouldRun("s") {
 			t.Errorf("Job %s should not run branch s", job.Name)
 		}
 
-		if !job.RunsAgainstBranch("r") {
+		if !job.Brancher.ShouldRun("r") {
 			t.Errorf("Job %s should run branch r", job.Name)
 		}
 	}

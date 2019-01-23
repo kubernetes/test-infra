@@ -84,13 +84,13 @@ func handleGenericComment(c Client, trigger *plugins.Trigger, gc github.GenericC
 			return err
 		}
 	}
-	needsOkToTest := HonorOkToTest(trigger) && okToTestRe.MatchString(gc.Body)
-	if needsOkToTest && !github.HasLabel(labels.OkToTest, l) {
+	isOkToTest := HonorOkToTest(trigger) && okToTestRe.MatchString(gc.Body)
+	if isOkToTest && !github.HasLabel(labels.OkToTest, l) {
 		if err := c.GitHubClient.AddLabel(org, repo, number, labels.OkToTest); err != nil {
 			return err
 		}
 	}
-	if (needsOkToTest || github.HasLabel(labels.OkToTest, l)) && github.HasLabel(labels.NeedsOkToTest, l) {
+	if (isOkToTest || github.HasLabel(labels.OkToTest, l)) && github.HasLabel(labels.NeedsOkToTest, l) {
 		if err := c.GitHubClient.RemoveLabel(org, repo, number, labels.NeedsOkToTest); err != nil {
 			return err
 		}
@@ -100,7 +100,6 @@ func handleGenericComment(c Client, trigger *plugins.Trigger, gc github.GenericC
 	if err != nil {
 		return err
 	}
-	fmt.Printf("got filtered presubmits: %v\n", toTest)
 	return RunRequested(c, pr, toTest, gc.GUID)
 }
 
@@ -125,6 +124,9 @@ type GitHubClient interface {
 //    to run unless we can determine they shouldn't
 //  - if we get a /test foo, we only want to consider those jobs that match;
 //    jobs will default to run unless we can determine they shouldn't
+// If a comment that we get matches more than one of the above patterns, we
+// consider the set of matching presubmits the union of the results from the
+// matching cases.
 func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string, pr *github.PullRequest, presubmits []config.Presubmit) ([]config.Presubmit, error) {
 	org, repo, number, sha, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Head.SHA, pr.Base.Ref
 	filter, err := presubmitFilter(honorOkToTest, gitHubClient, body, org, repo, sha)
@@ -153,14 +155,16 @@ type statusGetter interface {
 }
 
 func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, repo, sha string) (func(config.Presubmit) (bool, bool), error) {
-	// the filter determines if we should check whether a job should run and
-	// what the default behavior should be for that check
-	var filter func(config.Presubmit) (bool, bool)
-	if (honorOkToTest && okToTestRe.MatchString(body)) || testAllRe.MatchString(body) {
-		filter = func(p config.Presubmit) (bool, bool) {
-			return !p.NeedsExplicitTrigger(), false
-		}
-	} else if retestRe.MatchString(body) {
+	// the filters determine if we should check whether a job should run and
+	// what the default behavior should be for that check. Multiple filters
+	// can match a single presubmit, so it is important to order them correctly
+	// as they have precedence -- filters that override the false default should
+	// match before others. We order filters by amount of specificity.
+	var filters []func(config.Presubmit) (bool, bool)
+	filters = append(filters, func(p config.Presubmit) (bool, bool) {
+		return p.TriggerMatches(body), true
+	})
+	if retestRe.MatchString(body) {
 		combinedStatus, err := statusGetter.GetCombinedStatus(org, repo, sha)
 		if err != nil {
 			return nil, err
@@ -173,13 +177,21 @@ func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, r
 				failedContexts.Insert(status.Context)
 			}
 		}
-		filter = func(p config.Presubmit) (bool, bool) {
+		filters = append(filters, func(p config.Presubmit) (bool, bool) {
 			return failedContexts.Has(p.Context) || (!p.NeedsExplicitTrigger() && !allContexts.Has(p.Context)), true
-		}
-	} else {
-		filter = func(p config.Presubmit) (bool, bool) {
-			return p.TriggerMatches(body), true
-		}
+		})
 	}
-	return filter, nil
+	if (honorOkToTest && okToTestRe.MatchString(body)) || testAllRe.MatchString(body) {
+		filters = append(filters, func(p config.Presubmit) (bool, bool) {
+			return !p.NeedsExplicitTrigger(), false
+		})
+	}
+	return func(presubmit config.Presubmit) (bool, bool) {
+		for _, filter := range filters {
+			if shouldRun, defaults := filter(presubmit); shouldRun {
+				return shouldRun, defaults
+			}
+		}
+		return false, false
+	}, nil
 }

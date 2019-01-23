@@ -209,8 +209,8 @@ func (br Brancher) RunsAgainstAllBranch() bool {
 	return len(br.SkipBranches) == 0 && len(br.Branches) == 0
 }
 
-// RunsAgainstBranch returns true if the input branch matches, given the whitelist/blacklist.
-func (br Brancher) RunsAgainstBranch(branch string) bool {
+// ShouldRun returns true if the input branch matches, given the whitelist/blacklist.
+func (br Brancher) ShouldRun(branch string) bool {
 	if br.RunsAgainstAllBranch() {
 		return true
 	}
@@ -251,14 +251,15 @@ func (br Brancher) Intersects(other Brancher) bool {
 	return other.Intersects(br)
 }
 
-// CouldRun determines if it's possible for a set of changes to trigger this condition
+// CouldRun determines if its possible for a set of changes to trigger this condition
 func (cm RegexpChangeMatcher) CouldRun() bool {
 	return cm.RunIfChanged != ""
 }
 
-// ShouldRun determines if we can know for certain that the job should run based on the matcher
-// and whether or not the job should run
-func (cm RegexpChangeMatcher) ShouldRun(changes ChangedFilesProvider) (bool, bool, error) {
+// ShouldRun determines if we can know for certain that the job should run. We can either
+// know for certain that the job should or should not run based on the matcher, or we can
+// not be able to determine that fact at all.
+func (cm RegexpChangeMatcher) ShouldRun(changes ChangedFilesProvider) (determined bool, shouldRun bool, err error) {
 	if cm.CouldRun() {
 		changeList, err := changes()
 		if err != nil {
@@ -282,7 +283,7 @@ func (cm RegexpChangeMatcher) RunsAgainstChanges(changes []string) bool {
 // CouldRun determines if the postsubmit could run against a specific
 // base ref
 func (ps Postsubmit) CouldRun(baseRef string) bool {
-	return ps.RunsAgainstBranch(baseRef)
+	return ps.Brancher.ShouldRun(baseRef)
 }
 
 // ShouldRun determines if the postsubmit should run in response to a
@@ -303,7 +304,7 @@ func (ps Postsubmit) ShouldRun(baseRef string, changes ChangedFilesProvider) (bo
 // CouldRun determines if the presubmit could run against a specific
 // base ref
 func (ps Presubmit) CouldRun(baseRef string) bool {
-	return ps.RunsAgainstBranch(baseRef)
+	return ps.Brancher.ShouldRun(baseRef)
 }
 
 // ShouldRun determines if the presubmit should run against a specific
@@ -363,7 +364,6 @@ func NewGitHubDeferredChangedFilesProvider(client githubClient, org, repo string
 			for _, change := range changes {
 				changedFiles = append(changedFiles, change.Filename)
 			}
-			return changedFiles, nil
 		}
 		return changedFiles, nil
 	}

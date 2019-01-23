@@ -236,7 +236,7 @@ func (c *Controller) retireRemovedContexts(retiredPresubmits map[string][]config
 				"repo":    repo,
 				"context": presubmit.Context,
 			}).Info("Retiring context.")
-			if err := c.statusMigrator.retire(org, repo, presubmit.Context, presubmit.Brancher.RunsAgainstBranch); err != nil {
+			if err := c.statusMigrator.retire(org, repo, presubmit.Context, presubmit.Brancher.ShouldRun); err != nil {
 				if c.continueOnError {
 					retireErrors = append(retireErrors, err)
 					continue
@@ -260,7 +260,7 @@ func (c *Controller) updateMigratedContexts(migrations map[string][]presubmitMig
 				"from": migration.from.Context,
 				"to":   migration.to.Context,
 			}).Info("Migrating context.")
-			if err := c.statusMigrator.migrate(org, repo, migration.from.Context, migration.to.Context, migration.from.Brancher.RunsAgainstBranch); err != nil {
+			if err := c.statusMigrator.migrate(org, repo, migration.from.Context, migration.to.Context, migration.from.Brancher.ShouldRun); err != nil {
 				if c.continueOnError {
 					migrateErrors = append(migrateErrors, err)
 					continue

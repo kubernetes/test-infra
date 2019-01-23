@@ -862,7 +862,7 @@ func TestPresubmitFilter(t *testing.T) {
 					RerunCommand: "/test trigger",
 				},
 			},
-			expected: [][]bool{{false, true}, {false, true}, {false, true}},
+			expected: [][]bool{{false, false}, {false, false}, {false, false}},
 		},
 		{
 			name:       "statuses are not gathered unless retest is specified (will error but we should not see it)",
@@ -925,7 +925,7 @@ func TestPresubmitFilter(t *testing.T) {
 					Context:   "missing-always-runs",
 				},
 			},
-			expected: [][]bool{{false, true}, {false, true}, {true, true}, {true, true}, {true, true}},
+			expected: [][]bool{{false, false}, {false, false}, {true, true}, {true, true}, {true, true}},
 		},
 		{
 			name: "explicit test command filters for jobs that match",
@@ -991,7 +991,78 @@ func TestPresubmitFilter(t *testing.T) {
 					RerunCommand: "/test other-trigger",
 				},
 			},
-			expected: [][]bool{{true, true}, {true, true}, {true, true}, {false, true}, {false, true}, {false, true}},
+			expected: [][]bool{{true, true}, {true, true}, {true, true}, {false, false}, {false, false}, {false, false}},
+		},
+		{
+			name: "comments matching more than one case will select the union of presubmits",
+			body: `/test trigger
+/test all
+/retest`,
+			org:  "org",
+			repo: "repo",
+			ref:  "ref",
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Name: "always-runs",
+					},
+					AlwaysRun:    true,
+					Context:      "existing-successful",
+					Trigger:      `(?m)^/test (?:.*? )?other-trigger(?: .*?)?$`,
+					RerunCommand: "/test other-trigger",
+				},
+				{
+					JobBase: config.JobBase{
+						Name: "runs-if-changed",
+					},
+					Context: "existing-successful",
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						RunIfChanged: "sometimes",
+					},
+					Trigger:      `(?m)^/test (?:.*? )?other-trigger(?: .*?)?$`,
+					RerunCommand: "/test other-trigger",
+				},
+				{
+					JobBase: config.JobBase{
+						Name: "runs-if-triggered",
+					},
+					Context:      "runs-if-triggered",
+					Trigger:      `(?m)^/test (?:.*? )?trigger(?: .*?)?$`,
+					RerunCommand: "/test trigger",
+				},
+				{
+					JobBase: config.JobBase{
+						Name: "successful-job",
+					},
+					Context: "existing-successful",
+				},
+				{
+					JobBase: config.JobBase{
+						Name: "pending-job",
+					},
+					Context: "existing-pending",
+				},
+				{
+					JobBase: config.JobBase{
+						Name: "failure-job",
+					},
+					Context: "existing-failure",
+				},
+				{
+					JobBase: config.JobBase{
+						Name: "error-job",
+					},
+					Context: "existing-error",
+				},
+				{
+					JobBase: config.JobBase{
+						Name: "missing-always-runs",
+					},
+					AlwaysRun: true,
+					Context:   "missing-always-runs",
+				},
+			},
+			expected: [][]bool{{true, false}, {true, false}, {true, true}, {false, false}, {false, false}, {true, true}, {true, true}, {true, true}},
 		},
 	}
 
@@ -1024,10 +1095,10 @@ func TestPresubmitFilter(t *testing.T) {
 				actualFiltered, actualDefault := filter(presubmit)
 				expectedFiltered, expectedDefault := testCase.expected[i][0], testCase.expected[i][1]
 				if actualFiltered != expectedFiltered {
-					t.Errorf("%s: filter did not evaluate correctly, expected %v but got %v for %v", testCase.name, expectedFiltered, actualFiltered, presubmit)
+					t.Errorf("%s: filter did not evaluate correctly, expected %v but got %v for %v", testCase.name, expectedFiltered, actualFiltered, presubmit.Name)
 				}
 				if actualDefault != expectedDefault {
-					t.Errorf("%s: filter did not determine default correctly, expected %v but got %v for %v", testCase.name, expectedDefault, actualDefault, presubmit)
+					t.Errorf("%s: filter did not determine default correctly, expected %v but got %v for %v", testCase.name, expectedDefault, actualDefault, presubmit.Name)
 				}
 			}
 		})
