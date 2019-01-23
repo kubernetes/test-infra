@@ -69,6 +69,7 @@ var (
 	kopsMasterCount  = flag.Int("kops-master-count", 1, "(kops only) Number of masters to run")
 	kopsEtcdVersion  = flag.String("kops-etcd-version", "", "(kops only) Etcd Version")
 	kopsNetworkMode  = flag.String("kops-network-mode", "", "(kops only) Networking mode to use. kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana, amazon-vpc-routed-eni, cilium.")
+	kopsOverrides    = flag.String("kops-overrides", "", "(kops only) List of kops cluster configuration overrides, comma delimited")
 
 	kopsMultipleZones = flag.Bool("kops-multiple-zones", false, "(kops only) run tests in multiple zones")
 
@@ -135,6 +136,9 @@ type kops struct {
 
 	// networkMode is the networking mode to use for the cluster (e.g kubenet)
 	networkMode string
+
+	// overrides is a list of cluster configuration overrides, comma delimited
+	overrides string
 
 	// multipleZones denotes using more than one zone
 	multipleZones bool
@@ -340,6 +344,7 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		etcdVersion:   *kopsEtcdVersion,
 		masterSize:    *kopsMasterSize,
 		networkMode:   *kopsNetworkMode,
+		overrides:     *kopsOverrides,
 	}, nil
 }
 
@@ -361,9 +366,6 @@ func (k kops) Up() error {
 		}
 	}
 
-	var featureFlags []string
-	var overrides []string
-
 	createArgs := []string{
 		"create", "cluster",
 		"--name", k.cluster,
@@ -373,6 +375,12 @@ func (k kops) Up() error {
 		"--master-volume-size", strconv.Itoa(k.diskSize),
 		"--master-count", strconv.Itoa(k.masterCount),
 		"--zones", strings.Join(k.zones, ","),
+	}
+
+	var featureFlags []string
+	var overrides []string
+	if k.overrides != "" {
+		overrides = append(overrides, k.overrides)
 	}
 
 	// We are defaulting the master size to c4.large on AWS because m3.larges are getting less previlent.
