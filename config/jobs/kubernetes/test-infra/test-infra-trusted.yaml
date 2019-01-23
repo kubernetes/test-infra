@@ -3,6 +3,7 @@ postsubmits:
   - name: post-org-peribolos
     cluster: test-infra-trusted
     decorate: true
+    max_concurrency: 1
     spec:
       containers:
       - image: launcher.gcr.io/google/bazel
@@ -73,6 +74,7 @@ periodics:
   name: ci-org-peribolos
   cluster: test-infra-trusted
   decorate: true
+  max_concurrency: 1
   extra_refs:
   - org: kubernetes
     repo: org
