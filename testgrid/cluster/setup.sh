@@ -21,13 +21,13 @@ kubectl get namespaces/testgrid &>/dev/null || kubectl create namespace testgrid
 echo 'PRESENT' >&2
 # Ensure secrets exists
 for i in updater configurator; do
-  echo -n "testgrid-$i-service-account secret: " >&2
-  kubectl get secrets/testgrid-$i-service-account --namespace=testgrid &>/dev/null \
+  echo -n "testgrid-${i}-service-account secret: " >&2
+  kubectl get secrets/testgrid-${i}-service-account --namespace=testgrid &>/dev/null \
     && echo 'PRESENT' >&2 \
     && continue
   echo 'MISSING' >&2
   echo 'Fix with the following:' >&2
-  echo "  kubectl create secret generic testgrid-$i-service-account \\" >&2
+  echo "  kubectl create secret generic testgrid-${i}-service-account \\" >&2
   echo '    --from-file=service-account.json=PATH/TO/SERVICE-ACCOUNT.json' >&2
   exit 1
 done

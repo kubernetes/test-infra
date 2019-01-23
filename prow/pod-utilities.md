@@ -27,7 +27,7 @@ Example test container script:
 pwd # my repo root
 ls path/to/file/in/my/repo.txt # access repo file
 ls ../other-repo # access repo file in another repo
-echo success > $ARTIFACTS/results.txt # result info that will be uploaded to GCS.
+echo success > ${ARTIFACTS}/results.txt # result info that will be uploaded to GCS.
 # logs, and job metadata are automatically uploaded.
 ```
 
