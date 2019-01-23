@@ -190,7 +190,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "aws-cncf-testing"
+    preset-aws-credential: "true"
   decorate: true
   decoration_config:
     timeout: 14000000000000 # 140m

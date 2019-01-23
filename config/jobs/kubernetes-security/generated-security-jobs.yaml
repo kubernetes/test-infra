@@ -55,7 +55,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-kops-aws
     labels:
-      preset-aws-credential: aws-cncf-testing
+      preset-aws-credential: "true"
       preset-aws-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-platform-aws: "true"
@@ -117,7 +117,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-kops-aws
     labels:
-      preset-aws-credential: aws-cncf-testing
+      preset-aws-credential: "true"
       preset-aws-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-platform-aws: "true"
@@ -176,7 +176,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-kops-aws
     labels:
-      preset-aws-credential: aws-cncf-testing
+      preset-aws-credential: "true"
       preset-aws-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-platform-aws: "true"
