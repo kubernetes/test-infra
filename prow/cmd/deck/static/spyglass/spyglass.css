@@ -1,0 +1,44 @@
+.mdl-card {
+    background-color: #000;
+}
+
+.mdl-card__title {
+  color: #fff;
+}
+
+body {
+  background: #212121;
+  color: #fff;
+}
+
+#lens-container {
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+
+#lens-container .lens-title {
+  padding-bottom: 0;
+}
+
+.lens-card.mdl-card {
+  width: 100%;
+  align-content: center;
+}
+
+#lens-container .lens-view-content {
+  width: calc(100% - 16px);
+  padding: 8px;
+}
+
+.lens-card-loading {
+  left: 50%;
+}
+
+.mdl-layout__content a:link {
+  text-decoration: none;
+  color: #798bef;
+}
+
+a:visited {
+  color: #798bef;
+}
