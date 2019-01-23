@@ -17,10 +17,13 @@ limitations under the License.
 package resources
 
 import (
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 // AutoScalingGroups: https://docs.aws.amazon.com/sdk-for-go/api/service/autoscaling/#AutoScaling.DescribeAutoScalingGroups
@@ -67,6 +70,27 @@ func (AutoScalingGroups) MarkAndSweep(sess *session.Session, acct string, region
 		}
 	}
 	return nil
+}
+
+func (AutoScalingGroups) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	c := autoscaling.New(sess, aws.NewConfig().WithRegion(region))
+	set := NewSet(0)
+	input := &autoscaling.DescribeAutoScalingGroupsInput{}
+
+	err := c.DescribeAutoScalingGroupsPages(input, func(asgs *autoscaling.DescribeAutoScalingGroupsOutput, isLast bool) bool {
+		now := time.Now()
+		for _, asg := range asgs.AutoScalingGroups {
+			arn := autoScalingGroup{
+				ID:   *asg.AutoScalingGroupARN,
+				Name: *asg.AutoScalingGroupName,
+			}.ARN()
+			set.firstSeen[arn] = now
+		}
+
+		return true
+	})
+
+	return set, errors.Wrapf(err, "couldn't describe auto scaling groups for %q in %q", acct, region)
 }
 
 type autoScalingGroup struct {

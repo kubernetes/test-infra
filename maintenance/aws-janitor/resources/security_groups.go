@@ -18,11 +18,13 @@ package resources
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 // SecurityGroups: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeSecurityGroups
@@ -94,6 +96,31 @@ func (SecurityGroups) MarkAndSweep(sess *session.Session, acct string, region st
 		}
 	}
 	return nil
+}
+
+func (SecurityGroups) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
+	set := NewSet(0)
+	input := &ec2.DescribeSecurityGroupsInput{}
+
+	err := svc.DescribeSecurityGroupsPages(input, func(groups *ec2.DescribeSecurityGroupsOutput, _ bool) bool {
+		now := time.Now()
+		for _, sg := range groups.SecurityGroups {
+			arn := securityGroup{
+				Account: acct,
+				Region:  region,
+				ID:      *sg.GroupId,
+			}.ARN()
+
+			set.firstSeen[arn] = now
+		}
+
+		return true
+
+	})
+
+	return set, errors.Wrapf(err, "couldn't describe security groups for %q in %q", acct, region)
+
 }
 
 type securityGroup struct {

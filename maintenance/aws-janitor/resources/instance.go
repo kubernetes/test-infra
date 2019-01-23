@@ -18,11 +18,13 @@ package resources
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 // Instances: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeInstances
@@ -69,6 +71,31 @@ func (Instances) MarkAndSweep(sess *session.Session, acct string, region string,
 		}
 	}
 	return nil
+}
+
+func (Instances) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	svc := ec2.New(sess, aws.NewConfig().WithRegion(region))
+	set := NewSet(0)
+	inp := &ec2.DescribeInstancesInput{}
+
+	err := svc.DescribeInstancesPages(inp, func(instances *ec2.DescribeInstancesOutput, _ bool) bool {
+		for _, res := range instances.Reservations {
+			for _, inst := range res.Instances {
+				now := time.Now()
+				arn := instance{
+					Account:    acct,
+					Region:     region,
+					InstanceID: *inst.InstanceId,
+				}.ARN()
+
+				set.firstSeen[arn] = now
+			}
+		}
+		return true
+
+	})
+
+	return set, errors.Wrapf(err, "couldn't describe instances for %q in %q", acct, region)
 }
 
 type instance struct {

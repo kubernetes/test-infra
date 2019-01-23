@@ -19,11 +19,13 @@ package resources
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 // IAM Roles
@@ -80,6 +82,29 @@ func (IAMRoles) MarkAndSweep(sess *session.Session, acct string, region string, 
 		}
 	}
 	return nil
+}
+
+func (IAMRoles) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	svc := iam.New(sess, aws.NewConfig().WithRegion(region))
+	set := NewSet(0)
+	inp := &iam.ListRolesInput{}
+
+	err := svc.ListRolesPages(inp, func(roles *iam.ListRolesOutput, _ bool) bool {
+		now := time.Now()
+		for _, role := range roles.Roles {
+			arn := iamRole{
+				arn:      aws.StringValue(role.Arn),
+				roleID:   aws.StringValue(role.RoleId),
+				roleName: aws.StringValue(role.RoleName),
+			}.ARN()
+
+			set.firstSeen[arn] = now
+		}
+
+		return true
+	})
+
+	return set, errors.Wrapf(err, "couldn't describe iam roles for %q in %q", acct, region)
 }
 
 type iamRole struct {

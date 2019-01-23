@@ -18,11 +18,13 @@ package resources
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 // IAM Instance Profiles
@@ -67,6 +69,27 @@ func (IAMInstanceProfiles) MarkAndSweep(sess *session.Session, acct string, regi
 		}
 	}
 	return nil
+}
+
+func (IAMInstanceProfiles) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	svc := iam.New(sess, aws.NewConfig().WithRegion(region))
+	set := NewSet(0)
+	inp := &iam.ListInstanceProfilesInput{}
+
+	err := svc.ListInstanceProfilesPages(inp, func(profiles *iam.ListInstanceProfilesOutput, _ bool) bool {
+		now := time.Now()
+		for _, profile := range profiles.InstanceProfiles {
+			arn := iamInstanceProfile{
+				profile: profile,
+			}.ARN()
+
+			set.firstSeen[arn] = now
+		}
+
+		return true
+	})
+
+	return set, errors.Wrapf(err, "couldn't describe iam instance profiles for %q in %q", acct, region)
 }
 
 type iamInstanceProfile struct {

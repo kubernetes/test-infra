@@ -6,12 +6,12 @@ go_library(
     importpath = "k8s.io/test-infra/maintenance/aws-janitor",
     visibility = ["//visibility:private"],
     deps = [
+        "//maintenance/aws-janitor/account:go_default_library",
         "//maintenance/aws-janitor/resources:go_default_library",
         "//maintenance/aws-janitor/s3:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/service/iam:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
     ],
 )
@@ -33,7 +33,8 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//maintenance/aws-janitor/cmd/aws-janitor-boscos:all-srcs",
+        "//maintenance/aws-janitor/account:all-srcs",
+        "//maintenance/aws-janitor/cmd/aws-resources-list:all-srcs",
         "//maintenance/aws-janitor/resources:all-srcs",
         "//maintenance/aws-janitor/s3:all-srcs",
     ],

@@ -18,11 +18,13 @@ package resources
 
 import (
 	"regexp"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 // Route53
@@ -148,6 +150,39 @@ func (Route53ResourceRecordSets) MarkAndSweep(sess *session.Session, acct string
 	}
 
 	return nil
+}
+
+func (Route53ResourceRecordSets) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	svc := route53.New(sess, aws.NewConfig().WithRegion(region))
+	set := NewSet(0)
+
+	err := svc.ListHostedZonesPages(&route53.ListHostedZonesInput{}, func(zones *route53.ListHostedZonesOutput, _ bool) bool {
+		for _, z := range zones.HostedZones {
+			if !zoneIsManaged(z) {
+				continue
+			}
+			inp := &route53.ListResourceRecordSetsInput{HostedZoneId: z.Id}
+			err := svc.ListResourceRecordSetsPages(inp, func(recordSets *route53.ListResourceRecordSetsOutput, _ bool) bool {
+				now := time.Now()
+				for _, recordSet := range recordSets.ResourceRecordSets {
+					arn := route53ResourceRecordSet{
+						zone: z,
+						obj:  recordSet,
+					}.ARN()
+					set.firstSeen[arn] = now
+				}
+				return true
+			})
+			if err != nil {
+				glog.Errorf("couldn't describe route53 resources for %q in %q zone %q: %v", acct, region, *z.Id, err)
+			}
+
+		}
+		return true
+	})
+
+	return set, errors.Wrapf(err, "couldn't describe route53 instance profiles for %q in %q", acct, region)
+
 }
 
 type route53ResourceRecordSet struct {

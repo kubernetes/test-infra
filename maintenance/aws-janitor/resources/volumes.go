@@ -18,11 +18,13 @@ package resources
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 // Volumes: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeVolumes
@@ -51,6 +53,29 @@ func (Volumes) MarkAndSweep(sess *session.Session, acct string, region string, s
 		}
 	}
 	return nil
+}
+
+func (Volumes) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	svc := ec2.New(sess, aws.NewConfig().WithRegion(region))
+	set := NewSet(0)
+	inp := &ec2.DescribeVolumesInput{}
+
+	err := svc.DescribeVolumesPages(inp, func(vols *ec2.DescribeVolumesOutput, _ bool) bool {
+		now := time.Now()
+		for _, vol := range vols.Volumes {
+			arn := volume{
+				Account: acct,
+				Region:  region,
+				ID:      *vol.VolumeId,
+			}.ARN()
+
+			set.firstSeen[arn] = now
+		}
+
+		return true
+	})
+
+	return set, errors.Wrapf(err, "couldn't describe volumes for %q in %q", acct, region)
 }
 
 type volume struct {

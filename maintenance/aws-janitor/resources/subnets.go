@@ -18,11 +18,13 @@ package resources
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 // Subnets: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeSubnets
@@ -54,6 +56,26 @@ func (Subnets) MarkAndSweep(sess *session.Session, acct string, region string, s
 		}
 	}
 	return nil
+}
+
+func (Subnets) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
+	set := NewSet(0)
+	input := &ec2.DescribeSubnetsInput{}
+
+	// Subnets not paginated
+	subnets, err := svc.DescribeSubnets(input)
+	now := time.Now()
+	for _, sn := range subnets.Subnets {
+		arn := subnet{
+			Account: acct,
+			Region:  region,
+			ID:      *sn.SubnetId,
+		}.ARN()
+		set.firstSeen[arn] = now
+	}
+
+	return set, errors.Wrapf(err, "couldn't describe subnets for %q in %q", acct, region)
 }
 
 type subnet struct {

@@ -18,11 +18,13 @@ package resources
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 // DHCPOptions: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeDhcpOptions
@@ -79,6 +81,29 @@ func (DHCPOptions) MarkAndSweep(sess *session.Session, acct string, region strin
 		glog.Errorf("Found more than one default-looking DHCP option set: %v", defaults)
 	}
 	return nil
+}
+
+func (DHCPOptions) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	svc := ec2.New(sess, aws.NewConfig().WithRegion(region))
+	set := NewSet(0)
+	inp := &ec2.DescribeDhcpOptionsInput{}
+
+	optsList, err := svc.DescribeDhcpOptions(inp)
+	if err != nil {
+		return nil, errors.Wrapf(err, "couldn't describe DHCP Options for %q in %q", acct, region)
+	}
+
+	now := time.Now()
+	for _, opts := range optsList.DhcpOptions {
+		arn := dhcpOption{
+			Account: acct,
+			Region:  region,
+			ID:      *opts.DhcpOptionsId,
+		}.ARN()
+		set.firstSeen[arn] = now
+	}
+
+	return set, nil
 }
 
 // defaultLookingDHCPOptions: This part is a little annoying. If
