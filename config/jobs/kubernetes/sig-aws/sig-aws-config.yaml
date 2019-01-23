@@ -36,7 +36,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-aws-credential: "aws-cncf-testing"
     preset-e2e-platform-aws: "true"
   spec:
     containers:
@@ -60,7 +60,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-aws-credential: "aws-cncf-testing"
     preset-e2e-platform-aws: "true"
   spec:
     containers:
@@ -84,7 +84,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-aws-credential: "aws-cncf-testing"
   spec:
     containers:
     - args:
@@ -110,7 +110,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-aws-credential: "aws-cncf-testing"
   spec:
     containers:
     - args:
@@ -137,7 +137,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-aws-credential: "aws-cncf-testing"
   spec:
     containers:
     - args:
@@ -164,7 +164,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-aws-credential: "aws-cncf-testing"
   spec:
     containers:
     - args:
@@ -192,7 +192,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-aws-credential: "aws-cncf-testing"
   spec:
     containers:
     - args:
@@ -219,7 +219,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-aws-credential: "aws-cncf-testing"
   spec:
     containers:
     - args:
@@ -245,7 +245,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-aws-credential: "aws-cncf-testing"
   spec:
     containers:
     - args:
@@ -270,7 +270,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-aws-credential: "aws-cncf-testing"
   spec:
     containers:
     - args:
@@ -294,7 +294,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-aws-credential: "aws-cncf-testing"
   spec:
     containers:
     - args:
@@ -318,7 +318,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-aws-credential: "aws-cncf-testing"
   spec:
     containers:
     - args:
@@ -342,7 +342,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-aws-credential: "aws-cncf-testing"
   spec:
     containers:
     - args:
@@ -367,7 +367,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-aws-credential: "aws-cncf-testing"
   spec:
     containers:
     - args:

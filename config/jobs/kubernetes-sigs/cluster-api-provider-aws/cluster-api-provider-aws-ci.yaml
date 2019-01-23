@@ -5,7 +5,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-aws-credential: "aws-cncf-testing"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-aws
