@@ -661,6 +661,11 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
+        description: Issues or PRs related to contributor summit events
+        name: area/contributor-summit
+        target: both
+        addedBy: label
+      - color: 0052cc
         description: Issues or PRs related to deflaking kubernetes tests
         name: area/deflake
         target: both
