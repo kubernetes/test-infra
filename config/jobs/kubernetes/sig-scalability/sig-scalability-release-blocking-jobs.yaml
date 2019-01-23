@@ -27,7 +27,7 @@ periodics:
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=210m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190119-7f748595c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190122-6eca4133a-master
       resources:
         requests:
           cpu: 6
@@ -62,7 +62,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --node-schedulable-timeout=90m --gather-resource-usage=masteranddns --gather-metrics-at-teardown=master --vmodule=request=4
       - --timeout=1050m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190119-7f748595c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190122-6eca4133a-master
       resources:
         requests:
           cpu: 6
@@ -80,7 +80,7 @@ periodics:
     preset-e2e-scalability-common: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190119-7f748595c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190122-6eca4133a-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -136,7 +136,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190119-7f748595c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190122-6eca4133a-master
 
 # This is a sig-release-<stable1>-blocking job.
 - cron: "0 0/12 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable2 and ci-kubernetes-e2e-gci-gce-scalability-stable3
@@ -168,7 +168,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190119-7f748595c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190122-6eca4133a-master
 
 # This is a sig-release-<stable2>-blocking job.
 - cron: "0 4-16/12 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable1 and ci-kubernetes-e2e-gci-gce-scalability-stable3
@@ -200,7 +200,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190119-7f748595c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190122-6eca4133a-master
 
 # This is a sig-release-<stable3>-blocking job.
 - cron: "0 8-20/12 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable1 and ci-kubernetes-e2e-gci-gce-scalability-stable2
@@ -232,4 +232,4 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190119-7f748595c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190122-6eca4133a-master
