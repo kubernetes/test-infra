@@ -2,6 +2,7 @@ presubmits:
   kubernetes-sigs/cluster-api-provider-azure:
   - name: pull-cluster-api-provider-azure-build
     always_run: true
+    optional: true
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     spec:
@@ -14,6 +15,7 @@ presubmits:
         - clusterctl
   - name: pull-cluster-api-provider-azure-test
     always_run: true
+    optional: true
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     spec:
@@ -25,6 +27,7 @@ presubmits:
         - test
   - name: pull-cluster-api-provider-azure-check
     always_run: true
+    optional: true
     decorate: true
     branches:
     - master
