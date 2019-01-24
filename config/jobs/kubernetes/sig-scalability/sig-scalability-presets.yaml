@@ -104,9 +104,9 @@ presets:
   # Reduce logs verbosity.
   - name: TEST_CLUSTER_LOG_LEVEL
     value: --v=2
-  # Use verbosity 4 for the scheduler logs, as otherwise the logs are meaningless.
+  # Use verbosity 3 for the scheduler logs, as otherwise the logs are meaningless.
   - name: SCHEDULER_TEST_LOG_LEVEL
-    value: --v=4
+    value: --v=3
   # Increase resync period to simulate production.
   - name: TEST_CLUSTER_RESYNC_PERIOD
     value: --min-resync-period=12h
