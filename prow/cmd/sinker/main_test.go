@@ -368,7 +368,7 @@ func TestClean(t *testing.T) {
 		logger:        logrus.WithField("component", "sinker"),
 		prowJobClient: fpjc.ProwV1().ProwJobs("ns"),
 		podClients:    fpc,
-		configAgent:   newFakeConfigAgent(),
+		config:        newFakeConfigAgent().Config,
 	}
 	c.clean()
 	assertSetsEqual(deletedPods, getDeletedObjectNames(fkc[0].Fake.Actions()), t, "did not delete correct Pods")

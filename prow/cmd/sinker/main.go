@@ -33,10 +33,6 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 )
 
-type configAgent interface {
-	Config() *config.Config
-}
-
 type options struct {
 	runOnce                bool
 	configPath             string
@@ -65,6 +61,7 @@ func main() {
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
+	cfg := configAgent.Config
 
 	clusterConfigs, defaultContext, err := kube.LoadClusterConfigs(o.buildClusterKubeconfig, o.buildCluster)
 	defaultConfig := clusterConfigs[defaultContext]
@@ -85,9 +82,9 @@ func main() {
 
 	c := controller{
 		logger:        logrus.NewEntry(logrus.StandardLogger()),
-		prowJobClient: pjclient.ProwV1().ProwJobs(configAgent.Config().ProwJobNamespace),
+		prowJobClient: pjclient.ProwV1().ProwJobs(cfg().ProwJobNamespace),
 		podClients:    podClients,
-		configAgent:   configAgent,
+		config:        cfg,
 	}
 
 	// Clean now and regularly from now on.
@@ -98,7 +95,7 @@ func main() {
 		if o.runOnce {
 			break
 		}
-		time.Sleep(configAgent.Config().Sinker.ResyncPeriod)
+		time.Sleep(cfg().Sinker.ResyncPeriod)
 	}
 }
 
@@ -106,7 +103,7 @@ type controller struct {
 	logger        *logrus.Entry
 	prowJobClient prowv1.ProwJobInterface
 	podClients    []corev1.PodInterface
-	configAgent   configAgent
+	config        config.Getter
 }
 
 func (c *controller) clean() {
@@ -120,7 +117,7 @@ func (c *controller) clean() {
 	// Only delete pod if its prowjob is marked as finished
 	isFinished := make(map[string]bool)
 
-	maxProwJobAge := c.configAgent.Config().Sinker.MaxProwJobAge
+	maxProwJobAge := c.config().Sinker.MaxProwJobAge
 	for _, prowJob := range prowJobs.Items {
 		// Handle periodics separately.
 		if prowJob.Spec.Type == kube.PeriodicJob {
@@ -143,7 +140,7 @@ func (c *controller) clean() {
 	// Keep track of what periodic jobs are in the config so we will
 	// not clean up their last prowjob.
 	isActivePeriodic := make(map[string]bool)
-	for _, p := range c.configAgent.Config().Periodics {
+	for _, p := range c.config().Periodics {
 		isActivePeriodic[p.Name] = true
 	}
 
@@ -182,7 +179,7 @@ func (c *controller) clean() {
 			c.logger.WithError(err).Error("Error listing pods.")
 			return
 		}
-		maxPodAge := c.configAgent.Config().Sinker.MaxPodAge
+		maxPodAge := c.config().Sinker.MaxPodAge
 		for _, pod := range pods.Items {
 			if _, ok := isFinished[pod.ObjectMeta.Name]; !ok {
 				// prowjob is not marked as completed yet
