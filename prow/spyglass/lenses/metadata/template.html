@@ -7,14 +7,12 @@
 {{$len := len .Metadata}}
 {{$passed := eq .Status "SUCCESS"}}
 {{$failed := eq .Status "FAILURE" "FAILED"}}
-<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp metadata-table">
-  <thead>
-    <tr class="test-row">
-      <td class="mdl-data-table__cell--non-numeric">Status</td>
-      <td class="mdl-data-table__cell--non-numeric" style="color: {{if $passed}}#00FF00{{else if $failed}}#FF0000{{end}}">{{.Status}}</td>
-    </tr>
-  </thead>
+<table class="mdl-data-table mdl-js-data-table metadata-table">
   <tbody>
+  <tr class="test-row">
+    <td class="mdl-data-table__cell--non-numeric">Status</td>
+    <td class="mdl-data-table__cell--non-numeric" style="color: {{if $passed}}#00FF00{{else if $failed}}#ff4040{{end}}">{{.Status}}</td>
+  </tr>
     <tr>
       <td class="mdl-data-table__cell--non-numeric">Started</td>
       <td class="mdl-data-table__cell--non-numeric" id="start_time">{{.StartTime}}</td>
@@ -35,11 +33,11 @@
     </tbody>
     {{if gt $len 1}}
     <tr class="expander" onclick="toggleExpansion('supplementary_data', 'expand_text', 'expand_icon')">
-      <td id="expand_text" class="mdl-data-table__cell--non-numeric expander">Show more</td>
-      <td class="mdl-data-table__cell--non-numeric expander">
+      <td colspan="2" class="mdl-data-table__cell--non-numeric expander">
+        <span id="expand_text">Show more</span>
         <i id="expand_icon" class="icon-button material-icons arrow-icon">expand_more</i>
       </td>
-      </tr>
+    </tr>
     {{end}}
   </tbody>
 </table>

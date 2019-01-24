@@ -32,7 +32,10 @@ rollup_bundle(
 
 filegroup(
     name = "resources",
-    srcs = [":script_bundle"],
+    srcs = [
+        "junit.css",
+        ":script_bundle",
+    ],
     visibility = ["//visibility:public"],
 )
 
