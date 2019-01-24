@@ -5848,7 +5848,7 @@ dashboards:
 - name: sig-cluster-lifecycle-cluster-api-provider-azure
   dashboard_tab:
   - name: pr-make
-    test_group_name: pull-cluster-api-provider-azure-make
+    test_group_name: pull-cluster-api-provider-azure-build
   - name: pr-check
     test_group_name: pull-cluster-api-provider-azure-check
   - name: pr-test
