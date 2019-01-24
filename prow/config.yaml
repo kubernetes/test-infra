@@ -347,58 +347,39 @@ tide:
     - do-not-merge/work-in-progress
     - needs-rebase
   - orgs:
+    - kubernetes
     - kubernetes-client
     - kubernetes-csi
     - kubernetes-incubator
     - kubernetes-sigs
     repos:
     - client-go/unofficial-docs
-    - kubernetes/autoscaler
-    - kubernetes/client-go
-    - kubernetes/cloud-provider-aws
-    - kubernetes/cloud-provider-alibaba-cloud
-    - kubernetes/cloud-provider-azure
-    - kubernetes/cloud-provider-gcp
-    - kubernetes/cloud-provider-openstack
-    - kubernetes/cloud-provider-sample
-    - kubernetes/cloud-provider-vsphere
-    - kubernetes/cluster-registry
-    - kubernetes/community
-    - kubernetes/contrib
-    - kubernetes/dashboard
-    - kubernetes/dns
-    - kubernetes/enhancements
-    - kubernetes/examples
-    - kubernetes/federation
-    - kubernetes/frakti
-    - kubernetes/gengo
-    - kubernetes/git-sync
-    - kubernetes/ingress-gce
-    - kubernetes/ingress-nginx
-    - kubernetes/k8s.io
-    - kubernetes/klog
-    - kubernetes/kompose
-    - kubernetes/kops
-    - kubernetes/kube-deploy
-    - kubernetes/kube-openapi
-    - kubernetes/kube-state-metrics
-    - kubernetes/kubeadm
-    - kubernetes/kubectl
-    - kubernetes/kubernetes-anywhere
-    - kubernetes/kubernetes-template-project
-    - kubernetes/minikube
-    - kubernetes/node-problem-detector
-    - kubernetes/org
-    - kubernetes/perf-tests
-    - kubernetes/publishing-bot
-    - kubernetes/release
-    - kubernetes/repo-infra
-    - kubernetes/security
-    - kubernetes/sig-release
-    - kubernetes/steering
-    - kubernetes/test-infra
-    - kubernetes/utils
-    - kubernetes/website
+    excludedRepos:
+    - kubernetes/kubernetes # Handled with a separate Tide query below.
+    # The following are staging repos which do not normally support merging PRs.
+    # https://github.com/kubernetes/kubernetes/blob/master/staging/README.md
+    # Note that k/client-go is an exception to this rule so it is not an excludedRepo.
+    - kubernetes/api
+    - kubernetes/apiextensions-apiserver
+    - kubernetes/apimachinery
+    - kubernetes/apiserver
+    - kubernetes/cli-runtime
+    - kubernetes/cloud-provider
+    - kubernetes/cluster-bootstrap
+    - kubernetes/code-generator
+    - kubernetes/component-base
+    - kubernetes/csi-api
+    - kubernetes/csi-translation-lib
+    - kubernetes/kube-aggregator
+    - kubernetes/kube-controller-manager
+    - kubernetes/kube-proxy
+    - kubernetes/kube-scheduler
+    - kubernetes/kubelet
+    - kubernetes/metrics
+    - kubernetes/node-api
+    - kubernetes/sample-apiserver
+    - kubernetes/sample-cli-plugin
+    - kubernetes/sample-controller
     labels:
     - lgtm
     - approved
