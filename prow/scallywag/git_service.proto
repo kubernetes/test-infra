@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package scallywag;
+
+import "types.proto";
+
+service GitService {
+	rpc InitializeProvider(Provider) returns (Provider) {}
+	
+  rpc UpdateIssue(Issue) returns (Issue) {}
+	
+	rpc ListRepositories(Organization) returns (stream Repository) {}
+	
+	rpc CreateRepository(RepositoryInfo) returns (Repository) {}
+	
+	rpc GetRepository(RepositoryInfo) returns (Repository) {}
+	
+	rpc DeleteRepository(Repository) returns (Confirmation) {}
+	
+	rpc ForkRepository(ForkInfo) returns (Repository) {}
+	
+	rpc RenameRepository(Repository) returns (Repository) {}
+	
+	rpc ValidateRepositoryName(RepositoryInfo) returns (Confirmation) {}
+	
+	rpc CreatePullRequest(PullRequest) returns (PullRequest) {}
+	
+	rpc UpdatePullRequestStatus(PullRequest) returns (Confirmation) {}
+	
+	rpc GetPullRequest(PullRequest) returns (PullRequest) {}
+	
+	rpc GetPullRequestCommits(PullRequest) returns (stream Commit) {}
+	
+	rpc PullRequestLastCommitStatus(PullRequest) returns (Commit) {}
+	
+	rpc ListCommitStatus(Commit) returns (stream CommitStatus) {}
+
+	rpc UpdateCommitStatus(CommitStatus) returns (CommitStatus) {}
+
+	rpc MergePullRequest(PullRequest) returns (Confirmation) {}
+
+	rpc CreateWebhook(Webhook) returns (Confirmation) {}
+
+	rpc ListWebhooks(Repository) returns (stream Webhook) {}
+
+	rpc UpdateWebHook(Webhook) returns (stream Webhook) {}
+
+	rpc GetIssue(Issue) returns (Issue) {}
+
+	rpc SearchIssues(IssueQuery) returns (Issue) {}
+
+	rpc CreateIssue(Issue) returns (Issue) {}
+
+	rpc HasIssues(Repository) returns (Confirmation) {}
+
+	rpc AddPRComment(PullRequestComment) returns (PullRequestComment) {}
+
+	rpc CreateIssueComment(IssueComment) returns (IssueComment) {}
+
+	rpc UpdateRelease(Release) returns (Confirmation) {}
+
+	rpc ListReleases(Repository) returns (stream Release) {}
+}

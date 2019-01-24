@@ -1,0 +1,204 @@
+syntax = "proto3";
+
+package scallywag;
+
+message Confirmation {
+
+}
+
+message Provider {
+  string name  = 1;
+  string URL = 2;
+  string token = 3;
+  string type = 4;
+}
+
+message String {
+  string value = 1;
+}
+
+message Branch {
+  string repo = 1;
+  string owner = 2;
+  string name = 3;
+}
+
+message Collaborator {
+  string user = 1;
+  string repo = 2;
+  string org = 3;
+}
+
+message Repository {
+  string name = 1;
+  string HTMLURL = 2;
+  string SSHURL = 3;
+  string CloneURL = 4;
+  bool AllowMergeCommit = 5;
+  string Language = 6;
+  bool Fork = 7;
+  int64 Stars = 8;
+}
+
+message RepositoryInfo {
+	string org = 1;
+	string user = 2;
+	bool isPrivate = 3;
+}
+
+message ForkInfo {
+	string upstreamOwner = 1;
+	string destinationOwner = 2;
+	Repository repo = 3;
+}
+
+message Organization {
+  string name = 1;
+}
+
+message User {
+  string login = 1;
+  string email = 2;
+  string name = 3;
+  string URL = 4;
+  string AvatarURL = 5;
+}
+
+message PullRequest {
+  string Base = 1;
+  string Head = 2;
+  string URL = 3;
+  string Repository = 4;
+  string Owner = 5;
+  int64 Number = 6;
+  bool Mergeable = 7;
+  bool Merged = 8;
+  State State = 9;
+  string StatusesURL = 10;
+  string IssueURL = 11;
+  string DiffURL = 12;
+  string MergeCommitSHA = 13;
+  string CloseAt = 14;
+  string MergedAt = 15;
+  string LastCommitSha = 16;
+  string Title = 17;
+  string Body = 18;
+}
+
+message PullRequestComment {
+
+}
+
+message Webhook {
+  int64 ID = 1;
+  string owner = 2;
+  string repo = 3;
+  string URL = 4;
+  string secret = 5;
+}
+
+message IssueQuery {
+  string query = 1;
+}
+
+message Commit {
+  string SHA = 1;
+  string message = 2;
+  User auther = 3;
+  string URL = 4;
+  string branch = 5;
+  User committer = 6;
+  string org = 8;
+  string repo = 9;
+}
+
+message CommitStatus {
+  string SHA = 1;
+  string URL = 2;
+  string state = 3;
+  string name = 4;
+  string description = 5;
+  string CreateOn = 6;
+  string UpdatedOn = 7;
+  string org = 8;
+  string repo = 9;
+}
+
+message FileContent {
+  string Type = 1;
+  string Encoding = 2;
+  int64 Size = 3;
+  string Name = 4;
+  string Path = 5;
+  string Content = 6;
+  string SHA = 7;
+  string URL = 8;
+  string GitURL = 9;
+  string HTMLURL = 10;
+  string DownloadURL = 11;
+}
+
+message Issue {
+  string URL = 1;
+  string owner = 2;
+  string repo = 3;
+  int64 number = 4;
+  string key = 5;
+  string title = 6;
+  string body = 7;
+  State state = 8;
+  repeated Label label = 9;
+  string StatusesURL = 10;
+  string IssueURL = 11;
+  string CreatedAt = 12;
+  string UpdatedAt = 13;
+  string ClosedAt = 14;
+  bool IsPullRequest = 15;
+  User user = 16;
+  User ClosedBy = 17;
+  repeated User assignees = 18;
+}
+
+message Label {
+  string URL = 1;
+  string name = 2;
+  string color = 3;
+}
+
+message IssueComment {
+  string body = 1;
+  string HTMLURL = 2;
+  User user = 3;
+  string CreatedAt = 4;
+  string UpdatedAt = 5;
+}
+
+message Asset {
+  string DownloadURL = 1;
+  string name = 2;
+  string contentType = 3;
+}
+
+message Release {
+  string name = 1;
+  string tagName = 2;
+  string body = 3;
+  string URL = 4;
+  string HTMLURL = 5;
+  int64 DownloadCount = 6;
+  repeated Asset Asset = 7;
+}
+
+message Empty {
+
+}
+
+enum State {
+  OPEN = 0;
+  CLOSED = 1;
+}
+
+message Organisation {
+	string login =1;
+}
+

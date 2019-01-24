@@ -20,8 +20,18 @@ go_library(
     srcs = [
         "interface.go",
         "types.go",
+        "git_service.pb.go",
+        "server.go",
+        "types.pb.go",
+        "webhook.pb.go",
     ],
     importpath = "k8s.io/test-infra/prow/scallywag",
+    deps = [
+        "//vendor/github.com/golang/protobuf/proto:go_default_library",
+        "//vendor/golang.org/x/net/context:go_default_library",
+        "//vendor/google.golang.org/grpc:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
 )
 
 filegroup(
@@ -29,4 +39,10 @@ filegroup(
     srcs = glob(["**"]),
     tags = ["automanaged"],
     visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
 )
