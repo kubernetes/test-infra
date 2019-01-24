@@ -85,17 +85,12 @@ type PodLogClient interface {
 	GetLogTail(pod, container string, n int64) ([]byte, error)
 }
 
-// ConfigAgent is an interface to get the agent Config.
-type ConfigAgent interface {
-	Config() *config.Config
-}
-
 // NewJobAgent is a JobAgent constructor.
-func NewJobAgent(kc serviceClusterClient, plClients map[string]PodLogClient, ca ConfigAgent) *JobAgent {
+func NewJobAgent(kc serviceClusterClient, plClients map[string]PodLogClient, cfg config.Getter) *JobAgent {
 	return &JobAgent{
-		kc:   kc,
-		pkcs: plClients,
-		c:    ca,
+		kc:     kc,
+		pkcs:   plClients,
+		config: cfg,
 	}
 }
 
@@ -103,7 +98,7 @@ func NewJobAgent(kc serviceClusterClient, plClients map[string]PodLogClient, ca 
 type JobAgent struct {
 	kc        serviceClusterClient
 	pkcs      map[string]PodLogClient
-	c         ConfigAgent
+	config    config.Getter
 	prowJobs  []kube.ProwJob
 	jobs      []Job
 	jobsMap   map[string]Job                     // pod name -> Job
@@ -173,7 +168,7 @@ func (ja *JobAgent) GetJobLogTail(job, id string, n int64) ([]byte, error) {
 		}
 		return client.GetLogTail(j.Status.PodName, kube.TestContainerName, n)
 	}
-	for _, agentToTmpl := range ja.c.Config().Deck.ExternalAgentLogs {
+	for _, agentToTmpl := range ja.config().Deck.ExternalAgentLogs {
 		if agentToTmpl.Agent != string(j.Spec.Agent) {
 			continue
 		}
@@ -223,7 +218,7 @@ func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
 		}
 		return client.GetContainerLog(j.Status.PodName, kube.TestContainerName)
 	}
-	for _, agentToTmpl := range ja.c.Config().Deck.ExternalAgentLogs {
+	for _, agentToTmpl := range ja.config().Deck.ExternalAgentLogs {
 		if agentToTmpl.Agent != string(j.Spec.Agent) {
 			continue
 		}

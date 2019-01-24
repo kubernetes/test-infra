@@ -72,7 +72,7 @@ func (s *Spyglass) prowToGCS(prowKey string) (string, error) {
 	}
 
 	url := job.Status.URL
-	prefix := s.ConfigAgent.Config().Plank.JobURLPrefix
+	prefix := s.config().Plank.JobURLPrefix
 	if !strings.HasPrefix(url, prefix) {
 		return "", fmt.Errorf("unexpected job URL %q when finding GCS path: expected something starting with %q", url, prefix)
 	}
