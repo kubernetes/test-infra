@@ -108,7 +108,7 @@ branch-protection:
         dashboard:
           required_status_checks:
             contexts:
-            - continuous-integration/travis-ci
+            - continuous-integration/travis-ci/pr
           required_pull_request_reviews:
             required_approving_review_count: 1
         dns:
