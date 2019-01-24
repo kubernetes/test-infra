@@ -24,22 +24,18 @@ import (
 	"k8s.io/test-infra/prow/report"
 )
 
-type configAgent interface {
-	Config() *config.Config
-}
-
 // Client is a github reporter client
 type Client struct {
 	gc          report.GithubClient
-	ca          configAgent
+	config      config.Getter
 	reportAgent string
 }
 
 // NewReporter returns a reporter client
-func NewReporter(gc report.GithubClient, ca configAgent, reportAgent string) *Client {
+func NewReporter(gc report.GithubClient, cfg config.Getter, reportAgent string) *Client {
 	return &Client{
 		gc:          gc,
-		ca:          ca,
+		config:      cfg,
 		reportAgent: reportAgent,
 	}
 }
@@ -67,6 +63,6 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 
 // Report will report via reportlib
 func (c *Client) Report(pj *v1.ProwJob) error {
-	// TODO(krzyzacy): ditch ReportTemplate, and we can drop reference to configAgent
-	return report.Report(c.gc, c.ca.Config().Plank.ReportTemplate, *pj)
+	// TODO(krzyzacy): ditch ReportTemplate, and we can drop reference to config.Getter
+	return report.Report(c.gc, c.config().Plank.ReportTemplate, *pj)
 }

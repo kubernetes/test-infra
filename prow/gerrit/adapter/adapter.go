@@ -52,9 +52,9 @@ type configAgent interface {
 
 // Controller manages gerrit changes.
 type Controller struct {
-	ca configAgent
-	kc kubeClient
-	gc gerritClient
+	config config.Getter
+	kc     kubeClient
+	gc     gerritClient
 
 	lastSyncFallback string
 
@@ -62,7 +62,7 @@ type Controller struct {
 }
 
 // NewController returns a new gerrit controller client
-func NewController(lastSyncFallback, cookiefilePath string, projects map[string][]string, kc *kube.Client, ca *config.Agent) (*Controller, error) {
+func NewController(lastSyncFallback, cookiefilePath string, projects map[string][]string, kc *kube.Client, cfg config.Getter) (*Controller, error) {
 	if lastSyncFallback == "" {
 		return nil, errors.New("empty lastSyncFallback")
 	}
@@ -89,7 +89,7 @@ func NewController(lastSyncFallback, cookiefilePath string, projects map[string]
 
 	return &Controller{
 		kc:               kc,
-		ca:               ca,
+		config:           cfg,
 		gc:               c,
 		lastUpdate:       lastUpdate,
 		lastSyncFallback: lastSyncFallback,
@@ -150,7 +150,7 @@ func (c *Controller) Sync() error {
 	// gerrit timestamp only has second precision
 	syncTime := time.Now().Truncate(time.Second)
 
-	for instance, changes := range c.gc.QueryChanges(c.lastUpdate, c.ca.Config().Gerrit.RateLimit) {
+	for instance, changes := range c.gc.QueryChanges(c.lastUpdate, c.config().Gerrit.RateLimit) {
 		for _, change := range changes {
 			if err := c.ProcessChange(instance, change); err != nil {
 				logrus.WithError(err).Errorf("Failed process change %v", change.CurrentRevision)
@@ -241,8 +241,8 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 
 	switch change.Status {
 	case client.Merged:
-		postsubmits := c.ca.Config().Postsubmits[cloneURI.String()]
-		postsubmits = append(postsubmits, c.ca.Config().Postsubmits[cloneURI.Host+"/"+cloneURI.Path]...)
+		postsubmits := c.config().Postsubmits[cloneURI.String()]
+		postsubmits = append(postsubmits, c.config().Postsubmits[cloneURI.Host+"/"+cloneURI.Path]...)
 		for _, postsubmit := range postsubmits {
 			if postsubmit.RunsAgainstBranch(change.Branch) && postsubmit.RunsAgainstChanges(changedFiles) {
 				jobSpecs = append(jobSpecs, jobSpec{
@@ -252,8 +252,8 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 			}
 		}
 	case client.New:
-		presubmits := c.ca.Config().Presubmits[cloneURI.String()]
-		presubmits = append(presubmits, c.ca.Config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
+		presubmits := c.config().Presubmits[cloneURI.String()]
+		presubmits = append(presubmits, c.config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
 		for _, presubmit := range presubmits {
 			if presubmit.RunsAgainstBranch(change.Branch) && presubmit.RunsAgainstChanges(changedFiles) {
 				jobSpecs = append(jobSpecs, jobSpec{
