@@ -2550,6 +2550,9 @@ test_groups:
 - name: pull-kubernetes-cross
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-cross
   num_columns_recent: 20
+- name: pull-kubernetes-e2e-aks-engine-azure
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-aks-engine-azure
+  num_columns_recent: 30
 - name: pull-kubernetes-e2e-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce
   num_columns_recent: 20
@@ -7077,6 +7080,9 @@ dashboards:
     base_options: width=10
     alert_options:
       alert_mail_to_addresses: bentheelder+alerts@google.com
+  - name: pull-kubernetes-e2e-aks-engine-azure
+    test_group_name: pull-kubernetes-e2e-aks-engine-azure
+    base_options: width=10
   - name: pull-kubernetes-e2e-gce
     test_group_name: pull-kubernetes-e2e-gce
     base_options: width=10
@@ -7568,6 +7574,9 @@ dashboards:
   - name: "azure-master-conformance"
     description: Runs conformance tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
     test_group_name: ci-cloud-provider-azure-master
+  - name: pr-k8s-e2e
+    description: "Run e2e tests"
+    test_group_name: pull-kubernetes-e2e-aks-engine-azure
 
 # openshift dashboard
 - name: redhat-openshift-release-blocking
