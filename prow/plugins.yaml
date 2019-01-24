@@ -346,6 +346,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - owners-label
   - pony
   - shrug
   - sigmention
@@ -359,7 +360,6 @@ plugins:
   kubernetes/cloud-provider-aws:
   - milestone
   - milestonestatus
-  - owners-label
   - release-note
   - require-matching-label
   - welcome
@@ -383,7 +383,6 @@ plugins:
 
   kubernetes/community:
   - blockade
-  - owners-label
   - require-sig
   - trigger
 
@@ -393,7 +392,6 @@ plugins:
   kubernetes/enhancements:
   - blockade
   - milestone
-  - owners-label
   - require-sig
   - stage
 
@@ -415,13 +413,11 @@ plugins:
   - milestone
   - milestonestatus
   - override
-  - owners-label
   - release-note
   - require-matching-label
   - trigger
 
   kubernetes/org:
-  - owners-label
   - trigger
 
   kubernetes/perf-tests:
@@ -436,22 +432,17 @@ plugins:
   kubernetes/sig-release:
   - blockade
   - milestone
-  - owners-label
   - stage
 
   kubernetes/test-infra:
   - config-updater
   - milestone
-  - owners-label
   - override
   - trigger
   - welcome
 
   kubernetes/utils:
   - override
-
-  kubernetes/website:
-  - owners-label
 
   kubernetes-client:
   - approve
@@ -466,6 +457,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - owners-label
   - pony
   - shrug
   - size
@@ -487,6 +479,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - owners-label
   - pony
   - shrug
   - size
@@ -511,6 +504,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - owners-label
   - pony
   - shrug
   - size
@@ -541,6 +535,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - owners-label
   - pony
   - shrug
   - size
