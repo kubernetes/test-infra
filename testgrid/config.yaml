@@ -4620,6 +4620,29 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce
   - name: kops-aws-master
     test_group_name: ci-kubernetes-e2e-kops-aws
+  - name: gce-device-plugin-gpu-master
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
+  - name: gce-cos-master-slow
+    test_group_name: ci-kubernetes-e2e-gci-gce-slow
+  - name: gce-cos-master-serial
+    test_group_name: ci-kubernetes-e2e-gci-gce-serial
+  - name: gce-cos-master-alpha-features
+    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
+  - name: gce-cos-master-scalability-100
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability
+  - name: gce-cos-master-ingress
+    test_group_name: ci-kubernetes-e2e-gci-gce-ingress
+  - name: gce-cos-master-reboot
+    test_group_name: ci-kubernetes-e2e-gci-gce-reboot
+  - name: kubeadm-gce-master
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-master
+  - name: kubeadm-gce-stable-on-master
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
+  - name: packages-pushed-master
+    test_group_name: periodic-kubernetes-e2e-packages-pushed
+
+- name: sig-release-master-informing
+  dashboard_tab:
   - name: Conformance - GCE
     description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
     test_group_name: ci-kubernetes-gce-conformance
@@ -4632,30 +4655,12 @@ dashboards:
   - name: Conformance - vSphere
     description: Runs conformance tests using e2e.test against latest kubernetes master with in-tree vSphere
     test_group_name: ci-periodic-vsphere-test-e2e-conformance
-  - name: gce-device-plugin-gpu-master
-    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
-  - name: gce-cos-master-slow
-    test_group_name: ci-kubernetes-e2e-gci-gce-slow
-  - name: gce-cos-master-serial
-    test_group_name: ci-kubernetes-e2e-gci-gce-serial
-  - name: gce-cos-master-alpha-features
-    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
-  - name: gce-cos-master-scalability-100
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability
   - name: gce-master-scale-correctness
+    description: Runs 1000-node performance test once a week and checks that operational results are still all correct at that scale
     test_group_name: ci-kubernetes-e2e-gce-scale-correctness
   - name: gce-master-scale-performance
+    description: 5000-node performance test, runs once a day on weekdays
     test_group_name: ci-kubernetes-e2e-gce-scale-performance
-  - name: gce-cos-master-ingress
-    test_group_name: ci-kubernetes-e2e-gci-gce-ingress
-  - name: gce-cos-master-reboot
-    test_group_name: ci-kubernetes-e2e-gci-gce-reboot
-  - name: kubeadm-gce-master
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-master
-  - name: kubeadm-gce-stable-on-master
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
-  - name: packages-pushed-master
-    test_group_name: periodic-kubernetes-e2e-packages-pushed
 
 - name: sig-release-1.13-all
   dashboard_tab:
