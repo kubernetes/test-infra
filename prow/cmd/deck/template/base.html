@@ -16,7 +16,7 @@
   <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
   {{block "scripts" .Arguments}}{{end}}
 </head>
-<body{{if branding.BackgroundColor}} style="background-color: {{branding.BackgroundColor}};"{{end}}>
+<body id="{{.PageName}}"{{if branding.BackgroundColor}} style="background-color: {{branding.BackgroundColor}};"{{end}}>
 <div id="alert-container"></div>
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
   <header class="mdl-layout__header"{{if branding.HeaderColor}} style="background-color: {{branding.HeaderColor}};"{{end}}>

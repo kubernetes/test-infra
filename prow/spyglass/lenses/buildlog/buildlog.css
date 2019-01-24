@@ -1,10 +1,25 @@
+body {
+    padding-left: 15px;
+}
+
+table button {
+    font-size: 1em;
+    text-align: left;
+    background: none;
+    color: #ccc;
+    margin: 0;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+}
+
 .loglines {
     list-style-type: none;
     padding: 0;
     margin: 0;
     line-height:1.2;
-    color: #e8e8e8;
-    background-color: #212121;
+    color: #fff;
+    /*background-color: #212121;*/
 }
 .loglines td {
     padding-left: 0;

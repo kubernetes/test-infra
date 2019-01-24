@@ -1,5 +1,13 @@
-.mdl-card {
-    background-color: #000;
+.lens-card.mdl-card {
+  width: calc(100% - 30px);
+  align-content: center;
+  background-color: #424242;
+  margin-left: 15px;
+  margin-bottom: 30px;
+}
+
+.lens-card h3 {
+  padding-bottom: 10px;
 }
 
 .mdl-card__title {
@@ -7,8 +15,12 @@
 }
 
 body {
-  background: #212121;
+  background-color: #303030;
   color: #fff;
+}
+
+.mdl-layout__header {
+  background-color: #212121;
 }
 
 #lens-container {
@@ -20,14 +32,9 @@ body {
   padding-bottom: 0;
 }
 
-.lens-card.mdl-card {
-  width: 100%;
-  align-content: center;
-}
-
 #lens-container .lens-view-content {
-  width: calc(100% - 16px);
-  padding: 8px;
+  width: 100%;
+  padding: 0;
 }
 
 .lens-card-loading {
