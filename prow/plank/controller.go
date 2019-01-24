@@ -61,10 +61,6 @@ type GitHubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
-type configAgent interface {
-	Config() *config.Config
-}
-
 // TODO: Dry this out
 type syncFn func(pj kube.ProwJob, pm map[string]kube.Pod, reports chan<- kube.ProwJob) error
 
@@ -74,7 +70,7 @@ type Controller struct {
 	pkcs   map[string]kubeClient
 	ghc    GitHubClient
 	log    *logrus.Entry
-	ca     configAgent
+	config config.Getter
 	totURL string
 	// selector that will be applied on prowjobs and pods.
 	selector string
@@ -93,7 +89,7 @@ type Controller struct {
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(kc *kube.Client, pkcs map[string]*kube.Client, ghc GitHubClient, logger *logrus.Entry, ca *config.Agent, totURL, selector string, skipReport bool) (*Controller, error) {
+func NewController(kc *kube.Client, pkcs map[string]*kube.Client, ghc GitHubClient, logger *logrus.Entry, cfg config.Getter, totURL, selector string, skipReport bool) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
@@ -106,7 +102,7 @@ func NewController(kc *kube.Client, pkcs map[string]*kube.Client, ghc GitHubClie
 		pkcs:        buildClusters,
 		ghc:         ghc,
 		log:         logger,
-		ca:          ca,
+		config:      cfg,
 		pendingJobs: make(map[string]int),
 		totURL:      totURL,
 		selector:    selector,
@@ -120,7 +116,7 @@ func (c *Controller) canExecuteConcurrently(pj *kube.ProwJob) bool {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
-	if max := c.ca.Config().Plank.MaxConcurrency; max > 0 {
+	if max := c.config().Plank.MaxConcurrency; max > 0 {
 		var running int
 		for _, num := range c.pendingJobs {
 			running += num
@@ -221,7 +217,7 @@ func (c *Controller) Sync() error {
 	c.pendingJobs = make(map[string]int)
 	// Sync pending jobs first so we can determine what is the maximum
 	// number of new jobs we can trigger when syncing the non-pendings.
-	maxSyncRoutines := c.ca.Config().Plank.MaxGoroutines
+	maxSyncRoutines := c.config().Plank.MaxGoroutines
 	c.log.Debugf("Handling %d pending prowjobs", len(pendingCh))
 	syncProwJobs(c.log, c.syncPendingJob, maxSyncRoutines, pendingCh, reportCh, errCh, pm)
 	c.log.Debugf("Handling %d triggered prowjobs", len(triggeredCh))
@@ -236,7 +232,7 @@ func (c *Controller) Sync() error {
 
 	var reportErrs []error
 	if !c.skipReport {
-		reportTemplate := c.ca.Config().Plank.ReportTemplate
+		reportTemplate := c.config().Plank.ReportTemplate
 		for report := range reportCh {
 			if err := reportlib.Report(c.ghc, reportTemplate, report); err != nil {
 				reportErrs = append(reportErrs, err)
@@ -287,7 +283,7 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob, pm map[string]kube.Pod) 
 		toCancel := pjs[cancelIndex]
 		// Allow aborting presubmit jobs for commits that have been superseded by
 		// newer commits in Github pull requests.
-		if c.ca.Config().Plank.AllowCancellations {
+		if c.config().Plank.AllowCancellations {
 			if pod, exists := pm[toCancel.ObjectMeta.Name]; exists {
 				if client, ok := c.pkcs[toCancel.ClusterAlias()]; !ok {
 					c.log.WithFields(pjutil.ProwJobFields(&toCancel)).Errorf("Unknown cluster alias %q.", toCancel.ClusterAlias())
@@ -385,7 +381,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 			pj.Status.Description = "Job succeeded."
 			for _, nj := range pj.Spec.RunAfterSuccess {
 				child := pjutil.NewProwJob(nj, pj.ObjectMeta.Labels)
-				if c.ghc != nil && !c.RunAfterSuccessCanRun(&pj, &child, c.ca, c.ghc) {
+				if c.ghc != nil && !c.runAfterSuccessCanRun(&pj, &child) {
 					continue
 				}
 				if _, err := c.kc.CreateProwJob(pjutil.NewProwJob(nj, pj.ObjectMeta.Labels)); err != nil {
@@ -418,7 +414,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 			pj.Status.Description = "Job failed."
 
 		case kube.PodPending:
-			maxPodPending := c.ca.Config().Plank.PodPendingTimeout
+			maxPodPending := c.config().Plank.PodPendingTimeout
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodPending {
 				// Pod is running. Do nothing.
 				c.incrementNumPendingJobs(pj.Spec.Job)
@@ -438,7 +434,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 		}
 	}
 
-	pj.Status.URL = pjutil.JobURL(c.ca.Config().Plank, pj, c.log)
+	pj.Status.URL = pjutil.JobURL(c.config().Plank, pj, c.log)
 
 	reports <- pj
 
@@ -490,7 +486,7 @@ func (c *Controller) syncTriggeredJob(pj kube.ProwJob, pm map[string]kube.Pod, r
 		pj.Status.State = kube.PendingState
 		pj.Status.PodName = pn
 		pj.Status.Description = "Job triggered."
-		pj.Status.URL = pjutil.JobURL(c.ca.Config().Plank, pj, c.log)
+		pj.Status.URL = pjutil.JobURL(c.config().Plank, pj, c.log)
 	}
 	reports <- pj
 	if prevState != pj.Status.State {
@@ -540,12 +536,12 @@ func getPodBuildID(pod *kube.Pod) string {
 	return ""
 }
 
-// RunAfterSuccessCanRun returns whether a child job (specified as run_after_success in the
+// runAfterSuccessCanRun returns whether a child job (specified as run_after_success in the
 // prow config) can run once its parent job succeeds. The only case we will not run a child job
 // is when it is a presubmit job and has a run_if_changed regular expression specified which does
 // not match the changed filenames in the pull request the job was meant to run for.
 // TODO: Collapse with Jenkins, impossible to reuse as is due to the interfaces.
-func (c *Controller) RunAfterSuccessCanRun(parent, child *kube.ProwJob, ca configAgent, ghc GitHubClient) bool {
+func (c *Controller) runAfterSuccessCanRun(parent, child *kube.ProwJob) bool {
 	if parent.Spec.Type != kube.PresubmitJob {
 		return true
 	}
@@ -555,7 +551,7 @@ func (c *Controller) RunAfterSuccessCanRun(parent, child *kube.ProwJob, ca confi
 	repo := parent.Spec.Refs.Repo
 	prNum := parent.Spec.Refs.Pulls[0].Number
 
-	ps := ca.Config().GetPresubmit(org+"/"+repo, child.Spec.Job)
+	ps := c.config().GetPresubmit(org+"/"+repo, child.Spec.Job)
 	if ps == nil {
 		// The config has changed ever since we started the parent.
 		// Not sure what is more correct here. Run the child for now.
@@ -564,7 +560,7 @@ func (c *Controller) RunAfterSuccessCanRun(parent, child *kube.ProwJob, ca confi
 	if ps.RunIfChanged == "" {
 		return true
 	}
-	changesFull, err := ghc.GetPullRequestChanges(org, repo, prNum)
+	changesFull, err := c.ghc.GetPullRequestChanges(org, repo, prNum)
 	if err != nil {
 		c.log.WithError(err).WithFields(pjutil.ProwJobFields(parent)).Warnf("Cannot get PR changes for #%d", prNum)
 		return true
