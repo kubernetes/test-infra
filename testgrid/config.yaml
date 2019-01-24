@@ -6569,9 +6569,11 @@ dashboards:
   dashboard_tab:
   - name: master-gce-lastest
     test_group_name: ci-sig-storage-local-static-provisioner-master-gce-latest
+    base_options: include-filter-by-regex=sig-storage
     description: E2E tests against latest kubernetes on GCE
   - name: master-gke-default
     test_group_name: ci-sig-storage-local-static-provisioner-master-gke-default
+    base_options: include-filter-by-regex=sig-storage
     description: E2E tests against default kubernetes on GKE
   - name: master-canary-build
     test_group_name: post-sig-storage-local-static-provisioner-build-canary
