@@ -1,5 +1,7 @@
 body {
     padding-left: 15px;
+    padding-bottom: 10px;
+    width: calc(100% - 15px);
 }
 
 table button {

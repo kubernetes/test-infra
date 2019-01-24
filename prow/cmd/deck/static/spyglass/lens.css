@@ -10,6 +10,7 @@ html {
  */
 body.lens-body {
   min-height: unset;
+  font-size: 14px;
 }
 
 
@@ -22,6 +23,7 @@ table.mdl-data-table {
   margin: 0;
   border: 0;
   width: 100%;
+  font-size: inherit;
 }
 
 .mdl-data-table {
