@@ -14,6 +14,20 @@ presubmits:
       - name: third
         image: busybox
         args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-presubmits.yaml"]
+  - name: pull-test-infra-build-smoke-fail
+    agent: knative-build
+    decorate: true
+    build_spec:
+      steps:
+      - name: first
+        image: busybox
+        args: ["echo", "hello"]
+      - name: second
+        image: busybox
+        args: ["sleep", "60"]
+      - name: third
+        image: busybox
+        args: ["exit", "1"]
 
   - name: pull-test-infra-bazel
     branches:

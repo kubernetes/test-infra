@@ -780,6 +780,9 @@ test_groups:
 - name: pull-test-infra-build-smoke
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-build-smoke
   num_columns_recent: 20
+- name: pull-test-infra-build-smoke-fail
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-build-smoke-fail
+  num_columns_recent: 20
 - name: post-test-infra-build-smoke
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-build-smoke
 - name: ci-test-infra-bazel
@@ -6687,6 +6690,11 @@ dashboards:
   - name: pull-build-smoke
     description: basic presubmit to ensure build controller works correctly
     test_group_name: pull-test-infra-build-smoke
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: pull-build-smoke-fail
+    description: basic presubmit to ensure build controller fails correctly (Will remove once we assert the behavior)
+    test_group_name: pull-test-infra-build-smoke-fail
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: post-build-smoke
