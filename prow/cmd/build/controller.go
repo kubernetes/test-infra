@@ -57,10 +57,8 @@ const (
 	controllerName = "prow-build-crd"
 )
 
-type getConfig func() *config.Config
-
 type controller struct {
-	config getConfig
+	config config.Getter
 	pjc    prowjobset.Interface
 	builds map[string]buildConfig
 	totURL string
@@ -116,7 +114,7 @@ func (c *controller) hasSynced() bool {
 	return true // Everyone is synced
 }
 
-func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjobinfov1.ProwJobInformer, buildConfigs map[string]buildConfig, totURL string, prowConfig getConfig, rl workqueue.RateLimitingInterface) *controller {
+func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjobinfov1.ProwJobInformer, buildConfigs map[string]buildConfig, totURL string, prowConfig config.Getter, rl workqueue.RateLimitingInterface) *controller {
 	// Log to events
 	prowjobscheme.AddToScheme(scheme.Scheme)
 	eventBroadcaster := record.NewBroadcaster()
