@@ -2479,6 +2479,15 @@ test_groups:
 - name: pull-cluster-api-provider-aws-bazel-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-e2e
   num_columns_recent: 20
+- name: pull-cluster-api-provider-azure-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-build
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-azure-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-test
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-azure-check
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-check
+  num_columns_recent: 20
 - name: pull-cluster-api-provider-digitalocean-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-digitalocean-build
   num_columns_recent: 20
@@ -5844,6 +5853,15 @@ dashboards:
   - name: test-creds
     test_group_name: periodic-cluster-api-provider-aws-test-creds
 
+- name: sig-cluster-lifecycle-cluster-api-provider-azure
+  dashboard_tab:
+  - name: pr-build
+    test_group_name: pull-cluster-api-provider-azure-build
+  - name: pr-check
+    test_group_name: pull-cluster-api-provider-azure-check
+  - name: pr-test
+    test_group_name: pull-cluster-api-provider-azure-test
+
 - name: sig-cluster-lifecycle-cluster-api-provider-digitalocean
   dashboard_tab:
   - name: build
@@ -7591,6 +7609,7 @@ dashboard_groups:
   - sig-cluster-lifecycle-multi-platform
   - sig-cluster-lifecycle-cluster-api
   - sig-cluster-lifecycle-cluster-api-provider-aws
+  - sig-cluster-lifecycle-cluster-api-provider-azure
   - sig-cluster-lifecycle-cluster-api-provider-digitalocean
   - sig-cluster-lifecycle-cluster-api-provider-vsphere
   - sig-cluster-lifecycle-cluster-api-provider-gcp
