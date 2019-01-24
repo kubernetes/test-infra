@@ -43,7 +43,7 @@ presubmits:
     decorate: true
     labels:
       preset-service-account: "true"
-      preset-aws-ebs-csi-driver-common: "true"
+      preset-aws-credential-aws-oss-testing: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190122-6eca4133a-master
