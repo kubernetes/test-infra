@@ -302,6 +302,7 @@ func (c *controller) buildID(pj prowjobv1.ProwJob) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
+	pj.Status.BuildID = id
 	url := pjutil.JobURL(c.config().Plank, pj, logrus.NewEntry(logrus.StandardLogger()))
 	return id, url, nil
 }
