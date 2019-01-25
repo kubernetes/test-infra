@@ -129,27 +129,6 @@ blockades:
 - repos:
   - kubernetes/kubernetes
   blockregexps:
-  - ^docs/man
-  exceptionregexps:
-  - ^docs/man/man1/.*\.1$
-  explanation: "Files under `docs/man` must be in the `man1` directory and have suffix `.1`."
-- repos:
-  - kubernetes/kubernetes
-  blockregexps:
-  - ^docs/user-guide
-  exceptionregexps:
-  - ^docs/user-guide/kubectl/kubectl.*\.md$
-  explanation: "Files under `docs/user-guide` must be in the `kubectl` directory and match pattern `kubectl*.md`."
-- repos:
-  - kubernetes/kubernetes
-  blockregexps:
-  - ^docs/yaml
-  exceptionregexps:
-  - ^docs/yaml/kubectl/kubectl_.*\.yaml$
-  explanation: "Files under `docs/yaml` must be in the `kubectl` directory and match pattern `kubectl_*.yaml`."
-- repos:
-  - kubernetes/kubernetes
-  blockregexps:
   - ^examples/
   explanation: "examples/ has moved to https://github.com/kubernetes/examples/"
 - repos:
