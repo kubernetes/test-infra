@@ -7610,6 +7610,7 @@ dashboard_groups:
   - sig-aws-cloud-provider-aws
   - sig-aws-ebs-csi-driver
   - sig-aws-eks-periodics
+  - sig-aws-eks-presubmits
 
 - name: sig-cli
   dashboard_names:
