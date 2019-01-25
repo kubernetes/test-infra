@@ -70,7 +70,7 @@ type Controller struct {
 	jc     jenkinsClient
 	ghc    githubClient
 	log    *logrus.Entry
-	ca     configAgent
+	cfg    config.Getter
 	node   *snowflake.Node
 	totURL string
 	// selector that will be applied on prowjobs.
@@ -87,7 +87,7 @@ type Controller struct {
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(kc *kube.Client, jc *Client, ghc *github.Client, logger *logrus.Entry, ca *config.Agent, totURL, selector string) (*Controller, error) {
+func NewController(kc *kube.Client, jc *Client, ghc *github.Client, logger *logrus.Entry, cfg config.Getter, totURL, selector string) (*Controller, error) {
 	n, err := snowflake.NewNode(1)
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func NewController(kc *kube.Client, jc *Client, ghc *github.Client, logger *logr
 		jc:          jc,
 		ghc:         ghc,
 		log:         logger,
-		ca:          ca,
+		cfg:         cfg,
 		selector:    selector,
 		node:        n,
 		totURL:      totURL,
@@ -109,7 +109,7 @@ func NewController(kc *kube.Client, jc *Client, ghc *github.Client, logger *logr
 }
 
 func (c *Controller) config() config.Controller {
-	operators := c.ca.Config().JenkinsOperators
+	operators := c.cfg().JenkinsOperators
 	if len(operators) == 1 {
 		return operators[0].Controller
 	}
@@ -370,7 +370,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 			pj.Status.Description = "Jenkins job succeeded."
 			for _, nj := range pj.Spec.RunAfterSuccess {
 				child := pjutil.NewProwJob(nj, pj.ObjectMeta.Labels)
-				if !c.RunAfterSuccessCanRun(&pj, &child, c.ca, c.ghc) {
+				if !c.RunAfterSuccessCanRun(&pj, &child) {
 					continue
 				}
 				if _, err := c.kc.CreateProwJob(pjutil.NewProwJob(nj, pj.ObjectMeta.Labels)); err != nil {
@@ -464,7 +464,7 @@ func (c *Controller) getBuildID(name string) (string, error) {
 // is when it is a presubmit job and has a run_if_changed regular expression specified which does
 // not match the changed filenames in the pull request the job was meant to run for.
 // TODO: Collapse with plank, impossible to reuse as is due to the interfaces.
-func (c *Controller) RunAfterSuccessCanRun(parent, child *kube.ProwJob, ca configAgent, ghc githubClient) bool {
+func (c *Controller) RunAfterSuccessCanRun(parent, child *kube.ProwJob) bool {
 	if parent.Spec.Type != kube.PresubmitJob {
 		return true
 	}
@@ -474,7 +474,7 @@ func (c *Controller) RunAfterSuccessCanRun(parent, child *kube.ProwJob, ca confi
 	repo := parent.Spec.Refs.Repo
 	prNum := parent.Spec.Refs.Pulls[0].Number
 
-	ps := ca.Config().GetPresubmit(org+"/"+repo, child.Spec.Job)
+	ps := c.cfg().GetPresubmit(org+"/"+repo, child.Spec.Job)
 	if ps == nil {
 		// The config has changed ever since we started the parent.
 		// Not sure what is more correct here. Run the child for now.
@@ -483,7 +483,7 @@ func (c *Controller) RunAfterSuccessCanRun(parent, child *kube.ProwJob, ca confi
 	if ps.RunIfChanged == "" {
 		return true
 	}
-	changesFull, err := ghc.GetPullRequestChanges(org, repo, prNum)
+	changesFull, err := c.ghc.GetPullRequestChanges(org, repo, prNum)
 	if err != nil {
 		c.log.WithError(err).WithFields(pjutil.ProwJobFields(parent)).Warnf("Cannot get PR changes for #%d", prNum)
 		return true

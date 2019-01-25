@@ -140,8 +140,9 @@ func main() {
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
+	cfg := configAgent.Config
 
-	kubeClient, err := o.kubernetes.Client(configAgent.Config().ProwJobNamespace, o.dryRun)
+	kubeClient, err := o.kubernetes.Client(cfg().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
@@ -196,13 +197,13 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
-	c, err := jenkins.NewController(kubeClient, jc, githubClient, nil, configAgent, o.totURL, o.selector)
+	c, err := jenkins.NewController(kubeClient, jc, githubClient, nil, cfg, o.totURL, o.selector)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to instantiate Jenkins controller.")
 	}
 
 	// Push metrics to the configured prometheus pushgateway endpoint.
-	pushGateway := configAgent.Config().PushGateway
+	pushGateway := cfg().PushGateway
 	if pushGateway.Endpoint != "" {
 		go m.PushMetrics("jenkins-operator", pushGateway.Endpoint, pushGateway.Interval)
 	}
