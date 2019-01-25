@@ -4444,6 +4444,33 @@ dashboards:
   - name: gke-sd-logging-ubuntu-1.12
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
 
+- name: google-gke-upgrade
+  dashboard_tab:
+  - name: gke-gci-stable-gci-master-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
+    description: Upgrade master only, in gke, from gci 1.10 to gci master
+  - name: gke-gci-new-gci-master-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
+    description: Upgrade master only, in gke(gci), from 1.10 to master
+  - name: gke-gci-new-gci-master-upgrade-cluster-parallel
+    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-parallel
+    description: Upgrade master and node, in gke(gci), from 1.10 to master, run parallel tests only
+  - name: gke-gci-new-gci-master-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
+    description: Upgrade master and node, in gke(gci), from 1.10 to master
+  - name: gke-gci-master-gci-new-downgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
+    description: Downgrade master and node, in gke(gci), from master to 1.10
+  - name: gke-gci-master-gci-new-downgrade-cluster-parallel
+    test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
+    description: Downgrade master and node, in gke(gci), from master to 1.10, run parallel tests only
+  - name: gke-gci-new-gci-master-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
+    description: Upgrade master and node, in gke(gci), from 1.10 to master, and run skewed e2e tests; skipping slow tests as we run serially
+  - name: gke-gci-new-gci-master-upgrade-cluster-new-parallel
+    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new-parallel
+    description: Upgrade master and node, in gke(gci), from 1.10 to master, and run skewed e2e tests; skipping serial and disruptive tests as we run in parallel
+
 - name: google-soak
   dashboard_tab:
   - name: gce-gci
@@ -4514,33 +4541,6 @@ dashboards:
   dashboard_tab:
   - name: windows-prototype
     test_group_name: ci-kubernetes-e2e-windows-gce-poc
-
-- name: sig-release-master-upgrade-optional
-  dashboard_tab:
-  - name: gke-gci-stable-gci-master-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
-    description: Upgrade master only, in gke, from gci 1.10 to gci master
-  - name: gke-gci-new-gci-master-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
-    description: Upgrade master only, in gke(gci), from 1.10 to master
-  - name: gke-gci-new-gci-master-upgrade-cluster-parallel
-    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-parallel
-    description: Upgrade master and node, in gke(gci), from 1.10 to master, run parallel tests only
-  - name: gke-gci-new-gci-master-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
-    description: Upgrade master and node, in gke(gci), from 1.10 to master
-  - name: gke-gci-master-gci-new-downgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
-    description: Downgrade master and node, in gke(gci), from master to 1.10
-  - name: gke-gci-master-gci-new-downgrade-cluster-parallel
-    test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
-    description: Downgrade master and node, in gke(gci), from master to 1.10, run parallel tests only
-  - name: gke-gci-new-gci-master-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
-    description: Upgrade master and node, in gke(gci), from 1.10 to master, and run skewed e2e tests; skipping slow tests as we run serially
-  - name: gke-gci-new-gci-master-upgrade-cluster-new-parallel
-    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new-parallel
-    description: Upgrade master and node, in gke(gci), from 1.10 to master, and run skewed e2e tests; skipping serial and disruptive tests as we run in parallel
 
 - name: sig-release-master-upgrade
   dashboard_tab:
@@ -7569,14 +7569,15 @@ dashboard_groups:
   dashboard_names:
   - google-aws
   - google-gce
-  - google-gci
   - google-gce-compute-image-tools
+  - google-gci
   - google-gke
+  - google-gke-stackdriver
+  - google-gke-upgrade
+  - google-kops-gce
+  - google-rules_k8s
   - google-soak
   - google-unit
-  - google-gke-stackdriver
-  - google-rules_k8s
-  - google-kops-gce
   - google-windows
 
 - name: istio
@@ -7658,7 +7659,6 @@ dashboard_groups:
   - sig-release-master-blocking
   - sig-release-master-informing
   - sig-release-master-upgrade
-  - sig-release-master-upgrade-optional
   - sig-release-1.13-all
   - sig-release-1.13-blocking
   - sig-release-1.12-all
