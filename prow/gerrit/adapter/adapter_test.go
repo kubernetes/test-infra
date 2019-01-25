@@ -348,9 +348,9 @@ func TestProcessChange(t *testing.T) {
 		fkc := &fkc{}
 
 		c := &Controller{
-			ca: fca,
-			kc: fkc,
-			gc: &fgc{},
+			config: fca.Config,
+			kc:     fkc,
+			gc:     &fgc{},
 		}
 
 		err := c.ProcessChange("https://gerrit", tc.change)

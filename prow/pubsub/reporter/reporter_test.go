@@ -109,7 +109,9 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 		},
 	}
 
-	c := &Client{ca: fca}
+	c := &Client{
+		config: fca.Config,
+	}
 
 	for _, tc := range testcases {
 		m := c.generateMessageFromPJ(tc.pj)
@@ -178,7 +180,8 @@ func TestShouldReport(t *testing.T) {
 		},
 	}
 
-	c := NewReporter(&fca{})
+	var fakeConfigAgent fca
+	c := NewReporter(fakeConfigAgent.Config)
 
 	for _, tc := range testcases {
 		r := c.ShouldReport(tc.pj)

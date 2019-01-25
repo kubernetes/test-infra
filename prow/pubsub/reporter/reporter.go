@@ -51,18 +51,16 @@ type ReportMessage struct {
 	GCSPath string            `json:"gcs_path"`
 }
 
-type configAgent interface {
-	Config() *config.Config
-}
-
 // Client is a reporter client fed to crier controller
 type Client struct {
-	ca configAgent
+	config config.Getter
 }
 
 // NewReporter creates a new Pub/Sub reporter
-func NewReporter(ca configAgent) *Client {
-	return &Client{ca: ca}
+func NewReporter(cfg config.Getter) *Client {
+	return &Client{
+		config: cfg,
+	}
 }
 
 // GetName returns the name of the reporter
@@ -116,7 +114,7 @@ func (c *Client) generateMessageFromPJ(pj *kube.ProwJob) *ReportMessage {
 		RunID:   runID,
 		Status:  pj.Status.State,
 		URL:     pj.Status.URL,
-		GCSPath: strings.Replace(pj.Status.URL, c.ca.Config().Plank.JobURLPrefix, GCSPrefix, 1),
+		GCSPath: strings.Replace(pj.Status.URL, c.config().Plank.JobURLPrefix, GCSPrefix, 1),
 	}
 
 	return psReport
