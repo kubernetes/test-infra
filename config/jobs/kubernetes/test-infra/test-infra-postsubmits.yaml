@@ -3,6 +3,7 @@ postsubmits:
   - name: post-test-infra-build-smoke
     agent: knative-build
     decorate: true
+    report: true
     build_spec:
       steps:
       - name: first
@@ -14,6 +15,7 @@ postsubmits:
       - name: third
         image: busybox
         args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-postsubmits.yaml"]
+
   - name: ci-test-infra-bazel
     branches:
     - master
