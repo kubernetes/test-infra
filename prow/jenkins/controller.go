@@ -30,9 +30,9 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	reportlib "k8s.io/test-infra/prow/github/report"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
-	reportlib "k8s.io/test-infra/prow/report"
 )
 
 const (

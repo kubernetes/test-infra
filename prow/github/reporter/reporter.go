@@ -21,7 +21,7 @@ package reporter
 import (
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/report"
+	"k8s.io/test-infra/prow/github/report"
 )
 
 const (
