@@ -83,6 +83,11 @@ func TestGetRevisionFromRef(t *testing.T) {
 
 func TestWait(t *testing.T) {
 	aborted := strconv.Itoa(entrypoint.AbortedErrorCode)
+	skip := strconv.Itoa(entrypoint.PreviousErrorCode)
+	const (
+		pass = "0"
+		fail = "1"
+	)
 	cases := []struct {
 		name         string
 		markers      []string
@@ -90,43 +95,56 @@ func TestWait(t *testing.T) {
 		pass         bool
 		accessDenied bool
 		missing      bool
+		failures     int
 	}{
 		{
 			name:    "pass, not abort when 1 item passes",
-			markers: []string{"0"},
+			markers: []string{pass},
 			pass:    true,
 		},
 		{
 			name:    "pass when all items pass",
-			markers: []string{"0", "0", "0"},
+			markers: []string{pass, pass, pass},
 			pass:    true,
 		},
 		{
-			name:    "fail, not abort when 1 item fails",
-			markers: []string{"1"},
+			name:     "fail, not abort when 1 item fails",
+			markers:  []string{fail},
+			failures: 1,
 		},
 		{
-			name:    "fail when any item fails",
-			markers: []string{"0", "1", "0"},
+			name:     "fail when any item fails",
+			markers:  []string{pass, fail, pass},
+			failures: 1,
 		},
 		{
-			name:    "abort and fail when 1 item aborts",
-			markers: []string{aborted},
-			abort:   true,
+			name:     "abort and fail when 1 item aborts",
+			markers:  []string{aborted},
+			abort:    true,
+			failures: 1,
 		},
 		{
-			name:    "abort when any item aborts",
-			markers: []string{"0", aborted, "1"},
-			abort:   true,
+			name:     "abort when any item aborts",
+			markers:  []string{pass, aborted, fail},
+			abort:    true,
+			failures: 2,
 		},
 		{
-			name:    "fail when marker cannot be read",
-			markers: []string{"0", "not-an-exit-code", "0"},
+			name:     "fail when marker cannot be read",
+			markers:  []string{pass, "not-an-exit-code", pass},
+			failures: 1,
 		},
 		{
-			name:    "fail when marker does not exist",
-			markers: []string{"0"},
-			missing: true,
+			name:     "fail when marker does not exist",
+			markers:  []string{pass},
+			missing:  true,
+			failures: 1,
+		},
+		{
+			name:     "count all failures",
+			markers:  []string{pass, fail, aborted, skip, fail, pass},
+			abort:    true,
+			failures: 3,
 		},
 	}
 
@@ -160,13 +178,16 @@ func TestWait(t *testing.T) {
 				go cancel()
 			}
 
-			pass, abort := wait(ctx, entries)
+			pass, abort, failures := wait(ctx, entries)
 			cancel()
 			if pass != tc.pass {
 				t.Errorf("expected pass %t != actual %t", tc.pass, pass)
 			}
 			if abort != tc.abort {
 				t.Errorf("expected abort %t != actual %t", tc.abort, abort)
+			}
+			if failures != tc.failures {
+				t.Errorf("expected failures %d != actual %d", tc.failures, failures)
 			}
 		})
 	}

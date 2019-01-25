@@ -43,6 +43,9 @@ type Options struct {
 
 	// Additional entries to wait for if set
 	Entries []wrapper.Options `json:"entries,omitempty"`
+
+	// EntryError requires all entries to pass in order to exit cleanly.
+	EntryError bool `json:"entry_error,omitempty"`
 }
 
 func (o Options) entries() []wrapper.Options {
