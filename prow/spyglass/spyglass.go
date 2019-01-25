@@ -48,16 +48,10 @@ type Spyglass struct {
 	// JobAgent contains information about the current jobs in deck
 	JobAgent *jobs.JobAgent
 
-	// ConfigAgent contains information about the prow configuration
-	ConfigAgent configAgent
+	config config.Getter
 
 	*GCSArtifactFetcher
 	*PodLogArtifactFetcher
-}
-
-// This interface matches config.Agent and exists for the purpose of unit tests.
-type configAgent interface {
-	Config() *config.Config
 }
 
 // LensRequest holds data sent by a view
@@ -67,10 +61,10 @@ type LensRequest struct {
 }
 
 // New constructs a Spyglass object from a JobAgent, a config.Agent, and a storage Client.
-func New(ja *jobs.JobAgent, conf configAgent, c *storage.Client) *Spyglass {
+func New(ja *jobs.JobAgent, cfg config.Getter, c *storage.Client) *Spyglass {
 	return &Spyglass{
 		JobAgent:              ja,
-		ConfigAgent:           conf,
+		config:                cfg,
 		PodLogArtifactFetcher: NewPodLogArtifactFetcher(ja),
 		GCSArtifactFetcher:    NewGCSArtifactFetcher(c),
 	}
