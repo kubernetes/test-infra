@@ -40,6 +40,9 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *January 22, 2019* `sinker` prefers `.kube/config` instead of the custom `Clusters`
+   file to specify credentials for external build clusters. The flag name has changed
+   from `--build-cluster` to `--kubeconfig`. Migrate before June 2019.
  - *November 29, 2018* `plank` will no longer default jobs with `decorate: true`
    to have `automountServiceAccountToken: false` in their PodSpec if unset, if the
    job explicitly sets `serviceAccountName`
