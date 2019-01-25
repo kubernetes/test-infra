@@ -737,7 +737,7 @@ func TestPickBatch(t *testing.T) {
 	c := &Controller{
 		logger: logrus.WithField("component", "tide"),
 		gc:     gc,
-		ca:     ca,
+		config: ca.Config,
 	}
 	prs, err := c.pickBatch(sp, &config.TideContextPolicy{})
 	if err != nil {
@@ -1026,7 +1026,7 @@ func TestTakeAction(t *testing.T) {
 		c := &Controller{
 			logger: logrus.WithField("controller", "tide"),
 			gc:     gc,
-			ca:     ca,
+			config: ca.Config,
 			ghc:    &fgc,
 			kc:     &fkc,
 		}
@@ -1295,14 +1295,14 @@ func TestSync(t *testing.T) {
 		sc := &statusController{
 			logger:         logrus.WithField("controller", "status-update"),
 			ghc:            fgc,
-			ca:             ca,
+			config:         ca.Config,
 			newPoolPending: make(chan bool, 1),
 			shutDown:       make(chan bool),
 		}
 		go sc.run()
 		defer sc.shutdown()
 		c := &Controller{
-			ca:     ca,
+			config: ca.Config,
 			ghc:    fgc,
 			kc:     fkc,
 			logger: logrus.WithField("controller", "sync"),
@@ -1980,8 +1980,8 @@ func TestPresubmitsByPull(t *testing.T) {
 			prs:    []PullRequest{samplePR},
 		}
 		c := &Controller{
-			ca:  cfgAgent,
-			ghc: &fgc{},
+			config: cfgAgent.Config,
+			ghc:    &fgc{},
 			changedFiles: &changedFilesAgent{
 				ghc:             &fgc{},
 				changeCache:     tc.initialChangeCache,

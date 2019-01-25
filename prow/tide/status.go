@@ -44,7 +44,7 @@ const (
 
 type statusController struct {
 	logger *logrus.Entry
-	ca     *config.Agent
+	config config.Getter
 	ghc    githubClient
 
 	// newPoolPending is a size 1 chan that signals that the main Tide loop has
@@ -234,11 +234,11 @@ func expectedStatus(queryMap *config.QueryMap, pr *PullRequest, pool map[string]
 // targetURL determines the URL used for more details in the status
 // context on GitHub. If no PR dashboard is configured, we will use
 // the administrative Prow overview.
-func targetURL(c *config.Agent, pr *PullRequest, log *logrus.Entry) string {
+func targetURL(c config.Getter, pr *PullRequest, log *logrus.Entry) string {
 	var link string
-	if tideURL := c.Config().Tide.TargetURL; tideURL != "" {
+	if tideURL := c().Tide.TargetURL; tideURL != "" {
 		link = tideURL
-	} else if baseURL := c.Config().Tide.PRStatusBaseURL; baseURL != "" {
+	} else if baseURL := c().Tide.PRStatusBaseURL; baseURL != "" {
 		parseURL, err := url.Parse(baseURL)
 		if err != nil {
 			log.WithError(err).Error("Failed to parse PR status base URL")
@@ -256,7 +256,7 @@ func targetURL(c *config.Agent, pr *PullRequest, log *logrus.Entry) string {
 func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullRequest) {
 	// queryMap caches which queries match a repo.
 	// Make a new one each sync loop as queries will change.
-	queryMap := sc.ca.Config().Tide.Queries.QueryMap()
+	queryMap := sc.config().Tide.Queries.QueryMap()
 	processed := sets.NewString()
 
 	process := func(pr *PullRequest) {
@@ -267,7 +267,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 			log.WithError(err).Error("Getting head commit status contexts, skipping...")
 			return
 		}
-		cr, err := sc.ca.Config().GetTideContextPolicy(
+		cr, err := sc.config().GetTideContextPolicy(
 			string(pr.Repository.Owner.Login),
 			string(pr.Repository.Name),
 			string(pr.BaseRef.Name))
@@ -294,7 +294,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 					Context:     statusContext,
 					State:       wantState,
 					Description: wantDesc,
-					TargetURL:   targetURL(sc.ca, pr, log),
+					TargetURL:   targetURL(sc.config, pr, log),
 				}); err != nil {
 				log.WithError(err).Errorf(
 					"Failed to set status context from %q to %q.",
@@ -343,7 +343,7 @@ func (sc *statusController) run() {
 // this function returns immediately without syncing.
 func (sc *statusController) waitSync() {
 	// wait for the min sync period time to elapse if needed.
-	wait := time.After(time.Until(sc.lastSyncStart.Add(sc.ca.Config().Tide.StatusUpdatePeriod)))
+	wait := time.After(time.Until(sc.lastSyncStart.Add(sc.config().Tide.StatusUpdatePeriod)))
 	for {
 		select {
 		case <-wait:
@@ -378,7 +378,7 @@ func (sc *statusController) search() []PullRequest {
 	// updated until PRs are individually bumped or Tide is restarted.
 	// The actual queries must still consider negative matches in order to avoid
 	// adding statuses to excluded repos.
-	orgExceptions, repos := sc.ca.Config().Tide.Queries.OrgExceptionsAndRepos()
+	orgExceptions, repos := sc.config().Tide.Queries.OrgExceptionsAndRepos()
 	orgs := sets.StringKeySet(orgExceptions)
 	freshOrgs, freshRepos := orgs.Difference(sc.trackedOrgs), repos.Difference(sc.trackedRepos)
 	oldOrgs, oldRepos := sc.trackedOrgs.Difference(orgs), sc.trackedRepos.Difference(repos)

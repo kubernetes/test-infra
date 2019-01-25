@@ -67,7 +67,7 @@ type contextChecker interface {
 // Controller knows how to sync PRs and PJs.
 type Controller struct {
 	logger *logrus.Entry
-	ca     *config.Agent
+	config config.Getter
 	ghc    githubClient
 	kc     kubeClient
 	gc     *git.Client
@@ -191,14 +191,14 @@ func init() {
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, ca *config.Agent, gc *git.Client, logger *logrus.Entry) *Controller {
+func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, cfg config.Getter, gc *git.Client, logger *logrus.Entry) *Controller {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
 	sc := &statusController{
 		logger:         logger.WithField("controller", "status-update"),
 		ghc:            ghcStatus,
-		ca:             ca,
+		config:         cfg,
 		newPoolPending: make(chan bool, 1),
 		shutDown:       make(chan bool),
 
@@ -210,7 +210,7 @@ func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, ca *confi
 		logger: logger.WithField("controller", "sync"),
 		ghc:    ghcSync,
 		kc:     kc,
-		ca:     ca,
+		config: cfg,
 		gc:     gc,
 		sc:     sc,
 		changedFiles: &changedFilesAgent{
@@ -273,7 +273,7 @@ func (c *Controller) Sync() error {
 	ctx := context.Background()
 	c.logger.Debug("Building tide pool.")
 	prs := make(map[string]PullRequest)
-	for _, q := range c.ca.Config().Tide.Queries {
+	for _, q := range c.config().Tide.Queries {
 		results, err := newSearchExecutor(ctx, c.ghc, c.logger, q.Query()).search()
 		if err != nil {
 			return err
@@ -295,9 +295,9 @@ func (c *Controller) Sync() error {
 			return err
 		}
 
-		if label := c.ca.Config().Tide.BlockerLabel; label != "" {
+		if label := c.config().Tide.BlockerLabel; label != "" {
 			c.logger.Debugf("Searching for blocking issues (label %q).", label)
-			orgExcepts, repos := c.ca.Config().Tide.Queries.OrgExceptionsAndRepos()
+			orgExcepts, repos := c.config().Tide.Queries.OrgExceptionsAndRepos()
 			orgs := make([]string, 0, len(orgExcepts))
 			for org := range orgExcepts {
 				orgs = append(orgs, org)
@@ -314,7 +314,7 @@ func (c *Controller) Sync() error {
 	if err != nil {
 		return err
 	}
-	filteredPools := c.filterSubpools(c.ca.Config().Tide.MaxGoroutines, rawPools)
+	filteredPools := c.filterSubpools(c.config().Tide.MaxGoroutines, rawPools)
 
 	// Notify statusController about the new pool.
 	c.sc.Lock()
@@ -328,7 +328,7 @@ func (c *Controller) Sync() error {
 	// Sync subpools in parallel.
 	poolChan := make(chan Pool, len(filteredPools))
 	subpoolsInParallel(
-		c.ca.Config().Tide.MaxGoroutines,
+		c.config().Tide.MaxGoroutines,
 		filteredPools,
 		func(sp *subpool) {
 			pool, err := c.syncSubpool(*sp, blocks.GetApplicable(sp.org, sp.repo, sp.branch))
@@ -424,7 +424,7 @@ func (c *Controller) initSubpoolData(sp *subpool) error {
 	if err != nil {
 		return fmt.Errorf("error determining required presubmit prowjobs: %v", err)
 	}
-	sp.cc, err = c.ca.Config().GetTideContextPolicy(sp.org, sp.repo, sp.branch)
+	sp.cc, err = c.config().GetTideContextPolicy(sp.org, sp.repo, sp.branch)
 	if err != nil {
 		return fmt.Errorf("error setting up context checker: %v", err)
 	}
@@ -799,8 +799,8 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	for i, pr := range prs {
 		backoff := time.Second * 4
 		log := log.WithFields(pr.logFields())
-		mergeMethod := c.ca.Config().Tide.MergeMethod(sp.org, sp.repo)
-		if squashLabel := c.ca.Config().Tide.SquashLabel; squashLabel != "" {
+		mergeMethod := c.config().Tide.MergeMethod(sp.org, sp.repo)
+		if squashLabel := c.config().Tide.SquashLabel; squashLabel != "" {
 			for _, prlabel := range pr.Labels.Nodes {
 				if string(prlabel.Name) == squashLabel {
 					mergeMethod = github.MergeSquash
@@ -886,7 +886,7 @@ func (c *Controller) trigger(sp subpool, presubmitContexts map[int]sets.String, 
 	}
 
 	// TODO(cjwagner): DRY this out when generalizing triggering code (and code to determine required and to-run jobs).
-	for _, ps := range c.ca.Config().Presubmits[sp.org+"/"+sp.repo] {
+	for _, ps := range c.config().Presubmits[sp.org+"/"+sp.repo] {
 		if ps.SkipReport || !ps.RunsAgainstBranch(sp.branch) || !requiredContexts.Has(ps.Context) {
 			continue
 		}
@@ -1036,7 +1036,7 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int]sets.String, error) 
 		}
 	}
 
-	for _, ps := range c.ca.Config().Presubmits[sp.org+"/"+sp.repo] {
+	for _, ps := range c.config().Presubmits[sp.org+"/"+sp.repo] {
 		if !ps.ContextRequired() || !ps.RunsAgainstBranch(sp.branch) {
 			continue
 		}

@@ -94,6 +94,7 @@ func main() {
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
+	cfg := configAgent.Config
 
 	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
@@ -116,7 +117,7 @@ func main() {
 	// The sync loop should have a much lower burst allowance than the status
 	// loop which may need to update many statuses upon restarting Tide after
 	// changing the context format or starting Tide on a new repo.
-	githubSync.Throttle(o.syncThrottle, 3*tokensPerIteration(o.syncThrottle, configAgent.Config().Tide.SyncPeriod))
+	githubSync.Throttle(o.syncThrottle, 3*tokensPerIteration(o.syncThrottle, cfg().Tide.SyncPeriod))
 	githubStatus.Throttle(o.statusThrottle, o.statusThrottle/2)
 
 	gitClient, err := o.github.GitClient(secretAgent, o.dryRun)
@@ -125,19 +126,19 @@ func main() {
 	}
 	defer gitClient.Clean()
 
-	kubeClient, err := o.kubernetes.Client(configAgent.Config().ProwJobNamespace, o.dryRun)
+	kubeClient, err := o.kubernetes.Client(cfg().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
 	}
 
-	c := tide.NewController(githubSync, githubStatus, kubeClient, configAgent, gitClient, nil)
+	c := tide.NewController(githubSync, githubStatus, kubeClient, cfg, gitClient, nil)
 	defer c.Shutdown()
 	http.Handle("/", c)
 	http.Handle("/history", c.History)
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
 
 	// Push metrics to the configured prometheus pushgateway endpoint.
-	pushGateway := configAgent.Config().PushGateway
+	pushGateway := cfg().PushGateway
 	if pushGateway.Endpoint != "" {
 		go metrics.PushMetrics("tide", pushGateway.Endpoint, pushGateway.Interval)
 	}
@@ -152,7 +153,7 @@ func main() {
 		signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 		for {
 			select {
-			case <-time.After(time.Until(start.Add(configAgent.Config().Tide.SyncPeriod))):
+			case <-time.After(time.Until(start.Add(cfg().Tide.SyncPeriod))):
 				start = time.Now()
 				sync(c)
 			case <-sig:
