@@ -32,11 +32,21 @@ var jobConfigPath = flag.String("job-config", "../../config/jobs", "Path to prow
 var podRe = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
 
 // Consistent but meaningless order.
-func flattenJobs(jobs []Presubmit) []Presubmit {
+func flattenPresubmits(jobs []Presubmit) []Presubmit {
 	ret := jobs
 	for _, job := range jobs {
 		if len(job.RunAfterSuccess) > 0 {
-			ret = append(ret, flattenJobs(job.RunAfterSuccess)...)
+			ret = append(ret, flattenPresubmits(job.RunAfterSuccess)...)
+		}
+	}
+	return ret
+}
+
+func flattenPostsubmits(jobs []Postsubmit) []Postsubmit {
+	ret := jobs
+	for _, job := range jobs {
+		if len(job.RunAfterSuccess) > 0 {
+			ret = append(ret, flattenPostsubmits(job.RunAfterSuccess)...)
 		}
 	}
 	return ret
@@ -86,7 +96,7 @@ func TestPresubmits(t *testing.T) {
 	}
 
 	for _, rootJobs := range c.Presubmits {
-		jobs := flattenJobs(rootJobs)
+		jobs := flattenPresubmits(rootJobs)
 		for i, job := range jobs {
 			if job.Name == "" {
 				t.Errorf("Job %v needs a name.", job)
@@ -120,6 +130,47 @@ func TestPresubmits(t *testing.T) {
 					}
 					if job2.re.MatchString(job.RerunCommand) {
 						t.Errorf("%d, %d, RerunCommand \"%s\" from job %s matches \"%v\" from job %s but shouldn't.", i, j, job.RerunCommand, job.Name, job2.Trigger, job2.Name)
+					}
+				}
+			}
+		}
+	}
+}
+
+// TODO(krzyzacy): technically this, and TestPresubmits above should belong to config/ instead of prow/
+func TestPostsubmits(t *testing.T) {
+	if len(c.Postsubmits) == 0 {
+		t.Fatalf("No jobs found in presubmit.yaml.")
+	}
+
+	for _, rootJobs := range c.Postsubmits {
+		jobs := flattenPostsubmits(rootJobs)
+		for i, job := range jobs {
+			if job.Name == "" {
+				t.Errorf("Job %v needs a name.", job)
+				continue
+			}
+			if job.Report && job.Context == "" {
+				t.Errorf("Job %s needs a context.", job.Name)
+			}
+
+			if len(job.Brancher.Branches) > 0 && len(job.Brancher.SkipBranches) > 0 {
+				t.Errorf("Job %s : Cannot have both branches and skip_branches set", job.Name)
+			}
+			// Next check that the rerun command doesn't run any other jobs.
+			for _, job2 := range jobs[i+1:] {
+				if job.Name == job2.Name {
+					// Make sure max_concurrency are the same
+					if job.MaxConcurrency != job2.MaxConcurrency {
+						t.Errorf("Jobs %s share same name but has different max_concurrency", job.Name)
+					}
+					// Make sure branches are not overlapping
+					if checkOverlapBrancher(job.Brancher, job2.Brancher) {
+						t.Errorf("Two jobs have the same name: %s, and have conflicting branches", job.Name)
+					}
+				} else {
+					if job.Context == job2.Context {
+						t.Errorf("Jobs %s and %s have the same context: %s", job.Name, job2.Name, job.Context)
 					}
 				}
 			}
