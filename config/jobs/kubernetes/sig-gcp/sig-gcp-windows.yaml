@@ -6,6 +6,10 @@ periodics:
     repo: kubernetes
     base_ref: windows-up
     path_alias: k8s.io/kubernetes
+  - org: yujuhong
+    repo: gce-k8s-windows-testing
+    base_ref: master
+    path_alias: k8s.io/gce-k8s-windows-testing
   - org: kubernetes
     repo: release
     base_ref: master
@@ -31,7 +35,7 @@ periodics:
       - --ginkgo-parallel=8
       - --provider=gce
       - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/kubernetes/hack/run-e2e.sh
+      - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
       - --test-cmd-args=--ginkgo.focus=\[Conformance\] --minStartupPods=8
       - --timeout=720m
       env:
