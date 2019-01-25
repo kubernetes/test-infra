@@ -1155,6 +1155,9 @@ func (c *ProwConfig) defaultPostsubmitFields(js []Postsubmit) {
 	for i := range js {
 		c.defaultJobBase(&js[i].JobBase)
 		c.defaultPostsubmitFields(js[i].RunAfterSuccess)
+		if js[i].Context == "" {
+			js[i].Context = js[i].Name
+		}
 	}
 }
 

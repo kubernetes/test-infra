@@ -153,6 +153,13 @@ type Postsubmit struct {
 
 	Brancher
 
+	// Context is the name of the GitHub status context for the job.
+	Context string `json:"context"`
+
+	// TODO(krzyzacy): opt-in for now - Consider make it default true like presubmits
+	// Report will comment and set status on GitHub.
+	Report bool `json:"report,omitempty"`
+
 	// Run these jobs after successfully running this one.
 	RunAfterSuccess []Postsubmit `json:"run_after_success,omitempty"`
 }

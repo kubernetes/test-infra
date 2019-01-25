@@ -112,6 +112,8 @@ func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 func PostsubmitSpec(p config.Postsubmit, refs kube.Refs) kube.ProwJobSpec {
 	pjs := specFromJobBase(p.JobBase)
 	pjs.Type = kube.PostsubmitJob
+	pjs.Context = p.Context
+	pjs.Report = p.Report
 	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
 
 	for _, nextP := range p.RunAfterSuccess {
