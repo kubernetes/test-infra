@@ -17,10 +17,13 @@ limitations under the License.
 package resources
 
 import (
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 // Clean-up ELBs
@@ -54,6 +57,28 @@ func (LoadBalancers) MarkAndSweep(sess *session.Session, account string, region 
 		}
 	}
 	return nil
+}
+
+func (LoadBalancers) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	c := elb.New(sess, aws.NewConfig().WithRegion(region))
+	set := NewSet(0)
+	input := &elb.DescribeLoadBalancersInput{}
+
+	err := c.DescribeLoadBalancersPages(input, func(lbs *elb.DescribeLoadBalancersOutput, isLast bool) bool {
+		now := time.Now()
+		for _, lb := range lbs.LoadBalancerDescriptions {
+			arn := loadBalancer{
+				region:  region,
+				account: acct,
+				name:    *lb.LoadBalancerName,
+			}.ARN()
+			set.firstSeen[arn] = now
+		}
+
+		return true
+	})
+
+	return set, errors.Wrapf(err, "couldn't describe load balancers for %q in %q", acct, region)
 }
 
 type loadBalancer struct {

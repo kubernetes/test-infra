@@ -39,8 +39,27 @@ type Set struct {
 	ttl       time.Duration
 }
 
+func NewSet(ttl time.Duration) *Set {
+	return &Set{
+		firstSeen: make(map[string]time.Time),
+		marked:    make(map[string]bool),
+		ttl:       ttl,
+	}
+}
+
+func (s *Set) GetARNs() []string {
+	slice := make([]string, len(s.firstSeen))
+	i := 0
+	for key := range s.firstSeen {
+		slice[i] = key
+		i++
+	}
+
+	return slice
+}
+
 func LoadSet(sess *session.Session, p *s3path.Path, ttl time.Duration) (*Set, error) {
-	s := &Set{firstSeen: make(map[string]time.Time), marked: make(map[string]bool), ttl: ttl}
+	s := NewSet(ttl)
 	svc := s3.New(sess, &aws.Config{Region: aws.String(p.Region)})
 	resp, err := svc.GetObject(&s3.GetObjectInput{Bucket: aws.String(p.Bucket), Key: aws.String(p.Key)})
 	if err != nil {

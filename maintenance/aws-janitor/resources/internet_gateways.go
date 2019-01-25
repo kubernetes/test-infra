@@ -18,11 +18,13 @@ package resources
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 // InternetGateways: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeInternetGateways
@@ -80,6 +82,28 @@ func (InternetGateways) MarkAndSweep(sess *session.Session, acct string, region 
 		}
 	}
 	return nil
+}
+
+func (InternetGateways) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	svc := ec2.New(sess, aws.NewConfig().WithRegion(region))
+	set := NewSet(0)
+	input := &ec2.DescribeInternetGatewaysInput{}
+
+	gateways, err := svc.DescribeInternetGateways(input)
+	if err != nil {
+		return set, errors.Wrapf(err, "couldn't describe internet gateways for %q in %q", acct, region)
+	}
+	now := time.Now()
+	for _, gateway := range gateways.InternetGateways {
+		arn := internetGateway{
+			Account: acct,
+			Region:  region,
+			ID:      *gateway.InternetGatewayId,
+		}.ARN()
+		set.firstSeen[arn] = now
+	}
+
+	return set, nil
 }
 
 type internetGateway struct {
