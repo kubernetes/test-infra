@@ -48,8 +48,13 @@ func (c *Client) GetName() string {
 // ShouldReport returns if this prowjob should be reported by the github reporter
 func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 
-	if !pj.Spec.Report || pj.Spec.Type != v1.PresubmitJob {
-		// Only report presubmit github jobs for github reporter
+	if !pj.Spec.Report {
+		// Respect report field
+		return false
+	}
+
+	if pj.Spec.Type != v1.PresubmitJob && pj.Spec.Type != v1.PostsubmitJob {
+		// Report presubmit and postsubmit github jobs for github reporter
 		return false
 	}
 
