@@ -630,7 +630,7 @@ func decorateSteps(steps []v1.Container, dc prowjobv1.DecorationConfig, toolsMou
 func injectedSteps(encodedJobSpec string, dc prowjobv1.DecorationConfig, injectedSource bool, toolsMount v1.VolumeMount, entries []wrapper.Options) ([]v1.Container, *v1.Container, *v1.Volume, error) {
 	gcsVol, gcsMount, gcsOptions := decorate.GCSOptions(dc)
 
-	sidecar, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, encodedJobSpec, entries...)
+	sidecar, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, encodedJobSpec, decorate.RequirePassingEntries, entries...)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("inject sidecar: %v", err)
 	}

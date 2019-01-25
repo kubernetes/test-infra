@@ -42,25 +42,29 @@ func nameEntry(idx int, opt wrapper.Options) string {
 	return fmt.Sprintf("entry %d: %s", idx, strings.Join(opt.Args, " "))
 }
 
-func wait(ctx context.Context, entries []wrapper.Options) (bool, bool) {
+func wait(ctx context.Context, entries []wrapper.Options) (bool, bool, int) {
 	passed := true
 	aborted := false
+	var failures int
 
 	for _, opt := range entries {
 		returnCode, err := wrapper.WaitForMarker(ctx, opt.MarkerFile)
 		passed = passed && err == nil && returnCode == 0
 		aborted = aborted || returnCode == entrypoint.AbortedErrorCode
+		if returnCode != 0 && returnCode != entrypoint.PreviousErrorCode {
+			failures++
+		}
 	}
-	return passed, aborted
+	return passed, aborted, failures
 }
 
 // Run will watch for the process being wrapped to exit
 // and then post the status of that process and any artifacts
 // to cloud storage.
-func (o Options) Run(ctx context.Context) error {
+func (o Options) Run(ctx context.Context) (int, error) {
 	spec, err := downwardapi.ResolveSpecFromEnv()
 	if err != nil {
-		return fmt.Errorf("could not resolve job spec: %v", err)
+		return 0, fmt.Errorf("could not resolve job spec: %v", err)
 	}
 
 	ctx, cancel := context.WithCancel(ctx)
@@ -87,7 +91,7 @@ func (o Options) Run(ctx context.Context) error {
 		logrus.Warnf("Using deprecated wrapper_options instead of entries. Please update prow/pod-utils/decorate before June 2019")
 	}
 	entries := o.entries()
-	passed, aborted := wait(ctx, entries)
+	passed, aborted, failures := wait(ctx, entries)
 
 	cancel()
 	// If we are being asked to terminate by the kubelet but we have
@@ -99,7 +103,7 @@ func (o Options) Run(ctx context.Context) error {
 
 	buildLog := logReader(entries)
 	metadata := combineMetadata(entries)
-	return o.doUpload(spec, passed, aborted, metadata, buildLog)
+	return failures, o.doUpload(spec, passed, aborted, metadata, buildLog)
 }
 
 const errorKey = "sidecar-errors"
