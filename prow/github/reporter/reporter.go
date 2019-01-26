@@ -24,6 +24,11 @@ import (
 	"k8s.io/test-infra/prow/report"
 )
 
+const (
+	// GithubReporterName is the name for github reporter
+	GithubReporterName = "github-reporter"
+)
+
 // Client is a github reporter client
 type Client struct {
 	gc          report.GithubClient
@@ -42,7 +47,7 @@ func NewReporter(gc report.GithubClient, cfg config.Getter, reportAgent string) 
 
 // GetName returns the name of the reporter
 func (c *Client) GetName() string {
-	return "github-reporter"
+	return GithubReporterName
 }
 
 // ShouldReport returns if this prowjob should be reported by the github reporter
