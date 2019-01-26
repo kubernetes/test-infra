@@ -27,6 +27,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/github/reporter"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
@@ -151,6 +152,18 @@ func (c *Controller) incrementNumPendingJobs(job string) {
 	c.pendingJobs[job]++
 }
 
+// setPreviousReportState sets the github key for PrevReportStates
+// to current state. This is a work-around for plank -> crier
+// migration to become seamless.
+func (c *Controller) setPreviousReportState(pj kube.ProwJob) error {
+	if pj.Status.PrevReportStates == nil {
+		pj.Status.PrevReportStates = map[string]kube.ProwJobState{}
+	}
+	pj.Status.PrevReportStates[reporter.GithubReporterName] = pj.Status.State
+	_, err := c.kc.ReplaceProwJob(pj.ObjectMeta.Name, pj)
+	return err
+}
+
 // Sync does one sync iteration.
 func (c *Controller) Sync() error {
 	pjs, err := c.kc.ListProwJobs(c.selector)
@@ -221,6 +234,11 @@ func (c *Controller) Sync() error {
 			if err := reportlib.Report(c.ghc, reportTemplate, report); err != nil {
 				reportErrs = append(reportErrs, err)
 				c.log.WithFields(pjutil.ProwJobFields(&report)).WithError(err).Warn("Failed to report ProwJob status")
+			}
+
+			// plank is not retrying on errors, so we just set the current state as reported
+			if err := c.setPreviousReportState(report); err != nil {
+				c.log.WithFields(pjutil.ProwJobFields(&report)).WithError(err).Error("Failed to patch PrevReportStates")
 			}
 		}
 	}

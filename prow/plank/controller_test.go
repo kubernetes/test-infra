@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"sync"
 	"testing"
 	"text/template"
@@ -32,6 +33,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/github/reporter"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
@@ -424,15 +426,16 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		pods           map[string][]kube.Pod
 		podErr         error
 
-		expectedState      kube.ProwJobState
-		expectedPodHasName bool
-		expectedNumPods    map[string]int
-		expectedComplete   bool
-		expectedCreatedPJs int
-		expectedReport     bool
-		expectedURL        string
-		expectedBuildID    string
-		expectError        bool
+		expectedState         kube.ProwJobState
+		expectedPodHasName    bool
+		expectedNumPods       map[string]int
+		expectedComplete      bool
+		expectedCreatedPJs    int
+		expectedReport        bool
+		expectPrevReportState map[string]kube.ProwJobState
+		expectedURL           string
+		expectedBuildID       string
+		expectError           bool
 	}{
 		{
 			name: "start new pod",
@@ -454,7 +457,10 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			expectedPodHasName: true,
 			expectedNumPods:    map[string]int{"default": 1},
 			expectedReport:     true,
-			expectedURL:        "blabla/pending",
+			expectPrevReportState: map[string]kube.ProwJobState{
+				reporter.GithubReporterName: kube.PendingState,
+			},
+			expectedURL: "blabla/pending",
 		},
 		{
 			name: "pod with a max concurrency of 1",
@@ -553,7 +559,10 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			expectedNumPods:    map[string]int{"default": 1, "trusted": 1},
 			expectedPodHasName: true,
 			expectedReport:     true,
-			expectedURL:        "some/pending",
+			expectPrevReportState: map[string]kube.ProwJobState{
+				reporter.GithubReporterName: kube.PendingState,
+			},
+			expectedURL: "some/pending",
 		},
 		{
 			name: "do not exceed global maxconcurrency",
@@ -595,7 +604,10 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			expectedState:   kube.PendingState,
 			expectedNumPods: map[string]int{"default": 1},
 			expectedReport:  true,
-			expectedURL:     "beer/pending",
+			expectPrevReportState: map[string]kube.ProwJobState{
+				reporter.GithubReporterName: kube.PendingState,
+			},
+			expectedURL: "beer/pending",
 		},
 		{
 			name: "unprocessable prow job",
@@ -614,6 +626,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			expectedState:    kube.ErrorState,
 			expectedComplete: true,
 			expectedReport:   true,
+			expectPrevReportState: map[string]kube.ProwJobState{
+				reporter.GithubReporterName: kube.ErrorState,
+			},
 		},
 		{
 			name: "conflict error starting pod",
@@ -689,6 +704,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			expectedState:   kube.PendingState,
 			expectedNumPods: map[string]int{"default": 1},
 			expectedReport:  true,
+			expectPrevReportState: map[string]kube.ProwJobState{
+				reporter.GithubReporterName: kube.PendingState,
+			},
 			expectedURL:     "foo/pending",
 			expectedBuildID: "0987654321",
 		},
@@ -735,6 +753,14 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		}
 		close(reports)
 
+		numReports := len(reports)
+		// for asserting recorded report states
+		for report := range reports {
+			if err := c.setPreviousReportState(report); err != nil {
+				t.Errorf("for case %q got error in setPreviousReportState : %v", tc.name, err)
+			}
+		}
+
 		actual := fc.prowjobs[0]
 		if actual.Status.State != tc.expectedState {
 			t.Errorf("for case %q got state %v", tc.name, actual.Status.State)
@@ -753,19 +779,21 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		if len(fc.prowjobs) != tc.expectedCreatedPJs+1 {
 			t.Errorf("for case %q got %d created prowjobs", tc.name, len(fc.prowjobs)-1)
 		}
-		if tc.expectedReport && len(reports) != 1 {
-			t.Errorf("for case %q wanted one report but got %d", tc.name, len(reports))
+		if tc.expectedReport && numReports != 1 {
+			t.Errorf("for case %q wanted one report but got %d", tc.name, numReports)
 		}
-		if !tc.expectedReport && len(reports) != 0 {
-			t.Errorf("for case %q did not wany any reports but got %d", tc.name, len(reports))
+		if !tc.expectedReport && numReports != 0 {
+			t.Errorf("for case %q did not want any reports but got %d", tc.name, numReports)
 		}
-		if tc.expectedReport {
-			r := <-reports
+		if !reflect.DeepEqual(tc.expectPrevReportState, actual.Status.PrevReportStates) {
+			t.Errorf("for case %q want prev report state %v, got %v", tc.name, tc.expectPrevReportState, actual.Status.PrevReportStates)
+		}
 
-			if got, want := r.Status.URL, tc.expectedURL; got != want {
+		if tc.expectedReport {
+			if got, want := actual.Status.URL, tc.expectedURL; got != want {
 				t.Errorf("for case %q, report.Status.URL: got %q, want %q", tc.name, got, want)
 			}
-			if got, want := r.Status.BuildID, tc.expectedBuildID; want != "" && got != want {
+			if got, want := actual.Status.BuildID, tc.expectedBuildID; want != "" && got != want {
 				t.Errorf("for case %q, report.Status.ProwJobID: got %q, want %q", tc.name, got, want)
 			}
 		}
