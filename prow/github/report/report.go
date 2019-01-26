@@ -91,7 +91,11 @@ func reportStatus(ghc GithubClient, pj prowapi.ProwJob, childDescription string)
 		if err != nil {
 			return err
 		}
-		if err := ghc.CreateStatus(refs.Org, refs.Repo, refs.Pulls[0].SHA, github.Status{
+		sha := refs.BaseSHA
+		if len(refs.Pulls) > 0 {
+			sha = refs.Pulls[0].SHA
+		}
+		if err := ghc.CreateStatus(refs.Org, refs.Repo, sha, github.Status{
 			State:       contextState,
 			Description: truncate(pj.Status.Description),
 			Context:     pj.Spec.Context, // consider truncating this too
@@ -109,22 +113,31 @@ func Report(ghc GithubClient, reportTemplate *template.Template, pj prowapi.Prow
 	if ghc == nil {
 		return fmt.Errorf("trying to report pj %s, but found empty github client", pj.ObjectMeta.Name)
 	}
+
 	if !pj.Spec.Report {
 		return nil
 	}
+
 	refs := pj.Spec.Refs
-	if len(refs.Pulls) != 1 {
-		return fmt.Errorf("prowjob %s has %d pulls, not 1", pj.ObjectMeta.Name, len(refs.Pulls))
+	if len(refs.Pulls) > 1 {
+		return nil // we are not reporting for batch jobs
 	}
+
 	childDescription := fmt.Sprintf("Waiting on: %s", pj.Spec.Context)
 	if err := reportStatus(ghc, pj, childDescription); err != nil {
 		return fmt.Errorf("error setting status: %v", err)
 	}
+
 	// Report manually aborted Jenkins jobs and jobs with invalid pod specs alongside
 	// test successes/failures.
 	if !pj.Complete() {
 		return nil
 	}
+
+	if len(refs.Pulls) == 0 {
+		return nil
+	}
+
 	ics, err := ghc.ListIssueComments(refs.Org, refs.Repo, refs.Pulls[0].Number)
 	if err != nil {
 		return fmt.Errorf("error listing comments: %v", err)
