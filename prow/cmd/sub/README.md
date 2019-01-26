@@ -60,6 +60,9 @@ and value ```prow.k8s.io/pubsub.PeriodicProwJobEvent```, and a payload like so:
     "GIT_BRANCH":"v.1.2",
     "MY_ENV":"overwrite"
   },
+  "labels":{
+    "myLabel":"myValue",
+  },
   "annotations":{
     "prow.k8s.io/pubsub.project":"myProject",
     "prow.k8s.io/pubsub.runID":"asdfasdfasdf",
