@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
+        "search.go",
         "status.go",
         "tide.go",
     ],
@@ -15,7 +16,9 @@ go_library(
         "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
         "//prow/tide/blockers:go_default_library",
-        "//vendor/github.com/shurcooL/githubql:go_default_library",
+        "//prow/tide/history:go_default_library",
+        "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
+        "//vendor/github.com/shurcooL/githubv4:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
@@ -33,6 +36,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//prow/tide/blockers:all-srcs",
+        "//prow/tide/history:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
@@ -41,6 +45,7 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = [
+        "search_test.go",
         "status_test.go",
         "tide_test.go",
     ],
@@ -50,7 +55,8 @@ go_test(
         "//prow/git/localgit:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
-        "//vendor/github.com/shurcooL/githubql:go_default_library",
+        "//prow/tide/history:go_default_library",
+        "//vendor/github.com/shurcooL/githubv4:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],

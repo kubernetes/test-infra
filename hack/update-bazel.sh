@@ -17,19 +17,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
-# https://github.com/kubernetes/test-infra/issues/5699#issuecomment-348350792
-cd ${TESTINFRA_ROOT}
-TMP_GOPATH=$(mktemp -d)
-
-OUTPUT_GOBIN="${TESTINFRA_ROOT}/_output/bin"
-GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle
-GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/kubernetes/repo-infra/kazel
-
-touch "${TESTINFRA_ROOT}/vendor/BUILD.bazel"
-
-"${OUTPUT_GOBIN}/gazelle" fix \
-  -external=vendored \
-  -mode=fix
-
-"${OUTPUT_GOBIN}/kazel"
+cd "$(git rev-parse --show-toplevel)"
+mkdir -p ./vendor
+touch ./vendor/BUILD.bazel
+bazel run //:gazelle
+bazel run //:kazel

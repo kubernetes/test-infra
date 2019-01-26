@@ -25,6 +25,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/labels"
 )
 
 func TestCLALabels(t *testing.T) {
@@ -75,7 +76,7 @@ func TestCLALabels(t *testing.T) {
 			state:     "failure",
 			statusSHA: "a",
 			issues: []github.Issue{
-				{Number: 3, State: "open", Labels: []github.Label{{Name: claYesLabel}}},
+				{Number: 3, State: "open", Labels: []github.Label{{Name: labels.ClaYes}}},
 			},
 			pullRequests: []github.PullRequest{
 				{Number: 3, Head: github.PullRequestBranch{SHA: "b"}},
@@ -94,7 +95,7 @@ func TestCLALabels(t *testing.T) {
 			pullRequests: []github.PullRequest{
 				{Number: 3, Head: github.PullRequestBranch{SHA: "a"}},
 			},
-			addedLabels:   []string{fmt.Sprintf("/#3:%s", claYesLabel)},
+			addedLabels:   []string{fmt.Sprintf("/#3:%s", labels.ClaYes)},
 			removedLabels: nil,
 		},
 		{
@@ -117,13 +118,13 @@ func TestCLALabels(t *testing.T) {
 			state:     "success",
 			statusSHA: "a",
 			issues: []github.Issue{
-				{Number: 3, State: "open", Labels: []github.Label{{Name: claNoLabel}}},
+				{Number: 3, State: "open", Labels: []github.Label{{Name: labels.ClaNo}}},
 			},
 			pullRequests: []github.PullRequest{
 				{Number: 3, Head: github.PullRequestBranch{SHA: "a"}},
 			},
-			addedLabels:   []string{fmt.Sprintf("/#3:%s", claYesLabel)},
-			removedLabels: []string{fmt.Sprintf("/#3:%s", claNoLabel)},
+			addedLabels:   []string{fmt.Sprintf("/#3:%s", labels.ClaYes)},
+			removedLabels: []string{fmt.Sprintf("/#3:%s", labels.ClaNo)},
 		},
 		{
 			name:      "cla/linuxfoundation status failure removes \"cncf-cla: yes\" label",
@@ -131,13 +132,13 @@ func TestCLALabels(t *testing.T) {
 			state:     "failure",
 			statusSHA: "a",
 			issues: []github.Issue{
-				{Number: 3, State: "open", Labels: []github.Label{{Name: claYesLabel}}},
+				{Number: 3, State: "open", Labels: []github.Label{{Name: labels.ClaYes}}},
 			},
 			pullRequests: []github.PullRequest{
 				{Number: 3, Head: github.PullRequestBranch{SHA: "a"}},
 			},
-			addedLabels:   []string{fmt.Sprintf("/#3:%s", claNoLabel)},
-			removedLabels: []string{fmt.Sprintf("/#3:%s", claYesLabel)},
+			addedLabels:   []string{fmt.Sprintf("/#3:%s", labels.ClaNo)},
+			removedLabels: []string{fmt.Sprintf("/#3:%s", labels.ClaYes)},
 		},
 	}
 	for _, tc := range testcases {
@@ -161,12 +162,12 @@ func TestCLALabels(t *testing.T) {
 			continue
 		}
 
-		if !reflect.DeepEqual(fc.LabelsAdded, tc.addedLabels) {
-			t.Errorf("Expected: %#v, Got %#v in case %s.", tc.addedLabels, fc.LabelsAdded, tc.name)
+		if !reflect.DeepEqual(fc.IssueLabelsAdded, tc.addedLabels) {
+			t.Errorf("Expected: %#v, Got %#v in case %s.", tc.addedLabels, fc.IssueLabelsAdded, tc.name)
 		}
 
-		if !reflect.DeepEqual(fc.LabelsRemoved, tc.removedLabels) {
-			t.Errorf("Expected: %#v, Got %#v in case %s.", tc.removedLabels, fc.LabelsRemoved, tc.name)
+		if !reflect.DeepEqual(fc.IssueLabelsRemoved, tc.removedLabels) {
+			t.Errorf("Expected: %#v, Got %#v in case %s.", tc.removedLabels, fc.IssueLabelsRemoved, tc.name)
 		}
 	}
 }
@@ -247,7 +248,7 @@ func TestCheckCLA(t *testing.T) {
 				{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
 
-			addedLabel: fmt.Sprintf("/#3:%s", claYesLabel),
+			addedLabel: fmt.Sprintf("/#3:%s", labels.ClaYes),
 		},
 		{
 			name:       "cla/linuxfoundation status adds the cla-yes label and removes cla-no label when its state is \"success\"",
@@ -262,8 +263,8 @@ func TestCheckCLA(t *testing.T) {
 			},
 			hasCLANo: true,
 
-			addedLabel:   fmt.Sprintf("/#3:%s", claYesLabel),
-			removedLabel: fmt.Sprintf("/#3:%s", claNoLabel),
+			addedLabel:   fmt.Sprintf("/#3:%s", labels.ClaYes),
+			removedLabel: fmt.Sprintf("/#3:%s", labels.ClaNo),
 		},
 		{
 			name:       "cla/linuxfoundation status adds the cla-no label when its state is \"failure\"",
@@ -277,7 +278,7 @@ func TestCheckCLA(t *testing.T) {
 				{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
 
-			addedLabel: fmt.Sprintf("/#3:%s", claNoLabel),
+			addedLabel: fmt.Sprintf("/#3:%s", labels.ClaNo),
 		},
 		{
 			name:       "cla/linuxfoundation status adds the cla-no label and removes cla-yes label when its state is \"failure\"",
@@ -292,8 +293,8 @@ func TestCheckCLA(t *testing.T) {
 			},
 			hasCLAYes: true,
 
-			addedLabel:   fmt.Sprintf("/#3:%s", claNoLabel),
-			removedLabel: fmt.Sprintf("/#3:%s", claYesLabel),
+			addedLabel:   fmt.Sprintf("/#3:%s", labels.ClaNo),
+			removedLabel: fmt.Sprintf("/#3:%s", labels.ClaYes),
 		},
 		{
 			name:       "cla/linuxfoundation status retains the cla-yes label and removes cla-no label when its state is \"success\"",
@@ -309,7 +310,7 @@ func TestCheckCLA(t *testing.T) {
 			hasCLANo:  true,
 			hasCLAYes: true,
 
-			removedLabel: fmt.Sprintf("/#3:%s", claNoLabel),
+			removedLabel: fmt.Sprintf("/#3:%s", labels.ClaNo),
 		},
 		{
 			name:       "cla/linuxfoundation status retains the cla-no label and removes cla-yes label when its state is \"failure\"",
@@ -325,7 +326,7 @@ func TestCheckCLA(t *testing.T) {
 			hasCLANo:  true,
 			hasCLAYes: true,
 
-			removedLabel: fmt.Sprintf("/#3:%s", claYesLabel),
+			removedLabel: fmt.Sprintf("/#3:%s", labels.ClaYes),
 		},
 	}
 	for _, tc := range testcases {
@@ -351,17 +352,17 @@ func TestCheckCLA(t *testing.T) {
 				},
 			}
 			if tc.hasCLAYes {
-				fc.LabelsAdded = append(fc.LabelsAdded, fmt.Sprintf("/#3:%s", claYesLabel))
+				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", labels.ClaYes))
 			}
 			if tc.hasCLANo {
-				fc.LabelsAdded = append(fc.LabelsAdded, fmt.Sprintf("/#3:%s", claNoLabel))
+				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", labels.ClaNo))
 			}
 			if err := handleComment(fc, logrus.WithField("plugin", pluginName), e); err != nil {
 				t.Errorf("For case %s, didn't expect error from cla plugin: %v", tc.name, err)
 			}
 			ok := tc.addedLabel == ""
 			if !ok {
-				for _, label := range fc.LabelsAdded {
+				for _, label := range fc.IssueLabelsAdded {
 					if reflect.DeepEqual(tc.addedLabel, label) {
 						ok = true
 						break
@@ -369,11 +370,11 @@ func TestCheckCLA(t *testing.T) {
 				}
 			}
 			if !ok {
-				t.Errorf("Expected to add: %#v, Got %#v in case %s.", tc.addedLabel, fc.LabelsAdded, tc.name)
+				t.Errorf("Expected to add: %#v, Got %#v in case %s.", tc.addedLabel, fc.IssueLabelsAdded, tc.name)
 			}
 			ok = tc.removedLabel == ""
 			if !ok {
-				for _, label := range fc.LabelsRemoved {
+				for _, label := range fc.IssueLabelsRemoved {
 					if reflect.DeepEqual(tc.removedLabel, label) {
 						ok = true
 						break
@@ -381,7 +382,7 @@ func TestCheckCLA(t *testing.T) {
 				}
 			}
 			if !ok {
-				t.Errorf("Expected to remove: %#v, Got %#v in case %s.", tc.removedLabel, fc.LabelsRemoved, tc.name)
+				t.Errorf("Expected to remove: %#v, Got %#v in case %s.", tc.removedLabel, fc.IssueLabelsRemoved, tc.name)
 			}
 		})
 	}

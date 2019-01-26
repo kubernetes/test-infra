@@ -19,7 +19,6 @@ package hook
 import (
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/commentpruner"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -65,19 +64,14 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 		s.wg.Add(1)
 		go func(p string, h plugins.ReviewEventHandler) {
 			defer s.wg.Done()
-			pc := s.Plugins.PluginClient
-			pc.Logger = l.WithField("plugin", p)
-			pc.Config = s.ConfigAgent.Config()
-			pc.PluginConfig = s.Plugins.Config()
-			pc.CommentPruner = commentpruner.NewEventClient(
-				pc.GitHubClient,
-				l.WithField("client", "commentpruner"),
+			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, l.WithField("plugin", p))
+			agent.InitializeCommentPruner(
 				re.Repo.Owner.Login,
 				re.Repo.Name,
 				re.PullRequest.Number,
 			)
-			if err := h(pc, re); err != nil {
-				pc.Logger.WithError(err).Error("Error handling ReviewEvent.")
+			if err := h(agent, re); err != nil {
+				agent.Logger.WithError(err).Error("Error handling ReviewEvent.")
 			}
 		}(p, h)
 	}
@@ -89,6 +83,7 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 	s.handleGenericComment(
 		l,
 		&github.GenericCommentEvent{
+			GUID:         re.GUID,
 			IsPR:         true,
 			Action:       action,
 			Body:         re.Review.Body,
@@ -120,19 +115,14 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 		s.wg.Add(1)
 		go func(p string, h plugins.ReviewCommentEventHandler) {
 			defer s.wg.Done()
-			pc := s.Plugins.PluginClient
-			pc.Logger = l.WithField("plugin", p)
-			pc.Config = s.ConfigAgent.Config()
-			pc.PluginConfig = s.Plugins.Config()
-			pc.CommentPruner = commentpruner.NewEventClient(
-				pc.GitHubClient,
-				l.WithField("client", "commentpruner"),
+			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, l.WithField("plugin", p))
+			agent.InitializeCommentPruner(
 				rce.Repo.Owner.Login,
 				rce.Repo.Name,
 				rce.PullRequest.Number,
 			)
-			if err := h(pc, rce); err != nil {
-				pc.Logger.WithError(err).Error("Error handling ReviewCommentEvent.")
+			if err := h(agent, rce); err != nil {
+				agent.Logger.WithError(err).Error("Error handling ReviewCommentEvent.")
 			}
 		}(p, h)
 	}
@@ -144,6 +134,7 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 	s.handleGenericComment(
 		l,
 		&github.GenericCommentEvent{
+			GUID:         rce.GUID,
 			IsPR:         true,
 			Action:       action,
 			Body:         rce.Comment.Body,
@@ -174,19 +165,14 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 		s.wg.Add(1)
 		go func(p string, h plugins.PullRequestHandler) {
 			defer s.wg.Done()
-			pc := s.Plugins.PluginClient
-			pc.Logger = l.WithField("plugin", p)
-			pc.Config = s.ConfigAgent.Config()
-			pc.PluginConfig = s.Plugins.Config()
-			pc.CommentPruner = commentpruner.NewEventClient(
-				pc.GitHubClient,
-				l.WithField("client", "commentpruner"),
+			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, l.WithField("plugin", p))
+			agent.InitializeCommentPruner(
 				pr.Repo.Owner.Login,
 				pr.Repo.Name,
 				pr.PullRequest.Number,
 			)
-			if err := h(pc, pr); err != nil {
-				pc.Logger.WithError(err).Error("Error handling PullRequestEvent.")
+			if err := h(agent, pr); err != nil {
+				agent.Logger.WithError(err).Error("Error handling PullRequestEvent.")
 			}
 		}(p, h)
 	}
@@ -200,6 +186,7 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 	s.handleGenericComment(
 		l,
 		&github.GenericCommentEvent{
+			GUID:         pr.GUID,
 			IsPR:         true,
 			Action:       action,
 			Body:         pr.PullRequest.Body,
@@ -229,12 +216,9 @@ func (s *Server) handlePushEvent(l *logrus.Entry, pe github.PushEvent) {
 		s.wg.Add(1)
 		go func(p string, h plugins.PushEventHandler) {
 			defer s.wg.Done()
-			pc := s.Plugins.PluginClient
-			pc.Logger = l.WithField("plugin", p)
-			pc.Config = s.ConfigAgent.Config()
-			pc.PluginConfig = s.Plugins.Config()
-			if err := h(pc, pe); err != nil {
-				pc.Logger.WithError(err).Error("Error handling PushEvent.")
+			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, l.WithField("plugin", p))
+			if err := h(agent, pe); err != nil {
+				agent.Logger.WithError(err).Error("Error handling PushEvent.")
 			}
 		}(p, h)
 	}
@@ -254,19 +238,14 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 		s.wg.Add(1)
 		go func(p string, h plugins.IssueHandler) {
 			defer s.wg.Done()
-			pc := s.Plugins.PluginClient
-			pc.Logger = l.WithField("plugin", p)
-			pc.Config = s.ConfigAgent.Config()
-			pc.PluginConfig = s.Plugins.Config()
-			pc.CommentPruner = commentpruner.NewEventClient(
-				pc.GitHubClient,
-				l.WithField("client", "commentpruner"),
+			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, l.WithField("plugin", p))
+			agent.InitializeCommentPruner(
 				i.Repo.Owner.Login,
 				i.Repo.Name,
 				i.Issue.Number,
 			)
-			if err := h(pc, i); err != nil {
-				pc.Logger.WithError(err).Error("Error handling IssueEvent.")
+			if err := h(agent, i); err != nil {
+				agent.Logger.WithError(err).Error("Error handling IssueEvent.")
 			}
 		}(p, h)
 	}
@@ -280,6 +259,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 	s.handleGenericComment(
 		l,
 		&github.GenericCommentEvent{
+			GUID:         i.GUID,
 			IsPR:         i.Issue.IsPullRequest(),
 			Action:       action,
 			Body:         i.Issue.Body,
@@ -310,19 +290,14 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 		s.wg.Add(1)
 		go func(p string, h plugins.IssueCommentHandler) {
 			defer s.wg.Done()
-			pc := s.Plugins.PluginClient
-			pc.Logger = l.WithField("plugin", p)
-			pc.Config = s.ConfigAgent.Config()
-			pc.PluginConfig = s.Plugins.Config()
-			pc.CommentPruner = commentpruner.NewEventClient(
-				pc.GitHubClient,
-				l.WithField("client", "commentpruner"),
+			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, l.WithField("plugin", p))
+			agent.InitializeCommentPruner(
 				ic.Repo.Owner.Login,
 				ic.Repo.Name,
 				ic.Issue.Number,
 			)
-			if err := h(pc, ic); err != nil {
-				pc.Logger.WithError(err).Error("Error handling IssueCommentEvent.")
+			if err := h(agent, ic); err != nil {
+				agent.Logger.WithError(err).Error("Error handling IssueCommentEvent.")
 			}
 		}(p, h)
 	}
@@ -334,6 +309,7 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 	s.handleGenericComment(
 		l,
 		&github.GenericCommentEvent{
+			GUID:         ic.GUID,
 			IsPR:         ic.Issue.IsPullRequest(),
 			Action:       action,
 			Body:         ic.Comment.Body,
@@ -365,12 +341,9 @@ func (s *Server) handleStatusEvent(l *logrus.Entry, se github.StatusEvent) {
 		s.wg.Add(1)
 		go func(p string, h plugins.StatusEventHandler) {
 			defer s.wg.Done()
-			pc := s.Plugins.PluginClient
-			pc.Logger = l.WithField("plugin", p)
-			pc.Config = s.ConfigAgent.Config()
-			pc.PluginConfig = s.Plugins.Config()
-			if err := h(pc, se); err != nil {
-				pc.Logger.WithError(err).Error("Error handling StatusEvent.")
+			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, l.WithField("plugin", p))
+			if err := h(agent, se); err != nil {
+				agent.Logger.WithError(err).Error("Error handling StatusEvent.")
 			}
 		}(p, h)
 	}
@@ -396,19 +369,14 @@ func (s *Server) handleGenericComment(l *logrus.Entry, ce *github.GenericComment
 		s.wg.Add(1)
 		go func(p string, h plugins.GenericCommentHandler) {
 			defer s.wg.Done()
-			pc := s.Plugins.PluginClient
-			pc.Logger = l.WithField("plugin", p)
-			pc.Config = s.ConfigAgent.Config()
-			pc.PluginConfig = s.Plugins.Config()
-			pc.CommentPruner = commentpruner.NewEventClient(
-				pc.GitHubClient,
-				l.WithField("client", "commentpruner"),
+			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, l.WithField("plugin", p))
+			agent.InitializeCommentPruner(
 				ce.Repo.Owner.Login,
 				ce.Repo.Name,
 				ce.Number,
 			)
-			if err := h(pc, *ce); err != nil {
-				pc.Logger.WithError(err).Error("Error handling GenericCommentEvent.")
+			if err := h(agent, *ce); err != nil {
+				agent.Logger.WithError(err).Error("Error handling GenericCommentEvent.")
 			}
 		}(p, h)
 	}

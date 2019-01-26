@@ -1,0 +1,28 @@
+presubmits:
+  bazelbuild/rules_k8s:
+  - name: pull-rules-k8s-e2e
+    cluster: gke_rules-k8s_us-central1-f_testing
+    max_concurrency: 1  # TODO(fejta): increase this
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/rules-k8s/gcloud-bazel:v20181017-3f8359f
+        args:
+        - bash
+        - -c
+        - |
+          gcloud auth activate-service-account --key-file=/etc/gcp/service-account.json \
+          && gcloud container clusters get-credentials testing --zone=us-central1-f --project=rules-k8s \
+          && echo "startup --host_jvm_args=-Duser.name=prow" > /root/.bazelrc \
+          && ./test-e2e.sh
+        env:
+        - name: USER
+          value: prow
+        volumeMounts:
+        - name: service-account
+          mountPath: /etc/gcp
+      volumes:
+      - name: service-account
+        secret:
+          secretName: service-account

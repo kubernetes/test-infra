@@ -79,7 +79,7 @@ function clustersSum(tests) {
   return sum(tests, t => sum(t.jobs, j => j.builds.length));
 }
 
-// Return arr sotred by value according to keyFunc, which
+// Return arr sorted by value according to keyFunc, which
 // should take an element of arr and return an array of values.
 function sortByKey(arr, keyFunc) {
   var vals = arr.map((x, i) => [keyFunc(x), x]);

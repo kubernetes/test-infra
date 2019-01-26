@@ -23,9 +23,9 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/ghodss/yaml"
 	"github.com/hashicorp/go-multierror"
 	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/storage"

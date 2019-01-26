@@ -16,6 +16,9 @@ $GOPATH/src/k8s.io/test-infra/   # ... <kubernetes/test-infra checkout>
 Then from `$GOPATH/src/k8s.io/kubernetes/` run:
  `./../planter/planter.sh make bazel-build`.
 
+NOTE: if you previously built Kubernetes by other means, you may need to run
+`make clean` first to clean up some symlink cycles.
+
  For `test-infra` you can run eg `./planter/planter.sh bazel test //...`.
 
 ## Options
@@ -54,7 +57,7 @@ consider tuning the following Docker options:
 
 You can find these under [preferences > advanced](https://docs.docker.com/docker-for-mac/#advanced)
 
-Check [this unnoficial guide](https://medium.com/@TomKeur/how-get-better-disk-performance-in-docker-for-mac-2ba1244b5b70)
+Check [this unofficial guide](https://medium.com/@TomKeur/how-get-better-disk-performance-in-docker-for-mac-2ba1244b5b70)
 and make sure that you are using `.raw` formatted VM disk for the daemon. 
 
 Periodically restarting the daemon (docker for mac tray icon > restart) can

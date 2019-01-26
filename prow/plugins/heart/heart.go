@@ -31,11 +31,10 @@ import (
 )
 
 const (
-	pluginName     = "heart"
-	ownersFilename = "OWNERS"
+	pluginName            = "heart"
+	ownersFilename        = "OWNERS"
+	ownersAliasesFilename = "OWNERS_ALIASES"
 )
-
-var mergeRe = regexp.MustCompile(`Automatic merge from submit-queue`)
 
 var reactions = []string{
 	github.ReactionThumbsUp,
@@ -52,10 +51,11 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The {WhoCanUse, Usage, Examples} fields are omitted because this plugin is not triggered with commands.
 	return &pluginhelp.PluginHelp{
-			Description: "The heart plugin celebrates certain Github actions with the reaction emojis. Emojis are added to merge notifications left by mungegithub's submit-queue and to pull requests that make additions to OWNERS files.",
+			Description: "The heart plugin celebrates certain Github actions with the reaction emojis. Emojis are added to pull requests that make additions to OWNERS or OWNERS_ALIASES files and to comments left by specified \"adorees\".",
 			Config: map[string]string{
 				"": fmt.Sprintf(
-					"The heart plugin is configured to react to merge notifications left by the following Github users: %s.",
+					"The heart plugin is configured to react to comments,  satisfying the regular expression %s, left by the following Github users: %s.",
+					config.Heart.CommentRegexp,
 					strings.Join(config.Heart.Adorees, ", "),
 				),
 			},
@@ -74,22 +74,25 @@ type client struct {
 	Logger       *logrus.Entry
 }
 
-func getClient(pc plugins.PluginClient) client {
+func getClient(pc plugins.Agent) client {
 	return client{
 		GitHubClient: pc.GitHubClient,
 		Logger:       pc.Logger,
 	}
 }
 
-func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	return handleIC(getClient(pc), pc.PluginConfig.Heart.Adorees, ic)
+func handleIssueComment(pc plugins.Agent, ic github.IssueCommentEvent) error {
+	if (pc.PluginConfig.Heart.Adorees == nil || len(pc.PluginConfig.Heart.Adorees) == 0) || len(pc.PluginConfig.Heart.CommentRegexp) == 0 {
+		return nil
+	}
+	return handleIC(getClient(pc), pc.PluginConfig.Heart.Adorees, pc.PluginConfig.Heart.CommentRe, ic)
 }
 
-func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	return handlePR(getClient(pc), pre)
 }
 
-func handleIC(c client, adorees []string, ic github.IssueCommentEvent) error {
+func handleIC(c client, adorees []string, commentRe *regexp.Regexp, ic github.IssueCommentEvent) error {
 	// Only consider new comments on PRs.
 	if !ic.Issue.IsPullRequest() || ic.Action != github.IssueCommentActionCreated {
 		return nil
@@ -105,7 +108,7 @@ func handleIC(c client, adorees []string, ic github.IssueCommentEvent) error {
 		return nil
 	}
 
-	if !mergeRe.MatchString(ic.Comment.Body) {
+	if !commentRe.MatchString(ic.Comment.Body) {
 		return nil
 	}
 
@@ -134,7 +137,7 @@ func handlePR(c client, pre github.PullRequestEvent) error {
 	// Smile at any change that adds to OWNERS files
 	for _, change := range changes {
 		_, filename := filepath.Split(change.Filename)
-		if filename == ownersFilename && change.Additions > 0 {
+		if (filename == ownersFilename || filename == ownersAliasesFilename) && change.Additions > 0 {
 			c.Logger.Info("Adding new OWNERS makes me happy!")
 			return c.GitHubClient.CreateIssueReaction(
 				pre.PullRequest.Base.Repo.Owner.Login,

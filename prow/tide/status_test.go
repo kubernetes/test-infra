@@ -18,11 +18,13 @@ package tide
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
-	"github.com/shurcooL/githubql"
+	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 )
@@ -36,6 +38,7 @@ func TestExpectedStatus(t *testing.T) {
 		baseref         string
 		branchWhitelist []string
 		branchBlacklist []string
+		sameBranchReqs  bool
 		labels          []string
 		milestone       string
 		contexts        []Context
@@ -52,40 +55,45 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  statusInPool,
 		},
 		{
-			name:   "check truncation of label list",
-			inPool: false,
+			name:      "check truncation of label list",
+			milestone: "v1.0",
+			inPool:    false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1, need-2 labels."),
 		},
 		{
-			name:   "check truncation of label list is not excessive",
-			labels: append([]string{}, neededLabels[:2]...),
-			inPool: false,
+			name:      "check truncation of label list is not excessive",
+			labels:    append([]string{}, neededLabels[:2]...),
+			milestone: "v1.0",
+			inPool:    false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-a-very-super-duper-extra-not-short-at-all-label-name label."),
 		},
 		{
-			name:   "has forbidden labels",
-			labels: append(append([]string{}, neededLabels...), forbiddenLabels...),
-			inPool: false,
+			name:      "has forbidden labels",
+			labels:    append(append([]string{}, neededLabels...), forbiddenLabels...),
+			milestone: "v1.0",
+			inPool:    false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Should not have forbidden-1, forbidden-2 labels."),
 		},
 		{
-			name:   "has one forbidden label",
-			labels: append(append([]string{}, neededLabels...), forbiddenLabels[0]),
-			inPool: false,
+			name:      "has one forbidden label",
+			labels:    append(append([]string{}, neededLabels...), forbiddenLabels[0]),
+			milestone: "v1.0",
+			inPool:    false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Should not have forbidden-1 label."),
 		},
 		{
-			name:   "only mention one requirement class",
-			labels: append(append([]string{}, neededLabels[1:]...), forbiddenLabels[0]),
-			inPool: false,
+			name:      "only mention one requirement class",
+			labels:    append(append([]string{}, neededLabels[1:]...), forbiddenLabels[0]),
+			milestone: "v1.0",
+			inPool:    false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1 label."),
@@ -94,6 +102,7 @@ func TestExpectedStatus(t *testing.T) {
 			name:            "against excluded branch",
 			baseref:         "bad",
 			branchBlacklist: []string{"bad"},
+			sameBranchReqs:  true,
 			labels:          neededLabels,
 			inPool:          false,
 
@@ -104,11 +113,23 @@ func TestExpectedStatus(t *testing.T) {
 			name:            "not against included branch",
 			baseref:         "bad",
 			branchWhitelist: []string{"good"},
+			sameBranchReqs:  true,
 			labels:          neededLabels,
 			inPool:          false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Merging to branch bad is forbidden."),
+		},
+		{
+			name:            "choose query for correct branch",
+			baseref:         "bad",
+			branchWhitelist: []string{"good"},
+			milestone:       "v1.0",
+			labels:          neededLabels,
+			inPool:          false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Needs 1, 2, 3, 4, 5, 6, 7 labels."),
 		},
 		{
 			name:      "only failed tide context",
@@ -121,17 +142,19 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, ""),
 		},
 		{
-			name:     "single bad context",
-			labels:   neededLabels,
-			contexts: []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateError}},
-			inPool:   false,
+			name:      "single bad context",
+			labels:    neededLabels,
+			contexts:  []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateError}},
+			milestone: "v1.0",
+			inPool:    false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Job job-name has not succeeded."),
 		},
 		{
-			name:   "multiple bad contexts",
-			labels: neededLabels,
+			name:      "multiple bad contexts",
+			labels:    neededLabels,
+			milestone: "v1.0",
 			contexts: []Context{
 				{Context: githubql.String("job-name"), State: githubql.StatusStateError},
 				{Context: githubql.String("other-job-name"), State: githubql.StatusStateError},
@@ -162,9 +185,10 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, ""),
 		},
 		{
-			name:   "check that min diff query is used",
-			labels: []string{"3", "4", "5", "6", "7"},
-			inPool: false,
+			name:      "check that min diff query is used",
+			labels:    []string{"3", "4", "5", "6", "7"},
+			milestone: "v1.0",
+			inPool:    false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs 1, 2 labels."),
@@ -173,20 +197,26 @@ func TestExpectedStatus(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Logf("Test Case: %q\n", tc.name)
-		queriesByRepo := config.QueryMap(map[string]config.TideQueries{
-			"": {
-				config.TideQuery{
-					ExcludedBranches: tc.branchBlacklist,
-					IncludedBranches: tc.branchWhitelist,
-					Labels:           neededLabels,
-					MissingLabels:    forbiddenLabels,
-					Milestone:        "v1.0",
-				},
-				config.TideQuery{
-					Labels: []string{"1", "2", "3", "4", "5", "6", "7"}, // lots of requirements
-				},
+		secondQuery := config.TideQuery{
+			Orgs:      []string{""},
+			Labels:    []string{"1", "2", "3", "4", "5", "6", "7"}, // lots of requirements
+			Milestone: "v1.0",
+		}
+		if tc.sameBranchReqs {
+			secondQuery.ExcludedBranches = tc.branchBlacklist
+			secondQuery.IncludedBranches = tc.branchWhitelist
+		}
+		queriesByRepo := config.TideQueries{
+			config.TideQuery{
+				Orgs:             []string{""},
+				ExcludedBranches: tc.branchBlacklist,
+				IncludedBranches: tc.branchWhitelist,
+				Labels:           neededLabels,
+				MissingLabels:    forbiddenLabels,
+				Milestone:        "v1.0",
 			},
-		})
+			secondQuery,
+		}.QueryMap()
 		var pr PullRequest
 		pr.BaseRef = struct {
 			Name   githubql.String
@@ -340,7 +370,7 @@ func TestSetStatuses(t *testing.T) {
 			t.Fatalf("Failed to get log output before testing: %v", err)
 		}
 
-		sc := &statusController{ghc: fc, ca: ca, logger: log}
+		sc := &statusController{ghc: fc, config: ca.Config, logger: log}
 		sc.setStatuses([]PullRequest{pr}, pool)
 		if str, err := log.String(); err != nil {
 			t.Fatalf("For case %s: failed to get log output: %v", tc.name, err)
@@ -405,8 +435,34 @@ func TestTargetUrl(t *testing.T) {
 		ca := &config.Agent{}
 		ca.Set(&config.Config{ProwConfig: config.ProwConfig{Tide: tc.config}})
 		log := logrus.WithField("controller", "status-update")
-		if actual, expected := targetURL(ca, tc.pr, log), tc.expectedURL; actual != expected {
+		if actual, expected := targetURL(ca.Config, tc.pr, log), tc.expectedURL; actual != expected {
 			t.Errorf("%s: expected target URL %s but got %s", tc.name, expected, actual)
 		}
 	}
+}
+
+func TestOpenPRsQuery(t *testing.T) {
+	var q string
+	checkTok := func(tok string) {
+		if !strings.Contains(q, " "+tok+" ") {
+			t.Errorf("Expected query to contain \"%s\", got \"%s\"", tok, q)
+		}
+	}
+
+	orgs := []string{"org", "kuber"}
+	repos := []string{"k8s/k8s", "k8s/t-i"}
+	exceptions := map[string]sets.String{
+		"org":            sets.NewString("org/repo1", "org/repo2"),
+		"irrelevant-org": sets.NewString("irrelevant-org/repo1", "irrelevant-org/repo2"),
+	}
+
+	q = " " + openPRsQuery(orgs, repos, exceptions) + " "
+	checkTok("is:pr")
+	checkTok("state:open")
+	checkTok("org:\"org\"")
+	checkTok("org:\"kuber\"")
+	checkTok("repo:\"k8s/k8s\"")
+	checkTok("repo:\"k8s/t-i\"")
+	checkTok("-repo:\"org/repo1\"")
+	checkTok("-repo:\"org/repo2\"")
 }

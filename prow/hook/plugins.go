@@ -16,16 +16,19 @@ limitations under the License.
 
 package hook
 
-// All enabled plugins. We need to empty import them like this so that they
-// will be linked into any hook binary.
+// We need to empty import all enabled plugins so that they will be linked into
+// any hook binary.
 import (
-	_ "k8s.io/test-infra/prow/plugins/approve"
+	_ "k8s.io/test-infra/prow/plugins/approve" // Import all enabled plugins.
 	_ "k8s.io/test-infra/prow/plugins/assign"
 	_ "k8s.io/test-infra/prow/plugins/blockade"
 	_ "k8s.io/test-infra/prow/plugins/blunderbuss"
+	_ "k8s.io/test-infra/prow/plugins/branchcleaner"
 	_ "k8s.io/test-infra/prow/plugins/buildifier"
 	_ "k8s.io/test-infra/prow/plugins/cat"
+	_ "k8s.io/test-infra/prow/plugins/cherrypickunapproved"
 	_ "k8s.io/test-infra/prow/plugins/cla"
+	_ "k8s.io/test-infra/prow/plugins/dco"
 	_ "k8s.io/test-infra/prow/plugins/docs-no-retest"
 	_ "k8s.io/test-infra/prow/plugins/dog"
 	_ "k8s.io/test-infra/prow/plugins/golint"
@@ -37,8 +40,11 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/lifecycle"
 	_ "k8s.io/test-infra/prow/plugins/milestone"
 	_ "k8s.io/test-infra/prow/plugins/milestonestatus"
+	_ "k8s.io/test-infra/prow/plugins/override"
 	_ "k8s.io/test-infra/prow/plugins/owners-label"
+	_ "k8s.io/test-infra/prow/plugins/pony"
 	_ "k8s.io/test-infra/prow/plugins/releasenote"
+	_ "k8s.io/test-infra/prow/plugins/require-matching-label"
 	_ "k8s.io/test-infra/prow/plugins/requiresig"
 	_ "k8s.io/test-infra/prow/plugins/shrug"
 	_ "k8s.io/test-infra/prow/plugins/sigmention"
@@ -49,6 +55,7 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/trigger"
 	_ "k8s.io/test-infra/prow/plugins/updateconfig"
 	_ "k8s.io/test-infra/prow/plugins/verify-owners"
+	_ "k8s.io/test-infra/prow/plugins/welcome"
 	_ "k8s.io/test-infra/prow/plugins/wip"
 	_ "k8s.io/test-infra/prow/plugins/yuks"
 )

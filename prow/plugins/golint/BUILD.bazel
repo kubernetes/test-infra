@@ -13,6 +13,7 @@ go_test(
     deps = [
         "//prow/git/localgit:go_default_library",
         "//prow/github:go_default_library",
+        "//prow/plugins:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
@@ -27,6 +28,7 @@ go_library(
         "//prow/github:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
+        "//prow/plugins/golint/suggestion:go_default_library",
         "//vendor/github.com/golang/lint:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
@@ -41,6 +43,9 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//prow/plugins/golint/suggestion:all-srcs",
+    ],
     tags = ["automanaged"],
 )

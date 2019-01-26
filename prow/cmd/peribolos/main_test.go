@@ -28,13 +28,11 @@ import (
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 
-	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"sigs.k8s.io/yaml"
 )
 
 func TestOptions(t *testing.T) {
-	weirdFlags := flagutil.NewStrings(defaultEndpoint)
-	weirdFlags.Set("weird://url") // no error possible
 	cases := []struct {
 		name     string
 		args     []string
@@ -42,35 +40,29 @@ func TestOptions(t *testing.T) {
 	}{
 		{
 			name: "missing --config",
-			args: []string{"--github-token-path=fake"},
-		},
-		{
-			name: "missing --github-token-path",
-			args: []string{"--config-path=fake"},
+			args: []string{},
 		},
 		{
 			name: "bad --github-endpoint",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--github-endpoint=ht!tp://:dumb"},
+			args: []string{"--config-path=foo", "--github-endpoint=ht!tp://:dumb"},
 		},
 		{
 			name: "--minAdmins too low",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--min-admins=1"},
+			args: []string{"--config-path=foo", "--min-admins=1"},
 		},
 		{
 			name: "--maximum-removal-delta too high",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--maximum-removal-delta=1.1"},
+			args: []string{"--config-path=foo", "--maximum-removal-delta=1.1"},
 		},
 		{
 			name: "--maximum-removal-delta too low",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--maximum-removal-delta=-0.1"},
+			args: []string{"--config-path=foo", "--maximum-removal-delta=-0.1"},
 		},
 		{
 			name: "maximal delta",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--maximum-removal-delta=1"},
+			args: []string{"--config-path=foo", "--maximum-removal-delta=1"},
 			expected: &options{
 				config:        "foo",
-				token:         "bar",
-				endpoint:      flagutil.NewStrings(defaultEndpoint),
 				minAdmins:     defaultMinAdmins,
 				requireSelf:   true,
 				maximumDelta:  1,
@@ -80,11 +72,9 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "minimal delta",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--maximum-removal-delta=0"},
+			args: []string{"--config-path=foo", "--maximum-removal-delta=0"},
 			expected: &options{
 				config:        "foo",
-				token:         "bar",
-				endpoint:      flagutil.NewStrings(defaultEndpoint),
 				minAdmins:     defaultMinAdmins,
 				requireSelf:   true,
 				maximumDelta:  0,
@@ -94,11 +84,9 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "minimal admins",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--min-admins=2"},
+			args: []string{"--config-path=foo", "--min-admins=2"},
 			expected: &options{
 				config:        "foo",
-				token:         "bar",
-				endpoint:      flagutil.NewStrings(defaultEndpoint),
 				minAdmins:     2,
 				requireSelf:   true,
 				maximumDelta:  defaultDelta,
@@ -108,27 +96,25 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "reject burst > tokens",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--tokens=10", "--token-burst=11"},
+			args: []string{"--config-path=foo", "--tokens=10", "--token-burst=11"},
 		},
 		{
 			name: "reject dump and confirm",
-			args: []string{"--github-token-path=bar", "--confirm", "--dump=frogger"},
+			args: []string{"--confirm", "--dump=frogger"},
 		},
 		{
 			name: "reject dump and config-path",
-			args: []string{"--github-token-path=bar", "--config-path=foo", "--dump=frogger"},
+			args: []string{"--config-path=foo", "--dump=frogger"},
 		},
 		{
 			name: "reject --fix-team-members without --fix-teams",
-			args: []string{"--github-token-path=bar", "--config-path=foo", "--fix-team-members"},
+			args: []string{"--config-path=foo", "--fix-team-members"},
 		},
 		{
 			name: "allow disabled throttle",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--tokens=0"},
+			args: []string{"--config-path=foo", "--tokens=0"},
 			expected: &options{
 				config:        "foo",
-				token:         "bar",
-				endpoint:      flagutil.NewStrings(defaultEndpoint),
 				minAdmins:     defaultMinAdmins,
 				requireSelf:   true,
 				maximumDelta:  defaultDelta,
@@ -138,10 +124,8 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "allow dump without config",
-			args: []string{"--github-token-path=bar", "--dump=frogger"},
+			args: []string{"--dump=frogger"},
 			expected: &options{
-				token:         "bar",
-				endpoint:      flagutil.NewStrings(defaultEndpoint),
 				minAdmins:     defaultMinAdmins,
 				requireSelf:   true,
 				maximumDelta:  defaultDelta,
@@ -152,11 +136,9 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "minimal",
-			args: []string{"--config-path=foo", "--github-token-path=bar"},
+			args: []string{"--config-path=foo"},
 			expected: &options{
 				config:        "foo",
-				token:         "bar",
-				endpoint:      flagutil.NewStrings(defaultEndpoint),
 				minAdmins:     defaultMinAdmins,
 				requireSelf:   true,
 				maximumDelta:  defaultDelta,
@@ -169,8 +151,6 @@ func TestOptions(t *testing.T) {
 			args: []string{"--config-path=foo", "--github-token-path=bar", "--github-endpoint=weird://url", "--confirm=true", "--require-self=false", "--tokens=5", "--token-burst=2", "--dump=", "--fix-org", "--fix-org-members", "--fix-teams", "--fix-team-members"},
 			expected: &options{
 				config:         "foo",
-				token:          "bar",
-				endpoint:       weirdFlags,
 				confirm:        true,
 				requireSelf:    false,
 				minAdmins:      defaultMinAdmins,
@@ -189,6 +169,7 @@ func TestOptions(t *testing.T) {
 		flags := flag.NewFlagSet(tc.name, flag.ContinueOnError)
 		var actual options
 		err := actual.parseArgs(flags, tc.args)
+		actual.github = flagutil.GitHubOptions{}
 		switch {
 		case err == nil && tc.expected == nil:
 			t.Errorf("%s: failed to return an error", tc.name)
@@ -229,7 +210,7 @@ func (c *fakeClient) ListOrgMembers(org, role string) ([]github.TeamMember, erro
 	case github.RoleAdmin:
 		return c.makeMembers(c.admins), nil
 	default:
-		// RoleAll: implmenent when/if necessary
+		// RoleAll: implement when/if necessary
 		return nil, fmt.Errorf("bad role: %s", role)
 	}
 }
@@ -301,6 +282,24 @@ func (c *fakeClient) ListTeamMembers(id int, role string) ([]github.TeamMember, 
 	}
 }
 
+func (c *fakeClient) ListTeamInvitations(id int) ([]github.OrgInvitation, error) {
+	if id != teamID {
+		return nil, fmt.Errorf("only team 66 supported, not %d", id)
+	}
+	var ret []github.OrgInvitation
+	for p := range c.invitees {
+		if p == "fail" {
+			return nil, errors.New("injected list org invitations failure")
+		}
+		ret = append(ret, github.OrgInvitation{
+			TeamMember: github.TeamMember{
+				Login: p,
+			},
+		})
+	}
+	return ret, nil
+}
+
 const teamID = 66
 
 func (c *fakeClient) UpdateTeamMembership(id int, user string, maintainer bool) (*github.TeamMembership, error) {
@@ -349,13 +348,14 @@ func (c *fakeClient) RemoveTeamMembership(id int, user string) error {
 
 func TestConfigureMembers(t *testing.T) {
 	cases := []struct {
-		name    string
-		want    memberships
-		have    memberships
-		remove  sets.String
-		members sets.String
-		supers  sets.String
-		err     bool
+		name     string
+		want     memberships
+		have     memberships
+		remove   sets.String
+		members  sets.String
+		supers   sets.String
+		invitees sets.String
+		err      bool
 	}{
 		{
 			name: "forgot to remove duplicate entry",
@@ -431,6 +431,17 @@ func TestConfigureMembers(t *testing.T) {
 				members: sets.NewString("UpPeR"),
 			},
 		},
+		{
+			name: "remove invites for those not in org config",
+			have: memberships{
+				members: sets.NewString("member-one", "member-two"),
+			},
+			want: memberships{
+				members: sets.NewString("member-one", "member-two"),
+			},
+			remove:   sets.NewString("member-three"),
+			invitees: sets.NewString("member-three"),
+		},
 	}
 
 	for _, tc := range cases {
@@ -458,7 +469,7 @@ func TestConfigureMembers(t *testing.T) {
 				return nil
 			}
 
-			err := configureMembers(tc.have, tc.want, adder, remover)
+			err := configureMembers(tc.have, tc.want, tc.invitees, adder, remover)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -583,6 +594,30 @@ func TestConfigureOrgMembers(t *testing.T) {
 			err: true,
 		},
 		{
+			name: "require team members with upper name to be org member",
+			config: org.Config{
+				Teams: map[string]org.Team{
+					"foo": {
+						Members: []string{"Me"},
+					},
+				},
+				Members: []string{"Me"},
+			},
+			members: []string{"Me"},
+		},
+		{
+			name: "require team maintainer with upper name to be org member",
+			config: org.Config{
+				Teams: map[string]org.Team{
+					"foo": {
+						Maintainers: []string{"Me"},
+					},
+				},
+				Admins: []string{"Me"},
+			},
+			admins: []string{"Me"},
+		},
+		{
 			name: "disallow duplicate names",
 			config: org.Config{
 				Teams: map[string]org.Team{
@@ -606,7 +641,7 @@ func TestConfigureOrgMembers(t *testing.T) {
 			err: true,
 		},
 		{
-			name: "trival case works",
+			name: "trivial case works",
 		},
 		{
 			name: "some of everything",
@@ -631,11 +666,6 @@ func TestConfigureOrgMembers(t *testing.T) {
 			},
 			invitations: []string{"invited-admin", "invited-member"},
 		},
-		{
-			name:        "github list invitation rpc fails",
-			invitations: []string{"fail"},
-			err:         true,
-		},
 	}
 
 	for _, tc := range cases {
@@ -643,12 +673,12 @@ func TestConfigureOrgMembers(t *testing.T) {
 			fc := &fakeClient{
 				admins:     sets.NewString(tc.admins...),
 				members:    sets.NewString(tc.members...),
-				invitees:   sets.NewString(tc.invitations...),
 				removed:    sets.String{},
 				newAdmins:  sets.String{},
 				newMembers: sets.String{},
 			}
-			err := configureOrgMembers(tc.opt, fc, fakeOrg, tc.config)
+
+			err := configureOrgMembers(tc.opt, fc, fakeOrg, tc.config, sets.NewString(tc.invitations...))
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -1209,6 +1239,7 @@ func TestConfigureTeamMembers(t *testing.T) {
 		remove         sets.String
 		addMembers     sets.String
 		addMaintainers sets.String
+		invitees       sets.String
 		team           org.Team
 		id             int
 	}{
@@ -1241,21 +1272,45 @@ func TestConfigureTeamMembers(t *testing.T) {
 			addMembers:     sets.NewString("new-member"),
 			addMaintainers: sets.NewString("new-maintainer"),
 		},
+		{
+			name: "do not reinvitee invitees",
+			team: org.Team{
+				Maintainers: []string{"invited-maintainer", "newbie"},
+				Members:     []string{"invited-member"},
+			},
+			invitees:       sets.NewString("invited-maintainer", "invited-member"),
+			addMaintainers: sets.NewString("newbie"),
+		},
+		{
+			name: "do not remove pending invitees",
+			team: org.Team{
+				Maintainers: []string{"keep-maintainer"},
+				Members:     []string{"invited-member"},
+			},
+			maintainers: sets.NewString("keep-maintainer"),
+			invitees:    sets.NewString("invited-member"),
+			remove:      sets.String{},
+		},
 	}
 
 	for _, tc := range cases {
-		if tc.id == 0 {
-			tc.id = teamID
+		gt := github.Team{
+			ID:   teamID,
+			Name: "whatev",
+		}
+		if tc.id != 0 {
+			gt.ID = tc.id
 		}
 		t.Run(tc.name, func(t *testing.T) {
 			fc := &fakeClient{
 				admins:     sets.StringKeySet(tc.maintainers),
 				members:    sets.StringKeySet(tc.members),
+				invitees:   sets.StringKeySet(tc.invitees),
 				removed:    sets.String{},
 				newAdmins:  sets.String{},
 				newMembers: sets.String{},
 			}
-			err := configureTeamMembers(fc, tc.id, tc.team)
+			err := configureTeamMembers(fc, gt, tc.team)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -1671,7 +1726,7 @@ func TestDumpOrgConfig(t *testing.T) {
 		{
 			name: "basically works",
 			meta: github.Organization{
-				Name: hello,
+				Name:                         hello,
 				MembersCanCreateRepositories: yes,
 				DefaultRepositoryPermission:  string(perm),
 			},
@@ -1878,5 +1933,74 @@ func fixup(ret *org.Config) {
 		sort.Strings(team.Maintainers)
 		sort.Strings(team.Previously)
 		ret.Teams[name] = team
+	}
+}
+
+func TestOrgInvitations(t *testing.T) {
+	cases := []struct {
+		name     string
+		opt      options
+		invitees sets.String // overrides
+		expected sets.String
+		err      bool
+	}{
+		{
+			name:     "do not call on empty options",
+			invitees: sets.NewString("him", "her", "them"),
+			expected: sets.String{},
+		},
+		{
+			name: "call if fixOrgMembers",
+			opt: options{
+				fixOrgMembers: true,
+			},
+			invitees: sets.NewString("him", "her", "them"),
+			expected: sets.NewString("him", "her", "them"),
+		},
+		{
+			name: "call if fixTeamMembers",
+			opt: options{
+				fixTeamMembers: true,
+			},
+			invitees: sets.NewString("him", "her", "them"),
+			expected: sets.NewString("him", "her", "them"),
+		},
+		{
+			name: "ensure case normalization",
+			opt: options{
+				fixOrgMembers:  true,
+				fixTeamMembers: true,
+			},
+			invitees: sets.NewString("MiXeD", "lower", "UPPER"),
+			expected: sets.NewString("mixed", "lower", "upper"),
+		},
+		{
+			name: "error if list fails",
+			opt: options{
+				fixTeamMembers: true,
+				fixOrgMembers:  true,
+			},
+			invitees: sets.NewString("erick", "fail"),
+			err:      true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			fc := &fakeClient{
+				invitees: tc.invitees,
+			}
+			actual, err := orgInvitations(tc.opt, fc, "random-org")
+			switch {
+			case err != nil:
+				if !tc.err {
+					t.Errorf("unexpected error: %v", err)
+				}
+			case tc.err:
+				t.Errorf("failed to receive an error")
+			case !reflect.DeepEqual(actual, tc.expected):
+				t.Errorf("%#v != expected %#v", actual, tc.expected)
+			}
+		})
 	}
 }

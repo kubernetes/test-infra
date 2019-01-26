@@ -1,7 +1,80 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_prefix")
+# gazelle:prefix k8s.io/test-infra
+# gazelle:proto disable_global
+# gazelle:exclude vendor/k8s.io/code-generator/_examples/
+
 load("@io_kubernetes_build//defs:run_in_workspace.bzl", "workspace_binary")
 
-go_prefix("k8s.io/test-infra")
+workspace_binary(
+    name = "go",
+    cmd = "@go_sdk//:bin/go",
+)
+
+workspace_binary(
+    name = "update-minor",
+    args = [
+        "get",
+        "-u",
+    ],
+    cmd = "@go_sdk//:bin/go",
+)
+
+workspace_binary(
+    name = "update-patch",
+    args = [
+        "get",
+        "-u=patch",
+    ],
+    cmd = "@go_sdk//:bin/go",
+)
+
+workspace_binary(
+    name = "gofmt",
+    cmd = "@go_sdk//:bin/gofmt",
+)
+
+workspace_binary(
+    name = "govet",
+    args = ["vet"],
+    cmd = "@go_sdk//:bin/go",
+)
+
+workspace_binary(
+    name = "golint",
+    cmd = "@com_github_golang_lint//golint",
+)
+
+load("@bazel_gazelle//:def.bzl", "gazelle")
+
+gazelle(
+    name = "gazelle",
+    command = "fix",
+    external = "vendored",
+)
+
+gazelle(
+    name = "gazelle-diff",
+    command = "fix",
+    external = "vendored",
+    mode = "diff",
+)
+
+workspace_binary(
+    name = "kazel",
+    args = [
+        "--cfg-path=./hack/.kazelcfg.json",
+    ],
+    cmd = "@io_kubernetes_build//kazel",
+)
+
+workspace_binary(
+    name = "kazel-diff",
+    args = [
+        "--dry-run",
+        "--print-diff",
+        "--cfg-path=./hack/.kazelcfg.json",
+    ],
+    cmd = "@io_kubernetes_build//kazel",
+)
 
 filegroup(
     name = "package-srcs",
@@ -17,32 +90,18 @@ filegroup(
     visibility = ["//visibility:private"],
 )
 
-workspace_binary(
-    name = "dep",
-    cmd = "//vendor/github.com/golang/dep/cmd/dep",
-)
-
-workspace_binary(
-    name = "golint",
-    cmd = "//vendor/github.com/golang/lint/golint",
-)
-
 filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//autogo:all-srcs",
         "//boskos:all-srcs",
         "//config:all-srcs",
         "//def:all-srcs",
-        "//dind/cmd/cluster-up:all-srcs",
-        "//dind/pkg/cluster-up/cluster:all-srcs",
-        "//dind/pkg/cluster-up/options:all-srcs",
         "//experiment:all-srcs",
         "//gcsweb/cmd/gcsweb:all-srcs",
         "//gcsweb/pkg/version:all-srcs",
-        "//ghclient:all-srcs",
         "//ghproxy:all-srcs",
+        "//gopherage:all-srcs",
         "//greenhouse:all-srcs",
         "//hack:all-srcs",
         "//images/bootstrap/barnacle:all-srcs",
@@ -55,11 +114,14 @@ filegroup(
         "//maintenance/aws-janitor:all-srcs",
         "//maintenance/migratestatus:all-srcs",
         "//metrics:all-srcs",
-        "//mungegithub:all-srcs",
+        "//pkg/flagutil:all-srcs",
+        "//pkg/ghclient:all-srcs",
         "//prow:all-srcs",
-        "//queue_health/graph:all-srcs",
         "//robots/commenter:all-srcs",
+        "//robots/coverage:all-srcs",
         "//robots/issue-creator:all-srcs",
+        "//robots/pr-creator:all-srcs",
+        "//robots/pr-labeler:all-srcs",
         "//scenarios:all-srcs",
         "//testgrid:all-srcs",
         "//triage:all-srcs",
@@ -69,3 +131,5 @@ filegroup(
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
+
+exports_files(["tsconfig.json"])

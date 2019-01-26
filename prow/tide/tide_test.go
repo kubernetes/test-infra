@@ -26,7 +26,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/shurcooL/githubql"
+	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -34,6 +34,7 @@ import (
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/tide/history"
 )
 
 func testPullsMatchList(t *testing.T, test string, actual []PullRequest, expected []int) {
@@ -80,10 +81,16 @@ func TestAccumulateBatch(t *testing.T) {
 		},
 		{
 			name:       "batch pending",
-			presubmits: map[int]sets.String{1: jobSet, 2: jobSet},
+			presubmits: map[int]sets.String{1: sets.NewString("foo"), 2: sets.NewString("foo")},
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs:   []prowjob{{job: "foo", state: kube.PendingState, prs: []pull{{1, "a"}}}},
 			pending:    true,
+		},
+		{
+			name:       "pending batch missing presubmits is ignored",
+			presubmits: map[int]sets.String{1: jobSet},
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs:   []prowjob{{job: "foo", state: kube.PendingState, prs: []pull{{1, "a"}}}},
 		},
 		{
 			name:       "batch pending, successful previous run",
@@ -91,11 +98,14 @@ func TestAccumulateBatch(t *testing.T) {
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs: []prowjob{
 				{job: "foo", state: kube.PendingState, prs: []pull{{1, "a"}}},
+				{job: "bar", state: kube.SuccessState, prs: []pull{{1, "a"}}},
+				{job: "baz", state: kube.SuccessState, prs: []pull{{1, "a"}}},
 				{job: "foo", state: kube.SuccessState, prs: []pull{{2, "b"}}},
 				{job: "bar", state: kube.SuccessState, prs: []pull{{2, "b"}}},
 				{job: "baz", state: kube.SuccessState, prs: []pull{{2, "b"}}},
 			},
 			pending: true,
+			merges:  []int{2},
 		},
 		{
 			name:       "successful run",
@@ -171,6 +181,19 @@ func TestAccumulateBatch(t *testing.T) {
 			pulls:   []pull{{1, "a"}, {2, "b"}},
 			pending: false,
 		},
+		{
+			name:       "pending batch with PR that left pool, successful previous run",
+			presubmits: map[int]sets.String{2: jobSet},
+			pulls:      []pull{{2, "b"}},
+			prowJobs: []prowjob{
+				{job: "foo", state: kube.PendingState, prs: []pull{{1, "a"}}},
+				{job: "foo", state: kube.SuccessState, prs: []pull{{2, "b"}}},
+				{job: "bar", state: kube.SuccessState, prs: []pull{{2, "b"}}},
+				{job: "baz", state: kube.SuccessState, prs: []pull{{2, "b"}}},
+			},
+			pending: false,
+			merges:  []int{2},
+		},
 	}
 	for _, test := range tests {
 		var pulls []PullRequest
@@ -185,9 +208,10 @@ func TestAccumulateBatch(t *testing.T) {
 		for _, pj := range test.prowJobs {
 			npj := kube.ProwJob{
 				Spec: kube.ProwJobSpec{
-					Job:  pj.job,
-					Type: kube.BatchJob,
-					Refs: new(kube.Refs),
+					Job:     pj.job,
+					Context: pj.job,
+					Type:    kube.BatchJob,
+					Refs:    new(kube.Refs),
 				},
 				Status: kube.ProwJobStatus{State: pj.state},
 			}
@@ -199,7 +223,7 @@ func TestAccumulateBatch(t *testing.T) {
 			}
 			pjs = append(pjs, npj)
 		}
-		merges, pending := accumulateBatch(test.presubmits, pulls, pjs)
+		merges, pending := accumulateBatch(test.presubmits, pulls, pjs, logrus.NewEntry(logrus.New()))
 		if (len(pending) > 0) != test.pending {
 			t.Errorf("For case \"%s\", got wrong pending.", test.name)
 		}
@@ -369,15 +393,16 @@ func TestAccumulate(t *testing.T) {
 		for _, pj := range test.prowJobs {
 			pjs = append(pjs, kube.ProwJob{
 				Spec: kube.ProwJobSpec{
-					Job:  pj.job,
-					Type: kube.PresubmitJob,
-					Refs: &kube.Refs{Pulls: []kube.Pull{{Number: pj.prNumber, SHA: pj.sha}}},
+					Job:     pj.job,
+					Context: pj.job,
+					Type:    kube.PresubmitJob,
+					Refs:    &kube.Refs{Pulls: []kube.Pull{{Number: pj.prNumber, SHA: pj.sha}}},
 				},
 				Status: kube.ProwJobStatus{State: pj.state},
 			})
 		}
 
-		successes, pendings, nones := accumulate(test.presubmits, pulls, pjs)
+		successes, pendings, nones := accumulate(test.presubmits, pulls, pjs, logrus.NewEntry(logrus.New()))
 
 		t.Logf("test run %d", i)
 		testPullsMatchList(t, "successes", successes, test.successes)
@@ -583,7 +608,7 @@ func TestDividePool(t *testing.T) {
 	if len(sps) == 0 {
 		t.Error("No subpools.")
 	}
-	for sp := range sps {
+	for _, sp := range sps {
 		name := fmt.Sprintf("%s/%s %s", sp.org, sp.repo, sp.branch)
 		sha := fc.refs[sp.org+"/"+sp.repo+" heads/"+sp.branch]
 		if sp.sha != sha {
@@ -712,7 +737,7 @@ func TestPickBatch(t *testing.T) {
 	c := &Controller{
 		logger: logrus.WithField("component", "tide"),
 		gc:     gc,
-		ca:     ca,
+		config: ca.Config,
 	}
 	prs, err := c.pickBatch(sp, &config.TideContextPolicy{})
 	if err != nil {
@@ -926,16 +951,18 @@ func TestTakeAction(t *testing.T) {
 			map[string][]config.Presubmit{
 				"o/r": {
 					{
-						Name:         "foo",
+						Context:      "foo",
 						Trigger:      "/test all",
 						RerunCommand: "/test all",
 						AlwaysRun:    true,
 					},
 					{
-						Name:         "if-changed",
+						Context:      "if-changed",
 						Trigger:      "/test if-changed",
 						RerunCommand: "/test if-changed",
-						RunIfChanged: "CHANGED",
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
+							RunIfChanged: "CHANGED",
+						},
 					},
 				},
 			},
@@ -962,11 +989,13 @@ func TestTakeAction(t *testing.T) {
 		}
 
 		sp := subpool{
-			log:    logrus.WithField("component", "tide"),
-			org:    "o",
-			repo:   "r",
-			branch: "master",
-			sha:    "master",
+			log:               logrus.WithField("component", "tide"),
+			presubmitContexts: tc.presubmits,
+			cc:                &config.TideContextPolicy{},
+			org:               "o",
+			repo:              "r",
+			branch:            "master",
+			sha:               "master",
 		}
 		genPulls := func(nums []int) []PullRequest {
 			var prs []PullRequest
@@ -997,7 +1026,7 @@ func TestTakeAction(t *testing.T) {
 		c := &Controller{
 			logger: logrus.WithField("controller", "tide"),
 			gc:     gc,
-			ca:     ca,
+			config: ca.Config,
 			ghc:    &fgc,
 			kc:     &fkc,
 		}
@@ -1006,8 +1035,7 @@ func TestTakeAction(t *testing.T) {
 			batchPending = []PullRequest{{}}
 		}
 		t.Logf("Test case: %s", tc.name)
-		cr := &config.TideContextPolicy{}
-		if act, _, err := c.takeAction(sp, tc.presubmits, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges), cr); err != nil {
+		if act, _, err := c.takeAction(sp, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges)); err != nil {
 			t.Errorf("Error in takeAction: %v", err)
 			continue
 		} else if act != tc.action {
@@ -1049,6 +1077,7 @@ func TestServeHTTP(t *testing.T) {
 				Action:     Merge,
 			},
 		},
+		History: history.New(100),
 	}
 	s := httptest.NewServer(c)
 	defer s.Close()
@@ -1078,7 +1107,6 @@ func TestHeadContexts(t *testing.T) {
 	headSHA := "head"
 	testCases := []struct {
 		name           string
-		headRef        *commitContext
 		commitContexts []commitContext
 		expectAPICall  bool
 	}{
@@ -1107,21 +1135,6 @@ func TestHeadContexts(t *testing.T) {
 			},
 			expectAPICall: true,
 		},
-		{
-			name:    "headRef is usable",
-			headRef: &commitContext{context: win, sha: headSHA},
-			commitContexts: []commitContext{
-				{context: lose, sha: "shaaa"},
-				{context: lose, sha: "other"},
-				{context: lose, sha: "sha"},
-			},
-			expectAPICall: true,
-		},
-		{
-			name:           "headRef is usable (no other commits in list)",
-			headRef:        &commitContext{context: win, sha: headSHA},
-			commitContexts: []commitContext{},
-		},
 	}
 
 	for _, tc := range testCases {
@@ -1144,28 +1157,6 @@ func TestHeadContexts(t *testing.T) {
 			}
 			pr.Commits.Nodes = append(pr.Commits.Nodes, struct{ Commit Commit }{commit})
 		}
-		if tc.headRef != nil {
-			pr.HeadRef = &struct {
-				Target struct {
-					Commit Commit `graphql:"... on Commit"`
-				}
-			}{
-				Target: struct {
-					Commit Commit `graphql:"... on Commit"`
-				}{
-					Commit: Commit{
-						Status: struct{ Contexts []Context }{
-							Contexts: []Context{
-								{
-									Context: githubql.String(tc.headRef.context),
-								},
-							},
-						},
-						OID: githubql.String(tc.headRef.sha),
-					},
-				},
-			}
-		}
 
 		contexts, err := headContexts(logrus.WithField("component", "tide"), fgc, pr)
 		if err != nil {
@@ -1179,7 +1170,7 @@ func TestHeadContexts(t *testing.T) {
 
 func testPR(org, repo, branch string, number int, mergeable githubql.MergeableState) PullRequest {
 	pr := PullRequest{
-		Number:     5,
+		Number:     githubql.Int(number),
 		Mergeable:  mergeable,
 		HeadRefOID: githubql.String("SHA"),
 	}
@@ -1289,6 +1280,7 @@ func TestSync(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		t.Logf("Starting case %q...", tc.name)
 		fgc := &fgc{prs: tc.prs}
 		fkc := &fkc{}
 		ca := &config.Agent{}
@@ -1303,18 +1295,23 @@ func TestSync(t *testing.T) {
 		sc := &statusController{
 			logger:         logrus.WithField("controller", "status-update"),
 			ghc:            fgc,
-			ca:             ca,
+			config:         ca.Config,
 			newPoolPending: make(chan bool, 1),
 			shutDown:       make(chan bool),
 		}
 		go sc.run()
 		defer sc.shutdown()
 		c := &Controller{
-			ca:     ca,
+			config: ca.Config,
 			ghc:    fgc,
 			kc:     fkc,
 			logger: logrus.WithField("controller", "sync"),
 			sc:     sc,
+			changedFiles: &changedFilesAgent{
+				ghc:             fgc,
+				nextChangeCache: make(map[changeCacheKey][]string),
+			},
+			History: history.New(100),
 		}
 
 		if err := c.Sync(); err != nil {
@@ -1338,6 +1335,333 @@ func TestSync(t *testing.T) {
 				t.Errorf("Expected pool %#v does not match actual pool %#v.", expected, *match)
 			}
 		}
+	}
+}
+
+func TestFilterSubpool(t *testing.T) {
+	presubmits := map[int]sets.String{
+		1: sets.NewString("pj-a"),
+		2: sets.NewString("pj-a", "pj-b"),
+	}
+
+	trueVar := true
+	cc := &config.TideContextPolicy{
+		RequiredContexts:    []string{"pj-a", "pj-b", "other-a"},
+		OptionalContexts:    []string{"tide", "pj-c"},
+		SkipUnknownContexts: &trueVar,
+	}
+
+	type pr struct {
+		number    int
+		mergeable bool
+		contexts  []Context
+	}
+	tcs := []struct {
+		name string
+
+		prs         []pr
+		expectedPRs []int // Empty indicates no subpool should be returned.
+	}{
+		{
+			name: "one mergeable passing PR (omitting optional context)",
+			prs: []pr{
+				{
+					number:    1,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("other-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+				},
+			},
+			expectedPRs: []int{1},
+		},
+		{
+			name: "one unmergeable passing PR",
+			prs: []pr{
+				{
+					number:    1,
+					mergeable: false,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("other-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+				},
+			},
+			expectedPRs: []int{},
+		},
+		{
+			name: "one mergeable PR pending non-PJ context (consider failing)",
+			prs: []pr{
+				{
+					number:    2,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("other-a"),
+							State:   githubql.StatusStatePending,
+						},
+					},
+				},
+			},
+			expectedPRs: []int{},
+		},
+		{
+			name: "one mergeable PR pending PJ context (consider in pool)",
+			prs: []pr{
+				{
+					number:    2,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStatePending,
+						},
+						{
+							Context: githubql.String("other-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+				},
+			},
+			expectedPRs: []int{2},
+		},
+		{
+			name: "one mergeable PR failing PJ context (consider failing)",
+			prs: []pr{
+				{
+					number:    2,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateFailure,
+						},
+						{
+							Context: githubql.String("other-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+				},
+			},
+			expectedPRs: []int{},
+		},
+		{
+			name: "one mergeable PR missing PJ context (consider failing)",
+			prs: []pr{
+				{
+					number:    2,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("other-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+				},
+			},
+			expectedPRs: []int{},
+		},
+		{
+			name: "one mergeable PR failing unknown context (consider in pool)",
+			prs: []pr{
+				{
+					number:    2,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("other-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("unknown"),
+							State:   githubql.StatusStateFailure,
+						},
+					},
+				},
+			},
+			expectedPRs: []int{2},
+		},
+		{
+			name: "one PR failing non-PJ required context; one PR successful (should not prune pool)",
+			prs: []pr{
+				{
+					number:    1,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("other-a"),
+							State:   githubql.StatusStateFailure,
+						},
+					},
+				},
+				{
+					number:    2,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("other-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("unknown"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+				},
+			},
+			expectedPRs: []int{2},
+		},
+		{
+			name: "two successful PRs",
+			prs: []pr{
+				{
+					number:    1,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("other-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+				},
+				{
+					number:    2,
+					mergeable: true,
+					contexts: []Context{
+						{
+							Context: githubql.String("pj-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("pj-b"),
+							State:   githubql.StatusStateSuccess,
+						},
+						{
+							Context: githubql.String("other-a"),
+							State:   githubql.StatusStateSuccess,
+						},
+					},
+				},
+			},
+			expectedPRs: []int{1, 2},
+		},
+	}
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			sp := &subpool{
+				org:               "org",
+				repo:              "repo",
+				branch:            "branch",
+				presubmitContexts: presubmits,
+				cc:                cc,
+				log:               logrus.WithFields(logrus.Fields{"org": "org", "repo": "repo", "branch": "branch"}),
+			}
+			for _, pull := range tc.prs {
+				pr := PullRequest{
+					Number: githubql.Int(pull.number),
+				}
+				pr.Commits.Nodes = []struct{ Commit Commit }{
+					{
+						Commit{
+							Status: struct{ Contexts []Context }{
+								Contexts: pull.contexts,
+							},
+						},
+					},
+				}
+				if !pull.mergeable {
+					pr.Mergeable = githubql.MergeableStateConflicting
+				}
+				sp.prs = append(sp.prs, pr)
+			}
+
+			filtered := filterSubpool(nil, sp)
+			if len(tc.expectedPRs) == 0 {
+				if filtered != nil {
+					t.Fatalf("Expected subpool to be pruned, but got: %v", filtered)
+				}
+				return
+			}
+			if filtered == nil {
+				t.Fatalf("Expected subpool to have %d prs, but it was pruned.", len(tc.expectedPRs))
+			}
+			if got := prNumbers(filtered.prs); !reflect.DeepEqual(got, tc.expectedPRs) {
+				t.Errorf("Expected filtered pool to have PRs %v, but got %v.", tc.expectedPRs, got)
+			}
+		})
 	}
 }
 
@@ -1467,24 +1791,26 @@ func TestPresubmitsByPull(t *testing.T) {
 	testcases := []struct {
 		name string
 
-		initialChangeCache map[string][]string
+		initialChangeCache map[changeCacheKey][]string
 		presubmits         []config.Presubmit
 
 		expectedPresubmits  map[int]sets.String
-		expectedChangeCache map[string][]string
+		expectedChangeCache map[changeCacheKey][]string
 	}{
 		{
 			name: "no matching presubmits",
 			presubmits: []config.Presubmit{
 				{
-					Name:         "always",
-					RunIfChanged: "foo",
+					Context: "always",
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						RunIfChanged: "foo",
+					},
 				},
 				{
-					Name: "never",
+					Context: "never",
 				},
 			},
-			expectedChangeCache: map[string][]string{"org/repo#100:sha": {"CHANGED"}},
+			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"CHANGED"}},
 			expectedPresubmits:  map[int]sets.String{},
 		},
 		{
@@ -1496,36 +1822,38 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "no matching presubmits (check cache eviction)",
 			presubmits: []config.Presubmit{
 				{
-					Name: "never",
+					Context: "never",
 				},
 			},
-			initialChangeCache: map[string][]string{"org/repo#100:sha": {"FILE"}},
+			initialChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
 			expectedPresubmits: map[int]sets.String{},
 		},
 		{
 			name: "no matching presubmits (check cache retention)",
 			presubmits: []config.Presubmit{
 				{
-					Name:         "always",
-					RunIfChanged: "foo",
+					Context: "always",
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						RunIfChanged: "foo",
+					},
 				},
 				{
-					Name: "never",
+					Context: "never",
 				},
 			},
-			initialChangeCache:  map[string][]string{"org/repo#100:sha": {"FILE"}},
-			expectedChangeCache: map[string][]string{"org/repo#100:sha": {"FILE"}},
+			initialChangeCache:  map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
+			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
 			expectedPresubmits:  map[int]sets.String{},
 		},
 		{
 			name: "always_run",
 			presubmits: []config.Presubmit{
 				{
-					Name:      "always",
+					Context:   "always",
 					AlwaysRun: true,
 				},
 				{
-					Name: "never",
+					Context: "never",
 				},
 			},
 			expectedPresubmits: map[int]sets.String{100: sets.NewString("always")},
@@ -1534,14 +1862,14 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "runs against branch",
 			presubmits: []config.Presubmit{
 				{
-					Name:      "presubmit",
+					Context:   "presubmit",
 					AlwaysRun: true,
 					Brancher: config.Brancher{
 						Branches: []string{"master", "dev"},
 					},
 				},
 				{
-					Name: "never",
+					Context: "never",
 				},
 			},
 			expectedPresubmits: map[int]sets.String{100: sets.NewString("presubmit")},
@@ -1550,18 +1878,18 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "doesn't run against branch",
 			presubmits: []config.Presubmit{
 				{
-					Name:      "presubmit",
+					Context:   "presubmit",
 					AlwaysRun: true,
 					Brancher: config.Brancher{
 						Branches: []string{"release", "dev"},
 					},
 				},
 				{
-					Name:      "always",
+					Context:   "always",
 					AlwaysRun: true,
 				},
 				{
-					Name: "never",
+					Context: "never",
 				},
 			},
 			expectedPresubmits: map[int]sets.String{100: sets.NewString("always")},
@@ -1570,57 +1898,63 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "run_if_changed (uncached)",
 			presubmits: []config.Presubmit{
 				{
-					Name:         "presubmit",
-					RunIfChanged: "^CHANGE.$",
+					Context: "presubmit",
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						RunIfChanged: "^CHANGE.$",
+					},
 				},
 				{
-					Name:      "always",
+					Context:   "always",
 					AlwaysRun: true,
 				},
 				{
-					Name: "never",
+					Context: "never",
 				},
 			},
 			expectedPresubmits:  map[int]sets.String{100: sets.NewString("presubmit", "always")},
-			expectedChangeCache: map[string][]string{"org/repo#100:sha": {"CHANGED"}},
+			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"CHANGED"}},
 		},
 		{
 			name: "run_if_changed (cached)",
 			presubmits: []config.Presubmit{
 				{
-					Name:         "presubmit",
-					RunIfChanged: "^FIL.$",
+					Context: "presubmit",
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						RunIfChanged: "^FIL.$",
+					},
 				},
 				{
-					Name:      "always",
+					Context:   "always",
 					AlwaysRun: true,
 				},
 				{
-					Name: "never",
+					Context: "never",
 				},
 			},
-			initialChangeCache:  map[string][]string{"org/repo#100:sha": {"FILE"}},
+			initialChangeCache:  map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
 			expectedPresubmits:  map[int]sets.String{100: sets.NewString("presubmit", "always")},
-			expectedChangeCache: map[string][]string{"org/repo#100:sha": {"FILE"}},
+			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
 		},
 		{
 			name: "run_if_changed (cached) (skippable)",
 			presubmits: []config.Presubmit{
 				{
-					Name:         "presubmit",
-					RunIfChanged: "^CHANGE.$",
+					Context: "presubmit",
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						RunIfChanged: "^CHANGE.$",
+					},
 				},
 				{
-					Name:      "always",
+					Context:   "always",
 					AlwaysRun: true,
 				},
 				{
-					Name: "never",
+					Context: "never",
 				},
 			},
-			initialChangeCache:  map[string][]string{"org/repo#100:sha": {"FILE"}},
+			initialChangeCache:  map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
 			expectedPresubmits:  map[int]sets.String{100: sets.NewString("always")},
-			expectedChangeCache: map[string][]string{"org/repo#100:sha": {"FILE"}},
+			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
 		},
 	}
 
@@ -1628,39 +1962,42 @@ func TestPresubmitsByPull(t *testing.T) {
 		t.Logf("Starting test case: %q", tc.name)
 
 		if tc.initialChangeCache == nil {
-			tc.initialChangeCache = map[string][]string{}
+			tc.initialChangeCache = map[changeCacheKey][]string{}
 		}
 		if tc.expectedChangeCache == nil {
-			tc.expectedChangeCache = map[string][]string{}
+			tc.expectedChangeCache = map[changeCacheKey][]string{}
 		}
 
 		cfg := &config.Config{}
 		cfg.SetPresubmits(map[string][]config.Presubmit{
-			"org/repo": tc.presubmits,
-			"foo/bar":  {{Name: "wrong-repo", AlwaysRun: true}},
+			"/":       tc.presubmits,
+			"foo/bar": {{Context: "wrong-repo", AlwaysRun: true}},
 		})
 		cfgAgent := &config.Agent{}
 		cfgAgent.Set(cfg)
-		sp := subpool{
-			org:    "org",
-			repo:   "repo",
+		sp := &subpool{
 			branch: "master",
 			prs:    []PullRequest{samplePR},
 		}
 		c := &Controller{
-			ca:               cfgAgent,
-			fileChangesCache: tc.initialChangeCache,
-			ghc:              &fgc{},
+			config: cfgAgent.Config,
+			ghc:    &fgc{},
+			changedFiles: &changedFilesAgent{
+				ghc:             &fgc{},
+				changeCache:     tc.initialChangeCache,
+				nextChangeCache: make(map[changeCacheKey][]string),
+			},
 		}
 		presubmits, err := c.presubmitsByPull(sp)
 		if err != nil {
 			t.Fatalf("unexpected error from presubmitsByPull: %v", err)
 		}
+		c.changedFiles.prune()
 		if !reflect.DeepEqual(presubmits, tc.expectedPresubmits) {
 			t.Errorf("expected presubmit mapping: %v,\nbut got %v\n", tc.expectedPresubmits, presubmits)
 		}
-		if !reflect.DeepEqual(c.fileChangesCache, tc.expectedChangeCache) {
-			t.Errorf("expected file change cache: %v,\nbut got %v\n", tc.expectedChangeCache, c.fileChangesCache)
+		if got := c.changedFiles.changeCache; !reflect.DeepEqual(got, tc.expectedChangeCache) {
+			t.Errorf("expected file change cache: %v,\nbut got %v\n", tc.expectedChangeCache, got)
 		}
 	}
 }

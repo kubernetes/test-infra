@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -28,13 +29,15 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/robfig/cron.v2"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/validation"
+	"sigs.k8s.io/yaml"
 
+	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -100,6 +103,9 @@ type ProwConfig struct {
 	// OwnersDirBlacklist is used to configure which directories to ignore when
 	// searching for OWNERS{,_ALIAS} files in a repo.
 	OwnersDirBlacklist OwnersDirBlacklist `json:"owners_dir_blacklist,omitempty"`
+
+	// Pub/Sub Subscriptions that we want to listen to
+	PubSubSubscriptions PubsubSubscriptions `json:"pubsub_subscriptions,omitempty"`
 }
 
 // OwnersDirBlacklist is used to configure which directories to ignore when
@@ -166,6 +172,9 @@ type Plank struct {
 	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
 	// that request to have their PodSpecs decorated
 	DefaultDecorationConfig *kube.DecorationConfig `json:"default_decoration_config,omitempty"`
+	// JobURLPrefix is the host and path prefix under
+	// which job details will be viewable
+	JobURLPrefix string `json:"job_url_prefix,omitempty"`
 }
 
 // Gerrit is config for the gerrit controller.
@@ -213,8 +222,26 @@ type Sinker struct {
 	MaxPodAge time.Duration `json:"-"`
 }
 
+// Spyglass holds config for Spyglass
+type Spyglass struct {
+	// Viewers is a map of Regexp strings to viewer names that defines which sets
+	// of artifacts need to be consumed by which viewers. The keys are compiled
+	// and stored in RegexCache at load time.
+	Viewers map[string][]string `json:"viewers,omitempty"`
+	// RegexCache is a map of viewer regexp strings to their compiled equivalents.
+	RegexCache map[string]*regexp.Regexp `json:"-"`
+	// SizeLimit is the max size artifact in bytes that Spyglass will attempt to
+	// read in entirety. This will only affect viewers attempting to use
+	// artifact.ReadAll(). To exclude outlier artifacts, set this limit to
+	// expected file size + variance. To include all artifacts with high
+	// probability, use 2*maximum observed artifact size.
+	SizeLimit int64 `json:"size_limit,omitempty"`
+}
+
 // Deck holds config for deck.
 type Deck struct {
+	// Spyglass specifies which viewers will be used for which artifacts when viewing a job in Deck
+	Spyglass Spyglass `json:"spyglass,omitempty"`
 	// TideUpdatePeriodString compiles into TideUpdatePeriod at load time.
 	TideUpdatePeriodString string `json:"tide_update_period,omitempty"`
 	// TideUpdatePeriod specifies how often Deck will fetch status from Tide. Defaults to 10s.
@@ -260,6 +287,9 @@ type Branding struct {
 	HeaderColor string `json:"header_color,omitempty"`
 }
 
+// PubSubSubscriptions maps GCP projects to a list of Topics.
+type PubsubSubscriptions map[string][]string
+
 // Load loads and parses the config at path.
 func Load(prowConfig, jobConfig string) (c *Config, err error) {
 	// we never want config loading to take down the prow components
@@ -273,6 +303,9 @@ func Load(prowConfig, jobConfig string) (c *Config, err error) {
 		return nil, err
 	}
 	if err := c.finalizeJobConfig(); err != nil {
+		return nil, err
+	}
+	if err := c.validateComponentConfig(); err != nil {
 		return nil, err
 	}
 	if err := c.validateJobConfig(); err != nil {
@@ -343,7 +376,7 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 			return nil
 		}
 
-		if filepath.Ext(path) != ".yaml" {
+		if filepath.Ext(path) != ".yaml" && filepath.Ext(path) != ".yml" {
 			return nil
 		}
 
@@ -380,6 +413,48 @@ func yamlToConfig(path string, nc interface{}) error {
 	if err := yaml.Unmarshal(b, nc); err != nil {
 		return fmt.Errorf("error unmarshaling %s: %v", path, err)
 	}
+	var jc *JobConfig
+	switch v := nc.(type) {
+	case *JobConfig:
+		jc = v
+	case *Config:
+		jc = &v.JobConfig
+	}
+	for rep := range jc.Presubmits {
+		var fix func(*Presubmit)
+		fix = func(job *Presubmit) {
+			job.SourcePath = path
+			for i := range job.RunAfterSuccess {
+				fix(&job.RunAfterSuccess[i])
+			}
+		}
+		for i := range jc.Presubmits[rep] {
+			fix(&jc.Presubmits[rep][i])
+		}
+	}
+	for rep := range jc.Postsubmits {
+		var fix func(*Postsubmit)
+		fix = func(job *Postsubmit) {
+			job.SourcePath = path
+			for i := range job.RunAfterSuccess {
+				fix(&job.RunAfterSuccess[i])
+			}
+		}
+		for i := range jc.Postsubmits[rep] {
+			fix(&jc.Postsubmits[rep][i])
+		}
+	}
+
+	var fix func(*Periodic)
+	fix = func(job *Periodic) {
+		job.SourcePath = path
+		for i := range job.RunAfterSuccess {
+			fix(&job.RunAfterSuccess[i])
+		}
+	}
+	for i := range jc.Periodics {
+		fix(&jc.Periodics[i])
+	}
 	return nil
 }
 
@@ -394,14 +469,15 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 	// *** Presets ***
 	c.Presets = append(c.Presets, jc.Presets...)
 
-	// validate no duplicated presets
-	validLabels := map[string]string{}
+	// validate no duplicated preset key-value pairs
+	validLabels := map[string]bool{}
 	for _, preset := range c.Presets {
 		for label, val := range preset.Labels {
-			if _, ok := validLabels[label]; ok {
-				return fmt.Errorf("duplicated preset label : %s", label)
+			pair := label + ":" + val
+			if _, ok := validLabels[pair]; ok {
+				return fmt.Errorf("duplicated preset 'label:value' pair : %s", pair)
 			}
-			validLabels[label] = val
+			validLabels[pair] = true
 		}
 	}
 
@@ -429,7 +505,7 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 
 func setPresubmitDecorationDefaults(c *Config, ps *Presubmit) {
 	if ps.Decorate {
-		ps.DecorationConfig = setDecorationDefaults(ps.DecorationConfig, c.Plank.DefaultDecorationConfig)
+		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
 	}
 
 	for i := range ps.RunAfterSuccess {
@@ -439,7 +515,7 @@ func setPresubmitDecorationDefaults(c *Config, ps *Presubmit) {
 
 func setPostsubmitDecorationDefaults(c *Config, ps *Postsubmit) {
 	if ps.Decorate {
-		ps.DecorationConfig = setDecorationDefaults(ps.DecorationConfig, c.Plank.DefaultDecorationConfig)
+		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
 	}
 
 	for i := range ps.RunAfterSuccess {
@@ -449,7 +525,7 @@ func setPostsubmitDecorationDefaults(c *Config, ps *Postsubmit) {
 
 func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 	if ps.Decorate {
-		ps.DecorationConfig = setDecorationDefaults(ps.DecorationConfig, c.Plank.DefaultDecorationConfig)
+		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
 	}
 
 	for i := range ps.RunAfterSuccess {
@@ -490,17 +566,21 @@ func (c *Config) finalizeJobConfig() error {
 		}
 	}
 
-	// Ensure that regexes are valid.
+	// Ensure that regexes are valid and set defaults.
 	for _, vs := range c.Presubmits {
+		c.defaultPresubmitFields(vs)
 		if err := SetPresubmitRegexes(vs); err != nil {
 			return fmt.Errorf("could not set regex: %v", err)
 		}
 	}
 	for _, js := range c.Postsubmits {
+		c.defaultPostsubmitFields(js)
 		if err := SetPostsubmitRegexes(js); err != nil {
 			return fmt.Errorf("could not set regex: %v", err)
 		}
 	}
+
+	c.defaultPeriodicFields(c.Periodics)
 
 	for _, v := range c.AllPresubmits(nil) {
 		if err := resolvePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
@@ -521,6 +601,39 @@ func (c *Config) finalizeJobConfig() error {
 	}
 
 	return nil
+}
+
+// validateComponentConfig validates the infrastructure component configuration
+func (c *Config) validateComponentConfig() error {
+	if _, err := url.Parse(c.Plank.JobURLPrefix); c.Plank.JobURLPrefix != "" && err != nil {
+		return fmt.Errorf("plank declares an invalid job URL prefix %q: %v", c.Plank.JobURLPrefix, err)
+	}
+	return nil
+}
+
+var jobNameRegex = regexp.MustCompile(`^[A-Za-z0-9-._]+$`)
+
+func validateJobBase(v JobBase, jobType kube.ProwJobType, podNamespace string) error {
+	if !jobNameRegex.MatchString(v.Name) {
+		return fmt.Errorf("name: must match regex %q", jobNameRegex.String())
+	}
+	// Ensure max_concurrency is non-negative.
+	if v.MaxConcurrency < 0 {
+		return fmt.Errorf("max_concurrency: %d must be a non-negative number", v.MaxConcurrency)
+	}
+	if err := validateAgent(v, podNamespace); err != nil {
+		return err
+	}
+	if err := validatePodSpec(jobType, v.Spec); err != nil {
+		return err
+	}
+	if err := validateLabels(v.Labels); err != nil {
+		return err
+	}
+	if v.Spec == nil || len(v.Spec.Containers) == 0 {
+		return nil // knative-build and jenkins jobs have no spec
+	}
+	return validateDecoration(v.Spec.Containers[0], v.DecorationConfig)
 }
 
 // validateJobConfig validates if all the jobspecs/presets are valid
@@ -546,18 +659,8 @@ func (c *Config) validateJobConfig() error {
 	}
 
 	for _, v := range c.AllPresubmits(nil) {
-		if err := validateAgent(v.Name, v.Agent, v.Spec, v.DecorationConfig); err != nil {
-			return err
-		}
-		// Ensure max_concurrency is non-negative.
-		if v.MaxConcurrency < 0 {
-			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", v.Name, v.MaxConcurrency)
-		}
-		if err := validatePodSpec(v.Name, kube.PresubmitJob, v.Spec); err != nil {
-			return err
-		}
-		if err := validateLabels(v.Name, v.Labels); err != nil {
-			return err
+		if err := validateJobBase(v.JobBase, prowjobv1.PresubmitJob, c.PodNamespace); err != nil {
+			return fmt.Errorf("invalid presubmit job %s: %v", v.Name, err)
 		}
 		if err := validateTriggering(v); err != nil {
 			return err
@@ -580,18 +683,8 @@ func (c *Config) validateJobConfig() error {
 	}
 
 	for _, j := range c.AllPostsubmits(nil) {
-		if err := validateAgent(j.Name, j.Agent, j.Spec, j.DecorationConfig); err != nil {
-			return err
-		}
-		// Ensure max_concurrency is non-negative.
-		if j.MaxConcurrency < 0 {
-			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", j.Name, j.MaxConcurrency)
-		}
-		if err := validatePodSpec(j.Name, kube.PostsubmitJob, j.Spec); err != nil {
-			return err
-		}
-		if err := validateLabels(j.Name, j.Labels); err != nil {
-			return err
+		if err := validateJobBase(j.JobBase, prowjobv1.PostsubmitJob, c.PodNamespace); err != nil {
+			return fmt.Errorf("invalid postsubmit job %s: %v", j.Name, err)
 		}
 	}
 
@@ -603,14 +696,8 @@ func (c *Config) validateJobConfig() error {
 			return fmt.Errorf("duplicated periodic job : %s", p.Name)
 		}
 		validPeriodics.Insert(p.Name)
-		if err := validateAgent(p.Name, p.Agent, p.Spec, p.DecorationConfig); err != nil {
-			return err
-		}
-		if err := validatePodSpec(p.Name, kube.PeriodicJob, p.Spec); err != nil {
-			return err
-		}
-		if err := validateLabels(p.Name, p.Labels); err != nil {
-			return err
+		if err := validateJobBase(p.JobBase, prowjobv1.PeriodicJob, c.PodNamespace); err != nil {
+			return fmt.Errorf("invalid periodic job %s: %v", p.Name, err)
 		}
 	}
 	// Set the interval on the periodic jobs. It doesn't make sense to do this
@@ -706,6 +793,37 @@ func parseProwConfig(c *Config) error {
 			return fmt.Errorf("cannot parse duration for deck.tide_update_period: %v", err)
 		}
 		c.Deck.TideUpdatePeriod = period
+	}
+
+	if c.Deck.Spyglass.SizeLimit == 0 {
+		c.Deck.Spyglass.SizeLimit = 100e6
+	} else if c.Deck.Spyglass.SizeLimit <= 0 {
+		return fmt.Errorf("invalid value for deck.spyglass.size_limit, must be >=0")
+	}
+
+	c.Deck.Spyglass.RegexCache = make(map[string]*regexp.Regexp)
+	for k := range c.Deck.Spyglass.Viewers {
+		r, err := regexp.Compile(k)
+		if err != nil {
+			return fmt.Errorf("cannot compile regexp %s, err: %v", k, err)
+		}
+		c.Deck.Spyglass.RegexCache[k] = r
+	}
+
+	// Map old viewer names to the new ones for backwards compatibility.
+	// TODO(Katharine, #10274): remove this, eventually.
+	oldViewers := map[string]string{
+		"build-log-viewer": "buildlog",
+		"metadata-viewer":  "metadata",
+		"junit-viewer":     "junit",
+	}
+
+	for re, viewers := range c.Deck.Spyglass.Viewers {
+		for i, v := range viewers {
+			if rename, ok := oldViewers[v]; ok {
+				c.Deck.Spyglass.Viewers[re][i] = rename
+			}
+		}
 	}
 
 	if c.PushGateway.IntervalString == "" {
@@ -833,67 +951,66 @@ func (c *JobConfig) decorationRequested() bool {
 	return false
 }
 
-func setDecorationDefaults(provided, defaults *kube.DecorationConfig) *kube.DecorationConfig {
-	merged := &kube.DecorationConfig{}
-	if provided != nil {
-		merged = provided
-	}
-
-	if merged.Timeout == 0 {
-		merged.Timeout = defaults.Timeout
-	}
-	if merged.GracePeriod == 0 {
-		merged.GracePeriod = defaults.GracePeriod
-	}
-	if merged.UtilityImages == nil {
-		merged.UtilityImages = defaults.UtilityImages
-	}
-	if merged.GCSConfiguration == nil {
-		merged.GCSConfiguration = defaults.GCSConfiguration
-	}
-	if merged.GCSCredentialsSecret == "" {
-		merged.GCSCredentialsSecret = defaults.GCSCredentialsSecret
-	}
-	if len(merged.SSHKeySecrets) == 0 {
-		merged.SSHKeySecrets = defaults.SSHKeySecrets
-	}
-
-	return merged
-}
-
-func validateLabels(name string, labels map[string]string) error {
-	for label := range labels {
+func validateLabels(labels map[string]string) error {
+	for label, value := range labels {
 		for _, prowLabel := range decorate.Labels() {
 			if label == prowLabel {
-				return fmt.Errorf("job %s attempted to set Prow-controlled label %s to %s", name, label, labels[label])
+				return fmt.Errorf("label %s is reserved for decoration", label)
 			}
+		}
+		if errs := validation.IsQualifiedName(label); len(errs) != 0 {
+			return fmt.Errorf("invalid label %s: %v", label, errs)
+		}
+		if errs := validation.IsValidLabelValue(labels[label]); len(errs) != 0 {
+			return fmt.Errorf("label %s has invalid value %s: %v", label, value, errs)
 		}
 	}
 	return nil
 }
 
-func validateAgent(name, agent string, spec *v1.PodSpec, config *kube.DecorationConfig) error {
-	// Ensure that k8s jobs have a pod spec.
-	if agent == string(kube.KubernetesAgent) && spec == nil {
-		return fmt.Errorf("job %s has no spec", name)
+func validateAgent(v JobBase, podNamespace string) error {
+	k := string(prowjobv1.KubernetesAgent)
+	b := string(prowjobv1.KnativeBuildAgent)
+	j := string(prowjobv1.JenkinsAgent)
+	agents := sets.NewString(k, b, j)
+	agent := v.Agent
+	switch {
+	case !agents.Has(agent):
+		return fmt.Errorf("agent must be one of %s (found %q)", strings.Join(agents.List(), ", "), agent)
+	case v.Spec != nil && agent != k:
+		return fmt.Errorf("job specs require agent: %s (found %q)", k, agent)
+	case agent == k && v.Spec == nil:
+		return errors.New("kubernetes jobs require a spec")
+	case v.BuildSpec != nil && agent != b:
+		return fmt.Errorf("job build_specs require agent: %s (found %q)", b, agent)
+	case agent == b && v.BuildSpec == nil:
+		return errors.New("knative-build jobs require a build_spec")
+	case v.DecorationConfig != nil && agent != k && agent != b:
+		// TODO(fejta): only source decoration supported...
+		return fmt.Errorf("decoration requires agent: %s or %s (found %q)", k, b, agent)
+	case v.ErrorOnEviction && agent != k:
+		return fmt.Errorf("error_on_eviction only applies to agent: %s (found %q)", k, agent)
+	case v.Namespace == nil || *v.Namespace == "":
+		return fmt.Errorf("failed to default namespace")
+	case *v.Namespace != podNamespace && agent != b:
+		// TODO(fejta): update plank to allow this (depends on client change)
+		return fmt.Errorf("namespace customization requires agent: %s (found %q)", b, agent)
 	}
-	// Only k8s jobs can be decorated
-	if agent != string(kube.KubernetesAgent) && config != nil {
-		return fmt.Errorf("job %s configured PodSpec decoration but is not a Kubernetes job", name)
+	return nil
+}
+
+func validateDecoration(container v1.Container, config *kube.DecorationConfig) error {
+	if config == nil {
+		return nil
 	}
-	// Jobs asking for decoration should provide config
-	if agent == string(kube.KubernetesAgent) && config != nil {
-		if config.UtilityImages == nil {
-			return fmt.Errorf("job %s does not configure pod utility images but asks for decoration", name)
-		}
-		if config.GCSConfiguration == nil || config.GCSCredentialsSecret == "" {
-			return fmt.Errorf("job %s does not configure GCS uploads but asks for decoration", name)
-		}
+
+	if err := config.Validate(); err != nil {
+		return fmt.Errorf("invalid decoration config: %v", err)
 	}
-	// Ensure agent is a known value.
-	if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
-		return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
-			name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
+	var args []string
+	args = append(append(args, container.Command...), container.Args...)
+	if len(args) == 0 || args[0] == "" {
+		return errors.New("decorated job containers must specify command and/or args")
 	}
 	return nil
 }
@@ -908,23 +1025,24 @@ func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, pre
 	return nil
 }
 
-func validatePodSpec(name string, jobType kube.ProwJobType, spec *v1.PodSpec) error {
+func validatePodSpec(jobType kube.ProwJobType, spec *v1.PodSpec) error {
 	if spec == nil {
 		return nil
 	}
 
 	if len(spec.InitContainers) != 0 {
-		return fmt.Errorf("job %s specified init containers, which is not allowed", name)
+		return errors.New("pod spec may not use init containers")
 	}
 
-	if len(spec.Containers) != 1 {
-		return fmt.Errorf("job %s specified %d containers when only one is allowed", name, len(spec.Containers))
+	if n := len(spec.Containers); n != 1 {
+		return fmt.Errorf("pod spec must specify exactly 1 container, found: %d", n)
 	}
 
 	for _, env := range spec.Containers[0].Env {
 		for _, prowEnv := range downwardapi.EnvForType(jobType) {
 			if env.Name == prowEnv {
-				return fmt.Errorf("job %s attempted to set Prow-controlled environment variable %s to %s on test container", name, env.Name, env.Value)
+				// TODO(fejta): consider allowing this
+				return fmt.Errorf("env %s is reserved", env.Name)
 			}
 		}
 	}
@@ -932,12 +1050,12 @@ func validatePodSpec(name string, jobType kube.ProwJobType, spec *v1.PodSpec) er
 	for _, mount := range spec.Containers[0].VolumeMounts {
 		for _, prowMount := range decorate.VolumeMounts() {
 			if mount.Name == prowMount {
-				return fmt.Errorf("job %s attempted to mount a Prow-controlled volume mount %s on test container", name, mount.Name)
+				return fmt.Errorf("volumeMount name %s is reserved for decoration", prowMount)
 			}
 		}
 		for _, prowMountPath := range decorate.VolumeMountPaths() {
 			if strings.HasPrefix(mount.MountPath, prowMountPath) || strings.HasPrefix(prowMountPath, mount.MountPath) {
-				return fmt.Errorf("job %s mounts %s at %s, which would conflict with a Prow-controlled mount at %s", name, mount.Name, mount.MountPath, prowMountPath)
+				return fmt.Errorf("mount %s at %s conflicts with decoration mount at %s", mount.Name, mount.MountPath, prowMountPath)
 			}
 		}
 	}
@@ -945,7 +1063,7 @@ func validatePodSpec(name string, jobType kube.ProwJobType, spec *v1.PodSpec) er
 	for _, volume := range spec.Volumes {
 		for _, prowVolume := range decorate.VolumeMounts() {
 			if volume.Name == prowVolume {
-				return fmt.Errorf("job %s attempted to add a Prow-controlled volume %s", name, volume.Name)
+				return fmt.Errorf("volume %s is a reserved for decoration", volume.Name)
 			}
 		}
 	}
@@ -990,6 +1108,66 @@ func ValidateController(c *Controller) error {
 	return nil
 }
 
+// DefaultTriggerFor returns the default regexp string used to match comments
+// that should trigger the job with this name.
+func DefaultTriggerFor(name string) string {
+	return fmt.Sprintf(`(?m)^/test( | .* )%s,?($|\s.*)`, name)
+}
+
+// DefaultRerunCommandFor returns the default rerun command for the job with
+// this name.
+func DefaultRerunCommandFor(name string) string {
+	return fmt.Sprintf("/test %s", name)
+}
+
+// defaultJobBase configures common parameters, currently Agent and Namespace.
+func (c *ProwConfig) defaultJobBase(base *JobBase) {
+	if base.Agent == "" { // Use kubernetes by default
+		base.Agent = string(kube.KubernetesAgent)
+	}
+	if base.Namespace == nil || *base.Namespace == "" {
+		s := c.PodNamespace
+		base.Namespace = &s
+	}
+	if base.Cluster == "" {
+		base.Cluster = kube.DefaultClusterAlias
+	}
+}
+
+func (c *ProwConfig) defaultPresubmitFields(js []Presubmit) {
+	for i := range js {
+		c.defaultJobBase(&js[i].JobBase)
+		if js[i].Context == "" {
+			js[i].Context = js[i].Name
+		}
+		// Default the values of Trigger and RerunCommand if both fields are
+		// specified. Otherwise let validation fail as both or neither should have
+		// been specified.
+		if js[i].Trigger == "" && js[i].RerunCommand == "" {
+			js[i].Trigger = DefaultTriggerFor(js[i].Name)
+			js[i].RerunCommand = DefaultRerunCommandFor(js[i].Name)
+		}
+		c.defaultPresubmitFields(js[i].RunAfterSuccess)
+	}
+}
+
+func (c *ProwConfig) defaultPostsubmitFields(js []Postsubmit) {
+	for i := range js {
+		c.defaultJobBase(&js[i].JobBase)
+		c.defaultPostsubmitFields(js[i].RunAfterSuccess)
+		if js[i].Context == "" {
+			js[i].Context = js[i].Name
+		}
+	}
+}
+
+func (c *ProwConfig) defaultPeriodicFields(js []Periodic) {
+	for i := range js {
+		c.defaultJobBase(&js[i].JobBase)
+		c.defaultPeriodicFields(js[i].RunAfterSuccess)
+	}
+}
+
 // SetPresubmitRegexes compiles and validates all the regular expressions for
 // the provided presubmits.
 func SetPresubmitRegexes(js []Presubmit) error {
@@ -1002,21 +1180,21 @@ func SetPresubmitRegexes(js []Presubmit) error {
 		if !js[i].re.MatchString(j.RerunCommand) {
 			return fmt.Errorf("for job %s, rerun command \"%s\" does not match trigger \"%s\"", j.Name, j.RerunCommand, j.Trigger)
 		}
-		if err := SetPresubmitRegexes(j.RunAfterSuccess); err != nil {
-			return err
-		}
-		if j.RunIfChanged != "" {
-			re, err := regexp.Compile(j.RunIfChanged)
-			if err != nil {
-				return fmt.Errorf("could not compile changes regex for %s: %v", j.Name, err)
-			}
-			js[i].reChanges = re
-		}
 		b, err := setBrancherRegexes(j.Brancher)
 		if err != nil {
 			return fmt.Errorf("could not set branch regexes for %s: %v", j.Name, err)
 		}
 		js[i].Brancher = b
+
+		c, err := setChangeRegexes(j.RegexpChangeMatcher)
+		if err != nil {
+			return fmt.Errorf("could not set change regexes for %s: %v", j.Name, err)
+		}
+		js[i].RegexpChangeMatcher = c
+
+		if err := SetPresubmitRegexes(j.RunAfterSuccess); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -1041,6 +1219,17 @@ func setBrancherRegexes(br Brancher) (Brancher, error) {
 	return br, nil
 }
 
+func setChangeRegexes(cm RegexpChangeMatcher) (RegexpChangeMatcher, error) {
+	if cm.RunIfChanged != "" {
+		re, err := regexp.Compile(cm.RunIfChanged)
+		if err != nil {
+			return cm, fmt.Errorf("could not compile run_if_changed regex: %v", err)
+		}
+		cm.reChanges = re
+	}
+	return cm, nil
+}
+
 // SetPostsubmitRegexes compiles and validates all the regular expressions for
 // the provided postsubmits.
 func SetPostsubmitRegexes(ps []Postsubmit) error {
@@ -1050,6 +1239,11 @@ func SetPostsubmitRegexes(ps []Postsubmit) error {
 			return fmt.Errorf("could not set branch regexes for %s: %v", j.Name, err)
 		}
 		ps[i].Brancher = b
+		c, err := setChangeRegexes(j.RegexpChangeMatcher)
+		if err != nil {
+			return fmt.Errorf("could not set change regexes for %s: %v", j.Name, err)
+		}
+		ps[i].RegexpChangeMatcher = c
 		if err := SetPostsubmitRegexes(j.RunAfterSuccess); err != nil {
 			return err
 		}

@@ -1,4 +1,6 @@
-load("//prow:prow.bzl", "release", "component", "MULTI_KIND", "BUILD_CLUSTER")
+package(default_visibility = ["//prow:__subpackages__"])
+
+load("//prow:def.bzl", "release", "component", "MULTI_KIND", "BUILD_CLUSTER")
 
 # Usage:
 #   bazel run //prow/cluster:foo.apply
@@ -6,12 +8,22 @@ load("//prow:prow.bzl", "release", "component", "MULTI_KIND", "BUILD_CLUSTER")
 release(
     "production",
     component("branchprotector", "cronjob"),
+    component("build", "deployment"),
+    component("build_rbac", MULTI_KIND),
+    component("crier", "deployment"),
+    component("crier_rbac", MULTI_KIND),
     component("deck", "service", "deployment"),
     component("gce-ssd-retain", "storageclass"),
-    component("ghproxy", "service", "deployment"),
+    component("ghproxy", MULTI_KIND),
+    component(
+        "grandmatriarch",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
     component("hook", "service", "deployment"),
     component("horologium", "deployment"),
-    component("lego", "deployment"),
+    component("cert-manager", MULTI_KIND),
+    component("cluster-issuer", MULTI_KIND),
     component(
         "mem-limit-range",
         "limitrange",
@@ -21,7 +33,6 @@ release(
     component("prowjob", "customresourcedefinition"),
     component("pushgateway", "deployment"),
     component("sinker", "deployment"),
-    component("splice", "deployment"),
     component("tide", "service", "deployment"),
     component("tls-ing", "ingress"),
     component("tot", "service", "deployment"),

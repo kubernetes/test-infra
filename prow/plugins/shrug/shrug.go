@@ -23,6 +23,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -30,9 +31,8 @@ import (
 const pluginName = "shrug"
 
 var (
-	shrugLabel = "¯\\_(ツ)_/¯"
-	shrugRe    = regexp.MustCompile(`(?mi)^/shrug\s*$`)
-	unshrugRe  = regexp.MustCompile(`(?mi)^/unshrug\s*$`)
+	shrugRe   = regexp.MustCompile(`(?mi)^/shrug\s*$`)
+	unshrugRe = regexp.MustCompile(`(?mi)^/unshrug\s*$`)
 )
 
 type event struct {
@@ -54,13 +54,13 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: shrugLabel,
+		Description: labels.Shrug,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/[un]shrug",
-		Description: shrugLabel,
+		Description: labels.Shrug,
 		Featured:    false,
-		WhoCanUse:   "Anyone, " + shrugLabel,
+		WhoCanUse:   "Anyone, " + labels.Shrug,
 		Examples:    []string{"/shrug", "/unshrug"},
 	})
 	return pluginHelp, nil
@@ -73,7 +73,7 @@ type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, &e)
 }
 
@@ -96,12 +96,12 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 
 	// Only add the label if it doesn't have it yet.
 	hasShrug := false
-	labels, err := gc.GetIssueLabels(org, repo, e.Number)
+	issueLabels, err := gc.GetIssueLabels(org, repo, e.Number)
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get the labels on %s/%s#%d.", org, repo, e.Number)
 	}
-	for _, candidate := range labels {
-		if candidate.Name == shrugLabel {
+	for _, candidate := range issueLabels {
+		if candidate.Name == labels.Shrug {
 			hasShrug = true
 			break
 		}
@@ -113,10 +113,10 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 		if err := gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp)); err != nil {
 			return fmt.Errorf("failed to comment on %s/%s#%d: %v", org, repo, e.Number, err)
 		}
-		return gc.RemoveLabel(org, repo, e.Number, shrugLabel)
+		return gc.RemoveLabel(org, repo, e.Number, labels.Shrug)
 	} else if !hasShrug && wantShrug {
 		log.Info("Adding Shrug label.")
-		return gc.AddLabel(org, repo, e.Number, shrugLabel)
+		return gc.AddLabel(org, repo, e.Number, labels.Shrug)
 	}
 	return nil
 }

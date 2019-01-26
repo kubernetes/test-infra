@@ -1,0 +1,38 @@
+presubmits:
+  kubernetes/cloud-provider-openstack:
+  - name: pull-cloud-provider-openstack-check
+    always_run: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --scenario=execute
+        - --
+        - make
+        - check
+
+  - name: pull-cloud-provider-openstack-test
+    always_run: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --scenario=execute
+        - --
+        - make
+        - test
+

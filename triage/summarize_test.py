@@ -36,7 +36,7 @@ class StringsTest(unittest.TestCase):
                 ('Mon, 12 January 2017 11:34:35 blah blah', 'TIMEblah blah'),
                 ('123.45.68.12:345 abcd1234eeee', 'UNIQ1 UNIQ2'),
                 ('foobarbaz ' * 500000,
-                 'foobarbaz ' * 10000 + '\n...[truncated]...\n' + 'foobarbaz ' * 10000),
+                 'foobarbaz ' * 500 + '\n...[truncated]...\n' + 'foobarbaz ' * 500),
         ]:
             self.assertEqual(summarize.normalize(src), dst)
 
@@ -81,8 +81,8 @@ class ClusterTest(unittest.TestCase):
         t4 = make_test('long message immediately preceding exit code 2')
         self.assertEqual(summarize.cluster_test([t3, t4]), {t3['failure_text']: [t3, t4]})
 
-        t5 = make_test('1 2 ' * 40000)
-        t6 = make_test('1 2 ' * 39999 + '3 4 ')
+        t5 = make_test('1 2 ' * 400)
+        t6 = make_test('1 2 ' * 399 + '3 4 ')
 
         self.assertEqual(summarize.cluster_test([t1, t5, t6]),
                          {t1['failure_text']: [t1], t5['failure_text']: [t5, t6]})
@@ -101,7 +101,7 @@ class ClusterTest(unittest.TestCase):
             {'exit 1': {'test a': [t1, t2], 'test b': [t3]}})
 
     def test_cluster_global_previous(self):
-        # clusters are stable when provided with previou seeds
+        # clusters are stable when provided with previous seeds
         textOld = 'some long failure message that changes occasionally foo'
         textNew = textOld.replace('foo', 'bar')
         t1 = make_test(textNew)
@@ -186,7 +186,7 @@ class IntegrationTest(unittest.TestCase):
             {'number': 5, 'path': 'gs://logs/other-job/5', 'job': 'other-job', 'elapsed': 8},
             {'number': 7, 'path': 'gs://logs/other-job/7', 'result': 'FAILURE'},
         ]), open('builds.json', 'w'))
-        json.dump(smear([
+        tests = smear([
             {'name': 'example test', 'build': 'gs://logs/some-job/1',
              'failure_text': 'some awful stack trace exit 1'},
             {'build': 'gs://logs/some-job/2'},
@@ -196,7 +196,10 @@ class IntegrationTest(unittest.TestCase):
             {'name': 'unrelated test', 'build': 'gs://logs/other-job/5'},
             {},  # intentional dupe
             {'build': 'gs://logs/other-job/7'},
-        ]), open('tests.json', 'w'))
+        ])
+        with open('tests.json', 'w') as f:
+            for t in tests:
+                f.write(json.dumps(t) + '\n')
         json.dump({
             'node': ['example']
         }, open('owners.json', 'w'))

@@ -15,11 +15,14 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: plank
   labels:
     app: plank
 spec:
   replicas: 1 # Do not scale up.
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -28,7 +31,7 @@ spec:
       # serviceAccountName: "plank" # Uncomment for use with RBAC
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20180709-7109caeb1
+        image: gcr.io/k8s-prow/plank:v20190125-2aca69d
         args:
         - --tot-url=http://tot
         - --build-cluster=/etc/cluster/cluster

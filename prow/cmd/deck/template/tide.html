@@ -1,0 +1,40 @@
+{{define "title"}}Tide Status{{end}}
+
+{{define "scripts"}}
+<link rel="stylesheet" type="text/css" href="/static/labels.css">
+<script type="text/javascript" src="/static/tide_bundle.min.js"></script>
+<script type="text/javascript" src="tide.js?var=tideData"></script>
+{{end}}
+
+{{define "content"}}
+<article>
+  <div id="info-div" class="card-box">
+    <h4 style="user-select: none">Merge Requirements: (click to expand)</h4>
+    <span class="hidden">
+      <hr>
+      <p><strong>All <a href="https://help.github.com/articles/about-required-status-checks/">GitHub statuses</a> on a Pull Request must be passing / green for automatic merge&nbsp;<span class="success">✓</span></strong></p>
+      <p><strong>Prow test results are ignored if they do not test the Pull Request against the most recent commit on the branch.</strong></p>
+      <p><strong>Your Pull Request must also match one of these GitHub search queries (you can click them to check):</strong></p>
+      <ul id="queries"></ul>
+    </span>
+  </div>
+</article>
+<article>
+  <div class="table-container">
+    <table id="pools">
+      <thead>
+      <th>Repo</th>
+      <th>State</th>
+      <th>Batch</th>
+      <th>Passing</th>
+      <th>Pending</th>
+      <th>Queued for Retest</th>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+</article>
+{{end}}
+
+{{template "page" (settings mobileUnfriendly "tide" .)}}

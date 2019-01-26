@@ -1,0 +1,70 @@
+presubmits:
+  kubernetes-sigs/gcp-filestore-csi-driver:
+  - name: pull-gcp-filestore-csi-driver-e2e
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        - "--timeout=300"
+        - "--scenario=execute"
+        - "--" # end bootstrap args, scenario args below
+        - "test/run_e2e.sh"
+        env:
+        - name: ZONE
+          value: us-central1-c
+  - name: pull-gcp-filestore-csi-driver-sanity
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        - "--timeout=10"
+        - "--scenario=execute"
+        - "--" # end bootstrap args, scenario args below
+        - "test/run_sanity.sh"
+  - name: pull-gcp-filestore-csi-driver-unit
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        - "--timeout=10"
+        - "--scenario=execute"
+        - "--" # end bootstrap args, scenario args below
+        - "test/run_unit.sh"
+  - name: pull-gcp-filestore-csi-driver-verify
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        - "--timeout=10"
+        - "--scenario=execute"
+        - "--" # end bootstrap args, scenario args below
+        - "hack/verify_all.sh"

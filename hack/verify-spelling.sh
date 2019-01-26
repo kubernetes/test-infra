@@ -45,5 +45,6 @@ find -L . -type f -not \( \
     -path '*/vendor/*' \
     -o -path '*/static/*' \
     -o -path '*/third_party/*' \
+    -o -path '*/node_modules/*' \
     \) -prune \
   \) | xargs "${misspell}" -error

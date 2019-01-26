@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-PROJECT = google-containers
+PROJECT = k8s-testimages
 IMG = gcr.io/$(PROJECT)/logexporter
-TAG = v0.1.1
+TAG = v0.1.3
 
 .PHONY: build push
 

@@ -139,6 +139,8 @@ index 1ea52dc..5bd70a9 100644
  }
 `)
 
+var body = "This PR updates the magic number.\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
+
 func TestCherryPickIC(t *testing.T) {
 	lg, c, err := localgit.New()
 	if err != nil {
@@ -169,6 +171,7 @@ func TestCherryPickIC(t *testing.T) {
 			},
 			Merged: true,
 			Title:  "This is a fix for X",
+			Body:   body,
 		},
 		isMember:   true,
 		createdNum: 3,
@@ -199,19 +202,23 @@ func TestCherryPickIC(t *testing.T) {
 	botName := "ci-robot"
 	expectedRepo := "foo/bar"
 	expectedTitle := "[stage] This is a fix for X"
-	expectedBody := "This is an automated cherry-pick of #2\n\n/assign wiseguy"
+	expectedBody := "This is an automated cherry-pick of #2\n\n/assign wiseguy\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
 	expectedBase := "stage"
 	expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, expectedBase)
 	expected := fmt.Sprintf(expectedFmt, expectedRepo, expectedTitle, expectedBody, expectedHead, expectedBase, true)
 
+	getSecret := func() []byte {
+		return []byte("sha=abcdefg")
+	}
+
 	s := &Server{
-		botName:    botName,
-		gc:         c,
-		push:       func(repo, newBranch string) error { return nil },
-		ghc:        ghc,
-		hmacSecret: []byte("sha=abcdefg"),
-		log:        logrus.StandardLogger().WithField("client", "cherrypicker"),
-		repos:      []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+		botName:        botName,
+		gc:             c,
+		push:           func(repo, newBranch string) error { return nil },
+		ghc:            ghc,
+		tokenGenerator: getSecret,
+		log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
+		repos:          []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
 
 		prowAssignments: true,
 	}
@@ -321,14 +328,19 @@ func TestCherryPickPR(t *testing.T) {
 	}
 
 	botName := "ci-robot"
+
+	getSecret := func() []byte {
+		return []byte("sha=abcdefg")
+	}
+
 	s := &Server{
-		botName:    botName,
-		gc:         c,
-		push:       func(repo, newBranch string) error { return nil },
-		ghc:        ghc,
-		hmacSecret: []byte("sha=abcdefg"),
-		log:        logrus.StandardLogger().WithField("client", "cherrypicker"),
-		repos:      []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+		botName:        botName,
+		gc:             c,
+		push:           func(repo, newBranch string) error { return nil },
+		ghc:            ghc,
+		tokenGenerator: getSecret,
+		log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
+		repos:          []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
 
 		prowAssignments: false,
 	}

@@ -26,6 +26,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -36,7 +37,7 @@ var (
 	chatBack = "Reiterating the mentions to trigger a notification: \n%v\n"
 
 	kindMap = map[string]string{
-		"bugs":             "kind/bug",
+		"bugs":             labels.Bug,
 		"feature-requests": "kind/feature",
 		"api-reviews":      "kind/api-change",
 		"proposals":        "kind/design",
@@ -70,7 +71,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		nil
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.SigMention.Re)
 }
 
@@ -103,15 +104,15 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 	if err != nil {
 		return err
 	}
-	existingLabels := map[string]string{}
+	RepoLabelsExisting := map[string]string{}
 	for _, l := range repoLabels {
-		existingLabels[strings.ToLower(l.Name)] = l.Name
+		RepoLabelsExisting[strings.ToLower(l.Name)] = l.Name
 	}
 
 	var nonexistent, toRepeat []string
 	for _, sigMatch := range sigMatches {
 		sigLabel := strings.ToLower("sig" + "/" + sigMatch[1])
-		sigLabel, ok := existingLabels[sigLabel]
+		sigLabel, ok := RepoLabelsExisting[sigLabel]
 		if !ok {
 			nonexistent = append(nonexistent, "sig/"+sigMatch[1])
 			continue

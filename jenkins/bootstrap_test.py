@@ -577,35 +577,6 @@ class GubernatorUriTest(unittest.TestCase):
             bootstrap.gubernator_uri(self.create_path(uri)))
 
 
-class UploadPodspecTest(unittest.TestCase):
-    """ Tests for maybe_upload_podspec() """
-
-    def test_missing_env(self):
-        """ Missing env vars return without doing anything. """
-        # pylint: disable=no-self-use
-        bootstrap.maybe_upload_podspec(None, '', None, {}.get)
-        bootstrap.maybe_upload_podspec(None, '', None, {bootstrap.K8S_ENV: 'foo'}.get)
-        bootstrap.maybe_upload_podspec(None, '', None, {'HOSTNAME': 'blah'}.get)
-
-    def test_upload(self):
-        gsutil = FakeGSUtil()
-        call = FakeSubprocess()
-
-        output = 'type: gamma/example\n'
-        call.output['kubectl'] = [output]
-        artifacts = 'gs://bucket/logs/123/artifacts'
-        bootstrap.maybe_upload_podspec(
-            call, artifacts, gsutil,
-            {bootstrap.K8S_ENV: 'exists', 'HOSTNAME': 'abcd'}.get)
-
-        self.assertEqual(
-            call.calls,
-            [(['kubectl', 'get', '-oyaml', 'pods/abcd'], (), {'output': True})])
-        self.assertEqual(
-            gsutil.texts,
-            [(('%s/prow_podspec.yaml' % artifacts, output), {})])
-
-
 class AppendResultTest(unittest.TestCase):
     """Tests for append_result()."""
 
@@ -847,7 +818,8 @@ SECONDS = 10
 
 
 def fake_environment(set_home=True, set_node=True, set_job=True,
-                     set_jenkins_home=True, set_workspace=True, **kwargs):
+                     set_jenkins_home=True, set_workspace=True,
+                     set_artifacts=True, **kwargs):
     if set_home:
         kwargs.setdefault(bootstrap.HOME_ENV, '/fake/home-dir')
     if set_node:
@@ -858,6 +830,8 @@ def fake_environment(set_home=True, set_node=True, set_job=True,
         kwargs.setdefault(bootstrap.JENKINS_HOME_ENV, '/fake/home-dir')
     if set_workspace:
         kwargs.setdefault(bootstrap.WORKSPACE_ENV, '/fake/workspace')
+    if set_artifacts:
+        kwargs.setdefault(bootstrap.JOB_ARTIFACTS_ENV, '/fake/workspace/_artifacts')
     return kwargs
 
 

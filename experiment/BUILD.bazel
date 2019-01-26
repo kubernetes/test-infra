@@ -9,8 +9,18 @@ py_binary(
     srcs = ["generate_tests.py"],
     data = [
         "test_config.yaml",
+        "//config:prowjobs",
         "//jobs",
         "//prow:configs",
+    ],
+    deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
+)
+
+py_binary(
+    name = "fix_testgrid_config",
+    srcs = ["fix_testgrid_config.py"],
+    data = [
+        "//testgrid:config-yaml",
     ],
     deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
 )
@@ -26,8 +36,10 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//experiment/add-hook:all-srcs",
         "//experiment/aws-stockout:all-srcs",
         "//experiment/bootstrap:all-srcs",
+        "//experiment/ci-janitor:all-srcs",
         "//experiment/coverage:all-srcs",
         "//experiment/manual-trigger:all-srcs",
         "//experiment/tracer:all-srcs",

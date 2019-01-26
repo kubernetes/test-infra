@@ -26,9 +26,9 @@ go_library(
     deps = [
         "//boskos/common:go_default_library",
         "//boskos/storage:go_default_library",
-        "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/hashicorp/go-multierror:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
 

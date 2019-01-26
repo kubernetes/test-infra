@@ -16,7 +16,11 @@ limitations under the License.
 
 package main
 
-import "testing"
+import (
+	"testing"
+
+	"k8s.io/test-infra/prow/flagutil"
+)
 
 func TestOptions_Validate(t *testing.T) {
 	var testCases = []struct {
@@ -27,59 +31,73 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "minimal ok with jenkins token",
 			input: options{
+				jenkinsURL:       "https://example.com",
 				jenkinsTokenFile: "secret",
+				github:           flagutil.GitHubOptions{TokenPath: "token"},
 			},
 			expectedErr: false,
 		},
 		{
 			name: "minimal ok with jenkins bearer token",
 			input: options{
+				jenkinsURL:             "https://example.com",
 				jenkinsBearerTokenFile: "secret",
+				github:                 flagutil.GitHubOptions{TokenPath: "token"},
 			},
 			expectedErr: false,
 		},
 		{
 			name: "both jenkins tokens failure",
 			input: options{
+				jenkinsURL:             "https://example.com",
 				jenkinsTokenFile:       "secret",
 				jenkinsBearerTokenFile: "other",
+				github:                 flagutil.GitHubOptions{TokenPath: "token"},
 			},
 			expectedErr: true,
 		},
 		{
 			name: "all certificate files given",
 			input: options{
+				jenkinsURL:       "https://example.com",
 				jenkinsTokenFile: "secret",
 				certFile:         "cert",
 				keyFile:          "key",
 				caCertFile:       "cacert",
+				github:           flagutil.GitHubOptions{TokenPath: "token"},
 			},
 			expectedErr: false,
 		},
 		{
 			name: "missing cacert",
 			input: options{
+				jenkinsURL:       "https://example.com",
 				jenkinsTokenFile: "secret",
 				certFile:         "cert",
 				keyFile:          "key",
+				github:           flagutil.GitHubOptions{TokenPath: "token"},
 			},
 			expectedErr: true,
 		},
 		{
 			name: "missing cert",
 			input: options{
+				jenkinsURL:       "https://example.com",
 				jenkinsTokenFile: "secret",
 				keyFile:          "key",
 				caCertFile:       "cacert",
+				github:           flagutil.GitHubOptions{TokenPath: "token"},
 			},
 			expectedErr: true,
 		},
 		{
 			name: "missing key",
 			input: options{
+				jenkinsURL:       "https://example.com",
 				jenkinsTokenFile: "secret",
 				certFile:         "cert",
 				caCertFile:       "cacert",
+				github:           flagutil.GitHubOptions{TokenPath: "token"},
 			},
 			expectedErr: true,
 		},

@@ -1,0 +1,99 @@
+presets:
+- labels:
+    preset-cadvisor-docker-credential: "true"
+  env:
+  - name: DOCKER_USER
+    value: /etc/cadvisor-cred/username
+  - name: DOCKER_PASSWORD
+    value: /etc/cadvisor-cred/password
+  volumes:
+  - name: cadvisor-cred
+    secret:
+      defaultMode: 0400
+      secretName: cadvisor-docker-credential
+  volumeMounts:
+  - name: cadvisor-cred
+    mountPath: /etc/cadvisor-cred
+    readOnly: true
+
+presubmits:
+  google/cadvisor:
+  - name: pull-cadvisor-e2e
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/kubernetes"
+        - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
+        - --root=/go/src
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=90
+        - --scenario=kubernetes_e2e
+        - --
+        - --deployment=node
+        - --gcp-project=cadvisor-e2e
+        - --gcp-zone=us-central1-f
+        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml --test-suite=cadvisor
+        - --node-tests=true
+        - --provider=gce
+        - --test_args=--nodes=1--flakeAttempts=2
+        - --timeout=10m
+
+periodics:
+- interval: 24h
+  name: ci-cadvisor-canarypush
+  labels:
+    preset-service-account: "true"
+    preset-cadvisor-docker-credential: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20190117-ea691e01a
+      args:
+      - --repo=github.com/google/cadvisor
+      - --root=/go/src
+      - --timeout=30
+      - --scenario=canarypush
+      - --
+      - --file=deploy/canary/Dockerfile
+      - --owner=stclair@google.com
+      - --target=google/cadvisor:canary
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+
+- name: ci-cadvisor-e2e
+  interval: 8h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      args:
+      - --job=$(JOB_NAME)
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/google/cadvisor=master
+      - --service-account=/etc/service-account/service-account.json
+      - --timeout=90
+      - --upload=gs://kubernetes-jenkins/logs
+      - --scenario=kubernetes_e2e
+      - --
+      - --deployment=node
+      - --gcp-project=ci-cadvisor-e2e
+      - --gcp-zone=us-central1-f
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml --test-suite=cadvisor
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=1--flakeAttempts=2
+      - --timeout=10m
+      env:
+      - name: GOPATH
+        value: /go

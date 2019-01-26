@@ -1,0 +1,123 @@
+periodics:
+- interval: 1h
+  name: ci-kubernetes-coverage-conformance
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  decoration_config:
+    timeout: 10800000000000 # 3 hours
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      command:
+      - runner.sh
+      - bash
+      args:
+      - -e
+      - -c
+      - |
+        shopt -s globstar
+        ../test-infra/scenarios/kubernetes_e2e.py \
+          --build=quick \
+          --dump-before-and-after \
+          --extract=local \
+          --stage=gs://kubernetes-release-dev/ci/ci-kubernetes-conformance-coverage \
+          --gcp-zone=us-central1-f \
+          --provider=gce \
+          --timeout=150m \
+          --test_args="--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]"
+        cd ../test-infra
+        bazel run //gopherage -- merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
+        bazel run //gopherage -- merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
+        bazel run //gopherage -- diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/conformance.cov"
+        bazel run //gopherage -- filter --exclude-path=zz_generated,third_party/,cmd/,cloudprovider/providers/,alpha,beta  "${ARTIFACTS}/conformance.cov" > "${ARTIFACTS}/filtered.cov"
+        bazel run //gopherage -- html "${ARTIFACTS}/filtered.cov"  > "${ARTIFACTS}/conformance.html"
+        bazel run //gopherage -- junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml"
+      env:
+      - name: KUBE_BUILD_WITH_COVERAGE
+        value: "true"
+      - name: KUBE_BUILD_HYPERKUBE
+        value: "n"
+      - name: KUBE_BUILD_CONFORMANCE
+        value: "n"
+      securityContext:
+        privileged: true
+# coverage for same tests that run in ci-kubernetes-e2e-gci-gce
+- interval: 1h
+  name: ci-kubernetes-coverage-e2e-gci-gce
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  decoration_config:
+    timeout: 10800000000000 # 3 hours
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      command:
+      - runner.sh
+      - bash
+      args:
+      - -e
+      - -c
+      - |
+        shopt -s globstar
+        ../test-infra/scenarios/kubernetes_e2e.py \
+          --env=ENABLE_POD_SECURITY_POLICY=true \
+          --build=quick \
+          --dump-before-and-after \
+          --extract=local \
+          --stage=gs://kubernetes-release-dev/ci/ci-kubernetes-coverage-e2e-gci-gce \
+          --gcp-master-image=gci \
+          --gcp-node-image=gci \
+          --gcp-nodes=4 \
+          --gcp-zone=us-central1-f \
+          --ginkgo-parallel=30 \
+          --provider=gce \
+          --timeout=150m \
+          --test_args="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8"
+        cd ../test-infra
+        bazel run //gopherage -- merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
+        bazel run //gopherage -- merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
+        bazel run //gopherage -- diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/e2e.cov"
+        bazel run //gopherage -- filter --exclude-path=zz_generated,third_party/,cmd/,cloudprovider/providers/ "${ARTIFACTS}/e2e.cov" > "${ARTIFACTS}/filtered.cov"
+        bazel run //gopherage -- html "${ARTIFACTS}/filtered.cov"  > "${ARTIFACTS}/e2e.html"
+        bazel run //gopherage -- junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml"
+      env:
+      - name: KUBE_BUILD_WITH_COVERAGE
+        value: "true"
+      - name: KUBE_BUILD_HYPERKUBE
+        value: "n"
+      - name: KUBE_BUILD_CONFORMANCE
+        value: "n"
+      securityContext:
+        privileged: true

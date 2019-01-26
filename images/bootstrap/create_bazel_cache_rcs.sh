@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-CACHE_HOST="bazel-cache.default"
+CACHE_HOST="bazel-cache.default.svc.cluster.local."
 CACHE_PORT="8080"
 
 # get the installed version of a debian package
@@ -29,7 +29,7 @@ command_to_package () {
     # https://wiki.debian.org/DebianAlternatives
     local binary_path
     binary_path=$(readlink -f "$(command -v "$1")")
-    # `dpkg-query --search $file-pattern` ouputs lines with the format: "$package: $file-path"
+    # `dpkg-query --search $file-pattern` outputs lines with the format: "$package: $file-path"
     # where $file-path belongs to $package
     # https://manpages.debian.org/jessie/dpkg/dpkg-query.1.en.html
     dpkg-query --search "${binary_path}" | cut -d':' -f1

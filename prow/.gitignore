@@ -2,7 +2,6 @@ cmd/hook/hook
 cmd/line/line
 cmd/sinker/sinker
 cmd/deck/deck
-cmd/splice/splice
 cmd/marque/marque
 cmd/tot/tot
 cmd/tot/fallbackcheck/fallbackcheck
@@ -13,3 +12,9 @@ cmd/jenkins-operator/jenkins-operator
 cmd/tide/tide
 cmd/clonerefs/clonerefs
 cmd/initupload/initupload
+cmd/phony/phony
+cmd/peribolos/peribolos
+cmd/branchprotector/branchprotector
+external-plugins/cherrypicker/cherrypicker
+external-plugins/needs-rebase/needs-rebase
+external-plugins/refresh/refresh

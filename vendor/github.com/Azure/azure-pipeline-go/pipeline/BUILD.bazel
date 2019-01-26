@@ -1,0 +1,33 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "core.go",
+        "defaultlog_syslog.go",
+        "defaultlog_windows.go",
+        "doc.go",
+        "error.go",
+        "progress.go",
+        "request.go",
+        "response.go",
+        "version.go",
+    ],
+    importmap = "k8s.io/test-infra/vendor/github.com/Azure/azure-pipeline-go/pipeline",
+    importpath = "github.com/Azure/azure-pipeline-go/pipeline",
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

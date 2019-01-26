@@ -1,8 +1,11 @@
 apiVersion: prow.k8s.io/v1
 kind: ProwJob
 metadata:
+  annotations:
+    prow.k8s.io/job: kubernetes-explicit-decoration
   creationTimestamp: null
   labels:
+    created-by-prow: "true"
     prow.k8s.io/job: kubernetes-explicit-decoration
     prow.k8s.io/refs.org: test-org
     prow.k8s.io/refs.pull: "1"
@@ -16,6 +19,8 @@ spec:
   decoration_config:
     gcs_configuration:
       bucket: explicit-bucket
+      default_org: kubernetes
+      default_repo: kubernetes
       path_strategy: explicit
     gcs_credentials_secret: explicit-service-account
     grace_period: 1
@@ -26,6 +31,7 @@ spec:
       initupload: initupload:explicit
       sidecar: sidecar:explicit
   job: kubernetes-explicit-decoration
+  namespace: default
   pod_spec:
     containers:
     - args:

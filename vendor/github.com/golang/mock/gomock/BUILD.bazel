@@ -8,9 +8,10 @@ go_library(
         "controller.go",
         "matchers.go",
     ],
-    importmap = "vendor/github.com/golang/mock/gomock",
+    importmap = "k8s.io/test-infra/vendor/github.com/golang/mock/gomock",
     importpath = "github.com/golang/mock/gomock",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/golang.org/x/net/context:go_default_library"],
 )
 
 filegroup(

@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -36,10 +37,11 @@ import (
 // Server implements http.Handler. It validates incoming GitHub webhooks and
 // then dispatches them to the appropriate plugins.
 type Server struct {
-	Plugins     *plugins.PluginAgent
-	ConfigAgent *config.Agent
-	HMACSecret  []byte
-	Metrics     *Metrics
+	ClientAgent    *plugins.ClientAgent
+	Plugins        *plugins.ConfigAgent
+	ConfigAgent    *config.Agent
+	TokenGenerator func() []byte
+	Metrics        *Metrics
 
 	// c is an http client used for dispatching events
 	// to external plugin services.
@@ -50,7 +52,15 @@ type Server struct {
 
 // ServeHTTP validates an incoming webhook and puts it into the event channel.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	eventType, eventGUID, payload, ok := ValidateWebhook(w, r, s.HMACSecret)
+	eventType, eventGUID, payload, ok, resp := github.ValidateWebhook(w, r, s.TokenGenerator())
+	if counter, err := s.Metrics.WebhookCounter.GetMetricWithLabelValues(strconv.Itoa(resp)); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"status-code": resp,
+		}).WithError(err).Error("Failed to get metric for reporting webhook status code")
+	} else {
+		counter.Inc()
+	}
+
 	if !ok {
 		return
 	}
@@ -59,73 +69,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err := s.demuxEvent(eventType, eventGUID, payload, r.Header); err != nil {
 		logrus.WithError(err).Error("Error parsing event.")
 	}
-}
-
-// ValidateWebhook ensures that the provided request conforms to the
-// format of a Github webhook and the payload can be validated with
-// the provided hmac secret. It returns the event type, the event guid,
-// the payload of the request, and whether the webhook is valid or not.
-func ValidateWebhook(w http.ResponseWriter, r *http.Request, hmacSecret []byte) (string, string, []byte, bool) {
-	defer r.Body.Close()
-
-	// Our health check uses GET, so just kick back a 200.
-	if r.Method == http.MethodGet {
-		return "", "", nil, false
-	}
-
-	// Header checks: It must be a POST with an event type and a signature.
-	if r.Method != http.MethodPost {
-		resp := "405 Method not allowed"
-		logrus.Debug(resp)
-		http.Error(w, resp, http.StatusMethodNotAllowed)
-		return "", "", nil, false
-	}
-	eventType := r.Header.Get("X-GitHub-Event")
-	if eventType == "" {
-		resp := "400 Bad Request: Missing X-GitHub-Event Header"
-		logrus.Debug(resp)
-		http.Error(w, resp, http.StatusBadRequest)
-		return "", "", nil, false
-	}
-	eventGUID := r.Header.Get("X-GitHub-Delivery")
-	if eventGUID == "" {
-		resp := "400 Bad Request: Missing X-GitHub-Delivery Header"
-		logrus.Debug(resp)
-		http.Error(w, resp, http.StatusBadRequest)
-		return "", "", nil, false
-	}
-	sig := r.Header.Get("X-Hub-Signature")
-	if sig == "" {
-		resp := "403 Forbidden: Missing X-Hub-Signature"
-		logrus.Debug(resp)
-		http.Error(w, resp, http.StatusForbidden)
-		return "", "", nil, false
-	}
-	contentType := r.Header.Get("content-type")
-	if contentType != "application/json" {
-		resp := "400 Bad Request: Hook only accepts content-type: application/json - please reconfigure this hook on GitHub"
-		logrus.Debug(resp)
-		http.Error(w, resp, http.StatusBadRequest)
-		return "", "", nil, false
-	}
-
-	payload, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		resp := "500 Internal Server Error: Failed to read request body"
-		logrus.Debug(resp)
-		http.Error(w, resp, http.StatusInternalServerError)
-		return "", "", nil, false
-	}
-
-	// Validate the payload with our HMAC secret.
-	if !github.ValidatePayload(payload, sig, hmacSecret) {
-		resp := "403 Forbidden: Invalid X-Hub-Signature"
-		logrus.Debug(resp)
-		http.Error(w, resp, http.StatusForbidden)
-		return "", "", nil, false
-	}
-
-	return eventType, eventGUID, payload, true
 }
 
 func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.Header) error {
@@ -206,6 +149,8 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		srcRepo = se.Repo.FullName
 		s.wg.Add(1)
 		go s.handleStatusEvent(l, se)
+	default:
+		l.Debug("Ignoring unhandled event type. (Might still be handled by external plugins.)")
 	}
 	// Demux events only to external plugins that require this event.
 	if external := s.needDemux(eventType, srcRepo); len(external) > 0 {
@@ -222,16 +167,7 @@ func (s *Server) needDemux(eventType, srcRepo string) []plugins.ExternalPlugin {
 
 	for repo, plugins := range s.Plugins.Config().ExternalPlugins {
 		// Make sure the repositories match
-		var matchesRepo bool
-		if repo == srcRepo {
-			matchesRepo = true
-		}
-		// If repo is an org, we need to compare orgs.
-		if !matchesRepo && !strings.Contains(repo, "/") && repo == srcOrg {
-			matchesRepo = true
-		}
-		// No need to continue if the repos don't match.
-		if !matchesRepo {
+		if repo != srcRepo && repo != srcOrg {
 			continue
 		}
 
@@ -292,7 +228,8 @@ func (s *Server) dispatch(endpoint string, payload []byte, h http.Header) error 
 	return nil
 }
 
-// Implements a graceful shutdown protool. Handles all requests sent before receiving shutdown signal.
+// GracefulShutdown implements a graceful shutdown protocol. It handles all requests sent before
+// receiving the shutdown signal.
 func (s *Server) GracefulShutdown() {
 	s.wg.Wait() // Handle remaining requests
 	return

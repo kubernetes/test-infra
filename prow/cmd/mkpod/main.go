@@ -23,9 +23,9 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"

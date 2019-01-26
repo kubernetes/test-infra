@@ -1,23 +1,19 @@
 presubmits:
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - name: pull-gcp-compute-persistent-disk-csi-driver-e2e
-    context: pull-gcp-compute-persistent-disk-csi-driver-e2e
     always_run: true
-    rerun_command: "/test pull-gcp-compute-persistent-disk-csi-driver-e2e"
-    trigger: "(?m)^/test( all| pull-gcp-compute-persistent-disk-csi-driver-e2e),?(\\s+|$)"
-    agent: kubernetes
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20180927-6b4facbe6
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        - "--timeout=300"
+        - "--timeout=20" # Minutes
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run-e2e.sh"
@@ -25,62 +21,70 @@ presubmits:
         - name: ZONE
           value: us-central1-c
   - name: pull-gcp-compute-persistent-disk-csi-driver-sanity
-    context: pull-gcp-compute-persistent-disk-csi-driver-sanity
     always_run: true
-    rerun_command: "/test pull-gcp-compute-persistent-disk-csi-driver-sanity"
-    trigger: "(?m)^/test( all| pull-gcp-compute-persistent-disk-csi-driver-sanity),?(\\s+|$)"
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20180927-6b4facbe6
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        - "--timeout=10"
+        - "--timeout=10" # Minutes
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run-sanity.sh"
   - name: pull-gcp-compute-persistent-disk-csi-driver-unit
-    context: pull-gcp-compute-persistent-disk-csi-driver-unit
     always_run: true
-    rerun_command: "/test pull-gcp-compute-persistent-disk-csi-driver-unit"
-    trigger: "(?m)^/test( all| pull-gcp-compute-persistent-disk-csi-driver-unit),?(\\s+|$)"
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20180927-6b4facbe6
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        - "--timeout=10"
+        - "--timeout=10" # Minutes
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run-unit.sh"
   - name: pull-gcp-compute-persistent-disk-csi-driver-verify
-    context: pull-gcp-compute-persistent-disk-csi-driver-verify
     always_run: true
-    rerun_command: "/test pull-gcp-compute-persistent-disk-csi-driver-verify"
-    trigger: "(?m)^/test( all| pull-gcp-compute-persistent-disk-csi-driver-verify),?(\\s+|$)"
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20180927-6b4facbe6
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        - "--timeout=10"
+        - "--timeout=10" # Minutes
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "hack/verify-all.sh"
+  - name: pull-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        args:
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        - "--timeout=60" # Minutes
+        - "--scenario=execute"
+        - "--" # end bootstrap args, scenario args below
+        - "test/run-k8s-integration.sh"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true

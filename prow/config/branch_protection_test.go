@@ -307,10 +307,12 @@ func TestJobRequirements(t *testing.T) {
 					SkipReport: false,
 				},
 				{
-					Context:      "run-if-changed",
-					RunIfChanged: "foo",
-					AlwaysRun:    false,
-					SkipReport:   false,
+					Context: "run-if-changed",
+					RegexpChangeMatcher: RegexpChangeMatcher{
+						RunIfChanged: "foo",
+					},
+					AlwaysRun:  false,
+					SkipReport: false,
 				},
 				{
 					Context:    "not-always",
@@ -351,10 +353,12 @@ func TestJobRequirements(t *testing.T) {
 					},
 				},
 				{
-					Context:      "run-if-changed",
-					RunIfChanged: "foo",
-					SkipReport:   true,
-					AlwaysRun:    false,
+					Context: "run-if-changed",
+					RegexpChangeMatcher: RegexpChangeMatcher{
+						RunIfChanged: "foo",
+					},
+					SkipReport: true,
+					AlwaysRun:  false,
 					RunAfterSuccess: []Presubmit{
 						{
 							Context: "me2",
@@ -678,7 +682,9 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					Presubmits: map[string][]Presubmit{
 						"org/repo": {
 							{
-								Name:      "required presubmit",
+								JobBase: JobBase{
+									Name: "required presubmit",
+								},
 								Context:   "required presubmit",
 								AlwaysRun: true,
 							},
@@ -708,7 +714,9 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					Presubmits: map[string][]Presubmit{
 						"org/repo": {
 							{
-								Name:      "required presubmit",
+								JobBase: JobBase{
+									Name: "required presubmit",
+								},
 								Context:   "required presubmit",
 								AlwaysRun: true,
 							},
@@ -740,7 +748,9 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					Presubmits: map[string][]Presubmit{
 						"org/repo": {
 							{
-								Name:      "required presubmit",
+								JobBase: JobBase{
+									Name: "required presubmit",
+								},
 								Context:   "required presubmit",
 								AlwaysRun: true,
 							},
@@ -765,7 +775,9 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					Presubmits: map[string][]Presubmit{
 						"org/repo": {
 							{
-								Name:      "optional presubmit",
+								JobBase: JobBase{
+									Name: "optional presubmit",
+								},
 								Context:   "optional presubmit",
 								AlwaysRun: true,
 								Optional:  true,
@@ -794,7 +806,9 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					Presubmits: map[string][]Presubmit{
 						"org/repo": {
 							{
-								Name:      "optional presubmit",
+								JobBase: JobBase{
+									Name: "optional presubmit",
+								},
 								Context:   "optional presubmit",
 								AlwaysRun: true,
 								Optional:  true,

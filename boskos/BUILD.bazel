@@ -28,6 +28,7 @@ go_test(
         "//boskos/crds:go_default_library",
         "//boskos/ranch:go_default_library",
         "//boskos/storage:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/validation:go_default_library",
     ],
 )
 

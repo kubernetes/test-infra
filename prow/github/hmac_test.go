@@ -16,7 +16,9 @@ limitations under the License.
 
 package github
 
-import "testing"
+import (
+	"testing"
+)
 
 // echo -n 'BODY' | openssl dgst -sha1 -hmac KEY
 func TestValidatePayload(t *testing.T) {

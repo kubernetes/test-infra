@@ -43,24 +43,36 @@ type fca struct {
 func newFakeConfigAgent(t *testing.T, maxConcurrency int, operators []config.JenkinsOperator) *fca {
 	presubmits := []config.Presubmit{
 		{
-			Name: "test-bazel-build",
+			JobBase: config.JobBase{
+				Name: "test-bazel-build",
+			},
 			RunAfterSuccess: []config.Presubmit{
 				{
-					Name:         "test-kubeadm-cloud",
-					RunIfChanged: "^(cmd/kubeadm|build/debs).*$",
+					JobBase: config.JobBase{
+						Name: "test-kubeadm-cloud",
+					},
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						RunIfChanged: "^(cmd/kubeadm|build/debs).*$",
+					},
 				},
 			},
 		},
 		{
-			Name: "test-e2e",
+			JobBase: config.JobBase{
+				Name: "test-e2e",
+			},
 			RunAfterSuccess: []config.Presubmit{
 				{
-					Name: "push-image",
+					JobBase: config.JobBase{
+						Name: "push-image",
+					},
 				},
 			},
 		},
 		{
-			Name: "test-bazel-test",
+			JobBase: config.JobBase{
+				Name: "test-bazel-test",
+			},
 		},
 	}
 	if err := config.SetPresubmitRegexes(presubmits); err != nil {
@@ -312,7 +324,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			kc:          fkc,
 			jc:          fjc,
 			log:         logrus.NewEntry(logrus.StandardLogger()),
-			ca:          newFakeConfigAgent(t, tc.maxConcurrency, nil),
+			cfg:         newFakeConfigAgent(t, tc.maxConcurrency, nil).Config,
 			totURL:      totServ.URL,
 			lock:        sync.RWMutex{},
 			pendingJobs: make(map[string]int),
@@ -528,7 +540,7 @@ func TestSyncPendingJobs(t *testing.T) {
 			kc:          fkc,
 			jc:          fjc,
 			log:         logrus.NewEntry(logrus.StandardLogger()),
-			ca:          newFakeConfigAgent(t, 0, nil),
+			cfg:         newFakeConfigAgent(t, 0, nil).Config,
 			totURL:      totServ.URL,
 			lock:        sync.RWMutex{},
 			pendingJobs: make(map[string]int),
@@ -583,8 +595,10 @@ func pState(state string) *string {
 // TestBatch walks through the happy path of a batch job on Jenkins.
 func TestBatch(t *testing.T) {
 	pre := config.Presubmit{
-		Name:    "pr-some-job",
-		Agent:   "jenkins",
+		JobBase: config.JobBase{
+			Name:  "pr-some-job",
+			Agent: "jenkins",
+		},
 		Context: "Some Job Context",
 	}
 	pj := pjutil.NewProwJob(pjutil.BatchSpec(pre, kube.Refs{
@@ -618,9 +632,10 @@ func TestBatch(t *testing.T) {
 	defer totServ.Close()
 	c := Controller{
 		kc:          fc,
+		ghc:         &fghc{},
 		jc:          jc,
 		log:         logrus.NewEntry(logrus.StandardLogger()),
-		ca:          newFakeConfigAgent(t, 0, nil),
+		cfg:         newFakeConfigAgent(t, 0, nil).Config,
 		totURL:      totServ.URL,
 		pendingJobs: make(map[string]int),
 		lock:        sync.RWMutex{},
@@ -758,9 +773,13 @@ func TestRunAfterSuccessCanRun(t *testing.T) {
 			err:     test.err,
 		}
 
-		c := Controller{log: logrus.NewEntry(logrus.StandardLogger())}
+		c := Controller{
+			log: logrus.NewEntry(logrus.StandardLogger()),
+			cfg: newFakeConfigAgent(t, 0, nil).Config,
+			ghc: fakeGH,
+		}
 
-		got := c.RunAfterSuccessCanRun(test.parent, test.child, newFakeConfigAgent(t, 0, nil), fakeGH)
+		got := c.RunAfterSuccessCanRun(test.parent, test.child)
 		if got != test.expected {
 			t.Errorf("expected to run: %t, got: %t", test.expected, got)
 		}
@@ -876,7 +895,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			kc:          fc,
 			jc:          fjc,
 			log:         logrus.NewEntry(logrus.StandardLogger()),
-			ca:          newFakeConfigAgent(t, 0, nil),
+			cfg:         newFakeConfigAgent(t, 0, nil).Config,
 			totURL:      totServ.URL,
 			pendingJobs: test.pendingJobs,
 		}
@@ -1051,7 +1070,7 @@ func TestOperatorConfig(t *testing.T) {
 		t.Logf("scenario %q", test.name)
 
 		c := Controller{
-			ca:       newFakeConfigAgent(t, 10, test.operators),
+			cfg:      newFakeConfigAgent(t, 10, test.operators).Config,
 			selector: test.labelSelector,
 		}
 

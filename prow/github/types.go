@@ -18,8 +18,11 @@ package github
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
+
+	"k8s.io/test-infra/prow/errorutil"
 )
 
 const (
@@ -35,6 +38,16 @@ const (
 	// RepoLogField is the repository of a PR.
 	// Used as a log field across prow.
 	RepoLogField = "repo"
+
+	// SearchTimeFormat is a time.Time format string for ISO8601 which is the
+	// format that GitHub requires for times specified as part of a search query.
+	SearchTimeFormat = "2006-01-02T15:04:05Z"
+)
+
+var (
+	// FoundingYear is the year GitHub was founded. This is just used so that
+	// we can lower bound dates related to PRs and issues.
+	FoundingYear, _ = time.Parse(SearchTimeFormat, "2007-01-01T00:00:00Z")
 )
 
 // These are possible State entries for a Status.
@@ -68,6 +81,23 @@ const (
 	MergeSquash PullRequestMergeType = "squash"
 )
 
+func unmarshalClientError(b []byte) error {
+	var errors []error
+	clientError := ClientError{}
+	err := json.Unmarshal(b, &clientError)
+	if err == nil {
+		return clientError
+	}
+	errors = append(errors, err)
+	alternativeClientError := AlternativeClientError{}
+	err = json.Unmarshal(b, &alternativeClientError)
+	if err == nil {
+		return alternativeClientError
+	}
+	errors = append(errors, err)
+	return errorutil.NewAggregate(errors...)
+}
+
 // ClientError represents https://developer.github.com/v3/#client-errors
 type ClientError struct {
 	Message string `json:"message"`
@@ -77,6 +107,22 @@ type ClientError struct {
 		Code     string `json:"code"`
 		Message  string `json:"message,omitempty"`
 	} `json:"errors,omitempty"`
+}
+
+func (r ClientError) Error() string {
+	return r.Message
+}
+
+// AlternativeClientError represents an alternative format for https://developer.github.com/v3/#client-errors
+// This is probably a GitHub bug, as documentation_url should appear only in custom errors
+type AlternativeClientError struct {
+	Message          string   `json:"message"`
+	Errors           []string `json:"errors,omitempty"`
+	DocumentationURL string   `json:"documentation_url,omitempty"`
+}
+
+func (r AlternativeClientError) Error() string {
+	return r.Message
 }
 
 // Reaction holds the type of emotional reaction.
@@ -94,6 +140,7 @@ type Status struct {
 
 // CombinedStatus is the latest statuses for a ref.
 type CombinedStatus struct {
+	SHA      string   `json:"sha"`
 	Statuses []Status `json:"statuses"`
 }
 
@@ -122,13 +169,13 @@ const (
 	PullRequestActionReviewRequested = "review_requested"
 	// PullRequestActionReviewRequestRemoved means review requests were removed.
 	PullRequestActionReviewRequestRemoved = "review_request_removed"
-	// PullRequestActionLabeled means means labels were added.
+	// PullRequestActionLabeled means labels were added.
 	PullRequestActionLabeled = "labeled"
 	// PullRequestActionUnlabeled means labels were removed
 	PullRequestActionUnlabeled = "unlabeled"
 	// PullRequestActionOpened means the PR was created
 	PullRequestActionOpened = "opened"
-	// PullRequestActionEdited means means the PR body changed.
+	// PullRequestActionEdited means the PR body changed.
 	PullRequestActionEdited = "edited"
 	// PullRequestActionClosed means the PR was closed (or was merged).
 	PullRequestActionClosed = "closed"
@@ -214,17 +261,19 @@ const (
 
 // PullRequestChange contains information about what a PR changed.
 type PullRequestChange struct {
-	SHA       string `json:"sha"`
-	Filename  string `json:"filename"`
-	Status    string `json:"status"`
-	Additions int    `json:"additions"`
-	Deletions int    `json:"deletions"`
-	Changes   int    `json:"changes"`
-	Patch     string `json:"patch"`
-	BlobURL   string `json:"blob_url"`
+	SHA              string `json:"sha"`
+	Filename         string `json:"filename"`
+	Status           string `json:"status"`
+	Additions        int    `json:"additions"`
+	Deletions        int    `json:"deletions"`
+	Changes          int    `json:"changes"`
+	Patch            string `json:"patch"`
+	BlobURL          string `json:"blob_url"`
+	PreviousFilename string `json:"previous_filename"`
 }
 
 // Repo contains general repository information.
+// See also https://developer.github.com/v3/repos/#get
 type Repo struct {
 	Owner         User   `json:"owner"`
 	Name          string `json:"name"`
@@ -232,6 +281,7 @@ type Repo struct {
 	HTMLURL       string `json:"html_url"`
 	Fork          bool   `json:"fork"`
 	DefaultBranch string `json:"default_branch"`
+	Archived      bool   `json:"archived"`
 }
 
 // Branch contains general branch information.
@@ -249,6 +299,14 @@ type BranchProtectionRequest struct {
 	EnforceAdmins              *bool                       `json:"enforce_admins"`
 	RequiredPullRequestReviews *RequiredPullRequestReviews `json:"required_pull_request_reviews"`
 	Restrictions               *Restrictions               `json:"restrictions"`
+}
+
+func (r BranchProtectionRequest) String() string {
+	bytes, err := json.Marshal(&r)
+	if err != nil {
+		return fmt.Sprintf("%#v", r)
+	}
+	return string(bytes)
 }
 
 // RequiredStatusChecks specifies which contexts must pass to merge.
@@ -274,6 +332,38 @@ type Restrictions struct {
 	Users *[]string `json:"users,omitempty"`
 	Teams *[]string `json:"teams,omitempty"`
 }
+
+// HookConfig holds the endpoint and its secret.
+type HookConfig struct {
+	URL         string  `json:"url"`
+	ContentType *string `json:"content_type,omitempty"`
+	Secret      *string `json:"secret,omitempty"`
+}
+
+// Hook holds info about the webhook configuration.
+type Hook struct {
+	ID     int        `json:"id"`
+	Name   string     `json:"name"`
+	Events []string   `json:"events"`
+	Active bool       `json:"active"`
+	Config HookConfig `json:"config"`
+}
+
+// HookRequest can create and/or edit a webhook.
+//
+// AddEvents and RemoveEvents are only valid during an edit, and only for a repo
+type HookRequest struct {
+	Name         string      `json:"name,omitempty"` // must be web or "", only create
+	Active       *bool       `json:"active,omitempty"`
+	AddEvents    []string    `json:"add_events,omitempty"` // only repo edit
+	Config       *HookConfig `json:"config,omitempty"`
+	Events       []string    `json:"events,omitempty"`
+	RemoveEvents []string    `json:"remove_events,omitempty"` // only repo edit
+}
+
+// AllHookEvents causes github to send all events.
+// https://developer.github.com/v3/activity/events/types/
+var AllHookEvents = []string{"*"}
 
 // IssueEventAction enumerates the triggers for this
 // webhook payload type. See also:
@@ -436,6 +526,9 @@ type PushEvent struct {
 	Ref     string   `json:"ref"`
 	Before  string   `json:"before"`
 	After   string   `json:"after"`
+	Created bool     `json:"created"`
+	Deleted bool     `json:"deleted"`
+	Forced  bool     `json:"forced"`
 	Compare string   `json:"compare"`
 	Commits []Commit `json:"commits"`
 	// Pusher is the user that pushed the commit, valid in a webhook event.
@@ -461,6 +554,16 @@ type Commit struct {
 	Added    []string `json:"added"`
 	Removed  []string `json:"removed"`
 	Modified []string `json:"modified"`
+}
+
+// SingleCommit is the commit part received when requesting a single commit
+// https://developer.github.com/v3/repos/commits/#get-a-single-commit
+type SingleCommit struct {
+	Commit struct {
+		Tree struct {
+			SHA string `json:"sha"`
+		} `json:"tree"`
+	} `json:"commit"`
 }
 
 // ReviewEventAction enumerates the triggers for this
@@ -659,7 +762,8 @@ type TeamMembership struct {
 // OrgInvitation contains Login and other details about the invitation.
 type OrgInvitation struct {
 	TeamMember
-	Inviter TeamMember `json:"login"`
+	Email   string     `json:"email"`
+	Inviter TeamMember `json:"inviter"`
 }
 
 // GenericCommentEventAction coerces multiple actions into its generic equivalent.
@@ -699,10 +803,31 @@ type GenericCommentEvent struct {
 	IssueState   string
 	IssueBody    string
 	IssueHTMLURL string
+	GUID         string
 }
 
 // Milestone is a milestone defined on a github repository
 type Milestone struct {
 	Title  string `json:"title"`
 	Number int    `json:"number"`
+}
+
+// RepositoryCommit represents a commit in a repo.
+// Note that it's wrapping a GitCommit, so author/committer information is in two places,
+// but contain different details about them: in RepositoryCommit "github details", in GitCommit - "git details".
+type RepositoryCommit struct {
+	SHA         string    `json:"sha"`
+	Commit      GitCommit `json:"commit"`
+	Author      User      `json:"author"`
+	Committer   User      `json:"committer"`
+	Parents     []Commit  `json:"parents,omitempty"`
+	HTMLURL     string    `json:"html_url"`
+	URL         string    `json:"url"`
+	CommentsURL string    `json:"comments_url"`
+}
+
+// GitCommit represents a GitHub commit.
+type GitCommit struct {
+	SHA     string `json:"sha,omitempty"`
+	Message string `json:"message,omitempty"`
 }

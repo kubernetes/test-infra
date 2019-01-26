@@ -21,31 +21,20 @@ set -o xtrace
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 
 PROW_CONFIG="${TESTINFRA_ROOT}/prow/config.yaml"
-JOBS_CONFIG="${TESTINFRA_ROOT}/jobs/config.json"
 JOBS_DIR="${TESTINFRA_ROOT}/config/jobs"
 TMP_CONFIG=$(mktemp)
 TMP_GENERATED_JOBS=$(mktemp)
 
-trap 'rm $TMP_CONFIG && rm $TMP_GENERATED_JOBS' EXIT
+trap 'rm ${TMP_CONFIG} && rm ${TMP_GENERATED_JOBS}' EXIT
 cp "${PROW_CONFIG}" "${TMP_CONFIG}"
 
 bazel run //config/jobs/kubernetes-security:genjobs -- \
 "--config=${PROW_CONFIG}" \
-"--config-json=${JOBS_CONFIG}" \
 "--jobs=${JOBS_DIR}" \
 "--output=${TMP_GENERATED_JOBS}"
 
-bazel run //jobs:config_sort -- "--prow-config=${TMP_CONFIG}" --only-prow
-
-DIFF=$(diff "${TMP_CONFIG}" "${PROW_CONFIG}")
+DIFF=$(diff "${TMP_GENERATED_JOBS}" "${JOBS_DIR}/kubernetes-security/generated-security-jobs.yaml")
 if [ ! -z "$DIFF" ]; then
-    echo "config is not correct, please run \\\`hack/update-config.sh\\\`"
-    exit 1
-fi
-
-
-DIFF2=$(diff "${TMP_GENERATED_JOBS}" "${JOBS_DIR}/kubernetes-security/generated-security-jobs.yaml")
-if [ ! -z "$DIFF2" ]; then
     echo "config is not correct, please run \\\`hack/update-config.sh\\\`"
     exit 1
 fi

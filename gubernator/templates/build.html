@@ -16,7 +16,11 @@
 		{{job}}
 	% endif
 	#{{build}}</h1>
-	<p><a href="/builds{{job_dir}}">Recent runs</a><br>
+	<p><a href="/builds{{job_dir}}">Recent runs</a>
+	% if spyglass_link
+	|| <a href="{{spyglass_link}}">View in Spyglass</a>
+	% endif
+	</p><br>
 % endblock
 % block content
 <div id="summary">
@@ -43,7 +47,7 @@
 		% endif
 		<tr><td>Started<td>{{started['timestamp']|timestamp}}
 		{% if finished %}<tr><td>Elapsed<td>{{(finished['timestamp']-started['timestamp'])|duration}}{% endif %}
-		<tr><td>Version<td><a href="https://github.com/{{repo}}/commit/{{commit}}">{{started['version'] or finished['version']}}</a>
+		<tr><td>Revision<td><a href="https://github.com/{{repo}}/commit/{{commit}}">{{started['revision'] or finished['revision']}}</a>
 		% if 'node' in started
 			<tr><td>Builder<td>{{started['node']}}
 		% endif
@@ -63,7 +67,7 @@
 			<tr><td>{{k}}<td>{{v|maybe_linkify}}
 			% endfor
 		% endif
-		% if finished and 'metadata' in finished
+		% if finished and 'metadata' in finished and finished['metadata']
 			% for k, v in finished['metadata']|dictsort
 			<tr><td>{{k}}<td>{{v|maybe_linkify}}
 			% endfor

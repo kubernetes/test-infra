@@ -5,6 +5,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  namespace: default
   name: plugins
 data:
   plugins.yaml: ""
@@ -12,6 +13,7 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  namespace: default
   name: config
 data:
   config.yaml: |
@@ -74,10 +76,49 @@ spec:
                   - "aborted"
           - required:
             - completionTime
+  additionalPrinterColumns:
+  - name: Job
+    type: string
+    description: The name of the job being run.
+    JSONPath: .spec.job
+  - name: BuildId
+    type: string
+    description: The ID of the job being run.
+    JSONPath: .status.build_id
+  - name: Type
+    type: string
+    description: The type of job being run.
+    JSONPath: .spec.type
+  - name: Org
+    type: string
+    description: The org for which the job is running.
+    JSONPath: .spec.refs.org
+  - name: Repo
+    type: string
+    description: The repo for which the job is running.
+    JSONPath: .spec.refs.repo
+  - name: Pulls
+    type: string
+    description: The pulls for which the job is running.
+    JSONPath: ".spec.refs.pulls[*].number"
+  - name: StartTime
+    type: date
+    description: When the job started running.
+    JSONPath: .status.startTime
+  - name: CompletionTime
+    type: date
+    description: When the job finished running.
+    JSONPath: .status.completionTime
+  - name: State
+    description: The state of the job.
+    name: state
+    type: string
+    JSONPath: .status.state
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: hook
   labels:
     app: hook
@@ -93,10 +134,11 @@ spec:
       labels:
         app: hook
     spec:
+      serviceAccountName: "hook"
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20180710-7b6ac39a1
+        image: gcr.io/k8s-prow/hook:v20190125-2aca69d
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -133,6 +175,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: default
   name: hook
 spec:
   selector:
@@ -144,11 +187,14 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: plank
   labels:
     app: plank
 spec:
   replicas: 1 # Do not scale up.
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -157,7 +203,7 @@ spec:
       serviceAccountName: "plank"
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20180709-7109caeb1
+        image: gcr.io/k8s-prow/plank:v20190125-2aca69d
         args:
         - --dry-run=false
         volumeMounts:
@@ -178,6 +224,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: sinker
   labels:
     app: sinker
@@ -191,7 +238,7 @@ spec:
       serviceAccountName: "sinker"
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:v20180709-7109caeb1
+        image: gcr.io/k8s-prow/sinker:v20190125-2aca69d
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -204,6 +251,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: deck
   labels:
     app: deck
@@ -223,8 +271,9 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20180709-7109caeb1
+        image: gcr.io/k8s-prow/deck:v20190125-2aca69d
         args:
+        - --tide-url=http://tide/
         - --hook-url=http://hook:8888/plugin-help
         ports:
           - name: http
@@ -241,6 +290,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: default
   name: deck
 spec:
   selector:
@@ -253,11 +303,14 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  namespace: default
   name: horologium
   labels:
     app: horologium
 spec:
-  replicas: 1
+  replicas: 1 # Do not scale up.
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -267,7 +320,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20180709-7109caeb1
+        image: gcr.io/k8s-prow/horologium:v20190125-2aca69d
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -278,14 +331,68 @@ spec:
           name: config
 ---
 apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: default
+  name: tide
+  labels:
+    app: tide
+spec:
+  replicas: 1 # Do not scale up.
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: tide
+    spec:
+      serviceAccountName: "tide"
+      containers:
+      - name: tide
+        image: gcr.io/k8s-prow/tide:v20190125-2aca69d
+        args:
+        - --dry-run=false
+        ports:
+          - name: http
+            containerPort: 8888
+        volumeMounts:
+        - name: oauth
+          mountPath: /etc/github
+          readOnly: true
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+      volumes:
+      - name: oauth
+        secret:
+          secretName: oauth-token
+      - name: config
+        configMap:
+          name: config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: default
+  name: tide
+spec:
+  selector:
+    app: tide
+  ports:
+  - port: 80
+    targetPort: 8888
+  type: NodePort
+---
+apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
+  namespace: default
   name: ing
 spec:
   rules:
   - http:
       paths:
-      - path: /*
+      - path: /
         backend:
           serviceName: deck
           servicePort: 80
@@ -294,15 +401,16 @@ spec:
           serviceName: hook
           servicePort: 8888
 ---
-
 kind: ServiceAccount
 apiVersion: v1
 metadata:
+  namespace: default
   name: "deck"
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "deck"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -315,6 +423,7 @@ subjects:
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "deck"
 rules:
   - apiGroups:
@@ -334,11 +443,13 @@ rules:
 kind: ServiceAccount
 apiVersion: v1
 metadata:
+  namespace: default
   name: "horologium"
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "horologium"
 rules:
   - apiGroups:
@@ -352,6 +463,7 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "horologium"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -364,11 +476,13 @@ subjects:
 kind: ServiceAccount
 apiVersion: v1
 metadata:
+  namespace: default
   name: "plank"
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "plank"
 rules:
   - apiGroups:
@@ -391,6 +505,7 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "plank"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -403,11 +518,13 @@ subjects:
 kind: ServiceAccount
 apiVersion: v1
 metadata:
+  namespace: default
   name: "sinker"
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "sinker"
 rules:
   - apiGroups:
@@ -428,6 +545,7 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  namespace: default
   name: "sinker"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -436,4 +554,75 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: "sinker"
-
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: default
+  name: "hook"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: default
+  name: "hook"
+rules:
+  - apiGroups:
+      - "prow.k8s.io"
+    resources:
+      - prowjobs
+    verbs:
+      - create
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - update
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: default
+  name: "hook"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "hook"
+subjects:
+- kind: ServiceAccount
+  name: "hook"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: default
+  name: "tide"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: default
+  name: "tide"
+rules:
+  - apiGroups:
+      - "prow.k8s.io"
+    resources:
+      - prowjobs
+    verbs:
+      - create
+      - list
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: default
+  name: "tide"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "tide"
+subjects:
+- kind: ServiceAccount
+  name: "tide"

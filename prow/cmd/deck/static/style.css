@@ -6,6 +6,19 @@ body {
     font-size: 16px !important;
 }
 
+.mdl-layout__drawer footer {
+    text-align: center;
+    color: darkgray;
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    font-size: small;
+}
+
+.mdl-navigation__link .material-icons {
+    font-size: 14px;
+}
+
 code {
     background-color: #EEEEEE;
     border-radius: 3px;
@@ -18,6 +31,10 @@ a.current {
 
 a:link {
     text-decoration: none;
+    color: #3F51B5;
+}
+
+a:visited {
     color: #3F51B5;
 }
 
@@ -116,6 +133,10 @@ th {
     display: none;
 }
 
+.blocked {
+    color: #EF5350;
+}
+
 .icon-cell {
     width: 32px;
 }
@@ -144,6 +165,10 @@ i.state {
 .state.error, .state.aborted, .state.error.mdl-list__item-icon.material-icons,
 .state.aborted.mdl-list__item-icon.material-icons {
     color: #BDBDBD;
+}
+
+.state.context-warning.mdl-list__item-icon.material-icons {
+    color: #F4C20D;
 }
 
 #filter-list {
@@ -261,10 +286,7 @@ span.label {
     font-weight: bold;
     margin: 0 .1em;
     text-align: center;
-    color: white;
     box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12);
-    background-color: #ededed;
-    color: #333333;
     white-space: nowrap;
 }
 
@@ -310,6 +332,7 @@ span.label:not(.merge-table-label):hover {
     color: #757575;
     font-size: 15px;
     font-weight: bolder;
+    max-width: 170px;
 }
 
 .command-example-list {
@@ -338,6 +361,10 @@ span.label:not(.merge-table-label):hover {
 }
 
 #usage-col {
+    min-width: 200px;
+}
+
+#description-col {
     min-width: 200px;
 }
 
@@ -392,39 +419,6 @@ span.label:not(.merge-table-label):hover {
     color: #757575;
 }
 
-/* Known GitHub Labels, can be overridden in extensions/style.css */
-/* NOTE: spaces must be stripped from the label name */
-.label.lgtm {
-    background-color: #15dd18;
-    color: #000000;
-}
-.label.approved {
-    background-color: #0ffa16;
-    color: #000000;
-}
-.label.cncf-cla\:yes {
-    background-color: #bfe5bf;
-    color: #000000;
-}
-
-.label.needs-ok-to-test {
-    background-color: #b60205;
-    color: #ffffff;
-}
-.label.do-not-merge,
-.label.do-not-merge\/hold,
-.label.do-not-merge\/work-in-progress,
-.label.do-not-merge\/release-note-label-needed,
-.label.do-not-merge\/cherry-pick-not-approved,
-.label.do-not-merge\/blocked-paths {
-    background-color: #e11d21;
-    color: #ffffff;
-}
-.label.needs-rebase {
-    background-color: #BDBDBD;
-    color: #000000;
-}
-
 /*
 Plugin Help style
  */
@@ -465,26 +459,23 @@ Plugin Help style
     margin: 0 8px;
     padding: 8px 16px;
 }
+
 /*
- * User dashboard style sheet
+ * PR dashboard style sheet
  */
 #loading-progress {
     margin: 0 8px;
     width: calc(100% - 16px);
 }
 
-#main-container {
+#pr-container {
     display: flex;
     flex-direction: column;
 }
 
-#main-container .message {
+#pr-container .message {
     padding-top: 72px;
     text-align: center;
-}
-
-.pr-status-dialog > .mdl-dialog__content p {
-    font-size: 16px;
 }
 
 #merge-help-dialog.mdl-dialog, #status-help-dialog.mdl-dialog, #search-dialog.mdl-dialog {
@@ -492,7 +483,11 @@ Plugin Help style
 }
 
 #query-dialog.mdl-dialog {
-    width: 1000px;
+    width: 600px;
+}
+
+#query-dialog .label {
+    line-height: 18px;
 }
 
 #search-action {
@@ -552,7 +547,6 @@ Plugin Help style
 }
 
 .job-list-item.mdl-list__item {
-    height: 32px;
     min-height: 32px;
     padding: 4px;
 }
@@ -662,12 +656,13 @@ Plugin Help style
 
 .pr-card.mdl-card {
     border: 1px solid #e5e5e5;
-    max-width: 1200px;
+    max-width: 800px;
     min-width: 500px;
     width: 100%;
 }
 
 .pr-card > .mdl-card__supporting-text {
+    color: #3c3c3c;
     padding-top: 0;
     width: auto;
 }
@@ -700,18 +695,39 @@ Plugin Help style
     padding-left: 8px;
 }
 
+.pr-status-dialog > .mdl-dialog__title {
+    font-size: 32px;
+}
+
+.detail-data {
+    color: #3c3c3c;
+    margin: 0;
+}
+
+.detail-branch {
+    margin-right: 8px;
+}
+
+.detail-title {
+    color: #3f51b5;
+    font-size: 16px;
+    margin: 8px 0;
+}
+
 .status {
     align-items: center;
-    border-bottom: 1px solid #EFEBE9;
     cursor: pointer;
     background-color: #ffffff;
     display: flex;
     font-size: 16px;
-    font-weight: bold;
     height: 24px;
     line-height: 24px;
     padding: 12px 16px 2px 17px;
     user-select: none;
+}
+
+.status.expandable {
+    border-bottom: 1px solid #EFEBE9;
 }
 
 .status > .status-icon {
@@ -764,15 +780,6 @@ Plugin Help style
 
 .search-title .mdl-button--icon .material-icons {
     font-size: 20px;
-}
-
-.query-details-section {
-    font-size: 20px;
-    font-weight: bold;
-}
-
-.pr-status-dialog > .mdl-dialog__title {
-    font-size: 32px;
 }
 
 @media (max-device-width: 768px) {
@@ -851,4 +858,16 @@ Plugin Help style
         width: 320px;
     }
 
+}
+
+.alert{
+    padding: 15px;
+    background-color: #FFCB50;
+}
+
+.closebutton {
+    color: black;
+    float: right;
+    font-size: 24px;
+    cursor: pointer;
 }

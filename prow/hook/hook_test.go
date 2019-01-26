@@ -50,21 +50,28 @@ func TestHook(t *testing.T) {
 	}
 	plugins.RegisterIssueHandler(
 		"baz",
-		func(pc plugins.PluginClient, ie github.IssueEvent) error {
+		func(pc plugins.Agent, ie github.IssueEvent) error {
 			called <- true
 			return nil
 		},
 		nil,
 	)
-	pa := &plugins.PluginAgent{}
+	pa := &plugins.ConfigAgent{}
 	pa.Set(&plugins.Configuration{Plugins: map[string][]string{"foo/bar": {"baz"}}})
 	ca := &config.Agent{}
+	clientAgent := &plugins.ClientAgent{}
 	metrics := NewMetrics()
+
+	getSecret := func() []byte {
+		return []byte("123abc")
+	}
+
 	s := httptest.NewServer(&Server{
-		Plugins:     pa,
-		ConfigAgent: ca,
-		HMACSecret:  secret,
-		Metrics:     metrics,
+		ClientAgent:    clientAgent,
+		Plugins:        pa,
+		ConfigAgent:    ca,
+		Metrics:        metrics,
+		TokenGenerator: getSecret,
 	})
 	defer s.Close()
 	if err := phony.SendHook(s.URL, "issues", payload, secret); err != nil {

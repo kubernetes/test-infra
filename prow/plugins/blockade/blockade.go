@@ -31,16 +31,17 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 const (
-	pluginName        = "blockade"
-	blockedPathsLabel = "do-not-merge/blocked-paths"
+	// PluginName defines this plugin's registered name.
+	PluginName = "blockade"
 )
 
-var blockedPathsBody = fmt.Sprintf("Adding label: `%s` because PR changes a protected file.", blockedPathsLabel)
+var blockedPathsBody = fmt.Sprintf("Adding label: `%s` because PR changes a protected file.", labels.BlockedPaths)
 
 type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
@@ -55,7 +56,7 @@ type pruneClient interface {
 }
 
 func init() {
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
+	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
@@ -77,7 +78,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		blockConfig[repo] = buf.String()
 	}
 	return &pluginhelp.PluginHelp{
-			Description: "The blockade plugin blocks pull requests from merging if they touch specific files. The plugin applies the '" + blockedPathsLabel + "' label to pull requests that touch files that match a blockade's block regular expression and none of the corresponding exception regular expressions.",
+			Description: "The blockade plugin blocks pull requests from merging if they touch specific files. The plugin applies the '" + labels.BlockedPaths + "' label to pull requests that touch files that match a blockade's block regular expression and none of the corresponding exception regular expressions.",
 			Config:      blockConfig,
 		},
 		nil
@@ -86,22 +87,18 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 type blockCalc func([]github.PullRequestChange, []blockade) summary
 
 type client struct {
-	ghc    githubClient
-	log    *logrus.Entry
-	pruner pruneClient
+	ghc githubClient
+	log *logrus.Entry
 
 	blockCalc blockCalc
 }
 
-func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) error {
-	c := &client{
-		ghc:    pc.GitHubClient,
-		log:    pc.Logger,
-		pruner: pc.CommentPruner,
-
-		blockCalc: calculateBlocks,
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+	cp, err := pc.CommentPruner()
+	if err != nil {
+		return err
 	}
-	return handle(c, pc.PluginConfig.Blockades, &pre)
+	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.Blockades, cp, calculateBlocks, &pre)
 }
 
 // blockade is a compiled version of a plugins.Blockade config struct.
@@ -131,7 +128,7 @@ func (s summary) String() string {
 	return buf.String()
 }
 
-func handle(c *client, config []plugins.Blockade, pre *github.PullRequestEvent) error {
+func handle(ghc githubClient, log *logrus.Entry, config []plugins.Blockade, cp pruneClient, blockCalc blockCalc, pre *github.PullRequestEvent) error {
 	if pre.Action != github.PullRequestActionSynchronize &&
 		pre.Action != github.PullRequestActionOpened &&
 		pre.Action != github.PullRequestActionReopened {
@@ -140,13 +137,13 @@ func handle(c *client, config []plugins.Blockade, pre *github.PullRequestEvent) 
 
 	org := pre.Repo.Owner.Login
 	repo := pre.Repo.Name
-	labels, err := c.ghc.GetIssueLabels(org, repo, pre.Number)
+	issueLabels, err := ghc.GetIssueLabels(org, repo, pre.Number)
 	if err != nil {
 		return err
 	}
 
-	labelPresent := hasBlockedLabel(labels)
-	blockades := compileApplicableBlockades(org, repo, c.log, config)
+	labelPresent := hasBlockedLabel(issueLabels)
+	blockades := compileApplicableBlockades(org, repo, log, config)
 	if len(blockades) == 0 && !labelPresent {
 		// Since the label is missing, we assume that we removed any associated comments.
 		return nil
@@ -154,27 +151,27 @@ func handle(c *client, config []plugins.Blockade, pre *github.PullRequestEvent) 
 
 	var sum summary
 	if len(blockades) > 0 {
-		changes, err := c.ghc.GetPullRequestChanges(org, repo, pre.Number)
+		changes, err := ghc.GetPullRequestChanges(org, repo, pre.Number)
 		if err != nil {
 			return err
 		}
-		sum = c.blockCalc(changes, blockades)
+		sum = blockCalc(changes, blockades)
 	}
 
 	shouldBlock := len(sum) > 0
 	if shouldBlock && !labelPresent {
 		// Add the label and leave a comment explaining why the label was added.
-		if err := c.ghc.AddLabel(org, repo, pre.Number, blockedPathsLabel); err != nil {
+		if err := ghc.AddLabel(org, repo, pre.Number, labels.BlockedPaths); err != nil {
 			return err
 		}
 		msg := plugins.FormatResponse(pre.PullRequest.User.Login, blockedPathsBody, sum.String())
-		return c.ghc.CreateComment(org, repo, pre.Number, msg)
+		return ghc.CreateComment(org, repo, pre.Number, msg)
 	} else if !shouldBlock && labelPresent {
 		// Remove the label and delete any comments created by this plugin.
-		if err := c.ghc.RemoveLabel(org, repo, pre.Number, blockedPathsLabel); err != nil {
+		if err := ghc.RemoveLabel(org, repo, pre.Number, labels.BlockedPaths); err != nil {
 			return err
 		}
-		c.pruner.PruneComments(func(ic github.IssueComment) bool {
+		cp.PruneComments(func(ic github.IssueComment) bool {
 			return strings.Contains(ic.Body, blockedPathsBody)
 		})
 	}
@@ -235,9 +232,9 @@ func calculateBlocks(changes []github.PullRequestChange, blockades []blockade) s
 	return sum
 }
 
-func hasBlockedLabel(labels []github.Label) bool {
-	label := strings.ToLower(blockedPathsLabel)
-	for _, elem := range labels {
+func hasBlockedLabel(githubLabels []github.Label) bool {
+	label := strings.ToLower(labels.BlockedPaths)
+	for _, elem := range githubLabels {
 		if strings.ToLower(elem.Name) == label {
 			return true
 		}

@@ -20,20 +20,20 @@ import (
 	"bytes"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
-	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -216,7 +216,9 @@ func (c *Client) requestRetry(r *request) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode == 409 {
+	if resp.StatusCode == 404 {
+		return nil, NewNotFoundError(fmt.Errorf("body: %s", string(rb)))
+	} else if resp.StatusCode == 409 {
 		return nil, NewConflictError(fmt.Errorf("body: %s", string(rb)))
 	} else if resp.StatusCode == 422 {
 		return nil, NewUnprocessableEntityError(fmt.Errorf("body: %s", string(rb)))
@@ -312,15 +314,15 @@ func NewClientInCluster(namespace string) (*Client, error) {
 // gcloud --project <gcp_project> container clusters describe --zone <zone> <cluster_name>
 type Cluster struct {
 	// The IP address of the cluster's master endpoint.
-	Endpoint string `yaml:"endpoint"`
+	Endpoint string `json:"endpoint"`
 	// Base64-encoded public cert used by clients to authenticate to the
 	// cluster endpoint.
-	ClientCertificate string `yaml:"clientCertificate"`
+	ClientCertificate []byte `json:"clientCertificate"`
 	// Base64-encoded private key used by clients..
-	ClientKey string `yaml:"clientKey"`
+	ClientKey []byte `json:"clientKey"`
 	// Base64-encoded public certificate that is the root of trust for the
 	// cluster.
-	ClusterCACertificate string `yaml:"clusterCaCertificate"`
+	ClusterCACertificate []byte `json:"clusterCaCertificate"`
 }
 
 // NewClientFromFile reads a Cluster object at clusterPath and returns an
@@ -337,16 +339,8 @@ func NewClientFromFile(clusterPath, namespace string) (*Client, error) {
 	return NewClient(&c, namespace)
 }
 
-// ClientMapFromFile reads the file at clustersPath and attempts to load a map of cluster aliases
-// to authenticated clients to the respective clusters.
-// The file at clustersPath is expected to be a yaml map from strings to Cluster structs OR it may
-// simply be a single Cluster struct which will be assigned the alias $DefaultClusterAlias.
-// If the file is an alias map, it must include the alias $DefaultClusterAlias.
-func ClientMapFromFile(clustersPath, namespace string) (map[string]*Client, error) {
-	data, err := ioutil.ReadFile(clustersPath)
-	if err != nil {
-		return nil, err
-	}
+// UnmarshalClusterMap reads a map[string]Cluster in yaml bytes.
+func UnmarshalClusterMap(data []byte) (map[string]Cluster, error) {
 	var raw map[string]Cluster
 	if err := yaml.Unmarshal(data, &raw); err != nil {
 		// If we failed to unmarshal the multicluster format try the single Cluster format.
@@ -355,6 +349,28 @@ func ClientMapFromFile(clustersPath, namespace string) (map[string]*Client, erro
 			return nil, err
 		}
 		raw = map[string]Cluster{DefaultClusterAlias: singleConfig}
+	}
+	return raw, nil
+}
+
+// MarshalClusterMap writes c as yaml bytes.
+func MarshalClusterMap(c map[string]Cluster) ([]byte, error) {
+	return yaml.Marshal(c)
+}
+
+// ClientMapFromFile reads the file at clustersPath and attempts to load a map of cluster aliases
+// to authenticated clients to the respective clusters.
+// The file at clustersPath is expected to be a yaml map from strings to Cluster structs OR it may
+// simply be a single Cluster struct which will be assigned the alias $DefaultClusterAlias.
+// If the file is an alias map, it must include the alias $DefaultClusterAlias.
+func ClientMapFromFile(clustersPath, namespace string) (map[string]*Client, error) {
+	data, err := ioutil.ReadFile(clustersPath)
+	if err != nil {
+		return nil, fmt.Errorf("read error: %v", err)
+	}
+	raw, err := UnmarshalClusterMap(data)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal error: %v", err)
 	}
 	foundDefault := false
 	result := map[string]*Client{}
@@ -376,18 +392,11 @@ func ClientMapFromFile(clustersPath, namespace string) (map[string]*Client, erro
 
 // NewClient returns an authenticated Client using the keys in the Cluster.
 func NewClient(c *Cluster, namespace string) (*Client, error) {
-	cc, err := base64.StdEncoding.DecodeString(c.ClientCertificate)
-	if err != nil {
-		return nil, err
-	}
-	ck, err := base64.StdEncoding.DecodeString(c.ClientKey)
-	if err != nil {
-		return nil, err
-	}
-	ca, err := base64.StdEncoding.DecodeString(c.ClusterCACertificate)
-	if err != nil {
-		return nil, err
-	}
+	// Relies on json encoding/decoding []byte as base64
+	// https://golang.org/pkg/encoding/json/#Marshal
+	cc := c.ClientCertificate
+	ck := c.ClientKey
+	ca := c.ClusterCACertificate
 
 	cert, err := tls.X509KeyPair(cc, ck)
 	if err != nil {
@@ -435,9 +444,9 @@ func (c *Client) ListPods(selector string) ([]Pod, error) {
 	return pl.Items, err
 }
 
-// DeletePod deletes the pod at name in the client's default namespace.
+// DeletePod deletes the pod at name in the client's specified namespace.
 //
-// Analogous to kubectl delete pod
+// Analogous to kubectl delete pod --namespace=client.namespace
 func (c *Client) DeletePod(name string) error {
 	c.log("DeletePod", name)
 	return c.request(&request{
@@ -446,9 +455,9 @@ func (c *Client) DeletePod(name string) error {
 	}, nil)
 }
 
-// CreateProwJob creates a prowjob in the client's default namespace.
+// CreateProwJob creates a prowjob in the client's specified namespace.
 //
-// Analogous to kubectl create prowjob
+// Analogous to kubectl create prowjob --namespace=client.namespace
 func (c *Client) CreateProwJob(j ProwJob) (ProwJob, error) {
 	var representation string
 	if out, err := json.Marshal(j); err == nil {
@@ -486,9 +495,9 @@ func shouldHide(pj *ProwJob, hiddenRepos sets.String, showHiddenOnly bool) bool 
 	return shouldHide
 }
 
-// GetProwJob returns the prowjob at name in the client's default namespace.
+// GetProwJob returns the prowjob at name in the client's specified namespace.
 //
-// Analogous to kubectl get prowjob/NAME
+// Analogous to kubectl get prowjob/NAME --namespace=client.namespace
 func (c *Client) GetProwJob(name string) (ProwJob, error) {
 	c.log("GetProwJob", name)
 	var pj ProwJob
@@ -505,9 +514,9 @@ func (c *Client) GetProwJob(name string) (ProwJob, error) {
 	return pj, err
 }
 
-// ListProwJobs lists prowjobs using the specified labelSelector in the client's default namespace.
+// ListProwJobs lists prowjobs using the specified labelSelector in the client's specified namespace.
 //
-// Analogous to kubectl get prowjobs --selector=SELECTOR
+// Analogous to kubectl get prowjobs --selector=SELECTOR --namespace=client.namespace
 func (c *Client) ListProwJobs(selector string) ([]ProwJob, error) {
 	c.log("ListProwJobs", selector)
 	var jl struct {
@@ -531,7 +540,9 @@ func (c *Client) ListProwJobs(selector string) ([]ProwJob, error) {
 	return jl.Items, err
 }
 
-// DeleteProwJob deletes the prowjob at name in the client's default namespace.
+// DeleteProwJob deletes the prowjob at name in the client's specified namespace.
+//
+// Analogous to kubectl delete prowjob/NAME --namespace=client.namespace
 func (c *Client) DeleteProwJob(name string) error {
 	c.log("DeleteProwJob", name)
 	return c.request(&request{
@@ -540,9 +551,9 @@ func (c *Client) DeleteProwJob(name string) error {
 	}, nil)
 }
 
-// ReplaceProwJob will replace name with job in the client's default namespace.
+// ReplaceProwJob will replace name with job in the client's specified namespace.
 //
-// Analogous to kubectl replace prowjobs/NAME
+// Analogous to kubectl replace prowjobs/NAME --namespace=client.namespace
 func (c *Client) ReplaceProwJob(name string, job ProwJob) (ProwJob, error) {
 	c.log("ReplaceProwJob", name, job)
 	var retJob ProwJob
@@ -554,9 +565,9 @@ func (c *Client) ReplaceProwJob(name string, job ProwJob) (ProwJob, error) {
 	return retJob, err
 }
 
-// CreatePod creates a pod in the client's default namespace.
+// CreatePod creates a pod in the client's specified namespace.
 //
-// Analogous to kubectl create pod
+// Analogous to kubectl create pod --namespace=client.namespace
 func (c *Client) CreatePod(p v1.Pod) (Pod, error) {
 	c.log("CreatePod", p)
 	var retPod Pod
@@ -568,20 +579,46 @@ func (c *Client) CreatePod(p v1.Pod) (Pod, error) {
 	return retPod, err
 }
 
-// GetLog returns the log of the test container in the specified pod, in the client's default namespace.
+// GetLog returns the log of the default container in the specified pod, in the client's specified namespace.
 //
-// Analogous to kubectl logs POD -c test
+// Analogous to kubectl logs pod --namespace=client.namespace
 func (c *Client) GetLog(pod string) ([]byte, error) {
 	c.log("GetLog", pod)
 	return c.requestRetry(&request{
-		path:  fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
-		query: map[string]string{"container": TestContainerName},
+		path: fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
 	})
 }
 
-// CreateConfigMap creates a configmap.
+// GetLogTail returns the last n bytes of the log of the specified container in the specified pod,
+// in the client's specified namespace.
 //
-// Analogous to kubectl create configmap
+// Analogous to kubectl logs pod --tail -1 --limit-bytes n -c container --namespace=client.namespace
+func (c *Client) GetLogTail(pod, container string, n int64) ([]byte, error) {
+	c.log("GetLogTail", pod, n)
+	return c.requestRetry(&request{
+		path: fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
+		query: map[string]string{ // Because we want last n bytes, we fetch all lines and then limit to n bytes
+			"tailLines":  "-1",
+			"container":  container,
+			"limitBytes": strconv.FormatInt(n, 10),
+		},
+	})
+}
+
+// GetContainerLog returns the log of a container in the specified pod, in the client's specified namespace.
+//
+// Analogous to kubectl logs pod -c container --namespace=client.namespace
+func (c *Client) GetContainerLog(pod, container string) ([]byte, error) {
+	c.log("GetContainerLog", pod)
+	return c.requestRetry(&request{
+		path:  fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
+		query: map[string]string{"container": container},
+	})
+}
+
+// CreateConfigMap creates a configmap, in the client's specified namespace.
+//
+// Analogous to kubectl create configmap --namespace=client.namespace
 func (c *Client) CreateConfigMap(content ConfigMap) (ConfigMap, error) {
 	c.log("CreateConfigMap")
 	var retConfigMap ConfigMap
@@ -594,7 +631,9 @@ func (c *Client) CreateConfigMap(content ConfigMap) (ConfigMap, error) {
 	return retConfigMap, err
 }
 
-// GetConfigMap gets the configmap identified.
+// GetConfigMap gets the configmap identified, in the client's specified namespace.
+//
+// Analogous to kubectl get configmap --namespace=client.namespace
 func (c *Client) GetConfigMap(name, namespace string) (ConfigMap, error) {
 	c.log("GetConfigMap", name)
 	if namespace == "" {
@@ -612,7 +651,7 @@ func (c *Client) GetConfigMap(name, namespace string) (ConfigMap, error) {
 //
 // Analogous to kubectl replace configmap
 //
-// If config.Namespace is empty, the client's default namespace is used.
+// If config.Namespace is empty, the client's specified namespace is used.
 // Returns the content returned by the apiserver
 func (c *Client) ReplaceConfigMap(name string, config ConfigMap) (ConfigMap, error) {
 	c.log("ReplaceConfigMap", name)

@@ -1,0 +1,16 @@
+presubmits:
+  kubernetes-sigs/structured-merge-diff:
+  - name: pull-structured-merge-diff-test
+    labels:
+      preset-service-account: "true"
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/structured-merge-diff
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        command:
+        - go
+        args:
+        - test
+        - ./...

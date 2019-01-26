@@ -67,7 +67,7 @@ _k8s_configmap = rule(
 # Supports cluster=kubectl_context, namespace="blah", labels={"app": "fancy"}
 # as well as any args k8s_object supports.
 # 
-# Generates a k8s_object(kind="configmap") with the generated  template.
+# Generates a k8s_object(kind="configmap") with the generated template.
 #
 # See also:
 #   * https://docs.bazel.build/versions/master/skylark/macros.html

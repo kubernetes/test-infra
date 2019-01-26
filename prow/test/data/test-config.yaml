@@ -16,11 +16,7 @@ plank:
 presubmits:
   test-org/test-repo:
   - name: kubernetes-no-decoration
-    agent: kubernetes
     always_run: true
-    context: kubernetes-no-decoration
-    rerun_command: "/test kubernetes-no-decoration"
-    trigger: "(?m)^/test( all| kubernetes-no-decoration),?(\\s+|$)"
     spec:
       containers:
       - image: golang:latest
@@ -28,11 +24,7 @@ presubmits:
         - "test"
         - "./..."
   - name: kubernetes-defaulted-decoration
-    agent: kubernetes
     always_run: true
-    context: kubernetes-defaulted-decoration
-    rerun_command: "/test kubernetes-defaulted-decoration"
-    trigger: "(?m)^/test( all| kubernetes-defaulted-decoration),?(\\s+|$)"
     decorate: true
     spec:
       containers:
@@ -41,23 +33,20 @@ presubmits:
         - "test"
         - "./..."
   - name: kubernetes-explicit-decoration
-    agent: kubernetes
     always_run: true
-    context: kubernetes-explicit-decoration
-    rerun_command: "/test kubernetes-explicit-decoration"
-    trigger: "(?m)^/test( all| kubernetes-explicit-decoration),?(\\s+|$)"
     decorate: true
-    timeout: 1
-    grace_period: 1
-    utility_images:
-      clonerefs: "clonerefs:explicit"
-      initupload: "initupload:explicit"
-      entrypoint: "entrypoint:explicit"
-      sidecar: "sidecar:explicit"
-    gcs_configuration:
-      bucket: "explicit-bucket"
-      path_strategy: "explicit"
-    gcs_credentials_secret: "explicit-service-account"
+    decoration_config:
+      timeout: 1
+      grace_period: 1
+      utility_images:
+        clonerefs: "clonerefs:explicit"
+        initupload: "initupload:explicit"
+        entrypoint: "entrypoint:explicit"
+        sidecar: "sidecar:explicit"
+      gcs_configuration:
+        bucket: "explicit-bucket"
+        path_strategy: "explicit"
+      gcs_credentials_secret: "explicit-service-account"
     spec:
       containers:
       - image: golang:latest

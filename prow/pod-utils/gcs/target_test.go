@@ -63,7 +63,7 @@ func TestPathForSpec(t *testing.T) {
 				Type:    kube.PresubmitJob,
 				Job:     "job",
 				BuildID: "number",
-				Refs: kube.Refs{
+				Refs: &kube.Refs{
 					Org:  "org",
 					Repo: "repo",
 					Pulls: []kube.Pull{
@@ -82,7 +82,7 @@ func TestPathForSpec(t *testing.T) {
 				Type:    kube.PresubmitJob,
 				Job:     "job",
 				BuildID: "number",
-				Refs: kube.Refs{
+				Refs: &kube.Refs{
 					Org:  "org",
 					Repo: "repo",
 					Pulls: []kube.Pull{
@@ -101,7 +101,7 @@ func TestPathForSpec(t *testing.T) {
 				Type:    kube.PresubmitJob,
 				Job:     "job",
 				BuildID: "number",
-				Refs: kube.Refs{
+				Refs: &kube.Refs{
 					Org:  "org",
 					Repo: "repo",
 					Pulls: []kube.Pull{
@@ -174,7 +174,7 @@ func TestLatestBuildForSpec(t *testing.T) {
 			spec: &downwardapi.JobSpec{
 				Type: kube.PresubmitJob,
 				Job:  "pull-kubernetes-unit",
-				Refs: kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
+				Refs: &kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
 			},
 			expected: []string{"pr-logs/directory/pull-kubernetes-unit/latest-build.txt"},
 		},
@@ -183,7 +183,7 @@ func TestLatestBuildForSpec(t *testing.T) {
 			spec: &downwardapi.JobSpec{
 				Type: kube.PresubmitJob,
 				Job:  "pull-kubernetes-unit",
-				Refs: kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
+				Refs: &kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
 			},
 			builder: NewExplicitRepoPathBuilder(),
 			expected: []string{
@@ -196,7 +196,7 @@ func TestLatestBuildForSpec(t *testing.T) {
 			spec: &downwardapi.JobSpec{
 				Type: kube.PresubmitJob,
 				Job:  "pull-kubernetes-unit",
-				Refs: kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
+				Refs: &kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
 			},
 			builder: NewLegacyRepoPathBuilder("kubernetes", "test-infra"),
 			expected: []string{
@@ -209,7 +209,7 @@ func TestLatestBuildForSpec(t *testing.T) {
 			spec: &downwardapi.JobSpec{
 				Type: kube.PresubmitJob,
 				Job:  "pull-kubernetes-unit",
-				Refs: kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
+				Refs: &kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
 			},
 			builder: NewSingleDefaultRepoPathBuilder("defaultorg", "defaultrepo"),
 			expected: []string{
@@ -318,6 +318,14 @@ func TestNewLegacyRepoPathBuilder(t *testing.T) {
 			repo:        "wild",
 			expected:    "other_wild",
 		},
+		{
+			name:        "gerrit",
+			defaultOrg:  "org",
+			defaultRepo: "repo",
+			org:         "gerrit",
+			repo:        "foo/bar",
+			expected:    "gerrit_foo_bar",
+		},
 	}
 
 	for _, test := range testCases {
@@ -369,6 +377,14 @@ func TestNewSingleDefaultRepoPathBuilder(t *testing.T) {
 			repo:        "wild",
 			expected:    "other_wild",
 		},
+		{
+			name:        "gerrit",
+			defaultOrg:  "org",
+			defaultRepo: "repo",
+			org:         "gerrit",
+			repo:        "foo/bar",
+			expected:    "gerrit_foo_bar",
+		},
 	}
 
 	for _, test := range testCases {
@@ -380,7 +396,29 @@ func TestNewSingleDefaultRepoPathBuilder(t *testing.T) {
 }
 
 func TestNewExplicitRepoPathBuilder(t *testing.T) {
-	if expected, actual := "a_b", NewExplicitRepoPathBuilder()("a", "b"); expected != actual {
-		t.Errorf("expected explicit repo path builder to create path segment %q but got %q", expected, actual)
+	testCases := []struct {
+		name     string
+		org      string
+		repo     string
+		expected string
+	}{
+		{
+			name:     "default org and repo",
+			org:      "org",
+			repo:     "repo",
+			expected: "org_repo",
+		},
+		{
+			name:     "gerrit",
+			org:      "gerrit",
+			repo:     "foo/bar",
+			expected: "gerrit_foo_bar",
+		},
+	}
+
+	for _, tc := range testCases {
+		if expected, actual := tc.expected, NewExplicitRepoPathBuilder()(tc.org, tc.repo); expected != actual {
+			t.Errorf("tc %s: expected explicit repo path builder to create path segment %q but got %q", tc.name, expected, actual)
+		}
 	}
 }

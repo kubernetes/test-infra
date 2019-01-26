@@ -1,0 +1,9 @@
+.test-row {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.mdl-data-table .metadata-header th {
+    font-size: 1.2em;
+    color: black;
+}

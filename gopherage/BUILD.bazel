@@ -1,0 +1,47 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/gopherage",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//gopherage/cmd/aggregate:go_default_library",
+        "//gopherage/cmd/diff:go_default_library",
+        "//gopherage/cmd/filter:go_default_library",
+        "//gopherage/cmd/html:go_default_library",
+        "//gopherage/cmd/junit:go_default_library",
+        "//gopherage/cmd/merge:go_default_library",
+        "//vendor/github.com/spf13/cobra:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "gopherage",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//gopherage/cmd/aggregate:all-srcs",
+        "//gopherage/cmd/diff:all-srcs",
+        "//gopherage/cmd/filter:all-srcs",
+        "//gopherage/cmd/html:all-srcs",
+        "//gopherage/cmd/junit:all-srcs",
+        "//gopherage/cmd/merge:all-srcs",
+        "//gopherage/pkg/cov:all-srcs",
+        "//gopherage/pkg/util:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

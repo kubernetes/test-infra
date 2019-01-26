@@ -1,0 +1,82 @@
+{{define "title"}}PR Status{{end}}
+{{define "scripts"}}
+    <link rel="stylesheet" href="/static/labels.css">
+    <link rel="stylesheet" href="/static/dialog-polyfill.css">
+    <script type="text/javascript" src="/static/pr_bundle.min.js"></script>
+    <script type="text/javascript" src="data.js?var=allBuilds"></script>
+    <script type="text/javascript" src="tide.js?var=tideData"></script>
+{{end}}
+{{define "content"}}
+<div id="pr-container">
+
+</div>
+{{end}}
+{{define "extra content"}}
+<dialog id="search-dialog" class="pr-status-dialog mdl-dialog">
+  <h4 class="mdl-dialog__title">Github search query</h4>
+  <div class="mdl-dialog__content">
+    <p>You can query for <strong>pull requests</strong> using Github search syntax.</p>
+    <p>Notice:</p>
+    <ol>
+      <li>
+        <p>The search feature is used to search <strong>pull requests</strong>. We enforce this by dropping any <code>is:issue</code> or <code>type:issue</code> token in the query and will append <code>is:pr</code> to the query if <code>is:pr</code> does not exist.</p>
+      </li>
+      <li>
+        <p>If you do not mention any organization or repository in the query, we will search for pull requests in repositories that use either <strong>Prow</strong> or <strong>Tide</strong>.</p>
+      </li>
+      <li>
+        <p>By default, PR Status will display all of your open pull requests that are configured with either <strong>Prow</strong> or <strong>Tide</strong>.</p>
+      </li>
+    </ol>
+  </div>
+  <div class="mdl-dialog__actions">
+    <button type="button" class="mdl-button close">Close</button>
+  </div>
+</dialog>
+<dialog id="status-help-dialog" class="pr-status-dialog mdl-dialog">
+  <h4 class="mdl-dialog__title"></h4>
+  <div class="mdl-dialog__content">
+  </div>
+  <div class="mdl-dialog__actions">
+    <button type="button" class="mdl-button close">Close</button>
+  </div>
+</dialog>
+<dialog id="query-dialog" class="pr-status-dialog mdl-dialog">
+  <h4 class="mdl-dialog__title">Query Details</h4>
+  <div class="mdl-dialog__content">
+    <div id="query-detail-milestone" class="hidden">
+      <p class="detail-title">Milestone</p>
+      <p class="detail-data"></p>
+    </div>
+    <div id="query-detail-exclude" class="hidden">
+      <p class="detail-title">Excluded branches</p>
+      <p class="detail-data"></p>
+    </div>
+    <div id="query-detail-include" class="hidden">
+      <p class="detail-title">Included branches</p>
+      <p class="detail-data"></p>
+    </div>
+    <p class="detail-title">All required labels</p>
+    <p id="query-all-required"></p>
+    <p class="detail-title">All forbidden labels</p>
+    <p id="query-all-forbidden"></p>
+  </div>
+  <div class="mdl-dialog__actions">
+    <button type="button" class="mdl-button close">Close</button>
+  </div>
+</dialog>
+<dialog id="merge-help-dialog" class="pr-status-dialog mdl-dialog">
+  <h4 class="mdl-dialog__title">How to meet merge requirements?</h4>
+  <div class="mdl-dialog__content">
+    <p>To meet merge requirements, all PR's labels need to satisfy at least one of queries configured for the repo that the PR belongs to.</p>
+    <p>The table below shows all queries for the PR's repo. Each row of the table below shows 2 parts of a query: <strong>required</strong> labels <strong>missing</strong> from the PR and <strong>forbidden</strong> labels that the PR <strong>has</strong>.</p>
+    <p>The PR would be considered as meeting merge requirements once it <strong>obtains all required labels</strong> and <strong>removes all forbidden labels</strong> for at least one row.</p>
+    <p>For more information, see: <a href="https://github.com/kubernetes/community/tree/master/contributors/guide">Kubernetes Contributor Guide</a> & <a href="/command-help">Command Help Page</a></p>
+  </div>
+  <div class="mdl-dialog__actions">
+    <button type="button" class="mdl-button close">Close</button>
+  </div>
+</dialog>
+{{end}}
+
+{{template "page" (settings mobileFriendly "pr" .)}}

@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "es6", "ScriptHost", "es2015.core", "dom.iterable", "es2016.array.include"],
+    "strict": true,
+    "allowSyntheticDefaultImports": true,
+    // Emulate Bazel's workspace path lookup for the benefit of non-bazel tooling.
+    // NB: Bazel ignores whatever we put here, so any other values won't work.
+    "baseUrl": ".",
+    "paths": {
+      "test_infra/*": ["*"]
+    }
+  },
+  "bazelOptions": {
+    // If we don't set this, setting baseUrl/paths makes compiling very noisy for no reason.
+    "suppressTsconfigOverrideWarnings": true
+  },
+  // Bazel doesn't need these, but it prevents other tooling (e.g. VS Code)
+  // from being confused.
+  "exclude": [
+    "bazel-bin",
+    "bazel-out",
+    "bazel-test-infra",
+    "node_modules"
+  ]
+}

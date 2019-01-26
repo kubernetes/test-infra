@@ -1,0 +1,135 @@
+postsubmits:
+  kubernetes/org:
+  - name: post-org-peribolos
+    cluster: test-infra-trusted
+    decorate: true
+    max_concurrency: 1
+    spec:
+      containers:
+      - image: launcher.gcr.io/google/bazel
+        imagePullPolicy: Always
+        command:
+        - bazel
+        args:
+        - run
+        - //admin:update
+        - --
+        - --github-endpoint=http://ghproxy.default.svc.cluster.local
+        - --github-endpoint=https://api.github.com
+        - --github-token-path=/etc/github-token/oauth
+        - --tokens=1200
+        - --confirm
+        volumeMounts:
+        - name: github
+          mountPath: /etc/github-token
+      volumes:
+      - name: github
+        secret:
+          secretName: oauth-token
+  kubernetes/test-infra:
+  - name: post-test-infra-deploy-prow
+    cluster: test-infra-trusted
+    decorate: true
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20181107-d88dbbf
+        command:
+        - prow/deploy.sh
+        args:
+        - --confirm
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /creds/service-account.json
+        volumeMounts:
+        - name: creds
+          mountPath: /creds
+      volumes:
+      - name: creds
+        secret:
+          secretName: deployer-service-account
+
+  - name: post-test-infra-push-prow
+    cluster: test-infra-trusted
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20181107-d88dbbf
+        command:
+        - prow/push.sh
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /creds/service-account.json
+        volumeMounts:
+        - name: creds
+          mountPath: /creds
+      volumes:
+      - name: creds
+        secret:
+          secretName: pusher-service-account
+
+periodics:
+- interval: 24h
+  name: ci-org-peribolos
+  cluster: test-infra-trusted
+  decorate: true
+  max_concurrency: 1
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: master
+  spec:
+    containers:
+    - image: launcher.gcr.io/google/bazel
+      imagePullPolicy: Always
+      command:
+      - bazel
+      args:
+      - run
+      - //admin:update
+      - --
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-endpoint=https://api.github.com
+      - --github-token-path=/etc/github-token/oauth
+      - --tokens=1200
+      - --confirm
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+    volumes:
+    - name: github
+      secret:
+        secretName: oauth-token
+- cron: "05 15 * * 1-5"  # Run at 7:05 PST (15:05 UTC) Mon-Fri
+  name: ci-test-infra-autobump-prow
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:v20181117-55a41ad84-0.18.1
+      command:
+      - prow/autobump.sh
+      args:
+      - k8s-ci-robot
+      - /etc/github-token/oauth
+      - "Kubernetes Prow Robot"
+      - "k8s.ci.robot@gmail.com"
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+      - name: ssh
+        mountPath: /root/.ssh
+    volumes:
+    - name: github
+      secret:
+        secretName: oauth-token
+    - name: ssh
+      secret:
+        secretName: k8s-ci-robot-ssh-keys
+        defaultMode: 0400

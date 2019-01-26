@@ -19,6 +19,7 @@ package crds
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	"k8s.io/test-infra/boskos/common"
 
@@ -38,10 +39,58 @@ const (
 	version = "v1"
 )
 
-var (
-	kubeConfig = flag.String("kubeconfig", "", "absolute path to the kubeConfig file")
-	namespace  = flag.String("namespace", v1.NamespaceDefault, "namespace to install on")
-)
+// KubernetesClientOptions are flag options used to create a kube client.
+type KubernetesClientOptions struct {
+	inMemory   bool
+	kubeConfig string
+	namespace  string
+}
+
+// AddFlags adds kube client flags to existing FlagSet.
+func (o *KubernetesClientOptions) AddFlags(fs *flag.FlagSet) {
+	fs.StringVar(&o.namespace, "namespace", v1.NamespaceDefault, "namespace to install on")
+	fs.StringVar(&o.kubeConfig, "kubeconfig", "", "absolute path to the kubeConfig file")
+	fs.BoolVar(&o.inMemory, "in_memory", false, "Use in memory client instead of CRD")
+}
+
+// Validate validates Kubernetes client options.
+func (o *KubernetesClientOptions) Validate() error {
+	if o.kubeConfig != "" {
+		if _, err := os.Stat(o.kubeConfig); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Client returns a ClientInterface based on the flags provided.
+func (o *KubernetesClientOptions) Client(t Type) (ClientInterface, error) {
+	if o.inMemory {
+		return newDummyClient(t), nil
+	}
+	return o.newCRDClient(t)
+}
+
+// newClientFromFlags creates a CRD rest client from provided flags.
+func (o *KubernetesClientOptions) newCRDClient(t Type) (*Client, error) {
+	config, scheme, err := createRESTConfig(o.kubeConfig, t)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = registerResource(config, t); err != nil {
+		return nil, err
+	}
+	// creates the client
+	var restClient *rest.RESTClient
+	restClient, err = rest.RESTClientFor(config)
+	if err != nil {
+		return nil, err
+	}
+	rc := Client{cl: restClient, ns: o.namespace, t: t,
+		codec: runtime.NewParameterCodec(scheme)}
+	return &rc, nil
+}
 
 // Type defines a Custom Resource Definition (CRD) Type.
 type Type struct {
@@ -113,9 +162,8 @@ func registerResource(config *rest.Config, t Type) error {
 			Name: fmt.Sprintf("%s.%s", t.Plural, group),
 		},
 		Spec: apiextensionsv1beta1.CustomResourceDefinitionSpec{
-			Group:   group,
-			Version: version,
-			Scope:   apiextensionsv1beta1.NamespaceScoped,
+			Group: group,
+			Scope: apiextensionsv1beta1.NamespaceScoped,
 			Names: apiextensionsv1beta1.CustomResourceDefinitionNames{
 				Singular: t.Singular,
 				Plural:   t.Plural,
@@ -130,12 +178,6 @@ func registerResource(config *rest.Config, t Type) error {
 	return nil
 }
 
-// NewClient creates a CRD client for a given resource type.
-func NewClient(cl *rest.RESTClient, scheme *runtime.Scheme, namespace string, t Type) Client {
-	return Client{cl: cl, ns: namespace, t: t,
-		codec: runtime.NewParameterCodec(scheme)}
-}
-
 // newDummyClient creates a in memory client representation for testing, such that we do not need to use a kubernetes API Server.
 func newDummyClient(t Type) *dummyClient {
 	c := &dummyClient{
@@ -143,26 +185,6 @@ func newDummyClient(t Type) *dummyClient {
 		objects: make(map[string]Object),
 	}
 	return c
-}
-
-// newClientFromFlags creates a CRD rest client from provided flags.
-func newClientFromFlags(t Type) (*Client, error) {
-	config, scheme, err := createRESTConfig(*kubeConfig, t)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = registerResource(config, t); err != nil {
-		return nil, err
-	}
-	// creates the client
-	var restClient *rest.RESTClient
-	restClient, err = rest.RESTClientFor(config)
-	if err != nil {
-		return nil, err
-	}
-	rc := NewClient(restClient, scheme, *namespace, t)
-	return &rc, nil
 }
 
 // ClientInterface is used for testing.

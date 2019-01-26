@@ -14,7 +14,7 @@ go run prow/cmd/hook/main.go
 --config-path=prow/config.yaml
 --plugin-config=prow/plugins.yaml
 --hmac-secret-file=path/to/hmac
---github-token-file=path/to/github-token
+-github-token-path=path/to/github-token
 ```
 
 ## Usage

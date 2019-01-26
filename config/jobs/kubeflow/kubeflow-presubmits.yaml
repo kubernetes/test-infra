@@ -1,11 +1,7 @@
 presubmits:
   kubeflow/examples:
   - name: kubeflow-examples-presubmit
-    context: kubeflow-examples-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-examples-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-examples-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -17,11 +13,7 @@ presubmits:
 
   kubeflow/kubeflow:
   - name: kubeflow-presubmit
-    context: kubeflow-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-presubmit),?(\\s+|$)"
     labels:
       preset-service-account: "true"
     spec:
@@ -31,11 +23,7 @@ presubmits:
 
   kubeflow/pytorch-operator:
   - name: kubeflow-pytorch-operator-presubmit
-    context: kubeflow-pytorch-operator-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-pytorch-operator-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-pytorch-operator-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -47,11 +35,7 @@ presubmits:
 
   kubeflow/reporting:
   - name: kubeflow-reporting-presubmit
-    context: kubeflow-reporting-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-reporting-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-reporting-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -63,11 +47,7 @@ presubmits:
 
   kubeflow/website:
   - name: kubeflow-website-presubmit
-    context: kubeflow-website-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-website-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-website-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -79,11 +59,7 @@ presubmits:
 
   kubeflow/testing:
   - name: kubeflow-testing-presubmit
-    context: kubeflow-testing-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-testing-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-testing-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -95,11 +71,7 @@ presubmits:
 
   kubeflow/tf-operator:
   - name: kubeflow-tf-operator-presubmit
-    context: kubeflow-tf-operator-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-tf-operator-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-tf-operator-presubmit),?(\\s+|$)"
     labels:
       preset-service-account: "true"
     spec:
@@ -109,11 +81,7 @@ presubmits:
 
   kubeflow/katib:
   - name: kubeflow-katib-presubmit
-    context: kubeflow-katib-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-katib-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-katib-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -125,11 +93,7 @@ presubmits:
 
   kubeflow/experimental-kvc:
   - name: kubeflow-experimental-kvc-presubmit
-    context: kubeflow-experimental-kvc-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-experimental-kvc-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-experimental-kvc-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -141,11 +105,7 @@ presubmits:
 
   kubeflow/experimental-seldon:
   - name: kubeflow-experimental-seldon-presubmit
-    context: kubeflow-experimental-seldon-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-experimental-seldon-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-experimental-seldon-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -157,11 +117,7 @@ presubmits:
 
   kubeflow/experimental-beagle:
   - name: kubeflow-experimental-beagle-presubmit
-    context: kubeflow-experimental-beagle-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-experimental-beagle-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-experimental-beagle-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -173,11 +129,7 @@ presubmits:
 
   kubeflow/caffe2-operator:
   - name: kubeflow-caffe2-operator-presubmit
-    context: kubeflow-caffe2-operator-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-caffe2-operator-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-caffe2-operator-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -189,11 +141,7 @@ presubmits:
 
   kubeflow/kubebench:
   - name: kubeflow-kubebench-presubmit
-    context: kubeflow-kubebench-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-kubebench-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-kubebench-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -205,11 +153,7 @@ presubmits:
 
   kubeflow/mpi-operator:
   - name: kubeflow-mpi-operator-presubmit
-    context: kubeflow-mpi-operator-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-mpi-operator-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-mpi-operator-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -218,3 +162,104 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
+
+  kubeflow/chainer-operator:
+  - name: kubeflow-chainer-operator-presubmit
+    always_run: true         # Run for every PR, or only when requested.
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/mxnet-operator:
+  - name: kubeflow-mxnet-operator-presubmit
+    always_run: true         # Run for every PR, or only when requested.
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/arena:
+  - name: kubeflow-arena-presubmit
+    always_run: true         # Run for every PR, or only when requested.
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/pipelines:
+  - name: kubeflow-pipeline-build-image
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.10
+        command:
+        - ./test/presubmit-tests.sh
+        args:
+        - --workflow_file
+        - build_image.yaml
+    run_after_success:
+    - name: kubeflow-pipeline-e2e-test
+      always_run: true
+      decorate: true
+      labels:
+        preset-service-account: "true"
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.10
+          command:
+          - ./test/presubmit-tests-with-pipeline-deployment.sh
+          args:
+          - --workflow_file
+          - e2e_test_gke_v2.yaml
+          - --test_result_folder
+          - e2e_test
+    - name: kubeflow-pipeline-sample-test
+      always_run: true
+      decorate: true
+      skip_report: true
+      labels:
+        preset-service-account: "true"
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.10
+          command:
+          - ./test/presubmit-tests-with-pipeline-deployment.sh
+          args:
+          - --workflow_file
+          - sample_test_v2.yaml
+          - --test_result_folder
+          - sample_test
+          - --timeout
+          - "3600"
+    - name: kubeflow-pipeline-e2e-test-gce-minikube
+      always_run: true
+      decorate: true
+      skip_report: true
+      labels:
+        preset-service-account: "true"
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.10
+          command:
+          - ./test/presubmit-tests-gce-minikube.sh
+          args:
+          - --workflow_file
+          - e2e_test_gke.yaml
+          - --test_result_folder
+          - e2e_test_gke

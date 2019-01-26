@@ -15,6 +15,7 @@
 # This file builds an image for the log exporter tool. For more info,
 # have a look at the tool's README.md file.
 
+# Base image must have 'journalctl' binary.
 FROM fedora
 LABEL maintainer="Shyam Jeedigunta <shyamjvs@google.com>"
 

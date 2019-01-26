@@ -23,22 +23,25 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/repoowners"
 )
 
 type fakeGithubClient struct {
+	pr        *github.PullRequest
 	changes   []github.PullRequestChange
 	requested []string
 }
 
-func newFakeGithubClient(filesChanged []string) *fakeGithubClient {
+func newFakeGithubClient(pr *github.PullRequest, filesChanged []string) *fakeGithubClient {
 	changes := make([]github.PullRequestChange, 0, len(filesChanged))
 	for _, name := range filesChanged {
 		changes = append(changes, github.PullRequestChange{Filename: name})
 	}
-	return &fakeGithubClient{changes: changes}
+	return &fakeGithubClient{pr: pr, changes: changes}
 }
 
 func (c *fakeGithubClient) RequestReview(org, repo string, number int, logins []string) error {
@@ -68,12 +71,25 @@ func (c *fakeGithubClient) GetPullRequestChanges(org, repo string, num int) ([]g
 	return c.changes, nil
 }
 
+func (c *fakeGithubClient) GetPullRequest(org, repo string, num int) (*github.PullRequest, error) {
+	return c.pr, nil
+}
+
+type fakeRepoownersClient struct {
+	foc *fakeOwnersClient
+}
+
+func (froc fakeRepoownersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
+	return froc.foc, nil
+}
+
 type fakeOwnersClient struct {
-	owners        map[string]string
-	approvers     map[string]sets.String
-	leafApprovers map[string]sets.String
-	reviewers     map[string]sets.String
-	leafReviewers map[string]sets.String
+	owners            map[string]string
+	approvers         map[string]sets.String
+	leafApprovers     map[string]sets.String
+	reviewers         map[string]sets.String
+	requiredReviewers map[string]sets.String
+	leafReviewers     map[string]sets.String
 }
 
 func (foc *fakeOwnersClient) Approvers(path string) sets.String {
@@ -92,12 +108,24 @@ func (foc *fakeOwnersClient) Reviewers(path string) sets.String {
 	return foc.reviewers[path]
 }
 
+func (foc *fakeOwnersClient) RequiredReviewers(path string) sets.String {
+	return foc.requiredReviewers[path]
+}
+
 func (foc *fakeOwnersClient) LeafReviewers(path string) sets.String {
 	return foc.leafReviewers[path]
 }
 
 func (foc *fakeOwnersClient) FindReviewersOwnersForFile(path string) string {
 	return foc.owners[path]
+}
+
+func (foc *fakeOwnersClient) FindLabelsForFile(path string) sets.String {
+	return sets.String{}
+}
+
+func (foc *fakeOwnersClient) IsNoParentOwners(path string) bool {
+	return false
 }
 
 var (
@@ -117,6 +145,12 @@ var (
 
 		"e.go":  sets.NewString("erick", "evan"),
 		"ee.go": sets.NewString("erick", "evan"),
+		"f.go":  sets.NewString("author", "non-author"),
+	}
+	requiredReviewers = map[string]sets.String{
+		"a.go": sets.NewString("ben"),
+
+		"ee.go": sets.NewString("chris", "charles"),
 	}
 	leafReviewers = map[string]sets.String{
 		"a.go":  sets.NewString("alice"),
@@ -126,6 +160,7 @@ var (
 
 		"e.go":  sets.NewString("erick", "ellen"),
 		"ee.go": sets.NewString("erick", "ellen"),
+		"f.go":  sets.NewString("author"),
 	}
 	testcases = []struct {
 		name                       string
@@ -151,19 +186,20 @@ var (
 			name:              "two files, 2 leaf reviewers, 1 common parent, request 2",
 			filesChanged:      []string{"a.go", "b.go"},
 			reviewerCount:     2,
-			expectedRequested: []string{"alice", "bob"},
+			expectedRequested: []string{"alice", "ben", "bob"},
 		},
 		{
 			name:              "two files, 2 leaf reviewers, 1 common parent, request 3",
 			filesChanged:      []string{"a.go", "b.go"},
 			reviewerCount:     3,
-			expectedRequested: []string{"alice", "bob", "al"},
+			expectedRequested: []string{"alice", "ben", "bob", "al"},
 		},
 		{
 			name:              "one files, 1 leaf reviewers, request 1",
 			filesChanged:      []string{"a.go"},
 			reviewerCount:     1,
-			expectedRequested: []string{"alice"},
+			maxReviewerCount:  1,
+			expectedRequested: []string{"alice", "ben"},
 		},
 		{
 			name:              "one file, 2 leaf reviewer, 2 parent reviewers (1 dup), request 3",
@@ -188,15 +224,21 @@ var (
 			name:              "two files, 2 leaf reviewers, 1 common parent, request 1",
 			filesChanged:      []string{"a.go", "b.go"},
 			reviewerCount:     1,
-			expectedRequested: []string{"alice", "bob"},
+			expectedRequested: []string{"alice", "ben", "bob"},
 		},
 		{
-			name:                       "two files, 2 leaf reviewers, 1 common parent, request 1, limit 1",
+			name:                       "two files, 2 leaf reviewers, 1 common parent, request 1, limit 2",
 			filesChanged:               []string{"a.go", "b.go"},
 			reviewerCount:              1,
 			maxReviewerCount:           1,
-			expectedRequested:          []string{"alice"},
-			alternateExpectedRequested: []string{"bob"},
+			expectedRequested:          []string{"alice", "ben"},
+			alternateExpectedRequested: []string{"ben", "bob"},
+		},
+		{
+			name:              "exclude author",
+			filesChanged:      []string{"f.go"},
+			reviewerCount:     1,
+			expectedRequested: []string{"non-author"},
 		},
 	}
 )
@@ -205,20 +247,24 @@ var (
 // reviews from the correct number of unique users when ExcludeApprovers is
 // true.
 func TestHandleWithExcludeApproversOnlyReviewers(t *testing.T) {
-	foc := &fakeOwnersClient{
-		owners:        owners,
-		reviewers:     reviewers,
-		leafReviewers: leafReviewers,
+	froc := &fakeRepoownersClient{
+		foc: &fakeOwnersClient{
+			owners:            owners,
+			reviewers:         reviewers,
+			requiredReviewers: requiredReviewers,
+			leafReviewers:     leafReviewers,
+		},
 	}
 
 	for _, tc := range testcases {
-		fghc := newFakeGithubClient(tc.filesChanged)
-		pre := &github.PullRequestEvent{
-			Number:      5,
-			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
-			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
-		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, true, pre); err != nil {
+		pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}}
+		repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
+		fghc := newFakeGithubClient(&pr, tc.filesChanged)
+
+		if err := handle(
+			fghc, froc, logrus.WithField("plugin", PluginName),
+			&tc.reviewerCount, nil, tc.maxReviewerCount, true, &repo, &pr,
+		); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}
@@ -243,20 +289,24 @@ func TestHandleWithExcludeApproversOnlyReviewers(t *testing.T) {
 // The owners fixture and test cases should always be the same as the ones in
 // TestHandleWithExcludeApprovers.
 func TestHandleWithoutExcludeApproversNoReviewers(t *testing.T) {
-	foc := &fakeOwnersClient{
-		owners:        owners,
-		approvers:     reviewers,
-		leafApprovers: leafReviewers,
+	froc := &fakeRepoownersClient{
+		foc: &fakeOwnersClient{
+			owners:            owners,
+			approvers:         reviewers,
+			leafApprovers:     leafReviewers,
+			requiredReviewers: requiredReviewers,
+		},
 	}
 
 	for _, tc := range testcases {
-		fghc := newFakeGithubClient(tc.filesChanged)
-		pre := &github.PullRequestEvent{
-			Number:      5,
-			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
-			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
-		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, false, pre); err != nil {
+		pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}}
+		repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
+		fghc := newFakeGithubClient(&pr, tc.filesChanged)
+
+		if err := handle(
+			fghc, froc, logrus.WithField("plugin", PluginName),
+			&tc.reviewerCount, nil, tc.maxReviewerCount, false, &repo, &pr,
+		); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}
@@ -277,48 +327,50 @@ func TestHandleWithoutExcludeApproversNoReviewers(t *testing.T) {
 }
 
 func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
-	foc := &fakeOwnersClient{
-		owners: map[string]string{
-			"a.go":  "1",
-			"b.go":  "2",
-			"bb.go": "3",
-			"c.go":  "4",
+	froc := &fakeRepoownersClient{
+		foc: &fakeOwnersClient{
+			owners: map[string]string{
+				"a.go":  "1",
+				"b.go":  "2",
+				"bb.go": "3",
+				"c.go":  "4",
 
-			"e.go":  "5",
-			"ee.go": "5",
-		},
-		approvers: map[string]sets.String{
-			"a.go": sets.NewString("al"),
-			"b.go": sets.NewString("jeff"),
-			"c.go": sets.NewString("jeff"),
+				"e.go":  "5",
+				"ee.go": "5",
+			},
+			approvers: map[string]sets.String{
+				"a.go": sets.NewString("al"),
+				"b.go": sets.NewString("jeff"),
+				"c.go": sets.NewString("jeff"),
 
-			"e.go":  sets.NewString(),
-			"ee.go": sets.NewString("larry"),
-		},
-		leafApprovers: map[string]sets.String{
-			"a.go": sets.NewString("alice"),
-			"b.go": sets.NewString("brad"),
-			"c.go": sets.NewString("evan"),
+				"e.go":  sets.NewString(),
+				"ee.go": sets.NewString("larry"),
+			},
+			leafApprovers: map[string]sets.String{
+				"a.go": sets.NewString("alice"),
+				"b.go": sets.NewString("brad"),
+				"c.go": sets.NewString("evan"),
 
-			"e.go":  sets.NewString("erick", "evan"),
-			"ee.go": sets.NewString("erick", "evan"),
-		},
-		reviewers: map[string]sets.String{
-			"a.go": sets.NewString("al"),
-			"b.go": sets.NewString(),
-			"c.go": sets.NewString("charles"),
+				"e.go":  sets.NewString("erick", "evan"),
+				"ee.go": sets.NewString("erick", "evan"),
+			},
+			reviewers: map[string]sets.String{
+				"a.go": sets.NewString("al"),
+				"b.go": sets.NewString(),
+				"c.go": sets.NewString("charles"),
 
-			"e.go":  sets.NewString("erick", "evan"),
-			"ee.go": sets.NewString("erick", "evan"),
-		},
-		leafReviewers: map[string]sets.String{
-			"a.go":  sets.NewString("alice"),
-			"b.go":  sets.NewString("bob"),
-			"bb.go": sets.NewString("bob", "ben"),
-			"c.go":  sets.NewString("cole", "carl", "chad"),
+				"e.go":  sets.NewString("erick", "evan"),
+				"ee.go": sets.NewString("erick", "evan"),
+			},
+			leafReviewers: map[string]sets.String{
+				"a.go":  sets.NewString("alice"),
+				"b.go":  sets.NewString("bob"),
+				"bb.go": sets.NewString("bob", "ben"),
+				"c.go":  sets.NewString("cole", "carl", "chad"),
 
-			"e.go":  sets.NewString("erick", "ellen"),
-			"ee.go": sets.NewString("erick", "ellen"),
+				"e.go":  sets.NewString("erick", "ellen"),
+				"ee.go": sets.NewString("erick", "ellen"),
+			},
 		},
 	}
 
@@ -368,13 +420,13 @@ func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		fghc := newFakeGithubClient(tc.filesChanged)
-		pre := &github.PullRequestEvent{
-			Number:      5,
-			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
-			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
-		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, false, pre); err != nil {
+		pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}}
+		repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
+		fghc := newFakeGithubClient(&pr, tc.filesChanged)
+		if err := handle(
+			fghc, froc, logrus.WithField("plugin", PluginName),
+			&tc.reviewerCount, nil, tc.maxReviewerCount, false, &repo, &pr,
+		); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}
@@ -395,17 +447,21 @@ func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
 }
 
 func TestHandleOld(t *testing.T) {
-	foc := &fakeOwnersClient{
-		reviewers: map[string]sets.String{
-			"c.go": sets.NewString("charles"),
-			"d.go": sets.NewString("dan"),
-			"e.go": sets.NewString("erick", "evan"),
-		},
-		leafReviewers: map[string]sets.String{
-			"a.go": sets.NewString("alice"),
-			"b.go": sets.NewString("bob"),
-			"c.go": sets.NewString("cole", "carl", "chad"),
-			"e.go": sets.NewString("erick"),
+	froc := &fakeRepoownersClient{
+		foc: &fakeOwnersClient{
+			reviewers: map[string]sets.String{
+				"c.go": sets.NewString("charles"),
+				"d.go": sets.NewString("dan"),
+				"e.go": sets.NewString("erick", "evan"),
+				"f.go": sets.NewString("author", "non-author"),
+			},
+			leafReviewers: map[string]sets.String{
+				"a.go": sets.NewString("alice"),
+				"b.go": sets.NewString("bob"),
+				"c.go": sets.NewString("cole", "carl", "chad"),
+				"e.go": sets.NewString("erick"),
+				"f.go": sets.NewString("author"),
+			},
 		},
 	}
 
@@ -457,23 +513,191 @@ func TestHandleOld(t *testing.T) {
 			reviewerCount:     2,
 			expectedRequested: []string{"erick", "evan"},
 		},
+		{
+			name:              "exclude author",
+			filesChanged:      []string{"f.go"},
+			reviewerCount:     1,
+			expectedRequested: []string{"non-author"},
+		},
 	}
 	for _, tc := range testcases {
-		fghc := newFakeGithubClient(tc.filesChanged)
-		pre := &github.PullRequestEvent{
-			Number:      5,
-			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
-			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
-		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), nil, &tc.reviewerCount, 0, false, pre); err != nil {
-			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
-			continue
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}}
+			repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
+			fghc := newFakeGithubClient(&pr, tc.filesChanged)
 
-		sort.Strings(fghc.requested)
-		sort.Strings(tc.expectedRequested)
-		if !reflect.DeepEqual(fghc.requested, tc.expectedRequested) {
-			t.Errorf("[%s] expected the requested reviewers to be %q, but got %q.", tc.name, tc.expectedRequested, fghc.requested)
-		}
+			err := handle(
+				fghc, froc, logrus.WithField("plugin", PluginName),
+				nil, &tc.reviewerCount, 0, false, &repo, &pr,
+			)
+			if err != nil {
+				t.Fatalf("unexpected error from handle: %v", err)
+			}
+
+			sort.Strings(fghc.requested)
+			sort.Strings(tc.expectedRequested)
+			if !reflect.DeepEqual(fghc.requested, tc.expectedRequested) {
+				t.Fatalf("expected the requested reviewers to be %q, but got %q.", tc.expectedRequested, fghc.requested)
+			}
+		})
+	}
+}
+
+func TestHandlePullRequest(t *testing.T) {
+	froc := &fakeRepoownersClient{
+		foc: &fakeOwnersClient{
+			owners: map[string]string{
+				"a.go": "1",
+			},
+			leafReviewers: map[string]sets.String{
+				"a.go": sets.NewString("al"),
+			},
+		},
+	}
+
+	var testcases = []struct {
+		name              string
+		action            github.PullRequestEventAction
+		body              string
+		filesChanged      []string
+		reviewerCount     int
+		expectedRequested []string
+	}{
+		{
+			name:              "PR opened",
+			action:            github.PullRequestActionOpened,
+			body:              "/auto-cc",
+			filesChanged:      []string{"a.go"},
+			expectedRequested: []string{"al"},
+		},
+		{
+			name:         "PR opened with /cc command",
+			action:       github.PullRequestActionOpened,
+			body:         "/cc",
+			filesChanged: []string{"a.go"},
+		},
+		{
+			name:         "PR closed",
+			action:       github.PullRequestActionClosed,
+			body:         "/auto-cc",
+			filesChanged: []string{"a.go"},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}, Body: tc.body}
+			repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
+			fghc := newFakeGithubClient(&pr, tc.filesChanged)
+			config := plugins.Blunderbuss{
+				ReviewerCount:    &tc.reviewerCount,
+				FileWeightCount:  nil,
+				MaxReviewerCount: 0,
+				ExcludeApprovers: false,
+			}
+
+			if err := handlePullRequest(
+				fghc, froc, logrus.WithField("plugin", PluginName),
+				config, tc.action, &pr, &repo,
+			); err != nil {
+				t.Fatalf("unexpected error from handle: %v", err)
+			}
+
+			sort.Strings(fghc.requested)
+			sort.Strings(tc.expectedRequested)
+			if !reflect.DeepEqual(fghc.requested, tc.expectedRequested) {
+				t.Fatalf("expected the requested reviewers to be %q, but got %q.", tc.expectedRequested, fghc.requested)
+			}
+		})
+	}
+}
+
+func TestHandleGenericComment(t *testing.T) {
+	froc := &fakeRepoownersClient{
+		foc: &fakeOwnersClient{
+			owners: map[string]string{
+				"a.go": "1",
+			},
+			leafReviewers: map[string]sets.String{
+				"a.go": sets.NewString("al"),
+			},
+		},
+	}
+
+	var testcases = []struct {
+		name              string
+		action            github.GenericCommentEventAction
+		issueState        string
+		isPR              bool
+		body              string
+		filesChanged      []string
+		reviewerCount     int
+		expectedRequested []string
+	}{
+		{
+			name:              "comment with a valid command in an open PR triggers auto-assignment",
+			action:            github.GenericCommentActionCreated,
+			issueState:        "open",
+			isPR:              true,
+			body:              "/auto-cc",
+			filesChanged:      []string{"a.go"},
+			expectedRequested: []string{"al"},
+		},
+		{
+			name:         "comment with an invalid command in an open PR will not trigger auto-assignment",
+			action:       github.GenericCommentActionCreated,
+			issueState:   "open",
+			isPR:         true,
+			body:         "/automatic-review",
+			filesChanged: []string{"a.go"},
+		},
+		{
+			name:         "comment with a valid command in a closed PR will not trigger auto-assignment",
+			action:       github.GenericCommentActionCreated,
+			issueState:   "closed",
+			isPR:         true,
+			body:         "/auto-cc",
+			filesChanged: []string{"a.go"},
+		},
+		{
+			name:         "comment deleted from an open PR will not trigger auto-assignment",
+			action:       github.GenericCommentActionDeleted,
+			issueState:   "open",
+			isPR:         true,
+			body:         "/auto-cc",
+			filesChanged: []string{"a.go"},
+		},
+		{
+			name:       "comment with valid command in an open issue will not trigger auto-assignment",
+			action:     github.GenericCommentActionCreated,
+			issueState: "open",
+			isPR:       false,
+			body:       "/auto-cc",
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}}
+			fghc := newFakeGithubClient(&pr, tc.filesChanged)
+			repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
+			config := plugins.Blunderbuss{
+				ReviewerCount:    &tc.reviewerCount,
+				FileWeightCount:  nil,
+				MaxReviewerCount: 0,
+				ExcludeApprovers: false,
+			}
+
+			if err := handleGenericComment(
+				fghc, froc, logrus.WithField("plugin", PluginName), config,
+				tc.action, tc.isPR, pr.Number, tc.issueState, &repo, tc.body,
+			); err != nil {
+				t.Fatalf("unexpected error from handle: %v", err)
+			}
+
+			sort.Strings(fghc.requested)
+			sort.Strings(tc.expectedRequested)
+			if !reflect.DeepEqual(fghc.requested, tc.expectedRequested) {
+				t.Fatalf("expected the requested reviewers to be %q, but got %q.", tc.expectedRequested, fghc.requested)
+			}
+		})
 	}
 }

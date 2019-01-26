@@ -12,20 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Copyright 2016 The Kubernetes Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import json
 import logging
 import urllib
@@ -40,15 +26,20 @@ import view_base
 
 class Endpoint(view_base.BaseHandler):
     def github_client(self):
-        if not self.app.config['github_client']:
+        client_key = 'github_client'
+        if '.appspot.com' not in self.request.host and \
+            not self.request.host.startswith('localhost:'):
+            client_key = 'github_client_' + self.request.host
+        if not self.app.config.get(client_key):
             try:
-                self.app.config['github_client'] = secrets.get('github_client')
+                self.app.config[client_key] = secrets.get(client_key)
             except KeyError:
                 self.abort(500,
                            body_template=(
                            'An admin must <a href="/config">'
-                           'configure Github secrets</a> first.'))
-        client = self.app.config['github_client']
+                           'configure Github secrets</a> for %r first.'
+                           % self.request.host))
+        client = self.app.config[client_key]
         return client['id'], client['secret']
 
     def maybe_redirect(self, target):

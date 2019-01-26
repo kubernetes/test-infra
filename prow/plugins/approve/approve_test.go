@@ -19,17 +19,19 @@ package approve
 import (
 	"fmt"
 	"io/ioutil"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/ghodss/yaml"
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/approve/approvers"
 	"k8s.io/test-infra/prow/repoowners"
@@ -39,7 +41,7 @@ const prNumber = 1
 
 // TestPluginConfig validates that there are no duplicate repos in the approve plugin config.
 func TestPluginConfig(t *testing.T) {
-	pa := &plugins.PluginAgent{}
+	pa := &plugins.ConfigAgent{}
 
 	b, err := ioutil.ReadFile("../../plugins.yaml")
 	if err != nil {
@@ -124,7 +126,7 @@ func newFakeGithubClient(hasLabel, humanApproved bool, files []string, comments 
 		changes = append(changes, github.PullRequestChange{Filename: file})
 	}
 	return &fakegithub.FakeClient{
-		LabelsAdded:        labels,
+		IssueLabelsAdded:   labels,
 		PullRequestChanges: map[int][]github.PullRequestChange{prNumber: changes},
 		IssueComments:      map[int][]github.IssueComment{prNumber: comments},
 		IssueEvents:        map[int][]github.ListedIssueEvent{prNumber: events},
@@ -196,7 +198,7 @@ func TestHandle(t *testing.T) {
 
 This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -232,7 +234,7 @@ We suggest the following additional approver: **cjwagner**
 
 If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -266,7 +268,7 @@ This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
 
 Associated issue requirement bypassed by: *<a href="" title="Approved">Alice</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -301,7 +303,7 @@ This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
 
 Associated issue: *#42*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -346,7 +348,7 @@ This pull-request has been approved by: *<a href="" title="Approved">ALIcE</a>*,
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with `+"`/approve no-issue`"+`
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -399,7 +401,7 @@ If they are not already assigned, you can assign the PR to them by writing ` + "
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -483,7 +485,7 @@ This pull-request has been approved by: *<a href="" title="Approved">alice</a>*
 
 Associated issue: *#1*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -549,7 +551,7 @@ Approval requirements bypassed by manually added approval.
 
 This pull-request has been approved by:
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -596,7 +598,7 @@ We suggest the following additional approver: **alice**
 
 If they are not already assigned, you can assign the PR to them by writing `+"`/assign @alice`"+` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -639,7 +641,7 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 
 This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -675,7 +677,7 @@ We suggest the following additional approver: **cjwagner**
 
 If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -707,7 +709,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 
 This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -729,6 +731,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			reviews: []github.Review{
 				newTestReview("cjwagner", "stuff", "COMMENTED"),
 				newTestReview("cjwagner", "unsubmitted stuff", "PENDING"),
+				newTestReview("cjwagner", "dismissed stuff", "DISMISSED"),
 			},
 			selfApprove:         false,
 			needsIssue:          false,
@@ -746,7 +749,7 @@ We suggest the following additional approver: **cjwagner**
 
 If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -787,7 +790,7 @@ We suggest the following additional approver: **cjwagner**
 
 If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -800,6 +803,43 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["cjwagner"]} -->`,
+		},
+		{
+			name:     "dismissed review doesn't cancel prior approval",
+			hasLabel: true,
+			files:    []string{"a/a.go"},
+			comments: []github.IssueComment{
+				newTestCommentTime(time.Now().Add(time.Hour), "k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"), // second
+			},
+			reviews: []github.Review{
+				newTestReviewTime(time.Now(), "Alice", "yep", github.ReviewStateApproved),                         // first
+				newTestReviewTime(time.Now().Add(time.Hour*2), "Alice", "dismissed", github.ReviewStateDismissed), // third
+			},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: true,
+
+			expectDelete:  true,
+			expectToggle:  false,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details >
+Needs approval from an approver in each of these files:
+
+- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":[]} -->`,
 		},
 		{
 			name:     "approve cancel command supersedes earlier approved review",
@@ -828,7 +868,7 @@ We suggest the following additional approver: **cjwagner**
 
 If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -866,7 +906,7 @@ We suggest the following additional approver: **cjwagner**
 
 If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -898,7 +938,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 
 This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -931,7 +971,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 
 This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -973,16 +1013,18 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			branch = test.branch
 		}
 
+		rsa := !test.selfApprove
+		irs := !test.reviewActsAsApprove
 		if err := handle(
 			logrus.WithField("plugin", "approve"),
 			fghc,
 			fr,
 			&plugins.Approve{
 				Repos:               []string{"org/repo"},
-				ImplicitSelfApprove: test.selfApprove,
+				RequireSelfApproval: &rsa,
 				IssueRequired:       test.needsIssue,
 				LgtmActsAsApprove:   test.lgtmActsAsApprove,
-				ReviewActsAsApprove: test.reviewActsAsApprove,
+				IgnoreReviewState:   &irs,
 			},
 			&state{
 				org:       "org",
@@ -1040,7 +1082,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 		}
 
 		labelAdded := false
-		for _, l := range fghc.LabelsAdded {
+		for _, l := range fghc.IssueLabelsAdded {
 			if l == fmt.Sprintf("org/repo#%v:approved", prNumber) {
 				if labelAdded {
 					t.Errorf("[%s] The approved label was applied to a PR that already had it!", test.name)
@@ -1052,7 +1094,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			labelAdded = false
 		}
 		toggled := labelAdded
-		for _, l := range fghc.LabelsRemoved {
+		for _, l := range fghc.IssueLabelsRemoved {
 			if l == fmt.Sprintf("org/repo#%v:approved", prNumber) {
 				if !test.hasLabel {
 					t.Errorf("[%s] The approved label was removed from a PR that doesn't have it!", test.name)
@@ -1076,7 +1118,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 
 type fakeOwnersClient struct{}
 
-func (foc fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerInterface, error) {
+func (foc fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
 	return fakeRepoOwners{}, nil
 }
 
@@ -1100,12 +1142,8 @@ func (fro fakeRepoOwners) Reviewers(path string) sets.String {
 	return sets.NewString()
 }
 
-// func (fro fakeRepoOwners) FindReviewersOwners
-
-func getTestHandleFunc() func(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, opts *plugins.Approve, pr *state) error {
-	return func(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, opts *plugins.Approve, pr *state) error {
-		return nil
-	}
+func (fro fakeRepoOwners) RequiredReviewers(path string) sets.String {
+	return sets.NewString()
 }
 
 func TestHandleGenericComment(t *testing.T) {
@@ -1114,6 +1152,7 @@ func TestHandleGenericComment(t *testing.T) {
 		commentEvent      github.GenericCommentEvent
 		lgtmActsAsApprove bool
 		expectHandle      bool
+		expectState       *state
 	}{
 		{
 			name: "valid approve command",
@@ -1125,8 +1164,22 @@ func TestHandleGenericComment(t *testing.T) {
 				User: github.User{
 					Login: "author",
 				},
+				IssueBody: "Fix everything",
+				IssueAuthor: github.User{
+					Login: "P.R. Author",
+				},
 			},
 			expectHandle: true,
+			expectState: &state{
+				org:       "org",
+				repo:      "repo",
+				branch:    "branch",
+				number:    1,
+				body:      "Fix everything",
+				author:    "P.R. Author",
+				assignees: nil,
+				htmlURL:   "",
+			},
 		},
 		{
 			name: "not comment created",
@@ -1211,7 +1264,9 @@ func TestHandleGenericComment(t *testing.T) {
 	}
 
 	var handled bool
-	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, opts *plugins.Approve, pr *state) error {
+	var gotState *state
+	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.Repo, opts *plugins.Approve, pr *state) error {
+		gotState = pr
 		handled = true
 		return nil
 	}
@@ -1258,6 +1313,10 @@ func TestHandleGenericComment(t *testing.T) {
 			t.Errorf("%s: expected no call to handleFunc, but it was called", test.name)
 		}
 
+		if test.expectState != nil && !reflect.DeepEqual(test.expectState, gotState) {
+			t.Errorf("%s: expected PR state to equal: %#v, but got: %#v", test.name, test.expectState, gotState)
+		}
+
 		if err != nil {
 			t.Errorf("%s: error calling handleGenericComment: %v", test.name, err)
 		}
@@ -1265,13 +1324,19 @@ func TestHandleGenericComment(t *testing.T) {
 	}
 }
 
-func TestHandleReviewEvent(t *testing.T) {
+// GitHub webhooks send state as lowercase, so force it to lowercase here.
+func stateToLower(s github.ReviewState) github.ReviewState {
+	return github.ReviewState(strings.ToLower(string(s)))
+}
+
+func TestHandleReview(t *testing.T) {
 	tests := []struct {
 		name                string
 		reviewEvent         github.ReviewEvent
 		lgtmActsAsApprove   bool
 		reviewActsAsApprove bool
 		expectHandle        bool
+		expectState         *state
 	}{
 		{
 			name: "approved state",
@@ -1282,11 +1347,21 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateApproved,
+					State: stateToLower(github.ReviewStateApproved),
 				},
 			},
 			reviewActsAsApprove: true,
 			expectHandle:        true,
+			expectState: &state{
+				org:       "org",
+				repo:      "repo",
+				branch:    "branch",
+				number:    1,
+				body:      "Fix everything",
+				author:    "P.R. Author",
+				assignees: nil,
+				htmlURL:   "",
+			},
 		},
 		{
 			name: "changes requested state",
@@ -1297,14 +1372,14 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateChangesRequested,
+					State: stateToLower(github.ReviewStateChangesRequested),
 				},
 			},
 			reviewActsAsApprove: true,
 			expectHandle:        true,
 		},
 		{
-			name: "pending state",
+			name: "pending review state",
 			reviewEvent: github.ReviewEvent{
 				Action: github.ReviewActionSubmitted,
 				Review: github.Review{
@@ -1312,7 +1387,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStatePending,
+					State: stateToLower(github.ReviewStatePending),
 				},
 			},
 			reviewActsAsApprove: true,
@@ -1327,7 +1402,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateApproved,
+					State: stateToLower(github.ReviewStateApproved),
 				},
 			},
 			reviewActsAsApprove: true,
@@ -1342,11 +1417,11 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateDismissed,
+					State: stateToLower(github.ReviewStateDismissed),
 				},
 			},
 			reviewActsAsApprove: true,
-			expectHandle:        false,
+			expectHandle:        true,
 		},
 		{
 			name: "approve command",
@@ -1357,7 +1432,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateApproved,
+					State: stateToLower(github.ReviewStateApproved),
 				},
 			},
 			reviewActsAsApprove: true,
@@ -1372,7 +1447,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateApproved,
+					State: stateToLower(github.ReviewStateApproved),
 				},
 			},
 			lgtmActsAsApprove:   true,
@@ -1388,7 +1463,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateApproved,
+					State: stateToLower(github.ReviewStateApproved),
 				},
 			},
 			reviewActsAsApprove: false,
@@ -1397,7 +1472,9 @@ func TestHandleReviewEvent(t *testing.T) {
 	}
 
 	var handled bool
-	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, opts *plugins.Approve, pr *state) error {
+	var gotState *state
+	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.Repo, opts *plugins.Approve, pr *state) error {
+		gotState = pr
 		handled = true
 		return nil
 	}
@@ -1412,10 +1489,14 @@ func TestHandleReviewEvent(t *testing.T) {
 		Name: "repo",
 	}
 	pr := github.PullRequest{
+		User: github.User{
+			Login: "P.R. Author",
+		},
 		Base: github.PullRequestBranch{
 			Ref: "branch",
 		},
 		Number: 1,
+		Body:   "Fix everything",
 	}
 	fghc := &fakegithub.FakeClient{
 		PullRequests: map[int]*github.PullRequest{1: &pr},
@@ -1425,10 +1506,11 @@ func TestHandleReviewEvent(t *testing.T) {
 		test.reviewEvent.Repo = repo
 		test.reviewEvent.PullRequest = pr
 		config := &plugins.Configuration{}
+		irs := !test.reviewActsAsApprove
 		config.Approve = append(config.Approve, plugins.Approve{
-			Repos:               []string{test.reviewEvent.Repo.Owner.Login},
-			LgtmActsAsApprove:   test.lgtmActsAsApprove,
-			ReviewActsAsApprove: test.reviewActsAsApprove,
+			Repos:             []string{test.reviewEvent.Repo.Owner.Login},
+			LgtmActsAsApprove: test.lgtmActsAsApprove,
+			IgnoreReviewState: &irs,
 		})
 		err := handleReview(
 			logrus.WithField("plugin", "approve"),
@@ -1446,25 +1528,50 @@ func TestHandleReviewEvent(t *testing.T) {
 			t.Errorf("%s: expected no call to handleFunc, but it was called", test.name)
 		}
 
+		if test.expectState != nil && !reflect.DeepEqual(test.expectState, gotState) {
+			t.Errorf("%s: expected PR state to equal: %#v, but got: %#v", test.name, test.expectState, gotState)
+		}
+
 		if err != nil {
-			t.Errorf("%s: error calling handleGenericComment: %v", test.name, err)
+			t.Errorf("%s: error calling handleReview: %v", test.name, err)
 		}
 		handled = false
 	}
 }
 
-func TestHandlePullRequestEvent(t *testing.T) {
+func TestHandlePullRequest(t *testing.T) {
 	tests := []struct {
 		name         string
 		prEvent      github.PullRequestEvent
 		expectHandle bool
+		expectState  *state
 	}{
 		{
 			name: "pr opened",
 			prEvent: github.PullRequestEvent{
 				Action: github.PullRequestActionOpened,
+				PullRequest: github.PullRequest{
+					User: github.User{
+						Login: "P.R. Author",
+					},
+					Base: github.PullRequestBranch{
+						Ref: "branch",
+					},
+					Body: "Fix everything",
+				},
+				Number: 1,
 			},
 			expectHandle: true,
+			expectState: &state{
+				org:       "org",
+				repo:      "repo",
+				branch:    "branch",
+				number:    1,
+				body:      "Fix everything",
+				author:    "P.R. Author",
+				assignees: nil,
+				htmlURL:   "",
+			},
 		},
 		{
 			name: "pr reopened",
@@ -1485,7 +1592,7 @@ func TestHandlePullRequestEvent(t *testing.T) {
 			prEvent: github.PullRequestEvent{
 				Action: github.PullRequestActionLabeled,
 				Label: github.Label{
-					Name: approvedLabel,
+					Name: labels.Approved,
 				},
 			},
 			expectHandle: true,
@@ -1505,7 +1612,7 @@ func TestHandlePullRequestEvent(t *testing.T) {
 			prEvent: github.PullRequestEvent{
 				Action: github.PullRequestActionLabeled,
 				Label: github.Label{
-					Name: approvedLabel,
+					Name: labels.Approved,
 				},
 				PullRequest: github.PullRequest{
 					State: "closed",
@@ -1523,7 +1630,9 @@ func TestHandlePullRequestEvent(t *testing.T) {
 	}
 
 	var handled bool
-	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, opts *plugins.Approve, pr *state) error {
+	var gotState *state
+	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.Repo, opts *plugins.Approve, pr *state) error {
+		gotState = pr
 		handled = true
 		return nil
 	}
@@ -1557,8 +1666,12 @@ func TestHandlePullRequestEvent(t *testing.T) {
 			t.Errorf("%s: expected no call to handleFunc, but it was called", test.name)
 		}
 
+		if test.expectState != nil && !reflect.DeepEqual(test.expectState, gotState) {
+			t.Errorf("%s: expected PR state to equal: %#v, but got: %#v", test.name, test.expectState, gotState)
+		}
+
 		if err != nil {
-			t.Errorf("%s: error calling handleGenericComment: %v", test.name, err)
+			t.Errorf("%s: error calling handlePullRequest: %v", test.name, err)
 		}
 		handled = false
 	}

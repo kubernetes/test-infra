@@ -1,0 +1,242 @@
+# this file should contain all periodic jobs that use the fejta-bot token
+periodics:
+- name: periodic-test-infra-close
+  interval: 1h
+  decorate: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+      command:
+      - /commenter
+      args:
+      - |-
+        --query=org:kubernetes
+        -label:lifecycle/frozen
+        label:lifecycle/rotten
+      - --updated=720h
+      - --token=/etc/token/bot-github-token
+      - |-
+        --comment=Rotten issues close after 30d of inactivity.
+        Reopen the issue with `/reopen`.
+        Mark the issue as fresh with `/remove-lifecycle rotten`.
+
+        Send feedback to sig-testing, kubernetes/test-infra and/or [fejta](https://github.com/fejta).
+        /close
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/token
+    volumes:
+    - name: token
+      secret:
+        secretName: fejta-bot-token
+
+- name: periodic-test-infra-retester
+  interval: 20m  # Retest at most 1 PR per 20m, which should not DOS the queue.
+  decorate: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+      command:
+      - /commenter
+      args:
+      - |-
+        --query=is:pr
+        -label:do-not-merge
+        -label:do-not-merge/blocked-paths
+        -label:do-not-merge/cherry-pick-not-approved
+        -label:do-not-merge/hold
+        -label:do-not-merge/invalid-owners-file
+        -label:do-not-merge/release-note-label-needed
+        -label:do-not-merge/work-in-progress
+        label:lgtm
+        label:approved
+        status:failure
+        -label:needs-rebase
+        -label:needs-ok-to-test
+        -label:"cncf-cla: no"
+        repo:kubernetes/kubernetes
+      - --token=/etc/token/bot-github-token
+      - |-
+        --comment=/retest
+        This bot automatically retries jobs that failed/flaked on approved PRs (send feedback to [fejta](https://github.com/fejta)).
+
+        Review the [full test history](https://gubernator.k8s.io/pr/{{.Number}}) for this PR.
+
+        Silence the bot with an `/lgtm cancel` or `/hold` comment for consistent failures.
+
+      - --template
+      - --ceiling=1
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/token
+    volumes:
+    - name: token
+      secret:
+        secretName: fejta-bot-token
+
+- name: periodic-test-infra-rotten
+  interval: 1h
+  decorate: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+      command:
+      - /commenter
+      args:
+      - |-
+        --query=org:kubernetes
+        -label:lifecycle/frozen
+        label:lifecycle/stale
+        -label:lifecycle/rotten
+      - --updated=720h
+      - --token=/etc/token/bot-github-token
+      - |-
+        --comment=Stale issues rot after 30d of inactivity.
+        Mark the issue as fresh with `/remove-lifecycle rotten`.
+        Rotten issues close after an additional 30d of inactivity.
+
+        If this issue is safe to close now please do so with `/close`.
+
+        Send feedback to sig-testing, kubernetes/test-infra and/or [fejta](https://github.com/fejta).
+        /lifecycle rotten
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/token
+    volumes:
+    - name: token
+      secret:
+        secretName: fejta-bot-token
+
+- name: periodic-test-infra-stale
+  interval: 1h
+  decorate: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+      command:
+      - /commenter
+      args:
+      - |-
+        --query=org:kubernetes
+        -label:lifecycle/frozen
+        -label:lifecycle/stale
+        -label:lifecycle/rotten
+      - --updated=2160h
+      - --token=/etc/token/bot-github-token
+      - |-
+        --comment=Issues go stale after 90d of inactivity.
+        Mark the issue as fresh with `/remove-lifecycle stale`.
+        Stale issues rot after an additional 30d of inactivity and eventually close.
+
+        If this issue is safe to close now please do so with `/close`.
+
+        Send feedback to sig-testing, kubernetes/test-infra and/or [fejta](https://github.com/fejta).
+        /lifecycle stale
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/token
+    volumes:
+    - name: token
+      secret:
+        secretName: fejta-bot-token
+
+- name: issue-creator
+  interval: 24h
+  labels:
+    preset-service-account: "true"
+  decorate: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/issue-creator:v20170907-5240cca5
+      command:
+      - /issue-creator
+      args:
+      - --dry-run=false
+      - --alsologtostderr
+      - --org=kubernetes
+      - --project=kubernetes
+      - --token-file=/etc/token/bot-github-token
+      - --test-owners-csv=/test_owners.csv
+      - --triage-window=1
+      - --triage-count=10
+      - --flakyjob-count=3
+      volumeMounts:
+      - name: token
+        mountPath: /etc/token
+    volumes:
+    - name: token
+      secret:
+        secretName: fejta-bot-token
+
+- name: periodic-enhancements-unfreeze
+  interval: 30m
+  decorate: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+      command:
+      - /commenter
+      args:
+      - |-
+        --query=repo:kubernetes/enhancements
+        label:lifecycle/frozen
+      - --updated=5m
+      - --token=/etc/token/bot-github-token
+      - |-
+        --comment=Enhancement issues opened in `kubernetes/enhancements` should never be marked as frozen.
+        Enhancement Owners can ensure that enhancements stay fresh by consistently updating their states across release cycles.
+
+        /remove-lifecycle frozen
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/token
+    volumes:
+    - name: token
+      secret:
+        secretName: fejta-bot-token
+
+# periodically file / close bugs for repos based on presence of SECURITY_CONTACTS
+- name: periodic-secping
+  interval: 24h
+  decorate: true
+  extra_refs:
+  - base_ref: master
+    org: jessfraz
+    repo: secping
+  - org: fejta
+    repo: go-github
+    base_ref: master
+    path_alias: github.com/jessfraz/go-github # https://github.com/google/go-github/pull/1076
+  spec:
+    containers:
+    - command:
+      - go
+      - run
+      - .
+      - -d
+      - --confirm
+      - --token-path=/etc/token/bot-github-token
+      - --skip-emails
+      image: golang:1.11
+      volumeMounts:
+      - name: token
+        mountPath: /etc/token
+      env:
+      - name: GO111MODULE
+        value: "on"
+    volumes:
+    - name: token
+      secret:
+        secretName: fejta-bot-token

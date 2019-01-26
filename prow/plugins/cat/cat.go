@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package cat adds cat images to issues in response to a /meow comment
+// Package cat adds cat images to an issue or PR in response to a /meow comment
 package cat
 
 import (
-	"encoding/xml"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -37,9 +37,9 @@ import (
 )
 
 var (
-	match = regexp.MustCompile(`(?mi)^/meow( .+)?\s*$`)
+	match = regexp.MustCompile(`(?mi)^/meow(vie)?(?: (.+))?\s*$`)
 	meow  = &realClowder{
-		url: "http://thecatapi.com/api/images/get?format=xml&results_per_page=1",
+		url: "https://api.thecatapi.com/api/images/get?format=json&results_per_page=1",
 	}
 )
 
@@ -54,14 +54,14 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The cat plugin adds a cat image to an issue in response to the `/meow` command.",
+		Description: "The cat plugin adds a cat image to an issue or PR in response to the `/meow` command.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/meow",
-		Description: "Add a cat image to the issue",
+		Usage:       "/meow(vie) [CATegory]",
+		Description: "Add a cat image to the issue or PR",
 		Featured:    false,
 		WhoCanUse:   "Anyone",
-		Examples:    []string{"/meow", "/meow caturday"},
+		Examples:    []string{"/meow", "/meow caturday", "/meowvie clothes"},
 	})
 	return pluginHelp, nil
 }
@@ -71,7 +71,7 @@ type githubClient interface {
 }
 
 type clowder interface {
-	readCat(string) (string, error)
+	readCat(string, bool) (string, error)
 }
 
 type realClowder struct {
@@ -102,11 +102,9 @@ func (c *realClowder) setKey(keyPath string, log *logrus.Entry) {
 	c.key = ""
 }
 
-var client = http.Client{}
-
 type catResult struct {
-	Source string `xml:"data>images>image>source_url"`
-	Image  string `xml:"data>images>image>url"`
+	Source string `json:"source_url"`
+	Image  string `json:"url"`
 }
 
 func (cr catResult) Format() (string, error) {
@@ -128,46 +126,54 @@ func (cr catResult) Format() (string, error) {
 	return fmt.Sprintf("[![cat image](%s)](%s)", img, src), nil
 }
 
-func (r *realClowder) Url(category string) string {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
-	uri := string(r.url)
+func (c *realClowder) URL(category string, movieCat bool) string {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	uri := string(c.url)
 	if category != "" {
 		uri += "&category=" + url.QueryEscape(category)
 	}
-	if r.key != "" {
-		uri += "&api_key=" + url.QueryEscape(r.key)
+	if c.key != "" {
+		uri += "&api_key=" + url.QueryEscape(c.key)
+	}
+	if movieCat {
+		uri += "&mime_types=gif"
 	}
 	return uri
 }
 
-func (r *realClowder) readCat(category string) (string, error) {
-	uri := r.Url(category)
-	req, err := http.NewRequest("GET", uri, nil)
-	if err != nil {
-		return "", fmt.Errorf("could not create request %s: %v", uri, err)
-	}
-	req.Header.Add("Accept", "application/json")
-	resp, err := client.Do(req)
+func (c *realClowder) readCat(category string, movieCat bool) (string, error) {
+	uri := c.URL(category, movieCat)
+	resp, err := http.Get(uri)
 	if err != nil {
 		return "", fmt.Errorf("could not read cat from %s: %v", uri, err)
 	}
 	defer resp.Body.Close()
-	var a catResult
-	if err = xml.NewDecoder(resp.Body).Decode(&a); err != nil {
+	if sc := resp.StatusCode; sc > 299 || sc < 200 {
+		return "", fmt.Errorf("failing %d response from %s", sc, uri)
+	}
+	cats := make([]catResult, 0)
+	if err = json.NewDecoder(resp.Body).Decode(&cats); err != nil {
 		return "", err
+	}
+	if len(cats) < 1 {
+		return "", fmt.Errorf("no cats in response from %s", uri)
+	}
+	a := cats[0]
+	if a.Image == "" {
+		return "", fmt.Errorf("no image url in response from %s", uri)
 	}
 	// checking size, GitHub doesn't support big images
 	toobig, err := github.ImageTooBig(a.Image)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("could not validate image size %s: %v", a.Image, err)
 	} else if toobig {
-		return "", errors.New("unsupported cat :( size too big: " + a.Image)
+		return "", fmt.Errorf("longcat is too long: %s", a.Image)
 	}
 	return a.Format()
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	return handle(
 		pc.GitHubClient,
 		pc.Logger,
@@ -188,20 +194,20 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 		return nil
 	}
 
+	category, movieCat, err := parseMatch(mat)
+	if err != nil {
+		return err
+	}
+
 	// Now that we know this is a relevant event we can set the key.
 	setKey()
-
-	category := mat[1]
-	if len(category) > 1 {
-		category = category[1:]
-	}
 
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 	number := e.Number
 
 	for i := 0; i < 3; i++ {
-		resp, err := c.readCat(category)
+		resp, err := c.readCat(category, movieCat)
 		if err != nil {
 			log.WithError(err).Error("Failed to get cat img")
 			continue
@@ -211,13 +217,23 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 
 	var msg string
 	if category != "" {
-		msg = "Bad category. Please see http://thecatapi.com/api/categories/list"
+		msg = "Bad category. Please see https://api.thecatapi.com/api/categories/list"
 	} else {
-		msg = "http://thecatapi.com appears to be down"
+		msg = "https://thecatapi.com appears to be down"
 	}
 	if err := gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg)); err != nil {
 		log.WithError(err).Error("Failed to leave comment")
 	}
 
 	return errors.New("could not find a valid cat image")
+}
+
+func parseMatch(mat []string) (string, bool, error) {
+	if len(mat) != 3 {
+		err := fmt.Errorf("expected 3 capture groups in regexp match, but got %d", len(mat))
+		return "", false, err
+	}
+	category := strings.TrimSpace(mat[2])
+	movieCat := len(mat[1]) > 0 // "vie" suffix is present.
+	return category, movieCat, nil
 }

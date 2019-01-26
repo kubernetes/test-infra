@@ -26,7 +26,7 @@ go_library(
         "projects_tag.go",
         "types.go",
     ],
-    importmap = "vendor/github.com/andygrunwald/go-gerrit",
+    importmap = "k8s.io/test-infra/vendor/github.com/andygrunwald/go-gerrit",
     importpath = "github.com/andygrunwald/go-gerrit",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/google/go-querystring/query:go_default_library"],

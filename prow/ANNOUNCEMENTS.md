@@ -1,6 +1,26 @@
 # Announcements
 
-New features added to each components:
+New features added to each component:
+
+ - *January 15, 2019* `approve` now considers self-approval and github review
+   state by default. Configure with `require_self_approval` and
+   `ignore_review_state`. Temporarily revert to old defaults with `use_deprecated_2018_implicit_self_approve_default_migrate_before_july_2019` and `use_deprecated_2018_review_acts_as_approve_default_migrate_before_july_2019`.
+ - *January 12, 2019* `blunderbluss` plugin now provides a new command, `/auto-cc`,
+   that triggers automatic review requests.
+ - *January 7, 2019* `implicit_self_approve` will become `require_self_approval` in
+   the second half of this year.
+ - *January 7, 2019* `review_acts_as_approve` will become `ignore_review_state` in
+   the second half of this year.
+ - *October 10, 2018* `tide` now supports the `-repo:foo/bar` tag in queries via
+   the `excludedRepos` YAML field.
+ - *October 3, 2018* `welcome` now supports a configurable message on a per-org,
+   or per-repo basis. Please note that this includes a config schema change that
+   will break previous deployments of this plugin.
+ - *August 22, 2018* `spyglass` is a pluggable viewing framework for artifacts
+   produced by Prowjobs. See a demo [here](https://prow.k8s.io/view/gcs/kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-performance/121)!
+ - *July 13, 2018* `blunderbluss` plugin will now support `required_reviewers` in
+   OWNERS file to specify a person or github team to be cc'd on every PR that
+   touches the corresponding part of the code.
  - *June 25, 2018* `updateconfig` plugin will now support update/remove keys
    from a glob match.
  - *June 05, 2018* `blunderbuss` plugin may now suggest approvers in addition
@@ -20,6 +40,47 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *January 22, 2019* `sinker` prefers `.kube/config` instead of the custom `Clusters`
+   file to specify credentials for external build clusters. The flag name has changed
+   from `--build-cluster` to `--kubeconfig`. Migrate before June 2019.
+ - *November 29, 2018* `plank` will no longer default jobs with `decorate: true`
+   to have `automountServiceAccountToken: false` in their PodSpec if unset, if the
+   job explicitly sets `serviceAccountName`
+ - *November 26, 2018* job names must now match `^[A-Za-z0-9-._]+$`. Jobs that did not
+   match this before were allowed but did not provide a good user experience.
+ - *November 15, 2018* the `hook` service account now requires RBAC privileges
+   to create `ConfigMaps` to support new functionality in the `updateconfig` plugin.
+ - *November 9, 2018* Prow gerrit client label/annotations now have a `prow.k8s.io/` namespace
+    prefix, if you have a gerrit deployment, please bump both cmd/gerrit and cmd/crier.
+ - *November 8, 2018* `plank` now defaults jobs with `decorate: true` to have
+   `automountServiceAccountToken: false` in their PodSpec if unset. Jobs that used the default
+   service account should explicitly set this field to maintain functionality.
+ - *October 16, 2018* Prow tls-cert management has been migrated from kube-lego to cert-manager.
+ - *October 12, 2018* Removed deprecated `buildId` environment variable from prow jobs. Use `BUILD_ID.`
+ - *October 3, 2018* `-github-token-file` replaced with
+    `-github-token-path` for consistency with `branchprotector` and
+    `peribolos` which were already using `-github-token-path`.
+    `-github-token-file` will continue to work through the remainder
+    of 2018, but it will be removed in early 2019.  The following
+    commands are affected: `cherrypicker`, `hook`, `jenkins-operator`,
+    `needs-rebase`, `phony`, `plank`, `refresh`, and `tide`.
+ - *October 1, 2018* bazel is the one official way to build container images.
+    Please use prow/bump.sh and/or bazel run //prow:release-push
+ - *Sep 27, 2018* If you are setting explicit decorate configs, the format has changed from
+    ```yaml
+    - name: job-foo
+      decorate: true
+      timeout: 1
+    ```
+    to
+    ```yaml
+    - name: job-foo
+      decorate: true
+      decoration_config:
+        timeout: 1
+    ```
+ - *September 24, 2018* the `splice` component has been deleted following the
+   deletion of mungegithub.
  - *July 9, 2018* `milestone` format has changed from
     ```yaml
     milestone:

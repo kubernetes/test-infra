@@ -32,7 +32,6 @@ import (
 
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -40,6 +39,7 @@ import (
 const pluginName = "cherrypick"
 
 var cherryPickRe = regexp.MustCompile(`(?m)^/cherrypick\s+(.+)$`)
+var releaseNoteRe = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
 
 type githubClient interface {
 	AssignIssue(org, repo string, number int, logins []string) error
@@ -54,9 +54,10 @@ type githubClient interface {
 	ListOrgMembers(org, role string) ([]github.TeamMember, error)
 }
 
+// HelpProvider construct the pluginhelp.PluginHelp for this plugin.
 func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: `The cherrypick plugin is used for cherrypicking PRs across branches. For every successful cherrypick invocation a new PR is opened against the target branch and assigned to the requester.`,
+		Description: `The cherrypick plugin is used for cherrypicking PRs across branches. For every successful cherrypick invocation a new PR is opened against the target branch and assigned to the requester. If the parent PR contains a release note, it is copied to the cherrypick PR.`,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/cherrypick [branch]",
@@ -72,9 +73,9 @@ func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 // Server implements http.Handler. It validates incoming GitHub webhooks and
 // then dispatches them to the appropriate plugins.
 type Server struct {
-	hmacSecret []byte
-	botName    string
-	email      string
+	tokenGenerator func() []byte
+	botName        string
+	email          string
 
 	gc *git.Client
 	// Used for unit testing
@@ -96,7 +97,7 @@ type Server struct {
 
 // ServeHTTP validates an incoming webhook and puts it into the event channel.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	eventType, eventGUID, payload, ok := hook.ValidateWebhook(w, r, s.hmacSecret)
+	eventType, eventGUID, payload, ok, _ := github.ValidateWebhook(w, r, s.tokenGenerator())
 	if !ok {
 		return
 	}
@@ -188,6 +189,7 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 	}
 	baseBranch := pr.Base.Ref
 	title := pr.Title
+	body := pr.Body
 
 	// Cherry-pick only merged PRs.
 	if !pr.Merged {
@@ -220,7 +222,7 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		WithField("requestor", ic.Comment.User.Login).
 		WithField("target_branch", targetBranch).
 		Debug("Cherrypick request.")
-	return s.handle(l, ic.Comment.User.Login, ic.Comment, org, repo, targetBranch, title, num)
+	return s.handle(l, ic.Comment.User.Login, ic.Comment, org, repo, targetBranch, title, body, num)
 }
 
 func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent) error {
@@ -239,6 +241,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 	baseBranch := pr.Base.Ref
 	num := pr.Number
 	title := pr.Title
+	body := pr.Body
 
 	l = l.WithFields(logrus.Fields{
 		github.OrgLogField:  org,
@@ -296,7 +299,9 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 	for requestor, branches := range requestorToComments {
 		for targetBranch, ic := range branches {
 			if targetBranch == baseBranch {
-				// TODO: Comment back.
+				resp := fmt.Sprintf("base branch (%s) needs to differ from target branch (%s)", baseBranch, targetBranch)
+				s.log.WithFields(l.Data).Info(resp)
+				s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(*ic, resp))
 				continue
 			}
 			if handledBranches[targetBranch] {
@@ -308,7 +313,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 				WithField("requestor", requestor).
 				WithField("target_branch", targetBranch).
 				Debug("Cherrypick request.")
-			err := s.handle(l, requestor, *ic, org, repo, targetBranch, title, num)
+			err := s.handle(l, requestor, *ic, org, repo, targetBranch, title, body, num)
 			if err != nil {
 				return err
 			}
@@ -319,7 +324,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 
 var cherryPickBranchFmt = "cherry-pick-%d-to-%s"
 
-func (s *Server) handle(l *logrus.Entry, requestor string, comment github.IssueComment, org, repo, targetBranch, title string, num int) error {
+func (s *Server) handle(l *logrus.Entry, requestor string, comment github.IssueComment, org, repo, targetBranch, title, body string, num int) error {
 	if err := s.ensureForkExists(org, repo); err != nil {
 		return err
 	}
@@ -385,12 +390,16 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment github.IssueC
 
 	// Open a PR in Github.
 	title = fmt.Sprintf("[%s] %s", targetBranch, title)
-	body := fmt.Sprintf("This is an automated cherry-pick of #%d", num)
+	cherryPickBody := fmt.Sprintf("This is an automated cherry-pick of #%d", num)
 	if s.prowAssignments {
-		body = fmt.Sprintf("%s\n\n/assign %s", body, requestor)
+		cherryPickBody = fmt.Sprintf("%s\n\n/assign %s", cherryPickBody, requestor)
 	}
+	if releaseNote := releaseNoteFromParentPR(body); len(releaseNote) != 0 {
+		cherryPickBody = fmt.Sprintf("%s\n\n%s", cherryPickBody, releaseNote)
+	}
+
 	head := fmt.Sprintf("%s:%s", s.botName, newBranch)
-	createdNum, err := s.ghc.CreatePullRequest(org, repo, title, body, head, targetBranch, true)
+	createdNum, err := s.ghc.CreatePullRequest(org, repo, title, cherryPickBody, head, targetBranch, true)
 	if err != nil {
 		resp := fmt.Sprintf("new pull request could not be created: %v", err)
 		s.log.WithFields(l.Data).Info(resp)
@@ -491,4 +500,15 @@ func (s *Server) getPatch(org, repo, targetBranch string, num int) (string, erro
 
 func normalize(input string) string {
 	return strings.Replace(input, "/", "-", -1)
+}
+
+// releaseNoteNoteFromParentPR gets the release note from the
+// parent PR and formats it as per the PR template so that
+// it can be copied to the cherry-pick PR.
+func releaseNoteFromParentPR(body string) string {
+	potentialMatch := releaseNoteRe.FindStringSubmatch(body)
+	if potentialMatch == nil {
+		return ""
+	}
+	return fmt.Sprintf("```release-note\n%s\n```", strings.TrimSpace(potentialMatch[1]))
 }

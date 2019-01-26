@@ -20,23 +20,31 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"regexp"
 	"sort"
 
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/assign"
+	"k8s.io/test-infra/prow/repoowners"
 )
 
 const (
-	pluginName = "blunderbuss"
+	// PluginName defines this plugin's registered name.
+	PluginName = "blunderbuss"
+)
+
+var (
+	match = regexp.MustCompile(`(?mi)^/auto-cc\s*$`)
 )
 
 func init() {
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
+	plugins.RegisterPullRequestHandler(PluginName, handlePullRequestEvent, helpProvider)
+	plugins.RegisterGenericCommentHandler(PluginName, handleGenericCommentEvent, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
@@ -50,19 +58,27 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	if reviewCount != 1 {
 		pluralSuffix = "s"
 	}
-	// Omit the fields [WhoCanUse, Usage, Examples] because this plugin is not triggered by human actions.
-	return &pluginhelp.PluginHelp{
-			Description: "The blunderbuss plugin automatically requests reviews from reviewers when a new PR is created. The reviewers are selected based on the reviewers specified in the OWNERS files that apply to the files modified by the PR.",
-			Config: map[string]string{
-				"": fmt.Sprintf("Blunderbuss is currently configured to request reviews from %d reviewer%s.", reviewCount, pluralSuffix),
-			},
+
+	pluginHelp := &pluginhelp.PluginHelp{
+		Description: "The blunderbuss plugin automatically requests reviews from reviewers when a new PR is created. The reviewers are selected based on the reviewers specified in the OWNERS files that apply to the files modified by the PR.",
+		Config: map[string]string{
+			"": fmt.Sprintf("Blunderbuss is currently configured to request reviews from %d reviewer%s.", reviewCount, pluralSuffix),
 		},
-		nil
+	}
+	pluginHelp.AddCommand(pluginhelp.Command{
+		Usage:       "/auto-cc",
+		Featured:    false,
+		Description: "Manually request reviews from reviewers for a PR. Useful if OWNERS file were updated since the PR was opened.",
+		Examples:    []string{"/auto-cc"},
+		WhoCanUse:   "Anyone",
+	})
+	return pluginHelp, nil
 }
 
 type reviewersClient interface {
 	FindReviewersOwnersForFile(path string) string
 	Reviewers(path string) sets.String
+	RequiredReviewers(path string) sets.String
 	LeafReviewers(path string) sets.String
 }
 
@@ -92,41 +108,103 @@ func (foc fallbackReviewersClient) LeafReviewers(path string) sets.String {
 type githubClient interface {
 	RequestReview(org, repo string, number int, logins []string) error
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 }
 
-func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) error {
-	if pre.Action != github.PullRequestActionOpened || assign.CCRegexp.MatchString(pre.PullRequest.Body) {
+type repoownersClient interface {
+	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error)
+}
+
+func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
+	return handlePullRequest(
+		pc.GitHubClient,
+		pc.OwnersClient,
+		pc.Logger,
+		pc.PluginConfig.Blunderbuss,
+		pre.Action,
+		&pre.PullRequest,
+		&pre.Repo,
+	)
+}
+
+func handlePullRequest(ghc githubClient, roc repoownersClient, log *logrus.Entry, config plugins.Blunderbuss, action github.PullRequestEventAction, pr *github.PullRequest, repo *github.Repo) error {
+	if action != github.PullRequestActionOpened || assign.CCRegexp.MatchString(pr.Body) {
 		return nil
 	}
 
-	oc, err := pc.OwnersClient.LoadRepoOwners(pre.Repo.Owner.Login, pre.Repo.Name, pre.PullRequest.Base.Ref)
+	return handle(
+		ghc,
+		roc,
+		log,
+		config.ReviewerCount,
+		config.FileWeightCount,
+		config.MaxReviewerCount,
+		config.ExcludeApprovers,
+		repo,
+		pr,
+	)
+}
+
+func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
+	return handleGenericComment(
+		pc.GitHubClient,
+		pc.OwnersClient,
+		pc.Logger,
+		pc.PluginConfig.Blunderbuss,
+		ce.Action,
+		ce.IsPR,
+		ce.Number,
+		ce.IssueState,
+		&ce.Repo,
+		ce.Body,
+	)
+}
+
+func handleGenericComment(ghc githubClient, roc repoownersClient, log *logrus.Entry, config plugins.Blunderbuss, action github.GenericCommentEventAction, isPR bool, prNumber int, issueState string, repo *github.Repo, body string) error {
+	if action != github.GenericCommentActionCreated || !isPR || issueState == "closed" {
+		return nil
+	}
+
+	if !match.MatchString(body) {
+		return nil
+	}
+
+	pr, err := ghc.GetPullRequest(repo.Owner.Login, repo.Name, prNumber)
+	if err != nil {
+		return fmt.Errorf("error loading PullRequest: %v", err)
+	}
+
+	return handle(
+		ghc,
+		roc,
+		log,
+		config.ReviewerCount,
+		config.FileWeightCount,
+		config.MaxReviewerCount,
+		config.ExcludeApprovers,
+		repo,
+		pr,
+	)
+}
+
+func handle(ghc githubClient, roc repoownersClient, log *logrus.Entry, reviewerCount, oldReviewCount *int, maxReviewers int, excludeApprovers bool, repo *github.Repo, pr *github.PullRequest) error {
+	oc, err := roc.LoadRepoOwners(repo.Owner.Login, repo.Name, pr.Base.Ref)
 	if err != nil {
 		return fmt.Errorf("error loading RepoOwners: %v", err)
 	}
 
-	return handle(
-		pc.GitHubClient,
-		oc, pc.Logger,
-		pc.PluginConfig.Blunderbuss.ReviewerCount,
-		pc.PluginConfig.Blunderbuss.FileWeightCount,
-		pc.PluginConfig.Blunderbuss.MaxReviewerCount,
-		pc.PluginConfig.Blunderbuss.ExcludeApprovers,
-		&pre,
-	)
-}
-
-func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount, oldReviewCount *int, maxReviewers int, excludeApprovers bool, pre *github.PullRequestEvent) error {
-	changes, err := ghc.GetPullRequestChanges(pre.Repo.Owner.Login, pre.Repo.Name, pre.Number)
+	changes, err := ghc.GetPullRequestChanges(repo.Owner.Login, repo.Name, pr.Number)
 	if err != nil {
 		return fmt.Errorf("error getting PR changes: %v", err)
 	}
 
 	var reviewers []string
+	var requiredReviewers []string
 	switch {
 	case oldReviewCount != nil:
-		reviewers = getReviewersOld(log, oc, pre.PullRequest.User.Login, changes, *oldReviewCount)
+		reviewers = getReviewersOld(log, oc, pr.User.Login, changes, *oldReviewCount)
 	case reviewerCount != nil:
-		reviewers, err = getReviewers(oc, pre.PullRequest.User.Login, changes, *reviewerCount)
+		reviewers, requiredReviewers, err = getReviewers(oc, pr.User.Login, changes, *reviewerCount)
 		if err != nil {
 			return err
 		}
@@ -137,7 +215,7 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount,
 				// and approvers and the search might stop too early if it finds
 				// duplicates.
 				frc := fallbackReviewersClient{ownersClient: oc}
-				approvers, err := getReviewers(frc, pre.PullRequest.User.Login, changes, *reviewerCount)
+				approvers, _, err := getReviewers(frc, pr.User.Login, changes, *reviewerCount)
 				if err != nil {
 					return err
 				}
@@ -152,20 +230,25 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount,
 		}
 	}
 
+	if maxReviewers > 0 && len(reviewers) > maxReviewers {
+		log.Infof("Limiting request of %d reviewers to %d maxReviewers.", len(reviewers), maxReviewers)
+		reviewers = reviewers[:maxReviewers]
+	}
+
+	// add required reviewers if any
+	reviewers = append(reviewers, requiredReviewers...)
+
 	if len(reviewers) > 0 {
-		if maxReviewers > 0 && len(reviewers) > maxReviewers {
-			log.Infof("Limiting request of %d reviewers to %d maxReviewers.", len(reviewers), maxReviewers)
-			reviewers = reviewers[:maxReviewers]
-		}
 		log.Infof("Requesting reviews from users %s.", reviewers)
-		return ghc.RequestReview(pre.Repo.Owner.Login, pre.Repo.Name, pre.Number, reviewers)
+		return ghc.RequestReview(repo.Owner.Login, repo.Name, pr.Number, reviewers)
 	}
 	return nil
 }
 
-func getReviewers(rc reviewersClient, author string, files []github.PullRequestChange, minReviewers int) ([]string, error) {
-	authorSet := sets.NewString(author)
+func getReviewers(rc reviewersClient, author string, files []github.PullRequestChange, minReviewers int) ([]string, []string, error) {
+	authorSet := sets.NewString(github.NormLogin(author))
 	reviewers := sets.NewString()
+	requiredReviewers := sets.NewString()
 	leafReviewers := sets.NewString()
 	ownersSeen := sets.NewString()
 	// first build 'reviewers' by taking a unique reviewer from each OWNERS file.
@@ -175,6 +258,9 @@ func getReviewers(rc reviewersClient, author string, files []github.PullRequestC
 			continue
 		}
 		ownersSeen.Insert(ownersFile)
+
+		// record required reviewers if any
+		requiredReviewers.Insert(rc.RequiredReviewers(file.Filename).UnsortedList()...)
 
 		fileUnusedLeafs := rc.LeafReviewers(file.Filename).Difference(reviewers).Difference(authorSet)
 		if fileUnusedLeafs.Len() == 0 {
@@ -197,7 +283,7 @@ func getReviewers(rc reviewersClient, author string, files []github.PullRequestC
 			reviewers.Insert(popRandom(fileReviewers))
 		}
 	}
-	return reviewers.List(), nil
+	return reviewers.List(), requiredReviewers.List(), nil
 }
 
 // popRandom randomly selects an element of 'set' and pops it.
@@ -249,7 +335,7 @@ func getPotentialReviewers(owners ownersClient, author string, files []github.Pu
 		}
 
 		for _, owner := range fileOwners.List() {
-			if owner == author {
+			if owner == github.NormLogin(author) {
 				continue
 			}
 			potentialReviewers[owner] = potentialReviewers[owner] + fileWeight

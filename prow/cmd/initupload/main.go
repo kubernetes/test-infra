@@ -23,10 +23,10 @@ package main
 
 import (
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/pod-utils/options"
 
 	"k8s.io/test-infra/prow/initupload"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/pod-utils/options"
 )
 
 func main() {

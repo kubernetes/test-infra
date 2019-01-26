@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// buildifier defines a Prow plugin that runs buildifier over modified BUILD,
-// WORKSPACE, and skylark (.bzl) files in pull requests.
+// Package buildifier defines a Prow plugin that runs buildifier over modified
+// BUILD, WORKSPACE, and skylark (.bzl) files in pull requests.
 package buildifier
 
 import (
@@ -72,7 +72,7 @@ type githubClient interface {
 	ListPullRequestComments(org, repo string, number int) ([]github.ReviewComment, error)
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.GitClient, pc.Logger, &e)
 }
 

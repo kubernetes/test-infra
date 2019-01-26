@@ -1,0 +1,25 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["version.go"],
+    importpath = "k8s.io/test-infra/prow/cmd/deck/version",
+    visibility = ["//visibility:public"],
+    x_defs = {
+        "Version": "{STABLE_BUILD_GIT_COMMIT}",
+    },
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

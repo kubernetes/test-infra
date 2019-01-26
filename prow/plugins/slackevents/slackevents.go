@@ -80,7 +80,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		nil
 }
 
-func handleComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	c := client{
 		GithubClient: pc.GitHubClient,
 		SlackConfig:  pc.PluginConfig.Slack,
@@ -89,7 +89,7 @@ func handleComment(pc plugins.PluginClient, e github.GenericCommentEvent) error 
 	return echoToSlack(c, e)
 }
 
-func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {
+func handlePush(pc plugins.Agent, pe github.PushEvent) error {
 	c := client{
 		GithubClient: pc.GitHubClient,
 		SlackConfig:  pc.PluginConfig.Slack,
@@ -103,7 +103,17 @@ func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 	if mw := getMergeWarning(pc.SlackConfig.MergeWarnings, pe.Repo.Owner.Login, pe.Repo.Name); mw != nil {
 		//If the MergeWarning whitelist has the merge user then no need to send a message.
 		if wl := !isWhiteListed(mw, pe); wl {
-			message := fmt.Sprintf("*Warning:* %s (<@%s>) manually merged %s", pe.Sender.Login, pe.Sender.Login, pe.Compare)
+			var message string
+			switch {
+			case pe.Created:
+				message = fmt.Sprintf("*Warning:* %s (<@%s>) pushed a new branch (%s): %s", pe.Sender.Login, pe.Sender.Login, pe.Branch(), pe.Compare)
+			case pe.Deleted:
+				message = fmt.Sprintf("*Warning:* %s (<@%s>) deleted a branch (%s): %s", pe.Sender.Login, pe.Sender.Login, pe.Branch(), pe.Compare)
+			case pe.Forced:
+				message = fmt.Sprintf("*Warning:* %s (<@%s>) *force* merged %d commit(s) into %s: %s", pe.Sender.Login, pe.Sender.Login, len(pe.Commits), pe.Branch(), pe.Compare)
+			default:
+				message = fmt.Sprintf("*Warning:* %s (<@%s>) manually merged %d commit(s) into %s: %s", pe.Sender.Login, pe.Sender.Login, len(pe.Commits), pe.Branch(), pe.Compare)
+			}
 			for _, channel := range mw.Channels {
 				if err := pc.SlackClient.WriteMessage(message, channel); err != nil {
 					return err

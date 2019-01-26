@@ -29,15 +29,14 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 
+// Run will start the initupload job to upload the artifacts, logs and clone status.
 func (o Options) Run() error {
 	spec, err := downwardapi.ResolveSpecFromEnv()
 	if err != nil {
 		return fmt.Errorf("could not resolve job spec: %v", err)
 	}
 
-	started := struct {
-		Timestamp int64 `json:"timestamp"`
-	}{
+	started := gcs.Started{
 		Timestamp: time.Now().Unix(),
 	}
 	startedData, err := json.Marshal(&started)
@@ -75,9 +74,8 @@ func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (b
 	if err = json.Unmarshal(data, &cloneRecords); err != nil {
 		return true, fmt.Errorf("could not unmarshal clone records: %v", err)
 	}
-	// Do not read from cloneLog directly.
-	// Instead create multiple readers from cloneLog so it can be uploaded to
-	// both clone-log.txt and build-log.txt on failure.
+	// Do not read from cloneLog directly. Instead create multiple readers from cloneLog so it can
+	// be uploaded to both clone-log.txt and build-log.txt on failure.
 	cloneLog := bytes.Buffer{}
 	failed := false
 	for _, record := range cloneRecords {
@@ -90,11 +88,7 @@ func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (b
 	if failed {
 		uploadTargets["build-log.txt"] = gcs.DataUpload(bytes.NewReader(cloneLog.Bytes()))
 
-		finished := struct {
-			Timestamp int64  `json:"timestamp"`
-			Passed    bool   `json:"passed"`
-			Result    string `json:"result"`
-		}{
+		finished := gcs.Finished{
 			Timestamp: time.Now().Unix(),
 			Passed:    false,
 			Result:    "FAILURE",

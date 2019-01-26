@@ -1,4 +1,5 @@
 ---
-labels:
-  - name: %invalid name ?
-    color: "abc
+default:
+  labels:
+    - name: %invalid name ?
+      color: "abc

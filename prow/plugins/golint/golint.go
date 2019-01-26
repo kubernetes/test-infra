@@ -33,6 +33,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/golint/suggestion"
 )
 
 const (
@@ -70,8 +71,17 @@ type githubClient interface {
 	ListPullRequestComments(org, repo string, number int) ([]github.ReviewComment, error)
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	return handle(pc.GitHubClient, pc.GitClient, pc.Logger, &e)
+const defaultConfidence = 0.8
+
+func minConfidence(g *plugins.Golint) float64 {
+	if g == nil || g.MinimumConfidence == nil {
+		return defaultConfidence
+	}
+	return *g.MinimumConfidence
+}
+
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+	return handle(minConfidence(pc.PluginConfig.Golint), pc.GitHubClient, pc.GitClient, pc.Logger, &e)
 }
 
 // modifiedGoFiles returns a map from filename to patch string for all go files
@@ -129,22 +139,51 @@ func newProblems(cs []github.ReviewComment, ps map[string]map[int]lint.Problem) 
 
 // problemsInFiles runs golint on the files. It returns a map from the file to
 // a map from the line in the patch to the problem.
-func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]lint.Problem, error) {
+func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]lint.Problem, []github.DraftReviewComment) {
 	problems := make(map[string]map[int]lint.Problem)
+	var lintErrorComments []github.DraftReviewComment
 	l := new(lint.Linter)
 	for f, patch := range files {
 		problems[f] = make(map[int]lint.Problem)
 		src, err := ioutil.ReadFile(filepath.Join(r.Dir, f))
 		if err != nil {
-			return nil, err
+			lintErrorComments = append(lintErrorComments, github.DraftReviewComment{
+				Path: f,
+				Body: fmt.Sprintf("%v", err),
+			})
 		}
 		ps, err := l.Lint(f, src)
 		if err != nil {
-			return nil, fmt.Errorf("linting %s: %v", f, err)
+			// Get error line by parsing the error message
+			errLineIndexStart := strings.LastIndex(err.Error(), f) + len(f)
+			reNumber := regexp.MustCompile(`:([0-9]+):`)
+			matches := reNumber.FindStringSubmatch(err.Error()[errLineIndexStart:])
+			newComment := github.DraftReviewComment{
+				Path: f,
+				Body: err.Error(),
+			}
+			if len(matches) > 1 {
+				errLineString := matches[1]
+				errLine, errAtoi := strconv.Atoi(errLineString)
+				if errAtoi == nil {
+					newComment.Position = errLine
+				}
+				// Trim error message to after the line and column numbers
+				reTrimError := regexp.MustCompile(`(:[0-9]+:[0-9]+: )`)
+				matches = reTrimError.FindStringSubmatch(err.Error())
+				if len(matches) > 0 {
+					newComment.Body = err.Error()[len(matches[0])+errLineIndexStart:]
+				}
+			}
+			lintErrorComments = append(lintErrorComments, newComment)
 		}
-		al, err := addedLines(patch)
+		al, err := AddedLines(patch)
 		if err != nil {
-			return nil, fmt.Errorf("computing added lines in %s: %v", f, err)
+			lintErrorComments = append(lintErrorComments,
+				github.DraftReviewComment{
+					Path: f,
+					Body: fmt.Sprintf("computing added lines in %s: %v", f, err),
+				})
 		}
 		for _, p := range ps {
 			if pl, ok := al[p.Position.Line]; ok {
@@ -152,10 +191,10 @@ func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]l
 			}
 		}
 	}
-	return problems, nil
+	return problems, lintErrorComments
 }
 
-func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(minimumConfidence float64, ghc githubClient, gc *git.Client, log *logrus.Entry, e *github.GenericCommentEvent) error {
 	// Only handle open PRs and new requests.
 	if e.IssueState != "open" || !e.IsPR || e.Action != github.GenericCommentActionCreated {
 		return nil
@@ -200,28 +239,40 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, e *github.Gener
 	log.WithField("duration", time.Since(startClone)).Info("Cloned and checked out PR.")
 
 	// Compute lint errors.
-	problems, err := problemsInFiles(r, modifiedFiles)
+	problems, lintErrorComments := problemsInFiles(r, modifiedFiles)
 	if err != nil {
 		return err
+	}
+	// Filter out problems that are below our threshold
+	for file := range problems {
+		for line, problem := range problems[file] {
+			if problem.Confidence < minimumConfidence {
+				delete(problems[file], line)
+			}
+		}
 	}
 	log.WithField("duration", time.Since(finishClone)).Info("Linted.")
 
-	oldComments, err := ghc.ListPullRequestComments(org, repo, e.Number)
-	if err != nil {
-		return err
+	nps := problems
+	if len(problems) > 0 {
+		oldComments, err := ghc.ListPullRequestComments(org, repo, e.Number)
+		if err != nil {
+			return err
+		}
+		nps = newProblems(oldComments, problems)
 	}
-	nps := newProblems(oldComments, problems)
 
 	// Make the list of comments.
-	var comments []github.DraftReviewComment
+	var comments []github.DraftReviewComment = lintErrorComments
 	for f, ls := range nps {
 		for l, p := range ls {
+			var suggestion = suggestion.SuggestCodeChange(p)
 			var body string
-			if p.Link == "" {
-				body = fmt.Sprintf("Golint %s: %s. %s", p.Category, p.Text, commentTag)
-			} else {
-				body = fmt.Sprintf("Golint %s: %s. [More info](%s). %s", p.Category, p.Text, p.Link, commentTag)
+			var link string
+			if p.Link != "" {
+				link = fmt.Sprintf("[More info](%s). ", p.Link)
 			}
+			body = fmt.Sprintf("%sGolint %s: %s. %s%s", suggestion, p.Category, p.Text, link, commentTag)
 			comments = append(comments, github.DraftReviewComment{
 				Path:     f,
 				Position: l,
@@ -270,18 +321,22 @@ func numProblems(ps map[string]map[int]lint.Problem) int {
 	return num
 }
 
-// addedLines returns line numbers that were added in the patch, along with
+// AddedLines returns line numbers that were added in the patch, along with
 // their line in the patch itself as a map from line to patch line.
 // https://www.gnu.org/software/diffutils/manual/diffutils.html#Detailed-Unified
 // GitHub omits the ---/+++ lines since that information is in the
 // PullRequestChange object.
-func addedLines(patch string) (map[int]int, error) {
+func AddedLines(patch string) (map[int]int, error) {
 	result := make(map[int]int)
 	if patch == "" {
 		return result, nil
 	}
 	lines := strings.Split(patch, "\n")
 	for i := 0; i < len(lines); i++ {
+		// dodge the "\ No newline at end of file" line
+		if lines[i] == "\\ No newline at end of file" {
+			continue
+		}
 		_, oldLen, newLine, newLen, err := parseHunkLine(lines[i])
 		if err != nil {
 			return nil, fmt.Errorf("couldn't parse hunk on line %d in patch %s: %v", i, patch, err)

@@ -1,0 +1,53 @@
+presubmits:
+  kubernetes-sigs/cluster-api-provider-openstack:
+  - name: pull-cluster-api-provider-openstack-make
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-openstack
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        args:
+        - make
+        - images
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        resources:
+          requests:
+            memory: "6Gi"
+  - name: pull-cluster-api-provider-openstack-test
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-openstack
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test
+  - name: pull-cluster-api-provider-openstack-check
+    always_run: true
+    decorate: true
+    branches:
+    - master
+    path_alias: sigs.k8s.io/cluster-api-provider-openstack
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - check

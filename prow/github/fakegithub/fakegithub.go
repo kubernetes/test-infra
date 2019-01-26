@@ -20,10 +20,13 @@ import (
 	"fmt"
 	"regexp"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 )
 
 const botName = "k8s-ci-robot"
+
+// Bot is the exported botName
 const Bot = botName
 
 // FakeClient is like client, but fake.
@@ -41,12 +44,14 @@ type FakeClient struct {
 	CombinedStatuses    map[string]*github.CombinedStatus
 	CreatedStatuses     map[string][]github.Status
 	IssueEvents         map[int][]github.ListedIssueEvent
+	Commits             map[string]github.SingleCommit
 
 	//All Labels That Exist In The Repo
-	ExistingLabels []string
+	RepoLabelsExisting []string
 	// org/repo#number:label
-	LabelsAdded   []string
-	LabelsRemoved []string
+	IssueLabelsAdded    []string
+	IssueLabelsExisting []string
+	IssueLabelsRemoved  []string
 
 	// org/repo#number:body
 	IssueCommentsAdded []string
@@ -64,9 +69,16 @@ type FakeClient struct {
 	Milestone    int
 	MilestoneMap map[string]int
 
+	// list of commits for each PR
+	// org/repo#number:[]commit
+	CommitMap map[string][]github.RepositoryCommit
+
 	// Fake remote git storage. File name are keys
 	// and values map SHA to content
 	RemoteFiles map[string]map[string]string
+
+	// A list of refs that got deleted via DeleteRef
+	RefsDeleted []struct{ Org, Repo, Ref string }
 }
 
 // BotName returns authenticated login.
@@ -183,12 +195,23 @@ func (f *FakeClient) GetRef(owner, repo, ref string) (string, error) {
 	return "abcde", nil
 }
 
+// DeleteRef returns an error indicating if deletion of the given ref was successful
+func (f *FakeClient) DeleteRef(owner, repo, ref string) error {
+	f.RefsDeleted = append(f.RefsDeleted, struct{ Org, Repo, Ref string }{Org: owner, Repo: repo, Ref: ref})
+	return nil
+}
+
+// GetSingleCommit returns a single commit.
+func (f *FakeClient) GetSingleCommit(org, repo, SHA string) (github.SingleCommit, error) {
+	return f.Commits[SHA], nil
+}
+
 // CreateStatus adds a status context to a commit.
-func (f *FakeClient) CreateStatus(owner, repo, sha string, s github.Status) error {
+func (f *FakeClient) CreateStatus(owner, repo, SHA string, s github.Status) error {
 	if f.CreatedStatuses == nil {
 		f.CreatedStatuses = make(map[string][]github.Status)
 	}
-	statuses := f.CreatedStatuses[sha]
+	statuses := f.CreatedStatuses[SHA]
 	var updated bool
 	for i := range statuses {
 		if statuses[i].Context == s.Context {
@@ -199,7 +222,7 @@ func (f *FakeClient) CreateStatus(owner, repo, sha string, s github.Status) erro
 	if !updated {
 		statuses = append(statuses, s)
 	}
-	f.CreatedStatuses[sha] = statuses
+	f.CreatedStatuses[SHA] = statuses
 	return nil
 }
 
@@ -216,7 +239,7 @@ func (f *FakeClient) GetCombinedStatus(owner, repo, ref string) (*github.Combine
 // GetRepoLabels gets labels in a repo.
 func (f *FakeClient) GetRepoLabels(owner, repo string) ([]github.Label, error) {
 	la := []github.Label{}
-	for _, l := range f.ExistingLabels {
+	for _, l := range f.RepoLabelsExisting {
 		la = append(la, github.Label{Name: l})
 	}
 	return la, nil
@@ -224,10 +247,12 @@ func (f *FakeClient) GetRepoLabels(owner, repo string) ([]github.Label, error) {
 
 // GetIssueLabels gets labels on an issue
 func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.Label, error) {
-	// Only labels added to an issue are considered. Removals are ignored by this fake.
 	re := regexp.MustCompile(fmt.Sprintf(`^%s/%s#%d:(.*)$`, owner, repo, number))
 	la := []github.Label{}
-	for _, l := range f.LabelsAdded {
+	allLabels := sets.NewString(f.IssueLabelsExisting...)
+	allLabels.Insert(f.IssueLabelsAdded...)
+	allLabels.Delete(f.IssueLabelsRemoved...)
+	for _, l := range allLabels.List() {
 		groups := re.FindStringSubmatch(l)
 		if groups != nil {
 			la = append(la, github.Label{Name: groups[1]})
@@ -238,13 +263,17 @@ func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.La
 
 // AddLabel adds a label
 func (f *FakeClient) AddLabel(owner, repo string, number int, label string) error {
-	if f.ExistingLabels == nil {
-		f.LabelsAdded = append(f.LabelsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label))
+	labelString := fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label)
+	if sets.NewString(f.IssueLabelsAdded...).Has(labelString) {
+		return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
+	}
+	if f.RepoLabelsExisting == nil {
+		f.IssueLabelsAdded = append(f.IssueLabelsAdded, labelString)
 		return nil
 	}
-	for _, l := range f.ExistingLabels {
+	for _, l := range f.RepoLabelsExisting {
 		if label == l {
-			f.LabelsAdded = append(f.LabelsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label))
+			f.IssueLabelsAdded = append(f.IssueLabelsAdded, labelString)
 			return nil
 		}
 	}
@@ -253,8 +282,12 @@ func (f *FakeClient) AddLabel(owner, repo string, number int, label string) erro
 
 // RemoveLabel removes a label
 func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) error {
-	f.LabelsRemoved = append(f.LabelsRemoved, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label))
-	return nil
+	labelString := fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label)
+	if !sets.NewString(f.IssueLabelsRemoved...).Has(labelString) {
+		f.IssueLabelsRemoved = append(f.IssueLabelsRemoved, labelString)
+		return nil
+	}
+	return fmt.Errorf("cannot remove %v from %s/%s/#%d", label, owner, repo, number)
 }
 
 // FindIssues returns f.Issues
@@ -299,10 +332,24 @@ func (f *FakeClient) GetFile(org, repo, file, commit string) ([]byte, error) {
 	return nil, fmt.Errorf("could not find file %s with ref %s", file, commit)
 }
 
+// ListTeams return a list of fake teams that correspond to the fake team members returned by ListTeamMembers
+func (f *FakeClient) ListTeams(org string) ([]github.Team, error) {
+	return []github.Team{
+		{
+			ID:   0,
+			Name: "Admins",
+		},
+		{
+			ID:   42,
+			Name: "Leads",
+		},
+	}, nil
+}
+
 // ListTeamMembers return a fake team with a single "sig-lead" Github teammember
 func (f *FakeClient) ListTeamMembers(teamID int, role string) ([]github.TeamMember, error) {
 	if role != github.RoleAll {
-		return nil, fmt.Errorf("unsupport role %v (only all supported)", role)
+		return nil, fmt.Errorf("unsupported role %v (only all supported)", role)
 	}
 	teams := map[int][]github.TeamMember{
 		0:  {{Login: "default-sig-lead"}},
@@ -357,4 +404,10 @@ func (f *FakeClient) ListMilestones(org, repo string) ([]github.Milestone, error
 		milestones = append(milestones, github.Milestone{Title: k, Number: v})
 	}
 	return milestones, nil
+}
+
+// ListPRCommits lists commits for a given PR.
+func (f *FakeClient) ListPRCommits(org, repo string, prNumber int) ([]github.RepositoryCommit, error) {
+	k := fmt.Sprintf("%s/%s#%d", org, repo, prNumber)
+	return f.CommitMap[k], nil
 }

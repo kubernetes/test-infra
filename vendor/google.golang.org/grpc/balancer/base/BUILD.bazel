@@ -6,7 +6,7 @@ go_library(
         "balancer.go",
         "base.go",
     ],
-    importmap = "vendor/google.golang.org/grpc/balancer/base",
+    importmap = "k8s.io/test-infra/vendor/google.golang.org/grpc/balancer/base",
     importpath = "google.golang.org/grpc/balancer/base",
     visibility = ["//visibility:public"],
     deps = [

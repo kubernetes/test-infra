@@ -28,13 +28,14 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 const (
-	label      = "do-not-merge/work-in-progress"
-	pluginName = "wip"
+	// PluginName defines this plugin's registered name.
+	PluginName = "wip"
 )
 
 var (
@@ -50,13 +51,13 @@ type event struct {
 }
 
 func init() {
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
+	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
 	return &pluginhelp.PluginHelp{
-			Description: "The wip (Work In Progress) plugin applies the '" + label + "' label to pull requests whose title starts with 'WIP' and removes it from pull requests when they remove the title prefix. The '" + label + "' label is typically used to block a pull request from merging while it is still in progress.",
+			Description: "The wip (Work In Progress) plugin applies the '" + labels.WorkInProgress + "' Label to pull requests whose title starts with 'WIP' and removes it from pull requests when they remove the title prefix. The '" + labels.WorkInProgress + "' Label is typically used to block a pull request from merging while it is still in progress.",
 		},
 		nil
 }
@@ -68,7 +69,7 @@ type githubClient interface {
 	RemoveLabel(owner, repo string, number int, label string) error
 }
 
-func handlePullRequest(pc plugins.PluginClient, pe github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
 	// These are the only actions indicating the PR title may have changed.
 	if pe.Action != github.PullRequestActionOpened &&
 		pe.Action != github.PullRequestActionReopened &&
@@ -89,7 +90,7 @@ func handlePullRequest(pc plugins.PluginClient, pe github.PullRequestEvent) erro
 	}
 	hasLabel := false
 	for _, l := range currentLabels {
-		if l.Name == label {
+		if l.Name == labels.WorkInProgress {
 			hasLabel = true
 		}
 	}
@@ -112,13 +113,13 @@ func handlePullRequest(pc plugins.PluginClient, pe github.PullRequestEvent) erro
 // Otherwise, neither should be present.
 func handle(gc githubClient, le *logrus.Entry, e *event) error {
 	if e.needsLabel && !e.hasLabel {
-		if err := gc.AddLabel(e.org, e.repo, e.number, label); err != nil {
-			le.Warnf("error while adding label %q: %v", label, err)
+		if err := gc.AddLabel(e.org, e.repo, e.number, labels.WorkInProgress); err != nil {
+			le.Warnf("error while adding Label %q: %v", labels.WorkInProgress, err)
 			return err
 		}
 	} else if !e.needsLabel && e.hasLabel {
-		if err := gc.RemoveLabel(e.org, e.repo, e.number, label); err != nil {
-			le.Warnf("error while removing label %q: %v", label, err)
+		if err := gc.RemoveLabel(e.org, e.repo, e.number, labels.WorkInProgress); err != nil {
+			le.Warnf("error while removing Label %q: %v", labels.WorkInProgress, err)
 			return err
 		}
 	}

@@ -20,8 +20,9 @@ set -o pipefail
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 
 TMP_LABELS_DOCS=$(mktemp)
-trap "rm -f $TMP_LABELS_DOCS" EXIT
+trap 'rm -f "${TMP_LABELS_DOCS}"' EXIT
 LABELS_DOCS_OUTPUT="${TMP_LABELS_DOCS}" ${TESTINFRA_ROOT}/hack/update-labels.sh
+
 
 DIFF=$(diff "${TMP_LABELS_DOCS}" "${TESTINFRA_ROOT}/label_sync/labels.md" || true)
 if [ ! -z "$DIFF" ]; then

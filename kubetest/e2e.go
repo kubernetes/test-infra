@@ -25,6 +25,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"k8s.io/test-infra/kubetest/e2e"
@@ -47,23 +48,31 @@ func argFields(args, dump, ipRange string) []string {
 }
 
 func run(deploy deployer, o options) error {
-	if o.checkSkew {
-		os.Setenv("KUBECTL", "./cluster/kubectl.sh --match-server-version")
-	} else {
-		os.Setenv("KUBECTL", "./cluster/kubectl.sh")
+	cmd, err := deploy.KubectlCommand()
+	if err != nil {
+		return err
 	}
+	if cmd == nil {
+		cmd = exec.Command("./cluster/kubectl.sh")
+	}
+	if o.checkSkew {
+		cmd.Args = append(cmd.Args, "--match-server-version")
+	}
+	os.Setenv("KUBECTL", strings.Join(cmd.Args, " "))
+
 	os.Setenv("KUBE_CONFIG_FILE", "config-test.sh")
 	os.Setenv("KUBE_RUNTIME_CONFIG", o.runtimeConfig)
 
-	dump := o.dump
-	if dump != "" {
-		if !filepath.IsAbs(dump) { // Directory may change
-			wd, err := os.Getwd()
-			if err != nil {
-				return fmt.Errorf("failed to os.Getwd(): %v", err)
-			}
-			dump = filepath.Join(wd, dump)
-		}
+	var errs []error
+
+	dump, err := util.OptionalAbsPath(o.dump)
+	if err != nil {
+		return fmt.Errorf("failed handling --dump path: %v", err)
+	}
+
+	dumpPreTestLogs, err := util.OptionalAbsPath(o.dumpPreTestLogs)
+	if err != nil {
+		return fmt.Errorf("failed handling --dump-pre-test-logs path: %v", err)
 	}
 
 	if o.up {
@@ -76,9 +85,6 @@ func run(deploy deployer, o options) error {
 			return fmt.Errorf("error tearing down previous cluster: %s", err)
 		}
 	}
-
-	var err error
-	var errs []error
 
 	// Ensures that the cleanup/down action is performed exactly once.
 	var (
@@ -144,14 +150,13 @@ func run(deploy deployer, o options) error {
 				return fmt.Errorf("error starting federation: %s", err)
 			}
 		}
-
-		// The dind deployer checks that the control plane is healthy.
-		if !o.nodeTests && o.deployment != "dind" {
-			// Check that the api is reachable before proceeding with further steps.
-			errs = util.AppendError(errs, control.XMLWrap(&suite, "Check APIReachability", getKubectlVersion))
+		// If node testing is enabled, check that the api is reachable before
+		// proceeding with further steps. This is accomplished by listing the nodes.
+		if !o.nodeTests {
+			errs = util.AppendError(errs, control.XMLWrap(&suite, "Check APIReachability", func() error { return getKubectlVersion(deploy) }))
 			if dump != "" {
 				errs = util.AppendError(errs, control.XMLWrap(&suite, "list nodes", func() error {
-					return listNodes(dump)
+					return listNodes(deploy, dump)
 				}))
 			}
 		}
@@ -181,6 +186,10 @@ func run(deploy deployer, o options) error {
 		}
 	}
 
+	if dumpPreTestLogs != "" {
+		errs = append(errs, dumpRemoteLogs(deploy, o, dumpPreTestLogs, "pre-test")...)
+	}
+
 	testArgs := argFields(o.testArgs, dump, o.clusterIPRange)
 	if o.test {
 		if err := control.XMLWrap(&suite, "test setup", deploy.TestSetup); err != nil {
@@ -197,8 +206,8 @@ func run(deploy deployer, o options) error {
 				return federationTest(testArgs)
 			}))
 		} else {
-			if o.deployment != "dind" && o.deployment != "conformance" {
-				errs = util.AppendError(errs, control.XMLWrap(&suite, "kubectl version", getKubectlVersion))
+			if o.deployment != "conformance" {
+				errs = util.AppendError(errs, control.XMLWrap(&suite, "kubectl version", func() error { return getKubectlVersion(deploy) }))
 			}
 
 			if o.skew {
@@ -221,6 +230,12 @@ func run(deploy deployer, o options) error {
 		}
 	}
 
+	if o.kubemark {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "Kubemark Overall", func() error {
+			return kubemarkTest(testArgs, dump, o, deploy)
+		}))
+	}
+
 	if o.testCmd != "" {
 		if err := control.XMLWrap(&suite, "test setup", deploy.TestSetup); err != nil {
 			errs = util.AppendError(errs, err)
@@ -234,29 +249,19 @@ func run(deploy deployer, o options) error {
 
 	// TODO(bentheelder): consider remapping charts, etc to testCmd
 
+	var kubemarkWg sync.WaitGroup
+	var kubemarkDownErr error
 	if o.kubemark {
-		errs = util.AppendError(errs, control.XMLWrap(&suite, "Kubemark Overall", func() error {
-			return kubemarkTest(testArgs, dump, o, deploy)
-		}))
+		kubemarkWg.Add(1)
+		go kubemarkDown(&kubemarkDownErr, &kubemarkWg)
 	}
 
 	if o.charts {
 		errs = util.AppendError(errs, control.XMLWrap(&suite, "Helm Charts", chartsTest))
 	}
 
-	if o.perfTests {
-		errs = util.AppendError(errs, control.XMLWrap(&suite, "Perf Tests", perfTest))
-	}
-
 	if dump != "" {
-		errs = util.AppendError(errs, control.XMLWrap(&suite, "DumpClusterLogs", func() error {
-			return deploy.DumpClusterLogs(dump, o.logexporterGCSPath)
-		}))
-		if o.federation {
-			errs = util.AppendError(errs, control.XMLWrap(&suite, "dumpFederationLogs", func() error {
-				return dumpFederationLogs(dump)
-			}))
-		}
+		errs = append(errs, dumpRemoteLogs(deploy, o, dump, "")...)
 	}
 
 	if o.checkLeaks {
@@ -290,6 +295,10 @@ func run(deploy deployer, o options) error {
 			return nil
 		}))
 	}
+
+	// Wait for kubemarkDown step to finish before going further.
+	kubemarkWg.Wait()
+	errs = util.AppendError(errs, kubemarkDownErr)
 
 	// Save the state if we upped a new cluster without downing it
 	// or we are turning up federated clusters without turning up
@@ -337,10 +346,19 @@ func run(deploy deployer, o options) error {
 	return nil
 }
 
-func getKubectlVersion() error {
+func getKubectlVersion(dp deployer) error {
+	cmd, err := dp.KubectlCommand()
+	if err != nil {
+		return err
+	}
+	if cmd == nil {
+		cmd = exec.Command("./cluster/kubectl.sh")
+	}
+	cmd.Args = append(cmd.Args, "--match-server-version=false", "version")
+	copied := *cmd
 	retries := 5
 	for {
-		_, err := control.Output(exec.Command("./cluster/kubectl.sh", "--match-server-version=false", "version"))
+		_, err := control.Output(&copied)
 		if err == nil {
 			return nil
 		}
@@ -348,21 +366,56 @@ func getKubectlVersion() error {
 		if retries == 0 {
 			return err
 		}
-		log.Print("Failed to reach api. Sleeping for 10 seconds before retrying...")
+		log.Printf("Failed to reach api. Sleeping for 10 seconds before retrying... (%v)", copied.Args)
 		time.Sleep(10 * time.Second)
 	}
 }
 
-func listNodes(dump string) error {
-	b, err := control.Output(exec.Command("./cluster/kubectl.sh", "--match-server-version=false", "get", "nodes", "-oyaml"))
+func dumpRemoteLogs(deploy deployer, o options, path, reason string) []error {
+	if reason != "" {
+		reason += " "
+	}
+
+	var errs []error
+
+	errs = util.AppendError(errs, control.XMLWrap(&suite, reason+"DumpClusterLogs", func() error {
+		return deploy.DumpClusterLogs(path, o.logexporterGCSPath)
+	}))
+	if o.federation {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, reason+"dumpFederationLogs", func() error {
+			return dumpFederationLogs(path)
+		}))
+	}
+
+	return errs
+}
+
+func listNodes(dp deployer, dump string) error {
+	cmd, err := dp.KubectlCommand()
+	if err != nil {
+		return err
+	}
+	if cmd == nil {
+		cmd = exec.Command("./cluster/kubectl.sh")
+	}
+	cmd.Args = append(cmd.Args, "--match-server-version=false", "get", "nodes", "-oyaml")
+	b, err := control.Output(cmd)
 	if err != nil {
 		return err
 	}
 	return ioutil.WriteFile(filepath.Join(dump, "nodes.yaml"), b, 0644)
 }
 
-func listKubemarkNodes(dump string) error {
-	b, err := control.Output(exec.Command("./cluster/kubectl.sh", "--match-server-version=false", "--kubeconfig=./test/kubemark/resources/kubeconfig.kubemark", "get", "nodes", "-oyaml"))
+func listKubemarkNodes(dp deployer, dump string) error {
+	cmd, err := dp.KubectlCommand()
+	if err != nil {
+		return err
+	}
+	if cmd == nil {
+		cmd = exec.Command("./cluster/kubectl.sh")
+	}
+	cmd.Args = append(cmd.Args, "--match-server-version=false", "--kubeconfig=./test/kubemark/resources/kubeconfig.kubemark", "get", "nodes", "-oyaml")
+	b, err := control.Output(cmd)
 	if err != nil {
 		return err
 	}
@@ -532,15 +585,6 @@ func dumpFederationLogs(location string) error {
 	return nil
 }
 
-func perfTest() error {
-	// Run perf tests
-	cmdline := util.K8s("perf-tests", "clusterloader", "run-e2e.sh")
-	if err := control.FinishRunning(exec.Command(cmdline)); err != nil {
-		return err
-	}
-	return nil
-}
-
 func chartsTest() error {
 	// Run helm tests.
 	cmdline := util.K8s("charts", "test", "helm-test-e2e.sh")
@@ -589,15 +633,6 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 	}); err != nil {
 		return err
 	}
-	// If we tried to bring the Kubemark cluster up, make a courtesy
-	// attempt to bring it down so we're not leaving resources around.
-	//
-	// TODO: We should try calling stop-kubemark exactly once. Though to
-	// stop the leaking resources for now, we want to be on the safe side
-	// and call it explicitly in defer if the other one is not called.
-	defer control.XMLWrap(&suite, "Kubemark TearDown (Deferred)", func() error {
-		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
-	})
 
 	if err := control.XMLWrap(&suite, "IsUp", deploy.IsUp); err != nil {
 		return err
@@ -618,7 +653,7 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 	// Check kubemark apiserver reachability by listing all nodes.
 	if dump != "" {
 		control.XMLWrap(&suite, "list kubemark nodes", func() error {
-			return listKubemarkNodes(dump)
+			return listKubemarkNodes(deploy, dump)
 		})
 	}
 
@@ -643,6 +678,11 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 		if err := os.Setenv("KUBE_MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
 			return err
 		}
+		// MASTER_IP variable is required by the clusterloader. It requires to have master ip provided,
+		// due to master being unregistered.
+		if err := os.Setenv("MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
+			return err
+		}
 
 		if os.Getenv("ENABLE_KUBEMARK_CLUSTER_AUTOSCALER") == "true" {
 			testArgs = append(testArgs, "--kubemark-external-kubeconfig="+os.Getenv("DEFAULT_KUBECONFIG"))
@@ -650,6 +690,10 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 
 		cwd, err := os.Getwd()
 		if err != nil {
+			return err
+		}
+
+		if err := os.Setenv("KUBECONFIG", fmt.Sprintf("%s/test/kubemark/resources/kubeconfig.kubemark", cwd)); err != nil {
 			return err
 		}
 
@@ -662,7 +706,6 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 			os.Environ(),
 			"KUBERNETES_PROVIDER=kubemark",
 			"KUBE_CONFIG_FILE=config-default.sh",
-			fmt.Sprintf("KUBECONFIG=%s/test/kubemark/resources/kubeconfig.kubemark", cwd),
 			"KUBE_MASTER_URL=https://"+os.Getenv("KUBE_MASTER_IP"),
 		)
 
@@ -681,14 +724,17 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 		return control.FinishRunning(exec.Command("./test/kubemark/master-log-dump.sh", dump))
 	})
 
-	// Stop the kubemark cluster.
-	if err := control.XMLWrap(&suite, "Kubemark TearDown", func() error {
-		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
-	}); err != nil {
-		return err
-	}
-
+	// 'Stop kubemark cluster' step has now been moved outside this function
+	// to make it asynchronous with other steps (to speed test execution).
 	return nil
+}
+
+// Brings down the kubemark cluster.
+func kubemarkDown(err *error, wg *sync.WaitGroup) {
+	defer wg.Done()
+	*err = control.XMLWrap(&suite, "Kubemark TearDown", func() error {
+		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
+	})
 }
 
 // Runs tests in the kubernetes_skew directory, appending --report-prefix flag to the run

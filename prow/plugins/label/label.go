@@ -31,8 +31,8 @@ import (
 const pluginName = "label"
 
 var (
-	labelRegex              = regexp.MustCompile(`(?m)^/(area|committee|kind|priority|sig|triage|wg)\s*(.*)$`)
-	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|committee|kind|priority|sig|triage|wg)\s*(.*)$`)
+	labelRegex              = regexp.MustCompile(`(?m)^/(area|committee|kind|language|priority|sig|triage|wg)\s*(.*)$`)
+	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|committee|kind|language|priority|sig|triage|wg)\s*(.*)$`)
 	customLabelRegex        = regexp.MustCompile(`(?m)^/label\s*(.*)$`)
 	customRemoveLabelRegex  = regexp.MustCompile(`(?m)^/remove-label\s*(.*)$`)
 	nonExistentLabelOnIssue = "Those labels are not set on the issue: `%v`"
@@ -45,19 +45,19 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The label plugin provides commands that add or remove certain types of labels. Labels of the following types can be manipulated: 'area/*', 'committee/*', 'kind/*', 'priority/*', 'sig/*', 'triage/*', and 'wg/*'. More labels can be configured to be used via the /label command.",
+		Description: "The label plugin provides commands that add or remove certain types of labels. Labels of the following types can be manipulated: 'area/*', 'committee/*', 'kind/*', 'language/*', 'priority/*', 'sig/*', 'triage/*', and 'wg/*'. More labels can be configured to be used via the /label command.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/[remove-](area|committee|kind|priority|sig|triage|wg|label) <target>",
+		Usage:       "/[remove-](area|committee|kind|language|priority|sig|triage|wg|label) <target>",
 		Description: "Applies or removes a label from one of the recognized types of labels.",
 		Featured:    false,
 		WhoCanUse:   "Anyone can trigger this command on a PR.",
-		Examples:    []string{"/kind bug", "/remove-area prow", "/sig testing"},
+		Examples:    []string{"/kind bug", "/remove-area prow", "/sig testing", "/language zh"},
 	})
 	return pluginHelp, nil
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	var labels []string
 	if pc.PluginConfig.Label != nil {
 		labels = pc.PluginConfig.Label.AdditionalLabels
@@ -126,9 +126,9 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 		return err
 	}
 
-	existingLabels := map[string]string{}
+	RepoLabelsExisting := map[string]string{}
 	for _, l := range repoLabels {
-		existingLabels[strings.ToLower(l.Name)] = l.Name
+		RepoLabelsExisting[strings.ToLower(l.Name)] = l.Name
 	}
 	var (
 		nonexistent         []string
@@ -147,12 +147,12 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 			continue
 		}
 
-		if _, ok := existingLabels[labelToAdd]; !ok {
+		if _, ok := RepoLabelsExisting[labelToAdd]; !ok {
 			nonexistent = append(nonexistent, labelToAdd)
 			continue
 		}
 
-		if err := gc.AddLabel(org, repo, e.Number, existingLabels[labelToAdd]); err != nil {
+		if err := gc.AddLabel(org, repo, e.Number, RepoLabelsExisting[labelToAdd]); err != nil {
 			log.WithError(err).Errorf("Github failed to add the following label: %s", labelToAdd)
 		}
 	}
@@ -164,7 +164,7 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 			continue
 		}
 
-		if _, ok := existingLabels[labelToRemove]; !ok {
+		if _, ok := RepoLabelsExisting[labelToRemove]; !ok {
 			nonexistent = append(nonexistent, labelToRemove)
 			continue
 		}

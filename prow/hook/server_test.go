@@ -28,12 +28,17 @@ import (
 
 func TestServeHTTPErrors(t *testing.T) {
 	metrics := NewMetrics()
-	pa := &plugins.PluginAgent{}
+	pa := &plugins.ConfigAgent{}
 	pa.Set(&plugins.Configuration{})
+
+	getSecret := func() []byte {
+		return []byte("abc")
+	}
+
 	s := &Server{
-		HMACSecret: []byte("abc"),
-		Metrics:    metrics,
-		Plugins:    pa,
+		Metrics:        metrics,
+		Plugins:        pa,
+		TokenGenerator: getSecret,
 	}
 	// This is the SHA1 signature for payload "{}" and signature "abc"
 	// echo -n '{}' | openssl dgst -sha1 -hmac abc
@@ -237,7 +242,7 @@ func TestNeedDemux(t *testing.T) {
 	for _, test := range tests {
 		t.Logf("Running scenario %q", test.name)
 
-		pa := &plugins.PluginAgent{}
+		pa := &plugins.ConfigAgent{}
 		pa.Set(&plugins.Configuration{
 			ExternalPlugins: test.plugins,
 		})

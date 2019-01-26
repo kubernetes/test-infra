@@ -60,7 +60,7 @@ func AppendError(errs []error, err error) []error {
 	return errs
 }
 
-// Home returns Returns $HOME/part/part/part
+// Home returns $HOME/part/part/part
 func Home(parts ...string) string {
 	p := []string{os.Getenv("HOME")}
 	for _, a := range parts {
@@ -72,6 +72,16 @@ func Home(parts ...string) string {
 // InsertPath does export PATH=path:$PATH
 func InsertPath(path string) error {
 	return os.Setenv("PATH", fmt.Sprintf("%v:%v", path, os.Getenv("PATH")))
+}
+
+// OptionalAbsPath returns an absolute path if the provided path wasn't empty, and otherwise
+// returns an empty string.
+func OptionalAbsPath(path string) (string, error) {
+	if path == "" {
+		return "", nil
+	}
+
+	return filepath.Abs(path)
 }
 
 // JoinURL converts input (gs://foo, "bar") to gs://foo/bar

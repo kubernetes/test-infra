@@ -17,43 +17,43 @@ limitations under the License.
 package verifyowners
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"regexp"
+	"strconv"
 
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/golint"
 	"k8s.io/test-infra/prow/repoowners"
 )
 
 const (
-	pluginName     = "verify-owners"
+	// PluginName defines this plugin's registered name.
+	PluginName     = "verify-owners"
 	ownersFileName = "OWNERS"
 )
 
-var (
-	invalidOwnersLabel = "do-not-merge/invalid-owners-file"
-)
-
 func init() {
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
+	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	return &pluginhelp.PluginHelp{
-			Description: fmt.Sprintf("The verify-owners plugin validates OWNERS files if they are modified in a PR. On validation failure it automatically adds the '%s' label to the PR, and a review comment on the incriminating file(s).", invalidOwnersLabel),
+			Description: fmt.Sprintf("The verify-owners plugin validates %s files if they are modified in a PR. On validation failure it automatically adds the '%s' label to the PR, and a review comment on the incriminating file(s).", ownersFileName, labels.InvalidOwners),
 		},
 		nil
 }
 
 type ownersClient interface {
-	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerInterface, error)
+	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error)
 }
 
 type githubClient interface {
@@ -64,17 +64,22 @@ type githubClient interface {
 	RemoveLabel(owner, repo string, number int, label string) error
 }
 
-func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	if pre.Action != github.PullRequestActionOpened && pre.Action != github.PullRequestActionReopened && pre.Action != github.PullRequestActionSynchronize {
 		return nil
 	}
 	return handle(pc.GitHubClient, pc.GitClient, pc.Logger, &pre, pc.PluginConfig.Owners.LabelsBlackList)
 }
 
+type messageWithLine struct {
+	line    int
+	message string
+}
+
 func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.PullRequestEvent, labelsBlackList []string) error {
 	org := pre.Repo.Owner.Login
 	repo := pre.Repo.Name
-	wrongOwnersFiles := map[string]error{}
+	wrongOwnersFiles := map[string]messageWithLine{}
 
 	// Get changes.
 	changes, err := ghc.GetPullRequestChanges(org, repo, pre.Number)
@@ -83,10 +88,10 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 	}
 
 	// List modified OWNERS files.
-	var modifiedOwnersFiles []string
+	var modifiedOwnersFiles []github.PullRequestChange
 	for _, change := range changes {
 		if filepath.Base(change.Filename) == ownersFileName {
-			modifiedOwnersFiles = append(modifiedOwnersFiles, change.Filename)
+			modifiedOwnersFiles = append(modifiedOwnersFiles, change)
 		}
 	}
 	if len(modifiedOwnersFiles) == 0 {
@@ -106,23 +111,48 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 	if err := r.CheckoutPullRequest(pre.Number); err != nil {
 		return err
 	}
+	// If we have a specific SHA, use it.
+	if pre.PullRequest.Head.SHA != "" {
+		if err := r.Checkout(pre.PullRequest.Head.SHA); err != nil {
+			return err
+		}
+	}
 
 	// Check each OWNERS file.
-	for _, f := range modifiedOwnersFiles {
+	for _, c := range modifiedOwnersFiles {
 		// Try to load OWNERS file.
-		path := filepath.Join(r.Dir, f)
+		path := filepath.Join(r.Dir, c.Filename)
 		b, err := ioutil.ReadFile(path)
 		if err != nil {
-			log.WithError(err).Errorf("Failed to read %s.", path)
+			log.WithError(err).Warningf("Failed to read %s.", path)
 			return nil
 		}
 		var approvers []string
 		var labels []string
+		// by default we bind errors to line 1
+		lineNumber := 1
 		simple, err := repoowners.ParseSimpleConfig(b)
 		if err != nil || simple.Empty() {
 			full, err := repoowners.ParseFullConfig(b)
 			if err != nil {
-				wrongOwnersFiles[f] = fmt.Errorf("error occurred parsing the OWNERS file in %s: %v", f, err)
+				lineNumberRe, _ := regexp.Compile(`line (\d+)`)
+				lineNumberMatches := lineNumberRe.FindStringSubmatch(err.Error())
+				// try to find a line number for the error
+				if len(lineNumberMatches) > 1 {
+					// we're sure it will convert as it passed the regexp already
+					absoluteLineNumber, _ := strconv.Atoi(lineNumberMatches[1])
+					// we need to convert it to a line number relative to the patch
+					al, err := golint.AddedLines(c.Patch)
+					if err != nil {
+						log.WithError(err).Errorf("Failed to compute added lines in %s: %v", c.Filename, err)
+					} else if val, ok := al[absoluteLineNumber]; ok {
+						lineNumber = val
+					}
+				}
+				wrongOwnersFiles[c.Filename] = messageWithLine{
+					lineNumber,
+					fmt.Sprintf("Cannot parse file: %v.", err),
+				}
 				continue
 			} else {
 				// it's a FullConfig
@@ -138,52 +168,58 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 		}
 		// Check labels against blacklist
 		if sets.NewString(labels...).HasAny(labelsBlackList...) {
-			wrongOwnersFiles[f] = fmt.Errorf("OWNERS file contains blacklisted labels: %s", sets.NewString(simple.Config.Labels...).Intersection(sets.NewString(labelsBlackList...)).List())
+			wrongOwnersFiles[c.Filename] = messageWithLine{
+				lineNumber,
+				fmt.Sprintf("File contains blacklisted labels: %s.", sets.NewString(labels...).Intersection(sets.NewString(labelsBlackList...)).List()),
+			}
 			continue
 		}
 		// Check approvers isn't empty
-		if filepath.Dir(f) == "." && len(approvers) == 0 {
-			wrongOwnersFiles[f] = errors.New("no approvers in the root directory OWNERS file")
+		if filepath.Dir(c.Filename) == "." && len(approvers) == 0 {
+			wrongOwnersFiles[c.Filename] = messageWithLine{
+				lineNumber,
+				fmt.Sprintf("No approvers defined in this root directory %s file.", ownersFileName),
+			}
 			continue
 		}
 	}
 	// React if we saw something.
 	if len(wrongOwnersFiles) > 0 {
-		if err := ghc.AddLabel(org, repo, pre.Number, invalidOwnersLabel); err != nil {
-			return err
-		}
-		log.Debugf("Creating a review for %d OWNERS files.", len(wrongOwnersFiles))
-		var comments []github.DraftReviewComment
-		for errFile, errMsg := range wrongOwnersFiles {
-			resp := fmt.Sprintf("Invalid OWNERS file: %v", errMsg)
-			comments = append(comments, github.DraftReviewComment{
-				Path: errFile,
-				Body: resp,
-			})
-		}
-		// Make the review body.
 		s := "s"
 		if len(wrongOwnersFiles) == 1 {
 			s = ""
 		}
-		response := fmt.Sprintf("%d invalid OWNERS file%s", len(wrongOwnersFiles), s)
-		err := ghc.CreateReview(org, repo, pre.Number, github.DraftReview{
+		if err := ghc.AddLabel(org, repo, pre.Number, labels.InvalidOwners); err != nil {
+			return err
+		}
+		log.Debugf("Creating a review for %d %s file%s.", len(wrongOwnersFiles), ownersFileName, s)
+		var comments []github.DraftReviewComment
+		for errFile, err := range wrongOwnersFiles {
+			comments = append(comments, github.DraftReviewComment{
+				Path:     errFile,
+				Body:     err.message,
+				Position: err.line,
+			})
+		}
+		// Make the review body.
+		response := fmt.Sprintf("%d invalid %s file%s", len(wrongOwnersFiles), ownersFileName, s)
+		draftReview := github.DraftReview{
 			Body:     plugins.FormatResponseRaw(pre.PullRequest.Body, pre.PullRequest.HTMLURL, pre.PullRequest.User.Login, response),
 			Action:   github.Comment,
 			Comments: comments,
-		})
+		}
+		if pre.PullRequest.Head.SHA != "" {
+			draftReview.CommitSHA = pre.PullRequest.Head.SHA
+		}
+		err := ghc.CreateReview(org, repo, pre.Number, draftReview)
 		if err != nil {
-			return fmt.Errorf("error creating a review for invalid OWNERS file(s): %v", err)
+			return fmt.Errorf("error creating a review for invalid %s file%s: %v", ownersFileName, s, err)
 		}
 	} else {
 		// Don't bother checking if it has the label...it's a race, and we'll have
 		// to handle failure due to not being labeled anyway.
-		labelNotFound := true
-		if err := ghc.RemoveLabel(org, repo, pre.Number, invalidOwnersLabel); err != nil {
-			if _, labelNotFound = err.(*github.LabelNotFound); !labelNotFound {
-				return fmt.Errorf("failed removing lgtm label: %v", err)
-			}
-			// If the error is indeed *github.LabelNotFound, consider it a success.
+		if err := ghc.RemoveLabel(org, repo, pre.Number, labels.InvalidOwners); err != nil {
+			return fmt.Errorf("failed removing %s label: %v", labels.InvalidOwners, err)
 		}
 	}
 	return nil

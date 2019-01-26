@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
@@ -36,9 +35,10 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
 
+	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/config/secret"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -46,10 +46,10 @@ import (
 )
 
 type options struct {
-	configPath string
-	selector   string
-	totURL     string
-	deckURL    string
+	configPath    string
+	jobConfigPath string
+	selector      string
+	totURL        string
 
 	jenkinsURL             string
 	jenkinsUserName        string
@@ -60,12 +60,22 @@ type options struct {
 	caCertFile             string
 	csrfProtect            bool
 
-	githubEndpoint  flagutil.Strings
-	githubTokenFile string
-	dryRun          bool
+	dryRun     bool
+	kubernetes prowflagutil.KubernetesOptions
+	github     prowflagutil.GitHubOptions
 }
 
 func (o *options) Validate() error {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+		if err := group.Validate(o.dryRun); err != nil {
+			return err
+		}
+	}
+
+	if _, err := url.ParseRequestURI(o.jenkinsURL); err != nil {
+		return fmt.Errorf("invalid -jenkins-url URI: %q", o.jenkinsURL)
+	}
+
 	if o.jenkinsTokenFile == "" && o.jenkinsBearerTokenFile == "" {
 		return errors.New("either --jenkins-token-file or --jenkins-bearer-token-file must be set")
 	} else if o.jenkinsTokenFile != "" && o.jenkinsBearerTokenFile != "" {
@@ -89,27 +99,27 @@ func (o *options) Validate() error {
 }
 
 func gatherOptions() options {
-	o := options{
-		githubEndpoint: flagutil.NewStrings("https://api.github.com"),
+	o := options{}
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	fs.StringVar(&o.selector, "label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
+	fs.StringVar(&o.totURL, "tot-url", "", "Tot URL")
+
+	fs.StringVar(&o.jenkinsURL, "jenkins-url", "http://jenkins-proxy", "Jenkins URL")
+	fs.StringVar(&o.jenkinsUserName, "jenkins-user", "jenkins-trigger", "Jenkins username")
+	fs.StringVar(&o.jenkinsTokenFile, "jenkins-token-file", "", "Path to the file containing the Jenkins API token.")
+	fs.StringVar(&o.jenkinsBearerTokenFile, "jenkins-bearer-token-file", "", "Path to the file containing the Jenkins API bearer token.")
+	fs.StringVar(&o.certFile, "cert-file", "", "Path to a PEM-encoded certificate file.")
+	fs.StringVar(&o.keyFile, "key-file", "", "Path to a PEM-encoded key file.")
+	fs.StringVar(&o.caCertFile, "ca-cert-file", "", "Path to a PEM-encoded CA certificate file.")
+	fs.BoolVar(&o.csrfProtect, "csrf-protect", false, "Request a CSRF protection token from Jenkins that will be used in all subsequent requests to Jenkins.")
+
+	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub/Kubernetes/Jenkins.")
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+		group.AddFlags(fs)
 	}
-	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	flag.StringVar(&o.selector, "label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
-	flag.StringVar(&o.totURL, "tot-url", "", "Tot URL")
-	flag.StringVar(&o.deckURL, "deck-url", "", "Deck URL for read-only access to the cluster.")
-
-	flag.StringVar(&o.jenkinsURL, "jenkins-url", "http://jenkins-proxy", "Jenkins URL")
-	flag.StringVar(&o.jenkinsUserName, "jenkins-user", "jenkins-trigger", "Jenkins username")
-	flag.StringVar(&o.jenkinsTokenFile, "jenkins-token-file", "", "Path to the file containing the Jenkins API token.")
-	flag.StringVar(&o.jenkinsBearerTokenFile, "jenkins-bearer-token-file", "", "Path to the file containing the Jenkins API bearer token.")
-	flag.StringVar(&o.certFile, "cert-file", "", "Path to a PEM-encoded certificate file.")
-	flag.StringVar(&o.keyFile, "key-file", "", "Path to a PEM-encoded key file.")
-	flag.StringVar(&o.caCertFile, "ca-cert-file", "", "Path to a PEM-encoded CA certificate file.")
-	flag.BoolVar(&o.csrfProtect, "csrf-protect", false, "Request a CSRF protection token from Jenkins that will be used in all subsequent requests to Jenkins.")
-
-	flag.Var(&o.githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
-	flag.StringVar(&o.githubTokenFile, "github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
-	flag.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub/Kubernetes/Jenkins.")
-	flag.Parse()
+	fs.Parse(os.Args[1:])
 	return o
 }
 
@@ -127,11 +137,12 @@ func main() {
 	}
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, ""); err != nil {
+	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
+	cfg := configAgent.Config
 
-	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
+	kubeClient, err := o.kubernetes.Client(cfg().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
@@ -139,22 +150,32 @@ func main() {
 	ac := &jenkins.AuthConfig{
 		CSRFProtect: o.csrfProtect,
 	}
+
+	var tokens []string
+	tokens = append(tokens, o.github.TokenPath)
+
 	if o.jenkinsTokenFile != "" {
-		token, err := loadToken(o.jenkinsTokenFile)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Could not read token file.")
-		}
+		tokens = append(tokens, o.jenkinsTokenFile)
+	}
+
+	if o.jenkinsBearerTokenFile != "" {
+		tokens = append(tokens, o.jenkinsBearerTokenFile)
+	}
+
+	// Start the secret agent.
+	secretAgent := &secret.Agent{}
+	if err := secretAgent.Start(tokens); err != nil {
+		logrus.WithError(err).Fatal("Error starting secrets agent.")
+	}
+
+	if o.jenkinsTokenFile != "" {
 		ac.Basic = &jenkins.BasicAuthConfig{
-			User:  o.jenkinsUserName,
-			Token: token,
+			User:     o.jenkinsUserName,
+			GetToken: secretAgent.GetTokenGenerator(o.jenkinsTokenFile),
 		}
 	} else if o.jenkinsBearerTokenFile != "" {
-		token, err := loadToken(o.jenkinsBearerTokenFile)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Could not read bearer token file.")
-		}
 		ac.BearerToken = &jenkins.BearerTokenAuthConfig{
-			Token: token,
+			GetToken: secretAgent.GetTokenGenerator(o.jenkinsBearerTokenFile),
 		}
 	}
 	var tlsConfig *tls.Config
@@ -171,28 +192,12 @@ func main() {
 		logrus.WithError(err).Fatalf("Could not setup Jenkins client.")
 	}
 
-	oauthSecretRaw, err := ioutil.ReadFile(o.githubTokenFile)
+	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
 	if err != nil {
-		logrus.WithError(err).Fatalf("Could not read Github oauth secret file.")
-	}
-	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
-
-	for _, ep := range o.githubEndpoint.Strings() {
-		_, err = url.Parse(ep)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
-		}
+		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
-	var ghc *github.Client
-	if o.dryRun {
-		ghc = github.NewDryRunClient(oauthSecret, o.githubEndpoint.Strings()...)
-		kc = kube.NewFakeClient(o.deckURL)
-	} else {
-		ghc = github.NewClient(oauthSecret, o.githubEndpoint.Strings()...)
-	}
-
-	c, err := jenkins.NewController(kc, jc, ghc, nil, configAgent, o.totURL, o.selector)
+	c, err := jenkins.NewController(kubeClient, jc, githubClient, nil, cfg, o.totURL, o.selector)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to instantiate Jenkins controller.")
 	}
@@ -227,14 +232,6 @@ func main() {
 			return
 		}
 	}
-}
-
-func loadToken(file string) (string, error) {
-	raw, err := ioutil.ReadFile(file)
-	if err != nil {
-		return "", err
-	}
-	return string(bytes.TrimSpace(raw)), nil
 }
 
 func loadCerts(certFile, keyFile, caCertFile string) (*tls.Config, error) {

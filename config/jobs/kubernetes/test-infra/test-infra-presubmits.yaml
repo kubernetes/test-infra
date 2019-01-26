@@ -1,29 +1,51 @@
 presubmits:
   kubernetes/test-infra:
+  - name: pull-test-infra-build-smoke
+    agent: knative-build
+    decorate: true
+    build_spec:
+      steps:
+      - name: first
+        image: busybox
+        args: ["echo", "hello"]
+      - name: second
+        image: busybox
+        args: ["echo", "world"]
+      - name: third
+        image: busybox
+        args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-presubmits.yaml"]
+  - name: pull-test-infra-build-smoke-fail
+    agent: knative-build
+    decorate: true
+    build_spec:
+      steps:
+      - name: first
+        image: busybox
+        args: ["echo", "hello"]
+      - name: second
+        image: busybox
+        args: ["sleep", "60"]
+      - name: third
+        image: busybox
+        args: ["exit", "1"]
+
   - name: pull-test-infra-bazel
-    agent: kubernetes
-    context: pull-test-infra-bazel
     branches:
     - master
     always_run: true
-    rerun_command: "/test pull-test-infra-bazel"
-    trigger: "(?m)^/test( all| pull-test-infra-bazel),?(\\s+|$)"
+    decorate: true
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
+        command:
+        - runner.sh
+        - ./scenarios/kubernetes_execute_bazel.py
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--timeout=15"
-        - "--" # end bootstrap args, scenario args below
-        - "hack/build-then-unit.sh"
+        - hack/build-then-unit.sh
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -32,49 +54,35 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-test-infra-gubernator
-    agent: kubernetes
-    context: pull-test-infra-gubernator
     branches:
     - master
-    rerun_command: "/test pull-test-infra-gubernator"
-    trigger: "(?m)^/test pull-test-infra-gubernator,?(\\s+|$)"
     run_if_changed: 'gubernator|prow/config.yaml'
+    decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gubernator:0.4
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --service-account=/etc/service-account/service-account.json
-        - --scenario=execute
-        - --
+        command:
         - ./gubernator/test-gubernator.sh
+        env:
+        - name: WORKSPACE
+          value: "/workspace"
 
   - name: pull-test-infra-lint
-    agent: kubernetes
-    context: pull-test-infra-lint
     always_run: true
-    rerun_command: "/test pull-test-infra-lint"
-    trigger: "(?m)^/test( all| pull-test-infra-lint),?(\\s+|$)"
+    decorate: true
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
-        imagePullPolicy: Always
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
+        command:
+        - runner.sh
+        - ./scenarios/kubernetes_bazel.py
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_bazel"
-        - "--timeout=15"
-        - "--" # end bootstrap args, scenario args below
         - "--install=gubernator/test_requirements.txt"
         - "--test=//..."
         - "--test-args=--config=lint"
@@ -87,48 +95,32 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-test-infra-verify-bazel
-    agent: kubernetes
-    context: pull-test-infra-verify-bazel
     branches:
     - master
-    rerun_command: "/test pull-test-infra-verify-bazel"
-    trigger: "(?m)^/test( all| pull-test-infra-verify-bazel),?(\\s+|$)"
     always_run: true
+    decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-        args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - --root=/go/src
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --scenario=execute
-        - --
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
+        command:
         - ./hack/verify-bazel.sh
 
   - name: pull-test-infra-verify-config
-    agent: kubernetes
-    context: pull-test-infra-verify-config
     branches:
     - master
-    rerun_command: "/test pull-test-infra-verify-config"
-    trigger: "/test pull-test-infra-verify-config"
-    run_if_changed: '^prow/config.yaml$'
+    always_run: true
+    decorate: true
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --service-account=/etc/service-account/service-account.json
-        - --timeout=15
-        - --scenario=execute
-        - --
         - ./hack/verify-config.sh
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
@@ -138,12 +130,8 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-test-infra-verify-config-canary
-    agent: kubernetes
-    context: pull-test-infra-verify-config-canary
     branches:
     - master
-    rerun_command: "/test pull-test-infra-verify-config-canary"
-    trigger: "/test pull-test-infra-verify-config-canary"
     path_alias: "k8s.io/test-infra"
     decorate: true
     spec:
@@ -151,7 +139,7 @@ presubmits:
       - name: test
         command:
         - ./hack/verify-config.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
         env:
         - name: TEST_TMPDIR
           value: /bazel-scratch/.cache/bazel
@@ -168,26 +156,19 @@ presubmits:
         emptyDir: {}
 
   - name: pull-test-infra-verify-deps
-    agent: kubernetes
-    context: pull-test-infra-verify-deps
     branches:
     - master
-    rerun_command: "/test pull-test-infra-verify-deps"
-    trigger: "/test pull-test-infra-verify-deps"
     run_if_changed: '^(Gopkg\.|^vendor/).*$'
+    decorate: true
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --service-account=/etc/service-account/service-account.json
-        - --scenario=execute
-        - --
         - ./hack/verify-deps.sh
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
@@ -196,69 +177,64 @@ presubmits:
           requests:
             memory: "2Gi"
 
-  - name: pull-test-infra-verify-gofmt
-    agent: kubernetes
-    context: pull-test-infra-verify-gofmt
+  - name: pull-test-infra-verify-codegen
     branches:
     - master
-    rerun_command: "/test pull-test-infra-verify-gofmt"
-    trigger: "/test( all| pull-test-infra-verify-gofmt)"
     always_run: true
+    path_alias: "k8s.io/test-infra"
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
+        command:
+        - ./hack/verify-codegen.sh
+        resources:
+          requests:
+            memory: "2Gi"
+
+  - name: pull-test-infra-verify-gofmt
+    branches:
+    - master
+    always_run: true
+    decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-        args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - --root=/go/src
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --scenario=execute
-        - --
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
+        command:
         - ./hack/verify-gofmt.sh
 
   - name: pull-test-infra-verify-govet
-    agent: kubernetes
-    context: pull-test-infra-verify-govet
     branches:
     - master
-    rerun_command: "/test pull-test-infra-verify-govet"
-    trigger: "/test( all| pull-test-infra-verify-govet)"
     always_run: true
+    decorate: true
+    path_alias: k8s.io/test-infra
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
+        command:
+        - runner.sh
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - --root=/go/src
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --scenario=execute
-        - --
         - ./hack/verify-govet.sh
 
   - name: pull-test-infra-verify-labels
-    agent: kubernetes
-    context: pull-test-infra-verify-labels
     branches:
     - master
-    rerun_command: "/test pull-test-infra-verify-labels"
-    trigger: "/test pull-test-infra-verify-labels"
-    run_if_changed: '^label_sync'
+    run_if_changed: '^label_sync/labels.yaml'
+    decorate: true
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
+        command:
+        - runner.sh
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - --root=/go/src
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --service-account=/etc/service-account/service-account.json
-        - --scenario=execute
-        - --
         - ./hack/verify-labels.sh
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:

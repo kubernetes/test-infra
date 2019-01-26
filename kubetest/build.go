@@ -19,8 +19,8 @@ package main
 import (
 	"fmt"
 	"os/exec"
+	"runtime"
 
-	"k8s.io/test-infra/kubetest/dind"
 	"k8s.io/test-infra/kubetest/util"
 )
 
@@ -43,14 +43,18 @@ func (b *buildStrategy) String() string {
 // Set to --build=B or buildDefault if just --build
 func (b *buildStrategy) Set(value string) error {
 	if value == "true" { // just --build, choose default
-		value = buildDefault
+		if runtime.GOARCH == "amd64" {
+			value = buildDefault
+		} else {
+			value = "host-go"
+		}
 	}
 	switch value {
-	case "bazel", "dind", "e2e", "host-go", "quick", "release":
+	case "bazel", "e2e", "host-go", "quick", "release":
 		*b = buildStrategy(value)
 		return nil
 	}
-	return fmt.Errorf("bad build strategy: %v (use: bazel, dind, e2e, host-go, quick, release)", value)
+	return fmt.Errorf("bad build strategy: %v (use: bazel, e2e, host-go, quick, release)", value)
 }
 
 func (b *buildStrategy) Type() string {
@@ -69,8 +73,6 @@ func (b *buildStrategy) Build() error {
 	switch *b {
 	case "bazel":
 		target = "bazel-release"
-	case "dind":
-		return dind.NewBuilder(util.K8s("kubernetes"), util.K8s("test-infra", "dind"), control).Build()
 	case "e2e":
 		//TODO(Q-Lee): we should have a better way of build just the e2e tests
 		target = "bazel-release"

@@ -1,17 +1,12 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@io_bazel_rules_docker//go:image.bzl", "go_image")
-load(
-    "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
-    "go_library",
-    "go_test",
-)
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+load("//prow:def.bzl", "prow_image")
 
-go_image(
+prow_image(
     name = "image",
     base = "@alpine-base//image",
-    binary = ":sinker",
+    visibility = ["//visibility:public"],
 )
 
 go_binary(
@@ -25,11 +20,18 @@ go_test(
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/client/clientset/versioned/fake:go_default_library",
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/client-go/kubernetes/fake:go_default_library",
+        "//vendor/k8s.io/client-go/kubernetes/typed/core/v1:go_default_library",
+        "//vendor/k8s.io/client-go/testing:go_default_library",
     ],
 )
 
@@ -38,11 +40,16 @@ go_library(
     srcs = ["main.go"],
     importpath = "k8s.io/test-infra/prow/cmd/sinker",
     deps = [
+        "//prow/client/clientset/versioned:go_default_library",
+        "//prow/client/clientset/versioned/typed/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//prow/pjutil:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/client-go/kubernetes:go_default_library",
+        "//vendor/k8s.io/client-go/kubernetes/typed/core/v1:go_default_library",
     ],
 )
 

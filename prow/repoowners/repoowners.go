@@ -25,8 +25,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/git"
@@ -48,21 +48,26 @@ type dirOptions struct {
 	NoParentOwners bool `json:"no_parent_owners,omitempty"`
 }
 
+// Config holds roles+usernames and labels for a directory considered as a unit of independent code
 type Config struct {
-	Approvers []string `json:"approvers,omitempty"`
-	Reviewers []string `json:"reviewers,omitempty"`
-	Labels    []string `json:"labels,omitempty"`
+	Approvers         []string `json:"approvers,omitempty"`
+	Reviewers         []string `json:"reviewers,omitempty"`
+	RequiredReviewers []string `json:"required_reviewers,omitempty"`
+	Labels            []string `json:"labels,omitempty"`
 }
 
+// SimpleConfig holds options and Config applied to everything under the containing directory
 type SimpleConfig struct {
 	Options dirOptions `json:"options,omitempty"`
 	Config  `json:",inline"`
 }
 
+// Empty checks if a SimpleConfig could be considered empty
 func (s *SimpleConfig) Empty() bool {
-	return len(s.Approvers) == 0 && len(s.Reviewers) == 0 && len(s.Labels) == 0
+	return len(s.Approvers) == 0 && len(s.Reviewers) == 0 && len(s.RequiredReviewers) == 0 && len(s.Labels) == 0
 }
 
+// FullConfig contains Filters which apply specific Config to files matching its regexp
 type FullConfig struct {
 	Options dirOptions        `json:"options,omitempty"`
 	Filters map[string]Config `json:"filters,omitempty"`
@@ -79,21 +84,18 @@ type cacheEntry struct {
 	owners  *RepoOwners
 }
 
-type configGetter interface {
-	Config() *prowConf.Config
-}
-
 // Interface is an interface to work with OWNERS files.
 type Interface interface {
 	LoadRepoAliases(org, repo, base string) (RepoAliases, error)
-	LoadRepoOwners(org, repo, base string) (RepoOwnerInterface, error)
+	LoadRepoOwners(org, repo, base string) (RepoOwner, error)
 }
 
 // Client is an implementation of the Interface.
 var _ Interface = &Client{}
 
+// Client is the repoowners client
 type Client struct {
-	configGetter configGetter
+	config *prowConf.Config
 
 	git    *git.Client
 	ghc    githubClient
@@ -106,10 +108,11 @@ type Client struct {
 	cache map[string]cacheEntry
 }
 
+// NewClient is the constructor for Client
 func NewClient(
 	gc *git.Client,
 	ghc *github.Client,
-	configGetter *prowConf.Agent,
+	config *prowConf.Config,
 	mdYAMLEnabled func(org, repo string) bool,
 	skipCollaborators func(org, repo string) bool,
 ) *Client {
@@ -122,13 +125,15 @@ func NewClient(
 		mdYAMLEnabled:     mdYAMLEnabled,
 		skipCollaborators: skipCollaborators,
 
-		configGetter: configGetter,
+		config: config,
 	}
 }
 
+// RepoAliases defines groups of people to be used in OWNERS files
 type RepoAliases map[string]sets.String
 
-type RepoOwnerInterface interface {
+// RepoOwner is an interface to work with repoowners
+type RepoOwner interface {
 	FindApproverOwnersForFile(path string) string
 	FindReviewersOwnersForFile(path string) string
 	FindLabelsForFile(path string) sets.String
@@ -137,18 +142,20 @@ type RepoOwnerInterface interface {
 	Approvers(path string) sets.String
 	LeafReviewers(path string) sets.String
 	Reviewers(path string) sets.String
+	RequiredReviewers(path string) sets.String
 }
 
-// RepoOwners implements RepoOwnerInterface
-var _ RepoOwnerInterface = &RepoOwners{}
+var _ RepoOwner = &RepoOwners{}
 
+// RepoOwners contains the parsed OWNERS config.
 type RepoOwners struct {
 	RepoAliases
 
-	approvers map[string]map[*regexp.Regexp]sets.String
-	reviewers map[string]map[*regexp.Regexp]sets.String
-	labels    map[string]map[*regexp.Regexp]sets.String
-	options   map[string]dirOptions
+	approvers         map[string]map[*regexp.Regexp]sets.String
+	reviewers         map[string]map[*regexp.Regexp]sets.String
+	requiredReviewers map[string]map[*regexp.Regexp]sets.String
+	labels            map[string]map[*regexp.Regexp]sets.String
+	options           map[string]dirOptions
 
 	baseDir      string
 	enableMDYAML bool
@@ -194,7 +201,7 @@ func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
 
 // LoadRepoOwners returns an up-to-date RepoOwners struct for the specified repo.
 // Note: The returned *RepoOwners should be treated as read only.
-func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwnerInterface, error) {
+func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	log := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "base": base})
 	cloneRef := fmt.Sprintf("%s/%s", org, repo)
 	fullName := fmt.Sprintf("%s:%s", cloneRef, base)
@@ -223,7 +230,7 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwnerInterface, err
 			entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
 		}
 
-		blacklistConfig := c.configGetter.Config().OwnersDirBlacklist
+		blacklistConfig := c.config.OwnersDirBlacklist
 
 		dirBlacklist := defaultDirBlacklist.Union(sets.NewString(blacklistConfig.Default...))
 		if bl, ok := blacklistConfig.Repos[org]; ok {
@@ -258,6 +265,7 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwnerInterface, err
 	return owners, nil
 }
 
+// ExpandAlias returns members of an alias
 func (a RepoAliases) ExpandAlias(alias string) sets.String {
 	if a == nil {
 		return nil
@@ -265,6 +273,7 @@ func (a RepoAliases) ExpandAlias(alias string) sets.String {
 	return a[github.NormLogin(alias)]
 }
 
+// ExpandAliases returns members of multiple aliases, duplicates are pruned
 func (a RepoAliases) ExpandAliases(logins sets.String) sets.String {
 	if a == nil {
 		return logins
@@ -313,10 +322,11 @@ func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirBlackli
 		enableMDYAML: mdYaml,
 		log:          log,
 
-		approvers: make(map[string]map[*regexp.Regexp]sets.String),
-		reviewers: make(map[string]map[*regexp.Regexp]sets.String),
-		labels:    make(map[string]map[*regexp.Regexp]sets.String),
-		options:   make(map[string]dirOptions),
+		approvers:         make(map[string]map[*regexp.Regexp]sets.String),
+		reviewers:         make(map[string]map[*regexp.Regexp]sets.String),
+		requiredReviewers: make(map[string]map[*regexp.Regexp]sets.String),
+		labels:            make(map[string]map[*regexp.Regexp]sets.String),
+		options:           make(map[string]dirOptions),
 
 		dirBlacklist: dirBlacklist,
 	}
@@ -470,6 +480,12 @@ func (o *RepoOwners) applyConfigToPath(path string, re *regexp.Regexp, config *C
 		}
 		o.reviewers[path][re] = o.ExpandAliases(normLogins(config.Reviewers))
 	}
+	if len(config.RequiredReviewers) > 0 {
+		if o.requiredReviewers[path] == nil {
+			o.requiredReviewers[path] = make(map[*regexp.Regexp]sets.String)
+		}
+		o.requiredReviewers[path][re] = o.ExpandAliases(normLogins(config.RequiredReviewers))
+	}
 	if len(config.Labels) > 0 {
 		if o.labels[path] == nil {
 			o.labels[path] = make(map[*regexp.Regexp]sets.String)
@@ -530,7 +546,7 @@ func findOwnersForFile(log *logrus.Entry, path string, ownerMap map[string]map[*
 	return ""
 }
 
-// FindApproversOwnersForFile returns the OWNERS file path furthest down the tree for a specified file
+// FindApproverOwnersForFile returns the OWNERS file path furthest down the tree for a specified file
 // that contains an approvers section
 func (o *RepoOwners) FindApproverOwnersForFile(path string) string {
 	return findOwnersForFile(o.log, path, o.approvers)
@@ -621,4 +637,12 @@ func (o *RepoOwners) LeafReviewers(path string) sets.String {
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoOwners) Reviewers(path string) sets.String {
 	return o.entriesForFile(path, o.reviewers, false)
+}
+
+// RequiredReviewers returns ALL of the users who are required_reviewers for the
+// requested file (including required_reviewers in parent dirs' OWNERS).
+// If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
+// will return both user1 and user2 for the path pkg/util/sets/file.go
+func (o *RepoOwners) RequiredReviewers(path string) sets.String {
+	return o.entriesForFile(path, o.requiredReviewers, false)
 }

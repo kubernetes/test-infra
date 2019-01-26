@@ -10,10 +10,6 @@
 gs://kubernetes-jenkins/logs/:
   contact: "fejta"
   prefix: ""
-gs://kopeio-kubernetes-e2e/logs/:
-  contact: "justinsb"
-  prefix: "kopeio:"
-  sequential: false
 gs://canonical-kubernetes-tests/logs/:
   contact: "chuckbutler"
   prefix: "juju:"
@@ -44,5 +40,5 @@ gs://k8s-conformance-openstack/:
   contact: "kiwik"
   prefix: "openstack:"
 gs://k8s-conformance-gardener:
-  contact: "rolpat"
+  contact: "OlegLoewen"
   prefix: "gardener:"

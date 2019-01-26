@@ -22,16 +22,14 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 var (
-	lifecycleFrozenLabel = "lifecycle/frozen"
-	lifecycleStaleLabel  = "lifecycle/stale"
-	lifecycleRottenLabel = "lifecycle/rotten"
-	lifecycleLabels      = []string{lifecycleFrozenLabel, lifecycleStaleLabel, lifecycleRottenLabel}
-	lifecycleRe          = regexp.MustCompile(`(?mi)^/(remove-)?lifecycle (frozen|stale|rotten)\s*$`)
+	lifecycleLabels = []string{labels.LifecycleActive, labels.LifecycleFrozen, labels.LifecycleStale, labels.LifecycleRotten}
+	lifecycleRe     = regexp.MustCompile(`(?mi)^/(remove-)?lifecycle (active|frozen|stale|rotten)\s*$`)
 )
 
 func init() {
@@ -46,14 +44,14 @@ func help(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.Plu
 		Usage:       "/close",
 		Description: "Closes an issue or PR.",
 		Featured:    false,
-		WhoCanUse:   "Authors and assignees can triggers this command.",
+		WhoCanUse:   "Authors and collaborators on the repository can trigger this command.",
 		Examples:    []string{"/close"},
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/reopen",
 		Description: "Reopens an issue or PR",
 		Featured:    false,
-		WhoCanUse:   "Authors and assignees can trigger this command.",
+		WhoCanUse:   "Authors and collaborators on the repository can trigger this command.",
 		Examples:    []string{"/reopen"},
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{
@@ -72,7 +70,7 @@ type lifecycleClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
-func lifecycleHandleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func lifecycleHandleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	gc := pc.GitHubClient
 	log := pc.Logger
 	if err := handleReopen(gc, log, &e); err != nil {

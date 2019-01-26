@@ -1,0 +1,179 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-integration
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bootstrap:v20190117-ea691e01a
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
+        - --scenario=kubernetes_verify
+        - --
+        - "--branch=${PULL_BASE_REF}"
+        - --prow
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 4
+
+  # TODO(krzyzacy): add branches once this works
+  # TODO(krzyzacy): Consider combine kubekins-e2e and kubekins-test
+  - name: pull-kubernetes-integration-podutil
+    always_run: false
+    decorate: true
+    branches:
+    - master
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - ./hack/jenkins/test-dockerized.sh
+        env:
+        - name: KUBE_FORCE_VERIFY_CHECKS
+          value: "n"
+        - name: KUBE_VERIFY_GIT_BRANCH
+          value: master
+        - name: REPO_DIR
+          value: /workspace/k8s.io/kubernetes
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 4
+
+periodics:
+- interval: 1h
+  name: ci-kubernetes-integration-master
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20190117-ea691e01a
+      args:
+      - --repo=k8s.io/kubernetes
+      - --timeout=100
+      - --scenario=kubernetes_verify
+      - --
+      - --branch=master
+      - --force
+      - --prow
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4
+
+# manual-release-bump-required
+- interval: 2h
+  name: ci-kubernetes-integration-beta
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20190117-ea691e01a
+      args:
+      - --repo=k8s.io/kubernetes=release-1.13
+      - --timeout=100
+      - --scenario=kubernetes_verify
+      - --
+      - --branch=release-1.13
+      - --force
+      - --prow
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4
+
+# manual-release-bump-required
+- interval: 2h
+  name: ci-kubernetes-integration-stable1
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20190117-ea691e01a
+      args:
+      - --repo=k8s.io/kubernetes=release-1.12
+      - --timeout=100
+      - --scenario=kubernetes_verify
+      - --
+      - --branch=release-1.12
+      - --force
+      - --prow
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4
+
+# manual-release-bump-required
+- interval: 6h
+  name: ci-kubernetes-integration-stable2
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20190117-ea691e01a
+      args:
+      - --repo=k8s.io/kubernetes=release-1.11
+      - --timeout=100
+      - --scenario=kubernetes_verify
+      - --
+      - --branch=release-1.11
+      - --force
+      - --prow
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4
+
+# manual-release-bump-required
+- interval: 24h
+  name: ci-kubernetes-integration-stable3
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20190117-ea691e01a
+      args:
+      - --repo=k8s.io/kubernetes=release-1.10
+      - --timeout=100
+      - --scenario=kubernetes_verify
+      - --
+      - --branch=release-1.10
+      - --force
+      - --prow
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4

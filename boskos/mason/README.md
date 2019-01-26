@@ -11,7 +11,7 @@ Mason only handles lease and release of physical resources.
 
 ## Configuration
 
-Each configuration is represented by a name. The name of confguration maps to the virtual resource type in Boskos.
+Each configuration is represented by a name. The name of configuration maps to the virtual resource type in Boskos.
 
 Here is an example configuration:
 
@@ -91,9 +91,9 @@ func main() {
 ### Recycling Thread
 
 The recycling thread is acquiring dirty virtual resources and releasing the associated physical resources as
-dirty such Janitor can clean them up as an example. It then put the virtual resource to the Fullfilling queue.
+dirty such Janitor can clean them up as an example. It then put the virtual resource to the Fulfilling queue.
 
-### Fullfilling Thread
+### Fulfilling Thread
 
 The fulfilling thread will look at the config resource needs, and will acquire the necessary resources.
 Once a resource is acquired it will update the virtual resource LEASED_RESOURCES user data. Once all resources

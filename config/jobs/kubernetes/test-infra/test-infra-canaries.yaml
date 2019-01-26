@@ -1,18 +1,14 @@
 presubmits:  
   kubernetes/test-infra:
   - name: pull-test-infra-bazel-canary
-    agent: kubernetes
-    context: pull-test-infra-bazel-canary
     always_run: false
-    rerun_command: "/test pull-test-infra-bazel-canary"
-    trigger: "(?m)^/test pull-test-infra-bazel-canary,?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e@sha256:02fe7ded2e8e477e52f3c82eab5fb6632ad7cd09612e2d7c5944d143974f3685
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         args:
         - "--job=$(JOB_NAME)"

@@ -36,8 +36,6 @@ func NewOptions() *Options {
 // for defining the process being watched and
 // where in GCS an upload will land.
 type Options struct {
-	// Args is the process and args to run
-	Args []string `json:"args"`
 	// Timeout determines how long to wait before the
 	// entrypoint sends SIGINT to the process
 	Timeout time.Duration `json:"timeout"`
@@ -50,6 +48,17 @@ type Options struct {
 	// If specified, it is created by entrypoint before starting the test process.
 	// May be ignored if not using sidecar.
 	ArtifactDir string `json:"artifact_dir,omitempty"`
+
+	// PreviousMarker has no effect when empty (default).
+	// When set it causes entrypoint to:
+	// a) wait until previous_marker exists
+	// b) run args as normal if previous_marker == 0
+	// c) otherwise immediately write PreviousErrorCode to marker_file without running args
+	PreviousMarker string `json:"previous_marker,omitempty"`
+
+	// AlwaysZero will cause entrypoint to exit zero, regardless of the marker it writes.
+	// Primarily useful in case a subsequent entrypoint will read this entrypoint's marker
+	AlwaysZero bool `json:"always_zero,omitempty"`
 
 	*wrapper.Options
 }
@@ -82,12 +91,12 @@ func (o *Options) LoadConfig(config string) error {
 	return json.Unmarshal([]byte(config), o)
 }
 
-// BindOptions binds flags to options
-func (o *Options) BindOptions(flags *flag.FlagSet) {
+// AddFlags binds flags to options
+func (o *Options) AddFlags(flags *flag.FlagSet) {
 	flags.DurationVar(&o.Timeout, "timeout", DefaultTimeout, "Timeout for the test command.")
 	flags.DurationVar(&o.GracePeriod, "grace-period", DefaultGracePeriod, "Grace period after timeout for the test command.")
 	flags.StringVar(&o.ArtifactDir, "artifact-dir", "", "directory where test artifacts should be placed for upload to persistent storage")
-	wrapper.BindOptions(o.Options, flags)
+	o.Options.AddFlags(flags)
 }
 
 // Complete internalizes command line arguments

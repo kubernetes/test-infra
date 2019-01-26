@@ -27,6 +27,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Logger provides an interface to log debug messages.
 type Logger interface {
 	Debugf(s string, v ...interface{})
 }
@@ -37,8 +38,8 @@ type Client struct {
 	// If logger is non-nil, log all method calls with it.
 	logger Logger
 
-	token string
-	fake  bool
+	tokenGenerator func() []byte
+	fake           bool
 }
 
 const (
@@ -49,10 +50,10 @@ const (
 )
 
 // NewClient creates a slack client with an API token.
-func NewClient(token string) *Client {
+func NewClient(tokenGenerator func() []byte) *Client {
 	return &Client{
-		logger: logrus.WithField("client", "slack"),
-		token:  token,
+		logger:         logrus.WithField("client", "slack"),
+		tokenGenerator: tokenGenerator,
 	}
 }
 
@@ -78,7 +79,7 @@ func (sl *Client) urlValues() *url.Values {
 	uv := url.Values{}
 	uv.Add("username", botName)
 	uv.Add("icon_emoji", botIconEmoji)
-	uv.Add("token", sl.token)
+	uv.Add("token", string(sl.tokenGenerator()))
 	return &uv
 }
 
@@ -103,7 +104,7 @@ func (sl *Client) WriteMessage(text, channel string) error {
 	if sl.fake {
 		return nil
 	}
-	var uv *url.Values = sl.urlValues()
+	var uv = sl.urlValues()
 	uv.Add("channel", channel)
 	uv.Add("text", text)
 

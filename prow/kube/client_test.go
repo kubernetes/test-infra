@@ -18,10 +18,10 @@ package kube
 
 import (
 	"bufio"
+	"bytes"
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
@@ -32,6 +32,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 
@@ -230,6 +231,63 @@ func TestGetPod(t *testing.T) {
 	}
 }
 
+func TestGetLogTail(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/api/v1/namespaces/ns/pods/testpod/log" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		limitQueryParam := r.URL.Query().Get("limitBytes")
+		byteLim, err := strconv.ParseInt(limitQueryParam, 10, 64)
+		if err != nil {
+			t.Fatalf("Invalid byte limit: %s, must be integer value", limitQueryParam)
+		}
+		var log []byte
+		for i := 0; i < 5; i++ {
+			log = append(log, []byte("What do you call recorded dolphin conversations?\npod logs")...)
+		}
+		logLen := int64(len(log))
+		if byteLim >= logLen {
+			fmt.Fprint(w, string(log))
+		} else {
+			fmt.Fprint(w, string(log[logLen-byteLim:]))
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	testCases := []struct {
+		name     string
+		bytes    int64
+		expected []byte
+	}{
+		{
+			name:     "Get last 15 bytes of pod log",
+			bytes:    15,
+			expected: []byte("tions?\npod logs"),
+		},
+		{
+			name:     "Get last 1000 bytes of pod log size<1000",
+			bytes:    285,
+			expected: []byte("What do you call recorded dolphin conversations?\npod logsWhat do you call recorded dolphin conversations?\npod logsWhat do you call recorded dolphin conversations?\npod logsWhat do you call recorded dolphin conversations?\npod logsWhat do you call recorded dolphin conversations?\npod logs"),
+		},
+	}
+	for _, tc := range testCases {
+		log, err := c.GetLogTail("testpod", "", tc.bytes)
+		if err != nil {
+			t.Errorf("%s didn't expect error: %v", tc.name, err)
+		}
+		gotBytes := int64(len(log))
+		if gotBytes != tc.bytes {
+			t.Errorf("%s expected %d bytes, got %d", tc.name, tc.bytes, gotBytes)
+		}
+		if !bytes.Equal(log, tc.expected) {
+			t.Errorf("%s expected log %s, got log %s", tc.name, string(tc.expected), string(log))
+		}
+	}
+}
+
 func TestCreatePod(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
@@ -248,6 +306,42 @@ func TestCreatePod(t *testing.T) {
 	}
 	if po.ObjectMeta.Name != "abcd" {
 		t.Errorf("Wrong name: %s", po.ObjectMeta.Name)
+	}
+}
+
+func TestGetConfigMap(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/api/v1/namespaces/ns/configmaps/abcd" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		fmt.Fprint(w, `{"metadata": {"name": "abcd"}}`)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if _, err := c.GetConfigMap("abcd", "ns"); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestGetNotFound(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/api/v1/namespaces/ns/configmaps/abcd" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		http.NotFound(w, r)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if _, err := c.GetConfigMap("abcd", "ns"); err == nil {
+		t.Error("Expected not found error but got none")
+	} else if _, isNotFound := err.(NotFoundError); !isNotFound {
+		t.Errorf("Expected a not found error, got: %v", err)
 	}
 }
 
@@ -302,10 +396,10 @@ func TestNewClient(t *testing.T) {
 		NotBefore:             time.Now(),
 		NotAfter:              time.Now().Add(time.Hour),
 		BasicConstraintsValid: true,
-		IsCA:        true,
-		KeyUsage:    x509.KeyUsageCertSign | x509.KeyUsageDigitalSignature,
-		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
-		IPAddresses: []net.IP{net.ParseIP("127.0.0.1")},
+		IsCA:                  true,
+		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
+		IPAddresses:           []net.IP{net.ParseIP("127.0.0.1")},
 	}
 	certDER, err := x509.CreateCertificate(r, tmpl, tmpl, &rootKey.PublicKey, rootKey)
 	if err != nil {
@@ -351,9 +445,9 @@ func TestNewClient(t *testing.T) {
 	certPool.AppendCertsFromPEM(rootCertPEM)
 
 	clus := &Cluster{
-		ClientCertificate:    base64.StdEncoding.EncodeToString(clientCertPEM),
-		ClientKey:            base64.StdEncoding.EncodeToString(clientKeyPEM),
-		ClusterCACertificate: base64.StdEncoding.EncodeToString(rootCertPEM),
+		ClientCertificate:    clientCertPEM,
+		ClientKey:            clientKeyPEM,
+		ClusterCACertificate: rootCertPEM,
 	}
 	s := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("{}")) }))
 	s.TLS = &tls.Config{

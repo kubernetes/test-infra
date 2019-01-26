@@ -36,7 +36,9 @@ type JobSpec struct {
 	BuildID   string           `json:"buildid,omitempty"`
 	ProwJobID string           `json:"prowjobid,omitempty"`
 
-	Refs kube.Refs `json:"refs,omitempty"`
+	// refs & extra_refs from the full spec
+	Refs      *kube.Refs  `json:"refs,omitempty"`
+	ExtraRefs []kube.Refs `json:"extra_refs,omitempty"`
 
 	// we need to keep track of the agent until we
 	// migrate everyone away from using the $BUILD_NUMBER
@@ -46,17 +48,13 @@ type JobSpec struct {
 
 // NewJobSpec converts a kube.ProwJobSpec invocation into a JobSpec
 func NewJobSpec(spec kube.ProwJobSpec, buildID, prowJobID string) JobSpec {
-	refs := kube.Refs{}
-	if spec.Refs != nil {
-		refs = *spec.Refs
-	}
-
 	return JobSpec{
 		Type:      spec.Type,
 		Job:       spec.Job,
 		BuildID:   buildID,
 		ProwJobID: prowJobID,
-		Refs:      refs,
+		Refs:      spec.Refs,
+		ExtraRefs: spec.ExtraRefs,
 		agent:     spec.Agent,
 	}
 }
@@ -85,9 +83,8 @@ const (
 	jobTypeEnv   = "JOB_TYPE"
 	prowJobIDEnv = "PROW_JOB_ID"
 
-	buildIDEnv        = "BUILD_ID"
-	prowBuildIDEnv    = "BUILD_NUMBER" // Deprecated, will be removed in the future.
-	jenkinsBuildIDEnv = "buildId"      // Deprecated, will be removed in the future.
+	buildIDEnv     = "BUILD_ID"
+	prowBuildIDEnv = "BUILD_NUMBER" // Deprecated, will be removed in the future.
 
 	repoOwnerEnv   = "REPO_OWNER"
 	repoNameEnv    = "REPO_NAME"
@@ -113,8 +110,6 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 	// and in both $buildId and $BUILD_NUMBER for Jenkins
 	if spec.agent == kube.KubernetesAgent {
 		env[prowBuildIDEnv] = spec.BuildID
-	} else if spec.agent == kube.JenkinsAgent {
-		env[jenkinsBuildIDEnv] = spec.BuildID
 	}
 
 	raw, err := json.Marshal(spec)
@@ -126,6 +121,7 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 	if spec.Type == kube.PeriodicJob {
 		return env, nil
 	}
+
 	env[repoOwnerEnv] = spec.Refs.Org
 	env[repoNameEnv] = spec.Refs.Repo
 	env[pullBaseRefEnv] = spec.Refs.BaseRef
@@ -135,6 +131,7 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 	if spec.Type == kube.PostsubmitJob || spec.Type == kube.BatchJob {
 		return env, nil
 	}
+
 	env[pullNumberEnv] = strconv.Itoa(spec.Refs.Pulls[0].Number)
 	env[pullPullShaEnv] = spec.Refs.Pulls[0].SHA
 	return env, nil
@@ -142,7 +139,7 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 
 // EnvForType returns the slice of environment variables to export for jobType
 func EnvForType(jobType kube.ProwJobType) []string {
-	baseEnv := []string{jobNameEnv, JobSpecEnv, jobTypeEnv, prowJobIDEnv, buildIDEnv, prowBuildIDEnv, jenkinsBuildIDEnv}
+	baseEnv := []string{jobNameEnv, JobSpecEnv, jobTypeEnv, prowJobIDEnv, buildIDEnv, prowBuildIDEnv}
 	refsEnv := []string{repoOwnerEnv, repoNameEnv, pullBaseRefEnv, pullBaseShaEnv, pullRefsEnv}
 	pullEnv := []string{pullNumberEnv, pullPullShaEnv}
 

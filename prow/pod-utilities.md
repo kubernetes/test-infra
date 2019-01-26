@@ -27,7 +27,7 @@ Example test container script:
 pwd # my repo root
 ls path/to/file/in/my/repo.txt # access repo file
 ls ../other-repo # access repo file in another repo
-echo results.txt > $ARTIFACTS # result info that will be uploaded to GCS.
+echo success > ${ARTIFACTS}/results.txt # result info that will be uploaded to GCS.
 # logs, and job metadata are automatically uploaded.
 ```
 
@@ -53,11 +53,7 @@ Example ProwJob configuration:
 ```yaml
 
   - name: pull-job
-    agent: kubernetes
-    context: pull-job
     always_run: true
-    rerun_command: "/test pull-job"
-    trigger: "(?m)^/test (all|pull-job)\\s*"
     decorate: true
     spec:
       containers:
@@ -76,24 +72,26 @@ array not just a string. It should point to the test binary location in the cont
 Additional fields may be required for some use cases:
 - Private repos need to do two things:
 	- Add an ssh secret that gives the bot access to the repo to the build cluster
-	and specify the secret name in the `ssh_key_secrets` field of the job spec.
+	and specify the secret name in the `ssh_key_secrets` field of the job decoration config.
 	- Set the `clone_uri` field of the job spec to `git@github.com:{{.Org}}/{{.Repo}}.git`.
 - Repos requiring a non-standard clone path can use the `path_alias` field
-to clone the repo to a path different than the default of `/go/src/github.com/org/repo/` (e.g. `/go/src/k8s.io/kubernetes/kubernetes`).
+to clone the repo to different go import path than the default of `/home/prow/go/src/github.com/{{.Org}}/{{.Repo}}/` (e.g. `path_alias: k8s.io/test-infra` -> `/home/prow/go/src/k8s.io/test-infra`).
 - Jobs that require additional repos to be checked out can arrange for that with
 the `exta_refs` field.
+- Jobs that do not want submodules to be cloned should set `skip_submodules` to `true`
 
 ```yaml
 - name: post-job
-  agent: kubernetes
   decorate: true
-  ssh_key_secrets:
-  - ssh-secret
-  clone_uri: "git@github.com:{{.Org}}/{{.Repo}}.git"
+  decoration_config:
+    ssh_key_secrets:
+    - ssh-secret
+  clone_uri: "git@github.com:<YOUR_ORG>/<YOUR_REPO>.git"
   extra_refs:
   - org: kubernetes
     repo: other-repo
     base_ref: master
+  skip_submodules: true
   spec:
     containers:
     - image: alpine

@@ -1,0 +1,38 @@
+presubmits:
+  kubernetes/release:
+  - name: pull-release-cluster-up
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes
+        - --repo=k8s.io/release=$(PULL_REFS)
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=90
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --down=false
+        - --extract=local
+        - --gcp-node-image=gci
+        - --gcp-nodes=4
+        - --gcp-zone=us-central1-f
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
+        - --test_args=--ginkgo.focus=definitely-not-a-real-focus
+        - --timeout=65m
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        resources:
+          requests:
+            memory: "6Gi"

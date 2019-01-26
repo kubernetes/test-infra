@@ -1,0 +1,15 @@
+presubmits:
+  kubernetes/cloud-provider-gcp:
+  - name: cloud-provider-gcp-tests
+    max_concurrency: 5
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/cloud-builders/bazel
+        command: ["bash"]
+        args:
+        - -c
+        - |
+          bazel --output_base=/tmp build -- //... -//vendor/... && \
+          bazel --output_base=/tmp test --test_output=errors -- //... -//vendor/...

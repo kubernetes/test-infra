@@ -1,0 +1,342 @@
+presets:
+- labels:
+    preset-cos-containerd-env: "true"
+  env:
+  - name: LOG_DUMP_SYSTEMD_SERVICES
+    value: "containerd containerd-installation"
+
+periodics:
+- interval: 1h
+  name: ci-kubernetes-e2e-cos-containerd-gke-alpha-cluster
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-cos-containerd-env: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --deployment=gke
+      - --extract=ci/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=cos_containerd
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel
+      - --gke-create-command=container clusters create --quiet --enable-kubernetes-alpha
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+
+- interval: 1h
+  name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-cos-containerd-env: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --deployment=gke
+      - --extract=ci/k8s-beta
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=cos_containerd
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel
+      - --gke-create-command=container clusters create --quiet --enable-kubernetes-alpha
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+
+- interval: 1h
+  name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster-features
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-cos-containerd-env: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=200
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --deployment=gke
+      - --extract=ci/k8s-beta
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=cos_containerd
+      - --gcp-zone=us-central1-f
+      - --gke-create-command=container clusters create --quiet --enable-kubernetes-alpha
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes|NodeLease)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+
+- interval: 1h
+  name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-cos-containerd-env: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --deployment=gke
+      - --extract=ci/k8s-beta
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=cos_containerd
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel
+      - --gke-create-command=container clusters create --quiet
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+
+- interval: 1h
+  name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-cos-containerd-env: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --deployment=gke
+      - --extract=ci/k8s-stable1
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=cos_containerd
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel
+      - --gke-create-command=container clusters create --quiet
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+
+- interval: 1h
+  name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-cos-containerd-env: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --deployment=gke
+      - --extract=ci/k8s-stable1
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=cos_containerd
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel
+      - --gke-create-command=container clusters create --quiet --enable-kubernetes-alpha
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+
+- interval: 1h
+  name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster-features
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-cos-containerd-env: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=200
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --deployment=gke
+      - --extract=ci/k8s-stable1
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=cos_containerd
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel
+      - --gke-create-command=container clusters create --quiet --enable-kubernetes-alpha
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+
+- interval: 1h
+  name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --deployment=gke
+      - --extract=ci/k8s-beta
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel
+      - --gke-create-command=container clusters create --quiet --enable-kubernetes-alpha
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+
+- interval: 1h
+  name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster-features
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=200
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --deployment=gke
+      - --extract=ci/k8s-beta
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --gke-create-command=container clusters create --quiet --enable-kubernetes-alpha
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes|NodeLease)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+
+- interval: 1h
+  name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --deployment=gke
+      - --extract=ci/k8s-stable1
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel
+      - --gke-create-command=container clusters create --quiet --enable-kubernetes-alpha
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+
+- interval: 1h
+  name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster-features
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=200
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --deployment=gke
+      - --extract=ci/k8s-stable1
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel
+      - --gke-create-command=container clusters create --quiet --enable-kubernetes-alpha
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+
+- interval: 12h
+  name: ci-kubernetes-soak-gke-cos-containerd
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-cos-containerd-env: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=820
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --deployment=gke
+      - --down=false
+      - --extract=ci/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=cos_containerd
+      - --gcp-project=k8s-jkns-e2e-gci-gke-staging
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel
+      - --gke-create-command=container clusters create --quiet
+      - --gke-environment=test
+      - --provider=gke
+      - --soak
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
+      - --timeout=800m
+      - --up=false
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+

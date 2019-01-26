@@ -1,14 +1,9 @@
-load("@io_bazel_rules_docker//go:image.bzl", "go_image")
-load(
-    "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
-    "go_library",
-)
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("//prow:def.bzl", "prow_image")
 
-go_image(
+prow_image(
     name = "image",
     base = "@git-base//image",
-    binary = ":tide",
     visibility = ["//visibility:public"],
 )
 
@@ -18,12 +13,12 @@ go_library(
     importpath = "k8s.io/test-infra/prow/cmd/tide",
     visibility = ["//visibility:private"],
     deps = [
+        "//pkg/flagutil:go_default_library",
         "//prow/config:go_default_library",
+        "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
-        "//prow/git:go_default_library",
-        "//prow/github:go_default_library",
-        "//prow/kube:go_default_library",
         "//prow/logrusutil:go_default_library",
+        "//prow/metrics:go_default_library",
         "//prow/tide:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],

@@ -1,6 +1,12 @@
+# populate env used for stamping builds etc
 build --workspace_status_command=./hack/print-workspace-status.sh
 run --workspace_status_command=./hack/print-workspace-status.sh
+
+# enable data race detection
 test --features=race --test_output=errors
+
+# only build tests when testing
+test --build_tests_only
 
 # you can run only lint tests with:
 # bazel test //... --config=lint

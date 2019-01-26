@@ -34,11 +34,10 @@ import (
 
 const (
 	pluginName = "trigger"
-	lgtmLabel  = "lgtm"
 )
 
 func init() {
-	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment, helpProvider)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericCommentEvent, helpProvider)
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
 	plugins.RegisterPushEventHandler(pluginName, handlePush, helpProvider)
 }
@@ -100,21 +99,30 @@ type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	RemoveLabel(org, repo string, number int, label string) error
 	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
+	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
 type kubeClient interface {
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
 }
 
-type client struct {
+// Client holds the necessary structures to work with prow via logging, github, kubernetes and its configuration.
+//
+// TODO(fejta): consider exporting an interface rather than a struct
+type Client struct {
 	GitHubClient githubClient
 	KubeClient   kubeClient
 	Config       *config.Config
 	Logger       *logrus.Entry
 }
 
-func getClient(pc plugins.PluginClient) client {
-	return client{
+type trustedUserClient interface {
+	IsCollaborator(org, repo, user string) (bool, error)
+	IsMember(org, user string) (bool, error)
+}
+
+func getClient(pc plugins.Agent) Client {
+	return Client{
 		GitHubClient: pc.GitHubClient,
 		Config:       pc.Config,
 		KubeClient:   pc.KubeClient,
@@ -122,24 +130,24 @@ func getClient(pc plugins.PluginClient) client {
 	}
 }
 
-func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
 	org, repo, _ := orgRepoAuthor(pr.PullRequest)
 	return handlePR(getClient(pc), pc.PluginConfig.TriggerFor(org, repo), pr)
 }
 
-func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	return handleIC(getClient(pc), pc.PluginConfig.TriggerFor(ic.Repo.Owner.Login, ic.Repo.Name), ic)
+func handleGenericCommentEvent(pc plugins.Agent, gc github.GenericCommentEvent) error {
+	return handleGenericComment(getClient(pc), pc.PluginConfig.TriggerFor(gc.Repo.Owner.Login, gc.Repo.Name), gc)
 }
 
-func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {
+func handlePush(pc plugins.Agent, pe github.PushEvent) error {
 	return handlePE(getClient(pc), pe)
 }
 
-// trustedUser returns true if user is trusted in repo.
+// TrustedUser returns true if user is trusted in repo.
 //
 // Trusted users are either repo collaborators, org members or trusted org members.
 // Whether repo collaborators and/or a second org is trusted is configured by trigger.
-func trustedUser(ghc githubClient, trigger *plugins.Trigger, user, org, repo string) (bool, error) {
+func TrustedUser(ghc trustedUserClient, trigger *plugins.Trigger, user, org, repo string) (bool, error) {
 	// First check if user is a collaborator, assuming this is allowed
 	allowCollaborators := trigger == nil || !trigger.OnlyOrgMembers
 	if allowCollaborators {
@@ -190,7 +198,17 @@ func fileChangesGetter(ghc githubClient, org, repo string, num int) func() ([]st
 	}
 }
 
-func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts map[string]bool, body, eventGUID string) error {
+func allContexts(parent config.Presubmit) []string {
+	contexts := []string{parent.Context}
+	for _, child := range parent.RunAfterSuccess {
+		contexts = append(contexts, allContexts(child)...)
+	}
+	return contexts
+}
+
+// RunOrSkipRequested evaluates requestJobs to determine which config.Presubmits to
+// run and which ones to skip and once execute the ones that should be ran.
+func RunOrSkipRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts map[string]bool, body, eventGUID string) error {
 	org := pr.Base.Repo.Owner.Login
 	repo := pr.Base.Repo.Name
 	number := pr.Number
@@ -240,7 +258,10 @@ func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config
 			toRunJobs = append(toRunJobs, job)
 			toRun.Insert(job.Context)
 		} else if !job.SkipReport {
-			toSkip.Insert(job.Context)
+			// we need to post context statuses for all jobs; if a job is slated to
+			// run after the success of a parent job that is skipped, it must be
+			// skipped as well
+			toSkip.Insert(allContexts(job)...)
 		}
 	}
 	// 'Skip' any context that is requested, but doesn't have any job shards that
@@ -258,25 +279,7 @@ func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config
 	var errors []error
 	for _, job := range toRunJobs {
 		c.Logger.Infof("Starting %s build.", job.Name)
-		kr := kube.Refs{
-			Org:     org,
-			Repo:    repo,
-			BaseRef: pr.Base.Ref,
-			BaseSHA: baseSHA,
-			Pulls: []kube.Pull{
-				{
-					Number: number,
-					Author: pr.User.Login,
-					SHA:    pr.Head.SHA,
-				},
-			},
-		}
-		labels := make(map[string]string)
-		for k, v := range job.Labels {
-			labels[k] = v
-		}
-		labels[github.EventGUID] = eventGUID
-		pj := pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr), labels)
+		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
 		if _, err := c.KubeClient.CreateProwJob(pj); err != nil {
 			errors = append(errors, err)

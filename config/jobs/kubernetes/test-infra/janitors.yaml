@@ -1,6 +1,5 @@
 periodics:
 - interval: 1h
-  agent: kubernetes
   name: maintenance-ci-aws-janitor
   labels:
     preset-service-account: "true"
@@ -11,7 +10,7 @@ periodics:
       - --timeout=60
       - --service-account=/etc/service-account/service-account.json
       - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=kubernetes_janitor
+      - --scenario=execute
       - --
       - /aws-janitor
       - --
@@ -20,7 +19,7 @@ periodics:
       env:
       - name: AWS_SHARED_CREDENTIALS_FILE
         value: /workspace/.aws/credentials
-      image: gcr.io/k8s-test-infra-aws/aws-janitor:v20180606-bb012b637
+      image: gcr.io/k8s-test-infra-aws/aws-janitor:v20190114-57d0fe238
       volumeMounts:
       - mountPath: /workspace/.aws
         name: aws-cred
@@ -32,27 +31,33 @@ periodics:
         secretName: aws-cred-new
 
 - interval: 24h
-  agent: kubernetes
   name: maintenance-ci-janitor
   labels:
     preset-service-account: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=600
-      - --service-account=/etc/service-account/service-account.json
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=kubernetes_janitor
-      env:
-      image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+    - command:
+      - runner.sh
+      args:
+      - go
+      - run
+      - experiment/ci-janitor/main.go
+      - --config-path=prow/config.yaml
+      - --job-config-path=config/jobs
+      - --janitor-path=boskos/janitor/janitor.py
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
       resources:
         requests:
           cpu: 5
           memory: "8Gi"
 
 - interval: 1h
-  agent: kubernetes
   name: maintenance-pull-janitor
   labels:
     preset-service-account: "true"
@@ -67,14 +72,13 @@ periodics:
       - --
       - --mode=pr
       env:
-      image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
       resources:
         requests:
           cpu: 5
           memory: "8Gi"
 
 - interval: 1h
-  agent: kubernetes
   name: maintenance-pull-scale-janitor
   labels:
     preset-service-account: "true"
@@ -90,7 +94,7 @@ periodics:
       - --mode=scale
       - --ratelimit=5
       env:
-      image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
       resources:
         requests:
           cpu: 5

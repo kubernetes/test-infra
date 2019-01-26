@@ -42,8 +42,9 @@ type Client struct {
 	credLock sync.RWMutex
 	// user is used when pushing or pulling code if specified.
 	user string
-	// pass is used when pushing or pulling code if specified.
-	pass string
+
+	// needed to generate the token.
+	tokenGenerator func() []byte
 
 	// dir is the location of the git cache.
 	dir string
@@ -95,17 +96,17 @@ func (c *Client) SetRemote(remote string) {
 
 // SetCredentials sets credentials in the client to be used for pushing to
 // or pulling from remote repositories.
-func (c *Client) SetCredentials(user, pass string) {
+func (c *Client) SetCredentials(user string, tokenGenerator func() []byte) {
 	c.credLock.Lock()
 	defer c.credLock.Unlock()
 	c.user = user
-	c.pass = pass
+	c.tokenGenerator = tokenGenerator
 }
 
 func (c *Client) getCredentials() (string, string) {
 	c.credLock.RLock()
 	defer c.credLock.RUnlock()
-	return c.user, c.pass
+	return c.user, string(c.tokenGenerator())
 }
 
 func (c *Client) lockRepo(repo string) {
@@ -243,14 +244,17 @@ func (r *Repo) CheckoutNewBranch(branch string) error {
 func (r *Repo) Merge(commitlike string) (bool, error) {
 	r.logger.Infof("Merging %s.", commitlike)
 	co := r.gitCommand("merge", "--no-ff", "--no-stat", "-m merge", commitlike)
-	if b, err := co.CombinedOutput(); err == nil {
+
+	b, err := co.CombinedOutput()
+	if err == nil {
 		return true, nil
-	} else {
-		r.logger.WithError(err).Warningf("Merge failed with output: %s", string(b))
 	}
+	r.logger.WithError(err).Warningf("Merge failed with output: %s", string(b))
+
 	if b, err := r.gitCommand("merge", "--abort").CombinedOutput(); err != nil {
 		return false, fmt.Errorf("error aborting merge for commitlike %s: %v. output: %s", commitlike, err, string(b))
 	}
+
 	return false, nil
 }
 
@@ -319,9 +323,9 @@ func retryCmd(l *logrus.Entry, dir, cmd string, arg ...string) ([]byte, error) {
 	var err error
 	sleepyTime := time.Second
 	for i := 0; i < 3; i++ {
-		cmd := exec.Command(cmd, arg...)
-		cmd.Dir = dir
-		b, err = cmd.CombinedOutput()
+		c := exec.Command(cmd, arg...)
+		c.Dir = dir
+		b, err = c.CombinedOutput()
 		if err != nil {
 			l.Warningf("Running %s %v returned error %v with output %s.", cmd, arg, err, string(b))
 			time.Sleep(sleepyTime)

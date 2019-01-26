@@ -1,7 +1,22 @@
 postsubmits:
   kubernetes/test-infra:
+  - name: post-test-infra-build-smoke
+    agent: knative-build
+    decorate: true
+    report: true
+    build_spec:
+      steps:
+      - name: first
+        image: busybox
+        args: ["echo", "hello"]
+      - name: second
+        image: busybox
+        args: ["echo", "world"]
+      - name: third
+        image: busybox
+        args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-postsubmits.yaml"]
+
   - name: ci-test-infra-bazel
-    agent: kubernetes
     branches:
     - master
     labels:
@@ -10,7 +25,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -30,14 +45,13 @@ postsubmits:
             memory: "2Gi"
 
   - name: maintenance-boskos-config-upload
-    agent: kubernetes
     branches:
     - master
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -59,7 +73,6 @@ postsubmits:
           secretName: prow-build-service
 
   - name: maintenance-ci-testgrid-config-upload
-    agent: kubernetes
     branches:
     - master
     labels:
@@ -67,7 +80,7 @@ postsubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"

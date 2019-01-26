@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["encoding.go"],
-    importmap = "vendor/google.golang.org/grpc/encoding",
+    importmap = "k8s.io/test-infra/vendor/google.golang.org/grpc/encoding",
     importpath = "google.golang.org/grpc/encoding",
     visibility = ["//visibility:public"],
 )
@@ -17,7 +17,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//vendor/google.golang.org/grpc/encoding/proto:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

@@ -27,6 +27,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -148,7 +149,7 @@ func TestCalculateBlocks(t *testing.T) {
 	}
 
 	for _, tc := range tcs {
-		blockades := compileApplicableBlockades("org", "repo", logrus.WithField("plugin", pluginName), tc.config)
+		blockades := compileApplicableBlockades("org", "repo", logrus.WithField("plugin", PluginName), tc.config)
 		sum := calculateBlocks(tc.changes, blockades)
 		if !reflect.DeepEqual(sum, tc.expectedSummary) {
 			t.Errorf("[%s] Expected summary: %#v, actual summary: %#v.", tc.name, tc.expectedSummary, sum)
@@ -204,7 +205,7 @@ func TestHandle(t *testing.T) {
 	// Don't need to validate the following because they are validated by other tests:
 	// - Block calculation. (Whether or not changes justify blocking the PR.)
 	// - Comment contents, just existence.
-	otherLabel := "lgtm"
+	otherLabel := labels.LGTM
 
 	tcs := []struct {
 		name       string
@@ -231,7 +232,7 @@ func TestHandle(t *testing.T) {
 			hasLabel:   false,
 			filesBlock: true,
 
-			labelAdded:     blockedPathsLabel,
+			labelAdded:     labels.BlockedPaths,
 			commentCreated: true,
 		},
 		{
@@ -255,7 +256,7 @@ func TestHandle(t *testing.T) {
 			hasLabel:   true,
 			filesBlock: false,
 
-			labelRemoved: blockedPathsLabel,
+			labelRemoved: labels.BlockedPaths,
 		},
 		{
 			name:       "No blockade, not labeled",
@@ -271,7 +272,7 @@ func TestHandle(t *testing.T) {
 			hasLabel:   true,
 			filesBlock: true,
 
-			labelRemoved: blockedPathsLabel,
+			labelRemoved: labels.BlockedPaths,
 		},
 		{
 			name:       "Basic block (org scoped blockade)",
@@ -280,7 +281,7 @@ func TestHandle(t *testing.T) {
 			hasLabel:   false,
 			filesBlock: true,
 
-			labelAdded:     blockedPathsLabel,
+			labelAdded:     labels.BlockedPaths,
 			commentCreated: true,
 		},
 		{
@@ -295,15 +296,15 @@ func TestHandle(t *testing.T) {
 	for _, tc := range tcs {
 		expectAdded := []string{}
 		fakeClient := &fakegithub.FakeClient{
-			ExistingLabels:     []string{blockedPathsLabel, otherLabel},
+			RepoLabelsExisting: []string{labels.BlockedPaths, otherLabel},
 			IssueComments:      make(map[int][]github.IssueComment),
 			PullRequestChanges: make(map[int][]github.PullRequestChange),
-			LabelsAdded:        []string{},
-			LabelsRemoved:      []string{},
+			IssueLabelsAdded:   []string{},
+			IssueLabelsRemoved: []string{},
 		}
 		if tc.hasLabel {
-			label := formatLabel(blockedPathsLabel)
-			fakeClient.LabelsAdded = append(fakeClient.LabelsAdded, label)
+			label := formatLabel(labels.BlockedPaths)
+			fakeClient.IssueLabelsAdded = append(fakeClient.IssueLabelsAdded, label)
 			expectAdded = append(expectAdded, label)
 		}
 		calcF := func(_ []github.PullRequestChange, blockades []blockade) summary {
@@ -322,13 +323,7 @@ func TestHandle(t *testing.T) {
 			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 			Number: 1,
 		}
-		c := &client{
-			ghc:       fakeClient,
-			log:       logrus.WithField("plugin", pluginName),
-			pruner:    &fakePruner{},
-			blockCalc: calcF,
-		}
-		if err := handle(c, tc.config, pre); err != nil {
+		if err := handle(fakeClient, logrus.WithField("plugin", PluginName), tc.config, &fakePruner{}, calcF, pre); err != nil {
 			t.Errorf("[%s] Unexpected error from handle: %v.", tc.name, err)
 			continue
 		}
@@ -337,18 +332,18 @@ func TestHandle(t *testing.T) {
 			expectAdded = append(expectAdded, formatLabel(tc.labelAdded))
 		}
 		sort.Strings(expectAdded)
-		sort.Strings(fakeClient.LabelsAdded)
-		if !reflect.DeepEqual(expectAdded, fakeClient.LabelsAdded) {
-			t.Errorf("[%s]: Expected labels to be added: %q, but got: %q.", tc.name, expectAdded, fakeClient.LabelsAdded)
+		sort.Strings(fakeClient.IssueLabelsAdded)
+		if !reflect.DeepEqual(expectAdded, fakeClient.IssueLabelsAdded) {
+			t.Errorf("[%s]: Expected labels to be added: %q, but got: %q.", tc.name, expectAdded, fakeClient.IssueLabelsAdded)
 		}
 		expectRemoved := []string{}
 		if tc.labelRemoved != "" {
 			expectRemoved = append(expectRemoved, formatLabel(tc.labelRemoved))
 		}
 		sort.Strings(expectRemoved)
-		sort.Strings(fakeClient.LabelsRemoved)
-		if !reflect.DeepEqual(expectRemoved, fakeClient.LabelsRemoved) {
-			t.Errorf("[%s]: Expected labels to be removed: %q, but got: %q.", tc.name, expectRemoved, fakeClient.LabelsRemoved)
+		sort.Strings(fakeClient.IssueLabelsRemoved)
+		if !reflect.DeepEqual(expectRemoved, fakeClient.IssueLabelsRemoved) {
+			t.Errorf("[%s]: Expected labels to be removed: %q, but got: %q.", tc.name, expectRemoved, fakeClient.IssueLabelsRemoved)
 		}
 
 		if count := len(fakeClient.IssueComments[1]); count > 1 {

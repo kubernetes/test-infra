@@ -1,5 +1,5 @@
-load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("//prow:def.bzl", "prow_image")
 
 go_library(
     name = "go_default_library",
@@ -14,6 +14,20 @@ go_library(
     ],
 )
 
+go_binary(
+    name = "entrypoint",
+    embed = [":go_default_library"],
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
+prow_image(
+    name = "image",
+    base = "@git-base//image",
+    symlinks = {"/entrypoint": "/app/prow/cmd/entrypoint/app.binary"},
+    visibility = ["//visibility:public"],
+)
+
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
@@ -25,20 +39,5 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
-    visibility = ["//visibility:public"],
-)
-
-go_image(
-    name = "image",
-    base = "@git-base//image",
-    binary = ":entrypoint",
-    directory = "/",
-    visibility = ["//visibility:public"],
-)
-
-go_binary(
-    name = "entrypoint",
-    embed = [":go_default_library"],
-    pure = "on",
     visibility = ["//visibility:public"],
 )

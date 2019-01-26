@@ -1,0 +1,41 @@
+presubmits:
+  GoogleCloudPlatform/k8s-cluster-bundle:
+  - name: pull-k8s-cluster-bundle-bazel-test
+    always_run: true         # Run for every PR, or only when requested.
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/cloud-builders/bazel	
+        command:
+        - "bazel"
+        args:  
+        - "test"
+        - "..."
+        volumeMounts:
+        - name: empty-workspace
+          mountPath: /workspace
+      volumes:
+      - name: empty-workspace
+        emptyDir: {}
+postsubmits:
+  GoogleCloudPlatform/k8s-cluster-bundle:
+  - name: post-k8s-cluster-bundle-bazel-test
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/cloud-builders/bazel	
+        command:
+        - "bazel"
+        args: 
+        - "test"
+        - "..."
+        volumeMounts:
+        - name: empty-workspace
+          mountPath: /workspace
+      volumes:
+      - name: empty-workspace
+        emptyDir: {}

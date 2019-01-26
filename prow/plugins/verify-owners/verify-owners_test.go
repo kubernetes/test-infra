@@ -26,6 +26,7 @@ import (
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/labels"
 )
 
 var ownerFiles = map[string][]byte{
@@ -115,9 +116,9 @@ labels:
 `),
 }
 
-func labelsAddedContain(arr []string, str string) bool {
+func IssueLabelsAddedContain(arr []string, str string) bool {
 	for _, a := range arr {
-		// LabelsAdded format is owner/repo#number:label
+		// IssueLabelsAdded format is owner/repo#number:label
 		b := strings.Split(a, ":")
 		if b[len(b)-1] == str {
 			return true
@@ -264,20 +265,29 @@ func TestHandle(t *testing.T) {
 		if err := lg.AddCommit("org", "repo", pullFiles); err != nil {
 			t.Fatalf("Adding PR commit: %v", err)
 		}
+		sha, err := lg.RevParse("org", "repo", "HEAD")
+		if err != nil {
+			t.Fatalf("Getting commit SHA: %v", err)
+		}
 		pre := &github.PullRequestEvent{
-			Number:      pr,
-			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
-			Repo:        github.Repo{FullName: "org/repo"},
+			Number: pr,
+			PullRequest: github.PullRequest{
+				User: github.User{Login: "author"},
+				Head: github.PullRequestBranch{
+					SHA: sha,
+				},
+			},
+			Repo: github.Repo{FullName: "org/repo"},
 		}
 		fghc := newFakeGithubClient(test.filesChanged, pr)
-		if err := handle(fghc, c, logrus.WithField("plugin", pluginName), pre, []string{"approved", "lgtm"}); err != nil {
+		if err := handle(fghc, c, logrus.WithField("plugin", PluginName), pre, []string{labels.Approved, labels.LGTM}); err != nil {
 			t.Fatalf("Handle PR: %v", err)
 		}
-		if !test.shouldLabel && labelsAddedContain(fghc.LabelsAdded, invalidOwnersLabel) {
-			t.Errorf("%s: didn't expect label %s in %s", test.name, invalidOwnersLabel, fghc.LabelsAdded)
+		if !test.shouldLabel && IssueLabelsAddedContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
+			t.Errorf("%s: didn't expect label %s in %s", test.name, labels.InvalidOwners, fghc.IssueLabelsAdded)
 			continue
-		} else if test.shouldLabel && !labelsAddedContain(fghc.LabelsAdded, invalidOwnersLabel) {
-			t.Errorf("%s: expected label %s in %s", test.name, invalidOwnersLabel, fghc.LabelsAdded)
+		} else if test.shouldLabel && !IssueLabelsAddedContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
+			t.Errorf("%s: expected label %s in %s", test.name, labels.InvalidOwners, fghc.IssueLabelsAdded)
 			continue
 		}
 	}

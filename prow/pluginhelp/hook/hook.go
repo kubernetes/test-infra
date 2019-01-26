@@ -58,12 +58,14 @@ type githubClient interface {
 	GetRepos(org string, isUser bool) ([]github.Repo, error)
 }
 
+// HelpAgent is a handler that generates and serve plugin help information.
 type HelpAgent struct {
 	log *logrus.Entry
 	pa  pluginAgent
 	oa  *orgAgent
 }
 
+// NewHelpAgent constructs a new HelpAgent.
 func NewHelpAgent(pa pluginAgent, ghc githubClient) *HelpAgent {
 	l := logrus.WithField("client", "plugin-help")
 	return &HelpAgent{
@@ -197,11 +199,11 @@ func allRepos(config *plugins.Configuration, orgToRepos map[string]sets.String) 
 
 func externalHelpProvider(log *logrus.Entry, endpoint string) externalplugins.ExternalPluginHelpProvider {
 	return func(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-		url, err := url.Parse(endpoint)
+		u, err := url.Parse(endpoint)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing url: %s err: %v", endpoint, err)
 		}
-		url.Path = path.Join(url.Path, "/help")
+		u.Path = path.Join(u.Path, "/help")
 		b, err := json.Marshal(enabledRepos)
 		if err != nil {
 			return nil, fmt.Errorf("error marshalling enabled repos: %q, err: %v", enabledRepos, err)
@@ -209,7 +211,7 @@ func externalHelpProvider(log *logrus.Entry, endpoint string) externalplugins.Ex
 
 		// Don't retry because user is waiting for response to their browser.
 		// If there is an error the user can refresh to get the plugin info that failed to load.
-		urlString := url.String()
+		urlString := u.String()
 		resp, err := http.Post(urlString, "application/json", bytes.NewReader(b))
 		if err != nil {
 			return nil, fmt.Errorf("error posting to %s err: %v", urlString, err)
@@ -231,7 +233,7 @@ func externalHelpProvider(log *logrus.Entry, endpoint string) externalplugins.Ex
 // The returned values map plugin names to the set of org/repo strings they are enabled on.
 func reversePluginMaps(config *plugins.Configuration, orgToRepos map[string]sets.String) (normal, external map[string][]string) {
 	normal = map[string][]string{}
-	for repo, plugins := range config.Plugins {
+	for repo, enabledPlugins := range config.Plugins {
 		var repos []string
 		if !strings.Contains(repo, "/") {
 			if flattened, ok := orgToRepos[repo]; ok {
@@ -240,19 +242,19 @@ func reversePluginMaps(config *plugins.Configuration, orgToRepos map[string]sets
 		} else {
 			repos = []string{repo}
 		}
-		for _, plugin := range plugins {
+		for _, plugin := range enabledPlugins {
 			normal[plugin] = append(normal[plugin], repos...)
 		}
 	}
 	external = map[string][]string{}
-	for repo, plugins := range config.ExternalPlugins {
+	for repo, extPlugins := range config.ExternalPlugins {
 		var repos []string
 		if flattened, ok := orgToRepos[repo]; ok {
 			repos = flattened.List()
 		} else {
 			repos = []string{repo}
 		}
-		for _, plugin := range plugins {
+		for _, plugin := range extPlugins {
 			external[plugin.Name] = append(external[plugin.Name], repos...)
 		}
 	}

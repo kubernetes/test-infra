@@ -46,7 +46,7 @@ message Notification {
 
 // Specifies a group of tests to gather.
 message TestGroup {
-  reserved 5, 7, 8, 10, 13, 14, 16 to 23, 28 to 37;
+  reserved 5, 7, 8, 10, 13, 16 to 23, 28 to 37;
 
   // Name of this TestGroup, for mapping dashboard tabs to tests.
   string name = 1;
@@ -89,6 +89,10 @@ message TestGroup {
   // a consistent failure. If zero, no alerts are raised.
   int32 num_failures_to_alert = 12;
 
+  // Default code search path for searching regressions. Overridden by
+  // code_search_path in DashboardTab.
+  string code_search_path = 14;
+
   // The number of columns to consider "recent" for a variety of purposes.
   int32 num_columns_recent = 15;
 
@@ -107,6 +111,10 @@ message TestGroup {
 
   // The number of consecutive test passes to close the alert.
   int32 num_passes_to_disable_alert = 38;
+
+  // Numeric property metric value to be used for short text. If this property
+  // is present, it will override all the other short text values.
+  string short_text_metric = 43;
 }
 
 
@@ -158,7 +166,9 @@ message DashboardTab {
   // Default bug component for manually filing bugs from the dashboard
   int32 bug_component = 3;
 
-  // Default code search path for changelist search links
+  // Default code search path for searching regressions. This value overrides
+  // the default in the TestGroup config so that dashboards may be customized
+  // separately.
   string code_search_path = 4;
 
   // See TestGroup.num_columns_recent. This value overrides the default in the

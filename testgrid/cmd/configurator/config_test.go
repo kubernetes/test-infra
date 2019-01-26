@@ -25,7 +25,8 @@ import (
 
 	"path/filepath"
 
-	"github.com/ghodss/yaml"
+	"k8s.io/apimachinery/pkg/util/sets"
+
 	prow_config "k8s.io/test-infra/prow/config"
 	config_pb "k8s.io/test-infra/testgrid/config"
 )
@@ -37,12 +38,13 @@ type SQConfig struct {
 var (
 	companies = []string{
 		"canonical",
+		"cos",
 		"cri-o",
 		"istio",
 		"google",
 		"kopeio",
-		"tectonic",
 		"redhat",
+		"vmware",
 	}
 	orgs = []string{
 		"conformance",
@@ -169,8 +171,11 @@ func TestConfig(t *testing.T) {
 			t.Errorf("Dashboard %v: - Must have more than one dashboardtab", dashboard.Name)
 		}
 
-		// dashboardtab name set, to check duplicated tabs within each dashboard
-		dashboardtabmap := make(map[string]bool)
+		// dashboardtabSet is a set that checks duplicate tab name within each dashboard
+		dashboardtabSet := sets.NewString()
+
+		// dashboardtestgroupSet is a set that checks duplicate testgroups within each dashboard
+		dashboardtestgroupSet := sets.NewString()
 
 		// All notifications in dashboard must have a summary
 		if len(dashboard.Notifications) != 0 {
@@ -189,10 +194,17 @@ func TestConfig(t *testing.T) {
 			}
 
 			// All dashboardtab within a dashboard must not have duplicated names
-			if dashboardtabmap[dashboardtab.Name] {
-				t.Errorf("Duplicated dashboardtab: %v", dashboardtab.Name)
+			if dashboardtabSet.Has(dashboardtab.Name) {
+				t.Errorf("Duplicated name in dashboard %s: %v", dashboard.Name, dashboardtab.Name)
 			} else {
-				dashboardtabmap[dashboardtab.Name] = true
+				dashboardtabSet.Insert(dashboardtab.Name)
+			}
+
+			// All dashboardtab within a dashboard must not have duplicated testgroupnames
+			if dashboardtestgroupSet.Has(dashboardtab.TestGroupName) {
+				t.Errorf("Duplicated testgroupnames in dashboard %s: %v", dashboard.Name, dashboardtab.TestGroupName)
+			} else {
+				dashboardtestgroupSet.Insert(dashboardtab.TestGroupName)
 			}
 
 			// All testgroup in dashboard must be defined in testgroups
@@ -287,58 +299,6 @@ func TestConfig(t *testing.T) {
 			t.Errorf("Testgroup %v - defined but not used in any dashboards", testgroupname)
 		}
 	}
-
-	// make sure items in sq-blocking dashboard matches sq configmap
-	sqJobPool := []string{}
-	for _, d := range cfg.Dashboards {
-		if d.Name != "sq-blocking" {
-			continue
-		}
-
-		for _, tab := range d.DashboardTab {
-			for _, t := range cfg.TestGroups {
-				if t.Name == tab.TestGroupName {
-					job := strings.TrimPrefix(t.GcsPrefix, "kubernetes-jenkins/logs/")
-					sqJobPool = append(sqJobPool, job)
-					break
-				}
-			}
-		}
-	}
-
-	sqConfigPath := "../../../mungegithub/submit-queue/deployment/kubernetes/configmap.yaml"
-	configData, err := ioutil.ReadFile(sqConfigPath)
-	if err != nil {
-		t.Errorf("Read Buffer Error for SQ Data : %v", err)
-	}
-
-	sqData := &SQConfig{}
-	err = yaml.Unmarshal([]byte(configData), &sqData)
-	if err != nil {
-		t.Errorf("Unmarshal Error for SQ Data : %v", err)
-	}
-
-	for _, testgridJob := range sqJobPool {
-		t.Errorf("Err : testgrid job %v not found in SQ config", testgridJob)
-	}
-
-	sqNonBlockingJobs := strings.Split(sqData.Data["nonblocking-jobs"], ",")
-	for _, sqJob := range sqNonBlockingJobs {
-		if sqJob == "" { // ignore empty list of jobs
-			continue
-		}
-		found := false
-		for _, testgroup := range cfg.TestGroups {
-			if testgroup.Name == sqJob {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			t.Errorf("Err : %v not found in testgrid config", sqJob)
-		}
-	}
 }
 
 func TestJobsTestgridEntryMatch(t *testing.T) {
@@ -356,7 +316,11 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 	for _, job := range prowConfig.AllPresubmits([]string{
 		"bazelbuild/rules_k8s",
 		"google/cadvisor",
+		"helm/charts",
+		"GoogleCloudPlatform/k8s-cluster-bundle",
+		"kubeflow/arena",
 		"kubeflow/caffe2-operator",
+		"kubeflow/chainer-operator",
 		"kubeflow/examples",
 		"kubeflow/experimental-beagle",
 		"kubeflow/experimental-kvc",
@@ -365,21 +329,32 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubeflow/kubebench",
 		"kubeflow/kubeflow",
 		"kubeflow/mpi-operator",
+		"kubeflow/mxnet-operator",
 		"kubeflow/pytorch-operator",
 		"kubeflow/reporting",
 		"kubeflow/testing",
 		"kubeflow/tf-operator",
 		"kubeflow/website",
-		"kubernetes-sigs/cluster-api",
-		"kubernetes-sigs/poseidon",
-		"kubernetes/charts",
+		"kubernetes/cloud-provider-aws",
+		"kubernetes/cloud-provider-vsphere",
 		"kubernetes/cluster-registry",
 		"kubernetes/federation",
-		"kubernetes/heapster",
 		"kubernetes/kops",
-		"kubernetes/kube-deploy",
 		"kubernetes/kubernetes",
+		"kubernetes/org",
+		"kubernetes/publishing-bot",
 		"kubernetes/test-infra",
+		"kubernetes-sigs/aws-alb-ingress-controller",
+		"kubernetes-sigs/aws-ebs-csi-driver",
+		"kubernetes-sigs/cluster-api",
+		"kubernetes-sigs/cluster-api-provider-aws",
+		"kubernetes-sigs/cluster-api-provider-azure",
+		"kubernetes-sigs/cluster-api-provider-digitalocean",
+		"kubernetes-sigs/cluster-api-provider-gcp",
+		"kubernetes-sigs/cluster-api-provider-vsphere",
+		"kubernetes-sigs/cluster-api-provider-openstack",
+		"kubernetes-sigs/poseidon",
+		"kubernetes-sigs/structured-merge-diff",
 		"tensorflow/minigo",
 	}) {
 		jobs[job.Name] = false

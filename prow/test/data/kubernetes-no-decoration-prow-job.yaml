@@ -1,8 +1,11 @@
 apiVersion: prow.k8s.io/v1
 kind: ProwJob
 metadata:
+  annotations:
+    prow.k8s.io/job: kubernetes-no-decoration
   creationTimestamp: null
   labels:
+    created-by-prow: "true"
     prow.k8s.io/job: kubernetes-no-decoration
     prow.k8s.io/refs.org: test-org
     prow.k8s.io/refs.pull: "1"
@@ -14,6 +17,7 @@ spec:
   cluster: default
   context: kubernetes-no-decoration
   job: kubernetes-no-decoration
+  namespace: default
   pod_spec:
     containers:
     - args:

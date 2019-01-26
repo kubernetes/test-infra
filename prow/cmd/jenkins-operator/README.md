@@ -144,7 +144,7 @@ adding comments about failed tests. Note that this functionality may
 potentially move into its own service, then the Jenkins operator will
 not need to contact the Github API. The required options are already
 defaulted:
-* `github-token-file` set to `/etc/github/oauth`. This is the Github bot
+* `github-token-path` set to `/etc/github/oauth`. This is the Github bot
 oauth token that is used for updating job statuses and adding comments
 in Github.
 * `github-endpoint` set to `https://api.github.com`.

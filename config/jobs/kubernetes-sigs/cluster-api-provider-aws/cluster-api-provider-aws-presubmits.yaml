@@ -1,0 +1,73 @@
+presubmits:
+  kubernetes-sigs/cluster-api-provider-aws:
+  - name: pull-cluster-api-provider-aws-bazel-verify
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.12
+        command:
+        - "./hack/verify-bazel.sh"
+  - name: pull-cluster-api-provider-aws-bazel-test
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.12
+        command:
+        - "./scripts/ci-bazel-test.sh"
+  - name: pull-cluster-api-provider-aws-bazel-build
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.12
+        command:
+        - "./scripts/ci-bazel-build.sh"
+  - name: pull-cluster-api-provider-aws-bazel-e2e
+    always_run: true
+    optional: true
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master # needs bazel 0.18+
+        command:
+        - "runner.sh"
+        - "./scripts/ci-bazel-e2e.sh"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /sys/fs/cgroup
+          name: cgroup
+      volumes:
+      - name: modules
+        hostPath:
+          path: /lib/modules
+          type: Directory
+      - name: cgroup
+        hostPath:
+          path: /sys/fs/cgroup
+          type: Directory
+  - name: pull-cluster-api-provider-aws-verify-boilerplate
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        command:
+        - "./hack/verify_boilerplate.py"

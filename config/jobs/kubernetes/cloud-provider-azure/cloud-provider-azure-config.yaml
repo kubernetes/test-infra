@@ -1,0 +1,124 @@
+presets:
+- labels:
+    preset-cloud-provider-azure-account: "true"
+  env:
+  - name: IMAGE_REGISTRY
+    value: kaicr1.azurecr.io
+  - name: K8S_AZURE_ACCOUNT_CONFIG
+    value: /etc/cloud-provider-azure-account/account.env
+  volumes:
+  - name: cloud-provider-azure-account-cloud
+    secret:
+      secretName: cloud-provider-azure-account
+      items:
+      - key: account.env
+        path: account.env
+  - name: cloud-provider-azure-account-registry
+    secret:
+      secretName: cloud-provider-azure-account
+      items:
+      - key: registry.json
+        path: config.json
+  volumeMounts:
+  - name: cloud-provider-azure-account-cloud
+    mountPath: /etc/cloud-provider-azure-account
+    readOnly: true
+  - name: cloud-provider-azure-account-registry
+    mountPath: /root/.docker
+    readOnly: true
+
+presubmits:
+  kubernetes/cloud-provider-azure:
+  - name: pull-cloud-provider-azure-check
+    always_run: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --scenario=execute
+        - --
+        - make
+        - test-check
+
+  - name: pull-cloud-provider-azure-e2e
+    always_run: false
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-cloud-provider-azure-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--timeout=100"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --scenario=execute
+        - --
+        - make
+        - test-e2e
+        - SUITE=default
+        - "SUBJECT=${PULL_NUMBER}"
+        securityContext:
+          privileged: true
+
+  - name: pull-cloud-provider-azure-unit
+    always_run: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --scenario=execute
+        - --
+        - make
+        - test-unit
+
+periodics:
+- interval: 12h
+  name: ci-cloud-provider-azure-master
+  labels:
+    preset-service-account: "true"
+    preset-cloud-provider-azure-account: "true"
+    preset-dind-enabled: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-azure
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-azure
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - test-e2e
+      - SUITE=default
+      - "SUBJECT=${PULL_NUMBER}"
+      env:
+      - name: K8S_BRANCH
+        value: master
+      - name: TEST_MANIFEST
+        value: linux-kcm
+      securityContext:
+        privileged: true

@@ -1,5 +1,14 @@
-approvers:
-- cjwagner
-- kargakis
-- spxtr
-- stevekuznetsov
+# See the OWNERS docs at https://go.k8s.io/owners
+
+filters:
+  ".*":
+    approvers:
+      - cjwagner
+      - fejta
+      # - spxtr (emeritus)
+      - stevekuznetsov
+    labels:
+      - area/prow
+  "(plugins|config)\\.yaml$":
+    required_reviewers:
+      - cblecker

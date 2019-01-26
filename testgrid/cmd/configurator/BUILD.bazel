@@ -6,7 +6,6 @@ go_binary(
     name = "configurator",
     embed = [":go_default_library"],
     pure = "on",
-    tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
 
@@ -18,7 +17,6 @@ go_test(
     ],
     data = [
         "//config:prowjobs",
-        "//mungegithub:submit-queue/deployment/kubernetes/configmap.yaml",
         "//prow:config.yaml",
         "//testgrid:config-yaml",
     ],
@@ -26,7 +24,7 @@ go_test(
     deps = [
         "//prow/config:go_default_library",
         "//testgrid:config",
-        "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 
@@ -41,8 +39,8 @@ go_library(
         "//testgrid:config",
         "//testgrid/util/gcs:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
-        "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
 

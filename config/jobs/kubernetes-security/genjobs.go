@@ -27,18 +27,18 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"strings"
 
-	"github.com/ghodss/yaml"
 	flag "github.com/spf13/pflag"
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -49,41 +49,7 @@ import (
 
 var configPath = flag.String("config", "", "path to prow/config.yaml, defaults to $PWD/../../prow/config.yaml")
 var jobsPath = flag.String("jobs", "", "path to prowjobs, defaults to $PWD/../")
-var configJSONPath = flag.String("config-json", "", "path to jobs/config.json, defaults to $PWD/../../jobs/config.json")
-var outputPath = flag.String("output", "", "path to output the generated jobs to, defaults to $PWD/generated-security-jobs.json")
-
-// config.json is the worst but contains useful information :-(
-type configJSON map[string]map[string]interface{}
-
-func (c configJSON) ScenarioForJob(jobName string) string {
-	if scenario, ok := c[jobName]["scenario"]; ok {
-		return scenario.(string)
-	}
-	return ""
-}
-
-func (c configJSON) ArgsForJob(jobName string) []string {
-	res := []string{}
-	if args, ok := c[jobName]["args"]; ok {
-		for _, arg := range args.([]interface{}) {
-			res = append(res, arg.(string))
-		}
-	}
-	return res
-}
-
-func readConfigJSON(path string) (config configJSON, err error) {
-	raw, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	config = configJSON{}
-	err = json.Unmarshal(raw, &config)
-	if err != nil {
-		return nil, err
-	}
-	return config, nil
-}
+var outputPath = flag.String("output", "", "path to output the generated jobs to, defaults to $PWD/generated-security-jobs.yaml")
 
 // remove merged presets from a podspec
 func undoPreset(preset *config.Preset, labels map[string]string, pod *v1.PodSpec) {
@@ -154,7 +120,13 @@ func undoPresubmitPresets(presets []config.Preset, presubmit *config.Presubmit) 
 // convert a kubernetes/kubernetes job to a kubernetes-security/kubernetes job
 // dropLabels should be a set of "k: v" strings
 // xref: prow/config/config_test.go replace(...)
-func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, jobsConfig configJSON) {
+// it will return the same job mutated, or nil if the job should be removed
+func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, defaultDecoration *kube.DecorationConfig, podNamespace string) *config.Presubmit {
+	// if a GKE job, disable it
+	if strings.Contains(j.Name, "gke") {
+		return nil
+	}
+
 	// filter out the unwanted labels
 	if len(j.Labels) > 0 {
 		filteredLabels := make(map[string]string)
@@ -173,6 +145,12 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, jobsCo
 	j.RerunCommand = strings.Replace(j.RerunCommand, "pull-kubernetes", "pull-security-kubernetes", -1)
 	j.Trigger = strings.Replace(j.Trigger, "pull-kubernetes", "pull-security-kubernetes", -1)
 	j.Context = strings.Replace(j.Context, "pull-kubernetes", "pull-security-kubernetes", -1)
+	if j.Namespace != nil && *j.Namespace == podNamespace {
+		j.Namespace = nil
+	}
+	if j.DecorationConfig != nil && reflect.DeepEqual(j.DecorationConfig, defaultDecoration) {
+		j.DecorationConfig = nil
+	}
 
 	// handle k8s job args, volumes etc
 	if j.Agent == "kubernetes" {
@@ -183,12 +161,13 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, jobsCo
 		needGCSFlag := false
 		needGCSSharedFlag := false
 		needStagingFlag := false
+		isGCPe2e := false
 		for i, arg := range container.Args {
 			if arg == "--" {
 				endsWithScenarioArgs = true
 
 				// handle --repo substitution for main repo
-			} else if strings.HasPrefix(arg, "--repo=k8s.io/kubernetes") || strings.HasPrefix(arg, "--repo=k8s.io/$(REPO_NAME)") {
+			} else if arg == "--repo=k8s.io/kubernetes" || strings.HasPrefix(arg, "--repo=k8s.io/kubernetes=") || arg == "--repo=k8s.io/$(REPO_NAME)" || strings.HasPrefix(arg, "--repo=k8s.io/$(REPO_NAME)=") {
 				container.Args[i] = strings.Replace(arg, "k8s.io/", "github.com/kubernetes-security/", 1)
 
 				// handle upload bucket
@@ -210,9 +189,15 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, jobsCo
 		// check for scenario specific tweaks
 		// NOTE: jobs are remapped to their original name in bootstrap to de-dupe config
 
+		scenario := ""
+		for _, arg := range container.Args {
+			if strings.HasPrefix(arg, "--scenario=") {
+				scenario = strings.TrimPrefix(arg, "--scenario=")
+			}
+		}
 		// check if we need to change staging artifact location for bazel-build and e2es
-		if jobsConfig.ScenarioForJob(originalName) == "kubernetes_bazel" {
-			for _, arg := range jobsConfig.ArgsForJob(originalName) {
+		if scenario == "kubernetes_bazel" {
+			for _, arg := range container.Args {
 				if strings.HasPrefix(arg, "--release") {
 					needGCSFlag = true
 					needGCSSharedFlag = true
@@ -221,8 +206,11 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, jobsCo
 			}
 		}
 
-		if jobsConfig.ScenarioForJob(originalName) == "kubernetes_e2e" {
-			for _, arg := range jobsConfig.ArgsForJob(originalName) {
+		if scenario == "kubernetes_e2e" {
+			for _, arg := range container.Args {
+				if strings.Contains(arg, "gcp") {
+					isGCPe2e = true
+				}
 				if strings.HasPrefix(arg, "--stage") {
 					needStagingFlag = true
 				} else if strings.HasPrefix(arg, "--use-shared-build") {
@@ -243,6 +231,10 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, jobsCo
 		}
 		if needStagingFlag {
 			container.Args = append(container.Args, "--stage=gs://kubernetes-security-prow/ci/"+j.Name)
+		}
+		// GCP e2e use a fixed project for security testing
+		if isGCPe2e {
+			container.Args = append(container.Args, "--gcp-project=k8s-jkns-pr-gce-etcd3")
 		}
 
 		// add ssh key volume / mount
@@ -268,9 +260,17 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, jobsCo
 		)
 	}
 	// done with this job, check for run_after_success
-	for i := range j.RunAfterSuccess {
-		convertJobToSecurityJob(&j.RunAfterSuccess[i], dropLabels, jobsConfig)
+	if len(j.RunAfterSuccess) > 0 {
+		filteredRunAfterSucces := []config.Presubmit{}
+		for i := range j.RunAfterSuccess {
+			newJob := convertJobToSecurityJob(&j.RunAfterSuccess[i], dropLabels, defaultDecoration, podNamespace)
+			if newJob != nil {
+				filteredRunAfterSucces = append(filteredRunAfterSucces, *newJob)
+			}
+		}
+		j.RunAfterSuccess = filteredRunAfterSucces
 	}
+	return j
 }
 
 // these are unnecessary, and make the config larger so we strip them out
@@ -331,9 +331,6 @@ func main() {
 	if *jobsPath == "" {
 		*jobsPath = pwd + "/../"
 	}
-	if *configJSONPath == "" {
-		*configJSONPath = pwd + "/../../jobs/config.json"
-	}
 	if *outputPath == "" {
 		*outputPath = pwd + "/generated-security-jobs.yaml"
 	}
@@ -342,8 +339,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to read config file: %v", err)
 	}
-	// read in jobs config
-	jobsConfig, err := readConfigJSON(*configJSONPath)
 
 	// create temp file to write updated config
 	f, err := ioutil.TempFile(filepath.Dir(*configPath), "temp")
@@ -368,7 +363,10 @@ func main() {
 		// undo merged presets, this needs to occur first!
 		undoPresubmitPresets(parsed.Presets, job)
 		// now convert the job
-		convertJobToSecurityJob(job, dropLabels, jobsConfig)
+		job = convertJobToSecurityJob(job, dropLabels, parsed.Plank.DefaultDecorationConfig, parsed.PodNamespace)
+		if job == nil {
+			continue
+		}
 		jobBytes, err := yaml.Marshal(job)
 		if err != nil {
 			log.Fatalf("Failed to marshal job: %v", err)

@@ -40,37 +40,37 @@ DEFAULT_AWS_ZONES = [
     'ap-northeast-1a',
     'ap-northeast-1c',
     'ap-northeast-1d',
-    #'ap-northeast-2a', InsufficientInstanceCapacity for c4.large 2018-05-30
+    'ap-northeast-2a',
     #'ap-northeast-2b' - AZ does not exist, so we're breaking the 3 AZs per region target here
-    #'ap-northeast-2c', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-south-1a', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-south-1b', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-southeast-1a', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-southeast-1b', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-southeast-1c', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-southeast-2a', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-southeast-2b', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-southeast-2c', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ca-central-1a', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ca-central-1b', InsufficientInstanceCapacity for c4.large 2018-05-30
+    'ap-northeast-2c',
+    'ap-south-1a',
+    'ap-south-1b',
+    'ap-southeast-1a',
+    'ap-southeast-1b',
+    'ap-southeast-1c',
+    'ap-southeast-2a',
+    'ap-southeast-2b',
+    'ap-southeast-2c',
+    'ca-central-1a',
+    'ca-central-1b',
     'eu-central-1a',
     'eu-central-1b',
     'eu-central-1c',
     'eu-west-1a',
     'eu-west-1b',
     'eu-west-1c',
-    #'eu-west-2a', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'eu-west-2b', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'eu-west-2c', InsufficientInstanceCapacity for c4.large 2018-05-30
+    'eu-west-2a',
+    'eu-west-2b',
+    'eu-west-2c',
     #'eu-west-3a', documented to not support c4 family
     #'eu-west-3b', documented to not support c4 family
     #'eu-west-3c', documented to not support c4 family
     'sa-east-1a',
     #'sa-east-1b', AZ does not exist, so we're breaking the 3 AZs per region target here
     'sa-east-1c',
-    'us-east-1a',
-    'us-east-1b',
-    'us-east-1c',
+    #'us-east-1a', # temporarily removing due to lack of quota #10043
+    #'us-east-1b', # temporarily removing due to lack of quota #10043
+    #'us-east-1c', # temporarily removing due to lack of quota #10043
     #'us-east-1d', # limiting to 3 zones to not overallocate
     #'us-east-1e', # limiting to 3 zones to not overallocate
     #'us-east-1f', # limiting to 3 zones to not overallocate
@@ -80,9 +80,9 @@ DEFAULT_AWS_ZONES = [
     'us-west-1a',
     'us-west-1b',
     #'us-west-1c', AZ does not exist, so we're breaking the 3 AZs per region target here
-    'us-west-2a',
-    'us-west-2b',
-    'us-west-2c'
+    #'us-west-2a', # temporarily removing due to lack of quota #10043
+    #'us-west-2b', # temporarily removing due to lack of quota #10043
+    #'us-west-2c', # temporarily removing due to lack of quota #10043
 ]
 
 def test_infra(*paths):
@@ -212,9 +212,9 @@ class LocalMode(object):
         shutil.copy(cred, aws_cred)
 
         self.add_environment(
-            'JENKINS_AWS_SSH_PRIVATE_KEY_FILE=%s' % priv,
-            'JENKINS_AWS_SSH_PUBLIC_KEY_FILE=%s' % pub,
-            'JENKINS_AWS_CREDENTIALS_FILE=%s' % cred,
+            'AWS_SSH_PRIVATE_KEY_FILE=%s' % priv,
+            'AWS_SSH_PUBLIC_KEY_FILE=%s' % pub,
+            'AWS_SHARED_CREDENTIALS_FILE=%s' % cred,
         )
 
     def add_aws_role(self, profile, arn):
@@ -363,12 +363,15 @@ def set_up_kops_aws(workspace, args, mode, cluster, runner_args):
     if args.aws_cluster_domain:
         cluster = '%s.%s' % (cluster, args.aws_cluster_domain)
 
+    # AWS requires a username (and it varies per-image)
+    ssh_user = args.kops_ssh_user or 'admin'
+
     runner_args.extend([
         '--kops-cluster=%s' % cluster,
         '--kops-state=%s' % args.kops_state,
         '--kops-nodes=%s' % args.kops_nodes,
         '--kops-ssh-key=%s' % aws_ssh,
-        "--kops-ssh-user=admin",
+        '--kops-ssh-user=%s' % ssh_user,
     ])
 
 
@@ -396,13 +399,16 @@ def set_up_aws(workspace, args, mode, cluster, runner_args):
     if args.aws_cluster_domain:
         cluster = '%s.%s' % (cluster, args.aws_cluster_domain)
 
+    # AWS requires a username (and it varies per-image)
+    ssh_user = args.kops_ssh_user or 'admin'
+
     runner_args.extend([
         '--kops-cluster=%s' % cluster,
         '--kops-zones=%s' % zones,
         '--kops-state=%s' % args.kops_state,
         '--kops-nodes=%s' % args.kops_nodes,
         '--kops-ssh-key=%s' % aws_ssh,
-        "--kops-ssh-user=admin",
+        '--kops-ssh-user=%s' % ssh_user,
     ])
     # TODO(krzyzacy):Remove after retire kops-e2e-runner.sh
     mode.add_aws_runner()
@@ -437,7 +443,7 @@ def main(args):
 
     # Set up workspace/artifacts dir
     workspace = os.environ.get('WORKSPACE', os.getcwd())
-    artifacts = os.path.join(workspace, '_artifacts')
+    artifacts = os.environ.get('ARTIFACTS', os.path.join(workspace, '_artifacts'))
     if not os.path.isdir(artifacts):
         os.makedirs(artifacts)
 
@@ -450,9 +456,22 @@ def main(args):
 
     # TODO(fejta): remove after next image push
     mode.add_environment('KUBETEST_MANUAL_DUMP=y')
-    runner_args = [
-        '--dump=%s' % mode.artifacts,
-    ]
+    if args.dump_before_and_after:
+        before_dir = os.path.join(mode.artifacts, 'before')
+        if not os.path.exists(before_dir):
+            os.makedirs(before_dir)
+        after_dir = os.path.join(mode.artifacts, 'after')
+        if not os.path.exists(after_dir):
+            os.makedirs(after_dir)
+
+        runner_args = [
+            '--dump-pre-test-logs=%s' % before_dir,
+            '--dump=%s' % after_dir,
+            ]
+    else:
+        runner_args = [
+            '--dump=%s' % mode.artifacts,
+        ]
 
     if args.service_account:
         runner_args.append(
@@ -545,7 +564,8 @@ def main(args):
     if args.kubeadm:
         version = kubeadm_version(args.kubeadm, shared_build_gcs_path)
         runner_args.extend([
-            '--kubernetes-anywhere-path=%s' % os.path.join(workspace, 'kubernetes-anywhere'),
+            '--kubernetes-anywhere-path=%s' % os.path.join(workspace, 'k8s.io',
+                'kubernetes-anywhere'),
             '--kubernetes-anywhere-phase2-provider=kubeadm',
             '--kubernetes-anywhere-cluster=%s' % cluster,
             '--kubernetes-anywhere-kubeadm-version=%s' % version,
@@ -647,6 +667,9 @@ def create_parser():
         action='append',
         default=[],
         help='Send unrecognized args directly to kubetest')
+    parser.add_argument(
+        '--dump-before-and-after', action='store_true',
+        help='Dump artifacts from both before and after the test run')
 
 
     # kops & aws
@@ -667,20 +690,23 @@ def create_parser():
         help='Use --aws-profile to run as --aws-role-arn if set')
     parser.add_argument(
         '--aws-ssh',
-        default=os.environ.get('JENKINS_AWS_SSH_PRIVATE_KEY_FILE'),
+        default=os.environ.get('AWS_SSH_PRIVATE_KEY_FILE'),
         help='Path to private aws ssh keys')
     parser.add_argument(
         '--aws-pub',
-        default=os.environ.get('JENKINS_AWS_SSH_PUBLIC_KEY_FILE'),
+        default=os.environ.get('AWS_SSH_PUBLIC_KEY_FILE'),
         help='Path to pub aws ssh key')
     parser.add_argument(
         '--aws-cred',
-        default=os.environ.get('JENKINS_AWS_CREDENTIALS_FILE'),
+        default=os.environ.get('AWS_SHARED_CREDENTIALS_FILE'),
         help='Path to aws credential file')
     parser.add_argument(
         '--aws-cluster-domain', help='Domain of the aws cluster for aws-pr jobs')
     parser.add_argument(
         '--kops-nodes', default=4, type=int, help='Number of nodes to start')
+    parser.add_argument(
+        '--kops-ssh-user', default='',
+        help='Username for ssh connections to instances')
     parser.add_argument(
         '--kops-state', default='s3://k8s-kops-prow/',
         help='Name of the aws state storage')

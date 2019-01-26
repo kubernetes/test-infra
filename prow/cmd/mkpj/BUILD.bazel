@@ -7,13 +7,6 @@ load(
     "go_test",
 )
 
-go_binary(
-    name = "mkpj",
-    args = ["--config-path=$(location //prow:config.yaml)"],
-    data = ["//prow:config.yaml"],
-    embed = [":go_default_library"],
-)
-
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
@@ -22,8 +15,8 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
-        "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
 
@@ -43,5 +36,10 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
+    embed = [":go_default_library"],
+)
+
+go_binary(
+    name = "mkpj",
     embed = [":go_default_library"],
 )

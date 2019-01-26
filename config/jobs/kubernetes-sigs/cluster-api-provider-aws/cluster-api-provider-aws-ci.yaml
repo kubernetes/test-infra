@@ -1,0 +1,18 @@
+periodics:  
+- interval: 4h
+  name: periodic-cluster-api-provider-aws-test-creds
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-aws
+    base_ref: master
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.12
+      command:
+      - "./scripts/ci-aws-cred-test.sh"

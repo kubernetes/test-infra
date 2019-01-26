@@ -87,11 +87,11 @@ func (o *Options) LoadConfig(config string) error {
 	return json.Unmarshal([]byte(config), o)
 }
 
-// BindOptions binds flags to options
-func (o *Options) BindOptions(flags *flag.FlagSet) {
+// AddFlags binds flags to options
+func (o *Options) AddFlags(flags *flag.FlagSet) {
 	flags.IntVar(&o.NumWorkers, "num-workers", 25, "Number of threads to use for processing updates.")
 	flags.StringVar(&o.ProwJobNamespace, "prow-job-ns", "", "Namespace containing ProwJobs.")
-	gcsupload.BindOptions(o.Options, flags)
+	o.Options.AddFlags(flags)
 }
 
 // Complete internalizes command line arguments

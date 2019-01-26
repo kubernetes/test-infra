@@ -21,9 +21,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/ghodss/yaml"
 	"github.com/golang/protobuf/proto"
 	"k8s.io/test-infra/testgrid/config"
+	"sigs.k8s.io/yaml"
 )
 
 // Config includes config and defaults to apply on unspecified values.
@@ -70,7 +70,9 @@ func ReconcileTestGroup(currentTestGroup *config.TestGroup, defaultTestGroup *co
 	if currentTestGroup.NumFailuresToAlert == 0 {
 		currentTestGroup.NumFailuresToAlert = defaultTestGroup.NumFailuresToAlert
 	}
-
+	if currentTestGroup.CodeSearchPath == "" {
+		currentTestGroup.CodeSearchPath = defaultTestGroup.CodeSearchPath
+	}
 	if currentTestGroup.NumPassesToDisableAlert == 0 {
 		currentTestGroup.NumPassesToDisableAlert = defaultTestGroup.NumPassesToDisableAlert
 	}

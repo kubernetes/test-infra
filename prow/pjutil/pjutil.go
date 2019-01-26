@@ -18,47 +18,44 @@ limitations under the License.
 package pjutil
 
 import (
-	"strconv"
+	"bytes"
+	"net/url"
+	"path"
 
 	"github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/pod-utils/decorate"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
-const (
-	jobNameLabel = "prow.k8s.io/job"
-	jobTypeLabel = "prow.k8s.io/type"
-	orgLabel     = "prow.k8s.io/refs.org"
-	repoLabel    = "prow.k8s.io/refs.repo"
-	pullLabel    = "prow.k8s.io/refs.pull"
-)
+// NewProwJobWithAnnotation initializes a ProwJob out of a ProwJobSpec with annotations.
+func NewProwJobWithAnnotation(spec kube.ProwJobSpec, labels, annotations map[string]string) kube.ProwJob {
+	return newProwJob(spec, labels, annotations)
+}
 
 // NewProwJob initializes a ProwJob out of a ProwJobSpec.
 func NewProwJob(spec kube.ProwJobSpec, labels map[string]string) kube.ProwJob {
-	allLabels := map[string]string{
-		jobNameLabel: spec.Job,
-		jobTypeLabel: string(spec.Type),
-	}
-	if spec.Type != kube.PeriodicJob {
-		allLabels[orgLabel] = spec.Refs.Org
-		allLabels[repoLabel] = spec.Refs.Repo
-		if len(spec.Refs.Pulls) > 0 {
-			allLabels[pullLabel] = strconv.Itoa(spec.Refs.Pulls[0].Number)
-		}
-	}
-	for key, value := range labels {
-		allLabels[key] = value
-	}
+	return newProwJob(spec, labels, nil)
+}
+
+func newProwJob(spec kube.ProwJobSpec, extraLabels, extraAnnotations map[string]string) kube.ProwJob {
+	labels, annotations := decorate.LabelsAndAnnotationsForSpec(spec, extraLabels, extraAnnotations)
+
 	return kube.ProwJob{
-		APIVersion: "prow.k8s.io/v1",
-		Kind:       "ProwJob",
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "prow.k8s.io/v1",
+			Kind:       "ProwJob",
+		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   uuid.NewV1().String(),
-			Labels: allLabels,
+			Name:        uuid.NewV1().String(),
+			Labels:      labels,
+			Annotations: annotations,
 		},
 		Spec: spec,
 		Status: kube.ProwJobStatus{
@@ -68,31 +65,43 @@ func NewProwJob(spec kube.ProwJobSpec, labels map[string]string) kube.ProwJob {
 	}
 }
 
+// NewPresubmit converts a config.Presubmit into a kube.ProwJob.
+// The kube.Refs are configured correctly per the pr, baseSHA.
+// The eventGUID becomes a github.EventGUID label.
+func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, eventGUID string) kube.ProwJob {
+	org := pr.Base.Repo.Owner.Login
+	repo := pr.Base.Repo.Name
+	number := pr.Number
+	kr := kube.Refs{
+		Org:     org,
+		Repo:    repo,
+		BaseRef: pr.Base.Ref,
+		BaseSHA: baseSHA,
+		Pulls: []kube.Pull{
+			{
+				Number: number,
+				Author: pr.User.Login,
+				SHA:    pr.Head.SHA,
+			},
+		},
+	}
+	labels := make(map[string]string)
+	for k, v := range job.Labels {
+		labels[k] = v
+	}
+	labels[github.EventGUID] = eventGUID
+	return NewProwJob(PresubmitSpec(job, kr), labels)
+}
+
 // PresubmitSpec initializes a ProwJobSpec for a given presubmit job.
 func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
-	refs.PathAlias = p.PathAlias
-	refs.CloneURI = p.CloneURI
-	pjs := kube.ProwJobSpec{
-		Type:      kube.PresubmitJob,
-		Job:       p.Name,
-		Refs:      &refs,
-		ExtraRefs: p.ExtraRefs,
+	pjs := specFromJobBase(p.JobBase)
+	pjs.Type = kube.PresubmitJob
+	pjs.Context = p.Context
+	pjs.Report = !p.SkipReport
+	pjs.RerunCommand = p.RerunCommand
+	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
 
-		Report:         !p.SkipReport,
-		Context:        p.Context,
-		RerunCommand:   p.RerunCommand,
-		MaxConcurrency: p.MaxConcurrency,
-
-		DecorationConfig: p.DecorationConfig,
-	}
-	pjs.Agent = kube.ProwJobAgent(p.Agent)
-	if pjs.Agent == kube.KubernetesAgent {
-		pjs.PodSpec = p.Spec
-		pjs.Cluster = p.Cluster
-		if pjs.Cluster == "" {
-			pjs.Cluster = kube.DefaultClusterAlias
-		}
-	}
 	for _, nextP := range p.RunAfterSuccess {
 		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, PresubmitSpec(nextP, refs))
 	}
@@ -101,26 +110,12 @@ func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 
 // PostsubmitSpec initializes a ProwJobSpec for a given postsubmit job.
 func PostsubmitSpec(p config.Postsubmit, refs kube.Refs) kube.ProwJobSpec {
-	refs.PathAlias = p.PathAlias
-	refs.CloneURI = p.CloneURI
-	pjs := kube.ProwJobSpec{
-		Type:      kube.PostsubmitJob,
-		Job:       p.Name,
-		Refs:      &refs,
-		ExtraRefs: p.ExtraRefs,
+	pjs := specFromJobBase(p.JobBase)
+	pjs.Type = kube.PostsubmitJob
+	pjs.Context = p.Context
+	pjs.Report = p.Report
+	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
 
-		MaxConcurrency: p.MaxConcurrency,
-
-		DecorationConfig: p.DecorationConfig,
-	}
-	pjs.Agent = kube.ProwJobAgent(p.Agent)
-	if pjs.Agent == kube.KubernetesAgent {
-		pjs.PodSpec = p.Spec
-		pjs.Cluster = p.Cluster
-		if pjs.Cluster == "" {
-			pjs.Cluster = kube.DefaultClusterAlias
-		}
-	}
 	for _, nextP := range p.RunAfterSuccess {
 		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, PostsubmitSpec(nextP, refs))
 	}
@@ -129,21 +124,9 @@ func PostsubmitSpec(p config.Postsubmit, refs kube.Refs) kube.ProwJobSpec {
 
 // PeriodicSpec initializes a ProwJobSpec for a given periodic job.
 func PeriodicSpec(p config.Periodic) kube.ProwJobSpec {
-	pjs := kube.ProwJobSpec{
-		Type:      kube.PeriodicJob,
-		Job:       p.Name,
-		ExtraRefs: p.ExtraRefs,
+	pjs := specFromJobBase(p.JobBase)
+	pjs.Type = kube.PeriodicJob
 
-		DecorationConfig: p.DecorationConfig,
-	}
-	pjs.Agent = kube.ProwJobAgent(p.Agent)
-	if pjs.Agent == kube.KubernetesAgent {
-		pjs.PodSpec = p.Spec
-		pjs.Cluster = p.Cluster
-		if pjs.Cluster == "" {
-			pjs.Cluster = kube.DefaultClusterAlias
-		}
-	}
 	for _, nextP := range p.RunAfterSuccess {
 		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, PeriodicSpec(nextP))
 	}
@@ -152,29 +135,47 @@ func PeriodicSpec(p config.Periodic) kube.ProwJobSpec {
 
 // BatchSpec initializes a ProwJobSpec for a given batch job and ref spec.
 func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
-	refs.PathAlias = p.PathAlias
-	refs.CloneURI = p.CloneURI
-	pjs := kube.ProwJobSpec{
-		Type:      kube.BatchJob,
-		Job:       p.Name,
-		Refs:      &refs,
-		ExtraRefs: p.ExtraRefs,
-		Context:   p.Context, // The Submit Queue's getCompleteBatches needs this.
+	pjs := specFromJobBase(p.JobBase)
+	pjs.Type = kube.BatchJob
+	pjs.Context = p.Context
+	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
 
-		DecorationConfig: p.DecorationConfig,
-	}
-	pjs.Agent = kube.ProwJobAgent(p.Agent)
-	if pjs.Agent == kube.KubernetesAgent {
-		pjs.PodSpec = p.Spec
-		pjs.Cluster = p.Cluster
-		if pjs.Cluster == "" {
-			pjs.Cluster = kube.DefaultClusterAlias
-		}
-	}
 	for _, nextP := range p.RunAfterSuccess {
 		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, BatchSpec(nextP, refs))
 	}
 	return pjs
+}
+
+func specFromJobBase(jb config.JobBase) kube.ProwJobSpec {
+	var namespace string
+	if jb.Namespace != nil {
+		namespace = *jb.Namespace
+	}
+	return kube.ProwJobSpec{
+		Job:             jb.Name,
+		Agent:           kube.ProwJobAgent(jb.Agent),
+		Cluster:         jb.Cluster,
+		Namespace:       namespace,
+		MaxConcurrency:  jb.MaxConcurrency,
+		ErrorOnEviction: jb.ErrorOnEviction,
+
+		ExtraRefs:        jb.ExtraRefs,
+		DecorationConfig: jb.DecorationConfig,
+
+		PodSpec:   jb.Spec,
+		BuildSpec: jb.BuildSpec,
+	}
+}
+
+func completePrimaryRefs(refs kube.Refs, jb config.JobBase) *kube.Refs {
+	if jb.PathAlias != "" {
+		refs.PathAlias = jb.PathAlias
+	}
+	if jb.CloneURI != "" {
+		refs.CloneURI = jb.CloneURI
+	}
+	refs.SkipSubmodules = jb.SkipSubmodules
+	return &refs
 }
 
 // PartitionActive separates the provided prowjobs into pending and triggered
@@ -241,4 +242,26 @@ func ProwJobFields(pj *kube.ProwJob) logrus.Fields {
 		fields[github.OrgLogField] = pj.Spec.Refs.Org
 	}
 	return fields
+}
+
+// JobURL returns the expected URL for ProwJobStatus.
+//
+// TODO(fejta): consider moving default JobURLTemplate and JobURLPrefix out of plank
+func JobURL(plank config.Plank, pj kube.ProwJob, log *logrus.Entry) string {
+	if pj.Spec.DecorationConfig != nil && plank.JobURLPrefix != "" {
+		spec := downwardapi.NewJobSpec(pj.Spec, pj.Status.BuildID, pj.Name)
+		gcsConfig := pj.Spec.DecorationConfig.GCSConfiguration
+		_, gcsPath, _ := gcsupload.PathsForJob(gcsConfig, &spec, "")
+
+		prefix, _ := url.Parse(plank.JobURLPrefix)
+		prefix.Path = path.Join(prefix.Path, gcsConfig.Bucket, gcsPath)
+		return prefix.String()
+	}
+	var b bytes.Buffer
+	if err := plank.JobURLTemplate.Execute(&b, &pj); err != nil {
+		log.WithFields(ProwJobFields(&pj)).Errorf("error executing URL template: %v", err)
+	} else {
+		return b.String()
+	}
+	return ""
 }

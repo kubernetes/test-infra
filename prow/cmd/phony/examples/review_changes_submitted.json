@@ -1,0 +1,375 @@
+{
+  "sender": {
+    "avatar_url": "https://avatars0.githubusercontent.com/u/169553?v=4", 
+    "html_url": "https://github.com/timothysc", 
+    "node_id": "MDQ6VXNlcjE2OTU1Mw==", 
+    "gravatar_id": "", 
+    "site_admin": false, 
+    "login": "timothysc", 
+    "type": "User", 
+    "id": 169553
+  }, 
+  "repository": {
+    "stargazers_count": 39100, 
+    "mirror_url": null, 
+    "updated_at": "2018-07-24T18:02:40Z", 
+    "private": false, 
+    "has_wiki": false, 
+    "full_name": "kubernetes/kubernetes", 
+    "owner": {
+      "avatar_url": "https://avatars2.githubusercontent.com/u/13629408?v=4", 
+      "html_url": "https://github.com/kubernetes", 
+      "node_id": "MDEyOk9yZ2FuaXphdGlvbjEzNjI5NDA4", 
+      "gravatar_id": "", 
+      "site_admin": false, 
+      "login": "kubernetes", 
+      "type": "Organization", 
+      "id": 13629408
+    }, 
+    "id": 20580498, 
+    "description": "Production-Grade Container Scheduling and Management", 
+    "archived": false, 
+    "has_pages": false, 
+    "open_issues_count": 3153, 
+    "has_projects": true, 
+    "clone_url": "https://github.com/kubernetes/kubernetes.git", 
+    "watchers_count": 39100, 
+    "size": 794612, 
+    "homepage": "http://kubernetes.io", 
+    "fork": false, 
+    "watchers": 39100, 
+    "html_url": "https://github.com/kubernetes/kubernetes", 
+    "forks": 13657, 
+    "open_issues": 3153, 
+    "node_id": "MDEwOlJlcG9zaXRvcnkyMDU4MDQ5OA==", 
+    "git_url": "git://github.com/kubernetes/kubernetes.git", 
+    "svn_url": "https://github.com/kubernetes/kubernetes", 
+    "has_issues": true, 
+    "ssh_url": "git@github.com:kubernetes/kubernetes.git", 
+    "has_downloads": true, 
+    "license": {
+      "spdx_id": "Apache-2.0", 
+      "node_id": "MDc6TGljZW5zZTI=", 
+      "name": "Apache License 2.0", 
+      "key": "apache-2.0"
+    }, 
+    "name": "kubernetes", 
+    "language": "Go", 
+    "created_at": "2014-06-06T22:56:04Z", 
+    "pushed_at": "2018-07-24T17:42:36Z", 
+    "forks_count": 13657, 
+    "default_branch": "master"
+  }, 
+  "review": {
+    "body": "", 
+    "commit_id": "6420ae3d9ef16670a4c28848ec7c03311ec2030a", 
+    "submitted_at": "2018-07-24T18:04:22Z", 
+    "author_association": "MEMBER", 
+    "html_url": "https://github.com/kubernetes/kubernetes/pull/66534#pullrequestreview-140011842", 
+    "state": "changes_requested", 
+    "node_id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MTQwMDExODQy", 
+    "_links": {
+      "html": {
+        "href": "https://github.com/kubernetes/kubernetes/pull/66534#pullrequestreview-140011842"
+      }, 
+      "pull_request": {
+        "href": "https://api.github.com/repos/kubernetes/kubernetes/pulls/66534"
+      }
+    }, 
+    "user": {
+      "avatar_url": "https://avatars0.githubusercontent.com/u/169553?v=4", 
+      "html_url": "https://github.com/timothysc", 
+      "node_id": "MDQ6VXNlcjE2OTU1Mw==", 
+      "gravatar_id": "", 
+      "site_admin": false, 
+      "login": "timothysc", 
+      "type": "User", 
+      "id": 169553
+    }, 
+    "id": 140011842
+  }, 
+  "pull_request": {
+    "merge_commit_sha": "ffe7c31df513636a23b5472020964e926961b790", 
+    "labels": [
+      {
+        "default": false, 
+        "name": "area/kubeadm", 
+        "color": "0052cc", 
+        "node_id": "MDU6TGFiZWw0NTE0NTk1OTA=", 
+        "id": 451459590
+      }, 
+      {
+        "default": false, 
+        "name": "cncf-cla: yes", 
+        "color": "bfe5bf", 
+        "node_id": "MDU6TGFiZWw0NzczOTcwODY=", 
+        "id": 477397086
+      }, 
+      {
+        "default": false, 
+        "name": "kind/feature", 
+        "color": "c7def8", 
+        "node_id": "MDU6TGFiZWwyNjc3NjEzNjI=", 
+        "id": 267761362
+      }, 
+      {
+        "default": false, 
+        "name": "release-note", 
+        "color": "c2e0c6", 
+        "node_id": "MDU6TGFiZWwyMDAxNDk4MzM=", 
+        "id": 200149833
+      }, 
+      {
+        "default": false, 
+        "name": "sig/cluster-lifecycle", 
+        "color": "d2b48c", 
+        "node_id": "MDU6TGFiZWwxNzM0OTQyMjI=", 
+        "id": 173494222
+      }, 
+      {
+        "default": false, 
+        "name": "size/M", 
+        "color": "eebb00", 
+        "node_id": "MDU6TGFiZWwyNTM0NTA5MzQ=", 
+        "id": 253450934
+      }
+    ], 
+    "number": 66534, 
+    "assignee": {
+      "avatar_url": "https://avatars3.githubusercontent.com/u/331852?v=4", 
+      "html_url": "https://github.com/neolit123", 
+      "node_id": "MDQ6VXNlcjMzMTg1Mg==", 
+      "gravatar_id": "", 
+      "site_admin": false, 
+      "login": "neolit123", 
+      "type": "User", 
+      "id": 331852
+    }, 
+    "closed_at": null, 
+    "requested_reviewers": [
+      {
+        "avatar_url": "https://avatars3.githubusercontent.com/u/915544?v=4", 
+        "html_url": "https://github.com/detiber", 
+        "node_id": "MDQ6VXNlcjkxNTU0NA==", 
+        "gravatar_id": "", 
+        "site_admin": false, 
+        "login": "detiber", 
+        "type": "User", 
+        "id": 915544
+      }, 
+      {
+        "avatar_url": "https://avatars0.githubusercontent.com/u/33235082?v=4", 
+        "html_url": "https://github.com/liztio", 
+        "node_id": "MDQ6VXNlcjMzMjM1MDgy", 
+        "gravatar_id": "", 
+        "site_admin": false, 
+        "login": "liztio", 
+        "type": "User", 
+        "id": 33235082
+      }
+    ], 
+    "id": 203405992, 
+    "title": "Add kubeadm init or join operation record to file", 
+    "merged_at": null, 
+    "state": "open", 
+    "_links": {
+      "review_comment": {
+        "href": "https://api.github.com/repos/kubernetes/kubernetes/pulls/comments{/number}"
+      }, 
+      "commits": {
+        "href": "https://api.github.com/repos/kubernetes/kubernetes/pulls/66534/commits"
+      }, 
+      "self": {
+        "href": "https://api.github.com/repos/kubernetes/kubernetes/pulls/66534"
+      }, 
+      "review_comments": {
+        "href": "https://api.github.com/repos/kubernetes/kubernetes/pulls/66534/comments"
+      }, 
+      "html": {
+        "href": "https://github.com/kubernetes/kubernetes/pull/66534"
+      }, 
+      "comments": {
+        "href": "https://api.github.com/repos/kubernetes/kubernetes/issues/66534/comments"
+      }, 
+      "issue": {
+        "href": "https://api.github.com/repos/kubernetes/kubernetes/issues/66534"
+      }, 
+      "statuses": {
+        "href": "https://api.github.com/repos/kubernetes/kubernetes/statuses/1343611cc8455e6c9a345be6108cb5b051c41143"
+      }
+    }, 
+    "diff_url": "https://github.com/kubernetes/kubernetes/pull/66534.diff", 
+    "body": "This patch add file record when kubeadm init or kubeadm join\r\noperation, If kubeadm reset the record file will remove.\r\n\r\nIssues record: kubernetes/kubeadm#997\r\n\r\nSigned-off-by: Yuanbin.Chen <cybing4@gmail.com>\r\n\r\n<!--  Thanks for sending a pull request!  Here are some tips for you:\r\n1. If this is your first time, read our contributor guidelines https://git.k8s.io/community/contributors/guide#your-first-contribution and developer guide https://git.k8s.io/community/contributors/devel/development.md#development-guide\r\n2. If you want *faster* PR reviews, read how: https://git.k8s.io/community/contributors/guide/pull-requests.md#best-practices-for-faster-reviews\r\n3. Follow the instructions for writing a release note: https://git.k8s.io/community/contributors/guide/release-notes.md\r\n4. If the PR is unfinished, see how to mark it: https://git.k8s.io/community/contributors/guide/pull-requests.md#marking-unfinished-pull-requests\r\n-->\r\n\r\n**What this PR does / why we need it**:\r\n\r\n**Which issue(s) this PR fixes** *(optional, in `fixes #<issue number>(, fixes #<issue_number>, ...)` format, will close the issue(s) when PR gets merged)*:\r\nFixes kubernetes/kubeadm#997\r\n\r\n**Special notes for your reviewer**:\r\n\r\n**Release note**:\r\n<!--  Write your release note:\r\n1. Enter your extended release note in the below block. If the PR requires additional action from users switching to the new release, include the string \"action required\".\r\n2. If no release note is required, just write \"NONE\".\r\n-->\r\n```release-note\r\nkubeadm: detect previous kubeadm init and join invocations via a sentinel file\r\n```\r\n", 
+    "head": {
+      "repo": {
+        "stargazers_count": 0, 
+        "mirror_url": null, 
+        "updated_at": "2018-05-17T02:52:49Z", 
+        "private": false, 
+        "has_wiki": false, 
+        "full_name": "chenyb4/kubernetes", 
+        "owner": {
+          "avatar_url": "https://avatars1.githubusercontent.com/u/10691174?v=4", 
+          "html_url": "https://github.com/chenyb4", 
+          "node_id": "MDQ6VXNlcjEwNjkxMTc0", 
+          "gravatar_id": "", 
+          "site_admin": false, 
+          "login": "chenyb4", 
+          "type": "User", 
+          "id": 10691174
+        }, 
+        "id": 133750108, 
+        "description": "Production-Grade Container Scheduling and Management", 
+        "archived": false, 
+        "has_pages": false, 
+        "open_issues_count": 0, 
+        "has_projects": true, 
+        "clone_url": "https://github.com/chenyb4/kubernetes.git", 
+        "watchers_count": 0, 
+        "size": 573236, 
+        "homepage": "http://kubernetes.io", 
+        "fork": true, 
+        "watchers": 0, 
+        "html_url": "https://github.com/chenyb4/kubernetes", 
+        "forks": 0, 
+        "open_issues": 0, 
+        "node_id": "MDEwOlJlcG9zaXRvcnkxMzM3NTAxMDg=", 
+        "git_url": "git://github.com/chenyb4/kubernetes.git", 
+        "svn_url": "https://github.com/chenyb4/kubernetes", 
+        "has_issues": false, 
+        "ssh_url": "git@github.com:chenyb4/kubernetes.git", 
+        "has_downloads": true, 
+        "license": {
+          "spdx_id": "Apache-2.0", 
+          "node_id": "MDc6TGljZW5zZTI=", 
+          "name": "Apache License 2.0", 
+          "key": "apache-2.0"
+        }, 
+        "name": "kubernetes", 
+        "language": "Go", 
+        "created_at": "2018-05-17T02:52:15Z", 
+        "pushed_at": "2018-07-24T15:07:55Z", 
+        "forks_count": 0, 
+        "default_branch": "master"
+      }, 
+      "sha": "1343611cc8455e6c9a345be6108cb5b051c41143", 
+      "ref": "kubeadm_sentinel", 
+      "user": {
+        "avatar_url": "https://avatars1.githubusercontent.com/u/10691174?v=4", 
+        "html_url": "https://github.com/chenyb4", 
+        "node_id": "MDQ6VXNlcjEwNjkxMTc0", 
+        "gravatar_id": "", 
+        "site_admin": false, 
+        "login": "chenyb4", 
+        "type": "User", 
+        "id": 10691174
+      }, 
+      "label": "chenyb4:kubeadm_sentinel"
+    }, 
+    "author_association": "CONTRIBUTOR", 
+    "html_url": "https://github.com/kubernetes/kubernetes/pull/66534", 
+    "updated_at": "2018-07-24T18:04:22Z", 
+    "node_id": "MDExOlB1bGxSZXF1ZXN0MjAzNDA1OTky", 
+    "user": {
+      "avatar_url": "https://avatars1.githubusercontent.com/u/10691174?v=4", 
+      "html_url": "https://github.com/chenyb4", 
+      "node_id": "MDQ6VXNlcjEwNjkxMTc0", 
+      "gravatar_id": "", 
+      "site_admin": false, 
+      "login": "chenyb4", 
+      "type": "User", 
+      "id": 10691174
+    }, 
+    "milestone": null, 
+    "requested_teams": [], 
+    "locked": false, 
+    "created_at": "2018-07-24T04:20:50Z", 
+    "assignees": [
+      {
+        "avatar_url": "https://avatars3.githubusercontent.com/u/331852?v=4", 
+        "html_url": "https://github.com/neolit123", 
+        "node_id": "MDQ6VXNlcjMzMTg1Mg==", 
+        "gravatar_id": "", 
+        "site_admin": false, 
+        "login": "neolit123", 
+        "type": "User", 
+        "id": 331852
+      }
+    ], 
+    "base": {
+      "repo": {
+        "stargazers_count": 39100, 
+        "mirror_url": null, 
+        "updated_at": "2018-07-24T18:02:40Z", 
+        "private": false, 
+        "has_wiki": false, 
+        "full_name": "kubernetes/kubernetes", 
+        "owner": {
+          "avatar_url": "https://avatars2.githubusercontent.com/u/13629408?v=4", 
+          "html_url": "https://github.com/kubernetes", 
+          "node_id": "MDEyOk9yZ2FuaXphdGlvbjEzNjI5NDA4", 
+          "gravatar_id": "", 
+          "site_admin": false, 
+          "login": "kubernetes", 
+          "type": "Organization", 
+          "id": 13629408
+        }, 
+        "id": 20580498, 
+        "description": "Production-Grade Container Scheduling and Management", 
+        "archived": false, 
+        "has_pages": false, 
+        "open_issues_count": 3153, 
+        "has_projects": true, 
+        "clone_url": "https://github.com/kubernetes/kubernetes.git", 
+        "watchers_count": 39100, 
+        "size": 794612, 
+        "homepage": "http://kubernetes.io", 
+        "fork": false, 
+        "watchers": 39100, 
+        "html_url": "https://github.com/kubernetes/kubernetes", 
+        "forks": 13657, 
+        "open_issues": 3153, 
+        "node_id": "MDEwOlJlcG9zaXRvcnkyMDU4MDQ5OA==", 
+        "git_url": "git://github.com/kubernetes/kubernetes.git", 
+        "svn_url": "https://github.com/kubernetes/kubernetes", 
+        "has_issues": true, 
+        "ssh_url": "git@github.com:kubernetes/kubernetes.git", 
+        "has_downloads": true, 
+        "license": {
+          "spdx_id": "Apache-2.0", 
+          "node_id": "MDc6TGljZW5zZTI=", 
+          "name": "Apache License 2.0", 
+          "key": "apache-2.0"
+        }, 
+        "name": "kubernetes", 
+        "language": "Go", 
+        "created_at": "2014-06-06T22:56:04Z", 
+        "pushed_at": "2018-07-24T17:42:36Z", 
+        "forks_count": 13657, 
+        "default_branch": "master"
+      }, 
+      "sha": "0ffee495ad173fc75c01031cd3e90798de7fb9c0", 
+      "ref": "master", 
+      "user": {
+        "avatar_url": "https://avatars2.githubusercontent.com/u/13629408?v=4", 
+        "html_url": "https://github.com/kubernetes", 
+        "node_id": "MDEyOk9yZ2FuaXphdGlvbjEzNjI5NDA4", 
+        "gravatar_id": "", 
+        "site_admin": false, 
+        "login": "kubernetes", 
+        "type": "Organization", 
+        "id": 13629408
+      }, 
+      "label": "kubernetes:master"
+    }, 
+    "patch_url": "https://github.com/kubernetes/kubernetes/pull/66534.patch"
+  }, 
+  "action": "submitted", 
+  "organization": {
+    "description": "Kubernetes", 
+    "avatar_url": "https://avatars2.githubusercontent.com/u/13629408?v=4", 
+    "node_id": "MDEyOk9yZ2FuaXphdGlvbjEzNjI5NDA4", 
+    "login": "kubernetes", 
+    "id": 13629408
+  }
+}

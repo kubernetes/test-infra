@@ -707,11 +707,11 @@ def pr_paths(base, repos, job, build):
     )
 
 
-BUILD_ENV = 'BUILD_NUMBER'
+BUILD_ENV = 'BUILD_ID'
 BOOTSTRAP_ENV = 'BOOTSTRAP_MIGRATION'
 CLOUDSDK_ENV = 'CLOUDSDK_CONFIG'
 GCE_KEY_ENV = 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE'
-GUBERNATOR = 'https://k8s-gubernator.appspot.com/build'
+GUBERNATOR = 'https://gubernator.k8s.io/build'
 HOME_ENV = 'HOME'
 JENKINS_HOME_ENV = 'JENKINS_HOME'
 K8S_ENV = 'KUBERNETES_SERVICE_HOST'
@@ -725,11 +725,12 @@ IMAGE_NAME_ENV = 'IMAGE'
 GIT_AUTHOR_DATE_ENV = 'GIT_AUTHOR_DATE'
 GIT_COMMITTER_DATE_ENV = 'GIT_COMMITTER_DATE'
 SOURCE_DATE_EPOCH_ENV = 'SOURCE_DATE_EPOCH'
+JOB_ARTIFACTS_ENV = 'ARTIFACTS'
 
 
 def build_name(started):
     """Return the unique(ish) string representing this build."""
-    # TODO(fejta): right now jenkins sets the BUILD_NUMBER and does this
+    # TODO(fejta): right now jenkins sets the BUILD_ID and does this
     #              in an environment variable. Consider migrating this to a
     #              bootstrap.py flag
     if BUILD_ENV not in os.environ:
@@ -806,6 +807,12 @@ def setup_logging(path):
     return build_log
 
 
+def get_artifacts_dir():
+    return os.getenv(
+        JOB_ARTIFACTS_ENV,
+        os.path.join(os.getenv(WORKSPACE_ENV, os.getcwd()), '_artifacts'))
+
+
 def setup_magic_environment(job, call):
     """Set magic environment variables scripts currently expect."""
     home = os.environ[HOME_ENV]
@@ -821,11 +828,11 @@ def setup_magic_environment(job, call):
         os.path.join(home, '.ssh/google_compute_engine.pub'),
     )
     os.environ.setdefault(
-        'JENKINS_AWS_SSH_PRIVATE_KEY_FILE',
+        'AWS_SSH_PRIVATE_KEY_FILE',
         os.path.join(home, '.ssh/kube_aws_rsa'),
     )
     os.environ.setdefault(
-        'JENKINS_AWS_SSH_PUBLIC_KEY_FILE',
+        'AWS_SSH_PUBLIC_KEY_FILE',
         os.path.join(home, '.ssh/kube_aws_rsa.pub'),
     )
 
@@ -857,6 +864,18 @@ def setup_magic_environment(job, call):
     # This helps prevent reuse of cloudsdk configuration. It also reduces the
     # risk that running a job on a workstation corrupts the user's config.
     os.environ[CLOUDSDK_ENV] = '%s/.config/gcloud' % cwd
+
+    # Set $ARTIFACTS to help migrate to podutils
+    os.environ[JOB_ARTIFACTS_ENV] = os.path.join(
+        os.getenv(WORKSPACE_ENV, os.getcwd()), '_artifacts')
+
+    # also make the artifacts dir if it doesn't exist yet
+    if not os.path.isdir(get_artifacts_dir()):
+        try:
+            os.makedirs(get_artifacts_dir())
+        except OSError as exc:
+            logging.info(
+                'cannot create %s, continue : %s', get_artifacts_dir(), exc)
 
     # Try to set SOURCE_DATE_EPOCH based on the commit date of the tip of the
     # tree.
@@ -930,18 +949,6 @@ def configure_ssh_key(ssh):
             os.environ['GIT_SSH'] = old
     finally:
         os.unlink(fp.name)
-
-
-def maybe_upload_podspec(call, artifacts, gsutil, getenv):
-    """ Attempt to read our own podspec and upload it to the artifacts dir. """
-    if not getenv(K8S_ENV):
-        return  # we don't appear to be a pod
-    hostname = getenv('HOSTNAME')
-    if not hostname:
-        return
-    spec = call(['kubectl', 'get', '-oyaml', 'pods/' + hostname], output=True)
-    gsutil.upload_text(
-        os.path.join(artifacts, 'prow_podspec.yaml'), spec)
 
 
 def setup_root(call, root, repos, ssh, git_cache, clean):
@@ -1046,6 +1053,11 @@ def bootstrap(args):
     call = lambda *a, **kw: _call(end, *a, **kw)
     gsutil = GSUtil(call)
 
+    logging.warning('bootstrap.py is deprecated!\n'
+                    'Please migrate your job to podutils!\n'
+                    'https://github.com/kubernetes/test-infra/blob/master/prow/pod-utilities.md'
+                    )
+
     if len(sys.argv) > 1:
         logging.info('Args: %s', ' '.join(pipes.quote(a)
                                           for a in sys.argv[1:]))
@@ -1075,12 +1087,6 @@ def bootstrap(args):
     try:
         with configure_ssh_key(args.ssh):
             setup_credentials(call, args.service_account, upload)
-            if upload:
-                try:
-                    maybe_upload_podspec(
-                        call, paths.artifacts, gsutil, os.getenv)
-                except (OSError, subprocess.CalledProcessError), exc:
-                    logging.error("unable to upload podspecs: %s", exc)
             setup_root(call, args.root, repos, args.ssh,
                        args.git_cache, args.clean)
             logging.info('Configure environment...')
@@ -1109,9 +1115,7 @@ def bootstrap(args):
         logging.info('Gubernator results at %s', gubernator_uri(paths))
         try:
             finish(
-                gsutil, paths, success,
-                os.path.join(
-                    os.getenv(WORKSPACE_ENV, os.getcwd()), '_artifacts'),
+                gsutil, paths, success, get_artifacts_dir(),
                 build, version, repos, call
             )
         except subprocess.CalledProcessError:  # Still try to upload build log

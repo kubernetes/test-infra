@@ -23,8 +23,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
@@ -88,7 +88,8 @@ func main() {
 	for fullRepoName, ps := range conf.Presubmits {
 		org, repo, err := splitRepoName(fullRepoName)
 		if err != nil {
-			logrus.WithError(err).Fatal("Invalid repo name.")
+			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)
+			continue
 		}
 		for _, p := range ps {
 			if p.Name == o.jobName {
@@ -113,7 +114,8 @@ func main() {
 	for fullRepoName, ps := range conf.Postsubmits {
 		org, repo, err := splitRepoName(fullRepoName)
 		if err != nil {
-			logrus.WithError(err).Fatal("Invalid repo name.")
+			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)
+			continue
 		}
 		for _, p := range ps {
 			if p.Name == o.jobName {
@@ -172,7 +174,7 @@ func main() {
 }
 
 func splitRepoName(repo string) (string, string, error) {
-	s := strings.Split(repo, "/")
+	s := strings.SplitN(repo, "/", 2)
 	if len(s) != 2 {
 		return "", "", fmt.Errorf("repo %s cannot be split into org/repo", repo)
 	}

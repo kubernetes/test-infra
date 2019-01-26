@@ -1,0 +1,21 @@
+presubmits:
+  kubernetes/org:
+  - name: pull-org-test-all
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: launcher.gcr.io/google/bazel
+        command:
+        - bazel
+        args:
+        - test
+        - //...
+  - name: pull-org-verify-all
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: launcher.gcr.io/google/bazel
+        command:
+        - ./hack/verify-all.sh

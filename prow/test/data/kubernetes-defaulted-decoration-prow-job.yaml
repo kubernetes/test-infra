@@ -1,8 +1,11 @@
 apiVersion: prow.k8s.io/v1
 kind: ProwJob
 metadata:
+  annotations:
+    prow.k8s.io/job: kubernetes-defaulted-decoration
   creationTimestamp: null
   labels:
+    created-by-prow: "true"
     prow.k8s.io/job: kubernetes-defaulted-decoration
     prow.k8s.io/refs.org: test-org
     prow.k8s.io/refs.pull: "1"
@@ -28,6 +31,7 @@ spec:
       initupload: initupload:default
       sidecar: sidecar:default
   job: kubernetes-defaulted-decoration
+  namespace: default
   pod_spec:
     containers:
     - args:

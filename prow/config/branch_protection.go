@@ -27,8 +27,6 @@ import (
 // Policy for the config/org/repo/branch.
 // When merging policies, a nil value results in inheriting the parent policy.
 type Policy struct {
-	deprecatedPolicy
-	deprecatedWarning bool // true if a warning message was sent
 	// Protect overrides whether branch protection is enabled if set.
 	Protect *bool `json:"protect,omitempty"`
 	// RequiredStatusChecks configures github contexts
@@ -41,24 +39,8 @@ type Policy struct {
 	RequiredPullRequestReviews *ReviewPolicy `json:"required_pull_request_reviews,omitempty"`
 }
 
-// deprecatedPolicy deserializes fields that are no longer in use
-type deprecatedPolicy struct {
-	DeprecatedProtect  *bool    `json:"protect-by-default,omitempty"`
-	DeprecatedContexts []string `json:"require-contexts,omitempty"`
-	DeprecatedPushers  []string `json:"allow-push,omitempty"`
-}
-
-func (d deprecatedPolicy) defined() bool {
-	return d.DeprecatedProtect != nil || d.DeprecatedContexts != nil || d.DeprecatedPushers != nil
-}
-
 func (p Policy) defined() bool {
 	return p.Protect != nil || p.RequiredStatusChecks != nil || p.Admins != nil || p.Restrictions != nil || p.RequiredPullRequestReviews != nil
-}
-
-// HasProtect returns true if the policy or deprecated policy defines protection
-func (p Policy) HasProtect() bool {
-	return p.Protect != nil || p.deprecatedPolicy.DeprecatedProtect != nil
 }
 
 // ContextPolicy configures required github contexts.
@@ -164,36 +146,12 @@ func mergeRestrictions(parent, child *Restrictions) *Restrictions {
 
 // Apply returns a policy that merges the child into the parent
 func (p Policy) Apply(child Policy) (Policy, error) {
-	if old := child.deprecatedPolicy.defined(); old && child.defined() {
-		return p, errors.New("cannot mix Policy and deprecatedPolicy branch protection fields")
-	} else if old {
-		if !p.deprecatedWarning {
-			p.deprecatedWarning = true
-			logrus.Warn("WARNING: protect-by-default, require-contexts, allow-push are deprecated. Please replace them before July 2018")
-		}
-		d := child.deprecatedPolicy
-		child = Policy{
-			Protect: d.DeprecatedProtect,
-		}
-		if d.DeprecatedContexts != nil {
-			child.RequiredStatusChecks = &ContextPolicy{
-				Contexts: d.DeprecatedContexts,
-			}
-		}
-		if d.DeprecatedPushers != nil {
-			child.Restrictions = &Restrictions{
-				Teams: d.DeprecatedPushers,
-			}
-		}
-	}
-
 	return Policy{
 		Protect:                    selectBool(p.Protect, child.Protect),
 		RequiredStatusChecks:       mergeContextPolicy(p.RequiredStatusChecks, child.RequiredStatusChecks),
 		Admins:                     selectBool(p.Admins, child.Admins),
 		Restrictions:               mergeRestrictions(p.Restrictions, child.Restrictions),
 		RequiredPullRequestReviews: mergeReviewPolicy(p.RequiredPullRequestReviews, child.RequiredPullRequestReviews),
-		deprecatedWarning:          p.deprecatedWarning,
 	}, nil
 }
 
@@ -203,8 +161,20 @@ type BranchProtection struct {
 	ProtectTested         bool           `json:"protect-tested-repos,omitempty"`
 	Orgs                  map[string]Org `json:"orgs,omitempty"`
 	AllowDisabledPolicies bool           `json:"allow_disabled_policies,omitempty"`
+}
 
-	warned bool // warn if deprecated fields are use
+// GetOrg returns the org config after merging in any global policies.
+func (bp BranchProtection) GetOrg(name string) (*Org, error) {
+	o, ok := bp.Orgs[name]
+	if ok {
+		var err error
+		if o.Policy, err = bp.Apply(o.Policy); err != nil {
+			return nil, err
+		}
+	} else {
+		o.Policy = bp.Policy
+	}
+	return &o, nil
 }
 
 // Org holds the default protection policy for an entire org, as well as any repo overrides.
@@ -213,10 +183,41 @@ type Org struct {
 	Repos map[string]Repo `json:"repos,omitempty"`
 }
 
+// GetRepo returns the repo config after merging in any org policies.
+func (o Org) GetRepo(name string) (*Repo, error) {
+	r, ok := o.Repos[name]
+	if ok {
+		var err error
+		if r.Policy, err = o.Apply(r.Policy); err != nil {
+			return nil, err
+		}
+	} else {
+		r.Policy = o.Policy
+	}
+	return &r, nil
+}
+
 // Repo holds protection policy overrides for all branches in a repo, as well as specific branch overrides.
 type Repo struct {
 	Policy
 	Branches map[string]Branch `json:"branches,omitempty"`
+}
+
+// GetBranch returns the branch config after merging in any repo policies.
+func (r Repo) GetBranch(name string) (*Branch, error) {
+	b, ok := r.Branches[name]
+	if ok {
+		var err error
+		if b.Policy, err = r.Apply(b.Policy); err != nil {
+			return nil, err
+		}
+		if b.Protect == nil {
+			return nil, errors.New("defined branch policies must set protect")
+		}
+	} else {
+		b.Policy = r.Policy
+	}
+	return &b, nil
 }
 
 // Branch holds protection policy overrides for a particular branch.
@@ -228,36 +229,24 @@ type Branch struct {
 //
 // Handles merging any policies defined at repo/org/global levels into the branch policy.
 func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) {
-	bp := c.BranchProtection
-	var policy Policy
-	policy, err := policy.Apply(bp.Policy)
-	if err != nil {
-		return nil, err
+	if _, present := c.BranchProtection.Orgs[org]; !present {
+		return nil, nil // only consider branches in configured orgs
+	}
+	var b *Branch
+	if o, err := c.BranchProtection.GetOrg(org); err != nil {
+		return nil, fmt.Errorf("org: %v", err)
+	} else if r, err := o.GetRepo(repo); err != nil {
+		return nil, fmt.Errorf("repo: %v", err)
+	} else if b, err = r.GetBranch(branch); err != nil {
+		return nil, fmt.Errorf("branch: %v", err)
 	}
 
-	if o, ok := bp.Orgs[org]; ok {
-		policy, err = policy.Apply(o.Policy)
-		if err != nil {
-			return nil, err
-		}
-		if r, ok := o.Repos[repo]; ok {
-			policy, err = policy.Apply(r.Policy)
-			if err != nil {
-				return nil, err
-			}
-			if b, ok := r.Branches[branch]; ok {
-				policy, err = policy.Apply(b.Policy)
-				if err != nil {
-					return nil, err
-				}
-				if policy.Protect == nil {
-					return nil, errors.New("defined branch policies must set protect")
-				}
-			}
-		}
-	} else {
-		return nil, nil
-	}
+	return c.GetPolicy(org, repo, branch, *b)
+}
+
+// GetPolicy returns the protection policy for the branch, after merging in presubmits.
+func (c *Config) GetPolicy(org, repo, branch string, b Branch) (*Policy, error) {
+	policy := b.Policy
 
 	// Automatically require any required prow jobs
 	if prowContexts, _ := BranchRequirements(org, repo, branch, c.Presubmits); len(prowContexts) > 0 {
@@ -271,12 +260,12 @@ func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) 
 			},
 		}
 		// Require protection by default if ProtectTested is true
-		if bp.ProtectTested {
+		if c.BranchProtection.ProtectTested {
 			yes := true
 			ps.Protect = &yes
 		}
-		policy, err = policy.Apply(ps)
-		if err != nil {
+		var err error
+		if policy, err = policy.Apply(ps); err != nil {
 			return nil, err
 		}
 	}
@@ -286,7 +275,7 @@ func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) 
 		var old *bool
 		old, policy.Protect = policy.Protect, old
 		switch {
-		case policy.defined() && bp.AllowDisabledPolicies:
+		case policy.defined() && c.BranchProtection.AllowDisabledPolicies:
 			logrus.Warnf("%s/%s=%s defines a policy but has protect: false", org, repo, branch)
 			policy = Policy{
 				Protect: policy.Protect,

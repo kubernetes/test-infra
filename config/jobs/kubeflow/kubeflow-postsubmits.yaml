@@ -1,7 +1,6 @@
 postsubmits:
   kubeflow/examples:
   - name: kubeflow-examples-postsubmit
-    agent: kubernetes
     branches:
     - master
     labels:
@@ -13,7 +12,6 @@ postsubmits:
 
   kubeflow/kubeflow:
   - name: kubeflow-postsubmit
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:
@@ -23,7 +21,6 @@ postsubmits:
 
   kubeflow/pytorch-operator:
   - name: kubeflow-pytorch-operator-postsubmit
-    agent: kubernetes
     branches:
     - master
     labels:
@@ -35,7 +32,6 @@ postsubmits:
 
   kubeflow/reporting:
   - name: kubeflow-reporting-postsubmit
-    agent: kubernetes
     branches:
     - master
     labels:
@@ -47,7 +43,6 @@ postsubmits:
 
   kubeflow/website:
   - name: kubeflow-website-postsubmit
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:
@@ -57,7 +52,6 @@ postsubmits:
 
   kubeflow/testing:
   - name: kubeflow-testing-postsubmit
-    agent: kubernetes
     branches:
     - master
     labels:
@@ -69,7 +63,6 @@ postsubmits:
 
   kubeflow/tf-operator:
   - name: kubeflow-tf-operator-postsubmit
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:
@@ -79,7 +72,6 @@ postsubmits:
 
   kubeflow/katib:
   - name: kubeflow-katib-postsubmit
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:
@@ -89,7 +81,6 @@ postsubmits:
 
   kubeflow/experimental-kvc:
   - name: kubeflow-experimental-kvc-postsubmit
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:
@@ -99,7 +90,6 @@ postsubmits:
 
   kubeflow/experimental-seldon:
   - name: kubeflow-experimental-seldon-postsubmit
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:
@@ -109,7 +99,6 @@ postsubmits:
 
   kubeflow/experimental-beagle:
   - name: kubeflow-experimental-beagle-postsubmit
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:
@@ -119,7 +108,6 @@ postsubmits:
 
   kubeflow/caffe2-operator:
   - name: kubeflow-caffe2-operator-postsubmit
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:
@@ -129,7 +117,6 @@ postsubmits:
 
   kubeflow/kubebench:
   - name: kubeflow-kubebench-postsubmit
-    agent: kubernetes
     branches:
     - master
     labels:
@@ -141,7 +128,6 @@ postsubmits:
 
   kubeflow/mpi-operator:
   - name: kubeflow-mpi-operator-postsubmit
-    agent: kubernetes
     branches:
     - master
     labels:
@@ -150,3 +136,56 @@ postsubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
+
+  kubeflow/chainer-operator:
+  - name: kubeflow-chainer-operator-postsubmit
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/mxnet-operator:
+  - name: kubeflow-mxnet-operator-postsubmit
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/arena:
+  - name: kubeflow-arena-postsubmit
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/pipelines:
+  - name: kubeflow-pipeline-postsubmit
+    decorate: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.10
+        command:
+        - ./test/postsubmit-tests-with-pipeline-deployment.sh
+        args:
+        - --workflow_file
+        - sample_test.yaml
+        - --test_result_folder
+        - sample_test
+        - --timeout
+        - "3600"

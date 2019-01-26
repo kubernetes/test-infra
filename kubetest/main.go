@@ -37,7 +37,8 @@ import (
 
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/kubetest/conformance"
-	"k8s.io/test-infra/kubetest/dind"
+	"k8s.io/test-infra/kubetest/kind"
+	"k8s.io/test-infra/kubetest/kubeadmdind"
 	"k8s.io/test-infra/kubetest/process"
 	"k8s.io/test-infra/kubetest/util"
 )
@@ -51,7 +52,7 @@ var (
 	terminate = time.NewTimer(time.Duration(0)) // terminate testing at this time.
 	verbose   = false
 	timeout   = time.Duration(0)
-	boskos    = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos")
+	boskos    = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos.test-pods.svc.cluster.local.")
 	control   = process.NewControl(timeout, interrupt, terminate, verbose)
 )
 
@@ -64,9 +65,9 @@ type options struct {
 	cluster             string
 	clusterIPRange      string
 	deployment          string
-	dindImage           string
 	down                bool
 	dump                string
+	dumpPreTestLogs     string
 	extract             extractStrategies
 	extractFederation   extractFederationStrategies
 	extractSource       bool
@@ -100,7 +101,6 @@ type options struct {
 	nodeArgs            string
 	nodeTestArgs        string
 	nodeTests           bool
-	perfTests           bool
 	provider            string
 	publish             string
 	runtimeConfig       string
@@ -123,17 +123,17 @@ type options struct {
 
 func defineFlags() *options {
 	o := options{}
-	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (release|quick|bazel|dind) strategy")
+	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (release|quick|bazel) strategy")
 	flag.Var(&o.buildFederation, "build-federation", "Rebuild federation binaries, optionally forcing (release|quick|bazel) strategy")
 	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
 	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
 	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
 	flag.StringVar(&o.clusterIPRange, "cluster-ip-range", "", "Specifies CLUSTER_IP_RANGE value during --up and --test (only relevant for --deployment=bash). Auto-calculated if empty.")
-	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/conformance/dind/gke/kops/kubernetes-anywhere/node/local")
-	flag.StringVar(&o.dindImage, "dind-image", "", "The dind image to use to start a cluster. Defaults to the docker tag produced by bazel.")
+	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/conformance/gke/eks/kops/kubernetes-anywhere/node/local")
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
-	flag.StringVar(&o.dump, "dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
+	flag.StringVar(&o.dump, "dump", "", "If set, dump bring-up and cluster logs to this location on test or cluster-up failure")
+	flag.StringVar(&o.dumpPreTestLogs, "dump-pre-test-logs", "", "If set, dump cluster logs to this location before running tests")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
 	flag.Var(&o.extractFederation, "extract-federation", "Extract federation binaries from the specified release location")
 	flag.BoolVar(&o.extractSource, "extract-source", false, "Extract k8s src together with other tarballs")
@@ -168,8 +168,7 @@ func defineFlags() *options {
 	flag.StringVar(&o.nodeTestArgs, "node-test-args", "", "Test args specifically for node e2e tests.")
 	flag.BoolVar(&o.noAllowDup, "no-allow-dup", false, "if set --allow-dup will not be passed to push-build and --stage will error if the build already exists on the gcs path")
 	flag.BoolVar(&o.nodeTests, "node-tests", false, "If true, run node-e2e tests.")
-	flag.BoolVar(&o.perfTests, "perf-tests", false, "If true, run tests from perf-tests repo.")
-	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, etc")
+	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, eks, etc")
 	flag.StringVar(&o.publish, "publish", "", "Publish version to the specified gs:// path on success")
 	flag.StringVar(&o.runtimeConfig, "runtime-config", "batch/v2alpha1=true", "If set, API versions can be turned on or off while bringing up the API server.")
 	flag.StringVar(&o.stage.dockerRegistry, "registry", "", "Push images to the specified docker registry (e.g. gcr.io/a-test-project)")
@@ -227,6 +226,7 @@ type deployer interface {
 	TestSetup() error
 	Down() error
 	GetClusterCreated(gcpProject string) (time.Time, error)
+	KubectlCommand() (*exec.Cmd, error)
 }
 
 // publisher is implemented by deployers that want to publish status on success
@@ -241,12 +241,16 @@ func getDeployer(o *options) (deployer, error) {
 		return newBash(&o.clusterIPRange), nil
 	case "conformance":
 		return conformance.NewDeployer(o.kubecfg)
-	case "dind":
-		return dind.NewDeployer(o.kubecfg, o.dindImage, control)
 	case "gke":
 		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.gcpImageFamily, o.gcpImageProject, o.cluster, &o.testArgs, &o.upgradeArgs)
+	case "eks":
+		return newEKS(timeout, verbose)
+	case "kind":
+		return kind.NewKind(control)
 	case "kops":
 		return newKops(o.provider, o.gcpProject, o.cluster)
+	case "kubeadm-dind":
+		return kubeadmdind.NewDeployer(control)
 	case "kubernetes-anywhere":
 		if o.multiClusters.Enabled() {
 			return newKubernetesAnywhereMultiCluster(o.gcpProject, o.gcpZone, o.multiClusters)
@@ -258,6 +262,8 @@ func getDeployer(o *options) (deployer, error) {
 		return noneDeploy{}, nil
 	case "local":
 		return newLocalCluster(), nil
+	case "acsengine":
+		return newAcsEngine()
 	default:
 		return nil, fmt.Errorf("unknown deployment strategy %q", o.deployment)
 	}
@@ -276,7 +282,7 @@ func validateFlags(o *options) error {
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	// Initialize global pseudo random generator. Intializing it to select random AWS Zones.
+	// Initialize global pseudo random generator. Initializing it to select random AWS Zones.
 	rand.Seed(time.Now().UnixNano())
 
 	pflag.CommandLine = pflag.NewFlagSet(os.Args[0], pflag.ContinueOnError)
@@ -427,9 +433,6 @@ func acquireKubernetes(o *options) error {
 
 	// Potentially stage build binaries somewhere on GCS
 	if o.stage.Enabled() {
-		if o.build == "dind" {
-			return fmt.Errorf("staging dind images isn't supported yet")
-		}
 		if err := control.XMLWrap(&suite, "Stage", func() error {
 			return o.stage.Stage(o.federation, o.noAllowDup)
 		}); err != nil {
@@ -544,8 +547,8 @@ func writeMetadata(path, metadataSources string) error {
 	}
 
 	ver := findVersion()
-	m["version"] = ver // TODO(fejta): retire
-	m["job-version"] = ver
+	m["job-version"] = ver // TODO(krzyzacy): retire
+	m["revision"] = ver
 	re := regexp.MustCompile(`^BUILD_METADATA_(.+)$`)
 	for _, e := range os.Environ() {
 		p := strings.SplitN(e, "=", 2)
@@ -784,7 +787,7 @@ func prepareGcp(o *options) error {
 		go func(c *client.Client, proj string) {
 			for range time.Tick(time.Minute * 5) {
 				if err := c.UpdateOne(p.Name, "busy", nil); err != nil {
-					log.Printf("[Boskos] Update %s failed with %v", p, err)
+					log.Printf("[Boskos] Update of %s failed with %v", p.Name, err)
 				}
 			}
 		}(boskos, p.Name)
@@ -933,12 +936,19 @@ func prepare(o *options) error {
 	}
 
 	switch o.provider {
-	case "gce", "gke", "kubernetes-anywhere", "node":
+	case "gce", "gke", "node":
 		if err := prepareGcp(o); err != nil {
 			return err
 		}
 	case "aws":
 		if err := prepareAws(o); err != nil {
+			return err
+		}
+	}
+	// For kubernetes-anywhere as the deployer, call prepareGcp()
+	// independent of the specified provider.
+	if o.deployment == "kubernetes-anywhere" {
+		if err := prepareGcp(o); err != nil {
 			return err
 		}
 	}

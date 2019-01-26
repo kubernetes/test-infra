@@ -2,9 +2,9 @@
 
 This directory contains tooling for uploading [Kubernetes Conformance test](https://github.com/cncf/k8s-conformance) results for display / monitoring on [TestGrid](../README.md), a tool used heavily by [the core kubernetes project](https://github.com/kubernetes/kubernetes) to monitor test results, particularly as part of the release process.
 
-Federated conformance test results are hosted on the TestGrid [conformance dashboards](https://k8s-testgrid.appspot.com/conformance-all), including the "all" dashboard, and specific sub-dashboards, see [the TestGrid README](../README.md#dashboards) for details on dashboards. Generally we are aiming to have a dashboard here for each provider E.g. "[conformance-cloud-provider-openstack](https://k8s-testgrid.appspot.com/conformance-cloud-provider-openstack)" as well as [a cross-vendor dashboard](https://k8s-testgrid.appspot.com/conformance-all) to track project wide conformance. 
+Federated conformance test results are hosted on the TestGrid [conformance dashboards](https://testgrid.k8s.io/conformance-all), including the "all" dashboard, and specific sub-dashboards, see [the TestGrid README](../README.md#dashboards) for details on dashboards. Generally we are aiming to have a dashboard here for each provider E.g. "[conformance-cloud-provider-openstack](https://testgrid.k8s.io/conformance-cloud-provider-openstack)" as well as [a cross-vendor dashboard](https://testgrid.k8s.io/conformance-all) to track project wide conformance. 
 
-All Kubernetes cluster providers are invited to post results from their conformance test jobs and results from reliable continuous integration against the release branches may even be used as a signal by the Kubernetes release team in the [release-blocking dashboards](https://k8s-testgrid.appspot.com/sig-release-master-blocking).
+All Kubernetes cluster providers are invited to post results from their conformance test jobs and results from reliable continuous integration against the release branches may even be used as a signal by the Kubernetes release team in the [release-blocking dashboards](https://testgrid.k8s.io/sig-release-master-blocking).
 
 The release team has caught actual conformance test regressions using these dashboards just in the first month or so of setting up GCE / OpenStack conformance on TestGrid, and had them fixed before the Kubernetes 1.11 release.
 
@@ -39,13 +39,20 @@ For running the conformance tests and obtaining the result files (`b)` and `c)`)
    ```sh
    git clone https://github.com/kubernetes/kubernetes.git && cd kubernetes && git checkout release-1.11
    ```
-   - run `make WHAT=test/e2e.test` to build the test binaries
+   - run `make all WHAT="test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo cmd/kubectl"` to build the test binaries
    - make sure `kubectl` / `$KUBECONFIG` is authed to your cluster
    - run [kubetest](https://github.com/kubernetes/test-infra/tree/master/kubetest) with:
     ```sh
     export KUBERNETES_CONFORMANCE_TEST=y
+    # NOTE: see https://github.com/kubernetes/test-infra/pull/9104 for why 
+    # we have to supply `--ginkgo.skip`, in the longer term we should not do this.
+    # For < Kubernetes 1.12 use:
+    export SKIP="Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]"
+    # otherwise use:
+    export SKIP="Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]"
     kubetest --provider=skeleton \
-             --test --test_args="--ginkgo.focus=\[Conformance\]" \ 
+             --test \
+             --test_args="--ginkgo.focus=\[Conformance\] --ginkgo.skip=${SKIP}" \ 
              --dump=./_artifacts | tee ./e2e.log
     ```
    - You can then find the log file and JUnit at `./e2e.log` and `./_artifacts/junit_01.xml` respectively.

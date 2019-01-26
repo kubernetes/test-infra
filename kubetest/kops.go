@@ -51,7 +51,7 @@ var (
 	kopsPath         = flag.String("kops", "", "(kops only) Path to the kops binary. kops will be downloaded from kops-base-url if not set.")
 	kopsCluster      = flag.String("kops-cluster", "", "(kops only) Deprecated. Cluster name for kops; if not set defaults to --cluster.")
 	kopsState        = flag.String("kops-state", "", "(kops only) s3:// path to kops state store. Must be set.")
-	kopsSSHUser      = flag.String("kops-ssh-user", os.Getenv("USER"), "(kops only) Username for SSH connections to nodes.)")
+	kopsSSHUser      = flag.String("kops-ssh-user", os.Getenv("USER"), "(kops only) Username for SSH connections to nodes.")
 	kopsSSHKey       = flag.String("kops-ssh-key", "", "(kops only) Path to ssh key-pair for each node (defaults '~/.ssh/kube_aws_rsa' if unset.)")
 	kopsKubeVersion  = flag.String("kops-kubernetes-version", "", "(kops only) If set, the version of Kubernetes to deploy (can be a URL to a GCS path where the release is stored) (Defaults to kops default, latest stable release.).")
 	kopsZones        = flag.String("kops-zones", "", "(kops only) zones for kops deployment, comma delimited.")
@@ -68,6 +68,8 @@ var (
 	kopsMasterSize   = flag.String("kops-master-size", kopsAWSMasterSize, "(kops only) master instance type")
 	kopsMasterCount  = flag.Int("kops-master-count", 1, "(kops only) Number of masters to run")
 	kopsEtcdVersion  = flag.String("kops-etcd-version", "", "(kops only) Etcd Version")
+	kopsNetworkMode  = flag.String("kops-network-mode", "", "(kops only) Networking mode to use. kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana, amazon-vpc-routed-eni, cilium.")
+	kopsOverrides    = flag.String("kops-overrides", "", "(kops only) List of kops cluster configuration overrides, comma delimited")
 
 	kopsMultipleZones = flag.Bool("kops-multiple-zones", false, "(kops only) run tests in multiple zones")
 
@@ -131,6 +133,12 @@ type kops struct {
 
 	// masterSize is the EC2 instance type for the master
 	masterSize string
+
+	// networkMode is the networking mode to use for the cluster (e.g kubenet)
+	networkMode string
+
+	// overrides is a list of cluster configuration overrides, comma delimited
+	overrides string
 
 	// multipleZones denotes using more than one zone
 	multipleZones bool
@@ -197,6 +205,13 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 	}
 	if err := os.Setenv("KOPS_STATE_STORE", *kopsState); err != nil {
 		return nil, err
+	}
+
+	sshUser := *kopsSSHUser
+	if sshUser != "" {
+		if err := os.Setenv("KUBE_SSH_USER", sshUser); err != nil {
+			return nil, err
+		}
 	}
 
 	// Repoint KUBECONFIG to an isolated kubeconfig in our temp directory
@@ -312,7 +327,7 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		kubeVersion:   *kopsKubeVersion,
 		sshPrivateKey: sshKey,
 		sshPublicKey:  sshKey + ".pub",
-		sshUser:       *kopsSSHUser,
+		sshUser:       sshUser,
 		zones:         zones,
 		nodes:         *kopsNodes,
 		adminAccess:   *kopsAdminAccess,
@@ -328,6 +343,8 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		masterCount:   *kopsMasterCount,
 		etcdVersion:   *kopsEtcdVersion,
 		masterSize:    *kopsMasterSize,
+		networkMode:   *kopsNetworkMode,
+		overrides:     *kopsOverrides,
 	}, nil
 }
 
@@ -349,9 +366,6 @@ func (k kops) Up() error {
 		}
 	}
 
-	var featureFlags []string
-	var overrides []string
-
 	createArgs := []string{
 		"create", "cluster",
 		"--name", k.cluster,
@@ -361,6 +375,12 @@ func (k kops) Up() error {
 		"--master-volume-size", strconv.Itoa(k.diskSize),
 		"--master-count", strconv.Itoa(k.masterCount),
 		"--zones", strings.Join(k.zones, ","),
+	}
+
+	var featureFlags []string
+	var overrides []string
+	if k.overrides != "" {
+		overrides = append(overrides, k.overrides)
 	}
 
 	// We are defaulting the master size to c4.large on AWS because m3.larges are getting less previlent.
@@ -392,6 +412,9 @@ func (k kops) Up() error {
 		// append cloud type to allow for use of new regions without updates
 		createArgs = append(createArgs, "--cloud", "aws")
 	}
+	if k.networkMode != "" {
+		createArgs = append(createArgs, "--networking", k.networkMode)
+	}
 	if k.args != "" {
 		createArgs = append(createArgs, strings.Split(k.args, " ")...)
 	}
@@ -414,7 +437,10 @@ func (k kops) Up() error {
 
 	// We require repeated successes, so we know that the cluster is stable
 	// (e.g. in HA scenarios, or where we're using multiple DNS servers)
-	requiredConsecutiveSuccesses := 4
+	// We use a relatively high number as DNS can take a while to
+	// propagate across multiple servers / caches
+	requiredConsecutiveSuccesses := 10
+
 	// TODO(zmerlynn): More cluster validation. This should perhaps be
 	// added to kops and not here, but this is a fine place to loop
 	// for now.
@@ -642,6 +668,8 @@ func (k kops) Publish() error {
 		return gcsWrite(k.kopsPublish, []byte(k.kopsVersion))
 	})
 }
+
+func (_ kops) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
 
 // getRandomAWSZones looks up all regions, and the availability zones for those regions.  A random
 // region is then chosen and the AZ's for that region is returned. At least masterCount zones will be

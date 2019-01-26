@@ -361,7 +361,7 @@ func (br Column) Overall() Row {
 // AppendMetric adds the value at index to metric.
 //
 // Handles the details of sparse-encoding the results.
-// Indicies must be monotonically increasing for the same metric.
+// Indices must be monotonically increasing for the same metric.
 func AppendMetric(metric *state.Metric, idx int32, value float64) {
 	if l := int32(len(metric.Indices)); l == 0 || metric.Indices[l-2]+metric.Indices[l-1] != idx {
 		// If we append V to idx 9 and metric.Indices = [3, 4] then the last filled index is 3+4-1=7
@@ -864,7 +864,7 @@ func (b Builds) Less(i, j int) bool {
 func listBuilds(ctx context.Context, client *storage.Client, path gcs.Path) (Builds, error) {
 	log.Printf("LIST: %s", path)
 	p := path.Object()
-	if p[len(p)-1] != '/' {
+	if !strings.HasSuffix(p, "/") {
 		p += "/"
 	}
 	bkt := client.Bucket(path.Bucket())
@@ -881,6 +881,30 @@ func listBuilds(ctx context.Context, client *storage.Client, path gcs.Path) (Bui
 		if err != nil {
 			return nil, fmt.Errorf("failed to list objects: %v", err)
 		}
+
+		// if this is a link under directory, resolve the build value
+		if link := objAttrs.Metadata["link"]; len(link) > 0 {
+			// links created by bootstrap.py have a space
+			link = strings.TrimSpace(link)
+			u, err := url.Parse(link)
+			if err != nil {
+				return nil, fmt.Errorf("could not parse link for key %s: %v", objAttrs.Name, err)
+			}
+			if !strings.HasSuffix(u.Path, "/") {
+				u.Path += "/"
+			}
+			var linkPath gcs.Path
+			if err := linkPath.SetURL(u); err != nil {
+				return nil, fmt.Errorf("could not make GCS path for key %s: %v", objAttrs.Name, err)
+			}
+			all = append(all, Build{
+				Bucket:  bkt,
+				Context: ctx,
+				Prefix:  linkPath.Object(),
+			})
+			continue
+		}
+
 		if len(objAttrs.Prefix) == 0 {
 			continue
 		}
@@ -954,7 +978,7 @@ func ReadBuilds(parent context.Context, group config.TestGroup, builds Builds, m
 		}
 	}()
 
-	// Concurrently receive indicies and read builds
+	// Concurrently receive indices and read builds
 	for i := 0; i < concurrency; i++ {
 		wg.Add(1)
 		go func() {

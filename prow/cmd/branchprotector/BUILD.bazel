@@ -1,10 +1,8 @@
 # Usage:
 #   bazel run :dev-job.{create,delete,describe}
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
-load(
-    "//prow:prow.bzl",
-    prow_tags = "tags",
-)
+load("//prow:def.bzl", "prow_image")
 
 k8s_object(
     name = "oneshot",
@@ -15,15 +13,11 @@ k8s_object(
     template = ":oneshot-job.yaml",
 )
 
-load("@io_bazel_rules_docker//go:image.bzl", "go_image")
-
-go_image(
+prow_image(
     name = "image",
-    binary = ":branchprotector",
-    visibility = ["//prow:__subpackages__"],
+    base = "@alpine-base//image",
+    visibility = ["//visibility:public"],
 )
-
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -35,10 +29,12 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//prow/config:go_default_library",
+        "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 
@@ -53,8 +49,8 @@ go_test(
         "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
-        "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
 

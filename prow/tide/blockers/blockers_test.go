@@ -22,7 +22,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/shurcooL/githubql"
+	githubql "github.com/shurcooL/githubv4"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -71,11 +71,11 @@ func TestParseBranches(t *testing.T) {
 
 func TestBlockerQuery(t *testing.T) {
 	tcs := []struct {
-		orgs, repos sets.String
-		expected    sets.String
+		orgRepoQuery string
+		expected     sets.String
 	}{
 		{
-			orgs: sets.NewString("k8s"),
+			orgRepoQuery: "org:\"k8s\"",
 			expected: sets.NewString(
 				"is:issue",
 				"state:open",
@@ -84,7 +84,7 @@ func TestBlockerQuery(t *testing.T) {
 			),
 		},
 		{
-			repos: sets.NewString("k8s/t-i"),
+			orgRepoQuery: "repo:\"k8s/t-i\"",
 			expected: sets.NewString(
 				"is:issue",
 				"state:open",
@@ -93,7 +93,7 @@ func TestBlockerQuery(t *testing.T) {
 			),
 		},
 		{
-			orgs: sets.NewString("k8s", "kuber"),
+			orgRepoQuery: "org:\"k8s\" org:\"kuber\"",
 			expected: sets.NewString(
 				"is:issue",
 				"state:open",
@@ -103,7 +103,7 @@ func TestBlockerQuery(t *testing.T) {
 			),
 		},
 		{
-			repos: sets.NewString("k8s/t-i", "k8s/k8s"),
+			orgRepoQuery: "repo:\"k8s/t-i\" repo:\"k8s/k8s\"",
 			expected: sets.NewString(
 				"is:issue",
 				"state:open",
@@ -113,33 +113,32 @@ func TestBlockerQuery(t *testing.T) {
 			),
 		},
 		{
-			orgs:  sets.NewString("kuber", "netes"),
-			repos: sets.NewString("k8s/t-i", "k8s/k8s"),
+			orgRepoQuery: "org:\"k8s\" org:\"kuber\" repo:\"k8s/t-i\" repo:\"k8s/k8s\"",
 			expected: sets.NewString(
 				"is:issue",
 				"state:open",
 				"label:\"blocker\"",
 				"repo:\"k8s/t-i\"",
 				"repo:\"k8s/k8s\"",
-				"org:\"netes\"",
+				"org:\"k8s\"",
 				"org:\"kuber\"",
 			),
 		},
 	}
 
 	for _, tc := range tcs {
-		got := sets.NewString(strings.Split(blockerQuery("blocker", tc.orgs, tc.repos), " ")...)
+		got := sets.NewString(strings.Split(blockerQuery("blocker", tc.orgRepoQuery), " ")...)
 		if !reflect.DeepEqual(got, tc.expected) {
-			t.Errorf("Expected blockerQuery(\"blocker\", %v, %v)==%v, but got %v.", tc.orgs, tc.repos, tc.expected, got)
+			t.Errorf("Expected blockerQuery(\"blocker\", %q)==%q, but got %q.", tc.orgRepoQuery, tc.expected, got)
 		}
 	}
 }
 
 func testIssue(number int, title, org, repo string) Issue {
 	return Issue{
-		Number:  githubql.Int(number),
-		Title:   githubql.String(title),
-		HTMLURL: githubql.String(strconv.Itoa(number)),
+		Number: githubql.Int(number),
+		Title:  githubql.String(title),
+		URL:    githubql.String(strconv.Itoa(number)),
 		Repository: struct {
 			Name  githubql.String
 			Owner struct {

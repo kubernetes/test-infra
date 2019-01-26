@@ -27,4 +27,3 @@ bazel run //label_sync -- \
 --action=docs \
 --docs-template=${LABELS_DOCS_TEMPLATE} \
 --docs-output=${LABELS_DOCS_OUTPUT}
-

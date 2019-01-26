@@ -17,43 +17,36 @@ limitations under the License.
 package config
 
 import (
-	"encoding/json"
+	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
-	"strings"
 	"testing"
 
-	"flag"
 	"k8s.io/test-infra/prow/kube"
 )
 
 var c *Config
-var cj configJSON
 var configPath = flag.String("config", "../config.yaml", "Path to prow config")
-var jobConfigPath = flag.String("job-config", "", "Path to prow job config")
-var configJSONPath = flag.String("config-json", "../../jobs/config.json", "Path to prow job config")
+var jobConfigPath = flag.String("job-config", "../../config/jobs", "Path to prow job config")
 var podRe = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
 
-type configJSON map[string]map[string]interface{}
-
-const (
-	testThis   = "/test all"
-	retestBody = "/test all [submit-queue is verifying that this PR is safe to merge]"
-)
-
-type JSONJob struct {
-	Scenario string   `json:"scenario"`
-	Args     []string `json:"args"`
-}
-
 // Consistent but meaningless order.
-func flattenJobs(jobs []Presubmit) []Presubmit {
+func flattenPresubmits(jobs []Presubmit) []Presubmit {
 	ret := jobs
 	for _, job := range jobs {
 		if len(job.RunAfterSuccess) > 0 {
-			ret = append(ret, flattenJobs(job.RunAfterSuccess)...)
+			ret = append(ret, flattenPresubmits(job.RunAfterSuccess)...)
+		}
+	}
+	return ret
+}
+
+func flattenPostsubmits(jobs []Postsubmit) []Postsubmit {
+	ret := jobs
+	for _, job := range jobs {
+		if len(job.RunAfterSuccess) > 0 {
+			ret = append(ret, flattenPostsubmits(job.RunAfterSuccess)...)
 		}
 	}
 	return ret
@@ -80,19 +73,6 @@ func checkOverlapBrancher(b1, b2 Brancher) bool {
 	return false
 }
 
-func readConfigJSON(path string) (config configJSON, err error) {
-	raw, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	config = configJSON{}
-	err = json.Unmarshal(raw, &config)
-	if err != nil {
-		return nil, err
-	}
-	return config, nil
-}
-
 func TestMain(m *testing.M) {
 	flag.Parse()
 	if *configPath == "" {
@@ -107,31 +87,16 @@ func TestMain(m *testing.M) {
 	}
 	c = conf
 
-	if *configJSONPath != "" {
-		cj, err = readConfigJSON(*configJSONPath)
-		if err != nil {
-			fmt.Printf("Could not load jobs config: %v", err)
-			os.Exit(1)
-		}
-	}
-
 	os.Exit(m.Run())
 }
 
-// TODO(spxtr): Some of this is generic prowjob stuff and some of this is k8s-
-// specific. Figure out which is which and split this up.
 func TestPresubmits(t *testing.T) {
 	if len(c.Presubmits) == 0 {
 		t.Fatalf("No jobs found in presubmit.yaml.")
 	}
-	b, err := ioutil.ReadFile("../../jobs/config.json")
-	if err != nil {
-		t.Fatalf("Could not load jobs/config.json: %v", err)
-	}
-	var bootstrapConfig map[string]JSONJob
-	json.Unmarshal(b, &bootstrapConfig)
+
 	for _, rootJobs := range c.Presubmits {
-		jobs := flattenJobs(rootJobs)
+		jobs := flattenPresubmits(rootJobs)
 		for i, job := range jobs {
 			if job.Name == "" {
 				t.Errorf("Job %v needs a name.", job)
@@ -143,21 +108,6 @@ func TestPresubmits(t *testing.T) {
 			if job.RerunCommand == "" || job.Trigger == "" {
 				t.Errorf("Job %s needs a trigger and a rerun command.", job.Name)
 				continue
-			}
-			// Check that the merge bot will run AlwaysRun jobs, otherwise it
-			// will attempt to rerun forever.
-			if job.AlwaysRun && !job.re.MatchString(testThis) {
-				t.Errorf("AlwaysRun job %s: \"%s\" does not match regex \"%v\".", job.Name, testThis, job.Trigger)
-			}
-			if job.AlwaysRun && !job.re.MatchString(retestBody) {
-				t.Errorf("AlwaysRun job %s: \"%s\" does not match regex \"%v\".", job.Name, retestBody, job.Trigger)
-			}
-			// Check that the merge bot will not run Non-AlwaysRun jobs
-			if !job.AlwaysRun && job.re.MatchString(testThis) {
-				t.Errorf("Non-AlwaysRun job %s: \"%s\" matches regex \"%v\".", job.Name, testThis, job.Trigger)
-			}
-			if !job.AlwaysRun && job.re.MatchString(retestBody) {
-				t.Errorf("Non-AlwaysRun job %s: \"%s\" matches regex \"%v\".", job.Name, retestBody, job.Trigger)
 			}
 
 			if len(job.Brancher.Branches) > 0 && len(job.Brancher.SkipBranches) > 0 {
@@ -183,21 +133,45 @@ func TestPresubmits(t *testing.T) {
 					}
 				}
 			}
-			var scenario string
-			job.Name = strings.Replace(job.Name, "pull-security-kubernetes", "pull-kubernetes", 1)
-			if j, present := bootstrapConfig[job.Name]; present {
-				scenario = fmt.Sprintf("scenarios/%s.py", j.Scenario)
+		}
+	}
+}
+
+// TODO(krzyzacy): technically this, and TestPresubmits above should belong to config/ instead of prow/
+func TestPostsubmits(t *testing.T) {
+	if len(c.Postsubmits) == 0 {
+		t.Fatalf("No jobs found in presubmit.yaml.")
+	}
+
+	for _, rootJobs := range c.Postsubmits {
+		jobs := flattenPostsubmits(rootJobs)
+		for i, job := range jobs {
+			if job.Name == "" {
+				t.Errorf("Job %v needs a name.", job)
+				continue
+			}
+			if job.Report && job.Context == "" {
+				t.Errorf("Job %s needs a context.", job.Name)
 			}
 
-			// Ensure that jobs have a shell script of the same name.
-			if s, err := os.Stat(fmt.Sprintf("../../%s", scenario)); err != nil {
-				t.Errorf("Cannot find test-infra/%s for %s", scenario, job.Name)
-			} else {
-				if s.Mode()&0111 == 0 {
-					t.Errorf("Not executable: test-infra/%s (%o)", scenario, s.Mode()&0777)
-				}
-				if s.Mode()&0444 == 0 {
-					t.Errorf("Not readable: test-infra/%s (%o)", scenario, s.Mode()&0777)
+			if len(job.Brancher.Branches) > 0 && len(job.Brancher.SkipBranches) > 0 {
+				t.Errorf("Job %s : Cannot have both branches and skip_branches set", job.Name)
+			}
+			// Next check that the rerun command doesn't run any other jobs.
+			for _, job2 := range jobs[i+1:] {
+				if job.Name == job2.Name {
+					// Make sure max_concurrency are the same
+					if job.MaxConcurrency != job2.MaxConcurrency {
+						t.Errorf("Jobs %s share same name but has different max_concurrency", job.Name)
+					}
+					// Make sure branches are not overlapping
+					if checkOverlapBrancher(job.Brancher, job2.Brancher) {
+						t.Errorf("Two jobs have the same name: %s, and have conflicting branches", job.Name)
+					}
+				} else {
+					if job.Context == job2.Context {
+						t.Errorf("Jobs %s and %s have the same context: %s", job.Name, job2.Name, job.Context)
+					}
 				}
 			}
 		}
@@ -261,47 +235,63 @@ func TestCommentBodyMatches(t *testing.T) {
 			Presubmits: map[string][]Presubmit{
 				"org/repo": {
 					{
-						Name:      "gce",
+						JobBase: JobBase{
+							Name: "gce",
+						},
 						re:        regexp.MustCompile(`/test (gce|all)`),
 						AlwaysRun: true,
 					},
 					{
-						Name:      "unit",
+						JobBase: JobBase{
+							Name: "unit",
+						},
 						re:        regexp.MustCompile(`/test (unit|all)`),
 						AlwaysRun: true,
 					},
 					{
-						Name:      "gke",
+						JobBase: JobBase{
+							Name: "gke",
+						},
 						re:        regexp.MustCompile(`/test (gke|all)`),
 						AlwaysRun: false,
 					},
 					{
-						Name:      "federation",
+						JobBase: JobBase{
+							Name: "federation",
+						},
 						re:        regexp.MustCompile(`/test federation`),
 						AlwaysRun: false,
 					},
 				},
 				"org/repo2": {
 					{
-						Name:      "cadveapster",
+						JobBase: JobBase{
+							Name: "cadveapster",
+						},
 						re:        regexp.MustCompile(`/test all`),
 						AlwaysRun: true,
 						RunAfterSuccess: []Presubmit{
 							{
-								Name:      "after-cadveapster",
+								JobBase: JobBase{
+									Name: "after-cadveapster",
+								},
 								re:        regexp.MustCompile(`/test (really|all)`),
 								AlwaysRun: true,
 								RunAfterSuccess: []Presubmit{
 									{
-										Name:      "after-after-cadveapster",
+										JobBase: JobBase{
+											Name: "after-after-cadveapster",
+										},
 										re:        regexp.MustCompile(`/test (again really|all)`),
 										AlwaysRun: true,
 									},
 								},
 							},
 							{
-								Name:      "another-after-cadveapster",
-								re:        regexp.MustCompile(`@k8s-bot dont test this`),
+								JobBase: JobBase{
+									Name: "another-after-cadveapster",
+								},
+								re:        regexp.MustCompile(`@k8s-bot don't test this`),
 								AlwaysRun: true,
 							},
 						},
@@ -428,8 +418,12 @@ func TestRetestPresubmits(t *testing.T) {
 func TestConditionalPresubmits(t *testing.T) {
 	presubmits := []Presubmit{
 		{
-			Name:         "cross build",
-			RunIfChanged: `(Makefile|\.sh|_(windows|linux|osx|unknown)(_test)?\.go)$`,
+			JobBase: JobBase{
+				Name: "cross build",
+			},
+			RegexpChangeMatcher: RegexpChangeMatcher{
+				RunIfChanged: `(Makefile|\.sh|_(windows|linux|osx|unknown)(_test)?\.go)$`,
+			},
 		},
 	}
 	SetPresubmitRegexes(presubmits)
@@ -459,30 +453,34 @@ func TestListPresubmit(t *testing.T) {
 			Presubmits: map[string][]Presubmit{
 				"r1": {
 					{
-						Name: "a",
+						JobBase: JobBase{
+							Name: "a",
+						},
 						RunAfterSuccess: []Presubmit{
-							{Name: "aa"},
-							{Name: "ab"},
+							{JobBase: JobBase{Name: "aa"}},
+							{JobBase: JobBase{Name: "ab"}},
 						},
 					},
-					{Name: "b"},
+					{JobBase: JobBase{Name: "b"}},
 				},
 				"r2": {
 					{
-						Name: "c",
+						JobBase: JobBase{
+							Name: "c",
+						},
 						RunAfterSuccess: []Presubmit{
-							{Name: "ca"},
-							{Name: "cb"},
+							{JobBase: JobBase{Name: "ca"}},
+							{JobBase: JobBase{Name: "cb"}},
 						},
 					},
-					{Name: "d"},
+					{JobBase: JobBase{Name: "d"}},
 				},
 			},
 			Postsubmits: map[string][]Postsubmit{
-				"r1": {{Name: "e"}},
+				"r1": {{JobBase: JobBase{Name: "e"}}},
 			},
 			Periodics: []Periodic{
-				{Name: "f"},
+				{JobBase: JobBase{Name: "f"}},
 			},
 		},
 	}
@@ -528,23 +526,25 @@ func TestListPostsubmit(t *testing.T) {
 	c := &Config{
 		JobConfig: JobConfig{
 			Presubmits: map[string][]Presubmit{
-				"r1": {{Name: "a"}},
+				"r1": {{JobBase: JobBase{Name: "a"}}},
 			},
 			Postsubmits: map[string][]Postsubmit{
 				"r1": {
 					{
-						Name: "c",
+						JobBase: JobBase{
+							Name: "c",
+						},
 						RunAfterSuccess: []Postsubmit{
-							{Name: "ca"},
-							{Name: "cb"},
+							{JobBase: JobBase{Name: "ca"}},
+							{JobBase: JobBase{Name: "cb"}},
 						},
 					},
-					{Name: "d"},
+					{JobBase: JobBase{Name: "d"}},
 				},
-				"r2": {{Name: "e"}},
+				"r2": {{JobBase: JobBase{Name: "e"}}},
 			},
 			Periodics: []Periodic{
-				{Name: "f"},
+				{JobBase: JobBase{Name: "f"}},
 			},
 		},
 	}
@@ -590,20 +590,22 @@ func TestListPeriodic(t *testing.T) {
 	c := &Config{
 		JobConfig: JobConfig{
 			Presubmits: map[string][]Presubmit{
-				"r1": {{Name: "a"}},
+				"r1": {{JobBase: JobBase{Name: "a"}}},
 			},
 			Postsubmits: map[string][]Postsubmit{
-				"r1": {{Name: "b"}},
+				"r1": {{JobBase: JobBase{Name: "b"}}},
 			},
 			Periodics: []Periodic{
 				{
-					Name: "c",
+					JobBase: JobBase{
+						Name: "c",
+					},
 					RunAfterSuccess: []Periodic{
-						{Name: "ca"},
-						{Name: "cb"},
+						{JobBase: JobBase{Name: "ca"}},
+						{JobBase: JobBase{Name: "cb"}},
 					},
 				},
-				{Name: "d"},
+				{JobBase: JobBase{Name: "d"}},
 			},
 		},
 	}
@@ -630,29 +632,39 @@ func TestListPeriodic(t *testing.T) {
 func TestRunAgainstBranch(t *testing.T) {
 	jobs := []Presubmit{
 		{
-			Name:     "a",
+			JobBase: JobBase{
+				Name: "a",
+			},
 			Brancher: Brancher{SkipBranches: []string{"s"}},
 		},
 		{
-			Name:     "b",
+			JobBase: JobBase{
+				Name: "b",
+			},
 			Brancher: Brancher{Branches: []string{"r"}},
 		},
 		{
-			Name: "c",
+			JobBase: JobBase{
+				Name: "c",
+			},
 			Brancher: Brancher{
 				SkipBranches: []string{"s"},
 				Branches:     []string{"r"},
 			},
 		},
 		{
-			Name: "d",
+			JobBase: JobBase{
+				Name: "d",
+			},
 			Brancher: Brancher{
 				SkipBranches: []string{"s"},
 				Branches:     []string{"s", "r"},
 			},
 		},
 		{
-			Name: "default",
+			JobBase: JobBase{
+				Name: "default",
+			},
 		},
 	}
 

@@ -1,0 +1,30 @@
+presubmits:
+  kubernetes/cloud-provider-aws:
+  - name: pull-cloud-provider-aws-check
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - check
+
+  - name: pull-cloud-provider-aws-test
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test
+

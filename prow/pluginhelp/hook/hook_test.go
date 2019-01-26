@@ -140,7 +140,7 @@ func TestGeneratePluginHelp(t *testing.T) {
 
 	help := NewHelpAgent(fpa, fghc).GeneratePluginHelp()
 	if help == nil {
-		t.Fatal("HelpAgent returned nil Help struct pointer.")
+		t.Fatal("NewHelpAgent returned nil HelpAgent struct pointer.")
 	}
 	if got, expected := sets.NewString(help.AllRepos...), sets.NewString(expectedAllRepos...); !got.Equal(expected) {
 		t.Errorf("Expected 'AllRepos' to be %q, but got %q.", expected.List(), got.List())

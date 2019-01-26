@@ -1,0 +1,221 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
+load("@build_bazel_rules_typescript//:defs.bzl", "ts_library")
+
+ts_library(
+    name = "api",
+    srcs = glob(["api/**/*.ts"]),
+)
+
+ts_library(
+    name = "common",
+    srcs = glob(["common/*.ts"]),
+    deps = [
+        ":api",
+        "@npm//moment",
+    ],
+)
+
+ts_library(
+    name = "prow",
+    srcs = glob(["prow/*.ts"]) + ["vendor.d.ts"],
+    deps = [
+        ":api",
+        ":common",
+        "@npm//moment",
+    ],
+)
+
+rollup_bundle(
+    name = "prow_bundle",
+    entry_point = "prow/cmd/deck/static/prow/prow",
+    deps = [
+        ":prow",
+        "@npm//moment",
+    ],
+)
+
+ts_library(
+    name = "plugin_help",
+    srcs = glob(["plugin-help/*.ts"]) + ["vendor.d.ts"],
+    deps = [
+        ":api",
+    ],
+)
+
+rollup_bundle(
+    name = "plugin_help_bundle",
+    entry_point = "prow/cmd/deck/static/plugin-help/plugin-help",
+    deps = [
+        ":plugin_help",
+        "@npm//dialog-polyfill",
+    ],
+)
+
+ts_library(
+    name = "pr",
+    srcs = glob(["pr/*.ts"]),
+    deps = [
+        ":api",
+    ],
+)
+
+rollup_bundle(
+    name = "pr_bundle",
+    entry_point = "prow/cmd/deck/static/pr/pr",
+    deps = [
+        ":pr",
+        "@npm//dialog-polyfill",
+    ],
+)
+
+ts_library(
+    name = "tide",
+    srcs = glob(["tide/*.ts"]),
+    deps = [
+        ":api",
+        ":common",
+    ],
+)
+
+rollup_bundle(
+    name = "tide_bundle",
+    entry_point = "prow/cmd/deck/static/tide/tide",
+    deps = [
+        ":tide",
+        "@npm//moment",
+    ],
+)
+
+ts_library(
+    name = "tide_history",
+    srcs = glob(["tide-history/*.ts"]),
+    deps = [
+        ":api",
+        ":common",
+        "@npm//moment",
+    ],
+)
+
+rollup_bundle(
+    name = "tide_history_bundle",
+    entry_point = "prow/cmd/deck/static/tide-history/tide-history",
+    deps = [
+        ":tide_history",
+        "@npm//moment",
+    ],
+)
+
+ts_library(
+    name = "command_help",
+    srcs = glob(["command-help/*.ts"]) + ["vendor.d.ts"],
+    deps = [
+        ":api",
+    ],
+)
+
+rollup_bundle(
+    name = "command_help_bundle",
+    entry_point = "prow/cmd/deck/static/command-help/command-help",
+    deps = [
+        ":command_help",
+        "@npm//dialog-polyfill",
+    ],
+)
+
+ts_library(
+    name = "spyglass",
+    srcs = ["spyglass/spyglass.ts"],
+    deps = [
+        ":spyglass_common",
+    ],
+)
+
+ts_library(
+    name = "spyglass_lens",
+    srcs = ["spyglass/lens.ts"],
+    deps = [
+        ":spyglass_common",
+    ],
+)
+
+ts_library(
+    name = "spyglass_common",
+    srcs = ["spyglass/common.ts"],
+)
+
+rollup_bundle(
+    name = "spyglass_bundle",
+    entry_point = "prow/cmd/deck/static/spyglass/spyglass",
+    deps = [
+        ":spyglass",
+        ":spyglass_common",
+    ],
+)
+
+rollup_bundle(
+    name = "spyglass_lens_bundle",
+    entry_point = "prow/cmd/deck/static/spyglass/lens",
+    deps = [
+        ":spyglass_common",
+        ":spyglass_lens",
+    ],
+)
+
+genrule(
+    name = "labels_css",
+    srcs = [
+        "//label_sync:labels.css.tmpl",
+        "//label_sync:labels.yaml",
+    ],
+    outs = ["labels.css"],
+    cmd = "$(location //label_sync) --action=css --css-template=$(location //label_sync:labels.css.tmpl) --config=$(location //label_sync:labels.yaml) --css-output=$@",
+    tools = [
+        "//label_sync",
+    ],
+)
+
+filegroup(
+    name = "resources",
+    srcs = glob(
+        ["**/*"],
+        exclude = ["**/*.js"],
+    ) + glob(["extensions/*.js"]) + [":labels_css"],
+)
+
+filegroup(
+    name = "all-scripts",
+    srcs = [
+        ":command_help_bundle",
+        ":plugin_help_bundle",
+        ":pr_bundle",
+        ":prow_bundle",
+        ":spyglass_bundle",
+        ":spyglass_lens_bundle",
+        ":tide_bundle",
+        ":tide_history_bundle",
+    ],
+)
+
+filegroup(
+    name = "static",
+    srcs = [
+        ":all-scripts",
+        ":resources",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

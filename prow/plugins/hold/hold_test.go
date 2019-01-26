@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/labels"
 )
 
 func TestHandle(t *testing.T) {
@@ -49,7 +50,7 @@ func TestHandle(t *testing.T) {
 			shouldUnlabel: false,
 		},
 		{
-			name:          "requested hold, label already exists",
+			name:          "requested hold, Label already exists",
 			body:          "/hold",
 			hasLabel:      true,
 			shouldLabel:   false,
@@ -63,7 +64,7 @@ func TestHandle(t *testing.T) {
 			shouldUnlabel: true,
 		},
 		{
-			name:          "requested hold cancel, label already gone",
+			name:          "requested hold cancel, Label already gone",
 			body:          "/hold cancel",
 			hasLabel:      false,
 			shouldLabel:   false,
@@ -86,25 +87,25 @@ func TestHandle(t *testing.T) {
 			return tc.hasLabel
 		}
 
-		if err := handle(fc, logrus.WithField("plugin", pluginName), e, hasLabel); err != nil {
+		if err := handle(fc, logrus.WithField("plugin", PluginName), e, hasLabel); err != nil {
 			t.Errorf("For case %s, didn't expect error from hold: %v", tc.name, err)
 			continue
 		}
 
-		fakeLabel := fmt.Sprintf("org/repo#1:%s", label)
+		fakeLabel := fmt.Sprintf("org/repo#1:%s", labels.Hold)
 		if tc.shouldLabel {
-			if len(fc.LabelsAdded) != 1 || fc.LabelsAdded[0] != fakeLabel {
-				t.Errorf("For case %s: expected to add %q label but instead added: %v", tc.name, label, fc.LabelsAdded)
+			if len(fc.IssueLabelsAdded) != 1 || fc.IssueLabelsAdded[0] != fakeLabel {
+				t.Errorf("For case %s: expected to add %q Label but instead added: %v", tc.name, labels.Hold, fc.IssueLabelsAdded)
 			}
-		} else if len(fc.LabelsAdded) > 0 {
-			t.Errorf("For case %s, expected to not add %q label but added: %v", tc.name, label, fc.LabelsAdded)
+		} else if len(fc.IssueLabelsAdded) > 0 {
+			t.Errorf("For case %s, expected to not add %q Label but added: %v", tc.name, labels.Hold, fc.IssueLabelsAdded)
 		}
 		if tc.shouldUnlabel {
-			if len(fc.LabelsRemoved) != 1 || fc.LabelsRemoved[0] != fakeLabel {
-				t.Errorf("For case %s: expected to remove %q label but instead removed: %v", tc.name, label, fc.LabelsRemoved)
+			if len(fc.IssueLabelsRemoved) != 1 || fc.IssueLabelsRemoved[0] != fakeLabel {
+				t.Errorf("For case %s: expected to remove %q Label but instead removed: %v", tc.name, labels.Hold, fc.IssueLabelsRemoved)
 			}
-		} else if len(fc.LabelsRemoved) > 0 {
-			t.Errorf("For case %s, expected to not remove %q label but removed: %v", tc.name, label, fc.LabelsRemoved)
+		} else if len(fc.IssueLabelsRemoved) > 0 {
+			t.Errorf("For case %s, expected to not remove %q Label but removed: %v", tc.name, labels.Hold, fc.IssueLabelsRemoved)
 		}
 	}
 }

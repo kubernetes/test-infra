@@ -17,6 +17,20 @@ Testgrid is composed of:
 * A list of dashboards that are composed of tabs that display a test group
 * A list of dashboard groups of related dashboards.
 
+## Tip and Tricks
+
+We have a short [video] from the testgrid session at the 2018 contributor summit.
+
+The video demos power features of testgrid, including:
+* Sorting
+* Filtering
+* Graphing
+* Grouping
+* Dashboard groups
+* Summaries
+
+Please have a look!
+
 ## Configuration
 Open [`config.yaml`] in your favorite editor and:
 1. Configure the test groups
@@ -254,6 +268,16 @@ test_groups:
   ignore_pending: true
 ```
 
+### Showing a metric in the cells
+Specify `short_text_metric` to display a custom numeric metric in the TestGrid cells. Example:
+
+```
+test_groups:
+- name: ci-kubernetes-coverage-conformance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-coverage-conformance
+  short_text_metric: coverage
+```
+
 ## Using the client
 
 Here are some quick tips and clarifications for using the TestGrid site!
@@ -272,13 +296,13 @@ TestGrid assigns dashboard tabs a status based on recent test runs.
 You can get a small widget showing the status of your dashboard tab, based on
 the tab statuses above! For example:
 
-`sig-testing-misc#bazel`: [![sig-testing-misc/bazel](https://amerai-imagefix-dot-k8s-testgrid.appspot.com/q/summary/sig-testing-misc/bazel/tests_status?style=svg)](https://k8s-testgrid.appspot.com/sig-testing-misc/bazel)
+`sig-testing-misc#bazel`: [![sig-testing-misc/bazel](https://testgrid.k8s.io/q/summary/sig-testing-misc/bazel/tests_status?style=svg)](https://testgrid.k8s.io/sig-testing-misc#bazel)
 
 Inline it with:
 
 ```
 <!-- Inline with a link to your tab -->
-[![<dashboard_name>/<tab_name>](https://k8s-testgrid.appspot.com/q/summary/<dashboard_name>/<tab_name>/tests_status?style=svg)](https://k8s-testgrid.appspot.com/<dashboard_name>#<tab_name>)
+[![<dashboard_name>/<tab_name>](https://testgrid.k8s.io/q/summary/<dashboard_name>/<tab_name>/tests_status?style=svg)](https://testgrid.k8s.io/<dashboard_name>#<tab_name>)
 ```
 
 ### Customizing Test Result Sizes
@@ -373,3 +397,4 @@ bazel run //testgrid/cmd/config -- \
 
 [`config.proto`]: ./config.proto
 [`config.yaml`]: ./config.yaml
+[video]: https://www.youtube.com/watch?v=jm2l2SLq_yE

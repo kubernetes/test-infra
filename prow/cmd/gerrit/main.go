@@ -22,80 +22,86 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/gerrit"
+	"k8s.io/test-infra/prow/gerrit/adapter"
+	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 )
 
 type options struct {
-	configPath string
-	instance   string
-	projects   string
-	storage    string
+	cookiefilePath   string
+	configPath       string
+	jobConfigPath    string
+	projects         client.ProjectsFlag
+	lastSyncFallback string
 }
 
 func (o *options) Validate() error {
-	if o.instance == "" {
-		return errors.New("--gerrit-instance must set")
+	if len(o.projects) == 0 {
+		return errors.New("--gerrit-projects must be set")
 	}
+
+	if o.cookiefilePath == "" {
+		logrus.Info("--cookiefile is not set, using anonymous authentication")
+	}
+
+	if o.configPath == "" {
+		return errors.New("--config-path must be set")
+	}
+
+	if o.lastSyncFallback == "" {
+		return errors.New("--last-sync-fallback must be set")
+	}
+
 	return nil
 }
 
 func gatherOptions() options {
-	o := options{}
-	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	flag.StringVar(&o.instance, "gerrit-instance", "", "URL to gerrit instance")
-	flag.StringVar(&o.projects, "gerrit-projects", "", "comma separated gerrit projects to fetch from the gerrit instance")
-	flag.StringVar(&o.storage, "storage", "", "Path to persistent volume to load the last sync time")
+	o := options{
+		projects: client.ProjectsFlag{},
+	}
+	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
+	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs")
+	flag.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for anonymous")
+	flag.Var(&o.projects, "gerrit-projects", "Set of gerrit repos to monitor on a host example: --gerrit-host=https://android.googlesource.com=platform/build,toolchain/llvm, repeat flag for each host")
+	flag.StringVar(&o.lastSyncFallback, "last-sync-fallback", "", "Path to persistent volume to load the last sync time")
 	flag.Parse()
 	return o
 }
 
 func main() {
+	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "gerrit"}))
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "gerrit"}),
-	)
-
-	projs := strings.Split(o.projects, ",")
-	if len(projs) == 0 {
-		logrus.Fatal("must have one or more target gerrit project")
-	}
-
 	ca := &config.Agent{}
-	if err := ca.Start(o.configPath, ""); err != nil {
+	if err := ca.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
+	cfg := ca.Config
 
 	kc, err := kube.NewClientInCluster(ca.Config().ProwJobNamespace)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
 
-	c, err := gerrit.NewController(o.instance, o.storage, projs, kc, ca)
+	c, err := adapter.NewController(o.lastSyncFallback, o.cookiefilePath, o.projects, kc, cfg)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating gerrit client.")
 	}
 
-	if err := c.Auth(); err != nil {
-		logrus.WithError(err).Fatal("Error auth gerrit client.")
-	}
-
 	logrus.Infof("Starting gerrit fetcher")
 
-	tick := time.Tick(ca.Config().Gerrit.TickInterval)
-	auth := time.Tick(time.Minute * 10)
+	// TODO(fejta): refactor as timer, which we reset to the current TickInterval value each time
+	tick := time.Tick(cfg().Gerrit.TickInterval)
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 
@@ -107,10 +113,6 @@ func main() {
 				logrus.WithError(err).Error("Error syncing.")
 			}
 			logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
-		case <-auth:
-			if err := c.Auth(); err != nil {
-				logrus.WithError(err).Error("Error auth to gerrit... (continue)")
-			}
 		case <-sig:
 			logrus.Info("gerrit fetcher is shutting down...")
 			return

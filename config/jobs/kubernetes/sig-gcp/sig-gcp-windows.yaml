@@ -1,0 +1,49 @@
+periodics:
+- name: ci-kubernetes-e2e-windows-gce-poc
+  decorate: true
+  extra_refs:
+  - org: pjh
+    repo: kubernetes
+    base_ref: windows-up
+    path_alias: k8s.io/kubernetes
+  - org: yujuhong
+    repo: gce-k8s-windows-testing
+    base_ref: master
+    path_alias: k8s.io/gce-k8s-windows-testing
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  interval: 2h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --cluster=
+      - --build=bazel
+      - --stage=gs://kubernetes-release-dev/ci/ci-kubernetes-e2e-windows-gce-poc
+      - --extract=local
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel=8
+      - --provider=gce
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\] --minStartupPods=8
+      - --timeout=720m
+      env:
+      - name: USE_RELEASE_NODE_BINARIES
+        value: "true"
+      - name: KUBE_GCE_ENABLE_IP_ALIASES
+        value: "true"
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      resources:
+        requests:
+          memory: "8Gi"

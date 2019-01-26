@@ -44,7 +44,7 @@ func NewDefaultFieldsFormatter(
 	return res
 }
 
-// Format implements logrus.Formatter's Format. We allocate a a new Fields
+// Format implements logrus.Formatter's Format. We allocate a new Fields
 // map in order to not modify the caller's Entry, as that is not a thread
 // safe operation.
 func (d *DefaultFieldsFormatter) Format(entry *logrus.Entry) ([]byte, error) {

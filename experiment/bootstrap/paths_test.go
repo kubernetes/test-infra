@@ -222,7 +222,7 @@ func TestGubernatorBuildURL(t *testing.T) {
 		{
 			Name:     "with gs://",
 			Paths:    CIPaths("gs://foo", "bar", "baz"),
-			Expected: "https://k8s-gubernator.appspot.com/build/foo/bar/baz",
+			Expected: "https://gubernator.k8s.io/build/foo/bar/baz",
 		},
 		{
 			Name:     "without gs://",

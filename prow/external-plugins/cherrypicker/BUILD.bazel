@@ -1,4 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+load("//prow:def.bzl", "prow_image")
 
 go_library(
     name = "go_default_library",
@@ -9,15 +10,22 @@ go_library(
     importpath = "k8s.io/test-infra/prow/external-plugins/cherrypicker",
     visibility = ["//visibility:private"],
     deps = [
+        "//pkg/flagutil:go_default_library",
+        "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/git:go_default_library",
         "//prow/github:go_default_library",
-        "//prow/hook:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/pluginhelp/externalplugins:go_default_library",
         "//prow/plugins:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
+)
+
+prow_image(
+    name = "image",
+    base = "@git-base//image",
+    visibility = ["//visibility:public"],
 )
 
 go_binary(

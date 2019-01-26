@@ -21,7 +21,7 @@ config="$( mktemp )"
 trap "rm ${config}" EXIT
 
 cp ./config.yaml "${config}"
-./update_config.py ./../prow/config.yaml "${config}"
+./update_config.py ./../prow/config.yaml ./../config/jobs "${config}"
 
 if ! output="$( diff ./config.yaml "${config}" )"; then
     echo "Gubernator configuration file is out of sync!"

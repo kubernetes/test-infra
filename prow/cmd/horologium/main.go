@@ -89,7 +89,6 @@ func sync(kc kubeClient, cfg *config.Config, cr cronClient, now time.Time) error
 	}
 	latestJobs := pjutil.GetLatestProwJobs(jobs, kube.PeriodicJob)
 
-	// TODO(krzyzacy): retire the interval check, migrate everything to use cron
 	if err := cr.SyncConfig(cfg); err != nil {
 		logrus.WithError(err).Error("Error syncing cron jobs.")
 	}

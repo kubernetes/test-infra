@@ -1,0 +1,78 @@
+postsubmits:
+  kubernetes-sigs/sig-storage-local-static-provisioner:
+  # A postsubmit job to build canary image on master.
+  - name: post-sig-storage-local-static-provisioner-build-canary
+    branches:
+    - master
+    decorate: true
+    path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - release
+        env:
+        - name: VERSION
+          value: canary
+        - name: ALLOW_UNSTABLE
+          value: "true"
+        - name: CONFIRM
+          value: "yes"
+        - name: DOCKER_CONFIG
+          value: /etc/pusher-docker-config
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: pusher-docker-config
+          mountPath: /etc/pusher-docker-config
+      volumes:
+      - name: pusher-docker-config
+        secret:
+          secretName: sig-storage-local-static-provisioner-pusher
+  # A postsubmit job to build release image on release tags.
+  - name: post-sig-storage-local-static-provisioner-build-release
+    branches:
+    - ^v\d+\.\d+\.\d+$
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - e2e
+        - release
+        env:
+        - name: PROVIDER
+          value: gce
+        - name: EXTRACT_STRATEGY
+          value: ci/latest
+        - name: CONFIRM
+          value: "yes"
+        - name: DOCKER_CONFIG
+          value: /etc/pusher-docker-config
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: pusher-docker-config
+          mountPath: /etc/pusher-docker-config
+      volumes:
+      - name: pusher-docker-config
+        secret:
+          secretName: sig-storage-local-static-provisioner-pusher

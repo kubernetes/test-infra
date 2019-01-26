@@ -27,6 +27,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/plugins/lgtm",
     deps = [
         "//prow/github:go_default_library",
+        "//prow/labels:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/repoowners:go_default_library",
