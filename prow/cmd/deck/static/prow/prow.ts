@@ -514,19 +514,15 @@ function redraw(fz: FuzzySearch): void {
             r.appendChild(cell.text(""));
         }
         if (spyglass) {
-            if (build.state == 'pending') {
-                let url = window.location.origin + '/view/prowjob/' + build.job + '/' +
-                    build.build_id;
+            const buildIndex = build.url.indexOf('/build/');
+            if (buildIndex !== -1) {
+                let url = window.location.origin + '/view/gcs/' +
+                    build.url.substring(buildIndex + '/build/'.length);
                 r.appendChild(createSpyglassCell(url));
+            } else if (build.url.includes('/view/')) {
+                r.appendChild(createSpyglassCell(build.url))
             } else {
-                const buildIndex = build.url.indexOf('/build/');
-                if (buildIndex === -1) {
-                    r.appendChild(cell.text(''));
-                } else {
-                    let url = window.location.origin + '/view/gcs/' +
-                        build.url.substring(buildIndex + '/build/'.length);
-                    r.appendChild(createSpyglassCell(url));
-                }
+                r.appendChild(cell.text(''));
             }
         } else {
             r.appendChild(cell.text(''));
