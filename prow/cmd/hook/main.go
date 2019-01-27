@@ -126,7 +126,7 @@ func main() {
 	}
 	defer gitClient.Clean()
 
-	kubeClient, err := o.kubernetes.Client(configAgent.Config().ProwJobNamespace, o.dryRun)
+	kubeClient, defaultContext, kubernetesClients, err := o.kubernetes.Client(configAgent.Config().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
 	}
@@ -142,10 +142,11 @@ func main() {
 	}
 
 	clientAgent := &plugins.ClientAgent{
-		GitHubClient: githubClient,
-		KubeClient:   kubeClient,
-		GitClient:    gitClient,
-		SlackClient:  slackClient,
+		GitHubClient:     githubClient,
+		KubeClient:       kubeClient,
+		KubernetesClient: kubernetesClients[defaultContext],
+		GitClient:        gitClient,
+		SlackClient:      slackClient,
 	}
 
 	pluginAgent := &plugins.ConfigAgent{}
