@@ -26,8 +26,12 @@ import (
 
 const botName = "k8s-ci-robot"
 
-// Bot is the exported botName
-const Bot = botName
+const (
+	// Bot is the exported botName
+	Bot = botName
+	// TestRef is the ref returned when calling GetRef
+	TestRef = "abcde"
+)
 
 // FakeClient is like client, but fake.
 type FakeClient struct {
@@ -192,7 +196,7 @@ func (f *FakeClient) GetPullRequestChanges(org, repo string, number int) ([]gith
 
 // GetRef returns the hash of a ref.
 func (f *FakeClient) GetRef(owner, repo, ref string) (string, error) {
-	return "abcde", nil
+	return TestRef, nil
 }
 
 // DeleteRef returns an error indicating if deletion of the given ref was successful
