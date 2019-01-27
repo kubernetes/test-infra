@@ -28,6 +28,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
@@ -116,30 +117,24 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
-	kubeClient, _, _, err := o.kubernetes.Client(cfg().ProwJobNamespace, o.dryRun)
+	kubeClient, defaultContext, kubernetesClients, err := o.kubernetes.Client(cfg().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
 
-	var pkcs map[string]*kube.Client
-	if o.dryRun {
-		pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: kubeClient}
-	} else {
-		if o.buildCluster == "" {
-			pkc, err := kube.NewClientInCluster(cfg().PodNamespace)
-			if err != nil {
-				logrus.WithError(err).Fatal("Error getting kube client.")
-			}
-			pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: pkc}
-		} else {
-			pkcs, err = kube.ClientMapFromFile(o.buildCluster, cfg().PodNamespace)
-			if err != nil {
-				logrus.WithError(err).Fatal("Error getting kube client to build cluster.")
-			}
+	buildClients := map[string]corev1.PodInterface{}
+	for context, client := range kubernetesClients {
+		// we want to map cluster clients by their alias, not their context
+		// the only context that is not the alias is the default context, so
+		// we can simply overwrite that one and be content that our cluster
+		// mapping is correct for the controller
+		if context == defaultContext {
+			context = kube.DefaultClusterAlias
 		}
+		buildClients[context] = client.CoreV1().Pods(cfg().PodNamespace)
 	}
 
-	c, err := plank.NewController(kubeClient, pkcs, githubClient, nil, cfg, o.totURL, o.selector, o.skipReport)
+	c, err := plank.NewController(kubeClient, buildClients, githubClient, nil, cfg, o.totURL, o.selector, o.skipReport)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating plank controller.")
 	}
