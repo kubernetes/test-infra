@@ -80,7 +80,7 @@ larger set of contributors to apply/remove them.
 | <a id="sig/cli" href="#sig/cli">`sig/cli`</a> | Categorizes an issue or PR as relevant to sig-cli.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/cloud-provider" href="#sig/cloud-provider">`sig/cloud-provider`</a> | Categorizes an issue or PR as relevant to sig-cloud-provider.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/cluster-lifecycle" href="#sig/cluster-lifecycle">`sig/cluster-lifecycle`</a> | Categorizes an issue or PR as relevant to sig-cluster-lifecycle.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
-| <a id="sig/cluster-ops" href="#sig/cluster-ops">`sig/cluster-ops`</a> | Categorizes an issue or PR as relevant to sig-cluster-ops.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="sig/cluster-ops" href="#sig/cluster-ops">`sig/cluster-ops`</a> | REMOVING. This will be deleted after 2019-01-26 13:00:00 +0000 UTC <br><br> Categorizes an issue or PR as relevant to sig-cluster-ops.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/contributor-experience" href="#sig/contributor-experience">`sig/contributor-experience`</a> | Categorizes an issue or PR as relevant to sig-contributor-experience.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/docs" href="#sig/docs">`sig/docs`</a> | Categorizes an issue or PR as relevant to sig-docs.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/gcp" href="#sig/gcp">`sig/gcp`</a> | Categorizes an issue or PR as relevant to sig-gcp.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
