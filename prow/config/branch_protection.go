@@ -308,7 +308,7 @@ func BranchRequirements(org, repo, branch string, presubmits map[string][]Presub
 		}
 
 		if j.ContextRequired() {
-			if j.NeedsExplicitTrigger() {
+			if j.TriggersConditionally() {
 				// jobs that trigger conditionally cannot be
 				// required as their status may not exist on PRs
 				requiredIfPresent = append(requiredIfPresent, j.Context)

@@ -291,7 +291,7 @@ func TestApply(test *testing.T) {
 	}
 }
 
-func TestJobRequirements(t *testing.T) {
+func TestBranchRequirements(t *testing.T) {
 	cases := []struct {
 		name                            string
 		config                          []Presubmit
@@ -335,12 +335,12 @@ func TestJobRequirements(t *testing.T) {
 					Optional:   true,
 				},
 			},
-			masterExpected:  []string{"always-run", "run-if-changed"},
-			masterIfPresent: []string{"not-always"},
+			masterExpected:  []string{"always-run"},
+			masterIfPresent: []string{"run-if-changed", "not-always"},
 			masterOptional:  []string{"optional"},
-			otherExpected:   []string{"always-run", "run-if-changed"},
+			otherExpected:   []string{"always-run"},
+			otherIfPresent:  []string{"run-if-changed", "not-always"},
 			otherOptional:   []string{"skip-report", "optional"},
-			otherIfPresent:  []string{"not-always"},
 		},
 	}
 

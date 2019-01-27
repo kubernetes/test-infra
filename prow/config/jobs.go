@@ -325,6 +325,11 @@ func (ps Presubmit) ShouldRun(baseRef string, changes ChangedFilesProvider, defa
 	return defaults, nil
 }
 
+// TriggersConditionally determines if the presubmit triggers conditionally (if it may or may not trigger).
+func (ps Presubmit) TriggersConditionally() bool {
+	return ps.NeedsExplicitTrigger() || ps.RegexpChangeMatcher.CouldRun()
+}
+
 // NeedsExplicitTrigger determines if the presubmit requires a human action to trigger it or not.
 func (ps Presubmit) NeedsExplicitTrigger() bool {
 	return !ps.AlwaysRun && !ps.RegexpChangeMatcher.CouldRun()

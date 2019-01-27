@@ -115,15 +115,15 @@ type GitHubClient interface {
 // FilterPresubmits determines which presubmits should run. We only want to
 // trigger jobs that should run, but the pool of jobs we filter to those that
 // should run depends on the type of trigger we just got:
-//  - if we got a /test all or an /ok-to-test, we want to consider any job
-//    that doesn't explicitly require a human trigger comment; jobs will
-//    default to not run unless we can determine that they should
+//  - if we get a /test foo, we only want to consider those jobs that match;
+//    jobs will default to run unless we can determine they shouldn't
 //  - if we got a /retest, we only want to consider those jobs that have
 //    already run and posted failing contexts to the PR or those jobs that
 //    have not yet run but would otherwise match /test all; jobs will default
 //    to run unless we can determine they shouldn't
-//  - if we get a /test foo, we only want to consider those jobs that match;
-//    jobs will default to run unless we can determine they shouldn't
+//  - if we got a /test all or an /ok-to-test, we want to consider any job
+//    that doesn't explicitly require a human trigger comment; jobs will
+//    default to not run unless we can determine that they should
 // If a comment that we get matches more than one of the above patterns, we
 // consider the set of matching presubmits the union of the results from the
 // matching cases.
@@ -134,17 +134,19 @@ func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string
 		return nil, err
 	}
 
+	changes := config.NewGitHubDeferredChangedFilesProvider(gitHubClient, org, repo, number)
 	var filteredPresubmits []config.Presubmit
 	for _, presubmit := range presubmits {
 		matches, defaults := filter(presubmit)
-		if matches {
-			shouldRun, err := presubmit.ShouldRun(branch, config.NewGitHubDeferredChangedFilesProvider(gitHubClient, org, repo, number), defaults)
-			if err != nil {
-				return nil, err
-			}
-			if shouldRun {
-				filteredPresubmits = append(filteredPresubmits, presubmit)
-			}
+		if !matches {
+			continue
+		}
+		shouldRun, err := presubmit.ShouldRun(branch, changes, defaults)
+		if err != nil {
+			return nil, err
+		}
+		if shouldRun {
+			filteredPresubmits = append(filteredPresubmits, presubmit)
 		}
 	}
 	return filteredPresubmits, nil
@@ -162,6 +164,7 @@ func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, r
 	// match before others. We order filters by amount of specificity.
 	var filters []func(config.Presubmit) (bool, bool)
 	filters = append(filters, func(p config.Presubmit) (bool, bool) {
+		// filter for `/test foo`
 		return p.TriggerMatches(body), true
 	})
 	if retestRe.MatchString(body) {
@@ -178,11 +181,13 @@ func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, r
 			}
 		}
 		filters = append(filters, func(p config.Presubmit) (bool, bool) {
+			// filter for `/retest`
 			return failedContexts.Has(p.Context) || (!p.NeedsExplicitTrigger() && !allContexts.Has(p.Context)), true
 		})
 	}
 	if (honorOkToTest && okToTestRe.MatchString(body)) || testAllRe.MatchString(body) {
 		filters = append(filters, func(p config.Presubmit) (bool, bool) {
+			// filter for `/test all`
 			return !p.NeedsExplicitTrigger(), false
 		})
 	}

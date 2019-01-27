@@ -504,7 +504,7 @@ func poolPRMap(subpoolMap map[string]*subpool) map[string]PullRequest {
 type simpleState string
 
 const (
-	noneState    simpleState = "none"
+	failureState simpleState = "failure"
 	pendingState simpleState = "pending"
 	successState simpleState = "success"
 )
@@ -515,7 +515,7 @@ func toSimpleState(s kube.ProwJobState) simpleState {
 	} else if s == kube.SuccessState {
 		return successState
 	}
-	return noneState
+	return failureState
 }
 
 // isPassingTests returns whether or not all contexts set on the PR except for
@@ -633,7 +633,7 @@ func accumulateBatch(presubmits map[int][]config.Presubmit, prs []PullRequest, p
 		context := pj.Spec.Context
 		jobState := toSimpleState(pj.Status.State)
 		// Store the best result for this ref+context.
-		if s, ok := states[ref].jobStates[context]; !ok || s == noneState || jobState == successState {
+		if s, ok := states[ref].jobStates[context]; !ok || s == failureState || jobState == successState {
 			states[ref].jobStates[context] = jobState
 		}
 	}
@@ -650,8 +650,8 @@ func accumulateBatch(presubmits map[int][]config.Presubmit, prs []PullRequest, p
 		}
 		overallState := successState
 		for _, p := range requiredPresubmits.List() {
-			if s, ok := state.jobStates[p]; !ok || s == noneState {
-				overallState = noneState
+			if s, ok := state.jobStates[p]; !ok || s == failureState {
+				overallState = failureState
 				log.WithField("batch", ref).Debugf("batch invalid, required presubmit %s is not passing", p)
 				break
 			} else if s == pendingState && overallState == successState {
@@ -690,7 +690,7 @@ func accumulate(presubmits map[int][]config.Presubmit, prs []PullRequest, pjs []
 			name := pj.Spec.Context
 			oldState := psStates[name]
 			newState := toSimpleState(pj.Status.State)
-			if oldState == noneState || oldState == "" {
+			if oldState == failureState || oldState == "" {
 				psStates[name] = newState
 			} else if oldState == pendingState && newState == successState {
 				psStates[name] = successState
@@ -700,11 +700,11 @@ func accumulate(presubmits map[int][]config.Presubmit, prs []PullRequest, pjs []
 		overallState := successState
 		for _, ps := range presubmits[int(pr.Number)] {
 			if s, ok := psStates[ps.Context]; !ok {
-				overallState = noneState
+				overallState = failureState
 				log.WithFields(pr.logFields()).Debugf("missing presubmit %s", ps.Context)
 				break
-			} else if s == noneState {
-				overallState = noneState
+			} else if s == failureState {
+				overallState = failureState
 				log.WithFields(pr.logFields()).Debugf("presubmit %s not passing", ps.Context)
 				break
 			} else if s == pendingState {

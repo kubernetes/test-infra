@@ -218,6 +218,8 @@ func TrustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org,
 
 // buildAll acts as if a `/test all` comment has been placed on the PR
 func buildAll(c Client, pr *github.PullRequest, eventGUID string) error {
+	// we pass a literal `/test all` here as it's the most direct way to achieve
+	// that functionality from the logic that parses out comment triggers
 	toTest, err := FilterPresubmits(false, c.GitHubClient, `/test all`, pr, c.Config.Presubmits[pr.Base.Repo.FullName])
 	if err != nil {
 		return err
