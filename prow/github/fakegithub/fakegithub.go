@@ -186,7 +186,11 @@ func (f *FakeClient) DeleteStaleComments(org, repo string, number int, comments 
 
 // GetPullRequest returns details about the PR.
 func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*github.PullRequest, error) {
-	return f.PullRequests[number], nil
+	val, exists := f.PullRequests[number]
+	if !exists {
+		return nil, fmt.Errorf("Pull request number %d does not exit", number)
+	}
+	return val, nil
 }
 
 // GetPullRequestChanges returns the file modifications in a PR.
