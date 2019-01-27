@@ -3146,6 +3146,9 @@ test_groups:
 - name: ci-kubernetes-kind-conformance-latest-1-12
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance-latest-1-12
   num_columns_recent: 3
+- name: ci-kubernetes-kind-conformance-latest-1-13
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance-latest-1-13
+  num_columns_recent: 3
 - name: ci-kubernetes-kind-conformance-parallel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance-parallel
   num_columns_recent: 3
@@ -3290,6 +3293,16 @@ test_groups:
 - name: pull-rules-k8s-e2e
   gcs_prefix: kubernetes-jenkins/logs/pull-rules-k8s-e2e
 
+# Alibaba Cloud Provider Test Groups
+- name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.12
+  gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.12
+
+- name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.11
+  gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.11
+
+- name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.10
+  gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.10
+
 # kube-storage-version-migrator
 - name: pull-kube-storage-version-migrator-test
   gcs_prefix: kubernetes-jenkins/pr-logs/pull-kube-storage-version-migrator-test
@@ -3329,6 +3342,12 @@ test_groups:
   num_columns_recent: 30
 - name: pull-aws-ebs-csi-driver-integration
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-ebs-csi-driver-integration
+  num_columns_recent: 30
+- name: pull-aws-ebs-csi-driver-e2e-single-az
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-ebs-csi-driver-e2e-single-az
+  num_columns_recent: 30
+- name: pull-aws-ebs-csi-driver-e2e-multi-az
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-ebs-csi-driver-e2e-multi-az
   num_columns_recent: 30
 
 # OpenShift
@@ -3390,11 +3409,14 @@ dashboards:
   - name: kind, master (dev) [non-serial]
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
     test_group_name: ci-kubernetes-kind-conformance-parallel
+  - name: kind, v1.13 (dev)
+    description: Runs conformance tests using kubetest against latest kubernetes release-1.13 with a kubernetes-in-docker cluster
+    test_group_name: ci-kubernetes-kind-conformance-latest-1-13
   - name: kind, v1.12 (dev)
-    description: Runs conformance tests using kubetest against latest kubernetes relase-1.12 with a kubernetes-in-docker cluster
+    description: Runs conformance tests using kubetest against latest kubernetes release-1.12 with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance-latest-1-12
   - name: kind, v1.11 (dev)
-    description: Runs conformance tests using kubetest against latest kubernetes relase-1.12 with a kubernetes-in-docker cluster
+    description: Runs conformance tests using kubetest against latest kubernetes release-1.12 with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance-latest-1-11
   - name: local-up-cluster, master (dev)
     description: Runs conformance tests using kubetest with hack/local-up-cluster.sh
@@ -3543,13 +3565,18 @@ dashboards:
   - name: kind, master (dev) [non-serial]
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
     test_group_name: ci-kubernetes-kind-conformance-parallel
+  - name: kind, v1.13 (dev)
+    description: Runs conformance tests using kubetest against latest kubernetes release-1.13 with a kubernetes-in-docker cluster
+    test_group_name: ci-kubernetes-kind-conformance-latest-1-13
+    alert_options:
+      alert_mail_to_addresses: bentheelder@google.com
   - name: kind, v1.12 (dev)
-    description: Runs conformance tests using kubetest against latest kubernetes relase-1.12 with a kubernetes-in-docker cluster
+    description: Runs conformance tests using kubetest against latest kubernetes release-1.12 with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance-latest-1-12
     alert_options:
       alert_mail_to_addresses: bentheelder@google.com
   - name: kind, v1.11 (dev)
-    description: Runs conformance tests using kubetest against latest kubernetes relase-1.12 with a kubernetes-in-docker cluster
+    description: Runs conformance tests using kubetest against latest kubernetes release-1.12 with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance-latest-1-11
     alert_options:
       alert_mail_to_addresses: bentheelder@google.com
@@ -3680,6 +3707,19 @@ dashboards:
     test_group_name: pull-cluster-api-provider-vsphere-e2e
     alert_options:
       alert_mail_to_addresses: cnx+clusterapi@vmware.com
+
+# Alibaba Cloud Provider Dashboard
+- name: conformance-alibaba-cloud-provider
+  dashboard_tab:
+  - name: Alibaba Cloud Provider, v1.12
+    description: Runs conformance tests for cloud provier alibaba cloud on release v1.12
+    test_group_name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.12
+  - name: Alibaba Cloud Provider, v1.11
+    description: Runs conformance tests for cloud provier alibaba cloud on release v1.11
+    test_group_name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.11
+  - name: Alibaba Cloud Provider, v1.10
+    description: Runs conformance tests for cloud provier alibaba cloud on release v1.10
+    test_group_name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.10
 
 - name: canonical-ubuntu1-k8sbeta
   dashboard_tab:
@@ -4444,6 +4484,33 @@ dashboards:
   - name: gke-sd-logging-ubuntu-1.12
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
 
+- name: google-gke-upgrade
+  dashboard_tab:
+  - name: gke-gci-stable-gci-master-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
+    description: Upgrade master only, in gke, from gci 1.10 to gci master
+  - name: gke-gci-new-gci-master-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
+    description: Upgrade master only, in gke(gci), from 1.10 to master
+  - name: gke-gci-new-gci-master-upgrade-cluster-parallel
+    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-parallel
+    description: Upgrade master and node, in gke(gci), from 1.10 to master, run parallel tests only
+  - name: gke-gci-new-gci-master-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
+    description: Upgrade master and node, in gke(gci), from 1.10 to master
+  - name: gke-gci-master-gci-new-downgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
+    description: Downgrade master and node, in gke(gci), from master to 1.10
+  - name: gke-gci-master-gci-new-downgrade-cluster-parallel
+    test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
+    description: Downgrade master and node, in gke(gci), from master to 1.10, run parallel tests only
+  - name: gke-gci-new-gci-master-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
+    description: Upgrade master and node, in gke(gci), from 1.10 to master, and run skewed e2e tests; skipping slow tests as we run serially
+  - name: gke-gci-new-gci-master-upgrade-cluster-new-parallel
+    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new-parallel
+    description: Upgrade master and node, in gke(gci), from 1.10 to master, and run skewed e2e tests; skipping serial and disruptive tests as we run in parallel
+
 - name: google-soak
   dashboard_tab:
   - name: gce-gci
@@ -4514,60 +4581,6 @@ dashboards:
   dashboard_tab:
   - name: windows-prototype
     test_group_name: ci-kubernetes-e2e-windows-gce-poc
-
-- name: sig-release-master-kubectl-skew
-  dashboard_tab:
-  - name: skew-cluster1.10-kubectlmaster-gce
-    test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
-    description: 1.10 e2e tests run against a 1.10 gce cluster using a master kubectl binary
-  - name: skew-cluster1.10-kubectlmaster-gke
-    test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
-    description: 1.10 e2e tests run against a 1.10 gke cluster using a master kubectl binary
-  - name: skew-clustermaster-kubectl1.10-gce
-    test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
-    description: 1.10 e2e tests run against a master gce cluster using a 1.10 kubectl binary
-  - name: skew-cluster1.10-kubectl1.10-gke
-    test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
-    description: 1.10 e2e tests run against a master gke cluster using a 1.10 kubectl binary
-  - name: skew-cluster1.10-kubectlmaster-gce-serial
-    test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
-    description: 1.10 serial tests run against a 1.10 gke cluster using a master kubectl binary
-  - name: skew-cluster1.10-kubectlmaster-gke-serial
-    test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
-    description: 1.10 serial tests run against a 1.10 gce cluster using a master kubectl binary
-  - name: skew-clustermaster-kubectl1.10-gce-serial
-    test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
-    description: 1.10 serial tests run against a master gce cluster using a 1.10 kubectl binary
-  - name: skew-clustermaster-kubectl1.10-gke-serial
-    test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
-    description: 1.10 serial tests run against a master gke cluster using a 1.10 kubectl binary
-
-- name: sig-release-master-upgrade-optional
-  dashboard_tab:
-  - name: gke-gci-stable-gci-master-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
-    description: Upgrade master only, in gke, from gci 1.10 to gci master
-  - name: gke-gci-new-gci-master-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
-    description: Upgrade master only, in gke(gci), from 1.10 to master
-  - name: gke-gci-new-gci-master-upgrade-cluster-parallel
-    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-parallel
-    description: Upgrade master and node, in gke(gci), from 1.10 to master, run parallel tests only
-  - name: gke-gci-new-gci-master-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
-    description: Upgrade master and node, in gke(gci), from 1.10 to master
-  - name: gke-gci-master-gci-new-downgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
-    description: Downgrade master and node, in gke(gci), from master to 1.10
-  - name: gke-gci-master-gci-new-downgrade-cluster-parallel
-    test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
-    description: Downgrade master and node, in gke(gci), from master to 1.10, run parallel tests only
-  - name: gke-gci-new-gci-master-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
-    description: Upgrade master and node, in gke(gci), from 1.10 to master, and run skewed e2e tests; skipping slow tests as we run serially
-  - name: gke-gci-new-gci-master-upgrade-cluster-new-parallel
-    test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new-parallel
-    description: Upgrade master and node, in gke(gci), from 1.10 to master, and run skewed e2e tests; skipping serial and disruptive tests as we run in parallel
 
 - name: sig-release-master-upgrade
   dashboard_tab:
@@ -4661,6 +4674,34 @@ dashboards:
   - name: gce-master-scale-performance
     description: 5000-node performance test, runs once a day on weekdays
     test_group_name: ci-kubernetes-e2e-gce-scale-performance
+  # TODO(spiffxp): these are all formerly from sig-release-master-kubectl-skew
+  #                and may not even merit being on a sig-release dashboard, but
+  #                for the purposes of reducing the number of dashboards, I'm
+  #                putting them here
+  - name: skew-cluster1.10-kubectlmaster-gce
+    test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
+    description: 1.10 e2e tests run against a 1.10 gce cluster using a master kubectl binary
+  - name: skew-cluster1.10-kubectlmaster-gke
+    test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
+    description: 1.10 e2e tests run against a 1.10 gke cluster using a master kubectl binary
+  - name: skew-clustermaster-kubectl1.10-gce
+    test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
+    description: 1.10 e2e tests run against a master gce cluster using a 1.10 kubectl binary
+  - name: skew-cluster1.10-kubectl1.10-gke
+    test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
+    description: 1.10 e2e tests run against a master gke cluster using a 1.10 kubectl binary
+  - name: skew-cluster1.10-kubectlmaster-gce-serial
+    test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
+    description: 1.10 serial tests run against a 1.10 gke cluster using a master kubectl binary
+  - name: skew-cluster1.10-kubectlmaster-gke-serial
+    test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
+    description: 1.10 serial tests run against a 1.10 gce cluster using a master kubectl binary
+  - name: skew-clustermaster-kubectl1.10-gce-serial
+    test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
+    description: 1.10 serial tests run against a master gce cluster using a 1.10 kubectl binary
+  - name: skew-clustermaster-kubectl1.10-gke-serial
+    test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
+    description: 1.10 serial tests run against a master gke cluster using a 1.10 kubectl binary
 
 - name: sig-release-1.13-all
   dashboard_tab:
@@ -5676,6 +5717,13 @@ dashboards:
   - name: integration-test
     test_group_name: pull-aws-ebs-csi-driver-integration
     description: aws ebs csi driver integration test
+  - name: e2e-test-single-az
+    test_group_name: pull-aws-ebs-csi-driver-e2e-single-az
+    description: aws ebs csi driver e2e test on single az
+  - name: e2e-test-multi-az
+    test_group_name: pull-aws-ebs-csi-driver-e2e-multi-az
+    description: aws ebs csi driver e2e test on mutiple AZs
+
 
 - name: sig-aws-eks-presubmits
   dashboard_tab:
@@ -7568,14 +7616,15 @@ dashboard_groups:
   dashboard_names:
   - google-aws
   - google-gce
-  - google-gci
   - google-gce-compute-image-tools
+  - google-gci
   - google-gke
+  - google-gke-stackdriver
+  - google-gke-upgrade
+  - google-kops-gce
+  - google-rules_k8s
   - google-soak
   - google-unit
-  - google-gke-stackdriver
-  - google-rules_k8s
-  - google-kops-gce
   - google-windows
 
 - name: istio
@@ -7609,6 +7658,7 @@ dashboard_groups:
   - sig-aws-cloud-provider-aws
   - sig-aws-ebs-csi-driver
   - sig-aws-eks-periodics
+  - sig-aws-eks-presubmits
 
 - name: sig-cli
   dashboard_names:
@@ -7654,9 +7704,8 @@ dashboard_groups:
 - name: sig-release
   dashboard_names:
   - sig-release-master-blocking
-  - sig-release-master-kubectl-skew
+  - sig-release-master-informing
   - sig-release-master-upgrade
-  - sig-release-master-upgrade-optional
   - sig-release-1.13-all
   - sig-release-1.13-blocking
   - sig-release-1.12-all
@@ -7710,6 +7759,7 @@ dashboard_groups:
   - conformance-gce
   - conformance-kind
   - conformance-cloud-provider-openstack
+  - conformance-alibaba-cloud-provider
   - conformance-cloud-provider-vsphere
   - conformance-vsphere
   - conformance-gardener

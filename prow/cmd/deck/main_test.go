@@ -281,7 +281,7 @@ func TestTide(t *testing.T) {
 	if ta.pools[0].Org != "o" {
 		t.Errorf("Wrong org in pool. Got %s, expected o in %v", ta.pools[0].Org, ta.pools)
 	}
-	handler := handleTidePools(ca, &ta)
+	handler := handleTidePools(ca.Config, &ta)
 	req, err := http.NewRequest(http.MethodGet, "/tide.js", nil)
 	if err != nil {
 		t.Fatalf("Error making request: %v", err)

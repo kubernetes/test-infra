@@ -86,20 +86,22 @@ func main() {
 	if err := ca.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
+	cfg := ca.Config
 
 	kc, err := kube.NewClientInCluster(ca.Config().ProwJobNamespace)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
 
-	c, err := adapter.NewController(o.lastSyncFallback, o.cookiefilePath, o.projects, kc, ca)
+	c, err := adapter.NewController(o.lastSyncFallback, o.cookiefilePath, o.projects, kc, cfg)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating gerrit client.")
 	}
 
 	logrus.Infof("Starting gerrit fetcher")
 
-	tick := time.Tick(ca.Config().Gerrit.TickInterval)
+	// TODO(fejta): refactor as timer, which we reset to the current TickInterval value each time
+	tick := time.Tick(cfg().Gerrit.TickInterval)
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 

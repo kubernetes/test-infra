@@ -538,7 +538,7 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 		return fmt.Errorf("wrap container: %v", err)
 	}
 
-	sidecar, err := Sidecar(pj.Spec.DecorationConfig.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, encodedJobSpec, *wrapperOptions)
+	sidecar, err := Sidecar(pj.Spec.DecorationConfig.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, encodedJobSpec, !RequirePassingEntries, *wrapperOptions)
 	if err != nil {
 		return fmt.Errorf("create sidecar: %v", err)
 	}
@@ -555,11 +555,17 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 	return nil
 }
 
-func Sidecar(image string, gcsOptions gcsupload.Options, gcsMount, logMount kube.VolumeMount, encodedJobSpec string, wrappers ...wrapper.Options) (*kube.Container, error) {
+const (
+	// RequirePassingEntries causes sidecar to return an error if any entry fails. Otherwise it exits cleanly so long as it can complete.
+	RequirePassingEntries = true
+)
+
+func Sidecar(image string, gcsOptions gcsupload.Options, gcsMount, logMount kube.VolumeMount, encodedJobSpec string, requirePassingEntries bool, wrappers ...wrapper.Options) (*kube.Container, error) {
 	gcsOptions.Items = append(gcsOptions.Items, artifactsDir(logMount))
 	sidecarConfigEnv, err := sidecar.Encode(sidecar.Options{
 		GcsOptions: &gcsOptions,
 		Entries:    wrappers,
+		EntryError: requirePassingEntries,
 	})
 	if err != nil {
 		return nil, err

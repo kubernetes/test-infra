@@ -1127,7 +1127,7 @@ func TestInjectedSteps(t *testing.T) {
 					t.Fatalf("failed to create init upload: %v", err)
 				}
 				before := []corev1.Container{decorate.PlaceEntrypoint(dc.UtilityImages.Entrypoint, tm), *iu}
-				after, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, ejs, entries...)
+				after, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, ejs, decorate.RequirePassingEntries, entries...)
 				if err != nil {
 					t.Fatalf("failed to create sidecar: %v", err)
 				}
@@ -1142,7 +1142,7 @@ func TestInjectedSteps(t *testing.T) {
 					t.Fatalf("failed to create init upload: %v", err)
 				}
 				before := []corev1.Container{decorate.PlaceEntrypoint(dc.UtilityImages.Entrypoint, tm), *iu}
-				after, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, ejs, entries...)
+				after, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, ejs, decorate.RequirePassingEntries, entries...)
 				if err != nil {
 					t.Fatalf("failed to create sidecar: %v", err)
 				}
@@ -1171,7 +1171,7 @@ func TestInjectedSteps(t *testing.T) {
 					t.Fatalf("failed to create init upload: %v", err)
 				}
 				before := []corev1.Container{decorate.PlaceEntrypoint(dc.UtilityImages.Entrypoint, tm), *iu}
-				after, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, ejs, entries...)
+				after, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, ejs, decorate.RequirePassingEntries, entries...)
 				if err != nil {
 					t.Fatalf("failed to create sidecar: %v", err)
 				}

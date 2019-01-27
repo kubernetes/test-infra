@@ -19,6 +19,7 @@ package junit
 
 import (
 	"bytes"
+	"sort"
 
 	junit "github.com/joshdk/go-junit"
 	"github.com/sirupsen/logrus"
@@ -87,6 +88,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 	type testResults struct {
 		junit []junit.Test
 		link  string
+		path  string
 		err   error
 	}
 	resultChan := make(chan testResults)
@@ -94,6 +96,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		go func(artifact lenses.Artifact) {
 			result := testResults{
 				link: artifact.CanonicalLink(),
+				path: artifact.JobPath(),
 			}
 			var contents []byte
 			contents, result.err = artifact.ReadAll()
@@ -117,14 +120,19 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 			resultChan <- result
 		}(artifact)
 	}
+	results := make([]testResults, 0, len(artifacts))
+	for range artifacts {
+		results = append(results, <-resultChan)
+	}
+	sort.Slice(results, func(i, j int) bool { return results[i].path < results[j].path })
+
 	jvd := struct {
 		NumTests int
 		Passed   []TestResult
 		Failed   []TestResult
 		Skipped  []TestResult
 	}{}
-	for range artifacts {
-		result := <-resultChan
+	for _, result := range results {
 		if result.err != nil {
 			continue
 		}

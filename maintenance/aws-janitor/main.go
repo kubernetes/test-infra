@@ -18,16 +18,14 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/golang/glog"
+	"k8s.io/test-infra/maintenance/aws-janitor/account"
 	"k8s.io/test-infra/maintenance/aws-janitor/resources"
 	s3path "k8s.io/test-infra/maintenance/aws-janitor/s3"
 )
@@ -36,54 +34,6 @@ const defaultRegion = "us-east-1"
 
 var maxTTL = flag.Duration("ttl", 24*time.Hour, "Maximum time before we attempt deletion of a resource. Set to 0s to nuke all non-default resources.")
 var path = flag.String("path", "", "S3 path to store mark data in (required)")
-
-// ARNs (used for uniquifying within our previous mark file)
-
-type arn struct {
-	partition    string
-	service      string
-	region       string
-	account      string
-	resourceType string
-	resource     string
-}
-
-func parseARN(s string) (*arn, error) {
-	pieces := strings.Split(s, ":")
-	if len(pieces) != 6 || pieces[0] != "arn" || pieces[1] != "aws" {
-		return nil, fmt.Errorf("Invalid AWS ARN: %v", s)
-	}
-	var resourceType string
-	var resource string
-	res := strings.SplitN(pieces[5], "/", 2)
-	if len(res) == 1 {
-		resource = res[0]
-	} else {
-		resourceType = res[0]
-		resource = res[1]
-	}
-	return &arn{
-		partition:    pieces[1],
-		service:      pieces[2],
-		region:       pieces[3],
-		account:      pieces[4],
-		resourceType: resourceType,
-		resource:     resource,
-	}, nil
-}
-
-func getAccount(sess *session.Session, region string) (string, error) {
-	svc := iam.New(sess, &aws.Config{Region: aws.String(region)})
-	resp, err := svc.GetUser(nil)
-	if err != nil {
-		return "", err
-	}
-	arn, err := parseARN(*resp.User.Arn)
-	if err != nil {
-		return "", err
-	}
-	return arn.account, nil
-}
 
 func getRegions(sess *session.Session) ([]string, error) {
 	var regions []string
@@ -112,7 +62,7 @@ func main() {
 	if err != nil {
 		glog.Fatalf("--path %q isn't a valid S3 path: %v", *path, err)
 	}
-	acct, err := getAccount(sess, defaultRegion)
+	acct, err := account.GetAccount(sess, defaultRegion)
 	if err != nil {
 		glog.Fatalf("error getting current user: %v", err)
 	}

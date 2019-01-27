@@ -137,4 +137,4 @@ All commits in PRs from `github.com/kubeflow/community` repository are squashed 
 
 Before a PR is merged, Tide ensures that all jobs configured as required in the `presubmits` part of the `config.yaml` file are passing against the latest base branch commit, rerunning the jobs if necessary. **No job is required to be configured** in which case it's enough if a PR meets all GitHub search criteria.
 
-Semantic of individual fields of the `presubmits` is described in [prow/README.md#how-to-add-new-jobs](/prow/README.md#how-to-add-new-jobs).
+Semantic of individual fields of the `presubmits` is described in [prow/jobs.md](prow/jobs.md).

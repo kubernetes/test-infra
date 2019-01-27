@@ -40,7 +40,11 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "sidecar"}),
 	)
 
-	if err := o.Run(context.Background()); err != nil {
+	failures, err := o.Run(context.Background())
+	if err != nil {
 		logrus.WithError(err).Error("Failed to report job status")
+	}
+	if failures > 0 && o.EntryError {
+		logrus.Fatalf("%d containers failed", failures)
 	}
 }

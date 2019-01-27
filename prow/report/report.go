@@ -66,6 +66,22 @@ func prowjobStateToGithubStatus(pjState v1.ProwJobState) (string, error) {
 	return "", fmt.Errorf("Unknown prowjob state: %v", pjState)
 }
 
+const (
+	maxLen = 140 // https://developer.github.com/v3/repos/deployments/#parameters-2
+	elide  = " ... "
+)
+
+// truncate converts "really long messages" into "really ... messages".
+func truncate(in string) string {
+	const (
+		half = (maxLen - len(elide)) / 2
+	)
+	if len(in) <= maxLen {
+		return in
+	}
+	return in[:half] + elide + in[len(in)-half:]
+}
+
 // reportStatus should be called on status different from Success.
 // Once a parent ProwJob is pending, all children should be marked as Pending
 // Same goes for failed status.
@@ -78,8 +94,8 @@ func reportStatus(ghc GithubClient, pj v1.ProwJob, childDescription string) erro
 		}
 		if err := ghc.CreateStatus(refs.Org, refs.Repo, refs.Pulls[0].SHA, github.Status{
 			State:       contextState,
-			Description: pj.Status.Description,
-			Context:     pj.Spec.Context,
+			Description: truncate(pj.Status.Description),
+			Context:     pj.Spec.Context, // consider truncating this too
 			TargetURL:   pj.Status.URL,
 		}); err != nil {
 			return err

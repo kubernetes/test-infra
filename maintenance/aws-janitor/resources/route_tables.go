@@ -18,11 +18,13 @@ package resources
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 // RouteTables: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeRouteTables
@@ -68,6 +70,28 @@ func (RouteTables) MarkAndSweep(sess *session.Session, acct string, region strin
 		}
 	}
 	return nil
+}
+
+func (RouteTables) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	svc := ec2.New(sess, aws.NewConfig().WithRegion(region))
+	set := NewSet(0)
+	input := &ec2.DescribeRouteTablesInput{}
+
+	err := svc.DescribeRouteTablesPages(input, func(tables *ec2.DescribeRouteTablesOutput, _ bool) bool {
+		now := time.Now()
+		for _, table := range tables.RouteTables {
+			arn := routeTable{
+				Account: acct,
+				Region:  region,
+				ID:      *table.RouteTableId,
+			}.ARN()
+			set.firstSeen[arn] = now
+		}
+
+		return true
+	})
+
+	return set, errors.Wrapf(err, "couldn't describe route tables for %q in %q", acct, region)
 }
 
 type routeTable struct {

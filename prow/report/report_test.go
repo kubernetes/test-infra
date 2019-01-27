@@ -229,6 +229,9 @@ func (gh fakeGhClient) BotName() (string, error) {
 	return "BotName", nil
 }
 func (gh *fakeGhClient) CreateStatus(org, repo, ref string, s github.Status) error {
+	if d := s.Description; len(d) > maxLen {
+		return fmt.Errorf("%s is len %d, more than max of %d chars", d, len(d), maxLen)
+	}
 	gh.status = append(gh.status, s)
 	return nil
 
@@ -267,7 +270,18 @@ func createChildren(pj *kube.ProwJobSpec, d int) {
 	}
 }
 
+func shout(i int) string {
+	if i == 0 {
+		return "start"
+	}
+	return fmt.Sprintf("%s part%d", shout(i-1), i)
+}
+
 func TestReportStatus(t *testing.T) {
+	const (
+		defMsg   = "default-message"
+		childMsg = "Parent Status Changed"
+	)
 	tests := []struct {
 		name string
 
@@ -275,8 +289,10 @@ func TestReportStatus(t *testing.T) {
 		children int
 		state    kube.ProwJobState
 		report   bool
+		desc     string // override default msg
 
 		expectedStatuses []string
+		expectedDesc     string
 	}{
 		{
 			name: "Successful prowjob with report true and children should set status for itself but not its children",
@@ -311,8 +327,10 @@ func TestReportStatus(t *testing.T) {
 			children: 3,
 			state:    kube.PendingState,
 			report:   false,
+			desc:     "this should not report",
 
 			expectedStatuses: []string{"pending", "pending", "pending"},
+			expectedDesc:     childMsg,
 		},
 		{
 			name: "Aborted prowjob with report true should set failure status",
@@ -330,52 +348,160 @@ func TestReportStatus(t *testing.T) {
 
 			expectedStatuses: []string{"pending"},
 		},
+		{
+			name:             "really long description is truncated",
+			state:            kube.TriggeredState,
+			report:           true,
+			expectedStatuses: []string{"pending"},
+			desc:             shout(maxLen), // resulting string will exceed maxLen
+			expectedDesc:     truncate(shout(maxLen)),
+		},
 	}
 
-	createPJ := func(state kube.ProwJobState, report bool, children int) kube.ProwJob {
-		pj := kube.ProwJob{
-			Status: kube.ProwJobStatus{
-				State:       state,
-				Description: "message",
-				URL:         "http://mytest.com",
-			},
-			Spec: kube.ProwJobSpec{
-				Job:     "job-name",
-				Type:    kube.PresubmitJob,
-				Context: "parent",
-				Report:  report,
-				Refs: &kube.Refs{
-					Org:  "k8s",
-					Repo: "test-infra",
-					Pulls: []kube.Pull{{
-						Author: "me",
-						Number: 1,
-						SHA:    "abcdef",
-					}},
-				},
-			},
-		}
-		createChildren(&pj.Spec, children)
-		return pj
-	}
 	for _, tc := range tests {
-		t.Logf("Running scenario %q", tc.name)
-		// Setup
-		ghc := &fakeGhClient{}
-		pj := createPJ(tc.state, tc.report, tc.children)
-		// Run
-		if err := reportStatus(ghc, pj, "Parent Status Changed"); err != nil {
-			t.Error(err)
-		}
-		// Check
-		if len(ghc.status) != len(tc.expectedStatuses) {
-			t.Errorf("expected %d status(es), found %d", len(tc.expectedStatuses), len(ghc.status))
-			continue
-		}
-		for i, status := range ghc.status {
-			if status.State != tc.expectedStatuses[i] {
-				t.Errorf("unexpected status: %s, expected: %s", status.State, tc.expectedStatuses[i])
+		t.Run(tc.name, func(t *testing.T) {
+			// Setup
+			ghc := &fakeGhClient{}
+
+			if tc.desc == "" {
+				tc.desc = defMsg
 			}
-		}
+			if tc.expectedDesc == "" {
+				tc.expectedDesc = defMsg
+			}
+			pj := kube.ProwJob{
+				Status: kube.ProwJobStatus{
+					State:       tc.state,
+					Description: tc.desc,
+					URL:         "http://mytest.com",
+				},
+				Spec: kube.ProwJobSpec{
+					Job:     "job-name",
+					Type:    kube.PresubmitJob,
+					Context: "parent",
+					Report:  tc.report,
+					Refs: &kube.Refs{
+						Org:  "k8s",
+						Repo: "test-infra",
+						Pulls: []kube.Pull{{
+							Author: "me",
+							Number: 1,
+							SHA:    "abcdef",
+						}},
+					},
+				},
+			}
+			createChildren(&pj.Spec, tc.children)
+			// Run
+			if err := reportStatus(ghc, pj, childMsg); err != nil {
+				t.Error(err)
+			}
+			// Check
+			if len(ghc.status) != len(tc.expectedStatuses) {
+				t.Errorf("expected %d status(es), found %d", len(tc.expectedStatuses), len(ghc.status))
+				return
+			}
+			for i, status := range ghc.status {
+				if status.State != tc.expectedStatuses[i] {
+					t.Errorf("unexpected status: %s, expected: %s", status.State, tc.expectedStatuses[i])
+				}
+				if i == 0 && status.Description != tc.expectedDesc {
+					t.Errorf("description %d %s != expected %s", i, status.Description, tc.expectedDesc)
+				}
+			}
+		})
+	}
+}
+
+func TestTruncate(t *testing.T) {
+	if el := len(elide) * 2; maxLen < el {
+		t.Fatalf("maxLen must be at least %d (twice %s), got %d", el, elide, maxLen)
+	}
+	if s := shout(maxLen); len(s) <= maxLen {
+		t.Fatalf("%s should be at least %d, got %d", s, maxLen, len(s))
+	}
+	big := shout(maxLen)
+	outLen := maxLen
+	if (maxLen-len(elide))%2 == 1 {
+		outLen--
+	}
+	cases := []struct {
+		name   string
+		in     string
+		out    string
+		outLen int
+		front  string
+		back   string
+		middle string
+	}{
+		{
+			name: "do not change short strings",
+			in:   "foo",
+			out:  "foo",
+		},
+		{
+			name: "do not change at boundary",
+			in:   big[:maxLen],
+			out:  big[:maxLen],
+		},
+		{
+			name: "do not change boundary-1",
+			in:   big[:maxLen-1],
+			out:  big[:maxLen-1],
+		},
+		{
+			name:   "truncated messages have the right length",
+			in:     big,
+			outLen: outLen,
+		},
+		{
+			name:  "truncated message include beginning",
+			in:    big,
+			front: big[:maxLen/4], // include a lot of the start
+		},
+		{
+			name: "truncated messages include ending",
+			in:   big,
+			back: big[len(big)-maxLen/4:],
+		},
+		{
+			name:   "truncated messages include a ...",
+			in:     big,
+			middle: elide,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			out := truncate(tc.in)
+			exact := true
+			if tc.front != "" {
+				exact = false
+				if !strings.HasPrefix(out, tc.front) {
+					t.Errorf("%s does not start with %s", out, tc.front)
+				}
+			}
+			if tc.middle != "" {
+				exact = false
+				if !strings.Contains(out, tc.middle) {
+					t.Errorf("%s does not contain %s", out, tc.middle)
+				}
+			}
+			if tc.back != "" {
+				exact = false
+				if !strings.HasSuffix(out, tc.back) {
+					t.Errorf("%s does not end with %s", out, tc.back)
+				}
+			}
+			if tc.outLen > 0 {
+				exact = false
+				if len(out) != tc.outLen {
+					t.Errorf("%s len %d != expected %d", out, len(out), tc.outLen)
+				}
+			}
+			if exact && out != tc.out {
+				t.Errorf("%s != expected %s", out, tc.out)
+			}
+		})
 	}
 }

@@ -28,11 +28,11 @@ import sys
 
 VERSION_TAG = {
     '1.10': '1.10-v20180221-3655e24ae',
-    '1.11': '1.11-v20181218-db74ab3f4',
-    '1.12': '1.12-v20181218-db74ab3f4',
-    '1.13': '1.13-v20181218-db74ab3f4',
+    '1.11': '1.11-v20190125-cc5d6ecff3',
+    '1.12': '1.12-v20190125-cc5d6ecff3',
+    '1.13': '1.13-v20190125-cc5d6ecff3',
     # this is master, feature branches...
-    'default': '1.13-v20181218-db74ab3f4'
+    'default': '1.13-v20190125-cc5d6ecff3',
 }
 
 

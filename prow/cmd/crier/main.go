@@ -150,6 +150,7 @@ func main() {
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
+	cfg := configAgent.Config
 
 	if o.gerritWorkers > 0 {
 		informer := prowjobInformerFactory.Prow().V1().ProwJobs()
@@ -170,7 +171,7 @@ func main() {
 	}
 
 	if o.pubsubWorkers > 0 {
-		pubsubReporter := pubsubreporter.NewReporter(configAgent)
+		pubsubReporter := pubsubreporter.NewReporter(cfg)
 		controllers = append(
 			controllers,
 			crier.NewController(
@@ -195,7 +196,7 @@ func main() {
 			logrus.WithError(err).Fatal("Error getting GitHub client.")
 		}
 
-		githubReporter := githubreporter.NewReporter(githubClient, configAgent, o.reportAgent)
+		githubReporter := githubreporter.NewReporter(githubClient, cfg, o.reportAgent)
 		controllers = append(
 			controllers,
 			crier.NewController(

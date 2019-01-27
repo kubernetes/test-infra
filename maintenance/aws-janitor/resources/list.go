@@ -26,6 +26,9 @@ type Type interface {
 	// res.Mark(<resource>) on each resource and deleting
 	// appropriately.
 	MarkAndSweep(sess *session.Session, acct string, region string, res *Set) error
+
+	// ListAll queries all the resources this account has access to
+	ListAll(sess *session.Session, acct string, region string) (*Set, error)
 }
 
 // AWS resource types known to this script, in dependency order.

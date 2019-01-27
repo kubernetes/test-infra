@@ -23,8 +23,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/rest"
-
+	"k8s.io/client-go/kubernetes"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	pjclientset "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -33,20 +33,12 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 )
 
-type kubeClient interface {
-	ListPods(selector string) ([]kube.Pod, error)
-	DeletePod(name string) error
-}
-
-type configAgent interface {
-	Config() *config.Config
-}
-
 type options struct {
-	runOnce       bool
-	configPath    string
-	jobConfigPath string
-	buildCluster  string
+	runOnce                bool
+	configPath             string
+	jobConfigPath          string
+	buildCluster           string
+	buildClusterKubeconfig string
 }
 
 func gatherOptions() options {
@@ -55,6 +47,7 @@ func gatherOptions() options {
 	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	flag.StringVar(&o.buildCluster, "build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
+	flag.StringVar(&o.buildClusterKubeconfig, "kubeconfig", "", "Path to kubeconfig with build cluster credentials. If empty, defaults to in-cluster config.")
 	flag.Parse()
 	return o
 }
@@ -68,44 +61,30 @@ func main() {
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
+	cfg := configAgent.Config
 
-	clusterConfig, err := rest.InClusterConfig()
-	if err != nil {
-		logrus.WithError(err).Fatal("Error loading cluster config.")
-	}
+	clusterConfigs, defaultContext, err := kube.LoadClusterConfigs(o.buildClusterKubeconfig, o.buildCluster)
+	defaultConfig := clusterConfigs[defaultContext]
 
-	pjclient, err := pjclientset.NewForConfig(clusterConfig)
+	pjclient, err := pjclientset.NewForConfig(&defaultConfig)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating ProwJob client.")
 	}
 
-	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
-	if err != nil {
-		logrus.WithError(err).Error("Error getting client.")
-		return
-	}
-
-	var pkcs map[string]*kube.Client
-	if o.buildCluster == "" {
-		pkcs = map[string]*kube.Client{
-			kube.DefaultClusterAlias: kc.Namespace(configAgent.Config().PodNamespace),
-		}
-	} else {
-		pkcs, err = kube.ClientMapFromFile(o.buildCluster, configAgent.Config().PodNamespace)
+	var podClients []corev1.PodInterface
+	for context, clusterConfig := range clusterConfigs {
+		clusterClient, err := kubernetes.NewForConfig(&clusterConfig)
 		if err != nil {
-			logrus.WithError(err).Fatal("Error getting kube client(s).")
+			logrus.WithError(err).Fatalf("Error creating Kubernetes client for context %q.", context)
 		}
+		podClients = append(podClients, clusterClient.CoreV1().Pods(configAgent.Config().PodNamespace))
 	}
 
-	kubeClients := map[string]kubeClient{}
-	for alias, client := range pkcs {
-		kubeClients[alias] = kubeClient(client)
-	}
 	c := controller{
 		logger:        logrus.NewEntry(logrus.StandardLogger()),
-		prowJobClient: pjclient.ProwV1().ProwJobs(configAgent.Config().ProwJobNamespace),
-		pkcs:          kubeClients,
-		configAgent:   configAgent,
+		prowJobClient: pjclient.ProwV1().ProwJobs(cfg().ProwJobNamespace),
+		podClients:    podClients,
+		config:        cfg,
 	}
 
 	// Clean now and regularly from now on.
@@ -116,15 +95,15 @@ func main() {
 		if o.runOnce {
 			break
 		}
-		time.Sleep(configAgent.Config().Sinker.ResyncPeriod)
+		time.Sleep(cfg().Sinker.ResyncPeriod)
 	}
 }
 
 type controller struct {
 	logger        *logrus.Entry
 	prowJobClient prowv1.ProwJobInterface
-	pkcs          map[string]kubeClient
-	configAgent   configAgent
+	podClients    []corev1.PodInterface
+	config        config.Getter
 }
 
 func (c *controller) clean() {
@@ -138,7 +117,7 @@ func (c *controller) clean() {
 	// Only delete pod if its prowjob is marked as finished
 	isFinished := make(map[string]bool)
 
-	maxProwJobAge := c.configAgent.Config().Sinker.MaxProwJobAge
+	maxProwJobAge := c.config().Sinker.MaxProwJobAge
 	for _, prowJob := range prowJobs.Items {
 		// Handle periodics separately.
 		if prowJob.Spec.Type == kube.PeriodicJob {
@@ -161,7 +140,7 @@ func (c *controller) clean() {
 	// Keep track of what periodic jobs are in the config so we will
 	// not clean up their last prowjob.
 	isActivePeriodic := make(map[string]bool)
-	for _, p := range c.configAgent.Config().Periodics {
+	for _, p := range c.config().Periodics {
 		isActivePeriodic[p.Name] = true
 	}
 
@@ -194,14 +173,14 @@ func (c *controller) clean() {
 
 	// Now clean up old pods.
 	selector := fmt.Sprintf("%s = %s", kube.CreatedByProw, "true")
-	for _, client := range c.pkcs {
-		pods, err := client.ListPods(selector)
+	for _, client := range c.podClients {
+		pods, err := client.List(metav1.ListOptions{LabelSelector: selector})
 		if err != nil {
 			c.logger.WithError(err).Error("Error listing pods.")
 			return
 		}
-		maxPodAge := c.configAgent.Config().Sinker.MaxPodAge
-		for _, pod := range pods {
+		maxPodAge := c.config().Sinker.MaxPodAge
+		for _, pod := range pods.Items {
 			if _, ok := isFinished[pod.ObjectMeta.Name]; !ok {
 				// prowjob is not marked as completed yet
 				// deleting the pod now will result in plank creating a brand new pod
@@ -209,7 +188,7 @@ func (c *controller) clean() {
 			}
 			if !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge {
 				// Delete old completed pods. Don't quit if we fail to delete one.
-				if err := client.DeletePod(pod.ObjectMeta.Name); err == nil {
+				if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
 					c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
 				} else {
 					c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")

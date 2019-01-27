@@ -180,7 +180,8 @@ test/e2e/e2e.go:137 BeforeSuite on Node 1 failed test/e2e/e2e.go:137
 			},
 		},
 	}
-	fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, &config.Agent{})
+	fca := config.Agent{}
+	fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca.Config)
 	fakeJa.Start()
 	os.Exit(m.Run())
 }
@@ -250,7 +251,8 @@ func TestViews(t *testing.T) {
 			for _, l := range tc.registeredViewers {
 				lenses.RegisterLens(l)
 			}
-			sg := New(fakeJa, &config.Agent{}, fakeGCSClient)
+			fca := config.Agent{}
+			sg := New(fakeJa, fca.Config, fakeGCSClient)
 			lenses := sg.Lenses(tc.matchCache)
 			for _, l := range lenses {
 				var found bool
@@ -378,7 +380,8 @@ func TestJobPath(t *testing.T) {
 			},
 		},
 	}
-	fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, &config.Agent{})
+	fca := config.Agent{}
+	fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca.Config)
 	fakeJa.Start()
 	testCases := []struct {
 		name       string
@@ -444,7 +447,8 @@ func TestJobPath(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		fakeGCSClient := fakeGCSServer.Client()
-		sg := New(fakeJa, &config.Agent{}, fakeGCSClient)
+		fca := config.Agent{}
+		sg := New(fakeJa, fca.Config, fakeGCSClient)
 		jobPath, err := sg.JobPath(tc.src)
 		if tc.expError && err == nil {
 			t.Errorf("test %q: JobPath(%q) expected error", tc.name, tc.src)
@@ -461,29 +465,6 @@ func TestJobPath(t *testing.T) {
 }
 
 func TestProwToGCS(t *testing.T) {
-	kc := fkc{
-		kube.ProwJob{
-			Spec: kube.ProwJobSpec{
-				Job: "gubernator-job",
-			},
-			Status: kube.ProwJobStatus{
-				URL:     "https://gubernator.example.com/build/some-bucket/gubernator-job/1111/",
-				BuildID: "1111",
-			},
-		},
-		kube.ProwJob{
-			Spec: kube.ProwJobSpec{
-				Job: "spyglass-job",
-			},
-			Status: kube.ProwJobStatus{
-				URL:     "https://prow.example.com/view/gcs/some-bucket/spyglass-job/2222/",
-				BuildID: "2222",
-			},
-		},
-	}
-	fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, &config.Agent{})
-	fakeJa.Start()
-
 	testCases := []struct {
 		name         string
 		key          string
@@ -521,6 +502,27 @@ func TestProwToGCS(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+		kc := fkc{
+			kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job: "gubernator-job",
+				},
+				Status: kube.ProwJobStatus{
+					URL:     "https://gubernator.example.com/build/some-bucket/gubernator-job/1111/",
+					BuildID: "1111",
+				},
+			},
+			kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job: "spyglass-job",
+				},
+				Status: kube.ProwJobStatus{
+					URL:     "https://prow.example.com/view/gcs/some-bucket/spyglass-job/2222/",
+					BuildID: "2222",
+				},
+			},
+		}
+
 		fakeGCSClient := fakeGCSServer.Client()
 		fakeConfigAgent := fca{
 			c: config.Config{
@@ -531,7 +533,9 @@ func TestProwToGCS(t *testing.T) {
 				},
 			},
 		}
-		sg := New(fakeJa, fakeConfigAgent, fakeGCSClient)
+		fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
+		fakeJa.Start()
+		sg := New(fakeJa, fakeConfigAgent.Config, fakeGCSClient)
 
 		p, err := sg.prowToGCS(tc.key)
 		if err != nil && !tc.expectError {
@@ -571,12 +575,12 @@ func TestFetchArtifactsPodLog(t *testing.T) {
 			},
 		},
 	}
-	fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA")}, &config.Agent{})
+	fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA")}, fakeConfigAgent.Config)
 	fakeJa.Start()
 
 	fakeGCSClient := fakeGCSServer.Client()
 
-	sg := New(fakeJa, fakeConfigAgent, fakeGCSClient)
+	sg := New(fakeJa, fakeConfigAgent.Config, fakeGCSClient)
 	testKeys := []string{
 		"prowjob/job/123",
 		"gcs/kubernetes-jenkins/logs/job/123/",
