@@ -246,7 +246,7 @@ func getDeployer(o *options) (deployer, error) {
 	case "eks":
 		return newEKS(timeout, verbose)
 	case "kind":
-		return kind.NewKind(control)
+		return kind.NewKind(control, string(o.build))
 	case "kops":
 		return newKops(o.provider, o.gcpProject, o.cluster)
 	case "kubeadm-dind":
