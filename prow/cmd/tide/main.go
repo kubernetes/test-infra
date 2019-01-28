@@ -126,7 +126,7 @@ func main() {
 	}
 	defer gitClient.Clean()
 
-	kubeClient, err := o.kubernetes.Client(cfg().ProwJobNamespace, o.dryRun)
+	kubeClient, _, _, err := o.kubernetes.Client(cfg().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
 	}

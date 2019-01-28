@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/commentpruner"
@@ -131,10 +132,11 @@ func RegisterGenericCommentHandler(name string, fn GenericCommentHandler, help H
 
 // Agent may be used concurrently, so each entry must be thread-safe.
 type Agent struct {
-	GitHubClient *github.Client
-	KubeClient   *kube.Client
-	GitClient    *git.Client
-	SlackClient  *slack.Client
+	GitHubClient     *github.Client
+	KubeClient       *kube.Client
+	KubernetesClient kubernetes.Interface
+	GitClient        *git.Client
+	SlackClient      *slack.Client
 
 	OwnersClient *repoowners.Client
 
@@ -190,10 +192,11 @@ func (a *Agent) CommentPruner() (*commentpruner.EventClient, error) {
 
 // ClientAgent contains the various clients that are attached to the Agent.
 type ClientAgent struct {
-	GitHubClient *github.Client
-	KubeClient   *kube.Client
-	GitClient    *git.Client
-	SlackClient  *slack.Client
+	GitHubClient     *github.Client
+	KubeClient       *kube.Client
+	KubernetesClient kubernetes.Interface
+	GitClient        *git.Client
+	SlackClient      *slack.Client
 }
 
 // ConfigAgent contains the agent mutex and the Agent configuration.
