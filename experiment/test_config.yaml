@@ -1319,7 +1319,7 @@ nodeCommon:
     - --deployment=node
     - --node-tests=true
     - --provider=gce
-    - --gcp-zone=us-central1-f
+    - --gcp-zone=us-west1-b
 
 nodeImages:
   cos1:

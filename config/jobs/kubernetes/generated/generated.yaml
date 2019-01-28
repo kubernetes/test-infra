@@ -47,7 +47,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --timeout=60m
@@ -540,7 +540,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-lts-2
       - --image-project=gke-node-images-test
       - --timeout=300m
@@ -883,7 +883,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --timeout=300m
@@ -1025,7 +1025,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --timeout=60m
@@ -1054,7 +1054,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-lts-1
       - --image-project=gke-node-images-test
       - --timeout=60m
@@ -1252,7 +1252,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-lts-1
       - --image-project=gke-node-images-test
       - --timeout=300m
@@ -1853,7 +1853,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --timeout=60m
@@ -1912,7 +1912,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --timeout=300m
@@ -2058,7 +2058,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --timeout=300m
@@ -2087,7 +2087,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --timeout=300m
@@ -2116,7 +2116,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-lts-2
       - --image-project=gke-node-images-test
       - --timeout=60m
@@ -2651,7 +2651,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --timeout=60m
@@ -3034,7 +3034,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=pipeline-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --timeout=300m
@@ -3234,7 +3234,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --timeout=60m
@@ -4156,7 +4156,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --timeout=300m
@@ -4213,7 +4213,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-lts-2
       - --image-project=gke-node-images-test
       - --timeout=60m
@@ -4413,7 +4413,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-lts-1
       - --image-project=gke-node-images-test
       - --timeout=60m
@@ -4526,7 +4526,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-lts-1
       - --image-project=gke-node-images-test
       - --timeout=300m
@@ -4778,7 +4778,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-lts-1
       - --image-project=gke-node-images-test
       - --timeout=60m
@@ -5010,7 +5010,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --timeout=60m
@@ -5382,7 +5382,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-lts-1
       - --image-project=gke-node-images-test
       - --timeout=300m
@@ -5588,7 +5588,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --timeout=60m
@@ -5728,7 +5728,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-lts-1
       - --image-project=gke-node-images-test
       - --timeout=60m
@@ -5781,7 +5781,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --timeout=300m
@@ -6229,7 +6229,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-lts-2
       - --image-project=gke-node-images-test
       - --timeout=60m
@@ -6257,7 +6257,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-lts-1
       - --image-project=gke-node-images-test
       - --timeout=300m
@@ -6363,7 +6363,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-lts-2
       - --image-project=gke-node-images-test
       - --timeout=300m
@@ -6451,7 +6451,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --timeout=60m
@@ -6680,7 +6680,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-lts-2
       - --image-project=gke-node-images-test
       - --timeout=300m
@@ -6973,7 +6973,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-lts-2
       - --image-project=gke-node-images-test
       - --timeout=60m
@@ -7291,7 +7291,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --timeout=300m
@@ -7437,7 +7437,7 @@ periodics:
       - --deployment=node
       - --node-tests=true
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-lts-2
       - --image-project=gke-node-images-test
       - --timeout=300m
