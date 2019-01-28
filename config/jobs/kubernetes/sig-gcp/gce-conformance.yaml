@@ -14,7 +14,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
@@ -36,7 +36,7 @@ periodics:
       - --extract=ci/latest-1.10
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
@@ -57,7 +57,7 @@ periodics:
       - --extract=ci/latest-1.11
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
@@ -78,7 +78,7 @@ periodics:
       - --extract=ci/latest-1.12
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
@@ -99,7 +99,7 @@ periodics:
       - --extract=ci/latest-1.13
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
@@ -121,7 +121,7 @@ periodics:
       - --extract=release/stable-1.10
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
@@ -142,7 +142,7 @@ periodics:
       - --extract=release/stable-1.11
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
@@ -163,7 +163,7 @@ periodics:
       - --extract=release/stable-1.12
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
@@ -184,7 +184,7 @@ periodics:
       - --extract=release/stable-1.13
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m

@@ -64,7 +64,7 @@ periodics:
       - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
       - --extract=ci/latest
       - --gcp-project-type=ingress-project
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:IngressDowngrade\]
@@ -210,7 +210,7 @@ periodics:
       - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
       - --extract=ci/latest
       - --gcp-project=k8s-ingress-e2e-scale-backup
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel=1
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:IngressScale\]
@@ -234,7 +234,7 @@ periodics:
       - --env=GCE_GLBC_IMAGE=k8s.gcr.io/ingress-gce-glbc-amd64:v1.1.1
       - --extract=ci/latest
       - --gcp-project-type=ingress-project
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:IngressUpgrade\]

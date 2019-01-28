@@ -17,7 +17,7 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test=false
       - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
@@ -45,7 +45,7 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test=false
       - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
@@ -73,7 +73,7 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test=false
       - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
@@ -101,7 +101,7 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test=false
       - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
@@ -129,7 +129,7 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test=false
       - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
@@ -164,7 +164,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-nodes=3
       - --gcp-project=k8s-jkns-gci-autoscaling
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --runtime-config=scheduling.k8s.io/v1alpha1=true
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
@@ -187,7 +187,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-project=k8s-jkns-gci-autoscaling
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=300m
@@ -218,7 +218,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-nodes=3
       - --gcp-project=k8s-jkns-gci-autoscaling-migs
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --runtime-config=scheduling.k8s.io/v1alpha1=true
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
@@ -241,7 +241,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-project=k8s-jkns-gci-autoscaling-migs
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=300m
@@ -266,7 +266,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=k8s-e2e-gci-gke-autoscaling
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:ClusterSizeAutoscalingScaleWithNAP\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
@@ -292,7 +292,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=k8s-e2e-gci-gke-autoscaling
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8

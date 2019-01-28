@@ -25,7 +25,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-image=gci
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-csi-serial

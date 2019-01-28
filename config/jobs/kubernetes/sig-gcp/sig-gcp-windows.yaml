@@ -31,7 +31,7 @@ periodics:
       - --build=bazel
       - --stage=gs://kubernetes-release-dev/ci/ci-kubernetes-e2e-windows-gce-poc
       - --extract=local
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
       - --provider=gce
       - --test=false

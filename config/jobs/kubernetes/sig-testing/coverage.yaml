@@ -37,7 +37,7 @@ periodics:
           --dump-before-and-after \
           --extract=local \
           --stage=gs://kubernetes-release-dev/ci/ci-kubernetes-conformance-coverage \
-          --gcp-zone=us-central1-f \
+          --gcp-zone=us-west1-b \
           --provider=gce \
           --timeout=150m \
           --test_args="--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]"
@@ -100,7 +100,7 @@ periodics:
           --gcp-master-image=gci \
           --gcp-node-image=gci \
           --gcp-nodes=4 \
-          --gcp-zone=us-central1-f \
+          --gcp-zone=us-west1-b \
           --ginkgo-parallel=30 \
           --provider=gce \
           --timeout=150m \
