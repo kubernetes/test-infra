@@ -3187,6 +3187,11 @@ test_groups:
   alert_stale_results_hours: 32
   num_failures_to_alert: 1
 
+- name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.13
+  gcs_prefix: k8s-conformance-cloud-provider-vsphere/head/release/v1.13
+  alert_stale_results_hours: 32
+  num_failures_to_alert: 1
+
 - name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
   gcs_prefix: k8s-conformance-cloud-provider-vsphere/head/release/v1.12
   alert_stale_results_hours: 32
@@ -3200,6 +3205,11 @@ test_groups:
 # vsphere e2e conformance tests
 - name: ci-periodic-vsphere-test-e2e-conformance
   gcs_prefix: k8s-conformance-vsphere/head/ci/latest
+  alert_stale_results_hours: 32
+  num_failures_to_alert: 1
+
+- name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.13
+  gcs_prefix: k8s-conformance-vsphere/head/release/v1.13
   alert_stale_results_hours: 32
   num_failures_to_alert: 1
 
@@ -3437,6 +3447,11 @@ dashboards:
     test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
     alert_options:
       alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: vSphere-cloud-provider, v1.13 (dev)
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.13 branch with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.13
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
 
   - name: vSphere, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with the in-tree vSphere cloud provider
@@ -3451,6 +3466,11 @@ dashboards:
   - name: vSphere, v1.12 (dev)
     description: Runs conformance tests using kubetest against kubernetes from the release-1.12 branch with the in-tree vSphere cloud provider
     test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.12
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: vSphere, v1.13 (dev)
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.13 branch with the in-tree vSphere cloud provider
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.13
     alert_options:
       alert_mail_to_addresses: cnx+e2e@vmware.com
 
@@ -3580,6 +3600,11 @@ dashboards:
     test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.12
     alert_options:
       alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.13
+    description: Runs conformance tests using kubetest against kubernetes v1.13 with in-tree vSphere components
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.13
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
 
 - name: vmware-conformance
   dashboard_tab:
@@ -3591,6 +3616,11 @@ dashboards:
   - name: periodic-v1.12
     description: Runs conformance tests using kubetest against kubernetes v1.12 with in-tree vSphere components
     test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.12
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.13
+    description: Runs conformance tests using kubetest against kubernetes v1.13 with in-tree vSphere components
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.13
     alert_options:
       alert_mail_to_addresses: cnx+e2e@vmware.com
 
@@ -3639,6 +3669,11 @@ dashboards:
     test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
     alert_options:
       alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.13
+    description: Runs conformance tests using kubetest against kubernetes v1.13 with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.13
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
 
 - name: vmware-conformance-cloud-provider
   dashboard_tab:
@@ -3650,6 +3685,11 @@ dashboards:
   - name: periodic-v1.12
     description: Runs conformance tests using kubetest against kubernetes v1.12 with cloud-provider-vsphere
     test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.13
+    description: Runs conformance tests using kubetest against kubernetes v1.13 with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.13
     alert_options:
       alert_mail_to_addresses: cnx+e2e@vmware.com
 
