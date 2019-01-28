@@ -18,7 +18,6 @@ package kube
 
 import (
 	"bufio"
-	"bytes"
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
@@ -32,11 +31,8 @@ import (
 	"net/http/httptest"
 	"os"
 	"reflect"
-	"strconv"
 	"testing"
 	"time"
-
-	"k8s.io/api/core/v1"
 )
 
 func getClient(url string) *Client {
@@ -172,213 +168,6 @@ func TestHiddenReposProviderList(t *testing.T) {
 	}
 }
 
-func TestListPods(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/api/v1/namespaces/ns/pods" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		fmt.Fprint(w, `{"items": [{}, {}]}`)
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	ps, err := c.ListPods(EmptySelector)
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	}
-	if len(ps) != 2 {
-		t.Error("Expected two pods.")
-	}
-}
-
-func TestDeletePod(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodDelete {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/api/v1/namespaces/ns/pods/po" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	err := c.DeletePod("po")
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	}
-}
-
-func TestGetPod(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/api/v1/namespaces/ns/pods/po" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		fmt.Fprint(w, `{"metadata": {"name": "abcd"}}`)
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	po, err := c.GetPod("po")
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	}
-	if po.ObjectMeta.Name != "abcd" {
-		t.Errorf("Wrong name: %s", po.ObjectMeta.Name)
-	}
-}
-
-func TestGetLogTail(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/api/v1/namespaces/ns/pods/testpod/log" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		limitQueryParam := r.URL.Query().Get("limitBytes")
-		byteLim, err := strconv.ParseInt(limitQueryParam, 10, 64)
-		if err != nil {
-			t.Fatalf("Invalid byte limit: %s, must be integer value", limitQueryParam)
-		}
-		var log []byte
-		for i := 0; i < 5; i++ {
-			log = append(log, []byte("What do you call recorded dolphin conversations?\npod logs")...)
-		}
-		logLen := int64(len(log))
-		if byteLim >= logLen {
-			fmt.Fprint(w, string(log))
-		} else {
-			fmt.Fprint(w, string(log[logLen-byteLim:]))
-		}
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	testCases := []struct {
-		name     string
-		bytes    int64
-		expected []byte
-	}{
-		{
-			name:     "Get last 15 bytes of pod log",
-			bytes:    15,
-			expected: []byte("tions?\npod logs"),
-		},
-		{
-			name:     "Get last 1000 bytes of pod log size<1000",
-			bytes:    285,
-			expected: []byte("What do you call recorded dolphin conversations?\npod logsWhat do you call recorded dolphin conversations?\npod logsWhat do you call recorded dolphin conversations?\npod logsWhat do you call recorded dolphin conversations?\npod logsWhat do you call recorded dolphin conversations?\npod logs"),
-		},
-	}
-	for _, tc := range testCases {
-		log, err := c.GetLogTail("testpod", "", tc.bytes)
-		if err != nil {
-			t.Errorf("%s didn't expect error: %v", tc.name, err)
-		}
-		gotBytes := int64(len(log))
-		if gotBytes != tc.bytes {
-			t.Errorf("%s expected %d bytes, got %d", tc.name, tc.bytes, gotBytes)
-		}
-		if !bytes.Equal(log, tc.expected) {
-			t.Errorf("%s expected log %s, got log %s", tc.name, string(tc.expected), string(log))
-		}
-	}
-}
-
-func TestCreatePod(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/api/v1/namespaces/ns/pods" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		fmt.Fprint(w, `{"metadata": {"name": "abcd"}}`)
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	po, err := c.CreatePod(v1.Pod{})
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	}
-	if po.ObjectMeta.Name != "abcd" {
-		t.Errorf("Wrong name: %s", po.ObjectMeta.Name)
-	}
-}
-
-func TestGetConfigMap(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/api/v1/namespaces/ns/configmaps/abcd" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		fmt.Fprint(w, `{"metadata": {"name": "abcd"}}`)
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	if _, err := c.GetConfigMap("abcd", "ns"); err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	}
-}
-
-func TestGetNotFound(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/api/v1/namespaces/ns/configmaps/abcd" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		http.NotFound(w, r)
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	if _, err := c.GetConfigMap("abcd", "ns"); err == nil {
-		t.Error("Expected not found error but got none")
-	} else if _, isNotFound := err.(NotFoundError); !isNotFound {
-		t.Errorf("Expected a not found error, got: %v", err)
-	}
-}
-
-func TestCreateConfigMap(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/api/v1/namespaces/ns/configmaps" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		fmt.Fprint(w, `{"metadata": {"name": "abcd"}}`)
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	if _, err := c.CreateConfigMap(ConfigMap{}); err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	}
-}
-
-func TestReplaceConfigMap(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPut {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/api/v1/namespaces/ns/configmaps/config" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		fmt.Fprint(w, `{"metadata": {"name": "abcd"}}`)
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	if _, err := c.ReplaceConfigMap("config", ConfigMap{}); err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	}
-}
-
 // TestNewClient messes around with certs and keys and such to just make sure
 // that our cert handling is done properly. We create root and client keys,
 // then server and client certificates, then ensure that the client can talk
@@ -462,7 +251,7 @@ func TestNewClient(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create client: %v", err)
 	}
-	if _, err := cl.GetPod("p"); err != nil {
+	if _, err := cl.GetProwJob("p"); err != nil {
 		t.Fatalf("Failed to talk to server: %v", err)
 	}
 }
