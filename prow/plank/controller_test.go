@@ -386,10 +386,10 @@ func TestTerminateDupes(t *testing.T) {
 			},
 		}
 		c := Controller{
-			kc:   fkc,
-			pkcs: map[string]kubeClient{kube.DefaultClusterAlias: fkc},
-			log:  logrus.NewEntry(logrus.StandardLogger()),
-			ca:   fca,
+			kc:     fkc,
+			pkcs:   map[string]kubeClient{kube.DefaultClusterAlias: fkc},
+			log:    logrus.NewEntry(logrus.StandardLogger()),
+			config: fca.Config,
 		}
 
 		if err := c.terminateDupes(fkc.prowjobs, tc.pm); err != nil {
@@ -746,7 +746,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			kc:          fc,
 			pkcs:        pkcs,
 			log:         logrus.NewEntry(logrus.StandardLogger()),
-			ca:          newFakeConfigAgent(t, tc.maxConcurrency),
+			config:      newFakeConfigAgent(t, tc.maxConcurrency).Config,
 			totURL:      totServ.URL,
 			pendingJobs: make(map[string]int),
 		}
@@ -1160,7 +1160,7 @@ func TestSyncPendingJob(t *testing.T) {
 			kc:          fc,
 			pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: fpc},
 			log:         logrus.NewEntry(logrus.StandardLogger()),
-			ca:          newFakeConfigAgent(t, 0),
+			config:      newFakeConfigAgent(t, 0).Config,
 			totURL:      totServ.URL,
 			pendingJobs: make(map[string]int),
 		}
@@ -1232,7 +1232,7 @@ func TestPeriodic(t *testing.T) {
 		ghc:         &fghc{},
 		pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: &fkc{}, "trusted": fc},
 		log:         logrus.NewEntry(logrus.StandardLogger()),
-		ca:          newFakeConfigAgent(t, 0),
+		config:      newFakeConfigAgent(t, 0).Config,
 		totURL:      totServ.URL,
 		pendingJobs: make(map[string]int),
 		lock:        sync.RWMutex{},
@@ -1373,9 +1373,13 @@ func TestRunAfterSuccessCanRun(t *testing.T) {
 			err:     test.err,
 		}
 
-		c := Controller{log: logrus.NewEntry(logrus.StandardLogger())}
+		c := Controller{
+			log:    logrus.NewEntry(logrus.StandardLogger()),
+			config: newFakeConfigAgent(t, 0).Config,
+			ghc:    fakeGH,
+		}
 
-		got := c.RunAfterSuccessCanRun(test.parent, test.child, newFakeConfigAgent(t, 0), fakeGH)
+		got := c.runAfterSuccessCanRun(test.parent, test.child)
 		if got != test.expected {
 			t.Errorf("expected to run: %t, got: %t", test.expected, got)
 		}
@@ -1500,7 +1504,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			kc:          fc,
 			pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: fpc},
 			log:         logrus.NewEntry(logrus.StandardLogger()),
-			ca:          newFakeConfigAgent(t, 0),
+			config:      newFakeConfigAgent(t, 0).Config,
 			pendingJobs: test.pendingJobs,
 		}
 
