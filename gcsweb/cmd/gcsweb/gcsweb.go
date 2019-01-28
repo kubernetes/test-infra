@@ -36,7 +36,7 @@ import (
 
 // The base URL for GCS's HTTP API.
 const gcsBaseURL = "https://storage.googleapis.com"
-const gcsPath = "/gcs" // path for GCS browsing on this server
+const gcsPath = "/s3" // path for GCS browsing on this server
 
 // The base URL for GCP's GCS browser.
 const gcsBrowserURL = "https://console.cloud.google.com/storage/browser"
@@ -90,7 +90,7 @@ func main() {
 		})
 	}
 	// Handle unknown buckets.
-	http.HandleFunc("/gcs/", unknownBucketRequest)
+	http.HandleFunc("/s3/", unknownBucketRequest)
 
 	// Serve icons and styles.
 	longCacheServer := func(h http.Handler) http.HandlerFunc {
