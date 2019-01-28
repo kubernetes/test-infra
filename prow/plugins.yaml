@@ -166,6 +166,12 @@ slack:
     whitelist:
     - k8s-ci-robot
   - repos:
+    - kubernetes/enhancements
+    channels:
+    - sig-pm
+    whitelist:
+    - k8s-ci-robot
+  - repos:
     - kubernetes/utils
     channels:
     - sig-architecture
