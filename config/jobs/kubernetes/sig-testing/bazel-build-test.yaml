@@ -56,7 +56,7 @@ presubmits:
           - --
           - --cluster=
           - --deployment=kubernetes-anywhere
-          - --gcp-zone=us-central1-f
+          - --gcp-zone=us-west1-b
           - --ginkgo-parallel=30
           - --kubeadm=pull
           - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
@@ -116,7 +116,7 @@ presubmits:
           - --
           - --cluster=
           - --deployment=kubernetes-anywhere
-          - --gcp-zone=us-central1-f
+          - --gcp-zone=us-west1-b
           - --ginkgo-parallel=30
           - --kubeadm=pull
           - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
@@ -176,7 +176,7 @@ presubmits:
           - --
           - --cluster=
           - --deployment=kubernetes-anywhere
-          - --gcp-zone=us-central1-f
+          - --gcp-zone=us-west1-b
           - --ginkgo-parallel=30
           - --kubeadm=pull
           - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
@@ -236,7 +236,7 @@ presubmits:
           - --
           - --cluster=
           - --deployment=kubernetes-anywhere
-          - --gcp-zone=us-central1-f
+          - --gcp-zone=us-west1-b
           - --ginkgo-parallel=30
           - --kubeadm=pull
           - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
@@ -296,7 +296,7 @@ presubmits:
           - --
           - --cluster=
           - --deployment=kubernetes-anywhere
-          - --gcp-zone=us-central1-f
+          - --gcp-zone=us-west1-b
           - --ginkgo-parallel=30
           - --kubeadm=pull
           - --kubernetes-anywhere-kubernetes-version=ci-cross/latest

@@ -24,7 +24,7 @@ presubmits:
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-nodes=4
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus

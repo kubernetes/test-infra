@@ -38,7 +38,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-nodes=4
       - --gcp-project=k8s-e2e-gce-alpha-api-access
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GCEAlphaFeature\] --minStartupPods=8
@@ -111,7 +111,7 @@ periodics:
       - --cluster=
       - --env=CLUSTER_DNS_CORE_DNS=true
       - --extract=ci/latest
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -187,7 +187,7 @@ periodics:
       - --env=CLUSTER_DNS_CORE_DNS=true
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
       - --extract=ci/latest
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -235,7 +235,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-project-type=ingress-project
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
       - --timeout=180m
@@ -260,7 +260,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-nodes=4
       - --gcp-project=k8s-jenkins-gce-gci-ip-aliases
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -284,7 +284,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=ubuntu
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --image-family=ubuntu-gke-1604-lts
       - --image-project=ubuntu-os-gke-cloud
@@ -309,7 +309,7 @@ periodics:
       - --cluster=
       - --env=CLUSTER_DNS_CORE_DNS=false
       - --extract=ci/latest
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -333,7 +333,7 @@ periodics:
       - --env=CLUSTER_DNS_CORE_DNS=false
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
       - --extract=ci/latest
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -358,7 +358,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
@@ -383,7 +383,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=ingress-project
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8

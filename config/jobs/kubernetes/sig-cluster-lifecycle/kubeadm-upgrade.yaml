@@ -21,7 +21,7 @@ periodics:
       - --deployment=kubernetes-anywhere
       - --extract=release/latest-1.11
       - --extract=ci/latest-bazel-1.10
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --kubeadm=periodic
       - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.10
       - --kubernetes-anywhere-kubernetes-version=ci/latest-1.10
@@ -52,7 +52,7 @@ periodics:
       - --deployment=kubernetes-anywhere
       - --extract=release/latest-1.12
       - --extract=ci/latest-bazel-1.11
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --kubeadm=periodic
       - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.11
       - --kubernetes-anywhere-kubernetes-version=ci/latest-1.11
@@ -83,7 +83,7 @@ periodics:
       - --deployment=kubernetes-anywhere
       - --extract=release/latest-1.13
       - --extract=ci/latest-bazel-1.12
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --kubeadm=periodic
       - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.12
       - --kubernetes-anywhere-kubernetes-version=ci/latest-1.12
@@ -114,7 +114,7 @@ periodics:
       - --deployment=kubernetes-anywhere
       - --extract=ci/latest
       - --extract=release/stable
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --kubeadm=periodic
       - --kubernetes-anywhere-kubelet-version=stable
       - --kubernetes-anywhere-kubernetes-version=stable

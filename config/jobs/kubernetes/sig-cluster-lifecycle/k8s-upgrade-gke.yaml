@@ -161,7 +161,7 @@ periodics:
       - --extract=ci/k8s-stable2
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gke-environment=test
       - --provider=gke
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
@@ -329,7 +329,7 @@ periodics:
       - --extract=ci/k8s-stable3
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --gke-environment=test
       - --provider=gke
@@ -357,7 +357,7 @@ periodics:
       - --extract=ci/k8s-stable3
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --gke-environment=test
       - --provider=gke
@@ -386,7 +386,7 @@ periodics:
       - --extract=ci/k8s-stable3
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --gke-environment=test
       - --provider=gke

@@ -14,7 +14,7 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-cli\].*\[Serial\]|\[sig-cli\].*\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
@@ -37,7 +37,7 @@ periodics:
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-nodes=4
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-cli\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -62,7 +62,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --gke-environment=test
       - --provider=gke
@@ -87,7 +87,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[sig-cli\].*\[Serial\]|\[sig-cli\].*\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -135,7 +135,7 @@ periodics:
       - --extract=ci/k8s-stable1
       - --extract=ci/k8s-beta
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --provider=gce
       - --skew
@@ -160,7 +160,7 @@ periodics:
       - --extract=ci/k8s-stable1
       - --extract=ci/k8s-beta
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --skew
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
@@ -184,7 +184,7 @@ periodics:
       - --extract=ci/k8s-stable1
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel=25
       - --provider=gce
       - --skew
@@ -209,7 +209,7 @@ periodics:
       - --extract=ci/k8s-stable1
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --skew
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
@@ -233,7 +233,7 @@ periodics:
       - --extract=ci/latest
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel=25
       - --provider=gce
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
@@ -257,7 +257,7 @@ periodics:
       - --extract=ci/latest
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\]  --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
@@ -280,7 +280,7 @@ periodics:
       - --extract=ci/k8s-beta
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --provider=gce
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
@@ -304,7 +304,7 @@ periodics:
       - --extract=ci/k8s-beta
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
@@ -327,7 +327,7 @@ periodics:
       - --extract=ci/k8s-stable2
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --provider=gce
       - --skew
@@ -352,7 +352,7 @@ periodics:
       - --extract=ci/k8s-stable2
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --skew
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
@@ -376,7 +376,7 @@ periodics:
       - --extract=ci/k8s-stable1
       - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --provider=gce
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
@@ -400,7 +400,7 @@ periodics:
       - --extract=ci/k8s-stable1
       - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m

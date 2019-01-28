@@ -436,7 +436,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-image=gci
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true
@@ -491,7 +491,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-image=gci
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
@@ -546,7 +546,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-image=gci
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
@@ -602,7 +602,7 @@ presubmits:
         - --env=KUBE_FEATURE_GATES=AllAlpha=true
         - --extract=local
         - --gcp-node-image=gci
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --provider=gce
         - --runtime-config=api/all=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-alpha-features
@@ -661,7 +661,7 @@ presubmits:
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-project=k8s-c8d-pr-e2e
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true
@@ -768,7 +768,7 @@ presubmits:
         - --
         - --deployment=node
         - --gcp-project=k8s-jkns-pr-node-e2e
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
@@ -817,7 +817,7 @@ presubmits:
         - --
         - --deployment=node
         - --gcp-project=k8s-jkns-pr-node-e2e
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
@@ -866,7 +866,7 @@ presubmits:
         - --
         - --deployment=node
         - --gcp-project=k8s-jkns-pr-node-e2e
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
@@ -915,7 +915,7 @@ presubmits:
         - --
         - --deployment=node
         - --gcp-project=k8s-jkns-pr-node-e2e
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
@@ -964,7 +964,7 @@ presubmits:
         - --
         - --deployment=node
         - --gcp-project=k8s-jkns-pr-node-e2e
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
@@ -1014,7 +1014,7 @@ presubmits:
         - --
         - --deployment=node
         - --gcp-project=k8s-c8d-pr-node-e2e
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock
           --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file=
           --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"
@@ -1066,7 +1066,7 @@ presubmits:
         - --
         - --deployment=node
         - --gcp-project=k8s-jkns-pr-node-e2e
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --node-test-args=--feature-gates=AllAlpha=true,RotateKubeletServerCertificate=false
           --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
@@ -1630,7 +1630,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-image=gci
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-csi-serial
@@ -1694,7 +1694,7 @@ presubmits:
           - --
           - --cluster=
           - --deployment=kubernetes-anywhere
-          - --gcp-zone=us-central1-f
+          - --gcp-zone=us-west1-b
           - --ginkgo-parallel=30
           - --kubeadm=pull
           - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
@@ -1794,7 +1794,7 @@ presubmits:
           - --
           - --cluster=
           - --deployment=kubernetes-anywhere
-          - --gcp-zone=us-central1-f
+          - --gcp-zone=us-west1-b
           - --ginkgo-parallel=30
           - --kubeadm=pull
           - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
@@ -1889,7 +1889,7 @@ presubmits:
           - --
           - --cluster=
           - --deployment=kubernetes-anywhere
-          - --gcp-zone=us-central1-f
+          - --gcp-zone=us-west1-b
           - --ginkgo-parallel=30
           - --kubeadm=pull
           - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
@@ -1984,7 +1984,7 @@ presubmits:
           - --
           - --cluster=
           - --deployment=kubernetes-anywhere
-          - --gcp-zone=us-central1-f
+          - --gcp-zone=us-west1-b
           - --ginkgo-parallel=30
           - --kubeadm=pull
           - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
@@ -2079,7 +2079,7 @@ presubmits:
           - --
           - --cluster=
           - --deployment=kubernetes-anywhere
-          - --gcp-zone=us-central1-f
+          - --gcp-zone=us-west1-b
           - --ginkgo-parallel=30
           - --kubeadm=pull
           - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
