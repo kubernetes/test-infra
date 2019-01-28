@@ -40,6 +40,7 @@ const (
 
 type kubeClient interface {
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
+	GetProwJob(string) (kube.ProwJob, error)
 	ListProwJobs(string) ([]kube.ProwJob, error)
 	ReplaceProwJob(string, kube.ProwJob) (kube.ProwJob, error)
 
@@ -156,11 +157,17 @@ func (c *Controller) incrementNumPendingJobs(job string) {
 // to current state. This is a work-around for plank -> crier
 // migration to become seamless.
 func (c *Controller) setPreviousReportState(pj kube.ProwJob) error {
-	if pj.Status.PrevReportStates == nil {
-		pj.Status.PrevReportStates = map[string]kube.ProwJobState{}
+	// fetch latest before replace
+	latestPJ, err := c.kc.GetProwJob(pj.ObjectMeta.Name)
+	if err != nil {
+		return err
 	}
-	pj.Status.PrevReportStates[reporter.GithubReporterName] = pj.Status.State
-	_, err := c.kc.ReplaceProwJob(pj.ObjectMeta.Name, pj)
+
+	if latestPJ.Status.PrevReportStates == nil {
+		latestPJ.Status.PrevReportStates = map[string]kube.ProwJobState{}
+	}
+	latestPJ.Status.PrevReportStates[reporter.GithubReporterName] = latestPJ.Status.State
+	_, err = c.kc.ReplaceProwJob(latestPJ.ObjectMeta.Name, latestPJ)
 	return err
 }
 

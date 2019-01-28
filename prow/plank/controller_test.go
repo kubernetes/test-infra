@@ -129,6 +129,18 @@ func (f *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
 	return pj, nil
 }
 
+func (f *fkc) GetProwJob(name string) (kube.ProwJob, error) {
+	f.Lock()
+	defer f.Unlock()
+	for _, pj := range f.prowjobs {
+		if pj.ObjectMeta.Name == name {
+			return pj, nil
+		}
+	}
+
+	return kube.ProwJob{}, fmt.Errorf("did not find prowjob %s", name)
+}
+
 func (f *fkc) ListProwJobs(selector string) ([]kube.ProwJob, error) {
 	f.Lock()
 	defer f.Unlock()
