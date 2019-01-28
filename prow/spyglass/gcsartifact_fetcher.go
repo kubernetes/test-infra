@@ -168,7 +168,7 @@ func (af *GCSArtifactFetcher) artifact(key string, artifactName string, sizeLimi
 	obj := &gcsArtifactHandle{bkt.Object(path.Join(prefix, artifactName))}
 	artifactLink := &url.URL{
 		Scheme: httpsScheme,
-		Host:   "storage.googleapis.com",
+		Host:   "s3.console.aws.amazon.com/s3/buckets",
 		Path:   path.Join(src.jobPath(), artifactName),
 	}
 	return NewGCSArtifact(context.Background(), obj, artifactLink.String(), artifactName, sizeLimit), nil
