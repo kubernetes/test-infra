@@ -93,7 +93,7 @@
               "legendFormat": "cleaning",
               "metric": "boskos_gce_project_cleaning",
               "refId": "C",
-              "step": 60
+              "step": 120
             },
             {
               "expr": "boskos_gce_project_dirty",
@@ -102,7 +102,7 @@
               "legendFormat": "dirty",
               "metric": "boskos_gce_project_dirty",
               "refId": "D",
-              "step": 60
+              "step": 120
             },
             {
               "expr": "boskos_gce_project_busy",
@@ -112,7 +112,7 @@
               "legendFormat": "busy",
               "metric": "boskos_gce_project_busy",
               "refId": "A",
-              "step": 60
+              "step": 120
             },
             {
               "expr": "boskos_gce_project_free",
@@ -121,11 +121,11 @@
               "legendFormat": "free",
               "metric": "boskos_gce_project_free",
               "refId": "B",
-              "step": 60
+              "step": 120
             }
           ],
           "thresholds": [],
-          "timeFrom": "1d",
+          "timeFrom": null,
           "timeShift": null,
           "title": "Boskos GCE projects usage status",
           "tooltip": {
@@ -221,7 +221,7 @@
               "legendFormat": "cleaning",
               "metric": "boskos_gke_project_cleaning",
               "refId": "C",
-              "step": 60
+              "step": 120
             },
             {
               "expr": "boskos_gke_project_dirty",
@@ -230,7 +230,7 @@
               "legendFormat": "dirty",
               "metric": "boskos_gke_project_dirty",
               "refId": "D",
-              "step": 60
+              "step": 120
             },
             {
               "expr": "boskos_gke_project_busy",
@@ -240,7 +240,7 @@
               "legendFormat": "busy",
               "metric": "boskos_gke_project_busy",
               "refId": "A",
-              "step": 60
+              "step": 120
             },
             {
               "expr": "boskos_gke_project_free",
@@ -250,11 +250,11 @@
               "legendFormat": "free",
               "metric": "boskos_gke_project_free",
               "refId": "B",
-              "step": 60
+              "step": 120
             }
           ],
           "thresholds": [],
-          "timeFrom": "1d",
+          "timeFrom": null,
           "timeShift": null,
           "title": "Boskos GKE projects usage status",
           "tooltip": {
@@ -377,7 +377,7 @@
                   }
                 ]
               ],
-              "step": 60,
+              "step": 120,
               "tags": []
             },
             {
@@ -387,7 +387,7 @@
               "legendFormat": "dirty",
               "metric": "boskos_ingress_project_dirty",
               "refId": "B",
-              "step": 60
+              "step": 120
             },
             {
               "expr": "boskos_ingress_project_busy",
@@ -396,7 +396,7 @@
               "legendFormat": "busy",
               "metric": "boskos_ingress_project_busy",
               "refId": "C",
-              "step": 60
+              "step": 120
             },
             {
               "expr": "boskos_ingress_project_free",
@@ -405,7 +405,7 @@
               "legendFormat": "free",
               "metric": "boskos_ingress_project_free",
               "refId": "D",
-              "step": 60
+              "step": 120
             }
           ],
           "thresholds": [],
@@ -526,7 +526,7 @@
                   }
                 ]
               ],
-              "step": 60,
+              "step": 120,
               "tags": []
             },
             {
@@ -536,7 +536,7 @@
               "legendFormat": "dirty",
               "metric": "boskos_gpu_project_dirty",
               "refId": "B",
-              "step": 60
+              "step": 120
             },
             {
               "expr": "boskos_gpu_project_busy",
@@ -545,7 +545,7 @@
               "legendFormat": "busy",
               "metric": "boskos_gpu_project_busy",
               "refId": "C",
-              "step": 60
+              "step": 120
             },
             {
               "expr": "boskos_gpu_project_free",
@@ -554,162 +554,13 @@
               "legendFormat": "free",
               "metric": "boskos_gpu_project_free",
               "refId": "D",
-              "step": 60
+              "step": 120
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
           "title": "Boskos GPU Projects Usage Status",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "Dashboard Row",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 250,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "${DS_PROMETHEUS}",
-          "fill": 3,
-          "id": 6,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "span": 12,
-          "stack": true,
-          "steppedLine": false,
-          "targets": [
-            {
-              "dsType": "influxdb",
-              "expr": "boskos_gci_qa_project_cleaning",
-              "format": "time_series",
-              "groupBy": [
-                {
-                  "params": [
-                    "$__interval"
-                  ],
-                  "type": "time"
-                },
-                {
-                  "params": [
-                    "null"
-                  ],
-                  "type": "fill"
-                }
-              ],
-              "intervalFactor": 2,
-              "legendFormat": "cleaning",
-              "metric": "boskos_gci_qa_project_cleaning",
-              "orderByTime": "ASC",
-              "policy": "default",
-              "refId": "A",
-              "resultFormat": "time_series",
-              "select": [
-                [
-                  {
-                    "params": [
-                      "value"
-                    ],
-                    "type": "field"
-                  },
-                  {
-                    "params": [],
-                    "type": "mean"
-                  }
-                ]
-              ],
-              "step": 60,
-              "tags": []
-            },
-            {
-              "expr": "boskos_gci_qa_project_dirty",
-              "format": "time_series",
-              "intervalFactor": 2,
-              "legendFormat": "dirty",
-              "metric": "boskos_gci_qa_project_dirty",
-              "refId": "B",
-              "step": 60
-            },
-            {
-              "expr": "boskos_gci_qa_project_busy",
-              "format": "time_series",
-              "intervalFactor": 2,
-              "legendFormat": "busy",
-              "metric": "boskos_gci_qa_project_busy",
-              "refId": "C",
-              "step": 60
-            },
-            {
-              "expr": "boskos_gci_qa_project_free",
-              "format": "time_series",
-              "intervalFactor": 2,
-              "legendFormat": "free",
-              "metric": "boskos_gci_qa_project_free",
-              "refId": "D",
-              "step": 60
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Boskos GCI Projects Usage Status",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -824,7 +675,7 @@
                   }
                 ]
               ],
-              "step": 60,
+              "step": 120,
               "tags": []
             },
             {
@@ -834,7 +685,7 @@
               "legendFormat": "dirty",
               "metric": "boskos_istio_project_dirty",
               "refId": "B",
-              "step": 60
+              "step": 120
             },
             {
               "expr": "boskos_istio_project_busy",
@@ -843,7 +694,7 @@
               "legendFormat": "busy",
               "metric": "boskos_istio_project_busy",
               "refId": "C",
-              "step": 60
+              "step": 120
             },
             {
               "expr": "boskos_istio_project_free",
@@ -852,7 +703,7 @@
               "legendFormat": "free",
               "metric": "boskos_istio_project_free",
               "refId": "D",
-              "step": 60
+              "step": 120
             }
           ],
           "thresholds": [],
@@ -907,7 +758,7 @@
     "list": []
   },
   "time": {
-    "from": "now/d",
+    "from": "now-24h",
     "to": "now"
   },
   "timepicker": {
@@ -937,5 +788,5 @@
   },
   "timezone": "",
   "title": "boskos dashboard",
-  "version": 16
+  "version": 19
 }
