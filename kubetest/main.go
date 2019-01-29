@@ -92,7 +92,6 @@ type options struct {
 	kubemarkNodes      string // TODO(fejta): switch to int after migration
 	logexporterGCSPath string
 	metadataSources    string
-	multiClusters      multiClusterDeployment
 	noAllowDup         bool
 	nodeArgs           string
 	nodeTestArgs       string
@@ -154,7 +153,6 @@ func defineFlags() *options {
 	flag.StringVar(&o.kubemarkNodes, "kubemark-nodes", "5", "Number of kubemark nodes to start (only relevant if --kubemark=true).")
 	flag.StringVar(&o.logexporterGCSPath, "logexporter-gcs-path", "", "Path to the GCS artifacts directory to dump logs from nodes. Logexporter gets enabled if this is non-empty")
 	flag.StringVar(&o.metadataSources, "metadata-sources", "images.json", "Comma-separated list of files inside ./artifacts to merge into metadata.json")
-	flag.Var(&o.multiClusters, "multi-clusters", "If set, bring up/down multiple clusters specified. Format is [Zone1:]Cluster1[,[ZoneN:]ClusterN]]*. Zone is optional and default zone is used if zone is not specified")
 	flag.StringVar(&o.nodeArgs, "node-args", "", "Args for node e2e tests.")
 	flag.StringVar(&o.nodeTestArgs, "node-test-args", "", "Test args specifically for node e2e tests.")
 	flag.BoolVar(&o.noAllowDup, "no-allow-dup", false, "if set --allow-dup will not be passed to push-build and --stage will error if the build already exists on the gcs path")
@@ -242,9 +240,6 @@ func getDeployer(o *options) (deployer, error) {
 	case "kubeadm-dind":
 		return kubeadmdind.NewDeployer(control)
 	case "kubernetes-anywhere":
-		if o.multiClusters.Enabled() {
-			return newKubernetesAnywhereMultiCluster(o.gcpProject, o.gcpZone, o.multiClusters)
-		}
 		return newKubernetesAnywhere(o.gcpProject, o.gcpZone)
 	case "node":
 		return nodeDeploy{}, nil
@@ -260,9 +255,6 @@ func getDeployer(o *options) (deployer, error) {
 }
 
 func validateFlags(o *options) error {
-	if o.multiClusters.Enabled() && o.deployment != "kubernetes-anywhere" {
-		return errors.New("--multi-clusters flag cannot be passed with deployments other than 'kubernetes-anywhere'")
-	}
 	if !o.extract.Enabled() && o.extractSource {
 		return errors.New("--extract-source flag cannot be passed without --extract")
 	}
