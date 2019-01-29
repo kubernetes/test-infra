@@ -20,9 +20,9 @@
     {{range $ix, $test := .Failed}}
     <tr class="dark" onclick="toggleExpansion('failed-test-body-{{$ix}}', 'failed-test-expander-{{$ix}}')">
       <td class="mdl-data-table__cell--non-numeric test-name"><a href="{{$test.Link}}">{{$test.Junit.Name}}</a></td>
-      <td class="mdl-data-table__cell--non-numeric failed">{{$test.Junit.Status}}</td>
+      <td class="mdl-data-table__cell--non-numeric failed">Failed</td>
       <td class="mdl-data-table__cell--non-numeric">{{$test.Junit.Duration}}</td>
-      <td class="mdl-data-table__cell--non-numeric">{{$test.Junit.Error.Message}}</td>
+      <td class="mdl-data-table__cell--non-numeric"></td>
     </tr>
     {{end}}
     </tbody>
@@ -38,7 +38,7 @@
     {{range .Passed}}
     <tr>
       <td class="mdl-data-table__cell--non-numeric test-name"><a href="{{.Link}}">{{.Junit.Name}}</a></td>
-      <td class="mdl-data-table__cell--non-numeric passed">{{.Junit.Status}}</td>
+      <td class="mdl-data-table__cell--non-numeric passed">Passed</td>
       <td class="mdl-data-table__cell--non-numeric">{{.Junit.Duration}}</td>
       <td class="mdl-data-table__cell--non-numeric"></td>
     </tr>
@@ -56,7 +56,7 @@
     {{range .Skipped}}
     <tr>
       <td class="mdl-data-table__cell--non-numeric test-name"><a href="{{.Link}}">{{.Junit.Name}}</a></td>
-      <td class="mdl-data-table__cell--non-numeric skipped">{{.Junit.Status}}</td>
+      <td class="mdl-data-table__cell--non-numeric skipped">Skipped</td>
       <td class="mdl-data-table__cell--non-numeric">{{.Junit.Duration}}</td>
       <td class="mdl-data-table__cell--non-numeric"></td>
     </tr>

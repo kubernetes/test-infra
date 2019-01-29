@@ -8,8 +8,8 @@ go_library(
     importpath = "k8s.io/test-infra/prow/spyglass/lenses/junit",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/junit:go_default_library",
         "//prow/spyglass/lenses:go_default_library",
-        "//vendor/github.com/joshdk/go-junit:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
