@@ -7500,12 +7500,12 @@ dashboards:
 # sig-windows dashboard
 - name: sig-windows
   dashboard_tab:
-  - name: Conformance acs-engine on Azure
-    description: Runs conformance tests on a Kubernetes cluster provided by acs-engine (https://github.com/Azure/acs-engine) on Azure cloud"
-    test_group_name: ci-kubernetes-e2e-win-1-13
-  - name: Staging job for windows tests with aks-engine on Azure
+  - name: aks-engine-azure-windows-master
+    description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
+    test_group_name: ci-kubernetes-e2e-aks-engine-azure-master-windows
+  - name: aks-engine-azure-windows-master-staging
     description: Staging job for new Windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
-    test_group_name: ci-kubernetes-e2e-win-staging
+    test_group_name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
   - name: gce-windows-master
     description: Runs tests on a Kubernetes cluster with Windows nodes on GCE"
     test_group_name: ci-kubernetes-e2e-windows-gce
