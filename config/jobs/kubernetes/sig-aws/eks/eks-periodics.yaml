@@ -19,7 +19,7 @@ periodics:
       - --deployment=eks
       - --provider=eks
       - --gce-ssh=
-      - --extract=ci/latest-1.11
+      - --extract=ci/latest
       - --ginkgo-parallel=30
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=180m
