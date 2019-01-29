@@ -15,7 +15,7 @@ presets:
   - name: WIN_BUILD
     value: https://raw.githubusercontent.com/Azure/acs-engine/master/scripts/build-windows-k8s.sh
   - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
-    value: https://raw.githubusercontent.com/e2e-win/e2e-win-prow-deployment/master/repo-list
+    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list-ws2019
   volumes:
   - name: azure-cred
     secret:
