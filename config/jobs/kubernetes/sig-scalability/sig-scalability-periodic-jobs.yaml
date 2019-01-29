@@ -387,7 +387,7 @@ periodics:
       - --gcp-node-size=n1-standard-8
       - --gcp-nodes=7
       - --gcp-project=k8s-jenkins-blocking-kubemark
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-central1-f
       - --kubemark
       - --kubemark-nodes=500
       - --provider=gce
