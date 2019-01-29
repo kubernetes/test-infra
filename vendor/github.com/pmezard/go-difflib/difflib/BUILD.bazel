@@ -2,8 +2,9 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["consts.go"],
-    importpath = "k8s.io/test-infra/traiana",
+    srcs = ["difflib.go"],
+    importmap = "k8s.io/test-infra/vendor/github.com/pmezard/go-difflib/difflib",
+    importpath = "github.com/pmezard/go-difflib/difflib",
     visibility = ["//visibility:public"],
 )
 
@@ -16,14 +17,7 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [
-        ":package-srcs",
-        "//traiana/awsapi:all-srcs",
-        "//traiana/fakestorage:all-srcs",
-        "//traiana/prow/awsupload:all-srcs",
-        "//traiana/prow/plugins/force-merge:all-srcs",
-        "//traiana/storage:all-srcs",
-    ],
+    srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

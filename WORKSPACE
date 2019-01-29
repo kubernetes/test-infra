@@ -1516,3 +1516,21 @@ go_repository(
     importpath = "go.uber.org/zap",
     tag = "v1.9.1",
 )
+
+go_repository(
+    name = "com_github_asaskevich_govalidator",
+    commit = "f9ffefc3facf",
+    importpath = "github.com/asaskevich/govalidator",
+)
+
+go_repository(
+    name = "com_github_go_ozzo_ozzo_validation",
+    importpath = "github.com/go-ozzo/ozzo-validation",
+    tag = "v3.5.0",
+)
+
+go_repository(
+    name = "com_github_traiana_okro",
+    commit = "05c11def2e77",
+    importpath = "github.com/traiana/okro",
+)

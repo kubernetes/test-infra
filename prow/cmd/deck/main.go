@@ -34,13 +34,13 @@ import (
 	"time"
 
 	"k8s.io/test-infra/traiana/storage"
+	"k8s.io/test-infra/traiana/storage/option"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
-	"google.golang.org/api/option"
 	coreapi "k8s.io/api/core/v1"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"sigs.k8s.io/yaml"

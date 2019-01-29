@@ -8,6 +8,7 @@ go_library(
         "doc.go",
         "download.go",
         "upload.go",
+        "upload_input.go",
     ],
     importmap = "k8s.io/test-infra/vendor/github.com/aws/aws-sdk-go/service/s3/s3manager",
     importpath = "github.com/aws/aws-sdk-go/service/s3/s3manager",

@@ -134,6 +134,7 @@ filegroup(
         "//vendor/github.com/pelletier/go-toml:all-srcs",
         "//vendor/github.com/peterbourgon/diskv:all-srcs",
         "//vendor/github.com/pkg/errors:all-srcs",
+        "//vendor/github.com/pmezard/go-difflib/difflib:all-srcs",
         "//vendor/github.com/prometheus/client_golang/prometheus:all-srcs",
         "//vendor/github.com/prometheus/client_model/go:all-srcs",
         "//vendor/github.com/prometheus/common/expfmt:all-srcs",

@@ -9,7 +9,11 @@ go_test(
         "//prow/gcsupload:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",
+        "//prow/pod-utils/gcs:go_default_library",
+        "//traiana/storage:go_default_library",
+        "//traiana/storage/option:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/testhelper:go_default_library",
+        "//vendor/github.com/stretchr/testify/assert:go_default_library",
     ],
 )
 
