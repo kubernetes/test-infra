@@ -21,11 +21,9 @@ import (
 	"compress/zlib"
 	"context"
 	"encoding/json"
-	"encoding/xml"
 	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -37,6 +35,7 @@ import (
 	"sync"
 	"time"
 
+	"k8s.io/test-infra/pkg/junit"
 	"k8s.io/test-infra/testgrid/config"
 	"k8s.io/test-infra/testgrid/state"
 	"k8s.io/test-infra/testgrid/util/gcs"
@@ -175,40 +174,10 @@ func (m Metadata) ColumnMetadata() ColumnMetadata {
 	return bm
 }
 
-// JunitSuites holds a <testsuites/> list of JunitSuite results
-type JunitSuites struct {
-	XMLName xml.Name     `xml:"testsuites"`
-	Suites  []JunitSuite `xml:"testsuite"`
-}
-
-// JunitSuite holds <testsuite/> results
-type JunitSuite struct {
-	XMLName  xml.Name      `xml:"testsuite"`
-	Name     string        `xml:"name,attr"`
-	Time     float64       `xml:"time,attr"` // Seconds
-	Failures int           `xml:"failures,attr"`
-	Tests    int           `xml:"tests,attr"`
-	Results  []JunitResult `xml:"testcase"`
-	/*
-	* <properties><property name="go.version" value="go1.8.3"/></properties>
-	 */
-}
-
-// JunitResult holds <testcase/> results
-type JunitResult struct {
-	Name      string  `xml:"name,attr"`
-	Time      float64 `xml:"time,attr"`
-	ClassName string  `xml:"classname,attr"`
-	Failure   *string `xml:"failure,omitempty"`
-	Output    *string `xml:"system-out,omitempty"`
-	Error     *string `xml:"system-err,omitempty"`
-	Skipped   *string `xml:"skipped,omitempty"`
-}
-
 // Message extracts the message for the junit test case.
 //
 // Will use the first non-empty <failure/>, <skipped/>, <output/> value.
-func (jr JunitResult) Message() string {
+func message(jr junit.Result) string {
 	const max = 140
 	var msg string
 	switch {
@@ -228,7 +197,7 @@ func (jr JunitResult) Message() string {
 }
 
 // Row converts the junit result into a Row result, prepending the suite name.
-func (jr JunitResult) Row(suite string) (string, Row) {
+func row(jr junit.Result, suite string) (string, Row) {
 	n := jr.Name
 	if suite != "" {
 		n = suite + "." + n
@@ -242,7 +211,7 @@ func (jr JunitResult) Row(suite string) (string, Row) {
 	if jr.Time > 0 {
 		r.Metrics[elapsedKey] = jr.Time
 	}
-	if msg := jr.Message(); msg != "" {
+	if msg := message(jr); msg != "" {
 		r.Message = msg
 	}
 	switch {
@@ -262,33 +231,10 @@ func (jr JunitResult) Row(suite string) (string, Row) {
 	return n, r
 }
 
-func unmarshalXML(buf []byte, i interface{}) error {
-	reader := bytes.NewReader(buf)
-	dec := xml.NewDecoder(reader)
-	dec.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
-		switch charset {
-		case "UTF-8", "utf8", "":
-			// utf8 is not recognized by golang, but our coalesce.py writes a utf8 doc, which python accepts.
-			return input, nil
-		default:
-			return nil, fmt.Errorf("unknown charset: %s", charset)
-		}
-	}
-	return dec.Decode(i)
-}
-
 func extractRows(buf []byte, meta map[string]string) (map[string][]Row, error) {
-	var suites JunitSuites
-	// Try to parse it as a <testsuites/> object
-	err := unmarshalXML(buf, &suites)
+	suites, err := junit.Parse(buf)
 	if err != nil {
-		// Maybe it is a <testsuite/> object instead
-		suites.Suites = append([]JunitSuite(nil), JunitSuite{})
-		ie := unmarshalXML(buf, &suites.Suites[0])
-		if ie != nil {
-			// Nope, it just doesn't parse
-			return nil, fmt.Errorf("not valid testsuites: %v nor testsuite: %v", err, ie)
-		}
+		return nil, err
 	}
 	rows := map[string][]Row{}
 	for _, suite := range suites.Suites {
@@ -297,7 +243,7 @@ func extractRows(buf []byte, meta map[string]string) (map[string][]Row, error) {
 				continue
 			}
 
-			n, r := sr.Row(suite.Name)
+			n, r := row(sr, suite.Name)
 			for k, v := range meta {
 				r.Metadata[k] = v
 			}
