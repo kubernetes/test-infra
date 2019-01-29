@@ -30,8 +30,8 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"gopkg.in/robfig/cron.v2"
-	"k8s.io/api/core/v1"
+	cron "gopkg.in/robfig/cron.v2"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
@@ -616,6 +616,9 @@ var jobNameRegex = regexp.MustCompile(`^[A-Za-z0-9-._]+$`)
 func validateJobBase(v JobBase, jobType kube.ProwJobType, podNamespace string) error {
 	if !jobNameRegex.MatchString(v.Name) {
 		return fmt.Errorf("name: must match regex %q", jobNameRegex.String())
+	}
+	if v.Namespace != nil && *v.Namespace != podNamespace && v.Agent != prowjobv1.KnativeBuildAgent {
+		return fmt.Errorf("namespace: cannot be set to anything but the pod namespace for jobs not handled by knative builds")
 	}
 	// Ensure max_concurrency is non-negative.
 	if v.MaxConcurrency < 0 {
