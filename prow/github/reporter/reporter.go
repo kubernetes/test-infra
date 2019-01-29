@@ -33,11 +33,11 @@ const (
 type Client struct {
 	gc          report.GithubClient
 	config      config.Getter
-	reportAgent string
+	reportAgent v1.ProwJobAgent
 }
 
 // NewReporter returns a reporter client
-func NewReporter(gc report.GithubClient, cfg config.Getter, reportAgent string) *Client {
+func NewReporter(gc report.GithubClient, cfg config.Getter, reportAgent v1.ProwJobAgent) *Client {
 	return &Client{
 		gc:          gc,
 		config:      cfg,
@@ -63,7 +63,7 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 		return false
 	}
 
-	if c.reportAgent != "" && string(pj.Spec.Agent) != c.reportAgent {
+	if c.reportAgent != "" && pj.Spec.Agent != c.reportAgent {
 		// Only report for specified agent
 		return false
 	}
