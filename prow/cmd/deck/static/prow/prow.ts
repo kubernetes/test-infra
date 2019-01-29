@@ -523,7 +523,7 @@ function redraw(fz: FuzzySearch): void {
                 if (buildIndex === -1) {
                     r.appendChild(cell.text(''));
                 } else {
-                    let url = window.location.origin + '/view/gcs/' +
+                    let url = window.location.origin + '/view/s3/' +
                         build.url.substring(buildIndex + '/build/'.length);
                     r.appendChild(createSpyglassCell(url));
                 }

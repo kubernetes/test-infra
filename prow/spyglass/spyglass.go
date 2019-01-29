@@ -34,7 +34,7 @@ import (
 
 // Key types specify the way Spyglass will fetch artifact handles
 const (
-	gcsKeyType  = "gcs"
+	gcsKeyType  = "s3"
 	prowKeyType = "prowjob"
 )
 

@@ -45,7 +45,7 @@ const (
 	// https://github.com/kubernetes/test-infra/tree/master/gubernator#gcs-bucket-layout
 	logsPrefix     = "logs"
 	symLinkPrefix  = "pr-logs/directory"
-	spyglassPrefix = "/view/gcs"
+	spyglassPrefix = "/view/s3"
 	emptyID        = int64(-1) // indicates no build id was specified
 )
 
