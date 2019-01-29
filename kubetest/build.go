@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os/exec"
 	"runtime"
@@ -50,11 +51,11 @@ func (b *buildStrategy) Set(value string) error {
 		}
 	}
 	switch value {
-	case "bazel", "e2e", "host-go", "quick", "release":
+	case "bazel", "e2e", "host-go", "quick", "release", "custom":
 		*b = buildStrategy(value)
 		return nil
 	}
-	return fmt.Errorf("bad build strategy: %v (use: bazel, e2e, host-go, quick, release)", value)
+	return fmt.Errorf("bad build strategy: %v (use: bazel, e2e, host-go, quick, release, custom)", value)
 }
 
 func (b *buildStrategy) Type() string {
@@ -68,7 +69,7 @@ func (b *buildStrategy) Enabled() bool {
 
 // Build kubernetes according to specified strategy.
 // This may be a bazel, host-go, quick or full release build depending on --build=B.
-func (b *buildStrategy) Build() error {
+func (b *buildStrategy) Build(buildCmd string, buildCmdArgs []string) error {
 	var target string
 	switch *b {
 	case "bazel":
@@ -85,6 +86,11 @@ func (b *buildStrategy) Build() error {
 		target = "quick-release"
 	case "release":
 		target = "release"
+	case "custom":
+		if buildCmd == "" {
+			return errors.New("--build=custom need to also set --buildCmd")
+		}
+		return control.FinishRunning(exec.Command(buildCmd, buildCmdArgs...))
 	default:
 		return fmt.Errorf("Unknown build strategy: %v", b)
 	}

@@ -58,6 +58,8 @@ var (
 
 type options struct {
 	build               buildStrategy
+	buildCmd            string
+	buildCmdArgs        []string
 	buildFederation     buildFederationStrategy
 	charts              bool
 	checkLeaks          bool
@@ -123,7 +125,8 @@ type options struct {
 
 func defineFlags() *options {
 	o := options{}
-	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (release|quick|bazel) strategy")
+	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (release|quick|bazel|custom) strategy")
+	flag.StringVar(&o.buildCmd, "build-cmd", "", "Required for --build=custom for running a custom build command, you can also feed in --build-cmd-args for the command")
 	flag.Var(&o.buildFederation, "build-federation", "Rebuild federation binaries, optionally forcing (release|quick|bazel) strategy")
 	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
 	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
@@ -197,6 +200,7 @@ func defineFlags() *options {
 	flag.BoolVar(&verbose, "verbose-commands", true, "If true, print all command output.")
 
 	// go flag does not support StringArrayVar
+	pflag.StringArrayVar(&o.buildCmdArgs, "build-cmd-args", []string{}, "args for --build-cmd")
 	pflag.StringArrayVar(&o.testCmdArgs, "test-cmd-args", []string{}, "args for test-cmd")
 	return &o
 }
@@ -422,7 +426,9 @@ func complete(o *options) error {
 func acquireKubernetes(o *options) error {
 	// Potentially build kubernetes
 	if o.build.Enabled() {
-		err := control.XMLWrap(&suite, "Build", o.build.Build)
+		err := control.XMLWrap(&suite, "Build", func() error {
+			return o.build.Build(o.buildCmd, o.buildCmdArgs)
+		})
 		if o.flushMemAfterBuild {
 			util.FlushMem()
 		}
