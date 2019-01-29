@@ -7,6 +7,7 @@ presubmits:
     - release-1.10  # per-release image
     max_concurrency: 12
     always_run: true
+    optional: true
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
@@ -52,6 +53,7 @@ presubmits:
     - release-1.13  # per-release image
     max_concurrency: 12
     always_run: true
+    optional: true
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
@@ -97,6 +99,7 @@ presubmits:
     - release-1.10  # per-release image
     max_concurrency: 12
     always_run: true
+    optional: true
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
