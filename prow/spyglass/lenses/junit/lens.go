@@ -27,8 +27,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/pkg/junit"
 	"k8s.io/test-infra/prow/spyglass/lenses"
+	"k8s.io/test-infra/testgrid/junit"
 )
 
 const (

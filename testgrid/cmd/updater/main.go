@@ -35,8 +35,8 @@ import (
 	"sync"
 	"time"
 
-	"k8s.io/test-infra/pkg/junit"
 	"k8s.io/test-infra/testgrid/config"
+	"k8s.io/test-infra/testgrid/junit"
 	"k8s.io/test-infra/testgrid/state"
 	"k8s.io/test-infra/testgrid/util/gcs"
 

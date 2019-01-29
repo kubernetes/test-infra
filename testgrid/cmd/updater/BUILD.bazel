@@ -6,9 +6,9 @@ go_library(
     importpath = "k8s.io/test-infra/testgrid/cmd/updater",
     visibility = ["//visibility:private"],
     deps = [
-        "//pkg/junit:go_default_library",
         "//testgrid:config",
         "//testgrid:state",
+        "//testgrid/junit:go_default_library",
         "//testgrid/util/gcs:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
