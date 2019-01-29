@@ -737,7 +737,7 @@ func configureTeamAndMembers(opt options, client *github.Client, githubTeams map
 	// Configure team members
 	if !opt.fixTeamMembers {
 		logrus.Infof("Skipping %s member configuration", name)
-	} else if err = configureTeamMembers(client, gt.ID, team); err != nil {
+	} else if err = configureTeamMembers(client, gt, team); err != nil {
 		return fmt.Errorf("failed to update %s members: %v", name, err)
 	}
 
@@ -827,7 +827,7 @@ func teamInvitations(client teamMembersClient, teamID int) (sets.String, error) 
 }
 
 // configureTeamMembers will add/update people to the appropriate role on the team, and remove anyone else.
-func configureTeamMembers(client teamMembersClient, id int, team org.Team) error {
+func configureTeamMembers(client teamMembersClient, gt github.Team, team org.Team) error {
 	// Get desired state
 	wantMaintainers := sets.NewString(team.Maintainers...)
 	wantMembers := sets.NewString(team.Members...)
@@ -836,53 +836,53 @@ func configureTeamMembers(client teamMembersClient, id int, team org.Team) error
 	haveMaintainers := sets.String{}
 	haveMembers := sets.String{}
 
-	members, err := client.ListTeamMembers(id, github.RoleMember)
+	members, err := client.ListTeamMembers(gt.ID, github.RoleMember)
 	if err != nil {
-		return fmt.Errorf("failed to list %d members: %v", id, err)
+		return fmt.Errorf("failed to list %d(%s) members: %v", gt.ID, gt.Name, err)
 	}
 	for _, m := range members {
 		haveMembers.Insert(m.Login)
 	}
 
-	maintainers, err := client.ListTeamMembers(id, github.RoleMaintainer)
+	maintainers, err := client.ListTeamMembers(gt.ID, github.RoleMaintainer)
 	if err != nil {
-		return fmt.Errorf("failed to list %d maintainers: %v", id, err)
+		return fmt.Errorf("failed to list %d(%s) maintainers: %v", gt.ID, gt.Name, err)
 	}
 	for _, m := range maintainers {
 		haveMaintainers.Insert(m.Login)
 	}
 
-	invitees, err := teamInvitations(client, id)
+	invitees, err := teamInvitations(client, gt.ID)
 	if err != nil {
-		return fmt.Errorf("failed to list %d invitees: %v", id, err)
+		return fmt.Errorf("failed to list %d(%s) invitees: %v", gt.ID, gt.Name, err)
 	}
 
 	adder := func(user string, super bool) error {
 		if invitees.Has(user) {
-			logrus.Infof("Waiting for %s to accept invitation to %d", user, id)
+			logrus.Infof("Waiting for %s to accept invitation to %d(%s)", user, gt.ID, gt.Name)
 			return nil
 		}
 		role := github.RoleMember
 		if super {
 			role = github.RoleMaintainer
 		}
-		tm, err := client.UpdateTeamMembership(id, user, super)
+		tm, err := client.UpdateTeamMembership(gt.ID, user, super)
 		if err != nil {
-			logrus.WithError(err).Warnf("UpdateTeamMembership(%d, %s, %t) failed", id, user, super)
+			logrus.WithError(err).Warnf("UpdateTeamMembership(%d(%s), %s, %t) failed", gt.ID, gt.Name, user, super)
 		} else if tm.State == github.StatePending {
-			logrus.Infof("Invited %s to %d as a %s", user, id, role)
+			logrus.Infof("Invited %s to %d(%s) as a %s", user, gt.ID, gt.Name, role)
 		} else {
-			logrus.Infof("Set %s as a %s of %d", user, role, id)
+			logrus.Infof("Set %s as a %s of %d(%s)", user, role, gt.ID, gt.Name)
 		}
 		return err
 	}
 
 	remover := func(user string) error {
-		err := client.RemoveTeamMembership(id, user)
+		err := client.RemoveTeamMembership(gt.ID, user)
 		if err != nil {
-			logrus.WithError(err).Warnf("RemoveTeamMembership(%d, %s) failed", id, user)
+			logrus.WithError(err).Warnf("RemoveTeamMembership(%d(%s), %s) failed", gt.ID, gt.Name, user)
 		} else {
-			logrus.Infof("Removed %s from team %d", user, id)
+			logrus.Infof("Removed %s from team %d(%s)", user, gt.ID, gt.Name)
 		}
 		return err
 	}

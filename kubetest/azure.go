@@ -44,22 +44,21 @@ var (
 	// azure specific flags
 	acsResourceName        = flag.String("acsengine-resource-name", "", "Azure Resource Name")
 	acsResourceGroupName   = flag.String("acsengine-resourcegroup-name", "", "Azure Resource Group Name")
-	acsLocation            = flag.String("acsengine-location", "westus2", "Azure ACS location")
-	acsMasterVmSize        = flag.String("acsengine-mastervmsize", "Standard_D2s_v3", "Azure Master VM size")
-	acsAgentVmSize         = flag.String("acsengine-agentvmsize", "Standard_D2s_v3", "Azure Agent VM size")
+	acsLocation            = flag.String("acsengine-location", "", "Azure ACS location")
+	acsMasterVmSize        = flag.String("acsengine-mastervmsize", "", "Azure Master VM size")
+	acsAgentVmSize         = flag.String("acsengine-agentvmsize", "", "Azure Agent VM size")
 	acsAdminUsername       = flag.String("acsengine-admin-username", "", "Admin username")
 	acsAdminPassword       = flag.String("acsengine-admin-password", "", "Admin password")
-	acsAgentPoolCount      = flag.Int("acsengine-agentpoolcount", 2, "Azure Agent Pool Count")
-	acsAgentOSType         = flag.String("acsengine-agentOSType", "Windows", "OS Type of Agent Nodes. Options: Windows|Linux")
-	acsTemplatePath        = flag.String("acsengine-template", "", "Azure Template Name")
+	acsAgentPoolCount      = flag.Int("acsengine-agentpoolcount", 0, "Azure Agent Pool Count")
+	acsTemplateURL         = flag.String("acsengine-template-url", "", "Azure Template URL.")
 	acsDnsPrefix           = flag.String("acsengine-dnsprefix", "", "Azure K8s Master DNS Prefix")
 	acsEngineURL           = flag.String("acsengine-download-url", "", "Download URL for ACS engine")
 	acsEngineMD5           = flag.String("acsengine-md5-sum", "", "Checksum for acs engine download")
 	acsSSHPublicKeyPath    = flag.String("acsengine-public-key", "", "Path to SSH Public Key")
-	acsWinBinariesURL      = flag.String("acsengine-win-binaries-url", "", "Path to get the zip file containing kubelet and kubeproxy binaries for Windows")
-	acsHyperKubeURL        = flag.String("acsengine-hyperkube-url", "", "Path to get the kyberkube image for the deployment")
+	acsWinBinaries         = flag.Bool("acsengine-win-binaries", false, "Set to True if you want kubetest to build a custom zip with windows binaries for acs-engine")
+	acsHyperKube           = flag.Bool("acsengine-hyperkube", false, "Set to True if you want kubetest to build a custom hyperkube for acs-engine")
 	acsCredentialsFile     = flag.String("acsengine-creds", "", "Path to credential file for Azure")
-	acsOrchestratorRelease = flag.String("acsengine-orchestratorRelease", "1.11", "Orchestrator Profile for acs-engine")
+	acsOrchestratorRelease = flag.String("acsengine-orchestratorRelease", "", "Orchestrator Profile for acs-engine")
 	acsWinZipBuildScript   = flag.String("acsengine-winZipBuildScript", "https://raw.githubusercontent.com/Azure/acs-engine/master/scripts/build-windows-k8s.sh", "Build script to create custom zip containing win binaries for acs-engine")
 	acsNetworkPlugin       = flag.String("acsengine-networkPlugin", "azure", "Network pluging to use with acs-engine")
 )
@@ -96,6 +95,9 @@ type Cluster struct {
 	acsCustomHyperKubeURL   string
 	acsCustomWinBinariesURL string
 	acsEngineBinaryPath     string
+	agentPoolCount          int
+	k8sVersion              string
+	networkPlugin           string
 	azureClient             *AzureClient
 }
 
@@ -130,11 +132,8 @@ func checkParams() error {
 	if *acsSSHPublicKeyPath == "" {
 		*acsSSHPublicKeyPath = os.Getenv("HOME") + "/.ssh/id_rsa.pub"
 	}
-	if *acsAdminUsername == "" {
-		return fmt.Errorf("error parsing flags. No admin username specified")
-	}
-	if *acsAdminPassword == "" {
-		return fmt.Errorf("error parting flags. No admin password specified.")
+	if *acsTemplateURL == "" {
+		return fmt.Errorf("no ApiModel URL specified.")
 	}
 	return nil
 }
@@ -151,7 +150,7 @@ func newAcsEngine() (*Cluster, error) {
 	}
 	c := Cluster{
 		ctx:                     context.Background(),
-		apiModelPath:            *acsTemplatePath,
+		apiModelPath:            *acsTemplateURL,
 		name:                    *acsResourceName,
 		dnsPrefix:               *acsDnsPrefix,
 		location:                *acsLocation,
@@ -159,9 +158,16 @@ func newAcsEngine() (*Cluster, error) {
 		outputDir:               tempdir,
 		sshPublicKey:            fmt.Sprintf("%s", sshKey),
 		credentials:             &Creds{},
+		masterVMSize:            *acsMasterVmSize,
+		agentVMSize:             *acsAgentVmSize,
+		adminUsername:           *acsAdminUsername,
+		adminPassword:           *acsAdminPassword,
+		agentPoolCount:          *acsAgentPoolCount,
+		k8sVersion:              *acsOrchestratorRelease,
+		networkPlugin:           *acsNetworkPlugin,
 		acsCustomHyperKubeURL:   "",
 		acsCustomWinBinariesURL: "",
-		acsEngineBinaryPath:     "acs-engine", // use the one in path by default
+		acsEngineBinaryPath:     "aks-engine", // use the one in path by default
 	}
 	c.getAzCredentials()
 	err = c.getARMClient(c.ctx)
@@ -177,124 +183,74 @@ func newAcsEngine() (*Cluster, error) {
 	return &c, nil
 }
 
-func (c *Cluster) generateTemplate() error {
-	v := &AcsEngineAPIModel{
-		APIVersion: "vlabs",
-		Location:   c.location,
-		Name:       c.name,
-		Tags: map[string]string{
-			"date": time.Now().String(),
-		},
-		Properties: &Properties{
-			OrchestratorProfile: &OrchestratorProfile{
-				OrchestratorType:    "Kubernetes",
-				OrchestratorRelease: *acsOrchestratorRelease,
-				KubernetesConfig: &KubernetesConfig{
-					NetworkPlugin: *acsNetworkPlugin,
-				},
-			},
-			MasterProfile: &MasterProfile{
-				Count:          1,
-				DNSPrefix:      c.dnsPrefix,
-				VMSize:         *acsMasterVmSize,
-				IPAddressCount: 200,
-				Extensions: []map[string]string{
-					{
-						"name": "win-e2e-master-extension",
-					},
-				},
-			},
-			AgentPoolProfiles: []*AgentPoolProfile{
-				{
-					Name:                "agentpool0",
-					VMSize:              *acsAgentVmSize,
-					Count:               *acsAgentPoolCount,
-					OSType:              *acsAgentOSType,
-					AvailabilityProfile: "AvailabilitySet",
-					IPAddressCount:      200,
-					PreProvisionExtension: map[string]string{
-						"name":        "node_setup",
-						"singleOrAll": "all",
-					},
-					Extensions: []map[string]string{
-						{
-							"name": "winrm",
-						},
-					},
-				},
-			},
-			LinuxProfile: &LinuxProfile{
-				AdminUsername: *acsAdminUsername,
-				SSHKeys: &SSH{
-					PublicKeys: []PublicKey{{
-						KeyData: c.sshPublicKey,
-					},
-					},
-				},
-			},
-			WindowsProfile: &WindowsProfile{
-				AdminUsername: *acsAdminUsername,
-				AdminPassword: *acsAdminPassword,
-			},
-			ServicePrincipalProfile: &ServicePrincipalProfile{
-				ClientID: c.credentials.ClientID,
-				Secret:   c.credentials.ClientSecret,
-			},
-			ExtensionProfiles: []map[string]string{
-				{
-					/* Agent node preprovision template
-					   Used to setup windows node for e2e tests: i.e creates c:\tmp folder that some
-					   tests expect
-
-					   Extension source:
-					   https://github.com/e2e-win/e2e-win-prow-deployment/blob/master/extensions/agent_preprovision_extension/node_setup.ps1
-					*/
-					"name":    "node_setup",
-					"version": "v1",
-					"rootURL": "https://k8swin.blob.core.windows.net/k8s-windows/preprovision_extensions/",
-					"script":  "node_setup.ps1",
-				},
-				{
-					/*
-					   WinRM template used for accessing windows nodes for debugging and logs collection.
-					*/
-					"name":    "winrm",
-					"version": "v1",
-				},
-				{
-					/*
-						Master node custom script. Runs after provisioning.
-
-						Taints master node as not schedulable for tests. As this is the only
-						Linux node in the deployment, we need to wait until kube-system pods
-						start before tainting master
-
-						Extension source:
-						https://github.com/e2e-win/e2e-win-prow-deployment/blob/master/extensions/master_extension/win-e2e-master-extension.sh
-					*/
-					"name":                "win-e2e-master-extension",
-					"version":             "v1",
-					"extensionParameters": "parameters",
-					"rootURL":             "https://k8swin.blob.core.windows.net/k8s-windows/extensions/",
-					"script":              "win-e2e-master-extension.sh",
-				},
-			},
-		},
+func (c *Cluster) populateApiModelTemplate() error {
+	var err error
+	v := AcsEngineAPIModel{}
+	if c.apiModelPath != "" {
+		// template already exists, read it
+		template, err := ioutil.ReadFile(path.Join(c.outputDir, "kubernetes.json"))
+		if err != nil {
+			return fmt.Errorf("error reading ApiModel template file: %v.", err)
+		}
+		err = json.Unmarshal(template, &v)
+		if err != nil {
+			return fmt.Errorf("error unmarshaling ApiModel template file: %v", err)
+		}
+	} else {
+		return fmt.Errorf("No template file specified %v", err)
 	}
-	if *acsHyperKubeURL != "" {
-		v.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage = *acsHyperKubeURL
-	} else if c.acsCustomHyperKubeURL != "" {
+
+	// replace APIModel template properties from flags
+	if c.location != "" {
+		v.Location = c.location
+	}
+	if c.name != "" {
+		v.Name = c.name
+	}
+	if c.k8sVersion != "" {
+		v.Properties.OrchestratorProfile.OrchestratorRelease = c.k8sVersion
+	}
+	if v.Properties.OrchestratorProfile.KubernetesConfig == nil {
+		v.Properties.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
+	}
+	v.Properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = c.networkPlugin // default Azure
+	if c.dnsPrefix != "" {
+		v.Properties.MasterProfile.DNSPrefix = c.dnsPrefix
+	}
+	if c.masterVMSize != "" {
+		v.Properties.MasterProfile.VMSize = c.masterVMSize
+	}
+	if c.agentVMSize != "" {
+		for _, agentPool := range v.Properties.AgentPoolProfiles {
+			agentPool.VMSize = c.agentVMSize
+		}
+	}
+	if c.adminUsername != "" {
+		v.Properties.LinuxProfile.AdminUsername = c.adminUsername
+		if v.Properties.WindowsProfile != nil {
+			v.Properties.WindowsProfile.AdminUsername = c.adminUsername
+		}
+	}
+	if c.adminPassword != "" {
+		if v.Properties.WindowsProfile != nil {
+			v.Properties.WindowsProfile.AdminPassword = c.adminPassword
+		}
+	}
+	v.Properties.LinuxProfile.SSHKeys.PublicKeys = []PublicKey{{
+		KeyData: c.sshPublicKey,
+	}}
+	v.Properties.ServicePrincipalProfile.ClientID = c.credentials.ClientID
+	v.Properties.ServicePrincipalProfile.Secret = c.credentials.ClientSecret
+
+	if c.acsCustomHyperKubeURL != "" {
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage = c.acsCustomHyperKubeURL
 	}
-
-	if *acsWinBinariesURL != "" {
-		v.Properties.OrchestratorProfile.KubernetesConfig.CustomWindowsPackageURL = *acsWinBinariesURL
-	} else if c.acsCustomWinBinariesURL != "" {
+	if c.acsCustomWinBinariesURL != "" {
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomWindowsPackageURL = c.acsCustomWinBinariesURL
 	}
-	apiModel, _ := json.Marshal(v)
+	apiModel, _ := json.MarshalIndent(v, "", "    ")
 	c.apiModelPath = path.Join(c.outputDir, "kubernetes.json")
-	err := ioutil.WriteFile(c.apiModelPath, apiModel, 0644)
+	err = ioutil.WriteFile(c.apiModelPath, apiModel, 0644)
 	if err != nil {
 		return fmt.Errorf("cannot write apimodel to file: %v", err)
 	}
@@ -302,7 +258,7 @@ func (c *Cluster) generateTemplate() error {
 }
 
 func (c *Cluster) getAcsEngine(retry int) error {
-	downloadPath := path.Join(os.Getenv("HOME"), "acs-engine.tar.gz")
+	downloadPath := path.Join(os.Getenv("HOME"), "aks-engine.tar.gz")
 	f, err := os.Create(downloadPath)
 	if err != nil {
 		return err
@@ -342,7 +298,7 @@ func (c *Cluster) getAcsEngine(retry int) error {
 	if err = control.FinishRunning(exec.Command("tar", "-xzf", f.Name(), "--strip", "1")); err != nil {
 		return err
 	}
-	c.acsEngineBinaryPath = path.Join(cwd, "acs-engine")
+	c.acsEngineBinaryPath = path.Join(cwd, "aks-engine")
 	return nil
 
 }
@@ -429,18 +385,33 @@ func (c *Cluster) buildHyperKube() error {
 
 	cwd, _ := os.Getwd()
 	log.Printf("CWD %v", cwd)
-	log.Printf("Attempt docker gcloud login")
-	prepareDocker := util.K8s("gcloud", "auth", "configure-docker")
-	if err := control.FinishRunning(exec.Command(prepareDocker)); err != nil {
-		return err
+
+	username := os.Getenv("DOCKER_USERNAME")
+	password_file := os.Getenv("DOCKER_PASSWORD_FILE")
+	password, err := ioutil.ReadFile(password_file)
+	if err != nil {
+		return fmt.Errorf("error reading docker passoword file %v: %v.", password_file, err)
 	}
+
+	log.Println("Attempting Docker login.")
+	cmd := exec.Command("docker", "login", fmt.Sprintf("--username=%s", username), fmt.Sprintf("--password=%s", strings.TrimSuffix(string(password), "\n")))
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("Docker login failed with error: %v.", err)
+	}
+	log.Println("Docker login success.")
+	log.Println("Building hyperkube.")
 	pushHyperkube := util.K8s("kubernetes", "hack", "dev-push-hyperkube.sh")
 	if err1 := control.FinishRunning(exec.Command(pushHyperkube)); err1 != nil {
 		return err1
 	}
 	c.acsCustomHyperKubeURL = fmt.Sprintf("%s/hyperkube-amd64:%s", os.Getenv("REGISTRY"), os.Getenv("VERSION"))
 
-	log.Printf("Custom hyperkube url: %v", c.acsCustomHyperKubeURL)
+	log.Println("Docker logout.")
+	cmd = exec.Command("docker", "logout")
+	if err := cmd.Run(); err != nil {
+		log.Println("Docker logout failed.")
+	}
+	log.Printf("Custom hyperkube URL: %v .", c.acsCustomHyperKubeURL)
 	return nil
 }
 
@@ -469,6 +440,31 @@ func (c *Cluster) uploadZip(zipPath string) error {
 	c.acsCustomWinBinariesURL = blobURLString.String()
 	log.Printf("Custom win binaries url: %v", c.acsCustomWinBinariesURL)
 	return nil
+}
+
+func getApiModelTemplate(url string, downloadPath string, retry int) (string, error) {
+
+	f, err := os.Create(downloadPath)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	for i := 0; i < retry; i++ {
+		log.Printf("downloading %v from %v.", downloadPath, url)
+		if err := httpRead(url, f); err == nil {
+			break
+		}
+		err = fmt.Errorf("url=%s failed get %v: %v.", url, downloadPath, err)
+		if i == retry-1 {
+			return "", err
+		}
+		log.Println(err)
+		sleep(time.Duration(i) * time.Second)
+	}
+	f.Chmod(0644)
+	return downloadPath, nil
+
 }
 
 func getZipBuildScript(buildScriptURL string, retry int) (string, error) {
@@ -518,24 +514,31 @@ func (c *Cluster) buildWinZip() error {
 func (c Cluster) Up() error {
 
 	var err error
-	if *acsHyperKubeURL == "" {
+	if *acsHyperKube == true {
 		err = c.buildHyperKube()
 		if err != nil {
 			return fmt.Errorf("error building hyperkube %v", err)
 		}
 	}
-	if *acsWinBinariesURL == "" {
+	if *acsWinBinaries == true {
 		err = c.buildWinZip()
 		if err != nil {
 			return fmt.Errorf("error building windowsZipFile %v", err)
 		}
 	}
-	if c.apiModelPath == "" {
-		err = c.generateTemplate()
+	if c.apiModelPath != "" {
+		templateFile, err := getApiModelTemplate(c.apiModelPath, path.Join(c.outputDir, "kubernetes.json"), 2)
 		if err != nil {
-			return fmt.Errorf("failed to generate acs-engine apimodel template: %v", err)
+			return fmt.Errorf("error downloading ApiModel template: %v with error %v", c.apiModelPath, err)
 		}
+		c.apiModelPath = templateFile
 	}
+
+	err = c.populateApiModelTemplate()
+	if err != nil {
+		return fmt.Errorf("failed to populate acs-engine apimodel template: %v", err)
+	}
+
 	if *acsEngineURL != "" {
 		err = c.getAcsEngine(2)
 		if err != nil {

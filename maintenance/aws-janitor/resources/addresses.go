@@ -18,11 +18,13 @@ package resources
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 // Elastic IPs: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeAddresses
@@ -55,6 +57,29 @@ func (Addresses) MarkAndSweep(sess *session.Session, acct string, region string,
 		}
 	}
 	return nil
+}
+
+func (Addresses) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	svc := ec2.New(sess, aws.NewConfig().WithRegion(region))
+	set := NewSet(0)
+	inp := &ec2.DescribeAddressesInput{}
+
+	addrs, err := svc.DescribeAddresses(inp)
+	if err != nil {
+		return nil, errors.Wrapf(err, "couldn't describe EC2 addresses for %q in %q", acct, region)
+	}
+
+	now := time.Now()
+	for _, addr := range addrs.Addresses {
+		arn := address{
+			Account: acct,
+			Region:  region,
+			ID:      *addr.AllocationId,
+		}.ARN()
+		set.firstSeen[arn] = now
+	}
+
+	return set, nil
 }
 
 type address struct {

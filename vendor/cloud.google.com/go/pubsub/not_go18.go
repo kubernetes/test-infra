@@ -1,4 +1,4 @@
-// Copyright 2018 Google Inc. All Rights Reserved.
+// Copyright 2018 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,6 +40,8 @@ var (
 	NackCount dummy
 	// Not supported below Go 1.8.
 	ModAckCount dummy
+	// Not supported below Go 1.8.
+	ModAckTimeoutCount dummy
 	// Not supported below Go 1.8.
 	StreamOpenCount dummy
 	// Not supported below Go 1.8.

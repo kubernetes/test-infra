@@ -31,7 +31,6 @@ import (
 type jobAgent interface {
 	GetProwJob(job string, id string) (kube.ProwJob, error)
 	GetJobLog(job string, id string) ([]byte, error)
-	GetJobLogTail(job string, id string, n int64) ([]byte, error)
 }
 
 // PodLogArtifact holds data for reading from a specific pod log
@@ -144,7 +143,7 @@ func (a *PodLogArtifact) ReadAtMost(n int64) ([]byte, error) {
 
 // ReadTail reads the last n bytes of the pod log
 func (a *PodLogArtifact) ReadTail(n int64) ([]byte, error) {
-	logs, err := a.jobAgent.GetJobLogTail(a.name, a.buildID, n)
+	logs, err := a.jobAgent.GetJobLog(a.name, a.buildID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting pod log tail: %v", err)
 	}

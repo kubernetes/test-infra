@@ -26,6 +26,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/genfiles"
+	"k8s.io/test-infra/prow/gitattributes"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -88,7 +89,7 @@ func handlePR(gc githubClient, sizes plugins.Size, le *logrus.Entry, pe github.P
 		sha   = pe.PullRequest.Base.SHA
 	)
 
-	g, err := genfiles.NewGroup(gc, owner, repo, sha)
+	gf, err := genfiles.NewGroup(gc, owner, repo, sha)
 	if err != nil {
 		switch err.(type) {
 		case *genfiles.ParseError:
@@ -99,6 +100,11 @@ func handlePR(gc githubClient, sizes plugins.Size, le *logrus.Entry, pe github.P
 		}
 	}
 
+	ga, err := gitattributes.NewGroup(func() ([]byte, error) { return gc.GetFile(owner, repo, ".gitattributes", sha) })
+	if err != nil {
+		return err
+	}
+
 	changes, err := gc.GetPullRequestChanges(owner, repo, num)
 	if err != nil {
 		return fmt.Errorf("can not get PR changes for size plugin: %v", err)
@@ -106,7 +112,8 @@ func handlePR(gc githubClient, sizes plugins.Size, le *logrus.Entry, pe github.P
 
 	var count int
 	for _, change := range changes {
-		if g.Match(change.Filename) {
+		// Skip generated and linguist-generated files.
+		if gf.Match(change.Filename) || ga.IsLinguistGenerated(change.Filename) {
 			continue
 		}
 

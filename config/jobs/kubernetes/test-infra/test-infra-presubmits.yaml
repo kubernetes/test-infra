@@ -14,6 +14,20 @@ presubmits:
       - name: third
         image: busybox
         args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-presubmits.yaml"]
+  - name: pull-test-infra-build-smoke-fail
+    agent: knative-build
+    decorate: true
+    build_spec:
+      steps:
+      - name: first
+        image: busybox
+        args: ["echo", "hello"]
+      - name: second
+        image: busybox
+        args: ["sleep", "60"]
+      - name: third
+        image: busybox
+        args: ["exit", "1"]
 
   - name: pull-test-infra-bazel
     branches:
@@ -26,7 +40,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
         command:
         - runner.sh
         - ./scenarios/kubernetes_execute_bazel.py
@@ -64,7 +78,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
         command:
         - runner.sh
         - ./scenarios/kubernetes_bazel.py
@@ -89,7 +103,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
         command:
         - ./hack/verify-bazel.sh
 
@@ -103,7 +117,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
         command:
         - runner.sh
         args:
@@ -125,7 +139,7 @@ presubmits:
       - name: test
         command:
         - ./hack/verify-config.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-experimental
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
         env:
         - name: TEST_TMPDIR
           value: /bazel-scratch/.cache/bazel
@@ -151,7 +165,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
         command:
         - runner.sh
         args:
@@ -171,7 +185,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
         command:
         - ./hack/verify-codegen.sh
         resources:
@@ -187,7 +201,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
         command:
         - ./hack/verify-gofmt.sh
 
@@ -201,7 +215,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
         command:
         - runner.sh
         args:
@@ -217,7 +231,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
         command:
         - runner.sh
         args:

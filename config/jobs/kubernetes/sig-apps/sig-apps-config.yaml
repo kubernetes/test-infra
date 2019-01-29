@@ -7,7 +7,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
       args:
       - --repo=github.com/kubernetes-sigs/application=master
       - --upload=gs://kubernetes-jenkins/logs/
@@ -19,7 +19,7 @@ periodics:
       - --deployment=gke
       - --extract=gke
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gke-environment=prod
       - --provider=gke
       - --test=false
@@ -50,11 +50,11 @@ periodics:
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--feature-gates=TaintBasedEvictions=true --enable-taint-manager=true
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:TaintEviction\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
 
 
 - interval: 30m
@@ -71,8 +71,8 @@ periodics:
       - --
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:StatefulSet\] --minStartupPods=8
       - --timeout=90m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master

@@ -8,6 +8,7 @@ go_library(
         "go18.go",
         "iterator.go",
         "message.go",
+        "nodebug.go",
         "not_go18.go",
         "pubsub.go",
         "pullstream.go",

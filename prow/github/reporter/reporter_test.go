@@ -50,14 +50,14 @@ func TestShouldReport(t *testing.T) {
 			report: false,
 		},
 		{
-			name: "should not report postsubmit job",
+			name: "should report postsubmit job",
 			pj: &v1.ProwJob{
 				Spec: v1.ProwJobSpec{
 					Type:   v1.PostsubmitJob,
 					Report: true,
 				},
 			},
-			report: false,
+			report: true,
 		},
 		{
 			name: "should not report batch job",
@@ -70,7 +70,7 @@ func TestShouldReport(t *testing.T) {
 			report: false,
 		},
 		{
-			name: "only report presubmit job",
+			name: "should report presubmit job",
 			pj: &v1.ProwJob{
 				Spec: v1.ProwJobSpec{
 					Type:   v1.PresubmitJob,

@@ -227,6 +227,69 @@ func TestHandlePR(t *testing.T) {
 			sizes: defaultSizes,
 		},
 		{
+			name: "simple size/M, with .gitattributes",
+			client: &ghc{
+				labels: map[github.Label]bool{},
+				files: map[string][]byte{
+					".gitattributes": []byte(`
+						# comments
+						foobar linguist-generated=true
+						generated/**/*.txt linguist-generated=true
+					`),
+				},
+				prChanges: []github.PullRequestChange{
+					{
+						SHA:       "abcd",
+						Filename:  "foobar",
+						Additions: 10,
+						Deletions: 10,
+						Changes:   20,
+					},
+					{
+						SHA:       "abcd",
+						Filename:  "barfoo",
+						Additions: 50,
+						Deletions: 0,
+						Changes:   50,
+					},
+					{
+						SHA:       "abcd",
+						Filename:  "generated/what.txt",
+						Additions: 30,
+						Deletions: 0,
+						Changes:   30,
+					},
+					{
+						SHA:       "abcd",
+						Filename:  "generated/my/file.txt",
+						Additions: 300,
+						Deletions: 0,
+						Changes:   300,
+					},
+				},
+			},
+			event: github.PullRequestEvent{
+				Action: github.PullRequestActionOpened,
+				Number: 101,
+				PullRequest: github.PullRequest{
+					Number: 101,
+					Base: github.PullRequestBranch{
+						SHA: "abcd",
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "kubernetes",
+							},
+							Name: "kubernetes",
+						},
+					},
+				},
+			},
+			finalLabels: []github.Label{
+				{Name: "size/M"},
+			},
+			sizes: defaultSizes,
+		},
+		{
 			name: "simple size/XS, with .generated_files and paths-from-repo",
 			client: &ghc{
 				labels: map[github.Label]bool{},

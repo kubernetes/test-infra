@@ -14,7 +14,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -33,6 +33,13 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
 
 periodics:
 - name: ci-kubernetes-local-e2e
@@ -43,7 +50,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
       args:
       - "--timeout=140"
       - "--bare"
@@ -59,3 +66,10 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m

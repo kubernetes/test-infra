@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y \
     python \
     python-yaml \
     python-pip && \
-    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 
 RUN pip install influxdb google-cloud-bigquery==0.24.0
 

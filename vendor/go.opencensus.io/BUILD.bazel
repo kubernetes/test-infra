@@ -21,6 +21,7 @@ filegroup(
         ":package-srcs",
         "//vendor/go.opencensus.io/internal:all-srcs",
         "//vendor/go.opencensus.io/plugin/ocgrpc:all-srcs",
+        "//vendor/go.opencensus.io/plugin/ochttp:all-srcs",
         "//vendor/go.opencensus.io/stats:all-srcs",
         "//vendor/go.opencensus.io/tag:all-srcs",
         "//vendor/go.opencensus.io/trace:all-srcs",

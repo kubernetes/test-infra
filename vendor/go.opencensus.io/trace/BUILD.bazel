@@ -21,6 +21,7 @@ go_library(
     deps = [
         "//vendor/go.opencensus.io/internal:go_default_library",
         "//vendor/go.opencensus.io/trace/internal:go_default_library",
+        "//vendor/go.opencensus.io/trace/tracestate:go_default_library",
     ],
 )
 
@@ -37,6 +38,7 @@ filegroup(
         ":package-srcs",
         "//vendor/go.opencensus.io/trace/internal:all-srcs",
         "//vendor/go.opencensus.io/trace/propagation:all-srcs",
+        "//vendor/go.opencensus.io/trace/tracestate:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

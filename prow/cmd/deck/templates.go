@@ -21,7 +21,6 @@ import (
 	"html/template"
 	"k8s.io/test-infra/prow/cmd/deck/version"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/deck/jobs"
 	"net/http"
 	"path"
 )
@@ -37,9 +36,9 @@ func makeBaseTemplateSettings(mobileFriendly bool, pageName string, arguments in
 	return baseTemplateSettings{mobileFriendly, pageName, arguments}
 }
 
-func getConcreteBrandingFunction(ca jobs.ConfigAgent) func() config.Branding {
+func getConcreteBrandingFunction(cfg config.Getter) func() config.Branding {
 	return func() config.Branding {
-		if branding := ca.Config().Deck.Branding; branding != nil {
+		if branding := cfg().Deck.Branding; branding != nil {
 			return *branding
 		}
 		return config.Branding{}
@@ -60,10 +59,10 @@ func getConcreteSectionFunction(o options) func() baseTemplateSections {
 	}
 }
 
-func prepareBaseTemplate(o options, ca jobs.ConfigAgent, t *template.Template) (*template.Template, error) {
+func prepareBaseTemplate(o options, cfg config.Getter, t *template.Template) (*template.Template, error) {
 	return t.Funcs(map[string]interface{}{
 		"settings":         makeBaseTemplateSettings,
-		"branding":         getConcreteBrandingFunction(ca),
+		"branding":         getConcreteBrandingFunction(cfg),
 		"sections":         getConcreteSectionFunction(o),
 		"mobileFriendly":   func() bool { return true },
 		"mobileUnfriendly": func() bool { return false },
@@ -71,10 +70,10 @@ func prepareBaseTemplate(o options, ca jobs.ConfigAgent, t *template.Template) (
 	}).ParseFiles(path.Join(o.templateFilesLocation, "base.html"))
 }
 
-func handleSimpleTemplate(o options, ca jobs.ConfigAgent, templateName string, param interface{}) http.HandlerFunc {
+func handleSimpleTemplate(o options, cfg config.Getter, templateName string, param interface{}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		t := template.New(templateName) // the name matters, and must match the filename.
-		if _, err := prepareBaseTemplate(o, ca, t); err != nil {
+		if _, err := prepareBaseTemplate(o, cfg, t); err != nil {
 			logrus.WithError(err).Error("error preparing base template")
 			http.Error(w, "error preparing base template", http.StatusInternalServerError)
 			return

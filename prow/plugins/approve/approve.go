@@ -587,24 +587,35 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments []*comm
 func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.Approve {
 	fullName := fmt.Sprintf("%s/%s", org, repo)
 
-	// First search for repo config
-	for _, c := range config.Approve {
-		if !strInSlice(fullName, c.Repos) {
-			continue
+	a := func() *plugins.Approve {
+		// First search for repo config
+		for _, c := range config.Approve {
+			if !strInSlice(fullName, c.Repos) {
+				continue
+			}
+			return &c
 		}
-		return &c
-	}
 
-	// If you don't find anything, loop again looking for an org config
-	for _, c := range config.Approve {
-		if !strInSlice(org, c.Repos) {
-			continue
+		// If you don't find anything, loop again looking for an org config
+		for _, c := range config.Approve {
+			if !strInSlice(org, c.Repos) {
+				continue
+			}
+			return &c
 		}
-		return &c
-	}
 
-	// Return an empty config, and use plugin defaults
-	return &plugins.Approve{}
+		// Return an empty config, and use plugin defaults
+		return &plugins.Approve{}
+	}()
+	if a.DeprecatedImplicitSelfApprove == nil && a.RequireSelfApproval == nil && config.UseDeprecatedSelfApprove {
+		no := false
+		a.DeprecatedImplicitSelfApprove = &no
+	}
+	if a.DeprecatedReviewActsAsApprove == nil && a.IgnoreReviewState == nil && config.UseDeprecatedReviewApprove {
+		no := false
+		a.DeprecatedReviewActsAsApprove = &no
+	}
+	return a
 }
 
 func strInSlice(str string, slice []string) bool {

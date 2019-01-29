@@ -4,28 +4,43 @@
 
 load("@io_kubernetes_build//defs:run_in_workspace.bzl", "workspace_binary")
 
-filegroup(
-    name = "package-srcs",
-    srcs = glob(
-        ["**"],
-        exclude = [
-            "bazel-*/**",
-            ".git/**",
-            "*.db",
-            "*.gz",
-        ],
-    ),
-    visibility = ["//visibility:private"],
+workspace_binary(
+    name = "go",
+    cmd = "@go_sdk//:bin/go",
 )
 
 workspace_binary(
-    name = "dep",
-    cmd = "//vendor/github.com/golang/dep/cmd/dep",
+    name = "update-minor",
+    args = [
+        "get",
+        "-u",
+    ],
+    cmd = "@go_sdk//:bin/go",
+)
+
+workspace_binary(
+    name = "update-patch",
+    args = [
+        "get",
+        "-u=patch",
+    ],
+    cmd = "@go_sdk//:bin/go",
+)
+
+workspace_binary(
+    name = "gofmt",
+    cmd = "@go_sdk//:bin/gofmt",
+)
+
+workspace_binary(
+    name = "govet",
+    args = ["vet"],
+    cmd = "@go_sdk//:bin/go",
 )
 
 workspace_binary(
     name = "golint",
-    cmd = "//vendor/github.com/golang/lint/golint",
+    cmd = "@com_github_golang_lint//golint",
 )
 
 load("@bazel_gazelle//:def.bzl", "gazelle")
@@ -48,7 +63,7 @@ workspace_binary(
     args = [
         "--cfg-path=./hack/.kazelcfg.json",
     ],
-    cmd = "//vendor/k8s.io/repo-infra/kazel",
+    cmd = "@io_kubernetes_build//kazel",
 )
 
 workspace_binary(
@@ -58,18 +73,21 @@ workspace_binary(
         "--print-diff",
         "--cfg-path=./hack/.kazelcfg.json",
     ],
-    cmd = "//vendor/k8s.io/repo-infra/kazel",
+    cmd = "@io_kubernetes_build//kazel",
 )
 
-workspace_binary(
-    name = "gofmt",
-    cmd = "@go_sdk//:bin/gofmt",
-)
-
-workspace_binary(
-    name = "govet",
-    args = ["vet"],
-    cmd = "@go_sdk//:bin/go",
+filegroup(
+    name = "package-srcs",
+    srcs = glob(
+        ["**"],
+        exclude = [
+            "bazel-*/**",
+            ".git/**",
+            "*.db",
+            "*.gz",
+        ],
+    ),
+    visibility = ["//visibility:private"],
 )
 
 filegroup(

@@ -39,7 +39,7 @@ ret=0
 diff -Naupr "${DIFFROOT}/apis" "${TMP_DIFFROOT}/apis" || ret=$?
 diff -Naupr "${DIFFROOT}/client" "${TMP_DIFFROOT}/client" || ret=$?
 cp -a "${TMP_DIFFROOT}"/{apis,client} "${DIFFROOT}"
-if [[ $ret -eq 0 ]]
+if [[ ${ret} -eq 0 ]]
 then
   echo "${DIFFROOT} up to date."
 else

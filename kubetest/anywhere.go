@@ -241,7 +241,11 @@ func (k *kubernetesAnywhere) writeConfig(configTemplate string) error {
 }
 
 func (k *kubernetesAnywhere) Up() error {
-	cmd := exec.Command("make", "-C", k.path, "WAIT_FOR_KUBECONFIG=y", "deploy")
+	cmd := exec.Command("make", "-C", k.path, "setup")
+	if err := control.FinishRunning(cmd); err != nil {
+		return err
+	}
+	cmd = exec.Command("make", "-C", k.path, "WAIT_FOR_KUBECONFIG=y", "deploy")
 	if err := control.FinishRunning(cmd); err != nil {
 		return err
 	}
@@ -262,7 +266,25 @@ func (k *kubernetesAnywhere) DumpClusterLogs(localPath, gcsPath string) error {
 		log.Printf("Cluster log dumping disabled for Kubernetes Anywhere.")
 		return nil
 	}
-	return defaultDumpClusterLogs(localPath, gcsPath)
+
+	// the e2e framework in k/k does not support the "kubernetes-anywhere" provider,
+	// while the same provider is required by the k/k "./cluster/log-dump/log-dump.sh" script
+	// for dumping the logs of the GCE cluster that kubernetes-anywhere creates:
+	//   https://github.com/kubernetes/kubernetes/blob/master/cluster/log-dump/log-dump.sh
+	// this fix is quite messy, but an acceptable workaround until "anywhere.go" is removed completely.
+	//
+	// TODO(neolit123): this workaround can be removed if defaultDumpClusterLogs() is refactored to
+	// not use log-dump.sh.
+	providerKey := "KUBERNETES_PROVIDER"
+	oldValue := os.Getenv(providerKey)
+	if err := os.Setenv(providerKey, "kubernetes-anywhere"); err != nil {
+		return err
+	}
+	err := defaultDumpClusterLogs(localPath, gcsPath)
+	if err := os.Setenv(providerKey, oldValue); err != nil {
+		return err
+	}
+	return err
 }
 
 func (k *kubernetesAnywhere) TestSetup() error {

@@ -7,7 +7,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
         command:
         - runner.sh
         args:
@@ -19,7 +19,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
         command:
         - runner.sh
         args:
@@ -32,7 +32,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
         command:
         - runner.sh
         args:
@@ -43,12 +43,46 @@ presubmits:
     decorate: true
     labels:
       preset-service-account: "true"
-      preset-aws-ebs-csi-driver-common: "true"
+      preset-aws-credential-aws-oss-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
         command:
-          - runner.sh
+        - runner.sh
         args:
-          - make
-          - test-integration
+        - make
+        - test-integration
+  - name: pull-aws-ebs-csi-driver-e2e-single-az
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-aws-credential-aws-oss-testing: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190122-6eca4133a-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test-e2e-single-az
+        securityContext:
+          privileged: true
+  - name: pull-aws-ebs-csi-driver-e2e-multi-az
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-aws-credential-aws-oss-testing: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190122-6eca4133a-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test-e2e-multi-az
+        securityContext:
+          privileged: true

@@ -1,38 +1,5 @@
 {{define "header"}}
-<style>
-    .hidden-tests {
-        visibility: collapse;
-        display: none;
-    }
-
-    table {
-      width: 100%;
-    }
-
-    .mdl-data-table__cell--non-numeric {
-      font-family: monospace;
-      background-color: #212121;
-      color: #e8e8e8;
-    }
-    .noselect {
-      user-select: none;
-    }
-    .expander {
-      background-color: #333333;
-      font-weight:bold;
-      font-size:1.5em;
-    }
-
-    .expander:last-of-type {
-      text-align: right;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-</style>
-
+<link rel="stylesheet" type="text/css" href="junit.css">
 <script type="text/javascript" src="script_bundle.min.js"></script>
 {{end}}
 
@@ -45,15 +12,15 @@
   {{if gt $numF 0}}
     <thead id="failed-theader" onclick="toggleExpansion('failed-tbody', 'failed-expander')">
     <tr>
-      <td class="mdl-data-table__cell--non-numeric expander" style="color: #FF0000;" colspan="3"><h6>{{len .Failed}}/{{.NumTests}} Tests Failed.</h6></td>
+      <td class="mdl-data-table__cell--non-numeric expander failed" colspan="3"><h6>{{len .Failed}}/{{.NumTests}} Tests Failed.</h6></td>
       <td class="mdl-data-table__cell--non-numeric expander"><i id="failed-expander" class="icon-button material-icons arrow-icon noselect">expand_less</i></td>
     </tr>
     </thead>
     <tbody id="failed-tbody">
     {{range $ix, $test := .Failed}}
     <tr class="dark" onclick="toggleExpansion('failed-test-body-{{$ix}}', 'failed-test-expander-{{$ix}}')">
-      <td class="mdl-data-table__cell--non-numeric"><a href="{{$test.Link}}">{{$test.Junit.Name}}</a></td>
-      <td class="mdl-data-table__cell--non-numeric" style="color: #FF0000">{{$test.Junit.Status}}</td>
+      <td class="mdl-data-table__cell--non-numeric test-name"><a href="{{$test.Link}}">{{$test.Junit.Name}}</a></td>
+      <td class="mdl-data-table__cell--non-numeric failed">{{$test.Junit.Status}}</td>
       <td class="mdl-data-table__cell--non-numeric">{{$test.Junit.Duration}}</td>
       <td class="mdl-data-table__cell--non-numeric">{{$test.Junit.Error.Message}}</td>
     </tr>
@@ -63,15 +30,15 @@
   {{if gt $numP 0}}
     <thead id="passed-theader" onclick="toggleExpansion('passed-tbody', 'passed-expander')">
     <tr>
-      <td class="mdl-data-table__cell--non-numeric expander" style="color: #00FF00" colspan="3"><h6>{{len .Passed}}/{{.NumTests}} Tests Passed!</h6></td>
+      <td class="mdl-data-table__cell--non-numeric expander passed" colspan="3"><h6>{{len .Passed}}/{{.NumTests}} Tests Passed!</h6></td>
       <td class="mdl-data-table__cell--non-numeric expander"><i id="passed-expander" class="icon-button material-icons arrow-icon noselect">expand_more</i></td>
     </tr>
     </thead>
     <tbody id="passed-tbody" class="hidden-tests">
     {{range .Passed}}
     <tr>
-      <td class="mdl-data-table__cell--non-numeric"><a href="{{.Link}}">{{.Junit.Name}}</a></td>
-      <td class="mdl-data-table__cell--non-numeric" style="color: #00FF00">{{.Junit.Status}}</td>
+      <td class="mdl-data-table__cell--non-numeric test-name"><a href="{{.Link}}">{{.Junit.Name}}</a></td>
+      <td class="mdl-data-table__cell--non-numeric passed">{{.Junit.Status}}</td>
       <td class="mdl-data-table__cell--non-numeric">{{.Junit.Duration}}</td>
       <td class="mdl-data-table__cell--non-numeric"></td>
     </tr>
@@ -81,15 +48,15 @@
   {{if gt $numS 0}}
     <thead id="skipped-theader" onclick="toggleExpansion('skipped-tbody', 'skipped-expander')">
     <tr>
-      <td class="mdl-data-table__cell--non-numeric expander" style="color: rgba(255, 224, 0, 1.0);" colspan="3"><h6>{{len .Skipped}}/{{.NumTests}} Tests Skipped.</h6></td>
+      <td class="mdl-data-table__cell--non-numeric expander skipped" colspan="3"><h6>{{len .Skipped}}/{{.NumTests}} Tests Skipped.</h6></td>
       <td class="mdl-data-table__cell--non-numeric expander"><i id="skipped-expander" class="icon-button material-icons arrow-icon noselect">expand_more</i></td>
     </tr>
     </thead>
     <tbody id="skipped-tbody" class="hidden-tests">
     {{range .Skipped}}
     <tr>
-      <td class="mdl-data-table__cell--non-numeric"><a href="{{.Link}}">{{.Junit.Name}}</a></td>
-      <td class="mdl-data-table__cell--non-numeric" style="color: rgba(255, 224, 0, 1.0);">{{.Junit.Status}}</td>
+      <td class="mdl-data-table__cell--non-numeric test-name"><a href="{{.Link}}">{{.Junit.Name}}</a></td>
+      <td class="mdl-data-table__cell--non-numeric skipped">{{.Junit.Status}}</td>
       <td class="mdl-data-table__cell--non-numeric">{{.Junit.Duration}}</td>
       <td class="mdl-data-table__cell--non-numeric"></td>
     </tr>

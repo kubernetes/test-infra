@@ -17,6 +17,9 @@ function ansiToHTML(orig: string): string {
       return body;
     } else if (code === 1) {
       // bold
+      return '<strong>' + body + '</strong>';
+    } else if (code === 3) {
+      // italic
       return '<em>' + body + '</em>';
     } else if (30 <= code && code <= 37) {
       // foreground color

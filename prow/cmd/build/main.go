@@ -19,8 +19,6 @@ package main
 import (
 	"errors"
 	"flag"
-	"fmt"
-	"io/ioutil"
 	"os"
 	"os/signal"
 	"syscall"
@@ -36,16 +34,11 @@ import (
 	buildinfo "github.com/knative/build/pkg/client/informers/externalversions"
 	buildinfov1alpha1 "github.com/knative/build/pkg/client/informers/externalversions/build/v1alpha1"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/time/rate"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
-	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"k8s.io/client-go/util/workqueue"
-
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // support gcp users in .kube/config
+	"k8s.io/client-go/rest"
 )
 
 type options struct {
@@ -107,100 +100,6 @@ func stopper() chan struct{} {
 	return stop
 }
 
-// contextConfigs returns a context => config mapping as well as the default context.
-//
-// Returns an error if kubeconfig is specified and invalid
-// Returns an error if no contexts are found.
-func contextConfigs(kubeconfig, buildCluster string) (map[string]rest.Config, string, error) {
-	logrus.Infof("Loading cluster contexts...")
-	configs := map[string]rest.Config{}
-	var defCtx *string
-	// This will work if we are running inside kubernetes
-	if localCfg, err := rest.InClusterConfig(); err != nil {
-		logrus.Warnf("Failed to create in-cluster config: %v", err)
-	} else {
-		defCtx = new(string)
-		logrus.Info("* in-cluster")
-		configs[*defCtx] = *localCfg
-	}
-
-	// Attempt to load external clusters too
-	var loader clientcmd.ClientConfigLoader
-	if kubeconfig != "" { // load from --kubeconfig
-		loader = &clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfig}
-	} else {
-		loader = clientcmd.NewDefaultClientConfigLoadingRules()
-	}
-
-	cfg, err := loader.Load()
-	switch {
-	case err != nil && kubeconfig != "":
-		return nil, "", fmt.Errorf("load %s kubecfg: %v", kubeconfig, err)
-	case err != nil:
-		logrus.Warnf("failed to load any kubecfg files: %v", err)
-	default:
-		// normally defCtx is in cluster (""), but we may be a dev running on their workstation
-		// in which case rest.InClusterConfig() will fail, so use the current context as default
-		// (which is where we look for prowjobs)
-		if defCtx == nil && cfg.CurrentContext != "" {
-			defCtx = &cfg.CurrentContext
-		}
-
-		for context := range cfg.Contexts {
-			logrus.Infof("* %s", context)
-			contextCfg, err := clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, loader).ClientConfig()
-			if err != nil {
-				return nil, "", fmt.Errorf("create %s client: %v", context, err)
-			}
-			configs[context] = *contextCfg
-		}
-	}
-
-	if buildCluster != "" { // load from --build-cluster
-		data, err := ioutil.ReadFile(buildCluster)
-		if err != nil {
-			return nil, "", fmt.Errorf("read build clusters: %v", err)
-		}
-		raw, err := kube.UnmarshalClusterMap(data)
-		if err != nil {
-			return nil, "", fmt.Errorf("unmarshal build clusters: %v", err)
-		}
-		cfg = &clientcmdapi.Config{
-			Clusters:  map[string]*clientcmdapi.Cluster{},
-			AuthInfos: map[string]*clientcmdapi.AuthInfo{},
-			Contexts:  map[string]*clientcmdapi.Context{},
-		}
-		for alias, config := range raw {
-			cfg.Clusters[alias] = &clientcmdapi.Cluster{
-				Server:                   config.Endpoint,
-				CertificateAuthorityData: config.ClusterCACertificate,
-			}
-			cfg.AuthInfos[alias] = &clientcmdapi.AuthInfo{
-				ClientCertificateData: config.ClientCertificate,
-				ClientKeyData:         config.ClientKey,
-			}
-			cfg.Contexts[alias] = &clientcmdapi.Context{
-				Cluster:  alias,
-				AuthInfo: alias,
-				// TODO(fejta): Namespace?
-			}
-		}
-		for context := range cfg.Contexts {
-			logrus.Infof("* %s", context)
-			contextCfg, err := clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, nil).ClientConfig()
-			if err != nil {
-				return nil, "", fmt.Errorf("create %s client: %v", context, err)
-			}
-			configs[context] = *contextCfg
-		}
-	}
-
-	if len(configs) == 0 {
-		return nil, "", errors.New("no clients found")
-	}
-	return configs, *defCtx, nil
-}
-
 type buildConfig struct {
 	client   buildset.Interface
 	informer buildinfov1alpha1.BuildInformer
@@ -229,28 +128,19 @@ func newBuildConfig(cfg rest.Config, stop chan struct{}) (*buildConfig, error) {
 	}, nil
 }
 
-func rateLimiter() limiter {
-	rl := workqueue.NewMaxOfRateLimiter(
-		workqueue.NewItemExponentialFailureRateLimiter(5*time.Millisecond, 120*time.Second),
-		&workqueue.BucketRateLimiter{Limiter: rate.NewLimiter(rate.Limit(1000), 50000)},
-	)
-	return workqueue.NewNamedRateLimitingQueue(rl, controllerName)
-}
-
 func main() {
 	o := parseOptions()
 	logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "build"})
 
-	pjNamespace := ""
+	configAgent := &config.Agent{}
 	if o.config != "" {
-		pc, err := config.Load(o.config, "") // ignore jobConfig
-		if err != nil {
+		const ignoreJobConfig = ""
+		if err := configAgent.Start(o.config, ignoreJobConfig); err != nil {
 			logrus.WithError(err).Fatal("failed to load prow config")
 		}
-		pjNamespace = pc.ProwJobNamespace
 	}
 
-	configs, defaultContext, err := contextConfigs(o.kubeconfig, o.buildCluster)
+	configs, defaultContext, err := kube.LoadClusterConfigs(o.kubeconfig, o.buildCluster)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error building client configs")
 	}
@@ -294,7 +184,7 @@ func main() {
 		go runServer(o.cert, o.privateKey)
 	}
 
-	controller := newController(kc, pjc, pjif.Prow().V1().ProwJobs(), buildConfigs, o.totURL, pjNamespace, rateLimiter())
+	controller := newController(kc, pjc, pjif.Prow().V1().ProwJobs(), buildConfigs, o.totURL, configAgent.Config, kube.RateLimiter(controllerName))
 	if err := controller.Run(2, stop); err != nil {
 		logrus.WithError(err).Fatal("Error running controller")
 	}

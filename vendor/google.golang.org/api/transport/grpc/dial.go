@@ -1,4 +1,4 @@
-// Copyright 2015 Google Inc. All Rights Reserved.
+// Copyright 2015 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package grpc
 
 import (
 	"errors"
+	"log"
 
 	"golang.org/x/net/context"
 	"google.golang.org/api/internal"
@@ -58,10 +59,15 @@ func dial(ctx context.Context, insecure bool, opts []option.ClientOption) (*grpc
 	if o.GRPCConn != nil {
 		return o.GRPCConn, nil
 	}
-	var grpcOpts []grpc.DialOption
+	grpcOpts := []grpc.DialOption{
+		grpc.WithWaitForHandshake(),
+	}
 	if insecure {
 		grpcOpts = []grpc.DialOption{grpc.WithInsecure()}
 	} else if !o.NoAuth {
+		if o.APIKey != "" {
+			log.Print("API keys are not supported for gRPC APIs. Remove the WithAPIKey option from your client-creating call.")
+		}
 		creds, err := internal.Creds(ctx, &o)
 		if err != nil {
 			return nil, err
@@ -75,6 +81,10 @@ func dial(ctx context.Context, insecure bool, opts []option.ClientOption) (*grpc
 		// Use the Socket API on App Engine.
 		grpcOpts = append(grpcOpts, appengineDialerHook(ctx))
 	}
+	// Add tracing, but before the other options, so that clients can override the
+	// gRPC stats handler.
+	// This assumes that gRPC options are processed in order, left to right.
+	grpcOpts = addOCStatsHandler(grpcOpts)
 	grpcOpts = append(grpcOpts, o.GRPCDialOpts...)
 	if o.UserAgent != "" {
 		grpcOpts = append(grpcOpts, grpc.WithUserAgent(o.UserAgent))

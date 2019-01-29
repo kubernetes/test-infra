@@ -17,23 +17,21 @@ limitations under the License.
 package plank
 
 import (
-	"bytes"
 	"fmt"
-	"net/url"
-	"path"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/github/reporter"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
-	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	reportlib "k8s.io/test-infra/prow/report"
 )
 
@@ -43,12 +41,9 @@ const (
 
 type kubeClient interface {
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
+	GetProwJob(string) (kube.ProwJob, error)
 	ListProwJobs(string) ([]kube.ProwJob, error)
 	ReplaceProwJob(string, kube.ProwJob) (kube.ProwJob, error)
-
-	CreatePod(v1.Pod) (kube.Pod, error)
-	ListPods(string) ([]kube.Pod, error)
-	DeletePod(string) error
 }
 
 // GitHubClient contains the methods used by plank on k8s.io/test-infra/prow/github.Client
@@ -63,21 +58,17 @@ type GitHubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
-type configAgent interface {
-	Config() *config.Config
-}
-
 // TODO: Dry this out
 type syncFn func(pj kube.ProwJob, pm map[string]kube.Pod, reports chan<- kube.ProwJob) error
 
 // Controller manages ProwJobs.
 type Controller struct {
-	kc     kubeClient
-	pkcs   map[string]kubeClient
-	ghc    GitHubClient
-	log    *logrus.Entry
-	ca     configAgent
-	totURL string
+	kc           kubeClient
+	buildClients map[string]corev1.PodInterface
+	ghc          GitHubClient
+	log          *logrus.Entry
+	config       config.Getter
+	totURL       string
 	// selector that will be applied on prowjobs and pods.
 	selector string
 
@@ -95,24 +86,20 @@ type Controller struct {
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(kc *kube.Client, pkcs map[string]*kube.Client, ghc GitHubClient, logger *logrus.Entry, ca *config.Agent, totURL, selector string, skipReport bool) (*Controller, error) {
+func NewController(kc *kube.Client, buildClients map[string]corev1.PodInterface, ghc GitHubClient, logger *logrus.Entry, cfg config.Getter, totURL, selector string, skipReport bool) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
-	buildClusters := map[string]kubeClient{}
-	for alias, client := range pkcs {
-		buildClusters[alias] = kubeClient(client)
-	}
 	return &Controller{
-		kc:          kc,
-		pkcs:        buildClusters,
-		ghc:         ghc,
-		log:         logger,
-		ca:          ca,
-		pendingJobs: make(map[string]int),
-		totURL:      totURL,
-		selector:    selector,
-		skipReport:  skipReport,
+		kc:           kc,
+		buildClients: buildClients,
+		ghc:          ghc,
+		log:          logger,
+		config:       cfg,
+		pendingJobs:  make(map[string]int),
+		totURL:       totURL,
+		selector:     selector,
+		skipReport:   skipReport,
 	}, nil
 }
 
@@ -122,7 +109,7 @@ func (c *Controller) canExecuteConcurrently(pj *kube.ProwJob) bool {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
-	if max := c.ca.Config().Plank.MaxConcurrency; max > 0 {
+	if max := c.config().Plank.MaxConcurrency; max > 0 {
 		var running int
 		for _, num := range c.pendingJobs {
 			running += num
@@ -155,6 +142,24 @@ func (c *Controller) incrementNumPendingJobs(job string) {
 	c.pendingJobs[job]++
 }
 
+// setPreviousReportState sets the github key for PrevReportStates
+// to current state. This is a work-around for plank -> crier
+// migration to become seamless.
+func (c *Controller) setPreviousReportState(pj kube.ProwJob) error {
+	// fetch latest before replace
+	latestPJ, err := c.kc.GetProwJob(pj.ObjectMeta.Name)
+	if err != nil {
+		return err
+	}
+
+	if latestPJ.Status.PrevReportStates == nil {
+		latestPJ.Status.PrevReportStates = map[string]kube.ProwJobState{}
+	}
+	latestPJ.Status.PrevReportStates[reporter.GithubReporterName] = latestPJ.Status.State
+	_, err = c.kc.ReplaceProwJob(latestPJ.ObjectMeta.Name, latestPJ)
+	return err
+}
+
 // Sync does one sync iteration.
 func (c *Controller) Sync() error {
 	pjs, err := c.kc.ListProwJobs(c.selector)
@@ -167,12 +172,12 @@ func (c *Controller) Sync() error {
 	}
 
 	pm := map[string]kube.Pod{}
-	for alias, client := range c.pkcs {
-		pods, err := client.ListPods(selector)
+	for alias, client := range c.buildClients {
+		pods, err := client.List(metav1.ListOptions{LabelSelector: selector})
 		if err != nil {
 			return fmt.Errorf("error listing pods in cluster %q: %v", alias, err)
 		}
-		for _, pod := range pods {
+		for _, pod := range pods.Items {
 			pm[pod.ObjectMeta.Name] = pod
 		}
 	}
@@ -205,7 +210,7 @@ func (c *Controller) Sync() error {
 	c.pendingJobs = make(map[string]int)
 	// Sync pending jobs first so we can determine what is the maximum
 	// number of new jobs we can trigger when syncing the non-pendings.
-	maxSyncRoutines := c.ca.Config().Plank.MaxGoroutines
+	maxSyncRoutines := c.config().Plank.MaxGoroutines
 	c.log.Debugf("Handling %d pending prowjobs", len(pendingCh))
 	syncProwJobs(c.log, c.syncPendingJob, maxSyncRoutines, pendingCh, reportCh, errCh, pm)
 	c.log.Debugf("Handling %d triggered prowjobs", len(triggeredCh))
@@ -220,11 +225,16 @@ func (c *Controller) Sync() error {
 
 	var reportErrs []error
 	if !c.skipReport {
-		reportTemplate := c.ca.Config().Plank.ReportTemplate
+		reportTemplate := c.config().Plank.ReportTemplate
 		for report := range reportCh {
 			if err := reportlib.Report(c.ghc, reportTemplate, report); err != nil {
 				reportErrs = append(reportErrs, err)
 				c.log.WithFields(pjutil.ProwJobFields(&report)).WithError(err).Warn("Failed to report ProwJob status")
+			}
+
+			// plank is not retrying on errors, so we just set the current state as reported
+			if err := c.setPreviousReportState(report); err != nil {
+				c.log.WithFields(pjutil.ProwJobFields(&report)).WithError(err).Error("Failed to patch PrevReportStates")
 			}
 		}
 	}
@@ -266,11 +276,11 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob, pm map[string]kube.Pod) 
 		toCancel := pjs[cancelIndex]
 		// Allow aborting presubmit jobs for commits that have been superseded by
 		// newer commits in Github pull requests.
-		if c.ca.Config().Plank.AllowCancellations {
+		if c.config().Plank.AllowCancellations {
 			if pod, exists := pm[toCancel.ObjectMeta.Name]; exists {
-				if client, ok := c.pkcs[toCancel.ClusterAlias()]; !ok {
+				if client, ok := c.buildClients[toCancel.ClusterAlias()]; !ok {
 					c.log.WithFields(pjutil.ProwJobFields(&toCancel)).Errorf("Unknown cluster alias %q.", toCancel.ClusterAlias())
-				} else if err := client.DeletePod(pod.ObjectMeta.Name); err != nil {
+				} else if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err != nil {
 					c.log.WithError(err).WithFields(pjutil.ProwJobFields(&toCancel)).Warn("Cannot delete pod")
 				}
 			}
@@ -351,11 +361,11 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 			// Pod is in Unknown state. This can happen if there is a problem with
 			// the node. Delete the old pod, we'll start a new one next loop.
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Pod is in unknown state, deleting & restarting pod")
-			client, ok := c.pkcs[pj.ClusterAlias()]
+			client, ok := c.buildClients[pj.ClusterAlias()]
 			if !ok {
 				return fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
 			}
-			return client.DeletePod(pj.ObjectMeta.Name)
+			return client.Delete(pj.ObjectMeta.Name, &metav1.DeleteOptions{})
 
 		case kube.PodSucceeded:
 			// Pod succeeded. Update ProwJob, talk to GitHub, and start next jobs.
@@ -364,7 +374,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 			pj.Status.Description = "Job succeeded."
 			for _, nj := range pj.Spec.RunAfterSuccess {
 				child := pjutil.NewProwJob(nj, pj.ObjectMeta.Labels)
-				if c.ghc != nil && !c.RunAfterSuccessCanRun(&pj, &child, c.ca, c.ghc) {
+				if c.ghc != nil && !c.runAfterSuccessCanRun(&pj, &child) {
 					continue
 				}
 				if _, err := c.kc.CreateProwJob(pjutil.NewProwJob(nj, pj.ObjectMeta.Labels)); err != nil {
@@ -385,11 +395,11 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 				// ErrorOnEviction is disabled. Delete the pod now and recreate it in
 				// the next resync.
 				c.incrementNumPendingJobs(pj.Spec.Job)
-				client, ok := c.pkcs[pj.ClusterAlias()]
+				client, ok := c.buildClients[pj.ClusterAlias()]
 				if !ok {
 					return fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
 				}
-				return client.DeletePod(pj.ObjectMeta.Name)
+				return client.Delete(pj.ObjectMeta.Name, &metav1.DeleteOptions{})
 			}
 			// Pod failed. Update ProwJob, talk to GitHub.
 			pj.SetComplete()
@@ -397,7 +407,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 			pj.Status.Description = "Job failed."
 
 		case kube.PodPending:
-			maxPodPending := c.ca.Config().Plank.PodPendingTimeout
+			maxPodPending := c.config().Plank.PodPendingTimeout
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodPending {
 				// Pod is running. Do nothing.
 				c.incrementNumPendingJobs(pj.Spec.Job)
@@ -417,7 +427,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 		}
 	}
 
-	pj.Status.URL = jobURL(c.ca.Config().Plank, pj, c.log)
+	pj.Status.URL = pjutil.JobURL(c.config().Plank, pj, c.log)
 
 	reports <- pj
 
@@ -469,7 +479,7 @@ func (c *Controller) syncTriggeredJob(pj kube.ProwJob, pm map[string]kube.Pod, r
 		pj.Status.State = kube.PendingState
 		pj.Status.PodName = pn
 		pj.Status.Description = "Job triggered."
-		pj.Status.URL = jobURL(c.ca.Config().Plank, pj, c.log)
+		pj.Status.URL = pjutil.JobURL(c.config().Plank, pj, c.log)
 	}
 	reports <- pj
 	if prevState != pj.Status.State {
@@ -494,11 +504,11 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 		return "", "", err
 	}
 
-	client, ok := c.pkcs[pj.ClusterAlias()]
+	client, ok := c.buildClients[pj.ClusterAlias()]
 	if !ok {
 		return "", "", fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
 	}
-	actual, err := client.CreatePod(*pod)
+	actual, err := client.Create(pod)
 	if err != nil {
 		return "", "", err
 	}
@@ -519,12 +529,12 @@ func getPodBuildID(pod *kube.Pod) string {
 	return ""
 }
 
-// RunAfterSuccessCanRun returns whether a child job (specified as run_after_success in the
+// runAfterSuccessCanRun returns whether a child job (specified as run_after_success in the
 // prow config) can run once its parent job succeeds. The only case we will not run a child job
 // is when it is a presubmit job and has a run_if_changed regular expression specified which does
 // not match the changed filenames in the pull request the job was meant to run for.
 // TODO: Collapse with Jenkins, impossible to reuse as is due to the interfaces.
-func (c *Controller) RunAfterSuccessCanRun(parent, child *kube.ProwJob, ca configAgent, ghc GitHubClient) bool {
+func (c *Controller) runAfterSuccessCanRun(parent, child *kube.ProwJob) bool {
 	if parent.Spec.Type != kube.PresubmitJob {
 		return true
 	}
@@ -534,7 +544,7 @@ func (c *Controller) RunAfterSuccessCanRun(parent, child *kube.ProwJob, ca confi
 	repo := parent.Spec.Refs.Repo
 	prNum := parent.Spec.Refs.Pulls[0].Number
 
-	ps := ca.Config().GetPresubmit(org+"/"+repo, child.Spec.Job)
+	ps := c.config().GetPresubmit(org+"/"+repo, child.Spec.Job)
 	if ps == nil {
 		// The config has changed ever since we started the parent.
 		// Not sure what is more correct here. Run the child for now.
@@ -543,7 +553,7 @@ func (c *Controller) RunAfterSuccessCanRun(parent, child *kube.ProwJob, ca confi
 	if ps.RunIfChanged == "" {
 		return true
 	}
-	changesFull, err := ghc.GetPullRequestChanges(org, repo, prNum)
+	changesFull, err := c.ghc.GetPullRequestChanges(org, repo, prNum)
 	if err != nil {
 		c.log.WithError(err).WithFields(pjutil.ProwJobFields(parent)).Warnf("Cannot get PR changes for #%d", prNum)
 		return true
@@ -554,23 +564,4 @@ func (c *Controller) RunAfterSuccessCanRun(parent, child *kube.ProwJob, ca confi
 		changes = append(changes, change.Filename)
 	}
 	return ps.RunsAgainstChanges(changes)
-}
-
-func jobURL(plank config.Plank, pj kube.ProwJob, log *logrus.Entry) string {
-	if pj.Spec.DecorationConfig != nil && plank.JobURLPrefix != "" {
-		spec := downwardapi.NewJobSpec(pj.Spec, pj.Status.BuildID, pj.Name)
-		gcsConfig := pj.Spec.DecorationConfig.GCSConfiguration
-		_, gcsPath, _ := gcsupload.PathsForJob(gcsConfig, &spec, "")
-
-		prefix, _ := url.Parse(plank.JobURLPrefix)
-		prefix.Path = path.Join(prefix.Path, gcsConfig.Bucket, gcsPath)
-		return prefix.String()
-	}
-	var b bytes.Buffer
-	if err := plank.JobURLTemplate.Execute(&b, &pj); err != nil {
-		log.WithFields(pjutil.ProwJobFields(&pj)).Errorf("error executing URL template: %v", err)
-	} else {
-		return b.String()
-	}
-	return ""
 }

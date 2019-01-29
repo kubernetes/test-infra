@@ -25,7 +25,7 @@ JOBS_DIR="${TESTINFRA_ROOT}/config/jobs"
 TMP_CONFIG=$(mktemp)
 TMP_GENERATED_JOBS=$(mktemp)
 
-trap 'rm $TMP_CONFIG && rm $TMP_GENERATED_JOBS' EXIT
+trap 'rm ${TMP_CONFIG} && rm ${TMP_GENERATED_JOBS}' EXIT
 cp "${PROW_CONFIG}" "${TMP_CONFIG}"
 
 bazel run //config/jobs/kubernetes-security:genjobs -- \

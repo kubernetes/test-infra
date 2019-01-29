@@ -38,5 +38,12 @@ go_test(
     name = "go_default_test",
     srcs = ["run_test.go"],
     embed = [":go_default_library"],
-    deps = ["//prow/kube:go_default_library"],
+    deps = [
+        "//prow/entrypoint:go_default_library",
+        "//prow/kube:go_default_library",
+        "//prow/pod-utils/wrapper:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+    ],
 )

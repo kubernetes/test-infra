@@ -24,4 +24,4 @@ if ! which bazel &> /dev/null; then
   echo "Please install bazel at https://bazel.build/ (future commits may require it)" >&2
   cmd="gofmt"
 fi
-find . -name "*.go" | grep -v "\/vendor\/" | xargs $cmd -s -w
+find . -name "*.go" | grep -v "\/vendor\/" | xargs ${cmd} -s -w

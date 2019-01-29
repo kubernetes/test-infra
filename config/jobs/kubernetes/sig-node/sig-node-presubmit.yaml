@@ -14,7 +14,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -26,7 +26,7 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --gcp-project=k8s-jkns-pr-node-e2e
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
@@ -46,7 +46,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.13
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.13
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -58,7 +58,7 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --gcp-project=k8s-jkns-pr-node-e2e
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
@@ -78,7 +78,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.12
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -90,7 +90,7 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --gcp-project=k8s-jkns-pr-node-e2e
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
@@ -110,7 +110,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.11
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.11
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -122,7 +122,7 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --gcp-project=k8s-jkns-pr-node-e2e
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
@@ -142,7 +142,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -154,7 +154,7 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --gcp-project=k8s-jkns-pr-node-e2e
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
@@ -175,7 +175,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -188,7 +188,7 @@ presubmits:
         - --
         - --deployment=node
         - --gcp-project=k8s-c8d-pr-node-e2e
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --node-tests=true
         - --provider=gce
@@ -208,7 +208,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -220,7 +220,7 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --gcp-project=k8s-jkns-pr-node-e2e
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --node-test-args=--feature-gates=AllAlpha=true,RotateKubeletServerCertificate=false --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce

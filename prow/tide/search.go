@@ -31,6 +31,7 @@ type searchExecutor func(start, end time.Time) ([]PullRequest, int /*true match 
 
 func newSearchExecutor(ctx context.Context, ghc githubClient, log *logrus.Entry, q string) searchExecutor {
 	return func(start, end time.Time) ([]PullRequest, int, error) {
+		requestStart := time.Now()
 		datedQuery := fmt.Sprintf("%s %s", q, dateToken(start, end))
 		vars := map[string]interface{}{
 			"query":        githubql.String(datedQuery),
@@ -60,9 +61,10 @@ func newSearchExecutor(ctx context.Context, ghc githubClient, log *logrus.Entry,
 			vars["searchCursor"] = githubql.NewString(sq.Search.PageInfo.EndCursor)
 		}
 		log.WithFields(logrus.Fields{
-			"query": datedQuery,
-			"start": start.String(),
-			"end":   start.String(),
+			"query":    datedQuery,
+			"start":    start.String(),
+			"end":      end.String(),
+			"duration": time.Since(requestStart).String(),
 		}).Debugf("Query returned %d PRs and cost %d point(s). %d remaining.", len(ret), totalCost, remaining)
 		return ret, totalMatches, nil
 	}

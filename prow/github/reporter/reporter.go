@@ -24,36 +24,42 @@ import (
 	"k8s.io/test-infra/prow/report"
 )
 
-type configAgent interface {
-	Config() *config.Config
-}
+const (
+	// GithubReporterName is the name for github reporter
+	GithubReporterName = "github-reporter"
+)
 
 // Client is a github reporter client
 type Client struct {
 	gc          report.GithubClient
-	ca          configAgent
+	config      config.Getter
 	reportAgent string
 }
 
 // NewReporter returns a reporter client
-func NewReporter(gc report.GithubClient, ca configAgent, reportAgent string) *Client {
+func NewReporter(gc report.GithubClient, cfg config.Getter, reportAgent string) *Client {
 	return &Client{
 		gc:          gc,
-		ca:          ca,
+		config:      cfg,
 		reportAgent: reportAgent,
 	}
 }
 
 // GetName returns the name of the reporter
 func (c *Client) GetName() string {
-	return "github-reporter"
+	return GithubReporterName
 }
 
 // ShouldReport returns if this prowjob should be reported by the github reporter
 func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 
-	if !pj.Spec.Report || pj.Spec.Type != v1.PresubmitJob {
-		// Only report presubmit github jobs for github reporter
+	if !pj.Spec.Report {
+		// Respect report field
+		return false
+	}
+
+	if pj.Spec.Type != v1.PresubmitJob && pj.Spec.Type != v1.PostsubmitJob {
+		// Report presubmit and postsubmit github jobs for github reporter
 		return false
 	}
 
@@ -67,6 +73,6 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 
 // Report will report via reportlib
 func (c *Client) Report(pj *v1.ProwJob) error {
-	// TODO(krzyzacy): ditch ReportTemplate, and we can drop reference to configAgent
-	return report.Report(c.gc, c.ca.Config().Plank.ReportTemplate, *pj)
+	// TODO(krzyzacy): ditch ReportTemplate, and we can drop reference to config.Getter
+	return report.Report(c.gc, c.config().Plank.ReportTemplate, *pj)
 }

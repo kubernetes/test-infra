@@ -76,6 +76,44 @@ spec:
                   - "aborted"
           - required:
             - completionTime
+  additionalPrinterColumns:
+  - name: Job
+    type: string
+    description: The name of the job being run.
+    JSONPath: .spec.job
+  - name: BuildId
+    type: string
+    description: The ID of the job being run.
+    JSONPath: .status.build_id
+  - name: Type
+    type: string
+    description: The type of job being run.
+    JSONPath: .spec.type
+  - name: Org
+    type: string
+    description: The org for which the job is running.
+    JSONPath: .spec.refs.org
+  - name: Repo
+    type: string
+    description: The repo for which the job is running.
+    JSONPath: .spec.refs.repo
+  - name: Pulls
+    type: string
+    description: The pulls for which the job is running.
+    JSONPath: ".spec.refs.pulls[*].number"
+  - name: StartTime
+    type: date
+    description: When the job started running.
+    JSONPath: .status.startTime
+  - name: CompletionTime
+    type: date
+    description: When the job finished running.
+    JSONPath: .status.completionTime
+  - name: State
+    description: The state of the job.
+    name: state
+    type: string
+    JSONPath: .status.state
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -100,7 +138,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20190114-e939941
+        image: gcr.io/k8s-prow/hook:v20190125-2aca69d
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -165,7 +203,7 @@ spec:
       serviceAccountName: "plank"
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20190114-e939941
+        image: gcr.io/k8s-prow/plank:v20190125-2aca69d
         args:
         - --dry-run=false
         volumeMounts:
@@ -200,7 +238,7 @@ spec:
       serviceAccountName: "sinker"
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:v20190114-e939941
+        image: gcr.io/k8s-prow/sinker:v20190125-2aca69d
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -233,7 +271,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20190114-e939941
+        image: gcr.io/k8s-prow/deck:v20190125-2aca69d
         args:
         - --tide-url=http://tide/
         - --hook-url=http://hook:8888/plugin-help
@@ -282,7 +320,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20190114-e939941
+        image: gcr.io/k8s-prow/horologium:v20190125-2aca69d
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -311,7 +349,7 @@ spec:
       serviceAccountName: "tide"
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20190114-e939941
+        image: gcr.io/k8s-prow/tide:v20190125-2aca69d
         args:
         - --dry-run=false
         ports:
@@ -460,6 +498,7 @@ rules:
     resources:
       - prowjobs
     verbs:
+      - get
       - create
       - list
       - update

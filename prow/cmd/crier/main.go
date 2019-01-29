@@ -26,8 +26,6 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"golang.org/x/time/rate"
-	"k8s.io/client-go/util/workqueue"
 
 	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
 	"k8s.io/test-infra/prow/config"
@@ -37,12 +35,14 @@ import (
 	gerritclient "k8s.io/test-infra/prow/gerrit/client"
 	gerritreporter "k8s.io/test-infra/prow/gerrit/reporter"
 	githubreporter "k8s.io/test-infra/prow/github/reporter"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	pubsubreporter "k8s.io/test-infra/prow/pubsub/reporter"
 )
 
 const (
-	resync = 0 * time.Minute
+	resync         = 0 * time.Minute
+	controllerName = "prow-crier"
 )
 
 type options struct {
@@ -141,17 +141,16 @@ func main() {
 
 	prowjobInformerFactory := prowjobinformer.NewSharedInformerFactory(prowjobClient, resync)
 
-	queue := workqueue.NewRateLimitingQueue(
-		workqueue.NewMaxOfRateLimiter(
-			workqueue.NewItemExponentialFailureRateLimiter(1*time.Second, 60*time.Second),
-			// 10 qps, 100 bucket size.  This is only for retry speed and its only the overall factor (not per item)
-			&workqueue.BucketRateLimiter{Limiter: rate.NewLimiter(rate.Limit(10), 100)},
-		))
-
 	var controllers []*crier.Controller
 
 	// track all worker status before shutdown
 	wg := &sync.WaitGroup{}
+
+	configAgent := &config.Agent{}
+	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+		logrus.WithError(err).Fatal("Error starting config agent.")
+	}
+	cfg := configAgent.Config
 
 	if o.gerritWorkers > 0 {
 		informer := prowjobInformerFactory.Prow().V1().ProwJobs()
@@ -164,7 +163,7 @@ func main() {
 			controllers,
 			crier.NewController(
 				prowjobClient,
-				queue,
+				kube.RateLimiter(gerritReporter.GetName()),
 				informer,
 				gerritReporter,
 				o.gerritWorkers,
@@ -172,13 +171,14 @@ func main() {
 	}
 
 	if o.pubsubWorkers > 0 {
+		pubsubReporter := pubsubreporter.NewReporter(cfg)
 		controllers = append(
 			controllers,
 			crier.NewController(
 				prowjobClient,
-				queue,
+				kube.RateLimiter(pubsubReporter.GetName()),
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
-				pubsubreporter.NewReporter(),
+				pubsubReporter,
 				o.pubsubWorkers,
 				wg))
 	}
@@ -196,18 +196,14 @@ func main() {
 			logrus.WithError(err).Fatal("Error getting GitHub client.")
 		}
 
-		configAgent := &config.Agent{}
-		if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
-			logrus.WithError(err).Fatal("Error starting config agent.")
-		}
-
+		githubReporter := githubreporter.NewReporter(githubClient, cfg, o.reportAgent)
 		controllers = append(
 			controllers,
 			crier.NewController(
 				prowjobClient,
-				queue,
+				kube.RateLimiter(githubReporter.GetName()),
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
-				githubreporter.NewReporter(githubClient, configAgent, o.reportAgent),
+				githubReporter,
 				o.githubWorkers,
 				wg))
 	}

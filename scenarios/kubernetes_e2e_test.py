@@ -426,11 +426,11 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         self.assertIn('kops-e2e-runner.sh', lastcall)
 
         self.assertEqual(
-            self.envs['JENKINS_AWS_SSH_PRIVATE_KEY_FILE'], temp.name)
+            self.envs['AWS_SSH_PRIVATE_KEY_FILE'], temp.name)
         self.assertEqual(
-            self.envs['JENKINS_AWS_SSH_PUBLIC_KEY_FILE'], temp.name)
+            self.envs['AWS_SSH_PUBLIC_KEY_FILE'], temp.name)
         self.assertEqual(
-            self.envs['JENKINS_AWS_CREDENTIALS_FILE'], temp.name)
+            self.envs['AWS_SHARED_CREDENTIALS_FILE'], temp.name)
 
     def test_kops_aws(self):
         temp = tempfile.NamedTemporaryFile()

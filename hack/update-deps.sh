@@ -26,24 +26,29 @@ set -o errexit
 set -o pipefail
 set -o xtrace
 
-TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
-cd "${TESTINFRA_ROOT}"
-
+cd "$(git rev-parse --show-toplevel)"
 trap 'echo "FAILED" >&2' ERR
-# dep itself has a problematic testdata directory with infinite symlinks which
-# makes bazel sad: https://github.com/golang/dep/pull/1412
-# dep should probably be removing it, but it doesn't:
-# https://github.com/golang/dep/issues/1580
-rm -rf vendor/github.com/golang/dep/internal/fs/testdata
-# go-bindata does too, and is not maintained ...
-rm -rf vendor/github.com/jteeuwen/go-bindata/testdata
-# docker has a contrib dir with nothing we use in it, dep will retain the licenses
-# which includes some GPL, so we manually prune this. 
-# See https://github.com/kubernetes/steering/issues/57
-rm -rf vendor/github.com/docker/docker/contrib
-bazel run //:dep -- ensure -v "$@"
-rm -rf vendor/github.com/golang/dep/internal/fs/testdata
-rm -rf vendor/github.com/jteeuwen/go-bindata/testdata
-rm -rf vendor/github.com/docker/docker/contrib
+
+prune-vendor() {
+  find vendor -type f \
+    -not -iname "*.c" \
+    -not -iname "*.go" \
+    -not -iname "*.h" \
+    -not -iname "*.proto" \
+    -not -iname "*.s" \
+    -not -iname "AUTHORS*" \
+    -not -iname "CONTRIBUTORS*" \
+    -not -iname "COPYING*" \
+    -not -iname "LICENSE*" \
+    -not -iname "NOTICE*" \
+    -exec rm '{}' \;
+}
+
+rm -rf vendor
+export GO111MODULE=on
+bazel run //:go -- mod tidy
+bazel run //:go -- mod vendor
+prune-vendor
 hack/update-bazel.sh
+bazel run //:gazelle -- update-repos --from_file=go.mod
 echo SUCCESS

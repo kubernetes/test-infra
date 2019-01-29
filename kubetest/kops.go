@@ -37,7 +37,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/spf13/pflag"
 	"golang.org/x/crypto/ssh"
+
 	"k8s.io/test-infra/kubetest/e2e"
 	"k8s.io/test-infra/kubetest/util"
 )
@@ -68,6 +70,8 @@ var (
 	kopsMasterSize   = flag.String("kops-master-size", kopsAWSMasterSize, "(kops only) master instance type")
 	kopsMasterCount  = flag.Int("kops-master-count", 1, "(kops only) Number of masters to run")
 	kopsEtcdVersion  = flag.String("kops-etcd-version", "", "(kops only) Etcd Version")
+	kopsNetworkMode  = flag.String("kops-network-mode", "", "(kops only) Networking mode to use. kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana, amazon-vpc-routed-eni, cilium.")
+	kopsOverrides    = pflag.StringSlice("kops-overrides", []string{}, "(kops only) Kops cluster configuration overrides, comma delimited. This flag can be used multiple times.")
 
 	kopsMultipleZones = flag.Bool("kops-multiple-zones", false, "(kops only) run tests in multiple zones")
 
@@ -131,6 +135,12 @@ type kops struct {
 
 	// masterSize is the EC2 instance type for the master
 	masterSize string
+
+	// networkMode is the networking mode to use for the cluster (e.g kubenet)
+	networkMode string
+
+	// overrides is a list of cluster configuration overrides
+	overrides []string
 
 	// multipleZones denotes using more than one zone
 	multipleZones bool
@@ -335,6 +345,8 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		masterCount:   *kopsMasterCount,
 		etcdVersion:   *kopsEtcdVersion,
 		masterSize:    *kopsMasterSize,
+		networkMode:   *kopsNetworkMode,
+		overrides:     *kopsOverrides,
 	}, nil
 }
 
@@ -356,9 +368,6 @@ func (k kops) Up() error {
 		}
 	}
 
-	var featureFlags []string
-	var overrides []string
-
 	createArgs := []string{
 		"create", "cluster",
 		"--name", k.cluster,
@@ -369,6 +378,8 @@ func (k kops) Up() error {
 		"--master-count", strconv.Itoa(k.masterCount),
 		"--zones", strings.Join(k.zones, ","),
 	}
+
+	var featureFlags []string
 
 	// We are defaulting the master size to c4.large on AWS because m3.larges are getting less previlent.
 	// When we are using GCE, then we need to handle the flag differently.
@@ -384,7 +395,7 @@ func (k kops) Up() error {
 	if k.adminAccess != "" {
 		createArgs = append(createArgs, "--admin-access", k.adminAccess)
 		// Enable nodeport access from the same IP (we expect it to be the test IPs)
-		overrides = append(overrides, "cluster.spec.nodePortAccess="+k.adminAccess)
+		k.overrides = append(k.overrides, "cluster.spec.nodePortAccess="+k.adminAccess)
 	}
 	if k.image != "" {
 		createArgs = append(createArgs, "--image", k.image)
@@ -399,15 +410,18 @@ func (k kops) Up() error {
 		// append cloud type to allow for use of new regions without updates
 		createArgs = append(createArgs, "--cloud", "aws")
 	}
+	if k.networkMode != "" {
+		createArgs = append(createArgs, "--networking", k.networkMode)
+	}
 	if k.args != "" {
 		createArgs = append(createArgs, strings.Split(k.args, " ")...)
 	}
 	if k.etcdVersion != "" {
-		overrides = append(overrides, "cluster.spec.etcdClusters[*].version="+k.etcdVersion)
+		k.overrides = append(k.overrides, "cluster.spec.etcdClusters[*].version="+k.etcdVersion)
 	}
-	if len(overrides) != 0 {
+	if len(k.overrides) != 0 {
 		featureFlags = append(featureFlags, "SpecOverrideFlag")
-		createArgs = append(createArgs, "--override", strings.Join(overrides, ","))
+		createArgs = append(createArgs, "--override", strings.Join(k.overrides, ","))
 	}
 	if len(featureFlags) != 0 {
 		os.Setenv("KOPS_FEATURE_FLAGS", strings.Join(featureFlags, ","))

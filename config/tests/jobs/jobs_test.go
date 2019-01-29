@@ -27,12 +27,14 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	cfg "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
@@ -347,6 +349,115 @@ func TestTrustedJobs(t *testing.T) {
 	}
 }
 
+// Unit test only postsubmit/periodic jobs in config/jobs/<org>/<project>/<project>-trusted.yaml can use
+// secrets for <org>/<project> in default public cluster.
+func TestTrustedJobSecretsRestricted(t *testing.T) {
+	secretsRestricted := map[string]sets.String{
+		"kubernetes-sigs/sig-storage-local-static-provisioner": sets.NewString("sig-storage-local-static-provisioner-pusher"),
+	}
+	allSecrets := sets.String{}
+	for _, secrets := range secretsRestricted {
+		allSecrets.Insert(secrets.List()...)
+	}
+
+	isSecretUsedByContainer := func(secret string, container v1.Container) bool {
+		if container.EnvFrom == nil {
+			return false
+		}
+		for _, envFrom := range container.EnvFrom {
+			if envFrom.SecretRef != nil && envFrom.SecretRef.Name == secret {
+				return true
+			}
+		}
+		return false
+	}
+
+	isSecretUsed := func(secret string, job cfg.JobBase) bool {
+		if job.Spec == nil {
+			return false
+		}
+		if job.Spec.Volumes != nil {
+			for _, v := range job.Spec.Volumes {
+				if v.VolumeSource.Secret != nil {
+					if v.VolumeSource.Secret.SecretName == secret {
+						return true
+					}
+				}
+			}
+		}
+		if job.Spec.Containers != nil {
+			for _, c := range job.Spec.Containers {
+				if isSecretUsedByContainer(secret, c) {
+					return true
+				}
+			}
+		}
+		if job.Spec.InitContainers != nil {
+			for _, c := range job.Spec.InitContainers {
+				if isSecretUsedByContainer(secret, c) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+
+	// All presubmit jobs should not use any restricted secrets.
+	for _, job := range c.AllPresubmits(nil) {
+		if job.Cluster != kube.DefaultClusterAlias {
+			// check against default public cluster only
+			continue
+		}
+		for _, secret := range allSecrets.List() {
+			if isSecretUsed(secret, job.JobBase) {
+				t.Errorf("%q defined in %q may not use secret %q in %q cluster", job.Name, job.SourcePath, secret, job.Cluster)
+			}
+		}
+	}
+
+	secretsCanUseByPath := func(path string) sets.String {
+		cleanPath := strings.Trim(strings.TrimPrefix(path, *jobConfigPath), string(filepath.Separator))
+		seps := strings.Split(cleanPath, string(filepath.Separator))
+		if len(seps) <= 2 {
+			return nil
+		}
+		org := seps[0]
+		project := seps[1]
+		basename := seps[2]
+		if basename != fmt.Sprintf("%s-trusted.yaml", project) {
+			return nil
+		}
+		return secretsRestricted[fmt.Sprintf("%s/%s", org, project)]
+	}
+
+	// Postsubmit/periodic jobs defined in
+	// config/jobs/<org>/<project>/<project>-trusted.yaml can and only can use restricted
+	// secrets for <org>/repo>.
+	jobs := []cfg.JobBase{}
+	for _, job := range c.AllPostsubmits(nil) {
+		jobs = append(jobs, job.JobBase)
+	}
+	for _, job := range c.AllPeriodics() {
+		jobs = append(jobs, job.JobBase)
+	}
+	for _, job := range jobs {
+		if job.Cluster != kube.DefaultClusterAlias {
+			// check against default public cluster only
+			continue
+		}
+		secretsCanUse := secretsCanUseByPath(job.SourcePath)
+		for _, secret := range allSecrets.List() {
+			if secretsCanUse != nil && secretsCanUse.Has(secret) {
+				t.Logf("allow secret %v for job %s defined in %s", secret, job.Name, job.SourcePath)
+				continue
+			}
+			if isSecretUsed(secret, job) {
+				t.Errorf("%q defined in %q may not use secret %q in %q cluster", job.Name, job.SourcePath, secret, job.Cluster)
+			}
+		}
+	}
+}
+
 // Unit test jobs outside kubernetes-security do not use the security cluster
 // and that jobs inside kubernetes-security DO
 func TestConfigSecurityClusterRestricted(t *testing.T) {
@@ -478,7 +589,7 @@ func TestLatestUsesImagePullPolicy(t *testing.T) {
 
 // checkKubekinsPresets returns an error if a spec references to kubekins-e2e|bootstrap image,
 // but doesn't use service preset or ssh preset
-func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels, validLabels map[string]string) error {
+func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels map[string]string, validLabels map[string]bool) error {
 	service := true
 	ssh := true
 
@@ -518,10 +629,9 @@ func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels, validLabels 
 	}
 
 	for key, val := range labels {
-		if validVal, ok := validLabels[key]; !ok {
-			return fmt.Errorf("label %s is not a valid preset label", key)
-		} else if validVal != val {
-			return fmt.Errorf("label %s does not have valid value, have %s, expect %s", key, val, validVal)
+		pair := key + ":" + val
+		if validVal, ok := validLabels[pair]; !ok || !validVal {
+			return fmt.Errorf("key-value pair %s is not found in list of valid presets list", pair)
 		}
 	}
 
@@ -531,18 +641,17 @@ func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels, validLabels 
 // TestValidPresets makes sure all presets name starts with 'preset-', all job presets are valid,
 // and jobs that uses kubekins-e2e image has the right service account preset
 func TestValidPresets(t *testing.T) {
-	validLabels := map[string]string{}
+	validLabels := map[string]bool{}
 	for _, preset := range c.Presets {
 		for label, val := range preset.Labels {
 			if !strings.HasPrefix(label, "preset-") {
 				t.Errorf("Preset label %s - label name should start with 'preset-'", label)
-			} else if val != "true" {
-				t.Errorf("Preset label %s - label value should be true", label)
 			}
-			if _, ok := validLabels[label]; ok {
-				t.Errorf("Duplicated preset label : %s", label)
+			pair := label + ":" + val
+			if _, ok := validLabels[pair]; ok {
+				t.Errorf("Duplicated preset 'label:value' pair : %s", pair)
 			} else {
-				validLabels[label] = val
+				validLabels[pair] = true
 			}
 		}
 	}

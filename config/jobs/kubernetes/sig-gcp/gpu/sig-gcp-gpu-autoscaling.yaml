@@ -24,7 +24,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingGpu\] --ginkgo.skip=\[Flaky\]
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
 
 - interval: 4h
   name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-p100
@@ -51,7 +51,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingGpu\] --ginkgo.skip=\[Flaky\]
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
 
 - interval: 4h
   name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-v100
@@ -73,9 +73,9 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=k8s-gke-gpu-boskos-v100
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingGpu\] --ginkgo.skip=\[Flaky\]
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master

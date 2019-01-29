@@ -3,6 +3,7 @@ postsubmits:
   - name: post-org-peribolos
     cluster: test-infra-trusted
     decorate: true
+    max_concurrency: 1
     spec:
       containers:
       - image: launcher.gcr.io/google/bazel
@@ -16,6 +17,7 @@ postsubmits:
         - --github-endpoint=http://ghproxy.default.svc.cluster.local
         - --github-endpoint=https://api.github.com
         - --github-token-path=/etc/github-token/oauth
+        - --tokens=1200
         - --confirm
         volumeMounts:
         - name: github
@@ -72,6 +74,7 @@ periodics:
   name: ci-org-peribolos
   cluster: test-infra-trusted
   decorate: true
+  max_concurrency: 1
   extra_refs:
   - org: kubernetes
     repo: org
@@ -89,6 +92,7 @@ periodics:
       - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - --github-endpoint=https://api.github.com
       - --github-token-path=/etc/github-token/oauth
+      - --tokens=1200
       - --confirm
       volumeMounts:
       - name: github

@@ -8,7 +8,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
         args:
         - --repo=k8s.io/ingress-gce=$(PULL_REFS)
         - --root=/go/src/
@@ -30,7 +30,7 @@ postsubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
         args:
         - --repo=k8s.io/ingress-gce=$(PULL_REFS)
         - --root=/go/src/
@@ -53,7 +53,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
       args:
       - --timeout=340
       - --bare
@@ -64,7 +64,7 @@ periodics:
       - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
       - --extract=ci/latest
       - --gcp-project-type=ingress-project
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:IngressDowngrade\]
@@ -77,7 +77,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
       args:
       - --timeout=340
       - --bare
@@ -103,7 +103,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
       args:
       - --timeout=340
       - --bare
@@ -130,7 +130,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
       args:
       - --timeout=340
       - --bare
@@ -153,7 +153,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
       args:
       - --timeout=340
       - --bare
@@ -176,7 +176,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
       args:
       - --timeout=340
       - --bare
@@ -199,7 +199,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
       args:
       - --timeout=340
       - --bare
@@ -210,7 +210,7 @@ periodics:
       - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
       - --extract=ci/latest
       - --gcp-project=k8s-ingress-e2e-scale-backup
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel=1
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:IngressScale\]
@@ -223,7 +223,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
       args:
       - --timeout=340
       - --bare
@@ -234,7 +234,7 @@ periodics:
       - --env=GCE_GLBC_IMAGE=k8s.gcr.io/ingress-gce-glbc-amd64:v1.1.1
       - --extract=ci/latest
       - --gcp-project-type=ingress-project
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:IngressUpgrade\]

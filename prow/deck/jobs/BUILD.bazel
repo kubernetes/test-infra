@@ -9,6 +9,7 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
     ],
 )
@@ -17,7 +18,10 @@ go_test(
     name = "go_default_test",
     srcs = ["jobs_test.go"],
     embed = [":go_default_library"],
-    deps = ["//prow/kube:go_default_library"],
+    deps = [
+        "//prow/kube:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+    ],
 )
 
 filegroup(

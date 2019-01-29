@@ -828,11 +828,11 @@ def setup_magic_environment(job, call):
         os.path.join(home, '.ssh/google_compute_engine.pub'),
     )
     os.environ.setdefault(
-        'JENKINS_AWS_SSH_PRIVATE_KEY_FILE',
+        'AWS_SSH_PRIVATE_KEY_FILE',
         os.path.join(home, '.ssh/kube_aws_rsa'),
     )
     os.environ.setdefault(
-        'JENKINS_AWS_SSH_PUBLIC_KEY_FILE',
+        'AWS_SSH_PUBLIC_KEY_FILE',
         os.path.join(home, '.ssh/kube_aws_rsa.pub'),
     )
 
@@ -951,18 +951,6 @@ def configure_ssh_key(ssh):
         os.unlink(fp.name)
 
 
-def maybe_upload_podspec(call, artifacts, gsutil, getenv):
-    """ Attempt to read our own podspec and upload it to the artifacts dir. """
-    if not getenv(K8S_ENV):
-        return  # we don't appear to be a pod
-    hostname = getenv('HOSTNAME')
-    if not hostname:
-        return
-    spec = call(['kubectl', 'get', '-oyaml', 'pods/' + hostname], output=True)
-    gsutil.upload_text(
-        os.path.join(artifacts, 'prow_podspec.yaml'), spec)
-
-
 def setup_root(call, root, repos, ssh, git_cache, clean):
     """Create root dir, checkout repo and cd into resulting dir."""
     if not os.path.exists(root):
@@ -1068,7 +1056,7 @@ def bootstrap(args):
     logging.warning('bootstrap.py is deprecated!\n'
                     'Please migrate your job to podutils!\n'
                     'https://github.com/kubernetes/test-infra/blob/master/prow/pod-utilities.md'
-    )
+                    )
 
     if len(sys.argv) > 1:
         logging.info('Args: %s', ' '.join(pipes.quote(a)
@@ -1099,12 +1087,6 @@ def bootstrap(args):
     try:
         with configure_ssh_key(args.ssh):
             setup_credentials(call, args.service_account, upload)
-            if upload:
-                try:
-                    maybe_upload_podspec(
-                        call, paths.artifacts, gsutil, os.getenv)
-                except (OSError, subprocess.CalledProcessError), exc:
-                    logging.error("unable to upload podspecs: %s", exc)
             setup_root(call, args.root, repos, args.ssh,
                        args.git_cache, args.clean)
             logging.info('Configure environment...')

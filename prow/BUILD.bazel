@@ -14,6 +14,7 @@ container_bundle(
         "artifact-uploader",
         "branchprotector",
         "build",
+        "checkconfig",
         "clonerefs",
         "deck",
         "entrypoint",
@@ -29,6 +30,7 @@ container_bundle(
         "sidecar",
         "sinker",
         "status-reconciler",
+        "sub",
         "tide",
         "tot",
     ) + image_tags(**{
@@ -116,6 +118,7 @@ filegroup(
         "//prow/gerrit/client:all-srcs",
         "//prow/gerrit/reporter:all-srcs",
         "//prow/git:all-srcs",
+        "//prow/gitattributes:all-srcs",
         "//prow/github:all-srcs",
         "//prow/githuboauth:all-srcs",
         "//prow/hook:all-srcs",

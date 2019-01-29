@@ -2,7 +2,10 @@
 
 New features added to each component:
 
- - *January 12, 2018* `blunderbluss` plugin now provides a new command, `/auto-cc`,
+ - *January 15, 2019* `approve` now considers self-approval and github review
+   state by default. Configure with `require_self_approval` and
+   `ignore_review_state`. Temporarily revert to old defaults with `use_deprecated_2018_implicit_self_approve_default_migrate_before_july_2019` and `use_deprecated_2018_review_acts_as_approve_default_migrate_before_july_2019`.
+ - *January 12, 2019* `blunderbluss` plugin now provides a new command, `/auto-cc`,
    that triggers automatic review requests.
  - *January 7, 2019* `implicit_self_approve` will become `require_self_approval` in
    the second half of this year.
@@ -37,6 +40,9 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *January 22, 2019* `sinker` prefers `.kube/config` instead of the custom `Clusters`
+   file to specify credentials for external build clusters. The flag name has changed
+   from `--build-cluster` to `--kubeconfig`. Migrate before June 2019.
  - *November 29, 2018* `plank` will no longer default jobs with `decorate: true`
    to have `automountServiceAccountToken: false` in their PodSpec if unset, if the
    job explicitly sets `serviceAccountName`

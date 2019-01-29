@@ -15,7 +15,7 @@
 # This file creates a build environment for building and running kubernetes
 # unit and integration tests
 
-FROM golang:1.10.7
+FROM golang:1.10.8
 LABEL maintainer="Sen Lu <senlu@google.com>"
 
 # Setup workspace and symlink to gopath
@@ -54,7 +54,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     gnupg2 \
     software-properties-common \
-    lsb-release
+    lsb-release && \
+    rm -rf /var/lib/apt/lists/*
 
 # Add the Docker apt-repository
 RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg \
@@ -73,6 +74,7 @@ RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID"
 # https://github.com/kubernetes/test-infra/issues/6187
 RUN apt-get update && \
     apt-get install -y --no-install-recommends docker-ce=17.09.1~ce-0~debian && \
+    rm -rf /var/lib/apt/lists/* && \
     sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker
 
 

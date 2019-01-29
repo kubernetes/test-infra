@@ -26,11 +26,14 @@ Let's start with an example that shows the sessions API in a nutshell:
 		"github.com/gorilla/sessions"
 	)
 
-	var store = sessions.NewCookieStore([]byte("something-very-secret"))
+	// Note: Don't store your key in your source code. Pass it via an
+	// environmental variable, or flag (or both), and don't accidentally commit it
+	// alongside your code. Ensure your key is sufficiently random - i.e. use Go's
+	// crypto/rand or securecookie.GenerateRandomKey(32) and persist the result.
+	var store = sessions.NewCookieStore(os.Getenv("SESSION_KEY"))
 
 	func MyHandler(w http.ResponseWriter, r *http.Request) {
-		// Get a session. We're ignoring the error resulted from decoding an
-		// existing session: Get() always returns a session, even if empty.
+		// Get a session. Get() always returns a session, even if empty.
 		session, err := store.Get(r, "session-name")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -80,7 +83,7 @@ flashes, call session.Flashes(). Here is an example:
 			return
 		}
 
-		// Get the previously flashes, if any.
+		// Get the previous flashes, if any.
 		if flashes := session.Flashes(); len(flashes) > 0 {
 			// Use the flash values.
 		} else {

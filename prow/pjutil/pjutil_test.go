@@ -19,11 +19,14 @@ package pjutil
 import (
 	"reflect"
 	"testing"
+	"text/template"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -577,5 +580,73 @@ func TestNewProwJobWithAnnotations(t *testing.T) {
 		if actual, expected := pj.Annotations, testCase.expectedAnnotations; !reflect.DeepEqual(actual, expected) {
 			t.Errorf("%s: incorrect ProwJob labels created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
 		}
+	}
+}
+
+func TestJobURL(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		plank    config.Plank
+		pj       kube.ProwJob
+		expected string
+	}{
+		{
+			name: "non-decorated job uses template",
+			plank: config.Plank{
+				Controller: config.Controller{
+					JobURLTemplate: template.Must(template.New("test").Parse("{{.Spec.Type}}")),
+				},
+			},
+			pj:       kube.ProwJob{Spec: kube.ProwJobSpec{Type: kube.PeriodicJob}},
+			expected: "periodic",
+		},
+		{
+			name: "non-decorated job with broken template gives empty string",
+			plank: config.Plank{
+				Controller: config.Controller{
+					JobURLTemplate: template.Must(template.New("test").Parse("{{.Garbage}}")),
+				},
+			},
+			pj:       kube.ProwJob{},
+			expected: "",
+		},
+		{
+			name: "decorated job without prefix uses template",
+			plank: config.Plank{
+				Controller: config.Controller{
+					JobURLTemplate: template.Must(template.New("test").Parse("{{.Spec.Type}}")),
+				},
+			},
+			pj:       kube.ProwJob{Spec: kube.ProwJobSpec{Type: kube.PeriodicJob}},
+			expected: "periodic",
+		},
+		{
+			name: "decorated job with prefix uses gcslib",
+			plank: config.Plank{
+				JobURLPrefix: "https://gubernator.com/build",
+			},
+			pj: kube.ProwJob{Spec: kube.ProwJobSpec{
+				Type: kube.PresubmitJob,
+				Refs: &kube.Refs{
+					Org:   "org",
+					Repo:  "repo",
+					Pulls: []kube.Pull{{Number: 1}},
+				},
+				DecorationConfig: &kube.DecorationConfig{GCSConfiguration: &kube.GCSConfiguration{
+					Bucket:       "bucket",
+					PathStrategy: kube.PathStrategyExplicit,
+				}},
+			}},
+			expected: "https://gubernator.com/build/bucket/pr-logs/pull/org_repo/1",
+		},
+	}
+
+	logger := logrus.New()
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			if actual, expected := JobURL(testCase.plank, testCase.pj, logger.WithField("name", testCase.name)), testCase.expected; actual != expected {
+				t.Errorf("%s: expected URL to be %q but got %q", testCase.name, expected, actual)
+			}
+		})
 	}
 }

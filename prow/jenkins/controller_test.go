@@ -324,7 +324,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			kc:          fkc,
 			jc:          fjc,
 			log:         logrus.NewEntry(logrus.StandardLogger()),
-			ca:          newFakeConfigAgent(t, tc.maxConcurrency, nil),
+			cfg:         newFakeConfigAgent(t, tc.maxConcurrency, nil).Config,
 			totURL:      totServ.URL,
 			lock:        sync.RWMutex{},
 			pendingJobs: make(map[string]int),
@@ -540,7 +540,7 @@ func TestSyncPendingJobs(t *testing.T) {
 			kc:          fkc,
 			jc:          fjc,
 			log:         logrus.NewEntry(logrus.StandardLogger()),
-			ca:          newFakeConfigAgent(t, 0, nil),
+			cfg:         newFakeConfigAgent(t, 0, nil).Config,
 			totURL:      totServ.URL,
 			lock:        sync.RWMutex{},
 			pendingJobs: make(map[string]int),
@@ -635,7 +635,7 @@ func TestBatch(t *testing.T) {
 		ghc:         &fghc{},
 		jc:          jc,
 		log:         logrus.NewEntry(logrus.StandardLogger()),
-		ca:          newFakeConfigAgent(t, 0, nil),
+		cfg:         newFakeConfigAgent(t, 0, nil).Config,
 		totURL:      totServ.URL,
 		pendingJobs: make(map[string]int),
 		lock:        sync.RWMutex{},
@@ -773,9 +773,13 @@ func TestRunAfterSuccessCanRun(t *testing.T) {
 			err:     test.err,
 		}
 
-		c := Controller{log: logrus.NewEntry(logrus.StandardLogger())}
+		c := Controller{
+			log: logrus.NewEntry(logrus.StandardLogger()),
+			cfg: newFakeConfigAgent(t, 0, nil).Config,
+			ghc: fakeGH,
+		}
 
-		got := c.RunAfterSuccessCanRun(test.parent, test.child, newFakeConfigAgent(t, 0, nil), fakeGH)
+		got := c.RunAfterSuccessCanRun(test.parent, test.child)
 		if got != test.expected {
 			t.Errorf("expected to run: %t, got: %t", test.expected, got)
 		}
@@ -891,7 +895,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			kc:          fc,
 			jc:          fjc,
 			log:         logrus.NewEntry(logrus.StandardLogger()),
-			ca:          newFakeConfigAgent(t, 0, nil),
+			cfg:         newFakeConfigAgent(t, 0, nil).Config,
 			totURL:      totServ.URL,
 			pendingJobs: test.pendingJobs,
 		}
@@ -1066,7 +1070,7 @@ func TestOperatorConfig(t *testing.T) {
 		t.Logf("scenario %q", test.name)
 
 		c := Controller{
-			ca:       newFakeConfigAgent(t, 10, test.operators),
+			cfg:      newFakeConfigAgent(t, 10, test.operators).Config,
 			selector: test.labelSelector,
 		}
 

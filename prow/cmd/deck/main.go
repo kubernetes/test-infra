@@ -28,21 +28,26 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"strings"
 	"time"
 
 	"k8s.io/test-infra/traiana/storage"
+
 	"github.com/NYTimes/gziphandler"
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/traiana/storage/option"
-	"sigs.k8s.io/yaml"
-
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
+	"google.golang.org/api/option"
+	coreapi "k8s.io/api/core/v1"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"sigs.k8s.io/yaml"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -63,6 +68,7 @@ type options struct {
 	configPath            string
 	jobConfigPath         string
 	buildCluster          string
+	kubernetes            prowflagutil.KubernetesOptions
 	tideURL               string
 	hookURL               string
 	oauthURL              string
@@ -79,6 +85,15 @@ type options struct {
 }
 
 func (o *options) Validate() error {
+	if o.buildCluster != "" {
+		logrus.Error("--build-cluster is deprecated, switch to --cluster by June 2019.")
+		o.kubernetes.InjectBuildCluster(o.buildCluster)
+	}
+
+	if err := o.kubernetes.Validate(false); err != nil {
+		return err
+	}
+
 	if o.configPath == "" {
 		return errors.New("required flag --config-path was unset")
 	}
@@ -95,25 +110,27 @@ func (o *options) Validate() error {
 
 func gatherOptions() options {
 	o := options{}
-	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	flag.StringVar(&o.buildCluster, "build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
-	flag.StringVar(&o.tideURL, "tide-url", "", "Path to tide. If empty, do not serve tide data.")
-	flag.StringVar(&o.hookURL, "hook-url", "", "Path to hook plugin help endpoint.")
-	flag.StringVar(&o.oauthURL, "oauth-url", "", "Path to deck user dashboard endpoint.")
-	flag.StringVar(&o.githubOAuthConfigFile, "github-oauth-config-file", "/etc/github/secret", "Path to the file containing the GitHub App Client secret.")
-	flag.StringVar(&o.cookieSecretFile, "cookie-secret", "/etc/cookie/secret", "Path to the file containing the cookie secret key.")
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	fs.StringVar(&o.buildCluster, "build-cluster", "", "DEPRECATED. Use --cluster. Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
+	fs.StringVar(&o.tideURL, "tide-url", "", "Path to tide. If empty, do not serve tide data.")
+	fs.StringVar(&o.hookURL, "hook-url", "", "Path to hook plugin help endpoint.")
+	fs.StringVar(&o.oauthURL, "oauth-url", "", "Path to deck user dashboard endpoint.")
+	fs.StringVar(&o.githubOAuthConfigFile, "github-oauth-config-file", "/etc/github/secret", "Path to the file containing the GitHub App Client secret.")
+	fs.StringVar(&o.cookieSecretFile, "cookie-secret", "/etc/cookie/secret", "Path to the file containing the cookie secret key.")
 	// use when behind a load balancer
-	flag.StringVar(&o.redirectHTTPTo, "redirect-http-to", "", "Host to redirect http->https to based on x-forwarded-proto == http.")
+	fs.StringVar(&o.redirectHTTPTo, "redirect-http-to", "", "Host to redirect http->https to based on x-forwarded-proto == http.")
 	// use when behind an oauth proxy
-	flag.BoolVar(&o.hiddenOnly, "hidden-only", false, "Show only hidden jobs. Useful for serving hidden jobs behind an oauth proxy.")
-	flag.StringVar(&o.pregeneratedData, "pregenerated-data", "", "Use API output from another prow instance. Used by the prow/cmd/deck/runlocal script")
-	flag.BoolVar(&o.spyglass, "spyglass", false, "Use Prow built-in job viewing instead of Gubernator")
-	flag.StringVar(&o.spyglassFilesLocation, "spyglass-files-location", "/lenses", "Location of the static files for spyglass.")
-	flag.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
-	flag.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
-	flag.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the GCS credentials file")
-	flag.Parse()
+	fs.BoolVar(&o.hiddenOnly, "hidden-only", false, "Show only hidden jobs. Useful for serving hidden jobs behind an oauth proxy.")
+	fs.StringVar(&o.pregeneratedData, "pregenerated-data", "", "Use API output from another prow instance. Used by the prow/cmd/deck/runlocal script")
+	fs.BoolVar(&o.spyglass, "spyglass", false, "Use Prow built-in job viewing instead of Gubernator")
+	fs.StringVar(&o.spyglassFilesLocation, "spyglass-files-location", "/lenses", "Location of the static files for spyglass.")
+	fs.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
+	fs.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
+	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the GCS credentials file")
+	o.kubernetes.AddFlags(fs)
+	fs.Parse(os.Args[1:])
 	return o
 }
 
@@ -138,21 +155,22 @@ func main() {
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
+	cfg := configAgent.Config
 
 	// setup common handlers for local and deployed runs
 	mux.Handle("/static/", http.StripPrefix("/static", staticHandlerFromDir(o.staticFilesLocation)))
-	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
-	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(o.staticFilesLocation, configAgent)))
+	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(cfg)))
+	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(o.staticFilesLocation, cfg)))
 
 	// Set up handlers for template pages.
-	mux.Handle("/pr", gziphandler.GzipHandler(handleSimpleTemplate(o, configAgent, "pr.html", nil)))
-	mux.Handle("/command-help", gziphandler.GzipHandler(handleSimpleTemplate(o, configAgent, "command-help.html", nil)))
+	mux.Handle("/pr", gziphandler.GzipHandler(handleSimpleTemplate(o, cfg, "pr.html", nil)))
+	mux.Handle("/command-help", gziphandler.GzipHandler(handleSimpleTemplate(o, cfg, "command-help.html", nil)))
 	mux.Handle("/plugin-help", http.RedirectHandler("/command-help", http.StatusMovedPermanently))
-	mux.Handle("/tide", gziphandler.GzipHandler(handleSimpleTemplate(o, configAgent, "tide.html", nil)))
-	mux.Handle("/tide-history", gziphandler.GzipHandler(handleSimpleTemplate(o, configAgent, "tide-history.html", nil)))
-	mux.Handle("/plugins", gziphandler.GzipHandler(handleSimpleTemplate(o, configAgent, "plugins.html", nil)))
+	mux.Handle("/tide", gziphandler.GzipHandler(handleSimpleTemplate(o, cfg, "tide.html", nil)))
+	mux.Handle("/tide-history", gziphandler.GzipHandler(handleSimpleTemplate(o, cfg, "tide-history.html", nil)))
+	mux.Handle("/plugins", gziphandler.GzipHandler(handleSimpleTemplate(o, cfg, "plugins.html", nil)))
 
-	indexHandler := handleSimpleTemplate(o, configAgent, "index.html", struct{ SpyglassEnabled bool }{o.spyglass})
+	indexHandler := handleSimpleTemplate(o, cfg, "index.html", struct{ SpyglassEnabled bool }{o.spyglass})
 
 	runLocal := o.pregeneratedData != ""
 
@@ -173,9 +191,9 @@ func main() {
 	})
 
 	if runLocal {
-		mux = localOnlyMain(configAgent, o, mux)
+		mux = localOnlyMain(cfg, o, mux)
 	} else {
-		mux = prodOnlyMain(configAgent, o, mux)
+		mux = prodOnlyMain(cfg, o, mux)
 	}
 
 	// setup done, actually start the server
@@ -184,39 +202,50 @@ func main() {
 
 // localOnlyMain contains logic used only when running locally, and is mutually exclusive with
 // prodOnlyMain.
-func localOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *http.ServeMux {
-	mux.Handle("/github-login", gziphandler.GzipHandler(handleSimpleTemplate(o, configAgent, "github-login.html", nil)))
+func localOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeMux {
+	mux.Handle("/github-login", gziphandler.GzipHandler(handleSimpleTemplate(o, cfg, "github-login.html", nil)))
 
 	if o.spyglass {
-		initSpyglass(configAgent, o, mux, nil)
+		initSpyglass(cfg, o, mux, nil)
 	}
 
 	return mux
 }
 
-// prodOnlyMain contains logic only used when running deployed, not locally
-func prodOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *http.ServeMux {
-	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
+type podLogClient struct {
+	client corev1.PodInterface
+}
+
+func (c *podLogClient) GetLogs(name string, opts *coreapi.PodLogOptions) ([]byte, error) {
+	reader, err := c.client.GetLogs(name, &coreapi.PodLogOptions{Container: kube.TestContainerName}).Stream()
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting client.")
+		return nil, err
 	}
-	kc.SetHiddenReposProvider(func() []string { return configAgent.Config().Deck.HiddenRepos }, o.hiddenOnly)
+	defer reader.Close()
+	return ioutil.ReadAll(reader)
+}
 
-	var pkcs map[string]*kube.Client
-	if o.buildCluster == "" {
-		pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: kc.Namespace(configAgent.Config().PodNamespace)}
-	} else {
-		pkcs, err = kube.ClientMapFromFile(o.buildCluster, configAgent.Config().PodNamespace)
-		if err != nil {
-			logrus.WithError(err).Fatal("Error getting kube client to build cluster.")
+// prodOnlyMain contains logic only used when running deployed, not locally
+func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeMux {
+	kc, defaultContext, kubernetesClients, err := o.kubernetes.Client(cfg().ProwJobNamespace, false)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
+	}
+	kc.SetHiddenReposProvider(func() []string { return cfg().Deck.HiddenRepos }, o.hiddenOnly)
+
+	podLogClients := map[string]jobs.PodLogClient{}
+	for clusterContext, client := range kubernetesClients {
+		// we want to map cluster clients by their alias, not their context
+		// the only context that is not the alias is the default context, so
+		// we can simply overwrite that one and be content that our cluster
+		// mapping is correct for the controller
+		if clusterContext == defaultContext {
+			clusterContext = kube.DefaultClusterAlias
 		}
-	}
-	plClients := map[string]jobs.PodLogClient{}
-	for alias, client := range pkcs {
-		plClients[alias] = client
+		podLogClients[clusterContext] = &podLogClient{client: client.CoreV1().Pods(cfg().PodNamespace)}
 	}
 
-	ja := jobs.NewJobAgent(kc, plClients, configAgent)
+	ja := jobs.NewJobAgent(kc, podLogClients, cfg)
 	ja.Start()
 
 	// setup prod only handlers
@@ -227,7 +256,7 @@ func prodOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *htt
 	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
 
 	if o.spyglass {
-		initSpyglass(configAgent, o, mux, ja)
+		initSpyglass(cfg, o, mux, ja)
 	}
 
 	if o.hookURL != "" {
@@ -240,13 +269,13 @@ func prodOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *htt
 			log:  logrus.WithField("agent", "tide"),
 			path: o.tideURL,
 			updatePeriod: func() time.Duration {
-				return configAgent.Config().Deck.TideUpdatePeriod
+				return cfg().Deck.TideUpdatePeriod
 			},
-			hiddenRepos: configAgent.Config().Deck.HiddenRepos,
+			hiddenRepos: cfg().Deck.HiddenRepos,
 			hiddenOnly:  o.hiddenOnly,
 		}
 		ta.start()
-		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTidePools(configAgent, ta)))
+		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTidePools(cfg, ta)))
 		mux.Handle("/tide-history.js", gziphandler.GzipHandler(handleTideHistory(ta)))
 	}
 
@@ -290,10 +319,10 @@ func prodOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *htt
 		}
 
 		repoSet := make(map[string]bool)
-		for r := range configAgent.Config().Presubmits {
+		for r := range cfg().Presubmits {
 			repoSet[r] = true
 		}
-		for _, q := range configAgent.Config().Tide.Queries {
+		for _, q := range cfg().Tide.Queries {
 			for _, v := range q.Repos {
 				repoSet[v] = true
 			}
@@ -343,7 +372,7 @@ func prodOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *htt
 	return mux
 }
 
-func initSpyglass(configAgent *config.Agent, o options, mux *http.ServeMux, ja *jobs.JobAgent) {
+func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.JobAgent) {
 	var c *storage.Client
 	var err error
 	if o.gcsCredentialsFile == "" {
@@ -354,13 +383,13 @@ func initSpyglass(configAgent *config.Agent, o options, mux *http.ServeMux, ja *
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GCS client")
 	}
-	sg := spyglass.New(ja, configAgent, c)
+	sg := spyglass.New(ja, cfg, c)
 
 	mux.Handle("/spyglass/static/", http.StripPrefix("/spyglass/static", staticHandlerFromDir(o.spyglassFilesLocation)))
-	mux.Handle("/spyglass/lens/", gziphandler.GzipHandler(http.StripPrefix("/spyglass/lens/", handleArtifactView(o, sg, configAgent))))
-	mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent, o)))
-	mux.Handle("/job-history/", gziphandler.GzipHandler(handleJobHistory(o, configAgent, c)))
-	mux.Handle("/pr-history/", gziphandler.GzipHandler(handlePRHistory(o, configAgent, c)))
+	mux.Handle("/spyglass/lens/", gziphandler.GzipHandler(http.StripPrefix("/spyglass/lens/", handleArtifactView(o, sg, cfg))))
+	mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, cfg, o)))
+	mux.Handle("/job-history/", gziphandler.GzipHandler(handleJobHistory(o, cfg, c)))
+	mux.Handle("/pr-history/", gziphandler.GzipHandler(handlePRHistory(o, cfg, c)))
 }
 
 func loadToken(file string) ([]byte, error) {
@@ -497,17 +526,17 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 //
 // Example:
 // - /job-history/kubernetes-jenkins/logs/ci-kubernetes-e2e-prow-canary
-func handleJobHistory(o options, ca *config.Agent, gcsClient *storage.Client) http.HandlerFunc {
+func handleJobHistory(o options, cfg config.Getter, gcsClient *storage.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
-		tmpl, err := getJobHistory(r.URL, ca.Config(), gcsClient)
+		tmpl, err := getJobHistory(r.URL, cfg(), gcsClient)
 		if err != nil {
 			msg := fmt.Sprintf("failed to get job history: %v", err)
 			logrus.WithField("url", r.URL).Error(msg)
 			http.Error(w, msg, http.StatusInternalServerError)
 			return
 		}
-		handleSimpleTemplate(o, ca, "job-history.html", tmpl)(w, r)
+		handleSimpleTemplate(o, cfg, "job-history.html", tmpl)(w, r)
 	}
 }
 
@@ -515,17 +544,17 @@ func handleJobHistory(o options, ca *config.Agent, gcsClient *storage.Client) ht
 // The url must look like this:
 //
 // /pr-history/<org>/<repo>/<pr number>
-func handlePRHistory(o options, ca *config.Agent, gcsClient *storage.Client) http.HandlerFunc {
+func handlePRHistory(o options, cfg config.Getter, gcsClient *storage.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
-		tmpl, err := getPRHistory(r.URL, ca.Config(), gcsClient)
+		tmpl, err := getPRHistory(r.URL, cfg(), gcsClient)
 		if err != nil {
 			msg := fmt.Sprintf("failed to get PR history: %v", err)
 			logrus.WithField("url", r.URL).Error(msg)
 			http.Error(w, msg, http.StatusInternalServerError)
 			return
 		}
-		handleSimpleTemplate(o, ca, "pr-history.html", tmpl)(w, r)
+		handleSimpleTemplate(o, cfg, "pr-history.html", tmpl)(w, r)
 	}
 }
 
@@ -537,13 +566,13 @@ func handlePRHistory(o options, ca *config.Agent, gcsClient *storage.Client) htt
 // Examples:
 // - /view/gcs/kubernetes-jenkins/pr-logs/pull/test-infra/9557/pull-test-infra-verify-gofmt/15688/
 // - /view/prowjob/echo-test/1046875594609922048
-func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent, o options) http.HandlerFunc {
+func handleRequestJobViews(sg *spyglass.Spyglass, cfg config.Getter, o options) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		setHeadersNoCaching(w)
 		src := strings.TrimPrefix(r.URL.Path, "/view/")
 
-		page, err := renderSpyglass(sg, ca, src, o)
+		page, err := renderSpyglass(sg, cfg, src, o)
 		if err != nil {
 			logrus.WithError(err).Error("error rendering spyglass page")
 			message := fmt.Sprintf("error rendering spyglass page: %v", err)
@@ -562,7 +591,7 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent, o options) h
 }
 
 // renderSpyglass returns a pre-rendered Spyglass page from the given source string
-func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, o options) (string, error) {
+func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o options) (string, error) {
 	renderStart := time.Now()
 	artifactNames, err := sg.ListArtifacts(src)
 	if err != nil {
@@ -573,8 +602,8 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, o optio
 	}
 
 	viewerCache := map[string][]string{}
-	viewersRegistry := ca.Config().Deck.Spyglass.Viewers
-	regexCache := ca.Config().Deck.Spyglass.RegexCache
+	viewersRegistry := cfg().Deck.Spyglass.Viewers
+	regexCache := cfg().Deck.Spyglass.RegexCache
 
 	for re, viewerNames := range viewersRegistry {
 		matches := []string{}
@@ -620,7 +649,7 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, o optio
 	}
 	t := template.New("spyglass.html")
 
-	if _, err := prepareBaseTemplate(o, ca, t); err != nil {
+	if _, err := prepareBaseTemplate(o, cfg, t); err != nil {
 		return "", fmt.Errorf("error preparing base template: %v", err)
 	}
 	t, err = t.ParseFiles(path.Join(o.templateFilesLocation, "spyglass.html"))
@@ -644,7 +673,7 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, o optio
 // Query params:
 // - name: required, specifies the name of the viewer to load
 // - src: required, specifies the job source from which to fetch artifacts
-func handleArtifactView(o options, sg *spyglass.Spyglass, ca *config.Agent) http.HandlerFunc {
+func handleArtifactView(o options, sg *spyglass.Spyglass, cfg config.Getter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
 		pathSegments := strings.Split(r.URL.Path, "/")
@@ -671,7 +700,7 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, ca *config.Agent) http
 			return
 		}
 
-		artifacts, err := sg.FetchArtifacts(request.Source, "", ca.Config().Deck.Spyglass.SizeLimit, request.Artifacts)
+		artifacts, err := sg.FetchArtifacts(request.Source, "", cfg().Deck.Spyglass.SizeLimit, request.Artifacts)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed to retrieve expected artifacts: %v", err), http.StatusInternalServerError)
 			return
@@ -718,10 +747,10 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, ca *config.Agent) http
 	}
 }
 
-func handleTidePools(ca *config.Agent, ta *tideAgent) http.HandlerFunc {
+func handleTidePools(cfg config.Getter, ta *tideAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
-		queryConfigs := ta.filterHiddenQueries(ca.Config().Tide.Queries)
+		queryConfigs := ta.filterHiddenQueries(cfg().Tide.Queries)
 		queries := make([]string, 0, len(queryConfigs))
 		for _, qc := range queryConfigs {
 			queries = append(queries, qc.Query())
@@ -880,11 +909,11 @@ func handleRerun(kc pjClient) http.HandlerFunc {
 	}
 }
 
-func handleConfig(ca jobs.ConfigAgent) http.HandlerFunc {
+func handleConfig(cfg config.Getter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// TODO(bentheelder): add the ability to query for portions of the config?
 		setHeadersNoCaching(w)
-		config := ca.Config()
+		config := cfg()
 		b, err := yaml.Marshal(config)
 		if err != nil {
 			logrus.WithError(err).Error("Error marshaling config.")
@@ -900,9 +929,9 @@ func handleConfig(ca jobs.ConfigAgent) http.HandlerFunc {
 	}
 }
 
-func handleFavicon(staticFilesLocation string, ca jobs.ConfigAgent) http.HandlerFunc {
+func handleFavicon(staticFilesLocation string, cfg config.Getter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		config := ca.Config()
+		config := cfg()
 		if config.Deck.Branding != nil && config.Deck.Branding.Favicon != "" {
 			http.ServeFile(w, r, staticFilesLocation+"/"+config.Deck.Branding.Favicon)
 		} else {

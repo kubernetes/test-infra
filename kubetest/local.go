@@ -204,7 +204,7 @@ func (n localCluster) IsUp() error {
 }
 
 func (n localCluster) DumpClusterLogs(localPath, gcsPath string) error {
-	cmd := exec.Command("sudo", "cp", "-r", n.tempDir, localPath)
+	cmd := exec.Command("cp", "-r", n.tempDir, localPath)
 	return control.FinishRunning(cmd)
 }
 

@@ -8,7 +8,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20190110-2cba0a6ef
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
       args:
       - --repo=k8s.io/kubernetes=release-1.11
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -21,12 +21,12 @@ periodics:
       - --deployment=kubernetes-anywhere
       - --extract=release/latest-1.11
       - --extract=ci/latest-bazel-1.10
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --kubeadm=periodic
       - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.10
       - --kubernetes-anywhere-kubernetes-version=ci/latest-1.10
       - --kubernetes-anywhere-upgrade-method=upgrade
-      - --provider=kubernetes-anywhere
+      - --provider=skeleton
       - --skew
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m
@@ -39,7 +39,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20190110-2cba0a6ef
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
       args:
       - --repo=k8s.io/kubernetes=release-1.12
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -52,12 +52,12 @@ periodics:
       - --deployment=kubernetes-anywhere
       - --extract=release/latest-1.12
       - --extract=ci/latest-bazel-1.11
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --kubeadm=periodic
       - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.11
       - --kubernetes-anywhere-kubernetes-version=ci/latest-1.11
       - --kubernetes-anywhere-upgrade-method=upgrade
-      - --provider=kubernetes-anywhere
+      - --provider=skeleton
       - --skew
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m
@@ -70,7 +70,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20190110-2cba0a6ef
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
       args:
       - --repo=k8s.io/kubernetes=release-1.13
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -83,12 +83,12 @@ periodics:
       - --deployment=kubernetes-anywhere
       - --extract=release/latest-1.13
       - --extract=ci/latest-bazel-1.12
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --kubeadm=periodic
       - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.12
       - --kubernetes-anywhere-kubernetes-version=ci/latest-1.12
       - --kubernetes-anywhere-upgrade-method=upgrade
-      - --provider=kubernetes-anywhere
+      - --provider=skeleton
       - --skew
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m
@@ -101,7 +101,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20190110-2cba0a6ef
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -114,12 +114,12 @@ periodics:
       - --deployment=kubernetes-anywhere
       - --extract=ci/latest
       - --extract=release/stable
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --kubeadm=periodic
       - --kubernetes-anywhere-kubelet-version=stable
       - --kubernetes-anywhere-kubernetes-version=stable
       - --kubernetes-anywhere-upgrade-method=upgrade
-      - --provider=kubernetes-anywhere
+      - --provider=skeleton
       - --skew
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m
