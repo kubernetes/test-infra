@@ -259,7 +259,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		presubmits := c.config().Presubmits[cloneURI.String()]
 		presubmits = append(presubmits, c.config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
 		for _, presubmit := range presubmits {
-			if shouldRun, err := presubmit.ShouldRun(change.Branch, changedFiles, false); err != nil {
+			if shouldRun, err := presubmit.ShouldRun(change.Branch, changedFiles, false, false); err != nil {
 				return fmt.Errorf("failed to determine if presubmit %q should run: %v", presubmit.Name, err)
 			} else if shouldRun {
 				jobSpecs = append(jobSpecs, jobSpec{

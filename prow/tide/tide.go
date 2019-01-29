@@ -1054,7 +1054,7 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, 
 		}
 
 		for _, pr := range sp.prs {
-			if shouldRun, err := ps.ShouldRun(sp.branch, c.changedFiles.prChanges(&pr), false); err != nil {
+			if shouldRun, err := ps.ShouldRun(sp.branch, c.changedFiles.prChanges(&pr), false, false); err != nil {
 				return nil, err
 			} else if shouldRun {
 				record(int(pr.Number), ps)

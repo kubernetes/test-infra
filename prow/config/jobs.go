@@ -310,11 +310,14 @@ func (ps Presubmit) CouldRun(baseRef string) bool {
 // ShouldRun determines if the presubmit should run against a specific
 // base ref, or in response to a set of changes. The latter mechanism
 // is evaluated lazily, if necessary.
-func (ps Presubmit) ShouldRun(baseRef string, changes ChangedFilesProvider, defaults bool) (bool, error) {
+func (ps Presubmit) ShouldRun(baseRef string, changes ChangedFilesProvider, forced, defaults bool) (bool, error) {
 	if !ps.CouldRun(baseRef) {
 		return false, nil
 	}
 	if ps.AlwaysRun {
+		return true, nil
+	}
+	if forced {
 		return true, nil
 	}
 	if determined, shouldRun, err := ps.RegexpChangeMatcher.ShouldRun(changes); err != nil {

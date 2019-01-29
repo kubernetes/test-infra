@@ -792,7 +792,7 @@ func TestPresubmitFilter(t *testing.T) {
 					RerunCommand: "/test trigger",
 				},
 			},
-			expected: [][]bool{{true, false}, {true, false}, {false, false}},
+			expected: [][]bool{{true, false, false}, {true, false, false}, {false, false, false}},
 		},
 		{
 			name:          "honored ok-to-test comment selects all tests that don't need an explicit trigger",
@@ -827,7 +827,7 @@ func TestPresubmitFilter(t *testing.T) {
 					RerunCommand: "/test trigger",
 				},
 			},
-			expected: [][]bool{{true, false}, {true, false}, {false, false}},
+			expected: [][]bool{{true, false, false}, {true, false, false}, {false, false, false}},
 		},
 		{
 			name:          "not honored ok-to-test comment selects no tests",
@@ -862,7 +862,7 @@ func TestPresubmitFilter(t *testing.T) {
 					RerunCommand: "/test trigger",
 				},
 			},
-			expected: [][]bool{{false, false}, {false, false}, {false, false}},
+			expected: [][]bool{{false, false, false}, {false, false, false}, {false, false, false}},
 		},
 		{
 			name:       "statuses are not gathered unless retest is specified (will error but we should not see it)",
@@ -925,7 +925,7 @@ func TestPresubmitFilter(t *testing.T) {
 					Context:   "missing-always-runs",
 				},
 			},
-			expected: [][]bool{{false, false}, {false, false}, {true, true}, {true, true}, {true, true}},
+			expected: [][]bool{{false, false, false}, {false, false, false}, {true, false, true}, {true, false, true}, {true, false, true}},
 		},
 		{
 			name: "explicit test command filters for jobs that match",
@@ -991,7 +991,7 @@ func TestPresubmitFilter(t *testing.T) {
 					RerunCommand: "/test other-trigger",
 				},
 			},
-			expected: [][]bool{{true, true}, {true, true}, {true, true}, {false, false}, {false, false}, {false, false}},
+			expected: [][]bool{{true, true, true}, {true, true, true}, {true, true, true}, {false, false, false}, {false, false, false}, {false, false, false}},
 		},
 		{
 			name: "comments matching more than one case will select the union of presubmits",
@@ -1062,7 +1062,7 @@ func TestPresubmitFilter(t *testing.T) {
 					Context:   "missing-always-runs",
 				},
 			},
-			expected: [][]bool{{true, false}, {true, false}, {true, true}, {false, false}, {false, false}, {true, true}, {true, true}, {true, true}},
+			expected: [][]bool{{true, false, false}, {true, false, false}, {true, true, true}, {false, false, false}, {false, false, false}, {true, false, true}, {true, false, true}, {true, false, true}},
 		},
 	}
 
@@ -1092,10 +1092,13 @@ func TestPresubmitFilter(t *testing.T) {
 				t.Errorf("%s: expected no error creating the filter, but got one: %v", testCase.name, err)
 			}
 			for i, presubmit := range testCase.presubmits {
-				actualFiltered, actualDefault := filter(presubmit)
-				expectedFiltered, expectedDefault := testCase.expected[i][0], testCase.expected[i][1]
+				actualFiltered, actualForced, actualDefault := filter(presubmit)
+				expectedFiltered, expectedForced, expectedDefault := testCase.expected[i][0], testCase.expected[i][1], testCase.expected[i][2]
 				if actualFiltered != expectedFiltered {
 					t.Errorf("%s: filter did not evaluate correctly, expected %v but got %v for %v", testCase.name, expectedFiltered, actualFiltered, presubmit.Name)
+				}
+				if actualForced != expectedForced {
+					t.Errorf("%s: filter did not determine forced correctly, expected %v but got %v for %v", testCase.name, expectedForced, actualForced, presubmit.Name)
 				}
 				if actualDefault != expectedDefault {
 					t.Errorf("%s: filter did not determine default correctly, expected %v but got %v for %v", testCase.name, expectedDefault, actualDefault, presubmit.Name)

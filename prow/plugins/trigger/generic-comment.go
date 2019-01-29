@@ -137,11 +137,11 @@ func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string
 	changes := config.NewGitHubDeferredChangedFilesProvider(gitHubClient, org, repo, number)
 	var filteredPresubmits []config.Presubmit
 	for _, presubmit := range presubmits {
-		matches, defaults := filter(presubmit)
+		matches, forced, defaults := filter(presubmit)
 		if !matches {
 			continue
 		}
-		shouldRun, err := presubmit.ShouldRun(branch, changes, defaults)
+		shouldRun, err := presubmit.ShouldRun(branch, changes, forced, defaults)
 		if err != nil {
 			return nil, err
 		}
@@ -156,16 +156,17 @@ type statusGetter interface {
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 }
 
-func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, repo, sha string) (func(config.Presubmit) (bool, bool), error) {
-	// the filters determine if we should check whether a job should run and
+func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, repo, sha string) (func(config.Presubmit) (bool, bool, bool), error) {
+	// the filters determine if we should check whether a job should run, whether
+	// it should run regardless of whether its triggering conditions match, and
 	// what the default behavior should be for that check. Multiple filters
 	// can match a single presubmit, so it is important to order them correctly
 	// as they have precedence -- filters that override the false default should
 	// match before others. We order filters by amount of specificity.
-	var filters []func(config.Presubmit) (bool, bool)
-	filters = append(filters, func(p config.Presubmit) (bool, bool) {
+	var filters []func(config.Presubmit) (bool, bool, bool)
+	filters = append(filters, func(p config.Presubmit) (bool, bool, bool) {
 		// filter for `/test foo`
-		return p.TriggerMatches(body), true
+		return p.TriggerMatches(body), p.TriggerMatches(body), true
 	})
 	if retestRe.MatchString(body) {
 		combinedStatus, err := statusGetter.GetCombinedStatus(org, repo, sha)
@@ -180,23 +181,23 @@ func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, r
 				failedContexts.Insert(status.Context)
 			}
 		}
-		filters = append(filters, func(p config.Presubmit) (bool, bool) {
+		filters = append(filters, func(p config.Presubmit) (bool, bool, bool) {
 			// filter for `/retest`
-			return failedContexts.Has(p.Context) || (!p.NeedsExplicitTrigger() && !allContexts.Has(p.Context)), true
+			return failedContexts.Has(p.Context) || (!p.NeedsExplicitTrigger() && !allContexts.Has(p.Context)), false, true
 		})
 	}
 	if (honorOkToTest && okToTestRe.MatchString(body)) || testAllRe.MatchString(body) {
-		filters = append(filters, func(p config.Presubmit) (bool, bool) {
+		filters = append(filters, func(p config.Presubmit) (bool, bool, bool) {
 			// filter for `/test all`
-			return !p.NeedsExplicitTrigger(), false
+			return !p.NeedsExplicitTrigger(), false, false
 		})
 	}
-	return func(presubmit config.Presubmit) (bool, bool) {
+	return func(presubmit config.Presubmit) (bool, bool, bool) {
 		for _, filter := range filters {
-			if shouldRun, defaults := filter(presubmit); shouldRun {
-				return shouldRun, defaults
+			if shouldRun, forced, defaults := filter(presubmit); shouldRun {
+				return shouldRun, forced, defaults
 			}
 		}
-		return false, false
+		return false, false, false
 	}, nil
 }

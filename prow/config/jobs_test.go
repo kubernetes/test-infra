@@ -798,7 +798,7 @@ func TestPresubmitShouldRun(t *testing.T) {
 			}
 			jobShouldRun, err := jobs[0].ShouldRun(testCase.ref, func() ([]string, error) {
 				return testCase.fileChanges, testCase.fileError
-			}, false)
+			}, false, false)
 			if err == nil && testCase.expectedErr {
 				t.Errorf("%s: expected an error and got none", testCase.name)
 			}
