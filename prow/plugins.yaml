@@ -356,6 +356,11 @@ plugins:
   - trigger
 
   kubernetes/cloud-provider-azure:
+  - milestone
+  - milestonestatus
+  - release-note
+  - require-matching-label
+  - welcome
   - trigger
 
   kubernetes/cloud-provider-gcp:
@@ -554,6 +559,11 @@ plugins:
   - trigger
 
   kubernetes-sigs/cluster-api-provider-azure:
+  - milestone
+  - milestonestatus
+  - release-note
+  - require-matching-label
+  - welcome
   - trigger
 
   kubernetes-sigs/cluster-api-provider-digitalocean:
