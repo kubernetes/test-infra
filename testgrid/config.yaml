@@ -7557,8 +7557,8 @@ dashboards:
 # sig-windows dashboard
 - name: sig-windows
   dashboard_tab:
-  - name: "Conformance acs-engine on Azure"
-    description: Runs conformance tests on a Kubernetes cluster provided by acs-engine (https://github.com/Azure/acs-engine) on Azure cloud"
+  - name: "SIG-Windows Release (Azure)"
+    description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
     test_group_name: ci-kubernetes-e2e-win-1-13
 
 # sig-azure dashboard
