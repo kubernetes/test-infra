@@ -31,42 +31,43 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-    run_after_success:
-    - name: pull-kubernetes-e2e-kubeadm-gce
-      max_concurrency: 8
-      skip_report: true
-      run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
-      skip_branches:
-      - release-1.13 # per-release job
-      - release-1.12 # per-release job
-      - release-1.11 # per-release job
-      - release-1.10 # per-release job
-      labels:
-        preset-service-account: "true"
-        preset-k8s-ssh: "true"
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
-          args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--repo=k8s.io/kubernetes-anywhere=kubeadm-e2e"
-          - "--upload=gs://kubernetes-jenkins/pr-logs"
-          - "--timeout=75"
-          - --scenario=kubernetes_e2e
-          - --
-          - --cluster=
-          - --deployment=kubernetes-anywhere
-          - --gcp-zone=us-west1-b
-          - --ginkgo-parallel=30
-          - --kubeadm=pull
-          - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
-          - --provider=skeleton
-          - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
-          - --timeout=55m
-          - --use-shared-build=bazel
-          env:
-          - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
-            value: "true"
+    
+  - name: pull-kubernetes-e2e-kubeadm-gce
+    max_concurrency: 8
+    skip_report: true
+    run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
+    skip_branches:
+    - release-1.13 # per-release job
+    - release-1.12 # per-release job
+    - release-1.11 # per-release job
+    - release-1.10 # per-release job
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/kubernetes-anywhere=kubeadm-e2e"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
+        - --scenario=kubernetes_e2e
+        - --
+        - --cluster=
+        - --deployment=kubernetes-anywhere
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --kubeadm=pull
+        - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
+        - --provider=skeleton
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
+        - --timeout=55m
+        - --use-shared-build=bazel
+        env:
+        - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
+          value: "true"
+  
   - name: pull-kubernetes-bazel-build
     always_run: true
     branches:
@@ -94,39 +95,40 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-    run_after_success:
-    - name: pull-kubernetes-e2e-kubeadm-gce
-      max_concurrency: 8
-      skip_report: true
-      run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
-      branches:
-      - release-1.13
-      labels:
-        preset-service-account: "true"
-        preset-k8s-ssh: "true"
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
-          args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--repo=k8s.io/kubernetes-anywhere=kubeadm-e2e"
-          - "--upload=gs://kubernetes-jenkins/pr-logs"
-          - "--timeout=75"
-          - --scenario=kubernetes_e2e
-          - --
-          - --cluster=
-          - --deployment=kubernetes-anywhere
-          - --gcp-zone=us-west1-b
-          - --ginkgo-parallel=30
-          - --kubeadm=pull
-          - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
-          - --provider=skeleton
-          - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
-          - --timeout=55m
-          - --use-shared-build=bazel
-          env:
-          - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
-            value: "true"
+
+  - name: pull-kubernetes-e2e-kubeadm-gce
+    max_concurrency: 8
+    skip_report: true
+    run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
+    branches:
+    - release-1.13
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.13
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/kubernetes-anywhere=kubeadm-e2e"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
+        - --scenario=kubernetes_e2e
+        - --
+        - --cluster=
+        - --deployment=kubernetes-anywhere
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --kubeadm=pull
+        - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
+        - --provider=skeleton
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
+        - --timeout=55m
+        - --use-shared-build=bazel
+        env:
+        - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
+          value: "true"
+
   - name: pull-kubernetes-bazel-build
     always_run: true
     branches:
@@ -154,39 +156,40 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-    run_after_success:
-    - name: pull-kubernetes-e2e-kubeadm-gce
-      max_concurrency: 8
-      skip_report: true
-      run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
-      branches:
-      - release-1.12
-      labels:
-        preset-service-account: "true"
-        preset-k8s-ssh: "true"
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
-          args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--repo=k8s.io/kubernetes-anywhere=kubeadm-e2e"
-          - "--upload=gs://kubernetes-jenkins/pr-logs"
-          - "--timeout=75"
-          - --scenario=kubernetes_e2e
-          - --
-          - --cluster=
-          - --deployment=kubernetes-anywhere
-          - --gcp-zone=us-west1-b
-          - --ginkgo-parallel=30
-          - --kubeadm=pull
-          - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
-          - --provider=skeleton
-          - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
-          - --timeout=55m
-          - --use-shared-build=bazel
-          env:
-          - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
-            value: "true"
+
+  - name: pull-kubernetes-e2e-kubeadm-gce
+    max_concurrency: 8
+    skip_report: true
+    run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
+    branches:
+    - release-1.12
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.12
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/kubernetes-anywhere=kubeadm-e2e"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
+        - --scenario=kubernetes_e2e
+        - --
+        - --cluster=
+        - --deployment=kubernetes-anywhere
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --kubeadm=pull
+        - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
+        - --provider=skeleton
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
+        - --timeout=55m
+        - --use-shared-build=bazel
+        env:
+        - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
+          value: "true"
+
   - name: pull-kubernetes-bazel-build
     always_run: true
     branches:
@@ -214,39 +217,40 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-    run_after_success:
-    - name: pull-kubernetes-e2e-kubeadm-gce
-      max_concurrency: 8
-      skip_report: true
-      run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
-      branches:
-      - release-1.11
-      labels:
-        preset-service-account: "true"
-        preset-k8s-ssh: "true"
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
-          args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--repo=k8s.io/kubernetes-anywhere=kubeadm-e2e"
-          - "--upload=gs://kubernetes-jenkins/pr-logs"
-          - "--timeout=75"
-          - --scenario=kubernetes_e2e
-          - --
-          - --cluster=
-          - --deployment=kubernetes-anywhere
-          - --gcp-zone=us-west1-b
-          - --ginkgo-parallel=30
-          - --kubeadm=pull
-          - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
-          - --provider=skeleton
-          - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
-          - --timeout=55m
-          - --use-shared-build=bazel
-          env:
-          - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
-            value: "true"
+
+  - name: pull-kubernetes-e2e-kubeadm-gce
+    max_concurrency: 8
+    skip_report: true
+    run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
+    branches:
+    - release-1.11
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.11
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/kubernetes-anywhere=kubeadm-e2e"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
+        - --scenario=kubernetes_e2e
+        - --
+        - --cluster=
+        - --deployment=kubernetes-anywhere
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --kubeadm=pull
+        - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
+        - --provider=skeleton
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
+        - --timeout=55m
+        - --use-shared-build=bazel
+        env:
+        - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
+          value: "true"
+
   - name: pull-kubernetes-bazel-build
     always_run: true
     branches:
@@ -274,39 +278,39 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-    run_after_success:
-    - name: pull-kubernetes-e2e-kubeadm-gce
-      max_concurrency: 8
-      skip_report: true
-      run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
-      branches:
-      - release-1.10
-      labels:
-        preset-service-account: "true"
-        preset-k8s-ssh: "true"
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
-          args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--repo=k8s.io/kubernetes-anywhere=kubeadm-e2e"
-          - "--upload=gs://kubernetes-jenkins/pr-logs"
-          - "--timeout=75"
-          - --scenario=kubernetes_e2e
-          - --
-          - --cluster=
-          - --deployment=kubernetes-anywhere
-          - --gcp-zone=us-west1-b
-          - --ginkgo-parallel=30
-          - --kubeadm=pull
-          - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
-          - --provider=skeleton
-          - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
-          - --timeout=55m
-          - --use-shared-build=bazel
-          env:
-          - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
-            value: "true"
+
+  - name: pull-kubernetes-e2e-kubeadm-gce
+    max_concurrency: 8
+    skip_report: true
+    run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
+    branches:
+    - release-1.10
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.10
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/kubernetes-anywhere=kubeadm-e2e"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
+        - --scenario=kubernetes_e2e
+        - --
+        - --cluster=
+        - --deployment=kubernetes-anywhere
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --kubeadm=pull
+        - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
+        - --provider=skeleton
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
+        - --timeout=55m
+        - --use-shared-build=bazel
+        env:
+        - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
+          value: "true"
 
   #manual-release-bump-required
   - name: pull-kubernetes-bazel-test
@@ -499,34 +503,34 @@ postsubmits:
         resources:
           requests:
             memory: "6Gi"
-    run_after_success:
-    - name: ci-kubernetes-bazel-test
-      labels:
-        preset-service-account: "true"
-        preset-bazel-scratch-dir: "true"
-        preset-bazel-remote-cache-enabled: "true"
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
-          args:
-          - "--job=$(JOB_NAME)"
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--service-account=/etc/service-account/service-account.json"
-          - "--upload=gs://kubernetes-jenkins/logs"
-          - "--timeout=60"
-          - "--scenario=kubernetes_bazel"
-          - "--" # end bootstrap args, scenario args below
-          - "--test=//... -//build/... -//vendor/..."
-          - "--manual-test=//hack:verify-all"
-          - "--test-args=--config=unit"
-          - "--test-args=--build_tag_filters=-e2e,-integration"
-          - "--test-args=--test_tag_filters=-e2e,-integration"
-          - "--test-args=--flaky_test_attempts=3"
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              memory: "6Gi"
+
+  - name: ci-kubernetes-bazel-test
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        - "--timeout=60"
+        - "--scenario=kubernetes_bazel"
+        - "--" # end bootstrap args, scenario args below
+        - "--test=//... -//build/... -//vendor/..."
+        - "--manual-test=//hack:verify-all"
+        - "--test-args=--config=unit"
+        - "--test-args=--build_tag_filters=-e2e,-integration"
+        - "--test-args=--test_tag_filters=-e2e,-integration"
+        - "--test-args=--flaky_test_attempts=3"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
 
   # manual-release-bump-required (add a job for the new release branch and delete the one for the deprecated release.)
   - name: ci-kubernetes-bazel-build-1-10
