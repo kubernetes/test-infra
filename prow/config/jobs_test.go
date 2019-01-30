@@ -24,6 +24,8 @@ import (
 	"testing"
 
 	"k8s.io/test-infra/prow/kube"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 var c *Config
@@ -732,10 +734,11 @@ func TestMergePreset(t *testing.T) {
 		pod       *kube.PodSpec
 		presets   []Preset
 
-		shouldError  bool
-		numEnv       int
-		numVol       int
-		numVolMounts int
+		shouldError         bool
+		numEnv              int
+		numVol              int
+		numVolMounts        int
+		numImagePullSecrets int
 	}{
 		{
 			name:      "one volume",
@@ -836,6 +839,42 @@ func TestMergePreset(t *testing.T) {
 			},
 			numVolMounts: 2,
 		},
+		{
+			name:      "add imagePullSecret from preset",
+			jobLabels: map[string]string{"change": "me"},
+			pod:       &kube.PodSpec{},
+			presets: []Preset{
+				{
+					Labels:           map[string]string{"change": "me"},
+					ImagePullSecrets: []corev1.LocalObjectReference{{Name: "my-secret"}},
+				},
+			},
+			numImagePullSecrets: 1,
+		},
+		{
+			name:      "merge imagePullSecret from preset into existing imagePullSecret",
+			jobLabels: map[string]string{"change": "me"},
+			pod:       &kube.PodSpec{ImagePullSecrets: []corev1.LocalObjectReference{{Name: "my-other-secret"}}},
+			presets: []Preset{
+				{
+					Labels:           map[string]string{"change": "me"},
+					ImagePullSecrets: []corev1.LocalObjectReference{{Name: "my-secret"}},
+				},
+			},
+			numImagePullSecrets: 2,
+		},
+		{
+			name:      "return error when imagePullSecret alrady exists",
+			jobLabels: map[string]string{"change": "me"},
+			pod:       &kube.PodSpec{ImagePullSecrets: []corev1.LocalObjectReference{{Name: "my-secret"}}},
+			presets: []Preset{
+				{
+					Labels:           map[string]string{"change": "me"},
+					ImagePullSecrets: []corev1.LocalObjectReference{{Name: "my-secret"}},
+				},
+			},
+			shouldError: true,
+		},
 	}
 	for _, tc := range tcs {
 		if err := resolvePresets("foo", tc.jobLabels, tc.pod, tc.presets); err == nil && tc.shouldError {
@@ -856,6 +895,9 @@ func TestMergePreset(t *testing.T) {
 			if len(c.Env) != tc.numEnv {
 				t.Errorf("For test \"%s\": wrong number of env vars. Got %d, expected %d.", tc.name, len(c.Env), tc.numEnv)
 			}
+		}
+		if len(tc.pod.ImagePullSecrets) != tc.numImagePullSecrets {
+			t.Errorf("For test \"%s\": wrong number of imagePullSecrets. Got %d, expected %d.", tc.name, len(tc.pod.ImagePullSecrets), tc.numImagePullSecrets)
 		}
 	}
 }

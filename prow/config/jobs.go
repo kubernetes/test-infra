@@ -31,10 +31,11 @@ import (
 // Preset is intended to match the k8s' PodPreset feature, and may be removed
 // if that feature goes beta.
 type Preset struct {
-	Labels       map[string]string `json:"labels"`
-	Env          []v1.EnvVar       `json:"env"`
-	Volumes      []v1.Volume       `json:"volumes"`
-	VolumeMounts []v1.VolumeMount  `json:"volumeMounts"`
+	Labels           map[string]string         `json:"labels"`
+	Env              []v1.EnvVar               `json:"env"`
+	Volumes          []v1.Volume               `json:"volumes"`
+	VolumeMounts     []v1.VolumeMount          `json:"volumeMounts"`
+	ImagePullSecrets []v1.LocalObjectReference `json:"imagePullSecrets"`
 }
 
 func mergePreset(preset Preset, labels map[string]string, pod *v1.PodSpec) error {
@@ -73,6 +74,14 @@ func mergePreset(preset Preset, labels map[string]string, pod *v1.PodSpec) error
 			}
 			pod.Containers[i].VolumeMounts = append(pod.Containers[i].VolumeMounts, vm1)
 		}
+	}
+	for _, imagePullSecret := range preset.ImagePullSecrets {
+		for _, imagePullSecret2 := range pod.ImagePullSecrets {
+			if imagePullSecret.Name == imagePullSecret2.Name {
+				return fmt.Errorf("imagePullSecret duplicated in pod spec: %s", imagePullSecret.Name)
+			}
+		}
+		pod.ImagePullSecrets = append(pod.ImagePullSecrets, imagePullSecret)
 	}
 	return nil
 }
