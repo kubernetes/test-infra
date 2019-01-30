@@ -26,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
+	coreapi "k8s.io/api/core/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -60,7 +61,7 @@ type GitHubClient interface {
 }
 
 // TODO: Dry this out
-type syncFn func(pj prowapi.ProwJob, pm map[string]kube.Pod, reports chan<- prowapi.ProwJob) error
+type syncFn func(pj prowapi.ProwJob, pm map[string]coreapi.Pod, reports chan<- prowapi.ProwJob) error
 
 // Controller manages ProwJobs.
 type Controller struct {
@@ -172,7 +173,7 @@ func (c *Controller) Sync() error {
 		selector = strings.Join([]string{c.selector, selector}, ",")
 	}
 
-	pm := map[string]kube.Pod{}
+	pm := map[string]coreapi.Pod{}
 	for alias, client := range c.buildClients {
 		pods, err := client.List(metav1.ListOptions{LabelSelector: selector})
 		if err != nil {
@@ -256,7 +257,7 @@ func (c *Controller) SyncMetrics() {
 // terminateDupes aborts presubmits that have a newer version. It modifies pjs
 // in-place when it aborts.
 // TODO: Dry this out - need to ensure we can abstract children cancellation first.
-func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, pm map[string]kube.Pod) error {
+func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, pm map[string]coreapi.Pod) error {
 	// "job org/repo#number" -> newest job
 	dupes := make(map[string]int)
 	for i, pj := range pjs {
@@ -309,7 +310,7 @@ func syncProwJobs(
 	jobs <-chan prowapi.ProwJob,
 	reports chan<- prowapi.ProwJob,
 	syncErrors chan<- error,
-	pm map[string]kube.Pod,
+	pm map[string]coreapi.Pod,
 ) {
 	goroutines := maxSyncRoutines
 	if goroutines > len(jobs) {
@@ -331,7 +332,7 @@ func syncProwJobs(
 	wg.Wait()
 }
 
-func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]kube.Pod, reports chan<- prowapi.ProwJob) error {
+func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Pod, reports chan<- prowapi.ProwJob) error {
 	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
 
@@ -357,7 +358,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]kube.Pod, 
 		}
 	} else {
 		switch pod.Status.Phase {
-		case kube.PodUnknown:
+		case coreapi.PodUnknown:
 			c.incrementNumPendingJobs(pj.Spec.Job)
 			// Pod is in Unknown state. This can happen if there is a problem with
 			// the node. Delete the old pod, we'll start a new one next loop.
@@ -368,13 +369,13 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]kube.Pod, 
 			}
 			return client.Delete(pj.ObjectMeta.Name, &metav1.DeleteOptions{})
 
-		case kube.PodSucceeded:
+		case coreapi.PodSucceeded:
 			// Pod succeeded. Update ProwJob, talk to GitHub, and start next jobs.
 			pj.SetComplete()
 			pj.Status.State = prowapi.SuccessState
 			pj.Status.Description = "Job succeeded."
 
-		case kube.PodFailed:
+		case coreapi.PodFailed:
 			if pod.Status.Reason == kube.Evicted {
 				// Pod was evicted.
 				if pj.Spec.ErrorOnEviction {
@@ -398,7 +399,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]kube.Pod, 
 			pj.Status.State = prowapi.FailureState
 			pj.Status.Description = "Job failed."
 
-		case kube.PodPending:
+		case coreapi.PodPending:
 			maxPodPending := c.config().Plank.PodPendingTimeout
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodPending {
 				// Pod is running. Do nothing.
@@ -432,7 +433,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]kube.Pod, 
 	return err
 }
 
-func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]kube.Pod, reports chan<- prowapi.ProwJob) error {
+func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]coreapi.Pod, reports chan<- prowapi.ProwJob) error {
 	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
 
@@ -511,7 +512,7 @@ func (c *Controller) getBuildID(name string) (string, error) {
 	return pjutil.GetBuildID(name, c.totURL)
 }
 
-func getPodBuildID(pod *kube.Pod) string {
+func getPodBuildID(pod *coreapi.Pod) string {
 	for _, env := range pod.Spec.Containers[0].Env {
 		if env.Name == "BUILD_ID" {
 			return env.Value

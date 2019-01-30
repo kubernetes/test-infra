@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	coreapi "k8s.io/api/core/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobset "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowjobscheme "k8s.io/test-infra/prow/client/clientset/versioned/scheme"
@@ -635,7 +636,7 @@ func injectedSteps(encodedJobSpec string, dc prowjobv1.DecorationConfig, injecte
 		return nil, nil, nil, fmt.Errorf("inject sidecar: %v", err)
 	}
 
-	var cloneLogMount *kube.VolumeMount
+	var cloneLogMount *coreapi.VolumeMount
 	if injectedSource {
 		cloneLogMount = &logMount
 	}

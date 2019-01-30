@@ -25,7 +25,8 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/kube"
+
+	coreapi "k8s.io/api/core/v1"
 )
 
 var c *Config
@@ -544,7 +545,7 @@ func TestMergePreset(t *testing.T) {
 	tcs := []struct {
 		name      string
 		jobLabels map[string]string
-		pod       *kube.PodSpec
+		pod       *coreapi.PodSpec
 		presets   []Preset
 
 		shouldError  bool
@@ -555,11 +556,11 @@ func TestMergePreset(t *testing.T) {
 		{
 			name:      "one volume",
 			jobLabels: map[string]string{"foo": "bar"},
-			pod:       &kube.PodSpec{},
+			pod:       &coreapi.PodSpec{},
 			presets: []Preset{
 				{
 					Labels:  map[string]string{"foo": "bar"},
-					Volumes: []kube.Volume{{Name: "baz"}},
+					Volumes: []coreapi.Volume{{Name: "baz"}},
 				},
 			},
 			numVol: 1,
@@ -567,22 +568,22 @@ func TestMergePreset(t *testing.T) {
 		{
 			name:      "wrong label",
 			jobLabels: map[string]string{"foo": "nope"},
-			pod:       &kube.PodSpec{},
+			pod:       &coreapi.PodSpec{},
 			presets: []Preset{
 				{
 					Labels:  map[string]string{"foo": "bar"},
-					Volumes: []kube.Volume{{Name: "baz"}},
+					Volumes: []coreapi.Volume{{Name: "baz"}},
 				},
 			},
 		},
 		{
 			name:      "conflicting volume name",
 			jobLabels: map[string]string{"foo": "bar"},
-			pod:       &kube.PodSpec{Volumes: []kube.Volume{{Name: "baz"}}},
+			pod:       &coreapi.PodSpec{Volumes: []coreapi.Volume{{Name: "baz"}}},
 			presets: []Preset{
 				{
 					Labels:  map[string]string{"foo": "bar"},
-					Volumes: []kube.Volume{{Name: "baz"}},
+					Volumes: []coreapi.Volume{{Name: "baz"}},
 				},
 			},
 			shouldError: true,
@@ -590,11 +591,11 @@ func TestMergePreset(t *testing.T) {
 		{
 			name:      "non conflicting volume name",
 			jobLabels: map[string]string{"foo": "bar"},
-			pod:       &kube.PodSpec{Volumes: []kube.Volume{{Name: "baz"}}},
+			pod:       &coreapi.PodSpec{Volumes: []coreapi.Volume{{Name: "baz"}}},
 			presets: []Preset{
 				{
 					Labels:  map[string]string{"foo": "bar"},
-					Volumes: []kube.Volume{{Name: "qux"}},
+					Volumes: []coreapi.Volume{{Name: "qux"}},
 				},
 			},
 			numVol: 2,
@@ -602,11 +603,11 @@ func TestMergePreset(t *testing.T) {
 		{
 			name:      "one env",
 			jobLabels: map[string]string{"foo": "bar"},
-			pod:       &kube.PodSpec{Containers: []kube.Container{{}}},
+			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
 			presets: []Preset{
 				{
 					Labels: map[string]string{"foo": "bar"},
-					Env:    []kube.EnvVar{{Name: "baz"}},
+					Env:    []coreapi.EnvVar{{Name: "baz"}},
 				},
 			},
 			numEnv: 1,
@@ -614,11 +615,11 @@ func TestMergePreset(t *testing.T) {
 		{
 			name:      "one vm",
 			jobLabels: map[string]string{"foo": "bar"},
-			pod:       &kube.PodSpec{Containers: []kube.Container{{}}},
+			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
 			presets: []Preset{
 				{
 					Labels:       map[string]string{"foo": "bar"},
-					VolumeMounts: []kube.VolumeMount{{Name: "baz"}},
+					VolumeMounts: []coreapi.VolumeMount{{Name: "baz"}},
 				},
 			},
 			numVolMounts: 1,
@@ -626,13 +627,13 @@ func TestMergePreset(t *testing.T) {
 		{
 			name:      "one of each",
 			jobLabels: map[string]string{"foo": "bar"},
-			pod:       &kube.PodSpec{Containers: []kube.Container{{}}},
+			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
 			presets: []Preset{
 				{
 					Labels:       map[string]string{"foo": "bar"},
-					Env:          []kube.EnvVar{{Name: "baz"}},
-					VolumeMounts: []kube.VolumeMount{{Name: "baz"}},
-					Volumes:      []kube.Volume{{Name: "qux"}},
+					Env:          []coreapi.EnvVar{{Name: "baz"}},
+					VolumeMounts: []coreapi.VolumeMount{{Name: "baz"}},
+					Volumes:      []coreapi.Volume{{Name: "qux"}},
 				},
 			},
 			numEnv:       1,
@@ -642,11 +643,11 @@ func TestMergePreset(t *testing.T) {
 		{
 			name:      "two vm",
 			jobLabels: map[string]string{"foo": "bar"},
-			pod:       &kube.PodSpec{Containers: []kube.Container{{}}},
+			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
 			presets: []Preset{
 				{
 					Labels:       map[string]string{"foo": "bar"},
-					VolumeMounts: []kube.VolumeMount{{Name: "baz"}, {Name: "foo"}},
+					VolumeMounts: []coreapi.VolumeMount{{Name: "baz"}, {Name: "foo"}},
 				},
 			},
 			numVolMounts: 2,

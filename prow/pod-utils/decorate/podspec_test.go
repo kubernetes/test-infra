@@ -27,6 +27,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 
+	coreapi "k8s.io/api/core/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/clonerefs"
 	"k8s.io/test-infra/prow/entrypoint"
@@ -35,12 +36,12 @@ import (
 	"k8s.io/test-infra/prow/sidecar"
 )
 
-func cookieVolumeOnly(secret string) kube.Volume {
+func cookieVolumeOnly(secret string) coreapi.Volume {
 	v, _, _ := cookiefileVolume(secret)
 	return v
 }
 
-func cookieMountOnly(secret string) kube.VolumeMount {
+func cookieMountOnly(secret string) coreapi.VolumeMount {
 	_, vm, _ := cookiefileVolume(secret)
 	return vm
 }
@@ -51,11 +52,11 @@ func cookiePathOnly(secret string) string {
 
 func TestCloneRefs(t *testing.T) {
 	truth := true
-	logMount := kube.VolumeMount{
+	logMount := coreapi.VolumeMount{
 		Name:      "log",
 		MountPath: "/log-mount",
 	}
-	codeMount := kube.VolumeMount{
+	codeMount := coreapi.VolumeMount{
 		Name:      "code",
 		MountPath: "/code-mount",
 	}
@@ -66,12 +67,12 @@ func TestCloneRefs(t *testing.T) {
 		}
 		return e
 	}
-	sshVolumeOnly := func(secret string) kube.Volume {
+	sshVolumeOnly := func(secret string) coreapi.Volume {
 		v, _ := sshVolume(secret)
 		return v
 	}
 
-	sshMountOnly := func(secret string) kube.VolumeMount {
+	sshMountOnly := func(secret string) coreapi.VolumeMount {
 		_, vm := sshVolume(secret)
 		return vm
 	}
@@ -79,10 +80,10 @@ func TestCloneRefs(t *testing.T) {
 	cases := []struct {
 		name              string
 		pj                prowapi.ProwJob
-		codeMountOverride *kube.VolumeMount
-		logMountOverride  *kube.VolumeMount
-		expected          *kube.Container
-		volumes           []kube.Volume
+		codeMountOverride *coreapi.VolumeMount
+		logMountOverride  *coreapi.VolumeMount
+		expected          *coreapi.Container
+		volumes           []coreapi.Volume
 		err               bool
 	}{
 		{
@@ -123,7 +124,7 @@ func TestCloneRefs(t *testing.T) {
 					Refs:             &prowapi.Refs{},
 				},
 			},
-			codeMountOverride: &kube.VolumeMount{
+			codeMountOverride: &coreapi.VolumeMount{
 				MountPath: "/whatever",
 			},
 			err: true,
@@ -136,7 +137,7 @@ func TestCloneRefs(t *testing.T) {
 					Refs:             &prowapi.Refs{},
 				},
 			},
-			codeMountOverride: &kube.VolumeMount{
+			codeMountOverride: &coreapi.VolumeMount{
 				Name: "wee",
 			},
 			err: true,
@@ -149,7 +150,7 @@ func TestCloneRefs(t *testing.T) {
 					Refs:             &prowapi.Refs{},
 				},
 			},
-			logMountOverride: &kube.VolumeMount{
+			logMountOverride: &coreapi.VolumeMount{
 				MountPath: "/whatever",
 			},
 			err: true,
@@ -162,7 +163,7 @@ func TestCloneRefs(t *testing.T) {
 					Refs:             &prowapi.Refs{},
 				},
 			},
-			logMountOverride: &kube.VolumeMount{
+			logMountOverride: &coreapi.VolumeMount{
 				Name: "wee",
 			},
 			err: true,
@@ -177,7 +178,7 @@ func TestCloneRefs(t *testing.T) {
 					},
 				},
 			},
-			expected: &kube.Container{
+			expected: &coreapi.Container{
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
@@ -187,7 +188,7 @@ func TestCloneRefs(t *testing.T) {
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []kube.VolumeMount{logMount, codeMount},
+				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount},
 			},
 		},
 		{
@@ -200,7 +201,7 @@ func TestCloneRefs(t *testing.T) {
 					},
 				},
 			},
-			expected: &kube.Container{
+			expected: &coreapi.Container{
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
@@ -210,7 +211,7 @@ func TestCloneRefs(t *testing.T) {
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []kube.VolumeMount{logMount, codeMount},
+				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount},
 			},
 		},
 		{
@@ -224,7 +225,7 @@ func TestCloneRefs(t *testing.T) {
 					},
 				},
 			},
-			expected: &kube.Container{
+			expected: &coreapi.Container{
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
@@ -234,7 +235,7 @@ func TestCloneRefs(t *testing.T) {
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []kube.VolumeMount{logMount, codeMount},
+				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount},
 			},
 		},
 		{
@@ -248,7 +249,7 @@ func TestCloneRefs(t *testing.T) {
 					},
 				},
 			},
-			expected: &kube.Container{
+			expected: &coreapi.Container{
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
@@ -259,14 +260,14 @@ func TestCloneRefs(t *testing.T) {
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []kube.VolumeMount{
+				VolumeMounts: []coreapi.VolumeMount{
 					logMount,
 					codeMount,
 					sshMountOnly("super"),
 					sshMountOnly("secret"),
 				},
 			},
-			volumes: []kube.Volume{sshVolumeOnly("super"), sshVolumeOnly("secret")},
+			volumes: []coreapi.Volume{sshVolumeOnly("super"), sshVolumeOnly("secret")},
 		},
 		{
 			name: "include ssh host fingerprints when set",
@@ -279,7 +280,7 @@ func TestCloneRefs(t *testing.T) {
 					},
 				},
 			},
-			expected: &kube.Container{
+			expected: &coreapi.Container{
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
@@ -290,7 +291,7 @@ func TestCloneRefs(t *testing.T) {
 					HostFingerprints: []string{"thumb", "pinky"},
 					Log:              CloneLogPath(logMount),
 				}),
-				VolumeMounts: []kube.VolumeMount{logMount, codeMount},
+				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount},
 			},
 		},
 		{
@@ -304,7 +305,7 @@ func TestCloneRefs(t *testing.T) {
 					},
 				},
 			},
-			expected: &kube.Container{
+			expected: &coreapi.Container{
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Args:    []string{"--cookiefile=" + cookiePathOnly("oatmeal")},
@@ -316,9 +317,9 @@ func TestCloneRefs(t *testing.T) {
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []kube.VolumeMount{logMount, codeMount, cookieMountOnly("oatmeal")},
+				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, cookieMountOnly("oatmeal")},
 			},
-			volumes: []kube.Volume{cookieVolumeOnly("oatmeal")},
+			volumes: []coreapi.Volume{cookieVolumeOnly("oatmeal")},
 		},
 	}
 
@@ -549,7 +550,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "INITUPLOAD_OPTIONS", Value: `{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false,"log":"/logs/clone.json"}`},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
 							},
-							VolumeMounts: []kube.VolumeMount{
+							VolumeMounts: []coreapi.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -568,7 +569,7 @@ func TestProwJobToPod(t *testing.T) {
 								"/entrypoint",
 								"/tools/entrypoint",
 							},
-							VolumeMounts: []kube.VolumeMount{
+							VolumeMounts: []coreapi.VolumeMount{
 								{
 									Name:      "tools",
 									MountPath: "/tools",
@@ -770,7 +771,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "INITUPLOAD_OPTIONS", Value: `{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false,"log":"/logs/clone.json"}`},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
 							},
-							VolumeMounts: []kube.VolumeMount{
+							VolumeMounts: []coreapi.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -789,7 +790,7 @@ func TestProwJobToPod(t *testing.T) {
 								"/entrypoint",
 								"/tools/entrypoint",
 							},
-							VolumeMounts: []kube.VolumeMount{
+							VolumeMounts: []coreapi.VolumeMount{
 								{
 									Name:      "tools",
 									MountPath: "/tools",
@@ -1000,7 +1001,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "INITUPLOAD_OPTIONS", Value: `{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false,"log":"/logs/clone.json"}`},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
 							},
-							VolumeMounts: []kube.VolumeMount{
+							VolumeMounts: []coreapi.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -1019,7 +1020,7 @@ func TestProwJobToPod(t *testing.T) {
 								"/entrypoint",
 								"/tools/entrypoint",
 							},
-							VolumeMounts: []kube.VolumeMount{
+							VolumeMounts: []coreapi.VolumeMount{
 								{
 									Name:      "tools",
 									MountPath: "/tools",
@@ -1246,7 +1247,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "INITUPLOAD_OPTIONS", Value: `{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false,"log":"/logs/clone.json"}`},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
 							},
-							VolumeMounts: []kube.VolumeMount{
+							VolumeMounts: []coreapi.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -1265,7 +1266,7 @@ func TestProwJobToPod(t *testing.T) {
 								"/entrypoint",
 								"/tools/entrypoint",
 							},
-							VolumeMounts: []kube.VolumeMount{
+							VolumeMounts: []coreapi.VolumeMount{
 								{
 									Name:      "tools",
 									MountPath: "/tools",
@@ -1448,7 +1449,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "INITUPLOAD_OPTIONS", Value: `{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false}`},
 								{Name: "JOB_SPEC", Value: `{"type":"periodic","job":"job-name","buildid":"blabla","prowjobid":"pod"}`},
 							},
-							VolumeMounts: []kube.VolumeMount{
+							VolumeMounts: []coreapi.VolumeMount{
 								// don't mount log since we're not uploading a clone log
 								{
 									Name:      "gcs-credentials",
@@ -1464,7 +1465,7 @@ func TestProwJobToPod(t *testing.T) {
 								"/entrypoint",
 								"/tools/entrypoint",
 							},
-							VolumeMounts: []kube.VolumeMount{
+							VolumeMounts: []coreapi.VolumeMount{
 								{
 									Name:      "tools",
 									MountPath: "/tools",
@@ -1633,7 +1634,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "INITUPLOAD_OPTIONS", Value: `{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false}`},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"},"extra_refs":[{"org":"extra-org","repo":"extra-repo"}]}`},
 							},
-							VolumeMounts: []kube.VolumeMount{
+							VolumeMounts: []coreapi.VolumeMount{
 								// don't mount log since we're not uploading a clone log
 								{
 									Name:      "gcs-credentials",
@@ -1649,7 +1650,7 @@ func TestProwJobToPod(t *testing.T) {
 								"/entrypoint",
 								"/tools/entrypoint",
 							},
-							VolumeMounts: []kube.VolumeMount{
+							VolumeMounts: []coreapi.VolumeMount{
 								{
 									Name:      "tools",
 									MountPath: "/tools",

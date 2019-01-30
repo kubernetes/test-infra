@@ -25,10 +25,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
+	coreapi "k8s.io/api/core/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -197,7 +197,7 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 	if prowJob.Spec.PodSpec != nil {
 		for _, c := range prowJob.Spec.PodSpec.Containers {
 			for k, v := range pe.Envs {
-				c.Env = append(c.Env, kube.EnvVar{Name: k, Value: v})
+				c.Env = append(c.Env, coreapi.EnvVar{Name: k, Value: v})
 			}
 		}
 	}
