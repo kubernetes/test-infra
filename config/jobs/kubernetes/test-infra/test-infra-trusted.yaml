@@ -111,7 +111,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20181117-55a41ad84-0.18.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20190130-b4da262c0-0.21.0
       command:
       - prow/autobump.sh
       args:
