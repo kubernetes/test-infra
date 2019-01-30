@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/mattn/go-zglob"
+	zglob "github.com/mattn/go-zglob"
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -101,8 +101,10 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 				Name:      name,
 				Namespace: namespace,
 			},
-			Data: map[string]string{},
 		}
+	}
+	if cm.Data == nil {
+		cm.Data = map[string]string{}
 	}
 
 	for key, filename := range updates {
