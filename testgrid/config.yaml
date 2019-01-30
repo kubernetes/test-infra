@@ -7071,42 +7071,32 @@ dashboards:
     test_group_name: pull-kubernetes-bazel-build
     base_options: width=10
     alert_options:
-      alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@google.com
+      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: pull-kubernetes-bazel-test
     test_group_name: pull-kubernetes-bazel-test
     base_options: width=10
     alert_options:
-      alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@google.com
+      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: pull-kubernetes-e2e-gce
     test_group_name: pull-kubernetes-e2e-gce
     base_options: width=10
     alert_options:
-      alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@google.com
+      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: pull-kubernetes-e2e-gce-100-performance
     test_group_name: pull-kubernetes-e2e-gce-100-performance
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com
   - name: pull-kubernetes-kubemark-e2e-gce-big
     test_group_name: pull-kubernetes-kubemark-e2e-gce-big
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com
   - name: pull-kubernetes-node-e2e
     test_group_name: pull-kubernetes-node-e2e
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com
   - name: pull-kubernetes-integration
     test_group_name: pull-kubernetes-integration
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com
   - name: pull-kubernetes-verify
     test_group_name: pull-kubernetes-verify
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com
   - name: pull-kubernetes-typecheck
     test_group_name: pull-kubernetes-typecheck
     base_options: width=10
@@ -7143,8 +7133,6 @@ dashboards:
   - name: pull-kubernetes-e2e-kops-aws
     test_group_name: pull-kubernetes-e2e-kops-aws
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com
 
 - name: presubmits-cloud-provider-vsphere-blocking
   dashboard_tab:
