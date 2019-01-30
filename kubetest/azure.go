@@ -200,6 +200,11 @@ func (c *Cluster) populateApiModelTemplate() error {
 		return fmt.Errorf("No template file specified %v", err)
 	}
 
+	// set default distro so we do not use prebuilt os image
+	v.Properties.MasterProfile.Distro = "ubuntu"
+	for _, agentPool := range v.Properties.AgentPoolProfiles {
+		agentPool.Distro = "ubuntu"
+	}
 	// replace APIModel template properties from flags
 	if c.location != "" {
 		v.Location = c.location
@@ -381,7 +386,7 @@ func (c *Cluster) createCluster() error {
 
 func (c *Cluster) buildHyperKube() error {
 
-	os.Setenv("VERSION", fmt.Sprintf("win-e2e-%v", os.Getenv("BUILD_ID")))
+	os.Setenv("VERSION", fmt.Sprintf("azure-e2e-%v", os.Getenv("BUILD_ID")))
 
 	cwd, _ := os.Getwd()
 	log.Printf("CWD %v", cwd)
