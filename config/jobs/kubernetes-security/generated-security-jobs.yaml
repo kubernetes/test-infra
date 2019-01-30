@@ -355,6 +355,30 @@ presubmits:
     always_run: false
     cluster: security
     context: pull-security-kubernetes-e2e-kubeadm-gce
+    decorate: true
+    decoration_config:
+      gcs_configuration:
+        bucket: kubernetes-jenkins
+        default_org: kubernetes
+        default_repo: kubernetes
+        path_strategy: legacy
+      gcs_credentials_secret: service-account
+      grace_period: 15000000000
+      timeout: 4200000000000
+      utility_images:
+        clonerefs: gcr.io/k8s-prow/clonerefs:v20190125-2aca69d
+        entrypoint: gcr.io/k8s-prow/entrypoint:v20190125-2aca69d
+        initupload: gcr.io/k8s-prow/initupload:v20190125-2aca69d
+        sidecar: gcr.io/k8s-prow/sidecar:v20190125-2aca69d
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      path_alias: k8s.io/release
+      repo: release
+    - base_ref: kubeadm-e2e
+      org: kubernetes
+      path_alias: k8s.io/kubernetes-anywhere
+      repo: kubernetes-anywhere
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
@@ -374,13 +398,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --scenario=kubernetes_e2e
-        - --
         - --build=bazel
         - --cluster=
         - --extract=local
@@ -394,8 +411,11 @@ presubmits:
         - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]
           --minStartupPods=8
         - --timeout=55m
+        - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kubeadm-gce
-        - --gcp-project=k8s-jkns-pr-gce-etcd3
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         env:
         - name: SKIP_RELEASE_VALIDATION
           value: "true"
@@ -417,6 +437,30 @@ presubmits:
     - release-1.13
     cluster: security
     context: pull-security-kubernetes-e2e-kubeadm-gce
+    decorate: true
+    decoration_config:
+      gcs_configuration:
+        bucket: kubernetes-jenkins
+        default_org: kubernetes
+        default_repo: kubernetes
+        path_strategy: legacy
+      gcs_credentials_secret: service-account
+      grace_period: 15000000000
+      timeout: 4200000000000
+      utility_images:
+        clonerefs: gcr.io/k8s-prow/clonerefs:v20190125-2aca69d
+        entrypoint: gcr.io/k8s-prow/entrypoint:v20190125-2aca69d
+        initupload: gcr.io/k8s-prow/initupload:v20190125-2aca69d
+        sidecar: gcr.io/k8s-prow/sidecar:v20190125-2aca69d
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      path_alias: k8s.io/release
+      repo: release
+    - base_ref: kubeadm-e2e
+      org: kubernetes
+      path_alias: k8s.io/kubernetes-anywhere
+      repo: kubernetes-anywhere
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
@@ -431,13 +475,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --scenario=kubernetes_e2e
-        - --
         - --build=bazel
         - --cluster=
         - --extract=local
@@ -451,8 +488,11 @@ presubmits:
         - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]
           --minStartupPods=8
         - --timeout=55m
+        - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kubeadm-gce
-        - --gcp-project=k8s-jkns-pr-gce-etcd3
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         env:
         - name: SKIP_RELEASE_VALIDATION
           value: "true"
@@ -474,6 +514,30 @@ presubmits:
     - release-1.12
     cluster: security
     context: pull-security-kubernetes-e2e-kubeadm-gce
+    decorate: true
+    decoration_config:
+      gcs_configuration:
+        bucket: kubernetes-jenkins
+        default_org: kubernetes
+        default_repo: kubernetes
+        path_strategy: legacy
+      gcs_credentials_secret: service-account
+      grace_period: 15000000000
+      timeout: 4200000000000
+      utility_images:
+        clonerefs: gcr.io/k8s-prow/clonerefs:v20190125-2aca69d
+        entrypoint: gcr.io/k8s-prow/entrypoint:v20190125-2aca69d
+        initupload: gcr.io/k8s-prow/initupload:v20190125-2aca69d
+        sidecar: gcr.io/k8s-prow/sidecar:v20190125-2aca69d
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      path_alias: k8s.io/release
+      repo: release
+    - base_ref: kubeadm-e2e
+      org: kubernetes
+      path_alias: k8s.io/kubernetes-anywhere
+      repo: kubernetes-anywhere
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
@@ -488,13 +552,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --scenario=kubernetes_e2e
-        - --
         - --build=bazel
         - --cluster=
         - --extract=local
@@ -508,8 +565,11 @@ presubmits:
         - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]
           --minStartupPods=8
         - --timeout=55m
+        - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kubeadm-gce
-        - --gcp-project=k8s-jkns-pr-gce-etcd3
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         env:
         - name: SKIP_RELEASE_VALIDATION
           value: "true"
@@ -531,6 +591,30 @@ presubmits:
     - release-1.11
     cluster: security
     context: pull-security-kubernetes-e2e-kubeadm-gce
+    decorate: true
+    decoration_config:
+      gcs_configuration:
+        bucket: kubernetes-jenkins
+        default_org: kubernetes
+        default_repo: kubernetes
+        path_strategy: legacy
+      gcs_credentials_secret: service-account
+      grace_period: 15000000000
+      timeout: 4200000000000
+      utility_images:
+        clonerefs: gcr.io/k8s-prow/clonerefs:v20190125-2aca69d
+        entrypoint: gcr.io/k8s-prow/entrypoint:v20190125-2aca69d
+        initupload: gcr.io/k8s-prow/initupload:v20190125-2aca69d
+        sidecar: gcr.io/k8s-prow/sidecar:v20190125-2aca69d
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      path_alias: k8s.io/release
+      repo: release
+    - base_ref: kubeadm-e2e
+      org: kubernetes
+      path_alias: k8s.io/kubernetes-anywhere
+      repo: kubernetes-anywhere
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
@@ -545,13 +629,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --scenario=kubernetes_e2e
-        - --
         - --build=bazel
         - --cluster=
         - --extract=local
@@ -565,8 +642,11 @@ presubmits:
         - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]
           --minStartupPods=8
         - --timeout=55m
+        - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kubeadm-gce
-        - --gcp-project=k8s-jkns-pr-gce-etcd3
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         env:
         - name: SKIP_RELEASE_VALIDATION
           value: "true"
@@ -588,6 +668,30 @@ presubmits:
     - release-1.10
     cluster: security
     context: pull-security-kubernetes-e2e-kubeadm-gce
+    decorate: true
+    decoration_config:
+      gcs_configuration:
+        bucket: kubernetes-jenkins
+        default_org: kubernetes
+        default_repo: kubernetes
+        path_strategy: legacy
+      gcs_credentials_secret: service-account
+      grace_period: 15000000000
+      timeout: 4200000000000
+      utility_images:
+        clonerefs: gcr.io/k8s-prow/clonerefs:v20190125-2aca69d
+        entrypoint: gcr.io/k8s-prow/entrypoint:v20190125-2aca69d
+        initupload: gcr.io/k8s-prow/initupload:v20190125-2aca69d
+        sidecar: gcr.io/k8s-prow/sidecar:v20190125-2aca69d
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      path_alias: k8s.io/release
+      repo: release
+    - base_ref: kubeadm-e2e
+      org: kubernetes
+      path_alias: k8s.io/kubernetes-anywhere
+      repo: kubernetes-anywhere
     labels:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
@@ -602,13 +706,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --scenario=kubernetes_e2e
-        - --
         - --build=bazel
         - --cluster=
         - --extract=local
@@ -622,8 +719,11 @@ presubmits:
         - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]
           --minStartupPods=8
         - --timeout=55m
+        - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kubeadm-gce
-        - --gcp-project=k8s-jkns-pr-gce-etcd3
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         env:
         - name: SKIP_RELEASE_VALIDATION
           value: "true"

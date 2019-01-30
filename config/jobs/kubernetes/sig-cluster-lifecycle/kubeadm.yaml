@@ -11,6 +11,18 @@ presubmits:
     - release-1.12 # per-release job
     - release-1.11 # per-release job
     - release-1.10 # per-release job
+    decorate: true
+    decoration_config:
+      timeout: 4200000000000 # 70m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    - org: kubernetes
+      repo: kubernetes-anywhere
+      base_ref: kubeadm-e2e
+      path_alias: k8s.io/kubernetes-anywhere
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -20,14 +32,10 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--repo=k8s.io/kubernetes-anywhere=kubeadm-e2e"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=75"
-        - --scenario=kubernetes_e2e
-        - --
         - --build=bazel
         - --cluster=
         - --extract=local
@@ -56,17 +64,25 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
+    decorate: true
+    decoration_config:
+      timeout: 4200000000000 # 70m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    - org: kubernetes
+      repo: kubernetes-anywhere
+      base_ref: kubeadm-e2e
+      path_alias: k8s.io/kubernetes-anywhere
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.13
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--repo=k8s.io/kubernetes-anywhere=kubeadm-e2e"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=75"
-        - --scenario=kubernetes_e2e
-        - --
         - --build=bazel
         - --cluster=
         - --extract=local
@@ -95,17 +111,25 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
+    decorate: true
+    decoration_config:
+      timeout: 4200000000000 # 70m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    - org: kubernetes
+      repo: kubernetes-anywhere
+      base_ref: kubeadm-e2e
+      path_alias: k8s.io/kubernetes-anywhere
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.12
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--repo=k8s.io/kubernetes-anywhere=kubeadm-e2e"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=75"
-        - --scenario=kubernetes_e2e
-        - --
         - --build=bazel
         - --cluster=
         - --extract=local
@@ -134,17 +158,25 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
+    decorate: true
+    decoration_config:
+      timeout: 4200000000000 # 70m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    - org: kubernetes
+      repo: kubernetes-anywhere
+      base_ref: kubeadm-e2e
+      path_alias: k8s.io/kubernetes-anywhere
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.11
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--repo=k8s.io/kubernetes-anywhere=kubeadm-e2e"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=75"
-        - --scenario=kubernetes_e2e
-        - --
         - --build=bazel
         - --cluster=
         - --extract=local
@@ -173,17 +205,25 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
+    decorate: true
+    decoration_config:
+      timeout: 4200000000000 # 70m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    - org: kubernetes
+      repo: kubernetes-anywhere
+      base_ref: kubeadm-e2e
+      path_alias: k8s.io/kubernetes-anywhere
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.10
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--repo=k8s.io/kubernetes-anywhere=kubeadm-e2e"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=75"
-        - --scenario=kubernetes_e2e
-        - --
         - --build=bazel
         - --cluster=
         - --extract=local
