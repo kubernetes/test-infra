@@ -187,6 +187,7 @@ presubmits:
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
+    optional: true
     rerun_command: /test pull-security-kubernetes-e2e-kops-aws
     spec:
       containers:
@@ -246,6 +247,7 @@ presubmits:
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
+    optional: true
     rerun_command: /test pull-security-kubernetes-e2e-kops-aws
     spec:
       containers:
