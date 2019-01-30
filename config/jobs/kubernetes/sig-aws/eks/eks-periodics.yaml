@@ -61,7 +61,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
       imagePullPolicy: Always
       args:
-      - --timeout=200
+      - --timeout=320
       - --bare
       - --scenario=kubernetes_e2e
       - --
@@ -70,8 +70,9 @@ periodics:
       - --provider=eks
       - --gce-ssh=
       - --extract=ci/latest
+      - --eks-nodes=100
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8
-      - --timeout=180m
+      - --timeout=300m
 
 # Kubernetes e2e correctness tests against EKS 1.10 build.
 - interval: 3h
