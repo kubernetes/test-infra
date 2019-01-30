@@ -9,7 +9,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//prow/spyglass/lenses:go_default_library",
-        "//vendor/github.com/joshdk/go-junit:go_default_library",
+        "//testgrid/junit:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )

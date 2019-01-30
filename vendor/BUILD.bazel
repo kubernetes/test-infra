@@ -110,7 +110,6 @@ filegroup(
         "//vendor/github.com/jinzhu/gorm:all-srcs",
         "//vendor/github.com/jinzhu/inflection:all-srcs",
         "//vendor/github.com/jmespath/go-jmespath:all-srcs",
-        "//vendor/github.com/joshdk/go-junit:all-srcs",
         "//vendor/github.com/json-iterator/go:all-srcs",
         "//vendor/github.com/knative/build/pkg/apis/build:all-srcs",
         "//vendor/github.com/knative/build/pkg/client/clientset/versioned:all-srcs",

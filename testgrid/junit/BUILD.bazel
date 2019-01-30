@@ -2,15 +2,8 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "ingest.go",
-        "ingesters.go",
-        "node.go",
-        "parse.go",
-        "types.go",
-    ],
-    importmap = "k8s.io/test-infra/vendor/github.com/joshdk/go-junit",
-    importpath = "github.com/joshdk/go-junit",
+    srcs = ["junit.go"],
+    importpath = "k8s.io/test-infra/testgrid/junit",
     visibility = ["//visibility:public"],
 )
 
