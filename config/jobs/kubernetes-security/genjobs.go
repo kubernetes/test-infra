@@ -40,11 +40,11 @@ import (
 	flag "github.com/spf13/pflag"
 	"sigs.k8s.io/yaml"
 
-	"k8s.io/api/core/v1"
+	coreapi "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
 )
 
 var configPath = flag.String("config", "", "path to prow/config.yaml, defaults to $PWD/../../prow/config.yaml")
@@ -52,7 +52,7 @@ var jobsPath = flag.String("jobs", "", "path to prowjobs, defaults to $PWD/../")
 var outputPath = flag.String("output", "", "path to output the generated jobs to, defaults to $PWD/generated-security-jobs.yaml")
 
 // remove merged presets from a podspec
-func undoPreset(preset *config.Preset, labels map[string]string, pod *v1.PodSpec) {
+func undoPreset(preset *config.Preset, labels map[string]string, pod *coreapi.PodSpec) {
 	// skip presets that do not match the job labels
 	for l, v := range preset.Labels {
 		if v2, ok := labels[l]; !ok || v2 != v {
@@ -75,7 +75,7 @@ func undoPreset(preset *config.Preset, labels map[string]string, pod *v1.PodSpec
 	}
 
 	// remove volumes from spec
-	filteredVolumes := []v1.Volume{}
+	filteredVolumes := []coreapi.Volume{}
 	for _, volume := range pod.Volumes {
 		if !removeVolumeNames.Has(volume.Name) {
 			filteredVolumes = append(filteredVolumes, volume)
@@ -85,7 +85,7 @@ func undoPreset(preset *config.Preset, labels map[string]string, pod *v1.PodSpec
 
 	// remove env and volume mounts from containers
 	for i := range pod.Containers {
-		filteredEnv := []v1.EnvVar{}
+		filteredEnv := []coreapi.EnvVar{}
 		for _, env := range pod.Containers[i].Env {
 			if !removeEnvNames.Has(env.Name) {
 				filteredEnv = append(filteredEnv, env)
@@ -93,7 +93,7 @@ func undoPreset(preset *config.Preset, labels map[string]string, pod *v1.PodSpec
 		}
 		pod.Containers[i].Env = filteredEnv
 
-		filteredVolumeMounts := []v1.VolumeMount{}
+		filteredVolumeMounts := []coreapi.VolumeMount{}
 		for _, mount := range pod.Containers[i].VolumeMounts {
 			if !removeVolumeMountNames.Has(mount.Name) {
 				filteredVolumeMounts = append(filteredVolumeMounts, mount)
@@ -117,7 +117,7 @@ func undoPresubmitPresets(presets []config.Preset, presubmit *config.Presubmit) 
 // dropLabels should be a set of "k: v" strings
 // xref: prow/config/config_test.go replace(...)
 // it will return the same job mutated, or nil if the job should be removed
-func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, defaultDecoration *kube.DecorationConfig, podNamespace string) *config.Presubmit {
+func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, defaultDecoration *prowapi.DecorationConfig, podNamespace string) *config.Presubmit {
 	// if a GKE job, disable it
 	if strings.Contains(j.Name, "gke") {
 		return nil
@@ -236,7 +236,7 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, defaul
 		// add ssh key volume / mount
 		container.VolumeMounts = append(
 			container.VolumeMounts,
-			kube.VolumeMount{
+			coreapi.VolumeMount{
 				Name:      "ssh-security",
 				MountPath: "/etc/ssh-security",
 			},
@@ -244,10 +244,10 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, defaul
 		defaultMode := int32(0400)
 		j.Spec.Volumes = append(
 			j.Spec.Volumes,
-			kube.Volume{
+			coreapi.Volume{
 				Name: "ssh-security",
-				VolumeSource: kube.VolumeSource{
-					Secret: &kube.SecretSource{
+				VolumeSource: coreapi.VolumeSource{
+					Secret: &coreapi.SecretVolumeSource{
 						SecretName:  "ssh-security",
 						DefaultMode: &defaultMode,
 					},
