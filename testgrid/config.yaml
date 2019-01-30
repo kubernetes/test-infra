@@ -2480,14 +2480,17 @@ test_groups:
 - name: pull-cluster-api-provider-aws-bazel-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-e2e
   num_columns_recent: 20
-- name: pull-cluster-api-provider-azure-build
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-build
+- name: pull-cluster-api-provider-azure-bazel-verify
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-bazel-verify
   num_columns_recent: 20
-- name: pull-cluster-api-provider-azure-test
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-test
+- name: pull-cluster-api-provider-azure-verify-boilerplate
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-verify-boilerplate
   num_columns_recent: 20
-- name: pull-cluster-api-provider-azure-check
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-check
+- name: pull-cluster-api-provider-azure-bazel-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-bazel-build
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-azure-bazel-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-bazel-test
   num_columns_recent: 20
 - name: pull-cluster-api-provider-digitalocean-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-digitalocean-build
@@ -5909,12 +5912,22 @@ dashboards:
 
 - name: sig-cluster-lifecycle-cluster-api-provider-azure
   dashboard_tab:
-  - name: pr-build
-    test_group_name: pull-cluster-api-provider-azure-build
-  - name: pr-check
-    test_group_name: pull-cluster-api-provider-azure-check
-  - name: pr-test
-    test_group_name: pull-cluster-api-provider-azure-test
+  - name: verify-boilerplate
+    test_group_name: pull-cluster-api-provider-azure-verify-boilerplate
+    alert_options:
+      alert_mail_to_addresses: foo+k8s-azure@agst.us
+  - name: bazel-pr-verify
+    test_group_name: pull-cluster-api-provider-azure-bazel-verify
+    alert_options:
+      alert_mail_to_addresses: foo+k8s-azure@agst.us
+  - name: bazel-pr-build
+    test_group_name: pull-cluster-api-provider-azure-bazel-build
+    alert_options:
+      alert_mail_to_addresses: foo+k8s-azure@agst.us
+  - name: bazel-pr-test
+    test_group_name: pull-cluster-api-provider-azure-bazel-test
+    alert_options:
+      alert_mail_to_addresses: foo+k8s-azure@agst.us
 
 - name: sig-cluster-lifecycle-cluster-api-provider-digitalocean
   dashboard_tab:

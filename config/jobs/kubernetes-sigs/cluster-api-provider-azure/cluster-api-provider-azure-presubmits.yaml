@@ -1,41 +1,42 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-azure:
-  - name: pull-cluster-api-provider-azure-build
+  - name: pull-cluster-api-provider-azure-bazel-verify
     always_run: true
-    optional: true
+    optional: false
     decorate: true
-    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.12
+        command:
+        - "./hack/verify-bazel.sh"
+  - name: pull-cluster-api-provider-azure-bazel-test
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.12
+        command:
+        - "./scripts/ci-bazel-test.sh"
+  - name: pull-cluster-api-provider-azure-bazel-build
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.12
+        command:
+        - "./scripts/ci-bazel-build.sh"
+  - name: pull-cluster-api-provider-azure-verify-boilerplate
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
         command:
-        - make
-        args:
-        - manager
-        - clusterctl
-  - name: pull-cluster-api-provider-azure-test
-    always_run: true
-    optional: true
-    decorate: true
-    path_alias: sigs.k8s.io/cluster-api-provider-azure
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
-        command:
-        - make
-        args:
-        - test
-  - name: pull-cluster-api-provider-azure-check
-    always_run: true
-    optional: true
-    decorate: true
-    branches:
-    - master
-    path_alias: sigs.k8s.io/cluster-api-provider-azure
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
-        command:
-        - make
-        args:
-        - check
+        - "./hack/verify_boilerplate.py"
