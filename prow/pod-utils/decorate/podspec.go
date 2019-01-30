@@ -27,7 +27,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation"
 
@@ -143,7 +142,7 @@ func LabelsAndAnnotationsForJob(pj prowapi.ProwJob) (map[string]string, map[stri
 }
 
 // ProwJobToPod converts a ProwJob to a Pod that will run the tests.
-func ProwJobToPod(pj prowapi.ProwJob, buildID string) (*v1.Pod, error) {
+func ProwJobToPod(pj prowapi.ProwJob, buildID string) (*coreapi.Pod, error) {
 	if pj.Spec.PodSpec == nil {
 		return nil, fmt.Errorf("prowjob %q lacks a pod spec", pj.Name)
 	}
@@ -175,7 +174,7 @@ func ProwJobToPod(pj prowapi.ProwJob, buildID string) (*v1.Pod, error) {
 	}
 
 	podLabels, annotations := LabelsAndAnnotationsForJob(pj)
-	return &v1.Pod{
+	return &coreapi.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        pj.ObjectMeta.Name,
 			Labels:      podLabels,
@@ -188,6 +187,7 @@ func ProwJobToPod(pj prowapi.ProwJob, buildID string) (*v1.Pod, error) {
 const cloneLogPath = "clone.json"
 
 // CloneLogPath returns the path to the clone log file in the volume mount.
+// CloneLogPath returns the path to the clone log file in the volume mount.
 func CloneLogPath(logMount coreapi.VolumeMount) string {
 	return filepath.Join(logMount.MountPath, cloneLogPath)
 }
@@ -199,7 +199,7 @@ const (
 )
 
 // cloneEnv encodes clonerefs Options into json and puts it into an environment variable
-func cloneEnv(opt clonerefs.Options) ([]v1.EnvVar, error) {
+func cloneEnv(opt clonerefs.Options) ([]coreapi.EnvVar, error) {
 	// TODO(fejta): use flags
 	cloneConfigEnv, err := clonerefs.Encode(opt)
 	if err != nil {
@@ -218,7 +218,7 @@ func sshVolume(secret string) (coreapi.Volume, coreapi.VolumeMount) {
 	v := coreapi.Volume{
 		Name: name,
 		VolumeSource: coreapi.VolumeSource{
-			Secret: &kube.SecretSource{
+			Secret: &coreapi.SecretVolumeSource{
 				SecretName:  secret,
 				DefaultMode: &sshKeyMode,
 			},
@@ -256,7 +256,7 @@ func cookiefileVolume(secret string) (coreapi.Volume, coreapi.VolumeMount, strin
 	vol := coreapi.Volume{
 		Name: "cookiefile",
 		VolumeSource: coreapi.VolumeSource{
-			Secret: &kube.SecretSource{
+			Secret: &coreapi.SecretVolumeSource{
 				SecretName:  cookieSecret,
 				DefaultMode: &cookiefileMode,
 			},
@@ -420,7 +420,7 @@ func GCSOptions(dc prowapi.DecorationConfig) (coreapi.Volume, coreapi.VolumeMoun
 	vol := coreapi.Volume{
 		Name: gcsCredentialsMountName,
 		VolumeSource: coreapi.VolumeSource{
-			Secret: &kube.SecretSource{
+			Secret: &coreapi.SecretVolumeSource{
 				SecretName: dc.GCSCredentialsSecret,
 			},
 		},
@@ -589,16 +589,16 @@ func Sidecar(image string, gcsOptions gcsupload.Options, gcsMount, logMount core
 // kubeEnv transforms a mapping of environment variables
 // into their serialized form for a PodSpec, sorting by
 // the name of the env vars
-func kubeEnv(environment map[string]string) []v1.EnvVar {
+func kubeEnv(environment map[string]string) []coreapi.EnvVar {
 	var keys []string
 	for key := range environment {
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)
 
-	var kubeEnvironment []v1.EnvVar
+	var kubeEnvironment []coreapi.EnvVar
 	for _, key := range keys {
-		kubeEnvironment = append(kubeEnvironment, v1.EnvVar{
+		kubeEnvironment = append(kubeEnvironment, coreapi.EnvVar{
 			Name:  key,
 			Value: environment[key],
 		})

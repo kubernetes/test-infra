@@ -29,7 +29,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -660,9 +659,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 							Namespace: "pods",
 						},
 						Spec: coreapi.PodSpec{
-							Containers: []v1.Container{
+							Containers: []coreapi.Container{
 								{
-									Env: []v1.EnvVar{
+									Env: []coreapi.EnvVar{
 										{
 											Name:  "BUILD_ID",
 											Value: "0987654321",

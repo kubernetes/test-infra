@@ -40,7 +40,6 @@ import (
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
 	duckv1alpha1 "github.com/knative/pkg/apis/duck/v1alpha1"
 	"github.com/sirupsen/logrus"
-	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/runtime"
@@ -121,7 +120,7 @@ func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjo
 	eventBroadcaster := record.NewBroadcaster()
 	eventBroadcaster.StartLogging(logrus.Infof)
 	eventBroadcaster.StartRecordingToSink(&corev1.EventSinkImpl{Interface: kc.CoreV1().Events("")})
-	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, v1.EventSource{Component: controllerName})
+	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, coreapi.EventSource{Component: controllerName})
 
 	// Create struct
 	c := &controller{
@@ -460,13 +459,13 @@ func prowJobStatus(bs buildv1alpha1.BuildStatus) (prowjobv1.ProwJobState, string
 	}
 	cond := *pcond
 	switch {
-	case cond.Status == v1.ConditionTrue:
+	case cond.Status == coreapi.ConditionTrue:
 		return prowjobv1.SuccessState, description(cond, descSucceeded)
-	case cond.Status == v1.ConditionFalse:
+	case cond.Status == coreapi.ConditionFalse:
 		return prowjobv1.FailureState, description(cond, descFailed)
 	case started.IsZero():
 		return prowjobv1.TriggeredState, description(cond, descInitializing)
-	case cond.Status == v1.ConditionUnknown, finished.IsZero():
+	case cond.Status == coreapi.ConditionUnknown, finished.IsZero():
 		return prowjobv1.PendingState, description(cond, descRunning)
 	}
 	logrus.Warnf("Unknown condition %#v", cond)
@@ -482,11 +481,11 @@ const (
 )
 
 var (
-	codeMount = v1.VolumeMount{
+	codeMount = coreapi.VolumeMount{
 		Name:      workspaceMountName,
 		MountPath: "/code-mount", // should be irrelevant
 	}
-	logMount = v1.VolumeMount{
+	logMount = coreapi.VolumeMount{
 		Name:      homeMountName,
 		MountPath: "/var/prow-build-log", // should be irrelevant
 	}
@@ -522,7 +521,7 @@ func defaultArguments(t *buildv1alpha1.TemplateInstantiationSpec, rawEnv map[str
 }
 
 // defaultEnv adds the map of environment variables to the container, except keys already defined.
-func defaultEnv(c *v1.Container, rawEnv map[string]string) {
+func defaultEnv(c *coreapi.Container, rawEnv map[string]string) {
 	keys := sets.String{}
 	for _, arg := range c.Env {
 		keys.Insert(arg.Name)
@@ -531,7 +530,7 @@ func defaultEnv(c *v1.Container, rawEnv map[string]string) {
 		if keys.Has(k) {
 			continue
 		}
-		c.Env = append(c.Env, v1.EnvVar{Name: k, Value: rawEnv[k]})
+		c.Env = append(c.Env, coreapi.EnvVar{Name: k, Value: rawEnv[k]})
 	}
 }
 
@@ -590,23 +589,23 @@ func injectSource(b *buildv1alpha1.Build, pj prowjobv1.ProwJob) (bool, error) {
 	return true, nil
 }
 
-func tools() (v1.Volume, v1.VolumeMount) {
+func tools() (coreapi.Volume, coreapi.VolumeMount) {
 	const toolsName = "entrypoint-tools"
-	toolsVolume := v1.Volume{
+	toolsVolume := coreapi.Volume{
 		Name: toolsName,
-		VolumeSource: v1.VolumeSource{
-			EmptyDir: &v1.EmptyDirVolumeSource{},
+		VolumeSource: coreapi.VolumeSource{
+			EmptyDir: &coreapi.EmptyDirVolumeSource{},
 		},
 	}
 
-	toolsMount := v1.VolumeMount{
+	toolsMount := coreapi.VolumeMount{
 		Name:      toolsName,
 		MountPath: "/entrypoint-tools",
 	}
 	return toolsVolume, toolsMount
 }
 
-func decorateSteps(steps []v1.Container, dc prowjobv1.DecorationConfig, toolsMount v1.VolumeMount) ([]wrapper.Options, error) {
+func decorateSteps(steps []coreapi.Container, dc prowjobv1.DecorationConfig, toolsMount coreapi.VolumeMount) ([]wrapper.Options, error) {
 	const alwaysPass = true
 	var entries []wrapper.Options
 	for i := range steps {
@@ -628,7 +627,7 @@ func decorateSteps(steps []v1.Container, dc prowjobv1.DecorationConfig, toolsMou
 }
 
 // injectedSteps returns initial containers, a final container and an additional volume.
-func injectedSteps(encodedJobSpec string, dc prowjobv1.DecorationConfig, injectedSource bool, toolsMount v1.VolumeMount, entries []wrapper.Options) ([]v1.Container, *v1.Container, *v1.Volume, error) {
+func injectedSteps(encodedJobSpec string, dc prowjobv1.DecorationConfig, injectedSource bool, toolsMount coreapi.VolumeMount, entries []wrapper.Options) ([]coreapi.Container, *coreapi.Container, *coreapi.Volume, error) {
 	gcsVol, gcsMount, gcsOptions := decorate.GCSOptions(dc)
 
 	sidecar, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, encodedJobSpec, decorate.RequirePassingEntries, entries...)
@@ -647,7 +646,7 @@ func injectedSteps(encodedJobSpec string, dc prowjobv1.DecorationConfig, injecte
 
 	placer := decorate.PlaceEntrypoint(dc.UtilityImages.Entrypoint, toolsMount)
 
-	return []v1.Container{placer, *initUpload}, sidecar, &gcsVol, nil
+	return []coreapi.Container{placer, *initUpload}, sidecar, &gcsVol, nil
 }
 
 func decorateBuild(spec *buildv1alpha1.BuildSpec, encodedJobSpec string, dc prowjobv1.DecorationConfig, injectedSource bool) error {
