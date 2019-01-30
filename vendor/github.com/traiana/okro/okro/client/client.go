@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"strings"
 
-	okrov1beta1 "github.com/traiana/okro/okro/api/v1beta1"
+	okrov1beta2 "github.com/traiana/okro/okro/api/v1beta2"
 )
 
 const (
-	validateHeader = "X-VALIDATE-AGAINST"
+	commitValidationHeader = "X-Validate-Against"
 )
 
 type Client struct {
@@ -27,7 +27,7 @@ func New(baseURL string) *Client {
 	}
 }
 
-func (c *Client) GetTenant(tenant string) (*okrov1beta1.Tenant, error) {
+func (c *Client) GetTenant(tenant string) (*okrov1beta2.Tenant, error) {
 	url := fmt.Sprintf("%s/tenants/%s", c.baseURL, tenant)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -46,7 +46,7 @@ func (c *Client) GetTenant(tenant string) (*okrov1beta1.Tenant, error) {
 	}
 
 	var res *struct {
-		Tenant *okrov1beta1.Tenant `json:"tenant"`
+		Tenant *okrov1beta2.Tenant `json:"tenant"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (c *Client) GetTenant(tenant string) (*okrov1beta1.Tenant, error) {
 	return res.Tenant, nil
 }
 
-func (c *Client) GetCatalog(tenant string) (*okrov1beta1.Catalog, error) {
+func (c *Client) GetCatalog(tenant string) (*okrov1beta2.Catalog, error) {
 	url := fmt.Sprintf("%s/tenants/%s/catalog", c.baseURL, tenant)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -73,7 +73,7 @@ func (c *Client) GetCatalog(tenant string) (*okrov1beta1.Catalog, error) {
 	}
 
 	var res *struct {
-		Catalog *okrov1beta1.Catalog `json:"catalog"`
+		Catalog *okrov1beta2.Catalog `json:"catalog"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
 		return nil, err
@@ -81,7 +81,7 @@ func (c *Client) GetCatalog(tenant string) (*okrov1beta1.Catalog, error) {
 	return res.Catalog, nil
 }
 
-func (c *Client) ValidateCatalog(tenant string, catalog *okrov1beta1.Catalog, commit string) error {
+func (c *Client) ValidateCatalog(tenant string, catalog *okrov1beta2.Catalog, commit string) error {
 	url := fmt.Sprintf("%s/tenants/%s/catalog:validate", c.baseURL, tenant)
 	jsonStr, err := json.Marshal(catalog)
 	if err != nil {
@@ -92,7 +92,7 @@ func (c *Client) ValidateCatalog(tenant string, catalog *okrov1beta1.Catalog, co
 		return err
 	}
 	setDefaultHeaders(req)
-	req.Header.Set(validateHeader, commit)
+	req.Header.Set(commitValidationHeader, commit)
 	resp, err := c.httpc.Do(req)
 	if resp != nil {
 		defer resp.Body.Close()
@@ -106,7 +106,7 @@ func (c *Client) ValidateCatalog(tenant string, catalog *okrov1beta1.Catalog, co
 	return nil
 }
 
-func (c *Client) PutCatalog(tenant string, catalog *okrov1beta1.Catalog) error {
+func (c *Client) PutCatalog(tenant string, catalog *okrov1beta2.Catalog) error {
 	url := fmt.Sprintf("%s/tenants/%s/catalog", c.baseURL, tenant)
 	jsonStr, err := json.Marshal(catalog)
 	if err != nil {
@@ -130,7 +130,7 @@ func (c *Client) PutCatalog(tenant string, catalog *okrov1beta1.Catalog) error {
 	return nil
 }
 
-func (c *Client) GetTenantDomain(tenant string, domain string) (*okrov1beta1.TenantDomain, error) {
+func (c *Client) GetDomain(tenant string, domain string) (*okrov1beta2.Domain, error) {
 	url := fmt.Sprintf("%s/tenants/%s/domains/%s", c.baseURL, tenant, domain)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -149,17 +149,17 @@ func (c *Client) GetTenantDomain(tenant string, domain string) (*okrov1beta1.Ten
 	}
 
 	var res *struct {
-		TenantDomain *okrov1beta1.TenantDomain `json:"tenant-domain"`
+		Domain *okrov1beta2.Domain `json:"domain"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
 		return nil, err
 	}
-	return res.TenantDomain, nil
+	return res.Domain, nil
 }
 
-func (c *Client) ValidateTenantDomain(tenant string, domain string, tenantDomain *okrov1beta1.TenantDomain, commit string) error {
-	url := fmt.Sprintf("%s/tenants/%s/domains/%s:validate", c.baseURL, tenant, domain)
-	b, err := json.Marshal(tenantDomain)
+func (c *Client) ValidateDomain(tenant string, domain *okrov1beta2.Domain, commit string) error {
+	url := fmt.Sprintf("%s/tenants/%s/domains/%s:validate", c.baseURL, tenant, domain.Name)
+	b, err := json.Marshal(domain)
 	if err != nil {
 		return err
 	}
@@ -168,7 +168,7 @@ func (c *Client) ValidateTenantDomain(tenant string, domain string, tenantDomain
 		return err
 	}
 	setDefaultHeaders(req)
-	req.Header.Set(validateHeader, commit)
+	req.Header.Set(commitValidationHeader, commit)
 	resp, err := c.httpc.Do(req)
 	if resp != nil {
 		defer resp.Body.Close()
@@ -182,9 +182,9 @@ func (c *Client) ValidateTenantDomain(tenant string, domain string, tenantDomain
 	return nil
 }
 
-func (c *Client) PutTenantDomain(tenant string, domain string, tenantDomain *okrov1beta1.TenantDomain) error {
-	url := fmt.Sprintf("%s/tenants/%s/domains/%s", c.baseURL, tenant, domain)
-	jsonStr, err := json.Marshal(tenantDomain)
+func (c *Client) PutDomain(tenant string, domain *okrov1beta2.Domain) error {
+	url := fmt.Sprintf("%s/tenants/%s/domains/%s", c.baseURL, tenant, domain.Name)
+	jsonStr, err := json.Marshal(domain)
 	if err != nil {
 		return err
 	}
@@ -205,37 +205,6 @@ func (c *Client) PutTenantDomain(tenant string, domain string, tenantDomain *okr
 		return parseErrorResponse(resp)
 	}
 	return nil
-}
-
-func (c *Client) GetTenantByRepo(repoOwner string, repoName string) (*okrov1beta1.Tenant, error) {
-	url := fmt.Sprintf("%s/tenants:getByRepo", c.baseURL)
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-	q := req.URL.Query()
-	q.Add("owner", repoOwner)
-	q.Add("name", repoName)
-	req.URL.RawQuery = q.Encode()
-	setDefaultHeaders(req)
-	resp, err := c.httpc.Do(req)
-	if resp != nil {
-		defer resp.Body.Close()
-	}
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, parseErrorResponse(resp)
-	}
-
-	var res struct {
-		Tenant *okrov1beta1.Tenant `json:"tenant"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
-		return nil, err
-	}
-	return res.Tenant, nil
 }
 
 func setDefaultHeaders(req *http.Request) {
@@ -248,7 +217,7 @@ func parseErrorResponse(resp *http.Response) error {
 		return fmt.Errorf("failed to read response body: %v", err)
 	}
 	var res struct {
-		Error okrov1beta1.Error `json:"error"`
+		Error okrov1beta2.Error `json:"error"`
 	}
 	if err := json.Unmarshal(b, &res); err == nil {
 		return res.Error

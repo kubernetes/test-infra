@@ -1531,6 +1531,6 @@ go_repository(
 
 go_repository(
     name = "com_github_traiana_okro",
-    commit = "05c11def2e77",
+    commit = "614847a0ec95",
     importpath = "github.com/traiana/okro",
 )

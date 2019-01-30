@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strings"
 
+	"k8s.io/test-infra/prow/config"
+
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 
@@ -14,14 +16,14 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/repoowners"
 
-	okrov1beta1 "github.com/traiana/okro/okro/api/v1beta1"
+	okrov1beta2 "github.com/traiana/okro/okro/api/v1beta2"
 )
 
 const (
-	pluginName             = "okro/force-merge"
-	masterRef              = "heads/master"
-	domainFile             = "domain.yaml"
-	validateJobContext = "validate-tenant-domain"
+	pluginName         = "okro/force-merge"
+	masterRef          = "heads/master"
+	domainFile         = "domain.yaml"
+	validateJobContext = "validate-domain"
 )
 
 var (
@@ -35,7 +37,7 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "By default, PRs to tenant domain repos which break other tenant domains are not allowed. " +
+		Description: "By default, PRs to domain repos which break other domains are not allowed. " +
 			"The force-merge plugin allows root approvers to merge such PRs.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
@@ -63,15 +65,15 @@ type ownersClient interface {
 }
 
 type okroClient interface {
-	GetTenantByRepo(repoOwner string, repoName string) (*okrov1beta1.Tenant, error)
-	ValidateTenantDomain(tenant string, domain string, tenantDomain *okrov1beta1.TenantDomain, commit string) error
+	GetTenant(tenant string) (*okrov1beta2.Tenant, error)
+	ValidateDomain(tenant string, domain *okrov1beta2.Domain, commit string) error
 }
 
 func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) error {
-	return handleGenericComment(pc.Logger, pc.GitHubClient, pc.OwnersClient, pc.OkroClient, &e)
+	return handleGenericComment(pc.Logger, pc.OkroConfig, pc.GitHubClient, pc.OwnersClient, pc.OkroClient, &e)
 }
 
-func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, okroClient okroClient, ce *github.GenericCommentEvent) error {
+func handleGenericComment(log *logrus.Entry, okroConfig *config.OkroConfig, ghc githubClient, oc ownersClient, okroClient okroClient, ce *github.GenericCommentEvent) error {
 	// Only consider open PRs and new comments.
 	if !ce.IsPR || ce.IssueState != "open" || ce.Action != github.GenericCommentActionCreated || !mergeRe.MatchString(ce.Body) {
 		return nil
@@ -120,33 +122,34 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, 
 	}
 
 	if invalidMessage == "" {
-		var tenantDomain *okrov1beta1.TenantDomain
-		if err := yaml.Unmarshal(b, &tenantDomain); err != nil {
+		var domain *okrov1beta2.Domain
+		if err := yaml.Unmarshal(b, &domain); err != nil {
 			invalidMessage = fmt.Sprintf("invalid %s format.", domainFile)
 		} else {
-			tenant, err := okroClient.GetTenantByRepo(org, repo)
+			tenant, err := okroClient.GetTenant(okroConfig.Tenant)
 			if err != nil {
-				return fmt.Errorf("failed to get tenant for repo %s/%s", org, repo)
+				return fmt.Errorf("failed to get tenant %s", okroConfig.Tenant)
 			}
-			var domain string
+			var env string
 			repoURLSuffix := fmt.Sprintf("%s/%s.git", org, repo)
-			for _, domainSource := range tenant.DomainSources {
-				if strings.HasSuffix(domainSource.URL, repoURLSuffix) {
-					domain = domainSource.Name
+			for _, domainURL := range tenant.DomainURLs {
+				if strings.HasSuffix(domainURL.URL, repoURLSuffix) {
+					env = domainURL.Env
 					break
 				}
 			}
-			if domain == "" {
-				return fmt.Errorf("failed to get domain for repo %s/%s", org, repo)
+			if env == "" {
+				return fmt.Errorf("failed to get env for repo %s/%s", org, repo)
 			}
-			err = okroClient.ValidateTenantDomain(tenant.Name, domain, tenantDomain, pr.Base.SHA)
+			domain.Name = env
+			err = okroClient.ValidateDomain(tenant.Name, domain, pr.Base.SHA)
 			if err == nil {
 				invalidMessage = "repo is in a valid state.\nIf the validation job has failed, run `/retest`. " +
 					"Otherwise, wait for the PR to be merged automatically."
 			} else {
-				okroErr, ok := err.(okrov1beta1.Error)
+				okroErr, ok := err.(okrov1beta2.Error)
 				if !ok {
-					return fmt.Errorf("failed to validate tenant domain %s/%s: %v", tenant, domain, err)
+					return fmt.Errorf("failed to validate domain %s/%s: %v", tenant, domain, err)
 				}
 				// TODO: use AppCode
 				if okroErr.Message == "succeeded with warnings" {

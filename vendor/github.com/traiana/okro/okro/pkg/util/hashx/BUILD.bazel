@@ -2,11 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["client.go"],
-    importmap = "k8s.io/test-infra/vendor/github.com/traiana/okro/okro/client",
-    importpath = "github.com/traiana/okro/okro/client",
+    srcs = ["hashx.go"],
+    importmap = "k8s.io/test-infra/vendor/github.com/traiana/okro/okro/pkg/util/hashx",
+    importpath = "github.com/traiana/okro/okro/pkg/util/hashx",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/traiana/okro/okro/api/v1beta2:go_default_library"],
 )
 
 filegroup(

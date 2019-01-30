@@ -143,6 +143,7 @@ type Agent struct {
 	OwnersClient *repoowners.Client
 
 	OkroClient *okroclient.Client
+	OkroConfig *config.OkroConfig
 
 	// Config provides information about the jobs
 	// that we know how to run for repos.
@@ -171,6 +172,7 @@ func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientA
 			pluginConfig.SkipCollaborators,
 		),
 		OkroClient:   clientAgent.OkroClient,
+		OkroConfig:   configAgent.OkroConfig,
 		Config:       prowConfig,
 		PluginConfig: pluginConfig,
 		Logger:       logger,

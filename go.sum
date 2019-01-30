@@ -244,8 +244,8 @@ github.com/spf13/pflag v1.0.3/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnIn
 github.com/stretchr/testify v1.2.2 h1:bSDNvY7ZPG5RlJ8otE/7V6gMiyenm9RtJ7IUVIAoJ1w=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
-github.com/traiana/okro v0.0.0-20190127073656-05c11def2e77 h1:c1+FvflPQLw/a3fbEO6cbLuIfh3U5oy6wph/R0KjMc8=
-github.com/traiana/okro v0.0.0-20190127073656-05c11def2e77/go.mod h1:t3BWSgPh5HhVvtSMGFKISvzis9JFwy4yu0+hCut/6hw=
+github.com/traiana/okro v0.0.0-20190131143457-614847a0ec95 h1:zEX7xa5SDFNDHlj/894vT9Dh85ViMMJNIgqUZvklSm8=
+github.com/traiana/okro v0.0.0-20190131143457-614847a0ec95/go.mod h1:t3BWSgPh5HhVvtSMGFKISvzis9JFwy4yu0+hCut/6hw=
 github.com/ugorji/go v1.1.1/go.mod h1:hnLbHMwcvSihnDhEfx2/BzKp2xb0Y+ErdfYcrs9tkJQ=
 github.com/urfave/cli v1.18.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
 github.com/xiang90/probing v0.0.0-20160813154853-07dd2e8dfe18/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=

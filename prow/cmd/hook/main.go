@@ -59,6 +59,7 @@ type options struct {
 	slackTokenFile    string
 
 	okroURL string
+	tenant  string
 }
 
 func (o *options) Validate() error {
@@ -90,6 +91,7 @@ func gatherOptions() options {
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to the file containing the Slack token to use.")
 
 	fs.StringVar(&o.okroURL, "okro-url", "", "okro server's URL")
+	fs.StringVar(&o.tenant, "tenant", "", "Tenant name")
 
 	fs.Parse(os.Args[1:])
 	return o
@@ -102,7 +104,11 @@ func main() {
 	}
 	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "hook"}))
 
-	configAgent := &config.Agent{}
+	configAgent := &config.Agent{
+		OkroConfig: &config.OkroConfig{
+			Tenant: o.tenant,
+		},
+	}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}

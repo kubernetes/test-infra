@@ -1,4 +1,4 @@
-package v1beta1
+package v1beta2
 
 type Error struct {
 	AppCode string      `json:"app_code,omitempty"`

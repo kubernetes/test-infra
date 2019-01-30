@@ -77,7 +77,7 @@ require (
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.2.2
-	github.com/traiana/okro v0.0.0-20190127073656-05c11def2e77
+	github.com/traiana/okro v0.0.0-20190131143457-614847a0ec95
 	github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1 // indirect
 	golang.org/x/crypto v0.0.0-20181015023909-0c41d7ab0a0e
 	golang.org/x/net v0.0.0-20180906233101-161cd47e91fd
