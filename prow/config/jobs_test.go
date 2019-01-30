@@ -31,27 +31,6 @@ var configPath = flag.String("config", "../config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../config/jobs", "Path to prow job config")
 var podRe = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
 
-// Consistent but meaningless order.
-func flattenPresubmits(jobs []Presubmit) []Presubmit {
-	ret := jobs
-	for _, job := range jobs {
-		if len(job.RunAfterSuccess) > 0 {
-			ret = append(ret, flattenPresubmits(job.RunAfterSuccess)...)
-		}
-	}
-	return ret
-}
-
-func flattenPostsubmits(jobs []Postsubmit) []Postsubmit {
-	ret := jobs
-	for _, job := range jobs {
-		if len(job.RunAfterSuccess) > 0 {
-			ret = append(ret, flattenPostsubmits(job.RunAfterSuccess)...)
-		}
-	}
-	return ret
-}
-
 // Returns if two brancher has overlapping branches
 func checkOverlapBrancher(b1, b2 Brancher) bool {
 	if b1.RunsAgainstAllBranch() || b2.RunsAgainstAllBranch() {
@@ -96,8 +75,7 @@ func TestPresubmits(t *testing.T) {
 	}
 
 	for _, rootJobs := range c.Presubmits {
-		jobs := flattenPresubmits(rootJobs)
-		for i, job := range jobs {
+		for i, job := range rootJobs {
 			if job.Name == "" {
 				t.Errorf("Job %v needs a name.", job)
 				continue
@@ -114,7 +92,7 @@ func TestPresubmits(t *testing.T) {
 				t.Errorf("Job %s : Cannot have both branches and skip_branches set", job.Name)
 			}
 			// Next check that the rerun command doesn't run any other jobs.
-			for j, job2 := range jobs[i+1:] {
+			for j, job2 := range rootJobs[i+1:] {
 				if job.Name == job2.Name {
 					// Make sure max_concurrency are the same
 					if job.MaxConcurrency != job2.MaxConcurrency {
@@ -144,8 +122,7 @@ func TestPostsubmits(t *testing.T) {
 	}
 
 	for _, rootJobs := range c.Postsubmits {
-		jobs := flattenPostsubmits(rootJobs)
-		for i, job := range jobs {
+		for i, job := range rootJobs {
 			if job.Name == "" {
 				t.Errorf("Job %v needs a name.", job)
 				continue
@@ -158,7 +135,7 @@ func TestPostsubmits(t *testing.T) {
 				t.Errorf("Job %s : Cannot have both branches and skip_branches set", job.Name)
 			}
 			// Next check that the rerun command doesn't run any other jobs.
-			for _, job2 := range jobs[i+1:] {
+			for _, job2 := range rootJobs[i+1:] {
 				if job.Name == job2.Name {
 					// Make sure max_concurrency are the same
 					if job.MaxConcurrency != job2.MaxConcurrency {
@@ -210,21 +187,6 @@ func TestCommentBodyMatches(t *testing.T) {
 			[]string{"federation"},
 		},
 		{
-			"org/repo2",
-			"/test all",
-			[]string{"cadveapster", "after-cadveapster", "after-after-cadveapster"},
-		},
-		{
-			"org/repo2",
-			"/test really",
-			[]string{"after-cadveapster"},
-		},
-		{
-			"org/repo2",
-			"/test again really",
-			[]string{"after-after-cadveapster"},
-		},
-		{
 			"org/repo3",
 			"/test all",
 			[]string{},
@@ -261,40 +223,6 @@ func TestCommentBodyMatches(t *testing.T) {
 						},
 						re:        regexp.MustCompile(`/test federation`),
 						AlwaysRun: false,
-					},
-				},
-				"org/repo2": {
-					{
-						JobBase: JobBase{
-							Name: "cadveapster",
-						},
-						re:        regexp.MustCompile(`/test all`),
-						AlwaysRun: true,
-						RunAfterSuccess: []Presubmit{
-							{
-								JobBase: JobBase{
-									Name: "after-cadveapster",
-								},
-								re:        regexp.MustCompile(`/test (really|all)`),
-								AlwaysRun: true,
-								RunAfterSuccess: []Presubmit{
-									{
-										JobBase: JobBase{
-											Name: "after-after-cadveapster",
-										},
-										re:        regexp.MustCompile(`/test (again really|all)`),
-										AlwaysRun: true,
-									},
-								},
-							},
-							{
-								JobBase: JobBase{
-									Name: "another-after-cadveapster",
-								},
-								re:        regexp.MustCompile(`@k8s-bot don't test this`),
-								AlwaysRun: true,
-							},
-						},
 					},
 				},
 			},
@@ -456,10 +384,6 @@ func TestListPresubmit(t *testing.T) {
 						JobBase: JobBase{
 							Name: "a",
 						},
-						RunAfterSuccess: []Presubmit{
-							{JobBase: JobBase{Name: "aa"}},
-							{JobBase: JobBase{Name: "ab"}},
-						},
 					},
 					{JobBase: JobBase{Name: "b"}},
 				},
@@ -467,10 +391,6 @@ func TestListPresubmit(t *testing.T) {
 					{
 						JobBase: JobBase{
 							Name: "c",
-						},
-						RunAfterSuccess: []Presubmit{
-							{JobBase: JobBase{Name: "ca"}},
-							{JobBase: JobBase{Name: "cb"}},
 						},
 					},
 					{JobBase: JobBase{Name: "d"}},
@@ -492,12 +412,12 @@ func TestListPresubmit(t *testing.T) {
 	}{
 		{
 			"all presubmits",
-			[]string{"a", "aa", "ab", "b", "c", "ca", "cb", "d"},
+			[]string{"a", "b", "c", "d"},
 			[]string{},
 		},
 		{
 			"r2 presubmits",
-			[]string{"c", "ca", "cb", "d"},
+			[]string{"c", "d"},
 			[]string{"r2"},
 		},
 	}
@@ -534,10 +454,6 @@ func TestListPostsubmit(t *testing.T) {
 						JobBase: JobBase{
 							Name: "c",
 						},
-						RunAfterSuccess: []Postsubmit{
-							{JobBase: JobBase{Name: "ca"}},
-							{JobBase: JobBase{Name: "cb"}},
-						},
 					},
 					{JobBase: JobBase{Name: "d"}},
 				},
@@ -556,7 +472,7 @@ func TestListPostsubmit(t *testing.T) {
 	}{
 		{
 			"all postsubmits",
-			[]string{"c", "ca", "cb", "d", "e"},
+			[]string{"c", "d", "e"},
 			[]string{},
 		},
 		{
@@ -600,17 +516,13 @@ func TestListPeriodic(t *testing.T) {
 					JobBase: JobBase{
 						Name: "c",
 					},
-					RunAfterSuccess: []Periodic{
-						{JobBase: JobBase{Name: "ca"}},
-						{JobBase: JobBase{Name: "cb"}},
-					},
 				},
 				{JobBase: JobBase{Name: "d"}},
 			},
 		},
 	}
 
-	expected := []string{"c", "ca", "cb", "d"}
+	expected := []string{"c", "d"}
 	actual := c.AllPeriodics()
 	if len(actual) != len(expected) {
 		t.Fatalf("Wrong number of jobs. Got %v, expected %v", actual, expected)

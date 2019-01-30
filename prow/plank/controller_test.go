@@ -59,27 +59,10 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 			JobBase: config.JobBase{
 				Name: "test-bazel-build",
 			},
-			RunAfterSuccess: []config.Presubmit{
-				{
-					JobBase: config.JobBase{
-						Name: "test-kubeadm-cloud",
-					},
-					RegexpChangeMatcher: config.RegexpChangeMatcher{
-						RunIfChanged: "^(cmd/kubeadm|build/debs).*$",
-					},
-				},
-			},
 		},
 		{
 			JobBase: config.JobBase{
 				Name: "test-e2e",
-			},
-			RunAfterSuccess: []config.Presubmit{
-				{
-					JobBase: config.JobBase{
-						Name: "push-image",
-					},
-				},
 			},
 		},
 		{
@@ -881,12 +864,7 @@ func TestSyncPendingJob(t *testing.T) {
 				Spec: kube.ProwJobSpec{
 					Type:    kube.BatchJob,
 					PodSpec: &coreapi.PodSpec{Containers: []coreapi.Container{{Name: "test-name", Env: []coreapi.EnvVar{}}}},
-					RunAfterSuccess: []kube.ProwJobSpec{{
-						Job:     "job-name",
-						Type:    kube.PeriodicJob,
-						PodSpec: &coreapi.PodSpec{Containers: []coreapi.Container{{Name: "test-name", Env: []coreapi.EnvVar{}}}},
-					}},
-					Refs: &kube.Refs{Org: "fejtaverse"},
+					Refs:    &kube.Refs{Org: "fejtaverse"},
 				},
 				Status: kube.ProwJobStatus{
 					State:   kube.PendingState,
@@ -907,7 +885,7 @@ func TestSyncPendingJob(t *testing.T) {
 			expectedComplete:   true,
 			expectedState:      kube.SuccessState,
 			expectedNumPods:    1,
-			expectedCreatedPJs: 1,
+			expectedCreatedPJs: 0,
 			expectedReport:     true,
 			expectedURL:        "boop-42/success",
 		},
@@ -924,8 +902,7 @@ func TestSyncPendingJob(t *testing.T) {
 						BaseRef: "baseref", BaseSHA: "basesha",
 						Pulls: []kube.Pull{{Number: 100, Author: "me", SHA: "sha"}},
 					},
-					PodSpec:         &coreapi.PodSpec{Containers: []coreapi.Container{{Name: "test-name", Env: []coreapi.EnvVar{}}}},
-					RunAfterSuccess: []kube.ProwJobSpec{{}},
+					PodSpec: &coreapi.PodSpec{Containers: []coreapi.Container{{Name: "test-name", Env: []coreapi.EnvVar{}}}},
 				},
 				Status: kube.ProwJobStatus{
 					State:   kube.PendingState,
@@ -1018,13 +995,7 @@ func TestSyncPendingJob(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "boop-42",
 				},
-				Spec: kube.ProwJobSpec{
-					RunAfterSuccess: []kube.ProwJobSpec{{
-						Job:     "job-name",
-						Type:    kube.PeriodicJob,
-						PodSpec: &coreapi.PodSpec{Containers: []coreapi.Container{{Name: "test-name", Env: []coreapi.EnvVar{}}}},
-					}},
-				},
+				Spec: kube.ProwJobSpec{},
 				Status: kube.ProwJobStatus{
 					State:   kube.PendingState,
 					PodName: "boop-42",
@@ -1050,13 +1021,7 @@ func TestSyncPendingJob(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "boop-42",
 				},
-				Spec: kube.ProwJobSpec{
-					RunAfterSuccess: []kube.ProwJobSpec{{
-						Job:     "job-name",
-						Type:    kube.PeriodicJob,
-						PodSpec: &coreapi.PodSpec{Containers: []coreapi.Container{{Name: "test-name", Env: []coreapi.EnvVar{}}}},
-					}},
-				},
+				Spec: kube.ProwJobSpec{},
 				Status: kube.ProwJobStatus{
 					State:   kube.PendingState,
 					PodName: "boop-42",
@@ -1077,7 +1042,7 @@ func TestSyncPendingJob(t *testing.T) {
 			expectedComplete:   true,
 			expectedState:      kube.SuccessState,
 			expectedNumPods:    1,
-			expectedCreatedPJs: 1,
+			expectedCreatedPJs: 0,
 			expectedReport:     true,
 			expectedURL:        "boop-42/success",
 		},
@@ -1109,13 +1074,7 @@ func TestSyncPendingJob(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "nightmare",
 				},
-				Spec: kube.ProwJobSpec{
-					RunAfterSuccess: []kube.ProwJobSpec{{
-						Job:     "job-name",
-						Type:    kube.PeriodicJob,
-						PodSpec: &coreapi.PodSpec{Containers: []coreapi.Container{{Name: "test-name", Env: []coreapi.EnvVar{}}}},
-					}},
-				},
+				Spec: kube.ProwJobSpec{},
 				Status: kube.ProwJobStatus{
 					State:   kube.PendingState,
 					PodName: "nightmare",
@@ -1223,16 +1182,6 @@ func TestPeriodic(t *testing.T) {
 			Cluster: "trusted",
 			Spec:    &coreapi.PodSpec{Containers: []coreapi.Container{{Name: "test-name", Env: []coreapi.EnvVar{}}}},
 		},
-
-		RunAfterSuccess: []config.Periodic{
-			{
-				JobBase: config.JobBase{
-					Name:  "ci-periodic-job-2",
-					Agent: "kubernetes",
-					Spec:  &coreapi.PodSpec{Containers: []coreapi.Container{{Name: "test-name", Env: []coreapi.EnvVar{}}}},
-				},
-			},
-		},
 	}
 
 	totServ := httptest.NewServer(http.HandlerFunc(handleTot))
@@ -1297,121 +1246,11 @@ func TestPeriodic(t *testing.T) {
 	if fc.prowjobs[0].Status.State != kube.SuccessState {
 		t.Fatalf("Should be success: %v", fc.prowjobs[0].Status.State)
 	}
-	if len(fc.prowjobs) != 2 {
+	if len(fc.prowjobs) != 1 {
 		t.Fatalf("Wrong number of prow jobs: %d", len(fc.prowjobs))
 	}
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on fourth sync: %v", err)
-	}
-}
-
-func TestRunAfterSuccessCanRun(t *testing.T) {
-	tests := []struct {
-		name string
-
-		parent *kube.ProwJob
-		child  *kube.ProwJob
-
-		changes []github.PullRequestChange
-		err     error
-
-		expected bool
-	}{
-		{
-			name: "child does not require specific changes",
-			parent: &kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Job:  "test-e2e",
-					Type: kube.PresubmitJob,
-					Refs: &kube.Refs{
-						Org:  "kubernetes",
-						Repo: "kubernetes",
-						Pulls: []kube.Pull{
-							{Number: 123},
-						},
-					},
-				},
-			},
-			child: &kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Job: "push-image",
-				},
-			},
-			expected: true,
-		},
-		{
-			name: "child requires specific changes that are done",
-			parent: &kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Job:  "test-bazel-build",
-					Type: kube.PresubmitJob,
-					Refs: &kube.Refs{
-						Org:  "kubernetes",
-						Repo: "kubernetes",
-						Pulls: []kube.Pull{
-							{Number: 123},
-						},
-					},
-				},
-			},
-			child: &kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Job: "test-kubeadm-cloud",
-				},
-			},
-			changes: []github.PullRequestChange{
-				{Filename: "cmd/kubeadm/kubeadm.go"},
-				{Filename: "vendor/BUILD"},
-				{Filename: ".gitatrributes"},
-			},
-			expected: true,
-		},
-		{
-			name: "child requires specific changes that are not done",
-			parent: &kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Job:  "test-bazel-build",
-					Type: kube.PresubmitJob,
-					Refs: &kube.Refs{
-						Org:  "kubernetes",
-						Repo: "kubernetes",
-						Pulls: []kube.Pull{
-							{Number: 123},
-						},
-					},
-				},
-			},
-			child: &kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Job: "test-kubeadm-cloud",
-				},
-			},
-			changes: []github.PullRequestChange{
-				{Filename: "vendor/BUILD"},
-				{Filename: ".gitatrributes"},
-			},
-			expected: false,
-		},
-	}
-
-	for _, test := range tests {
-		t.Logf("scenario %q", test.name)
-
-		fakeGH := &fghc{
-			changes: test.changes,
-			err:     test.err,
-		}
-
-		c := Controller{
-			log:    logrus.NewEntry(logrus.StandardLogger()),
-			config: newFakeConfigAgent(t, 0).Config,
-			ghc:    fakeGH,
-		}
-
-		got := c.runAfterSuccessCanRun(test.parent, test.child)
-		if got != test.expected {
-			t.Errorf("expected to run: %t, got: %t", test.expected, got)
-		}
 	}
 }
 

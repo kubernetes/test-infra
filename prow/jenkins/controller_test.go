@@ -46,27 +46,10 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int, operators []config.Jen
 			JobBase: config.JobBase{
 				Name: "test-bazel-build",
 			},
-			RunAfterSuccess: []config.Presubmit{
-				{
-					JobBase: config.JobBase{
-						Name: "test-kubeadm-cloud",
-					},
-					RegexpChangeMatcher: config.RegexpChangeMatcher{
-						RunIfChanged: "^(cmd/kubeadm|build/debs).*$",
-					},
-				},
-			},
 		},
 		{
 			JobBase: config.JobBase{
 				Name: "test-e2e",
-			},
-			RunAfterSuccess: []config.Presubmit{
-				{
-					JobBase: config.JobBase{
-						Name: "push-image",
-					},
-				},
 			},
 		},
 		{
@@ -673,116 +656,6 @@ func TestBatch(t *testing.T) {
 	// This is what the SQ reads.
 	if fc.prowjobs[0].Spec.Context != "Some Job Context" {
 		t.Fatalf("Wrong context: %v", fc.prowjobs[0].Spec.Context)
-	}
-}
-
-func TestRunAfterSuccessCanRun(t *testing.T) {
-	tests := []struct {
-		name string
-
-		parent *kube.ProwJob
-		child  *kube.ProwJob
-
-		changes []github.PullRequestChange
-		err     error
-
-		expected bool
-	}{
-		{
-			name: "child does not require specific changes",
-			parent: &kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Job:  "test-e2e",
-					Type: kube.PresubmitJob,
-					Refs: &kube.Refs{
-						Org:  "kubernetes",
-						Repo: "kubernetes",
-						Pulls: []kube.Pull{
-							{Number: 123},
-						},
-					},
-				},
-			},
-			child: &kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Job: "push-image",
-				},
-			},
-			expected: true,
-		},
-		{
-			name: "child requires specific changes that are done",
-			parent: &kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Job:  "test-bazel-build",
-					Type: kube.PresubmitJob,
-					Refs: &kube.Refs{
-						Org:  "kubernetes",
-						Repo: "kubernetes",
-						Pulls: []kube.Pull{
-							{Number: 123},
-						},
-					},
-				},
-			},
-			child: &kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Job: "test-kubeadm-cloud",
-				},
-			},
-			changes: []github.PullRequestChange{
-				{Filename: "cmd/kubeadm/kubeadm.go"},
-				{Filename: "vendor/BUILD"},
-				{Filename: ".gitatrributes"},
-			},
-			expected: true,
-		},
-		{
-			name: "child requires specific changes that are not done",
-			parent: &kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Job:  "test-bazel-build",
-					Type: kube.PresubmitJob,
-					Refs: &kube.Refs{
-						Org:  "kubernetes",
-						Repo: "kubernetes",
-						Pulls: []kube.Pull{
-							{Number: 123},
-						},
-					},
-				},
-			},
-			child: &kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Job: "test-kubeadm-cloud",
-				},
-			},
-			changes: []github.PullRequestChange{
-				{Filename: "vendor/BUILD"},
-				{Filename: ".gitatrributes"},
-			},
-			expected: false,
-		},
-	}
-
-	for _, test := range tests {
-		t.Logf("scenario %q", test.name)
-
-		fakeGH := &fghc{
-			changes: test.changes,
-			err:     test.err,
-		}
-
-		c := Controller{
-			log: logrus.NewEntry(logrus.StandardLogger()),
-			cfg: newFakeConfigAgent(t, 0, nil).Config,
-			ghc: fakeGH,
-		}
-
-		got := c.RunAfterSuccessCanRun(test.parent, test.child)
-		if got != test.expected {
-			t.Errorf("expected to run: %t, got: %t", test.expected, got)
-		}
 	}
 }
 

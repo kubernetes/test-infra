@@ -111,10 +111,6 @@ func undoPresubmitPresets(presets []config.Preset, presubmit *config.Presubmit) 
 	for _, preset := range presets {
 		undoPreset(&preset, presubmit.Labels, presubmit.Spec)
 	}
-	// do the same for any run after success children
-	for i := range presubmit.RunAfterSuccess {
-		undoPresubmitPresets(presets, &presubmit.RunAfterSuccess[i])
-	}
 }
 
 // convert a kubernetes/kubernetes job to a kubernetes-security/kubernetes job
@@ -258,17 +254,6 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, defaul
 				},
 			},
 		)
-	}
-	// done with this job, check for run_after_success
-	if len(j.RunAfterSuccess) > 0 {
-		filteredRunAfterSucces := []config.Presubmit{}
-		for i := range j.RunAfterSuccess {
-			newJob := convertJobToSecurityJob(&j.RunAfterSuccess[i], dropLabels, defaultDecoration, podNamespace)
-			if newJob != nil {
-				filteredRunAfterSucces = append(filteredRunAfterSucces, *newJob)
-			}
-		}
-		j.RunAfterSuccess = filteredRunAfterSucces
 	}
 	return j
 }
