@@ -119,6 +119,7 @@ filegroup(
         "//kettle:all-srcs",
         "//kubetest:all-srcs",
         "//label_sync:all-srcs",
+        "//linkcheck:all-srcs",
         "//logexporter/cmd:all-srcs",
         "//maintenance/aws-janitor:all-srcs",
         "//maintenance/migratestatus:all-srcs",

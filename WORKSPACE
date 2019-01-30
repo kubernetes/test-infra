@@ -1515,3 +1515,9 @@ go_repository(
     importpath = "k8s.io/klog",
     tag = "v0.1.0",
 )
+
+go_repository(
+    name = "cc_mvdan_xurls_v2",
+    importpath = "mvdan.cc/xurls/v2",
+    tag = "v2.0.0",
+)

@@ -292,6 +292,7 @@ filegroup(
         "//vendor/k8s.io/client-go/util/workqueue:all-srcs",
         "//vendor/k8s.io/klog:all-srcs",
         "//vendor/k8s.io/kube-openapi/pkg/util/proto:all-srcs",
+        "//vendor/mvdan.cc/xurls/v2:all-srcs",
         "//vendor/sigs.k8s.io/yaml:all-srcs",
         "//vendor/vbom.ml/util/sortorder:all-srcs",
     ],
