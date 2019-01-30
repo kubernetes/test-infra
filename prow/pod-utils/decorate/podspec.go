@@ -26,10 +26,11 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/clonerefs"
 	"k8s.io/test-infra/prow/entrypoint"
 	"k8s.io/test-infra/prow/gcsupload"
@@ -73,7 +74,7 @@ func VolumeMountPaths() []string {
 // LabelsAndAnnotationsForSpec returns a minimal set of labels to add to prowjobs or its owned resources.
 //
 // User-provided extraLabels and extraAnnotations values will take precedence over auto-provided values.
-func LabelsAndAnnotationsForSpec(spec kube.ProwJobSpec, extraLabels, extraAnnotations map[string]string) (map[string]string, map[string]string) {
+func LabelsAndAnnotationsForSpec(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[string]string) (map[string]string, map[string]string) {
 	jobNameForLabel := spec.Job
 	if len(jobNameForLabel) > validation.LabelValueMaxLength {
 		// TODO(fejta): consider truncating middle rather than end.
@@ -90,7 +91,7 @@ func LabelsAndAnnotationsForSpec(spec kube.ProwJobSpec, extraLabels, extraAnnota
 		kube.ProwJobTypeLabel:  string(spec.Type),
 		kube.ProwJobAnnotation: jobNameForLabel,
 	}
-	if spec.Type != kube.PeriodicJob && spec.Refs != nil {
+	if spec.Type != prowapi.PeriodicJob && spec.Refs != nil {
 		labels[kube.OrgLabel] = spec.Refs.Org
 		labels[kube.RepoLabel] = spec.Refs.Repo
 		if len(spec.Refs.Pulls) > 0 {
@@ -131,7 +132,7 @@ func LabelsAndAnnotationsForSpec(spec kube.ProwJobSpec, extraLabels, extraAnnota
 }
 
 // LabelsAndAnnotationsForJob returns a standard set of labels to add to pod/build/etc resources.
-func LabelsAndAnnotationsForJob(pj kube.ProwJob) (map[string]string, map[string]string) {
+func LabelsAndAnnotationsForJob(pj prowapi.ProwJob) (map[string]string, map[string]string) {
 	var extraLabels map[string]string
 	if extraLabels = pj.ObjectMeta.Labels; extraLabels == nil {
 		extraLabels = map[string]string{}
@@ -141,7 +142,7 @@ func LabelsAndAnnotationsForJob(pj kube.ProwJob) (map[string]string, map[string]
 }
 
 // ProwJobToPod converts a ProwJob to a Pod that will run the tests.
-func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
+func ProwJobToPod(pj prowapi.ProwJob, buildID string) (*v1.Pod, error) {
 	if pj.Spec.PodSpec == nil {
 		return nil, fmt.Errorf("prowjob %q lacks a pod spec", pj.Name)
 	}
@@ -275,7 +276,7 @@ func cookiefileVolume(secret string) (kube.Volume, kube.VolumeMount, string) {
 //
 // The container may need to mount SSH keys and/or cookiefiles in order to access private refs.
 // CloneRefs returns a list of volumes containing these secrets required by the container.
-func CloneRefs(pj kube.ProwJob, codeMount, logMount kube.VolumeMount) (*kube.Container, []kube.Refs, []kube.Volume, error) {
+func CloneRefs(pj prowapi.ProwJob, codeMount, logMount kube.VolumeMount) (*kube.Container, []prowapi.Refs, []kube.Volume, error) {
 	if pj.Spec.DecorationConfig == nil {
 		return nil, nil, nil, nil
 	}
@@ -283,7 +284,7 @@ func CloneRefs(pj kube.ProwJob, codeMount, logMount kube.VolumeMount) (*kube.Con
 		return nil, nil, nil, nil
 	}
 	var cloneVolumes []kube.Volume
-	var refs []kube.Refs // Do not return []*kube.Refs which we do not own
+	var refs []prowapi.Refs // Do not return []*prowapi.Refs which we do not own
 	if pj.Spec.Refs != nil {
 		refs = append(refs, *pj.Spec.Refs)
 	}
@@ -414,7 +415,7 @@ func PlaceEntrypoint(image string, toolsMount kube.VolumeMount) kube.Container {
 	}
 }
 
-func GCSOptions(dc kube.DecorationConfig) (kube.Volume, kube.VolumeMount, gcsupload.Options) {
+func GCSOptions(dc prowapi.DecorationConfig) (kube.Volume, kube.VolumeMount, gcsupload.Options) {
 	vol := kube.Volume{
 		Name: gcsCredentialsMountName,
 		VolumeSource: kube.VolumeSource{
@@ -465,7 +466,7 @@ func InitUpload(image string, opt gcsupload.Options, creds kube.VolumeMount, clo
 	}, nil
 }
 
-func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) error {
+func decorate(spec *kube.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]string) error {
 	// TODO(fejta): we should pass around volume names rather than forcing particular mount paths.
 
 	rawEnv[artifactsEnv] = artifactsPath

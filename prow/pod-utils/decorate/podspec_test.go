@@ -22,11 +22,12 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/clonerefs"
 	"k8s.io/test-infra/prow/entrypoint"
 	"k8s.io/test-infra/prow/initupload"
@@ -77,7 +78,7 @@ func TestCloneRefs(t *testing.T) {
 
 	cases := []struct {
 		name              string
-		pj                kube.ProwJob
+		pj                prowapi.ProwJob
 		codeMountOverride *kube.VolumeMount
 		logMountOverride  *kube.VolumeMount
 		expected          *kube.Container
@@ -89,26 +90,26 @@ func TestCloneRefs(t *testing.T) {
 		},
 		{
 			name: "nil refs and extrarefs returns nil",
-			pj: kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					DecorationConfig: &kube.DecorationConfig{},
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					DecorationConfig: &prowapi.DecorationConfig{},
 				},
 			},
 		},
 		{
 			name: "nil DecorationConfig returns nil",
-			pj: kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Refs: &kube.Refs{},
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					Refs: &prowapi.Refs{},
 				},
 			},
 		},
 		{
 			name: "SkipCloning returns nil",
-			pj: kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Refs: &kube.Refs{},
-					DecorationConfig: &kube.DecorationConfig{
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					Refs: &prowapi.Refs{},
+					DecorationConfig: &prowapi.DecorationConfig{
 						SkipCloning: &truth,
 					},
 				},
@@ -116,10 +117,10 @@ func TestCloneRefs(t *testing.T) {
 		},
 		{
 			name: "reject empty code mount name",
-			pj: kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					DecorationConfig: &kube.DecorationConfig{},
-					Refs:             &kube.Refs{},
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					DecorationConfig: &prowapi.DecorationConfig{},
+					Refs:             &prowapi.Refs{},
 				},
 			},
 			codeMountOverride: &kube.VolumeMount{
@@ -129,10 +130,10 @@ func TestCloneRefs(t *testing.T) {
 		},
 		{
 			name: "reject empty code mountpath",
-			pj: kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					DecorationConfig: &kube.DecorationConfig{},
-					Refs:             &kube.Refs{},
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					DecorationConfig: &prowapi.DecorationConfig{},
+					Refs:             &prowapi.Refs{},
 				},
 			},
 			codeMountOverride: &kube.VolumeMount{
@@ -142,10 +143,10 @@ func TestCloneRefs(t *testing.T) {
 		},
 		{
 			name: "reject empty log mount name",
-			pj: kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					DecorationConfig: &kube.DecorationConfig{},
-					Refs:             &kube.Refs{},
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					DecorationConfig: &prowapi.DecorationConfig{},
+					Refs:             &prowapi.Refs{},
 				},
 			},
 			logMountOverride: &kube.VolumeMount{
@@ -155,10 +156,10 @@ func TestCloneRefs(t *testing.T) {
 		},
 		{
 			name: "reject empty log mountpath",
-			pj: kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					DecorationConfig: &kube.DecorationConfig{},
-					Refs:             &kube.Refs{},
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					DecorationConfig: &prowapi.DecorationConfig{},
+					Refs:             &prowapi.Refs{},
 				},
 			},
 			logMountOverride: &kube.VolumeMount{
@@ -168,11 +169,11 @@ func TestCloneRefs(t *testing.T) {
 		},
 		{
 			name: "create clonerefs container when refs are set",
-			pj: kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Refs: &kube.Refs{},
-					DecorationConfig: &kube.DecorationConfig{
-						UtilityImages: &kube.UtilityImages{},
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					Refs: &prowapi.Refs{},
+					DecorationConfig: &prowapi.DecorationConfig{
+						UtilityImages: &prowapi.UtilityImages{},
 					},
 				},
 			},
@@ -180,7 +181,7 @@ func TestCloneRefs(t *testing.T) {
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:      []kube.Refs{{}},
+					GitRefs:      []prowapi.Refs{{}},
 					GitUserEmail: clonerefs.DefaultGitUserEmail,
 					GitUserName:  clonerefs.DefaultGitUserName,
 					SrcRoot:      codeMount.MountPath,
@@ -191,11 +192,11 @@ func TestCloneRefs(t *testing.T) {
 		},
 		{
 			name: "create clonerefs containers when extrarefs are set",
-			pj: kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					ExtraRefs: []kube.Refs{{}},
-					DecorationConfig: &kube.DecorationConfig{
-						UtilityImages: &kube.UtilityImages{},
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					ExtraRefs: []prowapi.Refs{{}},
+					DecorationConfig: &prowapi.DecorationConfig{
+						UtilityImages: &prowapi.UtilityImages{},
 					},
 				},
 			},
@@ -203,7 +204,7 @@ func TestCloneRefs(t *testing.T) {
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:      []kube.Refs{{}},
+					GitRefs:      []prowapi.Refs{{}},
 					GitUserEmail: clonerefs.DefaultGitUserEmail,
 					GitUserName:  clonerefs.DefaultGitUserName,
 					SrcRoot:      codeMount.MountPath,
@@ -214,12 +215,12 @@ func TestCloneRefs(t *testing.T) {
 		},
 		{
 			name: "append extrarefs after refs",
-			pj: kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Refs:      &kube.Refs{Org: "first"},
-					ExtraRefs: []kube.Refs{{Org: "second"}, {Org: "third"}},
-					DecorationConfig: &kube.DecorationConfig{
-						UtilityImages: &kube.UtilityImages{},
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					Refs:      &prowapi.Refs{Org: "first"},
+					ExtraRefs: []prowapi.Refs{{Org: "second"}, {Org: "third"}},
+					DecorationConfig: &prowapi.DecorationConfig{
+						UtilityImages: &prowapi.UtilityImages{},
 					},
 				},
 			},
@@ -227,7 +228,7 @@ func TestCloneRefs(t *testing.T) {
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:      []kube.Refs{{Org: "first"}, {Org: "second"}, {Org: "third"}},
+					GitRefs:      []prowapi.Refs{{Org: "first"}, {Org: "second"}, {Org: "third"}},
 					GitUserEmail: clonerefs.DefaultGitUserEmail,
 					GitUserName:  clonerefs.DefaultGitUserName,
 					SrcRoot:      codeMount.MountPath,
@@ -238,11 +239,11 @@ func TestCloneRefs(t *testing.T) {
 		},
 		{
 			name: "append ssh secrets when set",
-			pj: kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Refs: &kube.Refs{},
-					DecorationConfig: &kube.DecorationConfig{
-						UtilityImages: &kube.UtilityImages{},
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					Refs: &prowapi.Refs{},
+					DecorationConfig: &prowapi.DecorationConfig{
+						UtilityImages: &prowapi.UtilityImages{},
 						SSHKeySecrets: []string{"super", "secret"},
 					},
 				},
@@ -251,7 +252,7 @@ func TestCloneRefs(t *testing.T) {
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:      []kube.Refs{{}},
+					GitRefs:      []prowapi.Refs{{}},
 					GitUserEmail: clonerefs.DefaultGitUserEmail,
 					GitUserName:  clonerefs.DefaultGitUserName,
 					KeyFiles:     []string{sshMountOnly("super").MountPath, sshMountOnly("secret").MountPath},
@@ -269,11 +270,11 @@ func TestCloneRefs(t *testing.T) {
 		},
 		{
 			name: "include ssh host fingerprints when set",
-			pj: kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					ExtraRefs: []kube.Refs{{}},
-					DecorationConfig: &kube.DecorationConfig{
-						UtilityImages:       &kube.UtilityImages{},
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					ExtraRefs: []prowapi.Refs{{}},
+					DecorationConfig: &prowapi.DecorationConfig{
+						UtilityImages:       &prowapi.UtilityImages{},
 						SSHHostFingerprints: []string{"thumb", "pinky"},
 					},
 				},
@@ -282,7 +283,7 @@ func TestCloneRefs(t *testing.T) {
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:          []kube.Refs{{}},
+					GitRefs:          []prowapi.Refs{{}},
 					GitUserEmail:     clonerefs.DefaultGitUserEmail,
 					GitUserName:      clonerefs.DefaultGitUserName,
 					SrcRoot:          codeMount.MountPath,
@@ -294,11 +295,11 @@ func TestCloneRefs(t *testing.T) {
 		},
 		{
 			name: "include cookiefile secrets when set",
-			pj: kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					ExtraRefs: []kube.Refs{{}},
-					DecorationConfig: &kube.DecorationConfig{
-						UtilityImages:    &kube.UtilityImages{},
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					ExtraRefs: []prowapi.Refs{{}},
+					DecorationConfig: &prowapi.DecorationConfig{
+						UtilityImages:    &prowapi.UtilityImages{},
 						CookiefileSecret: "oatmeal",
 					},
 				},
@@ -309,7 +310,7 @@ func TestCloneRefs(t *testing.T) {
 				Args:    []string{"--cookiefile=" + cookiePathOnly("oatmeal")},
 				Env: envOrDie(clonerefs.Options{
 					CookiePath:   cookiePathOnly("oatmeal"),
-					GitRefs:      []kube.Refs{{}},
+					GitRefs:      []prowapi.Refs{{}},
 					GitUserEmail: clonerefs.DefaultGitUserEmail,
 					GitUserName:  clonerefs.DefaultGitUserName,
 					SrcRoot:      codeMount.MountPath,
@@ -344,7 +345,7 @@ func TestCloneRefs(t *testing.T) {
 			case !equality.Semantic.DeepEqual(tc.volumes, volumes):
 				t.Errorf("unexpected volume:\n%s", diff.ObjectReflectDiff(tc.volumes, volumes))
 			case actual != nil:
-				var er []kube.Refs
+				var er []prowapi.Refs
 				if tc.pj.Spec.Refs != nil {
 					er = append(er, *tc.pj.Spec.Refs)
 				}
@@ -367,7 +368,7 @@ func TestProwJobToPod(t *testing.T) {
 		podName string
 		buildID string
 		labels  map[string]string
-		pjSpec  kube.ProwJobSpec
+		pjSpec  prowapi.ProwJobSpec
 
 		expected *v1.Pod
 	}{
@@ -375,16 +376,16 @@ func TestProwJobToPod(t *testing.T) {
 			podName: "pod",
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
-			pjSpec: kube.ProwJobSpec{
-				Type:  kube.PresubmitJob,
+			pjSpec: prowapi.ProwJobSpec{
+				Type:  prowapi.PresubmitJob,
 				Job:   "job-name",
-				Agent: kube.KubernetesAgent,
-				Refs: &kube.Refs{
+				Agent: prowapi.KubernetesAgent,
+				Refs: &prowapi.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
-					Pulls: []kube.Pull{{
+					Pulls: []prowapi.Pull{{
 						Number: 1,
 						Author: "author-name",
 						SHA:    "pull-sha",
@@ -451,19 +452,19 @@ func TestProwJobToPod(t *testing.T) {
 			podName: "pod",
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
-			pjSpec: kube.ProwJobSpec{
-				Type: kube.PresubmitJob,
+			pjSpec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
 				Job:  "job-name",
-				DecorationConfig: &kube.DecorationConfig{
+				DecorationConfig: &prowapi.DecorationConfig{
 					Timeout:     120 * time.Minute,
 					GracePeriod: 10 * time.Second,
-					UtilityImages: &kube.UtilityImages{
+					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
 						Entrypoint: "entrypoint:tag",
 						Sidecar:    "sidecar:tag",
 					},
-					GCSConfiguration: &kube.GCSConfiguration{
+					GCSConfiguration: &prowapi.GCSConfiguration{
 						Bucket:       "my-bucket",
 						PathStrategy: "legacy",
 						DefaultOrg:   "kubernetes",
@@ -472,20 +473,20 @@ func TestProwJobToPod(t *testing.T) {
 					GCSCredentialsSecret: "secret-name",
 					CookiefileSecret:     "yummy/.gitcookies",
 				},
-				Agent: kube.KubernetesAgent,
-				Refs: &kube.Refs{
+				Agent: prowapi.KubernetesAgent,
+				Refs: &prowapi.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
-					Pulls: []kube.Pull{{
+					Pulls: []prowapi.Pull{{
 						Number: 1,
 						Author: "author-name",
 						SHA:    "pull-sha",
 					}},
 					PathAlias: "somewhere/else",
 				},
-				ExtraRefs: []kube.Refs{},
+				ExtraRefs: []prowapi.Refs{},
 				PodSpec: &v1.PodSpec{
 					Containers: []v1.Container{
 						{
@@ -672,19 +673,19 @@ func TestProwJobToPod(t *testing.T) {
 			podName: "pod",
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
-			pjSpec: kube.ProwJobSpec{
-				Type: kube.PresubmitJob,
+			pjSpec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
 				Job:  "job-name",
-				DecorationConfig: &kube.DecorationConfig{
+				DecorationConfig: &prowapi.DecorationConfig{
 					Timeout:     120 * time.Minute,
 					GracePeriod: 10 * time.Second,
-					UtilityImages: &kube.UtilityImages{
+					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
 						Entrypoint: "entrypoint:tag",
 						Sidecar:    "sidecar:tag",
 					},
-					GCSConfiguration: &kube.GCSConfiguration{
+					GCSConfiguration: &prowapi.GCSConfiguration{
 						Bucket:       "my-bucket",
 						PathStrategy: "legacy",
 						DefaultOrg:   "kubernetes",
@@ -693,20 +694,20 @@ func TestProwJobToPod(t *testing.T) {
 					GCSCredentialsSecret: "secret-name",
 					CookiefileSecret:     "yummy",
 				},
-				Agent: kube.KubernetesAgent,
-				Refs: &kube.Refs{
+				Agent: prowapi.KubernetesAgent,
+				Refs: &prowapi.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
-					Pulls: []kube.Pull{{
+					Pulls: []prowapi.Pull{{
 						Number: 1,
 						Author: "author-name",
 						SHA:    "pull-sha",
 					}},
 					PathAlias: "somewhere/else",
 				},
-				ExtraRefs: []kube.Refs{},
+				ExtraRefs: []prowapi.Refs{},
 				PodSpec: &v1.PodSpec{
 					Containers: []v1.Container{
 						{
@@ -893,19 +894,19 @@ func TestProwJobToPod(t *testing.T) {
 			podName: "pod",
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
-			pjSpec: kube.ProwJobSpec{
-				Type: kube.PresubmitJob,
+			pjSpec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
 				Job:  "job-name",
-				DecorationConfig: &kube.DecorationConfig{
+				DecorationConfig: &prowapi.DecorationConfig{
 					Timeout:     120 * time.Minute,
 					GracePeriod: 10 * time.Second,
-					UtilityImages: &kube.UtilityImages{
+					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
 						Entrypoint: "entrypoint:tag",
 						Sidecar:    "sidecar:tag",
 					},
-					GCSConfiguration: &kube.GCSConfiguration{
+					GCSConfiguration: &prowapi.GCSConfiguration{
 						Bucket:       "my-bucket",
 						PathStrategy: "legacy",
 						DefaultOrg:   "kubernetes",
@@ -915,20 +916,20 @@ func TestProwJobToPod(t *testing.T) {
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 					SSHHostFingerprints:  []string{"hello", "world"},
 				},
-				Agent: kube.KubernetesAgent,
-				Refs: &kube.Refs{
+				Agent: prowapi.KubernetesAgent,
+				Refs: &prowapi.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
-					Pulls: []kube.Pull{{
+					Pulls: []prowapi.Pull{{
 						Number: 1,
 						Author: "author-name",
 						SHA:    "pull-sha",
 					}},
 					PathAlias: "somewhere/else",
 				},
-				ExtraRefs: []kube.Refs{},
+				ExtraRefs: []prowapi.Refs{},
 				PodSpec: &v1.PodSpec{
 					Containers: []v1.Container{
 						{
@@ -1140,19 +1141,19 @@ func TestProwJobToPod(t *testing.T) {
 			podName: "pod",
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
-			pjSpec: kube.ProwJobSpec{
-				Type: kube.PresubmitJob,
+			pjSpec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
 				Job:  "job-name",
-				DecorationConfig: &kube.DecorationConfig{
+				DecorationConfig: &prowapi.DecorationConfig{
 					Timeout:     120 * time.Minute,
 					GracePeriod: 10 * time.Second,
-					UtilityImages: &kube.UtilityImages{
+					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
 						Entrypoint: "entrypoint:tag",
 						Sidecar:    "sidecar:tag",
 					},
-					GCSConfiguration: &kube.GCSConfiguration{
+					GCSConfiguration: &prowapi.GCSConfiguration{
 						Bucket:       "my-bucket",
 						PathStrategy: "legacy",
 						DefaultOrg:   "kubernetes",
@@ -1161,20 +1162,20 @@ func TestProwJobToPod(t *testing.T) {
 					GCSCredentialsSecret: "secret-name",
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 				},
-				Agent: kube.KubernetesAgent,
-				Refs: &kube.Refs{
+				Agent: prowapi.KubernetesAgent,
+				Refs: &prowapi.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
-					Pulls: []kube.Pull{{
+					Pulls: []prowapi.Pull{{
 						Number: 1,
 						Author: "author-name",
 						SHA:    "pull-sha",
 					}},
 					PathAlias: "somewhere/else",
 				},
-				ExtraRefs: []kube.Refs{},
+				ExtraRefs: []prowapi.Refs{},
 				PodSpec: &v1.PodSpec{
 					Containers: []v1.Container{
 						{
@@ -1386,19 +1387,19 @@ func TestProwJobToPod(t *testing.T) {
 			podName: "pod",
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
-			pjSpec: kube.ProwJobSpec{
-				Type: kube.PeriodicJob,
+			pjSpec: prowapi.ProwJobSpec{
+				Type: prowapi.PeriodicJob,
 				Job:  "job-name",
-				DecorationConfig: &kube.DecorationConfig{
+				DecorationConfig: &prowapi.DecorationConfig{
 					Timeout:     120 * time.Minute,
 					GracePeriod: 10 * time.Second,
-					UtilityImages: &kube.UtilityImages{
+					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
 						Entrypoint: "entrypoint:tag",
 						Sidecar:    "sidecar:tag",
 					},
-					GCSConfiguration: &kube.GCSConfiguration{
+					GCSConfiguration: &prowapi.GCSConfiguration{
 						Bucket:       "my-bucket",
 						PathStrategy: "legacy",
 						DefaultOrg:   "kubernetes",
@@ -1407,7 +1408,7 @@ func TestProwJobToPod(t *testing.T) {
 					GCSCredentialsSecret: "secret-name",
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 				},
-				Agent: kube.KubernetesAgent,
+				Agent: prowapi.KubernetesAgent,
 				PodSpec: &v1.PodSpec{
 					Containers: []v1.Container{
 						{
@@ -1549,19 +1550,19 @@ func TestProwJobToPod(t *testing.T) {
 			podName: "pod",
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
-			pjSpec: kube.ProwJobSpec{
-				Type: kube.PresubmitJob,
+			pjSpec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
 				Job:  "job-name",
-				DecorationConfig: &kube.DecorationConfig{
+				DecorationConfig: &prowapi.DecorationConfig{
 					Timeout:     120 * time.Minute,
 					GracePeriod: 10 * time.Second,
-					UtilityImages: &kube.UtilityImages{
+					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
 						Entrypoint: "entrypoint:tag",
 						Sidecar:    "sidecar:tag",
 					},
-					GCSConfiguration: &kube.GCSConfiguration{
+					GCSConfiguration: &prowapi.GCSConfiguration{
 						Bucket:       "my-bucket",
 						PathStrategy: "legacy",
 						DefaultOrg:   "kubernetes",
@@ -1571,20 +1572,20 @@ func TestProwJobToPod(t *testing.T) {
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 					SkipCloning:          &truth,
 				},
-				Agent: kube.KubernetesAgent,
-				Refs: &kube.Refs{
+				Agent: prowapi.KubernetesAgent,
+				Refs: &prowapi.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
-					Pulls: []kube.Pull{{
+					Pulls: []prowapi.Pull{{
 						Number: 1,
 						Author: "author-name",
 						SHA:    "pull-sha",
 					}},
 					PathAlias: "somewhere/else",
 				},
-				ExtraRefs: []kube.Refs{
+				ExtraRefs: []prowapi.Refs{
 					{
 						Org:  "extra-org",
 						Repo: "extra-repo",
@@ -1785,7 +1786,7 @@ func TestProwJobToPod(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			pj := kube.ProwJob{ObjectMeta: metav1.ObjectMeta{Name: test.podName, Labels: test.labels}, Spec: test.pjSpec}
+			pj := prowapi.ProwJob{ObjectMeta: metav1.ObjectMeta{Name: test.podName, Labels: test.labels}, Spec: test.pjSpec}
 			got, err := ProwJobToPod(pj, test.buildID)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)

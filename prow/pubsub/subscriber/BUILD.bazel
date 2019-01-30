@@ -28,7 +28,6 @@ go_test(
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
-        "//prow/kube:go_default_library",
         "//prow/pubsub/reporter:go_default_library",
         "//vendor/cloud.google.com/go/pubsub:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

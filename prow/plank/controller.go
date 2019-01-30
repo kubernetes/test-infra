@@ -26,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/reporter"
@@ -40,10 +41,10 @@ const (
 )
 
 type kubeClient interface {
-	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
-	GetProwJob(string) (kube.ProwJob, error)
-	ListProwJobs(string) ([]kube.ProwJob, error)
-	ReplaceProwJob(string, kube.ProwJob) (kube.ProwJob, error)
+	CreateProwJob(prowapi.ProwJob) (prowapi.ProwJob, error)
+	GetProwJob(string) (prowapi.ProwJob, error)
+	ListProwJobs(string) ([]prowapi.ProwJob, error)
+	ReplaceProwJob(string, prowapi.ProwJob) (prowapi.ProwJob, error)
 }
 
 // GitHubClient contains the methods used by plank on k8s.io/test-infra/prow/github.Client
@@ -59,7 +60,7 @@ type GitHubClient interface {
 }
 
 // TODO: Dry this out
-type syncFn func(pj kube.ProwJob, pm map[string]kube.Pod, reports chan<- kube.ProwJob) error
+type syncFn func(pj prowapi.ProwJob, pm map[string]kube.Pod, reports chan<- prowapi.ProwJob) error
 
 // Controller manages ProwJobs.
 type Controller struct {
@@ -79,7 +80,7 @@ type Controller struct {
 
 	pjLock sync.RWMutex
 	// shared across the controller and a goroutine that gathers metrics.
-	pjs []kube.ProwJob
+	pjs []prowapi.ProwJob
 
 	// if skip report job results to github
 	skipReport bool
@@ -105,7 +106,7 @@ func NewController(kc *kube.Client, buildClients map[string]corev1.PodInterface,
 
 // canExecuteConcurrently checks whether the provided ProwJob can
 // be executed concurrently.
-func (c *Controller) canExecuteConcurrently(pj *kube.ProwJob) bool {
+func (c *Controller) canExecuteConcurrently(pj *prowapi.ProwJob) bool {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
@@ -145,7 +146,7 @@ func (c *Controller) incrementNumPendingJobs(job string) {
 // setPreviousReportState sets the github key for PrevReportStates
 // to current state. This is a work-around for plank -> crier
 // migration to become seamless.
-func (c *Controller) setPreviousReportState(pj kube.ProwJob) error {
+func (c *Controller) setPreviousReportState(pj prowapi.ProwJob) error {
 	// fetch latest before replace
 	latestPJ, err := c.kc.GetProwJob(pj.ObjectMeta.Name)
 	if err != nil {
@@ -153,7 +154,7 @@ func (c *Controller) setPreviousReportState(pj kube.ProwJob) error {
 	}
 
 	if latestPJ.Status.PrevReportStates == nil {
-		latestPJ.Status.PrevReportStates = map[string]kube.ProwJobState{}
+		latestPJ.Status.PrevReportStates = map[string]prowapi.ProwJobState{}
 	}
 	latestPJ.Status.PrevReportStates[reporter.GithubReporterName] = latestPJ.Status.State
 	_, err = c.kc.ReplaceProwJob(latestPJ.ObjectMeta.Name, latestPJ)
@@ -183,9 +184,9 @@ func (c *Controller) Sync() error {
 	}
 	// TODO: Replace the following filtering with a field selector once CRDs support field selectors.
 	// https://github.com/kubernetes/kubernetes/issues/53459
-	var k8sJobs []kube.ProwJob
+	var k8sJobs []prowapi.ProwJob
 	for _, pj := range pjs {
-		if pj.Spec.Agent == kube.KubernetesAgent {
+		if pj.Spec.Agent == prowapi.KubernetesAgent {
 			k8sJobs = append(k8sJobs, pj)
 		}
 	}
@@ -203,7 +204,7 @@ func (c *Controller) Sync() error {
 
 	pendingCh, triggeredCh := pjutil.PartitionActive(pjs)
 	errCh := make(chan error, len(pjs))
-	reportCh := make(chan kube.ProwJob, len(pjs))
+	reportCh := make(chan prowapi.ProwJob, len(pjs))
 
 	// Reinstantiate on every resync of the controller instead of trying
 	// to keep this in sync with the state of the world.
@@ -255,11 +256,11 @@ func (c *Controller) SyncMetrics() {
 // terminateDupes aborts presubmits that have a newer version. It modifies pjs
 // in-place when it aborts.
 // TODO: Dry this out - need to ensure we can abstract children cancellation first.
-func (c *Controller) terminateDupes(pjs []kube.ProwJob, pm map[string]kube.Pod) error {
+func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, pm map[string]kube.Pod) error {
 	// "job org/repo#number" -> newest job
 	dupes := make(map[string]int)
 	for i, pj := range pjs {
-		if pj.Complete() || pj.Spec.Type != kube.PresubmitJob {
+		if pj.Complete() || pj.Spec.Type != prowapi.PresubmitJob {
 			continue
 		}
 		n := fmt.Sprintf("%s %s/%s#%d", pj.Spec.Job, pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.Pulls[0].Number)
@@ -287,7 +288,7 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob, pm map[string]kube.Pod) 
 		}
 		toCancel.SetComplete()
 		prevState := toCancel.Status.State
-		toCancel.Status.State = kube.AbortedState
+		toCancel.Status.State = prowapi.AbortedState
 		c.log.WithFields(pjutil.ProwJobFields(&toCancel)).
 			WithField("from", prevState).
 			WithField("to", toCancel.Status.State).Info("Transitioning states.")
@@ -305,8 +306,8 @@ func syncProwJobs(
 	l *logrus.Entry,
 	syncFn syncFn,
 	maxSyncRoutines int,
-	jobs <-chan kube.ProwJob,
-	reports chan<- kube.ProwJob,
+	jobs <-chan prowapi.ProwJob,
+	reports chan<- prowapi.ProwJob,
 	syncErrors chan<- error,
 	pm map[string]kube.Pod,
 ) {
@@ -330,7 +331,7 @@ func syncProwJobs(
 	wg.Wait()
 }
 
-func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, reports chan<- kube.ProwJob) error {
+func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]kube.Pod, reports chan<- prowapi.ProwJob) error {
 	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
 
@@ -345,7 +346,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 			if !isUnprocessable {
 				return fmt.Errorf("error starting pod: %v", err)
 			}
-			pj.Status.State = kube.ErrorState
+			pj.Status.State = prowapi.ErrorState
 			pj.SetComplete()
 			pj.Status.Description = "Job cannot be processed."
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).WithError(err).Warning("Unprocessable pod.")
@@ -370,7 +371,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 		case kube.PodSucceeded:
 			// Pod succeeded. Update ProwJob, talk to GitHub, and start next jobs.
 			pj.SetComplete()
-			pj.Status.State = kube.SuccessState
+			pj.Status.State = prowapi.SuccessState
 			pj.Status.Description = "Job succeeded."
 
 		case kube.PodFailed:
@@ -379,7 +380,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 				if pj.Spec.ErrorOnEviction {
 					// ErrorOnEviction is enabled, complete the PJ and mark it as errored.
 					pj.SetComplete()
-					pj.Status.State = kube.ErrorState
+					pj.Status.State = prowapi.ErrorState
 					pj.Status.Description = "Job pod was evicted by the cluster."
 					break
 				}
@@ -394,7 +395,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 			}
 			// Pod failed. Update ProwJob, talk to GitHub.
 			pj.SetComplete()
-			pj.Status.State = kube.FailureState
+			pj.Status.State = prowapi.FailureState
 			pj.Status.Description = "Job failed."
 
 		case kube.PodPending:
@@ -408,7 +409,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 			// Pod is stuck in pending state longer than maxPodPending
 			// abort the job, and talk to Github
 			pj.SetComplete()
-			pj.Status.State = kube.AbortedState
+			pj.Status.State = prowapi.AbortedState
 			pj.Status.Description = "Job aborted."
 
 		default:
@@ -431,7 +432,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 	return err
 }
 
-func (c *Controller) syncTriggeredJob(pj kube.ProwJob, pm map[string]kube.Pod, reports chan<- kube.ProwJob) error {
+func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]kube.Pod, reports chan<- prowapi.ProwJob) error {
 	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
 
@@ -454,7 +455,7 @@ func (c *Controller) syncTriggeredJob(pj kube.ProwJob, pm map[string]kube.Pod, r
 			if !isUnprocessable {
 				return fmt.Errorf("error starting pod: %v", err)
 			}
-			pj.Status.State = kube.ErrorState
+			pj.Status.State = prowapi.ErrorState
 			pj.SetComplete()
 			pj.Status.Description = "Job cannot be processed."
 			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Unprocessable pod.")
@@ -464,10 +465,10 @@ func (c *Controller) syncTriggeredJob(pj kube.ProwJob, pm map[string]kube.Pod, r
 		pn = pod.ObjectMeta.Name
 	}
 
-	if pj.Status.State == kube.TriggeredState {
+	if pj.Status.State == prowapi.TriggeredState {
 		// BuildID needs to be set before we execute the job url template.
 		pj.Status.BuildID = id
-		pj.Status.State = kube.PendingState
+		pj.Status.State = prowapi.PendingState
 		pj.Status.PodName = pn
 		pj.Status.Description = "Job triggered."
 		pj.Status.URL = pjutil.JobURL(c.config().Plank, pj, c.log)
@@ -484,7 +485,7 @@ func (c *Controller) syncTriggeredJob(pj kube.ProwJob, pm map[string]kube.Pod, r
 
 // TODO: No need to return the pod name since we already have the
 // prowjob in the call site.
-func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
+func (c *Controller) startPod(pj prowapi.ProwJob) (string, string, error) {
 	buildID, err := c.getBuildID(pj.Spec.Job)
 	if err != nil {
 		return "", "", fmt.Errorf("error getting build ID: %v", err)

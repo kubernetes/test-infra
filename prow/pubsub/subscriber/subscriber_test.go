@@ -33,15 +33,15 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pubsub/reporter"
 )
 
 type kubeTestClient struct {
 	fails bool
-	pj    *kube.ProwJob
+	pj    *prowapi.ProwJob
 }
 
 type pubSubTestClient struct {
@@ -99,7 +99,7 @@ func (c *pubSubTestClient) subscription(id string) subscriptionInterface {
 	return &fakeSubscription{name: id, messageChan: c.messageChan}
 }
 
-func (c *kubeTestClient) CreateProwJob(job *kube.ProwJob) (*kube.ProwJob, error) {
+func (c *kubeTestClient) CreateProwJob(job *prowapi.ProwJob) (*prowapi.ProwJob, error) {
 	if c.fails {
 		return nil, fmt.Errorf("failed to create prowjob")
 	}

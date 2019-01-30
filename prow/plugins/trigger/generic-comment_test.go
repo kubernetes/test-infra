@@ -25,10 +25,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -37,7 +37,7 @@ type fkc struct {
 	started []string
 }
 
-func (c *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
+func (c *fkc) CreateProwJob(pj prowapi.ProwJob) (prowapi.ProwJob, error) {
 	if !sets.NewString(c.started...).Has(pj.Spec.Context) {
 		c.started = append(c.started, pj.Spec.Context)
 	}

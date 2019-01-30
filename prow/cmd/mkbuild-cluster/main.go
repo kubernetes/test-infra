@@ -30,9 +30,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"sigs.k8s.io/yaml"
-
 	"k8s.io/test-infra/prow/kube"
+	"sigs.k8s.io/yaml"
 )
 
 const (

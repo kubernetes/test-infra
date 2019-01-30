@@ -37,6 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	"sigs.k8s.io/yaml"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/github"
@@ -136,14 +137,14 @@ type Controller struct {
 	// JobURLTemplateString compiles into JobURLTemplate at load time.
 	JobURLTemplateString string `json:"job_url_template,omitempty"`
 	// JobURLTemplate is compiled at load time from JobURLTemplateString. It
-	// will be passed a kube.ProwJob and is used to set the URL for the
+	// will be passed a prowapi.ProwJob and is used to set the URL for the
 	// "Details" link on GitHub as well as the link from deck.
 	JobURLTemplate *template.Template `json:"-"`
 
 	// ReportTemplateString compiles into ReportTemplate at load time.
 	ReportTemplateString string `json:"report_template,omitempty"`
 	// ReportTemplate is compiled at load time from ReportTemplateString. It
-	// will be passed a kube.ProwJob and can provide an optional blurb below
+	// will be passed a prowapi.ProwJob and can provide an optional blurb below
 	// the test failures comment.
 	ReportTemplate *template.Template `json:"-"`
 
@@ -171,7 +172,7 @@ type Plank struct {
 	PodPendingTimeout time.Duration `json:"-"`
 	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
 	// that request to have their PodSpecs decorated
-	DefaultDecorationConfig *kube.DecorationConfig `json:"default_decoration_config,omitempty"`
+	DefaultDecorationConfig *prowapi.DecorationConfig `json:"default_decoration_config,omitempty"`
 	// JobURLPrefix is the host and path prefix under
 	// which job details will be viewable
 	JobURLPrefix string `json:"job_url_prefix,omitempty"`
@@ -270,7 +271,7 @@ type ExternalAgentLog struct {
 	// URLTemplateString compiles into URLTemplate at load time.
 	URLTemplateString string `json:"url_template,omitempty"`
 	// URLTemplate is compiled at load time from URLTemplateString. It
-	// will be passed a kube.ProwJob and the generated URL should provide
+	// will be passed a prowapi.ProwJob and the generated URL should provide
 	// logs for the ProwJob.
 	URLTemplate *template.Template `json:"-"`
 }
@@ -592,7 +593,7 @@ func (c *Config) validateComponentConfig() error {
 
 var jobNameRegex = regexp.MustCompile(`^[A-Za-z0-9-._]+$`)
 
-func validateJobBase(v JobBase, jobType kube.ProwJobType, podNamespace string) error {
+func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string) error {
 	if !jobNameRegex.MatchString(v.Name) {
 		return fmt.Errorf("name: must match regex %q", jobNameRegex.String())
 	}
@@ -978,7 +979,7 @@ func validateAgent(v JobBase, podNamespace string) error {
 	return nil
 }
 
-func validateDecoration(container v1.Container, config *kube.DecorationConfig) error {
+func validateDecoration(container v1.Container, config *prowapi.DecorationConfig) error {
 	if config == nil {
 		return nil
 	}
@@ -1004,7 +1005,7 @@ func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, pre
 	return nil
 }
 
-func validatePodSpec(jobType kube.ProwJobType, spec *v1.PodSpec) error {
+func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec) error {
 	if spec == nil {
 		return nil
 	}
@@ -1102,7 +1103,7 @@ func DefaultRerunCommandFor(name string) string {
 // defaultJobBase configures common parameters, currently Agent and Namespace.
 func (c *ProwConfig) defaultJobBase(base *JobBase) {
 	if base.Agent == "" { // Use kubernetes by default
-		base.Agent = string(kube.KubernetesAgent)
+		base.Agent = string(prowapi.KubernetesAgent)
 	}
 	if base.Namespace == nil || *base.Namespace == "" {
 		s := c.PodNamespace

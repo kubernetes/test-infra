@@ -11,11 +11,11 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/flagutil:go_default_library",
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
-        "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/pluginhelp/externalplugins:go_default_library",

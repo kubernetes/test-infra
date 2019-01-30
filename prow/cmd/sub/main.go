@@ -31,11 +31,11 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pubsub/subscriber"
@@ -64,7 +64,7 @@ type kubeClient struct {
 	dryRun    bool
 }
 
-func (c *kubeClient) CreateProwJob(job *kube.ProwJob) (*kube.ProwJob, error) {
+func (c *kubeClient) CreateProwJob(job *prowapi.ProwJob) (*prowapi.ProwJob, error) {
 	if c.dryRun {
 		return job, nil
 	}

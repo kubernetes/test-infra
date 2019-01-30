@@ -17,16 +17,16 @@ limitations under the License.
 package clone
 
 import (
-	"k8s.io/test-infra/prow/kube"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 // Record is a trace of what the desired
 // git state was, what steps we took to get there,
 // and whether or not we were successful.
 type Record struct {
-	Refs     kube.Refs `json:"refs"`
-	Commands []Command `json:"commands"`
-	Failed   bool      `json:"failed"`
+	Refs     prowapi.Refs `json:"refs"`
+	Commands []Command    `json:"commands"`
+	Failed   bool         `json:"failed"`
 }
 
 // Command is a trace of a command executed

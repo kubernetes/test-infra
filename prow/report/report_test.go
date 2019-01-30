@@ -21,8 +21,8 @@ import (
 	"strings"
 	"testing"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
 )
 
 func TestParseIssueComment(t *testing.T) {
@@ -173,13 +173,13 @@ func TestParseIssueComment(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		pj := kube.ProwJob{
-			Spec: kube.ProwJobSpec{
+		pj := prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
 				Context: tc.context,
-				Refs:    &kube.Refs{Pulls: []kube.Pull{{}}},
+				Refs:    &prowapi.Refs{Pulls: []prowapi.Pull{{}}},
 			},
-			Status: kube.ProwJobStatus{
-				State: kube.ProwJobState(tc.state),
+			Status: prowapi.ProwJobStatus{
+				State: prowapi.ProwJobState(tc.state),
 			},
 		}
 		deletes, entries, update := parseIssueComments(pj, "k8s-ci-robot", tc.ics)
@@ -264,7 +264,7 @@ func TestReportStatus(t *testing.T) {
 	tests := []struct {
 		name string
 
-		state  kube.ProwJobState
+		state  prowapi.ProwJobState
 		report bool
 		desc   string // override default msg
 
@@ -274,7 +274,7 @@ func TestReportStatus(t *testing.T) {
 		{
 			name: "Successful prowjob with report true and children should set status for itself but not its children",
 
-			state:  kube.SuccessState,
+			state:  prowapi.SuccessState,
 			report: true,
 
 			expectedStatuses: []string{"success"},
@@ -282,7 +282,7 @@ func TestReportStatus(t *testing.T) {
 		{
 			name: "Successful prowjob with report false and children should not set status for itself and its children",
 
-			state:  kube.SuccessState,
+			state:  prowapi.SuccessState,
 			report: false,
 
 			expectedStatuses: []string{},
@@ -290,7 +290,7 @@ func TestReportStatus(t *testing.T) {
 		{
 			name: "Pending prowjob with report true and children should set status for itself and its children",
 
-			state:  kube.PendingState,
+			state:  prowapi.PendingState,
 			report: true,
 
 			expectedStatuses: []string{"pending"},
@@ -298,7 +298,7 @@ func TestReportStatus(t *testing.T) {
 		{
 			name: "Aborted prowjob with report true should set failure status",
 
-			state:  kube.AbortedState,
+			state:  prowapi.AbortedState,
 			report: true,
 
 			expectedStatuses: []string{"failure"},
@@ -306,14 +306,14 @@ func TestReportStatus(t *testing.T) {
 		{
 			name: "Triggered prowjob with report true should set pending status",
 
-			state:  kube.TriggeredState,
+			state:  prowapi.TriggeredState,
 			report: true,
 
 			expectedStatuses: []string{"pending"},
 		},
 		{
 			name:             "really long description is truncated",
-			state:            kube.TriggeredState,
+			state:            prowapi.TriggeredState,
 			report:           true,
 			expectedStatuses: []string{"pending"},
 			desc:             shout(maxLen), // resulting string will exceed maxLen
@@ -332,21 +332,21 @@ func TestReportStatus(t *testing.T) {
 			if tc.expectedDesc == "" {
 				tc.expectedDesc = defMsg
 			}
-			pj := kube.ProwJob{
-				Status: kube.ProwJobStatus{
+			pj := prowapi.ProwJob{
+				Status: prowapi.ProwJobStatus{
 					State:       tc.state,
 					Description: tc.desc,
 					URL:         "http://mytest.com",
 				},
-				Spec: kube.ProwJobSpec{
+				Spec: prowapi.ProwJobSpec{
 					Job:     "job-name",
-					Type:    kube.PresubmitJob,
+					Type:    prowapi.PresubmitJob,
 					Context: "parent",
 					Report:  tc.report,
-					Refs: &kube.Refs{
+					Refs: &prowapi.Refs{
 						Org:  "k8s",
 						Repo: "test-infra",
-						Pulls: []kube.Pull{{
+						Pulls: []prowapi.Pull{{
 							Author: "me",
 							Number: 1,
 							SHA:    "abcdef",

@@ -12,6 +12,7 @@ go_library(
     srcs = ["main.go"],
     importpath = "k8s.io/test-infra/prow/cmd/mkpj",
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",

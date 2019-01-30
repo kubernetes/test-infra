@@ -30,6 +30,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
@@ -37,7 +38,7 @@ import (
 )
 
 type kubeClient interface {
-	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
+	CreateProwJob(prowapi.ProwJob) (prowapi.ProwJob, error)
 }
 
 type gerritClient interface {
@@ -216,13 +217,13 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 
 	triggeredJobs := []string{}
 
-	kr := kube.Refs{
+	kr := prowapi.Refs{
 		Org:      cloneURI.Host,  // Something like android.googlesource.com
 		Repo:     change.Project, // Something like platform/build
 		BaseRef:  change.Branch,
 		BaseSHA:  baseSHA,
 		CloneURI: cloneURI.String(), // Something like https://android.googlesource.com/platform/build
-		Pulls: []kube.Pull{
+		Pulls: []prowapi.Pull{
 			{
 				Number: change.Number,
 				Author: rev.Commit.Author.Name,
@@ -233,7 +234,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 	}
 
 	type jobSpec struct {
-		spec   kube.ProwJobSpec
+		spec   prowapi.ProwJobSpec
 		labels map[string]string
 	}
 

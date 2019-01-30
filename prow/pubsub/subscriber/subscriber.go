@@ -25,7 +25,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
@@ -69,7 +70,7 @@ func (pe *PeriodicProwJobEvent) ToMessage() (*pubsub.Message, error) {
 
 // KubeClientInterface mostly for testing.
 type KubeClientInterface interface {
-	CreateProwJob(job *kube.ProwJob) (*kube.ProwJob, error)
+	CreateProwJob(job *prowapi.ProwJob) (*prowapi.ProwJob, error)
 }
 
 // Subscriber handles Pub/Sub subscriptions, update metrics,
@@ -156,10 +157,10 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string) er
 func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, subscription string) error {
 
 	var pe PeriodicProwJobEvent
-	var prowJob kube.ProwJob
+	var prowJob prowapi.ProwJob
 
-	reportProwJobFailure := func(pj *kube.ProwJob, err error) {
-		pj.Status.State = kube.ErrorState
+	reportProwJobFailure := func(pj *prowapi.ProwJob, err error) {
+		pj.Status.State = prowapi.ErrorState
 		pj.Status.Description = err.Error()
 		if s.Reporter.ShouldReport(&prowJob) {
 			s.Reporter.Report(&prowJob)
@@ -180,7 +181,7 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 	if periodicJob == nil {
 		err := fmt.Errorf("failed to find associated periodic job %s", pe.Name)
 		l.WithError(err).Errorf("failed to create job %s", pe.Name)
-		prowJob = pjutil.NewProwJobWithAnnotation(kube.ProwJobSpec{}, nil, pe.Annotations)
+		prowJob = pjutil.NewProwJobWithAnnotation(prowapi.ProwJobSpec{}, nil, pe.Annotations)
 		reportProwJobFailure(&prowJob, err)
 		return err
 	}

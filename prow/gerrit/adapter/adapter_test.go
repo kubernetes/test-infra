@@ -23,8 +23,8 @@ import (
 
 	"k8s.io/test-infra/prow/gerrit/client"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
 )
 
 type fca struct {
@@ -40,10 +40,10 @@ func (f *fca) Config() *config.Config {
 
 type fkc struct {
 	sync.Mutex
-	prowjobs []kube.ProwJob
+	prowjobs []prowapi.ProwJob
 }
 
-func (f *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
+func (f *fkc) CreateProwJob(pj prowapi.ProwJob) (prowapi.ProwJob, error) {
 	f.Lock()
 	defer f.Unlock()
 	f.prowjobs = append(f.prowjobs, pj)

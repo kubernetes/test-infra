@@ -23,6 +23,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/cron"
 	"k8s.io/test-infra/prow/kube"
@@ -73,8 +74,8 @@ func main() {
 }
 
 type kubeClient interface {
-	ListProwJobs(string) ([]kube.ProwJob, error)
-	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
+	ListProwJobs(string) ([]prowapi.ProwJob, error)
+	CreateProwJob(prowapi.ProwJob) (prowapi.ProwJob, error)
 }
 
 type cronClient interface {
@@ -87,7 +88,7 @@ func sync(kc kubeClient, cfg *config.Config, cr cronClient, now time.Time) error
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
-	latestJobs := pjutil.GetLatestProwJobs(jobs, kube.PeriodicJob)
+	latestJobs := pjutil.GetLatestProwJobs(jobs, prowapi.PeriodicJob)
 
 	if err := cr.SyncConfig(cfg); err != nil {
 		logrus.WithError(err).Error("Error syncing cron jobs.")
