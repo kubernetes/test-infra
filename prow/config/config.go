@@ -37,6 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	"sigs.k8s.io/yaml"
 
+	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/org"
@@ -563,19 +564,19 @@ func (c *Config) finalizeJobConfig() error {
 	c.defaultPeriodicFields(c.Periodics)
 
 	for _, v := range c.AllPresubmits(nil) {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
 			return err
 		}
 	}
 
 	for _, v := range c.AllPostsubmits(nil) {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
 			return err
 		}
 	}
 
 	for _, v := range c.AllPeriodics() {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
 			return err
 		}
 	}
@@ -995,10 +996,18 @@ func validateDecoration(container v1.Container, config *prowapi.DecorationConfig
 	return nil
 }
 
-func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, presets []Preset) error {
+func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, buildSpec *buildv1alpha1.BuildSpec, presets []Preset) error {
 	for _, preset := range presets {
-		if err := mergePreset(preset, labels, spec); err != nil {
-			return fmt.Errorf("job %s failed to merge presets: %v", name, err)
+		if spec != nil {
+			if err := mergePreset(preset, labels, spec.Containers, &spec.Volumes); err != nil {
+				return fmt.Errorf("job %s failed to merge presets for podspec: %v", name, err)
+			}
+		}
+
+		if buildSpec != nil {
+			if err := mergePreset(preset, labels, buildSpec.Steps, &buildSpec.Volumes); err != nil {
+				return fmt.Errorf("job %s failed to merge presets for buildspec: %v", name, err)
+			}
 		}
 	}
 
