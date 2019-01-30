@@ -36,15 +36,12 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [
-        ":package-srcs",
-        "//maintenance/aws-janitor/cmd/aws-janitor-boskos/pkg/clean:all-srcs",
-    ],
+    srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
 
 go_image(
-    name ="aws-janitor-boskos-image",
-    embed = [":go_default_library"]
+    name = "aws-janitor-boskos-image",
+    embed = [":go_default_library"],
 )
