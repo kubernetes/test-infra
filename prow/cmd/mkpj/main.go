@@ -31,7 +31,6 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -65,7 +64,7 @@ func (o *options) getPullRequest() (*github.PullRequest, error) {
 	return pr, nil
 }
 
-func (o *options) defaultPR(pjs *kube.ProwJobSpec) error {
+func (o *options) defaultPR(pjs *prowapi.ProwJobSpec) error {
 	if pjs.Refs.Pulls[0].Number == 0 {
 		fmt.Fprint(os.Stderr, "PR Number: ")
 		var pullNumber int
@@ -90,7 +89,7 @@ func (o *options) defaultPR(pjs *kube.ProwJobSpec) error {
 	return nil
 }
 
-func (o *options) defaultBaseRef(pjs *kube.ProwJobSpec) error {
+func (o *options) defaultBaseRef(pjs *prowapi.ProwJobSpec) error {
 	if pjs.Refs.BaseRef == "" {
 		if o.pullNumber != 0 {
 			pr, err := o.getPullRequest()

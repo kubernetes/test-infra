@@ -890,7 +890,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 }
 
 func (c *Controller) trigger(sp subpool, presubmits map[int][]config.Presubmit, prs []PullRequest) error {
-	refs := kube.Refs{
+	refs := prowapi.Refs{
 		Org:     sp.org,
 		Repo:    sp.repo,
 		BaseRef: sp.branch,
@@ -899,7 +899,7 @@ func (c *Controller) trigger(sp subpool, presubmits map[int][]config.Presubmit, 
 	for _, pr := range prs {
 		refs.Pulls = append(
 			refs.Pulls,
-			kube.Pull{
+			prowapi.Pull{
 				Number: int(pr.Number),
 				Author: string(pr.Author.Login),
 				SHA:    string(pr.HeadRefOID),
