@@ -79,7 +79,7 @@ func (m *gitHubMigrator) migrate(org, repo, from, to string, targetBranchFilter 
 }
 
 type prowJobTriggerer interface {
-	runOrSkip(pr *github.PullRequest, requestedJobs []config.Presubmit) error
+	run(pr *github.PullRequest, requestedJobs []config.Presubmit) error
 }
 
 type kubeProwJobTriggerer struct {
@@ -88,15 +88,15 @@ type kubeProwJobTriggerer struct {
 	configAgent  *config.Agent
 }
 
-func (t *kubeProwJobTriggerer) runOrSkip(pr *github.PullRequest, requestedJobs []config.Presubmit) error {
-	return trigger.RunOrSkipRequested(
+func (t *kubeProwJobTriggerer) run(pr *github.PullRequest, requestedJobs []config.Presubmit) error {
+	return trigger.RunRequested(
 		trigger.Client{
 			GitHubClient: t.githubClient,
 			KubeClient:   t.kubeClient,
 			Config:       t.configAgent.Config(),
 			Logger:       logrus.WithField("client", "trigger"),
 		},
-		pr, requestedJobs, map[string]bool{}, "", "none",
+		pr, requestedJobs, "none",
 	)
 }
 
@@ -192,7 +192,7 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 			continue
 		}
 		for _, pr := range prs {
-			if err := c.triggerOrSkipIfTrusted(org, repo, pr, presubmits); err != nil {
+			if err := c.triggerIfTrusted(org, repo, pr, presubmits); err != nil {
 				triggerErrors = append(triggerErrors, fmt.Errorf("failed to trigger jobs for %s#%d: %v", orgrepo, pr.Number, err))
 				if !c.continueOnError {
 					return errorutil.NewAggregate(triggerErrors...)
@@ -204,7 +204,7 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 	return errorutil.NewAggregate(triggerErrors...)
 }
 
-func (c *Controller) triggerOrSkipIfTrusted(org, repo string, pr github.PullRequest, presubmits []config.Presubmit) error {
+func (c *Controller) triggerIfTrusted(org, repo string, pr github.PullRequest, presubmits []config.Presubmit) error {
 	trusted, err := c.trustedChecker.trustedPullRequest(pr.User.Login, org, repo, pr.Number)
 	if err != nil {
 		return fmt.Errorf("failed to determine if %s/%s#%d is trusted: %v", org, repo, pr.Number, err)
@@ -222,7 +222,7 @@ func (c *Controller) triggerOrSkipIfTrusted(org, repo string, pr github.PullRequ
 		"org":  org,
 		"repo": repo,
 	}).Info("Triggering new ProwJobs to create newly-required contexts.")
-	return c.prowJobTriggerer.runOrSkip(&pr, presubmits)
+	return c.prowJobTriggerer.run(&pr, presubmits)
 }
 
 func (c *Controller) retireRemovedContexts(retiredPresubmits map[string][]config.Presubmit) error {
@@ -236,7 +236,7 @@ func (c *Controller) retireRemovedContexts(retiredPresubmits map[string][]config
 				"repo":    repo,
 				"context": presubmit.Context,
 			}).Info("Retiring context.")
-			if err := c.statusMigrator.retire(org, repo, presubmit.Context, presubmit.Brancher.RunsAgainstBranch); err != nil {
+			if err := c.statusMigrator.retire(org, repo, presubmit.Context, presubmit.Brancher.ShouldRun); err != nil {
 				if c.continueOnError {
 					retireErrors = append(retireErrors, err)
 					continue
@@ -260,7 +260,7 @@ func (c *Controller) updateMigratedContexts(migrations map[string][]presubmitMig
 				"from": migration.from.Context,
 				"to":   migration.to.Context,
 			}).Info("Migrating context.")
-			if err := c.statusMigrator.migrate(org, repo, migration.from.Context, migration.to.Context, migration.from.Brancher.RunsAgainstBranch); err != nil {
+			if err := c.statusMigrator.migrate(org, repo, migration.from.Context, migration.to.Context, migration.from.Brancher.ShouldRun); err != nil {
 				if c.continueOnError {
 					migrateErrors = append(migrateErrors, err)
 					continue

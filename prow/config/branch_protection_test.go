@@ -291,12 +291,13 @@ func TestApply(test *testing.T) {
 	}
 }
 
-func TestJobRequirements(t *testing.T) {
+func TestBranchRequirements(t *testing.T) {
 	cases := []struct {
-		name                          string
-		config                        []Presubmit
-		masterExpected, otherExpected []string
-		masterOptional, otherOptional []string
+		name                            string
+		config                          []Presubmit
+		masterExpected, otherExpected   []string
+		masterOptional, otherOptional   []string
+		masterIfPresent, otherIfPresent []string
 	}{
 		{
 			name: "basic",
@@ -334,10 +335,12 @@ func TestJobRequirements(t *testing.T) {
 					Optional:   true,
 				},
 			},
-			masterExpected: []string{"always-run", "run-if-changed"},
-			masterOptional: []string{"optional"},
-			otherExpected:  []string{"always-run", "run-if-changed"},
-			otherOptional:  []string{"skip-report", "optional"},
+			masterExpected:  []string{"always-run"},
+			masterIfPresent: []string{"run-if-changed", "not-always"},
+			masterOptional:  []string{"optional"},
+			otherExpected:   []string{"always-run"},
+			otherIfPresent:  []string{"run-if-changed", "not-always"},
+			otherOptional:   []string{"skip-report", "optional"},
 		},
 	}
 
@@ -345,19 +348,28 @@ func TestJobRequirements(t *testing.T) {
 		if err := SetPresubmitRegexes(tc.config); err != nil {
 			t.Fatalf("could not set regexes: %v", err)
 		}
-		masterActual, masterOptional := jobRequirements(tc.config, "master", false)
+		presubmits := map[string][]Presubmit{
+			"o/r": tc.config,
+		}
+		masterActual, masterActualIfPresent, masterOptional := BranchRequirements("o", "r", "master", presubmits)
 		if !reflect.DeepEqual(masterActual, tc.masterExpected) {
-			t.Errorf("branch: master - %s: actual %v != expected %v", tc.name, masterActual, tc.masterExpected)
+			t.Errorf("%s: identified incorrect required contexts on branch master: %s", tc.name, diff.ObjectReflectDiff(masterActual, tc.masterExpected))
 		}
 		if !reflect.DeepEqual(masterOptional, tc.masterOptional) {
-			t.Errorf("branch: master - optional - %s: actual %v != expected %v", tc.name, masterOptional, tc.masterOptional)
+			t.Errorf("%s: identified incorrect optional contexts on branch master: %s", tc.name, diff.ObjectReflectDiff(masterOptional, tc.masterOptional))
 		}
-		otherActual, otherOptional := jobRequirements(tc.config, "other", false)
+		if !reflect.DeepEqual(masterActualIfPresent, tc.masterIfPresent) {
+			t.Errorf("%s: identified incorrect if-present contexts on branch master: %s", tc.name, diff.ObjectReflectDiff(masterActualIfPresent, tc.masterIfPresent))
+		}
+		otherActual, otherActualIfPresent, otherOptional := BranchRequirements("o", "r", "other", presubmits)
 		if !reflect.DeepEqual(masterActual, tc.masterExpected) {
-			t.Errorf("branch: other - %s: actual %v != expected %v", tc.name, otherActual, tc.otherExpected)
+			t.Errorf("%s: identified incorrect required contexts on branch other: : %s", tc.name, diff.ObjectReflectDiff(otherActual, tc.otherExpected))
 		}
 		if !reflect.DeepEqual(otherOptional, tc.otherOptional) {
-			t.Errorf("branch: other - optional - %s: actual %v != expected %v", tc.name, otherOptional, tc.otherOptional)
+			t.Errorf("%s: identified incorrect optional contexts on branch other: %s", tc.name, diff.ObjectReflectDiff(otherOptional, tc.otherOptional))
+		}
+		if !reflect.DeepEqual(otherActualIfPresent, tc.otherIfPresent) {
+			t.Errorf("%s: identified incorrect if-present contexts on branch other: %s", tc.name, diff.ObjectReflectDiff(otherActualIfPresent, tc.otherIfPresent))
 		}
 	}
 }

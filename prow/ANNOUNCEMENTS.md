@@ -40,8 +40,15 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *January 27, 2019* Jobs that do not run will no longer post "Skipped" statuses.
+ - *January 27, 2019* Jobs that do not run always will no longer be required by
+   branch protection as they will not always produce a status. They will continue
+   to be required for merge by `tide` if they are configured as required.
  - *January 27, 2019* All support for `run_after_success` jobs has been removed.
    Configuration of these jobs will continue to parse but will ignore the field.
+ - *January 27, 2019* `hook` will now correctly honor the `run_always` field on Gerrit
+   presubmits. Previously, if this field was unset it would have defaulted to `true`; now,
+   it will correctly default to `false`.
  - *January 22, 2019* `sinker` prefers `.kube/config` instead of the custom `Clusters`
    file to specify credentials for external build clusters. The flag name has changed
    from `--build-cluster` to `--kubeconfig`. Migrate before June 2019.

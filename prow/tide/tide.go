@@ -420,7 +420,7 @@ func (c *Controller) filterSubpools(goroutines int, raw map[string]*subpool) map
 
 func (c *Controller) initSubpoolData(sp *subpool) error {
 	var err error
-	sp.presubmitContexts, err = c.presubmitsByPull(sp)
+	sp.presubmits, err = c.presubmitsByPull(sp)
 	if err != nil {
 		return fmt.Errorf("error determining required presubmit prowjobs: %v", err)
 	}
@@ -472,9 +472,16 @@ func filterPR(ghc githubClient, sp *subpool, pr *PullRequest) bool {
 		log.WithError(err).Error("Getting head contexts.")
 		return true
 	}
-	pjContexts := sp.presubmitContexts[int(pr.Number)]
+	presubmitsHaveContext := func(context string) bool {
+		for _, job := range sp.presubmits[int(pr.Number)] {
+			if job.Context == context {
+				return true
+			}
+		}
+		return false
+	}
 	for _, ctx := range unsuccessfulContexts(contexts, sp.cc, log) {
-		if ctx.State != githubql.StatusStatePending || !pjContexts.Has(string(ctx.Context)) {
+		if ctx.State != githubql.StatusStatePending || !presubmitsHaveContext(string(ctx.Context)) {
 			log.WithField("context", ctx.Context).Debug("filtering out PR as unsuccessful context is not a pending Prow-controlled context")
 			return true
 		}
@@ -497,7 +504,7 @@ func poolPRMap(subpoolMap map[string]*subpool) map[string]PullRequest {
 type simpleState string
 
 const (
-	noneState    simpleState = "none"
+	failureState simpleState = "failure"
 	pendingState simpleState = "pending"
 	successState simpleState = "success"
 )
@@ -508,7 +515,7 @@ func toSimpleState(s kube.ProwJobState) simpleState {
 	} else if s == kube.SuccessState {
 		return successState
 	}
-	return noneState
+	return failureState
 }
 
 // isPassingTests returns whether or not all contexts set on the PR except for
@@ -573,7 +580,7 @@ func pickSmallestPassingNumber(log *logrus.Entry, ghc githubClient, prs []PullRe
 // accumulateBatch returns a list of PRs that can be merged after passing batch
 // testing, if any exist. It also returns a list of PRs currently being batch
 // tested.
-func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.ProwJob, log *logrus.Entry) ([]PullRequest, []PullRequest) {
+func accumulateBatch(presubmits map[int][]config.Presubmit, prs []PullRequest, pjs []kube.ProwJob, log *logrus.Entry) ([]PullRequest, []PullRequest) {
 	log.Debug("accumulating PRs for batch testing")
 	if len(presubmits) == 0 {
 		log.Debug("no presubmits configured, no batch can be triggered")
@@ -626,7 +633,7 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 		context := pj.Spec.Context
 		jobState := toSimpleState(pj.Status.State)
 		// Store the best result for this ref+context.
-		if s, ok := states[ref].jobStates[context]; !ok || s == noneState || jobState == successState {
+		if s, ok := states[ref].jobStates[context]; !ok || s == failureState || jobState == successState {
 			states[ref].jobStates[context] = jobState
 		}
 	}
@@ -637,12 +644,14 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 		}
 		requiredPresubmits := sets.NewString()
 		for _, pr := range state.prs {
-			requiredPresubmits = requiredPresubmits.Union(presubmits[int(pr.Number)])
+			for _, job := range presubmits[int(pr.Number)] {
+				requiredPresubmits.Insert(job.Context)
+			}
 		}
 		overallState := successState
 		for _, p := range requiredPresubmits.List() {
-			if s, ok := state.jobStates[p]; !ok || s == noneState {
-				overallState = noneState
+			if s, ok := state.jobStates[p]; !ok || s == failureState {
+				overallState = failureState
 				log.WithField("batch", ref).Debugf("batch invalid, required presubmit %s is not passing", p)
 				break
 			} else if s == pendingState && overallState == successState {
@@ -663,7 +672,7 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 
 // accumulate returns the supplied PRs sorted into three buckets based on their
 // accumulated state across the presubmits.
-func accumulate(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.ProwJob, log *logrus.Entry) (successes, pendings, nones []PullRequest) {
+func accumulate(presubmits map[int][]config.Presubmit, prs []PullRequest, pjs []kube.ProwJob, log *logrus.Entry) (successes, pendings, nones []PullRequest) {
 	for _, pr := range prs {
 		// Accumulate the best result for each job.
 		psStates := make(map[string]simpleState)
@@ -681,7 +690,7 @@ func accumulate(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.Pr
 			name := pj.Spec.Context
 			oldState := psStates[name]
 			newState := toSimpleState(pj.Status.State)
-			if oldState == noneState || oldState == "" {
+			if oldState == failureState || oldState == "" {
 				psStates[name] = newState
 			} else if oldState == pendingState && newState == successState {
 				psStates[name] = successState
@@ -689,17 +698,17 @@ func accumulate(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.Pr
 		}
 		// The overall result is the worst of the best.
 		overallState := successState
-		for _, ps := range presubmits[int(pr.Number)].List() {
-			if s, ok := psStates[ps]; !ok {
-				overallState = noneState
-				log.WithFields(pr.logFields()).Debugf("missing presubmit %s", ps)
+		for _, ps := range presubmits[int(pr.Number)] {
+			if s, ok := psStates[ps.Context]; !ok {
+				overallState = failureState
+				log.WithFields(pr.logFields()).Debugf("missing presubmit %s", ps.Context)
 				break
-			} else if s == noneState {
-				overallState = noneState
-				log.WithFields(pr.logFields()).Debugf("presubmit %s not passing", ps)
+			} else if s == failureState {
+				overallState = failureState
+				log.WithFields(pr.logFields()).Debugf("presubmit %s not passing", ps.Context)
 				break
 			} else if s == pendingState {
-				log.WithFields(pr.logFields()).Debugf("presubmit %s pending", ps)
+				log.WithFields(pr.logFields()).Debugf("presubmit %s pending", ps.Context)
 				overallState = pendingState
 			}
 		}
@@ -879,43 +888,44 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	return nil
 }
 
-func (c *Controller) trigger(sp subpool, presubmitContexts map[int]sets.String, prs []PullRequest) error {
-	requiredContexts := sets.NewString()
+func (c *Controller) trigger(sp subpool, presubmits map[int][]config.Presubmit, prs []PullRequest) error {
+	refs := kube.Refs{
+		Org:     sp.org,
+		Repo:    sp.repo,
+		BaseRef: sp.branch,
+		BaseSHA: sp.sha,
+	}
 	for _, pr := range prs {
-		requiredContexts = requiredContexts.Union(presubmitContexts[int(pr.Number)])
+		refs.Pulls = append(
+			refs.Pulls,
+			kube.Pull{
+				Number: int(pr.Number),
+				Author: string(pr.Author.Login),
+				SHA:    string(pr.HeadRefOID),
+			},
+		)
 	}
 
-	// TODO(cjwagner): DRY this out when generalizing triggering code (and code to determine required and to-run jobs).
-	for _, ps := range c.config().Presubmits[sp.org+"/"+sp.repo] {
-		if ps.SkipReport || !ps.RunsAgainstBranch(sp.branch) || !requiredContexts.Has(ps.Context) {
-			continue
-		}
-
-		refs := kube.Refs{
-			Org:     sp.org,
-			Repo:    sp.repo,
-			BaseRef: sp.branch,
-			BaseSHA: sp.sha,
-		}
-		for _, pr := range prs {
-			refs.Pulls = append(
-				refs.Pulls,
-				kube.Pull{
-					Number: int(pr.Number),
-					Author: string(pr.Author.Login),
-					SHA:    string(pr.HeadRefOID),
-				},
-			)
-		}
-		var spec kube.ProwJobSpec
-		if len(prs) == 1 {
-			spec = pjutil.PresubmitSpec(ps, refs)
-		} else {
-			spec = pjutil.BatchSpec(ps, refs)
-		}
-		pj := pjutil.NewProwJob(spec, ps.Labels)
-		if _, err := c.kc.CreateProwJob(pj); err != nil {
-			return fmt.Errorf("failed to create a ProwJob for job: %q, PRs: %v: %v", spec.Job, prNumbers(prs), err)
+	// If PRs require the same job, we only want to trigger it once.
+	// If multiple required jobs have the same context, we assume the
+	// same shard will be run to provide those contexts
+	triggeredContexts := sets.NewString()
+	for _, pr := range prs {
+		for _, ps := range presubmits[int(pr.Number)] {
+			if triggeredContexts.Has(string(ps.Context)) {
+				continue
+			}
+			triggeredContexts.Insert(string(ps.Context))
+			var spec kube.ProwJobSpec
+			if len(prs) == 1 {
+				spec = pjutil.PresubmitSpec(ps, refs)
+			} else {
+				spec = pjutil.BatchSpec(ps, refs)
+			}
+			pj := pjutil.NewProwJob(spec, ps.Labels)
+			if _, err := c.kc.CreateProwJob(pj); err != nil {
+				return fmt.Errorf("failed to create a ProwJob for job: %q, PRs: %v: %v", spec.Job, prNumbers(prs), err)
+			}
 		}
 	}
 	return nil
@@ -934,13 +944,13 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, n
 		}
 	}
 	// If no presubmits are configured, just wait.
-	if len(sp.presubmitContexts) == 0 {
+	if len(sp.presubmits) == 0 {
 		return Wait, nil, nil
 	}
 	// If we have no serial jobs pending or successful, trigger one.
 	if len(nones) > 0 && len(pendings) == 0 && len(successes) == 0 {
 		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, nones, sp.cc); ok {
-			return Trigger, []PullRequest{pr}, c.trigger(sp, sp.presubmitContexts, []PullRequest{pr})
+			return Trigger, []PullRequest{pr}, c.trigger(sp, sp.presubmits, []PullRequest{pr})
 		}
 	}
 	// If we have no batch, trigger one.
@@ -950,7 +960,7 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, n
 			return Wait, nil, err
 		}
 		if len(batch) > 1 {
-			return TriggerBatch, batch, c.trigger(sp, sp.presubmitContexts, batch)
+			return TriggerBatch, batch, c.trigger(sp, sp.presubmits, batch)
 		}
 	}
 	return Wait, nil, nil
@@ -975,47 +985,49 @@ type changeCacheKey struct {
 
 // prChanges gets the files changed by the PR, either from the cache or by
 // querying GitHub.
-func (c *changedFilesAgent) prChanges(pr *PullRequest) ([]string, error) {
-	cacheKey := changeCacheKey{
-		org:    string(pr.Repository.Owner.Login),
-		repo:   string(pr.Repository.Name),
-		number: int(pr.Number),
-		sha:    string(pr.HeadRefOID),
-	}
+func (c *changedFilesAgent) prChanges(pr *PullRequest) config.ChangedFilesProvider {
+	return func() ([]string, error) {
+		cacheKey := changeCacheKey{
+			org:    string(pr.Repository.Owner.Login),
+			repo:   string(pr.Repository.Name),
+			number: int(pr.Number),
+			sha:    string(pr.HeadRefOID),
+		}
 
-	c.RLock()
-	changedFiles, ok := c.changeCache[cacheKey]
-	if ok {
+		c.RLock()
+		changedFiles, ok := c.changeCache[cacheKey]
+		if ok {
+			c.RUnlock()
+			c.Lock()
+			c.nextChangeCache[cacheKey] = changedFiles
+			c.Unlock()
+			return changedFiles, nil
+		}
+		if changedFiles, ok = c.nextChangeCache[cacheKey]; ok {
+			c.RUnlock()
+			return changedFiles, nil
+		}
 		c.RUnlock()
+
+		// We need to query the changes from GitHub.
+		changes, err := c.ghc.GetPullRequestChanges(
+			string(pr.Repository.Owner.Login),
+			string(pr.Repository.Name),
+			int(pr.Number),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error getting PR changes for #%d: %v", int(pr.Number), err)
+		}
+		changedFiles = make([]string, 0, len(changes))
+		for _, change := range changes {
+			changedFiles = append(changedFiles, change.Filename)
+		}
+
 		c.Lock()
 		c.nextChangeCache[cacheKey] = changedFiles
 		c.Unlock()
 		return changedFiles, nil
 	}
-	if changedFiles, ok = c.nextChangeCache[cacheKey]; ok {
-		c.RUnlock()
-		return changedFiles, nil
-	}
-	c.RUnlock()
-
-	// We need to query the changes from GitHub.
-	changes, err := c.ghc.GetPullRequestChanges(
-		string(pr.Repository.Owner.Login),
-		string(pr.Repository.Name),
-		int(pr.Number),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("error getting PR changes for #%d: %v", int(pr.Number), err)
-	}
-	changedFiles = make([]string, 0, len(changes))
-	for _, change := range changes {
-		changedFiles = append(changedFiles, change.Filename)
-	}
-
-	c.Lock()
-	c.nextChangeCache[cacheKey] = changedFiles
-	c.Unlock()
-	return changedFiles, nil
 }
 
 // prune removes any cached file changes that were not used since the last prune.
@@ -1026,36 +1038,26 @@ func (c *changedFilesAgent) prune() {
 	c.nextChangeCache = make(map[changeCacheKey][]string)
 }
 
-func (c *Controller) presubmitsByPull(sp *subpool) (map[int]sets.String, error) {
-	presubmits := make(map[int]sets.String, len(sp.prs))
-	record := func(num int, context string) {
+func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, error) {
+	presubmits := make(map[int][]config.Presubmit, len(sp.prs))
+	record := func(num int, job config.Presubmit) {
 		if jobs, ok := presubmits[num]; ok {
-			jobs.Insert(context)
+			presubmits[num] = append(jobs, job)
 		} else {
-			presubmits[num] = sets.NewString(context)
+			presubmits[num] = []config.Presubmit{job}
 		}
 	}
 
 	for _, ps := range c.config().Presubmits[sp.org+"/"+sp.repo] {
-		if !ps.ContextRequired() || !ps.RunsAgainstBranch(sp.branch) {
+		if !ps.ContextRequired() {
 			continue
 		}
 
-		if ps.AlwaysRun {
-			// Every PR requires this job.
-			for _, pr := range sp.prs {
-				record(int(pr.Number), ps.Context)
-			}
-		} else if ps.RunIfChanged != "" {
-			// This is a run if changed job so we need to check if each PR requires it.
-			for _, pr := range sp.prs {
-				changedFiles, err := c.changedFiles.prChanges(&pr)
-				if err != nil {
-					return nil, err
-				}
-				if ps.RunsAgainstChanges(changedFiles) {
-					record(int(pr.Number), ps.Context)
-				}
+		for _, pr := range sp.prs {
+			if shouldRun, err := ps.ShouldRun(sp.branch, c.changedFiles.prChanges(&pr), false, false); err != nil {
+				return nil, err
+			} else if shouldRun {
+				record(int(pr.Number), ps)
 			}
 		}
 	}
@@ -1064,8 +1066,8 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int]sets.String, error) 
 
 func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, error) {
 	sp.log.Infof("Syncing subpool: %d PRs, %d PJs.", len(sp.prs), len(sp.pjs))
-	successes, pendings, nones := accumulate(sp.presubmitContexts, sp.prs, sp.pjs, sp.log)
-	batchMerge, batchPending := accumulateBatch(sp.presubmitContexts, sp.prs, sp.pjs, sp.log)
+	successes, pendings, nones := accumulate(sp.presubmits, sp.prs, sp.pjs, sp.log)
+	batchMerge, batchPending := accumulateBatch(sp.presubmits, sp.prs, sp.pjs, sp.log)
 	sp.log.WithFields(logrus.Fields{
 		"prs-passing":   prNumbers(successes),
 		"prs-pending":   prNumbers(pendings),
@@ -1166,8 +1168,8 @@ type subpool struct {
 	pjs []kube.ProwJob
 	prs []PullRequest
 
-	cc                contextChecker
-	presubmitContexts map[int]sets.String
+	cc         contextChecker
+	presubmits map[int][]config.Presubmit
 }
 
 func poolKey(org, repo, branch string) string {

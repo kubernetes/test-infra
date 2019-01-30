@@ -124,7 +124,7 @@ func TestProcessChange(t *testing.T) {
 		shouldError bool
 	}{
 		{
-			name: "no revisions",
+			name: "no revisions errors out",
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "test-infra",
@@ -133,7 +133,7 @@ func TestProcessChange(t *testing.T) {
 			shouldError: true,
 		},
 		{
-			name: "wrong project",
+			name: "wrong project triggers no jobs",
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "woof",
@@ -144,7 +144,7 @@ func TestProcessChange(t *testing.T) {
 			},
 		},
 		{
-			name: "normal",
+			name: "normal changes should trigger matching branch jobs",
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "test-infra",
@@ -287,12 +287,13 @@ func TestProcessChange(t *testing.T) {
 		testInfraPresubmits := []config.Presubmit{
 			{
 				JobBase: config.JobBase{
-					Name: "test-foo",
+					Name: "always-runs-all-branches",
 				},
+				AlwaysRun: true,
 			},
 			{
 				JobBase: config.JobBase{
-					Name: "test-go",
+					Name: "run-if-changed-all-branches",
 				},
 				RegexpChangeMatcher: config.RegexpChangeMatcher{
 					RunIfChanged: "\\.go",
@@ -300,19 +301,21 @@ func TestProcessChange(t *testing.T) {
 			},
 			{
 				JobBase: config.JobBase{
-					Name: "test-branch-pony",
+					Name: "runs-on-pony-branch",
 				},
 				Brancher: config.Brancher{
 					Branches: []string{"pony"},
 				},
+				AlwaysRun: true,
 			},
 			{
 				JobBase: config.JobBase{
-					Name: "test-skip-branch-baz",
+					Name: "runs-on-all-but-baz-branch",
 				},
 				Brancher: config.Brancher{
 					SkipBranches: []string{"baz"},
 				},
+				AlwaysRun: true,
 			},
 		}
 		if err := config.SetPresubmitRegexes(testInfraPresubmits); err != nil {
@@ -329,6 +332,7 @@ func TestProcessChange(t *testing.T) {
 								JobBase: config.JobBase{
 									Name: "other-test",
 								},
+								AlwaysRun: true,
 							},
 						},
 					},

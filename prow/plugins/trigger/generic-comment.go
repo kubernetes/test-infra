@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"regexp"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
@@ -46,38 +48,6 @@ func handleGenericComment(c Client, trigger *plugins.Trigger, gc github.GenericC
 		return err
 	}
 	if commentAuthor == botName {
-		return nil
-	}
-
-	// Which jobs does the comment want us to run?
-	allowOkToTest := trigger == nil || !trigger.IgnoreOkToTest
-	isOkToTest := okToTestRe.MatchString(gc.Body) && allowOkToTest
-	testAll := isOkToTest || testAllRe.MatchString(gc.Body)
-	shouldRetestFailed := retestRe.MatchString(gc.Body)
-	requestedJobs := c.Config.MatchingPresubmits(gc.Repo.FullName, gc.Body, testAll)
-	if !shouldRetestFailed && len(requestedJobs) == 0 {
-		// If a trusted member has commented "/ok-to-test",
-		// eventually add ok-to-test and remove needs-ok-to-test.
-		l, err := c.GitHubClient.GetIssueLabels(org, repo, number)
-		if err != nil {
-			return err
-		}
-		if isOkToTest && !github.HasLabel(labels.OkToTest, l) {
-			trusted, err := TrustedUser(c.GitHubClient, trigger, commentAuthor, org, repo)
-			if err != nil {
-				return err
-			}
-			if trusted {
-				if err := c.GitHubClient.AddLabel(org, repo, number, labels.OkToTest); err != nil {
-					return err
-				}
-				if github.HasLabel(labels.NeedsOkToTest, l) {
-					if err := c.GitHubClient.RemoveLabel(org, repo, number, labels.NeedsOkToTest); err != nil {
-						return err
-					}
-				}
-			}
-		}
 		return nil
 	}
 
@@ -114,6 +84,7 @@ func handleGenericComment(c Client, trigger *plugins.Trigger, gc github.GenericC
 			return err
 		}
 	}
+	isOkToTest := HonorOkToTest(trigger) && okToTestRe.MatchString(gc.Body)
 	if isOkToTest && !github.HasLabel(labels.OkToTest, l) {
 		if err := c.GitHubClient.AddLabel(org, repo, number, labels.OkToTest); err != nil {
 			return err
@@ -125,26 +96,108 @@ func handleGenericComment(c Client, trigger *plugins.Trigger, gc github.GenericC
 		}
 	}
 
-	// Do we have to run some tests?
-	var forceRunContexts map[string]bool
-	if shouldRetestFailed {
-		combinedStatus, err := c.GitHubClient.GetCombinedStatus(org, repo, pr.Head.SHA)
-		if err != nil {
-			return err
-		}
-		skipContexts := make(map[string]bool)    // these succeeded or are running
-		forceRunContexts = make(map[string]bool) // these failed and should be re-run
-		for _, status := range combinedStatus.Statuses {
-			state := status.State
-			if state == github.StatusSuccess || state == github.StatusPending {
-				skipContexts[status.Context] = true
-			} else if state == github.StatusError || state == github.StatusFailure {
-				forceRunContexts[status.Context] = true
-			}
-		}
-		retests := c.Config.RetestPresubmits(gc.Repo.FullName, skipContexts, forceRunContexts)
-		requestedJobs = append(requestedJobs, retests...)
+	toTest, err := FilterPresubmits(HonorOkToTest(trigger), c.GitHubClient, gc.Body, pr, c.Config.Presubmits[gc.Repo.FullName])
+	if err != nil {
+		return err
+	}
+	return RunRequested(c, pr, toTest, gc.GUID)
+}
+
+func HonorOkToTest(trigger *plugins.Trigger) bool {
+	return trigger == nil || !trigger.IgnoreOkToTest
+}
+
+type GitHubClient interface {
+	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
+	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+}
+
+// FilterPresubmits determines which presubmits should run. We only want to
+// trigger jobs that should run, but the pool of jobs we filter to those that
+// should run depends on the type of trigger we just got:
+//  - if we get a /test foo, we only want to consider those jobs that match;
+//    jobs will default to run unless we can determine they shouldn't
+//  - if we got a /retest, we only want to consider those jobs that have
+//    already run and posted failing contexts to the PR or those jobs that
+//    have not yet run but would otherwise match /test all; jobs will default
+//    to run unless we can determine they shouldn't
+//  - if we got a /test all or an /ok-to-test, we want to consider any job
+//    that doesn't explicitly require a human trigger comment; jobs will
+//    default to not run unless we can determine that they should
+// If a comment that we get matches more than one of the above patterns, we
+// consider the set of matching presubmits the union of the results from the
+// matching cases.
+func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string, pr *github.PullRequest, presubmits []config.Presubmit) ([]config.Presubmit, error) {
+	org, repo, number, sha, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Head.SHA, pr.Base.Ref
+	filter, err := presubmitFilter(honorOkToTest, gitHubClient, body, org, repo, sha)
+	if err != nil {
+		return nil, err
 	}
 
-	return RunOrSkipRequested(c, pr, requestedJobs, forceRunContexts, gc.Body, gc.GUID)
+	changes := config.NewGitHubDeferredChangedFilesProvider(gitHubClient, org, repo, number)
+	var filteredPresubmits []config.Presubmit
+	for _, presubmit := range presubmits {
+		matches, forced, defaults := filter(presubmit)
+		if !matches {
+			continue
+		}
+		shouldRun, err := presubmit.ShouldRun(branch, changes, forced, defaults)
+		if err != nil {
+			return nil, err
+		}
+		if shouldRun {
+			filteredPresubmits = append(filteredPresubmits, presubmit)
+		}
+	}
+	return filteredPresubmits, nil
+}
+
+type statusGetter interface {
+	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
+}
+
+func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, repo, sha string) (func(config.Presubmit) (bool, bool, bool), error) {
+	// the filters determine if we should check whether a job should run, whether
+	// it should run regardless of whether its triggering conditions match, and
+	// what the default behavior should be for that check. Multiple filters
+	// can match a single presubmit, so it is important to order them correctly
+	// as they have precedence -- filters that override the false default should
+	// match before others. We order filters by amount of specificity.
+	var filters []func(config.Presubmit) (bool, bool, bool)
+	filters = append(filters, func(p config.Presubmit) (bool, bool, bool) {
+		// filter for `/test foo`
+		return p.TriggerMatches(body), p.TriggerMatches(body), true
+	})
+	if retestRe.MatchString(body) {
+		combinedStatus, err := statusGetter.GetCombinedStatus(org, repo, sha)
+		if err != nil {
+			return nil, err
+		}
+		allContexts := sets.NewString()
+		failedContexts := sets.NewString()
+		for _, status := range combinedStatus.Statuses {
+			allContexts.Insert(status.Context)
+			if status.State == github.StatusError || status.State == github.StatusFailure {
+				failedContexts.Insert(status.Context)
+			}
+		}
+		filters = append(filters, func(p config.Presubmit) (bool, bool, bool) {
+			// filter for `/retest`
+			return failedContexts.Has(p.Context) || (!p.NeedsExplicitTrigger() && !allContexts.Has(p.Context)), false, true
+		})
+	}
+	if (honorOkToTest && okToTestRe.MatchString(body)) || testAllRe.MatchString(body) {
+		filters = append(filters, func(p config.Presubmit) (bool, bool, bool) {
+			// filter for `/test all`
+			return !p.NeedsExplicitTrigger(), false, false
+		})
+	}
+	return func(presubmit config.Presubmit) (bool, bool, bool) {
+		for _, filter := range filters {
+			if shouldRun, forced, defaults := filter(presubmit); shouldRun {
+				return shouldRun, forced, defaults
+			}
+		}
+		return false, false, false
+	}, nil
 }

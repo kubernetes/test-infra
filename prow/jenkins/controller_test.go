@@ -53,6 +53,7 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int, operators []config.Jen
 			},
 		},
 		{
+			AlwaysRun: true,
 			JobBase: config.JobBase{
 				Name: "test-bazel-test",
 			},

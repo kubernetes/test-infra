@@ -22,6 +22,7 @@ import (
 	"time"
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
+	"k8s.io/test-infra/prow/github"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -208,8 +209,8 @@ func (br Brancher) RunsAgainstAllBranch() bool {
 	return len(br.SkipBranches) == 0 && len(br.Branches) == 0
 }
 
-// RunsAgainstBranch returns true if the input branch matches, given the whitelist/blacklist.
-func (br Brancher) RunsAgainstBranch(branch string) bool {
+// ShouldRun returns true if the input branch matches, given the whitelist/blacklist.
+func (br Brancher) ShouldRun(branch string) bool {
 	if br.RunsAgainstAllBranch() {
 		return true
 	}
@@ -250,11 +251,27 @@ func (br Brancher) Intersects(other Brancher) bool {
 	return other.Intersects(br)
 }
 
+// CouldRun determines if its possible for a set of changes to trigger this condition
+func (cm RegexpChangeMatcher) CouldRun() bool {
+	return cm.RunIfChanged != ""
+}
+
+// ShouldRun determines if we can know for certain that the job should run. We can either
+// know for certain that the job should or should not run based on the matcher, or we can
+// not be able to determine that fact at all.
+func (cm RegexpChangeMatcher) ShouldRun(changes ChangedFilesProvider) (determined bool, shouldRun bool, err error) {
+	if cm.CouldRun() {
+		changeList, err := changes()
+		if err != nil {
+			return true, false, err
+		}
+		return true, cm.RunsAgainstChanges(changeList), nil
+	}
+	return false, false, nil
+}
+
 // RunsAgainstChanges returns true if any of the changed input paths match the run_if_changed regex.
 func (cm RegexpChangeMatcher) RunsAgainstChanges(changes []string) bool {
-	if cm.RunIfChanged == "" {
-		return true
-	}
 	for _, change := range changes {
 		if cm.reChanges.MatchString(change) {
 			return true
@@ -263,44 +280,101 @@ func (cm RegexpChangeMatcher) RunsAgainstChanges(changes []string) bool {
 	return false
 }
 
+// CouldRun determines if the postsubmit could run against a specific
+// base ref
+func (ps Postsubmit) CouldRun(baseRef string) bool {
+	return ps.Brancher.ShouldRun(baseRef)
+}
+
+// ShouldRun determines if the postsubmit should run in response to a
+// set of changes. This is evaluated lazily, if necessary.
+func (ps Postsubmit) ShouldRun(baseRef string, changes ChangedFilesProvider) (bool, error) {
+	if !ps.CouldRun(baseRef) {
+		return false, nil
+	}
+	if determined, shouldRun, err := ps.RegexpChangeMatcher.ShouldRun(changes); err != nil {
+		return false, err
+	} else if determined {
+		return shouldRun, nil
+	}
+	// Postsubmits default to always run
+	return true, nil
+}
+
+// CouldRun determines if the presubmit could run against a specific
+// base ref
+func (ps Presubmit) CouldRun(baseRef string) bool {
+	return ps.Brancher.ShouldRun(baseRef)
+}
+
+// ShouldRun determines if the presubmit should run against a specific
+// base ref, or in response to a set of changes. The latter mechanism
+// is evaluated lazily, if necessary.
+func (ps Presubmit) ShouldRun(baseRef string, changes ChangedFilesProvider, forced, defaults bool) (bool, error) {
+	if !ps.CouldRun(baseRef) {
+		return false, nil
+	}
+	if ps.AlwaysRun {
+		return true, nil
+	}
+	if forced {
+		return true, nil
+	}
+	if determined, shouldRun, err := ps.RegexpChangeMatcher.ShouldRun(changes); err != nil {
+		return false, err
+	} else if determined {
+		return shouldRun, nil
+	}
+	return defaults, nil
+}
+
+// TriggersConditionally determines if the presubmit triggers conditionally (if it may or may not trigger).
+func (ps Presubmit) TriggersConditionally() bool {
+	return ps.NeedsExplicitTrigger() || ps.RegexpChangeMatcher.CouldRun()
+}
+
+// NeedsExplicitTrigger determines if the presubmit requires a human action to trigger it or not.
+func (ps Presubmit) NeedsExplicitTrigger() bool {
+	return !ps.AlwaysRun && !ps.RegexpChangeMatcher.CouldRun()
+}
+
 // TriggerMatches returns true if the comment body should trigger this presubmit.
 //
 // This is usually a /test foo string.
 func (ps Presubmit) TriggerMatches(body string) bool {
-	return ps.re.MatchString(body)
+	return ps.Trigger != "" && ps.re.MatchString(body)
 }
 
 // ContextRequired checks whether a context is required from github points of view (required check).
 func (ps Presubmit) ContextRequired() bool {
-	if ps.Optional || ps.SkipReport {
-		return false
-	}
-	return true
+	return !ps.Optional && !ps.SkipReport
 }
 
 // ChangedFilesProvider returns a slice of modified files.
 type ChangedFilesProvider func() ([]string, error)
 
-func matching(j Presubmit, body string, testAll bool) []Presubmit {
-	// When matching ignore whether the job runs for the branch or whether the job runs for the
-	// PR's changes. Even if the job doesn't run, it still matches the PR and may need to be marked
-	// as skipped on github.
-	var result []Presubmit
-	if (testAll && (j.AlwaysRun || j.RunIfChanged != "")) || j.TriggerMatches(body) {
-		result = append(result, j)
-	}
-	return result
+type githubClient interface {
+	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
-// MatchingPresubmits returns a slice of presubmits to trigger based on the repo and a comment text.
-func (c *JobConfig) MatchingPresubmits(fullRepoName, body string, testAll bool) []Presubmit {
-	var result []Presubmit
-	if jobs, ok := c.Presubmits[fullRepoName]; ok {
-		for _, job := range jobs {
-			result = append(result, matching(job, body, testAll)...)
+// NewGitHubDeferredChangedFilesProvider uses a closure to lazily retrieve the file changes only if they are needed.
+// We only have to fetch the changes if there is at least one RunIfChanged job that is not being force run (due to
+// a `/retest` after a failure or because it is explicitly triggered with `/test foo`).
+func NewGitHubDeferredChangedFilesProvider(client githubClient, org, repo string, num int) ChangedFilesProvider {
+	var changedFiles []string
+	return func() ([]string, error) {
+		// Fetch the changed files from github at most once.
+		if changedFiles == nil {
+			changes, err := client.GetPullRequestChanges(org, repo, num)
+			if err != nil {
+				return nil, fmt.Errorf("error getting pull request changes: %v", err)
+			}
+			for _, change := range changes {
+				changedFiles = append(changedFiles, change.Filename)
+			}
 		}
+		return changedFiles, nil
 	}
-	return result
 }
 
 // UtilityConfig holds decoration metadata, such as how to clone and additional containers/etc
@@ -332,14 +406,14 @@ type UtilityConfig struct {
 
 // RetestPresubmits returns all presubmits that should be run given a /retest command.
 // This is the set of all presubmits intersected with ((alwaysRun + runContexts) - skipContexts)
-func (c *JobConfig) RetestPresubmits(fullRepoName string, skipContexts, runContexts map[string]bool) []Presubmit {
+func (c *JobConfig) RetestPresubmits(fullRepoName string, skipContexts, runContexts sets.String) []Presubmit {
 	var result []Presubmit
 	if jobs, ok := c.Presubmits[fullRepoName]; ok {
 		for _, job := range jobs {
-			if skipContexts[job.Context] {
+			if skipContexts.Has(job.Context) {
 				continue
 			}
-			if job.AlwaysRun || job.RunIfChanged != "" || runContexts[job.Context] {
+			if job.AlwaysRun || job.RunIfChanged != "" || runContexts.Has(job.Context) {
 				result = append(result, job)
 			}
 		}
@@ -441,4 +515,15 @@ func (c *JobConfig) AllPeriodics() []Periodic {
 	}
 
 	return listPeriodic(c.Periodics)
+}
+
+// ClearCompiledRegexes removes compiled regexes from the presubmits,
+// useful for testing when deep equality is needed between presubmits
+func ClearCompiledRegexes(presubmits []Presubmit) {
+	for i := range presubmits {
+		presubmits[i].re = nil
+		presubmits[i].Brancher.re = nil
+		presubmits[i].Brancher.reSkip = nil
+		presubmits[i].RegexpChangeMatcher.reChanges = nil
+	}
 }
