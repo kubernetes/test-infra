@@ -29,11 +29,11 @@ go_library(
     ],
     importpath = "k8s.io/test-infra/prow/plugins",
     deps = [
+        "//prow/client/clientset/versioned/typed/prowjobs/v1:go_default_library",
         "//prow/commentpruner:go_default_library",
         "//prow/config:go_default_library",
         "//prow/git:go_default_library",
         "//prow/github:go_default_library",
-        "//prow/kube:go_default_library",
         "//prow/labels:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/repoowners:go_default_library",

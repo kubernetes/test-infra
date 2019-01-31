@@ -133,7 +133,7 @@ func (c *fakeClient) GetRef(org, repo, ref string) (string, error) {
 	return fakeBaseSHA, nil
 }
 
-func (c *fakeClient) CreateProwJob(pj prowapi.ProwJob) (prowapi.ProwJob, error) {
+func (c *fakeClient) Create(pj *prowapi.ProwJob) (*prowapi.ProwJob, error) {
 	if s := pj.Status.State; s != prowapi.SuccessState {
 		return pj, fmt.Errorf("bad status state: %s", s)
 	}

@@ -50,7 +50,7 @@ type options struct {
 
 	dryRun      bool
 	gracePeriod time.Duration
-	kubernetes  prowflagutil.LegacyKubernetesOptions
+	kubernetes  prowflagutil.KubernetesOptions
 	github      prowflagutil.GitHubOptions
 
 	webhookSecretFile string
@@ -126,9 +126,14 @@ func main() {
 	}
 	defer gitClient.Clean()
 
-	kubeClient, defaultContext, kubernetesClients, err := o.kubernetes.Client(configAgent.Config().ProwJobNamespace, o.dryRun)
+	infrastructureClient, err := o.kubernetes.InfrastructureClusterClient(o.dryRun)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
+		logrus.WithError(err).Fatal("Error getting Kubernetes client for infrastructure cluster.")
+	}
+
+	prowJobClient, err := o.kubernetes.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting ProwJob client for infrastructure cluster.")
 	}
 
 	var slackClient *slack.Client
@@ -143,8 +148,8 @@ func main() {
 
 	clientAgent := &plugins.ClientAgent{
 		GitHubClient:     githubClient,
-		KubeClient:       kubeClient,
-		KubernetesClient: kubernetesClients[defaultContext],
+		ProwJobClient:    prowJobClient,
+		KubernetesClient: infrastructureClient,
 		GitClient:        gitClient,
 		SlackClient:      slackClient,
 	}

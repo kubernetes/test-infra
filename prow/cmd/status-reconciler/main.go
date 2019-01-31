@@ -41,7 +41,7 @@ type options struct {
 
 	continueOnError bool
 	dryRun          bool
-	kubernetes      prowflagutil.LegacyKubernetesOptions
+	kubernetes      prowflagutil.KubernetesOptions
 	github          prowflagutil.GitHubOptions
 }
 
@@ -107,7 +107,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
-	kubeClient, _, _, err := o.kubernetes.Client(configAgent.Config().ProwJobNamespace, o.dryRun)
+	prowJobClient, err := o.kubernetes.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
@@ -115,6 +115,6 @@ func main() {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 
-	c := statusreconciler.NewController(o.continueOnError, kubeClient, githubClient, configAgent, pluginAgent)
+	c := statusreconciler.NewController(o.continueOnError, prowJobClient, githubClient, configAgent, pluginAgent)
 	c.Run(sig, changes)
 }
