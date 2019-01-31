@@ -3259,6 +3259,10 @@ test_groups:
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-azure-v1.12
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
+- name: ci-gardener-e2e-conformance-alibaba-v1.13
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-alibaba-v1.13
+  alert_stale_results_hours: 168
+  num_failures_to_alert: 1
 
 
 - name: pull-k8s-cluster-bundle-bazel-test
@@ -3501,6 +3505,9 @@ dashboards:
   - name: Gardener, v1.12 Azure
     description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Microsoft Azure"
     test_group_name: ci-gardener-e2e-conformance-azure-v1.12
+  - name: Gardener, v1.13 Alibaba
+    description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Alibaba Cloud"
+    test_group_name: ci-gardener-e2e-conformance-alibaba-v1.13
 
 - name: conformance-gce
   dashboard_tab:
@@ -7523,6 +7530,11 @@ dashboards:
     test_group_name: ci-gardener-e2e-conformance-azure-v1.12
     alert_options:
       alert_mail_to_addresses: oleg.loewen@sap.com
+  - name: Gardener, v1.13 Alibaba
+    description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Alibaba Cloud"
+    test_group_name: ci-gardener-e2e-conformance-alibaba-v1.13
+    alert_options:
+      alert_mail_to_addresses: jerry.jia@sap.com
 
 - name: sig-api-machinery-kube-storage-version-migrator
   dashboard_tab:
