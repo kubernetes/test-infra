@@ -21,6 +21,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
 	"time"
@@ -54,9 +55,35 @@ func newUUID() string {
 	return uuid.New().String()
 }
 
+func prop(key, value string) *resultstore.Property {
+	return &resultstore.Property{
+		Key:   key,
+		Value: value,
+	}
+}
+
+func timing(when time.Time) *resultstore.Timing {
+	return &resultstore.Timing{
+		StartTime: stamp(when),
+	}
+}
+
+func timingEnd(when time.Time, seconds int64, nanos int32) *resultstore.Timing {
+	t := timing(when)
+	t.Duration = dur(seconds, nanos)
+	return t
+}
+
 func stamp(when time.Time) *timestamp.Timestamp {
 	return &timestamp.Timestamp{
 		Seconds: when.Unix(),
+	}
+}
+
+func dur(seconds int64, nanos int32) *duration.Duration {
+	return &duration.Duration{
+		Seconds: seconds,
+		Nanos:   nanos,
 	}
 }
 
@@ -103,9 +130,7 @@ func createInvocation(ctx context.Context, up uploadClient) (*resultstore.Invoca
 				ProjectId:   "fejta-prod",
 				Description: "hello world",
 			},
-			Timing: &resultstore.Timing{
-				StartTime: stamp(time.Now()),
-			},
+			Timing: timing(time.Now()),
 		},
 		AuthorizationToken: tok,
 	})
@@ -123,6 +148,107 @@ func str(inv interface{}) string {
 func print(inv ...interface{}) {
 	for _, i := range inv {
 		fmt.Println(str(i))
+	}
+}
+
+const (
+	finishConfiguredTarget = false
+	finishTarget           = false
+	finishInvocation       = false
+)
+
+func pick(choices ...string) string {
+	return choices[rand.Intn(len(choices))]
+}
+
+func caseName() string {
+	return pick(
+		"testFoo",
+		"testBar",
+		"testSanta",
+		"testGeorge",
+		"testAbstractFactoryBuilderBuilderBuilderFactory",
+		"testCRUD [Feature:Demo]",
+	)
+}
+
+func className() string {
+	return pick(
+		"com.google.omg",
+		"com.google.whynot",
+		"io.k8s.java",
+		"k8s.io/golang",
+		"ignore",
+	)
+}
+
+func flip() bool {
+	return rand.Int()%2 == 0
+}
+
+func randomTestCase() *resultstore.Test {
+	c := &resultstore.TestCase{
+		CaseName:  caseName(),
+		ClassName: className(),
+		Timing:    timingEnd(time.Now(), 15, 30),
+		Properties: []*resultstore.Property{
+			prop("whatever", "yo"),
+		},
+		// Files: []*resultstore.File{} // testcase files
+	}
+
+	failed, errored := flip(), flip()
+	switch {
+	case errored:
+		if flip() {
+			c.Result = resultstore.TestCase_INTERRUPTED
+		} else {
+			c.Result = resultstore.TestCase_CANCELLED
+		}
+	case failed || flip():
+		c.Result = resultstore.TestCase_COMPLETED
+	case flip():
+		c.Result = resultstore.TestCase_SKIPPED
+	case flip():
+		c.Result = resultstore.TestCase_SUPPRESSED
+	case flip():
+		c.Result = resultstore.TestCase_FILTERED
+	default:
+		c.Result = resultstore.TestCase_COMPLETED
+	}
+
+	if failed {
+		c.Failures = []*resultstore.TestFailure{
+			{
+				FailureMessage: "Expected err not to have occurred",
+				ExceptionType:  "NotEverythingIsJavaException",
+				StackTrace:     "TODO: stacktrace joke",
+				Expected: []string{
+					"foo",
+					"bar",
+				},
+				Actual: []string{
+					"spam",
+					"eggs",
+				},
+			},
+		}
+	}
+
+	if errored {
+		c.Errors = []*resultstore.TestError{
+			{
+				ErrorMessage:  "true != false",
+				ExceptionType: "panic",
+				StackTrace:    "lines",
+			},
+		}
+	}
+
+	return &resultstore.Test{
+		TestType: &resultstore.Test_TestCase{
+			TestCase: c,
+		},
 	}
 }
 
@@ -160,21 +286,18 @@ func setup(account, tok, invID string) error {
 	t, err := up.CreateTarget(ctx, &resultstore.CreateTargetRequest{
 		Parent:   inv.Name,
 		TargetId: "//erick//fejta:stardate-" + strconv.FormatInt(time.Now().Unix(), 10),
-		Target: &resultstore.Target{
+		Target: &resultstore.Target{ // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#Target
 			StatusAttributes: &resultstore.StatusAttributes{
 				Status:      resultstore.Status_BUILDING,
 				Description: "fun fun",
 			},
-			Visible: true,
+			Visible: true, // Will not appear in UI otherwise
+			//   Timing
+			//   TargetAttributes
+			//   TestAttributes
+			//   Properties
+			//   Files
 		},
-		// Target - https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#Target
-		//   StatusAttributes
-		//   Timing
-		//   TargetAttributes
-		//   TestAttributes
-		//   Properties
-		//   Files
-		//   Visible
 		AuthorizationToken: tok,
 	})
 	if err != nil {
@@ -207,14 +330,8 @@ func setup(account, tok, invID string) error {
 				Cpu: "amd64", // this is the only value, LOL
 			},
 			Properties: []*resultstore.Property{
-				{
-					Key:   "something",
-					Value: fmt.Sprintf("exciting-%d", time.Now().Unix()),
-				},
-				{
-					Key:   "more",
-					Value: "excitement",
-				},
+				prop("something", fmt.Sprintf("exciting-%d", time.Now().Unix())),
+				prop("more", "excitement"),
 			},
 		},
 	})
@@ -227,7 +344,10 @@ func setup(account, tok, invID string) error {
 		Parent: inv.Name,
 		// PageSize, PageStart
 	})
-	print("lc", lr, err)
+	if err != nil {
+		return fmt.Errorf("list configurations: %v", err)
+	}
+	print("lc", lr)
 
 	cfgs := lr.Configurations
 
@@ -242,25 +362,14 @@ func setup(account, tok, invID string) error {
 				Status:      resultstore.Status_TESTING,
 				Description: "oh wow",
 			},
-			Timing: &resultstore.Timing{
-				StartTime: stamp(time.Now()),
-				Duration: &duration.Duration{
-					Seconds: 50,
-					Nanos:   7,
-				},
-			},
+			Timing: timingEnd(time.Now(), 50, 7),
 			TestAttributes: &resultstore.ConfiguredTestAttributes{
 				TotalRunCount:   1,
 				TotalShardCount: 1,
-				TimeoutDuration: &duration.Duration{
-					Seconds: 500,
-				},
+				TimeoutDuration: dur(500, 0),
 			},
 			Properties: []*resultstore.Property{
-				{
-					Key:   "fun",
-					Value: fmt.Sprintf("times-%d", time.Now().Unix()),
-				},
+				prop("fun", fmt.Sprintf("times-%d", time.Now().Unix())),
 			},
 			Files: []*resultstore.File{
 				{
@@ -286,29 +395,40 @@ func setup(account, tok, invID string) error {
 			},
 		},
 	})
-
-	print("cct", ct, err)
+	if err != nil {
+		return fmt.Errorf("create configured target: %v", err)
+	}
+	print("cct", ct)
 
 	lctr, err := down.ListConfiguredTargets(ctx, &resultstore.ListConfiguredTargetsRequest{
 		Parent: t.Name,
 		// pagesize/start
 	})
-
-	print("lct", lctr, err)
+	if err != nil {
+		return fmt.Errorf("list %s configured targets: %v", t.Name, err)
+	}
+	print("lct", lctr)
 
 	cts := lctr.ConfiguredTargets
 	ct = cts[len(cts)-1]
 
 	a, err := up.CreateAction(ctx, &resultstore.CreateActionRequest{
 		Parent:             ct.Name,
-		ActionId:           "danger",
+		ActionId:           "build",
 		AuthorizationToken: tok,
 		Action: &resultstore.Action{
 			StatusAttributes: &resultstore.StatusAttributes{
-				Status:      resultstore.Status_PASSED,
-				Description: "hello again",
+				Status:      resultstore.Status_BUILT,
+				Description: "so built",
 			},
 			// Timing
+			ActionType: &resultstore.Action_BuildAction{
+				BuildAction: &resultstore.BuildAction{
+					Type:              "javac",
+					PrimaryInputPath:  "java/com/google/whatever/foo.java",
+					PrimaryOutputPath: "whatever.o",
+				},
+			},
 			// ActionType: Action_BuildAction / Test
 			ActionAttributes: &resultstore.ActionAttributes{
 				ExecutionStrategy: resultstore.ExecutionStrategy_LOCAL_SEQUENTIAL, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#ExecutionStrategy
@@ -335,7 +455,164 @@ func setup(account, tok, invID string) error {
 			Coverage:   nil, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#ActionCoverage
 		},
 	})
-	print("ca", a, err)
+	if err != nil {
+		return fmt.Errorf("create build action: %v", err)
+	}
+	print("ca#build", a)
+
+	a, err = up.CreateAction(ctx, &resultstore.CreateActionRequest{
+		Parent:             ct.Name,
+		ActionId:           "test",
+		AuthorizationToken: tok,
+		Action: &resultstore.Action{
+			StatusAttributes: &resultstore.StatusAttributes{
+				Status:      resultstore.Status_PASSED,
+				Description: "hello again",
+			},
+			// Timing
+			ActionType: &resultstore.Action_TestAction{
+				TestAction: &resultstore.TestAction{
+					TestTiming: &resultstore.TestTiming{
+						Location: &resultstore.TestTiming_Remote{
+							// Local: &resultstore.LocalTestTiming{
+							//   TestProcessDuration: &duration.Duration{},
+							// }
+							Remote: &resultstore.RemoteTestTiming{
+								LocalAnalysisDuration: dur(2, 0),
+								Attempts: []*resultstore.RemoteTestAttemptTiming{
+									{
+										// https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#RemoteTestAttemptTiming
+										QueueDuration:        dur(3, 4),
+										UploadDuration:       dur(30, 40),
+										MachineSetupDuration: dur(5, 0),
+										TestProcessDuration:  dur(6, 0),
+										DownloadDuration:     dur(7, 0),
+									},
+								},
+							},
+						},
+						SystemTimeDuration: dur(5, 0),
+						UserTimeDuration:   dur(10, 0),
+						TestCaching:        resultstore.TestCaching_CACHE_MISS, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#TestCaching
+					},
+					ShardNumber:          0,
+					RunNumber:            1,
+					AttemptNumber:        2,
+					EstimatedMemoryBytes: 3,
+					Warnings: []*resultstore.TestWarning{
+						{
+							WarningMessage: "google sure loves themselves some proto fields",
+						},
+					},
+					TestSuite: &resultstore.TestSuite{
+						SuiteName: "sweeeeet",
+						Tests: []*resultstore.Test{
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							// TestType: &resultstore.Test_TestSuite{TestSuite: &resultstore.TestSuite{}},
+						},
+						Failures: []*resultstore.TestFailure{ // suite level failures
+							{
+								FailureMessage: "bitter",
+								ExceptionType:  "VegetableException",
+								Expected: []string{
+									"candy",
+									"fruit",
+									"meat",
+								},
+								Actual: []string{
+									"broccoli",
+									"kale",
+									"cucumber",
+								},
+							},
+						},
+						Errors: []*resultstore.TestError{ // suite level errors
+							{
+								ErrorMessage:  "salty",
+								ExceptionType: "wounded",
+							},
+						},
+						Timing: timingEnd(time.Now(), 173, 0), // time to complete suite
+						Properties: []*resultstore.Property{
+							prop("sweet", "success"),
+						},
+						// Files: []*resultstore.File{} // files produced by this test suite
+					},
+				},
+			},
+			ActionAttributes: &resultstore.ActionAttributes{
+				ExecutionStrategy: resultstore.ExecutionStrategy_LOCAL_SEQUENTIAL, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#ExecutionStrategy
+				ExitCode:          1,
+				Hostname:          "foo",
+				InputFileInfo: &resultstore.InputFileInfo{
+					Count:             3,
+					DistinctCount:     2,
+					CountLimit:        12,
+					DistinctBytes:     100,
+					DistinctByteLimit: 1000,
+				},
+			},
+			ActionDependencies: []*resultstore.Dependency{
+				{
+					Resource: &resultstore.Dependency_Target{
+						Target: t.Name,
+					},
+					Label: "Root Cause", // exact resource that caused falure
+				},
+			},
+			Properties: nil,
+			Files:      nil, // special ids: build: stdout,stderr,baseline.lcov; test: test.xml,test.log,test.lcov
+			Coverage:   nil, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#ActionCoverage
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("create test action: %v", err)
+	}
+	print("ca#test", a)
 
 	lar, err := down.ListActions(ctx, &resultstore.ListActionsRequest{
 		Parent: ct.Name,
@@ -343,25 +620,40 @@ func setup(account, tok, invID string) error {
 	})
 	print("la", lar, err)
 
-	fct, err := up.FinishConfiguredTarget(ctx, &resultstore.FinishConfiguredTargetRequest{
-		Name:               ct.Name,
-		AuthorizationToken: tok,
-	})
-	print("fct", fct, err)
+	if finishConfiguredTarget {
+		fct, err := up.FinishConfiguredTarget(ctx, &resultstore.FinishConfiguredTargetRequest{
+			Name:               ct.Name,
+			AuthorizationToken: tok,
+		})
+		if err != nil {
+			return fmt.Errorf("finish %s: %v", ct.Name, err)
+		}
+		print("fct", fct)
+	}
 
-	ft, err := up.FinishTarget(ctx, &resultstore.FinishTargetRequest{
-		Name:               t.Name,
-		AuthorizationToken: tok,
-	})
-	print("ft", ft, err)
+	if finishTarget {
+		ft, err := up.FinishTarget(ctx, &resultstore.FinishTargetRequest{
+			Name:               t.Name,
+			AuthorizationToken: tok,
+		})
+		if err != nil {
+			return fmt.Errorf("finish %s: %v", t.Name, err)
+		}
+		print("ft", ft)
+	}
 
-	fi, err := up.FinishInvocation(ctx, &resultstore.FinishInvocationRequest{
-		Name:               inv.Name,
-		AuthorizationToken: tok,
-	})
-	print("fi", fi, err)
+	if finishInvocation {
+		fi, err := up.FinishInvocation(ctx, &resultstore.FinishInvocationRequest{
+			Name:               inv.Name,
+			AuthorizationToken: tok,
+		})
+		if err != nil {
+			return fmt.Errorf("finish %s: %v", inv.Name, err)
+		}
+		print("fi", fi)
+
+	}
 
 	fmt.Printf("See https://source.cloud.google.com/results/invocations/%s\n", inv.Id.InvocationId)
-
 	return nil
 }
