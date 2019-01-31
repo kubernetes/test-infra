@@ -28,13 +28,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/plank"
@@ -50,7 +47,7 @@ type options struct {
 	skipReport    bool
 
 	dryRun     bool
-	kubernetes prowflagutil.LegacyKubernetesOptions
+	kubernetes prowflagutil.KubernetesOptions
 	github     prowflagutil.GitHubOptions
 }
 
@@ -63,7 +60,7 @@ func gatherOptions() options {
 	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.buildCluster, "build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
-	fs.StringVar(&o.selector, "label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
+	fs.StringVar(&o.selector, "label-selector", labels.Everything().String(), "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
 	fs.BoolVar(&o.skipReport, "skip-report", false, "Whether or not to ignore report with githubClient")
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
@@ -117,24 +114,17 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
-	kubeClient, defaultContext, kubernetesClients, err := o.kubernetes.Client(cfg().ProwJobNamespace, o.dryRun)
+	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, o.dryRun)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting kube client.")
+		logrus.WithError(err).Fatal("Error getting prowjob client.")
 	}
 
-	buildClients := map[string]corev1.PodInterface{}
-	for context, client := range kubernetesClients {
-		// we want to map cluster clients by their alias, not their context
-		// the only context that is not the alias is the default context, so
-		// we can simply overwrite that one and be content that our cluster
-		// mapping is correct for the controller
-		if context == defaultContext {
-			context = kube.DefaultClusterAlias
-		}
-		buildClients[context] = client.CoreV1().Pods(cfg().PodNamespace)
+	buildClients, err := o.kubernetes.BuildClusterClients(cfg().ProwJobNamespace, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting build cluster clients.")
 	}
 
-	c, err := plank.NewController(kubeClient, buildClients, githubClient, nil, cfg, o.totURL, o.selector, o.skipReport)
+	c, err := plank.NewController(prowJobClient, buildClients, githubClient, nil, cfg, o.totURL, o.selector, o.skipReport)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating plank controller.")
 	}
