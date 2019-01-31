@@ -21,24 +21,13 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	clienttesting "k8s.io/client-go/testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 )
-
-type fakeKube struct {
-	jobs    []prowapi.ProwJob
-	created bool
-}
-
-func (fk *fakeKube) ListProwJobs(s string) ([]prowapi.ProwJob, error) {
-	return fk.jobs, nil
-}
-
-func (fk *fakeKube) CreateProwJob(j prowapi.ProwJob) (prowapi.ProwJob, error) {
-	fk.created = true
-	return j, nil
-}
 
 type fakeCron struct {
 	jobs []string
@@ -116,16 +105,23 @@ func TestSync(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		cfg := config.Config{
+			ProwConfig: config.ProwConfig{
+				ProwJobNamespace: "prowjobs",
+			},
 			JobConfig: config.JobConfig{
 				Periodics: []config.Periodic{{JobBase: config.JobBase{Name: "j"}}},
 			},
 		}
 		cfg.Periodics[0].SetInterval(time.Minute)
 
-		var jobs []prowapi.ProwJob
+		var jobs []runtime.Object
 		now := time.Now()
 		if tc.jobName != "" {
-			jobs = []prowapi.ProwJob{{
+			job := &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "with-interval",
+					Namespace: "prowjobs",
+				},
 				Spec: prowapi.ProwJobSpec{
 					Type: prowapi.PeriodicJob,
 					Job:  tc.jobName,
@@ -133,18 +129,27 @@ func TestSync(t *testing.T) {
 				Status: prowapi.ProwJobStatus{
 					StartTime: metav1.NewTime(now.Add(-tc.jobStartTimeAgo)),
 				},
-			}}
+			}
 			complete := metav1.NewTime(now.Add(-time.Millisecond))
 			if tc.jobComplete {
-				jobs[0].Status.CompletionTime = &complete
+				job.Status.CompletionTime = &complete
 			}
+			jobs = append(jobs, job)
 		}
-		kc := &fakeKube{jobs: jobs}
+		fakeProwJobClient := fake.NewSimpleClientset(jobs...)
 		fc := &fakeCron{}
-		if err := sync(kc, &cfg, fc, now); err != nil {
+		if err := sync(fakeProwJobClient.ProwV1().ProwJobs(cfg.ProwJobNamespace), &cfg, fc, now); err != nil {
 			t.Fatalf("For case %s, didn't expect error: %v", tc.testName, err)
 		}
-		if tc.shouldStart != kc.created {
+
+		sawCreation := false
+		for _, action := range fakeProwJobClient.Fake.Actions() {
+			switch action.(type) {
+			case clienttesting.CreateActionImpl:
+				sawCreation = true
+			}
+		}
+		if tc.shouldStart != sawCreation {
 			t.Errorf("For case %s, did the wrong thing.", tc.testName)
 		}
 	}
@@ -183,15 +188,22 @@ func TestSyncCron(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		cfg := config.Config{
+			ProwConfig: config.ProwConfig{
+				ProwJobNamespace: "prowjobs",
+			},
 			JobConfig: config.JobConfig{
 				Periodics: []config.Periodic{{JobBase: config.JobBase{Name: "j"}, Cron: "@every 1m"}},
 			},
 		}
 
-		var jobs []prowapi.ProwJob
+		var jobs []runtime.Object
 		now := time.Now()
 		if tc.jobName != "" {
-			jobs = []prowapi.ProwJob{{
+			job := &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "with-cron",
+					Namespace: "prowjobs",
+				},
 				Spec: prowapi.ProwJobSpec{
 					Type: prowapi.PeriodicJob,
 					Job:  tc.jobName,
@@ -199,18 +211,27 @@ func TestSyncCron(t *testing.T) {
 				Status: prowapi.ProwJobStatus{
 					StartTime: metav1.NewTime(now.Add(-time.Hour)),
 				},
-			}}
+			}
 			complete := metav1.NewTime(now.Add(-time.Millisecond))
 			if tc.jobComplete {
-				jobs[0].Status.CompletionTime = &complete
+				job.Status.CompletionTime = &complete
 			}
+			jobs = append(jobs, job)
 		}
-		kc := &fakeKube{jobs: jobs}
+		fakeProwJobClient := fake.NewSimpleClientset(jobs...)
 		fc := &fakeCron{}
-		if err := sync(kc, &cfg, fc, now); err != nil {
+		if err := sync(fakeProwJobClient.ProwV1().ProwJobs(cfg.ProwJobNamespace), &cfg, fc, now); err != nil {
 			t.Fatalf("For case %s, didn't expect error: %v", tc.testName, err)
 		}
-		if tc.shouldStart != kc.created {
+
+		sawCreation := false
+		for _, action := range fakeProwJobClient.Fake.Actions() {
+			switch action.(type) {
+			case clienttesting.CreateActionImpl:
+				sawCreation = true
+			}
+		}
+		if tc.shouldStart != sawCreation {
 			t.Errorf("For case %s, did the wrong thing.", tc.testName)
 		}
 	}
