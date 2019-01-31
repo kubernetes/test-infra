@@ -41,10 +41,13 @@ import (
 	"golang.org/x/oauth2/github"
 	"google.golang.org/api/option"
 	coreapi "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
@@ -68,7 +71,7 @@ type options struct {
 	configPath            string
 	jobConfigPath         string
 	buildCluster          string
-	kubernetes            prowflagutil.LegacyKubernetesOptions
+	kubernetes            prowflagutil.KubernetesOptions
 	tideURL               string
 	hookURL               string
 	oauthURL              string
@@ -85,11 +88,6 @@ type options struct {
 }
 
 func (o *options) Validate() error {
-	if o.buildCluster != "" {
-		logrus.Error("--build-cluster is deprecated, switch to --cluster by June 2019.")
-		o.kubernetes.InjectBuildCluster(o.buildCluster)
-	}
-
 	if err := o.kubernetes.Validate(false); err != nil {
 		return err
 	}
@@ -113,7 +111,6 @@ func gatherOptions() options {
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	fs.StringVar(&o.buildCluster, "build-cluster", "", "DEPRECATED. Use --cluster. Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 	fs.StringVar(&o.tideURL, "tide-url", "", "Path to tide. If empty, do not serve tide data.")
 	fs.StringVar(&o.hookURL, "hook-url", "", "Path to hook plugin help endpoint.")
 	fs.StringVar(&o.oauthURL, "oauth-url", "", "Path to deck user dashboard endpoint.")
@@ -225,27 +222,61 @@ func (c *podLogClient) GetLogs(name string, opts *coreapi.PodLogOptions) ([]byte
 	return ioutil.ReadAll(reader)
 }
 
+type filteringProwJobLister struct {
+	client      prowv1.ProwJobInterface
+	hiddenRepos sets.String
+	hiddenOnly  bool
+}
+
+func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJob, error) {
+	prowJobList, err := c.client.List(metav1.ListOptions{LabelSelector: selector})
+	if err != nil {
+		return nil, err
+	}
+
+	var filtered []prowapi.ProwJob
+	for _, item := range prowJobList.Items {
+		if item.Spec.Refs == nil && item.Spec.ExtraRefs == nil {
+			// periodic jobs with no refs cannot be filtered
+			filtered = append(filtered, item)
+		}
+
+		refs := item.Spec.Refs
+		if refs == nil {
+			refs = &item.Spec.ExtraRefs[0]
+		}
+		shouldHide := c.hiddenRepos.HasAny(fmt.Sprintf("%s/%s", refs.Org, refs.Repo), refs.Org)
+		if shouldHide == c.hiddenOnly {
+			// this is a hidden job, show it if we're asked
+			// to only show hidden jobs otherwise hide it
+			filtered = append(filtered, item)
+		}
+	}
+	return filtered, nil
+}
+
 // prodOnlyMain contains logic only used when running deployed, not locally
 func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeMux {
-	kc, defaultContext, kubernetesClients, err := o.kubernetes.Client(cfg().ProwJobNamespace, false)
+	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, false)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting ProwJob client for infrastructure cluster.")
+	}
+
+	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, false)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
 	}
-	kc.SetHiddenReposProvider(func() []string { return cfg().Deck.HiddenRepos }, o.hiddenOnly)
 
 	podLogClients := map[string]jobs.PodLogClient{}
-	for clusterContext, client := range kubernetesClients {
-		// we want to map cluster clients by their alias, not their context
-		// the only context that is not the alias is the default context, so
-		// we can simply overwrite that one and be content that our cluster
-		// mapping is correct for the controller
-		if clusterContext == defaultContext {
-			clusterContext = kube.DefaultClusterAlias
-		}
-		podLogClients[clusterContext] = &podLogClient{client: client.CoreV1().Pods(cfg().PodNamespace)}
+	for clusterContext, client := range buildClusterClients {
+		podLogClients[clusterContext] = &podLogClient{client: client}
 	}
 
-	ja := jobs.NewJobAgent(kc, podLogClients, cfg)
+	ja := jobs.NewJobAgent(&filteringProwJobLister{
+		client:      prowJobClient,
+		hiddenRepos: sets.NewString(cfg().Deck.HiddenRepos...),
+		hiddenOnly:  o.hiddenOnly,
+	}, podLogClients, cfg)
 	ja.Start()
 
 	// setup prod only handlers
@@ -253,7 +284,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 	mux.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja)))
 	mux.Handle("/badge.svg", gziphandler.GzipHandler(handleBadge(ja)))
 	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
-	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
+	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient)))
 
 	if o.spyglass {
 		initSpyglass(cfg, o, mux, ja)
@@ -879,18 +910,14 @@ func validateLogRequest(r *http.Request) error {
 	return nil
 }
 
-type pjClient interface {
-	GetProwJob(string) (prowapi.ProwJob, error)
-}
-
-func handleRerun(kc pjClient) http.HandlerFunc {
+func handleRerun(prowJobClient prowv1.ProwJobInterface) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("prowjob")
 		if name == "" {
 			http.Error(w, "request did not provide the 'name' query parameter", http.StatusBadRequest)
 			return
 		}
-		pj, err := kc.GetProwJob(name)
+		pj, err := prowJobClient.Get(name, metav1.GetOptions{})
 		if err != nil {
 			http.Error(w, fmt.Sprintf("ProwJob not found: %v", err), http.StatusNotFound)
 			logrus.WithError(err).Warning("ProwJob not found.")
