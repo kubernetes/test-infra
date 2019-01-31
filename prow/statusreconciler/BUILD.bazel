@@ -10,10 +10,10 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//maintenance/migratestatus/migrator:go_default_library",
+        "//prow/client/clientset/versioned/typed/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/errorutil:go_default_library",
         "//prow/github:go_default_library",
-        "//prow/kube:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/plugins/trigger:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

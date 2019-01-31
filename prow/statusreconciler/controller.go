@@ -23,24 +23,24 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 
 	"k8s.io/test-infra/maintenance/migratestatus/migrator"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/trigger"
 )
 
 // NewController constructs a new controller to reconcile stauses on config change
-func NewController(continueOnError bool, kubeClient *kube.Client, githubClient *github.Client, configAgent *config.Agent, pluginAgent *plugins.ConfigAgent) *Controller {
+func NewController(continueOnError bool, prowJobClient prowv1.ProwJobInterface, githubClient *github.Client, configAgent *config.Agent, pluginAgent *plugins.ConfigAgent) *Controller {
 	return &Controller{
 		continueOnError: continueOnError,
 		prowJobTriggerer: &kubeProwJobTriggerer{
-			kubeClient:   kubeClient,
-			githubClient: githubClient,
-			configAgent:  configAgent,
+			prowJobClient: prowJobClient,
+			githubClient:  githubClient,
+			configAgent:   configAgent,
 		},
 		githubClient: githubClient,
 		statusMigrator: &gitHubMigrator{
@@ -83,18 +83,18 @@ type prowJobTriggerer interface {
 }
 
 type kubeProwJobTriggerer struct {
-	kubeClient   *kube.Client
-	githubClient *github.Client
-	configAgent  *config.Agent
+	prowJobClient prowv1.ProwJobInterface
+	githubClient  *github.Client
+	configAgent   *config.Agent
 }
 
 func (t *kubeProwJobTriggerer) run(pr *github.PullRequest, requestedJobs []config.Presubmit) error {
 	return trigger.RunRequested(
 		trigger.Client{
-			GitHubClient: t.githubClient,
-			KubeClient:   t.kubeClient,
-			Config:       t.configAgent.Config(),
-			Logger:       logrus.WithField("client", "trigger"),
+			GitHubClient:  t.githubClient,
+			ProwJobClient: t.prowJobClient,
+			Config:        t.configAgent.Config(),
+			Logger:        logrus.WithField("client", "trigger"),
 		},
 		pr, requestedJobs, "none",
 	)
