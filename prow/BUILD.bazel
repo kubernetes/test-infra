@@ -142,7 +142,6 @@ filegroup(
         "//prow/pubsub/reporter:all-srcs",
         "//prow/pubsub/subscriber:all-srcs",
         "//prow/repoowners:all-srcs",
-        "//prow/report:all-srcs",
         "//prow/sidecar:all-srcs",
         "//prow/slack:all-srcs",
         "//prow/spyglass:all-srcs",
