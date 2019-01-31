@@ -199,7 +199,7 @@ func (a byStartTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a byStartTime) Less(i, j int) bool { return a[i].st.After(a[j].st) }
 
 func (ja *JobAgent) update() error {
-	pjs, err := ja.kc.ListProwJobs(kube.EmptySelector)
+	pjs, err := ja.kc.ListProwJobs(labels.Everything().String())
 	if err != nil {
 		return err
 	}
