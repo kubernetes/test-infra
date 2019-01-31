@@ -24,7 +24,7 @@ import (
 	"strings"
 	"text/template"
 
-	"k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -47,19 +47,19 @@ type GithubClient interface {
 // prowjobStateToGithubStatus maps prowjob status to github states.
 // Github states can be one of error, failure, pending, or success.
 // https://developer.github.com/v3/repos/statuses/#create-a-status
-func prowjobStateToGithubStatus(pjState v1.ProwJobState) (string, error) {
+func prowjobStateToGithubStatus(pjState prowapi.ProwJobState) (string, error) {
 	switch pjState {
-	case v1.TriggeredState:
+	case prowapi.TriggeredState:
 		return github.StatusPending, nil
-	case v1.PendingState:
+	case prowapi.PendingState:
 		return github.StatusPending, nil
-	case v1.SuccessState:
+	case prowapi.SuccessState:
 		return github.StatusSuccess, nil
-	case v1.ErrorState:
+	case prowapi.ErrorState:
 		return github.StatusError, nil
-	case v1.FailureState:
+	case prowapi.FailureState:
 		return github.StatusFailure, nil
-	case v1.AbortedState:
+	case prowapi.AbortedState:
 		return github.StatusFailure, nil
 	}
 	return "", fmt.Errorf("Unknown prowjob state: %v", pjState)
@@ -84,7 +84,7 @@ func truncate(in string) string {
 // reportStatus should be called on status different from Success.
 // Once a parent ProwJob is pending, all children should be marked as Pending
 // Same goes for failed status.
-func reportStatus(ghc GithubClient, pj v1.ProwJob, childDescription string) error {
+func reportStatus(ghc GithubClient, pj prowapi.ProwJob, childDescription string) error {
 	refs := pj.Spec.Refs
 	if pj.Spec.Report {
 		contextState, err := prowjobStateToGithubStatus(pj.Status.State)
@@ -105,7 +105,7 @@ func reportStatus(ghc GithubClient, pj v1.ProwJob, childDescription string) erro
 
 // Report is creating/updating/removing reports in Github based on the state of
 // the provided ProwJob.
-func Report(ghc GithubClient, reportTemplate *template.Template, pj v1.ProwJob) error {
+func Report(ghc GithubClient, reportTemplate *template.Template, pj prowapi.ProwJob) error {
 	if ghc == nil {
 		return fmt.Errorf("trying to report pj %s, but found empty github client", pj.ObjectMeta.Name)
 	}
@@ -161,7 +161,7 @@ func Report(ghc GithubClient, reportTemplate *template.Template, pj v1.ProwJob) 
 // entries, and the ID of the comment to update. If there are no table entries
 // then don't make a new comment. Otherwise, if the comment to update is 0,
 // create a new comment.
-func parseIssueComments(pj v1.ProwJob, botName string, ics []github.IssueComment) ([]int, []string, int) {
+func parseIssueComments(pj prowapi.ProwJob, botName string, ics []github.IssueComment) ([]int, []string, int) {
 	var delete []int
 	var previousComments []int
 	var latestComment int
@@ -231,7 +231,7 @@ func parseIssueComments(pj v1.ProwJob, botName string, ics []github.IssueComment
 	return delete, newEntries, latestComment
 }
 
-func createEntry(pj v1.ProwJob) string {
+func createEntry(pj prowapi.ProwJob) string {
 	return strings.Join([]string{
 		pj.Spec.Context,
 		pj.Spec.Refs.Pulls[0].SHA,
@@ -243,7 +243,7 @@ func createEntry(pj v1.ProwJob) string {
 // createComment take a ProwJob and a list of entries generated with
 // createEntry and returns a nicely formatted comment. It may fail if template
 // execution fails.
-func createComment(reportTemplate *template.Template, pj v1.ProwJob, entries []string) (string, error) {
+func createComment(reportTemplate *template.Template, pj prowapi.ProwJob, entries []string) (string, error) {
 	plural := ""
 	if len(entries) > 1 {
 		plural = "s"
