@@ -21,6 +21,11 @@ presets:
     value: "--profiling"
   - name: SCHEDULER_TEST_ARGS
     value: "--profiling"
+  # Reduce logs verbosity
+  - name: TEST_CLUSTER_LOG_LEVEL
+    value: "--v=2"
+  - name: API_SERVER_TEST_LOG_LEVEL
+    value: "--v=3"
   # Increase controller-manager's resync period to simulate production.
   - name: TEST_CLUSTER_RESYNC_PERIOD
     value: "--min-resync-period=12h"
@@ -37,9 +42,6 @@ presets:
     preset-e2e-kubemark-gce-big: "true"
   env:
   # kubernetes env
-  # Reduce logs verbosity
-  - name: TEST_CLUSTER_LOG_LEVEL
-    value: "--v=2"
   # Increase throughput in Kubemark master components.
   - name: KUBEMARK_MASTER_COMPONENTS_QPS_LIMITS
     value: "--kube-api-qps=100 --kube-api-burst=100"
@@ -52,9 +54,6 @@ presets:
     preset-e2e-kubemark-gce-scale: "true"
   env:
   # kubernetes env
-  # Reduce logs verbosity
-  - name: TEST_CLUSTER_LOG_LEVEL
-    value: "--v=2"
   # Increase throughput in Kubemark master components.
   - name: KUBEMARK_MASTER_COMPONENTS_QPS_LIMITS
     value: "--kube-api-qps=100 --kube-api-burst=100"
@@ -104,6 +103,8 @@ presets:
   # Reduce logs verbosity.
   - name: TEST_CLUSTER_LOG_LEVEL
     value: --v=2
+  - name: API_SERVER_TEST_LOG_LEVEL
+    value: "--v=3"
   # Increase resync period to simulate production.
   - name: TEST_CLUSTER_RESYNC_PERIOD
     value: --min-resync-period=12h

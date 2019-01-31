@@ -487,9 +487,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=kubemark-100pods
-      # Reduce logs verbosity
-      # TODO(wojtek-t): get rid of this
-      - --env=TEST_CLUSTER_LOG_LEVEL=--v=2
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-node-size=n1-standard-8
