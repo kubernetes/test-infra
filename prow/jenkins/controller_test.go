@@ -28,6 +28,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -69,6 +71,7 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int, operators []config.Jen
 	ca := &fca{
 		c: &config.Config{
 			ProwConfig: config.ProwConfig{
+				ProwJobNamespace: "prowjobs",
 				JenkinsOperators: []config.JenkinsOperator{
 					{
 						Controller: config.Controller{
@@ -94,36 +97,6 @@ func (f *fca) Config() *config.Config {
 	f.Lock()
 	defer f.Unlock()
 	return f.c
-}
-
-type fkc struct {
-	sync.Mutex
-	prowjobs []prowapi.ProwJob
-}
-
-func (f *fkc) CreateProwJob(pj prowapi.ProwJob) (prowapi.ProwJob, error) {
-	f.Lock()
-	defer f.Unlock()
-	f.prowjobs = append(f.prowjobs, pj)
-	return pj, nil
-}
-
-func (f *fkc) ListProwJobs(string) ([]prowapi.ProwJob, error) {
-	f.Lock()
-	defer f.Unlock()
-	return f.prowjobs, nil
-}
-
-func (f *fkc) ReplaceProwJob(name string, job prowapi.ProwJob) (prowapi.ProwJob, error) {
-	f.Lock()
-	defer f.Unlock()
-	for i := range f.prowjobs {
-		if f.prowjobs[i].ObjectMeta.Name == name {
-			f.prowjobs[i] = job
-			return job, nil
-		}
-	}
-	return prowapi.ProwJob{}, fmt.Errorf("did not find prowjob %s", name)
 }
 
 type fjc struct {
@@ -222,6 +195,10 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		{
 			name: "start new job",
 			pj: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test",
+					Namespace: "prowjobs",
+				},
 				Spec: prowapi.ProwJobSpec{
 					Type: prowapi.PostsubmitJob,
 				},
@@ -237,6 +214,10 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		{
 			name: "start new job, error",
 			pj: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test",
+					Namespace: "prowjobs",
+				},
 				Spec: prowapi.ProwJobSpec{
 					Type: prowapi.PresubmitJob,
 					Refs: &prowapi.Refs{
@@ -259,6 +240,10 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		{
 			name: "block running new job",
 			pj: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test",
+					Namespace: "prowjobs",
+				},
 				Spec: prowapi.ProwJobSpec{
 					Type: prowapi.PostsubmitJob,
 				},
@@ -276,6 +261,10 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		{
 			name: "allow running new job",
 			pj: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test",
+					Namespace: "prowjobs",
+				},
 				Spec: prowapi.ProwJobSpec{
 					Type: prowapi.PostsubmitJob,
 				},
@@ -300,18 +289,16 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		fjc := &fjc{
 			err: tc.err,
 		}
-		fkc := &fkc{
-			prowjobs: []prowapi.ProwJob{tc.pj},
-		}
+		fakeProwJobClient := fake.NewSimpleClientset(&tc.pj)
 
 		c := Controller{
-			kc:          fkc,
-			jc:          fjc,
-			log:         logrus.NewEntry(logrus.StandardLogger()),
-			cfg:         newFakeConfigAgent(t, tc.maxConcurrency, nil).Config,
-			totURL:      totServ.URL,
-			lock:        sync.RWMutex{},
-			pendingJobs: make(map[string]int),
+			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			jc:            fjc,
+			log:           logrus.NewEntry(logrus.StandardLogger()),
+			cfg:           newFakeConfigAgent(t, tc.maxConcurrency, nil).Config,
+			totURL:        totServ.URL,
+			lock:          sync.RWMutex{},
+			pendingJobs:   make(map[string]int),
 		}
 		if tc.pendingJobs != nil {
 			c.pendingJobs = tc.pendingJobs
@@ -324,7 +311,14 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		}
 		close(reports)
 
-		actual := fkc.prowjobs[0]
+		actualProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
+		if err != nil {
+			t.Fatalf("failed to list prowjobs from client %v", err)
+		}
+		if len(actualProwJobs.Items) != 1 {
+			t.Fatalf("Didn't create just one ProwJob, but %d", len(actualProwJobs.Items))
+		}
+		actual := actualProwJobs.Items[0]
 		if tc.expectedError && actual.Status.Description != "Error starting Jenkins job." {
 			t.Errorf("expected description %q, got %q", "Error starting Jenkins job.", actual.Status.Description)
 			continue
@@ -376,7 +370,8 @@ func TestSyncPendingJobs(t *testing.T) {
 			name: "enqueued",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "foofoo",
+					Name:      "foofoo",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{
 					Job: "test-job",
@@ -396,7 +391,8 @@ func TestSyncPendingJobs(t *testing.T) {
 			name: "finished queue",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "boing",
+					Name:      "boing",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{
 					Job: "test-job",
@@ -418,7 +414,8 @@ func TestSyncPendingJobs(t *testing.T) {
 			name: "building",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "firstoutthetrenches",
+					Name:      "firstoutthetrenches",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{
 					Job: "test-job",
@@ -438,7 +435,8 @@ func TestSyncPendingJobs(t *testing.T) {
 			name: "missing build",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "blabla",
+					Name:      "blabla",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{
 					Type: prowapi.PresubmitJob,
@@ -468,7 +466,8 @@ func TestSyncPendingJobs(t *testing.T) {
 			name: "finished, success",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "winwin",
+					Name:      "winwin",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{
 					Job: "test-job",
@@ -489,7 +488,8 @@ func TestSyncPendingJobs(t *testing.T) {
 			name: "finished, failed",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "whatapity",
+					Name:      "whatapity",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{
 					Job: "test-job",
@@ -516,18 +516,16 @@ func TestSyncPendingJobs(t *testing.T) {
 		fjc := &fjc{
 			err: tc.err,
 		}
-		fkc := &fkc{
-			prowjobs: []prowapi.ProwJob{tc.pj},
-		}
+		fakeProwJobClient := fake.NewSimpleClientset(&tc.pj)
 
 		c := Controller{
-			kc:          fkc,
-			jc:          fjc,
-			log:         logrus.NewEntry(logrus.StandardLogger()),
-			cfg:         newFakeConfigAgent(t, 0, nil).Config,
-			totURL:      totServ.URL,
-			lock:        sync.RWMutex{},
-			pendingJobs: make(map[string]int),
+			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			jc:            fjc,
+			log:           logrus.NewEntry(logrus.StandardLogger()),
+			cfg:           newFakeConfigAgent(t, 0, nil).Config,
+			totURL:        totServ.URL,
+			lock:          sync.RWMutex{},
+			pendingJobs:   make(map[string]int),
 		}
 
 		reports := make(chan prowapi.ProwJob, 100)
@@ -537,7 +535,14 @@ func TestSyncPendingJobs(t *testing.T) {
 		}
 		close(reports)
 
-		actual := fkc.prowjobs[0]
+		actualProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
+		if err != nil {
+			t.Fatalf("failed to list prowjobs from client %v", err)
+		}
+		if len(actualProwJobs.Items) != 1 {
+			t.Fatalf("Didn't create just one ProwJob, but %d", len(actualProwJobs.Items))
+		}
+		actual := actualProwJobs.Items[0]
 		if tc.expectedError && actual.Status.Description != "Error finding Jenkins job." {
 			t.Errorf("expected description %q, got %q", "Error finding Jenkins job.", actual.Status.Description)
 			continue
@@ -602,9 +607,8 @@ func TestBatch(t *testing.T) {
 		},
 	}), nil)
 	pj.ObjectMeta.Name = "known_name"
-	fc := &fkc{
-		prowjobs: []prowapi.ProwJob{pj},
-	}
+	pj.ObjectMeta.Namespace = "prowjobs"
+	fakeProwJobClient := fake.NewSimpleClientset(&pj)
 	jc := &fjc{
 		builds: map[string]Build{
 			"known_name": { /* Running */ },
@@ -615,48 +619,60 @@ func TestBatch(t *testing.T) {
 	}))
 	defer totServ.Close()
 	c := Controller{
-		kc:          fc,
-		ghc:         &fghc{},
-		jc:          jc,
-		log:         logrus.NewEntry(logrus.StandardLogger()),
-		cfg:         newFakeConfigAgent(t, 0, nil).Config,
-		totURL:      totServ.URL,
-		pendingJobs: make(map[string]int),
-		lock:        sync.RWMutex{},
+		prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+		ghc:           &fghc{},
+		jc:            jc,
+		log:           logrus.NewEntry(logrus.StandardLogger()),
+		cfg:           newFakeConfigAgent(t, 0, nil).Config,
+		totURL:        totServ.URL,
+		pendingJobs:   make(map[string]int),
+		lock:          sync.RWMutex{},
 	}
 
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on first sync: %v", err)
 	}
-	if fc.prowjobs[0].Status.State != prowapi.PendingState {
-		t.Fatalf("Wrong state: %v", fc.prowjobs[0].Status.State)
+	afterFirstSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").Get("known_name", metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("failed to get prowjob from client: %v", err)
 	}
-	if fc.prowjobs[0].Status.Description != "Jenkins job enqueued." {
-		t.Fatalf("Expected description %q, got %q.", "Jenkins job enqueued.", fc.prowjobs[0].Status.Description)
+	if afterFirstSync.Status.State != prowapi.PendingState {
+		t.Fatalf("Wrong state: %v", afterFirstSync.Status.State)
+	}
+	if afterFirstSync.Status.Description != "Jenkins job enqueued." {
+		t.Fatalf("Expected description %q, got %q.", "Jenkins job enqueued.", afterFirstSync.Status.Description)
 	}
 	jc.builds["known_name"] = Build{Number: 42}
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on second sync: %v", err)
 	}
-	if fc.prowjobs[0].Status.Description != "Jenkins job running." {
-		t.Fatalf("Expected description %q, got %q.", "Jenkins job running.", fc.prowjobs[0].Status.Description)
+	afterSecondSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").Get("known_name", metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("failed to get prowjob from client: %v", err)
 	}
-	if fc.prowjobs[0].Status.PodName != "known_name" {
-		t.Fatalf("Wrong PodName: %s", fc.prowjobs[0].Status.PodName)
+	if afterSecondSync.Status.Description != "Jenkins job running." {
+		t.Fatalf("Expected description %q, got %q.", "Jenkins job running.", afterSecondSync.Status.Description)
+	}
+	if afterSecondSync.Status.PodName != "known_name" {
+		t.Fatalf("Wrong PodName: %s", afterSecondSync.Status.PodName)
 	}
 	jc.builds["known_name"] = Build{Result: pState(success)}
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on third sync: %v", err)
 	}
-	if fc.prowjobs[0].Status.Description != "Jenkins job succeeded." {
-		t.Fatalf("Expected description %q, got %q.", "Jenkins job succeeded.", fc.prowjobs[0].Status.Description)
+	afterThirdSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").Get("known_name", metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("failed to get prowjob from client: %v", err)
 	}
-	if fc.prowjobs[0].Status.State != prowapi.SuccessState {
-		t.Fatalf("Wrong state: %v", fc.prowjobs[0].Status.State)
+	if afterThirdSync.Status.Description != "Jenkins job succeeded." {
+		t.Fatalf("Expected description %q, got %q.", "Jenkins job succeeded.", afterThirdSync.Status.Description)
+	}
+	if afterThirdSync.Status.State != prowapi.SuccessState {
+		t.Fatalf("Wrong state: %v", afterThirdSync.Status.State)
 	}
 	// This is what the SQ reads.
-	if fc.prowjobs[0].Spec.Context != "Some Job Context" {
-		t.Fatalf("Wrong context: %v", fc.prowjobs[0].Spec.Context)
+	if afterThirdSync.Spec.Context != "Some Job Context" {
+		t.Fatalf("Wrong context: %v", afterThirdSync.Spec.Context)
 	}
 }
 
@@ -671,6 +687,10 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			name: "avoid starting a triggered job",
 			pjs: []prowapi.ProwJob{
 				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "first",
+						Namespace: "prowjobs",
+					},
 					Spec: prowapi.ProwJobSpec{
 						Job:            "test-bazel-build",
 						Type:           prowapi.PostsubmitJob,
@@ -681,6 +701,10 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 					},
 				},
 				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "second",
+						Namespace: "prowjobs",
+					},
 					Spec: prowapi.ProwJobSpec{
 						Job:            "test-bazel-build",
 						Type:           prowapi.PostsubmitJob,
@@ -698,6 +722,10 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			name: "both triggered jobs can start",
 			pjs: []prowapi.ProwJob{
 				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "first",
+						Namespace: "prowjobs",
+					},
 					Spec: prowapi.ProwJobSpec{
 						Job:            "test-bazel-build",
 						Type:           prowapi.PostsubmitJob,
@@ -708,6 +736,10 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 					},
 				},
 				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "second",
+						Namespace: "prowjobs",
+					},
 					Spec: prowapi.ProwJobSpec{
 						Job:            "test-bazel-build",
 						Type:           prowapi.PostsubmitJob,
@@ -725,6 +757,10 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			name: "no triggered job can start",
 			pjs: []prowapi.ProwJob{
 				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "first",
+						Namespace: "prowjobs",
+					},
 					Spec: prowapi.ProwJobSpec{
 						Job:            "test-bazel-build",
 						Type:           prowapi.PostsubmitJob,
@@ -735,6 +771,10 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 					},
 				},
 				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "second",
+						Namespace: "prowjobs",
+					},
 					Spec: prowapi.ProwJobSpec{
 						Job:            "test-bazel-build",
 						Type:           prowapi.PostsubmitJob,
@@ -761,17 +801,19 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		}
 		close(jobs)
 
-		fc := &fkc{
-			prowjobs: test.pjs,
+		var prowJobs []runtime.Object
+		for i := range test.pjs {
+			prowJobs = append(prowJobs, &test.pjs[i])
 		}
+		fakeProwJobClient := fake.NewSimpleClientset(prowJobs...)
 		fjc := &fjc{}
 		c := Controller{
-			kc:          fc,
-			jc:          fjc,
-			log:         logrus.NewEntry(logrus.StandardLogger()),
-			cfg:         newFakeConfigAgent(t, 0, nil).Config,
-			totURL:      totServ.URL,
-			pendingJobs: test.pendingJobs,
+			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			jc:            fjc,
+			log:           logrus.NewEntry(logrus.StandardLogger()),
+			cfg:           newFakeConfigAgent(t, 0, nil).Config,
+			totURL:        totServ.URL,
+			pendingJobs:   test.pendingJobs,
 		}
 
 		reports := make(chan<- prowapi.ProwJob, len(test.pjs))
