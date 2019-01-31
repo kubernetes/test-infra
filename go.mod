@@ -39,6 +39,7 @@ require (
 	github.com/golang/protobuf v1.2.0
 	github.com/google/go-github v0.0.0-20170604030111-7a51fb928f52
 	github.com/google/go-querystring v0.0.0-20150414214848-547ef5ac9797 // indirect
+	github.com/google/uuid v1.0.0
 	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/gophercloud/gophercloud v0.0.0-20181215224939-bdd8b1ecd793 // indirect
 	github.com/gorilla/mux v1.6.2 // indirect
@@ -82,6 +83,8 @@ require (
 	golang.org/x/time v0.0.0-20180412165947-fbb02b2291d2
 	golang.org/x/tools v0.0.0-20180828015842-6cd1fcedba52
 	google.golang.org/api v0.0.0-20181021000519-a2651947f503
+	google.golang.org/genproto v0.0.0-20181016170114-94acd270e44e
+	google.golang.org/grpc v1.15.0
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v2 v2.2.1
 	k8s.io/api v0.0.0-20181128191700-6db15a15d2d3
