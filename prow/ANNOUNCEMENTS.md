@@ -40,6 +40,8 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *January 31, 2019* `crier` no longer supports the `--masterurl` flag for connecting
+   to the infrastructure cluster. Use `--kubeconfig` with `--context` for this.
  - *January 27, 2019* Jobs that do not run will no longer post "Skipped" statuses.
  - *January 27, 2019* Jobs that do not run always will no longer be required by
    branch protection as they will not always produce a status. They will continue
