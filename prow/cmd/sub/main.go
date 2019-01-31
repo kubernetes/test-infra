@@ -30,9 +30,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/client/clientset/versioned"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
@@ -46,7 +46,7 @@ var (
 )
 
 type options struct {
-	client         flagutil.KubernetesClientOptions
+	client         flagutil.KubernetesOptions
 	port           int
 	pushSecretFile string
 
@@ -59,16 +59,15 @@ type options struct {
 }
 
 type kubeClient struct {
-	client    versioned.Interface
-	namespace string
-	dryRun    bool
+	client prowv1.ProwJobInterface
+	dryRun bool
 }
 
-func (c *kubeClient) CreateProwJob(job *prowapi.ProwJob) (*prowapi.ProwJob, error) {
+func (c *kubeClient) Create(job *prowapi.ProwJob) (*prowapi.ProwJob, error) {
 	if c.dryRun {
 		return job, nil
 	}
-	return c.client.ProwV1().ProwJobs(c.namespace).Create(job)
+	return c.client.Create(job)
 }
 
 func init() {
@@ -110,14 +109,13 @@ func main() {
 		tokenGenerator = secretAgent.GetTokenGenerator(flagOptions.pushSecretFile)
 	}
 
-	prowjobClient, err := flagOptions.client.ProwJobClient()
+	prowjobClient, err := flagOptions.client.ProwJobClient(configAgent.Config().ProwJobNamespace, flagOptions.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("unable to create prow job client")
 	}
 	kubeClient := &kubeClient{
-		client:    prowjobClient,
-		namespace: configAgent.Config().ProwJobNamespace,
-		dryRun:    flagOptions.dryRun,
+		client: prowjobClient,
+		dryRun: flagOptions.dryRun,
 	}
 
 	promMetrics := subscriber.NewMetrics()
@@ -129,9 +127,9 @@ func main() {
 	}
 
 	s := &subscriber.Subscriber{
-		ConfigAgent: configAgent,
-		Metrics:     promMetrics,
-		KubeClient:  kubeClient,
+		ConfigAgent:   configAgent,
+		Metrics:       promMetrics,
+		ProwJobClient: kubeClient,
 	}
 
 	// Return 200 on / for health checks.
