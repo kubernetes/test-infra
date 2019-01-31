@@ -44,6 +44,7 @@ import (
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"sigs.k8s.io/yaml"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
@@ -450,7 +451,7 @@ func handleProwJobs(ja *jobs.JobAgent) http.HandlerFunc {
 			}
 		}
 		jd, err := json.Marshal(struct {
-			Items []kube.ProwJob `json:"items"`
+			Items []prowapi.ProwJob `json:"items"`
 		}{jobs})
 		if err != nil {
 			logrus.WithError(err).Error("Error marshaling jobs.")
@@ -879,7 +880,7 @@ func validateLogRequest(r *http.Request) error {
 }
 
 type pjClient interface {
-	GetProwJob(string) (kube.ProwJob, error)
+	GetProwJob(string) (prowapi.ProwJob, error)
 }
 
 func handleRerun(kc pjClient) http.HandlerFunc {

@@ -22,20 +22,20 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
 )
 
 type fakeKube struct {
-	jobs    []kube.ProwJob
+	jobs    []prowapi.ProwJob
 	created bool
 }
 
-func (fk *fakeKube) ListProwJobs(s string) ([]kube.ProwJob, error) {
+func (fk *fakeKube) ListProwJobs(s string) ([]prowapi.ProwJob, error) {
 	return fk.jobs, nil
 }
 
-func (fk *fakeKube) CreateProwJob(j kube.ProwJob) (kube.ProwJob, error) {
+func (fk *fakeKube) CreateProwJob(j prowapi.ProwJob) (prowapi.ProwJob, error) {
 	fk.created = true
 	return j, nil
 }
@@ -122,15 +122,15 @@ func TestSync(t *testing.T) {
 		}
 		cfg.Periodics[0].SetInterval(time.Minute)
 
-		var jobs []kube.ProwJob
+		var jobs []prowapi.ProwJob
 		now := time.Now()
 		if tc.jobName != "" {
-			jobs = []kube.ProwJob{{
-				Spec: kube.ProwJobSpec{
-					Type: kube.PeriodicJob,
+			jobs = []prowapi.ProwJob{{
+				Spec: prowapi.ProwJobSpec{
+					Type: prowapi.PeriodicJob,
 					Job:  tc.jobName,
 				},
-				Status: kube.ProwJobStatus{
+				Status: prowapi.ProwJobStatus{
 					StartTime: metav1.NewTime(now.Add(-tc.jobStartTimeAgo)),
 				},
 			}}
@@ -188,15 +188,15 @@ func TestSyncCron(t *testing.T) {
 			},
 		}
 
-		var jobs []kube.ProwJob
+		var jobs []prowapi.ProwJob
 		now := time.Now()
 		if tc.jobName != "" {
-			jobs = []kube.ProwJob{{
-				Spec: kube.ProwJobSpec{
-					Type: kube.PeriodicJob,
+			jobs = []prowapi.ProwJob{{
+				Spec: prowapi.ProwJobSpec{
+					Type: prowapi.PeriodicJob,
 					Job:  tc.jobName,
 				},
-				Status: kube.ProwJobStatus{
+				Status: prowapi.ProwJobStatus{
 					StartTime: metav1.NewTime(now.Add(-time.Hour)),
 				},
 			}}

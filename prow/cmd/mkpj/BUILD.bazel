@@ -12,11 +12,11 @@ go_library(
     srcs = ["main.go"],
     importpath = "k8s.io/test-infra/prow/cmd/mkpj",
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
-        "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/sigs.k8s.io/yaml:go_default_library",
@@ -44,7 +44,6 @@ go_test(
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",
-        "//prow/kube:go_default_library",
     ],
 )
 

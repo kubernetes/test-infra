@@ -21,7 +21,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/equality"
 
-	"k8s.io/test-infra/prow/kube"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
@@ -35,7 +35,7 @@ func TestPathForSpec(t *testing.T) {
 		{
 			name: "periodic",
 			spec: &downwardapi.JobSpec{
-				Type:    kube.PeriodicJob,
+				Type:    prowapi.PeriodicJob,
 				Job:     "job",
 				BuildID: "number",
 			},
@@ -43,7 +43,7 @@ func TestPathForSpec(t *testing.T) {
 		},
 		{
 			name: "postsubmit",
-			spec: &downwardapi.JobSpec{Type: kube.PostsubmitJob,
+			spec: &downwardapi.JobSpec{Type: prowapi.PostsubmitJob,
 				Job:     "job",
 				BuildID: "number",
 			},
@@ -51,7 +51,7 @@ func TestPathForSpec(t *testing.T) {
 		},
 		{
 			name: "batch",
-			spec: &downwardapi.JobSpec{Type: kube.BatchJob,
+			spec: &downwardapi.JobSpec{Type: prowapi.BatchJob,
 				Job:     "job",
 				BuildID: "number",
 			},
@@ -60,13 +60,13 @@ func TestPathForSpec(t *testing.T) {
 		{
 			name: "presubmit full default legacy",
 			spec: &downwardapi.JobSpec{
-				Type:    kube.PresubmitJob,
+				Type:    prowapi.PresubmitJob,
 				Job:     "job",
 				BuildID: "number",
-				Refs: &kube.Refs{
+				Refs: &prowapi.Refs{
 					Org:  "org",
 					Repo: "repo",
-					Pulls: []kube.Pull{
+					Pulls: []prowapi.Pull{
 						{
 							Number: 1,
 						},
@@ -79,13 +79,13 @@ func TestPathForSpec(t *testing.T) {
 		{
 			name: "presubmit default org legacy",
 			spec: &downwardapi.JobSpec{
-				Type:    kube.PresubmitJob,
+				Type:    prowapi.PresubmitJob,
 				Job:     "job",
 				BuildID: "number",
-				Refs: &kube.Refs{
+				Refs: &prowapi.Refs{
 					Org:  "org",
 					Repo: "repo",
-					Pulls: []kube.Pull{
+					Pulls: []prowapi.Pull{
 						{
 							Number: 1,
 						},
@@ -98,13 +98,13 @@ func TestPathForSpec(t *testing.T) {
 		{
 			name: "presubmit nondefault legacy",
 			spec: &downwardapi.JobSpec{
-				Type:    kube.PresubmitJob,
+				Type:    prowapi.PresubmitJob,
 				Job:     "job",
 				BuildID: "number",
-				Refs: &kube.Refs{
+				Refs: &prowapi.Refs{
 					Org:  "org",
 					Repo: "repo",
-					Pulls: []kube.Pull{
+					Pulls: []prowapi.Pull{
 						{
 							Number: 1,
 						},
@@ -131,23 +131,23 @@ func TestAliasForSpec(t *testing.T) {
 	}{
 		{
 			name:     "periodic",
-			spec:     &downwardapi.JobSpec{Type: kube.PeriodicJob},
+			spec:     &downwardapi.JobSpec{Type: prowapi.PeriodicJob},
 			expected: "",
 		},
 		{
 			name:     "batch",
-			spec:     &downwardapi.JobSpec{Type: kube.BatchJob},
+			spec:     &downwardapi.JobSpec{Type: prowapi.BatchJob},
 			expected: "",
 		},
 		{
 			name:     "postsubmit",
-			spec:     &downwardapi.JobSpec{Type: kube.PostsubmitJob},
+			spec:     &downwardapi.JobSpec{Type: prowapi.PostsubmitJob},
 			expected: "",
 		},
 		{
 			name: "presubmit",
 			spec: &downwardapi.JobSpec{
-				Type:    kube.PresubmitJob,
+				Type:    prowapi.PresubmitJob,
 				Job:     "job",
 				BuildID: "number",
 			},
@@ -172,18 +172,18 @@ func TestLatestBuildForSpec(t *testing.T) {
 		{
 			name: "presubmit - no strategy",
 			spec: &downwardapi.JobSpec{
-				Type: kube.PresubmitJob,
+				Type: prowapi.PresubmitJob,
 				Job:  "pull-kubernetes-unit",
-				Refs: &kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
+				Refs: &prowapi.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []prowapi.Pull{{Number: 1234}}},
 			},
 			expected: []string{"pr-logs/directory/pull-kubernetes-unit/latest-build.txt"},
 		},
 		{
 			name: "presubmit - explicit strategy",
 			spec: &downwardapi.JobSpec{
-				Type: kube.PresubmitJob,
+				Type: prowapi.PresubmitJob,
 				Job:  "pull-kubernetes-unit",
-				Refs: &kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
+				Refs: &prowapi.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []prowapi.Pull{{Number: 1234}}},
 			},
 			builder: NewExplicitRepoPathBuilder(),
 			expected: []string{
@@ -194,9 +194,9 @@ func TestLatestBuildForSpec(t *testing.T) {
 		{
 			name: "presubmit - legacy strategy",
 			spec: &downwardapi.JobSpec{
-				Type: kube.PresubmitJob,
+				Type: prowapi.PresubmitJob,
 				Job:  "pull-kubernetes-unit",
-				Refs: &kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
+				Refs: &prowapi.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []prowapi.Pull{{Number: 1234}}},
 			},
 			builder: NewLegacyRepoPathBuilder("kubernetes", "test-infra"),
 			expected: []string{
@@ -207,9 +207,9 @@ func TestLatestBuildForSpec(t *testing.T) {
 		{
 			name: "presubmit - single strategy",
 			spec: &downwardapi.JobSpec{
-				Type: kube.PresubmitJob,
+				Type: prowapi.PresubmitJob,
 				Job:  "pull-kubernetes-unit",
-				Refs: &kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
+				Refs: &prowapi.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []prowapi.Pull{{Number: 1234}}},
 			},
 			builder: NewSingleDefaultRepoPathBuilder("defaultorg", "defaultrepo"),
 			expected: []string{
@@ -219,17 +219,17 @@ func TestLatestBuildForSpec(t *testing.T) {
 		},
 		{
 			name:     "batch",
-			spec:     &downwardapi.JobSpec{Type: kube.BatchJob, Job: "pull-kubernetes-unit"},
+			spec:     &downwardapi.JobSpec{Type: prowapi.BatchJob, Job: "pull-kubernetes-unit"},
 			expected: []string{"pr-logs/directory/pull-kubernetes-unit/latest-build.txt"},
 		},
 		{
 			name:     "postsubmit",
-			spec:     &downwardapi.JobSpec{Type: kube.PostsubmitJob, Job: "ci-kubernetes-unit"},
+			spec:     &downwardapi.JobSpec{Type: prowapi.PostsubmitJob, Job: "ci-kubernetes-unit"},
 			expected: []string{"logs/ci-kubernetes-unit/latest-build.txt"},
 		},
 		{
 			name:     "periodic",
-			spec:     &downwardapi.JobSpec{Type: kube.PeriodicJob, Job: "ci-kubernetes-periodic"},
+			spec:     &downwardapi.JobSpec{Type: prowapi.PeriodicJob, Job: "ci-kubernetes-periodic"},
 			expected: []string{"logs/ci-kubernetes-periodic/latest-build.txt"},
 		},
 	}
@@ -250,22 +250,22 @@ func TestRootForSpec(t *testing.T) {
 	}{
 		{
 			name:     "presubmit",
-			spec:     &downwardapi.JobSpec{Type: kube.PresubmitJob, Job: "pull-kubernetes-unit"},
+			spec:     &downwardapi.JobSpec{Type: prowapi.PresubmitJob, Job: "pull-kubernetes-unit"},
 			expected: "pr-logs/directory/pull-kubernetes-unit",
 		},
 		{
 			name:     "batch",
-			spec:     &downwardapi.JobSpec{Type: kube.BatchJob, Job: "pull-kubernetes-unit"},
+			spec:     &downwardapi.JobSpec{Type: prowapi.BatchJob, Job: "pull-kubernetes-unit"},
 			expected: "pr-logs/directory/pull-kubernetes-unit",
 		},
 		{
 			name:     "postsubmit",
-			spec:     &downwardapi.JobSpec{Type: kube.PostsubmitJob, Job: "ci-kubernetes-unit"},
+			spec:     &downwardapi.JobSpec{Type: prowapi.PostsubmitJob, Job: "ci-kubernetes-unit"},
 			expected: "logs/ci-kubernetes-unit",
 		},
 		{
 			name:     "periodic",
-			spec:     &downwardapi.JobSpec{Type: kube.PeriodicJob, Job: "ci-kubernetes-periodic"},
+			spec:     &downwardapi.JobSpec{Type: prowapi.PeriodicJob, Job: "ci-kubernetes-periodic"},
 			expected: "logs/ci-kubernetes-periodic",
 		},
 	}

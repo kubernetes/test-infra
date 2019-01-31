@@ -26,9 +26,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -50,7 +50,7 @@ type githubClient interface {
 }
 
 type kubeClient interface {
-	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
+	CreateProwJob(prowapi.ProwJob) (prowapi.ProwJob, error)
 }
 
 type overrideClient interface {
@@ -86,7 +86,7 @@ func (c client) HasPermission(org, repo, user string, role ...string) (bool, err
 	return c.gc.HasPermission(org, repo, user, role...)
 }
 
-func (c client) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
+func (c client) CreateProwJob(pj prowapi.ProwJob) (prowapi.ProwJob, error) {
 	return c.kc.CreateProwJob(pj)
 }
 
@@ -208,10 +208,10 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent)
 
 			pj := pjutil.NewPresubmit(*pr, baseSHA, *pre, e.GUID)
 			now := metav1.Now()
-			pj.Status = kube.ProwJobStatus{
+			pj.Status = prowapi.ProwJobStatus{
 				StartTime:      now,
 				CompletionTime: &now,
-				State:          kube.SuccessState,
+				State:          prowapi.SuccessState,
 				Description:    description(user),
 				URL:            e.HTMLURL,
 			}

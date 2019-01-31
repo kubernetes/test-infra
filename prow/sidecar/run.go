@@ -31,8 +31,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/entrypoint"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
@@ -167,7 +167,7 @@ func combineMetadata(entries []wrapper.Options) map[string]interface{} {
 	return metadata
 }
 
-func getRevisionFromRef(refs *kube.Refs) string {
+func getRevisionFromRef(refs *prowapi.Refs) string {
 	if len(refs.Pulls) > 0 {
 		return refs.Pulls[0].SHA
 	}

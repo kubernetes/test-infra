@@ -26,7 +26,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/kube"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 // Preset is intended to match the k8s' PodPreset feature, and may be removed
@@ -397,11 +397,11 @@ type UtilityConfig struct {
 
 	// ExtraRefs are auxiliary repositories that
 	// need to be cloned, determined from config
-	ExtraRefs []kube.Refs `json:"extra_refs,omitempty"`
+	ExtraRefs []prowapi.Refs `json:"extra_refs,omitempty"`
 
 	// DecorationConfig holds configuration options for
 	// decorating PodSpecs that users provide
-	DecorationConfig *kube.DecorationConfig `json:"decoration_config,omitempty"`
+	DecorationConfig *prowapi.DecorationConfig `json:"decoration_config,omitempty"`
 }
 
 // RetestPresubmits returns all presubmits that should be run given a /retest command.

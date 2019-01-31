@@ -62,8 +62,8 @@ go_test(
     ],
     embed = [":go_default_library"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
-        "//prow/kube:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/tide:go_default_library",
         "//prow/tide/history:go_default_library",

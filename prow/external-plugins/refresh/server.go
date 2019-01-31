@@ -27,9 +27,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/report"
@@ -133,7 +133,7 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 	}
 
 	var list struct {
-		PJs []kube.ProwJob `json:"items"`
+		PJs []prowapi.ProwJob `json:"items"`
 	}
 	if err := json.Unmarshal(data, &list); err != nil {
 		return fmt.Errorf("cannot unmarshal data from deck: %v", err)
@@ -144,7 +144,7 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		return err
 	}
 
-	var presubmits []kube.ProwJob
+	var presubmits []prowapi.ProwJob
 	for _, pj := range list.PJs {
 		if pj.Spec.Type != "presubmit" {
 			continue
@@ -168,12 +168,12 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 
 	jenkinsConfig := s.configAgent.Config().JenkinsOperators
 	kubeReport := s.configAgent.Config().Plank.ReportTemplate
-	for _, pj := range pjutil.GetLatestProwJobs(presubmits, kube.PresubmitJob) {
+	for _, pj := range pjutil.GetLatestProwJobs(presubmits, prowapi.PresubmitJob) {
 		var reportTemplate *template.Template
 		switch pj.Spec.Agent {
-		case kube.KubernetesAgent:
+		case prowapi.KubernetesAgent:
 			reportTemplate = kubeReport
-		case kube.JenkinsAgent:
+		case prowapi.JenkinsAgent:
 			reportTemplate = s.reportForProwJob(pj, jenkinsConfig)
 		}
 		if reportTemplate == nil {
@@ -188,7 +188,7 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 	return nil
 }
 
-func (s *server) reportForProwJob(pj kube.ProwJob, configs []config.JenkinsOperator) *template.Template {
+func (s *server) reportForProwJob(pj prowapi.ProwJob, configs []config.JenkinsOperator) *template.Template {
 	for _, cfg := range configs {
 		if cfg.LabelSelector.Matches(labels.Set(pj.Labels)) {
 			return cfg.ReportTemplate

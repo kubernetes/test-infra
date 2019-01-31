@@ -17,9 +17,9 @@ limitations under the License.
 package trigger
 
 import (
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -56,7 +56,7 @@ func handlePE(c Client, pe github.PushEvent) error {
 		} else if !shouldRun {
 			continue
 		}
-		kr := kube.Refs{
+		kr := prowapi.Refs{
 			Org:     pe.Repo.Owner.Name,
 			Repo:    pe.Repo.Name,
 			BaseRef: pe.Branch(),

@@ -25,6 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	pjclientset "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -120,7 +121,7 @@ func (c *controller) clean() {
 	maxProwJobAge := c.config().Sinker.MaxProwJobAge
 	for _, prowJob := range prowJobs.Items {
 		// Handle periodics separately.
-		if prowJob.Spec.Type == kube.PeriodicJob {
+		if prowJob.Spec.Type == prowapi.PeriodicJob {
 			continue
 		}
 		if !prowJob.Complete() {
@@ -146,9 +147,9 @@ func (c *controller) clean() {
 
 	// Get the jobs that we need to retain so horologium can continue working
 	// as intended.
-	latestPeriodics := pjutil.GetLatestProwJobs(prowJobs.Items, kube.PeriodicJob)
+	latestPeriodics := pjutil.GetLatestProwJobs(prowJobs.Items, prowapi.PeriodicJob)
 	for _, prowJob := range prowJobs.Items {
-		if prowJob.Spec.Type != kube.PeriodicJob {
+		if prowJob.Spec.Type != prowapi.PeriodicJob {
 			continue
 		}
 

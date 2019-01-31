@@ -26,10 +26,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/test-infra/prow/kube"
 
-	"k8s.io/test-infra/prow/artifact-uploader"
+	artifact_uploader "k8s.io/test-infra/prow/artifact-uploader"
 	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pod-utils/options"
 )

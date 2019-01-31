@@ -28,7 +28,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
 
-	"k8s.io/test-infra/prow/kube"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
@@ -111,7 +111,7 @@ func (o Options) assembleTargets(spec *downwardapi.JobSpec, extra map[string]gcs
 //     - the job
 //     - this specific run of the job (if any subdir is present)
 // The builder for the job is also returned for use in other path resolution.
-func PathsForJob(options *kube.GCSConfiguration, spec *downwardapi.JobSpec, subdir string) (string, string, gcs.RepoPathBuilder) {
+func PathsForJob(options *prowapi.GCSConfiguration, spec *downwardapi.JobSpec, subdir string) (string, string, gcs.RepoPathBuilder) {
 	builder := builderForStrategy(options.PathStrategy, options.DefaultOrg, options.DefaultRepo)
 	jobBasePath := gcs.PathForSpec(spec, builder)
 	if options.PathPrefix != "" {
@@ -130,11 +130,11 @@ func PathsForJob(options *kube.GCSConfiguration, spec *downwardapi.JobSpec, subd
 func builderForStrategy(strategy, defaultOrg, defaultRepo string) gcs.RepoPathBuilder {
 	var builder gcs.RepoPathBuilder
 	switch strategy {
-	case kube.PathStrategyExplicit:
+	case prowapi.PathStrategyExplicit:
 		builder = gcs.NewExplicitRepoPathBuilder()
-	case kube.PathStrategyLegacy:
+	case prowapi.PathStrategyLegacy:
 		builder = gcs.NewLegacyRepoPathBuilder(defaultOrg, defaultRepo)
-	case kube.PathStrategySingle:
+	case prowapi.PathStrategySingle:
 		builder = gcs.NewSingleDefaultRepoPathBuilder(defaultOrg, defaultRepo)
 	}
 

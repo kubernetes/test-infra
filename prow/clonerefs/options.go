@@ -26,7 +26,7 @@ import (
 	"text/template"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/kube"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 // Options configures the clonerefs tool
@@ -47,7 +47,7 @@ type Options struct {
 	GitUserEmail string `json:"git_user_email,omitempty"`
 
 	// GitRefs are the refs to clone
-	GitRefs []kube.Refs `json:"refs"`
+	GitRefs []prowapi.Refs `json:"refs"`
 	// KeyFiles are files containing SSH keys to be used
 	// when cloning. Will be added to `ssh-agent`.
 	KeyFiles []string `json:"key_files,omitempty"`
@@ -156,7 +156,7 @@ func (o *Options) AddFlags(fs *flag.FlagSet) {
 }
 
 type gitRefs struct {
-	gitRefs []kube.Refs
+	gitRefs []prowapi.Refs
 }
 
 func (r *gitRefs) String() string {
@@ -167,7 +167,7 @@ func (r *gitRefs) String() string {
 	return representation.String()
 }
 
-// Set parses out a kube.Refs from the user string.
+// Set parses out a prowapi.Refs from the user string.
 // The following example shows all possible fields:
 //   org,repo=base-ref:base-sha[,pull-number:pull-sha]...
 // For the base ref and every pull number, the SHAs

@@ -26,9 +26,9 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
@@ -138,7 +138,7 @@ func (s *Spyglass) JobPath(src string) (string, error) {
 			return "", fmt.Errorf("failed to locate GCS upload bucket for %s: missing GCS configuration", jobName)
 		}
 		bktName := job.Spec.DecorationConfig.GCSConfiguration.Bucket
-		if job.Spec.Type == kube.PresubmitJob {
+		if job.Spec.Type == prowapi.PresubmitJob {
 			return path.Join(bktName, "pr-logs/directory", jobName), nil
 		}
 		return path.Join(bktName, "logs", jobName), nil

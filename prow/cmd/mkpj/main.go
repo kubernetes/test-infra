@@ -26,11 +26,11 @@ import (
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -64,7 +64,7 @@ func (o *options) getPullRequest() (*github.PullRequest, error) {
 	return pr, nil
 }
 
-func (o *options) defaultPR(pjs *kube.ProwJobSpec) error {
+func (o *options) defaultPR(pjs *prowapi.ProwJobSpec) error {
 	if pjs.Refs.Pulls[0].Number == 0 {
 		fmt.Fprint(os.Stderr, "PR Number: ")
 		var pullNumber int
@@ -89,7 +89,7 @@ func (o *options) defaultPR(pjs *kube.ProwJobSpec) error {
 	return nil
 }
 
-func (o *options) defaultBaseRef(pjs *kube.ProwJobSpec) error {
+func (o *options) defaultBaseRef(pjs *prowapi.ProwJobSpec) error {
 	if pjs.Refs.BaseRef == "" {
 		if o.pullNumber != 0 {
 			pr, err := o.getPullRequest()
@@ -177,7 +177,7 @@ func main() {
 		logrus.Fatalf("failed to get Github client: %v", err)
 	}
 
-	var pjs kube.ProwJobSpec
+	var pjs prowapi.ProwJobSpec
 	var labels map[string]string
 	var found bool
 	var needsBaseRef bool
@@ -190,12 +190,12 @@ func main() {
 		}
 		for _, p := range ps {
 			if p.Name == o.jobName {
-				pjs = pjutil.PresubmitSpec(p, kube.Refs{
+				pjs = pjutil.PresubmitSpec(p, prowapi.Refs{
 					Org:     org,
 					Repo:    repo,
 					BaseRef: o.baseRef,
 					BaseSHA: o.baseSha,
-					Pulls: []kube.Pull{{
+					Pulls: []prowapi.Pull{{
 						Author: o.pullAuthor,
 						Number: o.pullNumber,
 						SHA:    o.pullSha,
@@ -218,7 +218,7 @@ func main() {
 		}
 		for _, p := range ps {
 			if p.Name == o.jobName {
-				pjs = pjutil.PostsubmitSpec(p, kube.Refs{
+				pjs = pjutil.PostsubmitSpec(p, prowapi.Refs{
 					Org:     org,
 					Repo:    repo,
 					BaseRef: o.baseRef,

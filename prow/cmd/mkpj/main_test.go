@@ -19,10 +19,9 @@ package main
 import (
 	"testing"
 
-	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
-	"k8s.io/test-infra/prow/kube"
 )
 
 func TestOptions_Validate(t *testing.T) {
@@ -75,7 +74,7 @@ func TestDefaultPR(t *testing.T) {
 		Head: github.PullRequestBranch{SHA: sha},
 	}}
 	o := &options{pullNumber: 2, githubClient: fakeGithubClient}
-	pjs := &kube.ProwJobSpec{Refs: &kube.Refs{Pulls: []prowjobv1.Pull{{Number: 2}}}}
+	pjs := &prowapi.ProwJobSpec{Refs: &prowapi.Refs{Pulls: []prowapi.Pull{{Number: 2}}}}
 	if err := o.defaultPR(pjs); err != nil {
 		t.Fatalf("Expected no err when defaulting PJ, but got %v", err)
 	}
@@ -115,7 +114,7 @@ func TestDefaultBaseRef(t *testing.T) {
 				SHA: test.prBaseSha,
 			}}}
 			o := &options{pullNumber: test.pullNumber, githubClient: fakeGithubClient}
-			pjs := &kube.ProwJobSpec{Refs: &kube.Refs{BaseRef: test.baseRef}}
+			pjs := &prowapi.ProwJobSpec{Refs: &prowapi.Refs{BaseRef: test.baseRef}}
 			if err := o.defaultBaseRef(pjs); err != nil {
 				t.Fatalf("Error when calling defaultBaseRef: %v", err)
 			}

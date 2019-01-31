@@ -10,6 +10,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/tide",
     visibility = ["//visibility:public"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/git:go_default_library",
         "//prow/github:go_default_library",
@@ -51,10 +52,10 @@ go_test(
     ],
     embed = [":go_default_library"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/git/localgit:go_default_library",
         "//prow/github:go_default_library",
-        "//prow/kube:go_default_library",
         "//prow/tide/history:go_default_library",
         "//vendor/github.com/shurcooL/githubv4:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

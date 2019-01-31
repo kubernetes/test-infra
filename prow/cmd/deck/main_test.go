@@ -34,8 +34,8 @@ import (
 
 	"sigs.k8s.io/yaml"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/tide"
 	"k8s.io/test-infra/prow/tide/history"
@@ -192,29 +192,29 @@ func TestHandleLog(t *testing.T) {
 	}
 }
 
-type fpjc kube.ProwJob
+type fpjc prowapi.ProwJob
 
-func (fc *fpjc) GetProwJob(name string) (kube.ProwJob, error) {
-	return kube.ProwJob(*fc), nil
+func (fc *fpjc) GetProwJob(name string) (prowapi.ProwJob, error) {
+	return prowapi.ProwJob(*fc), nil
 }
 
 // TestRerun just checks that the result can be unmarshaled properly, has an
 // updated status, and has equal spec.
 func TestRerun(t *testing.T) {
-	fc := fpjc(kube.ProwJob{
-		Spec: kube.ProwJobSpec{
+	fc := fpjc(prowapi.ProwJob{
+		Spec: prowapi.ProwJobSpec{
 			Job:  "whoa",
-			Type: kube.PresubmitJob,
-			Refs: &kube.Refs{
+			Type: prowapi.PresubmitJob,
+			Refs: &prowapi.Refs{
 				Org:  "org",
 				Repo: "repo",
-				Pulls: []kube.Pull{
+				Pulls: []prowapi.Pull{
 					{Number: 1},
 				},
 			},
 		},
-		Status: kube.ProwJobStatus{
-			State: kube.PendingState,
+		Status: prowapi.ProwJobStatus{
+			State: prowapi.PendingState,
 		},
 	})
 	handler := handleRerun(&fc)
@@ -233,15 +233,15 @@ func TestRerun(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
-	var res kube.ProwJob
+	var res prowapi.ProwJob
 	if err := yaml.Unmarshal(body, &res); err != nil {
 		t.Fatalf("Error unmarshaling: %v", err)
 	}
 	if res.Spec.Job != "whoa" {
 		t.Errorf("Wrong job, expected \"whoa\", got \"%s\"", res.Spec.Job)
 	}
-	if res.Status.State != kube.TriggeredState {
-		t.Errorf("Wrong state, expected \"%v\", got \"%v\"", kube.TriggeredState, res.Status.State)
+	if res.Status.State != prowapi.TriggeredState {
+		t.Errorf("Wrong state, expected \"%v\", got \"%v\"", prowapi.TriggeredState, res.Status.State)
 	}
 }
 
