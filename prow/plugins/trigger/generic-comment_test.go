@@ -25,24 +25,16 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
+	clienttesting "k8s.io/client-go/testing"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
 )
-
-type fkc struct {
-	started []string
-}
-
-func (c *fkc) CreateProwJob(pj prowapi.ProwJob) (prowapi.ProwJob, error) {
-	if !sets.NewString(c.started...).Has(pj.Spec.Context) {
-		c.started = append(c.started, pj.Spec.Context)
-	}
-	return pj, nil
-}
 
 func issueLabels(labels ...string) []string {
 	var ls []string
@@ -620,12 +612,13 @@ func TestHandleGenericComment(t *testing.T) {
 				},
 			},
 		}
-		kc := &fkc{}
+		fakeConfig := &config.Config{ProwConfig: config.ProwConfig{ProwJobNamespace: "prowjobs"}}
+		fakeProwJobClient := fake.NewSimpleClientset()
 		c := Client{
-			GitHubClient: g,
-			KubeClient:   kc,
-			Config:       &config.Config{},
-			Logger:       logrus.WithField("plugin", pluginName),
+			GitHubClient:  g,
+			ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(fakeConfig.ProwJobNamespace),
+			Config:        fakeConfig,
+			Logger:        logrus.WithField("plugin", pluginName),
 		}
 		presubmits := tc.Presubmits
 		if presubmits == nil {
@@ -682,22 +675,31 @@ func TestHandleGenericComment(t *testing.T) {
 		if err := handleGenericComment(c, &trigger, event); err != nil {
 			t.Fatalf("%s: didn't expect error: %s", tc.name, err)
 		}
-		validate(tc.name, kc, g, tc, t)
+		validate(tc.name, fakeProwJobClient.Fake.Actions(), g, tc, t)
 		if err := handleGenericComment(c, &trigger, event); err != nil {
 			t.Fatalf("%s: didn't expect error: %s", tc.name, err)
 		}
-		validate(tc.name, kc, g, tc, t)
+		validate(tc.name, fakeProwJobClient.Fake.Actions(), g, tc, t)
 	}
 }
 
-func validate(name string, kc *fkc, g *fakegithub.FakeClient, tc testcase, t *testing.T) {
-	if len(kc.started) > 0 && !tc.ShouldBuild {
-		t.Errorf("%s: Built but should not have: %+v", name, tc)
-	} else if len(kc.started) == 0 && tc.ShouldBuild {
-		t.Errorf("%s: Not built but should have: %+v", name, tc)
+func validate(name string, actions []clienttesting.Action, g *fakegithub.FakeClient, tc testcase, t *testing.T) {
+	startedContexts := sets.NewString()
+	for _, action := range actions {
+		switch action := action.(type) {
+		case clienttesting.CreateActionImpl:
+			if prowJob, ok := action.Object.(*prowapi.ProwJob); ok {
+				startedContexts.Insert(prowJob.Spec.Context)
+			}
+		}
 	}
-	if tc.StartsExactly != "" && (len(kc.started) != 1 || kc.started[0] != tc.StartsExactly) {
-		t.Errorf("%s: Didn't build expected context %v, instead built %v", name, tc.StartsExactly, kc.started)
+	if len(startedContexts) > 0 && !tc.ShouldBuild {
+		t.Errorf("Built but should not have: %+v", tc)
+	} else if len(startedContexts) == 0 && tc.ShouldBuild {
+		t.Errorf("Not built but should have: %+v", tc)
+	}
+	if tc.StartsExactly != "" && (startedContexts.Len() != 1 || !startedContexts.Has(tc.StartsExactly)) {
+		t.Errorf("Didn't build expected context %v, instead built %v", tc.StartsExactly, startedContexts)
 	}
 	if tc.ShouldReport && len(g.CreatedStatuses) == 0 {
 		t.Errorf("%s: Expected report to github", name)

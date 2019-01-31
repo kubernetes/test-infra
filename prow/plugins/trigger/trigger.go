@@ -100,18 +100,18 @@ type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
-type kubeClient interface {
-	CreateProwJob(prowapi.ProwJob) (prowapi.ProwJob, error)
+type prowJobClient interface {
+	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
 }
 
 // Client holds the necessary structures to work with prow via logging, github, kubernetes and its configuration.
 //
 // TODO(fejta): consider exporting an interface rather than a struct
 type Client struct {
-	GitHubClient githubClient
-	KubeClient   kubeClient
-	Config       *config.Config
-	Logger       *logrus.Entry
+	GitHubClient  githubClient
+	ProwJobClient prowJobClient
+	Config        *config.Config
+	Logger        *logrus.Entry
 }
 
 type trustedUserClient interface {
@@ -121,10 +121,10 @@ type trustedUserClient interface {
 
 func getClient(pc plugins.Agent) Client {
 	return Client{
-		GitHubClient: pc.GitHubClient,
-		Config:       pc.Config,
-		KubeClient:   pc.KubeClient,
-		Logger:       pc.Logger,
+		GitHubClient:  pc.GitHubClient,
+		Config:        pc.Config,
+		ProwJobClient: pc.ProwJobClient,
+		Logger:        pc.Logger,
 	}
 }
 
@@ -190,7 +190,7 @@ func RunRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presu
 		c.Logger.Infof("Starting %s build.", job.Name)
 		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
-		if _, err := c.KubeClient.CreateProwJob(pj); err != nil {
+		if _, err := c.ProwJobClient.Create(&pj); err != nil {
 			errors = append(errors, err)
 		}
 	}
