@@ -111,6 +111,7 @@ go_library(
         "//prow/tide:go_default_library",
         "//prow/tide/history:go_default_library",
         "//traiana/storage:go_default_library",
+        "//traiana/storage/option:go_default_library",
         "//vendor/github.com/NYTimes/gziphandler:go_default_library",
         "//vendor/github.com/gorilla/sessions:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
