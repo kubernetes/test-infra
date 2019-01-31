@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import (
 	"k8s.io/test-infra/pkg/flagutil"
 )
 
-func TestLegacyKubernetesOptions_Validate(t *testing.T) {
+func TestKubernetesOptions_Validate(t *testing.T) {
 	var testCases = []struct {
 		name        string
 		dryRun      bool
@@ -32,13 +32,13 @@ func TestLegacyKubernetesOptions_Validate(t *testing.T) {
 		{
 			name:        "all ok without dry-run",
 			dryRun:      false,
-			kubernetes:  &LegacyKubernetesOptions{},
+			kubernetes:  &KubernetesOptions{},
 			expectedErr: false,
 		},
 		{
 			name:   "all ok with dry-run",
 			dryRun: true,
-			kubernetes: &LegacyKubernetesOptions{
+			kubernetes: &KubernetesOptions{
 				deckURI: "https://example.com",
 			},
 			expectedErr: false,
@@ -46,7 +46,7 @@ func TestLegacyKubernetesOptions_Validate(t *testing.T) {
 		{
 			name:        "missing deck endpoint with dry-run",
 			dryRun:      true,
-			kubernetes:  &LegacyKubernetesOptions{},
+			kubernetes:  &KubernetesOptions{},
 			expectedErr: true,
 		},
 	}
