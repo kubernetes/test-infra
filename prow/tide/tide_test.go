@@ -30,8 +30,10 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
+	clienttesting "k8s.io/client-go/testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
@@ -760,19 +762,6 @@ func TestPickBatch(t *testing.T) {
 	}
 }
 
-type fkc struct {
-	createdJobs []prowapi.ProwJob
-}
-
-func (c *fkc) ListProwJobs(string) ([]prowapi.ProwJob, error) {
-	return nil, nil
-}
-
-func (c *fkc) CreateProwJob(pj prowapi.ProwJob) (prowapi.ProwJob, error) {
-	c.createdJobs = append(c.createdJobs, pj)
-	return pj, nil
-}
-
 func TestTakeAction(t *testing.T) {
 	// PRs 0-9 exist. All are mergable, and all are passing tests.
 	testcases := []struct {
@@ -1022,14 +1011,14 @@ func TestTakeAction(t *testing.T) {
 			}
 			return prs
 		}
-		var fkc fkc
+		fakeProwJobClient := fake.NewSimpleClientset()
 		var fgc fgc
 		c := &Controller{
-			logger: logrus.WithField("controller", "tide"),
-			gc:     gc,
-			config: ca.Config,
-			ghc:    &fgc,
-			kc:     &fkc,
+			logger:        logrus.WithField("controller", "tide"),
+			gc:            gc,
+			config:        ca.Config,
+			ghc:           &fgc,
+			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
 		}
 		var batchPending []PullRequest
 		if tc.batchPending {
@@ -1042,24 +1031,32 @@ func TestTakeAction(t *testing.T) {
 		} else if act != tc.action {
 			t.Errorf("Wrong action. Got %v, wanted %v.", act, tc.action)
 		}
-		if tc.triggered != len(fkc.createdJobs) {
-			t.Errorf("Wrong number of jobs triggered. Got %d, expected %d.", len(fkc.createdJobs), tc.triggered)
+
+		numCreated := 0
+		var batchJobs []*prowapi.ProwJob
+		for _, action := range fakeProwJobClient.Actions() {
+			switch action := action.(type) {
+			case clienttesting.CreateActionImpl:
+				numCreated++
+				if prowJob, ok := action.Object.(*prowapi.ProwJob); ok && prowJob.Spec.Type == prowapi.BatchJob {
+					batchJobs = append(batchJobs, prowJob)
+				}
+			}
+		}
+		if tc.triggered != numCreated {
+			t.Errorf("Wrong number of jobs triggered. Got %d, expected %d.", numCreated, tc.triggered)
 		}
 		if tc.merged != fgc.merged {
 			t.Errorf("Wrong number of merges. Got %d, expected %d.", fgc.merged, tc.merged)
 		}
 		// Ensure that the correct number of batch jobs were triggered
-		batches := 0
-		for _, job := range fkc.createdJobs {
-			if (len(job.Spec.Refs.Pulls) > 1) != (job.Spec.Type == prowapi.BatchJob) {
+		if tc.triggeredBatches != len(batchJobs) {
+			t.Errorf("Wrong number of batches triggered. Got %d, expected %d.", len(batchJobs), tc.triggeredBatches)
+		}
+		for _, job := range batchJobs {
+			if len(job.Spec.Refs.Pulls) <= 1 {
 				t.Error("Found a batch job that doesn't contain multiple pull refs!")
 			}
-			if len(job.Spec.Refs.Pulls) > 1 {
-				batches++
-			}
-		}
-		if tc.triggeredBatches != batches {
-			t.Errorf("Wrong number of batches triggered. Got %d, expected %d.", batches, tc.triggeredBatches)
 		}
 	}
 }
@@ -1283,7 +1280,7 @@ func TestSync(t *testing.T) {
 	for _, tc := range testcases {
 		t.Logf("Starting case %q...", tc.name)
 		fgc := &fgc{prs: tc.prs}
-		fkc := &fkc{}
+		fakeProwJobClient := fake.NewSimpleClientset()
 		ca := &config.Agent{}
 		ca.Set(&config.Config{
 			ProwConfig: config.ProwConfig{
@@ -1303,11 +1300,11 @@ func TestSync(t *testing.T) {
 		go sc.run()
 		defer sc.shutdown()
 		c := &Controller{
-			config: ca.Config,
-			ghc:    fgc,
-			kc:     fkc,
-			logger: logrus.WithField("controller", "sync"),
-			sc:     sc,
+			config:        ca.Config,
+			ghc:           fgc,
+			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			logger:        logrus.WithField("controller", "sync"),
+			sc:            sc,
 			changedFiles: &changedFilesAgent{
 				ghc:             fgc,
 				nextChangeCache: make(map[changeCacheKey][]string),
