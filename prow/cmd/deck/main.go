@@ -68,7 +68,7 @@ type options struct {
 	configPath            string
 	jobConfigPath         string
 	buildCluster          string
-	kubernetes            prowflagutil.KubernetesOptions
+	kubernetes            prowflagutil.LegacyKubernetesOptions
 	tideURL               string
 	hookURL               string
 	oauthURL              string

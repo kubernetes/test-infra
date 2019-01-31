@@ -50,7 +50,7 @@ type options struct {
 
 	dryRun      bool
 	gracePeriod time.Duration
-	kubernetes  prowflagutil.KubernetesOptions
+	kubernetes  prowflagutil.LegacyKubernetesOptions
 	github      prowflagutil.GitHubOptions
 
 	webhookSecretFile string

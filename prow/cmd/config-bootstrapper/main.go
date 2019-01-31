@@ -42,7 +42,7 @@ type options struct {
 	pluginConfig  string
 
 	dryRun     bool
-	kubernetes prowflagutil.KubernetesOptions
+	kubernetes prowflagutil.LegacyKubernetesOptions
 }
 
 func gatherOptions() options {
