@@ -23,8 +23,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"k8s.io/klog"
 )
 
 // Instances: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeInstances
@@ -44,7 +44,8 @@ func (Instances) MarkAndSweep(sess *session.Session, acct string, region string,
 	}
 
 	var toDelete []*string // Paged call, defer deletion until we have the whole list.
-	if err := svc.DescribeInstancesPages(inp, func(page *ec2.DescribeInstancesOutput, _ bool) bool {
+
+	pageFunc := func(page *ec2.DescribeInstancesOutput, _ bool) bool {
 		for _, res := range page.Reservations {
 			for _, inst := range res.Instances {
 				i := &instance{
@@ -52,24 +53,28 @@ func (Instances) MarkAndSweep(sess *session.Session, acct string, region string,
 					Region:     region,
 					InstanceID: *inst.InstanceId,
 				}
+
 				if set.Mark(i) {
-					glog.Warningf("%s: deleting %T: %v", i.ARN(), inst, inst)
+					klog.Warningf("%s: deleting %T: %v", i.ARN(), inst, inst)
 					toDelete = append(toDelete, inst.InstanceId)
 				}
 			}
 		}
 		return true
-	}); err != nil {
+	}
+
+	if err := svc.DescribeInstancesPages(inp, pageFunc); err != nil {
 		return err
 	}
+
 	if len(toDelete) > 0 {
 		// TODO(zmerlynn): In theory this should be split up into
 		// blocks of 1000, but burn that bridge if it ever happens...
-		_, err := svc.TerminateInstances(&ec2.TerminateInstancesInput{InstanceIds: toDelete})
-		if err != nil {
-			glog.Warningf("termination failed: %v (for %v)", err, toDelete)
+		if _, err := svc.TerminateInstances(&ec2.TerminateInstancesInput{InstanceIds: toDelete}); err != nil {
+			klog.Warningf("Termination failed: %v (for %v)", err, toDelete)
 		}
 	}
+
 	return nil
 }
 
