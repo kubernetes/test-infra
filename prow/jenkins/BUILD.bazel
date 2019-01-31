@@ -17,6 +17,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/jenkins",
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/client/clientset/versioned/typed/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
@@ -26,6 +27,7 @@ go_library(
         "//vendor/github.com/bwmarrin/snowflake:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
     ],
 )
 
@@ -51,10 +53,12 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/client/clientset/versioned/fake:go_default_library",
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/pjutil:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
     ],
 )

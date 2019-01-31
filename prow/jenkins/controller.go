@@ -24,6 +24,8 @@ import (
 
 	"github.com/bwmarrin/snowflake"
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -37,10 +39,10 @@ const (
 	testInfra = "https://github.com/kubernetes/test-infra/issues"
 )
 
-type kubeClient interface {
-	CreateProwJob(prowapi.ProwJob) (prowapi.ProwJob, error)
-	ListProwJobs(string) ([]prowapi.ProwJob, error)
-	ReplaceProwJob(string, prowapi.ProwJob) (prowapi.ProwJob, error)
+type prowJobClient interface {
+	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
+	List(opts metav1.ListOptions) (*prowapi.ProwJobList, error)
+	UpdateStatus(*prowapi.ProwJob) (*prowapi.ProwJob, error)
 }
 
 type jenkinsClient interface {
@@ -59,21 +61,17 @@ type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
-type configAgent interface {
-	Config() *config.Config
-}
-
 type syncFn func(prowapi.ProwJob, chan<- prowapi.ProwJob, map[string]Build) error
 
 // Controller manages ProwJobs.
 type Controller struct {
-	kc     kubeClient
-	jc     jenkinsClient
-	ghc    githubClient
-	log    *logrus.Entry
-	cfg    config.Getter
-	node   *snowflake.Node
-	totURL string
+	prowJobClient prowJobClient
+	jc            jenkinsClient
+	ghc           githubClient
+	log           *logrus.Entry
+	cfg           config.Getter
+	node          *snowflake.Node
+	totURL        string
 	// selector that will be applied on prowjobs.
 	selector string
 
@@ -88,7 +86,7 @@ type Controller struct {
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(kc *kube.Client, jc *Client, ghc *github.Client, logger *logrus.Entry, cfg config.Getter, totURL, selector string) (*Controller, error) {
+func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, ghc *github.Client, logger *logrus.Entry, cfg config.Getter, totURL, selector string) (*Controller, error) {
 	n, err := snowflake.NewNode(1)
 	if err != nil {
 		return nil, err
@@ -97,15 +95,15 @@ func NewController(kc *kube.Client, jc *Client, ghc *github.Client, logger *logr
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
 	return &Controller{
-		kc:          kc,
-		jc:          jc,
-		ghc:         ghc,
-		log:         logger,
-		cfg:         cfg,
-		selector:    selector,
-		node:        n,
-		totURL:      totURL,
-		pendingJobs: make(map[string]int),
+		prowJobClient: prowJobClient,
+		jc:            jc,
+		ghc:           ghc,
+		log:           logger,
+		cfg:           cfg,
+		selector:      selector,
+		node:          n,
+		totURL:        totURL,
+		pendingJobs:   make(map[string]int),
 	}, nil
 }
 
@@ -170,37 +168,36 @@ func (c *Controller) incrementNumPendingJobs(job string) {
 
 // Sync does one sync iteration.
 func (c *Controller) Sync() error {
-	pjs, err := c.kc.ListProwJobs(c.selector)
+	pjs, err := c.prowJobClient.List(metav1.ListOptions{LabelSelector: c.selector})
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
 	// Share what we have for gathering metrics.
 	c.pjLock.Lock()
-	c.pjs = pjs
+	c.pjs = pjs.Items
 	c.pjLock.Unlock()
 
 	// TODO: Replace the following filtering with a field selector once CRDs support field selectors.
 	// https://github.com/kubernetes/kubernetes/issues/53459
 	var jenkinsJobs []prowapi.ProwJob
-	for _, pj := range pjs {
+	for _, pj := range pjs.Items {
 		if pj.Spec.Agent == prowapi.JenkinsAgent {
 			jenkinsJobs = append(jenkinsJobs, pj)
 		}
 	}
-	pjs = jenkinsJobs
-	jbs, err := c.jc.ListBuilds(getJenkinsJobs(pjs))
+	jbs, err := c.jc.ListBuilds(getJenkinsJobs(jenkinsJobs))
 	if err != nil {
 		return fmt.Errorf("error listing jenkins builds: %v", err)
 	}
 
 	var syncErrs []error
-	if err := c.terminateDupes(pjs, jbs); err != nil {
+	if err := c.terminateDupes(jenkinsJobs, jbs); err != nil {
 		syncErrs = append(syncErrs, err)
 	}
 
-	pendingCh, triggeredCh := pjutil.PartitionActive(pjs)
-	errCh := make(chan error, len(pjs))
-	reportCh := make(chan prowapi.ProwJob, len(pjs))
+	pendingCh, triggeredCh := pjutil.PartitionActive(jenkinsJobs)
+	errCh := make(chan error, len(jenkinsJobs))
+	reportCh := make(chan prowapi.ProwJob, len(jenkinsJobs))
 
 	// Reinstantiate on every resync of the controller instead of trying
 	// to keep this in sync with the state of the world.
@@ -301,11 +298,11 @@ func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, jbs map[string]Build)
 		c.log.WithFields(pjutil.ProwJobFields(&toCancel)).
 			WithField("from", prevState).
 			WithField("to", toCancel.Status.State).Info("Transitioning states.")
-		npj, err := c.kc.ReplaceProwJob(toCancel.ObjectMeta.Name, toCancel)
+		npj, err := c.prowJobClient.UpdateStatus(&toCancel)
 		if err != nil {
 			return err
 		}
-		pjs[cancelIndex] = npj
+		pjs[cancelIndex] = *npj
 	}
 	return nil
 }
@@ -398,7 +395,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, reports chan<- prowapi.P
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := c.kc.ReplaceProwJob(pj.ObjectMeta.Name, pj)
+	_, err := c.prowJobClient.UpdateStatus(&pj)
 	return err
 }
 
@@ -440,7 +437,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, reports chan<- prowapi
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := c.kc.ReplaceProwJob(pj.ObjectMeta.Name, pj)
+	_, err := c.prowJobClient.UpdateStatus(&pj)
 	return err
 }
 
