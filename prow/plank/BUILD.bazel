@@ -12,6 +12,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/client/clientset/versioned/fake:go_default_library",
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/github/reporter:go_default_library",
@@ -19,6 +20,7 @@ go_test(
         "//prow/pjutil:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
@@ -34,6 +36,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/plank",
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/client/clientset/versioned/typed/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/github/reporter:go_default_library",
@@ -43,6 +46,7 @@ go_library(
         "//prow/report:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/typed/core/v1:go_default_library",
     ],
