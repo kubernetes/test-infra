@@ -42,6 +42,7 @@ filegroup(
         "//experiment/ci-janitor:all-srcs",
         "//experiment/coverage:all-srcs",
         "//experiment/manual-trigger:all-srcs",
+        "//experiment/resultstore:all-srcs",
         "//experiment/tracer:all-srcs",
     ],
     tags = ["automanaged"],
