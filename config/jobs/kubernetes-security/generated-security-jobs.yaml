@@ -364,6 +364,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-service-account: "true"
     name: pull-security-kubernetes-e2e-aks-engine-azure
+    optional: true
     rerun_command: /test pull-security-kubernetes-e2e-aks-engine-azure
     spec:
       containers:
