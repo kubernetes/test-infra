@@ -38,41 +38,38 @@ type Preset struct {
 	VolumeMounts []v1.VolumeMount  `json:"volumeMounts"`
 }
 
-func mergePreset(preset Preset, labels map[string]string, pod *v1.PodSpec) error {
-	if pod == nil {
-		return nil
-	}
+func mergePreset(preset Preset, labels map[string]string, containers []v1.Container, volumes *[]v1.Volume) error {
 	for l, v := range preset.Labels {
 		if v2, ok := labels[l]; !ok || v2 != v {
 			return nil
 		}
 	}
 	for _, e1 := range preset.Env {
-		for i := range pod.Containers {
-			for _, e2 := range pod.Containers[i].Env {
+		for i := range containers {
+			for _, e2 := range containers[i].Env {
 				if e1.Name == e2.Name {
 					return fmt.Errorf("env var duplicated in pod spec: %s", e1.Name)
 				}
 			}
-			pod.Containers[i].Env = append(pod.Containers[i].Env, e1)
+			containers[i].Env = append(containers[i].Env, e1)
 		}
 	}
 	for _, v1 := range preset.Volumes {
-		for _, v2 := range pod.Volumes {
+		for _, v2 := range *volumes {
 			if v1.Name == v2.Name {
 				return fmt.Errorf("volume duplicated in pod spec: %s", v1.Name)
 			}
 		}
-		pod.Volumes = append(pod.Volumes, v1)
+		*volumes = append(*volumes, v1)
 	}
 	for _, vm1 := range preset.VolumeMounts {
-		for i := range pod.Containers {
-			for _, vm2 := range pod.Containers[i].VolumeMounts {
+		for i := range containers {
+			for _, vm2 := range containers[i].VolumeMounts {
 				if vm1.Name == vm2.Name {
 					return fmt.Errorf("volume mount duplicated in pod spec: %s", vm1.Name)
 				}
 			}
-			pod.Containers[i].VolumeMounts = append(pod.Containers[i].VolumeMounts, vm1)
+			containers[i].VolumeMounts = append(containers[i].VolumeMounts, vm1)
 		}
 	}
 	return nil

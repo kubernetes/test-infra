@@ -37,8 +37,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	"sigs.k8s.io/yaml"
 
+	buildapi "github.com/knative/build/pkg/apis/build/v1alpha1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -563,19 +563,19 @@ func (c *Config) finalizeJobConfig() error {
 	c.defaultPeriodicFields(c.Periodics)
 
 	for _, v := range c.AllPresubmits(nil) {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
 			return err
 		}
 	}
 
 	for _, v := range c.AllPostsubmits(nil) {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
 			return err
 		}
 	}
 
 	for _, v := range c.AllPeriodics() {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
 			return err
 		}
 	}
@@ -639,7 +639,7 @@ func (c *Config) validateJobConfig() error {
 	}
 
 	for _, v := range c.AllPresubmits(nil) {
-		if err := validateJobBase(v.JobBase, prowjobv1.PresubmitJob, c.PodNamespace); err != nil {
+		if err := validateJobBase(v.JobBase, prowapi.PresubmitJob, c.PodNamespace); err != nil {
 			return fmt.Errorf("invalid presubmit job %s: %v", v.Name, err)
 		}
 		if err := validateTriggering(v); err != nil {
@@ -663,7 +663,7 @@ func (c *Config) validateJobConfig() error {
 	}
 
 	for _, j := range c.AllPostsubmits(nil) {
-		if err := validateJobBase(j.JobBase, prowjobv1.PostsubmitJob, c.PodNamespace); err != nil {
+		if err := validateJobBase(j.JobBase, prowapi.PostsubmitJob, c.PodNamespace); err != nil {
 			return fmt.Errorf("invalid postsubmit job %s: %v", j.Name, err)
 		}
 	}
@@ -676,7 +676,7 @@ func (c *Config) validateJobConfig() error {
 			return fmt.Errorf("duplicated periodic job : %s", p.Name)
 		}
 		validPeriodics.Insert(p.Name)
-		if err := validateJobBase(p.JobBase, prowjobv1.PeriodicJob, c.PodNamespace); err != nil {
+		if err := validateJobBase(p.JobBase, prowapi.PeriodicJob, c.PodNamespace); err != nil {
 			return fmt.Errorf("invalid periodic job %s: %v", p.Name, err)
 		}
 	}
@@ -949,9 +949,9 @@ func validateLabels(labels map[string]string) error {
 }
 
 func validateAgent(v JobBase, podNamespace string) error {
-	k := string(prowjobv1.KubernetesAgent)
-	b := string(prowjobv1.KnativeBuildAgent)
-	j := string(prowjobv1.JenkinsAgent)
+	k := string(prowapi.KubernetesAgent)
+	b := string(prowapi.KnativeBuildAgent)
+	j := string(prowapi.JenkinsAgent)
 	agents := sets.NewString(k, b, j)
 	agent := v.Agent
 	switch {
@@ -995,10 +995,18 @@ func validateDecoration(container v1.Container, config *prowapi.DecorationConfig
 	return nil
 }
 
-func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, presets []Preset) error {
+func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, buildSpec *buildapi.BuildSpec, presets []Preset) error {
 	for _, preset := range presets {
-		if err := mergePreset(preset, labels, spec); err != nil {
-			return fmt.Errorf("job %s failed to merge presets: %v", name, err)
+		if spec != nil {
+			if err := mergePreset(preset, labels, spec.Containers, &spec.Volumes); err != nil {
+				return fmt.Errorf("job %s failed to merge presets for podspec: %v", name, err)
+			}
+		}
+
+		if buildSpec != nil {
+			if err := mergePreset(preset, labels, buildSpec.Steps, &buildSpec.Volumes); err != nil {
+				return fmt.Errorf("job %s failed to merge presets for buildspec: %v", name, err)
+			}
 		}
 	}
 
