@@ -41,15 +41,15 @@ go_library(
     importpath = "k8s.io/test-infra/prow/cmd/sinker",
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
-        "//prow/client/clientset/versioned:go_default_library",
         "//prow/client/clientset/versioned/typed/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
+        "//prow/flagutil:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//prow/pjutil:go_default_library",
+        "//vendor/github.com/pkg/errors:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
-        "//vendor/k8s.io/client-go/kubernetes:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/typed/core/v1:go_default_library",
     ],
 )
