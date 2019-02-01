@@ -40,6 +40,8 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *February 1, 2019* `horologium` and `sinker` now support the `--dry-run` flag,
+   so you must pass `--dry-run=false` to keep the previous behavior.
  - *January 31, 2019* `sub` no longer supports the `--masterurl` flag for connecting
    to the infrastructure cluster. Use `--kubeconfig` with `--context` for this.
  - *January 31, 2019* `crier` no longer supports the `--masterurl` flag for connecting

@@ -19,41 +19,62 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	pjclientset "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
 type options struct {
-	runOnce                bool
-	configPath             string
-	jobConfigPath          string
-	buildCluster           string
-	buildClusterKubeconfig string
+	runOnce       bool
+	configPath    string
+	jobConfigPath string
+	dryRun        bool
+	kubernetes    flagutil.KubernetesOptions
 }
 
 func gatherOptions() options {
 	o := options{}
-	flag.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
-	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	flag.StringVar(&o.buildCluster, "build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
-	flag.StringVar(&o.buildClusterKubeconfig, "kubeconfig", "", "Path to kubeconfig with build cluster credentials. If empty, defaults to in-cluster config.")
-	flag.Parse()
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
+	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+
+	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to Kubernetes.")
+	o.kubernetes.AddFlags(fs)
+	fs.Parse(os.Args[1:])
 	return o
 }
+
+func (o *options) Validate() error {
+	if err := o.kubernetes.Validate(o.dryRun); err != nil {
+		return err
+	}
+
+	if o.configPath == "" {
+		return errors.New("--config-path is required")
+	}
+
+	return nil
+}
+
 func main() {
 	o := gatherOptions()
+	if err := o.Validate(); err != nil {
+		logrus.WithError(err).Fatal("Invalid options")
+	}
+
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "sinker"}),
 	)
@@ -64,26 +85,25 @@ func main() {
 	}
 	cfg := configAgent.Config
 
-	clusterConfigs, defaultContext, err := kube.LoadClusterConfigs(o.buildClusterKubeconfig, o.buildCluster)
-	defaultConfig := clusterConfigs[defaultContext]
-
-	pjclient, err := pjclientset.NewForConfig(&defaultConfig)
+	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating ProwJob client.")
 	}
 
+	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error creating build cluster clients.")
+	}
+
 	var podClients []corev1.PodInterface
-	for context, clusterConfig := range clusterConfigs {
-		clusterClient, err := kubernetes.NewForConfig(&clusterConfig)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Error creating Kubernetes client for context %q.", context)
-		}
-		podClients = append(podClients, clusterClient.CoreV1().Pods(configAgent.Config().PodNamespace))
+	for _, client := range buildClusterClients {
+		// sinker doesn't care about build cluster aliases
+		podClients = append(podClients, client)
 	}
 
 	c := controller{
 		logger:        logrus.NewEntry(logrus.StandardLogger()),
-		prowJobClient: pjclient.ProwV1().ProwJobs(cfg().ProwJobNamespace),
+		prowJobClient: prowJobClient,
 		podClients:    podClients,
 		config:        cfg,
 	}
