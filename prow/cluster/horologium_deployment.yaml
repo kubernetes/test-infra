@@ -35,6 +35,7 @@ spec:
         image: gcr.io/k8s-prow/horologium:v20190206-75d4a95
         args:
         - --job-config-path=/etc/job-config
+        - --dry-run=false
         volumeMounts:
         - name: config
           mountPath: /etc/config
