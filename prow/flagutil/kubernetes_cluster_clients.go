@@ -120,6 +120,7 @@ func (o *KubernetesOptions) resolve(dryRun bool) (err error) {
 
 	o.prowJobClientset = pjClient
 	o.kubernetesClientsByContext = clients
+	o.resolved = true
 
 	return nil
 }
