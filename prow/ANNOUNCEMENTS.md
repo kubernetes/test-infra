@@ -40,6 +40,10 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *February 1, 2019* Now that `hook` and `tide` will no longer post "Skipped" statuses
+   for jobs that do not need to run, it is not possible to require those statuses with
+   branch protection. Therefore, it is necessary to run the `branchprotector` from at
+   least version `510db59` before upgrading `tide` to that version.
  - *February 1, 2019* `horologium` and `sinker` now support the `--dry-run` flag,
    so you must pass `--dry-run=false` to keep the previous behavior.
  - *January 31, 2019* `sub` no longer supports the `--masterurl` flag for connecting
