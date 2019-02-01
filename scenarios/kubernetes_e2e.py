@@ -563,9 +563,13 @@ def main(args):
 
     if args.kubeadm:
         version = kubeadm_version(args.kubeadm, shared_build_gcs_path)
+        # try to look for k-a repo
+        kubeadm_path = os.path.join(workspace, 'k8s.io', 'kubernetes-anywhere')
+        go_path = os.environ.get('GOPATH', '')
+        if go_path and os.path.exists(os.path.join(go_path, 'k8s.io', 'kubernetes-anywhere')):
+            kubeadm_path = os.path.join(go_path, 'k8s.io', 'kubernetes-anywhere')
         runner_args.extend([
-            '--kubernetes-anywhere-path=%s' % os.path.join(workspace, 'k8s.io',
-                'kubernetes-anywhere'),
+            '--kubernetes-anywhere-path=%s' % kubeadm_path,
             '--kubernetes-anywhere-phase2-provider=kubeadm',
             '--kubernetes-anywhere-cluster=%s' % cluster,
             '--kubernetes-anywhere-kubeadm-version=%s' % version,
