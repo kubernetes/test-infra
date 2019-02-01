@@ -25,6 +25,7 @@ presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-aks-engine-azure
     always_run: false
+    optional: true
     branches:
     - master
     labels:
