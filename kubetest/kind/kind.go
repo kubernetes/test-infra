@@ -17,13 +17,19 @@ limitations under the License.
 package kind
 
 import (
+	"crypto/sha256"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"go/build"
+	"io/ioutil"
+	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -31,27 +37,49 @@ import (
 )
 
 const (
-	kindBinaryDir = "$HOME/.kubetest/kind"
-	kindNodeImage = "kindest/node:latest"
+	kindBinaryDir       = "$HOME/.kubetest/kind"
+	kindNodeImageLatest = "kindest/node:latest"
+
+	kindBinaryBuild  = "build"
+	kindBinaryStable = "stable"
+
+	// If a new version of kind is released this value has to be updated.
+	kindBinaryStableTag = "0.1.0"
 )
 
 var (
 	kindConfigPath = flag.String("kind-config-path", "",
 		"(kind only) Path to the kind configuration file.")
+	kindBinaryVersion = flag.String("kind-binary-version", kindBinaryStable,
+		fmt.Sprintf("(kind only) This flag can be either %q (build from source) "+
+			"or %q (download a stable binary).", kindBinaryBuild, kindBinaryStable))
 )
 
 // Kind is an object the satisfies the deployer interface.
 type Kind struct {
-	control        *process.Control
-	configPath     string
-	importPathKind string
-	importPathK8s  string
-	kindBinaryPath string
+	control           *process.Control
+	buildType         string
+	configPath        string
+	importPathKind    string
+	importPathK8s     string
+	kindBinaryVersion string
+	kindBinaryPath    string
+	kindNodeImage     string
+}
+
+type kindReleaseAsset struct {
+	Name        string `json:"name"`
+	DownloadURL string `json:"browser_download_url"`
+}
+
+type kindRelease struct {
+	Tag    string             `json:"tag_name"`
+	Assets []kindReleaseAsset `json:"assets"`
 }
 
 // NewKind creates a new kind deployer.
-func NewKind(ctl *process.Control) (*Kind, error) {
-	k, err := initializeKind(ctl)
+func NewKind(ctl *process.Control, buildType string) (*Kind, error) {
+	k, err := initializeKind(ctl, buildType)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +96,7 @@ func getImportPath(path string) (string, error) {
 }
 
 // initializeKind initializers the kind deployer flags.
-func initializeKind(ctl *process.Control) (*Kind, error) {
+func initializeKind(ctl *process.Control, buildType string) (*Kind, error) {
 	if ctl == nil {
 		return nil, fmt.Errorf("kind deployer received nil Control")
 	}
@@ -93,15 +121,19 @@ func initializeKind(ctl *process.Control) (*Kind, error) {
 		return nil, err
 	}
 	k := &Kind{
-		control:        ctl,
-		configPath:     *kindConfigPath,
-		importPathK8s:  importPathK8s,
-		importPathKind: importPathKind,
-		kindBinaryPath: filepath.Join(kindBinaryDir, "kind"),
+		control:           ctl,
+		buildType:         buildType,
+		configPath:        *kindConfigPath,
+		importPathK8s:     importPathK8s,
+		importPathKind:    importPathKind,
+		kindBinaryPath:    filepath.Join(kindBinaryDir, "kind"),
+		kindBinaryVersion: *kindBinaryVersion,
+		kindNodeImage:     kindNodeImageLatest,
 	}
 	return k, nil
 }
 
+// getKubeConfigPath returns the path to the kubeconfig file.
 func (k *Kind) getKubeConfigPath() (string, error) {
 	o, err := k.control.Output(exec.Command("kind", "get", "kubeconfig-path"))
 	if err != nil {
@@ -110,6 +142,7 @@ func (k *Kind) getKubeConfigPath() (string, error) {
 	return strings.TrimSuffix(string(o), "\n"), nil
 }
 
+// setKubeConfigEnv sets the KUBECONFIG environment variable.
 func (k *Kind) setKubeConfigEnv() error {
 	path, err := k.getKubeConfigPath()
 	if err != nil {
@@ -121,33 +154,95 @@ func (k *Kind) setKubeConfigEnv() error {
 	return nil
 }
 
+// prepareKindBinary either builds kind from source or pulls a binary from GitHub.
+func (k *Kind) prepareKindBinary() error {
+	switch k.kindBinaryVersion {
+	case kindBinaryBuild:
+		log.Println("Building a kind binary from source.")
+		// Build the kind binary.
+		cmd := exec.Command("go", "build")
+		cmd.Dir = k.importPathKind
+		if err := k.control.FinishRunning(cmd); err != nil {
+			return err
+		}
+		// Copy the kind binary to the kind binary path.
+		cmd = exec.Command("cp", "./kind", k.kindBinaryPath)
+		cmd.Dir = k.importPathKind
+		if err := k.control.FinishRunning(cmd); err != nil {
+			return err
+		}
+	case kindBinaryStable:
+		// Download a stable kind binary.
+		binary := fmt.Sprintf("kind-%s-%s", runtime.GOOS, runtime.GOARCH)
+		url := fmt.Sprintf("https://github.com/kubernetes-sigs/kind/releases/download/%s/%s", kindBinaryStableTag, binary)
+		log.Printf("Downloading a stable kind binary from GitHub: %s, tag: %s\n", binary, kindBinaryStableTag)
+		new, err := getFromURL(url)
+		if err != nil {
+			return err
+		}
+		const writeMode = 0770
+		// If the old binary is missing write the new binary.
+		if _, err := os.Stat(k.kindBinaryPath); os.IsNotExist(err) {
+			if err := ioutil.WriteFile(k.kindBinaryPath, new, writeMode); err != nil {
+				return err
+			}
+			return nil
+		}
+		// Read the old binary and compare its checksum to the checksum of the new one.
+		// Only write the new binary if the checksums differ.
+		old, err := ioutil.ReadFile(k.kindBinaryPath)
+		if err != nil {
+			return err
+		}
+		if checksumIsEqual(new, old) {
+			log.Printf("The same version of kind is already installed: %s", k.kindBinaryPath)
+			return nil
+		}
+		log.Printf("Installing a new kind binary: %s", k.kindBinaryPath)
+		if err := ioutil.WriteFile(k.kindBinaryPath, new, writeMode); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// prepareNodeImage handles building the node image.
+func (k *Kind) prepareNodeImage() error {
+	// Adapt the build type if needed.
+	var buildType string
+	switch k.buildType {
+	case "":
+		// The default option is to use a pre-build image.
+		log.Println("Skipping the kind node image build.")
+		k.kindNodeImage = ""
+		return nil
+	case "quick":
+		// This is the default build type in kind.
+		buildType = "docker"
+	default:
+		// Other types and 'bazel' are handled transparently here.
+		buildType = k.buildType
+	}
+
+	// Build the node image.
+	cmd := exec.Command("kind", "build", "node-image", "--image="+k.kindNodeImage, "--type="+buildType)
+	if err := k.control.FinishRunning(cmd); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Up builds kind and the node image and then deploys a cluster based on the kind config.
 func (k *Kind) Up() error {
-	// TODO(neolit123): fetch a stable release binary and stash it in a kubetest specific dir.
-	// This should be the default option instead of building kind from source.
+	if err := k.prepareKindBinary(); err != nil {
+		return err
+	}
+	if err := k.prepareNodeImage(); err != nil {
+		return err
+	}
 
-	// TODO(neolit123): let --deployer=kind hook the kubetest --build process to instead do
-	// the appropriate --type of kind build node-image and a kubectl build for the host.
-
-	// Build the kind binary.
-	cmd := exec.Command("go", "build")
-	cmd.Dir = k.importPathKind
-	if err := k.control.FinishRunning(cmd); err != nil {
-		return err
-	}
-	// Copy the kind binary to the kind binary path.
-	cmd = exec.Command("cp", "./kind", k.kindBinaryPath)
-	cmd.Dir = k.importPathKind
-	if err := k.control.FinishRunning(cmd); err != nil {
-		return err
-	}
-	// Build the node image.
-	cmd = exec.Command("kind", "build", "node-image", "--image="+kindNodeImage)
-	if err := k.control.FinishRunning(cmd); err != nil {
-		return err
-	}
 	// Build kubectl.
-	cmd = exec.Command("make", "all", "WHAT=cmd/kubectl")
+	cmd := exec.Command("make", "all", "WHAT=cmd/kubectl")
 	cmd.Dir = k.importPathK8s
 	if err := k.control.FinishRunning(cmd); err != nil {
 		return err
@@ -158,14 +253,22 @@ func (k *Kind) Up() error {
 	if err := k.control.FinishRunning(cmd); err != nil {
 		return err
 	}
-	// Create the kind cluster.
-	useConfig := ""
+
+	// Handle the config flag.
+	configFlag := ""
 	if k.configPath != "" {
-		useConfig = "--config=" + k.configPath
+		configFlag = "--config=" + k.configPath
 	}
-	cmd = exec.Command("kind", "create", "cluster", "--image="+kindNodeImage,
-		"--retain", "--wait=1m", "--loglevel=debug",
-		useConfig)
+
+	// Handle the node image flag if we built a new node image.
+	nodeImageFlag := ""
+	if k.kindNodeImage != "" {
+		nodeImageFlag = "--image=" + k.kindNodeImage
+	}
+
+	// Build the kind cluster.
+	cmd = exec.Command("kind", "create", "cluster", nodeImageFlag, configFlag,
+		"--retain", "--wait=1m", "--loglevel=debug")
 	if err := k.control.FinishRunning(cmd); err != nil {
 		return err
 	}
@@ -236,4 +339,88 @@ func (k *Kind) KubectlCommand() (*exec.Cmd, error) {
 	cmd := exec.Command("kubectl")
 	cmd.Env = append(os.Environ(), fmt.Sprintf("KUBECONFIG=%s", kubeConfigPath))
 	return cmd, nil
+}
+
+// getFromURL downloads raw bytes from a URL.
+func getFromURL(url string) ([]byte, error) {
+	timeout := time.Duration(60 * time.Second)
+	client := http.Client{
+		Timeout: timeout,
+	}
+	resp, err := client.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+// checksumIsEqual takes a couple of byte slices and returns 'true' if their
+// checksum matches.
+func checksumIsEqual(new, old []byte) bool {
+	shaNew := sha256.Sum256(new)
+	shaOld := sha256.Sum256(old)
+	for i := 0; i < sha256.Size; i++ {
+		if shaNew[i] != shaOld[i] {
+			return false
+		}
+	}
+	return true
+}
+
+// getKindRelease accepts either a kind release tag or 'kindBinaryLatest'.
+// UNUSED: we might end up using this one day.
+func getKindRelease(tag string) (*kindRelease, error) {
+	b, err := getFromURL("https://api.github.com/repos/kubernetes-sigs/kind/releases")
+	if err != nil {
+		return nil, err
+	}
+
+	var releases []kindRelease
+	err = json.Unmarshal(b, &releases)
+	if err != nil {
+		return nil, err
+	}
+	if len(releases) == 0 {
+		return nil, errors.New("could not obtain a list of releases from GitHub")
+	}
+
+	switch tag {
+	case kindBinaryBuild:
+		return &releases[0], nil
+	default:
+		for _, r := range releases {
+			if r.Tag == tag {
+				return &r, nil
+			}
+		}
+		return nil, fmt.Errorf("could not find a release tagged as %q", tag)
+	}
+}
+
+// getKindBinaryFromRelease downloads a kind binary based on arch/platform (assetName) and a kindRelease.
+// UNUSED: we might end up using this one day.
+func getKindBinaryFromRelease(release *kindRelease, assetName string) ([]byte, error) {
+	if release == nil {
+		return nil, errors.New("getKindBinaryFromRelease() received nil value for 'release'")
+	}
+	if len(release.Assets) == 0 {
+		return nil, fmt.Errorf("no assets defined for release %q", release.Tag)
+	}
+	for _, a := range release.Assets {
+		if strings.Contains(a.Name, assetName) {
+			log.Printf("Downloading asset name %q for kind release tag %q\n", assetName, release.Tag)
+			b, err := getFromURL(a.DownloadURL)
+			if err != nil {
+				return nil, err
+			}
+			return b, nil
+		}
+	}
+	return nil, fmt.Errorf("no matching asset name %q", assetName)
 }
