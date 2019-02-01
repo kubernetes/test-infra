@@ -37,6 +37,9 @@ spec:
         - --job-config-path=/etc/job-config
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -46,6 +49,9 @@ spec:
           readOnly: true
         - name: oauth
           mountPath: /etc/github
+          readOnly: true
+        - name: service-account
+          mountPath: /etc/service-account
           readOnly: true
       volumes:
       - name: config
@@ -57,3 +63,6 @@ spec:
       - name: oauth
         secret:
           secretName: oauth-token
+      - name: service-account
+        secret:
+          secretName: service-account
