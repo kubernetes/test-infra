@@ -45,7 +45,7 @@ const (
 
 type prowJobClient interface {
 	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
-	UpdateStatus(*prowapi.ProwJob) (*prowapi.ProwJob, error)
+	Update(*prowapi.ProwJob) (*prowapi.ProwJob, error)
 	Get(name string, options metav1.GetOptions) (*prowapi.ProwJob, error)
 	List(opts metav1.ListOptions) (*prowapi.ProwJobList, error)
 }
@@ -160,7 +160,7 @@ func (c *Controller) setPreviousReportState(pj prowapi.ProwJob) error {
 		latestPJ.Status.PrevReportStates = map[string]prowapi.ProwJobState{}
 	}
 	latestPJ.Status.PrevReportStates[reporter.GithubReporterName] = latestPJ.Status.State
-	_, err = c.prowJobClient.UpdateStatus(latestPJ)
+	_, err = c.prowJobClient.Update(latestPJ)
 	return err
 }
 
@@ -294,7 +294,7 @@ func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, pm map[string]coreapi
 		c.log.WithFields(pjutil.ProwJobFields(&toCancel)).
 			WithField("from", prevState).
 			WithField("to", toCancel.Status.State).Info("Transitioning states.")
-		npj, err := c.prowJobClient.UpdateStatus(&toCancel)
+		npj, err := c.prowJobClient.Update(&toCancel)
 		if err != nil {
 			return err
 		}
@@ -429,7 +429,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := c.prowJobClient.UpdateStatus(&pj)
+	_, err := c.prowJobClient.Update(&pj)
 	return err
 }
 
@@ -479,7 +479,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]coreapi.
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := c.prowJobClient.UpdateStatus(&pj)
+	_, err := c.prowJobClient.Update(&pj)
 	return err
 }
 

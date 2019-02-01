@@ -42,7 +42,7 @@ const (
 type prowJobClient interface {
 	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
 	List(opts metav1.ListOptions) (*prowapi.ProwJobList, error)
-	UpdateStatus(*prowapi.ProwJob) (*prowapi.ProwJob, error)
+	Update(*prowapi.ProwJob) (*prowapi.ProwJob, error)
 }
 
 type jenkinsClient interface {
@@ -298,7 +298,7 @@ func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, jbs map[string]Build)
 		c.log.WithFields(pjutil.ProwJobFields(&toCancel)).
 			WithField("from", prevState).
 			WithField("to", toCancel.Status.State).Info("Transitioning states.")
-		npj, err := c.prowJobClient.UpdateStatus(&toCancel)
+		npj, err := c.prowJobClient.Update(&toCancel)
 		if err != nil {
 			return err
 		}
@@ -395,7 +395,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, reports chan<- prowapi.P
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := c.prowJobClient.UpdateStatus(&pj)
+	_, err := c.prowJobClient.Update(&pj)
 	return err
 }
 
@@ -437,7 +437,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, reports chan<- prowapi
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := c.prowJobClient.UpdateStatus(&pj)
+	_, err := c.prowJobClient.Update(&pj)
 	return err
 }
 
