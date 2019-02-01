@@ -264,60 +264,70 @@ func TestReportStatus(t *testing.T) {
 	tests := []struct {
 		name string
 
-		state  prowapi.ProwJobState
-		report bool
-		desc   string // override default msg
-
+		state            prowapi.ProwJobState
+		report           bool
+		desc             string // override default msg
+		pjType           prowapi.ProwJobType
 		expectedStatuses []string
 		expectedDesc     string
 	}{
 		{
-			name: "Successful prowjob with report true and children should set status for itself but not its children",
+			name: "Successful prowjob with report true should set status",
 
-			state:  prowapi.SuccessState,
-			report: true,
-
+			state:            prowapi.SuccessState,
+			pjType:           prowapi.PresubmitJob,
+			report:           true,
 			expectedStatuses: []string{"success"},
 		},
 		{
-			name: "Successful prowjob with report false and children should not set status for itself and its children",
+			name: "Successful prowjob with report false should not set status",
 
-			state:  prowapi.SuccessState,
-			report: false,
-
+			state:            prowapi.SuccessState,
+			pjType:           prowapi.PresubmitJob,
+			report:           false,
 			expectedStatuses: []string{},
 		},
 		{
-			name: "Pending prowjob with report true and children should set status for itself and its children",
+			name: "Pending prowjob with report true should set status",
 
-			state:  prowapi.PendingState,
-			report: true,
-
+			state:            prowapi.PendingState,
+			report:           true,
+			pjType:           prowapi.PresubmitJob,
 			expectedStatuses: []string{"pending"},
 		},
 		{
-			name: "Aborted prowjob with report true should set failure status",
+			name: "Aborted presubmit job with report true should set failure status",
 
-			state:  prowapi.AbortedState,
-			report: true,
-
+			state:            prowapi.AbortedState,
+			report:           true,
+			pjType:           prowapi.PresubmitJob,
 			expectedStatuses: []string{"failure"},
 		},
 		{
-			name: "Triggered prowjob with report true should set pending status",
+			name: "Triggered presubmit job with report true should set pending status",
 
-			state:  prowapi.TriggeredState,
-			report: true,
-
+			state:            prowapi.TriggeredState,
+			report:           true,
+			pjType:           prowapi.PresubmitJob,
 			expectedStatuses: []string{"pending"},
 		},
 		{
-			name:             "really long description is truncated",
+			name: "really long description is truncated",
+
 			state:            prowapi.TriggeredState,
 			report:           true,
 			expectedStatuses: []string{"pending"},
 			desc:             shout(maxLen), // resulting string will exceed maxLen
 			expectedDesc:     truncate(shout(maxLen)),
+		},
+		{
+			name: "Successful postsubmit job with report true should set success status",
+
+			state:  prowapi.SuccessState,
+			report: true,
+			pjType: prowapi.PostsubmitJob,
+
+			expectedStatuses: []string{"success"},
 		},
 	}
 
@@ -340,7 +350,7 @@ func TestReportStatus(t *testing.T) {
 				},
 				Spec: prowapi.ProwJobSpec{
 					Job:     "job-name",
-					Type:    prowapi.PresubmitJob,
+					Type:    tc.pjType,
 					Context: "parent",
 					Report:  tc.report,
 					Refs: &prowapi.Refs{
