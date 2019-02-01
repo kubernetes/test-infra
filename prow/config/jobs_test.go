@@ -24,7 +24,7 @@ import (
 	"regexp"
 	"testing"
 
-	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
+	buildapi "github.com/knative/build/pkg/apis/build/v1alpha1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	coreapi "k8s.io/api/core/v1"
@@ -547,7 +547,7 @@ func TestMergePreset(t *testing.T) {
 		name      string
 		jobLabels map[string]string
 		pod       *coreapi.PodSpec
-		buildSpec *buildv1alpha1.BuildSpec
+		buildSpec *buildapi.BuildSpec
 		presets   []Preset
 
 		shouldError  bool
@@ -559,7 +559,7 @@ func TestMergePreset(t *testing.T) {
 			name:      "one volume",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &coreapi.PodSpec{},
-			buildSpec: &buildv1alpha1.BuildSpec{},
+			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Labels:  map[string]string{"foo": "bar"},
@@ -572,7 +572,7 @@ func TestMergePreset(t *testing.T) {
 			name:      "wrong label",
 			jobLabels: map[string]string{"foo": "nope"},
 			pod:       &coreapi.PodSpec{},
-			buildSpec: &buildv1alpha1.BuildSpec{},
+			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Labels:  map[string]string{"foo": "bar"},
@@ -595,7 +595,7 @@ func TestMergePreset(t *testing.T) {
 		{
 			name:      "conflicting volume name for buildspec",
 			jobLabels: map[string]string{"foo": "bar"},
-			buildSpec: &buildv1alpha1.BuildSpec{Volumes: []coreapi.Volume{{Name: "baz"}}},
+			buildSpec: &buildapi.BuildSpec{Volumes: []coreapi.Volume{{Name: "baz"}}},
 			presets: []Preset{
 				{
 					Labels:  map[string]string{"foo": "bar"},
@@ -608,7 +608,7 @@ func TestMergePreset(t *testing.T) {
 			name:      "non conflicting volume name",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &coreapi.PodSpec{Volumes: []coreapi.Volume{{Name: "baz"}}},
-			buildSpec: &buildv1alpha1.BuildSpec{Volumes: []coreapi.Volume{{Name: "baz"}}},
+			buildSpec: &buildapi.BuildSpec{Volumes: []coreapi.Volume{{Name: "baz"}}},
 			presets: []Preset{
 				{
 					Labels:  map[string]string{"foo": "bar"},
@@ -621,7 +621,7 @@ func TestMergePreset(t *testing.T) {
 			name:      "one env",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
-			buildSpec: &buildv1alpha1.BuildSpec{},
+			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Labels: map[string]string{"foo": "bar"},
@@ -634,7 +634,7 @@ func TestMergePreset(t *testing.T) {
 			name:      "one vm",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
-			buildSpec: &buildv1alpha1.BuildSpec{},
+			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Labels:       map[string]string{"foo": "bar"},
@@ -647,7 +647,7 @@ func TestMergePreset(t *testing.T) {
 			name:      "one of each",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
-			buildSpec: &buildv1alpha1.BuildSpec{},
+			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Labels:       map[string]string{"foo": "bar"},
@@ -664,7 +664,7 @@ func TestMergePreset(t *testing.T) {
 			name:      "two vm",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
-			buildSpec: &buildv1alpha1.BuildSpec{},
+			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Labels:       map[string]string{"foo": "bar"},
