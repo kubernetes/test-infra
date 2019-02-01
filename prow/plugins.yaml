@@ -217,6 +217,14 @@ repo_milestone:
     # curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
     maintainers_id: 2460384
     maintainers_team: kubernetes-milestone-maintainers
+  'kubernetes-sigs/cluster-api':
+    maintainers_id: 3058957
+    maintainers_team: cluster-api-maintainers
+    maintainers_friendly_name: Cluster API Maintainers
+  'kubernetes-sigs/cluster-api-provider-aws':
+    maintainers_id: 2830895
+    maintainers_team: cluster-api-provider-aws-maintainers
+    maintainers_friendly_name: Cluster API Provider AWS Maintainers
 
 config_updater:
   maps:
@@ -554,9 +562,11 @@ plugins:
 
   kubernetes-sigs/cluster-api:
   - trigger
+  - milestone
 
   kubernetes-sigs/cluster-api-provider-aws:
   - trigger
+  - milestone
 
   kubernetes-sigs/cluster-api-provider-azure:
   - milestone
