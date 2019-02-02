@@ -341,6 +341,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubernetes/federation",
 		"kubernetes/kops",
 		"kubernetes/kubernetes",
+		"kubernetes/node-problem-detector",
 		"kubernetes/org",
 		"kubernetes/publishing-bot",
 		"kubernetes/test-infra",
