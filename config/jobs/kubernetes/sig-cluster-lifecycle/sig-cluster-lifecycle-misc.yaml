@@ -19,7 +19,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:HAMaster\] --minStartupPods=8
       - --timeout=220m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 24h
   name: ci-kubernetes-e2e-gce-min-node-permissions
@@ -43,4 +43,4 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master

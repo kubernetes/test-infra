@@ -24,7 +24,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingGpu\] --ginkgo.skip=\[Flaky\]
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 4h
   name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-p100
@@ -51,7 +51,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingGpu\] --ginkgo.skip=\[Flaky\]
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 4h
   name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-v100
@@ -78,4 +78,4 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingGpu\] --ginkgo.skip=\[Flaky\]
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master

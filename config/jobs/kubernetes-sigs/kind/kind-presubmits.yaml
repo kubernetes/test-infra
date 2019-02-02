@@ -7,7 +7,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
         command:
         - "./hack/ci/build-all.sh"
       # trialing this on kind jobs, we are using FQDN for in-cluster services, now
@@ -23,7 +23,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-experimental
         command:
         - "./hack/verify-all.sh"
       # trialing this on kind jobs, we are using FQDN for in-cluster services, now
@@ -44,7 +44,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -107,7 +107,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.13
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-1.13
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -170,7 +170,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-1.12
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -233,7 +233,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.11
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-1.11
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
