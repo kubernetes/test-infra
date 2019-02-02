@@ -239,6 +239,7 @@ func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJo
 		if item.Spec.Refs == nil && len(item.Spec.ExtraRefs) == 0 {
 			// periodic jobs with no refs cannot be filtered
 			filtered = append(filtered, item)
+			continue
 		}
 
 		refs := item.Spec.Refs
