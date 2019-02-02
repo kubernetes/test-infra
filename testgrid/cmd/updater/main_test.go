@@ -22,7 +22,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	"k8s.io/test-infra/testgrid/junit"
+	"k8s.io/test-infra/testgrid/metadata/junit"
 	"k8s.io/test-infra/testgrid/state"
 )
 

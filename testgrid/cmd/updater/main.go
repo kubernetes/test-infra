@@ -36,7 +36,8 @@ import (
 	"time"
 
 	"k8s.io/test-infra/testgrid/config"
-	"k8s.io/test-infra/testgrid/junit"
+	"k8s.io/test-infra/testgrid/metadata"
+	"k8s.io/test-infra/testgrid/metadata/junit"
 	"k8s.io/test-infra/testgrid/state"
 	"k8s.io/test-infra/testgrid/util/gcs"
 
@@ -46,6 +47,15 @@ import (
 
 	"vbom.ml/util/sortorder"
 )
+
+// Started holds started.json data.
+type Started = metadata.Started
+
+// Finished holds finished.json data.
+type Finished struct {
+	metadata.Finished
+	running bool
+}
 
 // options configures the updater
 type options struct {
@@ -111,67 +121,6 @@ type Build struct {
 
 func (b Build) String() string {
 	return b.Prefix
-}
-
-// Started holds the started.json values of the build.
-type Started struct {
-	Timestamp   int64             `json:"timestamp"` // epoch seconds
-	RepoVersion string            `json:"repo-version"`
-	Node        string            `json:"node"`
-	Pull        string            `json:"pull"`
-	Repos       map[string]string `json:"repos"` // {repo: branch_or_pull} map
-}
-
-// Finished holds the finished.json values of the build
-type Finished struct {
-	// Timestamp is epoch seconds
-	Timestamp  int64    `json:"timestamp"`
-	Passed     bool     `json:"passed"`
-	JobVersion string   `json:"job-version"`
-	Metadata   Metadata `json:"metadata"`
-	running    bool
-}
-
-// Metadata holds the finished.json values in the metadata key.
-//
-// Metadata values can either be string or string map of strings
-//
-// TODO(fejta): figure out which of these we want and document them
-// Special values: infra-commit, repos, repo, repo-commit, others
-type Metadata map[string]interface{}
-
-// String returns the name key if its value is a string.
-func (m Metadata) String(name string) (*string, bool) {
-	if v, ok := m[name]; !ok {
-		return nil, false
-	} else if t, good := v.(string); !good {
-		return nil, true
-	} else {
-		return &t, true
-	}
-}
-
-// Meta returns the name key if its value is a child object.
-func (m Metadata) Meta(name string) (*Metadata, bool) {
-	if v, ok := m[name]; !ok {
-		return nil, true
-	} else if t, good := v.(Metadata); !good {
-		return nil, false
-	} else {
-		return &t, true
-	}
-}
-
-// ColumnMetadata returns the subset of values in the map that are strings.
-func (m Metadata) ColumnMetadata() ColumnMetadata {
-	bm := ColumnMetadata{}
-	for k, v := range m {
-		if s, ok := v.(string); ok {
-			bm[k] = s
-		}
-		// TODO(fejta): handle sub items
-	}
-	return bm
 }
 
 // Message extracts the message for the junit test case.
@@ -781,9 +730,13 @@ func ReadBuild(build Build) (*Column, error) {
 		}
 		return &br, nil
 	}
-	br.Finished = finished.Timestamp
-	br.Metadata = finished.Metadata.ColumnMetadata()
-	br.Passed = finished.Passed
+	if finished.Timestamp != nil {
+		br.Finished = *finished.Timestamp
+	}
+	br.Metadata = finished.Metadata.Strings()
+	if finished.Passed != nil {
+		br.Passed = *finished.Passed
+	}
 	or := br.Overall()
 	br.Rows = map[string][]Row{
 		"Overall": {or},
