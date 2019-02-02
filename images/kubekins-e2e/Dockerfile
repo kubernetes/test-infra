@@ -15,7 +15,7 @@
 # This file creates a build environment for building and running kubernetes
 # unit and integration tests
 
-FROM gcr.io/k8s-testimages/bootstrap:v20190117-ea691e01a
+FROM gcr.io/k8s-testimages/bootstrap:v20190201-730a38075
 LABEL maintainer "Sen Lu <senlu@google.com>"
 
 # hint to kubetest that it is in CI
@@ -36,7 +36,8 @@ RUN mkdir -p /go/src/k8s.io/kubernetes \
 # - graphviz package for graphing profiles
 # - bc for shell to junit
 # - rpm for building RPMs with Bazel
-RUN apt-get install -y bc \
+RUN apt-get update && \
+    apt-get install -y bc \
     graphviz \
     rpm && \
     rm -rf /var/lib/apt/lists/*
