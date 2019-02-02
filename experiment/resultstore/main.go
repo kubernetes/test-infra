@@ -31,11 +31,14 @@ import (
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/google/uuid"
 	resultstore "google.golang.org/genproto/googleapis/devtools/resultstore/v2"
+	"google.golang.org/genproto/protobuf/field_mask"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/oauth"
 	"sigs.k8s.io/yaml"
 )
+
+// See https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2
 
 func main() {
 	var invID, tok string
@@ -194,7 +197,7 @@ func randomTestCase() *resultstore.Test {
 		Properties: []*resultstore.Property{
 			prop("whatever", "yo"),
 		},
-		// Files: []*resultstore.File{} // testcase files
+		Files: manyFiles,
 	}
 
 	failed, errored := flip(), flip()
@@ -252,6 +255,39 @@ func randomTestCase() *resultstore.Test {
 	}
 }
 
+const (
+	e2eLog        = "gs://kubernetes-jenkins/logs/ci-kubernetes-local-e2e/3355/build-log.txt"
+	compressedLog = e2eLog
+	pushLog       = "gs://kubernetes-jenkins/logs/post-test-infra-push-prow/1079/build-log.txt"
+	bumpLog       = "gs://kubernetes-jenkins/logs/ci-test-infra-autobump-prow/67/build-log.txt"
+	oldPushLog    = "gs://kubernetes-jenkins/logs/post-test-infra-push-prow/1077/build-log.txt"
+	erickLog      = "gs://kubernetes-jenkins/erick.txt"
+	fejtaLog      = "gs://kubernetes-jenkins/erick-fejta.txt"
+)
+
+var (
+	testLog = &resultstore.File{
+		Uid:           "test.log",
+		Uri:           pushLog,
+		ContentViewer: "https://storage.googleapis.com/kubernetes-jenkins/logs/ci-kubernetes-local-e2e/3355/build-log.txt",
+	}
+	buildLog = &resultstore.File{
+		Uid: "build.log",
+		Uri: bumpLog,
+	}
+	stdout = &resultstore.File{
+		Uid: "stdout",
+		Uri: erickLog,
+	}
+	stderr = &resultstore.File{
+		Uid: "stderr",
+		Uri: fejtaLog,
+	}
+	manyFiles = []*resultstore.File{ // special ids: build: stdout,stderr,baseline.lcov; test: test.xml,test.log,test.lcov
+		buildLog, testLog, stdout, stderr,
+	}
+)
+
 func setup(account, tok, invID string) error {
 	// create connection and clients
 	conn, err := grpcConn(account)
@@ -272,14 +308,26 @@ func setup(account, tok, invID string) error {
 		}
 		invID = inv.Id.InvocationId
 	}
-	s := "invocations/" + invID
+	invName := "invocations/" + invID
 	inv, err = down.GetInvocation(ctx, &resultstore.GetInvocationRequest{
-		Name: s,
+		Name: invName,
 	})
 	if err != nil {
-		return fmt.Errorf("get invocation %s: %v", err, s)
+		return fmt.Errorf("get invocation %s: %v", invName, err)
 	}
 	print("gi", tok, inv)
+
+	inv.Files = manyFiles
+	inv, err = up.UpdateInvocation(ctx, &resultstore.UpdateInvocationRequest{
+		Invocation: inv,
+		UpdateMask: &field_mask.FieldMask{
+			Paths: []string{"files"},
+		},
+		AuthorizationToken: tok,
+	})
+	if err != nil {
+		return fmt.Errorf("update invocation %s: %v", invName, err)
+	}
 
 	// add a target
 
@@ -451,8 +499,11 @@ func setup(account, tok, invID string) error {
 				},
 			},
 			Properties: nil,
-			Files:      nil, // special ids: build: stdout,stderr,baseline.lcov; test: test.xml,test.log,test.lcov
-			Coverage:   nil, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#ActionCoverage
+			Files: []*resultstore.File{ // special ids: build: stdout,stderr,baseline.lcov; test: test.xml,test.log,test.lcov
+				stdout,
+				stderr,
+			},
+			Coverage: nil, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#ActionCoverage
 		},
 	})
 	if err != nil {
@@ -580,7 +631,7 @@ func setup(account, tok, invID string) error {
 						Properties: []*resultstore.Property{
 							prop("sweet", "success"),
 						},
-						// Files: []*resultstore.File{} // files produced by this test suite
+						Files: manyFiles, // files produced by this test suite
 					},
 				},
 			},
@@ -605,8 +656,10 @@ func setup(account, tok, invID string) error {
 				},
 			},
 			Properties: nil,
-			Files:      nil, // special ids: build: stdout,stderr,baseline.lcov; test: test.xml,test.log,test.lcov
-			Coverage:   nil, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#ActionCoverage
+			Files: []*resultstore.File{ // special ids: build: stdout,stderr,baseline.lcov; test: test.xml,test.log,test.lcov
+				testLog,
+			},
+			Coverage: nil, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#ActionCoverage
 		},
 	})
 	if err != nil {
@@ -654,6 +707,7 @@ func setup(account, tok, invID string) error {
 
 	}
 
+	fmt.Println("Token: " + tok)
 	fmt.Printf("See https://source.cloud.google.com/results/invocations/%s\n", inv.Id.InvocationId)
 	return nil
 }
