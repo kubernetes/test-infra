@@ -144,7 +144,7 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 	if _, err := os.Stat(cache); os.IsNotExist(err) {
 		// Cache miss, clone it now.
 		c.logger.Infof("Cloning %s for the first time.", repo)
-		if err := os.Mkdir(filepath.Dir(cache), os.ModePerm); err != nil && !os.IsExist(err) {
+		if err := os.MkdirAll(filepath.Dir(cache), os.ModePerm); err != nil && !os.IsExist(err) {
 			return nil, err
 		}
 		remote := fmt.Sprintf("%s/%s", base, repo)
