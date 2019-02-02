@@ -196,9 +196,8 @@ slack:
         release-1.12:
             - feiskyer # 1.12 patch release manager
         release-1.13:
-            - dougm # 1.13 branch manager
-            - hoegaarden # 1.13 branch manager shadow
-            - idealhack # 1.13 branch manager shadow
+            - aleksandra-malinowska # 1.13 patch release team
+            - tpepper # 1.13 patch release team
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
             - apelisse # feature-serverside-apply "branch manager"
