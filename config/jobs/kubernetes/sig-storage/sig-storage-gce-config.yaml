@@ -34,7 +34,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
         resources:
           requests:
             memory: "6Gi"

@@ -43,7 +43,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GCEAlphaFeature\] --minStartupPods=8
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 6h
   name: ci-kubernetes-e2e-gce-coredns-performance
@@ -68,7 +68,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:PerformanceDNS\]
       - --timeout=60m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 6h
   name: ci-kubernetes-e2e-gce-kubedns-performance
@@ -93,7 +93,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:PerformanceDNS\]
       - --timeout=60m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 60m
   name: ci-kubernetes-e2e-gci-gce-coredns
@@ -116,7 +116,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 6h
   name: ci-kubernetes-e2e-gce-coredns-performance-nodecache
@@ -142,7 +142,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:PerformanceDNS\]
       - --timeout=60m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 6h
   name: ci-kubernetes-e2e-gce-kubedns-performance-nodecache
@@ -168,7 +168,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:PerformanceDNS\]
       - --timeout=60m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 60m
   name: ci-kubernetes-e2e-gci-gce-coredns-nodecache
@@ -192,7 +192,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-ingress
@@ -216,7 +216,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\] --ginkgo.skip=\[Unreleased\]
       - --timeout=320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 60m
   name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
@@ -239,7 +239,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-ip-alias
@@ -265,7 +265,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 60m
   name: ci-kubernetes-e2e-gci-gce-ipvs
@@ -291,7 +291,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 60m
   name: ci-kubernetes-e2e-gci-gce-kube-dns
@@ -314,7 +314,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 60m
   name: ci-kubernetes-e2e-gci-gce-kube-dns-nodecache
@@ -338,7 +338,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-serial-kube-dns
@@ -362,7 +362,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-ingress
@@ -388,4 +388,4 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master

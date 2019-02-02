@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-1.12
         command:
         - "./hack/verify-bazel.sh"
   - name: pull-cluster-api-provider-azure-bazel-test
@@ -17,7 +17,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-1.12
         command:
         - "./scripts/ci-bazel-test.sh"
   - name: pull-cluster-api-provider-azure-bazel-build
@@ -27,7 +27,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-1.12
         command:
         - "./scripts/ci-bazel-build.sh"
   - name: pull-cluster-api-provider-azure-verify-boilerplate
@@ -37,6 +37,6 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
         command:
         - "./hack/verify_boilerplate.py"

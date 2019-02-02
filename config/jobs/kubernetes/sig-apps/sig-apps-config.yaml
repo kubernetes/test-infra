@@ -7,7 +7,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
       args:
       - --repo=github.com/kubernetes-sigs/application=master
       - --upload=gs://kubernetes-jenkins/logs/
@@ -54,7 +54,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:TaintEviction\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 
 - interval: 30m
@@ -75,4 +75,4 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:StatefulSet\] --minStartupPods=8
       - --timeout=90m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master

@@ -7,7 +7,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
       args:
       - "--job=$(JOB_NAME)"
       - "--repo=github.com/apache-spark-on-k8s/spark-integration=master"
@@ -43,7 +43,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
       args:
       - "--job=$(JOB_NAME)"
       - "--repo=github.com/apache-spark-on-k8s/spark-integration=master"

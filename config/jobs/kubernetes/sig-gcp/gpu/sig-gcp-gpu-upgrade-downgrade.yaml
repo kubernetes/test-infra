@@ -24,7 +24,7 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-master-upgrade
@@ -51,7 +51,7 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUMasterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-gpu-stable1-beta-cluster-upgrade
@@ -78,7 +78,7 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterUpgrade\] --upgrade-target=ci/k8s-beta --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-gpu-stable1-beta-master-upgrade
@@ -105,7 +105,7 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUMasterUpgrade\] --upgrade-target=ci/k8s-beta --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
@@ -132,7 +132,7 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
@@ -159,7 +159,7 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUMasterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
@@ -187,7 +187,7 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterDowngrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 12h
   name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
@@ -215,4 +215,4 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterDowngrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master

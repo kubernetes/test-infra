@@ -23,7 +23,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
   interval: 2h
@@ -49,7 +49,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-monitoring
   interval: 3h
@@ -75,7 +75,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverAcceleratorMonitoring\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
   interval: 12h #expensive test
@@ -101,7 +101,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
   interval: 12h #expensive test
@@ -127,7 +127,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
   interval: 12h #expensive test
@@ -153,7 +153,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2
   interval: 12h #expensive test
@@ -179,7 +179,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   interval: 6h
@@ -205,7 +205,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable2
   interval: 12h
@@ -231,7 +231,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-ubuntu
   interval: 2h
@@ -258,4 +258,4 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master

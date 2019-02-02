@@ -207,7 +207,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-1.10
         command:
         - ./test/presubmit-tests.sh
         args:
@@ -221,7 +221,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.10
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-1.10
           command:
           - ./test/presubmit-tests-with-pipeline-deployment.sh
           args:
@@ -237,7 +237,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.10
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-1.10
           command:
           - ./test/presubmit-tests-with-pipeline-deployment.sh
           args:
@@ -255,7 +255,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.10
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-1.10
           command:
           - ./test/presubmit-tests-gce-minikube.sh
           args:

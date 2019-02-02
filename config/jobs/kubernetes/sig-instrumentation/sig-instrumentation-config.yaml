@@ -18,7 +18,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:InfluxdbMonitoring\]
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gce-prometheus
@@ -38,7 +38,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:PrometheusMonitoring\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gce-stackdriver
@@ -61,7 +61,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:StackdriverMonitoring\]|\[Feature:StackdriverCustomMetrics\]|\[Feature:StackdriverMetadataAgent\]|\[Feature:StackdriverExternalMetrics\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-es-logging
@@ -84,7 +84,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Elasticsearch\] --minStartupPods=8
       - --timeout=90m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-sd-logging
@@ -107,7 +107,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gke-sd-logging-gci-beta
@@ -131,7 +131,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gke-sd-logging-gci-latest
@@ -155,7 +155,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gke-sd-logging-gci-stable1
@@ -179,7 +179,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-beta
@@ -203,7 +203,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-latest
@@ -227,7 +227,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
@@ -251,7 +251,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gke-stackdriver
@@ -276,4 +276,4 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverMonitoring\]|\[Feature:StackdriverCustomMetrics\]|\[Feature:StackdriverMetadataAgent\]|\[Feature:StackdriverExternalMetrics\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
