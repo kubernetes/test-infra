@@ -123,7 +123,7 @@ func defineFlags() *options {
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
 	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
 	flag.StringVar(&o.clusterIPRange, "cluster-ip-range", "", "Specifies CLUSTER_IP_RANGE value during --up and --test (only relevant for --deployment=bash). Auto-calculated if empty.")
-	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/conformance/gke/eks/kops/kubernetes-anywhere/node/local")
+	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/conformance/gke/eks/kind/kops/kubernetes-anywhere/node/local")
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
 	flag.StringVar(&o.dump, "dump", "", "If set, dump bring-up and cluster logs to this location on test or cluster-up failure")
 	flag.StringVar(&o.dumpPreTestLogs, "dump-pre-test-logs", "", "If set, dump cluster logs to this location before running tests")
@@ -234,7 +234,7 @@ func getDeployer(o *options) (deployer, error) {
 	case "eks":
 		return newEKS(timeout, verbose)
 	case "kind":
-		return kind.NewKind(control, string(o.build))
+		return kind.NewDeployer(control, string(o.build))
 	case "kops":
 		return newKops(o.provider, o.gcpProject, o.cluster)
 	case "kubeadm-dind":
@@ -342,7 +342,7 @@ func complete(o *options) error {
 		}
 	}
 
-	if err := acquireKubernetes(o); err != nil {
+	if err := acquireKubernetes(o, deploy); err != nil {
 		return fmt.Errorf("failed to acquire k8s binaries: %v", err)
 	}
 	if o.extract.Enabled() {
@@ -389,10 +389,16 @@ func complete(o *options) error {
 	return nil
 }
 
-func acquireKubernetes(o *options) error {
+func acquireKubernetes(o *options, d deployer) error {
 	// Potentially build kubernetes
 	if o.build.Enabled() {
-		err := control.XMLWrap(&suite, "Build", o.build.Build)
+		var err error
+		// kind deployer manages build
+		if k, ok := d.(*kind.Deployer); ok {
+			err = control.XMLWrap(&suite, "Build", k.Build)
+		} else {
+			err = control.XMLWrap(&suite, "Build", o.build.Build)
+		}
 		if o.flushMemAfterBuild {
 			util.FlushMem()
 		}
