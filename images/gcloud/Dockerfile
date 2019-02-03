@@ -14,7 +14,6 @@
 
 # Includes go and gcloud
 FROM golang:1.11.5
-LABEL maintainer="senlu@google.com"
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
