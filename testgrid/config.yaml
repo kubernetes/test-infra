@@ -7080,9 +7080,6 @@ dashboards:
     base_options: width=10
     alert_options:
       alert_mail_to_addresses: bentheelder+alerts@google.com
-  - name: pull-kubernetes-e2e-aks-engine-azure
-    test_group_name: pull-kubernetes-e2e-aks-engine-azure
-    base_options: width=10
   - name: pull-kubernetes-e2e-gce
     test_group_name: pull-kubernetes-e2e-gce
     base_options: width=10
@@ -7114,6 +7111,9 @@ dashboards:
   dashboard_tab:
   - name: pull-kubernetes-cross
     test_group_name: pull-kubernetes-cross
+    base_options: width=10
+  - name: pull-kubernetes-e2e-aks-engine-azure
+    test_group_name: pull-kubernetes-e2e-aks-engine-azure
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-alpha-features
     test_group_name: pull-kubernetes-e2e-gce-alpha-features
