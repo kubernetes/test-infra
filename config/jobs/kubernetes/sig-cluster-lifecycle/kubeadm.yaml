@@ -31,7 +31,9 @@ presubmits:
       preset-pull-kubernetes-e2e: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+      # TODO(krzyzacy): use stable tag after debugging
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
