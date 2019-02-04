@@ -50,7 +50,7 @@ const (
 )
 
 var (
-	prefixRe = regexp.MustCompile("gs://.*?/")
+	prefixRe = regexp.MustCompile("s3://.*?/")
 	linkRe   = regexp.MustCompile("/([0-9]+)\\.txt$")
 )
 

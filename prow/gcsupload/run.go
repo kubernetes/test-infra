@@ -69,7 +69,7 @@ func (o Options) assembleTargets(spec *downwardapi.JobSpec, extra map[string]gcs
 	// ensure that an alias exists for any
 	// job we're uploading artifacts for
 	if alias := gcs.AliasForSpec(spec); alias != "" {
-		fullBasePath := "gs://" + path.Join(o.Bucket, jobBasePath)
+		fullBasePath := "s3://" + path.Join(o.Bucket, jobBasePath)
 		uploadTargets[alias] = gcs.DataUploadWithMetadata(strings.NewReader(fullBasePath), map[string]string{
 			"x-goog-meta-link": fullBasePath,
 		})

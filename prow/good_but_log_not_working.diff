@@ -1,0 +1,26 @@
+diff --git a/prow/cmd/deck/job_history.go b/prow/cmd/deck/job_history.go
+index 054051870..70a8b335a 100644
+--- a/prow/cmd/deck/job_history.go
++++ b/prow/cmd/deck/job_history.go
+@@ -50,7 +50,7 @@ const (
+ )
+ 
+ var (
+-	prefixRe = regexp.MustCompile("gs://.*?/")
++	prefixRe = regexp.MustCompile("s3://.*?/")
+ 	linkRe   = regexp.MustCompile("/([0-9]+)\\.txt$")
+ )
+ 
+diff --git a/prow/gcsupload/run.go b/prow/gcsupload/run.go
+index f5415c52e..e1cf12fa7 100644
+--- a/prow/gcsupload/run.go
++++ b/prow/gcsupload/run.go
+@@ -69,7 +69,7 @@ func (o Options) assembleTargets(spec *downwardapi.JobSpec, extra map[string]gcs
+ 	// ensure that an alias exists for any
+ 	// job we're uploading artifacts for
+ 	if alias := gcs.AliasForSpec(spec); alias != "" {
+-		fullBasePath := "gs://" + path.Join(o.Bucket, jobBasePath)
++		fullBasePath := "s3://" + path.Join(o.Bucket, jobBasePath)
+ 		uploadTargets[alias] = gcs.DataUploadWithMetadata(strings.NewReader(fullBasePath), map[string]string{
+ 			"x-goog-meta-link": fullBasePath,
+ 		})
