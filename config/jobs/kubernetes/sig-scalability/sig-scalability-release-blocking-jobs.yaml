@@ -80,10 +80,10 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
       args:
+      - --timeout=140
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
-      - --timeout=140
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
@@ -121,7 +121,9 @@ periodics:
     containers:
     - args:
       - --timeout=140
-      - --bare
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
       - --cluster=e2e-big-beta
@@ -131,7 +133,16 @@ periodics:
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=100
+      - --test-cmd-args=--provider=gce
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/density/100_nodes/override.yaml
+      - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
@@ -150,7 +161,9 @@ periodics:
     containers:
     - args:
       - --timeout=140
-      - --bare
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
       - --cluster=e2e-big-stable1
@@ -163,7 +176,16 @@ periodics:
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=100
+      - --test-cmd-args=--provider=gce
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/density/100_nodes/override.yaml
+      - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
@@ -182,7 +204,9 @@ periodics:
     containers:
     - args:
       - --timeout=140
-      - --bare
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
       - --cluster=e2e-big-stable2
@@ -195,7 +219,16 @@ periodics:
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=100
+      - --test-cmd-args=--provider=gce
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/density/100_nodes/override.yaml
+      - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
@@ -214,7 +247,9 @@ periodics:
     containers:
     - args:
       - --timeout=140
-      - --bare
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
       - --cluster=e2e-big-stable2
@@ -227,7 +262,16 @@ periodics:
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=100
+      - --test-cmd-args=--provider=gce
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/density/100_nodes/override.yaml
+      - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
