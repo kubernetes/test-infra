@@ -79,12 +79,12 @@ func fieldsForJob(src *gcsJobSource) logrus.Fields {
 func newGCSJobSource(src string) (*gcsJobSource, error) {
 	gcsURL, err := url.Parse(fmt.Sprintf("s3://%s", src))
 	if err != nil {
-		return &gcsJobSource{}, ErrCannotParseSource
+		return &gcsJobSource{}, err
 	}
 	gcsPath := &gcs.Path{}
 	err = gcsPath.SetURL(gcsURL)
 	if err != nil {
-		return &gcsJobSource{}, ErrCannotParseSource
+		return &gcsJobSource{}, err
 	}
 
 	tokens := strings.FieldsFunc(gcsPath.Object(), func(c rune) bool { return c == '/' })
@@ -95,7 +95,7 @@ func newGCSJobSource(src string) (*gcsJobSource, error) {
 	name := tokens[len(tokens)-2]
 	return &gcsJobSource{
 		source:     src,
-		linkPrefix: "gs://",
+		linkPrefix: "s3://",
 		bucket:     gcsPath.Bucket(),
 		jobPrefix:  path.Clean(gcsPath.Object()) + "/",
 		jobName:    name,
