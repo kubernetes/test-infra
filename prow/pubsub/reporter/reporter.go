@@ -38,7 +38,7 @@ const (
 	// PubSubRunIDLabel annotation
 	PubSubRunIDLabel = "prow.k8s.io/pubsub.runID"
 	// GCSPrefix is the prefix for a gcs path
-	GCSPrefix = "gs://"
+	GCSPrefix = "s3://"
 )
 
 // ReportMessage is a message structure used to pass a prowjob status to Pub/Sub topic.s

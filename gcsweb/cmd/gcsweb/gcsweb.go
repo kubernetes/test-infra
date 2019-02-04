@@ -35,7 +35,7 @@ import (
 )
 
 // The base URL for GCS's HTTP API.
-const gcsBaseURL = "https://s3.console.aws.amazon.com/s3/buckets"
+const gcsBaseURL = "https://s3.console.aws.amazon.com"
 const gcsPath = "/s3" // path for GCS browsing on this server
 
 // The base URL for GCP's GCS browser.

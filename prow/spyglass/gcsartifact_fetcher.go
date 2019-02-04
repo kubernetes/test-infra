@@ -77,14 +77,14 @@ func fieldsForJob(src *gcsJobSource) logrus.Fields {
 
 // newGCSJobSource creates a new gcsJobSource from a given bucket and jobPrefix
 func newGCSJobSource(src string) (*gcsJobSource, error) {
-	gcsURL, err := url.Parse(fmt.Sprintf("gs://%s", src))
+	gcsURL, err := url.Parse(fmt.Sprintf("s3://%s", src))
 	if err != nil {
-		return &gcsJobSource{}, ErrCannotParseSource
+		return &gcsJobSource{}, err
 	}
 	gcsPath := &gcs.Path{}
 	err = gcsPath.SetURL(gcsURL)
 	if err != nil {
-		return &gcsJobSource{}, ErrCannotParseSource
+		return &gcsJobSource{}, err
 	}
 
 	tokens := strings.FieldsFunc(gcsPath.Object(), func(c rune) bool { return c == '/' })
@@ -95,7 +95,7 @@ func newGCSJobSource(src string) (*gcsJobSource, error) {
 	name := tokens[len(tokens)-2]
 	return &gcsJobSource{
 		source:     src,
-		linkPrefix: "gs://",
+		linkPrefix: "s3://",
 		bucket:     gcsPath.Bucket(),
 		jobPrefix:  path.Clean(gcsPath.Object()) + "/",
 		jobName:    name,
@@ -168,8 +168,8 @@ func (af *GCSArtifactFetcher) artifact(key string, artifactName string, sizeLimi
 	obj := &gcsArtifactHandle{bkt.Object(path.Join(prefix, artifactName))}
 	artifactLink := &url.URL{
 		Scheme: httpsScheme,
-		Host:   "s3.console.aws.amazon.com/s3/buckets",
-		Path:   path.Join(src.jobPath(), artifactName),
+		Host:   "s3.console.aws.amazon.com",
+		Path:   path.Join("s3/object", src.jobPath(), artifactName),
 	}
 	return NewGCSArtifact(context.Background(), obj, artifactLink.String(), artifactName, sizeLimit), nil
 }

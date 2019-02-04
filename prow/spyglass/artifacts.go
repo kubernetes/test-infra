@@ -51,6 +51,11 @@ func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
 			break
 		}
 	}
+
+	if err != nil {
+		logrus.Warningf("Failed to list artifacts for prow job: %v", err)
+	}
+
 	if err != nil || !logFound {
 		artifactNames = append(artifactNames, "build-log.txt")
 	}

@@ -66,18 +66,18 @@ func (g *Path) SetURL(u *url.URL) error {
 	switch {
 	case u == nil:
 		return errors.New("nil url")
-	case u.Scheme != "gs":
-		return fmt.Errorf("must use a gs:// url: %s", u)
+	case u.Scheme != "s3":
+		return fmt.Errorf("must use a s3:// url: %s", u)
 	case strings.Contains(u.Host, ":"):
-		return fmt.Errorf("gs://bucket may not contain a port: %s", u)
+		return fmt.Errorf("s3://bucket may not contain a port: %s", u)
 	case u.Opaque != "":
-		return fmt.Errorf("url must start with gs://: %s", u)
+		return fmt.Errorf("url must start with s3://: %s", u)
 	case u.User != nil:
-		return fmt.Errorf("gs://bucket may not contain an user@ prefix: %s", u)
+		return fmt.Errorf("s3://bucket may not contain an user@ prefix: %s", u)
 	case u.RawQuery != "":
-		return fmt.Errorf("gs:// url may not contain a ?query suffix: %s", u)
+		return fmt.Errorf("s3:// url may not contain a ?query suffix: %s", u)
 	case u.Fragment != "":
-		return fmt.Errorf("gs:// url may not contain a #fragment suffix: %s", u)
+		return fmt.Errorf("s3:// url may not contain a #fragment suffix: %s", u)
 	}
 	g.url = *u
 	return nil
