@@ -157,10 +157,11 @@ func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientA
 	prowConfig := configAgent.Config()
 	pluginConfig := pluginConfigAgent.Config()
 	return Agent{
-		GitHubClient:  clientAgent.GitHubClient,
-		ProwJobClient: clientAgent.ProwJobClient,
-		GitClient:     clientAgent.GitClient,
-		SlackClient:   clientAgent.SlackClient,
+		GitHubClient:     clientAgent.GitHubClient,
+		KubernetesClient: clientAgent.KubernetesClient,
+		ProwJobClient:    clientAgent.ProwJobClient,
+		GitClient:        clientAgent.GitClient,
+		SlackClient:      clientAgent.SlackClient,
 		OwnersClient: repoowners.NewClient(
 			clientAgent.GitClient, clientAgent.GitHubClient,
 			prowConfig, pluginConfig.MDYAMLEnabled,
