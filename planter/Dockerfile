@@ -13,7 +13,6 @@
 # limitations under the License.
 
 FROM debian:jessie
-LABEL maintainer="Benjamin Elder <bentheelder@google.com>"
 
 # Includes everything needed to build and test github.com/kubernetes/kubernetes
 # and github.com/kubernetes/test-infra with bazel and run bazel as the host UID

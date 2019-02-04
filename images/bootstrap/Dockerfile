@@ -15,7 +15,6 @@
 # Includes basic workspace setup, with gcloud and a bootstrap runner
 
 FROM debian:stretch
-LABEL maintainer="Sen Lu <senlu@google.com>"
 
 WORKDIR /workspace
 RUN mkdir -p /workspace
