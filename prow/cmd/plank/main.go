@@ -118,7 +118,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting prowjob client.")
 	}
 
-	buildClients, err := o.kubernetes.BuildClusterClients(cfg().ProwJobNamespace, o.dryRun)
+	buildClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting build cluster clients.")
 	}
