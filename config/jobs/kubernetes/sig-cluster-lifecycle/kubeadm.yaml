@@ -14,6 +14,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 4200000000000 # 70m
+    path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
       repo: release
