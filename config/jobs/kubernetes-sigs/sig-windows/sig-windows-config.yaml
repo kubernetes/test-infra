@@ -42,7 +42,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
