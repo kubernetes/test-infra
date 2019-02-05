@@ -9,7 +9,7 @@ periodics:
     preset-e2e-scalability-common: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -81,7 +81,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1050m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       resources:
         requests:
           cpu: 6
@@ -125,7 +125,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
 
 - cron: '1 8 * * 0' # Run at 00:01PST (8:01 UTC) on sunday
   name: ci-kubernetes-e2e-gke-large-performance
@@ -168,7 +168,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=570m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       resources:
         requests:
           cpu: 6
@@ -216,7 +216,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=570m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       resources:
         requests:
           cpu: 6
@@ -250,7 +250,7 @@ periodics:
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8
       - --timeout=210m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       resources:
         requests:
           cpu: 6
@@ -286,7 +286,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Performance\]
       - --timeout=1030m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       resources:
         requests:
           cpu: 6
@@ -305,7 +305,7 @@ periodics:
     preset-e2e-kubemark-common: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -349,7 +349,7 @@ periodics:
     preset-e2e-kubemark-common: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - --bare
       - --timeout=80
@@ -384,7 +384,7 @@ periodics:
     preset-e2e-kubemark-gce-big: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -432,7 +432,7 @@ periodics:
     preset-e2e-kubemark-gce-scale: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -482,7 +482,7 @@ periodics:
     preset-e2e-kubemark-common: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -524,7 +524,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -551,7 +551,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
@@ -570,7 +570,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=55
@@ -595,7 +595,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master

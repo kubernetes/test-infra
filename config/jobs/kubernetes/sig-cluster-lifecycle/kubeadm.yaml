@@ -81,7 +81,7 @@ presubmits:
       path_alias: k8s.io/kubernetes-anywhere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-1.13
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.13
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -128,7 +128,7 @@ presubmits:
       path_alias: k8s.io/kubernetes-anywhere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.12
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -175,7 +175,7 @@ presubmits:
       path_alias: k8s.io/kubernetes-anywhere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-1.11
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.11
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -222,7 +222,7 @@ presubmits:
       path_alias: k8s.io/kubernetes-anywhere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -251,7 +251,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - --repo=k8s.io/kubernetes=release-1.11
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -278,7 +278,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - --repo=k8s.io/kubernetes=release-1.12
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -305,7 +305,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - --repo=k8s.io/kubernetes=release-1.13
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -331,7 +331,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
