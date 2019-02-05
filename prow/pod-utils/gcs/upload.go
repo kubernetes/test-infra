@@ -32,10 +32,14 @@ import (
 // UploadFunc knows how to upload into an object
 type UploadFunc func(obj *storage.ObjectHandle) error
 
+const uploadRetries = 3
+
 // Upload uploads all of the data in the
 // uploadTargets map to GCS in parallel. The map is
 // keyed on GCS path under the bucket
+// 3 attempts will be made to have an error free upload
 func Upload(bucket *storage.BucketHandle, uploadTargets map[string]UploadFunc) error {
+	lock := sync.Mutex{}
 	errCh := make(chan error, len(uploadTargets))
 	group := &sync.WaitGroup{}
 	group.Add(len(uploadTargets))
@@ -44,14 +48,23 @@ func Upload(bucket *storage.BucketHandle, uploadTargets map[string]UploadFunc) e
 		logrus.WithField("dest", dest).Info("Queued for upload")
 		go func(f UploadFunc, obj *storage.ObjectHandle, name string) {
 			defer group.Done()
-			if err := f(obj); err != nil {
-				errCh <- err
+			for i := 1; i <= uploadRetries; i++ {
+				lock.Lock()
+				err := f(obj)
+				lock.Unlock()
+				if err == nil {
+					break
+				} else if i == uploadRetries {
+					errCh <- err
+				}
+				logrus.WithError(err).WithField("dest", name).Info("Retrying upload")
 			}
 			logrus.WithField("dest", name).Info("Finished upload")
 		}(upload, obj, dest)
 	}
 	group.Wait()
 	close(errCh)
+
 	if len(errCh) != 0 {
 		var uploadErrors []error
 		for err := range errCh {
@@ -59,7 +72,6 @@ func Upload(bucket *storage.BucketHandle, uploadTargets map[string]UploadFunc) e
 		}
 		return fmt.Errorf("encountered errors during upload: %v", uploadErrors)
 	}
-
 	return nil
 }
 

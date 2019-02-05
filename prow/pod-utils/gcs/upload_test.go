@@ -30,6 +30,7 @@ func TestUploadToGcs(t *testing.T) {
 		name           string
 		passingTargets int
 		failingTargets int
+		flakyTargets   int
 		expectedErr    bool
 	}{
 		{
@@ -56,11 +57,26 @@ func TestUploadToGcs(t *testing.T) {
 			failingTargets: 10,
 			expectedErr:    true,
 		},
+		{
+			name:           "all flaky and passing on retry",
+			passingTargets: 0,
+			failingTargets: 0,
+			flakyTargets:   10,
+			expectedErr:    false,
+		},
+		{
+			name:           "some passing, some failing, some flaking",
+			passingTargets: 5,
+			failingTargets: 4,
+			flakyTargets:   3,
+			expectedErr:    true,
+		},
 	}
 
 	for _, testCase := range testCases {
 		lock := sync.Mutex{}
 		count := 0
+		retryCount := map[string]int{}
 
 		update := func() {
 			lock.Lock()
@@ -78,6 +94,15 @@ func TestUploadToGcs(t *testing.T) {
 			return nil
 		}
 
+		flaky := func(obj *storage.ObjectHandle) error {
+			retryCount[obj.ObjectName()]++
+			if retryCount[obj.ObjectName()] != uploadRetries {
+				return errors.New("flaky")
+			}
+			update()
+			return nil
+		}
+
 		targets := map[string]UploadFunc{}
 		for i := 0; i < testCase.passingTargets; i++ {
 			targets[fmt.Sprintf("pass-%d", i)] = success
@@ -85,6 +110,11 @@ func TestUploadToGcs(t *testing.T) {
 
 		for i := 0; i < testCase.failingTargets; i++ {
 			targets[fmt.Sprintf("fail-%d", i)] = fail
+		}
+
+		for i := 0; i < testCase.flakyTargets; i++ {
+			retryCount[fmt.Sprintf("flaky-%d", i)] = 0
+			targets[fmt.Sprintf("flaky-%d", i)] = flaky
 		}
 
 		err := Upload(&storage.BucketHandle{}, targets)
@@ -95,8 +125,12 @@ func TestUploadToGcs(t *testing.T) {
 			t.Errorf("%s: expected an error but got none", testCase.name)
 		}
 
-		if count != (testCase.passingTargets + testCase.failingTargets) {
-			t.Errorf("%s: had %d passing and %d failing targets but only ran %d targets, not %d", testCase.name, testCase.passingTargets, testCase.failingTargets, count, testCase.passingTargets+testCase.failingTargets)
+		// the fail func will update count for each retry, while the flaky func only updates count on final try
+		finalFailingCount := testCase.failingTargets * uploadRetries
+		finalPassingCount := testCase.passingTargets + testCase.flakyTargets
+
+		if count != (finalPassingCount + finalFailingCount) {
+			t.Errorf("%s: had %d passing and %d failing targets but only ran %d targets, not %d", testCase.name, finalPassingCount, finalFailingCount, count, finalPassingCount+finalFailingCount)
 		}
 	}
 }
