@@ -397,6 +397,7 @@ plugins:
   - milestone
   - require-sig
   - stage
+  - trigger
 
   kubernetes/examples:
   - trigger
