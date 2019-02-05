@@ -268,7 +268,7 @@ func (k *kubernetesAnywhere) DumpClusterLogs(localPath, gcsPath string) error {
 	}
 
 	// the e2e framework in k/k does not support the "kubernetes-anywhere" provider,
-	// while the same provider is required by the k/k "./cluster/log-dump/log-dump.sh" script
+	// while a valid provider is required by the k/k "./cluster/log-dump/log-dump.sh" script
 	// for dumping the logs of the GCE cluster that kubernetes-anywhere creates:
 	//   https://github.com/kubernetes/kubernetes/blob/master/cluster/log-dump/log-dump.sh
 	// this fix is quite messy, but an acceptable workaround until "anywhere.go" is removed completely.
@@ -277,7 +277,7 @@ func (k *kubernetesAnywhere) DumpClusterLogs(localPath, gcsPath string) error {
 	// not use log-dump.sh.
 	providerKey := "KUBERNETES_PROVIDER"
 	oldValue := os.Getenv(providerKey)
-	if err := os.Setenv(providerKey, "kubernetes-anywhere"); err != nil {
+	if err := os.Setenv(providerKey, "gce"); err != nil {
 		return err
 	}
 	err := defaultDumpClusterLogs(localPath, gcsPath)
