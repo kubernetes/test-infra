@@ -26,6 +26,8 @@ periodics:
       - --gcp-zone=us-east1-b
       - --provider=gce
       - --test=false
+      # TODO(mm4tt): Set it everywhere once it's confirmed to be working.
+      - --test_args=--dump-systemd-journal=true
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=100
