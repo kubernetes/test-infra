@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"compress/zlib"
 	"context"
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -28,7 +27,6 @@ import (
 	"log"
 	"net/url"
 	"path"
-	"regexp"
 	"runtime"
 	"sort"
 	"strings"
@@ -36,7 +34,6 @@ import (
 	"time"
 
 	"k8s.io/test-infra/testgrid/config"
-	"k8s.io/test-infra/testgrid/metadata"
 	"k8s.io/test-infra/testgrid/metadata/junit"
 	"k8s.io/test-infra/testgrid/state"
 	"k8s.io/test-infra/testgrid/util/gcs"
@@ -44,18 +41,11 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/api/iterator"
-
 	"vbom.ml/util/sortorder"
 )
 
-// Started holds started.json data.
-type Started = metadata.Started
-
-// Finished holds finished.json data.
-type Finished struct {
-	metadata.Finished
-	running bool
-}
+// Build holds data to builds stored in GCS.
+type Build = gcs.Build
 
 // options configures the updater
 type options struct {
@@ -109,18 +99,6 @@ func testGroupPath(g gcs.Path, name string) (*gcs.Path, error) {
 		return nil, fmt.Errorf("testGroup %s should not change bucket", name)
 	}
 	return np, nil
-}
-
-// Build points to a build stored under a particular gcs prefix.
-type Build struct {
-	Bucket  *storage.BucketHandle
-	Context context.Context
-	Prefix  string
-	number  *int
-}
-
-func (b Build) String() string {
-	return b.Prefix
 }
 
 // Message extracts the message for the junit test case.
@@ -444,183 +422,19 @@ func AppendColumn(headers []string, format nameConfig, grid *state.Grid, rows ma
 
 const elapsedKey = "seconds-elapsed"
 
-// junit_CONTEXT_TIMESTAMP_THREAD.xml
-var re = regexp.MustCompile(`.+/junit(_[^_]+)?(_\d+-\d+)?(_\d+)?\.xml$`)
-
-// dropPrefix removes the _ in _CONTEXT to help keep the regexp simple
-func dropPrefix(name string) string {
-	if len(name) == 0 {
-		return name
-	}
-	return name[1:]
-}
-
-// parseSuitesMeta returns the metadata for this junit file (nil for a non-junit file).
-//
-//
-// Expected format: junit_context_20180102-1256-07.xml
-// Results in {
-//   "Context": "context",
-//   "Timestamp": "20180102-1256",
-//   "Thread": "07",
-// }
-func parseSuitesMeta(name string) map[string]string {
-	mat := re.FindStringSubmatch(name)
-	if mat == nil {
-		return nil
-	}
-	return map[string]string{
-		"Context":   dropPrefix(mat[1]),
-		"Timestamp": dropPrefix(mat[2]),
-		"Thread":    dropPrefix(mat[3]),
-	}
-
-}
-
-// readJson will decode the json object stored in GCS.
-func readJson(ctx context.Context, obj *storage.ObjectHandle, i interface{}) error {
-	reader, err := obj.NewReader(ctx)
-	if err != nil {
-		return fmt.Errorf("open: %v", err)
-	}
-	if err = json.NewDecoder(reader).Decode(i); err != nil {
-		return fmt.Errorf("decode: %v", err)
-	}
-	return nil
-}
-
-// readStarted parses the build's started metadata.
-func readStarted(ctx context.Context, build Build) (*Started, error) {
-	uri := build.Prefix + "started.json"
-	var started Started
-	if err := readJson(ctx, build.Bucket.Object(uri), &started); err != nil {
-		return nil, fmt.Errorf("read %s: %v", uri, err)
-	}
-	return &started, nil
-}
-
-// readFinished parses the build's finished metadata.
-func readFinished(ctx context.Context, build Build) (*Finished, error) {
-	uri := build.Prefix + "finished.json"
-	var finished Finished
-	if err := readJson(ctx, build.Bucket.Object(uri), &finished); err != nil {
-		return nil, fmt.Errorf("read %s: %v", uri, err)
-	}
-	return &finished, nil
-}
-
-// listArtifacts writes the object name of all paths under the build's artifact dir to the output channel.
-func listArtifacts(ctx context.Context, build Build, artifacts chan<- string) error {
-	pref := build.Prefix + "artifacts/"
-	objs := build.Bucket.Objects(ctx, &storage.Query{Prefix: pref})
-	for {
-		obj, err := objs.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return fmt.Errorf("failed to list %s: %v", pref, err)
-		}
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("interrupted listing %s", pref)
-		case artifacts <- obj.Name:
-		}
-	}
-	return nil
-}
-
-// readSuites parses the <testsuite> or <testsuites> object in obj
-func readSuites(ctx context.Context, obj *storage.ObjectHandle) (*junit.Suites, error) {
-	reader, err := obj.NewReader(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("open: %v", err)
-	}
-
-	buf, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return nil, fmt.Errorf("read: %v", err)
-	}
-
-	suites, err := junit.Parse(buf)
-	if err != nil {
-		return nil, fmt.Errorf("parse: %v", err)
-	}
-	return &suites, nil
-}
-
-type suitesMeta struct {
-	suites   junit.Suites      // suites data extracted from file contents
-	metadata map[string]string // metadata extracted from path name
-}
-
-// listSuites takes a list of artifact names, parses those representing junit suites, writing the result to the suites channel.
-//
-// Note that junit suites are parsed in parallel, so there are no guarantees about suites ordering.
-func listSuites(ctx context.Context, build Build, artifacts <-chan string, suites chan<- suitesMeta) error {
-
-	var wg sync.WaitGroup
-	ec := make(chan error)
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-	for art := range artifacts {
-		meta := parseSuitesMeta(art)
-		if meta == nil {
-			continue // not a junit file ignore it, ignore it
-		}
-		wg.Add(1)
-		// concurrently parse each file because there may be a lot of them, and
-		// each takes a non-trivial amount of time waiting for the network.
-		go func(art string, meta map[string]string) {
-			defer wg.Done()
-			suitesData, err := readSuites(ctx, build.Bucket.Object(art))
-			if err != nil {
-				select {
-				case <-ctx.Done():
-				case ec <- err:
-				}
-				return
-			}
-			out := suitesMeta{
-				suites:   *suitesData,
-				metadata: meta,
-			}
-			select {
-			case <-ctx.Done():
-			case suites <- out:
-			}
-		}(art, meta)
-	}
-
-	go func() {
-		wg.Wait()
-		select {
-		case ec <- nil: // tell parent we exited cleanly
-		case <-ctx.Done(): // parent already exited
-		}
-		close(ec) // no one will send t
-	}()
-
-	select {
-	case <-ctx.Done(): // parent context marked as finished.
-		return ctx.Err()
-	case err := <-ec: // finished listing
-		return err
-	}
-}
-
 // ReadBuild asynchronously downloads the files in build from gcs and convert them into a build.
 func ReadBuild(build Build) (*Column, error) {
 	var wg sync.WaitGroup                                             // Each subtask does wg.Add(1), then we wg.Wait() for them to finish
 	ctx, cancel := context.WithTimeout(build.Context, 30*time.Second) // Allows aborting after first error
-	ec := make(chan error)                                            // Receives errors from anyone
+	build.Context = ctx
+	ec := make(chan error) // Receives errors from anyone
 
 	// Download started.json, send to sc
 	wg.Add(1)
-	sc := make(chan Started) // Receives started.json result
+	sc := make(chan gcs.Started) // Receives started.json result
 	go func() {
 		defer wg.Done()
-		started, err := readStarted(ctx, build)
+		started, err := build.Started()
 		if err != nil {
 			select {
 			case <-ctx.Done():
@@ -636,10 +450,10 @@ func ReadBuild(build Build) (*Column, error) {
 
 	// Download finished.json, send to fc
 	wg.Add(1)
-	fc := make(chan Finished) // Receives finished.json result
+	fc := make(chan gcs.Finished) // Receives finished.json result
 	go func() {
 		defer wg.Done()
-		finished, err := readFinished(ctx, build)
+		finished, err := build.Finished()
 		if err != nil {
 			select {
 			case <-ctx.Done():
@@ -659,7 +473,7 @@ func ReadBuild(build Build) (*Column, error) {
 	go func() {
 		defer wg.Done()
 		defer close(artifacts) // No more artifacts
-		if err := listArtifacts(ctx, build, artifacts); err != nil {
+		if err := build.Artifacts(artifacts); err != nil {
 			select {
 			case <-ctx.Done():
 			case ec <- err:
@@ -670,11 +484,16 @@ func ReadBuild(build Build) (*Column, error) {
 	// Download each artifact, send row map to rc
 	// With parallelism: 60s without: 220s
 	wg.Add(1)
-	suitesChan := make(chan suitesMeta)
+	suitesChan := make(chan gcs.SuitesMeta)
 	go func() {
 		defer wg.Done()
 		defer close(suitesChan) // No more rows
-		listSuites(ctx, build, artifacts, suitesChan)
+		if err := build.Suites(artifacts, suitesChan); err != nil {
+			select {
+			case <-ctx.Done():
+			case ec <- err:
+			}
+		}
 	}()
 
 	// Append each row into the column
@@ -683,7 +502,7 @@ func ReadBuild(build Build) (*Column, error) {
 	go func() {
 		defer wg.Done()
 		for suitesMeta := range suitesChan {
-			rowsPart := extractRows(suitesMeta.suites, suitesMeta.metadata)
+			rowsPart := extractRows(suitesMeta.Suites, suitesMeta.Metadata)
 			for name, results := range rowsPart {
 				rows[name] = append(rows[name], results...)
 			}
@@ -699,8 +518,8 @@ func ReadBuild(build Build) (*Column, error) {
 		case ec <- nil:
 		}
 	}()
-	var finished *Finished
-	var started *Started
+	var finished *gcs.Finished
+	var started *gcs.Started
 	for { // Wait until we receive started and finished and/or an error
 		select {
 		case err := <-ec:
@@ -723,7 +542,7 @@ func ReadBuild(build Build) (*Column, error) {
 		Started: started.Timestamp,
 	}
 	// Has the build finished?
-	if finished.running { // No
+	if finished.Running { // No
 		cancel()
 		br.Rows = map[string][]Row{
 			"Overall": {br.Overall()},
