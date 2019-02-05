@@ -483,7 +483,8 @@ presubmits:
         env:
         - name: SKIP_RELEASE_VALIDATION
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190201-234c5ddcf-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
         name: ""
         resources: {}
         volumeMounts:
