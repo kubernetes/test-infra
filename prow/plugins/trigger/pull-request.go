@@ -155,7 +155,7 @@ func welcomeMsg(ghc githubClient, trigger *plugins.Trigger, pr github.PullReques
 	}
 
 	var comment string
-	if trigger.IgnoreOkToTest {
+	if trigger != nil && trigger.IgnoreOkToTest {
 		comment = fmt.Sprintf(`Hi @%s. Thanks for your PR.
 
 PRs from untrusted users cannot be marked as trusted with `+"`/ok-to-test`"+` in this repo meaning untrusted PR authors can never trigger tests themselves. Collaborators can still trigger tests on the PR using `+"`/test all`"+`.
