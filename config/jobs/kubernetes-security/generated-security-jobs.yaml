@@ -450,6 +450,7 @@ presubmits:
       preset-service-account: "true"
     max_concurrency: 8
     name: pull-security-kubernetes-e2e-kubeadm-gce
+    path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-e2e-kubeadm-gce
     run_if_changed: ^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$
     skip_branches:
