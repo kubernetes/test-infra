@@ -1,0 +1,10 @@
+presubmits:
+  kubernetes/enhancements:
+  - name: pull-enhancements-verify
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: golang:1.11
+        command:
+        - ./hack/verify.sh
