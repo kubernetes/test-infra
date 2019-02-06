@@ -26,13 +26,13 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	coreapi "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"sigs.k8s.io/yaml"
-
 	"k8s.io/test-infra/prow/kube"
+	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -289,7 +289,7 @@ func do(o options) error {
 	if err != nil {
 		return fmt.Errorf("read stdin: %v", err)
 	}
-	var s kube.Secret
+	var s coreapi.Secret
 	if err := yaml.Unmarshal(b, &s); err != nil {
 		return fmt.Errorf("unmarshal stdin: %v", err)
 	}

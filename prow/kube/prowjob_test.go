@@ -18,25 +18,27 @@ package kube
 
 import (
 	"testing"
+
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 func TestRefs(t *testing.T) {
 	testcases := []struct {
-		ref      Refs
+		ref      prowapi.Refs
 		expected string
 	}{
 		{
-			ref: Refs{
+			ref: prowapi.Refs{
 				BaseRef: "master",
 				BaseSHA: "123abc",
 			},
 			expected: "master:123abc",
 		},
 		{
-			ref: Refs{
+			ref: prowapi.Refs{
 				BaseRef: "release-1.6",
 				BaseSHA: "123",
-				Pulls: []Pull{
+				Pulls: []prowapi.Pull{
 					{
 						Number: 5,
 						SHA:    "qwe",
@@ -46,10 +48,10 @@ func TestRefs(t *testing.T) {
 			expected: "release-1.6:123,5:qwe",
 		},
 		{
-			ref: Refs{
+			ref: prowapi.Refs{
 				BaseRef: "foo",
 				BaseSHA: "123",
-				Pulls: []Pull{
+				Pulls: []prowapi.Pull{
 					{
 						Number: 1,
 						SHA:    "qwe",
@@ -63,10 +65,10 @@ func TestRefs(t *testing.T) {
 			expected: "foo:123,1:qwe,2:asd",
 		},
 		{
-			ref: Refs{
+			ref: prowapi.Refs{
 				BaseRef: "foo",
 				BaseSHA: "123",
-				Pulls: []Pull{
+				Pulls: []prowapi.Pull{
 					{
 						Number: 1,
 						SHA:    "qwe",

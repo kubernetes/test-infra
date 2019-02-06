@@ -17,40 +17,23 @@ limitations under the License.
 package config
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
 	"regexp"
 	"testing"
 
-	"k8s.io/test-infra/prow/kube"
+	buildapi "github.com/knative/build/pkg/apis/build/v1alpha1"
+	"k8s.io/apimachinery/pkg/util/sets"
+
+	coreapi "k8s.io/api/core/v1"
 )
 
 var c *Config
 var configPath = flag.String("config", "../config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../config/jobs", "Path to prow job config")
 var podRe = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
-
-// Consistent but meaningless order.
-func flattenPresubmits(jobs []Presubmit) []Presubmit {
-	ret := jobs
-	for _, job := range jobs {
-		if len(job.RunAfterSuccess) > 0 {
-			ret = append(ret, flattenPresubmits(job.RunAfterSuccess)...)
-		}
-	}
-	return ret
-}
-
-func flattenPostsubmits(jobs []Postsubmit) []Postsubmit {
-	ret := jobs
-	for _, job := range jobs {
-		if len(job.RunAfterSuccess) > 0 {
-			ret = append(ret, flattenPostsubmits(job.RunAfterSuccess)...)
-		}
-	}
-	return ret
-}
 
 // Returns if two brancher has overlapping branches
 func checkOverlapBrancher(b1, b2 Brancher) bool {
@@ -59,13 +42,13 @@ func checkOverlapBrancher(b1, b2 Brancher) bool {
 	}
 
 	for _, run1 := range b1.Branches {
-		if b2.RunsAgainstBranch(run1) {
+		if b2.ShouldRun(run1) {
 			return true
 		}
 	}
 
 	for _, run2 := range b2.Branches {
-		if b1.RunsAgainstBranch(run2) {
+		if b1.ShouldRun(run2) {
 			return true
 		}
 	}
@@ -96,8 +79,7 @@ func TestPresubmits(t *testing.T) {
 	}
 
 	for _, rootJobs := range c.Presubmits {
-		jobs := flattenPresubmits(rootJobs)
-		for i, job := range jobs {
+		for i, job := range rootJobs {
 			if job.Name == "" {
 				t.Errorf("Job %v needs a name.", job)
 				continue
@@ -114,7 +96,7 @@ func TestPresubmits(t *testing.T) {
 				t.Errorf("Job %s : Cannot have both branches and skip_branches set", job.Name)
 			}
 			// Next check that the rerun command doesn't run any other jobs.
-			for j, job2 := range jobs[i+1:] {
+			for j, job2 := range rootJobs[i+1:] {
 				if job.Name == job2.Name {
 					// Make sure max_concurrency are the same
 					if job.MaxConcurrency != job2.MaxConcurrency {
@@ -144,8 +126,7 @@ func TestPostsubmits(t *testing.T) {
 	}
 
 	for _, rootJobs := range c.Postsubmits {
-		jobs := flattenPostsubmits(rootJobs)
-		for i, job := range jobs {
+		for i, job := range rootJobs {
 			if job.Name == "" {
 				t.Errorf("Job %v needs a name.", job)
 				continue
@@ -158,7 +139,7 @@ func TestPostsubmits(t *testing.T) {
 				t.Errorf("Job %s : Cannot have both branches and skip_branches set", job.Name)
 			}
 			// Next check that the rerun command doesn't run any other jobs.
-			for _, job2 := range jobs[i+1:] {
+			for _, job2 := range rootJobs[i+1:] {
 				if job.Name == job2.Name {
 					// Make sure max_concurrency are the same
 					if job.MaxConcurrency != job2.MaxConcurrency {
@@ -178,184 +159,36 @@ func TestPostsubmits(t *testing.T) {
 	}
 }
 
-func TestCommentBodyMatches(t *testing.T) {
-	var testcases = []struct {
-		repo         string
-		body         string
-		expectedJobs []string
-	}{
-		{
-			"org/repo",
-			"this is a random comment",
-			[]string{},
-		},
-		{
-			"org/repo",
-			"/ok-to-test",
-			[]string{"gce", "unit"},
-		},
-		{
-			"org/repo",
-			"/test all",
-			[]string{"gce", "unit", "gke"},
-		},
-		{
-			"org/repo",
-			"/test unit",
-			[]string{"unit"},
-		},
-		{
-			"org/repo",
-			"/test federation",
-			[]string{"federation"},
-		},
-		{
-			"org/repo2",
-			"/test all",
-			[]string{"cadveapster", "after-cadveapster", "after-after-cadveapster"},
-		},
-		{
-			"org/repo2",
-			"/test really",
-			[]string{"after-cadveapster"},
-		},
-		{
-			"org/repo2",
-			"/test again really",
-			[]string{"after-after-cadveapster"},
-		},
-		{
-			"org/repo3",
-			"/test all",
-			[]string{},
-		},
-	}
-	c := &Config{
-		JobConfig: JobConfig{
-			Presubmits: map[string][]Presubmit{
-				"org/repo": {
-					{
-						JobBase: JobBase{
-							Name: "gce",
-						},
-						re:        regexp.MustCompile(`/test (gce|all)`),
-						AlwaysRun: true,
-					},
-					{
-						JobBase: JobBase{
-							Name: "unit",
-						},
-						re:        regexp.MustCompile(`/test (unit|all)`),
-						AlwaysRun: true,
-					},
-					{
-						JobBase: JobBase{
-							Name: "gke",
-						},
-						re:        regexp.MustCompile(`/test (gke|all)`),
-						AlwaysRun: false,
-					},
-					{
-						JobBase: JobBase{
-							Name: "federation",
-						},
-						re:        regexp.MustCompile(`/test federation`),
-						AlwaysRun: false,
-					},
-				},
-				"org/repo2": {
-					{
-						JobBase: JobBase{
-							Name: "cadveapster",
-						},
-						re:        regexp.MustCompile(`/test all`),
-						AlwaysRun: true,
-						RunAfterSuccess: []Presubmit{
-							{
-								JobBase: JobBase{
-									Name: "after-cadveapster",
-								},
-								re:        regexp.MustCompile(`/test (really|all)`),
-								AlwaysRun: true,
-								RunAfterSuccess: []Presubmit{
-									{
-										JobBase: JobBase{
-											Name: "after-after-cadveapster",
-										},
-										re:        regexp.MustCompile(`/test (again really|all)`),
-										AlwaysRun: true,
-									},
-								},
-							},
-							{
-								JobBase: JobBase{
-									Name: "another-after-cadveapster",
-								},
-								re:        regexp.MustCompile(`@k8s-bot don't test this`),
-								AlwaysRun: true,
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-	for _, tc := range testcases {
-		actualJobs := c.MatchingPresubmits(tc.repo, tc.body, regexp.MustCompile(`/ok-to-test`).MatchString(tc.body))
-		match := true
-		if len(actualJobs) != len(tc.expectedJobs) {
-			match = false
-		} else {
-			for _, actualJob := range actualJobs {
-				found := false
-				for _, expectedJob := range tc.expectedJobs {
-					if expectedJob == actualJob.Name {
-						found = true
-						break
-					}
-				}
-				if !found {
-					match = false
-					break
-				}
-			}
-		}
-		if !match {
-			t.Errorf("Wrong jobs for body %s. Got %v, expected %v.", tc.body, actualJobs, tc.expectedJobs)
-		}
-	}
-}
-
 func TestRetestPresubmits(t *testing.T) {
 	var testcases = []struct {
-		skipContexts     map[string]bool
-		runContexts      map[string]bool
+		skipContexts     sets.String
+		runContexts      sets.String
 		expectedContexts []string
 	}{
 		{
-			map[string]bool{},
-			map[string]bool{},
-			[]string{"gce", "unit"},
+			skipContexts:     sets.NewString(),
+			runContexts:      sets.NewString(),
+			expectedContexts: []string{"gce", "unit"},
 		},
 		{
-			map[string]bool{"gce": true},
-			map[string]bool{},
-			[]string{"unit"},
+			skipContexts:     sets.NewString("gce"),
+			runContexts:      sets.NewString(),
+			expectedContexts: []string{"unit"},
 		},
 		{
-			map[string]bool{},
-			map[string]bool{"federation": true, "nonexistent": true},
-			[]string{"gce", "unit", "federation"},
+			skipContexts:     sets.NewString(),
+			runContexts:      sets.NewString("federation", "nonexistent"),
+			expectedContexts: []string{"gce", "unit", "federation"},
 		},
 		{
-			map[string]bool{},
-			map[string]bool{"gke": true},
-			[]string{"gce", "unit", "gke"},
+			skipContexts:     sets.NewString(),
+			runContexts:      sets.NewString("gke"),
+			expectedContexts: []string{"gce", "unit", "gke"},
 		},
 		{
-			map[string]bool{"gce": true},
-			map[string]bool{"gce": true}, // should never happen
-			[]string{"unit"},
+			skipContexts:     sets.NewString("gce"),
+			runContexts:      sets.NewString("gce"), // should never happ)n
+			expectedContexts: []string{"unit"},
 		},
 	}
 	c := &Config{
@@ -456,10 +289,6 @@ func TestListPresubmit(t *testing.T) {
 						JobBase: JobBase{
 							Name: "a",
 						},
-						RunAfterSuccess: []Presubmit{
-							{JobBase: JobBase{Name: "aa"}},
-							{JobBase: JobBase{Name: "ab"}},
-						},
 					},
 					{JobBase: JobBase{Name: "b"}},
 				},
@@ -467,10 +296,6 @@ func TestListPresubmit(t *testing.T) {
 					{
 						JobBase: JobBase{
 							Name: "c",
-						},
-						RunAfterSuccess: []Presubmit{
-							{JobBase: JobBase{Name: "ca"}},
-							{JobBase: JobBase{Name: "cb"}},
 						},
 					},
 					{JobBase: JobBase{Name: "d"}},
@@ -492,12 +317,12 @@ func TestListPresubmit(t *testing.T) {
 	}{
 		{
 			"all presubmits",
-			[]string{"a", "aa", "ab", "b", "c", "ca", "cb", "d"},
+			[]string{"a", "b", "c", "d"},
 			[]string{},
 		},
 		{
 			"r2 presubmits",
-			[]string{"c", "ca", "cb", "d"},
+			[]string{"c", "d"},
 			[]string{"r2"},
 		},
 	}
@@ -534,10 +359,6 @@ func TestListPostsubmit(t *testing.T) {
 						JobBase: JobBase{
 							Name: "c",
 						},
-						RunAfterSuccess: []Postsubmit{
-							{JobBase: JobBase{Name: "ca"}},
-							{JobBase: JobBase{Name: "cb"}},
-						},
 					},
 					{JobBase: JobBase{Name: "d"}},
 				},
@@ -556,7 +377,7 @@ func TestListPostsubmit(t *testing.T) {
 	}{
 		{
 			"all postsubmits",
-			[]string{"c", "ca", "cb", "d", "e"},
+			[]string{"c", "d", "e"},
 			[]string{},
 		},
 		{
@@ -600,17 +421,13 @@ func TestListPeriodic(t *testing.T) {
 					JobBase: JobBase{
 						Name: "c",
 					},
-					RunAfterSuccess: []Periodic{
-						{JobBase: JobBase{Name: "ca"}},
-						{JobBase: JobBase{Name: "cb"}},
-					},
 				},
 				{JobBase: JobBase{Name: "d"}},
 			},
 		},
 	}
 
-	expected := []string{"c", "ca", "cb", "d"}
+	expected := []string{"c", "d"}
 	actual := c.AllPeriodics()
 	if len(actual) != len(expected) {
 		t.Fatalf("Wrong number of jobs. Got %v, expected %v", actual, expected)
@@ -674,14 +491,14 @@ func TestRunAgainstBranch(t *testing.T) {
 
 	for _, job := range jobs {
 		if job.Name == "default" {
-			if !job.RunsAgainstBranch("s") {
+			if !job.Brancher.ShouldRun("s") {
 				t.Errorf("Job %s should run branch s", job.Name)
 			}
-		} else if job.RunsAgainstBranch("s") {
+		} else if job.Brancher.ShouldRun("s") {
 			t.Errorf("Job %s should not run branch s", job.Name)
 		}
 
-		if !job.RunsAgainstBranch("r") {
+		if !job.Brancher.ShouldRun("r") {
 			t.Errorf("Job %s should run branch r", job.Name)
 		}
 	}
@@ -729,7 +546,8 @@ func TestMergePreset(t *testing.T) {
 	tcs := []struct {
 		name      string
 		jobLabels map[string]string
-		pod       *kube.PodSpec
+		pod       *coreapi.PodSpec
+		buildSpec *buildapi.BuildSpec
 		presets   []Preset
 
 		shouldError  bool
@@ -740,11 +558,12 @@ func TestMergePreset(t *testing.T) {
 		{
 			name:      "one volume",
 			jobLabels: map[string]string{"foo": "bar"},
-			pod:       &kube.PodSpec{},
+			pod:       &coreapi.PodSpec{},
+			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Labels:  map[string]string{"foo": "bar"},
-					Volumes: []kube.Volume{{Name: "baz"}},
+					Volumes: []coreapi.Volume{{Name: "baz"}},
 				},
 			},
 			numVol: 1,
@@ -752,22 +571,35 @@ func TestMergePreset(t *testing.T) {
 		{
 			name:      "wrong label",
 			jobLabels: map[string]string{"foo": "nope"},
-			pod:       &kube.PodSpec{},
+			pod:       &coreapi.PodSpec{},
+			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Labels:  map[string]string{"foo": "bar"},
-					Volumes: []kube.Volume{{Name: "baz"}},
+					Volumes: []coreapi.Volume{{Name: "baz"}},
 				},
 			},
 		},
 		{
-			name:      "conflicting volume name",
+			name:      "conflicting volume name for podspec",
 			jobLabels: map[string]string{"foo": "bar"},
-			pod:       &kube.PodSpec{Volumes: []kube.Volume{{Name: "baz"}}},
+			pod:       &coreapi.PodSpec{Volumes: []coreapi.Volume{{Name: "baz"}}},
 			presets: []Preset{
 				{
 					Labels:  map[string]string{"foo": "bar"},
-					Volumes: []kube.Volume{{Name: "baz"}},
+					Volumes: []coreapi.Volume{{Name: "baz"}},
+				},
+			},
+			shouldError: true,
+		},
+		{
+			name:      "conflicting volume name for buildspec",
+			jobLabels: map[string]string{"foo": "bar"},
+			buildSpec: &buildapi.BuildSpec{Volumes: []coreapi.Volume{{Name: "baz"}}},
+			presets: []Preset{
+				{
+					Labels:  map[string]string{"foo": "bar"},
+					Volumes: []coreapi.Volume{{Name: "baz"}},
 				},
 			},
 			shouldError: true,
@@ -775,11 +607,12 @@ func TestMergePreset(t *testing.T) {
 		{
 			name:      "non conflicting volume name",
 			jobLabels: map[string]string{"foo": "bar"},
-			pod:       &kube.PodSpec{Volumes: []kube.Volume{{Name: "baz"}}},
+			pod:       &coreapi.PodSpec{Volumes: []coreapi.Volume{{Name: "baz"}}},
+			buildSpec: &buildapi.BuildSpec{Volumes: []coreapi.Volume{{Name: "baz"}}},
 			presets: []Preset{
 				{
 					Labels:  map[string]string{"foo": "bar"},
-					Volumes: []kube.Volume{{Name: "qux"}},
+					Volumes: []coreapi.Volume{{Name: "qux"}},
 				},
 			},
 			numVol: 2,
@@ -787,11 +620,12 @@ func TestMergePreset(t *testing.T) {
 		{
 			name:      "one env",
 			jobLabels: map[string]string{"foo": "bar"},
-			pod:       &kube.PodSpec{Containers: []kube.Container{{}}},
+			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
+			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Labels: map[string]string{"foo": "bar"},
-					Env:    []kube.EnvVar{{Name: "baz"}},
+					Env:    []coreapi.EnvVar{{Name: "baz"}},
 				},
 			},
 			numEnv: 1,
@@ -799,11 +633,12 @@ func TestMergePreset(t *testing.T) {
 		{
 			name:      "one vm",
 			jobLabels: map[string]string{"foo": "bar"},
-			pod:       &kube.PodSpec{Containers: []kube.Container{{}}},
+			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
+			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Labels:       map[string]string{"foo": "bar"},
-					VolumeMounts: []kube.VolumeMount{{Name: "baz"}},
+					VolumeMounts: []coreapi.VolumeMount{{Name: "baz"}},
 				},
 			},
 			numVolMounts: 1,
@@ -811,13 +646,14 @@ func TestMergePreset(t *testing.T) {
 		{
 			name:      "one of each",
 			jobLabels: map[string]string{"foo": "bar"},
-			pod:       &kube.PodSpec{Containers: []kube.Container{{}}},
+			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
+			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Labels:       map[string]string{"foo": "bar"},
-					Env:          []kube.EnvVar{{Name: "baz"}},
-					VolumeMounts: []kube.VolumeMount{{Name: "baz"}},
-					Volumes:      []kube.Volume{{Name: "qux"}},
+					Env:          []coreapi.EnvVar{{Name: "baz"}},
+					VolumeMounts: []coreapi.VolumeMount{{Name: "baz"}},
+					Volumes:      []coreapi.Volume{{Name: "qux"}},
 				},
 			},
 			numEnv:       1,
@@ -827,35 +663,300 @@ func TestMergePreset(t *testing.T) {
 		{
 			name:      "two vm",
 			jobLabels: map[string]string{"foo": "bar"},
-			pod:       &kube.PodSpec{Containers: []kube.Container{{}}},
+			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
+			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Labels:       map[string]string{"foo": "bar"},
-					VolumeMounts: []kube.VolumeMount{{Name: "baz"}, {Name: "foo"}},
+					VolumeMounts: []coreapi.VolumeMount{{Name: "baz"}, {Name: "foo"}},
 				},
 			},
 			numVolMounts: 2,
 		},
 	}
 	for _, tc := range tcs {
-		if err := resolvePresets("foo", tc.jobLabels, tc.pod, tc.presets); err == nil && tc.shouldError {
-			t.Errorf("For test \"%s\": expected error but got none.", tc.name)
-		} else if err != nil && !tc.shouldError {
-			t.Errorf("For test \"%s\": expected no error but got %v.", tc.name, err)
-		}
-		if tc.shouldError {
-			continue
-		}
-		if len(tc.pod.Volumes) != tc.numVol {
-			t.Errorf("For test \"%s\": wrong number of volumes. Got %d, expected %d.", tc.name, len(tc.pod.Volumes), tc.numVol)
-		}
-		for _, c := range tc.pod.Containers {
-			if len(c.VolumeMounts) != tc.numVolMounts {
-				t.Errorf("For test \"%s\": wrong number of volume mounts. Got %d, expected %d.", tc.name, len(c.VolumeMounts), tc.numVolMounts)
+		t.Run(tc.name, func(t *testing.T) {
+			if err := resolvePresets("foo", tc.jobLabels, tc.pod, tc.buildSpec, tc.presets); err == nil && tc.shouldError {
+				t.Errorf("expected error but got none.")
+			} else if err != nil && !tc.shouldError {
+				t.Errorf("expected no error but got %v.", err)
 			}
-			if len(c.Env) != tc.numEnv {
-				t.Errorf("For test \"%s\": wrong number of env vars. Got %d, expected %d.", tc.name, len(c.Env), tc.numEnv)
+			if tc.shouldError {
+				return
 			}
-		}
+			if len(tc.pod.Volumes) != tc.numVol {
+				t.Errorf("wrong number of volumes for podspec. Got %d, expected %d.", len(tc.pod.Volumes), tc.numVol)
+			}
+			if len(tc.buildSpec.Volumes) != tc.numVol {
+				t.Errorf("wrong number of volumes for buildspec. Got %d, expected %d.", len(tc.pod.Volumes), tc.numVol)
+			}
+			for _, c := range tc.pod.Containers {
+				if len(c.VolumeMounts) != tc.numVolMounts {
+					t.Errorf("wrong number of volume mounts for podspec. Got %d, expected %d.", len(c.VolumeMounts), tc.numVolMounts)
+				}
+				if len(c.Env) != tc.numEnv {
+					t.Errorf("wrong number of env vars for podspec. Got %d, expected %d.", len(c.Env), tc.numEnv)
+				}
+			}
+			for _, c := range tc.buildSpec.Steps {
+				if len(c.VolumeMounts) != tc.numVolMounts {
+					t.Errorf("wrong number of volume mounts for buildspec. Got %d, expected %d.", len(c.VolumeMounts), tc.numVolMounts)
+				}
+				if len(c.Env) != tc.numEnv {
+					t.Errorf("wrong number of env vars  for buildspec. Got %d, expected %d.", len(c.Env), tc.numEnv)
+				}
+			}
+		})
+	}
+}
+
+func TestPresubmitShouldRun(t *testing.T) {
+	var testCases = []struct {
+		name        string
+		fileChanges []string
+		fileError   error
+		job         Presubmit
+		ref         string
+		expectedRun bool
+		expectedErr bool
+	}{
+		{
+			name: "job skipped on the branch won't run",
+			job: Presubmit{
+				Brancher: Brancher{
+					SkipBranches: []string{"master"},
+				},
+			},
+			ref:         "master",
+			expectedRun: false,
+		},
+		{
+			name: "job enabled on the branch will run",
+			job: Presubmit{
+				Brancher: Brancher{
+					Branches: []string{"something"},
+				},
+				AlwaysRun: true,
+			},
+			ref:         "something",
+			expectedRun: true,
+		},
+		{
+			name: "job running only on other branches won't run",
+			job: Presubmit{
+				Brancher: Brancher{
+					Branches: []string{"master"},
+				},
+			},
+			ref:         "release-1.11",
+			expectedRun: false,
+		},
+		{
+			name: "job on a branch that's not skipped will run",
+			job: Presubmit{
+				Brancher: Brancher{
+					SkipBranches: []string{"master"},
+				},
+				AlwaysRun: true,
+			},
+			ref:         "other",
+			expectedRun: true,
+		},
+		{
+			name: "job with always_run: true should run",
+			job: Presubmit{
+				AlwaysRun: true,
+			},
+			ref:         "master",
+			expectedRun: true,
+		},
+		{
+			name: "job with always_run: false and no run_if_changed should not run",
+			job: Presubmit{
+				AlwaysRun:    false,
+				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
+				RerunCommand: "/test foo",
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged: "",
+				},
+			},
+			ref:         "master",
+			expectedRun: false,
+		},
+		{
+			name: "job with run_if_changed but file get errors should not run",
+			job: Presubmit{
+				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
+				RerunCommand: "/test foo",
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged: "file",
+				},
+			},
+			ref:         "master",
+			fileError:   errors.New("oops"),
+			expectedRun: false,
+			expectedErr: true,
+		},
+		{
+			name: "job with run_if_changed not matching should not run",
+			job: Presubmit{
+				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
+				RerunCommand: "/test foo",
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged: "^file$",
+				},
+			},
+			ref:         "master",
+			fileChanges: []string{"something"},
+			expectedRun: false,
+		},
+		{
+			name: "job with run_if_changed matching should run",
+			job: Presubmit{
+				Trigger:      `(?m)^/test (?:.*? )?foo(?: .*?)?$`,
+				RerunCommand: "/test foo",
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged: "^file$",
+				},
+			},
+			ref:         "master",
+			fileChanges: []string{"file"},
+			expectedRun: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			jobs := []Presubmit{testCase.job}
+			if err := SetPresubmitRegexes(jobs); err != nil {
+				t.Fatalf("%s: failed to set presubmit regexes: %v", testCase.name, err)
+			}
+			jobShouldRun, err := jobs[0].ShouldRun(testCase.ref, func() ([]string, error) {
+				return testCase.fileChanges, testCase.fileError
+			}, false, false)
+			if err == nil && testCase.expectedErr {
+				t.Errorf("%s: expected an error and got none", testCase.name)
+			}
+			if err != nil && !testCase.expectedErr {
+				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
+			}
+			if jobShouldRun != testCase.expectedRun {
+				t.Errorf("%s: did not determine if job should run correctly, expected %v but got %v", testCase.name, testCase.expectedRun, jobShouldRun)
+			}
+		})
+	}
+}
+
+func TestPostsubmitShouldRun(t *testing.T) {
+	var testCases = []struct {
+		name        string
+		fileChanges []string
+		fileError   error
+		job         Postsubmit
+		ref         string
+		expectedRun bool
+		expectedErr bool
+	}{
+		{
+			name: "job skipped on the branch won't run",
+			job: Postsubmit{
+				Brancher: Brancher{
+					SkipBranches: []string{"master"},
+				},
+			},
+			ref:         "master",
+			expectedRun: false,
+		},
+		{
+			name: "job enabled on the branch will run",
+			job: Postsubmit{
+				Brancher: Brancher{
+					Branches: []string{"something"},
+				},
+			},
+			ref:         "something",
+			expectedRun: true,
+		},
+		{
+			name: "job running only on other branches won't run",
+			job: Postsubmit{
+				Brancher: Brancher{
+					Branches: []string{"master"},
+				},
+			},
+			ref:         "release-1.11",
+			expectedRun: false,
+		},
+		{
+			name: "job on a branch that's not skipped will run",
+			job: Postsubmit{
+				Brancher: Brancher{
+					SkipBranches: []string{"master"},
+				},
+			},
+			ref:         "other",
+			expectedRun: true,
+		},
+		{
+			name:        "job with no run_if_changed should run",
+			job:         Postsubmit{},
+			ref:         "master",
+			expectedRun: true,
+		},
+		{
+			name: "job with run_if_changed but file get errors should not run",
+			job: Postsubmit{
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged: "file",
+				},
+			},
+			ref:         "master",
+			fileError:   errors.New("oops"),
+			expectedRun: false,
+			expectedErr: true,
+		},
+		{
+			name: "job with run_if_changed not matching should not run",
+			job: Postsubmit{
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged: "^file$",
+				},
+			},
+			ref:         "master",
+			fileChanges: []string{"something"},
+			expectedRun: false,
+		},
+		{
+			name: "job with run_if_changed matching should run",
+			job: Postsubmit{
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged: "^file$",
+				},
+			},
+			ref:         "master",
+			fileChanges: []string{"file"},
+			expectedRun: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			jobs := []Postsubmit{testCase.job}
+			if err := SetPostsubmitRegexes(jobs); err != nil {
+				t.Fatalf("%s: failed to set presubmit regexes: %v", testCase.name, err)
+			}
+			jobShouldRun, err := jobs[0].ShouldRun(testCase.ref, func() ([]string, error) {
+				return testCase.fileChanges, testCase.fileError
+			})
+			if err == nil && testCase.expectedErr {
+				t.Errorf("%s: expected an error and got none", testCase.name)
+			}
+			if err != nil && !testCase.expectedErr {
+				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
+			}
+			if jobShouldRun != testCase.expectedRun {
+				t.Errorf("%s: did not determine if job should run correctly, expected %v but got %v", testCase.name, testCase.expectedRun, jobShouldRun)
+			}
+		})
 	}
 }

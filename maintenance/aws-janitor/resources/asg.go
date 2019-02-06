@@ -22,8 +22,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"k8s.io/klog"
 )
 
 // AutoScalingGroups: https://docs.aws.amazon.com/sdk-for-go/api/service/autoscaling/#AutoScaling.DescribeAutoScalingGroups
@@ -34,41 +34,48 @@ func (AutoScalingGroups) MarkAndSweep(sess *session.Session, acct string, region
 	svc := autoscaling.New(sess, &aws.Config{Region: aws.String(region)})
 
 	var toDelete []*autoScalingGroup // Paged call, defer deletion until we have the whole list.
-	if err := svc.DescribeAutoScalingGroupsPages(nil, func(page *autoscaling.DescribeAutoScalingGroupsOutput, _ bool) bool {
+
+	pageFunc := func(page *autoscaling.DescribeAutoScalingGroupsOutput, _ bool) bool {
 		for _, asg := range page.AutoScalingGroups {
 			a := &autoScalingGroup{ID: *asg.AutoScalingGroupARN, Name: *asg.AutoScalingGroupName}
 			if set.Mark(a) {
-				glog.Warningf("%s: deleting %T: %v", a.ARN(), asg, asg)
+				klog.Warningf("%s: deleting %T: %v", a.ARN(), asg, asg)
 				toDelete = append(toDelete, a)
 			}
 		}
 		return true
-	}); err != nil {
+	}
+
+	if err := svc.DescribeAutoScalingGroupsPages(&autoscaling.DescribeAutoScalingGroupsInput{}, pageFunc); err != nil {
 		return err
 	}
+
 	for _, asg := range toDelete {
-		_, err := svc.DeleteAutoScalingGroup(
-			&autoscaling.DeleteAutoScalingGroupInput{
-				AutoScalingGroupName: aws.String(asg.Name),
-				ForceDelete:          aws.Bool(true),
-			})
-		if err != nil {
-			glog.Warningf("%v: delete failed: %v", asg.ARN(), err)
+		deleteInput := &autoscaling.DeleteAutoScalingGroupInput{
+			AutoScalingGroupName: aws.String(asg.Name),
+			ForceDelete:          aws.Bool(true),
+		}
+
+		if _, err := svc.DeleteAutoScalingGroup(deleteInput); err != nil {
+			klog.Warningf("%v: delete failed: %v", asg.ARN(), err)
 		}
 	}
+
 	// Block on ASGs finishing deletion. There are a lot of dependent
 	// resources, so this just makes the rest go more smoothly (and
 	// prevents a second pass).
 	for _, asg := range toDelete {
-		glog.Warningf("%v: waiting for delete", asg.ARN())
-		err := svc.WaitUntilGroupNotExists(
-			&autoscaling.DescribeAutoScalingGroupsInput{
-				AutoScalingGroupNames: []*string{aws.String(asg.Name)},
-			})
-		if err != nil {
-			glog.Warningf("%v: wait failed: %v", asg.ARN(), err)
+		klog.Warningf("%v: waiting for delete", asg.ARN())
+
+		describeInput := &autoscaling.DescribeAutoScalingGroupsInput{
+			AutoScalingGroupNames: []*string{aws.String(asg.Name)},
+		}
+
+		if err := svc.WaitUntilGroupNotExists(describeInput); err != nil {
+			klog.Warningf("%v: wait failed: %v", asg.ARN(), err)
 		}
 	}
+
 	return nil
 }
 

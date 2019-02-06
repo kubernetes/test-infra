@@ -6,6 +6,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/gerrit/adapter",
     visibility = ["//visibility:public"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/gerrit/client:go_default_library",
         "//prow/kube:go_default_library",
@@ -19,9 +20,9 @@ go_test(
     srcs = ["adapter_test.go"],
     embed = [":go_default_library"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/gerrit/client:go_default_library",
-        "//prow/kube:go_default_library",
     ],
 )
 

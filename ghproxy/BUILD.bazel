@@ -12,7 +12,6 @@ container_bundle(
         "{STABLE_DOCKER_REPO}/ghproxy:latest": ":image",
         "{STABLE_DOCKER_REPO}/ghproxy:latest-{BUILD_USER}": ":image",
     },
-    stamp = True,
 )
 
 docker_push(

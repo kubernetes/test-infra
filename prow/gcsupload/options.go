@@ -21,14 +21,14 @@ import (
 	"errors"
 	"flag"
 
-	"k8s.io/test-infra/prow/kube"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
 // NewOptions returns an empty Options with no nil fields.
 func NewOptions() *Options {
 	return &Options{
-		GCSConfiguration: &kube.GCSConfiguration{},
+		GCSConfiguration: &prowapi.GCSConfiguration{},
 	}
 }
 
@@ -41,7 +41,7 @@ type Options struct {
 	// SubDir is appended to the GCS path.
 	SubDir string `json:"sub_dir,omitempty"`
 
-	*kube.GCSConfiguration
+	*prowapi.GCSConfiguration
 
 	// GcsCredentialsFile is the path to the JSON
 	// credentials for pushing to GCS.
@@ -96,7 +96,7 @@ func (o *Options) Complete(args []string) {
 func (o *Options) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.SubDir, "sub-dir", "", "Optional sub-directory of the job's path to which artifacts are uploaded")
 
-	fs.StringVar(&o.PathStrategy, "path-strategy", kube.PathStrategyExplicit, "how to encode org and repo into GCS paths")
+	fs.StringVar(&o.PathStrategy, "path-strategy", prowapi.PathStrategyExplicit, "how to encode org and repo into GCS paths")
 	fs.StringVar(&o.DefaultOrg, "default-org", "", "optional default org for GCS path encoding")
 	fs.StringVar(&o.DefaultRepo, "default-repo", "", "optional default repo for GCS path encoding")
 

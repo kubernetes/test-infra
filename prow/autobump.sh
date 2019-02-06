@@ -56,6 +56,11 @@ ensure-config "$@"
 echo "Bumping prow to latest..." >&2
 ./bump.sh --latest
 
+# Also try to regenerate security-job configs which uses explicit podutils image config
+# TODO(krzyzacy): workaround before we resolves https://github.com/kubernetes/test-infra/issues/9783
+echo "Running test-infra/hack/update-config.sh ..." >&2
+../hack/update-config.sh
+
 # Convert image: gcr.io/k8s-prow/plank:v20181122-abcd to v20181122-abcd
 extract-version() {
   local v=$(grep plank:v "$@")

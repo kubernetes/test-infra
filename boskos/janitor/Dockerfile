@@ -13,7 +13,6 @@
 # limitations under the License.
 
 FROM gcr.io/k8s-testimages/gcloud-in-go:v20180725-a495f0247
-LABEL maintainer="senlu@google.com"
 
 ADD ["janitor", \
      "janitor.py", \

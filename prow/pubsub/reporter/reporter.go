@@ -26,8 +26,8 @@ import (
 
 	"cloud.google.com/go/pubsub"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
 )
 
 const (
@@ -43,12 +43,12 @@ const (
 
 // ReportMessage is a message structure used to pass a prowjob status to Pub/Sub topic.s
 type ReportMessage struct {
-	Project string            `json:"project"`
-	Topic   string            `json:"topic"`
-	RunID   string            `json:"runid"`
-	Status  kube.ProwJobState `json:"status"`
-	URL     string            `json:"url"`
-	GCSPath string            `json:"gcs_path"`
+	Project string               `json:"project"`
+	Topic   string               `json:"topic"`
+	RunID   string               `json:"runid"`
+	Status  prowapi.ProwJobState `json:"status"`
+	URL     string               `json:"url"`
+	GCSPath string               `json:"gcs_path"`
 }
 
 // Client is a reporter client fed to crier controller
@@ -68,7 +68,7 @@ func (c *Client) GetName() string {
 	return "pubsub-reporter"
 }
 
-func findLabels(pj *kube.ProwJob, labels ...string) map[string]string {
+func findLabels(pj *prowapi.ProwJob, labels ...string) map[string]string {
 	// Support checking for both labels(deprecated) and annotations(new) for backward compatibility
 	pubSubMap := map[string]string{}
 	for _, label := range labels {
@@ -82,14 +82,14 @@ func findLabels(pj *kube.ProwJob, labels ...string) map[string]string {
 }
 
 // ShouldReport tells if a prowjob should be reported by this reporter
-func (c *Client) ShouldReport(pj *kube.ProwJob) bool {
+func (c *Client) ShouldReport(pj *prowapi.ProwJob) bool {
 	pubSubMap := findLabels(pj, PubSubProjectLabel, PubSubTopicLabel)
 	return pubSubMap[PubSubProjectLabel] != "" && pubSubMap[PubSubTopicLabel] != ""
 }
 
 // Report takes a prowjob, and generate a pubsub ReportMessage and publish to specific Pub/Sub topic
 // based on Pub/Sub related labels if they exist in this prowjob
-func (c *Client) Report(pj *kube.ProwJob) error {
+func (c *Client) Report(pj *prowapi.ProwJob) error {
 	message := c.generateMessageFromPJ(pj)
 
 	ctx := context.Background()
@@ -117,7 +117,7 @@ func (c *Client) Report(pj *kube.ProwJob) error {
 	return nil
 }
 
-func (c *Client) generateMessageFromPJ(pj *kube.ProwJob) *ReportMessage {
+func (c *Client) generateMessageFromPJ(pj *prowapi.ProwJob) *ReportMessage {
 	pubSubMap := findLabels(pj, PubSubProjectLabel, PubSubTopicLabel, PubSubRunIDLabel)
 	return &ReportMessage{
 		Project: pubSubMap[PubSubProjectLabel],

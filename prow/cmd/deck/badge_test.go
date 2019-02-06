@@ -21,22 +21,22 @@ import (
 	"reflect"
 	"testing"
 
-	"k8s.io/test-infra/prow/kube"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 func TestPickLatest(t *testing.T) {
-	jobs := []kube.ProwJob{
+	jobs := []prowapi.ProwJob{
 		// We're using Cluster as a simple way to distinguish runs
-		{Spec: kube.ProwJobSpec{Job: "glob-1", Cluster: "1"}},
-		{Spec: kube.ProwJobSpec{Job: "glob-1", Cluster: "2"}},
-		{Spec: kube.ProwJobSpec{Job: "glob-2", Cluster: "1"}},
-		{Spec: kube.ProwJobSpec{Job: "job-a", Cluster: "1"}},
-		{Spec: kube.ProwJobSpec{Job: "job-ab", Cluster: "1"}},
+		{Spec: prowapi.ProwJobSpec{Job: "glob-1", Cluster: "1"}},
+		{Spec: prowapi.ProwJobSpec{Job: "glob-1", Cluster: "2"}},
+		{Spec: prowapi.ProwJobSpec{Job: "glob-2", Cluster: "1"}},
+		{Spec: prowapi.ProwJobSpec{Job: "job-a", Cluster: "1"}},
+		{Spec: prowapi.ProwJobSpec{Job: "job-ab", Cluster: "1"}},
 	}
-	expected := []kube.ProwJob{
-		{Spec: kube.ProwJobSpec{Job: "glob-1", Cluster: "1"}},
-		{Spec: kube.ProwJobSpec{Job: "glob-2", Cluster: "1"}},
-		{Spec: kube.ProwJobSpec{Job: "job-a", Cluster: "1"}},
+	expected := []prowapi.ProwJob{
+		{Spec: prowapi.ProwJobSpec{Job: "glob-1", Cluster: "1"}},
+		{Spec: prowapi.ProwJobSpec{Job: "glob-2", Cluster: "1"}},
+		{Spec: prowapi.ProwJobSpec{Job: "job-a", Cluster: "1"}},
 	}
 	result := pickLatestJobs(jobs, "glob-*,job-a")
 	if !reflect.DeepEqual(result, expected) {
@@ -62,11 +62,11 @@ func TestRenderBadge(t *testing.T) {
 		{[]string{"success", "failure"}, "red", "failing 2"},
 		{[]string{"success", "failure", "failure", "failure", "failure"}, "red", "failing 2, 3, 4, ..."},
 	} {
-		jobs := []kube.ProwJob{}
+		jobs := []prowapi.ProwJob{}
 		for i, state := range tc.jobStates {
-			jobs = append(jobs, kube.ProwJob{
-				Spec:   kube.ProwJobSpec{Job: fmt.Sprintf("%d", i+1)},
-				Status: kube.ProwJobStatus{State: kube.ProwJobState(state)},
+			jobs = append(jobs, prowapi.ProwJob{
+				Spec:   prowapi.ProwJobSpec{Job: fmt.Sprintf("%d", i+1)},
+				Status: prowapi.ProwJobStatus{State: prowapi.ProwJobState(state)},
 			})
 		}
 		status, color, _ := renderBadge(jobs)

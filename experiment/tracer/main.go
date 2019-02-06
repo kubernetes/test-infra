@@ -79,7 +79,7 @@ func main() {
 	}
 	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tracer"}))
 
-	_, defaultContext, kubernetesClients, err := o.kubernetes.Client(o.namespace, o.dryRun)
+	client, err := o.kubernetes.InfrastructureClusterClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
 	}
@@ -88,7 +88,7 @@ func main() {
 	if !o.headless {
 		mux.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir("/static"))))
 	}
-	mux.Handle("/trace", gziphandler.GzipHandler(handleTrace(o.selector, kubernetesClients[defaultContext].CoreV1().Pods(o.namespace))))
+	mux.Handle("/trace", gziphandler.GzipHandler(handleTrace(o.selector, client.CoreV1().Pods(o.namespace))))
 
 	server := &http.Server{
 		Addr:         ":8080",

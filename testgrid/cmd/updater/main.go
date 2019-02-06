@@ -21,11 +21,9 @@ import (
 	"compress/zlib"
 	"context"
 	"encoding/json"
-	"encoding/xml"
 	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -38,6 +36,8 @@ import (
 	"time"
 
 	"k8s.io/test-infra/testgrid/config"
+	"k8s.io/test-infra/testgrid/metadata"
+	"k8s.io/test-infra/testgrid/metadata/junit"
 	"k8s.io/test-infra/testgrid/state"
 	"k8s.io/test-infra/testgrid/util/gcs"
 
@@ -47,6 +47,15 @@ import (
 
 	"vbom.ml/util/sortorder"
 )
+
+// Started holds started.json data.
+type Started = metadata.Started
+
+// Finished holds finished.json data.
+type Finished struct {
+	metadata.Finished
+	running bool
+}
 
 // options configures the updater
 type options struct {
@@ -114,101 +123,10 @@ func (b Build) String() string {
 	return b.Prefix
 }
 
-// Started holds the started.json values of the build.
-type Started struct {
-	Timestamp   int64             `json:"timestamp"` // epoch seconds
-	RepoVersion string            `json:"repo-version"`
-	Node        string            `json:"node"`
-	Pull        string            `json:"pull"`
-	Repos       map[string]string `json:"repos"` // {repo: branch_or_pull} map
-}
-
-// Finished holds the finished.json values of the build
-type Finished struct {
-	// Timestamp is epoch seconds
-	Timestamp  int64    `json:"timestamp"`
-	Passed     bool     `json:"passed"`
-	JobVersion string   `json:"job-version"`
-	Metadata   Metadata `json:"metadata"`
-	running    bool
-}
-
-// Metadata holds the finished.json values in the metadata key.
-//
-// Metadata values can either be string or string map of strings
-//
-// TODO(fejta): figure out which of these we want and document them
-// Special values: infra-commit, repos, repo, repo-commit, others
-type Metadata map[string]interface{}
-
-// String returns the name key if its value is a string.
-func (m Metadata) String(name string) (*string, bool) {
-	if v, ok := m[name]; !ok {
-		return nil, false
-	} else if t, good := v.(string); !good {
-		return nil, true
-	} else {
-		return &t, true
-	}
-}
-
-// Meta returns the name key if its value is a child object.
-func (m Metadata) Meta(name string) (*Metadata, bool) {
-	if v, ok := m[name]; !ok {
-		return nil, true
-	} else if t, good := v.(Metadata); !good {
-		return nil, false
-	} else {
-		return &t, true
-	}
-}
-
-// ColumnMetadata returns the subset of values in the map that are strings.
-func (m Metadata) ColumnMetadata() ColumnMetadata {
-	bm := ColumnMetadata{}
-	for k, v := range m {
-		if s, ok := v.(string); ok {
-			bm[k] = s
-		}
-		// TODO(fejta): handle sub items
-	}
-	return bm
-}
-
-// JunitSuites holds a <testsuites/> list of JunitSuite results
-type JunitSuites struct {
-	XMLName xml.Name     `xml:"testsuites"`
-	Suites  []JunitSuite `xml:"testsuite"`
-}
-
-// JunitSuite holds <testsuite/> results
-type JunitSuite struct {
-	XMLName  xml.Name      `xml:"testsuite"`
-	Name     string        `xml:"name,attr"`
-	Time     float64       `xml:"time,attr"` // Seconds
-	Failures int           `xml:"failures,attr"`
-	Tests    int           `xml:"tests,attr"`
-	Results  []JunitResult `xml:"testcase"`
-	/*
-	* <properties><property name="go.version" value="go1.8.3"/></properties>
-	 */
-}
-
-// JunitResult holds <testcase/> results
-type JunitResult struct {
-	Name      string  `xml:"name,attr"`
-	Time      float64 `xml:"time,attr"`
-	ClassName string  `xml:"classname,attr"`
-	Failure   *string `xml:"failure,omitempty"`
-	Output    *string `xml:"system-out,omitempty"`
-	Error     *string `xml:"system-err,omitempty"`
-	Skipped   *string `xml:"skipped,omitempty"`
-}
-
 // Message extracts the message for the junit test case.
 //
 // Will use the first non-empty <failure/>, <skipped/>, <output/> value.
-func (jr JunitResult) Message() string {
+func message(jr junit.Result) string {
 	const max = 140
 	var msg string
 	switch {
@@ -228,7 +146,7 @@ func (jr JunitResult) Message() string {
 }
 
 // Row converts the junit result into a Row result, prepending the suite name.
-func (jr JunitResult) Row(suite string) (string, Row) {
+func row(jr junit.Result, suite string) (string, Row) {
 	n := jr.Name
 	if suite != "" {
 		n = suite + "." + n
@@ -242,7 +160,7 @@ func (jr JunitResult) Row(suite string) (string, Row) {
 	if jr.Time > 0 {
 		r.Metrics[elapsedKey] = jr.Time
 	}
-	if msg := jr.Message(); msg != "" {
+	if msg := message(jr); msg != "" {
 		r.Message = msg
 	}
 	switch {
@@ -262,34 +180,7 @@ func (jr JunitResult) Row(suite string) (string, Row) {
 	return n, r
 }
 
-func unmarshalXML(buf []byte, i interface{}) error {
-	reader := bytes.NewReader(buf)
-	dec := xml.NewDecoder(reader)
-	dec.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
-		switch charset {
-		case "UTF-8", "utf8", "":
-			// utf8 is not recognized by golang, but our coalesce.py writes a utf8 doc, which python accepts.
-			return input, nil
-		default:
-			return nil, fmt.Errorf("unknown charset: %s", charset)
-		}
-	}
-	return dec.Decode(i)
-}
-
-func extractRows(buf []byte, meta map[string]string) (map[string][]Row, error) {
-	var suites JunitSuites
-	// Try to parse it as a <testsuites/> object
-	err := unmarshalXML(buf, &suites)
-	if err != nil {
-		// Maybe it is a <testsuite/> object instead
-		suites.Suites = append([]JunitSuite(nil), JunitSuite{})
-		ie := unmarshalXML(buf, &suites.Suites[0])
-		if ie != nil {
-			// Nope, it just doesn't parse
-			return nil, fmt.Errorf("not valid testsuites: %v nor testsuite: %v", err, ie)
-		}
-	}
+func extractRows(suites junit.Suites, meta map[string]string) map[string][]Row {
 	rows := map[string][]Row{}
 	for _, suite := range suites.Suites {
 		for _, sr := range suite.Results {
@@ -297,14 +188,14 @@ func extractRows(buf []byte, meta map[string]string) (map[string][]Row, error) {
 				continue
 			}
 
-			n, r := sr.Row(suite.Name)
+			n, r := row(sr, suite.Name)
 			for k, v := range meta {
 				r.Metadata[k] = v
 			}
 			rows[n] = append(rows[n], r)
 		}
 	}
-	return rows, nil
+	return rows
 }
 
 // ColumnMetadata holds key => value mapping of metadata info.
@@ -564,7 +455,8 @@ func dropPrefix(name string) string {
 	return name[1:]
 }
 
-// ValidateName checks whether the basename matches a junit file.
+// parseSuitesMeta returns the metadata for this junit file (nil for a non-junit file).
+//
 //
 // Expected format: junit_context_20180102-1256-07.xml
 // Results in {
@@ -572,7 +464,7 @@ func dropPrefix(name string) string {
 //   "Timestamp": "20180102-1256",
 //   "Thread": "07",
 // }
-func ValidateName(name string) map[string]string {
+func parseSuitesMeta(name string) map[string]string {
 	mat := re.FindStringSubmatch(name)
 	if mat == nil {
 		return nil
@@ -583,6 +475,138 @@ func ValidateName(name string) map[string]string {
 		"Thread":    dropPrefix(mat[3]),
 	}
 
+}
+
+// readJson will decode the json object stored in GCS.
+func readJson(ctx context.Context, obj *storage.ObjectHandle, i interface{}) error {
+	reader, err := obj.NewReader(ctx)
+	if err != nil {
+		return fmt.Errorf("open: %v", err)
+	}
+	if err = json.NewDecoder(reader).Decode(i); err != nil {
+		return fmt.Errorf("decode: %v", err)
+	}
+	return nil
+}
+
+// readStarted parses the build's started metadata.
+func readStarted(ctx context.Context, build Build) (*Started, error) {
+	uri := build.Prefix + "started.json"
+	var started Started
+	if err := readJson(ctx, build.Bucket.Object(uri), &started); err != nil {
+		return nil, fmt.Errorf("read %s: %v", uri, err)
+	}
+	return &started, nil
+}
+
+// readFinished parses the build's finished metadata.
+func readFinished(ctx context.Context, build Build) (*Finished, error) {
+	uri := build.Prefix + "finished.json"
+	var finished Finished
+	if err := readJson(ctx, build.Bucket.Object(uri), &finished); err != nil {
+		return nil, fmt.Errorf("read %s: %v", uri, err)
+	}
+	return &finished, nil
+}
+
+// listArtifacts writes the object name of all paths under the build's artifact dir to the output channel.
+func listArtifacts(ctx context.Context, build Build, artifacts chan<- string) error {
+	pref := build.Prefix + "artifacts/"
+	objs := build.Bucket.Objects(ctx, &storage.Query{Prefix: pref})
+	for {
+		obj, err := objs.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("failed to list %s: %v", pref, err)
+		}
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("interrupted listing %s", pref)
+		case artifacts <- obj.Name:
+		}
+	}
+	return nil
+}
+
+// readSuites parses the <testsuite> or <testsuites> object in obj
+func readSuites(ctx context.Context, obj *storage.ObjectHandle) (*junit.Suites, error) {
+	reader, err := obj.NewReader(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("open: %v", err)
+	}
+
+	buf, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return nil, fmt.Errorf("read: %v", err)
+	}
+
+	suites, err := junit.Parse(buf)
+	if err != nil {
+		return nil, fmt.Errorf("parse: %v", err)
+	}
+	return &suites, nil
+}
+
+type suitesMeta struct {
+	suites   junit.Suites      // suites data extracted from file contents
+	metadata map[string]string // metadata extracted from path name
+}
+
+// listSuites takes a list of artifact names, parses those representing junit suites, writing the result to the suites channel.
+//
+// Note that junit suites are parsed in parallel, so there are no guarantees about suites ordering.
+func listSuites(ctx context.Context, build Build, artifacts <-chan string, suites chan<- suitesMeta) error {
+
+	var wg sync.WaitGroup
+	ec := make(chan error)
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	for art := range artifacts {
+		meta := parseSuitesMeta(art)
+		if meta == nil {
+			continue // not a junit file ignore it, ignore it
+		}
+		wg.Add(1)
+		// concurrently parse each file because there may be a lot of them, and
+		// each takes a non-trivial amount of time waiting for the network.
+		go func(art string, meta map[string]string) {
+			defer wg.Done()
+			suitesData, err := readSuites(ctx, build.Bucket.Object(art))
+			if err != nil {
+				select {
+				case <-ctx.Done():
+				case ec <- err:
+				}
+				return
+			}
+			out := suitesMeta{
+				suites:   *suitesData,
+				metadata: meta,
+			}
+			select {
+			case <-ctx.Done():
+			case suites <- out:
+			}
+		}(art, meta)
+	}
+
+	go func() {
+		wg.Wait()
+		select {
+		case ec <- nil: // tell parent we exited cleanly
+		case <-ctx.Done(): // parent already exited
+		}
+		close(ec) // no one will send t
+	}()
+
+	select {
+	case <-ctx.Done(): // parent context marked as finished.
+		return ctx.Err()
+	case err := <-ec: // finished listing
+		return err
+	}
 }
 
 // ReadBuild asynchronously downloads the files in build from gcs and convert them into a build.
@@ -596,18 +620,7 @@ func ReadBuild(build Build) (*Column, error) {
 	sc := make(chan Started) // Receives started.json result
 	go func() {
 		defer wg.Done()
-		started, err := func() (Started, error) {
-			var started Started
-			s := build.Bucket.Object(build.Prefix + "started.json")
-			sr, err := s.NewReader(ctx)
-			if err != nil {
-				return started, fmt.Errorf("build has not started")
-			}
-			if err = json.NewDecoder(sr).Decode(&started); err != nil {
-				return started, fmt.Errorf("could not decode started.json: %v", err)
-			}
-			return started, nil
-		}()
+		started, err := readStarted(ctx, build)
 		if err != nil {
 			select {
 			case <-ctx.Done():
@@ -617,7 +630,7 @@ func ReadBuild(build Build) (*Column, error) {
 		}
 		select {
 		case <-ctx.Done():
-		case sc <- started:
+		case sc <- *started:
 		}
 	}()
 
@@ -626,21 +639,7 @@ func ReadBuild(build Build) (*Column, error) {
 	fc := make(chan Finished) // Receives finished.json result
 	go func() {
 		defer wg.Done()
-		finished, err := func() (Finished, error) {
-			f := build.Bucket.Object(build.Prefix + "finished.json")
-			fr, err := f.NewReader(ctx)
-			var finished Finished
-			if err == storage.ErrObjectNotExist { // Job has not (yet) completed
-				finished.running = true
-				return finished, nil
-			} else if err != nil {
-				return finished, fmt.Errorf("could not open %s: %v", f, err)
-			}
-			if err = json.NewDecoder(fr).Decode(&finished); err != nil {
-				return finished, fmt.Errorf("could not decode finished.json: %v", err)
-			}
-			return finished, nil
-		}()
+		finished, err := readFinished(ctx, build)
 		if err != nil {
 			select {
 			case <-ctx.Done():
@@ -650,36 +649,17 @@ func ReadBuild(build Build) (*Column, error) {
 		}
 		select {
 		case <-ctx.Done():
-		case fc <- finished:
+		case fc <- *finished:
 		}
 	}()
 
-	// List artifacts, send to ac channel
+	// List artifacts to the artifacts channel
 	wg.Add(1)
-	ac := make(chan string) // Receives names of arifacts
+	artifacts := make(chan string) // Receives names of arifacts
 	go func() {
 		defer wg.Done()
-		defer close(ac) // No more artifacts
-		err := func() error {
-			pref := build.Prefix + "artifacts/"
-			ai := build.Bucket.Objects(ctx, &storage.Query{Prefix: pref})
-			for {
-				a, err := ai.Next()
-				if err == iterator.Done {
-					break
-				}
-				if err != nil {
-					return fmt.Errorf("failed to list %s: %v", pref, err)
-				}
-				select {
-				case <-ctx.Done():
-					return fmt.Errorf("interrupted listing %s", pref)
-				case ac <- a.Name: // Added
-				}
-			}
-			return nil
-		}()
-		if err != nil {
+		defer close(artifacts) // No more artifacts
+		if err := listArtifacts(ctx, build, artifacts); err != nil {
 			select {
 			case <-ctx.Done():
 			case ec <- err:
@@ -690,61 +670,11 @@ func ReadBuild(build Build) (*Column, error) {
 	// Download each artifact, send row map to rc
 	// With parallelism: 60s without: 220s
 	wg.Add(1)
-	rc := make(chan map[string][]Row)
+	suitesChan := make(chan suitesMeta)
 	go func() {
 		defer wg.Done()
-		defer close(rc) // No more rows
-		var awg sync.WaitGroup
-		for a := range ac {
-			select { // Should we stop?
-			case <-ctx.Done(): // Yes
-				return
-			default: // No, keep going
-			}
-			meta := ValidateName(a)
-			if meta == nil { // Not junit
-				continue
-			}
-			awg.Add(1)
-			// Read each artifact in a new thread
-			go func(ap string, meta map[string]string) {
-				defer awg.Done()
-				err := func() error {
-					ar, err := build.Bucket.Object(ap).NewReader(ctx)
-					if err != nil {
-						return fmt.Errorf("could not read %s: %v", ap, err)
-					}
-					if r := ar.Remain(); r > 50e6 {
-						return fmt.Errorf("too large: %s is %d > 50M", ap, r)
-					}
-					buf, err := ioutil.ReadAll(ar)
-					if err != nil {
-						return fmt.Errorf("partial read of %s: %v", ap, err)
-					}
-
-					select { // Keep going?
-					case <-ctx.Done(): // No, cancelled
-						return errors.New("aborted artifact read")
-					default: // Yes, acquire lock
-						// TODO(fejta): consider sync.Map
-						rows, err := extractRows(buf, meta)
-						if err != nil {
-							return fmt.Errorf("failed to parse %s: %v", ap, err)
-						}
-						rc <- rows
-					}
-					return nil
-				}()
-				if err == nil {
-					return
-				}
-				select {
-				case <-ctx.Done():
-				case ec <- err:
-				}
-			}(a, meta)
-		}
-		awg.Wait()
+		defer close(suitesChan) // No more rows
+		listSuites(ctx, build, artifacts, suitesChan)
 	}()
 
 	// Append each row into the column
@@ -752,14 +682,10 @@ func ReadBuild(build Build) (*Column, error) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		for r := range rc {
-			select { // Should we continue
-			case <-ctx.Done(): // No, aborted
-				return
-			default: // Yes
-			}
-			for t, rs := range r {
-				rows[t] = append(rows[t], rs...)
+		for suitesMeta := range suitesChan {
+			rowsPart := extractRows(suitesMeta.suites, suitesMeta.metadata)
+			for name, results := range rowsPart {
+				rows[name] = append(rows[name], results...)
 			}
 		}
 	}()
@@ -804,9 +730,13 @@ func ReadBuild(build Build) (*Column, error) {
 		}
 		return &br, nil
 	}
-	br.Finished = finished.Timestamp
-	br.Metadata = finished.Metadata.ColumnMetadata()
-	br.Passed = finished.Passed
+	if finished.Timestamp != nil {
+		br.Finished = *finished.Timestamp
+	}
+	br.Metadata = finished.Metadata.Strings()
+	if finished.Passed != nil {
+		br.Passed = *finished.Passed
+	}
 	or := br.Overall()
 	br.Rows = map[string][]Row{
 		"Overall": {or},

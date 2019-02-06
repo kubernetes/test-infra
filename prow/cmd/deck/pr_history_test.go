@@ -25,8 +25,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
 )
 
 type fakeBucket struct {
@@ -338,8 +338,8 @@ func TestGetGCSDirsForPR(t *testing.T) {
 			config: &config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
-						DefaultDecorationConfig: &kube.DecorationConfig{
-							GCSConfiguration: &kube.GCSConfiguration{
+						DefaultDecorationConfig: &prowapi.DecorationConfig{
+							GCSConfiguration: &prowapi.GCSConfiguration{
 								Bucket:       "krusty-krab",
 								PathStrategy: "legacy",
 								DefaultOrg:   "kubernetes",
@@ -355,8 +355,8 @@ func TestGetGCSDirsForPR(t *testing.T) {
 								JobBase: config.JobBase{
 									Name: "fum-is-chum",
 									UtilityConfig: config.UtilityConfig{
-										DecorationConfig: &kube.DecorationConfig{
-											GCSConfiguration: &kube.GCSConfiguration{
+										DecorationConfig: &prowapi.DecorationConfig{
+											GCSConfiguration: &prowapi.GCSConfiguration{
 												Bucket:       "chum-bucket",
 												PathStrategy: "legacy",
 												DefaultOrg:   "kubernetes",

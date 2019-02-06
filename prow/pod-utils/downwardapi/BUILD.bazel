@@ -8,14 +8,14 @@ go_library(
     ],
     importpath = "k8s.io/test-infra/prow/pod-utils/downwardapi",
     visibility = ["//visibility:public"],
-    deps = ["//prow/kube:go_default_library"],
+    deps = ["//prow/apis/prowjobs/v1:go_default_library"],
 )
 
 go_test(
     name = "go_default_test",
     srcs = ["jobspec_test.go"],
     embed = [":go_default_library"],
-    deps = ["//prow/kube:go_default_library"],
+    deps = ["//prow/apis/prowjobs/v1:go_default_library"],
 )
 
 filegroup(
