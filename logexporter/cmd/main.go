@@ -40,6 +40,7 @@ var (
 	gcloudAuthFilePath   = flag.String("gcloud-auth-file-path", "/etc/service-account/service-account.json", "Path to gcloud service account file, for authenticating gsutil to write to GCS bucket")
 	enableHollowNodeLogs = flag.Bool("enable-hollow-node-logs", false, "Enable uploading hollow node logs too. Relevant only for kubemark nodes")
 	sleepDuration        = flag.Duration("sleep-duration", 60*time.Second, "Duration to sleep before exiting with success. Useful for making pods schedule with hard anti-affinity when run as a job on a k8s cluster")
+	dumpSystemdJournal   = flag.Bool("dump-systemd-journal", false, "Whether to dump the full systemd journal")
 )
 
 var (
@@ -106,6 +107,21 @@ func createSystemdLogfile(service string, outputMode string, outputDir string) e
 	return nil
 }
 
+// createFullSystemdLogfile creates logfile for full systemd journal in the outputDir.
+func createFullSystemdLogfile(outputDir string) error {
+	cmd := exec.Command("journalctl", "--output=short-precise")
+	// Run the command and record the output to a file.
+	output, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("Journalctl command failed: %v", err)
+	}
+	logfile := filepath.Join(outputDir, "systemd.log")
+	if err := ioutil.WriteFile(logfile, output, 0444); err != nil {
+		return fmt.Errorf("Writing full journalctl logs to file failed: %v", err)
+	}
+	return nil
+}
+
 // Create logfiles for systemd services in outputDir.
 func createSystemdLogfiles(outputDir string) {
 	services := append(systemdServices, nodeSystemdServices...)
@@ -117,6 +133,11 @@ func createSystemdLogfiles(outputDir string) {
 	// Service logs specific to VM setup.
 	for _, service := range systemdSetupServices {
 		if err := createSystemdLogfile(service, "short-precise", outputDir); err != nil {
+			glog.Warningf("Failed to record journalctl logs: %v", err)
+		}
+	}
+	if *dumpSystemdJournal {
+		if err := createFullSystemdLogfile(outputDir); err != nil {
 			glog.Warningf("Failed to record journalctl logs: %v", err)
 		}
 	}
