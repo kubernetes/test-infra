@@ -222,6 +222,10 @@ repo_milestone:
     maintainers_id: 2830895
     maintainers_team: cluster-api-provider-aws-maintainers
     maintainers_friendly_name: Cluster API Provider AWS Maintainers
+  'kubernetes-sigs/cluster-api-provider-azure':
+    maintainers_id: 3063852
+    maintainers_team: cluster-api-provider-azure-maintainers
+    maintainers_friendly_name: Cluster API Provider Azure Maintainers
 
 config_updater:
   maps:
