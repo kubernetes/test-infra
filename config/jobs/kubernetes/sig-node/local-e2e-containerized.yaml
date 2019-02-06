@@ -63,7 +63,7 @@ periodics:
       - --extract-source
       - --ginkgo-parallel
       - --provider=local
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[Containerized\] --ginkgo.skip=\[Disruptive\]|\[sig\-apps\]\sDaemon\sset\s\[Serial\]\sshould\srollback\swithout\sunnecessary\srestarts\s\[Conformance\]|\[sig\-apps\]\sDaemon\sset\s[Serial]\sshould\srun\sand\sstop\scomplex\sdaemon\s\[Conformance\]
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[Containerized\] --ginkgo.skip=\[Disruptive\]|\[sig\-apps\]\sDaemon\sset\s\[Serial\]\sshould\srollback\swithout\sunnecessary\srestarts\s\[Conformance\]|\[sig\-apps\]\sDaemon\sset\s\[Serial\]\sshould\srun\sand\sstop\scomplex\sdaemon\s\[Conformance\]
       - --timeout=120m
       env:
       - name: DOCKERIZE_KUBELET
