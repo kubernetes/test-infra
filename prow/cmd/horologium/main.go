@@ -25,6 +25,7 @@ import (
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -114,25 +115,35 @@ func sync(prowJobClient prowJobClient, cfg *config.Config, cr cronClient, now ti
 		logrus.WithError(err).Error("Error syncing cron jobs.")
 	}
 
-	cronTriggers := map[string]bool{}
+	cronTriggers := sets.NewString()
 	for _, job := range cr.QueuedJobs() {
-		cronTriggers[job] = true
+		cronTriggers.Insert(job)
 	}
 
 	var errs []error
 	for _, p := range cfg.Periodics {
-		j, ok := latestJobs[p.Name]
+		j, previousFound := latestJobs[p.Name]
+		logger := logrus.WithFields(logrus.Fields{
+			"job":            p.Name,
+			"previous-found": previousFound,
+		})
 
 		if p.Cron == "" {
-			if !ok || (j.Complete() && now.Sub(j.Status.StartTime.Time) > p.GetInterval()) {
+			shouldTrigger := j.Complete() && now.Sub(j.Status.StartTime.Time) > p.GetInterval()
+			logger = logger.WithField("should-trigger", shouldTrigger)
+			if !previousFound || shouldTrigger {
 				prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels)
+				logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Triggering new run of interval periodic.")
 				if _, err := prowJobClient.Create(&prowJob); err != nil {
 					errs = append(errs, err)
 				}
 			}
-		} else if _, exist := cronTriggers[p.Name]; exist {
-			if !ok || j.Complete() {
+		} else if cronTriggers.Has(p.Name) {
+			shouldTrigger := j.Complete()
+			logger = logger.WithField("should-trigger", shouldTrigger)
+			if !previousFound || shouldTrigger {
 				prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels)
+				logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Triggering new run of cron periodic.")
 				if _, err := prowJobClient.Create(&prowJob); err != nil {
 					errs = append(errs, err)
 				}
