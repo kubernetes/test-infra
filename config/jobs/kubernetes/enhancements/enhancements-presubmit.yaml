@@ -7,4 +7,5 @@ presubmits:
       containers:
       - image: golang:1.11
         command:
+        - export PATH=$PATH:$GOPATH/bin
         - ./hack/verify.sh
