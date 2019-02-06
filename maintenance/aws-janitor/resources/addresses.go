@@ -23,8 +23,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"k8s.io/klog"
 )
 
 // Elastic IPs: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeAddresses
@@ -42,17 +42,19 @@ func (Addresses) MarkAndSweep(sess *session.Session, acct string, region string,
 	for _, addr := range resp.Addresses {
 		a := &address{Account: acct, Region: region, ID: *addr.AllocationId}
 		if set.Mark(a) {
-			glog.Warningf("%s: deleting %T: %v", a.ARN(), addr, addr)
+			klog.Warningf("%s: deleting %T: %v", a.ARN(), addr, addr)
+
 			if addr.AssociationId != nil {
-				glog.Warningf("%s: disassociating %T from active instance", a.ARN(), addr)
+				klog.Warningf("%s: disassociating %T from active instance", a.ARN(), addr)
 				_, err := svc.DisassociateAddress(&ec2.DisassociateAddressInput{AssociationId: addr.AssociationId})
 				if err != nil {
-					glog.Warningf("%s: disassociating %T failed: %v", a.ARN(), addr, err)
+					klog.Warningf("%s: disassociating %T failed: %v", a.ARN(), addr, err)
 				}
 			}
+
 			_, err := svc.ReleaseAddress(&ec2.ReleaseAddressInput{AllocationId: addr.AllocationId})
 			if err != nil {
-				glog.Warningf("%v: delete failed: %v", a.ARN(), err)
+				klog.Warningf("%v: delete failed: %v", a.ARN(), err)
 			}
 		}
 	}

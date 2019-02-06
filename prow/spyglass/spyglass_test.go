@@ -24,7 +24,9 @@ import (
 
 	"github.com/fsouza/fake-gcs-server/fakestorage"
 	"github.com/sirupsen/logrus"
+	coreapi "k8s.io/api/core/v1"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/kube"
@@ -40,46 +42,19 @@ const (
 	testSrc = "gs://test-bucket/logs/example-ci-run/403"
 )
 
-type fkc []kube.ProwJob
+type fkc []prowapi.ProwJob
 
-func (f fkc) GetLog(pod string) ([]byte, error) {
-	return nil, nil
-}
-
-func (f fkc) ListPods(selector string) ([]kube.Pod, error) {
-	return nil, nil
-}
-
-func (f fkc) ListProwJobs(s string) ([]kube.ProwJob, error) {
+func (f fkc) ListProwJobs(s string) ([]prowapi.ProwJob, error) {
 	return f, nil
 }
 
 type fpkc string
 
-func (f fpkc) GetLog(pod string) ([]byte, error) {
-	if pod == "wowowow" || pod == "powowow" {
+func (f fpkc) GetLogs(name string, opts *coreapi.PodLogOptions) ([]byte, error) {
+	if name == "wowowow" || name == "powowow" {
 		return []byte(f), nil
 	}
-	return nil, fmt.Errorf("pod not found: %s", pod)
-}
-
-func (f fpkc) GetContainerLog(pod, container string) ([]byte, error) {
-	if pod == "wowowow" || pod == "powowow" {
-		return []byte(f), nil
-	}
-	return nil, fmt.Errorf("pod not found: %s", pod)
-}
-
-func (f fpkc) GetLogTail(pod, container string, n int64) ([]byte, error) {
-	if pod == "wowowow" || pod == "powowow" {
-		tailBytes := []byte(f)
-		lenTailBytes := int64(len(tailBytes))
-		if lenTailBytes < n {
-			return tailBytes, nil
-		}
-		return tailBytes[lenTailBytes-n-1:], nil
-	}
-	return nil, fmt.Errorf("pod not found: %s", pod)
+	return nil, fmt.Errorf("pod not found: %s", name)
 }
 
 type fca struct {
@@ -158,23 +133,23 @@ test/e2e/e2e.go:137 BeforeSuite on Node 1 failed test/e2e/e2e.go:137
 	})
 	defer fakeGCSServer.Stop()
 	kc := fkc{
-		kube.ProwJob{
-			Spec: kube.ProwJobSpec{
-				Agent: kube.KubernetesAgent,
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Agent: prowapi.KubernetesAgent,
 				Job:   "job",
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowapi.ProwJobStatus{
 				PodName: "wowowow",
 				BuildID: "123",
 			},
 		},
-		kube.ProwJob{
-			Spec: kube.ProwJobSpec{
-				Agent:   kube.KubernetesAgent,
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Agent:   prowapi.KubernetesAgent,
 				Job:     "jib",
 				Cluster: "trusted",
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowapi.ProwJobStatus{
 				PodName: "powowow",
 				BuildID: "123",
 			},
@@ -328,53 +303,53 @@ func TestSplitSrc(t *testing.T) {
 
 func TestJobPath(t *testing.T) {
 	kc := fkc{
-		kube.ProwJob{
-			Spec: kube.ProwJobSpec{
-				Type: kube.PeriodicJob,
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PeriodicJob,
 				Job:  "example-periodic-job",
-				DecorationConfig: &kube.DecorationConfig{
-					GCSConfiguration: &kube.GCSConfiguration{
+				DecorationConfig: &prowapi.DecorationConfig{
+					GCSConfiguration: &prowapi.GCSConfiguration{
 						Bucket: "chum-bucket",
 					},
 				},
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowapi.ProwJobStatus{
 				PodName: "flying-whales",
 				BuildID: "1111",
 			},
 		},
-		kube.ProwJob{
-			Spec: kube.ProwJobSpec{
-				Type: kube.PresubmitJob,
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
 				Job:  "example-presubmit-job",
-				DecorationConfig: &kube.DecorationConfig{
-					GCSConfiguration: &kube.GCSConfiguration{
+				DecorationConfig: &prowapi.DecorationConfig{
+					GCSConfiguration: &prowapi.GCSConfiguration{
 						Bucket: "chum-bucket",
 					},
 				},
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowapi.ProwJobStatus{
 				PodName: "flying-whales",
 				BuildID: "2222",
 			},
 		},
-		kube.ProwJob{
-			Spec: kube.ProwJobSpec{
-				Type: kube.PresubmitJob,
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
 				Job:  "undecorated-job",
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowapi.ProwJobStatus{
 				PodName: "flying-whales",
 				BuildID: "1",
 			},
 		},
-		kube.ProwJob{
-			Spec: kube.ProwJobSpec{
-				Type:             kube.PresubmitJob,
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Type:             prowapi.PresubmitJob,
 				Job:              "missing-gcs-job",
-				DecorationConfig: &kube.DecorationConfig{},
+				DecorationConfig: &prowapi.DecorationConfig{},
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowapi.ProwJobStatus{
 				PodName: "flying-whales",
 				BuildID: "1",
 			},
@@ -503,20 +478,20 @@ func TestProwToGCS(t *testing.T) {
 
 	for _, tc := range testCases {
 		kc := fkc{
-			kube.ProwJob{
-				Spec: kube.ProwJobSpec{
+			prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
 					Job: "gubernator-job",
 				},
-				Status: kube.ProwJobStatus{
+				Status: prowapi.ProwJobStatus{
 					URL:     "https://gubernator.example.com/build/some-bucket/gubernator-job/1111/",
 					BuildID: "1111",
 				},
 			},
-			kube.ProwJob{
-				Spec: kube.ProwJobSpec{
+			prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
 					Job: "spyglass-job",
 				},
-				Status: kube.ProwJobStatus{
+				Status: prowapi.ProwJobStatus{
 					URL:     "https://prow.example.com/view/gcs/some-bucket/spyglass-job/2222/",
 					BuildID: "2222",
 				},
@@ -554,12 +529,12 @@ func TestProwToGCS(t *testing.T) {
 
 func TestFetchArtifactsPodLog(t *testing.T) {
 	kc := fkc{
-		kube.ProwJob{
-			Spec: kube.ProwJobSpec{
-				Agent: kube.KubernetesAgent,
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Agent: prowapi.KubernetesAgent,
 				Job:   "job",
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowapi.ProwJobStatus{
 				PodName: "wowowow",
 				BuildID: "123",
 				URL:     "https://gubernator.example.com/build/job/123",

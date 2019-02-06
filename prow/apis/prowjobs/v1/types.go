@@ -35,11 +35,11 @@ const (
 	// PresubmitJob means it runs on unmerged PRs.
 	PresubmitJob ProwJobType = "presubmit"
 	// PostsubmitJob means it runs on each new commit.
-	PostsubmitJob = "postsubmit"
+	PostsubmitJob ProwJobType = "postsubmit"
 	// Periodic job means it runs on a time-basis, unrelated to git changes.
-	PeriodicJob = "periodic"
+	PeriodicJob ProwJobType = "periodic"
 	// BatchJob tests multiple unmerged PRs at the same time.
-	BatchJob = "batch"
+	BatchJob ProwJobType = "batch"
 )
 
 // ProwJobState specifies whether the job is running
@@ -50,15 +50,15 @@ const (
 	// TriggeredState means the job has been created but not yet scheduled.
 	TriggeredState ProwJobState = "triggered"
 	// PendingState means the job is scheduled but not yet running.
-	PendingState = "pending"
+	PendingState ProwJobState = "pending"
 	// SuccessState means the job completed without error (exit 0)
-	SuccessState = "success"
+	SuccessState ProwJobState = "success"
 	// FailureState means the job completed with errors (exit non-zero)
-	FailureState = "failure"
+	FailureState ProwJobState = "failure"
 	// AbortedState means prow killed the job early (new commit pushed, perhaps).
-	AbortedState = "aborted"
+	AbortedState ProwJobState = "aborted"
 	// ErrorState means the job could not schedule (bad config, perhaps).
-	ErrorState = "error"
+	ErrorState ProwJobState = "error"
 )
 
 // ProwJobAgent specifies the controller (such as plank or jenkins-agent) that runs the job.
@@ -68,9 +68,9 @@ const (
 	// KubernetesAgent means prow will create a pod to run this job.
 	KubernetesAgent ProwJobAgent = "kubernetes"
 	// JenkinsAgent means prow will schedule the job on jenkins.
-	JenkinsAgent = "jenkins"
+	JenkinsAgent ProwJobAgent = "jenkins"
 	// KnativeBuildAgent means prow will schedule the job via a build-crd resource.
-	KnativeBuildAgent = "knative-build"
+	KnativeBuildAgent ProwJobAgent = "knative-build"
 )
 
 const (
@@ -146,10 +146,6 @@ type ProwJobSpec struct {
 	// DecorationConfig holds configuration options for
 	// decorating PodSpecs that users provide
 	DecorationConfig *DecorationConfig `json:"decoration_config,omitempty"`
-
-	// RunAfterSuccess are jobs that should be triggered if
-	// this job runs and does not fail
-	RunAfterSuccess []ProwJobSpec `json:"run_after_success,omitempty"`
 }
 
 // DecorationConfig specifies how to augment pods.
@@ -431,26 +427,37 @@ func (j *ProwJob) ClusterAlias() string {
 
 // Pull describes a pull request at a particular point in time.
 type Pull struct {
-	Number int    `json:"number,omitempty"`
-	Author string `json:"author,omitempty"`
-	SHA    string `json:"sha,omitempty"`
+	Number int    `json:"number"`
+	Author string `json:"author"`
+	SHA    string `json:"sha"`
+	Title  string `json:"title,omitempty"`
 
 	// Ref is git ref can be checked out for a change
 	// for example,
 	// github: pull/123/head
 	// gerrit: refs/changes/00/123/1
 	Ref string `json:"ref,omitempty"`
+	// Link links to the pull request itself.
+	Link string `json:"link,omitempty"`
+	// CommitLink links to the commit identified by the SHA.
+	CommitLink string `json:"commit_link,omitempty"`
+	// AuthorLink links to the author of the pull request.
+	AuthorLink string `json:"author_link,omitempty"`
 }
 
 // Refs describes how the repo was constructed.
 type Refs struct {
 	// Org is something like kubernetes or k8s.io
-	Org string `json:"org,omitempty"`
+	Org string `json:"org"`
 	// Repo is something like test-infra
-	Repo string `json:"repo,omitempty"`
+	Repo string `json:"repo"`
+	// RepoLink links to the source for Repo.
+	RepoLink string `json:"repo_link,omitempty"`
 
 	BaseRef string `json:"base_ref,omitempty"`
 	BaseSHA string `json:"base_sha,omitempty"`
+	// BaseLink is a link to the commit identified by BaseSHA.
+	BaseLink string `json:"base_link,omitempty"`
 
 	Pulls []Pull `json:"pulls,omitempty"`
 

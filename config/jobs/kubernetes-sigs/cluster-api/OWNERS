@@ -1,8 +1,9 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
 approvers:
-- jessicaochen
-- k4leung4
-- karan
+- justinsb
 - kris-nova
 - krousey
-- mkjelland
+- luxas
 - roberthbailey
+- vincepri

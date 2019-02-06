@@ -27,7 +27,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -35,8 +37,8 @@ func TestPostsubmitSpec(t *testing.T) {
 	tests := []struct {
 		name     string
 		p        config.Postsubmit
-		refs     kube.Refs
-		expected kube.ProwJobSpec
+		refs     prowapi.Refs
+		expected prowapi.ProwJobSpec
 	}{
 		{
 			name: "can override path alias and cloneuri",
@@ -48,9 +50,9 @@ func TestPostsubmitSpec(t *testing.T) {
 					},
 				},
 			},
-			expected: kube.ProwJobSpec{
-				Type: kube.PostsubmitJob,
-				Refs: &kube.Refs{
+			expected: prowapi.ProwJobSpec{
+				Type: prowapi.PostsubmitJob,
+				Refs: &prowapi.Refs{
 					PathAlias: "foo",
 					CloneURI:  "bar",
 				},
@@ -58,13 +60,13 @@ func TestPostsubmitSpec(t *testing.T) {
 		},
 		{
 			name: "controller can default path alias and cloneuri",
-			refs: kube.Refs{
+			refs: prowapi.Refs{
 				PathAlias: "fancy",
 				CloneURI:  "cats",
 			},
-			expected: kube.ProwJobSpec{
-				Type: kube.PostsubmitJob,
-				Refs: &kube.Refs{
+			expected: prowapi.ProwJobSpec{
+				Type: prowapi.PostsubmitJob,
+				Refs: &prowapi.Refs{
 					PathAlias: "fancy",
 					CloneURI:  "cats",
 				},
@@ -80,13 +82,13 @@ func TestPostsubmitSpec(t *testing.T) {
 					},
 				},
 			},
-			refs: kube.Refs{
+			refs: prowapi.Refs{
 				PathAlias: "fancy",
 				CloneURI:  "cats",
 			},
-			expected: kube.ProwJobSpec{
-				Type: kube.PostsubmitJob,
-				Refs: &kube.Refs{
+			expected: prowapi.ProwJobSpec{
+				Type: prowapi.PostsubmitJob,
+				Refs: &prowapi.Refs{
 					PathAlias: "foo",
 					CloneURI:  "bar",
 				},
@@ -106,8 +108,8 @@ func TestPresubmitSpec(t *testing.T) {
 	tests := []struct {
 		name     string
 		p        config.Presubmit
-		refs     kube.Refs
-		expected kube.ProwJobSpec
+		refs     prowapi.Refs
+		expected prowapi.ProwJobSpec
 	}{
 		{
 			name: "can override path alias and cloneuri",
@@ -119,9 +121,9 @@ func TestPresubmitSpec(t *testing.T) {
 					},
 				},
 			},
-			expected: kube.ProwJobSpec{
-				Type: kube.PresubmitJob,
-				Refs: &kube.Refs{
+			expected: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
 					PathAlias: "foo",
 					CloneURI:  "bar",
 				},
@@ -130,13 +132,13 @@ func TestPresubmitSpec(t *testing.T) {
 		},
 		{
 			name: "controller can default path alias and cloneuri",
-			refs: kube.Refs{
+			refs: prowapi.Refs{
 				PathAlias: "fancy",
 				CloneURI:  "cats",
 			},
-			expected: kube.ProwJobSpec{
-				Type: kube.PresubmitJob,
-				Refs: &kube.Refs{
+			expected: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
 					PathAlias: "fancy",
 					CloneURI:  "cats",
 				},
@@ -153,13 +155,13 @@ func TestPresubmitSpec(t *testing.T) {
 					},
 				},
 			},
-			refs: kube.Refs{
+			refs: prowapi.Refs{
 				PathAlias: "fancy",
 				CloneURI:  "cats",
 			},
-			expected: kube.ProwJobSpec{
-				Type: kube.PresubmitJob,
-				Refs: &kube.Refs{
+			expected: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
 					PathAlias: "foo",
 					CloneURI:  "bar",
 				},
@@ -180,8 +182,8 @@ func TestBatchSpec(t *testing.T) {
 	tests := []struct {
 		name     string
 		p        config.Presubmit
-		refs     kube.Refs
-		expected kube.ProwJobSpec
+		refs     prowapi.Refs
+		expected prowapi.ProwJobSpec
 	}{
 		{
 			name: "can override path alias and cloneuri",
@@ -193,9 +195,9 @@ func TestBatchSpec(t *testing.T) {
 					},
 				},
 			},
-			expected: kube.ProwJobSpec{
-				Type: kube.BatchJob,
-				Refs: &kube.Refs{
+			expected: prowapi.ProwJobSpec{
+				Type: prowapi.BatchJob,
+				Refs: &prowapi.Refs{
 					PathAlias: "foo",
 					CloneURI:  "bar",
 				},
@@ -203,13 +205,13 @@ func TestBatchSpec(t *testing.T) {
 		},
 		{
 			name: "controller can default path alias and cloneuri",
-			refs: kube.Refs{
+			refs: prowapi.Refs{
 				PathAlias: "fancy",
 				CloneURI:  "cats",
 			},
-			expected: kube.ProwJobSpec{
-				Type: kube.BatchJob,
-				Refs: &kube.Refs{
+			expected: prowapi.ProwJobSpec{
+				Type: prowapi.BatchJob,
+				Refs: &prowapi.Refs{
 					PathAlias: "fancy",
 					CloneURI:  "cats",
 				},
@@ -225,13 +227,13 @@ func TestBatchSpec(t *testing.T) {
 					},
 				},
 			},
-			refs: kube.Refs{
+			refs: prowapi.Refs{
 				PathAlias: "fancy",
 				CloneURI:  "cats",
 			},
-			expected: kube.ProwJobSpec{
-				Type: kube.BatchJob,
-				Refs: &kube.Refs{
+			expected: prowapi.ProwJobSpec{
+				Type: prowapi.BatchJob,
+				Refs: &prowapi.Refs{
 					PathAlias: "foo",
 					CloneURI:  "bar",
 				},
@@ -249,51 +251,51 @@ func TestBatchSpec(t *testing.T) {
 
 func TestPartitionActive(t *testing.T) {
 	tests := []struct {
-		pjs []kube.ProwJob
+		pjs []prowapi.ProwJob
 
 		pending   map[string]struct{}
 		triggered map[string]struct{}
 	}{
 		{
-			pjs: []kube.ProwJob{
+			pjs: []prowapi.ProwJob{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "foo",
 					},
-					Status: kube.ProwJobStatus{
-						State: kube.TriggeredState,
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.TriggeredState,
 					},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "bar",
 					},
-					Status: kube.ProwJobStatus{
-						State: kube.PendingState,
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.PendingState,
 					},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "baz",
 					},
-					Status: kube.ProwJobStatus{
-						State: kube.SuccessState,
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.SuccessState,
 					},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "error",
 					},
-					Status: kube.ProwJobStatus{
-						State: kube.ErrorState,
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.ErrorState,
 					},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "bak",
 					},
-					Status: kube.ProwJobStatus{
-						State: kube.PendingState,
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.PendingState,
 					},
 				},
 			},
@@ -326,27 +328,27 @@ func TestGetLatestProwJobs(t *testing.T) {
 	tests := []struct {
 		name string
 
-		pjs     []kube.ProwJob
+		pjs     []prowapi.ProwJob
 		jobType string
 
 		expected map[string]struct{}
 	}{
 		{
-			pjs: []kube.ProwJob{
+			pjs: []prowapi.ProwJob{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "831c7df0-baa4-11e7-a1a4-0a58ac10134a",
 					},
-					Spec: kube.ProwJobSpec{
-						Type:  kube.PresubmitJob,
-						Agent: kube.JenkinsAgent,
+					Spec: prowapi.ProwJobSpec{
+						Type:  prowapi.PresubmitJob,
+						Agent: prowapi.JenkinsAgent,
 						Job:   "test_pull_request_origin_extended_networking_minimal",
-						Refs: &kube.Refs{
+						Refs: &prowapi.Refs{
 							Org:     "openshift",
 							Repo:    "origin",
 							BaseRef: "master",
 							BaseSHA: "e92d5c525795eafb82cf16e3ab151b567b47e333",
-							Pulls: []kube.Pull{
+							Pulls: []prowapi.Pull{
 								{
 									Number: 17061,
 									Author: "enj",
@@ -358,9 +360,9 @@ func TestGetLatestProwJobs(t *testing.T) {
 						Context:      "ci/openshift-jenkins/extended_networking_minimal",
 						RerunCommand: "/test extended_networking_minimal",
 					},
-					Status: kube.ProwJobStatus{
+					Status: prowapi.ProwJobStatus{
 						StartTime:   metav1.Date(2017, time.October, 26, 23, 22, 19, 0, time.UTC),
-						State:       kube.FailureState,
+						State:       prowapi.FailureState,
 						Description: "Jenkins job failed.",
 						URL:         "https://openshift-gce-devel.appspot.com/build/origin-ci-test/pr-logs/pull/17061/test_pull_request_origin_extended_networking_minimal/9756/",
 						PodName:     "test_pull_request_origin_extended_networking_minimal-9756",
@@ -371,16 +373,16 @@ func TestGetLatestProwJobs(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "0079d4d3-ba25-11e7-ae3f-0a58ac10123b",
 					},
-					Spec: kube.ProwJobSpec{
-						Type:  kube.PresubmitJob,
-						Agent: kube.JenkinsAgent,
+					Spec: prowapi.ProwJobSpec{
+						Type:  prowapi.PresubmitJob,
+						Agent: prowapi.JenkinsAgent,
 						Job:   "test_pull_request_origin_extended_networking_minimal",
-						Refs: &kube.Refs{
+						Refs: &prowapi.Refs{
 							Org:     "openshift",
 							Repo:    "origin",
 							BaseRef: "master",
 							BaseSHA: "e92d5c525795eafb82cf16e3ab151b567b47e333",
-							Pulls: []kube.Pull{
+							Pulls: []prowapi.Pull{
 								{
 									Number: 17061,
 									Author: "enj",
@@ -392,9 +394,9 @@ func TestGetLatestProwJobs(t *testing.T) {
 						Context:      "ci/openshift-jenkins/extended_networking_minimal",
 						RerunCommand: "/test extended_networking_minimal",
 					},
-					Status: kube.ProwJobStatus{
+					Status: prowapi.ProwJobStatus{
 						StartTime:   metav1.Date(2017, time.October, 26, 22, 22, 19, 0, time.UTC),
-						State:       kube.FailureState,
+						State:       prowapi.FailureState,
 						Description: "Jenkins job failed.",
 						URL:         "https://openshift-gce-devel.appspot.com/build/origin-ci-test/pr-logs/pull/17061/test_pull_request_origin_extended_networking_minimal/9755/",
 						PodName:     "test_pull_request_origin_extended_networking_minimal-9755",
@@ -408,7 +410,7 @@ func TestGetLatestProwJobs(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		got := GetLatestProwJobs(test.pjs, kube.ProwJobType(test.jobType))
+		got := GetLatestProwJobs(test.pjs, prowapi.ProwJobType(test.jobType))
 		if len(got) != len(test.expected) {
 			t.Errorf("expected jobs:\n%+v\ngot jobs:\n%+v", test.expected, got)
 			continue
@@ -424,15 +426,15 @@ func TestGetLatestProwJobs(t *testing.T) {
 func TestNewProwJob(t *testing.T) {
 	var testCases = []struct {
 		name           string
-		spec           kube.ProwJobSpec
+		spec           prowapi.ProwJobSpec
 		labels         map[string]string
 		expectedLabels map[string]string
 	}{
 		{
 			name: "periodic job, no extra labels",
-			spec: kube.ProwJobSpec{
+			spec: prowapi.ProwJobSpec{
 				Job:  "job",
-				Type: kube.PeriodicJob,
+				Type: prowapi.PeriodicJob,
 			},
 			labels: map[string]string{},
 			expectedLabels: map[string]string{
@@ -443,9 +445,9 @@ func TestNewProwJob(t *testing.T) {
 		},
 		{
 			name: "periodic job, extra labels",
-			spec: kube.ProwJobSpec{
+			spec: prowapi.ProwJobSpec{
 				Job:  "job",
-				Type: kube.PeriodicJob,
+				Type: prowapi.PeriodicJob,
 			},
 			labels: map[string]string{
 				"extra": "stuff",
@@ -459,13 +461,13 @@ func TestNewProwJob(t *testing.T) {
 		},
 		{
 			name: "presubmit job",
-			spec: kube.ProwJobSpec{
+			spec: prowapi.ProwJobSpec{
 				Job:  "job",
-				Type: kube.PresubmitJob,
-				Refs: &kube.Refs{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
 					Org:  "org",
 					Repo: "repo",
-					Pulls: []kube.Pull{
+					Pulls: []prowapi.Pull{
 						{Number: 1},
 					},
 				},
@@ -482,13 +484,13 @@ func TestNewProwJob(t *testing.T) {
 		},
 		{
 			name: "non-github presubmit job",
-			spec: kube.ProwJobSpec{
+			spec: prowapi.ProwJobSpec{
 				Job:  "job",
-				Type: kube.PresubmitJob,
-				Refs: &kube.Refs{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
 					Org:  "https://some-gerrit-instance.foo.com",
 					Repo: "some/invalid/repo",
-					Pulls: []kube.Pull{
+					Pulls: []prowapi.Pull{
 						{Number: 1},
 					},
 				},
@@ -504,13 +506,13 @@ func TestNewProwJob(t *testing.T) {
 			},
 		}, {
 			name: "job with name too long to fit in a label",
-			spec: kube.ProwJobSpec{
+			spec: prowapi.ProwJobSpec{
 				Job:  "job-created-by-someone-who-loves-very-very-very-long-names-so-long-that-it-does-not-fit-into-the-Kubernetes-label-so-it-needs-to-be-truncated-to-63-characters",
-				Type: kube.PresubmitJob,
-				Refs: &kube.Refs{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
 					Org:  "org",
 					Repo: "repo",
-					Pulls: []kube.Pull{
+					Pulls: []prowapi.Pull{
 						{Number: 1},
 					},
 				},
@@ -541,15 +543,15 @@ func TestNewProwJob(t *testing.T) {
 func TestNewProwJobWithAnnotations(t *testing.T) {
 	var testCases = []struct {
 		name                string
-		spec                kube.ProwJobSpec
+		spec                prowapi.ProwJobSpec
 		annotations         map[string]string
 		expectedAnnotations map[string]string
 	}{
 		{
 			name: "job without annotation",
-			spec: kube.ProwJobSpec{
+			spec: prowapi.ProwJobSpec{
 				Job:  "job",
-				Type: kube.PeriodicJob,
+				Type: prowapi.PeriodicJob,
 			},
 			annotations: nil,
 			expectedAnnotations: map[string]string{
@@ -558,9 +560,9 @@ func TestNewProwJobWithAnnotations(t *testing.T) {
 		},
 		{
 			name: "job with annotation",
-			spec: kube.ProwJobSpec{
+			spec: prowapi.ProwJobSpec{
 				Job:  "job",
-				Type: kube.PeriodicJob,
+				Type: prowapi.PeriodicJob,
 			},
 			annotations: map[string]string{
 				"annotation": "foo",
@@ -587,7 +589,7 @@ func TestJobURL(t *testing.T) {
 	var testCases = []struct {
 		name     string
 		plank    config.Plank
-		pj       kube.ProwJob
+		pj       prowapi.ProwJob
 		expected string
 	}{
 		{
@@ -597,7 +599,7 @@ func TestJobURL(t *testing.T) {
 					JobURLTemplate: template.Must(template.New("test").Parse("{{.Spec.Type}}")),
 				},
 			},
-			pj:       kube.ProwJob{Spec: kube.ProwJobSpec{Type: kube.PeriodicJob}},
+			pj:       prowapi.ProwJob{Spec: prowapi.ProwJobSpec{Type: prowapi.PeriodicJob}},
 			expected: "periodic",
 		},
 		{
@@ -607,7 +609,7 @@ func TestJobURL(t *testing.T) {
 					JobURLTemplate: template.Must(template.New("test").Parse("{{.Garbage}}")),
 				},
 			},
-			pj:       kube.ProwJob{},
+			pj:       prowapi.ProwJob{},
 			expected: "",
 		},
 		{
@@ -617,7 +619,7 @@ func TestJobURL(t *testing.T) {
 					JobURLTemplate: template.Must(template.New("test").Parse("{{.Spec.Type}}")),
 				},
 			},
-			pj:       kube.ProwJob{Spec: kube.ProwJobSpec{Type: kube.PeriodicJob}},
+			pj:       prowapi.ProwJob{Spec: prowapi.ProwJobSpec{Type: prowapi.PeriodicJob}},
 			expected: "periodic",
 		},
 		{
@@ -625,16 +627,16 @@ func TestJobURL(t *testing.T) {
 			plank: config.Plank{
 				JobURLPrefix: "https://gubernator.com/build",
 			},
-			pj: kube.ProwJob{Spec: kube.ProwJobSpec{
-				Type: kube.PresubmitJob,
-				Refs: &kube.Refs{
+			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
 					Org:   "org",
 					Repo:  "repo",
-					Pulls: []kube.Pull{{Number: 1}},
+					Pulls: []prowapi.Pull{{Number: 1}},
 				},
-				DecorationConfig: &kube.DecorationConfig{GCSConfiguration: &kube.GCSConfiguration{
+				DecorationConfig: &prowapi.DecorationConfig{GCSConfiguration: &prowapi.GCSConfiguration{
 					Bucket:       "bucket",
-					PathStrategy: kube.PathStrategyExplicit,
+					PathStrategy: prowapi.PathStrategyExplicit,
 				}},
 			}},
 			expected: "https://gubernator.com/build/bucket/pr-logs/pull/org_repo/1",
@@ -648,5 +650,50 @@ func TestJobURL(t *testing.T) {
 				t.Errorf("%s: expected URL to be %q but got %q", testCase.name, expected, actual)
 			}
 		})
+	}
+}
+
+func TestCreateRefs(t *testing.T) {
+	pr := github.PullRequest{
+		Number:  42,
+		HTMLURL: "https://github.example.com/kubernetes/Hello-World/pull/42",
+		Head: github.PullRequestBranch{
+			SHA: "123456",
+		},
+		Base: github.PullRequestBranch{
+			Ref: "master",
+			Repo: github.Repo{
+				Name:    "Hello-World",
+				HTMLURL: "https://github.example.com/kubernetes/Hello-World",
+				Owner: github.User{
+					Login: "kubernetes",
+				},
+			},
+		},
+		User: github.User{
+			Login:   "ibzib",
+			HTMLURL: "https://github.example.com/ibzib",
+		},
+	}
+	expected := prowapi.Refs{
+		Org:      "kubernetes",
+		Repo:     "Hello-World",
+		RepoLink: "https://github.example.com/kubernetes/Hello-World",
+		BaseRef:  "master",
+		BaseSHA:  "abcdef",
+		BaseLink: "https://github.example.com/kubernetes/Hello-World/commit/abcdef",
+		Pulls: []prowapi.Pull{
+			{
+				Number:     42,
+				Author:     "ibzib",
+				SHA:        "123456",
+				Link:       "https://github.example.com/kubernetes/Hello-World/pull/42",
+				AuthorLink: "https://github.example.com/ibzib",
+				CommitLink: "https://github.example.com/kubernetes/Hello-World/pull/42/commits/123456",
+			},
+		},
+	}
+	if actual := createRefs(pr, "abcdef"); !reflect.DeepEqual(expected, actual) {
+		t.Errorf("diff between expected and actual refs:%s", diff.ObjectReflectDiff(expected, actual))
 	}
 }

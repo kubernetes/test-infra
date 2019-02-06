@@ -390,8 +390,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial
 - name: ci-kubernetes-e2e-gci-gce-serial-kube-dns
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-kube-dns
-- name: ci-kubernetes-e2e-gci-gce-serial-kube-dns-nodecache
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-kube-dns-nodecache
 - name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-serial-sig-cli
 - name: ci-kubernetes-e2e-gke-gci-serial-sig-cli
@@ -2437,6 +2435,10 @@ test_groups:
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64
 - name: arm64-conformance-aws-cluster
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-aws-cluster
+- name: arm64-conformance-aws-cluster-1-13-2
+  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-aws-v1.13.2
+- name: arm64-conformance-vexxhost-cluster
+  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-vexxhost-multi-node
 # kubernetes org jobs
 - name: ci-org-peribolos
   gcs_prefix: kubernetes-jenkins/logs/ci-org-peribolos
@@ -2482,14 +2484,17 @@ test_groups:
 - name: pull-cluster-api-provider-aws-bazel-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-e2e
   num_columns_recent: 20
-- name: pull-cluster-api-provider-azure-build
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-build
+- name: pull-cluster-api-provider-azure-bazel-verify
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-bazel-verify
   num_columns_recent: 20
-- name: pull-cluster-api-provider-azure-test
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-test
+- name: pull-cluster-api-provider-azure-verify-boilerplate
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-verify-boilerplate
   num_columns_recent: 20
-- name: pull-cluster-api-provider-azure-check
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-check
+- name: pull-cluster-api-provider-azure-bazel-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-bazel-build
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-azure-bazel-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-bazel-test
   num_columns_recent: 20
 - name: pull-cluster-api-provider-digitalocean-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-digitalocean-build
@@ -2549,6 +2554,9 @@ test_groups:
 - name: pull-kubernetes-cross
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-cross
   num_columns_recent: 20
+- name: pull-kubernetes-e2e-aks-engine-azure
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-aks-engine-azure
+  num_columns_recent: 30
 - name: pull-kubernetes-e2e-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce
   num_columns_recent: 20
@@ -3189,6 +3197,11 @@ test_groups:
   alert_stale_results_hours: 32
   num_failures_to_alert: 1
 
+- name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.13
+  gcs_prefix: k8s-conformance-cloud-provider-vsphere/head/release/v1.13
+  alert_stale_results_hours: 32
+  num_failures_to_alert: 1
+
 - name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
   gcs_prefix: k8s-conformance-cloud-provider-vsphere/head/release/v1.12
   alert_stale_results_hours: 32
@@ -3199,14 +3212,14 @@ test_groups:
   alert_stale_results_hours: 32
   num_failures_to_alert: 1
 
-- name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.10
-  gcs_prefix: k8s-conformance-cloud-provider-vsphere/head/release/v1.10
-  alert_stale_results_hours: 32
-  num_failures_to_alert: 1
-
 # vsphere e2e conformance tests
 - name: ci-periodic-vsphere-test-e2e-conformance
   gcs_prefix: k8s-conformance-vsphere/head/ci/latest
+  alert_stale_results_hours: 32
+  num_failures_to_alert: 1
+
+- name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.13
+  gcs_prefix: k8s-conformance-vsphere/head/release/v1.13
   alert_stale_results_hours: 32
   num_failures_to_alert: 1
 
@@ -3217,11 +3230,6 @@ test_groups:
 
 - name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.11
   gcs_prefix: k8s-conformance-vsphere/head/release/v1.11
-  alert_stale_results_hours: 32
-  num_failures_to_alert: 1
-
-- name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.10
-  gcs_prefix: k8s-conformance-vsphere/head/release/v1.10
   alert_stale_results_hours: 32
   num_failures_to_alert: 1
 
@@ -3256,6 +3264,10 @@ test_groups:
   num_failures_to_alert: 1
 - name: ci-gardener-e2e-conformance-azure-v1.12
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-azure-v1.12
+  alert_stale_results_hours: 168
+  num_failures_to_alert: 1
+- name: ci-gardener-e2e-conformance-alibaba-v1.11
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-alibaba-v1.11
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
 
@@ -3331,8 +3343,8 @@ test_groups:
 - name: pull-cloud-provider-aws-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-aws-test
   num_columns_recent: 30
-- name: pull-aws-ebs-disk-csi-driver-verify
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-ebs-disk-csi-driver-verify
+- name: pull-aws-ebs-csi-driver-verify
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-ebs-csi-driver-verify
   num_columns_recent: 30
 - name: pull-aws-ebs-csi-driver-unit
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-ebs-csi-driver-unit
@@ -3439,11 +3451,6 @@ dashboards:
     test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance
     alert_options:
       alert_mail_to_addresses: cnx+e2e@vmware.com
-  - name: vSphere-cloud-provider, v1.10 (dev)
-    description: Runs conformance tests using kubetest against kubernetes from the release-1.10 branch with cloud-provider-vsphere
-    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.10
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
   - name: vSphere-cloud-provider, v1.11 (dev)
     description: Runs conformance tests using kubetest against kubernetes from the release-1.11 branch with cloud-provider-vsphere
     test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.11
@@ -3454,15 +3461,15 @@ dashboards:
     test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
     alert_options:
       alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: vSphere-cloud-provider, v1.13 (dev)
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.13 branch with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.13
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
 
   - name: vSphere, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with the in-tree vSphere cloud provider
     test_group_name: ci-periodic-vsphere-test-e2e-conformance
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
-  - name: vSphere, v1.10 (dev)
-    description: Runs conformance tests using kubetest against kubernetes from the release-1.10 branch with the in-tree vSphere cloud provider
-    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.10
     alert_options:
       alert_mail_to_addresses: cnx+e2e@vmware.com
   - name: vSphere, v1.11 (dev)
@@ -3473,6 +3480,11 @@ dashboards:
   - name: vSphere, v1.12 (dev)
     description: Runs conformance tests using kubetest against kubernetes from the release-1.12 branch with the in-tree vSphere cloud provider
     test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.12
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: vSphere, v1.13 (dev)
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.13 branch with the in-tree vSphere cloud provider
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.13
     alert_options:
       alert_mail_to_addresses: cnx+e2e@vmware.com
 
@@ -3500,6 +3512,9 @@ dashboards:
   - name: Gardener, v1.12 Azure
     description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Microsoft Azure"
     test_group_name: ci-gardener-e2e-conformance-azure-v1.12
+  - name: Gardener, v1.11 Alibaba
+    description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Alibaba Cloud"
+    test_group_name: ci-gardener-e2e-conformance-alibaba-v1.11
 
 - name: conformance-gce
   dashboard_tab:
@@ -3592,11 +3607,6 @@ dashboards:
 
 - name: conformance-vsphere
   dashboard_tab:
-  - name: periodic-v1.10
-    description: Runs conformance tests using kubetest against kubernetes v1.10 with in-tree vSphere components
-    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.10
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
   - name: periodic-v1.11
     description: Runs conformance tests using kubetest against kubernetes v1.11 with in-tree vSphere components
     test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.11
@@ -3605,16 +3615,16 @@ dashboards:
   - name: periodic-v1.12
     description: Runs conformance tests using kubetest against kubernetes v1.12 with in-tree vSphere components
     test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.12
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.13
+    description: Runs conformance tests using kubetest against kubernetes v1.13 with in-tree vSphere components
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.13
     alert_options:
       alert_mail_to_addresses: cnx+e2e@vmware.com
 
 - name: vmware-conformance
   dashboard_tab:
-  - name: periodic-v1.10
-    description: Runs conformance tests using kubetest against kubernetes v1.10 with in-tree vSphere components
-    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.10
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
   - name: periodic-v1.11
     description: Runs conformance tests using kubetest against kubernetes v1.11 with in-tree vSphere components
     test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.11
@@ -3623,6 +3633,11 @@ dashboards:
   - name: periodic-v1.12
     description: Runs conformance tests using kubetest against kubernetes v1.12 with in-tree vSphere components
     test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.12
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.13
+    description: Runs conformance tests using kubetest against kubernetes v1.13 with in-tree vSphere components
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.13
     alert_options:
       alert_mail_to_addresses: cnx+e2e@vmware.com
 
@@ -3661,11 +3676,6 @@ dashboards:
 
 - name: conformance-cloud-provider-vsphere
   dashboard_tab:
-  - name: periodic-v1.10
-    description: Runs conformance tests using kubetest against kubernetes v1.10 with cloud-provider-vsphere
-    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.10
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
   - name: periodic-v1.11
     description: Runs conformance tests using kubetest against kubernetes v1.11 with cloud-provider-vsphere
     test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.11
@@ -3674,16 +3684,16 @@ dashboards:
   - name: periodic-v1.12
     description: Runs conformance tests using kubetest against kubernetes v1.12 with cloud-provider-vsphere
     test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.13
+    description: Runs conformance tests using kubetest against kubernetes v1.13 with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.13
     alert_options:
       alert_mail_to_addresses: cnx+e2e@vmware.com
 
 - name: vmware-conformance-cloud-provider
   dashboard_tab:
-  - name: periodic-v1.10
-    description: Runs conformance tests using kubetest against kubernetes v1.10 with cloud-provider-vsphere
-    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.10
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
   - name: periodic-v1.11
     description: Runs conformance tests using kubetest against kubernetes v1.11 with cloud-provider-vsphere
     test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.11
@@ -3692,6 +3702,11 @@ dashboards:
   - name: periodic-v1.12
     description: Runs conformance tests using kubetest against kubernetes v1.12 with cloud-provider-vsphere
     test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.13
+    description: Runs conformance tests using kubetest against kubernetes v1.13 with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.13
     alert_options:
       alert_mail_to_addresses: cnx+e2e@vmware.com
 
@@ -4631,8 +4646,9 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet
   - name: gce-cos-master-default
     test_group_name: ci-kubernetes-e2e-gci-gce
-  - name: kops-aws-master
-    test_group_name: ci-kubernetes-e2e-kops-aws
+  # https://github.com/kubernetes/kubernetes/issues/73444
+  #- name: kops-aws-master
+  #  test_group_name: ci-kubernetes-e2e-kops-aws
   - name: gce-device-plugin-gpu-master
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
   - name: gce-cos-master-slow
@@ -4834,8 +4850,9 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
   - name: gce-device-plugin-gpu-1.13
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
-  - name: kops-aws-1.13
-    test_group_name: ci-kubernetes-e2e-kops-aws-beta
+  # https://github.com/kubernetes/kubernetes/issues/73444
+  #- name: kops-aws-1.13
+  #  test_group_name: ci-kubernetes-e2e-kops-aws-beta
   - name: node-kubelet-1.13
     test_group_name: ci-kubernetes-node-kubelet-beta
   - name: gci-gce-scalability-1.13
@@ -4988,8 +5005,9 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
   - name: gce-cos-1.12-reboot
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-reboot
-  - name: kops-aws-1.12
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable1
+  # https://github.com/kubernetes/kubernetes/issues/73444
+  #- name: kops-aws-1.12
+  #  test_group_name: ci-kubernetes-e2e-kops-aws-stable1
   - name: node-kubelet-1.12
     test_group_name: ci-kubernetes-node-kubelet-stable1
   - name: gce-device-plugin-gpu-1.12
@@ -5235,8 +5253,9 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-serial
   - name: gce-cos-1.10-slow
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-slow
-  - name: kops-aws-1.10
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
+  # https://github.com/kubernetes/kubernetes/issues/73444
+  #- name: kops-aws-1.10
+  #  test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: gci-gce-scalability-1.10
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable3
 
@@ -5706,7 +5725,7 @@ dashboards:
 - name: sig-aws-ebs-csi-driver
   dashboard_tab:
   - name: verify
-    test_group_name: pull-aws-ebs-disk-csi-driver-verify
+    test_group_name: pull-aws-ebs-csi-driver-verify
     description: aws ebs csi driver basic code verification
   - name: unit-test
     test_group_name: pull-aws-ebs-csi-driver-unit
@@ -5911,12 +5930,22 @@ dashboards:
 
 - name: sig-cluster-lifecycle-cluster-api-provider-azure
   dashboard_tab:
-  - name: pr-build
-    test_group_name: pull-cluster-api-provider-azure-build
-  - name: pr-check
-    test_group_name: pull-cluster-api-provider-azure-check
-  - name: pr-test
-    test_group_name: pull-cluster-api-provider-azure-test
+  - name: verify-boilerplate
+    test_group_name: pull-cluster-api-provider-azure-verify-boilerplate
+    alert_options:
+      alert_mail_to_addresses: foo+k8s-azure@agst.us
+  - name: bazel-pr-verify
+    test_group_name: pull-cluster-api-provider-azure-bazel-verify
+    alert_options:
+      alert_mail_to_addresses: foo+k8s-azure@agst.us
+  - name: bazel-pr-build
+    test_group_name: pull-cluster-api-provider-azure-bazel-build
+    alert_options:
+      alert_mail_to_addresses: foo+k8s-azure@agst.us
+  - name: bazel-pr-test
+    test_group_name: pull-cluster-api-provider-azure-bazel-test
+    alert_options:
+      alert_mail_to_addresses: foo+k8s-azure@agst.us
 
 - name: sig-cluster-lifecycle-cluster-api-provider-digitalocean
   dashboard_tab:
@@ -6143,12 +6172,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-serial-kube-dns
     base_options: include-filter-by-regex=\[sig-network\]
     description: network gci-gce with kube-dns serial e2e tests for master branch
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: gci-gce-serial-kube-dns-nodecache
-    test_group_name: ci-kubernetes-e2e-gci-gce-serial-kube-dns-nodecache
-    base_options: include-filter-by-regex=\[sig-network\]
-    description: network gci-gce with kube-dns and nodelocaldns cache serial e2e tests for master branch
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: gci-gce-alpha-features
@@ -7066,47 +7089,32 @@ dashboards:
     test_group_name: pull-kubernetes-bazel-build
     base_options: width=10
     alert_options:
-      alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@google.com
+      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: pull-kubernetes-bazel-test
     test_group_name: pull-kubernetes-bazel-test
     base_options: width=10
     alert_options:
-      alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@google.com
+      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: pull-kubernetes-e2e-gce
     test_group_name: pull-kubernetes-e2e-gce
     base_options: width=10
     alert_options:
-      alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@google.com
+      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: pull-kubernetes-e2e-gce-100-performance
     test_group_name: pull-kubernetes-e2e-gce-100-performance
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com
-  - name: pull-kubernetes-e2e-kops-aws
-    test_group_name: pull-kubernetes-e2e-kops-aws
-    base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com
   - name: pull-kubernetes-kubemark-e2e-gce-big
     test_group_name: pull-kubernetes-kubemark-e2e-gce-big
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com
   - name: pull-kubernetes-node-e2e
     test_group_name: pull-kubernetes-node-e2e
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com
   - name: pull-kubernetes-integration
     test_group_name: pull-kubernetes-integration
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com
   - name: pull-kubernetes-verify
     test_group_name: pull-kubernetes-verify
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com
   - name: pull-kubernetes-typecheck
     test_group_name: pull-kubernetes-typecheck
     base_options: width=10
@@ -7118,6 +7126,9 @@ dashboards:
   dashboard_tab:
   - name: pull-kubernetes-cross
     test_group_name: pull-kubernetes-cross
+    base_options: width=10
+  - name: pull-kubernetes-e2e-aks-engine-azure
+    test_group_name: pull-kubernetes-e2e-aks-engine-azure
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-alpha-features
     test_group_name: pull-kubernetes-e2e-gce-alpha-features
@@ -7139,6 +7150,9 @@ dashboards:
     base_options: width=10
   - name: pull-kubernetes-node-e2e-alpha
     test_group_name: pull-kubernetes-node-e2e-alpha
+    base_options: width=10
+  - name: pull-kubernetes-e2e-kops-aws
+    test_group_name: pull-kubernetes-e2e-kops-aws
     base_options: width=10
 
 - name: presubmits-cloud-provider-vsphere-blocking
@@ -7530,6 +7544,11 @@ dashboards:
     test_group_name: ci-gardener-e2e-conformance-azure-v1.12
     alert_options:
       alert_mail_to_addresses: oleg.loewen@sap.com
+  - name: Gardener, v1.11 Alibaba
+    description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Alibaba Cloud"
+    test_group_name: ci-gardener-e2e-conformance-alibaba-v1.11
+    alert_options:
+      alert_mail_to_addresses: jerry.jia@sap.com
 
 - name: sig-api-machinery-kube-storage-version-migrator
   dashboard_tab:
@@ -7546,9 +7565,15 @@ dashboards:
 # Arm dashboard
 - name: conformance-arm
   dashboard_tab:
-  - name: "Arm64 AWS"
+  - name: "Periodic Arm64 conformance test on AWS"
     test_group_name: arm64-conformance-aws-cluster
     description: Runs conformance tests by using kubetest against latest version of kubernetes on AWS"
+  - name: "Arm64 conformance test on AWS v1.13.2"
+    test_group_name: arm64-conformance-aws-cluster-1-13-2
+    description: Runs conformance tests by using kubetest against stable version v1.13.2 of kubernetes on AWS"
+  - name: "Periodic Arm64 conformance test on VexxHost"
+    test_group_name: arm64-conformance-vexxhost-cluster
+    description: Runs conformance tests by using kubetest against latest version of kubernetes on VexxHost"
 
 # EKS dashboard
 - name: conformance-eks
@@ -7575,6 +7600,9 @@ dashboards:
   - name: "azure-master-conformance"
     description: Runs conformance tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
     test_group_name: ci-cloud-provider-azure-master
+  - name: pr-k8s-e2e
+    description: "Run e2e tests"
+    test_group_name: pull-kubernetes-e2e-aks-engine-azure
 
 # openshift dashboard
 - name: redhat-openshift-release-blocking

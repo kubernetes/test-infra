@@ -25,7 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	s3path "k8s.io/test-infra/maintenance/aws-janitor/s3"
 )
@@ -61,6 +61,7 @@ func (s *Set) GetARNs() []string {
 func LoadSet(sess *session.Session, p *s3path.Path, ttl time.Duration) (*Set, error) {
 	s := NewSet(ttl)
 	svc := s3.New(sess, &aws.Config{Region: aws.String(p.Region)})
+
 	resp, err := svc.GetObject(&s3.GetObjectInput{Bucket: aws.String(p.Bucket), Key: aws.String(p.Key)})
 	if err != nil {
 		if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() == "NoSuchKey" {
@@ -68,10 +69,13 @@ func LoadSet(sess *session.Session, p *s3path.Path, ttl time.Duration) (*Set, er
 		}
 		return nil, err
 	}
+
 	defer resp.Body.Close()
+
 	if err := json.NewDecoder(resp.Body).Decode(&s.firstSeen); err != nil {
 		return nil, err
 	}
+
 	return s, nil
 }
 
@@ -80,13 +84,16 @@ func (s *Set) Save(sess *session.Session, p *s3path.Path) error {
 	if err != nil {
 		return err
 	}
+
 	svc := s3.New(sess, &aws.Config{Region: aws.String(p.Region)})
+
 	_, err = svc.PutObject(&s3.PutObjectInput{
 		Bucket:       aws.String(p.Bucket),
 		Key:          aws.String(p.Key),
 		Body:         bytes.NewReader(b),
 		CacheControl: aws.String("max-age=0"),
 	})
+
 	return err
 }
 
@@ -104,16 +111,18 @@ func (s *Set) Mark(r Interface) bool {
 			s.swept = append(s.swept, key)
 			return true
 		}
-		glog.V(1).Infof("%s: seen for %v", key, since)
+		klog.V(1).Infof("%s: seen for %v", key, since)
 		return false
 	}
+
 	s.firstSeen[key] = now
-	glog.V(1).Infof("%s: first seen", key)
+	klog.V(1).Infof("%s: first seen", key)
 	if s.ttl == 0 {
 		// If the TTL is 0, it should be deleted now.
 		s.swept = append(s.swept, key)
 		return true
 	}
+
 	return false
 }
 
@@ -127,12 +136,15 @@ func (s *Set) MarkComplete() int {
 			gone = append(gone, key)
 		}
 	}
+
 	for _, key := range gone {
-		glog.V(1).Infof("%s: deleted since last run", key)
+		klog.V(1).Infof("%s: deleted since last run", key)
 		delete(s.firstSeen, key)
 	}
+
 	if len(s.swept) > 0 {
-		glog.Errorf("%d resources swept: %v", len(s.swept), s.swept)
+		klog.Errorf("%d resources swept: %v", len(s.swept), s.swept)
 	}
+
 	return len(s.swept)
 }

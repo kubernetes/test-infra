@@ -26,14 +26,14 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
+
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 const (
@@ -421,44 +421,10 @@ func NewClient(c *Cluster, namespace string) (*Client, error) {
 	}, nil
 }
 
-// GetPod is analogous to kubectl get pods/NAME namespace=client.namespace
-func (c *Client) GetPod(name string) (Pod, error) {
-	c.log("GetPod", name)
-	var retPod Pod
-	err := c.request(&request{
-		path: fmt.Sprintf("/api/v1/namespaces/%s/pods/%s", c.namespace, name),
-	}, &retPod)
-	return retPod, err
-}
-
-// ListPods is analogous to kubectl get pods --selector=SELECTOR --namespace=client.namespace
-func (c *Client) ListPods(selector string) ([]Pod, error) {
-	c.log("ListPods", selector)
-	var pl struct {
-		Items []Pod `json:"items"`
-	}
-	err := c.request(&request{
-		path:  fmt.Sprintf("/api/v1/namespaces/%s/pods", c.namespace),
-		query: map[string]string{"labelSelector": selector},
-	}, &pl)
-	return pl.Items, err
-}
-
-// DeletePod deletes the pod at name in the client's specified namespace.
-//
-// Analogous to kubectl delete pod --namespace=client.namespace
-func (c *Client) DeletePod(name string) error {
-	c.log("DeletePod", name)
-	return c.request(&request{
-		method: http.MethodDelete,
-		path:   fmt.Sprintf("/api/v1/namespaces/%s/pods/%s", c.namespace, name),
-	}, nil)
-}
-
 // CreateProwJob creates a prowjob in the client's specified namespace.
 //
 // Analogous to kubectl create prowjob --namespace=client.namespace
-func (c *Client) CreateProwJob(j ProwJob) (ProwJob, error) {
+func (c *Client) CreateProwJob(j prowapi.ProwJob) (prowapi.ProwJob, error) {
 	var representation string
 	if out, err := json.Marshal(j); err == nil {
 		representation = string(out[:])
@@ -466,7 +432,7 @@ func (c *Client) CreateProwJob(j ProwJob) (ProwJob, error) {
 		representation = fmt.Sprintf("%v", j)
 	}
 	c.log("CreateProwJob", representation)
-	var retJob ProwJob
+	var retJob prowapi.ProwJob
 	err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs", c.namespace),
@@ -482,7 +448,7 @@ func (c *Client) getHiddenRepos() sets.String {
 	return sets.NewString(c.hiddenReposProvider()...)
 }
 
-func shouldHide(pj *ProwJob, hiddenRepos sets.String, showHiddenOnly bool) bool {
+func shouldHide(pj *prowapi.ProwJob, hiddenRepos sets.String, showHiddenOnly bool) bool {
 	if pj.Spec.Refs == nil {
 		// periodic jobs do not have refs and therefore cannot be
 		// hidden by the org/repo mechanism
@@ -498,14 +464,14 @@ func shouldHide(pj *ProwJob, hiddenRepos sets.String, showHiddenOnly bool) bool 
 // GetProwJob returns the prowjob at name in the client's specified namespace.
 //
 // Analogous to kubectl get prowjob/NAME --namespace=client.namespace
-func (c *Client) GetProwJob(name string) (ProwJob, error) {
+func (c *Client) GetProwJob(name string) (prowapi.ProwJob, error) {
 	c.log("GetProwJob", name)
-	var pj ProwJob
+	var pj prowapi.ProwJob
 	err := c.request(&request{
 		path: fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs/%s", c.namespace, name),
 	}, &pj)
 	if err == nil && shouldHide(&pj, c.getHiddenRepos(), c.hiddenOnly) {
-		pj = ProwJob{}
+		pj = prowapi.ProwJob{}
 		// Revealing the existence of this prow job is ok because the pj name cannot be used to
 		// retrieve the pj itself. Furthermore, a timing attack could differentiate true 404s from
 		// 404s returned when a hidden pj is queried so returning a 404 wouldn't hide the pj's existence.
@@ -517,10 +483,10 @@ func (c *Client) GetProwJob(name string) (ProwJob, error) {
 // ListProwJobs lists prowjobs using the specified labelSelector in the client's specified namespace.
 //
 // Analogous to kubectl get prowjobs --selector=SELECTOR --namespace=client.namespace
-func (c *Client) ListProwJobs(selector string) ([]ProwJob, error) {
+func (c *Client) ListProwJobs(selector string) ([]prowapi.ProwJob, error) {
 	c.log("ListProwJobs", selector)
 	var jl struct {
-		Items []ProwJob `json:"items"`
+		Items []prowapi.ProwJob `json:"items"`
 	}
 	err := c.request(&request{
 		path:     fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs", c.namespace),
@@ -529,7 +495,7 @@ func (c *Client) ListProwJobs(selector string) ([]ProwJob, error) {
 	}, &jl)
 	if err == nil {
 		hidden := c.getHiddenRepos()
-		var pjs []ProwJob
+		var pjs []prowapi.ProwJob
 		for _, pj := range jl.Items {
 			if !shouldHide(&pj, hidden, c.hiddenOnly) {
 				pjs = append(pjs, pj)
@@ -554,117 +520,13 @@ func (c *Client) DeleteProwJob(name string) error {
 // ReplaceProwJob will replace name with job in the client's specified namespace.
 //
 // Analogous to kubectl replace prowjobs/NAME --namespace=client.namespace
-func (c *Client) ReplaceProwJob(name string, job ProwJob) (ProwJob, error) {
+func (c *Client) ReplaceProwJob(name string, job prowapi.ProwJob) (prowapi.ProwJob, error) {
 	c.log("ReplaceProwJob", name, job)
-	var retJob ProwJob
+	var retJob prowapi.ProwJob
 	err := c.request(&request{
 		method:      http.MethodPut,
 		path:        fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs/%s", c.namespace, name),
 		requestBody: &job,
 	}, &retJob)
 	return retJob, err
-}
-
-// CreatePod creates a pod in the client's specified namespace.
-//
-// Analogous to kubectl create pod --namespace=client.namespace
-func (c *Client) CreatePod(p v1.Pod) (Pod, error) {
-	c.log("CreatePod", p)
-	var retPod Pod
-	err := c.request(&request{
-		method:      http.MethodPost,
-		path:        fmt.Sprintf("/api/v1/namespaces/%s/pods", c.namespace),
-		requestBody: &p,
-	}, &retPod)
-	return retPod, err
-}
-
-// GetLog returns the log of the default container in the specified pod, in the client's specified namespace.
-//
-// Analogous to kubectl logs pod --namespace=client.namespace
-func (c *Client) GetLog(pod string) ([]byte, error) {
-	c.log("GetLog", pod)
-	return c.requestRetry(&request{
-		path: fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
-	})
-}
-
-// GetLogTail returns the last n bytes of the log of the specified container in the specified pod,
-// in the client's specified namespace.
-//
-// Analogous to kubectl logs pod --tail -1 --limit-bytes n -c container --namespace=client.namespace
-func (c *Client) GetLogTail(pod, container string, n int64) ([]byte, error) {
-	c.log("GetLogTail", pod, n)
-	return c.requestRetry(&request{
-		path: fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
-		query: map[string]string{ // Because we want last n bytes, we fetch all lines and then limit to n bytes
-			"tailLines":  "-1",
-			"container":  container,
-			"limitBytes": strconv.FormatInt(n, 10),
-		},
-	})
-}
-
-// GetContainerLog returns the log of a container in the specified pod, in the client's specified namespace.
-//
-// Analogous to kubectl logs pod -c container --namespace=client.namespace
-func (c *Client) GetContainerLog(pod, container string) ([]byte, error) {
-	c.log("GetContainerLog", pod)
-	return c.requestRetry(&request{
-		path:  fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
-		query: map[string]string{"container": container},
-	})
-}
-
-// CreateConfigMap creates a configmap, in the client's specified namespace.
-//
-// Analogous to kubectl create configmap --namespace=client.namespace
-func (c *Client) CreateConfigMap(content ConfigMap) (ConfigMap, error) {
-	c.log("CreateConfigMap")
-	var retConfigMap ConfigMap
-	err := c.request(&request{
-		method:      http.MethodPost,
-		path:        fmt.Sprintf("/api/v1/namespaces/%s/configmaps", c.namespace),
-		requestBody: &content,
-	}, &retConfigMap)
-
-	return retConfigMap, err
-}
-
-// GetConfigMap gets the configmap identified, in the client's specified namespace.
-//
-// Analogous to kubectl get configmap --namespace=client.namespace
-func (c *Client) GetConfigMap(name, namespace string) (ConfigMap, error) {
-	c.log("GetConfigMap", name)
-	if namespace == "" {
-		namespace = c.namespace
-	}
-	var retConfigMap ConfigMap
-	err := c.request(&request{
-		path: fmt.Sprintf("/api/v1/namespaces/%s/configmaps/%s", namespace, name),
-	}, &retConfigMap)
-
-	return retConfigMap, err
-}
-
-// ReplaceConfigMap puts the configmap into name.
-//
-// Analogous to kubectl replace configmap
-//
-// If config.Namespace is empty, the client's specified namespace is used.
-// Returns the content returned by the apiserver
-func (c *Client) ReplaceConfigMap(name string, config ConfigMap) (ConfigMap, error) {
-	c.log("ReplaceConfigMap", name)
-	namespace := c.namespace
-	if config.Namespace != "" {
-		namespace = config.Namespace
-	}
-	var retConfigMap ConfigMap
-	err := c.request(&request{
-		method:      http.MethodPut,
-		path:        fmt.Sprintf("/api/v1/namespaces/%s/configmaps/%s", namespace, name),
-		requestBody: &config,
-	}, &retConfigMap)
-
-	return retConfigMap, err
 }

@@ -25,7 +25,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-image=gci
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-csi-serial
@@ -34,7 +34,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
         resources:
           requests:
             memory: "6Gi"

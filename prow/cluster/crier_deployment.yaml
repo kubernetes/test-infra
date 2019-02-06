@@ -29,12 +29,14 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:v20190125-2aca69d
+        image: gcr.io/k8s-prow/crier:v20190206-75d4a95
         args:
         - --github-workers=1
         - --report-agent=knative-build
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
+        - --github-endpoint=http://ghproxy
+        - --github-endpoint=https://api.github.com
         volumeMounts:
         - name: config
           mountPath: /etc/config

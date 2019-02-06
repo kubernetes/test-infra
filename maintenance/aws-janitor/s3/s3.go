@@ -25,7 +25,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-const defaultRegion = "us-east-1"
+const (
+	defaultRegion = "us-east-1"
+)
 
 type Path struct {
 	Region string
@@ -38,17 +40,22 @@ func GetPath(sess *session.Session, s string) (*Path, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if url.Scheme != "s3" {
 		return nil, fmt.Errorf("Scheme %q != 's3'", url.Scheme)
 	}
+
 	svc := s3.New(sess, &aws.Config{Region: aws.String(defaultRegion)})
+
 	resp, err := svc.GetBucketLocation(&s3.GetBucketLocationInput{Bucket: aws.String(url.Host)})
 	if err != nil {
 		return nil, err
 	}
-	region := "us-east-1"
+
+	region := defaultRegion
 	if resp.LocationConstraint != nil {
 		region = *resp.LocationConstraint
 	}
+
 	return &Path{Region: region, Bucket: url.Host, Key: url.Path}, nil
 }

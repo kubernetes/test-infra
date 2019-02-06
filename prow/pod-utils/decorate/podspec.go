@@ -26,10 +26,11 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	coreapi "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/clonerefs"
 	"k8s.io/test-infra/prow/entrypoint"
 	"k8s.io/test-infra/prow/gcsupload"
@@ -73,7 +74,7 @@ func VolumeMountPaths() []string {
 // LabelsAndAnnotationsForSpec returns a minimal set of labels to add to prowjobs or its owned resources.
 //
 // User-provided extraLabels and extraAnnotations values will take precedence over auto-provided values.
-func LabelsAndAnnotationsForSpec(spec kube.ProwJobSpec, extraLabels, extraAnnotations map[string]string) (map[string]string, map[string]string) {
+func LabelsAndAnnotationsForSpec(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[string]string) (map[string]string, map[string]string) {
 	jobNameForLabel := spec.Job
 	if len(jobNameForLabel) > validation.LabelValueMaxLength {
 		// TODO(fejta): consider truncating middle rather than end.
@@ -90,7 +91,7 @@ func LabelsAndAnnotationsForSpec(spec kube.ProwJobSpec, extraLabels, extraAnnota
 		kube.ProwJobTypeLabel:  string(spec.Type),
 		kube.ProwJobAnnotation: jobNameForLabel,
 	}
-	if spec.Type != kube.PeriodicJob && spec.Refs != nil {
+	if spec.Type != prowapi.PeriodicJob && spec.Refs != nil {
 		labels[kube.OrgLabel] = spec.Refs.Org
 		labels[kube.RepoLabel] = spec.Refs.Repo
 		if len(spec.Refs.Pulls) > 0 {
@@ -131,7 +132,7 @@ func LabelsAndAnnotationsForSpec(spec kube.ProwJobSpec, extraLabels, extraAnnota
 }
 
 // LabelsAndAnnotationsForJob returns a standard set of labels to add to pod/build/etc resources.
-func LabelsAndAnnotationsForJob(pj kube.ProwJob) (map[string]string, map[string]string) {
+func LabelsAndAnnotationsForJob(pj prowapi.ProwJob) (map[string]string, map[string]string) {
 	var extraLabels map[string]string
 	if extraLabels = pj.ObjectMeta.Labels; extraLabels == nil {
 		extraLabels = map[string]string{}
@@ -141,7 +142,7 @@ func LabelsAndAnnotationsForJob(pj kube.ProwJob) (map[string]string, map[string]
 }
 
 // ProwJobToPod converts a ProwJob to a Pod that will run the tests.
-func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
+func ProwJobToPod(pj prowapi.ProwJob, buildID string) (*coreapi.Pod, error) {
 	if pj.Spec.PodSpec == nil {
 		return nil, fmt.Errorf("prowjob %q lacks a pod spec", pj.Name)
 	}
@@ -173,7 +174,7 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 	}
 
 	podLabels, annotations := LabelsAndAnnotationsForJob(pj)
-	return &v1.Pod{
+	return &coreapi.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        pj.ObjectMeta.Name,
 			Labels:      podLabels,
@@ -186,7 +187,8 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 const cloneLogPath = "clone.json"
 
 // CloneLogPath returns the path to the clone log file in the volume mount.
-func CloneLogPath(logMount kube.VolumeMount) string {
+// CloneLogPath returns the path to the clone log file in the volume mount.
+func CloneLogPath(logMount coreapi.VolumeMount) string {
 	return filepath.Join(logMount.MountPath, cloneLogPath)
 }
 
@@ -197,7 +199,7 @@ const (
 )
 
 // cloneEnv encodes clonerefs Options into json and puts it into an environment variable
-func cloneEnv(opt clonerefs.Options) ([]v1.EnvVar, error) {
+func cloneEnv(opt clonerefs.Options) ([]coreapi.EnvVar, error) {
 	// TODO(fejta): use flags
 	cloneConfigEnv, err := clonerefs.Encode(opt)
 	if err != nil {
@@ -209,21 +211,21 @@ func cloneEnv(opt clonerefs.Options) ([]v1.EnvVar, error) {
 // sshVolume converts a secret holding ssh keys into the corresponding volume and mount.
 //
 // This is used by CloneRefs to attach the mount to the clonerefs container.
-func sshVolume(secret string) (kube.Volume, kube.VolumeMount) {
+func sshVolume(secret string) (coreapi.Volume, coreapi.VolumeMount) {
 	var sshKeyMode int32 = 0400 // this is octal, so symbolic ref is `u+r`
 	name := strings.Join([]string{"ssh-keys", secret}, "-")
 	mountPath := path.Join("/secrets/ssh", secret)
-	v := kube.Volume{
+	v := coreapi.Volume{
 		Name: name,
-		VolumeSource: kube.VolumeSource{
-			Secret: &kube.SecretSource{
+		VolumeSource: coreapi.VolumeSource{
+			Secret: &coreapi.SecretVolumeSource{
 				SecretName:  secret,
 				DefaultMode: &sshKeyMode,
 			},
 		},
 	}
 
-	vm := kube.VolumeMount{
+	vm := coreapi.VolumeMount{
 		Name:      name,
 		MountPath: mountPath,
 		ReadOnly:  true,
@@ -240,7 +242,7 @@ func sshVolume(secret string) (kube.Volume, kube.VolumeMount) {
 //
 // This is used by CloneRefs to attach the mount to the clonerefs container.
 // The returned string value is the path to the cookiefile for use with --cookiefile.
-func cookiefileVolume(secret string) (kube.Volume, kube.VolumeMount, string) {
+func cookiefileVolume(secret string) (coreapi.Volume, coreapi.VolumeMount, string) {
 	// Separate secret-name/key-in-secret
 	parts := strings.SplitN(secret, "/", 2)
 	cookieSecret := parts[0]
@@ -251,16 +253,16 @@ func cookiefileVolume(secret string) (kube.Volume, kube.VolumeMount, string) {
 		base = parts[1]
 	}
 	var cookiefileMode int32 = 0400 // u+r
-	vol := kube.Volume{
+	vol := coreapi.Volume{
 		Name: "cookiefile",
-		VolumeSource: kube.VolumeSource{
-			Secret: &kube.SecretSource{
+		VolumeSource: coreapi.VolumeSource{
+			Secret: &coreapi.SecretVolumeSource{
 				SecretName:  cookieSecret,
 				DefaultMode: &cookiefileMode,
 			},
 		},
 	}
-	mount := kube.VolumeMount{
+	mount := coreapi.VolumeMount{
 		Name:      vol.Name,
 		MountPath: "/secrets/cookiefile", // append base to flag
 		ReadOnly:  true,
@@ -275,15 +277,15 @@ func cookiefileVolume(secret string) (kube.Volume, kube.VolumeMount, string) {
 //
 // The container may need to mount SSH keys and/or cookiefiles in order to access private refs.
 // CloneRefs returns a list of volumes containing these secrets required by the container.
-func CloneRefs(pj kube.ProwJob, codeMount, logMount kube.VolumeMount) (*kube.Container, []kube.Refs, []kube.Volume, error) {
+func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*coreapi.Container, []prowapi.Refs, []coreapi.Volume, error) {
 	if pj.Spec.DecorationConfig == nil {
 		return nil, nil, nil, nil
 	}
 	if skip := pj.Spec.DecorationConfig.SkipCloning; skip != nil && *skip {
 		return nil, nil, nil, nil
 	}
-	var cloneVolumes []kube.Volume
-	var refs []kube.Refs // Do not return []*kube.Refs which we do not own
+	var cloneVolumes []coreapi.Volume
+	var refs []prowapi.Refs // Do not return []*prowapi.Refs which we do not own
 	if pj.Spec.Refs != nil {
 		refs = append(refs, *pj.Spec.Refs)
 	}
@@ -300,7 +302,7 @@ func CloneRefs(pj kube.ProwJob, codeMount, logMount kube.VolumeMount) (*kube.Con
 		return nil, nil, nil, fmt.Errorf("logMount must set Name and MountPath")
 	}
 
-	var cloneMounts []kube.VolumeMount
+	var cloneMounts []coreapi.VolumeMount
 	var sshKeyPaths []string
 	for _, secret := range pj.Spec.DecorationConfig.SSHKeySecrets {
 		volume, mount := sshVolume(secret)
@@ -334,32 +336,32 @@ func CloneRefs(pj kube.ProwJob, codeMount, logMount kube.VolumeMount) (*kube.Con
 		return nil, nil, nil, fmt.Errorf("clone env: %v", err)
 	}
 
-	container := kube.Container{
+	container := coreapi.Container{
 		Name:         cloneRefsName,
 		Image:        pj.Spec.DecorationConfig.UtilityImages.CloneRefs,
 		Command:      []string{cloneRefsCommand},
 		Args:         cloneArgs,
 		Env:          env,
-		VolumeMounts: append([]kube.VolumeMount{logMount, codeMount}, cloneMounts...),
+		VolumeMounts: append([]coreapi.VolumeMount{logMount, codeMount}, cloneMounts...),
 	}
 	return &container, refs, cloneVolumes, nil
 }
 
-func processLog(log kube.VolumeMount, prefix string) string {
+func processLog(log coreapi.VolumeMount, prefix string) string {
 	if prefix == "" {
 		return filepath.Join(log.MountPath, "process-log.txt")
 	}
 	return filepath.Join(log.MountPath, fmt.Sprintf("%s-log.txt", prefix))
 }
 
-func markerFile(log kube.VolumeMount, prefix string) string {
+func markerFile(log coreapi.VolumeMount, prefix string) string {
 	if prefix == "" {
 		return filepath.Join(log.MountPath, "marker-file.txt")
 	}
 	return filepath.Join(log.MountPath, fmt.Sprintf("%s-marker.txt", prefix))
 }
 
-func metadataFile(log kube.VolumeMount, prefix string) string {
+func metadataFile(log coreapi.VolumeMount, prefix string) string {
 	ad := artifactsDir(log)
 	if prefix == "" {
 		return filepath.Join(ad, "metadata.json")
@@ -367,16 +369,16 @@ func metadataFile(log kube.VolumeMount, prefix string) string {
 	return filepath.Join(ad, fmt.Sprintf("%s-metadata.json", prefix))
 }
 
-func artifactsDir(log kube.VolumeMount) string {
+func artifactsDir(log coreapi.VolumeMount) string {
 	return filepath.Join(log.MountPath, "artifacts")
 }
 
-func entrypointLocation(tools kube.VolumeMount) string {
+func entrypointLocation(tools coreapi.VolumeMount) string {
 	return filepath.Join(tools.MountPath, "entrypoint")
 }
 
 // InjectEntrypoint will make the entrypoint binary in the tools volume the container's entrypoint, which will output to the log volume.
-func InjectEntrypoint(c *kube.Container, timeout, gracePeriod time.Duration, prefix, previousMarker string, exitZero bool, log, tools kube.VolumeMount) (*wrapper.Options, error) {
+func InjectEntrypoint(c *coreapi.Container, timeout, gracePeriod time.Duration, prefix, previousMarker string, exitZero bool, log, tools coreapi.VolumeMount) (*wrapper.Options, error) {
 	wrapperOptions := &wrapper.Options{
 		Args:         append(c.Command, c.Args...),
 		ProcessLog:   processLog(log, prefix),
@@ -404,26 +406,26 @@ func InjectEntrypoint(c *kube.Container, timeout, gracePeriod time.Duration, pre
 }
 
 // PlaceEntrypoint will copy entrypoint from the entrypoint image to the tools volume
-func PlaceEntrypoint(image string, toolsMount kube.VolumeMount) kube.Container {
-	return kube.Container{
+func PlaceEntrypoint(image string, toolsMount coreapi.VolumeMount) coreapi.Container {
+	return coreapi.Container{
 		Name:         "place-entrypoint",
 		Image:        image,
 		Command:      []string{"/bin/cp"},
 		Args:         []string{"/entrypoint", entrypointLocation(toolsMount)},
-		VolumeMounts: []kube.VolumeMount{toolsMount},
+		VolumeMounts: []coreapi.VolumeMount{toolsMount},
 	}
 }
 
-func GCSOptions(dc kube.DecorationConfig) (kube.Volume, kube.VolumeMount, gcsupload.Options) {
-	vol := kube.Volume{
+func GCSOptions(dc prowapi.DecorationConfig) (coreapi.Volume, coreapi.VolumeMount, gcsupload.Options) {
+	vol := coreapi.Volume{
 		Name: gcsCredentialsMountName,
-		VolumeSource: kube.VolumeSource{
-			Secret: &kube.SecretSource{
+		VolumeSource: coreapi.VolumeSource{
+			Secret: &coreapi.SecretVolumeSource{
 				SecretName: dc.GCSCredentialsSecret,
 			},
 		},
 	}
-	mount := kube.VolumeMount{
+	mount := coreapi.VolumeMount{
 		Name:      vol.Name,
 		MountPath: gcsCredentialsMountPath,
 	}
@@ -437,12 +439,12 @@ func GCSOptions(dc kube.DecorationConfig) (kube.Volume, kube.VolumeMount, gcsupl
 	return vol, mount, opt
 }
 
-func InitUpload(image string, opt gcsupload.Options, creds kube.VolumeMount, cloneLogMount *kube.VolumeMount, encodedJobSpec string) (*kube.Container, error) {
+func InitUpload(image string, opt gcsupload.Options, creds coreapi.VolumeMount, cloneLogMount *coreapi.VolumeMount, encodedJobSpec string) (*coreapi.Container, error) {
 	// TODO(fejta): remove encodedJobSpec
 	initUploadOptions := initupload.Options{
 		Options: &opt,
 	}
-	var mounts []kube.VolumeMount
+	var mounts []coreapi.VolumeMount
 	if cloneLogMount != nil {
 		initUploadOptions.Log = CloneLogPath(*cloneLogMount)
 		mounts = append(mounts, *cloneLogMount)
@@ -453,7 +455,7 @@ func InitUpload(image string, opt gcsupload.Options, creds kube.VolumeMount, clo
 	if err != nil {
 		return nil, fmt.Errorf("could not encode initupload configuration as JSON: %v", err)
 	}
-	return &kube.Container{
+	return &coreapi.Container{
 		Name:    "initupload",
 		Image:   image,
 		Command: []string{"/initupload"}, // TODO(fejta): remove this, use image's entrypoint and delete /initupload symlink
@@ -465,41 +467,41 @@ func InitUpload(image string, opt gcsupload.Options, creds kube.VolumeMount, clo
 	}, nil
 }
 
-func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) error {
+func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]string) error {
 	// TODO(fejta): we should pass around volume names rather than forcing particular mount paths.
 
 	rawEnv[artifactsEnv] = artifactsPath
 	rawEnv[gopathEnv] = codeMountPath // TODO(fejta): remove this once we can assume go modules
-	logMount := kube.VolumeMount{
+	logMount := coreapi.VolumeMount{
 		Name:      logMountName,
 		MountPath: logMountPath,
 	}
-	logVolume := kube.Volume{
+	logVolume := coreapi.Volume{
 		Name: logMountName,
-		VolumeSource: kube.VolumeSource{
-			EmptyDir: &kube.EmptyDirVolumeSource{},
+		VolumeSource: coreapi.VolumeSource{
+			EmptyDir: &coreapi.EmptyDirVolumeSource{},
 		},
 	}
 
-	codeMount := kube.VolumeMount{
+	codeMount := coreapi.VolumeMount{
 		Name:      codeMountName,
 		MountPath: codeMountPath,
 	}
-	codeVolume := kube.Volume{
+	codeVolume := coreapi.Volume{
 		Name: codeMountName,
-		VolumeSource: kube.VolumeSource{
-			EmptyDir: &kube.EmptyDirVolumeSource{},
+		VolumeSource: coreapi.VolumeSource{
+			EmptyDir: &coreapi.EmptyDirVolumeSource{},
 		},
 	}
 
-	toolsMount := kube.VolumeMount{
+	toolsMount := coreapi.VolumeMount{
 		Name:      toolsMountName,
 		MountPath: toolsMountPath,
 	}
-	toolsVolume := kube.Volume{
+	toolsVolume := coreapi.Volume{
 		Name: toolsMountName,
-		VolumeSource: kube.VolumeSource{
-			EmptyDir: &kube.EmptyDirVolumeSource{},
+		VolumeSource: coreapi.VolumeSource{
+			EmptyDir: &coreapi.EmptyDirVolumeSource{},
 		},
 	}
 
@@ -509,9 +511,9 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 	if err != nil {
 		return fmt.Errorf("create clonerefs container: %v", err)
 	}
-	var cloneLogMount *kube.VolumeMount
+	var cloneLogMount *coreapi.VolumeMount
 	if cloner != nil {
-		spec.InitContainers = append([]kube.Container{*cloner}, spec.InitContainers...)
+		spec.InitContainers = append([]coreapi.Container{*cloner}, spec.InitContainers...)
 		cloneLogMount = &logMount
 	}
 
@@ -560,7 +562,7 @@ const (
 	RequirePassingEntries = true
 )
 
-func Sidecar(image string, gcsOptions gcsupload.Options, gcsMount, logMount kube.VolumeMount, encodedJobSpec string, requirePassingEntries bool, wrappers ...wrapper.Options) (*kube.Container, error) {
+func Sidecar(image string, gcsOptions gcsupload.Options, gcsMount, logMount coreapi.VolumeMount, encodedJobSpec string, requirePassingEntries bool, wrappers ...wrapper.Options) (*coreapi.Container, error) {
 	gcsOptions.Items = append(gcsOptions.Items, artifactsDir(logMount))
 	sidecarConfigEnv, err := sidecar.Encode(sidecar.Options{
 		GcsOptions: &gcsOptions,
@@ -571,7 +573,7 @@ func Sidecar(image string, gcsOptions gcsupload.Options, gcsMount, logMount kube
 		return nil, err
 	}
 
-	return &kube.Container{
+	return &coreapi.Container{
 		Name:    "sidecar",
 		Image:   image,
 		Command: []string{"/sidecar"}, // TODO(fejta): remove, use image's entrypoint
@@ -579,7 +581,7 @@ func Sidecar(image string, gcsOptions gcsupload.Options, gcsMount, logMount kube
 			sidecar.JSONConfigEnvVar: sidecarConfigEnv,
 			downwardapi.JobSpecEnv:   encodedJobSpec, // TODO: shouldn't need this?
 		}),
-		VolumeMounts: []kube.VolumeMount{logMount, gcsMount},
+		VolumeMounts: []coreapi.VolumeMount{logMount, gcsMount},
 	}, nil
 
 }
@@ -587,16 +589,16 @@ func Sidecar(image string, gcsOptions gcsupload.Options, gcsMount, logMount kube
 // kubeEnv transforms a mapping of environment variables
 // into their serialized form for a PodSpec, sorting by
 // the name of the env vars
-func kubeEnv(environment map[string]string) []v1.EnvVar {
+func kubeEnv(environment map[string]string) []coreapi.EnvVar {
 	var keys []string
 	for key := range environment {
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)
 
-	var kubeEnvironment []v1.EnvVar
+	var kubeEnvironment []coreapi.EnvVar
 	for _, key := range keys {
-		kubeEnvironment = append(kubeEnvironment, v1.EnvVar{
+		kubeEnvironment = append(kubeEnvironment, coreapi.EnvVar{
 			Name:  key,
 			Value: environment[key],
 		})

@@ -15,9 +15,9 @@ periodics:
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel=25
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master

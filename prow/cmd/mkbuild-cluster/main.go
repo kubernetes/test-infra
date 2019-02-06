@@ -26,9 +26,13 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"sigs.k8s.io/yaml"
-
+	coreapi "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/test-infra/prow/kube"
+	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -234,12 +238,37 @@ func do(o options) error {
 
 	// Try to use this entry
 	if !o.skipCheck {
-		c, err := kube.NewClient(&newCluster, "kube-system")
-		if err != nil {
-			return err
+		cfg := &clientcmdapi.Config{
+			Clusters: map[string]*clientcmdapi.Cluster{
+				o.alias: {
+					Server:                   newCluster.Endpoint,
+					CertificateAuthorityData: newCluster.ClusterCACertificate,
+				},
+			},
+			AuthInfos: map[string]*clientcmdapi.AuthInfo{
+				o.alias: {
+					ClientCertificateData: newCluster.ClientCertificate,
+					ClientKeyData:         newCluster.ClientKey,
+				},
+			},
+			Contexts: map[string]*clientcmdapi.Context{
+				o.alias: {
+					Cluster:  o.alias,
+					AuthInfo: o.alias,
+				},
+			},
 		}
-		if _, err = c.ListPods("k8s-app=kube-dns"); err != nil {
-			return fmt.Errorf("authenticated client could not list pods: %v", err)
+
+		contextCfg, err := clientcmd.NewNonInteractiveClientConfig(*cfg, o.alias, &clientcmd.ConfigOverrides{}, nil).ClientConfig()
+		if err != nil {
+			return fmt.Errorf("create %s client: %v", o.alias, err)
+		}
+		client, err := kubernetes.NewForConfig(contextCfg)
+		if err != nil {
+			return fmt.Errorf("could not create kubernetes client: %v", err)
+		}
+		if _, err = client.CoreV1().Pods("kube-system").List(metav1.ListOptions{}); err != nil {
+			return fmt.Errorf("authenticated client could not list pods in the kube-system namespace: %v", err)
 		}
 	}
 
@@ -260,7 +289,7 @@ func do(o options) error {
 	if err != nil {
 		return fmt.Errorf("read stdin: %v", err)
 	}
-	var s kube.Secret
+	var s coreapi.Secret
 	if err := yaml.Unmarshal(b, &s); err != nil {
 		return fmt.Errorf("unmarshal stdin: %v", err)
 	}

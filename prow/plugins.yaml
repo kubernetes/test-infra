@@ -166,6 +166,12 @@ slack:
     whitelist:
     - k8s-ci-robot
   - repos:
+    - kubernetes/enhancements
+    channels:
+    - sig-pm
+    whitelist:
+    - k8s-ci-robot
+  - repos:
     - kubernetes/utils
     channels:
     - sig-architecture
@@ -179,10 +185,6 @@ slack:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
     branch_whitelist:
-        release-1.8:
-            - jpbetz # 1.8 patch release manager
-        release-1.9:
-            - mbohlool # 1.9 patch release manager
         release-1.10:
             - maciekpytel # 1.10 patch release manager
         release-1.11:
@@ -190,9 +192,10 @@ slack:
         release-1.12:
             - feiskyer # 1.12 patch release manager
         release-1.13:
-            - dougm # 1.13 branch manager
-            - hoegaarden # 1.13 branch manager shadow
-            - idealhack # 1.13 branch manager shadow
+            - aleksandra-malinowska # 1.13 patch release team
+            - tpepper # 1.13 patch release team
+        release-1.14:
+            - hoegaarden # 1.14 branch manager
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
             - apelisse # feature-serverside-apply "branch manager"
@@ -211,6 +214,18 @@ repo_milestone:
     # curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
     maintainers_id: 2460384
     maintainers_team: kubernetes-milestone-maintainers
+  'kubernetes-sigs/cluster-api':
+    maintainers_id: 3058957
+    maintainers_team: cluster-api-maintainers
+    maintainers_friendly_name: Cluster API Maintainers
+  'kubernetes-sigs/cluster-api-provider-aws':
+    maintainers_id: 2830895
+    maintainers_team: cluster-api-provider-aws-maintainers
+    maintainers_friendly_name: Cluster API Provider AWS Maintainers
+  'kubernetes-sigs/cluster-api-provider-azure':
+    maintainers_id: 3063852
+    maintainers_team: cluster-api-provider-azure-maintainers
+    maintainers_friendly_name: Cluster API Provider Azure Maintainers
 
 config_updater:
   maps:
@@ -350,6 +365,11 @@ plugins:
   - trigger
 
   kubernetes/cloud-provider-azure:
+  - milestone
+  - milestonestatus
+  - release-note
+  - require-matching-label
+  - welcome
   - trigger
 
   kubernetes/cloud-provider-gcp:
@@ -378,6 +398,7 @@ plugins:
   - milestone
   - require-sig
   - stage
+  - trigger
 
   kubernetes/examples:
   - trigger
@@ -543,11 +564,18 @@ plugins:
 
   kubernetes-sigs/cluster-api:
   - trigger
+  - milestone
 
   kubernetes-sigs/cluster-api-provider-aws:
   - trigger
+  - milestone
 
   kubernetes-sigs/cluster-api-provider-azure:
+  - milestone
+  - milestonestatus
+  - release-note
+  - require-matching-label
+  - welcome
   - trigger
 
   kubernetes-sigs/cluster-api-provider-digitalocean:
@@ -696,6 +724,10 @@ external_plugins:
     events:
       - pull_request
   kubernetes-sigs/cluster-api-provider-digitalocean:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes-sigs/kind:
   - name: needs-rebase
     events:
       - pull_request

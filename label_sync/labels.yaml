@@ -405,6 +405,7 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
+      deleteAfter: 2019-01-26T13:00:00Z
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to sig-contributor-experience.
       name: sig/contributor-experience

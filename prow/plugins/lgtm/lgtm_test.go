@@ -860,6 +860,39 @@ func TestHandlePullRequest(t *testing.T) {
 			},
 			expectNoComments: false,
 		},
+		{
+			name: "pr_synchronize, 2 tree-hash comments, keep label",
+			event: github.PullRequestEvent{
+				Action: github.PullRequestActionSynchronize,
+				PullRequest: github.PullRequest{
+					Number: 101,
+					Base: github.PullRequestBranch{
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "kubernetes",
+							},
+							Name: "kubernetes",
+						},
+					},
+					Head: github.PullRequestBranch{
+						SHA: SHA,
+					},
+				},
+			},
+			issueComments: map[int][]github.IssueComment{
+				101: {
+					{
+						Body: fmt.Sprintf(addLGTMLabelNotification, "older_treeSHA"),
+						User: github.User{Login: fakegithub.Bot},
+					},
+					{
+						Body: fmt.Sprintf(addLGTMLabelNotification, treeSHA),
+						User: github.User{Login: fakegithub.Bot},
+					},
+				},
+			},
+			expectNoComments: true,
+		},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

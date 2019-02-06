@@ -15,7 +15,6 @@
 # Includes gcloud (for bq and gsutil), python influxdb client (requires pip), python yaml parser, and jq.
 
 FROM ubuntu:16.04
-LABEL maintainer="colew@google.com"
 
 RUN apt-get update && apt-get install -y \
     git \

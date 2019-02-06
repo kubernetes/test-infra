@@ -1,6 +1,6 @@
 import {cell} from "../common/common";
 import {JobState} from "../api/prow";
-import {HistoryData, Record, PRMeta} from "../api/tide-history";
+import {HistoryData, Record} from "../api/tide-history";
 import moment from "moment";
 
 declare const tideHistory: HistoryData;
@@ -59,7 +59,7 @@ function optionsForRepoBranch(repo: string, branch: string): Options {
           opts.states[errorState(rec.err)] = true;
           for (const pr of rec.target || []) {
             opts.authors[pr.author] = true;
-            opts.pulls[pr.num] = true;
+            opts.pulls[pr.number] = true;
           }
         }
       }
@@ -209,7 +209,7 @@ function redraw(): void {
 
       let anyTargetMatches = false;
       for (const pr of rec.target || []) {
-        if (!equalSelected(pullSel, pr.num.toString())) {
+        if (!equalSelected(pullSel, pr.number.toString())) {
           continue;
         }
         if (!equalSelected(authorSel, pr.author)) {
@@ -288,13 +288,13 @@ function targetCell(rec: FilteredRecord): HTMLTableDataCellElement {
       return cell.text("");
     case 1:
       let pr = target[0];
-      return cell.prRevision(rec.repo, pr.num, pr.author, pr.title, pr.SHA);
+      return cell.prRevision(rec.repo, pr);
     default:
       // Multiple PRs in 'target'. Add them all to the cell, but on separate lines.
       let td = document.createElement("td");
       td.style.whiteSpace = "pre";
       for (const pr of target) {
-        cell.addPRRevision(td, rec.repo, pr.num, pr.author, pr.title, pr.SHA);
+        cell.addPRRevision(td, rec.repo, pr);
         td.appendChild(document.createTextNode("\n"));
       }
       return td;

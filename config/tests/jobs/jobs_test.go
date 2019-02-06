@@ -32,12 +32,12 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/api/core/v1"
+	coreapi "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	cfg "k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
 )
 
 var configPath = flag.String("config", "../../../prow/config.yaml", "Path to prow config")
@@ -100,12 +100,12 @@ func TestReportTemplate(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		var b bytes.Buffer
-		if err := c.Plank.ReportTemplate.Execute(&b, &kube.ProwJob{
-			Spec: kube.ProwJobSpec{
-				Refs: &kube.Refs{
+		if err := c.Plank.ReportTemplate.Execute(&b, &prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Refs: &prowapi.Refs{
 					Org:  tc.org,
 					Repo: tc.repo,
-					Pulls: []kube.Pull{
+					Pulls: []prowapi.Pull{
 						{
 							Number: tc.number,
 						},
@@ -126,7 +126,7 @@ func TestReportTemplate(t *testing.T) {
 func TestURLTemplate(t *testing.T) {
 	testcases := []struct {
 		name    string
-		jobType kube.ProwJobType
+		jobType prowapi.ProwJobType
 		org     string
 		repo    string
 		job     string
@@ -136,7 +136,7 @@ func TestURLTemplate(t *testing.T) {
 	}{
 		{
 			name:    "k8s presubmit",
-			jobType: kube.PresubmitJob,
+			jobType: prowapi.PresubmitJob,
 			org:     "kubernetes",
 			repo:    "kubernetes",
 			job:     "k8s-pre-1",
@@ -146,7 +146,7 @@ func TestURLTemplate(t *testing.T) {
 		},
 		{
 			name:    "k8s-security presubmit",
-			jobType: kube.PresubmitJob,
+			jobType: prowapi.PresubmitJob,
 			org:     "kubernetes-security",
 			repo:    "kubernetes",
 			job:     "k8s-pre-1",
@@ -156,7 +156,7 @@ func TestURLTemplate(t *testing.T) {
 		},
 		{
 			name:    "k8s/test-infra presubmit",
-			jobType: kube.PresubmitJob,
+			jobType: prowapi.PresubmitJob,
 			org:     "kubernetes",
 			repo:    "test-infra",
 			job:     "ti-pre-1",
@@ -166,7 +166,7 @@ func TestURLTemplate(t *testing.T) {
 		},
 		{
 			name:    "foo/k8s presubmit",
-			jobType: kube.PresubmitJob,
+			jobType: prowapi.PresubmitJob,
 			org:     "foo",
 			repo:    "kubernetes",
 			job:     "k8s-pre-1",
@@ -175,7 +175,7 @@ func TestURLTemplate(t *testing.T) {
 		},
 		{
 			name:    "foo-bar presubmit",
-			jobType: kube.PresubmitJob,
+			jobType: prowapi.PresubmitJob,
 			org:     "foo",
 			repo:    "bar",
 			job:     "foo-pre-1",
@@ -184,7 +184,7 @@ func TestURLTemplate(t *testing.T) {
 		},
 		{
 			name:    "k8s postsubmit",
-			jobType: kube.PostsubmitJob,
+			jobType: prowapi.PostsubmitJob,
 			org:     "kubernetes",
 			repo:    "kubernetes",
 			job:     "k8s-post-1",
@@ -193,21 +193,21 @@ func TestURLTemplate(t *testing.T) {
 		},
 		{
 			name:    "k8s periodic",
-			jobType: kube.PeriodicJob,
+			jobType: prowapi.PeriodicJob,
 			job:     "k8s-peri-1",
 			build:   "1",
 			expect:  *gubernatorPath + "/build/" + *bucket + "/logs/k8s-peri-1/1/",
 		},
 		{
 			name:    "empty periodic",
-			jobType: kube.PeriodicJob,
+			jobType: prowapi.PeriodicJob,
 			job:     "nan-peri-1",
 			build:   "1",
 			expect:  *gubernatorPath + "/build/" + *bucket + "/logs/nan-peri-1/1/",
 		},
 		{
 			name:    "k8s batch",
-			jobType: kube.BatchJob,
+			jobType: prowapi.BatchJob,
 			org:     "kubernetes",
 			repo:    "kubernetes",
 			job:     "k8s-batch-1",
@@ -217,7 +217,7 @@ func TestURLTemplate(t *testing.T) {
 		},
 		{
 			name:    "foo bar batch",
-			jobType: kube.BatchJob,
+			jobType: prowapi.BatchJob,
 			org:     "foo",
 			repo:    "bar",
 			job:     "k8s-batch-1",
@@ -231,19 +231,19 @@ func TestURLTemplate(t *testing.T) {
 			continue
 		}
 
-		var pj = kube.ProwJob{
+		var pj = prowapi.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{Name: tc.name},
-			Spec: kube.ProwJobSpec{
+			Spec: prowapi.ProwJobSpec{
 				Type: tc.jobType,
 				Job:  tc.job,
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowapi.ProwJobStatus{
 				BuildID: tc.build,
 			},
 		}
-		if tc.jobType != kube.PeriodicJob {
-			pj.Spec.Refs = &kube.Refs{
-				Pulls: []kube.Pull{{}},
+		if tc.jobType != prowapi.PeriodicJob {
+			pj.Spec.Refs = &prowapi.Refs{
+				Pulls: []prowapi.Pull{{}},
 				Org:   tc.org,
 				Repo:  tc.repo,
 			}
@@ -264,9 +264,6 @@ func checkContext(t *testing.T, repo string, p cfg.Presubmit) {
 	if !p.SkipReport && p.Name != p.Context {
 		t.Errorf("Context does not match job name: %s in %s", p.Name, repo)
 	}
-	for _, c := range p.RunAfterSuccess {
-		checkContext(t, repo, c)
-	}
 }
 
 func TestContextMatches(t *testing.T) {
@@ -283,7 +280,6 @@ func checkRetest(t *testing.T, repo string, presubmits []cfg.Presubmit) {
 		if p.RerunCommand != expected {
 			t.Errorf("%s in %s rerun_command: %s != expected: %s", repo, p.Name, p.RerunCommand, expected)
 		}
-		checkRetest(t, repo, p.RunAfterSuccess)
 	}
 }
 
@@ -303,9 +299,6 @@ func findRequired(t *testing.T, presubmits []cfg.Presubmit) []string {
 	for _, p := range presubmits {
 		if !p.AlwaysRun {
 			continue
-		}
-		for _, r := range findRequired(t, p.RunAfterSuccess) {
-			required = append(required, r)
 		}
 		if p.SkipReport {
 			continue
@@ -360,7 +353,7 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 		allSecrets.Insert(secrets.List()...)
 	}
 
-	isSecretUsedByContainer := func(secret string, container v1.Container) bool {
+	isSecretUsedByContainer := func(secret string, container coreapi.Container) bool {
 		if container.EnvFrom == nil {
 			return false
 		}
@@ -404,7 +397,7 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 
 	// All presubmit jobs should not use any restricted secrets.
 	for _, job := range c.AllPresubmits(nil) {
-		if job.Cluster != kube.DefaultClusterAlias {
+		if job.Cluster != prowapi.DefaultClusterAlias {
 			// check against default public cluster only
 			continue
 		}
@@ -441,7 +434,7 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 		jobs = append(jobs, job.JobBase)
 	}
 	for _, job := range jobs {
-		if job.Cluster != kube.DefaultClusterAlias {
+		if job.Cluster != prowapi.DefaultClusterAlias {
 			// check against default public cluster only
 			continue
 		}
@@ -501,7 +494,7 @@ func TestConfigSecurityClusterRestricted(t *testing.T) {
 
 // checkDockerSocketVolumes returns an error if any volume uses a hostpath
 // to the docker socket. we do not want to allow this
-func checkDockerSocketVolumes(volumes []v1.Volume) error {
+func checkDockerSocketVolumes(volumes []coreapi.Volume) error {
 	for _, volume := range volumes {
 		if volume.HostPath != nil && volume.HostPath.Path == "/var/run/docker.sock" {
 			return errors.New("job uses HostPath with docker socket")
@@ -539,7 +532,7 @@ func TestJobDoesNotHaveDockerSocket(t *testing.T) {
 
 // checkLatestUsesImagePullPolicy returns an error if an image is a `latest-.*` tag,
 // but doesn't have imagePullPolicy: Always
-func checkLatestUsesImagePullPolicy(spec *v1.PodSpec) error {
+func checkLatestUsesImagePullPolicy(spec *coreapi.PodSpec) error {
 	for _, container := range spec.Containers {
 		if strings.Contains(container.Image, ":latest-") {
 			// If the job doesn't specify imagePullPolicy: Always,
@@ -589,7 +582,7 @@ func TestLatestUsesImagePullPolicy(t *testing.T) {
 
 // checkKubekinsPresets returns an error if a spec references to kubekins-e2e|bootstrap image,
 // but doesn't use service preset or ssh preset
-func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels map[string]string, validLabels map[string]bool) error {
+func checkKubekinsPresets(jobName string, spec *coreapi.PodSpec, labels map[string]string, validLabels map[string]bool) error {
 	service := true
 	ssh := true
 

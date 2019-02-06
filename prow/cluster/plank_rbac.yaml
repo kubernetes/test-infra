@@ -23,6 +23,7 @@ rules:
     resources:
       - prowjobs
     verbs:
+      - get
       - create
       - list
       - update
