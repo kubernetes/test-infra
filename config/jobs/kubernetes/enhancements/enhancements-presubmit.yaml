@@ -1,7 +1,7 @@
 presubmits:
   kubernetes/enhancements:
   - name: pull-enhancements-verify
-    always_run: true
+    always_run: false  # TODO(Katharine,nikhita): Turn this back on when the job works.
     decorate: true
     spec:
       containers:
