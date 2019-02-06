@@ -122,18 +122,28 @@ func sync(prowJobClient prowJobClient, cfg *config.Config, cr cronClient, now ti
 
 	var errs []error
 	for _, p := range cfg.Periodics {
-		j, ok := latestJobs[p.Name]
+		j, previousFound := latestJobs[p.Name]
+		logger := logrus.WithFields(logrus.Fields{
+			"job":            p.Name,
+			"previous-found": previousFound,
+		})
 
 		if p.Cron == "" {
-			if !ok || (j.Complete() && now.Sub(j.Status.StartTime.Time) > p.GetInterval()) {
+			shouldTrigger := j.Complete() && now.Sub(j.Status.StartTime.Time) > p.GetInterval()
+			logger = logger.WithField("should-trigger", shouldTrigger)
+			if !previousFound || shouldTrigger {
 				prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels)
+				logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Triggering new run of interval periodic.")
 				if _, err := prowJobClient.Create(&prowJob); err != nil {
 					errs = append(errs, err)
 				}
 			}
 		} else if cronTriggers.Has(p.Name) {
-			if !ok || j.Complete() {
+			shouldTrigger := j.Complete()
+			logger = logger.WithField("should-trigger", shouldTrigger)
+			if !previousFound || shouldTrigger {
 				prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels)
+				logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Triggering new run of cron periodic.")
 				if _, err := prowJobClient.Create(&prowJob); err != nil {
 					errs = append(errs, err)
 				}
