@@ -18,17 +18,21 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"os"
 	"os/exec"
 	"regexp"
 	"strings"
 	"text/template"
 	"time"
+
+	"golang.org/x/crypto/ssh"
 )
 
 const defaultKubeadmCNI = "weave"
@@ -267,24 +271,79 @@ func (k *kubernetesAnywhere) DumpClusterLogs(localPath, gcsPath string) error {
 		return nil
 	}
 
-	// the e2e framework in k/k does not support the "kubernetes-anywhere" provider,
-	// while a valid provider is required by the k/k "./cluster/log-dump/log-dump.sh" script
-	// for dumping the logs of the GCE cluster that kubernetes-anywhere creates:
-	//   https://github.com/kubernetes/kubernetes/blob/master/cluster/log-dump/log-dump.sh
-	// this fix is quite messy, but an acceptable workaround until "anywhere.go" is removed completely.
-	//
-	// TODO(neolit123): this workaround can be removed if defaultDumpClusterLogs() is refactored to
-	// not use log-dump.sh.
-	providerKey := "KUBERNETES_PROVIDER"
-	oldValue := os.Getenv(providerKey)
-	if err := os.Setenv(providerKey, "gce"); err != nil {
+	privateKeyPath := os.Getenv("JENKINS_GCE_SSH_PRIVATE_KEY_FILE")
+	if privateKeyPath == "" {
+		return fmt.Errorf("JENKINS_GCE_SSH_PRIVATE_KEY_FILE is empty")
+	}
+
+	key, err := ioutil.ReadFile(privateKeyPath)
+	if err != nil {
+		return fmt.Errorf("error reading private key %q: %v", privateKeyPath, err)
+	}
+
+	signer, err := ssh.ParsePrivateKey(key)
+	if err != nil {
+		return fmt.Errorf("error parsing private key %q: %v", privateKeyPath, err)
+	}
+
+	sshConfig := &ssh.ClientConfig{
+		User: os.Getenv("USER"),
+		Auth: []ssh.AuthMethod{
+			ssh.PublicKeys(signer),
+		},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
+
+	sshClientFactory := &sshClientFactoryImplementation{
+		sshConfig: sshConfig,
+	}
+	logDumper, err := newLogDumper(sshClientFactory, localPath)
+	if err != nil {
 		return err
 	}
-	err := defaultDumpClusterLogs(localPath, gcsPath)
-	if err := os.Setenv(providerKey, oldValue); err != nil {
+
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+
+	finished := make(chan error)
+	go func() {
+		finished <- k.dumpAllNodes(ctx, logDumper)
+	}()
+
+	for {
+		select {
+		case <-interrupt.C:
+			cancel()
+		case err := <-finished:
+			return err
+		}
+	}
+}
+
+// dumpAllNodes connects to every node and dumps the logs
+func (k *kubernetesAnywhere) dumpAllNodes(ctx context.Context, d *logDumper) error {
+	// Make sure kubeconfig is set, in particular before calling DumpAllNodes, which calls kubectlGetNodes
+	if err := k.TestSetup(); err != nil {
+		return fmt.Errorf("error setting up kubeconfig: %v", err)
+	}
+	// try to grab the address of the master from $KUBECONFIG (yikes)
+	cmd := exec.Command("sh", "-c", "cat ${KUBECONFIG} | grep server")
+	oBytes, err := control.Output(cmd)
+	if err != nil {
+		return fmt.Errorf("failed calling 'cat $KUBECONFIG | grep server': %v", err)
+	}
+	o := strings.TrimSpace(string(oBytes))
+	o = strings.Replace(o, "server: https://", "", -1)
+	host, _, err := net.SplitHostPort(o)
+	if err != nil {
+		return fmt.Errorf("could not extract host from kubeconfig: %v", err)
+	}
+	// the rest of the nodes are doable but tricky
+	additionalIPs := []string{host}
+	if err := d.DumpAllNodes(ctx, additionalIPs); err != nil {
 		return err
 	}
-	return err
+	return nil
 }
 
 func (k *kubernetesAnywhere) TestSetup() error {
@@ -313,4 +372,4 @@ func (k *kubernetesAnywhere) GetClusterCreated(gcpProject string) (time.Time, er
 	return time.Time{}, errors.New("not implemented")
 }
 
-func (_ *kubernetesAnywhere) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
+func (*kubernetesAnywhere) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
