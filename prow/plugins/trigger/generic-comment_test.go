@@ -93,6 +93,15 @@ func TestHandleGenericComment(t *testing.T) {
 			ShouldBuild: false,
 		},
 		{
+			name: "Irrelevant comment leads to no action.",
+
+			Author:      "trusted-member",
+			Body:        "Nice weather outside, right?",
+			State:       "open",
+			IsPR:        true,
+			ShouldBuild: false,
+		},
+		{
 			name: "Non-trusted member's ok to test.",
 
 			Author:      "untrusted-member",
