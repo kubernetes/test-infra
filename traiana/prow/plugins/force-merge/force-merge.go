@@ -144,7 +144,7 @@ func handleGenericComment(log *logrus.Entry, okroConfig *config.OkroConfig, ghc 
 			domain.Name = env
 			err = okroClient.ValidateDomain(tenant.Name, domain, pr.Base.SHA)
 			if err == nil {
-				invalidMessage = "repo is in a valid state.\nIf the validation job has failed, run `/retest`. " +
+				invalidMessage = "repo is in a valid state.\nIf the validation job has failed, run `/rerun`. " +
 					"Otherwise, wait for the PR to be merged automatically."
 			} else {
 				okroErr, ok := err.(okrov1beta2.Error)

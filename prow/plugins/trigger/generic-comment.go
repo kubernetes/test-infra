@@ -26,8 +26,8 @@ import (
 )
 
 var okToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
-var testAllRe = regexp.MustCompile(`(?m)^/test all,?($|\s.*)`)
-var retestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
+var testAllRe = regexp.MustCompile(`(?m)^/run all,?($|\s.*)`)
+var retestRe = regexp.MustCompile(`(?m)^/rerun\s*$`)
 
 func handleGenericComment(c Client, trigger *plugins.Trigger, gc github.GenericCommentEvent) error {
 	org := gc.Repo.Owner.Login

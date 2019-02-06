@@ -1111,13 +1111,13 @@ func ValidateController(c *Controller) error {
 // DefaultTriggerFor returns the default regexp string used to match comments
 // that should trigger the job with this name.
 func DefaultTriggerFor(name string) string {
-	return fmt.Sprintf(`(?m)^/test( | .* )%s,?($|\s.*)`, name)
+	return fmt.Sprintf(`(?m)^/run( | .* )%s,?($|\s.*)`, name)
 }
 
 // DefaultRerunCommandFor returns the default rerun command for the job with
 // this name.
 func DefaultRerunCommandFor(name string) string {
-	return fmt.Sprintf("/test %s", name)
+	return fmt.Sprintf("/run %s", name)
 }
 
 // defaultJobBase configures common parameters, currently Agent and Namespace.

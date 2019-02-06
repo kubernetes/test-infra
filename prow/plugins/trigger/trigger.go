@@ -56,9 +56,9 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		configInfo[orgRepo] = fmt.Sprintf("The trusted Github organization for this repository is %q.", org)
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: `The trigger plugin starts tests in reaction to commands and pull request events. It is responsible for ensuring that test jobs are only run on trusted PRs. A PR is considered trusted if the author is a member of the 'trusted organization' for the repository or if such a member has left an '/ok-to-test' command on the PR.
-<br>Trigger starts jobs automatically when a new trusted PR is created or when an untrusted PR becomes trusted, but it can also be used to start jobs manually via the '/test' command.
-<br>The '/retest' command can be used to rerun jobs that have reported failure.`,
+		Description: `The trigger plugin starts jobs in reaction to commands and pull request events. It is responsible for ensuring that jobs are only run on trusted PRs. A PR is considered trusted if the author is a member of the 'trusted organization' for the repository or if such a member has left an '/ok-to-test' command on the PR.
+<br>Trigger starts jobs automatically when a new trusted PR is created or when an untrusted PR becomes trusted, but it can also be used to start jobs manually via the '/run' command.
+<br>The '/rerun' command can be used to rerun jobs that have reported failure.`,
 		Config: configInfo,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
@@ -69,18 +69,18 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		Examples:    []string{"/ok-to-test"},
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/test (<job name>|all)",
-		Description: "Manually starts a/all test job(s).",
+		Usage:       "/run (<job name>|all)",
+		Description: "Manually starts a/all job(s).",
 		Featured:    true,
 		WhoCanUse:   "Anyone can trigger this command on a trusted PR.",
-		Examples:    []string{"/test all", "/test pull-bazel-test"},
+		Examples:    []string{"/run all", "/run pull-bazel-test"},
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/retest",
-		Description: "Rerun test jobs that have failed.",
+		Usage:       "/rerun",
+		Description: "Rerun jobs that have failed.",
 		Featured:    true,
 		WhoCanUse:   "Anyone can trigger this command on a trusted PR.",
-		Examples:    []string{"/retest"},
+		Examples:    []string{"/rerun"},
 	})
 	return pluginHelp, nil
 }

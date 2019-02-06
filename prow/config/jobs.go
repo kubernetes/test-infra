@@ -127,11 +127,11 @@ type Presubmit struct {
 	// Trigger is the regular expression to trigger the job.
 	// e.g. `@k8s-bot e2e test this`
 	// RerunCommand must also be specified if this field is specified.
-	// (Default: `(?m)^/test (?:.*? )?<job name>(?: .*?)?$`)
+	// (Default: `(?m)^/run (?:.*? )?<job name>(?: .*?)?$`)
 	Trigger string `json:"trigger"`
 	// The RerunCommand to give users. Must match Trigger.
 	// Trigger must also be specified if this field is specified.
-	// (Default: `/test <job name>`)
+	// (Default: `/run <job name>`)
 	RerunCommand string `json:"rerun_command"`
 
 	// RunAfterSuccess is a list of jobs to run after successfully running this one.
