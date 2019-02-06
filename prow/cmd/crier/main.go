@@ -27,6 +27,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
@@ -46,7 +47,7 @@ const (
 )
 
 type options struct {
-	client         prowflagutil.KubernetesClientOptions
+	client         prowflagutil.KubernetesOptions
 	cookiefilePath string
 	gerritProjects gerritclient.ProjectsFlag
 	github         prowflagutil.GitHubOptions
@@ -64,6 +65,10 @@ type options struct {
 }
 
 func (o *options) validate() error {
+	if o.configPath == "" {
+		return errors.New("required flag --config-path was unset")
+	}
+
 	if o.gerritWorkers > 1 {
 		// TODO(krzyzacy): try to see how to handle racy better for gerrit aggregate report.
 		logrus.Warn("gerrit reporter only supports one worker")
@@ -88,6 +93,10 @@ func (o *options) validate() error {
 		if err := o.github.Validate(o.dryrun); err != nil {
 			return err
 		}
+	}
+
+	if err := o.client.Validate(o.dryrun); err != nil {
+		return err
 	}
 
 	return nil
@@ -134,23 +143,23 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "crier"}),
 	)
 
-	prowjobClient, err := o.client.ProwJobClient()
-	if err != nil {
-		logrus.WithError(err).Fatal("unable to create prow job client")
-	}
-
-	prowjobInformerFactory := prowjobinformer.NewSharedInformerFactory(prowjobClient, resync)
-
-	var controllers []*crier.Controller
-
-	// track all worker status before shutdown
-	wg := &sync.WaitGroup{}
-
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
+
+	prowjobClientset, err := o.client.ProwJobClientset(cfg().ProwJobNamespace, o.dryrun)
+	if err != nil {
+		logrus.WithError(err).Fatal("unable to create prow job client")
+	}
+
+	prowjobInformerFactory := prowjobinformer.NewSharedInformerFactory(prowjobClientset, resync)
+
+	var controllers []*crier.Controller
+
+	// track all worker status before shutdown
+	wg := &sync.WaitGroup{}
 
 	if o.gerritWorkers > 0 {
 		informer := prowjobInformerFactory.Prow().V1().ProwJobs()
@@ -162,7 +171,7 @@ func main() {
 		controllers = append(
 			controllers,
 			crier.NewController(
-				prowjobClient,
+				prowjobClientset,
 				kube.RateLimiter(gerritReporter.GetName()),
 				informer,
 				gerritReporter,
@@ -175,7 +184,7 @@ func main() {
 		controllers = append(
 			controllers,
 			crier.NewController(
-				prowjobClient,
+				prowjobClientset,
 				kube.RateLimiter(pubsubReporter.GetName()),
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
 				pubsubReporter,
@@ -196,11 +205,11 @@ func main() {
 			logrus.WithError(err).Fatal("Error getting GitHub client.")
 		}
 
-		githubReporter := githubreporter.NewReporter(githubClient, cfg, o.reportAgent)
+		githubReporter := githubreporter.NewReporter(githubClient, cfg, v1.ProwJobAgent(o.reportAgent))
 		controllers = append(
 			controllers,
 			crier.NewController(
-				prowjobClient,
+				prowjobClientset,
 				kube.RateLimiter(githubReporter.GetName()),
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
 				githubReporter,

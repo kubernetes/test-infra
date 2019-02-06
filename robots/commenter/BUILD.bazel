@@ -11,7 +11,6 @@ container_bundle(
         "{STABLE_DOCKER_REPO}/commenter:latest": ":commenter-image",
         "{STABLE_DOCKER_REPO}/commenter:latest-{BUILD_USER}": ":commenter-image",
     },
-    stamp = True,
 )
 
 docker_push(

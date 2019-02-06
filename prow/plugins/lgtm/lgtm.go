@@ -404,7 +404,10 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 		if err != nil {
 			log.WithError(err).Error("Failed to get issue comments.")
 		}
-		for _, comment := range comments {
+		// older comments are still present
+		// iterate backwards to find the last LGTM tree-hash
+		for i := len(comments) - 1; i >= 0; i-- {
+			comment := comments[i]
 			m := addLGTMLabelNotificationRe.FindStringSubmatch(comment.Body)
 			if comment.User.Login == botname && m != nil && comment.UpdatedAt.Equal(comment.CreatedAt) {
 				lastLgtmTreeHash = m[1]

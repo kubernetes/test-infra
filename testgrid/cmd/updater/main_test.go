@@ -21,10 +21,12 @@ import (
 	"testing"
 
 	"github.com/golang/protobuf/proto"
+
+	"k8s.io/test-infra/testgrid/metadata/junit"
 	"k8s.io/test-infra/testgrid/state"
 )
 
-func Test_ValidateName(t *testing.T) {
+func TestParseSuitesMeta(t *testing.T) {
 	cases := []struct {
 		name      string
 		input     string
@@ -80,7 +82,7 @@ func Test_ValidateName(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		actual := ValidateName(tc.input)
+		actual := parseSuitesMeta(tc.input)
 		switch {
 		case actual == nil && !tc.empty:
 			t.Errorf("%s: unexpected nil map", tc.name)
@@ -103,7 +105,7 @@ func Test_ValidateName(t *testing.T) {
 
 }
 
-func Test_ExtractRows(t *testing.T) {
+func TestExtractRows(t *testing.T) {
 	cases := []struct {
 		name     string
 		content  string
@@ -311,62 +313,67 @@ func Test_ExtractRows(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		rows := map[string][]Row{}
+		t.Run(tc.name, func(t *testing.T) {
+			rows := map[string][]Row{}
 
-		rows, err := extractRows([]byte(tc.content), tc.metadata)
-		switch {
-		case err == nil && tc.err:
-			t.Errorf("%s: failed to raise an error", tc.name)
-		case err != nil && !tc.err:
-			t.Errorf("%s: unexpected err: %v", tc.name, err)
-		case len(rows) > len(tc.rows):
-			t.Errorf("%s: extra rows: actual %v != expected %v", tc.name, rows, tc.rows)
-		default:
-			for target, expectedRows := range tc.rows {
-				actualRows, ok := rows[target]
-				if !ok {
-					t.Errorf("%s: missing row %s", tc.name, target)
-					continue
-				} else if len(actualRows) != len(expectedRows) {
-					t.Errorf("%s: bad results for %s: actual %v != expected %v", tc.name, target, actualRows, expectedRows)
-					continue
-				}
-				for i, er := range expectedRows {
-					ar := actualRows[i]
-					if er.Result != ar.Result {
-						t.Errorf("%s: %s %d actual %v != expected %v", tc.name, target, i, ar.Result, er.Result)
+			suites, err := junit.Parse([]byte(tc.content))
+			if err == nil {
+				rows = extractRows(suites, tc.metadata)
+			}
+			switch {
+			case err == nil && tc.err:
+				t.Error("failed to raise an error")
+			case err != nil && !tc.err:
+				t.Errorf("unexpected err: %v", err)
+			case len(rows) > len(tc.rows):
+				t.Errorf("extra rows: actual %v != expected %v", rows, tc.rows)
+			default:
+				for target, expectedRows := range tc.rows {
+					actualRows, ok := rows[target]
+					if !ok {
+						t.Errorf("missing row %s", target)
+						continue
+					} else if len(actualRows) != len(expectedRows) {
+						t.Errorf("bad results for %s: actual %v != expected %v", target, actualRows, expectedRows)
+						continue
 					}
+					for i, er := range expectedRows {
+						ar := actualRows[i]
+						if er.Result != ar.Result {
+							t.Errorf("%s %d actual %v != expected %v", target, i, ar.Result, er.Result)
+						}
 
-					if len(ar.Metrics) > len(er.Metrics) {
-						t.Errorf("%s: extra %s %d metrics: actual %v != expected %v", tc.name, target, i, ar.Metrics, er.Metrics)
-					} else {
-						for m, ev := range er.Metrics {
-							if av, ok := ar.Metrics[m]; !ok {
-								t.Errorf("%s: %s %d missing %s metric", tc.name, target, i, m)
-							} else if ev != av {
-								t.Errorf("%s: %s %d bad %s metric: actual %f != expected %f", tc.name, target, i, m, av, ev)
+						if len(ar.Metrics) > len(er.Metrics) {
+							t.Errorf("extra %s %d metrics: actual %v != expected %v", target, i, ar.Metrics, er.Metrics)
+						} else {
+							for m, ev := range er.Metrics {
+								if av, ok := ar.Metrics[m]; !ok {
+									t.Errorf("%s %d missing %s metric", target, i, m)
+								} else if ev != av {
+									t.Errorf("%s %d bad %s metric: actual %f != expected %f", target, i, m, av, ev)
+								}
 							}
 						}
-					}
 
-					if len(ar.Metadata) > len(er.Metadata) {
-						t.Errorf("%s: extra %s %d metadata: actual %v != expected %v", tc.name, target, i, ar.Metadata, er.Metadata)
-					} else {
-						for m, ev := range er.Metadata {
-							if av, ok := ar.Metadata[m]; !ok {
-								t.Errorf("%s: %s %d missing %s metadata", tc.name, target, i, m)
-							} else if ev != av {
-								t.Errorf("%s: %s %d bad %s metadata: actual %s != expected %s", tc.name, target, i, m, av, ev)
+						if len(ar.Metadata) > len(er.Metadata) {
+							t.Errorf("extra %s %d metadata: actual %v != expected %v", target, i, ar.Metadata, er.Metadata)
+						} else {
+							for m, ev := range er.Metadata {
+								if av, ok := ar.Metadata[m]; !ok {
+									t.Errorf("%s %d missing %s metadata", target, i, m)
+								} else if ev != av {
+									t.Errorf("%s %d bad %s metadata: actual %s != expected %s", target, i, m, av, ev)
+								}
 							}
 						}
 					}
 				}
 			}
-		}
+		})
 	}
 }
 
-func Test_MarshalGrid(t *testing.T) {
+func TestMarshalGrid(t *testing.T) {
 	g1 := state.Grid{
 		Columns: []*state.Column{
 			{Build: "alpha"},

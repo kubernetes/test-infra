@@ -16,39 +16,14 @@ limitations under the License.
 
 package gcs
 
-// Started is used to mirror the started.json artifact.
-// All fields in Started beside Timestamp are deprecated.
-type Started struct {
-	// Timestamp is the time in epoch seconds recorded when started.json is created.
-	Timestamp int64 `json:"timestamp"`
-	// Node is deprecated.
-	Node string `json:"node,omitempty"`
-	// Repos is deprecated.
-	Repos map[string]string `json:"repos,omitempty"`
-	// Pull is deprecated.
-	Pull string `json:"pull,omitempty"`
-}
+import (
+	"k8s.io/test-infra/testgrid/metadata"
+)
 
-// Finished is used to mirror the finished.json artifact.
-type Finished struct {
-	// Timestamp is the time in epoch seconds recorded when finished.json is created.
-	Timestamp int64 `json:"timestamp"`
-	// Version is deprecated.
-	// TODO: Version should be removed in favor of Revision.
-	Version string `json:"version,omitempty"`
-	// JobVersion is deprecated.
-	// TODO: JobVersion should be removed in favor of Revision.
-	JobVersion string `json:"job-version,omitempty"`
-	// Revision identifies the revision of the code the build tested.
-	// Revision can be either a SHA or a ref.
-	// TODO: resolve https://github.com/kubernetes/test-infra/issues/10359
-	Revision string `json:"revision,omitempty"`
-	// Passed is true when the job has passed, else false.
-	Passed bool `json:"passed"`
-	// Result is the result of the job ("SUCCESS", "ABORTED", or "FAILURE").
-	Result string `json:"result"`
-	// Metadata is any additional metadata uploaded by the job.
-	// Keys typically include infra-commit, repos, repo, repo-commit.
-	// Values typically have type string or map[string]string.
-	Metadata map[string]interface{} `json:"metadata,omitempty"`
-}
+// TODO(fejta): migrate usage off type alias.
+
+// Started holds started.json data
+type Started = metadata.Started
+
+// Finished holds finished.json data
+type Finished = metadata.Finished

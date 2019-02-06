@@ -40,20 +40,17 @@ func TestSkipStatus(t *testing.T) {
 		expected []github.Status
 	}{
 		{
-			name: "Skip some tests",
+			name: "required contexts should not be skipped regardless of their state",
 
 			presubmits: []config.Presubmit{
 				{
-					AlwaysRun: true,
-					Context:   "unit-tests",
+					Context: "passing-tests",
 				},
 				{
-					AlwaysRun: false,
-					Context:   "extended-tests",
+					Context: "failed-tests",
 				},
 				{
-					AlwaysRun: false,
-					Context:   "integration-tests",
+					Context: "pending-tests",
 				},
 			},
 			sha: "shalala",
@@ -67,53 +64,109 @@ func TestSkipStatus(t *testing.T) {
 			},
 			existing: []github.Status{
 				{
+					Context: "passing-tests",
 					State:   github.StatusSuccess,
-					Context: "unit-tests",
 				},
+				{
+					Context: "failed-tests",
+					State:   github.StatusFailure,
+				},
+				{
+					Context: "pending-tests",
+					State:   github.StatusPending,
+				},
+			},
+
+			expected: []github.Status{
+				{
+					Context: "passing-tests",
+					State:   github.StatusSuccess,
+				},
+				{
+					Context: "failed-tests",
+					State:   github.StatusFailure,
+				},
+				{
+					Context: "pending-tests",
+					State:   github.StatusPending,
+				},
+			},
+		},
+		{
+			name: "optional contexts that have failed or are pending should be skipped",
+
+			presubmits: []config.Presubmit{
+				{
+					Optional: true,
+					Context:  "failed-tests",
+				},
+				{
+					Optional: true,
+					Context:  "pending-tests",
+				},
+			},
+			sha: "shalala",
+			event: &github.GenericCommentEvent{
+				IsPR:       true,
+				IssueState: "open",
+				Action:     github.GenericCommentActionCreated,
+				Body:       "/skip",
+				Number:     1,
+				Repo:       github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+			},
+			existing: []github.Status{
 				{
 					State:   github.StatusFailure,
-					Context: "extended-tests",
+					Context: "failed-tests",
 				},
 				{
 					State:   github.StatusPending,
-					Context: "integration-tests",
+					Context: "pending-tests",
 				},
 			},
 
 			expected: []github.Status{
 				{
-					State:   github.StatusSuccess,
-					Context: "unit-tests",
+					State:       github.StatusSuccess,
+					Description: "Skipped",
+					Context:     "failed-tests",
 				},
 				{
 					State:       github.StatusSuccess,
 					Description: "Skipped",
-					Context:     "extended-tests",
-				},
-				{
-					State:       github.StatusSuccess,
-					Description: "Skipped",
-					Context:     "integration-tests",
+					Context:     "pending-tests",
 				},
 			},
 		},
 		{
-			name: "Do not skip tests with PR changes that need to run",
+			name: "optional contexts that have not posted a context should not be skipped",
 
 			presubmits: []config.Presubmit{
 				{
-					AlwaysRun: true,
-					Context:   "unit-tests",
+					Optional: true,
+					Context:  "untriggered-tests",
 				},
+			},
+			sha: "shalala",
+			event: &github.GenericCommentEvent{
+				IsPR:       true,
+				IssueState: "open",
+				Action:     github.GenericCommentActionCreated,
+				Body:       "/skip",
+				Number:     1,
+				Repo:       github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+			},
+			existing: []github.Status{},
+
+			expected: []github.Status{},
+		},
+		{
+			name: "optional contexts that have succeeded should not be skipped",
+
+			presubmits: []config.Presubmit{
 				{
-					AlwaysRun: false,
-					Context:   "extended-tests",
-				},
-				{
-					RegexpChangeMatcher: config.RegexpChangeMatcher{
-						RunIfChanged: "^(test/integration)",
-					},
-					Context: "integration-tests",
+					Optional: true,
+					Context:  "succeeded-tests",
 				},
 			},
 			sha: "shalala",
@@ -128,141 +181,56 @@ func TestSkipStatus(t *testing.T) {
 			existing: []github.Status{
 				{
 					State:   github.StatusSuccess,
-					Context: "unit-tests",
+					Context: "succeeded-tests",
 				},
+			},
+
+			expected: []github.Status{
+				{
+					State:   github.StatusSuccess,
+					Context: "succeeded-tests",
+				},
+			},
+		},
+		{
+			name: "optional tests that have failed but will be handled by trigger should not be skipped",
+
+			presubmits: []config.Presubmit{
+				{
+					Optional:     true,
+					Trigger:      `(?m)^/test (?:.*? )?job(?: .*?)?$`,
+					RerunCommand: "/test job",
+					Context:      "failed-tests",
+				},
+			},
+			sha: "shalala",
+			event: &github.GenericCommentEvent{
+				IsPR:       true,
+				IssueState: "open",
+				Action:     github.GenericCommentActionCreated,
+				Body: `/skip
+/test job`,
+				Number: 1,
+				Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+			},
+			existing: []github.Status{
 				{
 					State:   github.StatusFailure,
-					Context: "extended-tests",
-				},
-				{
-					State:   github.StatusPending,
-					Context: "integration-tests",
+					Context: "failed-tests",
 				},
 			},
-			prChanges: map[int][]github.PullRequestChange{
-				1: {
-					{
-						Filename: "test/integration/main.go",
-					},
-					{
-						Filename: "README.md",
-					},
-				},
-			},
-
 			expected: []github.Status{
 				{
-					State:   github.StatusSuccess,
-					Context: "unit-tests",
-				},
-				{
-					State:       github.StatusSuccess,
-					Description: "Skipped",
-					Context:     "extended-tests",
-				},
-				{
-					State:   github.StatusPending,
-					Context: "integration-tests",
-				},
-			},
-		},
-		{
-			name: "Skip tests with PR changes that do not need to run",
-
-			presubmits: []config.Presubmit{
-				{
-					RegexpChangeMatcher: config.RegexpChangeMatcher{
-						RunIfChanged: "^(test/integration)",
-					},
-					Context: "integration-tests",
-				},
-			},
-			sha: "shalala",
-			event: &github.GenericCommentEvent{
-				IsPR:       true,
-				IssueState: "open",
-				Action:     github.GenericCommentActionCreated,
-				Body:       "/skip",
-				Number:     1,
-				Repo:       github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
-			},
-			existing: []github.Status{
-				{
-					State:   github.StatusPending,
-					Context: "integration-tests",
-				},
-			},
-			prChanges: map[int][]github.PullRequestChange{
-				1: {
-					{
-						Filename: "build/core.sh",
-					},
-					{
-						Filename: "README.md",
-					},
-				},
-			},
-
-			expected: []github.Status{
-				{
-					State:       github.StatusSuccess,
-					Description: "Skipped",
-					Context:     "integration-tests",
-				},
-			},
-		},
-		{
-			name: "Skip broken but skippable tests",
-
-			presubmits: []config.Presubmit{
-				{
-					SkipReport: true,
-					RegexpChangeMatcher: config.RegexpChangeMatcher{
-						RunIfChanged: "^(test/integration)",
-					},
-					Context: "integration-tests",
-				},
-			},
-			sha: "shalala",
-			event: &github.GenericCommentEvent{
-				IsPR:       true,
-				IssueState: "open",
-				Action:     github.GenericCommentActionCreated,
-				Body:       "/skip",
-				Number:     1,
-				Repo:       github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
-			},
-			existing: []github.Status{
-				{
-					State:   github.StatusPending,
-					Context: "integration-tests",
-				},
-			},
-			prChanges: map[int][]github.PullRequestChange{
-				1: {
-					{
-						Filename: "test/integration/main.go",
-					},
-					{
-						Filename: "README.md",
-					},
-				},
-			},
-
-			expected: []github.Status{
-				{
-					State:       github.StatusSuccess,
-					Description: "Skipped",
-					Context:     "integration-tests",
+					State:   github.StatusFailure,
+					Context: "failed-tests",
 				},
 			},
 		},
 	}
 
 	for _, test := range tests {
-		t.Logf("running scenario %q", test.name)
 		if err := config.SetPresubmitRegexes(test.presubmits); err != nil {
-			t.Fatal(err)
+			t.Fatalf("%s: could not set presubmit regexes: %v", test.name, err)
 		}
 
 		fghc := &fakegithub.FakeClient{
@@ -281,31 +249,29 @@ func TestSkipStatus(t *testing.T) {
 		}
 		l := logrus.WithField("plugin", pluginName)
 
-		if err := handle(fghc, l, test.event, test.presubmits); err != nil {
-			t.Errorf("unexpected error: %v.", err)
+		if err := handle(fghc, l, test.event, test.presubmits, true); err != nil {
+			t.Errorf("%s: unexpected error: %v", test.name, err)
 			continue
 		}
 
 		// Check that the correct statuses have been updated.
 		created := fghc.CreatedStatuses[test.sha]
 		if len(test.expected) != len(created) {
-			t.Errorf("status mismatch: expected:\n%+v\ngot:\n%+v", test.expected, created)
+			t.Errorf("%s: status mismatch: expected:\n%+v\ngot:\n%+v", test.name, test.expected, created)
 			continue
 		}
-	out:
 		for _, got := range created {
 			var found bool
 			for _, exp := range test.expected {
 				if exp.Context == got.Context {
 					found = true
 					if !reflect.DeepEqual(exp, got) {
-						t.Errorf("expected status: %v, got: %v", exp, got)
-						break out
+						t.Errorf("%s: expected status: %v, got: %v", test.name, exp, got)
 					}
 				}
 			}
 			if !found {
-				t.Errorf("expected context %q in the results: %v", got.Context, created)
+				t.Errorf("%s: expected context %q in the results: %v", test.name, got.Context, created)
 				break
 			}
 		}

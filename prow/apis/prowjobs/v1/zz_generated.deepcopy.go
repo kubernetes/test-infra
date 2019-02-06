@@ -174,13 +174,6 @@ func (in *ProwJobSpec) DeepCopyInto(out *ProwJobSpec) {
 		*out = new(DecorationConfig)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.RunAfterSuccess != nil {
-		in, out := &in.RunAfterSuccess, &out.RunAfterSuccess
-		*out = make([]ProwJobSpec, len(*in))
-		for i := range *in {
-			(*in)[i].DeepCopyInto(&(*out)[i])
-		}
-	}
 	return
 }
 

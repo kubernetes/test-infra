@@ -26,8 +26,11 @@ import (
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/config/secret"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -41,6 +44,86 @@ type options struct {
 	pullNumber int
 	pullSha    string
 	pullAuthor string
+	org        string
+	repo       string
+
+	github       prowflagutil.GitHubOptions
+	githubClient githubClient
+	pullRequest  *github.PullRequest
+}
+
+func (o *options) getPullRequest() (*github.PullRequest, error) {
+	if o.pullRequest != nil {
+		return o.pullRequest, nil
+	}
+	pr, err := o.githubClient.GetPullRequest(o.org, o.repo, o.pullNumber)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch PullRequest from Github: %v", err)
+	}
+	o.pullRequest = pr
+	return pr, nil
+}
+
+func (o *options) defaultPR(pjs *prowapi.ProwJobSpec) error {
+	if pjs.Refs.Pulls[0].Number == 0 {
+		fmt.Fprint(os.Stderr, "PR Number: ")
+		var pullNumber int
+		fmt.Scanln(&pullNumber)
+		pjs.Refs.Pulls[0].Number = pullNumber
+		o.pullNumber = pullNumber
+	}
+	if pjs.Refs.Pulls[0].Author == "" {
+		pr, err := o.getPullRequest()
+		if err != nil {
+			return err
+		}
+		pjs.Refs.Pulls[0].Author = pr.User.Login
+	}
+	if pjs.Refs.Pulls[0].SHA == "" {
+		pr, err := o.getPullRequest()
+		if err != nil {
+			return err
+		}
+		pjs.Refs.Pulls[0].SHA = pr.Head.SHA
+	}
+	return nil
+}
+
+func (o *options) defaultBaseRef(pjs *prowapi.ProwJobSpec) error {
+	if pjs.Refs.BaseRef == "" {
+		if o.pullNumber != 0 {
+			pr, err := o.getPullRequest()
+			if err != nil {
+				return err
+			}
+			pjs.Refs.BaseRef = pr.Base.Ref
+		} else {
+			fmt.Fprint(os.Stderr, "Base ref (e.g. master): ")
+			fmt.Scanln(&pjs.Refs.BaseRef)
+		}
+	}
+	if pjs.Refs.BaseSHA == "" {
+		if o.pullNumber != 0 {
+			pr, err := o.getPullRequest()
+			if err != nil {
+				return err
+			}
+			pjs.Refs.BaseSHA = pr.Base.SHA
+		} else {
+			baseSHA, err := o.githubClient.GetRef(o.org, o.repo, fmt.Sprintf("heads/%s", pjs.Refs.BaseRef))
+			if err != nil {
+				logrus.Fatalf("failed to get base sha: %v", err)
+				return err
+			}
+			pjs.Refs.BaseSHA = baseSHA
+		}
+	}
+	return nil
+}
+
+type githubClient interface {
+	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
+	GetRef(org, repo, ref string) (string, error)
 }
 
 func (o *options) Validate() error {
@@ -57,15 +140,17 @@ func (o *options) Validate() error {
 
 func gatherOptions() options {
 	o := options{}
-	flag.StringVar(&o.jobName, "job", "", "Job to run.")
-	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	flag.StringVar(&o.baseRef, "base-ref", "", "Git base ref under test")
-	flag.StringVar(&o.baseSha, "base-sha", "", "Git base SHA under test")
-	flag.IntVar(&o.pullNumber, "pull-number", 0, "Git pull number under test")
-	flag.StringVar(&o.pullSha, "pull-sha", "", "Git pull SHA under test")
-	flag.StringVar(&o.pullAuthor, "pull-author", "", "Git pull author under test")
-	flag.Parse()
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.StringVar(&o.jobName, "job", "", "Job to run.")
+	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
+	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	fs.StringVar(&o.baseRef, "base-ref", "", "Git base ref under test")
+	fs.StringVar(&o.baseSha, "base-sha", "", "Git base SHA under test")
+	fs.IntVar(&o.pullNumber, "pull-number", 0, "Git pull number under test")
+	fs.StringVar(&o.pullSha, "pull-sha", "", "Git pull SHA under test")
+	fs.StringVar(&o.pullAuthor, "pull-author", "", "Git pull author under test")
+	o.github.AddFlagsWithoutDefaultGithubTokenPath(fs)
+	fs.Parse(os.Args[1:])
 	return o
 }
 
@@ -80,7 +165,19 @@ func main() {
 		logrus.WithError(err).Fatal("Error loading config.")
 	}
 
-	var pjs kube.ProwJobSpec
+	var secretAgent *secret.Agent
+	if o.github.TokenPath != "" {
+		secretAgent = &secret.Agent{}
+		if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
+			logrus.Fatalf("Failed to start secret agent: %v", err)
+		}
+	}
+	o.githubClient, err = o.github.GitHubClient(secretAgent, false)
+	if err != nil {
+		logrus.Fatalf("failed to get Github client: %v", err)
+	}
+
+	var pjs prowapi.ProwJobSpec
 	var labels map[string]string
 	var found bool
 	var needsBaseRef bool
@@ -93,12 +190,12 @@ func main() {
 		}
 		for _, p := range ps {
 			if p.Name == o.jobName {
-				pjs = pjutil.PresubmitSpec(p, kube.Refs{
+				pjs = pjutil.PresubmitSpec(p, prowapi.Refs{
 					Org:     org,
 					Repo:    repo,
 					BaseRef: o.baseRef,
 					BaseSHA: o.baseSha,
-					Pulls: []kube.Pull{{
+					Pulls: []prowapi.Pull{{
 						Author: o.pullAuthor,
 						Number: o.pullNumber,
 						SHA:    o.pullSha,
@@ -108,6 +205,8 @@ func main() {
 				found = true
 				needsBaseRef = true
 				needsPR = true
+				o.org = org
+				o.repo = repo
 			}
 		}
 	}
@@ -119,7 +218,7 @@ func main() {
 		}
 		for _, p := range ps {
 			if p.Name == o.jobName {
-				pjs = pjutil.PostsubmitSpec(p, kube.Refs{
+				pjs = pjutil.PostsubmitSpec(p, prowapi.Refs{
 					Org:     org,
 					Repo:    repo,
 					BaseRef: o.baseRef,
@@ -128,6 +227,8 @@ func main() {
 				labels = p.Labels
 				found = true
 				needsBaseRef = true
+				o.org = org
+				o.repo = repo
 			}
 		}
 	}
@@ -141,28 +242,14 @@ func main() {
 	if !found {
 		logrus.Fatalf("Job %s not found.", o.jobName)
 	}
-	if needsBaseRef {
-		if pjs.Refs.BaseRef == "" {
-			fmt.Fprint(os.Stderr, "Base ref (e.g. master): ")
-			fmt.Scanln(&pjs.Refs.BaseRef)
-		}
-		if pjs.Refs.BaseSHA == "" {
-			fmt.Fprint(os.Stderr, "Base SHA (e.g. 72bcb5d80): ")
-			fmt.Scanln(&pjs.Refs.BaseSHA)
+	if needsPR {
+		if err := o.defaultPR(&pjs); err != nil {
+			logrus.Fatalf("failed to default PR: %v", err)
 		}
 	}
-	if needsPR {
-		if pjs.Refs.Pulls[0].Number == 0 {
-			fmt.Fprint(os.Stderr, "PR Number: ")
-			fmt.Scanln(&pjs.Refs.Pulls[0].Number)
-		}
-		if pjs.Refs.Pulls[0].Author == "" {
-			fmt.Fprint(os.Stderr, "PR author: ")
-			fmt.Scanln(&pjs.Refs.Pulls[0].Author)
-		}
-		if pjs.Refs.Pulls[0].SHA == "" {
-			fmt.Fprint(os.Stderr, "PR SHA (e.g. 72bcb5d80): ")
-			fmt.Scanln(&pjs.Refs.Pulls[0].SHA)
+	if needsBaseRef {
+		if err := o.defaultBaseRef(&pjs); err != nil {
+			logrus.Fatalf("failed to default base ref: %v", err)
 		}
 	}
 	pj := pjutil.NewProwJob(pjs, labels)

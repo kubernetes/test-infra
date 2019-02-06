@@ -136,12 +136,6 @@ func (c *Cron) addPeriodic(p config.Periodic) error {
 		return err
 	}
 
-	for _, ras := range p.RunAfterSuccess {
-		if err := c.addPeriodic(ras); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 

@@ -23,8 +23,8 @@ import (
 
 	"k8s.io/test-infra/prow/gerrit/client"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
 )
 
 type fca struct {
@@ -40,10 +40,10 @@ func (f *fca) Config() *config.Config {
 
 type fkc struct {
 	sync.Mutex
-	prowjobs []kube.ProwJob
+	prowjobs []prowapi.ProwJob
 }
 
-func (f *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
+func (f *fkc) CreateProwJob(pj prowapi.ProwJob) (prowapi.ProwJob, error) {
 	f.Lock()
 	defer f.Unlock()
 	f.prowjobs = append(f.prowjobs, pj)
@@ -124,7 +124,7 @@ func TestProcessChange(t *testing.T) {
 		shouldError bool
 	}{
 		{
-			name: "no revisions",
+			name: "no revisions errors out",
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "test-infra",
@@ -133,7 +133,7 @@ func TestProcessChange(t *testing.T) {
 			shouldError: true,
 		},
 		{
-			name: "wrong project",
+			name: "wrong project triggers no jobs",
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "woof",
@@ -144,7 +144,7 @@ func TestProcessChange(t *testing.T) {
 			},
 		},
 		{
-			name: "normal",
+			name: "normal changes should trigger matching branch jobs",
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "test-infra",
@@ -287,12 +287,13 @@ func TestProcessChange(t *testing.T) {
 		testInfraPresubmits := []config.Presubmit{
 			{
 				JobBase: config.JobBase{
-					Name: "test-foo",
+					Name: "always-runs-all-branches",
 				},
+				AlwaysRun: true,
 			},
 			{
 				JobBase: config.JobBase{
-					Name: "test-go",
+					Name: "run-if-changed-all-branches",
 				},
 				RegexpChangeMatcher: config.RegexpChangeMatcher{
 					RunIfChanged: "\\.go",
@@ -300,19 +301,21 @@ func TestProcessChange(t *testing.T) {
 			},
 			{
 				JobBase: config.JobBase{
-					Name: "test-branch-pony",
+					Name: "runs-on-pony-branch",
 				},
 				Brancher: config.Brancher{
 					Branches: []string{"pony"},
 				},
+				AlwaysRun: true,
 			},
 			{
 				JobBase: config.JobBase{
-					Name: "test-skip-branch-baz",
+					Name: "runs-on-all-but-baz-branch",
 				},
 				Brancher: config.Brancher{
 					SkipBranches: []string{"baz"},
 				},
+				AlwaysRun: true,
 			},
 		}
 		if err := config.SetPresubmitRegexes(testInfraPresubmits); err != nil {
@@ -329,6 +332,7 @@ func TestProcessChange(t *testing.T) {
 								JobBase: config.JobBase{
 									Name: "other-test",
 								},
+								AlwaysRun: true,
 							},
 						},
 					},

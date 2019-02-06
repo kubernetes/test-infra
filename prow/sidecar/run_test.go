@@ -28,8 +28,8 @@ import (
 	"strings"
 	"testing"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/entrypoint"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
 
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -40,15 +40,15 @@ import (
 func TestGetRevisionFromRef(t *testing.T) {
 	var tests = []struct {
 		name     string
-		refs     *kube.Refs
+		refs     *prowapi.Refs
 		expected string
 	}{
 		{
 			name: "Refs with Pull",
-			refs: &kube.Refs{
+			refs: &prowapi.Refs{
 				BaseRef: "master",
 				BaseSHA: "deadbeef",
-				Pulls: []kube.Pull{
+				Pulls: []prowapi.Pull{
 					{
 						Number: 123,
 						SHA:    "abcd1234",
@@ -59,7 +59,7 @@ func TestGetRevisionFromRef(t *testing.T) {
 		},
 		{
 			name: "Refs with BaseSHA",
-			refs: &kube.Refs{
+			refs: &prowapi.Refs{
 				BaseRef: "master",
 				BaseSHA: "deadbeef",
 			},
@@ -67,7 +67,7 @@ func TestGetRevisionFromRef(t *testing.T) {
 		},
 		{
 			name: "Refs with BaseRef",
-			refs: &kube.Refs{
+			refs: &prowapi.Refs{
 				BaseRef: "master",
 			},
 			expected: "master",

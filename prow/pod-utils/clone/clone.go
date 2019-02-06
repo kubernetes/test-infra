@@ -25,12 +25,12 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/kube"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 // Run clones the refs under the prescribed directory and optionally
 // configures the git username and email in the repository as well.
-func Run(refs kube.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env []string) Record {
+func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env []string) Record {
 	logrus.WithFields(logrus.Fields{"refs": refs}).Info("Cloning refs")
 	record := Record{Refs: refs}
 
@@ -69,7 +69,7 @@ func Run(refs kube.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env 
 
 // PathForRefs determines the full path to where
 // refs should be cloned
-func PathForRefs(baseDir string, refs kube.Refs) string {
+func PathForRefs(baseDir string, refs prowapi.Refs) string {
 	var clonePath string
 	if refs.PathAlias != "" {
 		clonePath = refs.PathAlias
@@ -87,7 +87,7 @@ type gitCtx struct {
 }
 
 // gitCtxForRefs creates a gitCtx based on the provide refs and baseDir.
-func gitCtxForRefs(refs kube.Refs, baseDir string, env []string) gitCtx {
+func gitCtxForRefs(refs prowapi.Refs, baseDir string, env []string) gitCtx {
 	g := gitCtx{
 		cloneDir:      PathForRefs(baseDir, refs),
 		env:           env,
@@ -106,7 +106,7 @@ func (g *gitCtx) gitCommand(args ...string) cloneCommand {
 // commandsForBaseRef returns the list of commands needed to initialize and
 // configure a local git directory, as well as fetch and check out the provided
 // base ref.
-func (g *gitCtx) commandsForBaseRef(refs kube.Refs, gitUserName, gitUserEmail, cookiePath string) []cloneCommand {
+func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs, gitUserName, gitUserEmail, cookiePath string) []cloneCommand {
 	commands := []cloneCommand{{dir: "/", env: g.env, command: "mkdir", args: []string{"-p", g.cloneDir}}}
 
 	commands = append(commands, g.gitCommand("init"))
@@ -176,7 +176,7 @@ func gitTimestampEnvs(timestamp int) []string {
 // It's recommended that fakeTimestamp be set to the timestamp of the base ref.
 // This enables reproducible timestamps and git tree digests every time the same
 // set of base and pull refs are used.
-func (g *gitCtx) commandsForPullRefs(refs kube.Refs, fakeTimestamp int) []cloneCommand {
+func (g *gitCtx) commandsForPullRefs(refs prowapi.Refs, fakeTimestamp int) []cloneCommand {
 	var commands []cloneCommand
 	for _, prRef := range refs.Pulls {
 		ref := fmt.Sprintf("pull/%d/head", prRef.Number)

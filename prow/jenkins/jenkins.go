@@ -29,7 +29,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/kube"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
@@ -391,14 +391,14 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 // Build triggers a Jenkins build for the provided ProwJob. The name of
 // the ProwJob is going to be used as the Prow Job ID parameter that will
 // help us track the build before it's scheduled by Jenkins.
-func (c *Client) Build(pj *kube.ProwJob, buildID string) error {
+func (c *Client) Build(pj *prowapi.ProwJob, buildID string) error {
 	c.logger.WithFields(pjutil.ProwJobFields(pj)).Info("Build")
 	return c.BuildFromSpec(&pj.Spec, buildID, pj.ObjectMeta.Name)
 }
 
 // BuildFromSpec triggers a Jenkins build for the provided ProwJobSpec.
 // prowJobID helps us track the build before it's scheduled by Jenkins.
-func (c *Client) BuildFromSpec(spec *kube.ProwJobSpec, buildID, prowJobID string) error {
+func (c *Client) BuildFromSpec(spec *prowapi.ProwJobSpec, buildID, prowJobID string) error {
 	if c.dryRun {
 		return nil
 	}

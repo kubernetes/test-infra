@@ -76,11 +76,6 @@ func run(deploy deployer, o options) error {
 	}
 
 	if o.up {
-		if o.federation {
-			if err := control.XMLWrap(&suite, "Federation TearDown Previous", fedDown); err != nil {
-				return fmt.Errorf("error tearing down previous federation control plane: %v", err)
-			}
-		}
 		if err := control.XMLWrap(&suite, "TearDown Previous", deploy.Down); err != nil {
 			return fmt.Errorf("error tearing down previous cluster: %s", err)
 		}
@@ -88,8 +83,7 @@ func run(deploy deployer, o options) error {
 
 	// Ensures that the cleanup/down action is performed exactly once.
 	var (
-		downDone           = false
-		federationDownDone = false
+		downDone = false
 	)
 
 	var (
@@ -116,17 +110,6 @@ func run(deploy deployer, o options) error {
 				}
 				return nil
 			})
-			// Deferred statements are executed in last-in-first-out order, so
-			// federation down defer must appear after the cluster teardown in
-			// order to execute that before cluster teardown.
-			if o.federation {
-				defer control.XMLWrap(&suite, "Deferred Federation TearDown", func() error {
-					if !federationDownDone {
-						return fedDown()
-					}
-					return nil
-				})
-			}
 		}
 		// Start the cluster using this version.
 		if err := control.XMLWrap(&suite, "Up", deploy.Up); err != nil {
@@ -141,14 +124,6 @@ func run(deploy deployer, o options) error {
 				})
 			}
 			return fmt.Errorf("starting e2e cluster: %s", err)
-		}
-		if o.federation {
-			if err := control.XMLWrap(&suite, "Federation Up", fedUp); err != nil {
-				control.XMLWrap(&suite, "dumpFederationLogs", func() error {
-					return dumpFederationLogs(dump)
-				})
-				return fmt.Errorf("error starting federation: %s", err)
-			}
 		}
 		// If node testing is enabled, check that the api is reachable before
 		// proceeding with further steps. This is accomplished by listing the nodes.
@@ -201,10 +176,6 @@ func run(deploy deployer, o options) error {
 			}))
 		} else if err := control.XMLWrap(&suite, "IsUp", deploy.IsUp); err != nil {
 			errs = util.AppendError(errs, err)
-		} else if o.federation {
-			errs = util.AppendError(errs, control.XMLWrap(&suite, "FederationTest", func() error {
-				return federationTest(testArgs)
-			}))
 		} else {
 			if o.deployment != "conformance" {
 				errs = util.AppendError(errs, control.XMLWrap(&suite, "kubectl version", func() error { return getKubectlVersion(deploy) }))
@@ -272,18 +243,6 @@ func run(deploy deployer, o options) error {
 	}
 
 	if o.down {
-		if o.federation {
-			errs = util.AppendError(errs, control.XMLWrap(&suite, "Federation TearDown", func() error {
-				if !federationDownDone {
-					err := fedDown()
-					if err != nil {
-						return err
-					}
-					federationDownDone = true
-				}
-				return nil
-			}))
-		}
 		errs = util.AppendError(errs, control.XMLWrap(&suite, "TearDown", func() error {
 			if !downDone {
 				err := deploy.Down()
@@ -301,9 +260,7 @@ func run(deploy deployer, o options) error {
 	errs = util.AppendError(errs, kubemarkDownErr)
 
 	// Save the state if we upped a new cluster without downing it
-	// or we are turning up federated clusters without turning up
-	// the federation control plane.
-	if o.save != "" && ((!o.down && o.up) || (!o.federation && o.up && o.deployment != "none")) {
+	if o.save != "" && ((!o.down && o.up) || (o.up && o.deployment != "none")) {
 		errs = util.AppendError(errs, control.XMLWrap(&suite, "Save Cluster State", func() error {
 			return saveState(o.save)
 		}))
@@ -381,11 +338,6 @@ func dumpRemoteLogs(deploy deployer, o options, path, reason string) []error {
 	errs = util.AppendError(errs, control.XMLWrap(&suite, reason+"DumpClusterLogs", func() error {
 		return deploy.DumpClusterLogs(path, o.logexporterGCSPath)
 	}))
-	if o.federation {
-		errs = util.AppendError(errs, control.XMLWrap(&suite, reason+"dumpFederationLogs", func() error {
-			return dumpFederationLogs(path)
-		}))
-	}
 
 	return errs
 }
@@ -564,25 +516,6 @@ func defaultDumpClusterLogs(localArtifactsDir, logexporterGCSPath string) error 
 		cmd = exec.Command(logDumpPath, localArtifactsDir)
 	}
 	return control.FinishRunning(cmd)
-}
-
-func dumpFederationLogs(location string) error {
-	// TODO(shashidharatd): Remove below logic of choosing the scripts to run from federation
-	// repo once the k8s deployment in federation jobs moves to kubernetes-anywhere
-	var logDumpPath string
-	if useFederationRepo() {
-		logDumpPath = "../federation/deploy/cluster/log-dump.sh"
-	} else {
-		logDumpPath = "./federation/cluster/log-dump.sh"
-	}
-	// federation/cluster/log-dump.sh only exists in the Kubernetes tree
-	// post-1.6. If it doesn't exist, do nothing and do not report an error.
-	if _, err := os.Stat(logDumpPath); err == nil {
-		log.Printf("Dumping Federation logs to: %v", location)
-		return control.FinishRunning(exec.Command(logDumpPath, location))
-	}
-	log.Printf("Could not find %s. This is expected if running tests against a Kubernetes 1.6 or older tree.", logDumpPath)
-	return nil
 }
 
 func chartsTest() error {

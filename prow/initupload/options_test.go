@@ -19,8 +19,8 @@ package initupload
 import (
 	"testing"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/gcsupload"
-	"k8s.io/test-infra/prow/kube"
 )
 
 func TestOptions_Validate(t *testing.T) {
@@ -35,8 +35,8 @@ func TestOptions_Validate(t *testing.T) {
 				Log: "testing",
 				Options: &gcsupload.Options{
 					DryRun: true,
-					GCSConfiguration: &kube.GCSConfiguration{
-						PathStrategy: kube.PathStrategyExplicit,
+					GCSConfiguration: &prowapi.GCSConfiguration{
+						PathStrategy: prowapi.PathStrategyExplicit,
 					},
 				},
 			},
@@ -47,8 +47,8 @@ func TestOptions_Validate(t *testing.T) {
 			input: Options{
 				Options: &gcsupload.Options{
 					DryRun: true,
-					GCSConfiguration: &kube.GCSConfiguration{
-						PathStrategy: kube.PathStrategyExplicit,
+					GCSConfiguration: &prowapi.GCSConfiguration{
+						PathStrategy: prowapi.PathStrategyExplicit,
 					},
 				},
 			},
@@ -59,7 +59,7 @@ func TestOptions_Validate(t *testing.T) {
 			input: Options{
 				Options: &gcsupload.Options{
 					DryRun:           true,
-					GCSConfiguration: &kube.GCSConfiguration{},
+					GCSConfiguration: &prowapi.GCSConfiguration{},
 				},
 			},
 			expectedErr: true,

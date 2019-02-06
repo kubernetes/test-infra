@@ -26,6 +26,7 @@ limitations under the License.
 package ghcache
 
 import (
+	"context"
 	"net/http"
 	"path"
 	"strings"
@@ -35,6 +36,7 @@ import (
 	"github.com/peterbourgon/diskv"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/semaphore"
 )
 
 // Cache response modes describe how ghcache fulfilled a request.
@@ -59,8 +61,24 @@ var cacheCounter = prometheus.NewCounterVec(
 	[]string{"mode"},
 )
 
+// outboundConcurrencyGauge provides the 'concurrent_outbound_requests' gauge that
+// is global to the proxy.
+var outboundConcurrencyGauge = prometheus.NewGauge(prometheus.GaugeOpts{
+	Name: "concurrent_outbound_requests",
+	Help: "How many concurrent requests are in flight to GitHub servers.",
+})
+
+// pendingOutboundConnectionsGauge provides the 'pending_outbound_requests' gauge that
+// is global to the proxy.
+var pendingOutboundConnectionsGauge = prometheus.NewGauge(prometheus.GaugeOpts{
+	Name: "pending_outbound_requests",
+	Help: "How many pending requests are waiting to be sent to GitHub servers.",
+})
+
 func init() {
 	prometheus.MustRegister(cacheCounter)
+	prometheus.MustRegister(outboundConcurrencyGauge)
+	prometheus.MustRegister(pendingOutboundConnectionsGauge)
 }
 
 func cacheResponseMode(headers http.Header) string {
@@ -74,6 +92,29 @@ func cacheResponseMode(headers http.Header) string {
 		return ModeChanged
 	}
 	return ModeMiss
+}
+
+func newThrottlingTransport(maxConcurrency int, delegate http.RoundTripper) http.RoundTripper {
+	return &throttlingTransport{sem: semaphore.NewWeighted(int64(maxConcurrency)), delegate: delegate}
+}
+
+// throttlingTransport throttles outbound concurrency from the proxy
+type throttlingTransport struct {
+	sem      *semaphore.Weighted
+	delegate http.RoundTripper
+}
+
+func (c *throttlingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	pendingOutboundConnectionsGauge.Inc()
+	if err := c.sem.Acquire(context.Background(), 1); err != nil {
+		logrus.WithField("cache-key", req.URL.String()).WithError(err).Error("Internal error acquiring semaphore.")
+		return nil, err
+	}
+	defer c.sem.Release(1)
+	pendingOutboundConnectionsGauge.Dec()
+	outboundConcurrencyGauge.Inc()
+	defer outboundConcurrencyGauge.Dec()
+	return c.delegate.RoundTrip(req)
 }
 
 // upstreamTransport changes response headers from upstream before they
@@ -113,27 +154,28 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 
 // NewDiskCache creates a GitHub cache RoundTripper that is backed by a disk
 // cache.
-func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB int) http.RoundTripper {
+func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxConcurrency int) http.RoundTripper {
 	return NewFromCache(delegate, diskcache.NewWithDiskv(
 		diskv.New(diskv.Options{
 			BasePath:     path.Join(cacheDir, "data"),
 			TempDir:      path.Join(cacheDir, "temp"),
 			CacheSizeMax: uint64(cacheSizeGB) * uint64(1000000000), // convert G to B
-		}),
-	))
+		})),
+		maxConcurrency,
+	)
 }
 
 // NewMemCache creates a GitHub cache RoundTripper that is backed by a memory
 // cache.
-func NewMemCache(delegate http.RoundTripper) http.RoundTripper {
-	return NewFromCache(delegate, httpcache.NewMemoryCache())
+func NewMemCache(delegate http.RoundTripper, maxConcurrency int) http.RoundTripper {
+	return NewFromCache(delegate, httpcache.NewMemoryCache(), maxConcurrency)
 }
 
 // NewFromCache creates a GitHub cache RoundTripper that is backed by the
 // specified httpcache.Cache implementation.
-func NewFromCache(delegate http.RoundTripper, cache httpcache.Cache) http.RoundTripper {
+func NewFromCache(delegate http.RoundTripper, cache httpcache.Cache, maxConcurrency int) http.RoundTripper {
 	cacheTransport := httpcache.NewTransport(cache)
-	cacheTransport.Transport = upstreamTransport{delegate: delegate}
+	cacheTransport.Transport = newThrottlingTransport(maxConcurrency, upstreamTransport{delegate: delegate})
 	return &requestCoalescer{
 		keys:     make(map[string]*responseWaiter),
 		delegate: cacheTransport,

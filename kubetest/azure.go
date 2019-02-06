@@ -200,6 +200,11 @@ func (c *Cluster) populateApiModelTemplate() error {
 		return fmt.Errorf("No template file specified %v", err)
 	}
 
+	// set default distro so we do not use prebuilt os image
+	v.Properties.MasterProfile.Distro = "ubuntu"
+	for _, agentPool := range v.Properties.AgentPoolProfiles {
+		agentPool.Distro = "ubuntu"
+	}
 	// replace APIModel template properties from flags
 	if c.location != "" {
 		v.Location = c.location
@@ -381,7 +386,7 @@ func (c *Cluster) createCluster() error {
 
 func (c *Cluster) buildHyperKube() error {
 
-	os.Setenv("VERSION", fmt.Sprintf("win-e2e-%v", os.Getenv("BUILD_ID")))
+	os.Setenv("VERSION", fmt.Sprintf("azure-e2e-%v", os.Getenv("BUILD_ID")))
 
 	cwd, _ := os.Getwd()
 	log.Printf("CWD %v", cwd)
@@ -400,8 +405,12 @@ func (c *Cluster) buildHyperKube() error {
 	}
 	log.Println("Docker login success.")
 	log.Println("Building hyperkube.")
+
 	pushHyperkube := util.K8s("kubernetes", "hack", "dev-push-hyperkube.sh")
-	if err1 := control.FinishRunning(exec.Command(pushHyperkube)); err1 != nil {
+	cmd = exec.Command(pushHyperkube)
+	// dev-push-hyperkube will produce a lot of output to stdout. We should capture the output here.
+	cmd.Stdout = ioutil.Discard
+	if err1 := control.FinishRunning(cmd); err1 != nil {
 		return err1
 	}
 	c.acsCustomHyperKubeURL = fmt.Sprintf("%s/hyperkube-amd64:%s", os.Getenv("REGISTRY"), os.Getenv("VERSION"))
@@ -501,7 +510,10 @@ func (c *Cluster) buildWinZip() error {
 	if err != nil {
 		return err
 	}
-	if err := control.FinishRunning(exec.Command(buildScriptPath, "-u", zipName, "-z", buildFolder)); err != nil {
+	// the build script for the windows binaries will produce a lot of output. Capture it here.
+	cmd := exec.Command(buildScriptPath, "-u", zipName, "-z", buildFolder)
+	cmd.Stdout = ioutil.Discard
+	if err := control.FinishRunning(cmd); err != nil {
 		return err
 	}
 	log.Printf("Uploading %s", zipPath)

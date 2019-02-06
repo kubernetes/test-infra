@@ -104,7 +104,9 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 			if err = json.Unmarshal(read, &finished); err != nil {
 				logrus.WithError(err).Error("Error unmarshaling finished.json")
 			}
-			metadataViewData.FinishedTime = time.Unix(finished.Timestamp, 0)
+			if finished.Timestamp != nil {
+				metadataViewData.FinishedTime = time.Unix(*finished.Timestamp, 0)
+			}
 			metadataViewData.Status = finished.Result
 		}
 	}

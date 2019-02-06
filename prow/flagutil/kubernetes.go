@@ -26,22 +26,22 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
-// KubernetesOptions holds options for interacting with Kubernetes.
-type KubernetesOptions struct {
+// LegacyKubernetesOptions holds options for interacting with Kubernetes.
+type LegacyKubernetesOptions struct {
 	cluster    string
 	kubeconfig string
 	deckURI    string
 }
 
 // AddFlags injects Kubernetes options into the given FlagSet.
-func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
+func (o *LegacyKubernetesOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.cluster, "cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
 	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If empty, uses the local cluster.")
 	fs.StringVar(&o.deckURI, "deck-url", "", "Deck URI for read-only access to the cluster.")
 }
 
 // Validate validates Kubernetes options.
-func (o *KubernetesOptions) Validate(dryRun bool) error {
+func (o *LegacyKubernetesOptions) Validate(dryRun bool) error {
 	if dryRun && o.deckURI == "" {
 		return errors.New("a dry-run was requested but required flag -deck-url was unset")
 	}
@@ -56,12 +56,12 @@ func (o *KubernetesOptions) Validate(dryRun bool) error {
 }
 
 // InjectBuildCluster is needed for backwards compatibility for Deck. Remove later.
-func (o *KubernetesOptions) InjectBuildCluster(buildCluster string) {
+func (o *LegacyKubernetesOptions) InjectBuildCluster(buildCluster string) {
 	o.cluster = buildCluster
 }
 
 // Client returns a Kubernetes client.
-func (o *KubernetesOptions) Client(namespace string, dryRun bool) (client *kube.Client, defaultContext string, clientsets map[string]kubernetes.Interface, err error) {
+func (o *LegacyKubernetesOptions) Client(namespace string, dryRun bool) (client *kube.Client, defaultContext string, clientsets map[string]kubernetes.Interface, err error) {
 	if dryRun {
 		return kube.NewFakeClient(o.deckURI), "", map[string]kubernetes.Interface{}, nil
 	}

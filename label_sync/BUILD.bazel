@@ -23,7 +23,6 @@ container_bundle(
         "{STABLE_DOCKER_REPO}/label_sync:latest": ":label_sync-image",
         "{STABLE_DOCKER_REPO}/label_sync:latest-{BUILD_USER}": ":label_sync-image",
     },
-    stamp = True,
 )
 
 docker_push(
