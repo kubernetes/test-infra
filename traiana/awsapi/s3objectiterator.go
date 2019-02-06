@@ -28,20 +28,14 @@ func (it *S3ObjectIterator) Next() (*ObjectAttrs, error) {
 		return nil, it.err
 	}
 
-	var att *ObjectAttrs
-	var err error
-
-	if it.current < len(it.output.Contents) {
-		att = it.objectToAttrs(it.output.Contents[it.current])
+	if it.current == len(it.output.Contents) {
+		return nil, iterator.Done
 	}
 
+	att := it.objectToAttrs(it.output.Contents[it.current])
 	it.current++
 
-	if it.current >= len(it.output.Contents) {
-		err = iterator.Done
-	}
-
-	return att, err
+	return att, nil
 }
 
 func (it *S3ObjectIterator) objectToAttrs(o *s3.Object) *ObjectAttrs {
