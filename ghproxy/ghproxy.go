@@ -73,6 +73,8 @@ type options struct {
 	upstream       string
 	upstreamParsed *url.URL
 
+	maxConcurrency int
+
 	// pushGateway fields are used to configure pushing prometheus metrics.
 	pushGateway         string
 	pushGatewayInterval time.Duration
@@ -96,6 +98,7 @@ func flagOptions() *options {
 	flag.IntVar(&o.sizeGB, "cache-sizeGB", 0, "Cache size in GB if using a disk cache.")
 	flag.IntVar(&o.port, "port", 8888, "Port to listen on.")
 	flag.StringVar(&o.upstream, "upstream", "https://api.github.com", "Scheme, host, and base path of reverse proxy upstream.")
+	flag.IntVar(&o.maxConcurrency, "concurrency", 25, "Maximum number of concurrent in-flight requests to GitHub.")
 	flag.StringVar(&o.pushGateway, "push-gateway", "", "If specified, push prometheus metrics to this endpoint.")
 	flag.DurationVar(&o.pushGatewayInterval, "push-gateway-interval", time.Minute, "Interval at which prometheus metrics are pushed.")
 	return o
@@ -114,9 +117,9 @@ func main() {
 
 	var cache http.RoundTripper
 	if o.dir == "" {
-		cache = ghcache.NewMemCache(http.DefaultTransport)
+		cache = ghcache.NewMemCache(http.DefaultTransport, o.maxConcurrency)
 	} else {
-		cache = ghcache.NewDiskCache(http.DefaultTransport, o.dir, o.sizeGB)
+		cache = ghcache.NewDiskCache(http.DefaultTransport, o.dir, o.sizeGB, o.maxConcurrency)
 	}
 
 	if o.pushGateway != "" {

@@ -1,4 +1,248 @@
 # kubeadm release and master tests
+presubmits:
+  kubernetes/kubernetes:
+  #manual-release-bump-required
+  - name: pull-kubernetes-e2e-kubeadm-gce
+    max_concurrency: 8
+    skip_report: true
+    run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
+    skip_branches:
+    - release-1.13 # per-release job
+    - release-1.12 # per-release job
+    - release-1.11 # per-release job
+    - release-1.10 # per-release job
+    decorate: true
+    decoration_config:
+      timeout: 4200000000000 # 70m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    - org: kubernetes
+      repo: kubernetes-anywhere
+      base_ref: kubeadm-e2e
+      path_alias: k8s.io/kubernetes-anywhere
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+    spec:
+      containers:
+      # TODO(krzyzacy): use stable tag after debugging
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --deployment=kubernetes-anywhere
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --kubeadm=pull
+        - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
+        - --provider=skeleton
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kubeadm-gce
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
+        - --timeout=55m
+        env:
+        - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
+          value: "true"
+
+  - name: pull-kubernetes-e2e-kubeadm-gce
+    max_concurrency: 8
+    skip_report: true
+    run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
+    branches:
+    - release-1.13
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+    decorate: true
+    decoration_config:
+      timeout: 4200000000000 # 70m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    - org: kubernetes
+      repo: kubernetes-anywhere
+      base_ref: kubeadm-e2e
+      path_alias: k8s.io/kubernetes-anywhere
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.13
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --deployment=kubernetes-anywhere
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --kubeadm=pull
+        - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
+        - --provider=skeleton
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kubeadm-gce
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
+        - --timeout=55m
+        env:
+        - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
+          value: "true"
+
+  - name: pull-kubernetes-e2e-kubeadm-gce
+    max_concurrency: 8
+    skip_report: true
+    run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
+    branches:
+    - release-1.12
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+    decorate: true
+    decoration_config:
+      timeout: 4200000000000 # 70m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    - org: kubernetes
+      repo: kubernetes-anywhere
+      base_ref: kubeadm-e2e
+      path_alias: k8s.io/kubernetes-anywhere
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.12
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --deployment=kubernetes-anywhere
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --kubeadm=pull
+        - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
+        - --provider=skeleton
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kubeadm-gce
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
+        - --timeout=55m
+        env:
+        - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
+          value: "true"
+
+  - name: pull-kubernetes-e2e-kubeadm-gce
+    max_concurrency: 8
+    skip_report: true
+    run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
+    branches:
+    - release-1.11
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+    decorate: true
+    decoration_config:
+      timeout: 4200000000000 # 70m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    - org: kubernetes
+      repo: kubernetes-anywhere
+      base_ref: kubeadm-e2e
+      path_alias: k8s.io/kubernetes-anywhere
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.11
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --deployment=kubernetes-anywhere
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --kubeadm=pull
+        - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
+        - --provider=skeleton
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kubeadm-gce
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
+        - --timeout=55m
+        env:
+        - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
+          value: "true"
+
+  - name: pull-kubernetes-e2e-kubeadm-gce
+    max_concurrency: 8
+    skip_report: true
+    run_if_changed: '^(cmd/kubeadm|build/debs|pkg/kubelet/certificate|cmd/kubelet/app).*$'
+    branches:
+    - release-1.10
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+    decorate: true
+    decoration_config:
+      timeout: 4200000000000 # 70m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    - org: kubernetes
+      repo: kubernetes-anywhere
+      base_ref: kubeadm-e2e
+      path_alias: k8s.io/kubernetes-anywhere
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --deployment=kubernetes-anywhere
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --kubeadm=pull
+        - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
+        - --provider=skeleton
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kubeadm-gce
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
+        - --timeout=55m
+        env:
+        - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
+          value: "true"
+
 periodics:
 - name: ci-kubernetes-e2e-kubeadm-gce-1-11
   interval: 12h
@@ -7,7 +251,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - --repo=k8s.io/kubernetes=release-1.11
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -34,7 +278,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - --repo=k8s.io/kubernetes=release-1.12
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -61,7 +305,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - --repo=k8s.io/kubernetes=release-1.13
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -87,7 +331,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e

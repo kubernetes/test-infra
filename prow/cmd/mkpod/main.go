@@ -24,10 +24,10 @@ import (
 	"os"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
 
-	"k8s.io/test-infra/prow/kube"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 )
 
@@ -73,7 +73,7 @@ func main() {
 		rawJob = raw
 	}
 
-	var job kube.ProwJob
+	var job prowapi.ProwJob
 	if err := yaml.Unmarshal(rawJob, &job); err != nil {
 		logrus.WithError(err).Fatal("Could not unmarshal ProwJob YAML.")
 	}

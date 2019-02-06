@@ -30,14 +30,15 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"gopkg.in/robfig/cron.v2"
-	"k8s.io/api/core/v1"
+	cron "gopkg.in/robfig/cron.v2"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"sigs.k8s.io/yaml"
 
-	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	buildapi "github.com/knative/build/pkg/apis/build/v1alpha1"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -136,14 +137,14 @@ type Controller struct {
 	// JobURLTemplateString compiles into JobURLTemplate at load time.
 	JobURLTemplateString string `json:"job_url_template,omitempty"`
 	// JobURLTemplate is compiled at load time from JobURLTemplateString. It
-	// will be passed a kube.ProwJob and is used to set the URL for the
+	// will be passed a prowapi.ProwJob and is used to set the URL for the
 	// "Details" link on GitHub as well as the link from deck.
 	JobURLTemplate *template.Template `json:"-"`
 
 	// ReportTemplateString compiles into ReportTemplate at load time.
 	ReportTemplateString string `json:"report_template,omitempty"`
 	// ReportTemplate is compiled at load time from ReportTemplateString. It
-	// will be passed a kube.ProwJob and can provide an optional blurb below
+	// will be passed a prowapi.ProwJob and can provide an optional blurb below
 	// the test failures comment.
 	ReportTemplate *template.Template `json:"-"`
 
@@ -171,7 +172,7 @@ type Plank struct {
 	PodPendingTimeout time.Duration `json:"-"`
 	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
 	// that request to have their PodSpecs decorated
-	DefaultDecorationConfig *kube.DecorationConfig `json:"default_decoration_config,omitempty"`
+	DefaultDecorationConfig *prowapi.DecorationConfig `json:"default_decoration_config,omitempty"`
 	// JobURLPrefix is the host and path prefix under
 	// which job details will be viewable
 	JobURLPrefix string `json:"job_url_prefix,omitempty"`
@@ -270,7 +271,7 @@ type ExternalAgentLog struct {
 	// URLTemplateString compiles into URLTemplate at load time.
 	URLTemplateString string `json:"url_template,omitempty"`
 	// URLTemplate is compiled at load time from URLTemplateString. It
-	// will be passed a kube.ProwJob and the generated URL should provide
+	// will be passed a prowapi.ProwJob and the generated URL should provide
 	// logs for the ProwJob.
 	URLTemplate *template.Template `json:"-"`
 }
@@ -424,9 +425,6 @@ func yamlToConfig(path string, nc interface{}) error {
 		var fix func(*Presubmit)
 		fix = func(job *Presubmit) {
 			job.SourcePath = path
-			for i := range job.RunAfterSuccess {
-				fix(&job.RunAfterSuccess[i])
-			}
 		}
 		for i := range jc.Presubmits[rep] {
 			fix(&jc.Presubmits[rep][i])
@@ -436,9 +434,6 @@ func yamlToConfig(path string, nc interface{}) error {
 		var fix func(*Postsubmit)
 		fix = func(job *Postsubmit) {
 			job.SourcePath = path
-			for i := range job.RunAfterSuccess {
-				fix(&job.RunAfterSuccess[i])
-			}
 		}
 		for i := range jc.Postsubmits[rep] {
 			fix(&jc.Postsubmits[rep][i])
@@ -448,9 +443,6 @@ func yamlToConfig(path string, nc interface{}) error {
 	var fix func(*Periodic)
 	fix = func(job *Periodic) {
 		job.SourcePath = path
-		for i := range job.RunAfterSuccess {
-			fix(&job.RunAfterSuccess[i])
-		}
 	}
 	for i := range jc.Periodics {
 		fix(&jc.Periodics[i])
@@ -507,29 +499,17 @@ func setPresubmitDecorationDefaults(c *Config, ps *Presubmit) {
 	if ps.Decorate {
 		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
 	}
-
-	for i := range ps.RunAfterSuccess {
-		setPresubmitDecorationDefaults(c, &ps.RunAfterSuccess[i])
-	}
 }
 
 func setPostsubmitDecorationDefaults(c *Config, ps *Postsubmit) {
 	if ps.Decorate {
 		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
 	}
-
-	for i := range ps.RunAfterSuccess {
-		setPostsubmitDecorationDefaults(c, &ps.RunAfterSuccess[i])
-	}
 }
 
 func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 	if ps.Decorate {
 		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
-	}
-
-	for i := range ps.RunAfterSuccess {
-		setPeriodicDecorationDefaults(c, &ps.RunAfterSuccess[i])
 	}
 }
 
@@ -583,19 +563,19 @@ func (c *Config) finalizeJobConfig() error {
 	c.defaultPeriodicFields(c.Periodics)
 
 	for _, v := range c.AllPresubmits(nil) {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
 			return err
 		}
 	}
 
 	for _, v := range c.AllPostsubmits(nil) {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
 			return err
 		}
 	}
 
 	for _, v := range c.AllPeriodics() {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
 			return err
 		}
 	}
@@ -613,7 +593,7 @@ func (c *Config) validateComponentConfig() error {
 
 var jobNameRegex = regexp.MustCompile(`^[A-Za-z0-9-._]+$`)
 
-func validateJobBase(v JobBase, jobType kube.ProwJobType, podNamespace string) error {
+func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string) error {
 	if !jobNameRegex.MatchString(v.Name) {
 		return fmt.Errorf("name: must match regex %q", jobNameRegex.String())
 	}
@@ -647,7 +627,7 @@ func (c *Config) validateJobConfig() error {
 	// Checking that no duplicate job in prow config exists on the same org / repo / branch.
 	validPresubmits := map[orgRepoJobName][]Presubmit{}
 	for repo, jobs := range c.Presubmits {
-		for _, job := range listPresubmits(jobs) {
+		for _, job := range jobs {
 			repoJobName := orgRepoJobName{repo, job.Name}
 			for _, existingJob := range validPresubmits[repoJobName] {
 				if existingJob.Brancher.Intersects(job.Brancher) {
@@ -659,7 +639,7 @@ func (c *Config) validateJobConfig() error {
 	}
 
 	for _, v := range c.AllPresubmits(nil) {
-		if err := validateJobBase(v.JobBase, prowjobv1.PresubmitJob, c.PodNamespace); err != nil {
+		if err := validateJobBase(v.JobBase, prowapi.PresubmitJob, c.PodNamespace); err != nil {
 			return fmt.Errorf("invalid presubmit job %s: %v", v.Name, err)
 		}
 		if err := validateTriggering(v); err != nil {
@@ -671,7 +651,7 @@ func (c *Config) validateJobConfig() error {
 	// Checking that no duplicate job in prow config exists on the same org / repo / branch.
 	validPostsubmits := map[orgRepoJobName][]Postsubmit{}
 	for repo, jobs := range c.Postsubmits {
-		for _, job := range listPostsubmits(jobs) {
+		for _, job := range jobs {
 			repoJobName := orgRepoJobName{repo, job.Name}
 			for _, existingJob := range validPostsubmits[repoJobName] {
 				if existingJob.Brancher.Intersects(job.Brancher) {
@@ -683,7 +663,7 @@ func (c *Config) validateJobConfig() error {
 	}
 
 	for _, j := range c.AllPostsubmits(nil) {
-		if err := validateJobBase(j.JobBase, prowjobv1.PostsubmitJob, c.PodNamespace); err != nil {
+		if err := validateJobBase(j.JobBase, prowapi.PostsubmitJob, c.PodNamespace); err != nil {
 			return fmt.Errorf("invalid postsubmit job %s: %v", j.Name, err)
 		}
 	}
@@ -696,7 +676,7 @@ func (c *Config) validateJobConfig() error {
 			return fmt.Errorf("duplicated periodic job : %s", p.Name)
 		}
 		validPeriodics.Insert(p.Name)
-		if err := validateJobBase(p.JobBase, prowjobv1.PeriodicJob, c.PodNamespace); err != nil {
+		if err := validateJobBase(p.JobBase, prowapi.PeriodicJob, c.PodNamespace); err != nil {
 			return fmt.Errorf("invalid periodic job %s: %v", p.Name, err)
 		}
 	}
@@ -969,9 +949,9 @@ func validateLabels(labels map[string]string) error {
 }
 
 func validateAgent(v JobBase, podNamespace string) error {
-	k := string(prowjobv1.KubernetesAgent)
-	b := string(prowjobv1.KnativeBuildAgent)
-	j := string(prowjobv1.JenkinsAgent)
+	k := string(prowapi.KubernetesAgent)
+	b := string(prowapi.KnativeBuildAgent)
+	j := string(prowapi.JenkinsAgent)
 	agents := sets.NewString(k, b, j)
 	agent := v.Agent
 	switch {
@@ -999,7 +979,7 @@ func validateAgent(v JobBase, podNamespace string) error {
 	return nil
 }
 
-func validateDecoration(container v1.Container, config *kube.DecorationConfig) error {
+func validateDecoration(container v1.Container, config *prowapi.DecorationConfig) error {
 	if config == nil {
 		return nil
 	}
@@ -1015,17 +995,25 @@ func validateDecoration(container v1.Container, config *kube.DecorationConfig) e
 	return nil
 }
 
-func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, presets []Preset) error {
+func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, buildSpec *buildapi.BuildSpec, presets []Preset) error {
 	for _, preset := range presets {
-		if err := mergePreset(preset, labels, spec); err != nil {
-			return fmt.Errorf("job %s failed to merge presets: %v", name, err)
+		if spec != nil {
+			if err := mergePreset(preset, labels, spec.Containers, &spec.Volumes); err != nil {
+				return fmt.Errorf("job %s failed to merge presets for podspec: %v", name, err)
+			}
+		}
+
+		if buildSpec != nil {
+			if err := mergePreset(preset, labels, buildSpec.Steps, &buildSpec.Volumes); err != nil {
+				return fmt.Errorf("job %s failed to merge presets for buildspec: %v", name, err)
+			}
 		}
 	}
 
 	return nil
 }
 
-func validatePodSpec(jobType kube.ProwJobType, spec *v1.PodSpec) error {
+func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec) error {
 	if spec == nil {
 		return nil
 	}
@@ -1123,7 +1111,7 @@ func DefaultRerunCommandFor(name string) string {
 // defaultJobBase configures common parameters, currently Agent and Namespace.
 func (c *ProwConfig) defaultJobBase(base *JobBase) {
 	if base.Agent == "" { // Use kubernetes by default
-		base.Agent = string(kube.KubernetesAgent)
+		base.Agent = string(prowapi.KubernetesAgent)
 	}
 	if base.Namespace == nil || *base.Namespace == "" {
 		s := c.PodNamespace
@@ -1147,14 +1135,12 @@ func (c *ProwConfig) defaultPresubmitFields(js []Presubmit) {
 			js[i].Trigger = DefaultTriggerFor(js[i].Name)
 			js[i].RerunCommand = DefaultRerunCommandFor(js[i].Name)
 		}
-		c.defaultPresubmitFields(js[i].RunAfterSuccess)
 	}
 }
 
 func (c *ProwConfig) defaultPostsubmitFields(js []Postsubmit) {
 	for i := range js {
 		c.defaultJobBase(&js[i].JobBase)
-		c.defaultPostsubmitFields(js[i].RunAfterSuccess)
 		if js[i].Context == "" {
 			js[i].Context = js[i].Name
 		}
@@ -1164,7 +1150,6 @@ func (c *ProwConfig) defaultPostsubmitFields(js []Postsubmit) {
 func (c *ProwConfig) defaultPeriodicFields(js []Periodic) {
 	for i := range js {
 		c.defaultJobBase(&js[i].JobBase)
-		c.defaultPeriodicFields(js[i].RunAfterSuccess)
 	}
 }
 
@@ -1191,10 +1176,6 @@ func SetPresubmitRegexes(js []Presubmit) error {
 			return fmt.Errorf("could not set change regexes for %s: %v", j.Name, err)
 		}
 		js[i].RegexpChangeMatcher = c
-
-		if err := SetPresubmitRegexes(j.RunAfterSuccess); err != nil {
-			return err
-		}
 	}
 	return nil
 }
@@ -1244,9 +1225,6 @@ func SetPostsubmitRegexes(ps []Postsubmit) error {
 			return fmt.Errorf("could not set change regexes for %s: %v", j.Name, err)
 		}
 		ps[i].RegexpChangeMatcher = c
-		if err := SetPostsubmitRegexes(j.RunAfterSuccess); err != nil {
-			return err
-		}
 	}
 	return nil
 }

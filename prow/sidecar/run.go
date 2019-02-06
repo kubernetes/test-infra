@@ -31,8 +31,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/entrypoint"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
@@ -44,7 +44,7 @@ func nameEntry(idx int, opt wrapper.Options) string {
 
 func wait(ctx context.Context, entries []wrapper.Options) (bool, bool, int) {
 	passed := true
-	aborted := false
+	var aborted bool
 	var failures int
 
 	for _, opt := range entries {
@@ -167,7 +167,7 @@ func combineMetadata(entries []wrapper.Options) map[string]interface{} {
 	return metadata
 }
 
-func getRevisionFromRef(refs *kube.Refs) string {
+func getRevisionFromRef(refs *prowapi.Refs) string {
 	if len(refs.Pulls) > 0 {
 		return refs.Pulls[0].SHA
 	}
@@ -194,13 +194,16 @@ func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool, metad
 		result = "FAILURE"
 	}
 
+	now := time.Now().Unix()
 	finished := gcs.Finished{
-		Timestamp: time.Now().Unix(),
-		Passed:    passed,
+		Timestamp: &now,
+		Passed:    &passed,
 		Result:    result,
 		Metadata:  metadata,
+		// TODO(fejta): JobVersion,
 	}
 
+	// TODO(fejta): move to initupload and Started.Repos, RepoVersion
 	if spec.Refs != nil {
 		finished.Revision = getRevisionFromRef(spec.Refs)
 	} else if len(spec.ExtraRefs) > 0 {

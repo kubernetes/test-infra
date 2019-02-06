@@ -41,14 +41,7 @@ func newBash(clusterIPRange *string) *bashDeployer {
 }
 
 func (b *bashDeployer) Up() error {
-	// TODO(shashidharatd): Remove below logic of choosing the scripts to run from federation
-	// repo once the k8s deployment in federation jobs moves to kubernetes-anywhere
-	var script string
-	if useFederationRepo() {
-		script = "../federation/hack/e2e-internal/e2e-up.sh"
-	} else {
-		script = "./hack/e2e-internal/e2e-up.sh"
-	}
+	script := "./hack/e2e-internal/e2e-up.sh"
 	cmd := exec.Command(script)
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, fmt.Sprintf("CLUSTER_IP_RANGE=%s", b.clusterIPRange))
@@ -56,13 +49,7 @@ func (b *bashDeployer) Up() error {
 }
 
 func (b *bashDeployer) IsUp() error {
-	var cmd string
-	if useFederationRepo() {
-		cmd = "../federation/hack/e2e-internal/e2e-status.sh"
-	} else {
-		cmd = "./hack/e2e-internal/e2e-status.sh"
-	}
-	return control.FinishRunning(exec.Command(cmd))
+	return control.FinishRunning(exec.Command("./hack/e2e-internal/e2e-status.sh"))
 }
 
 func (b *bashDeployer) DumpClusterLogs(localPath, gcsPath string) error {
@@ -74,13 +61,7 @@ func (b *bashDeployer) TestSetup() error {
 }
 
 func (b *bashDeployer) Down() error {
-	var cmd string
-	if useFederationRepo() {
-		cmd = "../federation/hack/e2e-internal/e2e-down.sh"
-	} else {
-		cmd = "./hack/e2e-internal/e2e-down.sh"
-	}
-	return control.FinishRunning(exec.Command(cmd))
+	return control.FinishRunning(exec.Command("./hack/e2e-internal/e2e-down.sh"))
 }
 
 func (b *bashDeployer) GetClusterCreated(gcpProject string) (time.Time, error) {

@@ -13,7 +13,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -52,7 +52,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
       args:
       - "--timeout=140"
       - "--bare"
@@ -63,7 +63,7 @@ periodics:
       - --extract-source
       - --ginkgo-parallel
       - --provider=local
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[Containerized\] --ginkgo.skip=\[Disruptive\]|\[sig\-apps\]\sDaemon\sset\s\[Serial\]\sshould\srollback\swithout\sunnecessary\srestarts\s\[Conformance\]
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[Containerized\] --ginkgo.skip=\[Disruptive\]|\[sig\-apps\]\sDaemon\sset\s\[Serial\]\sshould\srollback\swithout\sunnecessary\srestarts\s\[Conformance\]|\[sig\-apps\]\sDaemon\sset\s[Serial]\sshould\srun\sand\sstop\scomplex\sdaemon\s\[Conformance\]
       - --timeout=120m
       env:
       - name: DOCKERIZE_KUBELET

@@ -442,7 +442,9 @@ func (c *Client) doRequest(method, path, accept string, body interface{}) (*http
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", "Token "+string(c.getToken()))
+	if token := c.getToken(); len(token) > 0 {
+		req.Header.Set("Authorization", "Token "+string(token))
+	}
 	if accept == acceptNone {
 		req.Header.Add("Accept", "application/vnd.github.v3+json")
 	} else {

@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"net/url"
 
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
@@ -156,7 +155,7 @@ func welcomeMsg(ghc githubClient, trigger *plugins.Trigger, pr github.PullReques
 	}
 
 	var comment string
-	if trigger.IgnoreOkToTest {
+	if trigger != nil && trigger.IgnoreOkToTest {
 		comment = fmt.Sprintf(`Hi @%s. Thanks for your PR.
 
 PRs from untrusted users cannot be marked as trusted with `+"`/ok-to-test`"+` in this repo meaning untrusted PR authors can never trigger tests themselves. Collaborators can still trigger tests on the PR using `+"`/test all`"+`.
@@ -214,40 +213,16 @@ func TrustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org,
 			return l, false, err
 		}
 	}
-	if github.HasLabel(labels.OkToTest, l) {
-		return l, true, nil
-	}
-	botName, err := ghc.BotName()
-	if err != nil {
-		return l, false, fmt.Errorf("error finding bot name: %v", err)
-	}
-	// Next look for "/ok-to-test" comments on the PR.
-	comments, err := ghc.ListIssueComments(org, repo, num)
-	if err != nil {
-		return l, false, err
-	}
-	for _, comment := range comments {
-		commentAuthor := comment.User.Login
-		// Skip comments: by the PR author, or by bot, or not matching "/ok-to-test".
-		if commentAuthor == author || commentAuthor == botName || !okToTestRe.MatchString(comment.Body) {
-			continue
-		}
-		// Ensure that the commenter is in the org.
-		if commentAuthorMember, err := TrustedUser(ghc, trigger, commentAuthor, org, repo); err != nil {
-			return l, false, fmt.Errorf("error checking %s for trust: %v", commentAuthor, err)
-		} else if commentAuthorMember {
-			return l, true, nil
-		}
-	}
-	return l, false, nil
+	return l, github.HasLabel(labels.OkToTest, l), nil
 }
 
+// buildAll acts as if a `/test all` comment has been placed on the PR
 func buildAll(c Client, pr *github.PullRequest, eventGUID string) error {
-	var matchingJobs []config.Presubmit
-	for _, job := range c.Config.Presubmits[pr.Base.Repo.FullName] {
-		if job.AlwaysRun || job.RunIfChanged != "" {
-			matchingJobs = append(matchingJobs, job)
-		}
+	// we pass a literal `/test all` here as it's the most direct way to achieve
+	// that functionality from the logic that parses out comment triggers
+	toTest, err := FilterPresubmits(false, c.GitHubClient, `/test all`, pr, c.Config.Presubmits[pr.Base.Repo.FullName])
+	if err != nil {
+		return err
 	}
-	return RunOrSkipRequested(c, pr, matchingJobs, nil, "", eventGUID)
+	return RunRequested(c, pr, toTest, eventGUID)
 }

@@ -65,8 +65,8 @@ func (s *stageStrategy) Enabled() bool {
 }
 
 // Stage the release build to GCS.
-// Essentially release/push-build.sh --bucket=B --ci? --gcs-suffix=S --federation? --noupdatelatest
-func (s *stageStrategy) Stage(fed, noAllowDup bool) error {
+// Essentially release/push-build.sh --bucket=B --ci? --gcs-suffix=S --noupdatelatest
+func (s *stageStrategy) Stage(noAllowDup bool) error {
 	name := util.K8s("release", "push-build.sh")
 	b := s.bucket
 	if strings.HasPrefix(b, "gs://") {
@@ -89,9 +89,6 @@ func (s *stageStrategy) Stage(fed, noAllowDup bool) error {
 	}
 	if len(s.dockerRegistry) > 0 {
 		args = append(args, fmt.Sprintf("--docker-registry=%s", s.dockerRegistry))
-	}
-	if fed {
-		args = append(args, "--federation")
 	}
 
 	if !noAllowDup {
@@ -100,46 +97,5 @@ func (s *stageStrategy) Stage(fed, noAllowDup bool) error {
 
 	cmd := exec.Command(name, args...)
 	cmd.Dir = util.K8s("kubernetes")
-	return control.FinishRunning(cmd)
-}
-
-type stageFederationStrategy struct {
-	stageStrategy
-}
-
-func (s *stageFederationStrategy) Type() string {
-	return "stageFederationStrategy"
-}
-
-// Stage the federation release build to GCS.
-// Essentially release/push-build.sh --bucket=B --ci? --gcs-suffix=S --noupdatelatest
-func (s *stageFederationStrategy) Stage() error {
-	name := util.K8s("release", "push-build.sh")
-	b := s.bucket
-	if strings.HasPrefix(b, "gs://") {
-		b = b[len("gs://"):]
-	}
-	args := []string{
-		"--nomock",
-		"--verbose",
-		"--noupdatelatest", // we may need to expose control of this if build jobs start using kubetest
-		fmt.Sprintf("--bucket=%v", b),
-		"--release-kind=federation",
-	}
-	if s.ci {
-		args = append(args, "--ci")
-	}
-	if len(s.gcsSuffix) > 0 {
-		args = append(args, fmt.Sprintf("--gcs-suffix=%v", s.gcsSuffix))
-	}
-	if len(s.versionSuffix) > 0 {
-		args = append(args, fmt.Sprintf("--version-suffix=%s", s.versionSuffix))
-	}
-	if len(s.dockerRegistry) > 0 {
-		args = append(args, fmt.Sprintf("--docker-registry=%s", s.dockerRegistry))
-	}
-
-	cmd := exec.Command(name, args...)
-	cmd.Dir = util.K8s("federation")
 	return control.FinishRunning(cmd)
 }

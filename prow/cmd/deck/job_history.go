@@ -308,8 +308,8 @@ func getBuildData(bucket storageBucket, dir string) (buildData, error) {
 	if finished.Revision != "" {
 		b.commitHash = finished.Revision
 	}
-	if finished.Timestamp != 0 {
-		b.Duration = time.Unix(finished.Timestamp, 0).Sub(b.Started)
+	if finished.Timestamp != nil {
+		b.Duration = time.Unix(*finished.Timestamp, 0).Sub(b.Started)
 	}
 	if finished.Result != "" {
 		b.Result = finished.Result
