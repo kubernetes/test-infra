@@ -40,25 +40,6 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
- - *February 1, 2019* Now that `hook` and `tide` will no longer post "Skipped" statuses
-   for jobs that do not need to run, it is not possible to require those statuses with
-   branch protection. Therefore, it is necessary to run the `branchprotector` from at
-   least version `510db59` before upgrading `tide` to that version.
- - *February 1, 2019* `horologium` and `sinker` now support the `--dry-run` flag,
-   so you must pass `--dry-run=false` to keep the previous behavior.
- - *January 31, 2019* `sub` no longer supports the `--masterurl` flag for connecting
-   to the infrastructure cluster. Use `--kubeconfig` with `--context` for this.
- - *January 31, 2019* `crier` no longer supports the `--masterurl` flag for connecting
-   to the infrastructure cluster. Use `--kubeconfig` with `--context` for this.
- - *January 27, 2019* Jobs that do not run will no longer post "Skipped" statuses.
- - *January 27, 2019* Jobs that do not run always will no longer be required by
-   branch protection as they will not always produce a status. They will continue
-   to be required for merge by `tide` if they are configured as required.
- - *January 27, 2019* All support for `run_after_success` jobs has been removed.
-   Configuration of these jobs will continue to parse but will ignore the field.
- - *January 27, 2019* `hook` will now correctly honor the `run_always` field on Gerrit
-   presubmits. Previously, if this field was unset it would have defaulted to `true`; now,
-   it will correctly default to `false`.
  - *January 22, 2019* `sinker` prefers `.kube/config` instead of the custom `Clusters`
    file to specify credentials for external build clusters. The flag name has changed
    from `--build-cluster` to `--kubeconfig`. Migrate before June 2019.

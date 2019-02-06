@@ -23,8 +23,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/golang/glog"
 	"github.com/pkg/errors"
-	"k8s.io/klog"
 )
 
 // InternetGateways: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeInternetGateways
@@ -47,7 +47,6 @@ func (InternetGateways) MarkAndSweep(sess *session.Session, acct string, region 
 			},
 		},
 	})
-
 	if err != nil {
 		return err
 	}
@@ -56,42 +55,32 @@ func (InternetGateways) MarkAndSweep(sess *session.Session, acct string, region 
 
 	for _, ig := range resp.InternetGateways {
 		i := &internetGateway{Account: acct, Region: region, ID: *ig.InternetGatewayId}
-
 		if set.Mark(i) {
 			isDefault := false
-			klog.Warningf("%s: deleting %T: %v", i.ARN(), ig, ig)
-
+			glog.Warningf("%s: deleting %T: %v", i.ARN(), ig, ig)
 			for _, att := range ig.Attachments {
 				if att.VpcId == defaultVpc.VpcId {
 					isDefault = true
 					break
 				}
-
-				detachReq := &ec2.DetachInternetGatewayInput{
+				_, err := svc.DetachInternetGateway(&ec2.DetachInternetGatewayInput{
 					InternetGatewayId: ig.InternetGatewayId,
 					VpcId:             att.VpcId,
-				}
-
-				if _, err := svc.DetachInternetGateway(detachReq); err != nil {
-					klog.Warningf("%v: detach from %v failed: %v", i.ARN(), *att.VpcId, err)
+				})
+				if err != nil {
+					glog.Warningf("%v: detach from %v failed: %v", i.ARN(), *att.VpcId, err)
 				}
 			}
-
 			if isDefault {
-				klog.Infof("%s: skipping delete as IGW is the default for the VPC %T: %v", i.ARN(), ig, ig)
+				glog.Infof("%s: skipping delete as IGW is the default for the VPC %T: %v", i.ARN(), ig, ig)
 				continue
 			}
-
-			deleteReq := &ec2.DeleteInternetGatewayInput{
-				InternetGatewayId: ig.InternetGatewayId,
-			}
-
-			if _, err := svc.DeleteInternetGateway(deleteReq); err != nil {
-				klog.Warningf("%v: delete failed: %v", i.ARN(), err)
+			_, err := svc.DeleteInternetGateway(&ec2.DeleteInternetGatewayInput{InternetGatewayId: ig.InternetGatewayId})
+			if err != nil {
+				glog.Warningf("%v: delete failed: %v", i.ARN(), err)
 			}
 		}
 	}
-
 	return nil
 }
 

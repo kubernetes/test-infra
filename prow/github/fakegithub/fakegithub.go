@@ -26,12 +26,8 @@ import (
 
 const botName = "k8s-ci-robot"
 
-const (
-	// Bot is the exported botName
-	Bot = botName
-	// TestRef is the ref returned when calling GetRef
-	TestRef = "abcde"
-)
+// Bot is the exported botName
+const Bot = botName
 
 // FakeClient is like client, but fake.
 type FakeClient struct {
@@ -186,11 +182,7 @@ func (f *FakeClient) DeleteStaleComments(org, repo string, number int, comments 
 
 // GetPullRequest returns details about the PR.
 func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*github.PullRequest, error) {
-	val, exists := f.PullRequests[number]
-	if !exists {
-		return nil, fmt.Errorf("Pull request number %d does not exit", number)
-	}
-	return val, nil
+	return f.PullRequests[number], nil
 }
 
 // GetPullRequestChanges returns the file modifications in a PR.
@@ -200,7 +192,7 @@ func (f *FakeClient) GetPullRequestChanges(org, repo string, number int) ([]gith
 
 // GetRef returns the hash of a ref.
 func (f *FakeClient) GetRef(owner, repo, ref string) (string, error) {
-	return TestRef, nil
+	return "abcde", nil
 }
 
 // DeleteRef returns an error indicating if deletion of the given ref was successful

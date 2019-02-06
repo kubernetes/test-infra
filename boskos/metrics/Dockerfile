@@ -13,6 +13,7 @@
 # limitations under the License.
 
 FROM alpine:3.5
+LABEL maintainer="senlu@google.com"
 
 ADD ["metrics", "/"]
 ENTRYPOINT ["/metrics"]

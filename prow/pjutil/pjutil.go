@@ -22,32 +22,32 @@ import (
 	"net/url"
 	"path"
 
-	uuid "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
 // NewProwJobWithAnnotation initializes a ProwJob out of a ProwJobSpec with annotations.
-func NewProwJobWithAnnotation(spec prowapi.ProwJobSpec, labels, annotations map[string]string) prowapi.ProwJob {
+func NewProwJobWithAnnotation(spec kube.ProwJobSpec, labels, annotations map[string]string) kube.ProwJob {
 	return newProwJob(spec, labels, annotations)
 }
 
 // NewProwJob initializes a ProwJob out of a ProwJobSpec.
-func NewProwJob(spec prowapi.ProwJobSpec, labels map[string]string) prowapi.ProwJob {
+func NewProwJob(spec kube.ProwJobSpec, labels map[string]string) kube.ProwJob {
 	return newProwJob(spec, labels, nil)
 }
 
-func newProwJob(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[string]string) prowapi.ProwJob {
+func newProwJob(spec kube.ProwJobSpec, extraLabels, extraAnnotations map[string]string) kube.ProwJob {
 	labels, annotations := decorate.LabelsAndAnnotationsForSpec(spec, extraLabels, extraAnnotations)
 
-	return prowapi.ProwJob{
+	return kube.ProwJob{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "prow.k8s.io/v1",
 			Kind:       "ProwJob",
@@ -58,26 +58,26 @@ func newProwJob(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[stri
 			Annotations: annotations,
 		},
 		Spec: spec,
-		Status: prowapi.ProwJobStatus{
+		Status: kube.ProwJobStatus{
 			StartTime: metav1.Now(),
-			State:     prowapi.TriggeredState,
+			State:     kube.TriggeredState,
 		},
 	}
 }
 
-// NewPresubmit converts a config.Presubmit into a prowapi.ProwJob.
-// The prowapi.Refs are configured correctly per the pr, baseSHA.
+// NewPresubmit converts a config.Presubmit into a kube.ProwJob.
+// The kube.Refs are configured correctly per the pr, baseSHA.
 // The eventGUID becomes a github.EventGUID label.
-func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, eventGUID string) prowapi.ProwJob {
+func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, eventGUID string) kube.ProwJob {
 	org := pr.Base.Repo.Owner.Login
 	repo := pr.Base.Repo.Name
 	number := pr.Number
-	kr := prowapi.Refs{
+	kr := kube.Refs{
 		Org:     org,
 		Repo:    repo,
 		BaseRef: pr.Base.Ref,
 		BaseSHA: baseSHA,
-		Pulls: []prowapi.Pull{
+		Pulls: []kube.Pull{
 			{
 				Number: number,
 				Author: pr.User.Login,
@@ -94,54 +94,66 @@ func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, e
 }
 
 // PresubmitSpec initializes a ProwJobSpec for a given presubmit job.
-func PresubmitSpec(p config.Presubmit, refs prowapi.Refs) prowapi.ProwJobSpec {
+func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 	pjs := specFromJobBase(p.JobBase)
-	pjs.Type = prowapi.PresubmitJob
+	pjs.Type = kube.PresubmitJob
 	pjs.Context = p.Context
 	pjs.Report = !p.SkipReport
 	pjs.RerunCommand = p.RerunCommand
 	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
 
+	for _, nextP := range p.RunAfterSuccess {
+		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, PresubmitSpec(nextP, refs))
+	}
 	return pjs
 }
 
 // PostsubmitSpec initializes a ProwJobSpec for a given postsubmit job.
-func PostsubmitSpec(p config.Postsubmit, refs prowapi.Refs) prowapi.ProwJobSpec {
+func PostsubmitSpec(p config.Postsubmit, refs kube.Refs) kube.ProwJobSpec {
 	pjs := specFromJobBase(p.JobBase)
-	pjs.Type = prowapi.PostsubmitJob
+	pjs.Type = kube.PostsubmitJob
 	pjs.Context = p.Context
 	pjs.Report = p.Report
 	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
 
+	for _, nextP := range p.RunAfterSuccess {
+		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, PostsubmitSpec(nextP, refs))
+	}
 	return pjs
 }
 
 // PeriodicSpec initializes a ProwJobSpec for a given periodic job.
-func PeriodicSpec(p config.Periodic) prowapi.ProwJobSpec {
+func PeriodicSpec(p config.Periodic) kube.ProwJobSpec {
 	pjs := specFromJobBase(p.JobBase)
-	pjs.Type = prowapi.PeriodicJob
+	pjs.Type = kube.PeriodicJob
 
+	for _, nextP := range p.RunAfterSuccess {
+		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, PeriodicSpec(nextP))
+	}
 	return pjs
 }
 
 // BatchSpec initializes a ProwJobSpec for a given batch job and ref spec.
-func BatchSpec(p config.Presubmit, refs prowapi.Refs) prowapi.ProwJobSpec {
+func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 	pjs := specFromJobBase(p.JobBase)
-	pjs.Type = prowapi.BatchJob
+	pjs.Type = kube.BatchJob
 	pjs.Context = p.Context
 	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
 
+	for _, nextP := range p.RunAfterSuccess {
+		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, BatchSpec(nextP, refs))
+	}
 	return pjs
 }
 
-func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
+func specFromJobBase(jb config.JobBase) kube.ProwJobSpec {
 	var namespace string
 	if jb.Namespace != nil {
 		namespace = *jb.Namespace
 	}
-	return prowapi.ProwJobSpec{
+	return kube.ProwJobSpec{
 		Job:             jb.Name,
-		Agent:           prowapi.ProwJobAgent(jb.Agent),
+		Agent:           kube.ProwJobAgent(jb.Agent),
 		Cluster:         jb.Cluster,
 		Namespace:       namespace,
 		MaxConcurrency:  jb.MaxConcurrency,
@@ -155,7 +167,7 @@ func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
 	}
 }
 
-func completePrimaryRefs(refs prowapi.Refs, jb config.JobBase) *prowapi.Refs {
+func completePrimaryRefs(refs kube.Refs, jb config.JobBase) *kube.Refs {
 	if jb.PathAlias != "" {
 		refs.PathAlias = jb.PathAlias
 	}
@@ -171,26 +183,26 @@ func completePrimaryRefs(refs prowapi.Refs, jb config.JobBase) *prowapi.Refs {
 // by different goroutines. Complete prowjobs are filtered out. Controller
 // loops need to handle pending jobs first so they can conform to maximum
 // concurrency requirements that different jobs may have.
-func PartitionActive(pjs []prowapi.ProwJob) (pending, triggered chan prowapi.ProwJob) {
+func PartitionActive(pjs []kube.ProwJob) (pending, triggered chan kube.ProwJob) {
 	// Size channels correctly.
 	pendingCount, triggeredCount := 0, 0
 	for _, pj := range pjs {
 		switch pj.Status.State {
-		case prowapi.PendingState:
+		case kube.PendingState:
 			pendingCount++
-		case prowapi.TriggeredState:
+		case kube.TriggeredState:
 			triggeredCount++
 		}
 	}
-	pending = make(chan prowapi.ProwJob, pendingCount)
-	triggered = make(chan prowapi.ProwJob, triggeredCount)
+	pending = make(chan kube.ProwJob, pendingCount)
+	triggered = make(chan kube.ProwJob, triggeredCount)
 
 	// Partition the jobs into the two separate channels.
 	for _, pj := range pjs {
 		switch pj.Status.State {
-		case prowapi.PendingState:
+		case kube.PendingState:
 			pending <- pj
-		case prowapi.TriggeredState:
+		case kube.TriggeredState:
 			triggered <- pj
 		}
 	}
@@ -201,8 +213,8 @@ func PartitionActive(pjs []prowapi.ProwJob) (pending, triggered chan prowapi.Pro
 
 // GetLatestProwJobs filters through the provided prowjobs and returns
 // a map of jobType jobs to their latest prowjobs.
-func GetLatestProwJobs(pjs []prowapi.ProwJob, jobType prowapi.ProwJobType) map[string]prowapi.ProwJob {
-	latestJobs := make(map[string]prowapi.ProwJob)
+func GetLatestProwJobs(pjs []kube.ProwJob, jobType kube.ProwJobType) map[string]kube.ProwJob {
+	latestJobs := make(map[string]kube.ProwJob)
 	for _, j := range pjs {
 		if j.Spec.Type != jobType {
 			continue
@@ -216,7 +228,7 @@ func GetLatestProwJobs(pjs []prowapi.ProwJob, jobType prowapi.ProwJobType) map[s
 }
 
 // ProwJobFields extracts logrus fields from a prowjob useful for logging.
-func ProwJobFields(pj *prowapi.ProwJob) logrus.Fields {
+func ProwJobFields(pj *kube.ProwJob) logrus.Fields {
 	fields := make(logrus.Fields)
 	fields["name"] = pj.ObjectMeta.Name
 	fields["job"] = pj.Spec.Job
@@ -235,7 +247,7 @@ func ProwJobFields(pj *prowapi.ProwJob) logrus.Fields {
 // JobURL returns the expected URL for ProwJobStatus.
 //
 // TODO(fejta): consider moving default JobURLTemplate and JobURLPrefix out of plank
-func JobURL(plank config.Plank, pj prowapi.ProwJob, log *logrus.Entry) string {
+func JobURL(plank config.Plank, pj kube.ProwJob, log *logrus.Entry) string {
 	if pj.Spec.DecorationConfig != nil && plank.JobURLPrefix != "" {
 		spec := downwardapi.NewJobSpec(pj.Spec, pj.Status.BuildID, pj.Name)
 		gcsConfig := pj.Spec.DecorationConfig.GCSConfiguration

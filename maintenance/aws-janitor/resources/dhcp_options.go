@@ -23,8 +23,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/golang/glog"
 	"github.com/pkg/errors"
-	"k8s.io/klog"
 )
 
 // DHCPOptions: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeDhcpOptions
@@ -48,7 +48,6 @@ func (DHCPOptions) MarkAndSweep(sess *session.Session, acct string, region strin
 		if err != nil {
 			return err
 		}
-
 		for _, vpc := range resp.Vpcs {
 			defaultRefs[*vpc.DhcpOptionsId] = true
 		}
@@ -64,27 +63,23 @@ func (DHCPOptions) MarkAndSweep(sess *session.Session, acct string, region strin
 		if defaultRefs[*dhcp.DhcpOptionsId] {
 			continue
 		}
-
 		// Separately, skip any "default looking" DHCP Option Sets. See comment below.
 		if defaultLookingDHCPOptions(dhcp, region) {
 			defaults = append(defaults, *dhcp.DhcpOptionsId)
 			continue
 		}
-
 		dh := &dhcpOption{Account: acct, Region: region, ID: *dhcp.DhcpOptionsId}
 		if set.Mark(dh) {
-			klog.Warningf("%s: deleting %T: %v", dh.ARN(), dhcp, dhcp)
-
-			if _, err := svc.DeleteDhcpOptions(&ec2.DeleteDhcpOptionsInput{DhcpOptionsId: dhcp.DhcpOptionsId}); err != nil {
-				klog.Warningf("%v: delete failed: %v", dh.ARN(), err)
+			glog.Warningf("%s: deleting %T: %v", dh.ARN(), dhcp, dhcp)
+			_, err := svc.DeleteDhcpOptions(&ec2.DeleteDhcpOptionsInput{DhcpOptionsId: dhcp.DhcpOptionsId})
+			if err != nil {
+				glog.Warningf("%v: delete failed: %v", dh.ARN(), err)
 			}
 		}
 	}
-
 	if len(defaults) > 1 {
-		klog.Errorf("Found more than one default-looking DHCP option set: %v", defaults)
+		glog.Errorf("Found more than one default-looking DHCP option set: %v", defaults)
 	}
-
 	return nil
 }
 
@@ -126,31 +121,25 @@ func defaultLookingDHCPOptions(dhcp *ec2.DhcpOptions, region string) bool {
 	if len(dhcp.Tags) != 0 {
 		return false
 	}
-
 	for _, conf := range dhcp.DhcpConfigurations {
-		switch *conf.Key {
-		case "domain-name":
+		if *conf.Key == "domain-name" {
 			var domain string
 			if region == "us-east-1" {
 				domain = "ec2.internal"
 			} else {
 				domain = region + ".compute.internal"
 			}
-
-			// TODO(vincepri): Investigate this line, seems it might segfault if conf.Values is 0?
 			if len(conf.Values) != 1 || *conf.Values[0].Value != domain {
 				return false
 			}
-		case "domain-name-servers":
-			// TODO(vincepri): Same as above.
+		} else if *conf.Key == "domain-name-servers" {
 			if len(conf.Values) != 1 || *conf.Values[0].Value != "AmazonProvidedDNS" {
 				return false
 			}
-		default:
+		} else {
 			return false
 		}
 	}
-
 	return true
 }
 

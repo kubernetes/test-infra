@@ -28,12 +28,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -48,14 +46,30 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int, operators []config.Jen
 			JobBase: config.JobBase{
 				Name: "test-bazel-build",
 			},
+			RunAfterSuccess: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Name: "test-kubeadm-cloud",
+					},
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						RunIfChanged: "^(cmd/kubeadm|build/debs).*$",
+					},
+				},
+			},
 		},
 		{
 			JobBase: config.JobBase{
 				Name: "test-e2e",
 			},
+			RunAfterSuccess: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Name: "push-image",
+					},
+				},
+			},
 		},
 		{
-			AlwaysRun: true,
 			JobBase: config.JobBase{
 				Name: "test-bazel-test",
 			},
@@ -71,7 +85,6 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int, operators []config.Jen
 	ca := &fca{
 		c: &config.Config{
 			ProwConfig: config.ProwConfig{
-				ProwJobNamespace: "prowjobs",
 				JenkinsOperators: []config.JenkinsOperator{
 					{
 						Controller: config.Controller{
@@ -99,15 +112,45 @@ func (f *fca) Config() *config.Config {
 	return f.c
 }
 
+type fkc struct {
+	sync.Mutex
+	prowjobs []kube.ProwJob
+}
+
+func (f *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
+	f.Lock()
+	defer f.Unlock()
+	f.prowjobs = append(f.prowjobs, pj)
+	return pj, nil
+}
+
+func (f *fkc) ListProwJobs(string) ([]kube.ProwJob, error) {
+	f.Lock()
+	defer f.Unlock()
+	return f.prowjobs, nil
+}
+
+func (f *fkc) ReplaceProwJob(name string, job kube.ProwJob) (kube.ProwJob, error) {
+	f.Lock()
+	defer f.Unlock()
+	for i := range f.prowjobs {
+		if f.prowjobs[i].ObjectMeta.Name == name {
+			f.prowjobs[i] = job
+			return job, nil
+		}
+	}
+	return kube.ProwJob{}, fmt.Errorf("did not find prowjob %s", name)
+}
+
 type fjc struct {
 	sync.Mutex
 	built  bool
-	pjs    []prowapi.ProwJob
+	pjs    []kube.ProwJob
 	err    error
 	builds map[string]Build
 }
 
-func (f *fjc) Build(pj *prowapi.ProwJob, buildID string) error {
+func (f *fjc) Build(pj *kube.ProwJob, buildID string) error {
 	f.Lock()
 	defer f.Unlock()
 	if f.err != nil {
@@ -179,13 +222,13 @@ func (f *fghc) EditComment(org, repo string, ID int, comment string) error {
 func TestSyncTriggeredJobs(t *testing.T) {
 	var testcases = []struct {
 		name           string
-		pj             prowapi.ProwJob
+		pj             kube.ProwJob
 		pendingJobs    map[string]int
 		maxConcurrency int
 		builds         map[string]Build
 		err            error
 
-		expectedState    prowapi.ProwJobState
+		expectedState    kube.ProwJobState
 		expectedBuild    bool
 		expectedComplete bool
 		expectedReport   bool
@@ -194,89 +237,73 @@ func TestSyncTriggeredJobs(t *testing.T) {
 	}{
 		{
 			name: "start new job",
-			pj: prowapi.ProwJob{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test",
-					Namespace: "prowjobs",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Type: kube.PostsubmitJob,
 				},
-				Spec: prowapi.ProwJobSpec{
-					Type: prowapi.PostsubmitJob,
-				},
-				Status: prowapi.ProwJobStatus{
-					State: prowapi.TriggeredState,
+				Status: kube.ProwJobStatus{
+					State: kube.TriggeredState,
 				},
 			},
 			expectedBuild:    true,
 			expectedReport:   true,
-			expectedState:    prowapi.PendingState,
+			expectedState:    kube.PendingState,
 			expectedEnqueued: true,
 		},
 		{
 			name: "start new job, error",
-			pj: prowapi.ProwJob{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test",
-					Namespace: "prowjobs",
-				},
-				Spec: prowapi.ProwJobSpec{
-					Type: prowapi.PresubmitJob,
-					Refs: &prowapi.Refs{
-						Pulls: []prowapi.Pull{{
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Type: kube.PresubmitJob,
+					Refs: &kube.Refs{
+						Pulls: []kube.Pull{{
 							Number: 1,
 							SHA:    "fake-sha",
 						}},
 					},
 				},
-				Status: prowapi.ProwJobStatus{
-					State: prowapi.TriggeredState,
+				Status: kube.ProwJobStatus{
+					State: kube.TriggeredState,
 				},
 			},
 			err:              errors.New("oh no"),
 			expectedReport:   true,
-			expectedState:    prowapi.ErrorState,
+			expectedState:    kube.ErrorState,
 			expectedComplete: true,
 			expectedError:    true,
 		},
 		{
 			name: "block running new job",
-			pj: prowapi.ProwJob{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test",
-					Namespace: "prowjobs",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Type: kube.PostsubmitJob,
 				},
-				Spec: prowapi.ProwJobSpec{
-					Type: prowapi.PostsubmitJob,
-				},
-				Status: prowapi.ProwJobStatus{
-					State: prowapi.TriggeredState,
+				Status: kube.ProwJobStatus{
+					State: kube.TriggeredState,
 				},
 			},
 			pendingJobs:      map[string]int{"motherearth": 10, "allagash": 8, "krusovice": 2},
 			maxConcurrency:   20,
 			expectedBuild:    false,
 			expectedReport:   false,
-			expectedState:    prowapi.TriggeredState,
+			expectedState:    kube.TriggeredState,
 			expectedEnqueued: false,
 		},
 		{
 			name: "allow running new job",
-			pj: prowapi.ProwJob{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test",
-					Namespace: "prowjobs",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Type: kube.PostsubmitJob,
 				},
-				Spec: prowapi.ProwJobSpec{
-					Type: prowapi.PostsubmitJob,
-				},
-				Status: prowapi.ProwJobStatus{
-					State: prowapi.TriggeredState,
+				Status: kube.ProwJobStatus{
+					State: kube.TriggeredState,
 				},
 			},
 			pendingJobs:      map[string]int{"motherearth": 10, "allagash": 8, "krusovice": 2},
 			maxConcurrency:   21,
 			expectedBuild:    true,
 			expectedReport:   true,
-			expectedState:    prowapi.PendingState,
+			expectedState:    kube.PendingState,
 			expectedEnqueued: true,
 		},
 	}
@@ -289,36 +316,31 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		fjc := &fjc{
 			err: tc.err,
 		}
-		fakeProwJobClient := fake.NewSimpleClientset(&tc.pj)
+		fkc := &fkc{
+			prowjobs: []kube.ProwJob{tc.pj},
+		}
 
 		c := Controller{
-			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
-			jc:            fjc,
-			log:           logrus.NewEntry(logrus.StandardLogger()),
-			cfg:           newFakeConfigAgent(t, tc.maxConcurrency, nil).Config,
-			totURL:        totServ.URL,
-			lock:          sync.RWMutex{},
-			pendingJobs:   make(map[string]int),
+			kc:          fkc,
+			jc:          fjc,
+			log:         logrus.NewEntry(logrus.StandardLogger()),
+			cfg:         newFakeConfigAgent(t, tc.maxConcurrency, nil).Config,
+			totURL:      totServ.URL,
+			lock:        sync.RWMutex{},
+			pendingJobs: make(map[string]int),
 		}
 		if tc.pendingJobs != nil {
 			c.pendingJobs = tc.pendingJobs
 		}
 
-		reports := make(chan prowapi.ProwJob, 100)
+		reports := make(chan kube.ProwJob, 100)
 		if err := c.syncTriggeredJob(tc.pj, reports, tc.builds); err != nil {
 			t.Errorf("unexpected error: %v", err)
 			continue
 		}
 		close(reports)
 
-		actualProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
-		if err != nil {
-			t.Fatalf("failed to list prowjobs from client %v", err)
-		}
-		if len(actualProwJobs.Items) != 1 {
-			t.Fatalf("Didn't create just one ProwJob, but %d", len(actualProwJobs.Items))
-		}
-		actual := actualProwJobs.Items[0]
+		actual := fkc.prowjobs[0]
 		if tc.expectedError && actual.Status.Description != "Error starting Jenkins job." {
 			t.Errorf("expected description %q, got %q", "Error starting Jenkins job.", actual.Status.Description)
 			continue
@@ -352,13 +374,13 @@ func TestSyncTriggeredJobs(t *testing.T) {
 func TestSyncPendingJobs(t *testing.T) {
 	var testcases = []struct {
 		name        string
-		pj          prowapi.ProwJob
+		pj          kube.ProwJob
 		pendingJobs map[string]int
 		builds      map[string]Build
 		err         error
 
 		// TODO: Change to pass a ProwJobStatus
-		expectedState    prowapi.ProwJobState
+		expectedState    kube.ProwJobState
 		expectedBuild    bool
 		expectedURL      string
 		expectedComplete bool
@@ -368,37 +390,35 @@ func TestSyncPendingJobs(t *testing.T) {
 	}{
 		{
 			name: "enqueued",
-			pj: prowapi.ProwJob{
+			pj: kube.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "foofoo",
-					Namespace: "prowjobs",
+					Name: "foofoo",
 				},
-				Spec: prowapi.ProwJobSpec{
+				Spec: kube.ProwJobSpec{
 					Job: "test-job",
 				},
-				Status: prowapi.ProwJobStatus{
-					State:       prowapi.PendingState,
+				Status: kube.ProwJobStatus{
+					State:       kube.PendingState,
 					Description: "Jenkins job enqueued.",
 				},
 			},
 			builds: map[string]Build{
 				"foofoo": {enqueued: true, Number: 10},
 			},
-			expectedState:    prowapi.PendingState,
+			expectedState:    kube.PendingState,
 			expectedEnqueued: true,
 		},
 		{
 			name: "finished queue",
-			pj: prowapi.ProwJob{
+			pj: kube.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "boing",
-					Namespace: "prowjobs",
+					Name: "boing",
 				},
-				Spec: prowapi.ProwJobSpec{
+				Spec: kube.ProwJobSpec{
 					Job: "test-job",
 				},
-				Status: prowapi.ProwJobStatus{
-					State:       prowapi.PendingState,
+				Status: kube.ProwJobStatus{
+					State:       kube.PendingState,
 					Description: "Jenkins job enqueued.",
 				},
 			},
@@ -406,50 +426,48 @@ func TestSyncPendingJobs(t *testing.T) {
 				"boing": {enqueued: false, Number: 10},
 			},
 			expectedURL:      "boing/pending",
-			expectedState:    prowapi.PendingState,
+			expectedState:    kube.PendingState,
 			expectedEnqueued: false,
 			expectedReport:   true,
 		},
 		{
 			name: "building",
-			pj: prowapi.ProwJob{
+			pj: kube.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "firstoutthetrenches",
-					Namespace: "prowjobs",
+					Name: "firstoutthetrenches",
 				},
-				Spec: prowapi.ProwJobSpec{
+				Spec: kube.ProwJobSpec{
 					Job: "test-job",
 				},
-				Status: prowapi.ProwJobStatus{
-					State: prowapi.PendingState,
+				Status: kube.ProwJobStatus{
+					State: kube.PendingState,
 				},
 			},
 			builds: map[string]Build{
 				"firstoutthetrenches": {enqueued: false, Number: 10},
 			},
 			expectedURL:    "firstoutthetrenches/pending",
-			expectedState:  prowapi.PendingState,
+			expectedState:  kube.PendingState,
 			expectedReport: true,
 		},
 		{
 			name: "missing build",
-			pj: prowapi.ProwJob{
+			pj: kube.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "blabla",
-					Namespace: "prowjobs",
+					Name: "blabla",
 				},
-				Spec: prowapi.ProwJobSpec{
-					Type: prowapi.PresubmitJob,
+				Spec: kube.ProwJobSpec{
+					Type: kube.PresubmitJob,
 					Job:  "test-job",
-					Refs: &prowapi.Refs{
-						Pulls: []prowapi.Pull{{
+					Refs: &kube.Refs{
+						Pulls: []kube.Pull{{
 							Number: 1,
 							SHA:    "fake-sha",
 						}},
 					},
 				},
-				Status: prowapi.ProwJobStatus{
-					State: prowapi.PendingState,
+				Status: kube.ProwJobStatus{
+					State: kube.PendingState,
 				},
 			},
 			// missing build
@@ -457,52 +475,50 @@ func TestSyncPendingJobs(t *testing.T) {
 				"other": {enqueued: false, Number: 10},
 			},
 			expectedURL:      "https://github.com/kubernetes/test-infra/issues",
-			expectedState:    prowapi.ErrorState,
+			expectedState:    kube.ErrorState,
 			expectedError:    true,
 			expectedComplete: true,
 			expectedReport:   true,
 		},
 		{
 			name: "finished, success",
-			pj: prowapi.ProwJob{
+			pj: kube.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "winwin",
-					Namespace: "prowjobs",
+					Name: "winwin",
 				},
-				Spec: prowapi.ProwJobSpec{
+				Spec: kube.ProwJobSpec{
 					Job: "test-job",
 				},
-				Status: prowapi.ProwJobStatus{
-					State: prowapi.PendingState,
+				Status: kube.ProwJobStatus{
+					State: kube.PendingState,
 				},
 			},
 			builds: map[string]Build{
 				"winwin": {Result: pState(success), Number: 11},
 			},
 			expectedURL:      "winwin/success",
-			expectedState:    prowapi.SuccessState,
+			expectedState:    kube.SuccessState,
 			expectedComplete: true,
 			expectedReport:   true,
 		},
 		{
 			name: "finished, failed",
-			pj: prowapi.ProwJob{
+			pj: kube.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "whatapity",
-					Namespace: "prowjobs",
+					Name: "whatapity",
 				},
-				Spec: prowapi.ProwJobSpec{
+				Spec: kube.ProwJobSpec{
 					Job: "test-job",
 				},
-				Status: prowapi.ProwJobStatus{
-					State: prowapi.PendingState,
+				Status: kube.ProwJobStatus{
+					State: kube.PendingState,
 				},
 			},
 			builds: map[string]Build{
 				"whatapity": {Result: pState(failure), Number: 12},
 			},
 			expectedURL:      "whatapity/failure",
-			expectedState:    prowapi.FailureState,
+			expectedState:    kube.FailureState,
 			expectedComplete: true,
 			expectedReport:   true,
 		},
@@ -516,33 +532,28 @@ func TestSyncPendingJobs(t *testing.T) {
 		fjc := &fjc{
 			err: tc.err,
 		}
-		fakeProwJobClient := fake.NewSimpleClientset(&tc.pj)
-
-		c := Controller{
-			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
-			jc:            fjc,
-			log:           logrus.NewEntry(logrus.StandardLogger()),
-			cfg:           newFakeConfigAgent(t, 0, nil).Config,
-			totURL:        totServ.URL,
-			lock:          sync.RWMutex{},
-			pendingJobs:   make(map[string]int),
+		fkc := &fkc{
+			prowjobs: []kube.ProwJob{tc.pj},
 		}
 
-		reports := make(chan prowapi.ProwJob, 100)
+		c := Controller{
+			kc:          fkc,
+			jc:          fjc,
+			log:         logrus.NewEntry(logrus.StandardLogger()),
+			cfg:         newFakeConfigAgent(t, 0, nil).Config,
+			totURL:      totServ.URL,
+			lock:        sync.RWMutex{},
+			pendingJobs: make(map[string]int),
+		}
+
+		reports := make(chan kube.ProwJob, 100)
 		if err := c.syncPendingJob(tc.pj, reports, tc.builds); err != nil {
 			t.Errorf("unexpected error: %v", err)
 			continue
 		}
 		close(reports)
 
-		actualProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
-		if err != nil {
-			t.Fatalf("failed to list prowjobs from client %v", err)
-		}
-		if len(actualProwJobs.Items) != 1 {
-			t.Fatalf("Didn't create just one ProwJob, but %d", len(actualProwJobs.Items))
-		}
-		actual := actualProwJobs.Items[0]
+		actual := fkc.prowjobs[0]
 		if tc.expectedError && actual.Status.Description != "Error finding Jenkins job." {
 			t.Errorf("expected description %q, got %q", "Error finding Jenkins job.", actual.Status.Description)
 			continue
@@ -590,12 +601,12 @@ func TestBatch(t *testing.T) {
 		},
 		Context: "Some Job Context",
 	}
-	pj := pjutil.NewProwJob(pjutil.BatchSpec(pre, prowapi.Refs{
+	pj := pjutil.NewProwJob(pjutil.BatchSpec(pre, kube.Refs{
 		Org:     "o",
 		Repo:    "r",
 		BaseRef: "master",
 		BaseSHA: "123",
-		Pulls: []prowapi.Pull{
+		Pulls: []kube.Pull{
 			{
 				Number: 1,
 				SHA:    "abc",
@@ -607,8 +618,9 @@ func TestBatch(t *testing.T) {
 		},
 	}), nil)
 	pj.ObjectMeta.Name = "known_name"
-	pj.ObjectMeta.Namespace = "prowjobs"
-	fakeProwJobClient := fake.NewSimpleClientset(&pj)
+	fc := &fkc{
+		prowjobs: []kube.ProwJob{pj},
+	}
 	jc := &fjc{
 		builds: map[string]Build{
 			"known_name": { /* Running */ },
@@ -619,99 +631,189 @@ func TestBatch(t *testing.T) {
 	}))
 	defer totServ.Close()
 	c := Controller{
-		prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
-		ghc:           &fghc{},
-		jc:            jc,
-		log:           logrus.NewEntry(logrus.StandardLogger()),
-		cfg:           newFakeConfigAgent(t, 0, nil).Config,
-		totURL:        totServ.URL,
-		pendingJobs:   make(map[string]int),
-		lock:          sync.RWMutex{},
+		kc:          fc,
+		ghc:         &fghc{},
+		jc:          jc,
+		log:         logrus.NewEntry(logrus.StandardLogger()),
+		cfg:         newFakeConfigAgent(t, 0, nil).Config,
+		totURL:      totServ.URL,
+		pendingJobs: make(map[string]int),
+		lock:        sync.RWMutex{},
 	}
 
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on first sync: %v", err)
 	}
-	afterFirstSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").Get("known_name", metav1.GetOptions{})
-	if err != nil {
-		t.Fatalf("failed to get prowjob from client: %v", err)
+	if fc.prowjobs[0].Status.State != kube.PendingState {
+		t.Fatalf("Wrong state: %v", fc.prowjobs[0].Status.State)
 	}
-	if afterFirstSync.Status.State != prowapi.PendingState {
-		t.Fatalf("Wrong state: %v", afterFirstSync.Status.State)
-	}
-	if afterFirstSync.Status.Description != "Jenkins job enqueued." {
-		t.Fatalf("Expected description %q, got %q.", "Jenkins job enqueued.", afterFirstSync.Status.Description)
+	if fc.prowjobs[0].Status.Description != "Jenkins job enqueued." {
+		t.Fatalf("Expected description %q, got %q.", "Jenkins job enqueued.", fc.prowjobs[0].Status.Description)
 	}
 	jc.builds["known_name"] = Build{Number: 42}
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on second sync: %v", err)
 	}
-	afterSecondSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").Get("known_name", metav1.GetOptions{})
-	if err != nil {
-		t.Fatalf("failed to get prowjob from client: %v", err)
+	if fc.prowjobs[0].Status.Description != "Jenkins job running." {
+		t.Fatalf("Expected description %q, got %q.", "Jenkins job running.", fc.prowjobs[0].Status.Description)
 	}
-	if afterSecondSync.Status.Description != "Jenkins job running." {
-		t.Fatalf("Expected description %q, got %q.", "Jenkins job running.", afterSecondSync.Status.Description)
-	}
-	if afterSecondSync.Status.PodName != "known_name" {
-		t.Fatalf("Wrong PodName: %s", afterSecondSync.Status.PodName)
+	if fc.prowjobs[0].Status.PodName != "known_name" {
+		t.Fatalf("Wrong PodName: %s", fc.prowjobs[0].Status.PodName)
 	}
 	jc.builds["known_name"] = Build{Result: pState(success)}
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on third sync: %v", err)
 	}
-	afterThirdSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").Get("known_name", metav1.GetOptions{})
-	if err != nil {
-		t.Fatalf("failed to get prowjob from client: %v", err)
+	if fc.prowjobs[0].Status.Description != "Jenkins job succeeded." {
+		t.Fatalf("Expected description %q, got %q.", "Jenkins job succeeded.", fc.prowjobs[0].Status.Description)
 	}
-	if afterThirdSync.Status.Description != "Jenkins job succeeded." {
-		t.Fatalf("Expected description %q, got %q.", "Jenkins job succeeded.", afterThirdSync.Status.Description)
-	}
-	if afterThirdSync.Status.State != prowapi.SuccessState {
-		t.Fatalf("Wrong state: %v", afterThirdSync.Status.State)
+	if fc.prowjobs[0].Status.State != kube.SuccessState {
+		t.Fatalf("Wrong state: %v", fc.prowjobs[0].Status.State)
 	}
 	// This is what the SQ reads.
-	if afterThirdSync.Spec.Context != "Some Job Context" {
-		t.Fatalf("Wrong context: %v", afterThirdSync.Spec.Context)
+	if fc.prowjobs[0].Spec.Context != "Some Job Context" {
+		t.Fatalf("Wrong context: %v", fc.prowjobs[0].Spec.Context)
+	}
+}
+
+func TestRunAfterSuccessCanRun(t *testing.T) {
+	tests := []struct {
+		name string
+
+		parent *kube.ProwJob
+		child  *kube.ProwJob
+
+		changes []github.PullRequestChange
+		err     error
+
+		expected bool
+	}{
+		{
+			name: "child does not require specific changes",
+			parent: &kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job:  "test-e2e",
+					Type: kube.PresubmitJob,
+					Refs: &kube.Refs{
+						Org:  "kubernetes",
+						Repo: "kubernetes",
+						Pulls: []kube.Pull{
+							{Number: 123},
+						},
+					},
+				},
+			},
+			child: &kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job: "push-image",
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "child requires specific changes that are done",
+			parent: &kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job:  "test-bazel-build",
+					Type: kube.PresubmitJob,
+					Refs: &kube.Refs{
+						Org:  "kubernetes",
+						Repo: "kubernetes",
+						Pulls: []kube.Pull{
+							{Number: 123},
+						},
+					},
+				},
+			},
+			child: &kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job: "test-kubeadm-cloud",
+				},
+			},
+			changes: []github.PullRequestChange{
+				{Filename: "cmd/kubeadm/kubeadm.go"},
+				{Filename: "vendor/BUILD"},
+				{Filename: ".gitatrributes"},
+			},
+			expected: true,
+		},
+		{
+			name: "child requires specific changes that are not done",
+			parent: &kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job:  "test-bazel-build",
+					Type: kube.PresubmitJob,
+					Refs: &kube.Refs{
+						Org:  "kubernetes",
+						Repo: "kubernetes",
+						Pulls: []kube.Pull{
+							{Number: 123},
+						},
+					},
+				},
+			},
+			child: &kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job: "test-kubeadm-cloud",
+				},
+			},
+			changes: []github.PullRequestChange{
+				{Filename: "vendor/BUILD"},
+				{Filename: ".gitatrributes"},
+			},
+			expected: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Logf("scenario %q", test.name)
+
+		fakeGH := &fghc{
+			changes: test.changes,
+			err:     test.err,
+		}
+
+		c := Controller{
+			log: logrus.NewEntry(logrus.StandardLogger()),
+			cfg: newFakeConfigAgent(t, 0, nil).Config,
+			ghc: fakeGH,
+		}
+
+		got := c.RunAfterSuccessCanRun(test.parent, test.child)
+		if got != test.expected {
+			t.Errorf("expected to run: %t, got: %t", test.expected, got)
+		}
 	}
 }
 
 func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 	tests := []struct {
 		name           string
-		pjs            []prowapi.ProwJob
+		pjs            []kube.ProwJob
 		pendingJobs    map[string]int
 		expectedBuilds int
 	}{
 		{
 			name: "avoid starting a triggered job",
-			pjs: []prowapi.ProwJob{
+			pjs: []kube.ProwJob{
 				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "first",
-						Namespace: "prowjobs",
-					},
-					Spec: prowapi.ProwJobSpec{
+					Spec: kube.ProwJobSpec{
 						Job:            "test-bazel-build",
-						Type:           prowapi.PostsubmitJob,
+						Type:           kube.PostsubmitJob,
 						MaxConcurrency: 1,
 					},
-					Status: prowapi.ProwJobStatus{
-						State: prowapi.TriggeredState,
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
 					},
 				},
 				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "second",
-						Namespace: "prowjobs",
-					},
-					Spec: prowapi.ProwJobSpec{
+					Spec: kube.ProwJobSpec{
 						Job:            "test-bazel-build",
-						Type:           prowapi.PostsubmitJob,
+						Type:           kube.PostsubmitJob,
 						MaxConcurrency: 1,
 					},
-					Status: prowapi.ProwJobStatus{
-						State: prowapi.TriggeredState,
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
 					},
 				},
 			},
@@ -720,33 +822,25 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		},
 		{
 			name: "both triggered jobs can start",
-			pjs: []prowapi.ProwJob{
+			pjs: []kube.ProwJob{
 				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "first",
-						Namespace: "prowjobs",
-					},
-					Spec: prowapi.ProwJobSpec{
+					Spec: kube.ProwJobSpec{
 						Job:            "test-bazel-build",
-						Type:           prowapi.PostsubmitJob,
+						Type:           kube.PostsubmitJob,
 						MaxConcurrency: 2,
 					},
-					Status: prowapi.ProwJobStatus{
-						State: prowapi.TriggeredState,
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
 					},
 				},
 				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "second",
-						Namespace: "prowjobs",
-					},
-					Spec: prowapi.ProwJobSpec{
+					Spec: kube.ProwJobSpec{
 						Job:            "test-bazel-build",
-						Type:           prowapi.PostsubmitJob,
+						Type:           kube.PostsubmitJob,
 						MaxConcurrency: 2,
 					},
-					Status: prowapi.ProwJobStatus{
-						State: prowapi.TriggeredState,
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
 					},
 				},
 			},
@@ -755,33 +849,25 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		},
 		{
 			name: "no triggered job can start",
-			pjs: []prowapi.ProwJob{
+			pjs: []kube.ProwJob{
 				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "first",
-						Namespace: "prowjobs",
-					},
-					Spec: prowapi.ProwJobSpec{
+					Spec: kube.ProwJobSpec{
 						Job:            "test-bazel-build",
-						Type:           prowapi.PostsubmitJob,
+						Type:           kube.PostsubmitJob,
 						MaxConcurrency: 5,
 					},
-					Status: prowapi.ProwJobStatus{
-						State: prowapi.TriggeredState,
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
 					},
 				},
 				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "second",
-						Namespace: "prowjobs",
-					},
-					Spec: prowapi.ProwJobSpec{
+					Spec: kube.ProwJobSpec{
 						Job:            "test-bazel-build",
-						Type:           prowapi.PostsubmitJob,
+						Type:           kube.PostsubmitJob,
 						MaxConcurrency: 5,
 					},
-					Status: prowapi.ProwJobStatus{
-						State: prowapi.TriggeredState,
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
 					},
 				},
 			},
@@ -795,28 +881,26 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			fmt.Fprint(w, "42")
 		}))
 		defer totServ.Close()
-		jobs := make(chan prowapi.ProwJob, len(test.pjs))
+		jobs := make(chan kube.ProwJob, len(test.pjs))
 		for _, pj := range test.pjs {
 			jobs <- pj
 		}
 		close(jobs)
 
-		var prowJobs []runtime.Object
-		for i := range test.pjs {
-			prowJobs = append(prowJobs, &test.pjs[i])
+		fc := &fkc{
+			prowjobs: test.pjs,
 		}
-		fakeProwJobClient := fake.NewSimpleClientset(prowJobs...)
 		fjc := &fjc{}
 		c := Controller{
-			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
-			jc:            fjc,
-			log:           logrus.NewEntry(logrus.StandardLogger()),
-			cfg:           newFakeConfigAgent(t, 0, nil).Config,
-			totURL:        totServ.URL,
-			pendingJobs:   test.pendingJobs,
+			kc:          fc,
+			jc:          fjc,
+			log:         logrus.NewEntry(logrus.StandardLogger()),
+			cfg:         newFakeConfigAgent(t, 0, nil).Config,
+			totURL:      totServ.URL,
+			pendingJobs: test.pendingJobs,
 		}
 
-		reports := make(chan<- prowapi.ProwJob, len(test.pjs))
+		reports := make(chan<- kube.ProwJob, len(test.pjs))
 		errors := make(chan<- error, len(test.pjs))
 
 		syncProwJobs(c.log, c.syncTriggeredJob, 20, jobs, reports, errors, nil)
@@ -833,45 +917,45 @@ func TestGetJenkinsJobs(t *testing.T) {
 	}
 	tests := []struct {
 		name     string
-		pjs      []prowapi.ProwJob
+		pjs      []kube.ProwJob
 		expected []string
 	}{
 		{
 			name: "both complete and running",
-			pjs: []prowapi.ProwJob{
+			pjs: []kube.ProwJob{
 				{
-					Spec: prowapi.ProwJobSpec{
+					Spec: kube.ProwJobSpec{
 						Job: "coolio",
 					},
-					Status: prowapi.ProwJobStatus{
+					Status: kube.ProwJobStatus{
 						CompletionTime: now(),
 					},
 				},
 				{
-					Spec: prowapi.ProwJobSpec{
+					Spec: kube.ProwJobSpec{
 						Job: "maradona",
 					},
-					Status: prowapi.ProwJobStatus{},
+					Status: kube.ProwJobStatus{},
 				},
 			},
 			expected: []string{"maradona"},
 		},
 		{
 			name: "only complete",
-			pjs: []prowapi.ProwJob{
+			pjs: []kube.ProwJob{
 				{
-					Spec: prowapi.ProwJobSpec{
+					Spec: kube.ProwJobSpec{
 						Job: "coolio",
 					},
-					Status: prowapi.ProwJobStatus{
+					Status: kube.ProwJobStatus{
 						CompletionTime: now(),
 					},
 				},
 				{
-					Spec: prowapi.ProwJobSpec{
+					Spec: kube.ProwJobSpec{
 						Job: "maradona",
 					},
-					Status: prowapi.ProwJobStatus{
+					Status: kube.ProwJobStatus{
 						CompletionTime: now(),
 					},
 				},
@@ -880,18 +964,18 @@ func TestGetJenkinsJobs(t *testing.T) {
 		},
 		{
 			name: "only running",
-			pjs: []prowapi.ProwJob{
+			pjs: []kube.ProwJob{
 				{
-					Spec: prowapi.ProwJobSpec{
+					Spec: kube.ProwJobSpec{
 						Job: "coolio",
 					},
-					Status: prowapi.ProwJobStatus{},
+					Status: kube.ProwJobStatus{},
 				},
 				{
-					Spec: prowapi.ProwJobSpec{
+					Spec: kube.ProwJobSpec{
 						Job: "maradona",
 					},
-					Status: prowapi.ProwJobStatus{},
+					Status: kube.ProwJobStatus{},
 				},
 			},
 			expected: []string{"maradona", "coolio"},

@@ -23,11 +23,11 @@ import (
 	"regexp"
 
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
-	"k8s.io/test-infra/prow/plugins/trigger"
 )
 
 const pluginName = "skip"
@@ -40,7 +40,6 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	CreateStatus(org, repo, ref string, s github.Status) error
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
-	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	ListStatuses(org, repo, ref string) ([]github.Status, error)
 }
@@ -64,11 +63,10 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 }
 
 func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
-	honorOkToTest := trigger.HonorOkToTest(pc.PluginConfig.TriggerFor(e.Repo.Owner.Login, e.Repo.Name))
-	return handle(pc.GitHubClient, pc.Logger, &e, pc.Config.Presubmits[e.Repo.FullName], honorOkToTest)
+	return handle(pc.GitHubClient, pc.Logger, &e, pc.Config.Presubmits[e.Repo.FullName])
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, presubmits []config.Presubmit, honorOkToTest bool) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, presubmits []config.Presubmit) error {
 	if !e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
 		return nil
 	}
@@ -88,6 +86,17 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 	}
 
+	changesFull, err := gc.GetPullRequestChanges(org, repo, number)
+	if err != nil {
+		resp := fmt.Sprintf("Cannot get changes for PR #%d in %s/%s: %v", number, org, repo, err)
+		log.Warn(resp)
+		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
+	}
+	var changes []string
+	for _, change := range changesFull {
+		changes = append(changes, change.Filename)
+	}
+
 	statuses, err := gc.ListStatuses(org, repo, pr.Head.SHA)
 	if err != nil {
 		resp := fmt.Sprintf("Cannot get commit statuses for PR #%d in %s/%s: %v", number, org, repo, err)
@@ -95,37 +104,21 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 	}
 
-	filteredPresubmits, err := trigger.FilterPresubmits(honorOkToTest, gc, e.Body, pr, presubmits)
-	if err != nil {
-		resp := fmt.Sprintf("Cannot get combined status for PR #%d in %s/%s: %v", number, org, repo, err)
-		log.Warn(resp)
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
-	}
-	triggerWillHandle := func(p config.Presubmit) bool {
-		for _, presubmit := range filteredPresubmits {
-			if p.Name == presubmit.Name && p.Context == presubmit.Context {
-				return true
-			}
-		}
-		return false
-	}
-
 	for _, job := range presubmits {
-		// Only consider jobs that have already posted a failed status
-		if !statusExists(job, statuses) || isSuccess(job, statuses) {
+		// Ignore blocking jobs.
+		if !job.SkipReport && job.AlwaysRun {
 			continue
 		}
-		// Ignore jobs that will be handled by the trigger plugin
-		// for this specific comment, regardless of whether they
-		// are required or not. This allows a comment like
-		// >/skip
-		// >/test foo
-		// To end up testing foo instead of skipping it
-		if triggerWillHandle(job) {
+		// Ignore jobs that need to run against the PR changes.
+		if !job.SkipReport && job.RunIfChanged != "" && job.RunsAgainstChanges(changes) {
 			continue
 		}
-		// Only skip jobs that are not required
-		if job.ContextRequired() {
+		// Ignore jobs that don't have a status yet.
+		if !statusExists(job, statuses) {
+			continue
+		}
+		// Ignore jobs that have a green status.
+		if !isNotSuccess(job, statuses) {
 			continue
 		}
 		context := job.Context
@@ -152,9 +145,9 @@ func statusExists(job config.Presubmit, statuses []github.Status) bool {
 	return false
 }
 
-func isSuccess(job config.Presubmit, statuses []github.Status) bool {
+func isNotSuccess(job config.Presubmit, statuses []github.Status) bool {
 	for _, status := range statuses {
-		if status.Context == job.Context && status.State == github.StatusSuccess {
+		if status.Context == job.Context && status.State != github.StatusSuccess {
 			return true
 		}
 	}

@@ -14,7 +14,7 @@ require (
 	github.com/andygrunwald/go-gerrit v0.0.0-20171029143327-95b11af228a1
 	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf // indirect
 	github.com/aws/aws-k8s-tester v0.0.0-20190114231546-b411acf57dfe
-	github.com/aws/aws-sdk-go v1.16.22
+	github.com/aws/aws-sdk-go v1.16.18
 	github.com/bazelbuild/buildtools v0.0.0-20180226164855-80c7f0d45d7e
 	github.com/bwmarrin/snowflake v0.0.0-20170221160716-02cc386c183a
 	github.com/deckarep/golang-set v0.0.0-20171013212420-1d4478f51bed
@@ -42,7 +42,6 @@ require (
 	github.com/golang/protobuf v1.2.0
 	github.com/google/go-github v0.0.0-20170604030111-7a51fb928f52
 	github.com/google/go-querystring v0.0.0-20150414214848-547ef5ac9797 // indirect
-	github.com/google/uuid v1.0.0
 	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/gophercloud/gophercloud v0.0.0-20181215224939-bdd8b1ecd793
 	github.com/gorilla/mux v1.6.2 // indirect
@@ -57,6 +56,7 @@ require (
 	github.com/jinzhu/gorm v0.0.0-20170316141641-572d0a0ab1eb
 	github.com/jinzhu/inflection v0.0.0-20151009084129-3272df6c21d0 // indirect
 	github.com/jinzhu/now v0.0.0-20181116074157-8ec929ed50c3 // indirect
+	github.com/joshdk/go-junit v0.0.0-20180412085512-bf76511d0869
 	github.com/knative/build v0.2.0
 	github.com/knative/pkg v0.0.0-20181205230426-0e41760cea1d
 	github.com/lib/pq v1.0.0 // indirect
@@ -87,15 +87,12 @@ require (
 	golang.org/x/time v0.0.0-20180412165947-fbb02b2291d2
 	golang.org/x/tools v0.0.0-20180828015842-6cd1fcedba52
 	google.golang.org/api v0.0.0-20181021000519-a2651947f503
-	google.golang.org/genproto v0.0.0-20181016170114-94acd270e44e
-	google.golang.org/grpc v1.15.0
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v2 v2.2.1
 	k8s.io/api v0.0.0-20181128191700-6db15a15d2d3
 	k8s.io/apiextensions-apiserver v0.0.0-20181128195303-1f84094d7e8e
 	k8s.io/apimachinery v0.0.0-20181128191346-49ce2735e507
 	k8s.io/client-go v9.0.0+incompatible
-	k8s.io/klog v0.1.0
 	k8s.io/kube-openapi v0.0.0-20180711000925-0cf8f7e6ed1d // indirect
 	sigs.k8s.io/yaml v1.1.0
 	vbom.ml/util v0.0.0-20170409195630-256737ac55c4

@@ -127,6 +127,9 @@ func checkContext(t *testing.T, repo string, p cfg.Presubmit) {
 	if !p.SkipReport && p.Name != p.Context {
 		t.Errorf("Context does not match job name: %s in %s", p.Name, repo)
 	}
+	for _, c := range p.RunAfterSuccess {
+		checkContext(t, repo, c)
+	}
 }
 
 func TestContextMatches(t *testing.T) {
@@ -143,6 +146,7 @@ func checkRetest(t *testing.T, repo string, presubmits []cfg.Presubmit) {
 		if p.RerunCommand != expected {
 			t.Errorf("%s in %s rerun_command: %s != expected: %s", repo, p.Name, p.RerunCommand, expected)
 		}
+		checkRetest(t, repo, p.RunAfterSuccess)
 	}
 }
 
@@ -164,6 +168,9 @@ func findRequired(t *testing.T, presubmits []cfg.Presubmit) []string {
 		if !p.AlwaysRun {
 			continue
 		}
+		for _, r := range findRequired(t, p.RunAfterSuccess) {
+			required = append(required, r)
+		}
 		if p.SkipReport {
 			continue
 		}
@@ -172,13 +179,14 @@ func findRequired(t *testing.T, presubmits []cfg.Presubmit) []string {
 	return required
 }
 
-// Load the config and extract all jobs
+// Load the config and extract all jobs, including any child jobs inside
+// RunAfterSuccess fields.
 func allJobs() ([]cfg.Presubmit, []cfg.Postsubmit, []cfg.Periodic, error) {
 	pres := []cfg.Presubmit{}
 	posts := []cfg.Postsubmit{}
 	peris := []cfg.Periodic{}
 
-	{ // Find all presubmit jobs
+	{ // Find all presubmit jobs, including child jobs.
 		q := []cfg.Presubmit{}
 
 		for _, p := range c.Presubmits {
@@ -189,11 +197,14 @@ func allJobs() ([]cfg.Presubmit, []cfg.Postsubmit, []cfg.Periodic, error) {
 
 		for len(q) > 0 {
 			pres = append(pres, q[0])
+			for _, p := range q[0].RunAfterSuccess {
+				q = append(q, p)
+			}
 			q = q[1:]
 		}
 	}
 
-	{ // Find all postsubmit jobs
+	{ // Find all postsubmit jobs, including child jobs.
 		q := []cfg.Postsubmit{}
 
 		for _, p := range c.Postsubmits {
@@ -204,11 +215,14 @@ func allJobs() ([]cfg.Presubmit, []cfg.Postsubmit, []cfg.Periodic, error) {
 
 		for len(q) > 0 {
 			posts = append(posts, q[0])
+			for _, p := range q[0].RunAfterSuccess {
+				q = append(q, p)
+			}
 			q = q[1:]
 		}
 	}
 
-	{ // Find all periodic jobs
+	{ // Find all periodic jobs, including child jobs.
 		q := []cfg.Periodic{}
 		for _, p := range c.Periodics {
 			q = append(q, p)
@@ -216,6 +230,9 @@ func allJobs() ([]cfg.Presubmit, []cfg.Postsubmit, []cfg.Periodic, error) {
 
 		for len(q) > 0 {
 			peris = append(peris, q[0])
+			for _, p := range q[0].RunAfterSuccess {
+				q = append(q, p)
+			}
 			q = q[1:]
 		}
 	}

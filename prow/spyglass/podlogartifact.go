@@ -24,12 +24,12 @@ import (
 	"net/url"
 	"strings"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
 type jobAgent interface {
-	GetProwJob(job string, id string) (prowapi.ProwJob, error)
+	GetProwJob(job string, id string) (kube.ProwJob, error)
 	GetJobLog(job string, id string) ([]byte, error)
 }
 

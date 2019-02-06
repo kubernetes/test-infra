@@ -55,5 +55,6 @@ var RegionalTypeList = []Type{
 var GlobalTypeList = []Type{
 	IAMInstanceProfiles{},
 	IAMRoles{},
+
 	Route53ResourceRecordSets{},
 }

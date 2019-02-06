@@ -13,6 +13,7 @@
 # limitations under the License.
 
 FROM ubuntu:16.04
+LABEL maintainer="spxtr@google.com"
 
 RUN apt-get update && apt-get install -y \
     git \

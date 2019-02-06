@@ -24,25 +24,25 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/diff"
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/kube"
 )
 
 func TestPathForRefs(t *testing.T) {
 	var testCases = []struct {
 		name     string
-		refs     prowapi.Refs
+		refs     kube.Refs
 		expected string
 	}{
 		{
 			name: "literal override",
-			refs: prowapi.Refs{
+			refs: kube.Refs{
 				PathAlias: "alias",
 			},
 			expected: "base/src/alias",
 		},
 		{
 			name: "default generated",
-			refs: prowapi.Refs{
+			refs: kube.Refs{
 				Org:  "org",
 				Repo: "repo",
 			},
@@ -61,7 +61,7 @@ func TestCommandsForRefs(t *testing.T) {
 	fakeTimestamp := 100200300
 	var testCases = []struct {
 		name                                       string
-		refs                                       prowapi.Refs
+		refs                                       kube.Refs
 		dir, gitUserName, gitUserEmail, cookiePath string
 		env                                        []string
 		expectedBase                               []cloneCommand
@@ -69,7 +69,7 @@ func TestCommandsForRefs(t *testing.T) {
 	}{
 		{
 			name: "simplest case, minimal refs",
-			refs: prowapi.Refs{
+			refs: kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "master",
@@ -90,7 +90,7 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "minimal refs with git user name",
-			refs: prowapi.Refs{
+			refs: kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "master",
@@ -113,7 +113,7 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "minimal refs with git user email",
-			refs: prowapi.Refs{
+			refs: kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "master",
@@ -136,7 +136,7 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "minimal refs with http cookie file",
-			refs: prowapi.Refs{
+			refs: kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "master",
@@ -159,7 +159,7 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "minimal refs with no submodules",
-			refs: prowapi.Refs{
+			refs: kube.Refs{
 				Org:            "org",
 				Repo:           "repo",
 				BaseRef:        "master",
@@ -179,7 +179,7 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "refs with clone URI override",
-			refs: prowapi.Refs{
+			refs: kube.Refs{
 				Org:      "org",
 				Repo:     "repo",
 				BaseRef:  "master",
@@ -201,7 +201,7 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "refs with path alias",
-			refs: prowapi.Refs{
+			refs: kube.Refs{
 				Org:       "org",
 				Repo:      "repo",
 				BaseRef:   "master",
@@ -223,7 +223,7 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "refs with specific base sha",
-			refs: prowapi.Refs{
+			refs: kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "master",
@@ -245,11 +245,11 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "refs with simple pr ref",
-			refs: prowapi.Refs{
+			refs: kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "master",
-				Pulls: []prowapi.Pull{
+				Pulls: []kube.Pull{
 					{Number: 1},
 				},
 			},
@@ -271,11 +271,11 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "refs with pr ref override",
-			refs: prowapi.Refs{
+			refs: kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "master",
-				Pulls: []prowapi.Pull{
+				Pulls: []kube.Pull{
 					{Number: 1, Ref: "pull-me"},
 				},
 			},
@@ -297,11 +297,11 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "refs with pr ref with specific sha",
-			refs: prowapi.Refs{
+			refs: kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "master",
-				Pulls: []prowapi.Pull{
+				Pulls: []kube.Pull{
 					{Number: 1, SHA: "abcdef"},
 				},
 			},
@@ -323,11 +323,11 @@ func TestCommandsForRefs(t *testing.T) {
 		},
 		{
 			name: "refs with multiple simple pr refs",
-			refs: prowapi.Refs{
+			refs: kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "master",
-				Pulls: []prowapi.Pull{
+				Pulls: []kube.Pull{
 					{Number: 1},
 					{Number: 2},
 				},

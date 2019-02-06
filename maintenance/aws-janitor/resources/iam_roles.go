@@ -24,8 +24,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/golang/glog"
 	"github.com/pkg/errors"
-	"k8s.io/klog"
 )
 
 // IAM Roles
@@ -44,11 +44,14 @@ func roleIsManaged(role *iam.Role) bool {
 	}
 
 	// kops roles have names start with `masters.` or `nodes.`
-	if strings.HasPrefix(name, "masters.") || strings.HasPrefix(name, "nodes.") {
+	if strings.HasPrefix(name, "masters.") {
+		return true
+	}
+	if strings.HasPrefix(name, "nodes.") {
 		return true
 	}
 
-	klog.Infof("Unknown role name=%q, path=%q; assuming not managed", name, path)
+	glog.Infof("unknown role name=%q, path=%q; assuming not managed", name, path)
 	return false
 }
 
@@ -56,8 +59,7 @@ func (IAMRoles) MarkAndSweep(sess *session.Session, acct string, region string, 
 	svc := iam.New(sess, &aws.Config{Region: aws.String(region)})
 
 	var toDelete []*iamRole // Paged call, defer deletion until we have the whole list.
-
-	pageFunc := func(page *iam.ListRolesOutput, _ bool) bool {
+	if err := svc.ListRolesPages(&iam.ListRolesInput{}, func(page *iam.ListRolesOutput, _ bool) bool {
 		for _, r := range page.Roles {
 			if !roleIsManaged(r) {
 				continue
@@ -65,23 +67,20 @@ func (IAMRoles) MarkAndSweep(sess *session.Session, acct string, region string, 
 
 			l := &iamRole{arn: aws.StringValue(r.Arn), roleID: aws.StringValue(r.RoleId), roleName: aws.StringValue(r.RoleName)}
 			if set.Mark(l) {
-				klog.Warningf("%s: deleting %T: %v", l.ARN(), r, r)
+				glog.Warningf("%s: deleting %T: %v", l.ARN(), r, r)
 				toDelete = append(toDelete, l)
 			}
 		}
 		return true
-	}
-
-	if err := svc.ListRolesPages(&iam.ListRolesInput{}, pageFunc); err != nil {
+	}); err != nil {
 		return err
 	}
 
 	for _, r := range toDelete {
 		if err := r.delete(svc); err != nil {
-			klog.Warningf("%v: delete failed: %v", r.ARN(), err)
+			glog.Warningf("%v: delete failed: %v", r.ARN(), err)
 		}
 	}
-
 	return nil
 }
 
@@ -126,40 +125,42 @@ func (r iamRole) delete(svc *iam.IAM) error {
 	roleName := r.roleName
 
 	var policyNames []string
-
-	rolePoliciesReq := &iam.ListRolePoliciesInput{RoleName: aws.String(roleName)}
-	err := svc.ListRolePoliciesPages(rolePoliciesReq, func(page *iam.ListRolePoliciesOutput, lastPage bool) bool {
-		for _, policyName := range page.PolicyNames {
-			policyNames = append(policyNames, aws.StringValue(policyName))
+	{
+		request := &iam.ListRolePoliciesInput{
+			RoleName: aws.String(roleName),
 		}
-		return true
-	})
-
-	if err != nil {
-		return fmt.Errorf("error listing IAM role policies for %q: %v", roleName, err)
+		err := svc.ListRolePoliciesPages(request, func(page *iam.ListRolePoliciesOutput, lastPage bool) bool {
+			for _, policyName := range page.PolicyNames {
+				policyNames = append(policyNames, aws.StringValue(policyName))
+			}
+			return true
+		})
+		if err != nil {
+			return fmt.Errorf("error listing IAM role policies for %q: %v", roleName, err)
+		}
 	}
 
 	for _, policyName := range policyNames {
-		klog.V(2).Infof("Deleting IAM role policy %q %q", roleName, policyName)
-
-		deletePolicyReq := &iam.DeleteRolePolicyInput{
+		glog.V(2).Infof("Deleting IAM role policy %q %q", roleName, policyName)
+		request := &iam.DeleteRolePolicyInput{
 			RoleName:   aws.String(roleName),
 			PolicyName: aws.String(policyName),
 		}
-
-		if _, err := svc.DeleteRolePolicy(deletePolicyReq); err != nil {
+		_, err := svc.DeleteRolePolicy(request)
+		if err != nil {
 			return fmt.Errorf("error deleting IAM role policy %q %q: %v", roleName, policyName, err)
 		}
 	}
 
-	klog.V(2).Infof("Deleting IAM role %q", roleName)
-
-	deleteReq := &iam.DeleteRoleInput{
-		RoleName: aws.String(roleName),
-	}
-
-	if _, err := svc.DeleteRole(deleteReq); err != nil {
-		return fmt.Errorf("error deleting IAM role %q: %v", roleName, err)
+	{
+		glog.V(2).Infof("Deleting IAM role %q", roleName)
+		request := &iam.DeleteRoleInput{
+			RoleName: aws.String(roleName),
+		}
+		_, err := svc.DeleteRole(request)
+		if err != nil {
+			return fmt.Errorf("error deleting IAM role %q: %v", roleName, err)
+		}
 	}
 
 	return nil

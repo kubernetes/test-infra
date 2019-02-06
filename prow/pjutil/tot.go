@@ -25,8 +25,8 @@ import (
 	"path"
 	"time"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 
 	"github.com/bwmarrin/snowflake"
@@ -50,7 +50,7 @@ func init() {
 // of a prow config.
 func PresubmitToJobSpec(pre config.Presubmit) *downwardapi.JobSpec {
 	return &downwardapi.JobSpec{
-		Type: prowapi.PresubmitJob,
+		Type: kube.PresubmitJob,
 		Job:  pre.Name,
 	}
 }
@@ -60,7 +60,7 @@ func PresubmitToJobSpec(pre config.Presubmit) *downwardapi.JobSpec {
 // of a prow config.
 func PostsubmitToJobSpec(post config.Postsubmit) *downwardapi.JobSpec {
 	return &downwardapi.JobSpec{
-		Type: prowapi.PostsubmitJob,
+		Type: kube.PostsubmitJob,
 		Job:  post.Name,
 	}
 }
@@ -70,7 +70,7 @@ func PostsubmitToJobSpec(post config.Postsubmit) *downwardapi.JobSpec {
 // of a prow config.
 func PeriodicToJobSpec(periodic config.Periodic) *downwardapi.JobSpec {
 	return &downwardapi.JobSpec{
-		Type: prowapi.PeriodicJob,
+		Type: kube.PeriodicJob,
 		Job:  periodic.Name,
 	}
 }

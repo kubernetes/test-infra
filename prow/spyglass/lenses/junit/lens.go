@@ -19,16 +19,16 @@ package junit
 
 import (
 	"bytes"
+	"sort"
+
+	junit "github.com/joshdk/go-junit"
+	"github.com/sirupsen/logrus"
+
 	"fmt"
 	"html/template"
 	"path/filepath"
-	"sort"
-	"time"
-
-	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/spyglass/lenses"
-	"k8s.io/test-infra/testgrid/metadata/junit"
 )
 
 const (
@@ -77,24 +77,16 @@ func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data 
 	return ""
 }
 
-type JunitResult struct {
-	junit.Result
-}
-
-func (jr JunitResult) Duration() time.Duration {
-	return time.Duration(jr.Time * float64(time.Second))
-}
-
 // TestResult holds data about a test extracted from junit output
 type TestResult struct {
-	Junit JunitResult
+	Junit junit.Test
 	Link  string
 }
 
 // Body renders the <body> for JUnit tests
 func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string) string {
 	type testResults struct {
-		junit []junit.Result
+		junit []junit.Test
 		link  string
 		path  string
 		err   error
@@ -113,15 +105,15 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 				resultChan <- result
 				return
 			}
-			var suites junit.Suites
-			suites, result.err = junit.Parse(contents)
+			var suites []junit.Suite
+			suites, result.err = junit.Ingest(contents)
 			if result.err != nil {
 				logrus.WithError(result.err).Error("Error parsing junit file.")
 				resultChan <- result
 				return
 			}
-			for _, suite := range suites.Suites {
-				for _, test := range suite.Results {
+			for _, suite := range suites {
+				for _, test := range suite.Tests {
 					result.junit = append(result.junit, test)
 				}
 			}
@@ -145,21 +137,23 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 			continue
 		}
 		for _, test := range result.junit {
-			if test.Failure != nil {
+			if test.Status == "failed" {
 				jvd.Failed = append(jvd.Failed, TestResult{
-					Junit: JunitResult{test},
+					Junit: test,
 					Link:  result.link,
 				})
-			} else if test.Skipped != nil {
+			} else if test.Status == "skipped" {
 				jvd.Skipped = append(jvd.Skipped, TestResult{
-					Junit: JunitResult{test},
+					Junit: test,
+					Link:  result.link,
+				})
+			} else if test.Status == "passed" {
+				jvd.Passed = append(jvd.Passed, TestResult{
+					Junit: test,
 					Link:  result.link,
 				})
 			} else {
-				jvd.Passed = append(jvd.Passed, TestResult{
-					Junit: JunitResult{test},
-					Link:  result.link,
-				})
+				logrus.WithField("status", test.Status).Error("invalid JUnit test status string")
 			}
 		}
 	}

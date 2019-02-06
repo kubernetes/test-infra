@@ -36,7 +36,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
         resources:
           requests:
             memory: "6Gi"
@@ -77,7 +77,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
         resources:
           requests:
             memory: "6Gi"
@@ -117,7 +117,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
         resources:
           requests:
             memory: "6Gi"
@@ -129,8 +129,6 @@ presubmits:
     max_concurrency: 12
     skip_branches:
     - release-1.13  # per-release image
-    - release-1.12  # per-release image
-    - release-1.11  # per-release image
     - release-1.10  # per-release image
     labels:
       preset-service-account: "true"
@@ -141,7 +139,7 @@ presubmits:
       preset-e2e-kubemark-gce-big: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -194,113 +192,7 @@ presubmits:
       preset-e2e-kubemark-gce-big: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.13
-        args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=120"
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
-        - --cluster=
-        - --extract=local
-        - --gcp-master-size=n1-standard-4
-        - --gcp-node-size=n1-standard-8
-        - --gcp-nodes=7
-        - --gcp-project=k8s-presubmit-scale
-        - --gcp-zone=us-east1-b
-        - --kubemark
-        - --kubemark-nodes=500
-        - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big
-        - --tear-down-previous
-        - --test=false
-        - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
-        - --timeout=100m
-        # TODO(krzyzacy): Figure out bazel built kubemark image
-        #env:
-        # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-
-  - name: pull-kubernetes-kubemark-e2e-gce-big
-    always_run: true
-    skip_report: false
-    max_concurrency: 12
-    branches:
-    - release-1.12  # per-release image
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-dind-enabled: "true"
-      preset-e2e-kubemark-common: "true"
-      preset-e2e-kubemark-gce-big: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.12
-        args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=120"
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
-        - --cluster=
-        - --extract=local
-        - --gcp-master-size=n1-standard-4
-        - --gcp-node-size=n1-standard-8
-        - --gcp-nodes=7
-        - --gcp-project=k8s-presubmit-scale
-        - --gcp-zone=us-east1-b
-        - --kubemark
-        - --kubemark-nodes=500
-        - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big
-        - --tear-down-previous
-        - --test=false
-        - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
-        - --timeout=100m
-        # TODO(krzyzacy): Figure out bazel built kubemark image
-        #env:
-        # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-
-  - name: pull-kubernetes-kubemark-e2e-gce-big
-    always_run: true
-    skip_report: false
-    max_concurrency: 12
-    branches:
-    - release-1.11  # per-release image
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-dind-enabled: "true"
-      preset-e2e-kubemark-common: "true"
-      preset-e2e-kubemark-gce-big: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.11
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.13
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -353,7 +245,7 @@ presubmits:
       preset-e2e-kubemark-gce-big: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -405,7 +297,7 @@ presubmits:
       preset-e2e-kubemark-gce-scale: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"

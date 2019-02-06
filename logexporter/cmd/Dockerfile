@@ -17,6 +17,7 @@
 
 # Base image must have 'journalctl' binary.
 FROM fedora
+LABEL maintainer="Shyam Jeedigunta <shyamjvs@google.com>"
 
 # Setup gcloud SDK for using gsutil.
 RUN dnf -y -q install which

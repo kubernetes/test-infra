@@ -30,7 +30,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
@@ -38,7 +37,7 @@ import (
 )
 
 type kubeClient interface {
-	CreateProwJob(prowapi.ProwJob) (prowapi.ProwJob, error)
+	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
 }
 
 type gerritClient interface {
@@ -185,15 +184,13 @@ func makeCloneURI(instance, project string) (*url.URL, error) {
 }
 
 // listChangedFiles lists (in lexicographic order) the files changed as part of a Gerrit patchset
-func listChangedFiles(changeInfo client.ChangeInfo) config.ChangedFilesProvider {
-	return func() ([]string, error) {
-		var changed []string
-		revision := changeInfo.Revisions[changeInfo.CurrentRevision]
-		for file := range revision.Files {
-			changed = append(changed, file)
-		}
-		return changed, nil
+func listChangedFiles(changeInfo client.ChangeInfo) []string {
+	changed := []string{}
+	revision := changeInfo.Revisions[changeInfo.CurrentRevision]
+	for file := range revision.Files {
+		changed = append(changed, file)
 	}
+	return changed
 }
 
 // ProcessChange creates new presubmit prowjobs base off the gerrit changes
@@ -217,13 +214,13 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 
 	triggeredJobs := []string{}
 
-	kr := prowapi.Refs{
+	kr := kube.Refs{
 		Org:      cloneURI.Host,  // Something like android.googlesource.com
 		Repo:     change.Project, // Something like platform/build
 		BaseRef:  change.Branch,
 		BaseSHA:  baseSHA,
 		CloneURI: cloneURI.String(), // Something like https://android.googlesource.com/platform/build
-		Pulls: []prowapi.Pull{
+		Pulls: []kube.Pull{
 			{
 				Number: change.Number,
 				Author: rev.Commit.Author.Name,
@@ -234,7 +231,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 	}
 
 	type jobSpec struct {
-		spec   prowapi.ProwJobSpec
+		spec   kube.ProwJobSpec
 		labels map[string]string
 	}
 
@@ -247,9 +244,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		postsubmits := c.config().Postsubmits[cloneURI.String()]
 		postsubmits = append(postsubmits, c.config().Postsubmits[cloneURI.Host+"/"+cloneURI.Path]...)
 		for _, postsubmit := range postsubmits {
-			if shouldRun, err := postsubmit.ShouldRun(change.Branch, changedFiles); err != nil {
-				return fmt.Errorf("failed to determine if postsubmit %q should run: %v", postsubmit.Name, err)
-			} else if shouldRun {
+			if postsubmit.RunsAgainstBranch(change.Branch) && postsubmit.RunsAgainstChanges(changedFiles) {
 				jobSpecs = append(jobSpecs, jobSpec{
 					spec:   pjutil.PostsubmitSpec(postsubmit, kr),
 					labels: postsubmit.Labels,
@@ -260,9 +255,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		presubmits := c.config().Presubmits[cloneURI.String()]
 		presubmits = append(presubmits, c.config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
 		for _, presubmit := range presubmits {
-			if shouldRun, err := presubmit.ShouldRun(change.Branch, changedFiles, false, false); err != nil {
-				return fmt.Errorf("failed to determine if presubmit %q should run: %v", presubmit.Name, err)
-			} else if shouldRun {
+			if presubmit.RunsAgainstBranch(change.Branch) && presubmit.RunsAgainstChanges(changedFiles) {
 				jobSpecs = append(jobSpecs, jobSpec{
 					spec:   pjutil.PresubmitSpec(presubmit, kr),
 					labels: presubmit.Labels,

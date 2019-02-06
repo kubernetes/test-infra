@@ -18,8 +18,6 @@ package kube
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 var (
@@ -41,7 +39,7 @@ func init() {
 }
 
 // GatherProwJobMetrics gathers prometheus metrics for prowjobs.
-func GatherProwJobMetrics(pjs []prowapi.ProwJob) {
+func GatherProwJobMetrics(pjs []ProwJob) {
 	// map of job to job type to state to count
 	metricMap := make(map[string]map[string]map[string]float64)
 

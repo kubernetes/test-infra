@@ -11,6 +11,7 @@ container_bundle(
         "{STABLE_DOCKER_REPO}/pr-labeler:latest": ":pr-labeler-image",
         "{STABLE_DOCKER_REPO}/pr-labeler:latest-{BUILD_USER}": ":pr-labeler-image",
     },
+    stamp = True,
 )
 
 docker_push(

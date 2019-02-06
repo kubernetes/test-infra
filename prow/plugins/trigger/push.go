@@ -17,32 +17,29 @@ limitations under the License.
 package trigger
 
 import (
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
-func listPushEventChanges(pe github.PushEvent) config.ChangedFilesProvider {
-	return func() ([]string, error) {
-		changed := make(map[string]bool)
-		for _, commit := range pe.Commits {
-			for _, added := range commit.Added {
-				changed[added] = true
-			}
-			for _, removed := range commit.Removed {
-				changed[removed] = true
-			}
-			for _, modified := range commit.Modified {
-				changed[modified] = true
-			}
+func listPushEventChanges(pe github.PushEvent) []string {
+	changed := make(map[string]bool)
+	for _, commit := range pe.Commits {
+		for _, added := range commit.Added {
+			changed[added] = true
 		}
-		var changedFiles []string
-		for file := range changed {
-			changedFiles = append(changedFiles, file)
+		for _, removed := range commit.Removed {
+			changed[removed] = true
 		}
-		return changedFiles, nil
+		for _, modified := range commit.Modified {
+			changed[modified] = true
+		}
 	}
+	changedFiles := []string{}
+	for file := range changed {
+		changedFiles = append(changedFiles, file)
+	}
+	return changedFiles
 }
 
 func handlePE(c Client, pe github.PushEvent) error {
@@ -51,12 +48,14 @@ func handlePE(c Client, pe github.PushEvent) error {
 		return nil
 	}
 	for _, j := range c.Config.Postsubmits[pe.Repo.FullName] {
-		if shouldRun, err := j.ShouldRun(pe.Branch(), listPushEventChanges(pe)); err != nil {
-			return err
-		} else if !shouldRun {
+		if !j.RunsAgainstBranch(pe.Branch()) {
 			continue
 		}
-		kr := prowapi.Refs{
+		changedFiles := listPushEventChanges(pe)
+		if !j.RunsAgainstChanges(changedFiles) {
+			continue
+		}
+		kr := kube.Refs{
 			Org:     pe.Repo.Owner.Name,
 			Repo:    pe.Repo.Name,
 			BaseRef: pe.Branch(),
@@ -69,7 +68,7 @@ func handlePE(c Client, pe github.PushEvent) error {
 		labels[github.EventGUID] = pe.GUID
 		pj := pjutil.NewProwJob(pjutil.PostsubmitSpec(j, kr), labels)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
-		if _, err := c.ProwJobClient.Create(&pj); err != nil {
+		if _, err := c.KubeClient.CreateProwJob(pj); err != nil {
 			return err
 		}
 	}

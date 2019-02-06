@@ -22,7 +22,7 @@ import (
 	"os"
 	"strconv"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/kube"
 )
 
 // JobSpec is the full downward API that we expose to
@@ -31,23 +31,23 @@ import (
 //  - the full spec, in serialized JSON in one variable
 //  - individual fields of the spec in their own variables
 type JobSpec struct {
-	Type      prowapi.ProwJobType `json:"type,omitempty"`
-	Job       string              `json:"job,omitempty"`
-	BuildID   string              `json:"buildid,omitempty"`
-	ProwJobID string              `json:"prowjobid,omitempty"`
+	Type      kube.ProwJobType `json:"type,omitempty"`
+	Job       string           `json:"job,omitempty"`
+	BuildID   string           `json:"buildid,omitempty"`
+	ProwJobID string           `json:"prowjobid,omitempty"`
 
 	// refs & extra_refs from the full spec
-	Refs      *prowapi.Refs  `json:"refs,omitempty"`
-	ExtraRefs []prowapi.Refs `json:"extra_refs,omitempty"`
+	Refs      *kube.Refs  `json:"refs,omitempty"`
+	ExtraRefs []kube.Refs `json:"extra_refs,omitempty"`
 
 	// we need to keep track of the agent until we
 	// migrate everyone away from using the $BUILD_NUMBER
 	// environment variable
-	agent prowapi.ProwJobAgent
+	agent kube.ProwJobAgent
 }
 
-// NewJobSpec converts a prowapi.ProwJobSpec invocation into a JobSpec
-func NewJobSpec(spec prowapi.ProwJobSpec, buildID, prowJobID string) JobSpec {
+// NewJobSpec converts a kube.ProwJobSpec invocation into a JobSpec
+func NewJobSpec(spec kube.ProwJobSpec, buildID, prowJobID string) JobSpec {
 	return JobSpec{
 		Type:      spec.Type,
 		Job:       spec.Job,
@@ -112,7 +112,7 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 	// for backwards compatibility, we provide the build ID
 	// in both $BUILD_ID and $BUILD_NUMBER for Prow agents
 	// and in both $buildId and $BUILD_NUMBER for Jenkins
-	if spec.agent == prowapi.KubernetesAgent {
+	if spec.agent == kube.KubernetesAgent {
 		env[prowBuildIDEnv] = spec.BuildID
 	}
 
@@ -122,7 +122,7 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 	}
 	env[JobSpecEnv] = string(raw)
 
-	if spec.Type == prowapi.PeriodicJob {
+	if spec.Type == kube.PeriodicJob {
 		return env, nil
 	}
 
@@ -133,7 +133,7 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 	env[pullBaseShaShortEnv] = shorten(spec.Refs.BaseSHA, shortShaLength)
 	env[pullRefsEnv] = spec.Refs.String()
 
-	if spec.Type == prowapi.PostsubmitJob || spec.Type == prowapi.BatchJob {
+	if spec.Type == kube.PostsubmitJob || spec.Type == kube.BatchJob {
 		return env, nil
 	}
 
@@ -151,17 +151,17 @@ func shorten(s string, length int) string {
 }
 
 // EnvForType returns the slice of environment variables to export for jobType
-func EnvForType(jobType prowapi.ProwJobType) []string {
+func EnvForType(jobType kube.ProwJobType) []string {
 	baseEnv := []string{jobNameEnv, JobSpecEnv, jobTypeEnv, prowJobIDEnv, buildIDEnv, prowBuildIDEnv}
 	refsEnv := []string{repoOwnerEnv, repoNameEnv, pullBaseRefEnv, pullBaseShaEnv, pullBaseShaShortEnv, pullRefsEnv}
 	pullEnv := []string{pullNumberEnv, pullPullShaEnv, pullPullShaShortEnv}
 
 	switch jobType {
-	case prowapi.PeriodicJob:
+	case kube.PeriodicJob:
 		return baseEnv
-	case prowapi.PostsubmitJob, prowapi.BatchJob:
+	case kube.PostsubmitJob, kube.BatchJob:
 		return append(baseEnv, refsEnv...)
-	case prowapi.PresubmitJob:
+	case kube.PresubmitJob:
 		return append(append(baseEnv, refsEnv...), pullEnv...)
 	default:
 		return []string{}

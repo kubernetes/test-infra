@@ -34,7 +34,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190131-v0.1-7-gd9aa1d2
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20181107-d88dbbf
         command:
         - prow/deploy.sh
         args:
@@ -55,7 +55,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190131-v0.1-7-gd9aa1d2
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20181107-d88dbbf
         command:
         - prow/push.sh
         env:
@@ -111,7 +111,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20190130-b4da262c0-0.21.0
+    - image: gcr.io/k8s-testimages/bazelbuild:v20181117-55a41ad84-0.18.1
       command:
       - prow/autobump.sh
       args:

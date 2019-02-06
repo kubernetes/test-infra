@@ -20,9 +20,6 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
-	clienttesting "k8s.io/client-go/testing"
-
-	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
@@ -93,12 +90,12 @@ func TestHandlePE(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		g := &fakegithub.FakeClient{}
-		fakeProwJobClient := fake.NewSimpleClientset()
+		kc := &fkc{}
 		c := Client{
-			GitHubClient:  g,
-			ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
-			Config:        &config.Config{ProwConfig: config.ProwConfig{ProwJobNamespace: "prowjobs"}},
-			Logger:        logrus.WithField("plugin", pluginName),
+			GitHubClient: g,
+			KubeClient:   kc,
+			Config:       &config.Config{},
+			Logger:       logrus.WithField("plugin", pluginName),
 		}
 		postsubmits := map[string][]config.Postsubmit{
 			"org/repo": {
@@ -126,15 +123,8 @@ func TestHandlePE(t *testing.T) {
 		if err != nil {
 			t.Errorf("test %q: handlePE returned unexpected error %v", tc.name, err)
 		}
-		var numStarted int
-		for _, action := range fakeProwJobClient.Fake.Actions() {
-			switch action.(type) {
-			case clienttesting.CreateActionImpl:
-				numStarted++
-			}
-		}
-		if numStarted != tc.jobsToRun {
-			t.Errorf("test %q: expected %d jobs to run, got %d", tc.name, tc.jobsToRun, numStarted)
+		if len(kc.started) != tc.jobsToRun {
+			t.Errorf("test %q: expected %d jobs to run, got %d", tc.name, tc.jobsToRun, len(kc.started))
 		}
 	}
 }

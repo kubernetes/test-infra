@@ -22,12 +22,11 @@ import (
 	"testing"
 	"time"
 
-	coreapi "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/clonerefs"
 	"k8s.io/test-infra/prow/entrypoint"
 	"k8s.io/test-infra/prow/initupload"
@@ -35,12 +34,12 @@ import (
 	"k8s.io/test-infra/prow/sidecar"
 )
 
-func cookieVolumeOnly(secret string) coreapi.Volume {
+func cookieVolumeOnly(secret string) kube.Volume {
 	v, _, _ := cookiefileVolume(secret)
 	return v
 }
 
-func cookieMountOnly(secret string) coreapi.VolumeMount {
+func cookieMountOnly(secret string) kube.VolumeMount {
 	_, vm, _ := cookiefileVolume(secret)
 	return vm
 }
@@ -51,38 +50,38 @@ func cookiePathOnly(secret string) string {
 
 func TestCloneRefs(t *testing.T) {
 	truth := true
-	logMount := coreapi.VolumeMount{
+	logMount := kube.VolumeMount{
 		Name:      "log",
 		MountPath: "/log-mount",
 	}
-	codeMount := coreapi.VolumeMount{
+	codeMount := kube.VolumeMount{
 		Name:      "code",
 		MountPath: "/code-mount",
 	}
-	envOrDie := func(opt clonerefs.Options) []coreapi.EnvVar {
+	envOrDie := func(opt clonerefs.Options) []v1.EnvVar {
 		e, err := cloneEnv(opt)
 		if err != nil {
 			t.Fatal(err)
 		}
 		return e
 	}
-	sshVolumeOnly := func(secret string) coreapi.Volume {
+	sshVolumeOnly := func(secret string) kube.Volume {
 		v, _ := sshVolume(secret)
 		return v
 	}
 
-	sshMountOnly := func(secret string) coreapi.VolumeMount {
+	sshMountOnly := func(secret string) kube.VolumeMount {
 		_, vm := sshVolume(secret)
 		return vm
 	}
 
 	cases := []struct {
 		name              string
-		pj                prowapi.ProwJob
-		codeMountOverride *coreapi.VolumeMount
-		logMountOverride  *coreapi.VolumeMount
-		expected          *coreapi.Container
-		volumes           []coreapi.Volume
+		pj                kube.ProwJob
+		codeMountOverride *kube.VolumeMount
+		logMountOverride  *kube.VolumeMount
+		expected          *kube.Container
+		volumes           []kube.Volume
 		err               bool
 	}{
 		{
@@ -90,26 +89,26 @@ func TestCloneRefs(t *testing.T) {
 		},
 		{
 			name: "nil refs and extrarefs returns nil",
-			pj: prowapi.ProwJob{
-				Spec: prowapi.ProwJobSpec{
-					DecorationConfig: &prowapi.DecorationConfig{},
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					DecorationConfig: &kube.DecorationConfig{},
 				},
 			},
 		},
 		{
 			name: "nil DecorationConfig returns nil",
-			pj: prowapi.ProwJob{
-				Spec: prowapi.ProwJobSpec{
-					Refs: &prowapi.Refs{},
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Refs: &kube.Refs{},
 				},
 			},
 		},
 		{
 			name: "SkipCloning returns nil",
-			pj: prowapi.ProwJob{
-				Spec: prowapi.ProwJobSpec{
-					Refs: &prowapi.Refs{},
-					DecorationConfig: &prowapi.DecorationConfig{
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Refs: &kube.Refs{},
+					DecorationConfig: &kube.DecorationConfig{
 						SkipCloning: &truth,
 					},
 				},
@@ -117,208 +116,208 @@ func TestCloneRefs(t *testing.T) {
 		},
 		{
 			name: "reject empty code mount name",
-			pj: prowapi.ProwJob{
-				Spec: prowapi.ProwJobSpec{
-					DecorationConfig: &prowapi.DecorationConfig{},
-					Refs:             &prowapi.Refs{},
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					DecorationConfig: &kube.DecorationConfig{},
+					Refs:             &kube.Refs{},
 				},
 			},
-			codeMountOverride: &coreapi.VolumeMount{
+			codeMountOverride: &kube.VolumeMount{
 				MountPath: "/whatever",
 			},
 			err: true,
 		},
 		{
 			name: "reject empty code mountpath",
-			pj: prowapi.ProwJob{
-				Spec: prowapi.ProwJobSpec{
-					DecorationConfig: &prowapi.DecorationConfig{},
-					Refs:             &prowapi.Refs{},
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					DecorationConfig: &kube.DecorationConfig{},
+					Refs:             &kube.Refs{},
 				},
 			},
-			codeMountOverride: &coreapi.VolumeMount{
+			codeMountOverride: &kube.VolumeMount{
 				Name: "wee",
 			},
 			err: true,
 		},
 		{
 			name: "reject empty log mount name",
-			pj: prowapi.ProwJob{
-				Spec: prowapi.ProwJobSpec{
-					DecorationConfig: &prowapi.DecorationConfig{},
-					Refs:             &prowapi.Refs{},
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					DecorationConfig: &kube.DecorationConfig{},
+					Refs:             &kube.Refs{},
 				},
 			},
-			logMountOverride: &coreapi.VolumeMount{
+			logMountOverride: &kube.VolumeMount{
 				MountPath: "/whatever",
 			},
 			err: true,
 		},
 		{
 			name: "reject empty log mountpath",
-			pj: prowapi.ProwJob{
-				Spec: prowapi.ProwJobSpec{
-					DecorationConfig: &prowapi.DecorationConfig{},
-					Refs:             &prowapi.Refs{},
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					DecorationConfig: &kube.DecorationConfig{},
+					Refs:             &kube.Refs{},
 				},
 			},
-			logMountOverride: &coreapi.VolumeMount{
+			logMountOverride: &kube.VolumeMount{
 				Name: "wee",
 			},
 			err: true,
 		},
 		{
 			name: "create clonerefs container when refs are set",
-			pj: prowapi.ProwJob{
-				Spec: prowapi.ProwJobSpec{
-					Refs: &prowapi.Refs{},
-					DecorationConfig: &prowapi.DecorationConfig{
-						UtilityImages: &prowapi.UtilityImages{},
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Refs: &kube.Refs{},
+					DecorationConfig: &kube.DecorationConfig{
+						UtilityImages: &kube.UtilityImages{},
 					},
 				},
 			},
-			expected: &coreapi.Container{
+			expected: &kube.Container{
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:      []prowapi.Refs{{}},
+					GitRefs:      []kube.Refs{{}},
 					GitUserEmail: clonerefs.DefaultGitUserEmail,
 					GitUserName:  clonerefs.DefaultGitUserName,
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount},
+				VolumeMounts: []kube.VolumeMount{logMount, codeMount},
 			},
 		},
 		{
 			name: "create clonerefs containers when extrarefs are set",
-			pj: prowapi.ProwJob{
-				Spec: prowapi.ProwJobSpec{
-					ExtraRefs: []prowapi.Refs{{}},
-					DecorationConfig: &prowapi.DecorationConfig{
-						UtilityImages: &prowapi.UtilityImages{},
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					ExtraRefs: []kube.Refs{{}},
+					DecorationConfig: &kube.DecorationConfig{
+						UtilityImages: &kube.UtilityImages{},
 					},
 				},
 			},
-			expected: &coreapi.Container{
+			expected: &kube.Container{
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:      []prowapi.Refs{{}},
+					GitRefs:      []kube.Refs{{}},
 					GitUserEmail: clonerefs.DefaultGitUserEmail,
 					GitUserName:  clonerefs.DefaultGitUserName,
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount},
+				VolumeMounts: []kube.VolumeMount{logMount, codeMount},
 			},
 		},
 		{
 			name: "append extrarefs after refs",
-			pj: prowapi.ProwJob{
-				Spec: prowapi.ProwJobSpec{
-					Refs:      &prowapi.Refs{Org: "first"},
-					ExtraRefs: []prowapi.Refs{{Org: "second"}, {Org: "third"}},
-					DecorationConfig: &prowapi.DecorationConfig{
-						UtilityImages: &prowapi.UtilityImages{},
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Refs:      &kube.Refs{Org: "first"},
+					ExtraRefs: []kube.Refs{{Org: "second"}, {Org: "third"}},
+					DecorationConfig: &kube.DecorationConfig{
+						UtilityImages: &kube.UtilityImages{},
 					},
 				},
 			},
-			expected: &coreapi.Container{
+			expected: &kube.Container{
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:      []prowapi.Refs{{Org: "first"}, {Org: "second"}, {Org: "third"}},
+					GitRefs:      []kube.Refs{{Org: "first"}, {Org: "second"}, {Org: "third"}},
 					GitUserEmail: clonerefs.DefaultGitUserEmail,
 					GitUserName:  clonerefs.DefaultGitUserName,
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount},
+				VolumeMounts: []kube.VolumeMount{logMount, codeMount},
 			},
 		},
 		{
 			name: "append ssh secrets when set",
-			pj: prowapi.ProwJob{
-				Spec: prowapi.ProwJobSpec{
-					Refs: &prowapi.Refs{},
-					DecorationConfig: &prowapi.DecorationConfig{
-						UtilityImages: &prowapi.UtilityImages{},
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Refs: &kube.Refs{},
+					DecorationConfig: &kube.DecorationConfig{
+						UtilityImages: &kube.UtilityImages{},
 						SSHKeySecrets: []string{"super", "secret"},
 					},
 				},
 			},
-			expected: &coreapi.Container{
+			expected: &kube.Container{
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:      []prowapi.Refs{{}},
+					GitRefs:      []kube.Refs{{}},
 					GitUserEmail: clonerefs.DefaultGitUserEmail,
 					GitUserName:  clonerefs.DefaultGitUserName,
 					KeyFiles:     []string{sshMountOnly("super").MountPath, sshMountOnly("secret").MountPath},
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []coreapi.VolumeMount{
+				VolumeMounts: []kube.VolumeMount{
 					logMount,
 					codeMount,
 					sshMountOnly("super"),
 					sshMountOnly("secret"),
 				},
 			},
-			volumes: []coreapi.Volume{sshVolumeOnly("super"), sshVolumeOnly("secret")},
+			volumes: []kube.Volume{sshVolumeOnly("super"), sshVolumeOnly("secret")},
 		},
 		{
 			name: "include ssh host fingerprints when set",
-			pj: prowapi.ProwJob{
-				Spec: prowapi.ProwJobSpec{
-					ExtraRefs: []prowapi.Refs{{}},
-					DecorationConfig: &prowapi.DecorationConfig{
-						UtilityImages:       &prowapi.UtilityImages{},
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					ExtraRefs: []kube.Refs{{}},
+					DecorationConfig: &kube.DecorationConfig{
+						UtilityImages:       &kube.UtilityImages{},
 						SSHHostFingerprints: []string{"thumb", "pinky"},
 					},
 				},
 			},
-			expected: &coreapi.Container{
+			expected: &kube.Container{
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:          []prowapi.Refs{{}},
+					GitRefs:          []kube.Refs{{}},
 					GitUserEmail:     clonerefs.DefaultGitUserEmail,
 					GitUserName:      clonerefs.DefaultGitUserName,
 					SrcRoot:          codeMount.MountPath,
 					HostFingerprints: []string{"thumb", "pinky"},
 					Log:              CloneLogPath(logMount),
 				}),
-				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount},
+				VolumeMounts: []kube.VolumeMount{logMount, codeMount},
 			},
 		},
 		{
 			name: "include cookiefile secrets when set",
-			pj: prowapi.ProwJob{
-				Spec: prowapi.ProwJobSpec{
-					ExtraRefs: []prowapi.Refs{{}},
-					DecorationConfig: &prowapi.DecorationConfig{
-						UtilityImages:    &prowapi.UtilityImages{},
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					ExtraRefs: []kube.Refs{{}},
+					DecorationConfig: &kube.DecorationConfig{
+						UtilityImages:    &kube.UtilityImages{},
 						CookiefileSecret: "oatmeal",
 					},
 				},
 			},
-			expected: &coreapi.Container{
+			expected: &kube.Container{
 				Name:    cloneRefsName,
 				Command: []string{cloneRefsCommand},
 				Args:    []string{"--cookiefile=" + cookiePathOnly("oatmeal")},
 				Env: envOrDie(clonerefs.Options{
 					CookiePath:   cookiePathOnly("oatmeal"),
-					GitRefs:      []prowapi.Refs{{}},
+					GitRefs:      []kube.Refs{{}},
 					GitUserEmail: clonerefs.DefaultGitUserEmail,
 					GitUserName:  clonerefs.DefaultGitUserName,
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, cookieMountOnly("oatmeal")},
+				VolumeMounts: []kube.VolumeMount{logMount, codeMount, cookieMountOnly("oatmeal")},
 			},
-			volumes: []coreapi.Volume{cookieVolumeOnly("oatmeal")},
+			volumes: []kube.Volume{cookieVolumeOnly("oatmeal")},
 		},
 	}
 
@@ -345,7 +344,7 @@ func TestCloneRefs(t *testing.T) {
 			case !equality.Semantic.DeepEqual(tc.volumes, volumes):
 				t.Errorf("unexpected volume:\n%s", diff.ObjectReflectDiff(tc.volumes, volumes))
 			case actual != nil:
-				var er []prowapi.Refs
+				var er []kube.Refs
 				if tc.pj.Spec.Refs != nil {
 					er = append(er, *tc.pj.Spec.Refs)
 				}
@@ -368,34 +367,34 @@ func TestProwJobToPod(t *testing.T) {
 		podName string
 		buildID string
 		labels  map[string]string
-		pjSpec  prowapi.ProwJobSpec
+		pjSpec  kube.ProwJobSpec
 
-		expected *coreapi.Pod
+		expected *v1.Pod
 	}{
 		{
 			podName: "pod",
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
-			pjSpec: prowapi.ProwJobSpec{
-				Type:  prowapi.PresubmitJob,
+			pjSpec: kube.ProwJobSpec{
+				Type:  kube.PresubmitJob,
 				Job:   "job-name",
-				Agent: prowapi.KubernetesAgent,
-				Refs: &prowapi.Refs{
+				Agent: kube.KubernetesAgent,
+				Refs: &kube.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
-					Pulls: []prowapi.Pull{{
+					Pulls: []kube.Pull{{
 						Number: 1,
 						Author: "author-name",
 						SHA:    "pull-sha",
 					}},
 				},
-				PodSpec: &coreapi.PodSpec{
-					Containers: []coreapi.Container{
+				PodSpec: &v1.PodSpec{
+					Containers: []v1.Container{
 						{
 							Image: "tester",
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "MY_ENV", Value: "rocks"},
 							},
 						},
@@ -403,7 +402,7 @@ func TestProwJobToPod(t *testing.T) {
 				},
 			},
 
-			expected: &coreapi.Pod{
+			expected: &v1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "pod",
 					Labels: map[string]string{
@@ -420,14 +419,14 @@ func TestProwJobToPod(t *testing.T) {
 						kube.ProwJobAnnotation: "job-name",
 					},
 				},
-				Spec: coreapi.PodSpec{
+				Spec: v1.PodSpec{
 					AutomountServiceAccountToken: &falseth,
 					RestartPolicy:                "Never",
-					Containers: []coreapi.Container{
+					Containers: []v1.Container{
 						{
 							Name:  "test",
 							Image: "tester",
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "MY_ENV", Value: "rocks"},
 								{Name: "BUILD_ID", Value: "blabla"},
 								{Name: "BUILD_NUMBER", Value: "blabla"},
@@ -454,19 +453,19 @@ func TestProwJobToPod(t *testing.T) {
 			podName: "pod",
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
-			pjSpec: prowapi.ProwJobSpec{
-				Type: prowapi.PresubmitJob,
+			pjSpec: kube.ProwJobSpec{
+				Type: kube.PresubmitJob,
 				Job:  "job-name",
-				DecorationConfig: &prowapi.DecorationConfig{
+				DecorationConfig: &kube.DecorationConfig{
 					Timeout:     120 * time.Minute,
 					GracePeriod: 10 * time.Second,
-					UtilityImages: &prowapi.UtilityImages{
+					UtilityImages: &kube.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
 						Entrypoint: "entrypoint:tag",
 						Sidecar:    "sidecar:tag",
 					},
-					GCSConfiguration: &prowapi.GCSConfiguration{
+					GCSConfiguration: &kube.GCSConfiguration{
 						Bucket:       "my-bucket",
 						PathStrategy: "legacy",
 						DefaultOrg:   "kubernetes",
@@ -475,34 +474,34 @@ func TestProwJobToPod(t *testing.T) {
 					GCSCredentialsSecret: "secret-name",
 					CookiefileSecret:     "yummy/.gitcookies",
 				},
-				Agent: prowapi.KubernetesAgent,
-				Refs: &prowapi.Refs{
+				Agent: kube.KubernetesAgent,
+				Refs: &kube.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
-					Pulls: []prowapi.Pull{{
+					Pulls: []kube.Pull{{
 						Number: 1,
 						Author: "author-name",
 						SHA:    "pull-sha",
 					}},
 					PathAlias: "somewhere/else",
 				},
-				ExtraRefs: []prowapi.Refs{},
-				PodSpec: &coreapi.PodSpec{
-					Containers: []coreapi.Container{
+				ExtraRefs: []kube.Refs{},
+				PodSpec: &v1.PodSpec{
+					Containers: []v1.Container{
 						{
 							Image:   "tester",
 							Command: []string{"/bin/thing"},
 							Args:    []string{"some", "args"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "MY_ENV", Value: "rocks"},
 							},
 						},
 					},
 				},
 			},
-			expected: &coreapi.Pod{
+			expected: &v1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "pod",
 					Labels: map[string]string{
@@ -519,19 +518,19 @@ func TestProwJobToPod(t *testing.T) {
 						kube.ProwJobAnnotation: "job-name",
 					},
 				},
-				Spec: coreapi.PodSpec{
+				Spec: v1.PodSpec{
 					AutomountServiceAccountToken: &falseth,
 					RestartPolicy:                "Never",
-					InitContainers: []coreapi.Container{
+					InitContainers: []v1.Container{
 						{
 							Name:    "clonerefs",
 							Image:   "clonerefs:tag",
 							Command: []string{"/clonerefs"},
 							Args:    []string{"--cookiefile=" + cookiePathOnly("yummy/.gitcookies")},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "CLONEREFS_OPTIONS", Value: `{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}],"cookie_path":"` + cookiePathOnly("yummy/.gitcookies") + `"}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -547,11 +546,11 @@ func TestProwJobToPod(t *testing.T) {
 							Name:    "initupload",
 							Image:   "initupload:tag",
 							Command: []string{"/initupload"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "INITUPLOAD_OPTIONS", Value: `{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false,"log":"/logs/clone.json"}`},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []kube.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -570,7 +569,7 @@ func TestProwJobToPod(t *testing.T) {
 								"/entrypoint",
 								"/tools/entrypoint",
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []kube.VolumeMount{
 								{
 									Name:      "tools",
 									MountPath: "/tools",
@@ -578,14 +577,14 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 					},
-					Containers: []coreapi.Container{
+					Containers: []v1.Container{
 						{
 							Name:       "test",
 							Image:      "tester",
 							Command:    []string{"/tools/entrypoint"},
 							Args:       []string{},
 							WorkingDir: "/home/prow/go/src/somewhere/else",
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "MY_ENV", Value: "rocks"},
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
@@ -606,7 +605,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "REPO_OWNER", Value: "org-name"},
 								{Name: "ENTRYPOINT_OPTIONS", Value: `{"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","args":["/bin/thing","some","args"],"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -625,11 +624,11 @@ func TestProwJobToPod(t *testing.T) {
 							Name:    "sidecar",
 							Image:   "sidecar:tag",
 							Command: []string{"/sidecar"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
 								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"entries":[{"args":["/bin/thing","some","args"],"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}]}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -641,23 +640,23 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 					},
-					Volumes: []coreapi.Volume{
+					Volumes: []v1.Volume{
 						{
 							Name: "logs",
-							VolumeSource: coreapi.VolumeSource{
-								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
 							},
 						},
 						{
 							Name: "tools",
-							VolumeSource: coreapi.VolumeSource{
-								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
 							},
 						},
 						{
 							Name: "gcs-credentials",
-							VolumeSource: coreapi.VolumeSource{
-								Secret: &coreapi.SecretVolumeSource{
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
 									SecretName: "secret-name",
 								},
 							},
@@ -665,8 +664,8 @@ func TestProwJobToPod(t *testing.T) {
 						cookieVolumeOnly("yummy/.gitcookies"),
 						{
 							Name: "code",
-							VolumeSource: coreapi.VolumeSource{
-								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
 							},
 						},
 					},
@@ -677,19 +676,19 @@ func TestProwJobToPod(t *testing.T) {
 			podName: "pod",
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
-			pjSpec: prowapi.ProwJobSpec{
-				Type: prowapi.PresubmitJob,
+			pjSpec: kube.ProwJobSpec{
+				Type: kube.PresubmitJob,
 				Job:  "job-name",
-				DecorationConfig: &prowapi.DecorationConfig{
+				DecorationConfig: &kube.DecorationConfig{
 					Timeout:     120 * time.Minute,
 					GracePeriod: 10 * time.Second,
-					UtilityImages: &prowapi.UtilityImages{
+					UtilityImages: &kube.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
 						Entrypoint: "entrypoint:tag",
 						Sidecar:    "sidecar:tag",
 					},
-					GCSConfiguration: &prowapi.GCSConfiguration{
+					GCSConfiguration: &kube.GCSConfiguration{
 						Bucket:       "my-bucket",
 						PathStrategy: "legacy",
 						DefaultOrg:   "kubernetes",
@@ -698,34 +697,34 @@ func TestProwJobToPod(t *testing.T) {
 					GCSCredentialsSecret: "secret-name",
 					CookiefileSecret:     "yummy",
 				},
-				Agent: prowapi.KubernetesAgent,
-				Refs: &prowapi.Refs{
+				Agent: kube.KubernetesAgent,
+				Refs: &kube.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
-					Pulls: []prowapi.Pull{{
+					Pulls: []kube.Pull{{
 						Number: 1,
 						Author: "author-name",
 						SHA:    "pull-sha",
 					}},
 					PathAlias: "somewhere/else",
 				},
-				ExtraRefs: []prowapi.Refs{},
-				PodSpec: &coreapi.PodSpec{
-					Containers: []coreapi.Container{
+				ExtraRefs: []kube.Refs{},
+				PodSpec: &v1.PodSpec{
+					Containers: []v1.Container{
 						{
 							Image:   "tester",
 							Command: []string{"/bin/thing"},
 							Args:    []string{"some", "args"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "MY_ENV", Value: "rocks"},
 							},
 						},
 					},
 				},
 			},
-			expected: &coreapi.Pod{
+			expected: &v1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "pod",
 					Labels: map[string]string{
@@ -742,19 +741,19 @@ func TestProwJobToPod(t *testing.T) {
 						kube.ProwJobAnnotation: "job-name",
 					},
 				},
-				Spec: coreapi.PodSpec{
+				Spec: v1.PodSpec{
 					AutomountServiceAccountToken: &falseth,
 					RestartPolicy:                "Never",
-					InitContainers: []coreapi.Container{
+					InitContainers: []v1.Container{
 						{
 							Name:    "clonerefs",
 							Image:   "clonerefs:tag",
 							Command: []string{"/clonerefs"},
 							Args:    []string{"--cookiefile=" + cookiePathOnly("yummy")},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "CLONEREFS_OPTIONS", Value: `{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}],"cookie_path":"` + cookiePathOnly("yummy") + `"}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -770,11 +769,11 @@ func TestProwJobToPod(t *testing.T) {
 							Name:    "initupload",
 							Image:   "initupload:tag",
 							Command: []string{"/initupload"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "INITUPLOAD_OPTIONS", Value: `{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false,"log":"/logs/clone.json"}`},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []kube.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -793,7 +792,7 @@ func TestProwJobToPod(t *testing.T) {
 								"/entrypoint",
 								"/tools/entrypoint",
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []kube.VolumeMount{
 								{
 									Name:      "tools",
 									MountPath: "/tools",
@@ -801,14 +800,14 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 					},
-					Containers: []coreapi.Container{
+					Containers: []v1.Container{
 						{
 							Name:       "test",
 							Image:      "tester",
 							Command:    []string{"/tools/entrypoint"},
 							Args:       []string{},
 							WorkingDir: "/home/prow/go/src/somewhere/else",
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "MY_ENV", Value: "rocks"},
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
@@ -829,7 +828,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "REPO_OWNER", Value: "org-name"},
 								{Name: "ENTRYPOINT_OPTIONS", Value: `{"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","args":["/bin/thing","some","args"],"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -848,11 +847,11 @@ func TestProwJobToPod(t *testing.T) {
 							Name:    "sidecar",
 							Image:   "sidecar:tag",
 							Command: []string{"/sidecar"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
 								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"entries":[{"args":["/bin/thing","some","args"],"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}]}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -864,23 +863,23 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 					},
-					Volumes: []coreapi.Volume{
+					Volumes: []v1.Volume{
 						{
 							Name: "logs",
-							VolumeSource: coreapi.VolumeSource{
-								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
 							},
 						},
 						{
 							Name: "tools",
-							VolumeSource: coreapi.VolumeSource{
-								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
 							},
 						},
 						{
 							Name: "gcs-credentials",
-							VolumeSource: coreapi.VolumeSource{
-								Secret: &coreapi.SecretVolumeSource{
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
 									SecretName: "secret-name",
 								},
 							},
@@ -888,8 +887,8 @@ func TestProwJobToPod(t *testing.T) {
 						cookieVolumeOnly("yummy"),
 						{
 							Name: "code",
-							VolumeSource: coreapi.VolumeSource{
-								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
 							},
 						},
 					},
@@ -900,19 +899,19 @@ func TestProwJobToPod(t *testing.T) {
 			podName: "pod",
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
-			pjSpec: prowapi.ProwJobSpec{
-				Type: prowapi.PresubmitJob,
+			pjSpec: kube.ProwJobSpec{
+				Type: kube.PresubmitJob,
 				Job:  "job-name",
-				DecorationConfig: &prowapi.DecorationConfig{
+				DecorationConfig: &kube.DecorationConfig{
 					Timeout:     120 * time.Minute,
 					GracePeriod: 10 * time.Second,
-					UtilityImages: &prowapi.UtilityImages{
+					UtilityImages: &kube.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
 						Entrypoint: "entrypoint:tag",
 						Sidecar:    "sidecar:tag",
 					},
-					GCSConfiguration: &prowapi.GCSConfiguration{
+					GCSConfiguration: &kube.GCSConfiguration{
 						Bucket:       "my-bucket",
 						PathStrategy: "legacy",
 						DefaultOrg:   "kubernetes",
@@ -922,34 +921,34 @@ func TestProwJobToPod(t *testing.T) {
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 					SSHHostFingerprints:  []string{"hello", "world"},
 				},
-				Agent: prowapi.KubernetesAgent,
-				Refs: &prowapi.Refs{
+				Agent: kube.KubernetesAgent,
+				Refs: &kube.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
-					Pulls: []prowapi.Pull{{
+					Pulls: []kube.Pull{{
 						Number: 1,
 						Author: "author-name",
 						SHA:    "pull-sha",
 					}},
 					PathAlias: "somewhere/else",
 				},
-				ExtraRefs: []prowapi.Refs{},
-				PodSpec: &coreapi.PodSpec{
-					Containers: []coreapi.Container{
+				ExtraRefs: []kube.Refs{},
+				PodSpec: &v1.PodSpec{
+					Containers: []v1.Container{
 						{
 							Image:   "tester",
 							Command: []string{"/bin/thing"},
 							Args:    []string{"some", "args"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "MY_ENV", Value: "rocks"},
 							},
 						},
 					},
 				},
 			},
-			expected: &coreapi.Pod{
+			expected: &v1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "pod",
 					Labels: map[string]string{
@@ -966,18 +965,18 @@ func TestProwJobToPod(t *testing.T) {
 						kube.ProwJobAnnotation: "job-name",
 					},
 				},
-				Spec: coreapi.PodSpec{
+				Spec: v1.PodSpec{
 					AutomountServiceAccountToken: &falseth,
 					RestartPolicy:                "Never",
-					InitContainers: []coreapi.Container{
+					InitContainers: []v1.Container{
 						{
 							Name:    "clonerefs",
 							Image:   "clonerefs:tag",
 							Command: []string{"/clonerefs"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "CLONEREFS_OPTIONS", Value: `{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}],"key_files":["/secrets/ssh/ssh-1","/secrets/ssh/ssh-2"],"host_fingerprints":["hello","world"]}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -1002,11 +1001,11 @@ func TestProwJobToPod(t *testing.T) {
 							Name:    "initupload",
 							Image:   "initupload:tag",
 							Command: []string{"/initupload"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "INITUPLOAD_OPTIONS", Value: `{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false,"log":"/logs/clone.json"}`},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []kube.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -1025,7 +1024,7 @@ func TestProwJobToPod(t *testing.T) {
 								"/entrypoint",
 								"/tools/entrypoint",
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []kube.VolumeMount{
 								{
 									Name:      "tools",
 									MountPath: "/tools",
@@ -1033,14 +1032,14 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 					},
-					Containers: []coreapi.Container{
+					Containers: []v1.Container{
 						{
 							Name:       "test",
 							Image:      "tester",
 							Command:    []string{"/tools/entrypoint"},
 							Args:       []string{},
 							WorkingDir: "/home/prow/go/src/somewhere/else",
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "MY_ENV", Value: "rocks"},
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
@@ -1061,7 +1060,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "REPO_OWNER", Value: "org-name"},
 								{Name: "ENTRYPOINT_OPTIONS", Value: `{"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","args":["/bin/thing","some","args"],"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -1080,11 +1079,11 @@ func TestProwJobToPod(t *testing.T) {
 							Name:    "sidecar",
 							Image:   "sidecar:tag",
 							Command: []string{"/sidecar"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
 								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"entries":[{"args":["/bin/thing","some","args"],"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}]}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -1096,31 +1095,31 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 					},
-					Volumes: []coreapi.Volume{
+					Volumes: []v1.Volume{
 						{
 							Name: "logs",
-							VolumeSource: coreapi.VolumeSource{
-								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
 							},
 						},
 						{
 							Name: "tools",
-							VolumeSource: coreapi.VolumeSource{
-								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
 							},
 						},
 						{
 							Name: "gcs-credentials",
-							VolumeSource: coreapi.VolumeSource{
-								Secret: &coreapi.SecretVolumeSource{
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
 									SecretName: "secret-name",
 								},
 							},
 						},
 						{
 							Name: "ssh-keys-ssh-1",
-							VolumeSource: coreapi.VolumeSource{
-								Secret: &coreapi.SecretVolumeSource{
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
 									SecretName:  "ssh-1",
 									DefaultMode: &sshKeyMode,
 								},
@@ -1128,8 +1127,8 @@ func TestProwJobToPod(t *testing.T) {
 						},
 						{
 							Name: "ssh-keys-ssh-2",
-							VolumeSource: coreapi.VolumeSource{
-								Secret: &coreapi.SecretVolumeSource{
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
 									SecretName:  "ssh-2",
 									DefaultMode: &sshKeyMode,
 								},
@@ -1137,8 +1136,8 @@ func TestProwJobToPod(t *testing.T) {
 						},
 						{
 							Name: "code",
-							VolumeSource: coreapi.VolumeSource{
-								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
 							},
 						},
 					},
@@ -1149,19 +1148,19 @@ func TestProwJobToPod(t *testing.T) {
 			podName: "pod",
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
-			pjSpec: prowapi.ProwJobSpec{
-				Type: prowapi.PresubmitJob,
+			pjSpec: kube.ProwJobSpec{
+				Type: kube.PresubmitJob,
 				Job:  "job-name",
-				DecorationConfig: &prowapi.DecorationConfig{
+				DecorationConfig: &kube.DecorationConfig{
 					Timeout:     120 * time.Minute,
 					GracePeriod: 10 * time.Second,
-					UtilityImages: &prowapi.UtilityImages{
+					UtilityImages: &kube.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
 						Entrypoint: "entrypoint:tag",
 						Sidecar:    "sidecar:tag",
 					},
-					GCSConfiguration: &prowapi.GCSConfiguration{
+					GCSConfiguration: &kube.GCSConfiguration{
 						Bucket:       "my-bucket",
 						PathStrategy: "legacy",
 						DefaultOrg:   "kubernetes",
@@ -1170,34 +1169,34 @@ func TestProwJobToPod(t *testing.T) {
 					GCSCredentialsSecret: "secret-name",
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 				},
-				Agent: prowapi.KubernetesAgent,
-				Refs: &prowapi.Refs{
+				Agent: kube.KubernetesAgent,
+				Refs: &kube.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
-					Pulls: []prowapi.Pull{{
+					Pulls: []kube.Pull{{
 						Number: 1,
 						Author: "author-name",
 						SHA:    "pull-sha",
 					}},
 					PathAlias: "somewhere/else",
 				},
-				ExtraRefs: []prowapi.Refs{},
-				PodSpec: &coreapi.PodSpec{
-					Containers: []coreapi.Container{
+				ExtraRefs: []kube.Refs{},
+				PodSpec: &v1.PodSpec{
+					Containers: []v1.Container{
 						{
 							Image:   "tester",
 							Command: []string{"/bin/thing"},
 							Args:    []string{"some", "args"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "MY_ENV", Value: "rocks"},
 							},
 						},
 					},
 				},
 			},
-			expected: &coreapi.Pod{
+			expected: &v1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "pod",
 					Labels: map[string]string{
@@ -1214,18 +1213,18 @@ func TestProwJobToPod(t *testing.T) {
 						kube.ProwJobAnnotation: "job-name",
 					},
 				},
-				Spec: coreapi.PodSpec{
+				Spec: v1.PodSpec{
 					AutomountServiceAccountToken: &falseth,
 					RestartPolicy:                "Never",
-					InitContainers: []coreapi.Container{
+					InitContainers: []v1.Container{
 						{
 							Name:    "clonerefs",
 							Image:   "clonerefs:tag",
 							Command: []string{"/clonerefs"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "CLONEREFS_OPTIONS", Value: `{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}],"key_files":["/secrets/ssh/ssh-1","/secrets/ssh/ssh-2"]}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -1250,11 +1249,11 @@ func TestProwJobToPod(t *testing.T) {
 							Name:    "initupload",
 							Image:   "initupload:tag",
 							Command: []string{"/initupload"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "INITUPLOAD_OPTIONS", Value: `{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false,"log":"/logs/clone.json"}`},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []kube.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -1273,7 +1272,7 @@ func TestProwJobToPod(t *testing.T) {
 								"/entrypoint",
 								"/tools/entrypoint",
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []kube.VolumeMount{
 								{
 									Name:      "tools",
 									MountPath: "/tools",
@@ -1281,14 +1280,14 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 					},
-					Containers: []coreapi.Container{
+					Containers: []v1.Container{
 						{
 							Name:       "test",
 							Image:      "tester",
 							Command:    []string{"/tools/entrypoint"},
 							Args:       []string{},
 							WorkingDir: "/home/prow/go/src/somewhere/else",
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "MY_ENV", Value: "rocks"},
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
@@ -1309,7 +1308,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "REPO_OWNER", Value: "org-name"},
 								{Name: "ENTRYPOINT_OPTIONS", Value: `{"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","args":["/bin/thing","some","args"],"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -1328,11 +1327,11 @@ func TestProwJobToPod(t *testing.T) {
 							Name:    "sidecar",
 							Image:   "sidecar:tag",
 							Command: []string{"/sidecar"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
 								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"entries":[{"args":["/bin/thing","some","args"],"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}]}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -1344,31 +1343,31 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 					},
-					Volumes: []coreapi.Volume{
+					Volumes: []v1.Volume{
 						{
 							Name: "logs",
-							VolumeSource: coreapi.VolumeSource{
-								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
 							},
 						},
 						{
 							Name: "tools",
-							VolumeSource: coreapi.VolumeSource{
-								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
 							},
 						},
 						{
 							Name: "gcs-credentials",
-							VolumeSource: coreapi.VolumeSource{
-								Secret: &coreapi.SecretVolumeSource{
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
 									SecretName: "secret-name",
 								},
 							},
 						},
 						{
 							Name: "ssh-keys-ssh-1",
-							VolumeSource: coreapi.VolumeSource{
-								Secret: &coreapi.SecretVolumeSource{
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
 									SecretName:  "ssh-1",
 									DefaultMode: &sshKeyMode,
 								},
@@ -1376,8 +1375,8 @@ func TestProwJobToPod(t *testing.T) {
 						},
 						{
 							Name: "ssh-keys-ssh-2",
-							VolumeSource: coreapi.VolumeSource{
-								Secret: &coreapi.SecretVolumeSource{
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
 									SecretName:  "ssh-2",
 									DefaultMode: &sshKeyMode,
 								},
@@ -1385,8 +1384,8 @@ func TestProwJobToPod(t *testing.T) {
 						},
 						{
 							Name: "code",
-							VolumeSource: coreapi.VolumeSource{
-								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
 							},
 						},
 					},
@@ -1397,19 +1396,19 @@ func TestProwJobToPod(t *testing.T) {
 			podName: "pod",
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
-			pjSpec: prowapi.ProwJobSpec{
-				Type: prowapi.PeriodicJob,
+			pjSpec: kube.ProwJobSpec{
+				Type: kube.PeriodicJob,
 				Job:  "job-name",
-				DecorationConfig: &prowapi.DecorationConfig{
+				DecorationConfig: &kube.DecorationConfig{
 					Timeout:     120 * time.Minute,
 					GracePeriod: 10 * time.Second,
-					UtilityImages: &prowapi.UtilityImages{
+					UtilityImages: &kube.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
 						Entrypoint: "entrypoint:tag",
 						Sidecar:    "sidecar:tag",
 					},
-					GCSConfiguration: &prowapi.GCSConfiguration{
+					GCSConfiguration: &kube.GCSConfiguration{
 						Bucket:       "my-bucket",
 						PathStrategy: "legacy",
 						DefaultOrg:   "kubernetes",
@@ -1418,21 +1417,21 @@ func TestProwJobToPod(t *testing.T) {
 					GCSCredentialsSecret: "secret-name",
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 				},
-				Agent: prowapi.KubernetesAgent,
-				PodSpec: &coreapi.PodSpec{
-					Containers: []coreapi.Container{
+				Agent: kube.KubernetesAgent,
+				PodSpec: &v1.PodSpec{
+					Containers: []v1.Container{
 						{
 							Image:   "tester",
 							Command: []string{"/bin/thing"},
 							Args:    []string{"some", "args"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "MY_ENV", Value: "rocks"},
 							},
 						},
 					},
 				},
 			},
-			expected: &coreapi.Pod{
+			expected: &v1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "pod",
 					Labels: map[string]string{
@@ -1446,19 +1445,19 @@ func TestProwJobToPod(t *testing.T) {
 						kube.ProwJobAnnotation: "job-name",
 					},
 				},
-				Spec: coreapi.PodSpec{
+				Spec: v1.PodSpec{
 					AutomountServiceAccountToken: &falseth,
 					RestartPolicy:                "Never",
-					InitContainers: []coreapi.Container{
+					InitContainers: []v1.Container{
 						{
 							Name:    "initupload",
 							Image:   "initupload:tag",
 							Command: []string{"/initupload"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "INITUPLOAD_OPTIONS", Value: `{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false}`},
 								{Name: "JOB_SPEC", Value: `{"type":"periodic","job":"job-name","buildid":"blabla","prowjobid":"pod"}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []kube.VolumeMount{
 								// don't mount log since we're not uploading a clone log
 								{
 									Name:      "gcs-credentials",
@@ -1474,7 +1473,7 @@ func TestProwJobToPod(t *testing.T) {
 								"/entrypoint",
 								"/tools/entrypoint",
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []kube.VolumeMount{
 								{
 									Name:      "tools",
 									MountPath: "/tools",
@@ -1482,13 +1481,13 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 					},
-					Containers: []coreapi.Container{
+					Containers: []v1.Container{
 						{
 							Name:    "test",
 							Image:   "tester",
 							Command: []string{"/tools/entrypoint"},
 							Args:    []string{},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "MY_ENV", Value: "rocks"},
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
@@ -1500,7 +1499,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "PROW_JOB_ID", Value: "pod"},
 								{Name: "ENTRYPOINT_OPTIONS", Value: `{"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","args":["/bin/thing","some","args"],"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -1515,11 +1514,11 @@ func TestProwJobToPod(t *testing.T) {
 							Name:    "sidecar",
 							Image:   "sidecar:tag",
 							Command: []string{"/sidecar"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "JOB_SPEC", Value: `{"type":"periodic","job":"job-name","buildid":"blabla","prowjobid":"pod"}`},
 								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"entries":[{"args":["/bin/thing","some","args"],"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}]}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -1531,23 +1530,23 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 					},
-					Volumes: []coreapi.Volume{
+					Volumes: []v1.Volume{
 						{
 							Name: "logs",
-							VolumeSource: coreapi.VolumeSource{
-								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
 							},
 						},
 						{
 							Name: "tools",
-							VolumeSource: coreapi.VolumeSource{
-								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
 							},
 						},
 						{
 							Name: "gcs-credentials",
-							VolumeSource: coreapi.VolumeSource{
-								Secret: &coreapi.SecretVolumeSource{
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
 									SecretName: "secret-name",
 								},
 							},
@@ -1560,19 +1559,19 @@ func TestProwJobToPod(t *testing.T) {
 			podName: "pod",
 			buildID: "blabla",
 			labels:  map[string]string{"needstobe": "inherited"},
-			pjSpec: prowapi.ProwJobSpec{
-				Type: prowapi.PresubmitJob,
+			pjSpec: kube.ProwJobSpec{
+				Type: kube.PresubmitJob,
 				Job:  "job-name",
-				DecorationConfig: &prowapi.DecorationConfig{
+				DecorationConfig: &kube.DecorationConfig{
 					Timeout:     120 * time.Minute,
 					GracePeriod: 10 * time.Second,
-					UtilityImages: &prowapi.UtilityImages{
+					UtilityImages: &kube.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
 						Entrypoint: "entrypoint:tag",
 						Sidecar:    "sidecar:tag",
 					},
-					GCSConfiguration: &prowapi.GCSConfiguration{
+					GCSConfiguration: &kube.GCSConfiguration{
 						Bucket:       "my-bucket",
 						PathStrategy: "legacy",
 						DefaultOrg:   "kubernetes",
@@ -1582,39 +1581,39 @@ func TestProwJobToPod(t *testing.T) {
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 					SkipCloning:          &truth,
 				},
-				Agent: prowapi.KubernetesAgent,
-				Refs: &prowapi.Refs{
+				Agent: kube.KubernetesAgent,
+				Refs: &kube.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
-					Pulls: []prowapi.Pull{{
+					Pulls: []kube.Pull{{
 						Number: 1,
 						Author: "author-name",
 						SHA:    "pull-sha",
 					}},
 					PathAlias: "somewhere/else",
 				},
-				ExtraRefs: []prowapi.Refs{
+				ExtraRefs: []kube.Refs{
 					{
 						Org:  "extra-org",
 						Repo: "extra-repo",
 					},
 				},
-				PodSpec: &coreapi.PodSpec{
-					Containers: []coreapi.Container{
+				PodSpec: &v1.PodSpec{
+					Containers: []v1.Container{
 						{
 							Image:   "tester",
 							Command: []string{"/bin/thing"},
 							Args:    []string{"some", "args"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "MY_ENV", Value: "rocks"},
 							},
 						},
 					},
 				},
 			},
-			expected: &coreapi.Pod{
+			expected: &v1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "pod",
 					Labels: map[string]string{
@@ -1631,19 +1630,19 @@ func TestProwJobToPod(t *testing.T) {
 						kube.ProwJobAnnotation: "job-name",
 					},
 				},
-				Spec: coreapi.PodSpec{
+				Spec: v1.PodSpec{
 					AutomountServiceAccountToken: &falseth,
 					RestartPolicy:                "Never",
-					InitContainers: []coreapi.Container{
+					InitContainers: []v1.Container{
 						{
 							Name:    "initupload",
 							Image:   "initupload:tag",
 							Command: []string{"/initupload"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "INITUPLOAD_OPTIONS", Value: `{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false}`},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"},"extra_refs":[{"org":"extra-org","repo":"extra-repo"}]}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []kube.VolumeMount{
 								// don't mount log since we're not uploading a clone log
 								{
 									Name:      "gcs-credentials",
@@ -1659,7 +1658,7 @@ func TestProwJobToPod(t *testing.T) {
 								"/entrypoint",
 								"/tools/entrypoint",
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []kube.VolumeMount{
 								{
 									Name:      "tools",
 									MountPath: "/tools",
@@ -1667,13 +1666,13 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 					},
-					Containers: []coreapi.Container{
+					Containers: []v1.Container{
 						{
 							Name:    "test",
 							Image:   "tester",
 							Command: []string{"/tools/entrypoint"},
 							Args:    []string{},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "MY_ENV", Value: "rocks"},
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
@@ -1694,7 +1693,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "REPO_OWNER", Value: "org-name"},
 								{Name: "ENTRYPOINT_OPTIONS", Value: `{"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","args":["/bin/thing","some","args"],"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -1709,11 +1708,11 @@ func TestProwJobToPod(t *testing.T) {
 							Name:    "sidecar",
 							Image:   "sidecar:tag",
 							Command: []string{"/sidecar"},
-							Env: []coreapi.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"},"extra_refs":[{"org":"extra-org","repo":"extra-repo"}]}`},
 								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"entries":[{"args":["/bin/thing","some","args"],"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}]}`},
 							},
-							VolumeMounts: []coreapi.VolumeMount{
+							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      "logs",
 									MountPath: "/logs",
@@ -1725,23 +1724,23 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 					},
-					Volumes: []coreapi.Volume{
+					Volumes: []v1.Volume{
 						{
 							Name: "logs",
-							VolumeSource: coreapi.VolumeSource{
-								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
 							},
 						},
 						{
 							Name: "tools",
-							VolumeSource: coreapi.VolumeSource{
-								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
 							},
 						},
 						{
 							Name: "gcs-credentials",
-							VolumeSource: coreapi.VolumeSource{
-								Secret: &coreapi.SecretVolumeSource{
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
 									SecretName: "secret-name",
 								},
 							},
@@ -1752,7 +1751,7 @@ func TestProwJobToPod(t *testing.T) {
 		},
 	}
 
-	findContainer := func(name string, pod coreapi.Pod) *coreapi.Container {
+	findContainer := func(name string, pod v1.Pod) *v1.Container {
 		for _, c := range pod.Spec.Containers {
 			if c.Name == name {
 				return &c
@@ -1760,7 +1759,7 @@ func TestProwJobToPod(t *testing.T) {
 		}
 		return nil
 	}
-	findEnv := func(key string, container coreapi.Container) *string {
+	findEnv := func(key string, container v1.Container) *string {
 		for _, env := range container.Env {
 			if env.Name == key {
 				v := env.Value
@@ -1777,7 +1776,7 @@ func TestProwJobToPod(t *testing.T) {
 		Validate() error
 	}
 
-	checkEnv := func(pod coreapi.Pod, name string, opt checker) error {
+	checkEnv := func(pod v1.Pod, name string, opt checker) error {
 		c := findContainer(name, pod)
 		if c == nil {
 			return nil
@@ -1798,7 +1797,7 @@ func TestProwJobToPod(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			pj := prowapi.ProwJob{ObjectMeta: metav1.ObjectMeta{Name: test.podName, Labels: test.labels}, Spec: test.pjSpec}
+			pj := kube.ProwJob{ObjectMeta: metav1.ObjectMeta{Name: test.podName, Labels: test.labels}, Spec: test.pjSpec}
 			got, err := ProwJobToPod(pj, test.buildID)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)

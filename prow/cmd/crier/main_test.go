@@ -37,29 +37,27 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "gerrit only support one worker",
-			args: []string{"--gerrit-workers=99", "--gerrit-projects=foo=bar", "--cookiefile=foobar", "--config-path=foo"},
+			args: []string{"--gerrit-workers=99", "--gerrit-projects=foo=bar", "--cookiefile=foobar"},
 			expected: &options{
 				gerritWorkers:  1,
 				cookiefilePath: "foobar",
 				gerritProjects: map[string][]string{
 					"foo": {"bar"},
 				},
-				configPath: "foo",
 			},
 		},
 		{
 			name: "gerrit missing --gerrit-projects, reject",
-			args: []string{"--gerrit-workers=5", "--cookiefile=foobar", "--config-path=foo"},
+			args: []string{"--gerrit-workers=5", "--cookiefile=foobar"},
 		},
 		{
 			name: "gerrit missing --cookiefile",
-			args: []string{"--gerrit-workers=5", "--gerrit-projects=foo=bar", "--config-path=foo"},
+			args: []string{"--gerrit-workers=5", "--gerrit-projects=foo=bar"},
 			expected: &options{
 				gerritWorkers: 1,
 				gerritProjects: map[string][]string{
 					"foo": {"bar"},
 				},
-				configPath: "foo",
 			},
 		},
 	}

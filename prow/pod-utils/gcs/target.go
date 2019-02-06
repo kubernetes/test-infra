@@ -24,7 +24,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
@@ -32,11 +32,11 @@ import (
 // for a specific job spec
 func PathForSpec(spec *downwardapi.JobSpec, pathSegment RepoPathBuilder) string {
 	switch spec.Type {
-	case prowapi.PeriodicJob, prowapi.PostsubmitJob:
+	case kube.PeriodicJob, kube.PostsubmitJob:
 		return path.Join("logs", spec.Job, spec.BuildID)
-	case prowapi.PresubmitJob:
+	case kube.PresubmitJob:
 		return path.Join("pr-logs", "pull", pathSegment(spec.Refs.Org, spec.Refs.Repo), strconv.Itoa(spec.Refs.Pulls[0].Number), spec.Job, spec.BuildID)
-	case prowapi.BatchJob:
+	case kube.BatchJob:
 		return path.Join("pr-logs", "pull", "batch", spec.Job, spec.BuildID)
 	default:
 		logrus.Fatalf("unknown job spec type: %v", spec.Type)
@@ -47,9 +47,9 @@ func PathForSpec(spec *downwardapi.JobSpec, pathSegment RepoPathBuilder) string 
 // AliasForSpec determines the GCS path aliases for a job spec
 func AliasForSpec(spec *downwardapi.JobSpec) string {
 	switch spec.Type {
-	case prowapi.PeriodicJob, prowapi.PostsubmitJob, prowapi.BatchJob:
+	case kube.PeriodicJob, kube.PostsubmitJob, kube.BatchJob:
 		return ""
-	case prowapi.PresubmitJob:
+	case kube.PresubmitJob:
 		return path.Join("pr-logs", "directory", spec.Job, fmt.Sprintf("%s.txt", spec.BuildID))
 	default:
 		logrus.Fatalf("unknown job spec type: %v", spec.Type)
@@ -64,16 +64,16 @@ func AliasForSpec(spec *downwardapi.JobSpec) string {
 func LatestBuildForSpec(spec *downwardapi.JobSpec, pathSegment RepoPathBuilder) []string {
 	var latestBuilds []string
 	switch spec.Type {
-	case prowapi.PeriodicJob, prowapi.PostsubmitJob:
+	case kube.PeriodicJob, kube.PostsubmitJob:
 		latestBuilds = append(latestBuilds, path.Join("logs", spec.Job, "latest-build.txt"))
-	case prowapi.PresubmitJob:
+	case kube.PresubmitJob:
 		latestBuilds = append(latestBuilds, path.Join("pr-logs", "directory", spec.Job, "latest-build.txt"))
 		// Gubernator expects presubmit tests to upload latest-build.txt
 		// under the PR-specific directory too.
 		if pathSegment != nil {
 			latestBuilds = append(latestBuilds, path.Join("pr-logs", "pull", pathSegment(spec.Refs.Org, spec.Refs.Repo), strconv.Itoa(spec.Refs.Pulls[0].Number), spec.Job, "latest-build.txt"))
 		}
-	case prowapi.BatchJob:
+	case kube.BatchJob:
 		latestBuilds = append(latestBuilds, path.Join("pr-logs", "directory", spec.Job, "latest-build.txt"))
 	default:
 		logrus.Errorf("unknown job spec type: %v", spec.Type)
@@ -86,9 +86,9 @@ func LatestBuildForSpec(spec *downwardapi.JobSpec, pathSegment RepoPathBuilder) 
 // the provided job.
 func RootForSpec(spec *downwardapi.JobSpec) string {
 	switch spec.Type {
-	case prowapi.PeriodicJob, prowapi.PostsubmitJob:
+	case kube.PeriodicJob, kube.PostsubmitJob:
 		return path.Join("logs", spec.Job)
-	case prowapi.PresubmitJob, prowapi.BatchJob:
+	case kube.PresubmitJob, kube.BatchJob:
 		return path.Join("pr-logs", "directory", spec.Job)
 	default:
 		logrus.Errorf("unknown job spec type: %v", spec.Type)

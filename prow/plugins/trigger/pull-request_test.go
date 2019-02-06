@@ -21,8 +21,6 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
-	clienttesting "k8s.io/client-go/testing"
-	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
@@ -278,12 +276,12 @@ func TestHandlePullRequest(t *testing.T) {
 				},
 			},
 		}
-		fakeProwJobClient := fake.NewSimpleClientset()
+		kc := &fkc{}
 		c := Client{
-			GitHubClient:  g,
-			ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("namespace"),
-			Config:        &config.Config{},
-			Logger:        logrus.WithField("plugin", pluginName),
+			GitHubClient: g,
+			KubeClient:   kc,
+			Config:       &config.Config{},
+			Logger:       logrus.WithField("plugin", pluginName),
 		}
 
 		presubmits := map[string][]config.Presubmit{
@@ -330,16 +328,9 @@ func TestHandlePullRequest(t *testing.T) {
 		if err := handlePR(c, &trigger, pr); err != nil {
 			t.Fatalf("Didn't expect error: %s", err)
 		}
-		var numStarted int
-		for _, action := range fakeProwJobClient.Actions() {
-			switch action.(type) {
-			case clienttesting.CreateActionImpl:
-				numStarted++
-			}
-		}
-		if numStarted > 0 && !tc.ShouldBuild {
+		if len(kc.started) > 0 && !tc.ShouldBuild {
 			t.Errorf("Built but should not have: %+v", tc)
-		} else if numStarted == 0 && tc.ShouldBuild {
+		} else if len(kc.started) == 0 && tc.ShouldBuild {
 			t.Errorf("Not built but should have: %+v", tc)
 		}
 		if tc.ShouldComment && len(g.IssueCommentsAdded) == 0 {

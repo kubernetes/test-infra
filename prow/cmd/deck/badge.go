@@ -24,7 +24,7 @@ import (
 	"sort"
 	"strings"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/kube"
 )
 
 var svg = `<svg xmlns="http://www.w3.org/2000/svg" width="{{.Width}}" height="20">
@@ -85,8 +85,8 @@ func makeShield(subject, status, color string) []byte {
 
 // pickLatestJobs returns the most recent run of each job matching the selector,
 // which is comma-separated list of globs, for example "ci-ti-*,ci-other".
-func pickLatestJobs(jobs []prowapi.ProwJob, selector string) []prowapi.ProwJob {
-	var out []prowapi.ProwJob
+func pickLatestJobs(jobs []kube.ProwJob, selector string) []kube.ProwJob {
+	var out []kube.ProwJob
 	have := make(map[string]bool)
 	want := strings.Split(selector, ",")
 	for _, job := range jobs {
@@ -104,7 +104,7 @@ func pickLatestJobs(jobs []prowapi.ProwJob, selector string) []prowapi.ProwJob {
 	return out
 }
 
-func renderBadge(jobs []prowapi.ProwJob) (string, string, []byte) {
+func renderBadge(jobs []kube.ProwJob) (string, string, []byte) {
 	color := "brightgreen"
 	status := "passing"
 	if len(jobs) == 0 {

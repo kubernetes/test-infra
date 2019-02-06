@@ -6,7 +6,6 @@ metadata:
 spec:
   schedule: "54 * * * *"  # Every hour at 54 minutes past the hour
   concurrencyPolicy: Forbid
-  suspend: true  # TODO(Katharine): remove this once we're up to date.
   jobTemplate:
     metadata:
       labels:

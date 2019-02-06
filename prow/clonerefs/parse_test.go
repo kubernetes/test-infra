@@ -21,20 +21,20 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/diff"
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/kube"
 )
 
 func TestParseRefs(t *testing.T) {
 	var testCases = []struct {
 		name      string
 		value     string
-		expected  *prowapi.Refs
+		expected  *kube.Refs
 		expectErr bool
 	}{
 		{
 			name:  "base branch only",
 			value: "org,repo=branch",
-			expected: &prowapi.Refs{
+			expected: &kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "branch",
@@ -44,7 +44,7 @@ func TestParseRefs(t *testing.T) {
 		{
 			name:  "base branch and sha",
 			value: "org,repo=branch:sha",
-			expected: &prowapi.Refs{
+			expected: &kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "branch",
@@ -55,69 +55,69 @@ func TestParseRefs(t *testing.T) {
 		{
 			name:  "base branch and pr number only",
 			value: "org,repo=branch,1",
-			expected: &prowapi.Refs{
+			expected: &kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "branch",
-				Pulls:   []prowapi.Pull{{Number: 1}},
+				Pulls:   []kube.Pull{{Number: 1}},
 			},
 			expectErr: false,
 		},
 		{
 			name:  "base branch and pr number and sha",
 			value: "org,repo=branch,1:sha",
-			expected: &prowapi.Refs{
+			expected: &kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "branch",
-				Pulls:   []prowapi.Pull{{Number: 1, SHA: "sha"}},
+				Pulls:   []kube.Pull{{Number: 1, SHA: "sha"}},
 			},
 			expectErr: false,
 		},
 		{
 			name:  "base branch, sha, pr number and sha",
 			value: "org,repo=branch:sha,1:pull-sha",
-			expected: &prowapi.Refs{
+			expected: &kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "branch",
 				BaseSHA: "sha",
-				Pulls:   []prowapi.Pull{{Number: 1, SHA: "pull-sha"}},
+				Pulls:   []kube.Pull{{Number: 1, SHA: "pull-sha"}},
 			},
 			expectErr: false,
 		},
 		{
 			name:  "base branch and multiple prs",
 			value: "org,repo=branch,1,2,3",
-			expected: &prowapi.Refs{
+			expected: &kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "branch",
-				Pulls:   []prowapi.Pull{{Number: 1}, {Number: 2}, {Number: 3}},
+				Pulls:   []kube.Pull{{Number: 1}, {Number: 2}, {Number: 3}},
 			},
 			expectErr: false,
 		},
 		{
 			name:  "base branch and multiple prs with shas",
 			value: "org,repo=branch:sha,1:pull-1-sha,2:pull-2-sha,3:pull-3-sha",
-			expected: &prowapi.Refs{
+			expected: &kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "branch",
 				BaseSHA: "sha",
-				Pulls:   []prowapi.Pull{{Number: 1, SHA: "pull-1-sha"}, {Number: 2, SHA: "pull-2-sha"}, {Number: 3, SHA: "pull-3-sha"}},
+				Pulls:   []kube.Pull{{Number: 1, SHA: "pull-1-sha"}, {Number: 2, SHA: "pull-2-sha"}, {Number: 3, SHA: "pull-3-sha"}},
 			},
 			expectErr: false,
 		},
 		{
 			name:  "base branch and pr with refs",
 			value: "org,repo=branch:sha,1:pull-1-sha:pull-1-ref",
-			expected: &prowapi.Refs{
+			expected: &kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "branch",
 				BaseSHA: "sha",
-				Pulls:   []prowapi.Pull{{Number: 1, SHA: "pull-1-sha", Ref: "pull-1-ref"}},
+				Pulls:   []kube.Pull{{Number: 1, SHA: "pull-1-sha", Ref: "pull-1-ref"}},
 			},
 			expectErr: false,
 		},

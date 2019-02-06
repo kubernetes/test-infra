@@ -27,7 +27,7 @@ func TestShouldReport(t *testing.T) {
 		name        string
 		pj          *v1.ProwJob
 		report      bool
-		reportAgent v1.ProwJobAgent
+		reportAgent string
 	}{
 		{
 			name: "should not report skip report job",

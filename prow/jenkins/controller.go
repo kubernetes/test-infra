@@ -24,29 +24,26 @@ import (
 
 	"github.com/bwmarrin/snowflake"
 	"github.com/sirupsen/logrus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-	reportlib "k8s.io/test-infra/prow/github/report"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
+	reportlib "k8s.io/test-infra/prow/report"
 )
 
 const (
 	testInfra = "https://github.com/kubernetes/test-infra/issues"
 )
 
-type prowJobClient interface {
-	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
-	List(opts metav1.ListOptions) (*prowapi.ProwJobList, error)
-	Update(*prowapi.ProwJob) (*prowapi.ProwJob, error)
+type kubeClient interface {
+	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
+	ListProwJobs(string) ([]kube.ProwJob, error)
+	ReplaceProwJob(string, kube.ProwJob) (kube.ProwJob, error)
 }
 
 type jenkinsClient interface {
-	Build(*prowapi.ProwJob, string) error
+	Build(*kube.ProwJob, string) error
 	ListBuilds(jobs []string) (map[string]Build, error)
 	Abort(job string, build *Build) error
 }
@@ -61,17 +58,21 @@ type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
-type syncFn func(prowapi.ProwJob, chan<- prowapi.ProwJob, map[string]Build) error
+type configAgent interface {
+	Config() *config.Config
+}
+
+type syncFn func(kube.ProwJob, chan<- kube.ProwJob, map[string]Build) error
 
 // Controller manages ProwJobs.
 type Controller struct {
-	prowJobClient prowJobClient
-	jc            jenkinsClient
-	ghc           githubClient
-	log           *logrus.Entry
-	cfg           config.Getter
-	node          *snowflake.Node
-	totURL        string
+	kc     kubeClient
+	jc     jenkinsClient
+	ghc    githubClient
+	log    *logrus.Entry
+	cfg    config.Getter
+	node   *snowflake.Node
+	totURL string
 	// selector that will be applied on prowjobs.
 	selector string
 
@@ -82,11 +83,11 @@ type Controller struct {
 
 	pjLock sync.RWMutex
 	// shared across the controller and a goroutine that gathers metrics.
-	pjs []prowapi.ProwJob
+	pjs []kube.ProwJob
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, ghc *github.Client, logger *logrus.Entry, cfg config.Getter, totURL, selector string) (*Controller, error) {
+func NewController(kc *kube.Client, jc *Client, ghc *github.Client, logger *logrus.Entry, cfg config.Getter, totURL, selector string) (*Controller, error) {
 	n, err := snowflake.NewNode(1)
 	if err != nil {
 		return nil, err
@@ -95,15 +96,15 @@ func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, ghc *githu
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
 	return &Controller{
-		prowJobClient: prowJobClient,
-		jc:            jc,
-		ghc:           ghc,
-		log:           logger,
-		cfg:           cfg,
-		selector:      selector,
-		node:          n,
-		totURL:        totURL,
-		pendingJobs:   make(map[string]int),
+		kc:          kc,
+		jc:          jc,
+		ghc:         ghc,
+		log:         logger,
+		cfg:         cfg,
+		selector:    selector,
+		node:        n,
+		totURL:      totURL,
+		pendingJobs: make(map[string]int),
 	}, nil
 }
 
@@ -129,7 +130,7 @@ func (c *Controller) config() config.Controller {
 
 // canExecuteConcurrently checks whether the provided ProwJob can
 // be executed concurrently.
-func (c *Controller) canExecuteConcurrently(pj *prowapi.ProwJob) bool {
+func (c *Controller) canExecuteConcurrently(pj *kube.ProwJob) bool {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
@@ -168,36 +169,37 @@ func (c *Controller) incrementNumPendingJobs(job string) {
 
 // Sync does one sync iteration.
 func (c *Controller) Sync() error {
-	pjs, err := c.prowJobClient.List(metav1.ListOptions{LabelSelector: c.selector})
+	pjs, err := c.kc.ListProwJobs(c.selector)
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
 	// Share what we have for gathering metrics.
 	c.pjLock.Lock()
-	c.pjs = pjs.Items
+	c.pjs = pjs
 	c.pjLock.Unlock()
 
 	// TODO: Replace the following filtering with a field selector once CRDs support field selectors.
 	// https://github.com/kubernetes/kubernetes/issues/53459
-	var jenkinsJobs []prowapi.ProwJob
-	for _, pj := range pjs.Items {
-		if pj.Spec.Agent == prowapi.JenkinsAgent {
+	var jenkinsJobs []kube.ProwJob
+	for _, pj := range pjs {
+		if pj.Spec.Agent == kube.JenkinsAgent {
 			jenkinsJobs = append(jenkinsJobs, pj)
 		}
 	}
-	jbs, err := c.jc.ListBuilds(getJenkinsJobs(jenkinsJobs))
+	pjs = jenkinsJobs
+	jbs, err := c.jc.ListBuilds(getJenkinsJobs(pjs))
 	if err != nil {
 		return fmt.Errorf("error listing jenkins builds: %v", err)
 	}
 
 	var syncErrs []error
-	if err := c.terminateDupes(jenkinsJobs, jbs); err != nil {
+	if err := c.terminateDupes(pjs, jbs); err != nil {
 		syncErrs = append(syncErrs, err)
 	}
 
-	pendingCh, triggeredCh := pjutil.PartitionActive(jenkinsJobs)
-	errCh := make(chan error, len(jenkinsJobs))
-	reportCh := make(chan prowapi.ProwJob, len(jenkinsJobs))
+	pendingCh, triggeredCh := pjutil.PartitionActive(pjs)
+	errCh := make(chan error, len(pjs))
+	reportCh := make(chan kube.ProwJob, len(pjs))
 
 	// Reinstantiate on every resync of the controller instead of trying
 	// to keep this in sync with the state of the world.
@@ -241,7 +243,7 @@ func (c *Controller) SyncMetrics() {
 
 // getJenkinsJobs returns all the Jenkins jobs for all active
 // prowjobs from the provided list. It handles deduplication.
-func getJenkinsJobs(pjs []prowapi.ProwJob) []string {
+func getJenkinsJobs(pjs []kube.ProwJob) []string {
 	jenkinsJobs := make(map[string]struct{})
 	for _, pj := range pjs {
 		if pj.Complete() {
@@ -258,11 +260,11 @@ func getJenkinsJobs(pjs []prowapi.ProwJob) []string {
 
 // terminateDupes aborts presubmits that have a newer version. It modifies pjs
 // in-place when it aborts.
-func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, jbs map[string]Build) error {
+func (c *Controller) terminateDupes(pjs []kube.ProwJob, jbs map[string]Build) error {
 	// "job org/repo#number" -> newest job
 	dupes := make(map[string]int)
 	for i, pj := range pjs {
-		if pj.Complete() || pj.Spec.Type != prowapi.PresubmitJob {
+		if pj.Complete() || pj.Spec.Type != kube.PresubmitJob {
 			continue
 		}
 		n := fmt.Sprintf("%s %s/%s#%d", pj.Spec.Job, pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.Pulls[0].Number)
@@ -294,15 +296,15 @@ func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, jbs map[string]Build)
 		}
 		toCancel.SetComplete()
 		prevState := toCancel.Status.State
-		toCancel.Status.State = prowapi.AbortedState
+		toCancel.Status.State = kube.AbortedState
 		c.log.WithFields(pjutil.ProwJobFields(&toCancel)).
 			WithField("from", prevState).
 			WithField("to", toCancel.Status.State).Info("Transitioning states.")
-		npj, err := c.prowJobClient.Update(&toCancel)
+		npj, err := c.kc.ReplaceProwJob(toCancel.ObjectMeta.Name, toCancel)
 		if err != nil {
 			return err
 		}
-		pjs[cancelIndex] = *npj
+		pjs[cancelIndex] = npj
 	}
 	return nil
 }
@@ -311,8 +313,8 @@ func syncProwJobs(
 	l *logrus.Entry,
 	syncFn syncFn,
 	maxSyncRoutines int,
-	jobs <-chan prowapi.ProwJob,
-	reports chan<- prowapi.ProwJob,
+	jobs <-chan kube.ProwJob,
+	reports chan<- kube.ProwJob,
 	syncErrors chan<- error,
 	jbs map[string]Build,
 ) {
@@ -336,14 +338,14 @@ func syncProwJobs(
 	wg.Wait()
 }
 
-func (c *Controller) syncPendingJob(pj prowapi.ProwJob, reports chan<- prowapi.ProwJob, jbs map[string]Build) error {
+func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob, jbs map[string]Build) error {
 	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
 
 	jb, jbExists := jbs[pj.ObjectMeta.Name]
 	if !jbExists {
 		pj.SetComplete()
-		pj.Status.State = prowapi.ErrorState
+		pj.Status.State = kube.ErrorState
 		pj.Status.URL = testInfra
 		pj.Status.Description = "Error finding Jenkins job."
 	} else {
@@ -364,17 +366,26 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, reports chan<- prowapi.P
 		case jb.IsSuccess():
 			// Build is complete.
 			pj.SetComplete()
-			pj.Status.State = prowapi.SuccessState
+			pj.Status.State = kube.SuccessState
 			pj.Status.Description = "Jenkins job succeeded."
+			for _, nj := range pj.Spec.RunAfterSuccess {
+				child := pjutil.NewProwJob(nj, pj.ObjectMeta.Labels)
+				if !c.RunAfterSuccessCanRun(&pj, &child) {
+					continue
+				}
+				if _, err := c.kc.CreateProwJob(pjutil.NewProwJob(nj, pj.ObjectMeta.Labels)); err != nil {
+					return fmt.Errorf("error starting next prowjob: %v", err)
+				}
+			}
 
 		case jb.IsFailure():
 			pj.SetComplete()
-			pj.Status.State = prowapi.FailureState
+			pj.Status.State = kube.FailureState
 			pj.Status.Description = "Jenkins job failed."
 
 		case jb.IsAborted():
 			pj.SetComplete()
-			pj.Status.State = prowapi.AbortedState
+			pj.Status.State = kube.AbortedState
 			pj.Status.Description = "Jenkins job aborted."
 		}
 		// Construct the status URL that will be used in reports.
@@ -395,11 +406,11 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, reports chan<- prowapi.P
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := c.prowJobClient.Update(&pj)
+	_, err := c.kc.ReplaceProwJob(pj.ObjectMeta.Name, pj)
 	return err
 }
 
-func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, reports chan<- prowapi.ProwJob, jbs map[string]Build) error {
+func (c *Controller) syncTriggeredJob(pj kube.ProwJob, reports chan<- kube.ProwJob, jbs map[string]Build) error {
 	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
 
@@ -416,17 +427,17 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, reports chan<- prowapi
 		if err := c.jc.Build(&pj, buildID); err != nil {
 			c.log.WithError(err).WithFields(pjutil.ProwJobFields(&pj)).Warn("Cannot start Jenkins build")
 			pj.SetComplete()
-			pj.Status.State = prowapi.ErrorState
+			pj.Status.State = kube.ErrorState
 			pj.Status.URL = testInfra
 			pj.Status.Description = "Error starting Jenkins job."
 		} else {
-			pj.Status.State = prowapi.PendingState
+			pj.Status.State = kube.PendingState
 			pj.Status.Description = "Jenkins job enqueued."
 		}
 	} else {
 		// If a Jenkins build already exists for this job, advance the ProwJob to Pending and
 		// it should be handled by syncPendingJob in the next sync.
-		pj.Status.State = prowapi.PendingState
+		pj.Status.State = kube.PendingState
 		pj.Status.Description = "Jenkins job enqueued."
 	}
 	// Report to Github.
@@ -437,7 +448,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, reports chan<- prowapi
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := c.prowJobClient.Update(&pj)
+	_, err := c.kc.ReplaceProwJob(pj.ObjectMeta.Name, pj)
 	return err
 }
 
@@ -446,4 +457,41 @@ func (c *Controller) getBuildID(name string) (string, error) {
 		return c.node.Generate().String(), nil
 	}
 	return pjutil.GetBuildID(name, c.totURL)
+}
+
+// RunAfterSuccessCanRun returns whether a child job (specified as run_after_success in the
+// prow config) can run once its parent job succeeds. The only case we will not run a child job
+// is when it is a presubmit job and has a run_if_changed regular expression specified which does
+// not match the changed filenames in the pull request the job was meant to run for.
+// TODO: Collapse with plank, impossible to reuse as is due to the interfaces.
+func (c *Controller) RunAfterSuccessCanRun(parent, child *kube.ProwJob) bool {
+	if parent.Spec.Type != kube.PresubmitJob {
+		return true
+	}
+
+	// TODO: Make sure that parent and child have always the same org/repo.
+	org := parent.Spec.Refs.Org
+	repo := parent.Spec.Refs.Repo
+	prNum := parent.Spec.Refs.Pulls[0].Number
+
+	ps := c.cfg().GetPresubmit(org+"/"+repo, child.Spec.Job)
+	if ps == nil {
+		// The config has changed ever since we started the parent.
+		// Not sure what is more correct here. Run the child for now.
+		return true
+	}
+	if ps.RunIfChanged == "" {
+		return true
+	}
+	changesFull, err := c.ghc.GetPullRequestChanges(org, repo, prNum)
+	if err != nil {
+		c.log.WithError(err).WithFields(pjutil.ProwJobFields(parent)).Warnf("Cannot get PR changes for #%d", prNum)
+		return true
+	}
+	// We only care about the filenames here
+	var changes []string
+	for _, change := range changesFull {
+		changes = append(changes, change.Filename)
+	}
+	return ps.RunsAgainstChanges(changes)
 }

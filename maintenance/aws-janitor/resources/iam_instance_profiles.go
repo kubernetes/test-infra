@@ -23,8 +23,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/golang/glog"
 	"github.com/pkg/errors"
-	"k8s.io/klog"
 )
 
 // IAM Instance Profiles
@@ -34,8 +34,7 @@ func (IAMInstanceProfiles) MarkAndSweep(sess *session.Session, acct string, regi
 	svc := iam.New(sess, &aws.Config{Region: aws.String(region)})
 
 	var toDelete []*iamInstanceProfile // Paged call, defer deletion until we have the whole list.
-
-	pageFunc := func(page *iam.ListInstanceProfilesOutput, _ bool) bool {
+	if err := svc.ListInstanceProfilesPages(&iam.ListInstanceProfilesInput{}, func(page *iam.ListInstanceProfilesOutput, _ bool) bool {
 		for _, p := range page.InstanceProfiles {
 			// We treat an instance profile as managed if all its roles are
 			managed := true
@@ -43,34 +42,30 @@ func (IAMInstanceProfiles) MarkAndSweep(sess *session.Session, acct string, regi
 				// Just in case...
 				managed = false
 			}
-
 			for _, r := range p.Roles {
 				if !roleIsManaged(r) {
 					managed = false
 				}
 			}
-
 			if !managed {
-				klog.Infof("ignoring unmanaged profile %s", aws.StringValue(p.Arn))
+				glog.Infof("ignoring unmanaged profile %s", aws.StringValue(p.Arn))
 				continue
 			}
 
 			o := &iamInstanceProfile{profile: p}
 			if set.Mark(o) {
-				klog.Warningf("%s: deleting %T: %v", o.ARN(), o, o)
+				glog.Warningf("%s: deleting %T: %v", o.ARN(), o, o)
 				toDelete = append(toDelete, o)
 			}
 		}
 		return true
-	}
-
-	if err := svc.ListInstanceProfilesPages(&iam.ListInstanceProfilesInput{}, pageFunc); err != nil {
+	}); err != nil {
 		return err
 	}
 
 	for _, o := range toDelete {
 		if err := o.delete(svc); err != nil {
-			klog.Warningf("%v: delete failed: %v", o.ARN(), err)
+			glog.Warningf("%v: delete failed: %v", o.ARN(), err)
 		}
 	}
 	return nil
@@ -110,25 +105,27 @@ func (p iamInstanceProfile) ResourceKey() string {
 }
 
 func (p iamInstanceProfile) delete(svc *iam.IAM) error {
-	// Unlink the roles first, before we can delete the instance profile.
-	for _, role := range p.profile.Roles {
-		request := &iam.RemoveRoleFromInstanceProfileInput{
+	// We need to unlink the roles first, before we can delete the instance profile
+	{
+		for _, role := range p.profile.Roles {
+			request := &iam.RemoveRoleFromInstanceProfileInput{
+				InstanceProfileName: p.profile.InstanceProfileName,
+				RoleName:            role.RoleName,
+			}
+			if _, err := svc.RemoveRoleFromInstanceProfile(request); err != nil {
+				return fmt.Errorf("error removing role %q: %v", aws.StringValue(role.RoleName), err)
+			}
+		}
+	}
+
+	// Delete the instance profile
+	{
+		request := &iam.DeleteInstanceProfileInput{
 			InstanceProfileName: p.profile.InstanceProfileName,
-			RoleName:            role.RoleName,
 		}
-
-		if _, err := svc.RemoveRoleFromInstanceProfile(request); err != nil {
-			return fmt.Errorf("error removing role %q: %v", aws.StringValue(role.RoleName), err)
+		if _, err := svc.DeleteInstanceProfile(request); err != nil {
+			return err
 		}
-	}
-
-	// Delete the instance profile.
-	request := &iam.DeleteInstanceProfileInput{
-		InstanceProfileName: p.profile.InstanceProfileName,
-	}
-
-	if _, err := svc.DeleteInstanceProfile(request); err != nil {
-		return err
 	}
 
 	return nil

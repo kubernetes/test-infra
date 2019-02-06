@@ -20,7 +20,7 @@ import (
 	"reflect"
 	"testing"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/kube"
 )
 
 func TestEnvironmentForSpec(t *testing.T) {
@@ -32,7 +32,7 @@ func TestEnvironmentForSpec(t *testing.T) {
 		{
 			name: "periodic job",
 			spec: JobSpec{
-				Type:      prowapi.PeriodicJob,
+				Type:      kube.PeriodicJob,
 				Job:       "job-name",
 				BuildID:   "0",
 				ProwJobID: "prowjob",
@@ -48,11 +48,11 @@ func TestEnvironmentForSpec(t *testing.T) {
 		{
 			name: "postsubmit job",
 			spec: JobSpec{
-				Type:      prowapi.PostsubmitJob,
+				Type:      kube.PostsubmitJob,
 				Job:       "job-name",
 				BuildID:   "0",
 				ProwJobID: "prowjob",
-				Refs: &prowapi.Refs{
+				Refs: &kube.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
@@ -76,16 +76,16 @@ func TestEnvironmentForSpec(t *testing.T) {
 		{
 			name: "batch job",
 			spec: JobSpec{
-				Type:      prowapi.BatchJob,
+				Type:      kube.BatchJob,
 				Job:       "job-name",
 				BuildID:   "0",
 				ProwJobID: "prowjob",
-				Refs: &prowapi.Refs{
+				Refs: &kube.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
-					Pulls: []prowapi.Pull{{
+					Pulls: []kube.Pull{{
 						Number: 1,
 						Author: "author-name",
 						SHA:    "pull-sha",
@@ -113,16 +113,16 @@ func TestEnvironmentForSpec(t *testing.T) {
 		{
 			name: "presubmit job",
 			spec: JobSpec{
-				Type:      prowapi.PresubmitJob,
+				Type:      kube.PresubmitJob,
 				Job:       "job-name",
 				BuildID:   "0",
 				ProwJobID: "prowjob",
-				Refs: &prowapi.Refs{
+				Refs: &kube.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
-					Pulls: []prowapi.Pull{{
+					Pulls: []kube.Pull{{
 						Number: 1,
 						Author: "author-name",
 						SHA:    "pull-sha",
@@ -149,11 +149,11 @@ func TestEnvironmentForSpec(t *testing.T) {
 		{
 			name: "kubernetes agent",
 			spec: JobSpec{
-				Type:      prowapi.PeriodicJob,
+				Type:      kube.PeriodicJob,
 				Job:       "job-name",
 				BuildID:   "0",
 				ProwJobID: "prowjob",
-				agent:     prowapi.KubernetesAgent,
+				agent:     kube.KubernetesAgent,
 			},
 			expected: map[string]string{
 				"JOB_NAME":     "job-name",
@@ -167,11 +167,11 @@ func TestEnvironmentForSpec(t *testing.T) {
 		{
 			name: "jenkins agent",
 			spec: JobSpec{
-				Type:      prowapi.PeriodicJob,
+				Type:      kube.PeriodicJob,
 				Job:       "job-name",
 				BuildID:   "0",
 				ProwJobID: "prowjob",
-				agent:     prowapi.JenkinsAgent,
+				agent:     kube.JenkinsAgent,
 			},
 			expected: map[string]string{
 				"JOB_NAME":    "job-name",

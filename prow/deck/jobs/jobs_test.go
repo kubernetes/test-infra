@@ -21,13 +21,12 @@ import (
 	"testing"
 
 	coreapi "k8s.io/api/core/v1"
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/kube"
 )
 
-type fkc []prowapi.ProwJob
+type fkc []kube.ProwJob
 
-func (f fkc) ListProwJobs(s string) ([]prowapi.ProwJob, error) {
+func (f fkc) ListProwJobs(s string) ([]kube.ProwJob, error) {
 	return f, nil
 }
 
@@ -45,23 +44,23 @@ func (f fpkc) GetLogs(name string, opts *coreapi.PodLogOptions) ([]byte, error) 
 
 func TestGetLog(t *testing.T) {
 	kc := fkc{
-		prowapi.ProwJob{
-			Spec: prowapi.ProwJobSpec{
-				Agent: prowapi.KubernetesAgent,
+		kube.ProwJob{
+			Spec: kube.ProwJobSpec{
+				Agent: kube.KubernetesAgent,
 				Job:   "job",
 			},
-			Status: prowapi.ProwJobStatus{
+			Status: kube.ProwJobStatus{
 				PodName: "wowowow",
 				BuildID: "123",
 			},
 		},
-		prowapi.ProwJob{
-			Spec: prowapi.ProwJobSpec{
-				Agent:   prowapi.KubernetesAgent,
+		kube.ProwJob{
+			Spec: kube.ProwJobSpec{
+				Agent:   kube.KubernetesAgent,
 				Job:     "jib",
 				Cluster: "trusted",
 			},
-			Status: prowapi.ProwJobStatus{
+			Status: kube.ProwJobStatus{
 				PodName: "powowow",
 				BuildID: "123",
 			},
@@ -89,16 +88,16 @@ func TestGetLog(t *testing.T) {
 
 func TestProwJobs(t *testing.T) {
 	kc := fkc{
-		prowapi.ProwJob{
-			Spec: prowapi.ProwJobSpec{
-				Agent: prowapi.KubernetesAgent,
+		kube.ProwJob{
+			Spec: kube.ProwJobSpec{
+				Agent: kube.KubernetesAgent,
 				Job:   "job",
-				Refs: &prowapi.Refs{
+				Refs: &kube.Refs{
 					Org:  "kubernetes",
 					Repo: "test-infra",
 				},
 			},
-			Status: prowapi.ProwJobStatus{
+			Status: kube.ProwJobStatus{
 				PodName: "wowowow",
 				BuildID: "123",
 			},

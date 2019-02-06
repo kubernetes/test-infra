@@ -26,10 +26,9 @@ import (
 	"time"
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/kube"
@@ -59,7 +58,7 @@ func TestDefaultJobBase(t *testing.T) {
 				j.Agent = ""
 			},
 			expected: func(j *JobBase) {
-				j.Agent = string(prowapi.KubernetesAgent)
+				j.Agent = string(kube.KubernetesAgent)
 			},
 		},
 		{
@@ -276,7 +275,7 @@ func TestDecorationRawYaml(t *testing.T) {
 		name        string
 		expectError bool
 		rawConfig   string
-		expected    *prowapi.DecorationConfig
+		expected    *kube.DecorationConfig
 	}{
 		{
 			name:        "no default",
@@ -322,18 +321,18 @@ periodics:
       args:
       - "test"
       - "./..."`,
-			expected: &prowapi.DecorationConfig{
+			expected: &kube.DecorationConfig{
 				Timeout:     2 * time.Hour,
 				GracePeriod: 15 * time.Second,
-				UtilityImages: &prowapi.UtilityImages{
+				UtilityImages: &kube.UtilityImages{
 					CloneRefs:  "clonerefs:default",
 					InitUpload: "initupload:default",
 					Entrypoint: "entrypoint:default",
 					Sidecar:    "sidecar:default",
 				},
-				GCSConfiguration: &prowapi.GCSConfiguration{
+				GCSConfiguration: &kube.GCSConfiguration{
 					Bucket:       "default-bucket",
-					PathStrategy: prowapi.PathStrategyLegacy,
+					PathStrategy: kube.PathStrategyLegacy,
 					DefaultOrg:   "kubernetes",
 					DefaultRepo:  "kubernetes",
 				},
@@ -381,18 +380,18 @@ periodics:
       args:
       - "test"
       - "./..."`,
-			expected: &prowapi.DecorationConfig{
+			expected: &kube.DecorationConfig{
 				Timeout:     1 * time.Nanosecond,
 				GracePeriod: 1 * time.Nanosecond,
-				UtilityImages: &prowapi.UtilityImages{
+				UtilityImages: &kube.UtilityImages{
 					CloneRefs:  "clonerefs:explicit",
 					InitUpload: "initupload:explicit",
 					Entrypoint: "entrypoint:explicit",
 					Sidecar:    "sidecar:explicit",
 				},
-				GCSConfiguration: &prowapi.GCSConfiguration{
+				GCSConfiguration: &kube.GCSConfiguration{
 					Bucket:       "explicit-bucket",
-					PathStrategy: prowapi.PathStrategyExplicit,
+					PathStrategy: kube.PathStrategyExplicit,
 					DefaultOrg:   "kubernetes",
 					DefaultRepo:  "kubernetes",
 				},
@@ -444,7 +443,7 @@ func TestValidateAgent(t *testing.T) {
 		Namespace: &ns,
 		Spec:      &v1.PodSpec{},
 		UtilityConfig: UtilityConfig{
-			DecorationConfig: &prowapi.DecorationConfig{},
+			DecorationConfig: &kube.DecorationConfig{},
 		},
 	}
 
@@ -581,12 +580,12 @@ func TestValidateAgent(t *testing.T) {
 }
 
 func TestValidatePodSpec(t *testing.T) {
-	periodEnv := sets.NewString(downwardapi.EnvForType(prowapi.PeriodicJob)...)
-	postEnv := sets.NewString(downwardapi.EnvForType(prowapi.PostsubmitJob)...)
-	preEnv := sets.NewString(downwardapi.EnvForType(prowapi.PresubmitJob)...)
+	periodEnv := sets.NewString(downwardapi.EnvForType(kube.PeriodicJob)...)
+	postEnv := sets.NewString(downwardapi.EnvForType(kube.PostsubmitJob)...)
+	preEnv := sets.NewString(downwardapi.EnvForType(kube.PresubmitJob)...)
 	cases := []struct {
 		name    string
-		jobType prowapi.ProwJobType
+		jobType kube.ProwJobType
 		spec    func(s *v1.PodSpec)
 		noSpec  bool
 		pass    bool
@@ -622,7 +621,7 @@ func TestValidatePodSpec(t *testing.T) {
 		},
 		{
 			name:    "reject reserved presubmit env",
-			jobType: prowapi.PresubmitJob,
+			jobType: kube.PresubmitJob,
 			spec: func(s *v1.PodSpec) {
 				// find a presubmit value
 				for n := range preEnv.Difference(postEnv).Difference(periodEnv) {
@@ -636,7 +635,7 @@ func TestValidatePodSpec(t *testing.T) {
 		},
 		{
 			name:    "reject reserved postsubmit env",
-			jobType: prowapi.PostsubmitJob,
+			jobType: kube.PostsubmitJob,
 			spec: func(s *v1.PodSpec) {
 				// find a postsubmit value
 				for n := range postEnv.Difference(periodEnv) {
@@ -650,7 +649,7 @@ func TestValidatePodSpec(t *testing.T) {
 		},
 		{
 			name:    "reject reserved periodic env",
-			jobType: prowapi.PeriodicJob,
+			jobType: kube.PeriodicJob,
 			spec: func(s *v1.PodSpec) {
 				// find a postsubmit value
 				for n := range periodEnv {
@@ -714,7 +713,7 @@ func TestValidatePodSpec(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			jt := prowapi.PresubmitJob
+			jt := kube.PresubmitJob
 			if tc.jobType != "" {
 				jt = tc.jobType
 			}
@@ -735,7 +734,7 @@ func TestValidatePodSpec(t *testing.T) {
 }
 
 func TestValidateDecoration(t *testing.T) {
-	defCfg := prowapi.DecorationConfig{
+	defCfg := kube.DecorationConfig{
 		UtilityImages: &prowjobv1.UtilityImages{
 			CloneRefs:  "clone-me",
 			InitUpload: "upload-me",
@@ -752,7 +751,7 @@ func TestValidateDecoration(t *testing.T) {
 	cases := []struct {
 		name      string
 		container v1.Container
-		config    *prowapi.DecorationConfig
+		config    *kube.DecorationConfig
 		pass      bool
 	}{
 		{
@@ -777,7 +776,7 @@ func TestValidateDecoration(t *testing.T) {
 		},
 		{
 			name:   "reject invalid decoration config",
-			config: &prowapi.DecorationConfig{},
+			config: &kube.DecorationConfig{},
 			container: v1.Container{
 				Command: []string{"hello", "world"},
 			},

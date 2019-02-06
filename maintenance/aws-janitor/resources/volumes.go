@@ -23,8 +23,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/golang/glog"
 	"github.com/pkg/errors"
-	"k8s.io/klog"
 )
 
 // Volumes: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeVolumes
@@ -34,32 +34,24 @@ func (Volumes) MarkAndSweep(sess *session.Session, acct string, region string, s
 	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
 
 	var toDelete []*volume // Paged call, defer deletion until we have the whole list.
-
-	pageFunc := func(page *ec2.DescribeVolumesOutput, _ bool) bool {
+	if err := svc.DescribeVolumesPages(nil, func(page *ec2.DescribeVolumesOutput, _ bool) bool {
 		for _, vol := range page.Volumes {
 			v := &volume{Account: acct, Region: region, ID: *vol.VolumeId}
 			if set.Mark(v) {
-				klog.Warningf("%s: deleting %T: %v", v.ARN(), vol, vol)
+				glog.Warningf("%s: deleting %T: %v", v.ARN(), vol, vol)
 				toDelete = append(toDelete, v)
 			}
 		}
 		return true
-	}
-
-	if err := svc.DescribeVolumesPages(nil, pageFunc); err != nil {
+	}); err != nil {
 		return err
 	}
-
 	for _, vol := range toDelete {
-		deleteReq := &ec2.DeleteVolumeInput{
-			VolumeId: aws.String(vol.ID),
-		}
-
-		if _, err := svc.DeleteVolume(deleteReq); err != nil {
-			klog.Warningf("%v: delete failed: %v", vol.ARN(), err)
+		_, err := svc.DeleteVolume(&ec2.DeleteVolumeInput{VolumeId: aws.String(vol.ID)})
+		if err != nil {
+			glog.Warningf("%v: delete failed: %v", vol.ARN(), err)
 		}
 	}
-
 	return nil
 }
 

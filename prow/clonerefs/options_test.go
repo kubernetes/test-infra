@@ -19,7 +19,7 @@ package clonerefs
 import (
 	"testing"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/kube"
 )
 
 func TestOptions_Validate(t *testing.T) {
@@ -33,7 +33,7 @@ func TestOptions_Validate(t *testing.T) {
 			input: Options{
 				SrcRoot: "test",
 				Log:     "thing",
-				GitRefs: []prowapi.Refs{
+				GitRefs: []kube.Refs{
 					{
 						Repo: "repo1",
 						Org:  "org1",
@@ -46,7 +46,7 @@ func TestOptions_Validate(t *testing.T) {
 			name: "missing src root",
 			input: Options{
 				Log: "thing",
-				GitRefs: []prowapi.Refs{
+				GitRefs: []kube.Refs{
 					{
 						Repo: "repo1",
 						Org:  "org1",
@@ -59,7 +59,7 @@ func TestOptions_Validate(t *testing.T) {
 			name: "missing Log location",
 			input: Options{
 				SrcRoot: "test",
-				GitRefs: []prowapi.Refs{
+				GitRefs: []kube.Refs{
 					{
 						Repo: "repo1",
 						Org:  "org1",
@@ -81,7 +81,7 @@ func TestOptions_Validate(t *testing.T) {
 			input: Options{
 				SrcRoot: "test",
 				Log:     "thing",
-				GitRefs: []prowapi.Refs{
+				GitRefs: []kube.Refs{
 					{
 						Repo: "repo1",
 						Org:  "org1",
@@ -99,7 +99,7 @@ func TestOptions_Validate(t *testing.T) {
 			input: Options{
 				SrcRoot: "test",
 				Log:     "thing",
-				GitRefs: []prowapi.Refs{
+				GitRefs: []kube.Refs{
 					{
 						Repo: "repo",
 						Org:  "org",

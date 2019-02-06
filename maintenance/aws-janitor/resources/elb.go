@@ -22,8 +22,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/golang/glog"
 	"github.com/pkg/errors"
-	"k8s.io/klog"
 )
 
 // Clean-up ELBs
@@ -34,32 +34,28 @@ func (LoadBalancers) MarkAndSweep(sess *session.Session, account string, region 
 	svc := elb.New(sess, &aws.Config{Region: aws.String(region)})
 
 	var toDelete []*loadBalancer // Paged call, defer deletion until we have the whole list.
-
-	pageFunc := func(page *elb.DescribeLoadBalancersOutput, _ bool) bool {
+	if err := svc.DescribeLoadBalancersPages(&elb.DescribeLoadBalancersInput{}, func(page *elb.DescribeLoadBalancersOutput, _ bool) bool {
 		for _, lb := range page.LoadBalancerDescriptions {
 			a := &loadBalancer{region: region, account: account, name: *lb.LoadBalancerName}
 			if set.Mark(a) {
-				klog.Warningf("%s: deleting %T: %v", a.ARN(), lb, lb)
+				glog.Warningf("%s: deleting %T: %v", a.ARN(), lb, lb)
 				toDelete = append(toDelete, a)
 			}
 		}
 		return true
-	}
-
-	if err := svc.DescribeLoadBalancersPages(&elb.DescribeLoadBalancersInput{}, pageFunc); err != nil {
+	}); err != nil {
 		return err
 	}
 
 	for _, lb := range toDelete {
-		deleteInput := &elb.DeleteLoadBalancerInput{
-			LoadBalancerName: aws.String(lb.name),
-		}
-
-		if _, err := svc.DeleteLoadBalancer(deleteInput); err != nil {
-			klog.Warningf("%v: delete failed: %v", lb.ARN(), err)
+		_, err := svc.DeleteLoadBalancer(
+			&elb.DeleteLoadBalancerInput{
+				LoadBalancerName: aws.String(lb.name),
+			})
+		if err != nil {
+			glog.Warningf("%v: delete failed: %v", lb.ARN(), err)
 		}
 	}
-
 	return nil
 }
 

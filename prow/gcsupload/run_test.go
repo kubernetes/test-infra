@@ -27,7 +27,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/diff"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
@@ -35,7 +35,7 @@ import (
 func TestOptions_AssembleTargets(t *testing.T) {
 	var testCases = []struct {
 		name     string
-		jobType  prowapi.ProwJobType
+		jobType  kube.ProwJobType
 		options  Options
 		paths    []string
 		extra    map[string]gcs.UploadFunc
@@ -43,10 +43,10 @@ func TestOptions_AssembleTargets(t *testing.T) {
 	}{
 		{
 			name:    "no extra paths should upload infra files for presubmits",
-			jobType: prowapi.PresubmitJob,
+			jobType: kube.PresubmitJob,
 			options: Options{
-				GCSConfiguration: &prowapi.GCSConfiguration{
-					PathStrategy: prowapi.PathStrategyExplicit,
+				GCSConfiguration: &kube.GCSConfiguration{
+					PathStrategy: kube.PathStrategyExplicit,
 					Bucket:       "bucket",
 				},
 			},
@@ -58,10 +58,10 @@ func TestOptions_AssembleTargets(t *testing.T) {
 		},
 		{
 			name:    "no extra paths should upload infra files for postsubmits",
-			jobType: prowapi.PostsubmitJob,
+			jobType: kube.PostsubmitJob,
 			options: Options{
-				GCSConfiguration: &prowapi.GCSConfiguration{
-					PathStrategy: prowapi.PathStrategyExplicit,
+				GCSConfiguration: &kube.GCSConfiguration{
+					PathStrategy: kube.PathStrategyExplicit,
 					Bucket:       "bucket",
 				},
 			},
@@ -71,10 +71,10 @@ func TestOptions_AssembleTargets(t *testing.T) {
 		},
 		{
 			name:    "no extra paths should upload infra files for periodics",
-			jobType: prowapi.PeriodicJob,
+			jobType: kube.PeriodicJob,
 			options: Options{
-				GCSConfiguration: &prowapi.GCSConfiguration{
-					PathStrategy: prowapi.PathStrategyExplicit,
+				GCSConfiguration: &kube.GCSConfiguration{
+					PathStrategy: kube.PathStrategyExplicit,
 					Bucket:       "bucket",
 				},
 			},
@@ -84,10 +84,10 @@ func TestOptions_AssembleTargets(t *testing.T) {
 		},
 		{
 			name:    "no extra paths should upload infra files for batches",
-			jobType: prowapi.BatchJob,
+			jobType: kube.BatchJob,
 			options: Options{
-				GCSConfiguration: &prowapi.GCSConfiguration{
-					PathStrategy: prowapi.PathStrategyExplicit,
+				GCSConfiguration: &kube.GCSConfiguration{
+					PathStrategy: kube.PathStrategyExplicit,
 					Bucket:       "bucket",
 				},
 			},
@@ -97,10 +97,10 @@ func TestOptions_AssembleTargets(t *testing.T) {
 		},
 		{
 			name:    "extra paths should be uploaded under job dir",
-			jobType: prowapi.PresubmitJob,
+			jobType: kube.PresubmitJob,
 			options: Options{
-				GCSConfiguration: &prowapi.GCSConfiguration{
-					PathStrategy: prowapi.PathStrategyExplicit,
+				GCSConfiguration: &kube.GCSConfiguration{
+					PathStrategy: kube.PathStrategyExplicit,
 					Bucket:       "bucket",
 				},
 			},
@@ -118,11 +118,11 @@ func TestOptions_AssembleTargets(t *testing.T) {
 		},
 		{
 			name:    "literal files should be uploaded under job dir",
-			jobType: prowapi.PresubmitJob,
+			jobType: kube.PresubmitJob,
 			options: Options{
 				Items: []string{"something", "else"},
-				GCSConfiguration: &prowapi.GCSConfiguration{
-					PathStrategy: prowapi.PathStrategyExplicit,
+				GCSConfiguration: &kube.GCSConfiguration{
+					PathStrategy: kube.PathStrategyExplicit,
 					Bucket:       "bucket",
 				},
 			},
@@ -137,11 +137,11 @@ func TestOptions_AssembleTargets(t *testing.T) {
 		},
 		{
 			name:    "directories should be uploaded under job dir",
-			jobType: prowapi.PresubmitJob,
+			jobType: kube.PresubmitJob,
 			options: Options{
 				Items: []string{"something"},
-				GCSConfiguration: &prowapi.GCSConfiguration{
-					PathStrategy: prowapi.PathStrategyExplicit,
+				GCSConfiguration: &kube.GCSConfiguration{
+					PathStrategy: kube.PathStrategyExplicit,
 					Bucket:       "bucket",
 				},
 			},
@@ -160,10 +160,10 @@ func TestOptions_AssembleTargets(t *testing.T) {
 			spec := &downwardapi.JobSpec{
 				Job:  "job",
 				Type: testCase.jobType,
-				Refs: &prowapi.Refs{
+				Refs: &kube.Refs{
 					Org:  "org",
 					Repo: "repo",
-					Pulls: []prowapi.Pull{
+					Pulls: []kube.Pull{
 						{
 							Number: 1,
 						},
@@ -224,14 +224,14 @@ func TestBuilderForStrategy(t *testing.T) {
 	}{
 		{
 			name:     "explicit",
-			strategy: prowapi.PathStrategyExplicit,
+			strategy: kube.PathStrategyExplicit,
 			expectedPaths: map[info]string{
 				{org: "org", repo: "repo"}: "org_repo",
 			},
 		},
 		{
 			name:        "single",
-			strategy:    prowapi.PathStrategySingle,
+			strategy:    kube.PathStrategySingle,
 			defaultOrg:  "org",
 			defaultRepo: "repo",
 			expectedPaths: map[info]string{
@@ -242,7 +242,7 @@ func TestBuilderForStrategy(t *testing.T) {
 		},
 		{
 			name:        "explicit",
-			strategy:    prowapi.PathStrategyLegacy,
+			strategy:    kube.PathStrategyLegacy,
 			defaultOrg:  "org",
 			defaultRepo: "repo",
 			expectedPaths: map[info]string{

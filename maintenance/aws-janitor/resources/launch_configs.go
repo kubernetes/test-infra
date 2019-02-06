@@ -22,8 +22,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/golang/glog"
 	"github.com/pkg/errors"
-	"k8s.io/klog"
 )
 
 // LaunchConfigurations: http://docs.aws.amazon.com/sdk-for-go/api/service/autoscaling/#AutoScaling.DescribeLaunchConfigurations
@@ -33,32 +33,27 @@ func (LaunchConfigurations) MarkAndSweep(sess *session.Session, acct string, reg
 	svc := autoscaling.New(sess, &aws.Config{Region: aws.String(region)})
 
 	var toDelete []*launchConfiguration // Paged call, defer deletion until we have the whole list.
-
-	pageFunc := func(page *autoscaling.DescribeLaunchConfigurationsOutput, _ bool) bool {
+	if err := svc.DescribeLaunchConfigurationsPages(nil, func(page *autoscaling.DescribeLaunchConfigurationsOutput, _ bool) bool {
 		for _, lc := range page.LaunchConfigurations {
 			l := &launchConfiguration{ID: *lc.LaunchConfigurationARN, Name: *lc.LaunchConfigurationName}
 			if set.Mark(l) {
-				klog.Warningf("%s: deleting %T: %v", l.ARN(), lc, lc)
+				glog.Warningf("%s: deleting %T: %v", l.ARN(), lc, lc)
 				toDelete = append(toDelete, l)
 			}
 		}
 		return true
-	}
-
-	if err := svc.DescribeLaunchConfigurationsPages(&autoscaling.DescribeLaunchConfigurationsInput{}, pageFunc); err != nil {
+	}); err != nil {
 		return err
 	}
-
 	for _, lc := range toDelete {
-		deleteReq := &autoscaling.DeleteLaunchConfigurationInput{
-			LaunchConfigurationName: aws.String(lc.Name),
-		}
-
-		if _, err := svc.DeleteLaunchConfiguration(deleteReq); err != nil {
-			klog.Warningf("%v: delete failed: %v", lc.ARN(), err)
+		_, err := svc.DeleteLaunchConfiguration(
+			&autoscaling.DeleteLaunchConfigurationInput{
+				LaunchConfigurationName: aws.String(lc.Name),
+			})
+		if err != nil {
+			glog.Warningf("%v: delete failed: %v", lc.ARN(), err)
 		}
 	}
-
 	return nil
 }
 

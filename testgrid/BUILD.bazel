@@ -57,7 +57,6 @@ filegroup(
         "//testgrid/cmd/configurator:all-srcs",
         "//testgrid/cmd/updater:all-srcs",
         "//testgrid/images:all-srcs",
-        "//testgrid/metadata:all-srcs",
         "//testgrid/util/gcs:all-srcs",
     ],
     tags = ["automanaged"],

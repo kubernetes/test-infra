@@ -38,8 +38,6 @@ func (o Options) Run() error {
 
 	started := gcs.Started{
 		Timestamp: time.Now().Unix(),
-		// TODO(fejta): repos, repo-version
-		// TODO(fejta): VM name
 	}
 	startedData, err := json.Marshal(&started)
 	if err != nil {
@@ -90,11 +88,9 @@ func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (b
 	if failed {
 		uploadTargets["build-log.txt"] = gcs.DataUpload(bytes.NewReader(cloneLog.Bytes()))
 
-		var failed bool
-		now := time.Now().Unix()
 		finished := gcs.Finished{
-			Timestamp: &now,
-			Passed:    &failed,
+			Timestamp: time.Now().Unix(),
+			Passed:    false,
 			Result:    "FAILURE",
 		}
 		finishedData, err := json.Marshal(&finished)

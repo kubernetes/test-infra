@@ -291,13 +291,12 @@ func TestApply(test *testing.T) {
 	}
 }
 
-func TestBranchRequirements(t *testing.T) {
+func TestJobRequirements(t *testing.T) {
 	cases := []struct {
-		name                            string
-		config                          []Presubmit
-		masterExpected, otherExpected   []string
-		masterOptional, otherOptional   []string
-		masterIfPresent, otherIfPresent []string
+		name                          string
+		config                        []Presubmit
+		masterExpected, otherExpected []string
+		masterOptional, otherOptional []string
 	}{
 		{
 			name: "basic",
@@ -335,12 +334,101 @@ func TestBranchRequirements(t *testing.T) {
 					Optional:   true,
 				},
 			},
-			masterExpected:  []string{"always-run"},
-			masterIfPresent: []string{"run-if-changed", "not-always"},
-			masterOptional:  []string{"optional"},
-			otherExpected:   []string{"always-run"},
-			otherIfPresent:  []string{"run-if-changed", "not-always"},
-			otherOptional:   []string{"skip-report", "optional"},
+			masterExpected: []string{"always-run", "run-if-changed"},
+			masterOptional: []string{"optional"},
+			otherExpected:  []string{"always-run", "run-if-changed"},
+			otherOptional:  []string{"skip-report", "optional"},
+		},
+		{
+			name: "children",
+			config: []Presubmit{
+				{
+					Context:    "always-run",
+					AlwaysRun:  true,
+					SkipReport: false,
+					RunAfterSuccess: []Presubmit{
+						{
+							Context: "include-me",
+						},
+					},
+				},
+				{
+					Context: "run-if-changed",
+					RegexpChangeMatcher: RegexpChangeMatcher{
+						RunIfChanged: "foo",
+					},
+					SkipReport: true,
+					AlwaysRun:  false,
+					RunAfterSuccess: []Presubmit{
+						{
+							Context: "me2",
+						},
+					},
+				},
+				{
+					Context:    "run-and-skip",
+					AlwaysRun:  true,
+					SkipReport: true,
+					RunAfterSuccess: []Presubmit{
+						{
+							Context: "also-me-3",
+						},
+					},
+				},
+				{
+					Context:    "optional",
+					AlwaysRun:  false,
+					SkipReport: false,
+					RunAfterSuccess: []Presubmit{
+						{
+							Context: "no thanks",
+						},
+					},
+				},
+				{
+					Context:    "hidden-grandpa",
+					AlwaysRun:  true,
+					SkipReport: true,
+					RunAfterSuccess: []Presubmit{
+						{
+							Context:   "hidden-parent",
+							Optional:  true,
+							AlwaysRun: false,
+							Brancher: Brancher{
+								Branches: []string{"master"},
+							},
+							RunAfterSuccess: []Presubmit{
+								{
+									Context: "visible-kid",
+									Brancher: Brancher{
+										Branches: []string{"master"},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			masterExpected: []string{
+				"always-run", "include-me",
+				"me2",
+				"also-me-3",
+				"visible-kid",
+			},
+			masterOptional: []string{
+				"run-if-changed",
+				"run-and-skip",
+				"hidden-grandpa",
+				"hidden-parent"},
+			otherExpected: []string{
+				"always-run", "include-me",
+				"me2",
+				"also-me-3",
+			},
+			otherOptional: []string{
+				"run-if-changed",
+				"run-and-skip",
+				"hidden-grandpa"},
 		},
 	}
 
@@ -348,28 +436,19 @@ func TestBranchRequirements(t *testing.T) {
 		if err := SetPresubmitRegexes(tc.config); err != nil {
 			t.Fatalf("could not set regexes: %v", err)
 		}
-		presubmits := map[string][]Presubmit{
-			"o/r": tc.config,
-		}
-		masterActual, masterActualIfPresent, masterOptional := BranchRequirements("o", "r", "master", presubmits)
+		masterActual, masterOptional := jobRequirements(tc.config, "master", false)
 		if !reflect.DeepEqual(masterActual, tc.masterExpected) {
-			t.Errorf("%s: identified incorrect required contexts on branch master: %s", tc.name, diff.ObjectReflectDiff(masterActual, tc.masterExpected))
+			t.Errorf("branch: master - %s: actual %v != expected %v", tc.name, masterActual, tc.masterExpected)
 		}
 		if !reflect.DeepEqual(masterOptional, tc.masterOptional) {
-			t.Errorf("%s: identified incorrect optional contexts on branch master: %s", tc.name, diff.ObjectReflectDiff(masterOptional, tc.masterOptional))
+			t.Errorf("branch: master - optional - %s: actual %v != expected %v", tc.name, masterOptional, tc.masterOptional)
 		}
-		if !reflect.DeepEqual(masterActualIfPresent, tc.masterIfPresent) {
-			t.Errorf("%s: identified incorrect if-present contexts on branch master: %s", tc.name, diff.ObjectReflectDiff(masterActualIfPresent, tc.masterIfPresent))
-		}
-		otherActual, otherActualIfPresent, otherOptional := BranchRequirements("o", "r", "other", presubmits)
+		otherActual, otherOptional := jobRequirements(tc.config, "other", false)
 		if !reflect.DeepEqual(masterActual, tc.masterExpected) {
-			t.Errorf("%s: identified incorrect required contexts on branch other: : %s", tc.name, diff.ObjectReflectDiff(otherActual, tc.otherExpected))
+			t.Errorf("branch: other - %s: actual %v != expected %v", tc.name, otherActual, tc.otherExpected)
 		}
 		if !reflect.DeepEqual(otherOptional, tc.otherOptional) {
-			t.Errorf("%s: identified incorrect optional contexts on branch other: %s", tc.name, diff.ObjectReflectDiff(otherOptional, tc.otherOptional))
-		}
-		if !reflect.DeepEqual(otherActualIfPresent, tc.otherIfPresent) {
-			t.Errorf("%s: identified incorrect if-present contexts on branch other: %s", tc.name, diff.ObjectReflectDiff(otherActualIfPresent, tc.otherIfPresent))
+			t.Errorf("branch: other - optional - %s: actual %v != expected %v", tc.name, otherOptional, tc.otherOptional)
 		}
 	}
 }
