@@ -1,4 +1,4 @@
-import {JobState} from "../api/prow";
+import {JobState, Pull} from "../api/prow";
 import moment from "moment";
 
 // The cell namespace exposes functions for constructing common table cells.
@@ -89,18 +89,21 @@ export namespace cell {
 		}
 	};
 
-	export function commitRevision(repo: string, ref: string, SHA: string): HTMLTableDataCellElement {
+	export function commitRevision(repo: string, ref: string, SHA: string, pushCommitLink: string): HTMLTableDataCellElement {
 		const c = document.createElement("td");
 		const bl = document.createElement("a");
-		bl.href = "https://github.com/" + repo + "/commit/" + SHA;
+		bl.href = pushCommitLink;
+		if (!bl.href) {
+			bl.href = "https://github.com/" + repo + "/commit/" + SHA;
+		}
 		bl.text = ref + " (" + SHA.slice(0, 7) + ")";
 		c.appendChild(bl);
 		return c;
 	}
 
-	export function prRevision(repo: string, num: number, author: string, title: string, SHA: string): HTMLTableDataCellElement {
+	export function prRevision(repo: string, pull: Pull): HTMLTableDataCellElement {
 		const td = document.createElement("td");
-		addPRRevision(td, repo, num, author, title, SHA);
+		addPRRevision(td, repo, pull);
 		return td;
 	}
 
@@ -110,31 +113,43 @@ export namespace cell {
 	  return "tipID-" + String(idCounter);
 	};
 
-	export function addPRRevision(elem: Node, repo: string, num: number, author: string, title: string, SHA: string): void {
+	export function addPRRevision(elem: Node, repo: string, pull: Pull): void {
 		elem.appendChild(document.createTextNode("#"));
 		const pl = document.createElement("a");
-		pl.href = "https://github.com/" + repo + "/pull/" + num;
-		pl.text = num.toString();
-		if (title) {
-			pl.id = "pr-" + repo + "-" + num + "-" + nextID();
-			const tip = tooltip.forElem(pl.id, document.createTextNode(title));
+		if (pull.link) {
+			pl.href = pull.link;
+		} else {
+			pl.href = "https://github.com/" + repo + "/pull/" + pull.number;
+		}
+		pl.text = pull.number.toString();
+		if (pull.title) {
+			pl.id = "pr-" + repo + "-" + pull.number + "-" + nextID();
+			const tip = tooltip.forElem(pl.id, document.createTextNode(pull.title));
 			pl.appendChild(tip);
 		}
 		elem.appendChild(pl);
-		if (SHA) {
+		if (pull.sha) {
 			elem.appendChild(document.createTextNode(" ("));
 			const cl = document.createElement("a");
-			cl.href = "https://github.com/" + repo + "/pull/" + num
-					+ '/commits/' + SHA;
-			cl.text = SHA.slice(0, 7);
+			if (pull.commit_link) {
+				cl.href = pull.commit_link;
+			} else {
+				cl.href = "https://github.com/" + repo + "/pull/" + pull.number
+					+ '/commits/' + pull.sha;
+			}
+			cl.text = pull.sha.slice(0, 7);
 			elem.appendChild(cl);
 			elem.appendChild(document.createTextNode(")"));
 		}
-		if (author) {
+		if (pull.author) {
 			elem.appendChild(document.createTextNode(" by "))
 			const al = document.createElement("a");
-			al.href = "https://github.com/" + author;
-			al.text = author;
+			if (pull.author_link) {
+				al.href = pull.author_link;
+			} else {
+				al.href = "https://github.com/" + pull.author;
+			}
+			al.text = pull.author;
 			elem.appendChild(al);
 		}
 	}

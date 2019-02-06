@@ -5,13 +5,17 @@ go_library(
     srcs = ["history.go"],
     importpath = "k8s.io/test-infra/prow/tide/history",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/sirupsen/logrus:go_default_library"],
+    deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
 )
 
 go_test(
     name = "go_default_test",
     srcs = ["history_test.go"],
     embed = [":go_default_library"],
+    deps = ["//prow/apis/prowjobs/v1:go_default_library"],
 )
 
 filegroup(

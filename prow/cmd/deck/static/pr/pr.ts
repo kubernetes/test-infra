@@ -406,10 +406,12 @@ function loadPrStatus(prData: UserData): void {
         let builds: Job[] = [];
         for (let build of allBuilds) {
             if (build.type === 'presubmit' &&
-                build.repo === pr.Repository.NameWithOwner &&
-                build.base_ref === pr.BaseRef.Name &&
-                build.number === pr.Number &&
-                build.pull_sha === pr.HeadRefOID) {
+                build.refs.repo === pr.Repository.NameWithOwner &&
+                build.refs.base_ref === pr.BaseRef.Name &&
+                build.refs.pulls &&
+                build.refs.pulls.length > 0 &&
+                build.refs.pulls[0].number === pr.Number &&
+                build.refs.pulls[0].sha === pr.HeadRefOID) {
                 if (!seenJobs[build.job]) {  // First (latest) build for job.
                     seenJobs[build.job] = true;
                     builds.push(build);

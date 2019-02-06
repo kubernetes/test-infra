@@ -1127,11 +1127,11 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 		err
 }
 
-func prMeta(prs ...PullRequest) []history.PRMeta {
-	var res []history.PRMeta
+func prMeta(prs ...PullRequest) []prowapi.Pull {
+	var res []prowapi.Pull
 	for _, pr := range prs {
-		res = append(res, history.PRMeta{
-			Num:    int(pr.Number),
+		res = append(res, prowapi.Pull{
+			Number: int(pr.Number),
 			Author: string(pr.Author.Login),
 			Title:  string(pr.Title),
 			SHA:    string(pr.HeadRefOID),
