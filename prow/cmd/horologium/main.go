@@ -25,6 +25,7 @@ import (
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -114,9 +115,9 @@ func sync(prowJobClient prowJobClient, cfg *config.Config, cr cronClient, now ti
 		logrus.WithError(err).Error("Error syncing cron jobs.")
 	}
 
-	cronTriggers := map[string]bool{}
+	cronTriggers := sets.NewString()
 	for _, job := range cr.QueuedJobs() {
-		cronTriggers[job] = true
+		cronTriggers.Insert(job)
 	}
 
 	var errs []error
@@ -130,7 +131,7 @@ func sync(prowJobClient prowJobClient, cfg *config.Config, cr cronClient, now ti
 					errs = append(errs, err)
 				}
 			}
-		} else if _, exist := cronTriggers[p.Name]; exist {
+		} else if cronTriggers.Has(p.Name) {
 			if !ok || j.Complete() {
 				prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels)
 				if _, err := prowJobClient.Create(&prowJob); err != nil {
