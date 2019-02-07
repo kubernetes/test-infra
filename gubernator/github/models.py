@@ -17,7 +17,7 @@ import datetime
 import json
 
 import google.appengine.ext.ndb as ndb
-from google.appengine.api.datastore_errors import NeedIndexError
+import google.appengine.api.datastore_errors as datastore_errors
 
 
 class GithubResource(ndb.Model):
@@ -179,7 +179,7 @@ class GHIssueDigest(ndb.Model):
     def find_xrefs_async(xref):
         try:
             issues = yield GHIssueDigest.query(GHIssueDigest.xref == xref).fetch_async()
-        except NeedIndexError:
+        except datastore_errors.NeedIndexError:
             raise ndb.Return([])
         raise ndb.Return(list(issues))
 
@@ -201,7 +201,7 @@ class GHIssueDigest(ndb.Model):
             issues = yield GHIssueDigest.query(
                 GHIssueDigest.xref >= min(xrefs),
                 GHIssueDigest.xref <= max(xrefs)).fetch_async(batch_size=500)
-        except NeedIndexError:
+        except datastore_errors.NeedIndexError:
             raise ndb.Return({})
         refs = {}
         for issue in issues:
