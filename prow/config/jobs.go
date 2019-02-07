@@ -115,18 +115,15 @@ type Presubmit struct {
 	// AlwaysRun automatically for every PR, or only when a comment triggers it.
 	AlwaysRun bool `json:"always_run"`
 
-	// Context is the name of the GitHub status context for the job.
-	Context string `json:"context"`
 	// Optional indicates that the job's status context should not be required for merge.
 	Optional bool `json:"optional,omitempty"`
-	// SkipReport skips commenting and setting status on GitHub.
-	SkipReport bool `json:"skip_report,omitempty"`
 
 	// Trigger is the regular expression to trigger the job.
 	// e.g. `@k8s-bot e2e test this`
 	// RerunCommand must also be specified if this field is specified.
 	// (Default: `(?m)^/test (?:.*? )?<job name>(?: .*?)?$`)
 	Trigger string `json:"trigger"`
+
 	// The RerunCommand to give users. Must match Trigger.
 	// Trigger must also be specified if this field is specified.
 	// (Default: `/test <job name>`)
@@ -135,6 +132,8 @@ type Presubmit struct {
 	Brancher
 
 	RegexpChangeMatcher
+
+	Reporter
 
 	// We'll set these when we load it.
 	re *regexp.Regexp // from Trigger.
@@ -148,12 +147,8 @@ type Postsubmit struct {
 
 	Brancher
 
-	// Context is the name of the GitHub status context for the job.
-	Context string `json:"context"`
-
-	// TODO(krzyzacy): opt-in for now - Consider make it default true like presubmits
-	// Report will comment and set status on GitHub.
-	Report bool `json:"report,omitempty"`
+	// TODO(krzyzacy): Move existing `Report` into `Skip_Report` once this is deployed
+	Reporter
 }
 
 // Periodic runs on a timer.
@@ -199,6 +194,13 @@ type RegexpChangeMatcher struct {
 	// If any file in the changeset matches this regex, the job will be triggered
 	RunIfChanged string         `json:"run_if_changed,omitempty"`
 	reChanges    *regexp.Regexp // from RunIfChanged
+}
+
+type Reporter struct {
+	// Context is the name of the GitHub status context for the job.
+	Context string `json:"context"`
+	// SkipReport skips commenting and setting status on GitHub.
+	SkipReport bool `json:"skip_report,omitempty"`
 }
 
 // RunsAgainstAllBranch returns true if there are both branches and skip_branches are unset
