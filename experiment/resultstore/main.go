@@ -24,10 +24,10 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/golang/protobuf/ptypes/duration"
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/google/uuid"
 	resultstore "google.golang.org/genproto/googleapis/devtools/resultstore/v2"
@@ -35,7 +35,10 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/oauth"
+	"google.golang.org/grpc/metadata"
 	"sigs.k8s.io/yaml"
+
+	tirs "k8s.io/test-infra/testgrid/resultstore"
 )
 
 // See https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2
@@ -65,29 +68,12 @@ func prop(key, value string) *resultstore.Property {
 	}
 }
 
-func timing(when time.Time) *resultstore.Timing {
-	return &resultstore.Timing{
-		StartTime: stamp(when),
-	}
-}
-
-func timingEnd(when time.Time, seconds int64, nanos int32) *resultstore.Timing {
-	t := timing(when)
-	t.Duration = dur(seconds, nanos)
-	return t
-}
-
-func stamp(when time.Time) *timestamp.Timestamp {
-	return &timestamp.Timestamp{
-		Seconds: when.Unix(),
-	}
+func tdur(seconds int64, nanos int32) time.Duration {
+	return time.Second*time.Duration(seconds) + time.Nanosecond*time.Duration(nanos)
 }
 
 func dur(seconds int64, nanos int32) *duration.Duration {
-	return &duration.Duration{
-		Seconds: seconds,
-		Nanos:   nanos,
-	}
+	return nil
 }
 
 func grpcConn(accountPath string) (*grpc.ClientConn, error) {
@@ -128,13 +114,12 @@ func createInvocation(ctx context.Context, up uploadClient) (*resultstore.Invoca
 	tok := newUUID()
 	fmt.Println("Auth token", tok)
 	inv, err := up.CreateInvocation(ctx, &resultstore.CreateInvocationRequest{
-		Invocation: &resultstore.Invocation{
-			InvocationAttributes: &resultstore.InvocationAttributes{
-				ProjectId:   "fejta-prod",
-				Description: "hello world",
-			},
-			Timing: timing(time.Now()),
-		},
+		Invocation: tirs.Invocation{
+			Project:     "fejta-prod",
+			Description: "hello world",
+			Start:       time.Now(),
+			Duration:    50 * time.Second,
+		}.To(),
 		AuthorizationToken: tok,
 	})
 	return inv, tok, err
@@ -189,70 +174,51 @@ func flip() bool {
 	return rand.Int()%2 == 0
 }
 
-func randomTestCase() *resultstore.Test {
-	c := &resultstore.TestCase{
-		CaseName:  caseName(),
-		ClassName: className(),
-		Timing:    timingEnd(time.Now(), 15, 30),
-		Properties: []*resultstore.Property{
-			prop("whatever", "yo"),
+func randomTestCase() tirs.Case {
+	c := tirs.Case{
+		Name:     caseName(),
+		Class:    className(),
+		Start:    time.Now(),
+		Duration: tdur(15, 30),
+		Properties: []tirs.Property{
+			tirs.Prop("whatever", "yo"),
 		},
 		Files: manyFiles,
 	}
 
 	failed, errored := flip(), flip()
-	switch {
-	case errored:
-		if flip() {
-			c.Result = resultstore.TestCase_INTERRUPTED
-		} else {
-			c.Result = resultstore.TestCase_CANCELLED
-		}
-	case failed || flip():
-		c.Result = resultstore.TestCase_COMPLETED
-	case flip():
-		c.Result = resultstore.TestCase_SKIPPED
-	case flip():
-		c.Result = resultstore.TestCase_SUPPRESSED
-	case flip():
-		c.Result = resultstore.TestCase_FILTERED
+	switch roll := rand.Int() % 5; {
+	case !failed && !errored, roll < 3:
+		c.Result = tirs.Completed
+	case roll == 3:
+		c.Result = tirs.Cancelled
 	default:
-		c.Result = resultstore.TestCase_COMPLETED
+		c.Result = tirs.Skipped
 	}
 
 	if failed {
-		c.Failures = []*resultstore.TestFailure{
+		c.Failures = []tirs.Failure{
 			{
-				FailureMessage: "Expected err not to have occurred",
-				ExceptionType:  "NotEverythingIsJavaException",
-				StackTrace:     "TODO: stacktrace joke",
-				Expected: []string{
-					"foo",
-					"bar",
-				},
-				Actual: []string{
-					"spam",
-					"eggs",
-				},
+				Message:  "Expected err not to have occurred",
+				Kind:     "NotEverythingIsJavaException",
+				Stack:    "TODO: stacktrace joke",
+				Expected: []string{"foo", "bar"},
+				Actual:   []string{"spam", "eggs"},
 			},
 		}
 	}
 
 	if errored {
-		c.Errors = []*resultstore.TestError{
+		c.Errors = []tirs.Error{
 			{
-				ErrorMessage:  "true != false",
-				ExceptionType: "panic",
-				StackTrace:    "lines",
+				Message: "true != false",
+				Kind:    "panic",
+				Stack:   "lines",
 			},
 		}
 	}
 
-	return &resultstore.Test{
-		TestType: &resultstore.Test_TestCase{
-			TestCase: c,
-		},
-	}
+	return c
 }
 
 const (
@@ -266,27 +232,38 @@ const (
 )
 
 var (
-	testLog = &resultstore.File{
-		Uid:           "test.log",
-		Uri:           pushLog,
-		ContentViewer: "https://storage.googleapis.com/kubernetes-jenkins/logs/ci-kubernetes-local-e2e/3355/build-log.txt",
+	testLog = tirs.File{
+		ID:  tirs.TestLog,
+		URL: pushLog,
 	}
-	buildLog = &resultstore.File{
-		Uid: "build.log",
-		Uri: bumpLog,
+	buildLog = tirs.File{
+		ID:  tirs.BuildLog,
+		URL: bumpLog,
 	}
-	stdout = &resultstore.File{
-		Uid: "stdout",
-		Uri: erickLog,
+	stdout = tirs.File{
+		ID:  tirs.Stdout,
+		URL: erickLog,
 	}
-	stderr = &resultstore.File{
-		Uid: "stderr",
-		Uri: fejtaLog,
+	stderr = tirs.File{
+		ID:  "stderr",
+		URL: fejtaLog,
 	}
-	manyFiles = []*resultstore.File{ // special ids: build: stdout,stderr,baseline.lcov; test: test.xml,test.log,test.lcov
+	manyFiles = []tirs.File{ // special ids: build: stdout,stderr,baseline.lcov; test: test.xml,test.log,test.lcov
 		buildLog, testLog, stdout, stderr,
 	}
 )
+
+func mask(ctx context.Context, fields ...string) context.Context {
+	return metadata.AppendToOutgoingContext(ctx, "X-Goog-FieldMask", strings.Join(fields, ","))
+}
+
+func listMask(ctx context.Context, fields ...string) context.Context {
+	out := []string{"next_page_token"}
+	for _, f := range fields {
+		out = append(out, f)
+	}
+	return mask(ctx, out...)
+}
 
 func setup(account, tok, invID string) error {
 	// create connection and clients
@@ -309,7 +286,7 @@ func setup(account, tok, invID string) error {
 		invID = inv.Id.InvocationId
 	}
 	invName := "invocations/" + invID
-	inv, err = down.GetInvocation(ctx, &resultstore.GetInvocationRequest{
+	inv, err = down.GetInvocation(mask(ctx, "timing,name"), &resultstore.GetInvocationRequest{
 		Name: invName,
 	})
 	if err != nil {
@@ -317,7 +294,7 @@ func setup(account, tok, invID string) error {
 	}
 	print("gi", tok, inv)
 
-	inv.Files = manyFiles
+	inv.Files = tirs.Files(manyFiles)
 	inv, err = up.UpdateInvocation(ctx, &resultstore.UpdateInvocationRequest{
 		Invocation: inv,
 		UpdateMask: &field_mask.FieldMask{
@@ -353,7 +330,7 @@ func setup(account, tok, invID string) error {
 	}
 	print("ct", t)
 
-	tr, err := down.ListTargets(ctx, &resultstore.ListTargetsRequest{
+	tr, err := down.ListTargets(listMask(ctx, "targets.name"), &resultstore.ListTargetsRequest{
 		Parent: inv.Name,
 		// PageSize
 		// PageStart
@@ -388,7 +365,7 @@ func setup(account, tok, invID string) error {
 	}
 	print("cc", c)
 
-	lr, err := down.ListConfigurations(ctx, &resultstore.ListConfigurationsRequest{
+	lr, err := down.ListConfigurations(listMask(ctx, "configurations.name", "configurations.id"), &resultstore.ListConfigurationsRequest{
 		Parent: inv.Name,
 		// PageSize, PageStart
 	})
@@ -410,7 +387,7 @@ func setup(account, tok, invID string) error {
 				Status:      resultstore.Status_TESTING,
 				Description: "oh wow",
 			},
-			Timing: timingEnd(time.Now(), 50, 7),
+			// Timing: timingEnd(time.Now(), 50, 7),
 			TestAttributes: &resultstore.ConfiguredTestAttributes{
 				TotalRunCount:   1,
 				TotalShardCount: 1,
@@ -448,7 +425,7 @@ func setup(account, tok, invID string) error {
 	}
 	print("cct", ct)
 
-	lctr, err := down.ListConfiguredTargets(ctx, &resultstore.ListConfiguredTargetsRequest{
+	lctr, err := down.ListConfiguredTargets(listMask(ctx, "configured_targets.name"), &resultstore.ListConfiguredTargetsRequest{
 		Parent: t.Name,
 		// pagesize/start
 	})
@@ -500,8 +477,8 @@ func setup(account, tok, invID string) error {
 			},
 			Properties: nil,
 			Files: []*resultstore.File{ // special ids: build: stdout,stderr,baseline.lcov; test: test.xml,test.log,test.lcov
-				stdout,
-				stderr,
+				stdout.To(),
+				stderr.To(),
 			},
 			Coverage: nil, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#ActionCoverage
 		},
@@ -515,159 +492,102 @@ func setup(account, tok, invID string) error {
 		Parent:             ct.Name,
 		ActionId:           "test",
 		AuthorizationToken: tok,
-		Action: &resultstore.Action{
-			StatusAttributes: &resultstore.StatusAttributes{
-				Status:      resultstore.Status_PASSED,
-				Description: "hello again",
+		Action: tirs.Test{
+			Action: tirs.Action{
+				Status:      tirs.Passed,
+				Description: "so healthy",
+				Start:       time.Now(),
+				Duration:    10 * time.Minute,
+				Node:        "foo",
+				ExitCode:    1,
 			},
-			// Timing
-			ActionType: &resultstore.Action_TestAction{
-				TestAction: &resultstore.TestAction{
-					TestTiming: &resultstore.TestTiming{
-						Location: &resultstore.TestTiming_Remote{
-							// Local: &resultstore.LocalTestTiming{
-							//   TestProcessDuration: &duration.Duration{},
-							// }
-							Remote: &resultstore.RemoteTestTiming{
-								LocalAnalysisDuration: dur(2, 0),
-								Attempts: []*resultstore.RemoteTestAttemptTiming{
-									{
-										// https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#RemoteTestAttemptTiming
-										QueueDuration:        dur(3, 4),
-										UploadDuration:       dur(30, 40),
-										MachineSetupDuration: dur(5, 0),
-										TestProcessDuration:  dur(6, 0),
-										DownloadDuration:     dur(7, 0),
-									},
-								},
-							},
+			Suite: tirs.Suite{
+				Name: "sweeeeet",
+				Cases: []tirs.Case{
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+					randomTestCase(),
+				},
+				Failures: []tirs.Failure{
+					{
+						Message: "bitter",
+						Kind:    "VegetableException",
+						Expected: []string{
+							"candy",
+							"fruit",
+							"meat",
 						},
-						SystemTimeDuration: dur(5, 0),
-						UserTimeDuration:   dur(10, 0),
-						TestCaching:        resultstore.TestCaching_CACHE_MISS, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#TestCaching
-					},
-					ShardNumber:          0,
-					RunNumber:            1,
-					AttemptNumber:        2,
-					EstimatedMemoryBytes: 3,
-					Warnings: []*resultstore.TestWarning{
-						{
-							WarningMessage: "google sure loves themselves some proto fields",
+						Actual: []string{
+							"broccoli",
+							"kale",
+							"cucumber",
 						},
-					},
-					TestSuite: &resultstore.TestSuite{
-						SuiteName: "sweeeeet",
-						Tests: []*resultstore.Test{
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							randomTestCase(),
-							// TestType: &resultstore.Test_TestSuite{TestSuite: &resultstore.TestSuite{}},
-						},
-						Failures: []*resultstore.TestFailure{ // suite level failures
-							{
-								FailureMessage: "bitter",
-								ExceptionType:  "VegetableException",
-								Expected: []string{
-									"candy",
-									"fruit",
-									"meat",
-								},
-								Actual: []string{
-									"broccoli",
-									"kale",
-									"cucumber",
-								},
-							},
-						},
-						Errors: []*resultstore.TestError{ // suite level errors
-							{
-								ErrorMessage:  "salty",
-								ExceptionType: "wounded",
-							},
-						},
-						Timing: timingEnd(time.Now(), 173, 0), // time to complete suite
-						Properties: []*resultstore.Property{
-							prop("sweet", "success"),
-						},
-						Files: manyFiles, // files produced by this test suite
 					},
 				},
-			},
-			ActionAttributes: &resultstore.ActionAttributes{
-				ExecutionStrategy: resultstore.ExecutionStrategy_LOCAL_SEQUENTIAL, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#ExecutionStrategy
-				ExitCode:          1,
-				Hostname:          "foo",
-				InputFileInfo: &resultstore.InputFileInfo{
-					Count:             3,
-					DistinctCount:     2,
-					CountLimit:        12,
-					DistinctBytes:     100,
-					DistinctByteLimit: 1000,
-				},
-			},
-			ActionDependencies: []*resultstore.Dependency{
-				{
-					Resource: &resultstore.Dependency_Target{
-						Target: t.Name,
+				Errors: []tirs.Error{
+					{
+						Message: "salty",
+						Kind:    "wound",
 					},
-					Label: "Root Cause", // exact resource that caused falure
 				},
+				Start:    time.Now(),
+				Duration: tdur(173, 0),
+				Properties: []tirs.Property{
+					tirs.Prop("sweet", "success"),
+				},
+				Files: manyFiles,
 			},
-			Properties: nil,
-			Files: []*resultstore.File{ // special ids: build: stdout,stderr,baseline.lcov; test: test.xml,test.log,test.lcov
-				testLog,
-			},
-			Coverage: nil, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#ActionCoverage
-		},
+			Warnings: []string{"global warning", "a warn oven"},
+		}.To(),
 	})
 	if err != nil {
 		return fmt.Errorf("create test action: %v", err)
 	}
 	print("ca#test", a)
 
-	lar, err := down.ListActions(ctx, &resultstore.ListActionsRequest{
+	lar, err := down.ListActions(listMask(ctx, "actions.name", "actions.build_action", "actions.test_action"), &resultstore.ListActionsRequest{
 		Parent: ct.Name,
 		// pagesizestart
 	})

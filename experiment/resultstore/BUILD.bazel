@@ -6,8 +6,8 @@ go_library(
     importpath = "k8s.io/test-infra/experiment/resultstore",
     visibility = ["//visibility:private"],
     deps = [
+        "//testgrid/resultstore:go_default_library",
         "//vendor/github.com/golang/protobuf/ptypes/duration:go_default_library",
-        "//vendor/github.com/golang/protobuf/ptypes/timestamp:go_default_library",
         "//vendor/github.com/golang/protobuf/ptypes/wrappers:go_default_library",
         "//vendor/github.com/google/uuid:go_default_library",
         "//vendor/google.golang.org/genproto/googleapis/devtools/resultstore/v2:go_default_library",
@@ -15,6 +15,7 @@ go_library(
         "//vendor/google.golang.org/grpc:go_default_library",
         "//vendor/google.golang.org/grpc/credentials:go_default_library",
         "//vendor/google.golang.org/grpc/credentials/oauth:go_default_library",
+        "//vendor/google.golang.org/grpc/metadata:go_default_library",
         "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
