@@ -516,7 +516,7 @@ function redraw(fz: FuzzySearch): void {
         if (spyglass) {
             const buildIndex = build.url.indexOf('/build/');
             if (buildIndex !== -1) {
-                let url = window.location.origin + '/view/gcs/' +
+                const url = window.location.origin + '/view/gcs/' +
                     build.url.substring(buildIndex + '/build/'.length);
                 r.appendChild(createSpyglassCell(url));
             } else if (build.url.includes('/view/')) {
