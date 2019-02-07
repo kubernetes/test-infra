@@ -16,6 +16,7 @@ presubmits:
       - args:
         - --root=/go/src
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/perf-tests=master
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --timeout=120
@@ -30,7 +31,16 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance
         - --tear-down-previous
-        - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=true --gather-metrics-at-teardown=true
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--nodes=100
+        - --test-cmd-args=--provider=gce
+        - --test-cmd-args=--report-dir=/workspace/_artifacts
+        - --test-cmd-args=--testconfig=testing/density/config.yaml
+        - --test-cmd-args=--testconfig=testing/load/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/density/100_nodes/override.yaml
+        - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
         # Bazel needs privileged mode in order to sandbox builds.
@@ -56,6 +66,7 @@ presubmits:
       - args:
         - --root=/go/src
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/perf-tests=master
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --timeout=270
@@ -71,7 +82,15 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-big-performance
         - --tear-down-previous
-        - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=masteranddns --gather-metrics-at-teardown=master
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--nodes=500
+        - --test-cmd-args=--provider=gce
+        - --test-cmd-args=--report-dir=/workspace/_artifacts
+        - --test-cmd-args=--testconfig=testing/density/config.yaml
+        - --test-cmd-args=--testconfig=testing/load/config.yaml
+        - --test-cmd-name=ClusterLoaderV2
         - --timeout=240m
         - --use-logexporter
         # Bazel needs privileged mode in order to sandbox builds.
@@ -97,6 +116,7 @@ presubmits:
       - args:
         - --root=/go/src
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/perf-tests=master
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --timeout=570
@@ -111,7 +131,16 @@ presubmits:
         - --gcp-zone=us-east1-a
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-large-performance
-        - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=masteranddns --gather-metrics-at-teardown=master
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--nodes=2000
+        - --test-cmd-args=--provider=gce
+        - --test-cmd-args=--report-dir=/workspace/_artifacts
+        - --test-cmd-args=--testconfig=testing/density/config.yaml
+        - --test-cmd-args=--testconfig=testing/load/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/density/2000_nodes/override.yaml
+        - --test-cmd-name=ClusterLoaderV2
         - --timeout=540m
         - --use-logexporter
         # Bazel needs privileged mode in order to sandbox builds.
