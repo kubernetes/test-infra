@@ -8,18 +8,18 @@ boskos is a resource manager service, that handles and manages different kind of
 
 ## Introduction
 
-Boskos is inited with a config of resources, one JSON entry per line, from `-config`
+Boskos is inited with a config of resources, a list of resources by names. It's passed in by `-config`, usually as a config map.
 
-A resource object looks like
-```go
-type Resource struct {
-        Type       string             `json:"type"`
-        Name       string             `json:"name"`
-        State      string             `json:"state"`
-        Owner      string             `json:"owner"`
-        LastUpdate time.Time          `json:"lastupdate"`
-        UserData   map[string]string  `json:"userdata"`
-}
+A resource yaml looks looks like:
+
+```yaml
+---
+resources:
+  - type: "aws-account"
+    state: clean
+    names:
+    - "account1"
+    - "account2"
 ```
 
 Type can be GCPProject, cluster, or even a dota2 server, anything that you
@@ -194,6 +194,23 @@ In theory those could be use outside of Boskos.
 
 For the boskos server that handles k8s e2e jobs, the status is available from the [`Velodrome dashboard`]
 
+## Adding UserData to a resource
+
+1. Check it out: 
+    ```shell
+    curl -X POST "http://localhost:8080/acquire?type=my-resource&state=clean&dest=busy&owner=$(whoami)"
+    {"type":"my-resource","name":"resource1","state":"busy","owner":"user","lastupdate":"2019-02-07T22:33:38.01350902Z","userdata":null}
+    ```
+
+1. Add the data:
+    ```shell
+    curl -X POST -d '{"access-key-id":"17","secret-access-key":"18"}' "http://localhost:8080/update?name=resource1&state=busy&owner=$(whoami)"
+    ```
+
+1. Check it back in:
+    ```shell
+    curl -X POST 'http://localhost:8080/release?name=liz2&dest=clean&owner=user'
+    ```
 
 ## Local test:
 1. Start boskos with a fake config.yaml, with `go run boskos.go -config=/path/to/config.yaml`
