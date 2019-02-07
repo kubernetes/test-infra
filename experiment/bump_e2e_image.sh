@@ -36,7 +36,7 @@ if [[ -n "${dirty}" ]]; then
   exit 1
 fi
 
-TREE="$(dirname "${BASH_SOURCE[0]}")/.."
+TREE="$(git rev-parse --show-toplevel)"
 
 DATE="$(date +v%Y%m%d)"
 TAG="${DATE}-$(git describe --tags --always --dirty)"
