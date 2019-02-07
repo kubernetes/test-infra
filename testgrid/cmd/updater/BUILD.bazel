@@ -8,7 +8,6 @@ go_library(
     deps = [
         "//testgrid:config",
         "//testgrid:state",
-        "//testgrid/metadata:go_default_library",
         "//testgrid/metadata/junit:go_default_library",
         "//testgrid/util/gcs:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
