@@ -10,12 +10,10 @@
 <div id="junit-container">
   <table id="junit-table" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" style="white-space: pre-wrap;">
   {{if gt $numF 0}}
-    <thead id="failed-theader" onclick="toggleExpansion('failed-tbody', 'failed-expander')">
-    <tr>
+    <tr id="failed-theader" class="header" onclick="toggleExpansion('failed-tbody', 'failed-expander')">
       <td class="mdl-data-table__cell--non-numeric expander failed" colspan="3"><h6>{{len .Failed}}/{{.NumTests}} Tests Failed.</h6></td>
       <td class="mdl-data-table__cell--non-numeric expander"><i id="failed-expander" class="icon-button material-icons arrow-icon noselect">expand_less</i></td>
     </tr>
-    </thead>
     <tbody id="failed-tbody">
     {{range $ix, $test := .Failed}}
     <tr class="dark" onclick="toggleExpansion('failed-test-body-{{$ix}}', 'failed-test-expander-{{$ix}}')">
@@ -28,12 +26,10 @@
     </tbody>
   {{end}}
   {{if gt $numP 0}}
-    <thead id="passed-theader" onclick="toggleExpansion('passed-tbody', 'passed-expander')">
-    <tr>
+    <tr id="passed-theader" class="header" onclick="toggleExpansion('passed-tbody', 'passed-expander')">
       <td class="mdl-data-table__cell--non-numeric expander passed" colspan="3"><h6>{{len .Passed}}/{{.NumTests}} Tests Passed!</h6></td>
       <td class="mdl-data-table__cell--non-numeric expander"><i id="passed-expander" class="icon-button material-icons arrow-icon noselect">expand_more</i></td>
     </tr>
-    </thead>
     <tbody id="passed-tbody" class="hidden-tests">
     {{range .Passed}}
     <tr>
@@ -46,12 +42,10 @@
     </tbody>
   {{end}}
   {{if gt $numS 0}}
-    <thead id="skipped-theader" onclick="toggleExpansion('skipped-tbody', 'skipped-expander')">
-    <tr>
+    <tr id="skipped-theader" class="header" onclick="toggleExpansion('skipped-tbody', 'skipped-expander')">
       <td class="mdl-data-table__cell--non-numeric expander skipped" colspan="3"><h6>{{len .Skipped}}/{{.NumTests}} Tests Skipped.</h6></td>
       <td class="mdl-data-table__cell--non-numeric expander"><i id="skipped-expander" class="icon-button material-icons arrow-icon noselect">expand_more</i></td>
     </tr>
-    </thead>
     <tbody id="skipped-tbody" class="hidden-tests">
     {{range .Skipped}}
     <tr>
