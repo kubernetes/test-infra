@@ -230,12 +230,23 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	org := rc.repo.Owner.Login
 	repoName := rc.repo.Name
 
-	// Author cannot LGTM own PR, comment and abort
+	// Author cannot LGTM own PR, unless he's the only reviewer for all the changed files
 	isAuthor := author == issueAuthor
 	if isAuthor && wantLGTM {
-		resp := "you cannot LGTM your own PR."
-		log.Infof("Commenting with \"%s\".", resp)
-		return gc.CreateComment(rc.repo.Owner.Login, rc.repo.Name, rc.number, plugins.FormatResponseRaw(rc.body, rc.htmlURL, rc.author, resp))
+		ro, err := loadRepoOwners(gc, ownersClient, org, repoName, number)
+		if err != nil {
+			return err
+		}
+		filenames, err := getChangedFiles(gc, org, repoName, number)
+		if err != nil {
+			return err
+		}
+		leafReviewers := loadLeafReviewers(ro, filenames)
+		if len(leafReviewers) != 1 || !leafReviewers.Has(github.NormLogin(author)) {
+			resp := "you cannot LGTM your own PR."
+			log.Infof("Commenting with \"%s\".", resp)
+			return gc.CreateComment(rc.repo.Owner.Login, rc.repo.Name, rc.number, plugins.FormatResponseRaw(rc.body, rc.htmlURL, rc.author, resp))
+		}
 	}
 
 	// Determine if reviewer is already assigned
@@ -476,6 +487,16 @@ func loadReviewers(ro repoowners.RepoOwner, filenames []string) sets.String {
 	reviewers := sets.String{}
 	for _, filename := range filenames {
 		reviewers = reviewers.Union(ro.Approvers(filename)).Union(ro.Reviewers(filename))
+	}
+	return reviewers
+}
+
+// loadLeafReviewers returns all leaf reviewers from all OWNERS files that
+// cover the provided filenames.
+func loadLeafReviewers(ro repoowners.RepoOwner, filenames []string) sets.String {
+	reviewers := sets.String{}
+	for _, filename := range filenames {
+		reviewers = reviewers.Union(ro.LeafReviewers(filename))
 	}
 	return reviewers
 }
