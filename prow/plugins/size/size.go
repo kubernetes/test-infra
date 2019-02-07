@@ -52,7 +52,9 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
 	sizes := sizesOrDefault(config.Size)
 	return &pluginhelp.PluginHelp{
-			Description: fmt.Sprintf(`The size plugin manages the 'size/*' labels, maintaining the appropriate label on each pull request as it is updated. Generated files identified by the config file '.generated_files' at the repo root are ignored. Labels are applied based on the total number of lines of changes (additions and deletions):<ul>
+			Description: "The size plugin manages the 'size/*' labels, maintaining the appropriate label on each pull request as it is updated. Generated files identified by the config file '.generated_files' at the repo root are ignored. Labels are applied based on the total number of lines of changes (additions and deletions).",
+			Config: map[string]string{
+				"": fmt.Sprintf(`The plugin has the following thresholds:<ul>
 <li>size/XS:  0-%d</li>
 <li>size/S:   %d-%d</li>
 <li>size/M:   %d-%d</li>
@@ -60,6 +62,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 <li>size/XL:  %d-%d</li>
 <li>size/XXL: %d+</li>
 </ul>`, sizes.S-1, sizes.S, sizes.M-1, sizes.M, sizes.L-1, sizes.L, sizes.Xl-1, sizes.Xl, sizes.Xxl-1, sizes.Xxl),
+			},
 		},
 		nil
 }
