@@ -94,6 +94,19 @@ presubmits:
           requests:
             memory: "2Gi"
 
+  - name: pull-test-infra-verify-tslint
+    branches:
+      - master
+    run_if_changed: '\.ts$'
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-experimental
+          command:
+            - ./hack/verify-tslint.sh
+
   - name: pull-test-infra-verify-bazel
     branches:
     - master

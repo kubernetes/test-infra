@@ -1,16 +1,15 @@
 import "dialog-polyfill";
 
 import {Context} from '../api/github';
-import {PullRequest, Label, UserData} from '../api/pr';
-import {Blocker, TideData, TidePool, TideQuery as ITideQuery} from '../api/tide';
+import {Label, PullRequest, UserData} from '../api/pr';
 import {Job, JobState} from '../api/prow';
+import {Blocker, TideData, TidePool, TideQuery as ITideQuery} from '../api/tide';
 
 declare const tideData: TideData;
 declare const allBuilds: Job[];
 declare const dialogPolyfill: {
   registerDialog(element: HTMLDialogElement): void;
 };
-
 
 type UnifiedState = JobState | "expected" | "error" | "failure" | "pending" | "success";
 
@@ -40,14 +39,14 @@ interface ProcessedQuery {
  * A Tide Query helper class that checks whether a pr is covered by the query.
  */
 class TideQuery {
-    orgs?: string[];
-    repos?: string[];
-    excludedRepos?: string[];
-    labels?: string[];
-    missingLabels?: string[];
-    excludedBranches?: string[];
-    includedBranches?: string[];
-    milestone?: string;
+    public orgs?: string[];
+    public repos?: string[];
+    public excludedRepos?: string[];
+    public labels?: string[];
+    public missingLabels?: string[];
+    public excludedBranches?: string[];
+    public includedBranches?: string[];
+    public milestone?: string;
 
     constructor(query: ITideQuery) {
         this.orgs = query.orgs;
@@ -63,7 +62,7 @@ class TideQuery {
     /**
      * Returns true if the pr is covered by the query.
      */
-    matchPr(pr: PullRequest): boolean {
+    public matchPr(pr: PullRequest): boolean {
         const isMatched =
             (this.repos && this.repos.indexOf(pr.Repository.NameWithOwner) !== -1) ||
             ((this.orgs && this.orgs.indexOf(pr.Repository.Owner.Login) !== -1) &&
@@ -129,7 +128,7 @@ function createXMLHTTPRequest(fulfillFn: (request: XMLHttpRequest) => any, error
 function getPRQuery(q: string): string {
     const tokens = q.replace(/\+/g, " ").split(" ");
     // Firstly, drop all pr/issue search tokens
-    let result = tokens.filter(tkn => {
+    let result = tokens.filter((tkn) => {
         tkn = tkn.trim();
         return !(tkn === "is:issue" || tkn === "type:issue" || tkn === "is:pr"
             || tkn === "type:pr");
@@ -190,8 +189,8 @@ function getCookieByName(name: string): string {
         return "";
     }
     const cookies = decodeURIComponent(document.cookie).split(";");
-    for (let i = 0; i < cookies.length; i++) {
-        const c = cookies[i].trim();
+    for (const cookie of cookies) {
+        const c = cookie.trim();
         const pref = name + "=";
         if (c.indexOf(pref) === 0) {
             return c.slice(pref.length);
@@ -234,10 +233,10 @@ function createMergeBlockingIssueAlert(tidePool: TidePool, blockers: Blocker[]):
 function showAlerts(): void {
     const alertContainer = document.querySelector("#alert-container")!;
     const tidePools = tideData.Pools ? tideData.Pools : [];
-    for (let pool of tidePools) {
+    for (const pool of tidePools) {
         const blockers = pool.Blockers ? pool.Blockers : [];
         if (blockers.length > 0) {
-            alertContainer.appendChild(createMergeBlockingIssueAlert(pool, blockers))
+            alertContainer.appendChild(createMergeBlockingIssueAlert(pool, blockers));
         }
     }
 }
@@ -254,11 +253,11 @@ window.onload = () => {
     // ?is:pr state:open query="author:<user_login>"
     if (window.location.search === "") {
         const login = getCookieByName("github_login");
-        const searchQuery = "is:pr state:open " + "author:" + login;
+        const searchQuery = "is:pr state:open author:" + login;
         window.location.search = "?query=" + encodeURIComponent(searchQuery);
     }
-    const request = createXMLHTTPRequest((request) => {
-        const prData = JSON.parse(request.responseText);
+    const request = createXMLHTTPRequest((r) => {
+        const prData = JSON.parse(r.responseText);
         redraw(prData);
         loadProgress(false);
     }, () => {
@@ -305,7 +304,7 @@ function createSearchCard(): HTMLElement {
     const userBtn = createIcon("person", "Show my open pull requests", ["search-button"], true);
     userBtn.addEventListener("click", () => {
         const login = getCookieByName("github_login");
-        const searchQuery = "is:pr state:open " + "author:" + login;
+        const searchQuery = "is:pr state:open author:" + login;
         window.location.search = "?query=" + encodeURIComponent(searchQuery);
     });
 
@@ -345,20 +344,20 @@ function createSearchCard(): HTMLElement {
 function getFullPRContext(builds: Job[], contexts: Context[]): UnifiedContext[] {
     const contextMap: Map<string, UnifiedContext> = new Map();
     if (contexts) {
-        for (let context of contexts) {
+        for (const context of contexts) {
             if (context.Context === "tide") {
                 continue;
             }
             contextMap.set(context.Context, {
                 context: context.Context,
                 description: context.Description,
-                state: context.State.toLowerCase() as UnifiedState,
                 discrepancy: null,
+                state: context.State.toLowerCase() as UnifiedState,
             });
         }
     }
     if (builds) {
-        for (let build of builds) {
+        for (const build of builds) {
             let discrepancy = null;
             // If Github context exits, check if mismatch or not.
             if (contextMap.has(build.context)) {
@@ -372,9 +371,9 @@ function getFullPRContext(builds: Job[], contexts: Context[]): UnifiedContext[] 
             contextMap.set(build.context, {
                 context: build.context,
                 description: build.description,
+                discrepancy,
                 state: build.state,
                 url: build.url,
-                discrepancy: discrepancy
             });
         }
     }
@@ -386,7 +385,7 @@ function getFullPRContext(builds: Job[], contexts: Context[]): UnifiedContext[] 
  */
 function loadPrStatus(prData: UserData): void {
     const tideQueries: TideQuery[] = [];
-    for (let query of tideData.TideQueries) {
+    for (const query of tideData.TideQueries) {
         tideQueries.push(new TideQuery(query));
     }
 
@@ -397,14 +396,14 @@ function loadPrStatus(prData: UserData): void {
         container.appendChild(msg);
         return;
     }
-    for (let prWithContext of prData.PullRequestsWithContexts) {
+    for (const prWithContext of prData.PullRequestsWithContexts) {
         // There might be multiple runs of jobs for a build.
         // allBuilds is sorted with the most recent builds first, so
         // we only need to keep the first build for each job name.
-        let pr = prWithContext.PullRequest;
-        let seenJobs: {[key: string]: boolean} = {};
-        let builds: Job[] = [];
-        for (let build of allBuilds) {
+        const pr = prWithContext.PullRequest;
+        const seenJobs: {[key: string]: boolean} = {};
+        const builds: Job[] = [];
+        for (const build of allBuilds) {
             if (build.type === 'presubmit' &&
                 build.refs.repo === pr.Repository.NameWithOwner &&
                 build.refs.base_ref === pr.BaseRef.Name &&
@@ -421,7 +420,7 @@ function loadPrStatus(prData: UserData): void {
         const githubContexts = prWithContext.Contexts;
         const contexts = getFullPRContext(builds, githubContexts);
         const validQueries: TideQuery[] = [];
-        for (let query of tideQueries) {
+        for (const query of tideQueries) {
             if (query.matchPr(pr)) {
                 validQueries.push(query);
             }
@@ -446,11 +445,11 @@ function createTidePoolLabel(pr: PullRequest, tidePool?: TidePool): HTMLElement 
     }
     const poolTypes = [tidePool.Target, tidePool.BatchPending,
         tidePool.SuccessPRs, tidePool.PendingPRs, tidePool.MissingPRs];
-    const inPoolId = poolTypes.findIndex(poolType => {
+    const inPoolId = poolTypes.findIndex((poolType) => {
         if (!poolType) {
             return false;
         }
-        const index = poolType.findIndex(prInPool => {
+        const index = poolType.findIndex((prInPool) => {
             return prInPool.Number === pr.Number;
         });
         return index !== -1;
@@ -525,12 +524,11 @@ function createPRCardTitle(pr: PullRequest, tidePools: TidePool[], jobStatus: Va
     title.classList.add("mdl-card__title-text");
 
     const subtitle = document.createElement("h5");
-    subtitle.textContent = pr.Repository.NameWithOwner + ":" + pr.BaseRef.Name;
+    subtitle.textContent = `${pr.Repository.NameWithOwner}:${pr.BaseRef.Name}`;
     subtitle.classList.add("mdl-card__subtitle-text");
 
     const link = document.createElement("a");
-    link.href = "https://github.com/" + pr.Repository.NameWithOwner + "/pull/"
-        + pr.Number;
+    link.href = `https://github.com/${pr.Repository.NameWithOwner}/pull/${pr.Number}`;
     link.appendChild(title);
 
     const prTitleText = document.createElement("div");
@@ -539,10 +537,9 @@ function createPRCardTitle(pr: PullRequest, tidePools: TidePool[], jobStatus: Va
     prTitleText.classList.add("pr-title-text");
     prTitle.appendChild(prTitleText);
 
-    const pool = tidePools.filter(pool => {
-        const repo = pool.Org + "/" + pool.Repo;
-        return pr.Repository.NameWithOwner === repo && pr.BaseRef.Name
-            === pool.Branch;
+    const pool = tidePools.filter((p) => {
+        const repo = `${p.Org}/${p.Repo}`;
+        return pr.Repository.NameWithOwner === repo && pr.BaseRef.Name === p.Branch;
     });
     let tidePoolLabel = createTidePoolLabel(pr, pool[0]);
     if (!tidePoolLabel) {
@@ -586,7 +583,7 @@ function createContextList(contexts: UnifiedContext[], itemStyle: string[] = [])
             return document.createElement("div");
         }
     };
-    contexts.forEach(context => {
+    contexts.forEach((context) => {
         const elCon = document.createElement("li");
         elCon.classList.add("mdl-list__item", "job-list-item", ...itemStyle);
         const item = getItemContainer(context);
@@ -622,11 +619,11 @@ function createJobStatus(builds: UnifiedContext[]): HTMLElement {
     const statusContainer = document.createElement("div");
     statusContainer.classList.add("status-container");
     const status = document.createElement("div");
-    const failedJobs = builds.filter(build => {
+    const failedJobs = builds.filter((build) => {
         return build.state === "failure";
     });
     // Job status indicator
-    const state = jobStatus(builds);
+    const state = jobVagueState(builds);
     let statusText = "";
     let stateIcon = "";
     switch (state) {
@@ -635,7 +632,7 @@ function createJobStatus(builds: UnifiedContext[]): HTMLElement {
             stateIcon = "check_circle";
             break;
         case "failed":
-            statusText = failedJobs.length + " test" + (failedJobs.length === 1 ? "" : "s") + " failed";
+            statusText = `${failedJobs.length} test${(failedJobs.length === 1 ? "" : "s")} failed`;
             stateIcon = "error";
             break;
         case "unknown":
@@ -691,10 +688,10 @@ function createJobStatus(builds: UnifiedContext[]): HTMLElement {
  * selector.
  */
 function escapeLabel(label: string): string {
-    if (label === "") return "";
-    const toUnicode = function(index: number): string {
+    if (label === "") { return ""; }
+    const toUnicode = (index: number): string => {
       const h = label.charCodeAt(index).toString(16).split('');
-      while (h.length < 6) h.splice(0, 0, '0');
+      while (h.length < 6) { h.splice(0, 0, '0'); }
 
       return 'x' + h.join('');
     };
@@ -710,7 +707,7 @@ function escapeLabel(label: string): string {
       result += label[i];
     }
 
-    return result
+    return result;
 }
 
 /**
@@ -730,7 +727,7 @@ function createLabelEl(label: string): HTMLElement {
  */
 function createMergeLabelCell(labels: ProcessedLabel[], notMissingLabel = false): HTMLElement {
     const cell = document.createElement("td");
-    labels.forEach(label => {
+    labels.forEach((label) => {
         const labelEl = createLabelEl(label.name);
         const toDisplay = label.own !== notMissingLabel;
         if (toDisplay) {
@@ -748,7 +745,7 @@ function appendLabelsToContainer(container: HTMLElement, labels: string[]): void
     while (container.firstChild) {
         container.removeChild(container.firstChild);
     }
-    labels.forEach(label => {
+    labels.forEach((label) => {
         const labelEl = createLabelEl(label);
         container.appendChild(labelEl);
     });
@@ -775,7 +772,7 @@ function fillDetail(selector: string, data?: string[] | string): void {
     }
 
     if (Array.isArray(data)) {
-        for (let branch of data) {
+        for (const branch of data) {
             const str = document.createElement("SPAN");
             str.classList.add("detail-branch");
             str.appendChild(document.createTextNode(branch));
@@ -805,10 +802,10 @@ function createQueryDetailsBtn(query: ProcessedQuery): HTMLTableDataCellElement 
         fillDetail("#query-detail-milestone", query.milestone);
         fillDetail("#query-detail-exclude", query.excludedBranches);
         fillDetail("#query-detail-include", query.includedBranches);
-        appendLabelsToContainer(allRequired, query.labels.map(label => {
+        appendLabelsToContainer(allRequired, query.labels.map((label) => {
             return label.name;
         }));
-        appendLabelsToContainer(allForbidden, query.missingLabels.map(label => {
+        appendLabelsToContainer(allForbidden, query.missingLabels.map((label) => {
             return label.name;
         }));
         dialog.showModal();
@@ -821,7 +818,7 @@ function createQueryDetailsBtn(query: ProcessedQuery): HTMLTableDataCellElement 
 /**
  * Creates merge requirement table for queries.
  */
-function createQueriesTable(prLabels: {Label: Label}[], queries: ProcessedQuery[]): HTMLTableElement {
+function createQueriesTable(prLabels: Array<{Label: Label}>, queries: ProcessedQuery[]): HTMLTableElement {
     const table = document.createElement("table");
     table.classList.add("merge-table");
     const thead = document.createElement("thead");
@@ -836,7 +833,7 @@ function createQueriesTable(prLabels: {Label: Label}[], queries: ProcessedQuery[
     const allLabelRow = document.createElement("tr");
     const allLabelCell = document.createElement("td");
     allLabelCell.colSpan = 3;
-    appendLabelsToContainer(allLabelCell, prLabels.map(label => {
+    appendLabelsToContainer(allLabelCell, prLabels.map((label) => {
         return label.Label.Name;
     }));
     allLabelRow.appendChild(allLabelCell);
@@ -850,7 +847,7 @@ function createQueriesTable(prLabels: {Label: Label}[], queries: ProcessedQuery[
     const col3 = document.createElement("td");
 
     const body = document.createElement("tbody");
-    queries.forEach(query => {
+    queries.forEach((query) => {
         const row = document.createElement("tr");
         row.appendChild(createMergeLabelCell(query.labels, true));
         row.appendChild(createMergeLabelCell(query.missingLabels));
@@ -871,7 +868,7 @@ function createQueriesTable(prLabels: {Label: Label}[], queries: ProcessedQuery[
 /**
  * Creates the merge label requirement status.
  */
-function createMergeLabelStatus(prLabels: {Label: Label}[] = [], queries: ProcessedQuery[]): HTMLElement {
+function createMergeLabelStatus(prLabels: Array<{Label: Label}> = [], queries: ProcessedQuery[]): HTMLElement {
     const statusContainer = document.createElement("div");
     statusContainer.classList.add("status-container");
     const status = document.createElement("div");
@@ -911,7 +908,7 @@ function createMergeLabelStatus(prLabels: {Label: Label}[] = [], queries: Proces
             if (queriesTable.classList.contains("hidden")) {
                 const offLabels = queriesTable.querySelectorAll(
                     ".merge-table-label.off");
-                offLabels.forEach(offLabel => {
+                offLabels.forEach((offLabel) => {
                     offLabel.classList.add("hidden");
                 });
             }
@@ -964,7 +961,7 @@ function createStatusHelp(title: string, content: HTMLElement[]): HTMLElement {
         while (dialogContent.firstChild) {
             dialogContent.removeChild(dialogContent.firstChild);
         }
-        content.forEach(el => {
+        content.forEach((el) => {
             dialogContent.appendChild(el);
         });
         dialog.showModal();
@@ -1009,7 +1006,6 @@ function createMilestoneConflictStatus(pr: PullRequest, queries: ProcessedQuery[
     return statusContainer;
 }
 
-
 function createPRCardBody(pr: PullRequest, builds: UnifiedContext[], queries: ProcessedQuery[],
                           mergeable: boolean, branchConflict: boolean,
                           milestoneConflict: boolean): HTMLElement {
@@ -1034,10 +1030,10 @@ function createPRCardBody(pr: PullRequest, builds: UnifiedContext[], queries: Pr
  */
 function compareJobFn(a: UnifiedContext, b: UnifiedContext): number {
     const stateToPrio: {[key: string]: number} = {};
-    stateToPrio["success"] = stateToPrio["expected"] = 3;
-    stateToPrio["aborted"] = 2;
-    stateToPrio["pending"] = stateToPrio["triggered"] = 1;
-    stateToPrio["error"] = stateToPrio["failure"] = 0;
+    stateToPrio.success = stateToPrio.expected = 3;
+    stateToPrio.aborted = 2;
+    stateToPrio.pending = stateToPrio.triggered = 1;
+    stateToPrio.error = stateToPrio.failure = 0;
 
     return stateToPrio[a.state] > stateToPrio[b.state] ? 1
         : stateToPrio[a.state] < stateToPrio[b.state] ? -1 : 0;
@@ -1049,12 +1045,12 @@ function compareJobFn(a: UnifiedContext, b: UnifiedContext): number {
 function closestMatchingQueries(pr: PullRequest, queries: TideQuery[]): ProcessedQuery[] {
     const prLabelsSet = new Set();
     if (pr.Labels && pr.Labels.Nodes) {
-        pr.Labels.Nodes.forEach(label => {
+        pr.Labels.Nodes.forEach((label) => {
             prLabelsSet.add(label.Label.Name);
         });
     }
     const processedQueries: ProcessedQuery[] = [];
-    queries.forEach(query => {
+    queries.forEach((query) => {
         let score = 0.0;
         const labels: ProcessedLabel[] = [];
         const missingLabels: ProcessedLabel[] = [];
@@ -1070,26 +1066,30 @@ function closestMatchingQueries(pr: PullRequest, queries: TideQuery[]): Processe
             }
             return a.length < b.length ? -1 : 1;
         });
-        (query.labels || []).forEach(label => {
+        (query.labels || []).forEach((label) => {
             labels.push({name: label, own: prLabelsSet.has(label)});
             score += labels[labels.length - 1].own ? 1 : 0;
         });
-        (query.missingLabels || []).forEach(label => {
+        (query.missingLabels || []).forEach((label) => {
             missingLabels.push({name: label, own: prLabelsSet.has(label)});
             score += missingLabels[missingLabels.length - 1].own ? 0 : 1;
         });
         score = (labels.length + missingLabels.length > 0) ? score
             / (labels.length + missingLabels.length) : 1.0;
-        processedQueries.push(
-            {
-                score: score, labels: labels, missingLabels: missingLabels, excludedBranches: query.excludedBranches,
-                includedBranches: query.includedBranches, milestone: query.milestone
-            });
+        processedQueries.push({
+            excludedBranches: query.excludedBranches,
+            includedBranches: query.includedBranches,
+            labels,
+            milestone: query.milestone,
+            missingLabels,
+            score,
+        });
     });
     // Sort queries by descending score order.
     processedQueries.sort((q1, q2) => {
         if (pr.BaseRef && pr.BaseRef.Name) {
-            let q1Excluded = 0, q2Excluded = 0;
+            let q1Excluded = 0;
+            let q2Excluded = 0;
             if (q1.excludedBranches && q1.excludedBranches.indexOf(pr.BaseRef.Name) !== -1) {
                 q1Excluded = 1;
             }
@@ -1100,7 +1100,8 @@ function closestMatchingQueries(pr: PullRequest, queries: TideQuery[]): Processe
                 return q1Excluded + q2Excluded;
             }
 
-            let q1Included = 0, q2Included = 0;
+            let q1Included = 0;
+            let q2Included = 0;
             if (q1.includedBranches && q1.includedBranches.indexOf(pr.BaseRef.Name) !== -1) {
                 q1Included = -1;
             }
@@ -1124,7 +1125,7 @@ function closestMatchingQueries(pr: PullRequest, queries: TideQuery[]): Processe
         }
         return q1.score > q2.score ? -1 : 1;
     });
-    return processedQueries
+    return processedQueries;
 }
 
 /**
@@ -1143,7 +1144,7 @@ function createPRCard(pr: PullRequest, builds: UnifiedContext[] = [], queries: P
             (queries[0].includedBranches && queries[0].includedBranches!.indexOf(pr.BaseRef.Name) === -1)));
     const milestoneConflict = hasMatchingQuery && queries[0].milestone ? (!pr.Milestone || !pr.Milestone.Title || pr.Milestone.Title !== queries[0].milestone) : false;
     const labelConflict = hasMatchingQuery ? !hasResolvedLabels(queries[0]) : false;
-    prCard.appendChild(createPRCardTitle(pr, tidePools, jobStatus(builds), !hasMatchingQuery, labelConflict, mergeConflict, branchConflict, milestoneConflict));
+    prCard.appendChild(createPRCardTitle(pr, tidePools, jobVagueState(builds), !hasMatchingQuery, labelConflict, mergeConflict, branchConflict, milestoneConflict));
     prCard.appendChild(createPRCardBody(pr, builds, queries, mergeConflict, branchConflict, milestoneConflict));
     return prCard;
 }
@@ -1160,7 +1161,7 @@ type VagueState = "succeeded" | "failed" | "pending" | "unknown";
 /**
  * Returns the job status based on its state.
  */
-function jobStatus(builds: UnifiedContext[]): VagueState {
+function jobVagueState(builds: UnifiedContext[]): VagueState {
     if (builds.length === 0) {
         return "unknown";
     }

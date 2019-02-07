@@ -84,7 +84,7 @@ describe('filter', () => {
 describe('enumerate', () => {
   it('should count up', () => {
     expect(Array.from(enumerate(['hello', 'world']))).toEqual([
-      [0, 'hello'], [1, 'world']
+      [0, 'hello'], [1, 'world'],
     ]);
   });
 
@@ -121,13 +121,13 @@ function iterableSpy<T>(output: T[]): [jasmine.Spy, Iterable<T>] {
         // IteratorResult<T> is incorrect for finished iterators, apparently.
         return {done: true} as IteratorResult<T>;
       }
-    }
+    },
   };
 
   const iterable = {
     [Symbol.iterator]() {
       return iterator;
-    }
+    },
   };
 
   const spy = spyOn(iterator, 'next').and.callThrough();

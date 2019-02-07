@@ -5,10 +5,10 @@ function toggleExpansion(dataId: string, textId: string, iconId: string): void {
   const textElem = document.getElementById(textId)!;
   if (body.classList.contains('hidden')) {
     icon.innerHTML = 'expand_more';
-    textElem.innerText = 'Show more'
+    textElem.innerText = 'Show more';
   } else {
     icon.innerHTML = 'expand_less';
-    textElem.innerText = 'Show less'
+    textElem.innerText = 'Show less';
   }
   spyglass.contentUpdated();
 }

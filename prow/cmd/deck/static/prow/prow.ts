@@ -1,16 +1,14 @@
-import {FuzzySearch} from './fuzzy-search';
+import moment from "moment";
 import {Job, JobState, JobType} from "../api/prow";
 import {cell} from "../common/common";
-import moment from "moment";
-
-
+import {FuzzySearch} from './fuzzy-search';
 
 declare const allBuilds: Job[];
 declare const spyglass: boolean;
 
 // http://stackoverflow.com/a/5158301/3694
 function getParameterByName(name: string): string | null {
-    const match = RegExp('[?&]' + name + '=([^&/]*)').exec(
+    const match = RegExp(`[?&]${name}=([^&/]*)`).exec(
         window.location.search);
     return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 }
@@ -31,17 +29,16 @@ interface RepoOptions {
 
 function optionsForRepo(repo: string): RepoOptions {
     const opts: RepoOptions = {
-        types: {},
-        repos: {},
-        jobs: {},
         authors: {},
-        pulls: {},
         batches: {},
+        jobs: {},
+        pulls: {},
+        repos: {},
         states: {},
+        types: {},
     };
 
-    for (let i = 0; i < allBuilds.length; i++) {
-        const build = allBuilds[i];
+    for (const build of allBuilds) {
         opts.types[build.type] = true;
         if (build.refs.repo) {
             opts.repos[build.refs.repo] = true;
@@ -66,9 +63,7 @@ function optionsForRepo(repo: string): RepoOptions {
 function redrawOptions(fz: FuzzySearch, opts: RepoOptions) {
     const ts = Object.keys(opts.types).sort();
     const selectedType = addOptions(ts, "type") as JobType;
-    const rs = Object.keys(opts.repos).filter(function (r) {
-        return r !== "/";
-    }).sort();
+    const rs = Object.keys(opts.repos).filter((r) => r !== "/").sort();
     addOptions(rs, "repo");
     const js = Object.keys(opts.jobs).sort();
     const jobInput = document.getElementById("job-input") as HTMLInputElement;
@@ -81,9 +76,7 @@ function redrawOptions(fz: FuzzySearch, opts: RepoOptions) {
         opts.pulls = opts.batches;
     }
     if (selectedType !== "periodic" && selectedType !== "postsubmit") {
-        const ps = Object.keys(opts.pulls).sort(function (a, b) {
-            return parseInt(a) - parseInt(b);
-        });
+        const ps = Object.keys(opts.pulls).sort((a, b) => Number(a) - Number(b));
         addOptions(ps, "pull");
     } else {
         addOptions([], "pull");
@@ -175,7 +168,7 @@ function handleUpKey(): void {
     adjustScroll(previousSibling);
 }
 
-window.onload = function(): void {
+window.onload = (): void => {
     const topNavigator = document.getElementById("top-navigator")!;
     let navigatorTimeOut: number | undefined;
     const main = document.querySelector("main")! as HTMLElement;
@@ -206,14 +199,14 @@ window.onload = function(): void {
     // Register selection on change functions
     const filterBox = document.getElementById("filter-box")!;
     const options = filterBox.querySelectorAll("select")!;
-    options.forEach(opt => {
+    options.forEach((opt) => {
         opt.onchange = () => {
             redraw(fz);
         };
     });
     // Attach job status bar on click
     const stateFilter = document.getElementById("state")! as HTMLSelectElement;
-    document.querySelectorAll(".job-bar-state").forEach(jb => {
+    document.querySelectorAll(".job-bar-state").forEach((jb) => {
         const state = jb.id.slice("job-bar-".length);
         if (state === "unknown") {
             return;
@@ -229,7 +222,7 @@ window.onload = function(): void {
         "job",
         "job-input",
         "job-list",
-        Object.keys(opts["jobs"]).sort());
+        Object.keys(opts.jobs).sort());
     redrawOptions(fz, opts);
     redraw(fz);
 };
@@ -239,7 +232,7 @@ function displayFuzzySearchResult(el: HTMLElement, inputContainer: ClientRect | 
     el.style.top = inputContainer.height - 1 + "px";
     el.style.width = inputContainer.width + "px";
     el.style.height = 200 + "px";
-    el.style.zIndex = "9999"
+    el.style.zIndex = "9999";
 }
 
 function fuzzySearch(fz: FuzzySearch, id: string, list: HTMLElement, input: HTMLInputElement): void {
@@ -280,9 +273,7 @@ function registerFuzzySearchHandler(fz: FuzzySearch, id: string, list: HTMLEleme
         } else if (validToken(event.keyCode)) {
             // Delay 1 frame that the input character is recorded before getting
             // input value
-            setTimeout(function () {
-                fuzzySearch(fz, id, list, input);
-            }, 32);
+            setTimeout(() => fuzzySearch(fz, id, list, input), 32);
         }
     });
 }
@@ -306,22 +297,22 @@ function initFuzzySearch(id: string, inputId: string, listId: string,
 }
 
 function registerJobResultEventHandler(fz: FuzzySearch, li: HTMLElement, input: HTMLInputElement) {
-    li.addEventListener("mousedown", function (event) {
+    li.addEventListener("mousedown", (event) => {
         input.value = (event.currentTarget as HTMLElement).innerHTML;
         redraw(fz);
     });
-    li.addEventListener("mouseover", function (event) {
+    li.addEventListener("mouseover", (event) => {
         const selectedJobs = document.getElementsByClassName("job-selected");
         if (!selectedJobs) {
             return;
         }
 
-        for (let i = 0; i < selectedJobs.length; i++) {
-            selectedJobs[i].classList.remove("job-selected");
+        for (const job of Array.from(selectedJobs)) {
+            job.classList.remove("job-selected");
         }
         (event.currentTarget as HTMLElement).classList.add("job-selected");
     });
-    li.addEventListener("mouseout", function (event) {
+    li.addEventListener("mouseout", (event) => {
         (event.currentTarget as HTMLElement).classList.remove("job-selected");
     });
 }
@@ -336,9 +327,9 @@ function addOptionFuzzySearch(fz: FuzzySearch, data: string[], id: string,
         list.removeChild(list.firstChild);
     }
     list.scrollTop = 0;
-    for (let i = 0; i < data.length; i++) {
+    for (const datum of data) {
         const li = document.createElement("li");
-        li.innerHTML = data[i];
+        li.innerHTML = datum;
         registerJobResultEventHandler(fz, li, input);
         list.appendChild(li);
     }
@@ -350,10 +341,10 @@ function addOptions(options: string[], selectID: string): string | null {
         sel.removeChild(sel.lastChild!);
     }
     const param = getParameterByName(selectID);
-    for (let i = 0; i < options.length; i++) {
+    for (const option of options) {
         const o = document.createElement("option");
-        o.text = options[i];
-        if (param && options[i] === param) {
+        o.text = option;
+        if (param && option === param) {
             o.selected = true;
         }
         sel.appendChild(o);
@@ -362,23 +353,23 @@ function addOptions(options: string[], selectID: string): string | null {
 }
 
 function selectionText(sel: HTMLSelectElement): string {
-    return sel.selectedIndex == 0 ? "" : sel.options[sel.selectedIndex].text;
+    return sel.selectedIndex === 0 ? "" : sel.options[sel.selectedIndex].text;
 }
 
 function equalSelected(sel: string, t: string): boolean {
-    return sel === "" || sel == t;
+    return sel === "" || sel === t;
 }
 
 function groupKey(build: Job): string {
-    let pr = (build.refs.pulls && build.refs.pulls.length === 1) ? build.refs.pulls[0].number : 0;
-    return build.refs.repo + " " + pr + " " + build.refs_key;
+    const pr = (build.refs.pulls && build.refs.pulls.length === 1) ? build.refs.pulls[0].number : 0;
+    return `${build.refs.repo} ${pr} ${build.refs_key}`;
 }
 
 function redraw(fz: FuzzySearch): void {
     const modal = document.getElementById('rerun')!;
-    const rerun_command = document.getElementById('rerun-content')!;
-    window.onclick = function (event) {
-        if (event.target == modal) {
+    const rerunCommand = document.getElementById('rerun-content')!;
+    window.onclick = (event) => {
+        if (event.target === modal) {
             modal.style.display = "none";
         }
     };
@@ -396,7 +387,7 @@ function redraw(fz: FuzzySearch): void {
             return "";
         }
         if (sel !== "") {
-            args.push(name + "=" + encodeURIComponent(sel));
+            args.push(`${name}=${encodeURIComponent(sel)}`);
         }
         return sel;
     }
@@ -408,8 +399,7 @@ function redraw(fz: FuzzySearch): void {
             return "";
         }
         if (inputText !== "") {
-            args.push(id + "=" + encodeURIComponent(
-                inputText));
+            args.push(`${id}=${encodeURIComponent(inputText)}`);
         }
 
         return inputText;
@@ -431,7 +421,7 @@ function redraw(fz: FuzzySearch): void {
         if (args.length > 0) {
             history.replaceState(null, "", "/?" + args.join('&'));
         } else {
-            history.replaceState(null, "", "/")
+            history.replaceState(null, "", "/");
         }
     }
     fz.setDict(Object.keys(opts.jobs));
@@ -456,7 +446,7 @@ function redraw(fz: FuzzySearch): void {
         }
         if (build.type === "presubmit") {
             if (build.refs.pulls && build.refs.pulls.length > 0) {
-                let pull = build.refs.pulls[0];
+                const pull = build.refs.pulls[0];
                 if (!equalSelected(pullSel, pull.number.toString())) {
                     continue;
                 }
@@ -484,15 +474,15 @@ function redraw(fz: FuzzySearch): void {
         r.appendChild(cell.state(build.state));
         if (build.pod_name) {
             const icon = createIcon("description", "Build log");
-            icon.href = "log?job=" + build.job + "&id=" + build.build_id;
-            const cell = document.createElement("td");
-            cell.classList.add("icon-cell");
-            cell.appendChild(icon);
-            r.appendChild(cell);
+            icon.href = `log?job=${build.job}&id=${build.build_id}`;
+            const c = document.createElement("td");
+            c.classList.add("icon-cell");
+            c.appendChild(icon);
+            r.appendChild(c);
         } else {
             r.appendChild(cell.text(""));
         }
-        r.appendChild(createRerunCell(modal, rerun_command, build.prow_job));
+        r.appendChild(createRerunCell(modal, rerunCommand, build.prow_job));
         const key = groupKey(build);
         if (key !== lastKey) {
             // This is a different PR or commit than the previous row.
@@ -506,8 +496,7 @@ function redraw(fz: FuzzySearch): void {
                 if (!repoLink) {
                     repoLink = "https://github.com/" + build.refs.repo;
                 }
-                r.appendChild(cell.link(build.refs.org + "/" + build.refs.repo,
-                    repoLink));
+                r.appendChild(cell.link(`${build.refs.org}/${build.refs.repo}`, repoLink));
             }
             if (build.type === "presubmit") {
                 if (build.refs.pulls && build.refs.pulls.length > 0) {
@@ -531,11 +520,10 @@ function redraw(fz: FuzzySearch): void {
         if (spyglass) {
             const buildIndex = build.url.indexOf('/build/');
             if (buildIndex !== -1) {
-                const url = window.location.origin + '/view/gcs/' +
-                    build.url.substring(buildIndex + '/build/'.length);
+                const url = `${window.location.origin}/view/gcs/${build.url.substring(buildIndex + '/build/'.length)}`;
                 r.appendChild(createSpyglassCell(url));
             } else if (build.url.includes('/view/')) {
-                r.appendChild(createSpyglassCell(build.url))
+                r.appendChild(createSpyglassCell(build.url));
             } else {
                 r.appendChild(cell.text(''));
             }
@@ -548,12 +536,12 @@ function redraw(fz: FuzzySearch): void {
             r.appendChild(cell.link(build.job, build.url));
         }
 
-        r.appendChild(cell.time(i.toString(), moment.unix(parseInt(build.started))));
+        r.appendChild(cell.time(i.toString(), moment.unix(Number(build.started))));
         r.appendChild(cell.text(build.duration));
         builds.appendChild(r);
     }
     const jobCount = document.getElementById("job-count")!;
-    jobCount.textContent = "Showing " + Math.min(totalJob, 500) + "/" + totalJob + " jobs";
+    jobCount.textContent = `Showing ${Math.min(totalJob, 500)}/${totalJob} jobs`;
     drawJobBar(totalJob, jobCountMap);
 }
 
@@ -576,12 +564,12 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
 }
 
 // copyToClipboard is from https://stackoverflow.com/a/33928558
-// Copies a string to the clipboard. Must be called from within an 
+// Copies a string to the clipboard. Must be called from within an
 // event handler such as click. May return false if it failed, but
-// this is not always possible. Browser support for Chrome 43+, 
+// this is not always possible. Browser support for Chrome 43+,
 // Firefox 42+, Safari 10+, Edge and IE 10+.
 // IE: The clipboard feature may be disabled by an administrator. By
-// default a prompt is shown the first time the clipboard is 
+// default a prompt is shown the first time the clipboard is
 // used (per session).
 function copyToClipboard(text: string) {
     if (window.clipboardData && window.clipboardData.setData) {
@@ -617,7 +605,7 @@ function batchRevisionCell(build: Job): HTMLTableDataCellElement {
         return c;
     }
     for (let i = 1; i < build.refs.pulls.length; i++) {
-        if (i != 1) {
+        if (i !== 1) {
             c.appendChild(document.createTextNode(", "));
         }
         const l = document.createElement("a");
@@ -625,7 +613,7 @@ function batchRevisionCell(build: Job): HTMLTableDataCellElement {
         if (link) {
             l.href = link;
         } else {
-            l.href = "https://github.com/" + build.refs.repo + "/pull/" + build.refs.pulls[i].number;
+            l.href = `https://github.com/${build.refs.repo}/pull/${build.refs.pulls[i].number}`;
         }
         l.text = build.refs.pulls[i].number.toString();
         c.appendChild(document.createTextNode("#"));
@@ -654,7 +642,7 @@ function drawJobBar(total: number, jobCountMap: Map<JobState, number>): void {
       el.style.width = "0";
     } else {
       el.textContent = count.toString();
-      tt.textContent = count + " " + stateToAdj(state) + " jobs";
+      tt.textContent = `${count} ${stateToAdj(state)} jobs`;
       if (index === states.length - 1) {
         el.style.width = "auto";
       } else {
@@ -678,10 +666,10 @@ function stateToAdj(state: JobState): string {
 function createSpyglassCell(url: string): HTMLTableDataCellElement {
     const icon = createIcon('visibility', 'View in Spyglass');
     icon.href = url;
-    const cell = document.createElement('td');
-    cell.classList.add('icon-cell');
-    cell.appendChild(icon);
-    return cell;
+    const c = document.createElement('td');
+    c.classList.add('icon-cell');
+    c.appendChild(icon);
+    return c;
 }
 
 function createIcon(iconString: string, tooltip: string = ""): HTMLAnchorElement {
