@@ -6,7 +6,7 @@ declare const lenses: string[];
 
 // Loads views for this job
 function loadLenses(): void {
-  for (let lens of lenses) {
+  for (const lens of lenses) {
     const frame = document.querySelector<HTMLIFrameElement>(`#iframe-${lens}`)!;
     frame.src = urlForLensRequest(lens, 'iframe');
   }
@@ -14,8 +14,8 @@ function loadLenses(): void {
 
 function queryForLens(lens: string): string {
   const data = {
-    src,
     artifacts: lensArtifacts[lens],
+    src,
   };
   return `req=${encodeURIComponent(JSON.stringify(data))}`;
 }

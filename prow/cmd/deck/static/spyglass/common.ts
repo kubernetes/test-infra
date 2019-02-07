@@ -6,7 +6,7 @@ function isBaseMessage(data: any): data is BaseMessage {
   return typeof data.type === 'string';
 }
 
-export interface ContentUpdatedMessage extends BaseMessage{
+export interface ContentUpdatedMessage extends BaseMessage {
   type: 'contentUpdated';
   height: number;
 }

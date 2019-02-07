@@ -1,4 +1,4 @@
-import {Message, Response, isResponse, isTransitMessage} from './common';
+import {isResponse, isTransitMessage, Message, Response} from './common';
 
 export interface Spyglass {
   /**
@@ -42,19 +42,19 @@ class SpyglassImpl implements Spyglass {
     window.addEventListener('message', (e) => this.handleMessage(e));
   }
 
-  async updatePage(data: string): Promise<void> {
+  public async updatePage(data: string): Promise<void> {
     await this.postMessage({type: 'updatePage', data});
     this.contentUpdated();
   }
-  async requestPage(data: string): Promise<string> {
+  public async requestPage(data: string): Promise<string> {
     const result = await this.postMessage({type: 'requestPage', data});
     return result.data;
   }
-  async request(data: string): Promise<string> {
+  public async request(data: string): Promise<string> {
     const result = await this.postMessage({type: 'request', data});
     return result.data;
   }
-  contentUpdated(): void {
+  public contentUpdated(): void {
     // .then() to suppress complaints about unhandled promises (we just don't care here).
     this.postMessage({type: 'contentUpdated', height: document.body.offsetHeight}).then();
   }

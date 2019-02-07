@@ -5,9 +5,9 @@ export interface HistoryData {
 }
 
 export interface Record {
-	time:    string;
-	action:  string;
-	baseSHA?: string;
-	target?:  Pull[];
-	err?:     string;
+  time: string;
+  action: string;
+  baseSHA?: string;
+  target?: Pull[];
+  err?: string;
 }

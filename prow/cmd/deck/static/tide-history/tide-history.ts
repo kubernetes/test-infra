@@ -1,7 +1,7 @@
-import {cell} from "../common/common";
+import moment from "moment";
 import {JobState} from "../api/prow";
 import {HistoryData, Record} from "../api/tide-history";
-import moment from "moment";
+import {cell} from "../common/common";
 
 declare const tideHistory: HistoryData;
 
@@ -15,7 +15,7 @@ interface FilteredRecord extends Record {
 
 // http://stackoverflow.com/a/5158301/3694
 function getParameterByName(name: string): string | null {
-  const match = RegExp('[?&]' + name + '=([^&/]*)').exec(
+  const match = RegExp(`[?&]${name}=([^&/]*)`).exec(
     window.location.search);
   return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 }
@@ -31,12 +31,12 @@ interface Options {
 
 function optionsForRepoBranch(repo: string, branch: string): Options {
   const opts: Options = {
-    repos: {},
-    branchs: {},
     actions: {},
-    states: {},
     authors: {},
+    branchs: {},
     pulls: {},
+    repos: {},
+    states: {},
   };
 
   const hist: {[key: string]: Record[]} = typeof tideHistory !== 'undefined' ? tideHistory.History : {};
@@ -52,8 +52,8 @@ function optionsForRepoBranch(repo: string, branch: string): Options {
     opts.repos[recRepo] = true;
     if (!repo || repo === recRepo) {
       opts.branchs[recBranch] = true;
-      if (!branch || branch == recBranch) {
-        let recs = hist[poolKey];
+      if (!branch || branch === recBranch) {
+        const recs = hist[poolKey];
         for (const rec of recs) {
           opts.actions[rec.action] = true;
           opts.states[errorState(rec.err)] = true;
@@ -70,7 +70,7 @@ function optionsForRepoBranch(repo: string, branch: string): Options {
 }
 
 function errorState(err?: string): JobState {
-  return err ? "failure" : "success"
+  return err ? "failure" : "success";
 }
 
 function redrawOptions(opts: Options) {
@@ -83,13 +83,13 @@ function redrawOptions(opts: Options) {
   const authors = Object.keys(opts.authors).sort(
     (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
   addOptions(authors, "author");
-  const pulls = Object.keys(opts.pulls).sort((a, b) => parseInt(a) - parseInt(b));
+  const pulls = Object.keys(opts.pulls).sort((a, b) => Number(a) - Number(b));
   addOptions(pulls, "pull");
   const states = Object.keys(opts.states).sort();
   addOptions(states, "state");
 }
 
-window.onload = function(): void {
+window.onload = (): void => {
   const topNavigator = document.getElementById("top-navigator")!;
   let navigatorTimeOut: number | undefined;
   const main = document.querySelector("main")! as HTMLElement;
@@ -113,7 +113,7 @@ window.onload = function(): void {
   // Register selection on change functions
   const filterBox = document.getElementById("filter-box")!;
   const options = filterBox.querySelectorAll("select")!;
-  options.forEach(opt => {
+  options.forEach((opt) => {
       opt.onchange = () => {
           redraw();
       };
@@ -130,11 +130,11 @@ function addOptions(options: string[], selectID: string): string | null {
     sel.removeChild(sel.lastChild!);
   }
   const param = getParameterByName(selectID);
-  for (let i = 0; i < options.length; i++) {
+  for (const option of options) {
     const o = document.createElement("option");
-    o.value = options[i];
+    o.value = option;
     o.text = o.value;
-    if (param && options[i] === param) {
+    if (param && option === param) {
       o.selected = true;
     }
     sel.appendChild(o);
@@ -143,7 +143,7 @@ function addOptions(options: string[], selectID: string): string | null {
 }
 
 function equalSelected(sel: string, t: string): boolean {
-  return sel === "" || sel == t;
+  return sel === "" || sel === t;
 }
 
 function redraw(): void {
@@ -155,7 +155,7 @@ function redraw(): void {
       return "";
     }
     if (sel !== "") {
-      args.push(name + "=" + encodeURIComponent(sel));
+      args.push(`${name}=${encodeURIComponent(sel)}`);
     }
     return sel;
   }
@@ -175,7 +175,7 @@ function redraw(): void {
     if (args.length > 0) {
       history.replaceState(null, "", "/tide-history?" + args.join('&'));
     } else {
-      history.replaceState(null, "", "/tide-history")
+      history.replaceState(null, "", "/tide-history");
     }
   }
   redrawOptions(opts);
@@ -185,8 +185,8 @@ function redraw(): void {
   const poolKeys = Object.keys(hist);
   for (const poolKey of poolKeys) {
     const match = RegExp('(.*?):(.*)').exec(poolKey);
-    if (!match || match.length != 3) {
-      return
+    if (!match || match.length !== 3) {
+      return;
     }
     const repo = match[1];
     const branch = match[2];
@@ -223,7 +223,7 @@ function redraw(): void {
         continue;
       }
 
-      const filtered = <FilteredRecord>rec;
+      const filtered = rec as FilteredRecord;
       filtered.repo = repo;
       filtered.branch = branch;
       filteredRecs.push(filtered);
@@ -255,13 +255,13 @@ function redrawRecords(recs: FilteredRecord[]): void {
       r.className = "changed";
 
       r.appendChild(cell.link(
-        rec.repo + " " + rec.branch,
-        "https://github.com/" + rec.repo + "/tree/" + rec.branch,
+        `${rec.repo} ${rec.branch}`,
+        `https://github.com/${rec.repo}/tree/${rec.branch}`,
       ));
       if (rec.baseSHA) {
           r.appendChild(cell.link(
-            rec.baseSHA.slice(0,7),
-            "https://github.com/" + rec.repo + "/commit/" + rec.baseSHA,
+            rec.baseSHA.slice(0, 7),
+            `https://github.com/${rec.repo}/commit/${rec.baseSHA}`,
           ));
       } else {
           r.appendChild(cell.text(""));
@@ -286,21 +286,22 @@ function targetCell(rec: FilteredRecord): HTMLTableDataCellElement {
   switch (target.length) {
     case 0:
       return cell.text("");
-    case 1:
-      let pr = target[0];
+    case 1: {
+      const pr = target[0];
       return cell.prRevision(rec.repo, pr);
-    default:
+    }
+    default: {
       // Multiple PRs in 'target'. Add them all to the cell, but on separate lines.
-      let td = document.createElement("td");
+      const td = document.createElement("td");
       td.style.whiteSpace = "pre";
       for (const pr of target) {
         cell.addPRRevision(td, rec.repo, pr);
         td.appendChild(document.createTextNode("\n"));
       }
       return td;
-   }
+    }
+  }
 }
-
 
 let idCounter = 0;
 function nextID(): string {
