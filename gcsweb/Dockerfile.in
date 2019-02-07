@@ -14,8 +14,6 @@
 
 FROM gcr.io/distroless/static
 
-MAINTAINER Tim Hockin <thockin@google.com>
-
 ADD passwd /etc/passwd
 USER nobody:nobody
 
