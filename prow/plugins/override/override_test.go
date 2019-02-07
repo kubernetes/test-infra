@@ -412,7 +412,9 @@ func TestHandle(t *testing.T) {
 			},
 			presubmits: map[string]config.Presubmit{
 				"prow-job": {
-					Context: "prow-job",
+					Reporter: config.Reporter{
+						Context: "prow-job",
+					},
 				},
 			},
 			jobs: sets.NewString("prow-job"),

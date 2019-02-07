@@ -56,6 +56,7 @@ func TestPostsubmitSpec(t *testing.T) {
 					PathAlias: "foo",
 					CloneURI:  "bar",
 				},
+				Report: true,
 			},
 		},
 		{
@@ -70,6 +71,7 @@ func TestPostsubmitSpec(t *testing.T) {
 					PathAlias: "fancy",
 					CloneURI:  "cats",
 				},
+				Report: true,
 			},
 		},
 		{
@@ -92,6 +94,7 @@ func TestPostsubmitSpec(t *testing.T) {
 					PathAlias: "foo",
 					CloneURI:  "bar",
 				},
+				Report: true,
 			},
 		},
 	}

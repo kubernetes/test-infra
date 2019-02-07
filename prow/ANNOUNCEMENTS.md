@@ -2,7 +2,7 @@
 
 New features added to each component:
  - *February 6, 2019* prow (both plank and crier) will set status on the commit
-   for postsubmit jobs on github. You can add `Skip_Report: true` to opt-out of
+   for postsubmit jobs on github. You can add `skip_report: true` to opt-out of
    reporting.
  - *January 15, 2019* `approve` now considers self-approval and github review
    state by default. Configure with `require_self_approval` and

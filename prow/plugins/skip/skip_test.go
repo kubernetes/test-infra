@@ -44,13 +44,19 @@ func TestSkipStatus(t *testing.T) {
 
 			presubmits: []config.Presubmit{
 				{
-					Context: "passing-tests",
+					Reporter: config.Reporter{
+						Context: "passing-tests",
+					},
 				},
 				{
-					Context: "failed-tests",
+					Reporter: config.Reporter{
+						Context: "failed-tests",
+					},
 				},
 				{
-					Context: "pending-tests",
+					Reporter: config.Reporter{
+						Context: "pending-tests",
+					},
 				},
 			},
 			sha: "shalala",
@@ -98,11 +104,15 @@ func TestSkipStatus(t *testing.T) {
 			presubmits: []config.Presubmit{
 				{
 					Optional: true,
-					Context:  "failed-tests",
+					Reporter: config.Reporter{
+						Context: "failed-tests",
+					},
 				},
 				{
 					Optional: true,
-					Context:  "pending-tests",
+					Reporter: config.Reporter{
+						Context: "pending-tests",
+					},
 				},
 			},
 			sha: "shalala",
@@ -144,7 +154,9 @@ func TestSkipStatus(t *testing.T) {
 			presubmits: []config.Presubmit{
 				{
 					Optional: true,
-					Context:  "untriggered-tests",
+					Reporter: config.Reporter{
+						Context: "untriggered-tests",
+					},
 				},
 			},
 			sha: "shalala",
@@ -166,7 +178,9 @@ func TestSkipStatus(t *testing.T) {
 			presubmits: []config.Presubmit{
 				{
 					Optional: true,
-					Context:  "succeeded-tests",
+					Reporter: config.Reporter{
+						Context: "succeeded-tests",
+					},
 				},
 			},
 			sha: "shalala",
@@ -200,7 +214,9 @@ func TestSkipStatus(t *testing.T) {
 					Optional:     true,
 					Trigger:      `(?m)^/test (?:.*? )?job(?: .*?)?$`,
 					RerunCommand: "/test job",
-					Context:      "failed-tests",
+					Reporter: config.Reporter{
+						Context: "failed-tests",
+					},
 				},
 			},
 			sha: "shalala",
