@@ -3,6 +3,7 @@
 # gazelle:exclude vendor/k8s.io/code-generator/_examples/
 
 load("@io_kubernetes_build//defs:run_in_workspace.bzl", "workspace_binary")
+load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
 
 workspace_binary(
     name = "go",
@@ -74,6 +75,14 @@ workspace_binary(
         "--cfg-path=./hack/.kazelcfg.json",
     ],
     cmd = "@io_kubernetes_build//kazel",
+)
+
+nodejs_binary(
+    name = "tslint",
+    data = [
+        "@npm//tslint",
+    ],
+    entry_point = "tslint/bin/tslint",
 )
 
 filegroup(
