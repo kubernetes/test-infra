@@ -25,7 +25,7 @@ REGISTRY ?= staging-k8s.gcr.io
 ARCH ?= amd64
 
 # The version string.
-VERSION := v1.0.6
+VERSION := v1.1.0
 
 ###
 ### These variables should not need tweaking.
@@ -33,28 +33,14 @@ VERSION := v1.0.6
 
 SRC_DIRS := cmd pkg # directories which hold app source (not vendored)
 
-# Other architectures are not supported because I don't know how to get CA
-# certs for busybox.
-#   arm arm64 ppc64le
-ALL_ARCH := amd64
+ALL_ARCH := amd64 arm arm64 ppc64le s390x
 
-# Set default base image dynamically for each arch
-ifeq ($(ARCH),amd64)
-    BASEIMAGE?=alpine
-endif
-ifeq ($(ARCH),arm)
-    BASEIMAGE?=armel/busybox
-endif
-ifeq ($(ARCH),arm64)
-    BASEIMAGE?=aarch64/busybox
-endif
-ifeq ($(ARCH),ppc64le)
-    BASEIMAGE?=ppc64le/busybox
-endif
+IMAGE := $(REGISTRY)/$(BIN)
 
-IMAGE := $(REGISTRY)/$(BIN)-$(ARCH)
+BUILD_IMAGE ?= golang:1.11.5
 
-BUILD_IMAGE ?= golang:1.9.3-alpine
+# This option is for running docker manifest command
+export DOCKER_CLI_EXPERIMENTAL := enabled
 
 # If you want to build all binaries, see the 'all-build' rule.
 # If you want to build all containers, see the 'all-container' rule.
@@ -74,7 +60,7 @@ all-build: $(addprefix build-, $(ALL_ARCH))
 
 all-container: $(addprefix container-, $(ALL_ARCH))
 
-all-push: $(addprefix push-, $(ALL_ARCH))
+all-push-images: $(addprefix push-, $(ALL_ARCH))
 
 build: bin/$(ARCH)/$(BIN)
 
@@ -97,28 +83,28 @@ bin/$(ARCH)/$(BIN): build-dirs
 	        ./build/build.sh                                               \
 	    "
 
-DOTFILE_IMAGE = $(subst /,_,$(IMAGE))-$(VERSION)
+DOTFILE_IMAGE = $(subst /,_,$(IMAGE))-$(ARCH)-$(VERSION)
 
 container: .container-$(DOTFILE_IMAGE) container-name
 .container-$(DOTFILE_IMAGE): bin/$(ARCH)/$(BIN) Dockerfile.in
 	@sed \
 	    -e 's|ARG_BIN|$(BIN)|g' \
 	    -e 's|ARG_ARCH|$(ARCH)|g' \
-	    -e 's|ARG_FROM|$(BASEIMAGE)|g' \
 	    Dockerfile.in > .dockerfile-$(ARCH)
-	@docker build -t $(IMAGE):$(VERSION) -f .dockerfile-$(ARCH) .
-	@docker images -q $(IMAGE):$(VERSION) > $@
+	@chmod -R go+r icons styles
+	@docker build --pull -t $(IMAGE)-$(ARCH):$(VERSION) -f .dockerfile-$(ARCH) .
+	@docker images -q $(IMAGE)-$(ARCH):$(VERSION) > $@
 
 container-name:
-	@echo "container: $(IMAGE):$(VERSION)"
+	@echo "container: $(IMAGE)-$(ARCH):$(VERSION)"
 
 push: .push-$(DOTFILE_IMAGE) push-name
 .push-$(DOTFILE_IMAGE): .container-$(DOTFILE_IMAGE)
-	@docker push $(IMAGE):$(VERSION)
-	@docker images -q $(IMAGE):$(VERSION) > $@
+	@docker push $(IMAGE)-$(ARCH):$(VERSION)
+	@docker images -q $(IMAGE)-$(ARCH):$(VERSION) > $@
 
 push-name:
-	@echo "pushed: $(IMAGE):$(VERSION)"
+	@echo "pushed: $(IMAGE)-$(ARCH):$(VERSION)"
 
 version:
 	@echo $(VERSION)
@@ -148,3 +134,10 @@ container-clean:
 
 bin-clean:
 	rm -rf .go bin
+
+all-push: all-push-images push-manifest
+
+push-manifest:
+	docker manifest create --amend $(IMAGE):$(VERSION) $(shell echo $(ALL_ARCH) | sed -e "s~[^ ]*~$(IMAGE)\-&:$(VERSION)~g")
+	@for arch in $(ALL_ARCH); do docker manifest annotate --arch $${arch} $(IMAGE):$(VERSION) $(IMAGE)-$${arch}:$(VERSION); done
+	docker manifest push --purge $(IMAGE):$(VERSION)
