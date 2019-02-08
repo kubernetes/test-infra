@@ -21,6 +21,7 @@ package localgit
 import (
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -48,7 +49,7 @@ func New() (*LocalGit, *git.Client, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	c, err := git.NewClient()
+	c, err := git.NewClient(&url.URL{Host: "https://github.com"})
 	if err != nil {
 		os.RemoveAll(t)
 		return nil, nil, err
@@ -60,7 +61,11 @@ func New() (*LocalGit, *git.Client, error) {
 
 	c.SetCredentials("", getSecret)
 
-	c.SetRemote(t)
+	c.SetRemote(&url.URL{
+		Scheme: "file",
+		Host:   "",
+		Path:   t,
+	})
 	return &LocalGit{
 		Dir: t,
 		Git: g,

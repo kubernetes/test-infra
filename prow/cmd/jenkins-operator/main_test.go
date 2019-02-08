@@ -33,7 +33,10 @@ func TestOptions_Validate(t *testing.T) {
 			input: options{
 				jenkinsURL:       "https://example.com",
 				jenkinsTokenFile: "secret",
-				github:           flagutil.GitHubOptions{TokenPath: "token"},
+				github: flagutil.GitHubOptions{
+					GitEndpoint: "https://github.com",
+					TokenPath:   "token",
+				},
 			},
 			expectedErr: false,
 		},
@@ -42,7 +45,10 @@ func TestOptions_Validate(t *testing.T) {
 			input: options{
 				jenkinsURL:             "https://example.com",
 				jenkinsBearerTokenFile: "secret",
-				github:                 flagutil.GitHubOptions{TokenPath: "token"},
+				github: flagutil.GitHubOptions{
+					GitEndpoint: "https://github.com",
+					TokenPath:   "token",
+				},
 			},
 			expectedErr: false,
 		},
@@ -52,7 +58,10 @@ func TestOptions_Validate(t *testing.T) {
 				jenkinsURL:             "https://example.com",
 				jenkinsTokenFile:       "secret",
 				jenkinsBearerTokenFile: "other",
-				github:                 flagutil.GitHubOptions{TokenPath: "token"},
+				github: flagutil.GitHubOptions{
+					GitEndpoint: "https://github.com",
+					TokenPath:   "token",
+				},
 			},
 			expectedErr: true,
 		},
@@ -64,7 +73,10 @@ func TestOptions_Validate(t *testing.T) {
 				certFile:         "cert",
 				keyFile:          "key",
 				caCertFile:       "cacert",
-				github:           flagutil.GitHubOptions{TokenPath: "token"},
+				github: flagutil.GitHubOptions{
+					GitEndpoint: "https://github.com",
+					TokenPath:   "token",
+				},
 			},
 			expectedErr: false,
 		},
@@ -75,7 +87,10 @@ func TestOptions_Validate(t *testing.T) {
 				jenkinsTokenFile: "secret",
 				certFile:         "cert",
 				keyFile:          "key",
-				github:           flagutil.GitHubOptions{TokenPath: "token"},
+				github: flagutil.GitHubOptions{
+					GitEndpoint: "https://github.com",
+					TokenPath:   "token",
+				},
 			},
 			expectedErr: true,
 		},
@@ -86,7 +101,10 @@ func TestOptions_Validate(t *testing.T) {
 				jenkinsTokenFile: "secret",
 				keyFile:          "key",
 				caCertFile:       "cacert",
-				github:           flagutil.GitHubOptions{TokenPath: "token"},
+				github: flagutil.GitHubOptions{
+					GitEndpoint: "https://github.com",
+					TokenPath:   "token",
+				},
 			},
 			expectedErr: true,
 		},
@@ -97,7 +115,10 @@ func TestOptions_Validate(t *testing.T) {
 				jenkinsTokenFile: "secret",
 				certFile:         "cert",
 				caCertFile:       "cacert",
-				github:           flagutil.GitHubOptions{TokenPath: "token"},
+				github: flagutil.GitHubOptions{
+					GitEndpoint: "https://github.com",
+					TokenPath:   "token",
+				},
 			},
 			expectedErr: true,
 		},

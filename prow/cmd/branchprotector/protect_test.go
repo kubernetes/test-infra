@@ -42,7 +42,10 @@ func TestOptions_Validate(t *testing.T) {
 			name: "all ok",
 			opt: options{
 				config: "dummy",
-				github: flagutil.GitHubOptions{TokenPath: "fake"},
+				github: flagutil.GitHubOptions{
+					GitEndpoint: "https://github.com",
+					TokenPath:   "fake",
+				},
 			},
 			expectedErr: false,
 		},
@@ -50,7 +53,10 @@ func TestOptions_Validate(t *testing.T) {
 			name: "no config",
 			opt: options{
 				config: "",
-				github: flagutil.GitHubOptions{TokenPath: "fake"},
+				github: flagutil.GitHubOptions{
+					GitEndpoint: "https://github.com",
+					TokenPath:   "fake",
+				},
 			},
 			expectedErr: true,
 		},
@@ -58,6 +64,9 @@ func TestOptions_Validate(t *testing.T) {
 			name: "no token, allow",
 			opt: options{
 				config: "dummy",
+				github: flagutil.GitHubOptions{
+					GitEndpoint: "https://github.com",
+				},
 			},
 			expectedErr: false,
 		},
