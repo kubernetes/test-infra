@@ -40,12 +40,18 @@ const (
 var (
 	addLGTMLabelNotification   = "LGTM label has been added.  <details>Git tree hash: %s</details>"
 	addLGTMLabelNotificationRe = regexp.MustCompile(fmt.Sprintf(addLGTMLabelNotification, "(.*)"))
+	configInfoReviewActsAsLgtm = `Reviews of "approve" or "request changes" act as adding or removing LGTM.`
+	configInfoStoreTreeHash    = `Squashing commits does not remove LGTM.`
 	// LGTMLabel is the name of the lgtm label applied by the lgtm plugin
 	LGTMLabel           = labels.LGTM
 	lgtmRe              = regexp.MustCompile(`(?mi)^/lgtm(?: no-issue)?\s*$`)
 	lgtmCancelRe        = regexp.MustCompile(`(?mi)^/lgtm cancel\s*$`)
 	removeLGTMLabelNoti = "New changes are detected. LGTM label has been removed."
 )
+
+func configInfoStickyLgtmTeam(team string) string {
+	return fmt.Sprintf(`Commits from "%s" do not remove LGTM.`, team)
+}
 
 type commentPruner interface {
 	PruneComments(shouldPrune func(github.IssueComment) bool)
@@ -60,9 +66,41 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	// The Config field is omitted because this plugin is not configurable.
+	configInfo := map[string]string{}
+	for _, orgRepo := range enabledRepos {
+		parts := strings.Split(orgRepo, "/")
+		var opts *plugins.Lgtm
+		switch len(parts) {
+		case 1:
+			opts = optionsForRepo(config, orgRepo, "")
+		case 2:
+			opts = optionsForRepo(config, parts[0], parts[1])
+		default:
+			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", orgRepo)
+		}
+		var isConfigured bool
+		var configInfoStrings []string
+		configInfoStrings = append(configInfoStrings, "The plugin has the following configuration:<ul>")
+		if opts.ReviewActsAsLgtm {
+			configInfoStrings = append(configInfoStrings, "<li>"+configInfoReviewActsAsLgtm+"</li>")
+			isConfigured = true
+		}
+		if opts.StoreTreeHash {
+			configInfoStrings = append(configInfoStrings, "<li>"+configInfoStoreTreeHash+"</li>")
+			isConfigured = true
+		}
+		if opts.StickyLgtmTeam != "" {
+			configInfoStrings = append(configInfoStrings, "<li>"+configInfoStickyLgtmTeam(opts.StickyLgtmTeam)+"</li>")
+			isConfigured = true
+		}
+		configInfoStrings = append(configInfoStrings, fmt.Sprintf("</ul>"))
+		if isConfigured {
+			configInfo[orgRepo] = strings.Join(configInfoStrings, "\n")
+		}
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The lgtm plugin manages the application and removal of the 'lgtm' (Looks Good To Me) label which is typically used to gate merging.",
+		Config:      configInfo,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/lgtm [cancel] or Github Review action",
