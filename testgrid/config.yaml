@@ -585,9 +585,6 @@ test_groups:
   num_failures_to_alert: 1
 - name: ci-kubernetes-kubemark-100-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-canary
-- name: ci-kubernetes-kubemark-5-gce-last-release
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-gce-last-release
-  num_failures_to_alert: 1
 - name: ci-kubernetes-kubemark-500-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-500-gce
   num_failures_to_alert: 1
@@ -6518,8 +6515,6 @@ dashboards:
 
 - name: sig-scalability-kubemark
   dashboard_tab:
-  - name: kubemark-small-last-release
-    test_group_name: ci-kubernetes-kubemark-5-gce-last-release
   - name: kubemark-100
     test_group_name: ci-kubernetes-kubemark-100-gce
   - name: kubemark-100-high-density
