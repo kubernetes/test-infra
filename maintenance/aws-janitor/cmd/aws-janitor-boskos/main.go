@@ -52,13 +52,14 @@ func main() {
 
 func run(boskos *client.Client) error {
 	for {
-		if res, err := boskos.Acquire(awsboskos.ResourceType, common.Dirty, common.Cleaning); errors.Cause(err) == client.NotFoundErr {
+		if res, err := boskos.Acquire(awsboskos.ResourceType, common.Dirty, common.Cleaning); errors.Cause(err) == client.ErrNotFound {
+			logrus.Info("no resource acquired. Sleeping.")
 			time.Sleep(sleepTime)
 			continue
 		} else if err != nil {
 			return errors.Wrap(err, "Couldn't retrieve resources from Boskos")
 		} else {
-			logrus.Infof("Acquired resource %q", res.Name)
+			logrus.WithField("name", res.Name).Info("Acquired resource")
 			if err := cleanResource(res); err != nil {
 				return errors.Wrapf(err, "Couldn't clean resource %q", res.Name)
 			}
@@ -80,11 +81,16 @@ func cleanResource(res *common.Resource) error {
 		return errors.Wrapf(err, "Failed to create AWS session")
 
 	}
+	logrus.WithField("name", res.Name).Info("beginning cleaning")
+	start := time.Now()
 
 	if err := cleanAll(s); err != nil {
 		return errors.Wrapf(err, "Failed to clean resource %q", res.Name)
 	}
-	logrus.Infof("Finished cleaning %q", res.Name)
+
+	duration := time.Since(start)
+
+	logrus.WithFields(logrus.Fields{"name": res.Name, "duration": duration.Seconds()}).Info("Finished cleaning")
 	return nil
 }
 
