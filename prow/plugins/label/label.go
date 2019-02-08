@@ -43,9 +43,17 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	// The Config field is omitted because this plugin is not configurable.
+	labels := []string{"kind", "priority", "area"}
+	labels = append(labels, config.Label.AdditionalLabels...)
+	var formattedLabels []string
+	for _, label := range labels {
+		formattedLabels = append(formattedLabels, fmt.Sprintf(`"%s/*"`, label))
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The label plugin provides commands that add or remove certain types of labels. Labels of the following types can be manipulated: 'area/*', 'committee/*', 'kind/*', 'language/*', 'priority/*', 'sig/*', 'triage/*', and 'wg/*'. More labels can be configured to be used via the /label command.",
+		Config: map[string]string{
+			"": fmt.Sprintf("The label plugin will work on %s and %s labels.", strings.Join(formattedLabels[:len(formattedLabels)-2], ", "), formattedLabels[len(formattedLabels)-1]),
+		},
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/[remove-](area|committee|kind|language|priority|sig|triage|wg|label) <target>",
