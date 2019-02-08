@@ -42,13 +42,14 @@ type Finished struct {
 
 // Build points to a build stored under a particular gcs prefix.
 type Build struct {
-	Bucket  *storage.BucketHandle
-	Context context.Context
-	Prefix  string
+	Bucket     *storage.BucketHandle
+	Context    context.Context
+	Prefix     string
+	BucketPath string
 }
 
 func (build Build) String() string {
-	return build.Prefix
+	return "gs://" + build.BucketPath + "/" + build.Prefix
 }
 
 // junit_CONTEXT_TIMESTAMP_THREAD.xml
@@ -117,7 +118,7 @@ func (build Build) Finished() (*Finished, error) {
 
 // Artifacts writes the object name of all paths under the build's artifact dir to the output channel.
 func (build Build) Artifacts(artifacts chan<- string) error {
-	pref := build.Prefix + "artifacts/"
+	pref := build.Prefix
 	objs := build.Bucket.Objects(build.Context, &storage.Query{Prefix: pref})
 	for {
 		obj, err := objs.Next()
@@ -159,6 +160,7 @@ func readSuites(ctx context.Context, obj *storage.ObjectHandle) (*junit.Suites, 
 type SuitesMeta struct {
 	Suites   junit.Suites      // suites data extracted from file contents
 	Metadata map[string]string // metadata extracted from path name
+	Path     string
 }
 
 // Suites takes a channel of artifact names, parses those representing junit suites, writing the result to the suites channel.
@@ -191,6 +193,7 @@ func (build Build) Suites(artifacts <-chan string, suites chan<- SuitesMeta) err
 			out := SuitesMeta{
 				Suites:   *suitesData,
 				Metadata: meta,
+				Path:     "gs://" + build.BucketPath + "/" + art,
 			}
 			select {
 			case <-ctx.Done():
