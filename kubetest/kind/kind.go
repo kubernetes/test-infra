@@ -202,6 +202,8 @@ func (d *Deployer) prepareKindBinary() error {
 		if err := downloadFromURL(url, f); err != nil {
 			return err
 		}
+	default:
+		return fmt.Errorf("uknown kind binary version value: %s", d.kindBinaryVersion)
 	}
 	return nil
 }
