@@ -40,10 +40,11 @@ function optionsForRepo(repo: string): RepoOptions {
 
     for (const build of allBuilds) {
         opts.types[build.type] = true;
-        if (build.refs.repo) {
-            opts.repos[build.refs.repo] = true;
+        const repoKey = `${build.refs.org}/${build.refs.repo}`;
+        if (repoKey) {
+            opts.repos[repoKey] = true;
         }
-        if (!repo || repo === build.refs.repo) {
+        if (!repo || repo === repoKey) {
             opts.jobs[build.job] = true;
             opts.states[build.state] = true;
             if (build.type === "presubmit" &&
@@ -435,7 +436,7 @@ function redraw(fz: FuzzySearch): void {
         if (!equalSelected(typeSel, build.type)) {
             continue;
         }
-        if (!equalSelected(repoSel, build.refs.repo)) {
+        if (!equalSelected(repoSel, `${build.refs.org}/${build.refs.repo}`)) {
             continue;
         }
         if (!equalSelected(stateSel, build.state)) {
