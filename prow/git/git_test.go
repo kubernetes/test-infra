@@ -18,6 +18,7 @@ package git_test
 
 import (
 	"bytes"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -136,7 +137,7 @@ func TestCheckoutPR(t *testing.T) {
 }
 
 func TestNewClient(t *testing.T) {
-	gitURL := "https://github.mycorp.com"
+	gitURL, _ := url.Parse("https://github.mycorp.com")
 	t.Logf("Verifying client is created with correct base endpoint.")
 	a, err := git.NewClient(gitURL)
 	if err != nil {
@@ -150,7 +151,7 @@ func TestNewClient(t *testing.T) {
 func TestRemote(t *testing.T) {
 	tests := []struct {
 		name      string
-		base      string
+		base      *url.URL
 		user      string
 		pass      string
 		pathItems string
@@ -159,7 +160,7 @@ func TestRemote(t *testing.T) {
 	}{
 		{
 			name:      "A valid remote url, with user, and password, no path",
-			base:      "https://github.com",
+			base:      &url.URL{Scheme: "https", Host: "github.com"},
 			user:      "user",
 			pass:      "pass",
 			pathItems: "",
@@ -167,7 +168,7 @@ func TestRemote(t *testing.T) {
 		},
 		{
 			name:      "A valid remote url, with user, password, organization, and repository",
-			base:      "https://github.com",
+			base:      &url.URL{Scheme: "https", Host: "github.com"},
 			user:      "user",
 			pass:      "pass",
 			pathItems: "user/repo",
@@ -181,7 +182,7 @@ func TestRemote(t *testing.T) {
 			t.Fatalf("Error creating git remote: %+v", err)
 		}
 		if test.expected != testURL.String() {
-			t.Errorf("git remote did not match expected remote: %v", err)
+			t.Errorf(`git remote did not match expected remote: expected: "%v" actual: "%v"`, test.expected, testURL)
 		}
 	}
 }

@@ -51,7 +51,7 @@ type Client struct {
 	git string
 	// base is the base path for git clone calls. For users it will be set to
 	// GitHub, but for tests set it to a directory with git repos.
-	base string
+	base *url.URL
 
 	// The mutex protects repoLocks which protect individual repos. This is
 	// necessary because Clone calls for the same repo are racy. Rather than
@@ -68,7 +68,7 @@ func (c *Client) Clean() error {
 
 // NewClient returns a client that talks to GitHub. It will fail if git is not
 // in the PATH.
-func NewClient(base string) (*Client, error) {
+func NewClient(base *url.URL) (*Client, error) {
 	g, err := exec.LookPath("git")
 	if err != nil {
 		return nil, err
@@ -89,7 +89,7 @@ func NewClient(base string) (*Client, error) {
 // SetRemote sets the remote for the client. This is not thread-safe, and is
 // useful for testing. The client will clone from remote/org/repo, and Repo
 // objects spun out of the client will also hit that path.
-func (c *Client) SetRemote(remote string) {
+func (c *Client) SetRemote(remote *url.URL) {
 	c.base = remote
 }
 
@@ -108,8 +108,8 @@ func (c *Client) getCredentials() (string, string) {
 	return c.user, string(c.tokenGenerator())
 }
 
-// GetBase returns Client.base as a string
-func (c *Client) GetBase() string {
+// GetBase returns Client.base as a *url.URL
+func (c *Client) GetBase() *url.URL {
 	return c.base
 }
 
@@ -146,7 +146,7 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 		if err != nil {
 			return nil, err
 		}
-		base = gitURL.String()
+		base = gitURL
 	}
 	cache := filepath.Join(c.dir, repo) + ".git"
 	if _, err := os.Stat(cache); os.IsNotExist(err) {
@@ -155,7 +155,7 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 		if err := os.MkdirAll(filepath.Dir(cache), os.ModePerm); err != nil && !os.IsExist(err) {
 			return nil, err
 		}
-		remote := fmt.Sprintf("%s/%s", base, repo)
+		remote := fmt.Sprintf("%s/%s", base.Path, repo)
 		if b, err := retryCmd(c.logger, "", c.git, "clone", "--mirror", remote, cache); err != nil {
 			return nil, fmt.Errorf("git cache clone error: %v. output: %s", err, string(b))
 		}
@@ -195,7 +195,7 @@ type Repo struct {
 	// git is the path to the git binary.
 	git string
 	// base is the base path for remote git fetch calls.
-	base string
+	base *url.URL
 	// repo is the full repo name: "org/repo".
 	repo string
 	// user is used for pushing to the remote repo.
@@ -302,11 +302,6 @@ func (r *Repo) Push(repo, branch string) error {
 		return fmt.Errorf("Remote error: %v", err)
 	}
 
-	// We can't push without user and repo in remote path
-	if !strings.Contains(remote.String(), strings.Join([]string{r.user, repo}, "/")) {
-		return errors.New("git remote must contain :user and :repo to push")
-	}
-
 	co := r.gitCommand("push", remote.String(), branch)
 	_, err = co.CombinedOutput()
 	return err
@@ -315,7 +310,8 @@ func (r *Repo) Push(repo, branch string) error {
 // CheckoutPullRequest does exactly that.
 func (r *Repo) CheckoutPullRequest(number int) error {
 	r.logger.Infof("Fetching and checking out %s#%d.", r.repo, number)
-	if b, err := retryCmd(r.logger, r.Dir, r.git, "fetch", r.base+"/"+r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number)); err != nil {
+	//r.base.Path = strings.Join([]string{r.base.Path, r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number)}, "/")
+	if b, err := retryCmd(r.logger, r.Dir, r.git, "fetch", r.base.String()+"/"+r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number)); err != nil {
 		return fmt.Errorf("git fetch failed for PR %d: %v. output: %s", number, err, string(b))
 	}
 	co := r.gitCommand("checkout", fmt.Sprintf("pull%d", number))
@@ -335,14 +331,10 @@ func (r *Repo) Config(key, value string) error {
 }
 
 // Remote builds a remote url from user, pasword, and a slice of path items
-func Remote(base string, user string, pass string, pathItems ...string) (*url.URL, error) {
-	newURL, err := url.Parse(base)
-	if err != nil {
-		return nil, fmt.Errorf("Error while parsing base: %v", err)
-	}
-	newURL.User = url.UserPassword(user, pass)
-	newURL.Path = strings.Join(pathItems, "/")
-	return newURL, nil
+func Remote(base *url.URL, user string, pass string, pathItems ...string) (*url.URL, error) {
+	base.User = url.UserPassword(user, pass)
+	base.Path = strings.Join(pathItems, "/")
+	return base, nil
 }
 
 // retryCmd will retry the command a few times with backoff. Use this for any
