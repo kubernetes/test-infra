@@ -339,38 +339,6 @@ periodics:
       securityContext:
         privileged: true
 
-#manual-release-bump-required
-- name: ci-kubernetes-kubemark-5-gce-last-release
-  interval: 30m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-dind-enabled: "true"
-    preset-e2e-kubemark-common: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
-      args:
-      - --bare
-      - --timeout=80
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=kubemark-latest
-      - --extract=ci/latest-1.12
-      - --gcp-node-size=n1-standard-2
-      - --gcp-nodes=1
-      - --gcp-project-type=scalability-project
-      - --gcp-zone=us-east1-b
-      - --kubemark
-      - --kubemark-nodes=5
-      - --provider=gce
-      - --test=false
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
-      - --timeout=60m
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-
 - name: ci-kubernetes-kubemark-500-gce
   tags:
   - "perfDashPrefix: kubemark-500Nodes"
