@@ -216,8 +216,6 @@ presubmits:
         - e2e_test_gke_v2.yaml
         - --test_result_folder
         - e2e_test
-
-  kubeflow/pipelines:
   - name: kubeflow-pipeline-sample-test
     always_run: true
     decorate: true
@@ -235,9 +233,6 @@ presubmits:
         - sample_test
         - --timeout
         - "3600"
-
-
-#   kubeflow/pipelines:
 #   - name: kubeflow-pipeline-e2e-test-gce-minikube
 #     always_run: true
 #     decorate: true
