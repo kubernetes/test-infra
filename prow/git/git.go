@@ -310,7 +310,6 @@ func (r *Repo) Push(repo, branch string) error {
 // CheckoutPullRequest does exactly that.
 func (r *Repo) CheckoutPullRequest(number int) error {
 	r.logger.Infof("Fetching and checking out %s#%d.", r.repo, number)
-	//r.base.Path = strings.Join([]string{r.base.Path, r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number)}, "/")
 	if b, err := retryCmd(r.logger, r.Dir, r.git, "fetch", r.base.String()+"/"+r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number)); err != nil {
 		return fmt.Errorf("git fetch failed for PR %d: %v. output: %s", number, err, string(b))
 	}
