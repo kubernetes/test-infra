@@ -45,6 +45,7 @@ var RegionalTypeList = []Type{
 	// VPN Connections
 	InternetGateways{},
 	RouteTables{},
+	NATGateway{},
 	VPCs{},
 	DHCPOptions{},
 	Volumes{},
