@@ -1408,7 +1408,7 @@ presubmits:
         - --
         - --build=bazel
         - --cluster=
-        - --env=KUBE_FEATURE_GATES=AllAlpha=true
+        - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
@@ -1876,7 +1876,7 @@ presubmits:
         - --deployment=node
         - --gcp-project=k8s-jkns-pr-node-e2e
         - --gcp-zone=us-west1-b
-        - --node-test-args=--feature-gates=AllAlpha=true,RotateKubeletServerCertificate=false
+        - --node-test-args=--feature-gates=AllAlpha=true,CSIMigration=false,RotateKubeletServerCertificate=false
           --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
