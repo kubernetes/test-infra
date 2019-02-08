@@ -19,6 +19,7 @@ ts_library(
     srcs = ["metadata.ts"],
     deps = [
         "//prow/spyglass/lenses:lens_api",
+        "@npm//moment",
     ],
 )
 
@@ -27,6 +28,7 @@ rollup_bundle(
     entry_point = "prow/spyglass/lenses/metadata/metadata",
     deps = [
         ":script",
+        "@npm//moment",
     ],
 )
 

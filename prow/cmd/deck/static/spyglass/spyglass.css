@@ -49,3 +49,7 @@ body {
 a:visited {
   color: #798bef;
 }
+
+.mdl-card.lens-card {
+  min-height: 0;
+}
