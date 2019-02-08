@@ -1349,6 +1349,10 @@ nodeK8sVersions:
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
   beta:
     args:
+    - --repo=k8s.io/kubernetes=release-1.14
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.14
+  stable1:
+    args:
     - --repo=k8s.io/kubernetes=release-1.13
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-1.13
   stable1:
