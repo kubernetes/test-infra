@@ -29,7 +29,7 @@ periodics:
       - "--provider=skeleton"
       - "--deployment=kind"
       - "--kind-binary-version=latest"
-      - "--kind-config./../../k8s.io/kubeadm/tests/e2e/kind/single-cp/single-cp.yaml"
+      - "--kind-config=./../../k8s.io/kubeadm/tests/e2e/kind/single-cp/single-cp.yaml"
       - "--test-cmd=./../../k8s.io/kubeadm/tests/e2e/kind/test-cmd-basic.sh"
       - "--timeout=30m"
       # we need privileged mode in order to do docker in docker
