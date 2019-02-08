@@ -494,20 +494,20 @@ function redraw(fz: FuzzySearch): void {
             } else {
                 let repoLink = build.refs.repo_link;
                 if (!repoLink) {
-                    repoLink = "https://github.com/" + build.refs.repo;
+                    repoLink = `https://github.com/${build.refs.org}/${build.refs.repo}`;
                 }
                 r.appendChild(cell.link(`${build.refs.org}/${build.refs.repo}`, repoLink));
             }
             if (build.type === "presubmit") {
                 if (build.refs.pulls && build.refs.pulls.length > 0) {
-                    r.appendChild(cell.prRevision(build.refs.repo, build.refs.pulls[0]));
+                    r.appendChild(cell.prRevision(`${build.refs.org}/${build.refs.repo}`, build.refs.pulls[0]));
                 } else {
                     r.appendChild(cell.text(""));
                 }
             } else if (build.type === "batch") {
                 r.appendChild(batchRevisionCell(build));
             } else if (build.type === "postsubmit") {
-                r.appendChild(cell.commitRevision(build.refs.repo, build.refs.base_ref || "",
+                r.appendChild(cell.commitRevision(`${build.refs.org}/${build.refs.repo}`, build.refs.base_ref || "",
                     build.refs.base_sha || "", build.refs.base_link || ""));
             } else if (build.type === "periodic") {
                 r.appendChild(cell.text(""));
@@ -613,7 +613,7 @@ function batchRevisionCell(build: Job): HTMLTableDataCellElement {
         if (link) {
             l.href = link;
         } else {
-            l.href = `https://github.com/${build.refs.repo}/pull/${build.refs.pulls[i].number}`;
+            l.href = `https://github.com/${build.refs.org}/${build.refs.repo}/pull/${build.refs.pulls[i].number}`;
         }
         l.text = build.refs.pulls[i].number.toString();
         c.appendChild(document.createTextNode("#"));
