@@ -199,24 +199,16 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+
   kubeflow/pipelines:
-  - name: kubeflow-pipeline-presubmit
+  - name: kubeflow-pipeline-e2e-test
     always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
-    agent: knative-build
-    build_spec:
-      steps:
-      - name: kubeflow-pipeline-build-image
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
-        command:
-        - ./test/presubmit-tests.sh
-        args:
-        - --workflow_file
-        - build_image.yaml
-      - name: kubeflow-pipeline-e2e-test
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -224,8 +216,16 @@ presubmits:
         - e2e_test_gke_v2.yaml
         - --test_result_folder
         - e2e_test
-      - name: kubeflow-pipeline-sample-test
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
+
+  kubeflow/pipelines:
+  - name: kubeflow-pipeline-sample-test
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -235,8 +235,18 @@ presubmits:
         - sample_test
         - --timeout
         - "3600"
-#       - name: kubeflow-pipeline-e2e-test-gce-minikube
-#         image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
+
+
+#   kubeflow/pipelines:
+#   - name: kubeflow-pipeline-e2e-test-gce-minikube
+#     always_run: true
+#     decorate: true
+#     skip_report: true
+#     labels:
+#       preset-service-account: "true"
+#     spec:
+#       containers:
+#       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
 #         command:
 #         - ./test/presubmit-tests-gce-minikube.sh
 #         args:
