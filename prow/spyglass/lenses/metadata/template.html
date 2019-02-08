@@ -7,38 +7,34 @@
 {{$len := len .Metadata}}
 {{$passed := eq .Status "SUCCESS"}}
 {{$failed := eq .Status "FAILURE" "FAILED"}}
-<table class="mdl-data-table mdl-js-data-table metadata-table">
+<p class="test-summary">Test started <abbr id="summary-start-time" title="{{.StartTime}}">{{.StartTime}}</abbr> {{if $passed -}}
+  <span class="passed">passed</span>
+{{- else if $failed -}}
+  <span class="failed">failed</span>
+{{- else -}}
+  is still running
+{{- end}} after {{.Elapsed}}. (<a href="#" id="show-table-link">more info</a>)</p>
+<table class="mdl-data-table mdl-js-data-table metadata-table hidden" id="data-table">
   <tbody>
   <tr class="test-row">
     <td class="mdl-data-table__cell--non-numeric">Status</td>
     <td class="mdl-data-table__cell--non-numeric" style="color: {{if $passed}}#00FF00{{else if $failed}}#ff4040{{end}}">{{.Status}}</td>
   </tr>
+  <tr>
+    <td class="mdl-data-table__cell--non-numeric">Started</td>
+    <td class="mdl-data-table__cell--non-numeric" id="start_time">{{.StartTime}}</td>
+  </tr>
+  <tr>
+    <td class="mdl-data-table__cell--non-numeric">Elapsed</td>
+    <td class="mdl-data-table__cell--non-numeric">{{.Elapsed}}</td>
+  </tr>
+  {{range $key, $value := .Metadata}}
+  {{if $value}}
     <tr>
-      <td class="mdl-data-table__cell--non-numeric">Started</td>
-      <td class="mdl-data-table__cell--non-numeric" id="start_time">{{.StartTime}}</td>
+      <td class="mdl-data-table__cell--non-numeric">{{$key}}</td>
+      <td class="mdl-data-table__cell--non-numeric">{{$value}}</td>
     </tr>
-    <tr>
-      <td class="mdl-data-table__cell--non-numeric">Elapsed</td>
-      <td class="mdl-data-table__cell--non-numeric">{{.Elapsed}}</td>
-    </tr>
-    <tbody id="supplementary_data" class="{{if gt $len 1}}hidden{{end}}">
-    {{range $key, $value := .Metadata}}
-    {{if $value}}
-      <tr>
-        <td class="mdl-data-table__cell--non-numeric">{{$key}}</td>
-        <td class="mdl-data-table__cell--non-numeric">{{$value}}</td>
-      </tr>
-    {{end}}
-    {{end}}
-    </tbody>
-    {{if gt $len 1}}
-    <tr class="expander" onclick="toggleExpansion('supplementary_data', 'expand_text', 'expand_icon')">
-      <td colspan="2" class="mdl-data-table__cell--non-numeric expander">
-        <span id="expand_text">Show more</span>
-        <i id="expand_icon" class="icon-button material-icons arrow-icon">expand_more</i>
-      </td>
-    </tr>
-    {{end}}
-  </tbody>
+  {{end}}
+  {{end}}
 </table>
 {{end}}

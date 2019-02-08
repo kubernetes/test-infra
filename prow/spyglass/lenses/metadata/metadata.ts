@@ -1,22 +1,23 @@
-function toggleExpansion(dataId: string, textId: string, iconId: string): void {
-  const body = document.getElementById(dataId)!;
-  body.classList.toggle('hidden');
-  const icon = document.getElementById(iconId)!;
-  const textElem = document.getElementById(textId)!;
-  if (body.classList.contains('hidden')) {
-    icon.innerHTML = 'expand_more';
-    textElem.innerText = 'Show more';
+import moment from "moment";
+
+function handleClick(e: MouseEvent): void {
+  e.preventDefault();
+  const button = document.getElementById('show-table-link')!;
+  const table = document.getElementById('data-table')!;
+  table.classList.toggle('hidden');
+  if (table.classList.contains('hidden')) {
+    button.innerText = 'more info';
   } else {
-    icon.innerHTML = 'expand_less';
-    textElem.innerText = 'Show less';
+    button.innerText = 'less info';
   }
   spyglass.contentUpdated();
 }
 
 function getLocalStartTime(): void {
-  const elem = document.getElementById("start_time")!;
-  elem.innerText = (new Date(elem.innerText)).toString();
+  document.getElementById('show-table-link')!.onclick = handleClick;
+  const elem = document.getElementById("summary-start-time")!;
+  elem.innerText = moment(elem.innerText).calendar().replace(/Last|Yesterday|Today|Tomorrow/,
+      (m) => m.charAt(0).toLowerCase() + m.substr(1));
 }
 
-(window as any).toggleExpansion = toggleExpansion;
 window.onload = getLocalStartTime;
