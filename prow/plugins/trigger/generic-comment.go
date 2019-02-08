@@ -134,12 +134,19 @@ type GitHubClient interface {
 // consider the set of matching presubmits the union of the results from the
 // matching cases.
 func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string, pr *github.PullRequest, presubmits []config.Presubmit) ([]config.Presubmit, error) {
-	org, repo, number, sha, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Head.SHA, pr.Base.Ref
+	org, repo, sha := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Head.SHA
 	filter, err := presubmitFilter(honorOkToTest, gitHubClient, body, org, repo, sha)
 	if err != nil {
 		return nil, err
 	}
 
+	return filterPresubmits(filter, gitHubClient, pr, presubmits)
+}
+
+// filterPresubmits determines which presubmits should run by evaluating the
+// user-provided filter.
+func filterPresubmits(filter filter, gitHubClient GitHubClient, pr *github.PullRequest, presubmits []config.Presubmit) ([]config.Presubmit, error) {
+	org, repo, number, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Base.Ref
 	changes := config.NewGitHubDeferredChangedFilesProvider(gitHubClient, org, repo, number)
 	var filteredPresubmits []config.Presubmit
 	for _, presubmit := range presubmits {
@@ -162,18 +169,15 @@ type statusGetter interface {
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 }
 
-func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, repo, sha string) (func(config.Presubmit) (bool, bool, bool), error) {
+func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, repo, sha string) (filter, error) {
 	// the filters determine if we should check whether a job should run, whether
 	// it should run regardless of whether its triggering conditions match, and
 	// what the default behavior should be for that check. Multiple filters
 	// can match a single presubmit, so it is important to order them correctly
 	// as they have precedence -- filters that override the false default should
 	// match before others. We order filters by amount of specificity.
-	var filters []func(config.Presubmit) (bool, bool, bool)
-	filters = append(filters, func(p config.Presubmit) (bool, bool, bool) {
-		// filter for `/test foo`
-		return p.TriggerMatches(body), p.TriggerMatches(body), true
-	})
+	var filters []filter
+	filters = append(filters, commandFilter(body))
 	if retestRe.MatchString(body) {
 		combinedStatus, err := statusGetter.GetCombinedStatus(org, repo, sha)
 		if err != nil {
@@ -187,17 +191,48 @@ func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, r
 				failedContexts.Insert(status.Context)
 			}
 		}
-		filters = append(filters, func(p config.Presubmit) (bool, bool, bool) {
-			// filter for `/retest`
-			return failedContexts.Has(p.Context) || (!p.NeedsExplicitTrigger() && !allContexts.Has(p.Context)), false, true
-		})
+
+		filters = append(filters, retestFilter(failedContexts, allContexts))
 	}
 	if (honorOkToTest && okToTestRe.MatchString(body)) || testAllRe.MatchString(body) {
-		filters = append(filters, func(p config.Presubmit) (bool, bool, bool) {
-			// filter for `/test all`
-			return !p.NeedsExplicitTrigger(), false, false
-		})
+		filters = append(filters, testAllFilter())
 	}
+	return aggregateFilter(filters), nil
+}
+
+// filter digests a presubmit config to determine if:
+//  - we can be certain that the presubmit should run
+//  - we know that the presubmit is forced to run
+//  - what the default behavior should be if the presubmit
+//    runs conditionally and does not match trigger conditions
+type filter func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool)
+
+// commandFilter builds a filter for `/test foo`
+func commandFilter(body string) filter {
+	return func(p config.Presubmit) (bool, bool, bool) {
+		return p.TriggerMatches(body), p.TriggerMatches(body), true
+	}
+}
+
+// retestFilter builds a filter for `/retest`
+func retestFilter(failedContexts, allContexts sets.String) filter {
+	return func(p config.Presubmit) (bool, bool, bool) {
+		return failedContexts.Has(p.Context) || (!p.NeedsExplicitTrigger() && !allContexts.Has(p.Context)), false, true
+	}
+}
+
+// testAllFilter builds a filter for the automatic behavior of `/test all`.
+// Jobs that explicitly match `/test all` in their trigger regex will be
+// handled by a commandFilter for the comment in question.
+func testAllFilter() filter {
+	return func(p config.Presubmit) (bool, bool, bool) {
+		return !p.NeedsExplicitTrigger(), false, false
+	}
+}
+
+// aggregateFilter builds a filter that evaluates the child filters in order
+// and returns the first match
+func aggregateFilter(filters []filter) filter {
 	return func(presubmit config.Presubmit) (bool, bool, bool) {
 		for _, filter := range filters {
 			if shouldRun, forced, defaults := filter(presubmit); shouldRun {
@@ -205,5 +240,5 @@ func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, r
 			}
 		}
 		return false, false, false
-	}, nil
+	}
 }
