@@ -82,7 +82,7 @@ type JunitResult struct {
 }
 
 func (jr JunitResult) Duration() time.Duration {
-	return time.Duration(jr.Time * float64(time.Second))
+	return time.Duration(jr.Time * float64(time.Second)).Round(time.Second)
 }
 
 // TestResult holds data about a test extracted from junit output
