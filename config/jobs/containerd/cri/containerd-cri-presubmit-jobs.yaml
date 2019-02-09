@@ -46,6 +46,9 @@ presubmits:
         - runner.sh
         args:
         - ./test/build.sh
+        env:
+        - name: GOPATH
+          value: /home/prow/go
       - name: pull-cri-containerd-node-e2e
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
         command:
@@ -91,6 +94,9 @@ presubmits:
         - runner.sh
         args:
         - ./test/build.sh
+        env:
+        - name: GOPATH
+          value: /home/prow/go
       - name: pull-cri-containerd-node-e2e
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
         command:
@@ -136,6 +142,9 @@ presubmits:
         - runner.sh
         args:
         - ./test/build.sh
+        env:
+        - name: GOPATH
+          value: /home/prow/go
       - name: pull-cri-containerd-node-e2e
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
         command:
