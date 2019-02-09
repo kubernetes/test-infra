@@ -22,10 +22,10 @@ presubmits:
   - name: pull-kubernetes-e2e-gce
     always_run: true
     skip_branches:
+    - release-1.14 # per-release image
     - release-1.13 # per-release image
     - release-1.12 # per-release image
     - release-1.11 # per-release image
-    - release-1.10 # per-release image
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -64,7 +64,7 @@ presubmits:
   - name: pull-kubernetes-e2e-gce
     always_run: true
     branches:
-    - release-1.13 # per-release image
+      - release-1.14 # per-release image
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -103,7 +103,7 @@ presubmits:
   - name: pull-kubernetes-e2e-gce
     always_run: true
     branches:
-    - release-1.12 # per-release image
+    - release-1.13 # per-release image
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -125,7 +125,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-image=gci
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
@@ -142,7 +142,7 @@ presubmits:
   - name: pull-kubernetes-e2e-gce
     always_run: true
     branches:
-    - release-1.11 # per-release image
+    - release-1.12 # per-release image
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -181,7 +181,7 @@ presubmits:
   - name: pull-kubernetes-e2e-gce
     always_run: true
     branches:
-    - release-1.10
+    - release-1.11 # per-release image
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -203,7 +203,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-f
         - --ginkgo-parallel=30
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true

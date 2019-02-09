@@ -157,10 +157,10 @@ presubmits:
     skip_report: false
     max_concurrency: 12
     skip_branches:
+    - release-1.14  # per-release image
     - release-1.13  # per-release image
     - release-1.12  # per-release image
     - release-1.11  # per-release image
-    - release-1.10  # per-release image
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -223,7 +223,7 @@ presubmits:
     skip_report: false
     max_concurrency: 12
     branches:
-    - release-1.13  # per-release image
+      - release-1.14  # per-release image
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -286,7 +286,7 @@ presubmits:
     skip_report: false
     max_concurrency: 12
     branches:
-    - release-1.12  # per-release image
+    - release-1.13  # per-release image
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -349,7 +349,7 @@ presubmits:
     skip_report: false
     max_concurrency: 12
     branches:
-    - release-1.11  # per-release image
+    - release-1.12  # per-release image
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -412,7 +412,7 @@ presubmits:
     skip_report: false
     max_concurrency: 12
     branches:
-    - release-1.10  # per-release image
+    - release-1.11  # per-release image
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
