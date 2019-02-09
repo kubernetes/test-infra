@@ -2,16 +2,30 @@
 periodics:
 - name: periodic-kubernetes-e2e-packages-pushed
   interval: 24h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: master
+    path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - args:
-      - --timeout=60
-      - --repo=k8s.io/kubeadm=master
-      - --scenario=execute
-      - --
-      - ./tests/e2e/packages/verify_packages_published.sh
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
+    -  image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+       imagePullPolicy: Always
+       command:
+       - ./tests/e2e/packages/verify_packages_published.sh
+
+- name: periodic-kubernetes-e2e-packages-install-deb
+  interval: 24h
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: master
+    path_alias: k8s.io/kubeadm
+  spec:
+    containers:
+    -  image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+       imagePullPolicy: Always
+       command:
+       - ./tests/e2e/packages/verify_packages_install_deb.sh
