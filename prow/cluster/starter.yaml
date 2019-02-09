@@ -239,8 +239,6 @@ spec:
       containers:
       - name: sinker
         image: gcr.io/k8s-prow/sinker:v20190125-2aca69d
-        args:
-        - --dry-run=false
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -323,8 +321,6 @@ spec:
       containers:
       - name: horologium
         image: gcr.io/k8s-prow/horologium:v20190125-2aca69d
-        args:
-        - --dry-run=false
         volumeMounts:
         - name: config
           mountPath: /etc/config
