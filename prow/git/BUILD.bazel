@@ -25,13 +25,14 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//prow/git/localgit:all-srcs",
+        "//prow/git/testing:all-srcs",
     ],
     tags = ["automanaged"],
 )
 
 go_test(
     name = "go_default_test",
-    srcs = ["git_test.go"],
+    srcs = ["git_command_test.go"],
     embed = [":go_default_library"],
-    deps = ["//prow/git/localgit:go_default_library"],
+    deps = ["//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library"],
 )

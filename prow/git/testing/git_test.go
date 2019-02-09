@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package git_test
+package testing
 
 import (
 	"bytes"
@@ -151,7 +151,7 @@ func TestNewClient(t *testing.T) {
 func TestRemote(t *testing.T) {
 	tests := []struct {
 		name      string
-		base      *url.URL
+		base      string
 		user      string
 		pass      string
 		pathItems string
@@ -160,15 +160,31 @@ func TestRemote(t *testing.T) {
 	}{
 		{
 			name:      "A valid remote url, with user, and password, no path",
-			base:      &url.URL{Scheme: "https", Host: "github.com"},
+			base:      "https://github.com",
 			user:      "user",
 			pass:      "pass",
 			pathItems: "",
 			expected:  "https://user:pass@github.com",
 		},
 		{
-			name:      "A valid remote url, with user, password, organization, and repository",
-			base:      &url.URL{Scheme: "https", Host: "github.com"},
+			name:      "A valid remote url, with user, password, organization and repository",
+			base:      "https://github.com",
+			user:      "user",
+			pass:      "pass",
+			pathItems: "user/repo",
+			expected:  "https://user:pass@github.com/user/repo",
+		},
+		{
+			name:      "local path, no user, no password, organization and repository",
+			base:      "/var/temp/dir",
+			user:      "",
+			pass:      "",
+			pathItems: "user/repo",
+			expected:  "/var/temp/dir/user/repo",
+		},
+		{
+			name:      "A valid remote url ended with slash, with user, and password, no path",
+			base:      "https://github.com/",
 			user:      "user",
 			pass:      "pass",
 			pathItems: "user/repo",
@@ -177,12 +193,14 @@ func TestRemote(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testURL, err := git.Remote(test.base, test.user, test.pass, test.pathItems)
-		if err != nil {
-			t.Fatalf("Error creating git remote: %+v", err)
-		}
+		base, _ := url.Parse(test.base)
+		savedBase := *base
+		testURL := git.Remote(base, test.user, test.pass, test.pathItems)
 		if test.expected != testURL.String() {
 			t.Errorf(`git remote did not match expected remote: expected: "%v" actual: "%v"`, test.expected, testURL)
+		}
+		if *base != savedBase {
+			t.Error("base was modified in git.Remote")
 		}
 	}
 }

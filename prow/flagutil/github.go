@@ -64,21 +64,21 @@ func (o *GitHubOptions) addFlags(wantDefaultGithubTokenPath bool, fs *flag.FlagS
 func (o *GitHubOptions) Validate(dryRun bool) error {
 	for _, uri := range o.endpoint.Strings() {
 		if _, err := url.ParseRequestURI(uri); err != nil {
-			return fmt.Errorf("invalid -github-endpoint URI: %q", uri)
+			return fmt.Errorf("invalid --github-endpoint URI: %q", uri)
 		}
 	}
 
 	if _, err := url.ParseRequestURI(o.GitEndpoint); err != nil {
-		return fmt.Errorf("invalid -git-endpoint URI: %q", o.GitEndpoint)
+		return fmt.Errorf("invalid --git-endpoint URI: %q", o.GitEndpoint)
 	}
 
 	if o.deprecatedTokenFile != "" {
 		o.TokenPath = o.deprecatedTokenFile
-		logrus.Error("-github-token-file is deprecated and may be removed anytime after 2019-01-01.  Use -github-token-path instead.")
+		logrus.Error("--github-token-file is deprecated and may be removed anytime after 2019-01-01.  Use -github-token-path instead.")
 	}
 
 	if o.TokenPath == "" {
-		logrus.Warn("empty -github-token-path, will use anonymous github client")
+		logrus.Warn("empty --github-token-path, will use anonymous github client")
 	}
 
 	return nil

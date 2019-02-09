@@ -1,0 +1,29 @@
+package(default_visibility = ["//visibility:public"])
+
+load(
+    "@io_bazel_rules_go//go:def.bzl",
+    "go_test",
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["git_test.go"],
+    deps = [
+        "//prow/git:go_default_library",
+        "//prow/git/localgit:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
