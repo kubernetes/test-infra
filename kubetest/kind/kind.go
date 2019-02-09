@@ -178,7 +178,7 @@ func (d *Deployer) prepareKindBinary() error {
 		}
 		log.Println("Building a kind binary from source.")
 		// Build the kind binary.
-		cmd := exec.Command("go", "build", "-o", filepath.Join(d.kindBinaryPath, "kind"))
+		cmd := exec.Command("go", "build", "-o", d.kindBinaryPath)
 		cmd.Dir = importPathKind
 		if err := d.control.FinishRunning(cmd); err != nil {
 			return err
