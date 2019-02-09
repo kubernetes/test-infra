@@ -263,7 +263,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 		logrus.WithError(err).Fatal("Error getting ProwJob client for infrastructure cluster.")
 	}
 
-	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, false)
+	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, false, cfg().AllClusterAliases())
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
 	}
