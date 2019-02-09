@@ -6,10 +6,10 @@ presubmits:
     always_run: true
     decorate: true
     skip_branches:
+    - release-1.14
     - release-1.13
     - release-1.12
     - release-1.11
-    - release-1.10
     path_alias: k8s.io/kubernetes
     labels:
       preset-service-account: "true"
@@ -45,6 +45,44 @@ presubmits:
             cpu: 4
   - name: pull-kubernetes-verify
     always_run: true
+    decorate: true
+    skip_branches:
+      - release-1.14
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190207-c706a2422-1.14
+          imagePullPolicy: Always
+          command:
+            - runner.sh
+          args:
+            - ./hack/jenkins/verify-dockerized.sh
+          env:
+            - name: KUBE_FORCE_VERIFY_CHECKS
+              value: "n"
+            - name: EXCLUDE_TYPECHECK
+              value: "y"
+            - name: EXCLUDE_GODEP
+              value: "y"
+            - name: KUBE_VERIFY_GIT_BRANCH
+              value: master
+            - name: REPO_DIR
+              value: /workspace/k8s.io/kubernetes
+            # TODO(bentheelder): remove bandaid once we have this metadata exposed
+            # properly, first-class
+            - name: METADATA_BANDAID
+              value: "true"
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 4
+  - name: pull-kubernetes-verify
+    always_run: true
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -53,7 +91,6 @@ presubmits:
     - release-1.13
     - release-1.12
     - release-1.11
-    - release-1.10
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
@@ -116,7 +153,7 @@ periodics:
         requests:
           cpu: 4
 
-# manual-release-bump-required
+  # manual-release-bump-required
 - interval: 2h
   name: ci-kubernetes-verify-beta
   labels:
@@ -150,6 +187,30 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
       args:
+      - --repo=k8s.io/kubernetes=release-1.13
+      - --timeout=75
+      - --scenario=kubernetes_verify
+      - --
+      - --branch=release-1.13
+      - --force
+      - --script=./hack/jenkins/verify-dockerized.sh
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4
+
+# manual-release-bump-required
+- interval: 2h
+  name: ci-kubernetes-verify-stable2
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+      args:
       - --repo=k8s.io/kubernetes=release-1.12
       - --timeout=75
       - --scenario=kubernetes_verify
@@ -166,7 +227,7 @@ periodics:
 
 # manual-release-bump-required
 - interval: 6h
-  name: ci-kubernetes-verify-stable2
+  name: ci-kubernetes-verify-stable3
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -179,30 +240,6 @@ periodics:
       - --scenario=kubernetes_verify
       - --
       - --branch=release-1.11
-      - --force
-      - --script=./hack/jenkins/verify-dockerized.sh
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          cpu: 4
-
-# manual-release-bump-required
-- interval: 24h
-  name: ci-kubernetes-verify-stable3
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
-      args:
-      - --repo=k8s.io/kubernetes=release-1.10
-      - --timeout=75
-      - --scenario=kubernetes_verify
-      - --
-      - --branch=release-1.10
       - --force
       - --script=./hack/jenkins/verify-dockerized.sh
       # docker-in-docker needs privileged mode

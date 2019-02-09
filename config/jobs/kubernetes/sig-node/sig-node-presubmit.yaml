@@ -3,10 +3,10 @@ presubmits:
   # manual-release-bump-required
   - name: pull-kubernetes-node-e2e
     skip_branches:
+    - release-1.14  # per-release image
     - release-1.13  # per-release image
     - release-1.12  # per-release image
     - release-1.11  # per-release image
-    - release-1.10  # per-release image
     always_run: true
     max_concurrency: 12
     labels:
@@ -38,7 +38,7 @@ presubmits:
             memory: "6Gi"
   - name: pull-kubernetes-node-e2e
     branches:
-    - release-1.13  # per-release image
+      - release-1.14  # per-release image
     always_run: true
     max_concurrency: 12
     labels:
@@ -70,7 +70,7 @@ presubmits:
             memory: "6Gi"
   - name: pull-kubernetes-node-e2e
     branches:
-    - release-1.12  # per-release image
+    - release-1.13  # per-release image
     always_run: true
     max_concurrency: 12
     labels:
@@ -102,7 +102,7 @@ presubmits:
             memory: "6Gi"
   - name: pull-kubernetes-node-e2e
     branches:
-    - release-1.11  # per-release image
+    - release-1.12  # per-release image
     always_run: true
     max_concurrency: 12
     labels:
@@ -134,7 +134,7 @@ presubmits:
             memory: "6Gi"
   - name: pull-kubernetes-node-e2e
     branches:
-    - release-1.10  # per-release image
+    - release-1.11  # per-release image
     always_run: true
     max_concurrency: 12
     labels:

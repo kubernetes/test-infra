@@ -3,10 +3,10 @@ presubmits:
   # manual-release-bump-required
   - name: pull-kubernetes-e2e-kops-aws
     skip_branches:
+    - release-1.14  # per-release image
     - release-1.13  # per-release image
     - release-1.12  # per-release image
     - release-1.11  # per-release image
-    - release-1.10  # per-release image
     max_concurrency: 12
     always_run: false
     optional: true
@@ -52,7 +52,7 @@ presubmits:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-kops-aws
     branches:
-    - release-1.13  # per-release image
+      - release-1.14  # per-release image
     max_concurrency: 12
     always_run: false
     optional: true
@@ -98,7 +98,7 @@ presubmits:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-kops-aws
     branches:
-    - release-1.12  # per-release image
+    - release-1.13  # per-release image
     max_concurrency: 12
     always_run: false
     optional: true
@@ -144,7 +144,7 @@ presubmits:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-kops-aws
     branches:
-    - release-1.11  # per-release image
+    - release-1.12  # per-release image
     max_concurrency: 12
     always_run: false
     optional: true
@@ -190,7 +190,7 @@ presubmits:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-kops-aws
     branches:
-    - release-1.10  # per-release image
+    - release-1.11  # per-release image
     max_concurrency: 12
     always_run: false
     optional: true

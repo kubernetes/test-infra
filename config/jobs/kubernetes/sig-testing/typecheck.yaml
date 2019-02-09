@@ -8,10 +8,10 @@ presubmits:
     skip_report: false
     # branched per release (older go versions)
     skip_branches:
-    - release-1.10
     - release-1.11
     - release-1.12
     - release-1.13
+    - release-1.14
     spec:
       containers:
       - name: main
@@ -30,7 +30,7 @@ presubmits:
     always_run: true
     skip_report: false
     branches:
-    - release-1.13 # per-release job
+      - release-1.14 # per-release job
     spec:
       containers:
       - name: main
@@ -49,7 +49,7 @@ presubmits:
     always_run: true
     skip_report: false
     branches:
-    - release-1.12
+    - release-1.13 # per-release job
     spec:
       containers:
       - name: main
@@ -68,7 +68,7 @@ presubmits:
     always_run: true
     skip_report: false
     branches:
-    - release-1.11
+    - release-1.12
     spec:
       containers:
       - name: main
@@ -87,7 +87,7 @@ presubmits:
     always_run: true
     skip_report: false
     branches:
-    - release-1.10
+    - release-1.11
     spec:
       containers:
       - name: main
@@ -100,4 +100,3 @@ presubmits:
         # Space separated list of the checks to run
         - name: WHAT
           value: typecheck
-

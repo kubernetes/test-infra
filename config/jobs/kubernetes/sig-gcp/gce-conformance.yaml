@@ -105,9 +105,8 @@ periodics:
       - --timeout=200m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-1.13
 
-# manual-release-bump-required (add a job for the new version and delete the job for the oldest version)
 - interval: 6h
-  name: ci-kubernetes-gce-conformance-stable-1-10
+  name: ci-kubernetes-gce-conformance-latest-1-14
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -127,6 +126,7 @@ periodics:
       - --timeout=200m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-1.10
 
+# manual-release-bump-required (add a job for the new version and delete the job for the oldest version)
 - interval: 6h
   name: ci-kubernetes-gce-conformance-stable-1-11
   labels:

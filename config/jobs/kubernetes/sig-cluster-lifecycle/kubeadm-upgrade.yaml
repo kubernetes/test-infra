@@ -94,6 +94,37 @@ periodics:
       - --timeout=300m
       - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --ginkgo.skip=statefulset-upgrade|hpa-upgrade|service-upgrade --upgrade-target=release/latest-1.13
 
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-13-1-14
+  interval: 12h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190207-c706a2422-master
+        args:
+          - --repo=k8s.io/kubernetes=release-1.14
+          - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
+          - --timeout=320
+          - --upload=gs://kubernetes-jenkins/logs
+          - --scenario=kubernetes_e2e
+          - --
+          - --check-version-skew=false
+          - --cluster=
+          - --deployment=kubernetes-anywhere
+          - --extract=release/latest-1.14
+          - --extract=ci/latest-bazel-1.13
+          - --gcp-zone=us-west1-b
+          - --kubeadm=periodic
+          - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.13
+          - --kubernetes-anywhere-kubernetes-version=ci/latest-1.13
+          - --kubernetes-anywhere-upgrade-method=upgrade
+          - --provider=skeleton
+          - --skew
+          - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
+          - --timeout=300m
+          - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --ginkgo.skip=statefulset-upgrade|hpa-upgrade|service-upgrade --upgrade-target=release/latest-1.14
+
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
   interval: 6h
   labels:

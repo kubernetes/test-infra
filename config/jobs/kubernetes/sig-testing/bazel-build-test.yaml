@@ -4,10 +4,10 @@ presubmits:
   - name: pull-kubernetes-bazel-build
     always_run: true
     skip_branches:
+    - release-1.14 # per-release job
     - release-1.13 # per-release job
     - release-1.12 # per-release job
     - release-1.11 # per-release job
-    - release-1.10 # per-release job
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -31,11 +31,11 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-  
+
   - name: pull-kubernetes-bazel-build
     always_run: true
     branches:
-    - release-1.13 # per-release job
+      - release-1.14 # per-release job
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -63,7 +63,7 @@ presubmits:
   - name: pull-kubernetes-bazel-build
     always_run: true
     branches:
-    - release-1.12 # per-release job
+    - release-1.13 # per-release job
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -91,7 +91,7 @@ presubmits:
   - name: pull-kubernetes-bazel-build
     always_run: true
     branches:
-    - release-1.11 # per-release job
+    - release-1.12 # per-release job
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -119,7 +119,7 @@ presubmits:
   - name: pull-kubernetes-bazel-build
     always_run: true
     branches:
-    - release-1.10
+    - release-1.11 # per-release job
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -148,10 +148,10 @@ presubmits:
   - name: pull-kubernetes-bazel-test
     always_run: true
     skip_branches:
+    - release-1.14 # per-release job
     - release-1.13 # per-release job
     - release-1.12 # per-release job
     - release-1.11 # per-release job
-    - release-1.10 # per-release job
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -182,7 +182,7 @@ presubmits:
   - name: pull-kubernetes-bazel-test
     always_run: true
     branches:
-    - release-1.13 # per-release job
+      - release-1.14 # per-release job
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -213,7 +213,7 @@ presubmits:
   - name: pull-kubernetes-bazel-test
     always_run: true
     branches:
-    - release-1.12 # per-release job
+    - release-1.13 # per-release job
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -244,7 +244,7 @@ presubmits:
   - name: pull-kubernetes-bazel-test
     always_run: true
     branches:
-    - release-1.11 # per-release job
+    - release-1.12 # per-release job
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -275,7 +275,7 @@ presubmits:
   - name: pull-kubernetes-bazel-test
     always_run: true
     branches:
-    - release-1.10
+    - release-1.11 # per-release job
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -481,11 +481,9 @@ postsubmits:
         resources:
           requests:
             memory: "6Gi"
-
-  # manual-release-bump-required (add a job for the new release branch and delete the one for the deprecated release.)
-  - name: ci-kubernetes-bazel-test-1-10
+  - name: ci-kubernetes-bazel-build-1-14
     branches:
-    - release-1.10
+      - release-1.14
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -599,6 +597,35 @@ postsubmits:
         resources:
           requests:
             memory: "6Gi"
+  - name: ci-kubernetes-bazel-test-1-14
+    branches:
+      - release-1.14
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190207-c706a2422-1.14
+          args:
+            - "--job=$(JOB_NAME)"
+            - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+            - "--service-account=/etc/service-account/service-account.json"
+            - "--upload=gs://kubernetes-jenkins/logs"
+            - "--timeout=60"
+            - "--scenario=kubernetes_bazel"
+            - "--" # end bootstrap args, scenario args below
+            - "--test=//... -//build/... -//vendor/..."
+            - "--manual-test=//hack:verify-all"
+            - "--test-args=--config=unit"
+            - "--test-args=--build_tag_filters=-e2e,-integration"
+            - "--test-args=--test_tag_filters=-e2e,-integration"
+            - "--test-args=--flaky_test_attempts=3"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              memory: "6Gi"
 
 periodics:
 # periodic bazel build jobs
@@ -767,6 +794,38 @@ periodics:
         requests:
           memory: "6Gi"
 
+- name: periodic-kubernetes-bazel-build-1-14
+  interval: 6h
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190207-c706a2422-1.14
+        args:
+          - "--job=$(JOB_NAME)"
+          - "--repo=k8s.io/kubernetes=release-1.14"
+          - "--service-account=/etc/service-account/service-account.json"
+          - "--upload=gs://kubernetes-jenkins/logs"
+          - "--timeout=60"
+          - "--scenario=kubernetes_bazel"
+          - "--" # end bootstrap args, scenario args below
+          - "--build=//... -//vendor/..."
+          - "--release=//build/release-tars"
+        env:
+          # so we can use the right cache id
+          # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
+          - name: REPO_OWNER
+            value: kubernetes
+          - name: REPO_NAME
+            value: kubernetes
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
 
 # periodic bazel test jobs
 - interval: 5m
@@ -944,3 +1003,39 @@ periodics:
       resources:
         requests:
           memory: "6Gi"
+
+- name: periodic-kubernetes-bazel-test-1-14
+  interval: 6h
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190207-c706a2422-1.14
+        args:
+          - "--repo=k8s.io/kubernetes=release-1.14"
+          - --root=/go/src
+          - "--service-account=/etc/service-account/service-account.json"
+          - "--upload=gs://kubernetes-jenkins/logs"
+          - "--timeout=60"
+          - "--scenario=kubernetes_bazel"
+          - "--" # end bootstrap args, scenario args below
+          - "--test=//... -//build/... -//vendor/..."
+          - "--manual-test=//hack:verify-all"
+          - "--test-args=--config=unit"
+          - "--test-args=--build_tag_filters=-e2e,-integration"
+          - "--test-args=--test_tag_filters=-e2e,-integration"
+          - "--test-args=--flaky_test_attempts=3"
+        env:
+          # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
+          - name: REPO_OWNER
+            value: kubernetes
+          - name: REPO_NAME
+            value: kubernetes
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+

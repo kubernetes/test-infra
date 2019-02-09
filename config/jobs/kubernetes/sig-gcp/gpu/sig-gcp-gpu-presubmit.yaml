@@ -14,10 +14,10 @@ presubmits:
   # manual-release-bump-required
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
     skip_branches:
+    - release-1.14  # per-release image
     - release-1.13  # per-release image
     - release-1.12  # per-release image
     - release-1.11  # per-release image
-    - release-1.10  # per-release image
     always_run: true
     optional: true
     max_concurrency: 12
@@ -61,7 +61,7 @@ presubmits:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
     branches:
-    - release-1.13  # per-release image
+      - release-1.14  # per-release image
     always_run: true
     optional: true
     max_concurrency: 12
@@ -75,6 +75,50 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-1.13
+        args:
+        - --root=/go/src
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --gcp-node-image=gci
+        - --gcp-nodes=4
+        - --gcp-project=k8s-jkns-pr-gce-gpus
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-device-plugin-gpu
+        - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
+        - --timeout=60m
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+  - name: pull-kubernetes-e2e-gce-device-plugin-gpu
+    branches:
+    - release-1.13  # per-release image
+    always_run: true
+    optional: true
+    max_concurrency: 12
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-gce-device-plugin-gpu: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-1.12
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -150,50 +194,6 @@ presubmits:
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
     branches:
     - release-1.11  # per-release image
-    always_run: true
-    optional: true
-    max_concurrency: 12
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-gce-device-plugin-gpu: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-1.12
-        args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
-        - --cluster=
-        - --extract=local
-        - --gcp-node-image=gci
-        - --gcp-nodes=4
-        - --gcp-project=k8s-jkns-pr-gce-gpus
-        - --gcp-zone=us-west1-b
-        - --ginkgo-parallel=30
-        - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-device-plugin-gpu
-        - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-        - --timeout=60m
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-  - name: pull-kubernetes-e2e-gce-device-plugin-gpu
-    branches:
-    - release-1.10  # per-release image
     always_run: true
     optional: true
     max_concurrency: 12
@@ -239,10 +239,10 @@ presubmits:
   # manual-release-bump-required
   - name: pull-kubernetes-e2e-gke-device-plugin-gpu
     skip_branches:
+    - release-1.14  # per-release image
     - release-1.13  # per-release image
     - release-1.12  # per-release image
     - release-1.11  # per-release image
-    - release-1.10  # per-release image
     always_run: false
     skip_report: false
     max_concurrency: 1
@@ -287,7 +287,7 @@ presubmits:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gke-device-plugin-gpu
     branches:
-    - release-1.13  # per-release image
+      - release-1.14  # per-release image
     always_run: false
     skip_report: false
     max_concurrency: 1
@@ -332,7 +332,7 @@ presubmits:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gke-device-plugin-gpu
     branches:
-    - release-1.12  # per-release image
+    - release-1.13  # per-release image
     always_run: false
     skip_report: false
     max_concurrency: 1
@@ -377,7 +377,7 @@ presubmits:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gke-device-plugin-gpu
     branches:
-    - release-1.11  # per-release image
+    - release-1.12  # per-release image
     always_run: false
     skip_report: false
     max_concurrency: 1
@@ -422,7 +422,7 @@ presubmits:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gke-device-plugin-gpu
     branches:
-    - release-1.10  # per-release image
+    - release-1.11  # per-release image
     always_run: false
     skip_report: false
     max_concurrency: 1

@@ -101,10 +101,10 @@ presubmits:
     optional: true
     rerun_command: /test pull-security-kubernetes-e2e-kops-aws
     skip_branches:
+    - release-1.14
     - release-1.13
     - release-1.12
     - release-1.11
-    - release-1.10
     spec:
       containers:
       - args:
@@ -152,7 +152,7 @@ presubmits:
   - agent: kubernetes
     always_run: false
     branches:
-    - release-1.13
+    - release-1.14
     cluster: security
     context: pull-security-kubernetes-e2e-kops-aws
     labels:
@@ -212,7 +212,7 @@ presubmits:
   - agent: kubernetes
     always_run: false
     branches:
-    - release-1.12
+    - release-1.13
     cluster: security
     context: pull-security-kubernetes-e2e-kops-aws
     labels:
@@ -272,7 +272,7 @@ presubmits:
   - agent: kubernetes
     always_run: false
     branches:
-    - release-1.11
+    - release-1.12
     cluster: security
     context: pull-security-kubernetes-e2e-kops-aws
     labels:
@@ -332,7 +332,7 @@ presubmits:
   - agent: kubernetes
     always_run: false
     branches:
-    - release-1.10
+    - release-1.11
     cluster: security
     context: pull-security-kubernetes-e2e-kops-aws
     labels:
@@ -466,10 +466,10 @@ presubmits:
     optional: true
     rerun_command: /test pull-security-kubernetes-e2e-gce-device-plugin-gpu
     skip_branches:
+    - release-1.14
     - release-1.13
     - release-1.12
     - release-1.11
-    - release-1.10
     spec:
       containers:
       - args:
@@ -516,7 +516,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.13
+    - release-1.14
     cluster: security
     context: pull-security-kubernetes-e2e-gce-device-plugin-gpu
     labels:
@@ -575,6 +575,65 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
+    - release-1.13
+    cluster: security
+    context: pull-security-kubernetes-e2e-gce-device-plugin-gpu
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-k8s-ssh: "true"
+      preset-pull-gce-device-plugin-gpu: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-service-account: "true"
+    max_concurrency: 12
+    name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
+    optional: true
+    rerun_command: /test pull-security-kubernetes-e2e-gce-device-plugin-gpu
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --root=/go/src
+        - --job=$(JOB_NAME)
+        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=90
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --gcp-node-image=gci
+        - --gcp-nodes=4
+        - --gcp-project=k8s-jkns-pr-gce-gpus
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-device-plugin-gpu
+        - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
+        - --timeout=60m
+        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-1.12
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-device-plugin-gpu,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
+    branches:
     - release-1.12
     cluster: security
     context: pull-security-kubernetes-e2e-gce-device-plugin-gpu
@@ -635,65 +694,6 @@ presubmits:
     always_run: true
     branches:
     - release-1.11
-    cluster: security
-    context: pull-security-kubernetes-e2e-gce-device-plugin-gpu
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-k8s-ssh: "true"
-      preset-pull-gce-device-plugin-gpu: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-service-account: "true"
-    max_concurrency: 12
-    name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
-    optional: true
-    rerun_command: /test pull-security-kubernetes-e2e-gce-device-plugin-gpu
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
-        - --cluster=
-        - --extract=local
-        - --gcp-node-image=gci
-        - --gcp-nodes=4
-        - --gcp-project=k8s-jkns-pr-gce-gpus
-        - --gcp-zone=us-west1-b
-        - --ginkgo-parallel=30
-        - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-device-plugin-gpu
-        - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-        - --timeout=60m
-        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
-        - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-1.12
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-device-plugin-gpu,?($|\s.*)
-  - agent: kubernetes
-    always_run: true
-    branches:
-    - release-1.10
     cluster: security
     context: pull-security-kubernetes-e2e-gce-device-plugin-gpu
     labels:
@@ -762,10 +762,10 @@ presubmits:
     name: pull-security-kubernetes-e2e-gce
     rerun_command: /test pull-security-kubernetes-e2e-gce
     skip_branches:
+    - release-1.14
     - release-1.13
     - release-1.12
     - release-1.11
-    - release-1.10
     spec:
       containers:
       - args:
@@ -810,7 +810,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.13
+    - release-1.14
     cluster: security
     context: pull-security-kubernetes-e2e-gce
     labels:
@@ -865,7 +865,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.12
+    - release-1.13
     cluster: security
     context: pull-security-kubernetes-e2e-gce
     labels:
@@ -891,7 +891,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-image=gci
-        - --gcp-zone=us-central1-f
+        - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
@@ -920,7 +920,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.11
+    - release-1.12
     cluster: security
     context: pull-security-kubernetes-e2e-gce
     labels:
@@ -975,7 +975,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.10
+    - release-1.11
     cluster: security
     context: pull-security-kubernetes-e2e-gce
     labels:
@@ -1001,7 +1001,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
+        - --gcp-zone=us-central1-f
         - --ginkgo-parallel=30
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
@@ -1205,10 +1205,10 @@ presubmits:
     name: pull-security-kubernetes-node-e2e
     rerun_command: /test pull-security-kubernetes-node-e2e
     skip_branches:
+    - release-1.14
     - release-1.13
     - release-1.12
     - release-1.11
-    - release-1.10
     spec:
       containers:
       - args:
@@ -1249,7 +1249,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.13
+    - release-1.14
     cluster: security
     context: pull-security-kubernetes-node-e2e
     labels:
@@ -1298,7 +1298,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.12
+    - release-1.13
     cluster: security
     context: pull-security-kubernetes-node-e2e
     labels:
@@ -1347,7 +1347,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.11
+    - release-1.12
     cluster: security
     context: pull-security-kubernetes-node-e2e
     labels:
@@ -1396,7 +1396,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.10
+    - release-1.11
     cluster: security
     context: pull-security-kubernetes-node-e2e
     labels:
@@ -1841,10 +1841,10 @@ presubmits:
     name: pull-security-kubernetes-kubemark-e2e-gce-big
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-big
     skip_branches:
+    - release-1.14
     - release-1.13
     - release-1.12
     - release-1.11
-    - release-1.10
     spec:
       containers:
       - args:
@@ -1905,7 +1905,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.13
+    - release-1.14
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
@@ -1978,7 +1978,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.12
+    - release-1.13
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
@@ -2051,7 +2051,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.11
+    - release-1.12
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
@@ -2124,7 +2124,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.10
+    - release-1.11
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
@@ -2329,10 +2329,10 @@ presubmits:
     name: pull-security-kubernetes-bazel-build
     rerun_command: /test pull-security-kubernetes-bazel-build
     skip_branches:
+    - release-1.14
     - release-1.13
     - release-1.12
     - release-1.11
-    - release-1.10
     spec:
       containers:
       - args:
@@ -2367,7 +2367,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.13
+    - release-1.14
     cluster: security
     context: pull-security-kubernetes-bazel-build
     labels:
@@ -2409,7 +2409,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.12
+    - release-1.13
     cluster: security
     context: pull-security-kubernetes-bazel-build
     labels:
@@ -2451,7 +2451,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.11
+    - release-1.12
     cluster: security
     context: pull-security-kubernetes-bazel-build
     labels:
@@ -2493,7 +2493,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.10
+    - release-1.11
     cluster: security
     context: pull-security-kubernetes-bazel-build
     labels:
@@ -2542,10 +2542,10 @@ presubmits:
     name: pull-security-kubernetes-bazel-test
     rerun_command: /test pull-security-kubernetes-bazel-test
     skip_branches:
+    - release-1.14
     - release-1.13
     - release-1.12
     - release-1.11
-    - release-1.10
     spec:
       containers:
       - args:
@@ -2582,7 +2582,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.13
+    - release-1.14
     cluster: security
     context: pull-security-kubernetes-bazel-test
     labels:
@@ -2626,7 +2626,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.12
+    - release-1.13
     cluster: security
     context: pull-security-kubernetes-bazel-test
     labels:
@@ -2670,7 +2670,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.11
+    - release-1.12
     cluster: security
     context: pull-security-kubernetes-bazel-test
     labels:
@@ -2714,7 +2714,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.10
+    - release-1.11
     cluster: security
     context: pull-security-kubernetes-bazel-test
     labels:
@@ -3054,10 +3054,10 @@ presubmits:
     path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-typecheck
     skip_branches:
-    - release-1.10
     - release-1.11
     - release-1.12
     - release-1.13
+    - release-1.14
     spec:
       containers:
       - args:
@@ -3083,7 +3083,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.13
+    - release-1.14
     cluster: security
     context: pull-security-kubernetes-typecheck
     decorate: true
@@ -3115,7 +3115,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.12
+    - release-1.13
     cluster: security
     context: pull-security-kubernetes-typecheck
     decorate: true
@@ -3147,7 +3147,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.11
+    - release-1.12
     cluster: security
     context: pull-security-kubernetes-typecheck
     decorate: true
@@ -3179,7 +3179,7 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.10
+    - release-1.11
     cluster: security
     context: pull-security-kubernetes-typecheck
     decorate: true
@@ -3220,10 +3220,10 @@ presubmits:
     path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-verify
     skip_branches:
+    - release-1.14
     - release-1.13
     - release-1.12
     - release-1.11
-    - release-1.10
     spec:
       containers:
       - args:
@@ -3264,10 +3264,10 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
+    - release-1.14
     - release-1.13
     - release-1.12
     - release-1.11
-    - release-1.10
     cluster: security
     context: pull-security-kubernetes-verify
     labels:
