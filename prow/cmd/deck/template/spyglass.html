@@ -21,7 +21,7 @@
   <div class="mdl-card__title lens-title"><h3 class="mdl-card__title-text">{{.Title}}</h3></div>
   <div id="{{.Name}}-view-container" class="lens-view-content mdl-card__supporting-text">
     <div class="mdl-spinner mdl-js-spinner is-active lens-card-loading" id="{{.Name}}-loading"></div>
-      <iframe class="lens-container" style="visibility: hidden;" id="iframe-{{.Name}}" sandbox="allow-scripts allow-top-navigation" data-lens="{{.Name}}"></iframe>
+      <iframe class="lens-container" style="visibility: hidden;" id="iframe-{{.Name}}" sandbox="allow-scripts allow-top-navigation allow-popups" data-lens="{{.Name}}"></iframe>
     </div>
   </div>
   {{end}}
