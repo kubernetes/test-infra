@@ -8,7 +8,8 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -28,7 +29,7 @@ periodics:
       - "--build=bazel"
       - "--provider=skeleton"
       - "--deployment=kind"
-      - "--kind-binary-version=latest"
+      - "--kind-binary-version=build"
       - "--kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/single-cp/single-cp.yaml"
       - "--test-cmd=./../../k8s.io/kubeadm/tests/e2e/kind/test-cmd-basic.sh"
       - "--timeout=30m"
