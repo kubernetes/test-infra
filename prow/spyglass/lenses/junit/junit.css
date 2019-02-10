@@ -3,8 +3,8 @@
   display: none;
 }
 
-.test-name {
-  font-family: monospace;
+.hidden {
+  display: none;
 }
 
 .noselect {
@@ -19,11 +19,6 @@
   text-align: right;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
 td.failed {
   color: #ff4040;
 }
@@ -34,4 +29,47 @@ td.passed {
 
 td.skipped {
   color: #ffe62d;
+}
+
+.failed-layout {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.failed-layout td {
+  border: 0;
+  padding: 0;
+}
+
+.failure-name {
+  cursor: pointer;
+}
+
+td {
+  white-space: normal !important;
+}
+
+/* We are engaged in a never-ending war of cascade escalation against MDL */
+#failed-tbody > tr:hover {
+  background-color: unset !important;
+}
+
+table.failed-layout tbody tr.failure-text:hover {
+  background-color: unset !important;
+}
+
+.failure-text div {
+  padding-left: 20px;
+  padding-right: 20px;
+  white-space: pre-wrap;
+  font-family: monospace;
+  padding-bottom: 10px;
+}
+
+.failure-text td {
+  padding-bottom: 15px;
+}
+
+.arrow-icon {
+  vertical-align: middle;
 }
