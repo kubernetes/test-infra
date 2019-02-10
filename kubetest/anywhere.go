@@ -193,12 +193,6 @@ func newKubernetesAnywhere(project, zone string) (deployer, error) {
 		return nil, err
 	}
 
-	// Set KUBERNETES_CONFORMANCE_PROVIDER since KUBERNETES_CONFORMANCE_TEST is set
-	// to ensure the right provider is passed onto the test.
-	if err := os.Setenv("KUBERNETES_CONFORMANCE_PROVIDER", "kubernetes-anywhere"); err != nil {
-		return nil, err
-	}
-
 	if err := k.writeConfig(kubernetesAnywhereConfigTemplate); err != nil {
 		return nil, err
 	}
