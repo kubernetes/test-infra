@@ -2652,6 +2652,9 @@ test_groups:
 - name: pull-publishing-bot-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-publishing-bot-build
   num_columns_recent: 20
+- name: pull-publishing-bot-validate
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-publishing-bot-validate
+  num_columns_recent: 20
 - name: post-test-infra-deploy-prow
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-deploy-prow
 - name: post-test-infra-push-prow
@@ -5265,6 +5268,8 @@ dashboards:
   dashboard_tab:
   - name: build
     test_group_name: pull-publishing-bot-build
+  - name: validate
+    test_group_name: pull-publishing-bot-validate
 
 - name: wg-resource-management
   dashboard_tab:

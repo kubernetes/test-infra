@@ -4,6 +4,42 @@ presubmits:
   kubernetes-security/kubernetes:
   - agent: kubernetes
     always_run: false
+    cluster: security
+    context: pull-publishing-bot-validate
+    decorate: true
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      path_alias: k8s.io/publishing-bot
+      repo: publishing-bot
+    name: pull-publishing-bot-validate
+    optional: true
+    path_alias: k8s.io/kubernetes
+    rerun_command: /test pull-publishing-bot-validate
+    run_if_changed: ^staging/publishing.*$
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - run
+        - k8s.io/publishing-bot/cmd/validate-rules
+        - /home/prow/go/src/k8s.io/kubernetes/staging/publishing/rules.yaml
+        command:
+        - go
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
+        name: ""
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-publishing-bot-validate,?($|\s.*)
+  - agent: kubernetes
+    always_run: false
     branches:
     - master
     cluster: security
