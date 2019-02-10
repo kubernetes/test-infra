@@ -14,6 +14,10 @@ periodics:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
         value: "true"
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: kubernetes
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
