@@ -74,13 +74,6 @@ build() {
     #make all WHAT="cmd/kubectl test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo"
     bazel build //cmd/kubectl //test/e2e:e2e.test //vendor/github.com/onsi/ginkgo/ginkgo
 
-    # e2e.test does not show up in a path with platform in it and will not be found
-    # by kube::util::find-binary, so we will copy it to an acceptable location
-    # until this is fixed upstream
-    # https://github.com/kubernetes/kubernetes/issues/68306
-    mkdir -p "_output/bin/"
-    cp "bazel-bin/test/e2e/e2e.test" "_output/bin/"
-
     # try to make sure the kubectl we built is in PATH
     local maybe_kubectl
     maybe_kubectl="$(find "${PWD}/bazel-bin/" -name "kubectl" -type f)"
