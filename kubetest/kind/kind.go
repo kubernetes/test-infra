@@ -269,17 +269,6 @@ func (d *Deployer) Build() error {
 		if err := d.control.FinishRunning(cmd); err != nil {
 			return err
 		}
-		/*
-			e2e.test does not show up in a path with platform in it and will
-			not be found by kube::util::find-binary, so we will copy it to an
-			acceptable location until this is fixed upstream
-			https://github.com/kubernetes/kubernetes/issues/68306
-		*/
-		cmd = exec.Command("cp", "-r", "bazel-bin/test/e2e/e2e.test", "./_output/bin/")
-		cmd.Dir = d.importPathK8s
-		if err := d.control.FinishRunning(cmd); err != nil {
-			return err
-		}
 	}
 
 	return nil
