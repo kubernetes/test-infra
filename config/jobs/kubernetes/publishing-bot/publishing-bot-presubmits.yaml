@@ -9,3 +9,25 @@ presubmits:
       - image: golang:1.11
         command:
         - make
+  kubernetes/kubernetes:
+    - name: pull-publishing-bot-validate
+      always_run: false
+      decorate: true
+      path_alias: k8s.io/kubernetes
+      skip_report: false
+      optional: true
+      run_if_changed: '^staging/publishing.*$'
+      extra_refs:
+        - org: kubernetes
+          repo: publishing-bot
+          base_ref: master
+          path_alias: k8s.io/publishing-bot
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
+            command:
+              - go
+            args:
+              - run
+              - k8s.io/publishing-bot/cmd/validate-rules
+              - /home/prow/go/src/k8s.io/kubernetes/staging/publishing/rules.yaml
