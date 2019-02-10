@@ -1153,6 +1153,8 @@ func (c *ProwConfig) defaultPeriodicFields(js []Periodic) {
 	}
 }
 
+var genericTestRe = regexp.MustCompile(`(?m)^/test (?:.*? )?.+(?: .*?)?$`)
+
 // SetPresubmitRegexes compiles and validates all the regular expressions for
 // the provided presubmits.
 func SetPresubmitRegexes(js []Presubmit) error {
@@ -1164,6 +1166,9 @@ func SetPresubmitRegexes(js []Presubmit) error {
 		}
 		if !js[i].re.MatchString(j.RerunCommand) {
 			return fmt.Errorf("for job %s, rerun command \"%s\" does not match trigger \"%s\"", j.Name, j.RerunCommand, j.Trigger)
+		}
+		if !genericTestRe.MatchString(j.RerunCommand) {
+			return fmt.Errorf("for job %s, rerun command \"%s\" does not match generic trigger \"%s\"", j.Name, j.RerunCommand, genericTestRe)
 		}
 		b, err := setBrancherRegexes(j.Brancher)
 		if err != nil {
