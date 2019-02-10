@@ -14,12 +14,13 @@ $GOPATH/src/k8s.io/kubernetes/   # ... <kubernetes/kubernetes checkout>
 $GOPATH/src/k8s.io/test-infra/   # ... <kubernetes/test-infra checkout>
 ```
 Then from `$GOPATH/src/k8s.io/kubernetes/` run:
- `./../planter/planter.sh make bazel-build`.
+ `./../test-infra/planter/planter.sh make bazel-build`.
 
 NOTE: if you previously built Kubernetes by other means, you may need to run
 `make clean` first to clean up some symlink cycles.
 
- For `test-infra` you can run eg `./planter/planter.sh bazel test //...`.
+To run the tests for `test-infra` using Bazel, you can run eg `./planter/planter.sh bazel test //...` from
+the `test-infra` directory.
 
 ## Options
 
@@ -41,7 +42,6 @@ Currently, SELinux is disabled for the container that runs the bazel
 environment, which allows for the rest of the host system to leave SELinux
 enabled. We could relabel the volumes and enable SELinux but this could cause
 major issues on the host if planter was used from say $HOME.
-
 
 Further details can be found in `planter.sh` itself, which is somewhat
 self-documenting.
