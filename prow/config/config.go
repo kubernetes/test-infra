@@ -1228,3 +1228,24 @@ func SetPostsubmitRegexes(ps []Postsubmit) error {
 	}
 	return nil
 }
+
+func (c *JobConfig) AllClusterAliases() sets.String {
+	aliases := sets.NewString()
+	for _, presubmits := range c.Presubmits {
+		for _, presubmit := range presubmits {
+			aliases.Insert(presubmit.Cluster)
+		}
+	}
+
+	for _, postsubmits := range c.Postsubmits {
+		for _, postsubmit := range postsubmits {
+			aliases.Insert(postsubmit.Cluster)
+		}
+	}
+
+	for _, periodic := range c.Periodics {
+		aliases.Insert(periodic.Cluster)
+	}
+
+	return aliases
+}

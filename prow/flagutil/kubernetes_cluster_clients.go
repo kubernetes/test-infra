@@ -23,6 +23,7 @@ import (
 	"net/url"
 	"os"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	prow "k8s.io/test-infra/prow/client/clientset/versioned"
@@ -165,7 +166,7 @@ func (o *KubernetesOptions) InfrastructureClusterClient(dryRun bool) (kubernetes
 }
 
 // BuildClusterClients returns Pod clients for build clusters, mapped by their buildCluster alias, not by context.
-func (o *KubernetesOptions) BuildClusterClients(namespace string, dryRun bool) (buildClusterClients map[string]corev1.PodInterface, err error) {
+func (o *KubernetesOptions) BuildClusterClients(namespace string, dryRun bool, knownAliases sets.String) (buildClusterClients map[string]corev1.PodInterface, err error) {
 	if o.dryRun {
 		return nil, errors.New("no dry-run pod client is supported for build clusters in dry-run mode")
 	}
@@ -174,16 +175,33 @@ func (o *KubernetesOptions) BuildClusterClients(namespace string, dryRun bool) (
 		return nil, err
 	}
 
+	buildClusterAliases := sets.NewString()
 	buildClients := map[string]corev1.PodInterface{}
-	for context, client := range o.kubernetesClientsByContext {
-		// we want to map build cluster clients by their alias, not their context
-		// the only context that is not the alias is the default context, so
-		// we can simply overwrite that one and be content that our build cluster
-		// mapping is correct for the controller
-		if context == o.infraContext {
-			context = kube.DefaultClusterAlias
-		}
-		buildClients[context] = client.CoreV1().Pods(namespace)
+	for alias, client := range contextsToAliases(o.kubernetesClientsByContext, o.infraContext) {
+		buildClusterAliases.Insert(alias)
+		buildClients[alias] = client.CoreV1().Pods(namespace)
+	}
+	if !buildClusterAliases.HasAll(knownAliases.UnsortedList()...) {
+		return nil, fmt.Errorf("the following cluster aliases declared for jobs were not found in loaded clusters: %v", knownAliases.Difference(buildClusterAliases).List())
 	}
 	return buildClients, nil
+}
+
+// contextsToAliases remaps Kubernetes clients from context to alias. This is
+// almost always a no-op except for when there is no literal "default" context
+// provided in the input map. In this case, the default context is the infra
+// cluster context (often the in-cluster context ("")) but the default alias
+// is Prow-specific ("default") and we need to ensure that the default alias
+// always exists.
+func contextsToAliases(clientsByContext map[string]kubernetes.Interface, infraContext string) map[string]kubernetes.Interface {
+	_, literalDefaultProvided := clientsByContext[kube.DefaultClusterAlias]
+	clientsByAlias := map[string]kubernetes.Interface{}
+	for context, client := range clientsByContext {
+		alias := context
+		if !literalDefaultProvided && context == infraContext {
+			alias = kube.DefaultClusterAlias
+		}
+		clientsByAlias[alias] = client
+	}
+	return clientsByAlias
 }
