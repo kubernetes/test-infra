@@ -37,22 +37,14 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-    agent: knative-build
-    build_spec:
-      steps:
-      - name: pull-cri-containerd-build-containerd
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
-        command:
-        - runner.sh
-        args:
-        - ./test/build.sh
-        env:
-        - name: GOPATH
-          value: /home/prow/go
+    spec:
+      containers:
       - name: pull-cri-containerd-node-e2e
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
         command:
         - runner.sh
+        - ./test/build.sh
+        - "&&"
         - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --deployment=node
@@ -85,22 +77,14 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-    agent: knative-build
-    build_spec:
-      steps:
-      - name: pull-cri-containerd-build-containerd
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
-        command:
-        - runner.sh
-        args:
-        - ./test/build.sh
-        env:
-        - name: GOPATH
-          value: /home/prow/go
+    spec:
+      containers:
       - name: pull-cri-containerd-node-e2e
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
         command:
         - runner.sh
+        - ./test/build.sh
+        - "&&"
         - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --deployment=node
@@ -112,7 +96,7 @@ presubmits:
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2
         - --timeout=65m
         - "--node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml -node-env=PULL_REFS=$(PULL_REFS)"
-
+  
   - name: pull-cri-containerd-node-e2e
     always_run: true
     max_concurrency: 8
@@ -133,22 +117,14 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-    agent: knative-build
-    build_spec:
-      steps:
-      - name: pull-cri-containerd-build-containerd
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
-        command:
-        - runner.sh
-        args:
-        - ./test/build.sh
-        env:
-        - name: GOPATH
-          value: /home/prow/go
+    spec:
+      containers:
       - name: pull-cri-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
         command:
         - runner.sh
+        - ./test/build.sh
+        - "&&"
         - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --deployment=node
@@ -160,7 +136,7 @@ presubmits:
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2
         - --timeout=65m
         - "--node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml -node-env=PULL_REFS=$(PULL_REFS)"
-
+  
   - name: pull-cri-containerd-verify
     always_run: true
     branches:
