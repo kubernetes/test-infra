@@ -67,7 +67,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
       - --provider=gce
