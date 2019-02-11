@@ -3303,6 +3303,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-kubedns-performance-nodecache
 
 # GCE windows test groups.
+- name: ci-kubernetes-e2e-windows-gce
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-windows-gce
 - name: ci-kubernetes-e2e-windows-gce-poc
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-windows-gce-poc
 
@@ -4601,6 +4603,8 @@ dashboards:
   dashboard_tab:
   - name: windows-prototype
     test_group_name: ci-kubernetes-e2e-windows-gce-poc
+  - name: windows-gce
+    test_group_name: ci-kubernetes-e2e-windows-gce
 
 - name: sig-release-master-upgrade
   dashboard_tab:
@@ -7603,6 +7607,9 @@ dashboards:
   - name: "Conformance acs-engine on Azure"
     description: Runs conformance tests on a Kubernetes cluster provided by acs-engine (https://github.com/Azure/acs-engine) on Azure cloud"
     test_group_name: ci-kubernetes-e2e-win-1-13
+  - name: "gce-windows-master"
+    description: Runs tests on a Kubernetes cluster with Windows nodes on GCE"
+    test_group_name: ci-kubernetes-e2e-windows-gce
 
 # sig-azure dashboard
 - name: sig-azure-master
