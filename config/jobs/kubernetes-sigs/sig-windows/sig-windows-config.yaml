@@ -48,7 +48,7 @@ periodics:
       - "--root=/go/src"
       - "--repo=k8s.io/kubernetes=master"
       - "--upload=gs://kubernetes-jenkins/logs/"
-      - "--timeout=460"
+      - "--timeout=480"
       - "--scenario=kubernetes_e2e"
       - --
       - "--test=true"
@@ -68,7 +68,7 @@ periodics:
       - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release.json"
       - "--acsengine-win-binaries"
       - "--acsengine-agentpoolcount=3"
-      - "--test_args=--node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob --ginkgo.skip=\\[LinuxOnly\\]"
-      - "--timeout=420m"
+      - "--test_args=--node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob --ginkgo.skip=\\[LinuxOnly\\]|\\[k8s.io\\].Pods.*should.cap.back-off.at.MaxContainerBackOff.\\[Slow\\]\\[NodeConformance\\]|\\[k8s.io\\].Pods.*should.have.their.auto-restart.back-off.timer.reset.on.image.update.\\[Slow\\]\\[NodeConformance\\]"
+      - "--timeout=450m"
       securityContext:
         privileged: true
