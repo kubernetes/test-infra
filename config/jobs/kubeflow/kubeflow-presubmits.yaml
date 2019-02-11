@@ -219,6 +219,7 @@ presubmits:
   - name: kubeflow-pipeline-sample-test
     always_run: true
     decorate: true
+    skip_report: true
     labels:
       preset-service-account: "true"
     spec:
