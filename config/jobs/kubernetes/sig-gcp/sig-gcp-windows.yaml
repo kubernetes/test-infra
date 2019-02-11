@@ -81,4 +81,6 @@ periodics:
         value: "true"
       - name: NUM_WINDOWS_NODES
         value: "3"
+      - name: KUBERNETES_NODE_PLATFORM
+        value: "windows"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190125-3d9554697e-master
