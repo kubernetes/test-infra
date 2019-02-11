@@ -53,3 +53,11 @@ table.mdl-data-table {
 .expander .icon-button {
   vertical-align: middle;
 }
+
+a:link {
+  color: #ff8caa;
+}
+
+a:visited {
+  color: #ff8caa;
+}
