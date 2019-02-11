@@ -30,7 +30,6 @@ import (
 var okToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
 var testAllRe = regexp.MustCompile(`(?m)^/test all,?($|\s.*)`)
 var retestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
-var genericTestRe = regexp.MustCompile(`(?m)^/test (?:.*? )?.+(?: .*?)?$`)
 
 func handleGenericComment(c Client, trigger *plugins.Trigger, gc github.GenericCommentEvent) error {
 	org := gc.Repo.Owner.Login
@@ -44,8 +43,17 @@ func handleGenericComment(c Client, trigger *plugins.Trigger, gc github.GenericC
 		return nil
 	}
 	// Skip comments not germane to this plugin
-	if !retestRe.MatchString(gc.Body) && !okToTestRe.MatchString(gc.Body) && !testAllRe.MatchString(gc.Body) && !genericTestRe.MatchString(gc.Body) {
-		return nil
+	if !retestRe.MatchString(gc.Body) && !okToTestRe.MatchString(gc.Body) && !testAllRe.MatchString(gc.Body) {
+		matched := false
+		for _, presubmit := range c.Config.Presubmits[gc.Repo.FullName] {
+			matched = matched || presubmit.TriggerMatches(gc.Body)
+			if matched {
+				break
+			}
+		}
+		if !matched {
+			return nil
+		}
 	}
 
 	// Skip bot comments.

@@ -229,6 +229,28 @@ func TestHandleGenericComment(t *testing.T) {
 			StartsExactly: "pull-jib",
 		},
 		{
+			name:   "test of silly regex job",
+			Author: "trusted-member",
+			Body:   "Nice weather outside, right?",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jab",
+						},
+						Brancher:     config.Brancher{Branches: []string{"master"}},
+						Context:      "pull-jab",
+						Trigger:      "Nice weather outside, right?",
+						RerunCommand: "Nice weather outside, right?",
+					},
+				},
+			},
+			ShouldBuild:   true,
+			StartsExactly: "pull-jab",
+		},
+		{
 			name: "needs-ok-to-test label is removed when no presubmit runs by default",
 
 			Author:      "trusted-member",
