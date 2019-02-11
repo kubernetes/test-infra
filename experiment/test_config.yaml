@@ -1057,7 +1057,7 @@ jobs:
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
     - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
     sigOwners: ['sig-gcp']
 
@@ -1099,7 +1099,7 @@ jobs:
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
     - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
     sigOwners: ['sig-gcp']
 
@@ -1139,7 +1139,7 @@ jobs:
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
     - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
     sigOwners: ['sig-gcp']
 
@@ -1179,7 +1179,7 @@ jobs:
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
     sigOwners: ['sig-gcp']
 
 # The following settings are used by cluster e2e tests.
