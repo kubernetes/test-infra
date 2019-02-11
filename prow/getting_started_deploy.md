@@ -349,7 +349,38 @@ so that they pick up the change.
 ### Run test pods in different clusters
 
 You may choose to run test pods in a separate cluster entirely. This is a good practice to keep testing isolated from Prow's service components and secrets. It can also be used to furcate job execution to different clusters.
-Create a secret containing a `{"cluster-name": {cluster-details}}` map like this:
+
+Prow allows you to specify credentials for these build clusters via the normal
+Kubeconfig, or a custom cluster configuration format. Regardless of the format
+for authentication details, extra build clusters will be addressed via an alias.
+By default, Prow will schedule all test Pods to the "default" cluster alias.
+Every Prow component that accesses build clusters will expose the following flags:
+
+| Flag | Description |
+| ---- | ----------- |
+| `--kubeconfig` | Path to a Kubeconfig file. |
+| `--context` | Name of a context in the `--kubeconfig` file to use for the infrastructure client. |
+| `--build-cluster` | Path to a Cluster YAML file. |
+ 
+With no flags set, Prow components will use [in-cluster configuration](https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/#accessing-the-api-from-a-pod)
+and authenticate as the service account that was created for the service. The RBAC
+rules that are deployed reflect the permissions each Prow component needs.
+
+If `--kubeconfig` is provided, the contexts in the config will be used as aliases
+for build clusters. See [the doc](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/)
+for how to specify connection credentials to multiple clusters in a configuration file.
+If the `--kubeconfig` file specifies a current context, this context will be used as 
+the context for the infrastructure cluster. If no current context is provided, the
+in-cluster context will be used as explained above. Target build clusters for test
+Pod scheduling by full context name.
+
+If `--build-cluster` is provided, the clusters from the file are merged with any other
+cluster configurations that were loaded from the Pod environment or from `--kubeconfig`
+and will be available to schedule test Pods by the alias given in the file. These files
+only allow certificate authentication, are deprecated and not suggested for use any longer.
+
+If you must create a legacy cluster file, create a secret containing a map of cluster
+alias to base-64-encoded certificate authentication details like this:
 
 ```yaml
 default:
@@ -372,6 +403,16 @@ bazel run //prow/cmd/mkbuild-cluster -- \
   --alias=A \
   --print-entry | tee cluster.yaml
 kubectl create secret generic build-cluster --from-file=cluster.yaml
+```
+
+If you only have one cluster to target, you may create a simpler file, where the
+only cluster present will be aliased as "default":
+
+```yaml
+endpoint: https://<master-ip>
+clientCertificate: <base64-encoded cert>
+clientKey: <base64-encoded key>
+clusterCaCertificate: <base64-encoded cert>
 ```
 
 Mount this secret into the prow components that need it (at minimum: `plank`,

@@ -34,64 +34,110 @@ import (
 // contexts are found.
 func LoadClusterConfigs(kubeconfig, buildCluster string) (configurations map[string]rest.Config, defaultContext string, err error) {
 	logrus.Infof("Loading cluster contexts...")
-	configs := map[string]rest.Config{}
-	var defCtx *string
-	// This will work if we are running inside kubernetes
-	if localCfg, err := rest.InClusterConfig(); err != nil {
-		logrus.Warnf("Failed to create in-cluster config: %v", err)
-	} else {
-		defCtx = new(string)
-		logrus.Info("* in-cluster")
-		configs[*defCtx] = *localCfg
+
+	loaders := []clusterConfigLoader{inClusterConfigLoader(), kubeconfigConfigLoader(kubeconfig)}
+	if buildCluster != "" {
+		loaders = append(loaders, buildClusterConfigLoader(buildCluster))
+	}
+	configs, defCtx, err := aggregateClusterConfigLoader(loaders...)()
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to load cluster configs: %v", err)
 	}
 
-	// Attempt to load external clusters too
-	var loader clientcmd.ClientConfigLoader
-	if kubeconfig != "" { // load from --kubeconfig
-		loader = &clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfig}
-	} else {
-		loader = clientcmd.NewDefaultClientConfigLoadingRules()
+	if len(configs) == 0 {
+		return nil, "", errors.New("no clients found")
 	}
+	return configs, *defCtx, nil
+}
 
-	cfg, err := loader.Load()
-	switch {
-	case err != nil && kubeconfig != "":
-		return nil, "", fmt.Errorf("load %s kubecfg: %v", kubeconfig, err)
-	case err != nil:
-		logrus.Warnf("failed to load any kubecfg files: %v", err)
-	default:
-		// normally defCtx is in cluster (""), but we may be a dev running on their workstation
-		// in which case rest.InClusterConfig() will fail, so use the current context as default
-		// (which is where we look for prowjobs)
-		if defCtx == nil && cfg.CurrentContext != "" {
-			defCtx = &cfg.CurrentContext
+// inClusterContext is the context used to denote an in-cluster client
+func inClusterContext() *string {
+	return new(string)
+}
+
+type clusterConfigLoader func() (configurations map[string]rest.Config, defaultContext *string, err error)
+
+// inClusterConfigLoader returns an optimistic loader for in-cluster config
+// the config has the in-cluster alias ("") and this will never return an error
+// and will not attempt to specify a default context
+func inClusterConfigLoader() clusterConfigLoader {
+	return pluggableInClusterConfigLoader(rest.InClusterConfig)
+}
+
+// pluggableInClusterConfigLoader returns an optimistic loader for in-cluster config
+// using the given loading func. This is intended for internal use and testing _only_
+func pluggableInClusterConfigLoader(loader func() (*rest.Config, error)) clusterConfigLoader {
+	return func() (configurations map[string]rest.Config, defaultContext *string, err error) {
+		configurations = map[string]rest.Config{}
+		if localCfg, err := loader(); err != nil {
+			logrus.WithError(err).Warn("failed to create in-cluster config")
+		} else {
+			logrus.WithField("context", "").Info("loaded in-cluster config")
+			configurations[*inClusterContext()] = *localCfg
+		}
+		return configurations, nil, nil
+	}
+}
+
+// kubeconfigConfigLoader returns a loader for build cluster configurations from a
+// kube.config file. This loader will attempt to provide a default context
+func kubeconfigConfigLoader(kubeconfig string) clusterConfigLoader {
+	return func() (configurations map[string]rest.Config, defaultContext *string, err error) {
+		configurations = map[string]rest.Config{}
+		var loader clientcmd.ClientConfigLoader
+		if kubeconfig != "" { // load from --kubeconfig
+			loader = &clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfig}
+		} else {
+			loader = clientcmd.NewDefaultClientConfigLoadingRules()
 		}
 
-		for context := range cfg.Contexts {
-			logrus.Infof("* %s", context)
-			contextCfg, err := clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, loader).ClientConfig()
-			if err != nil {
-				return nil, "", fmt.Errorf("create %s client: %v", context, err)
+		cfg, err := loader.Load()
+		switch {
+		case err != nil && kubeconfig != "":
+			return nil, nil, fmt.Errorf("error loading kubeconfig at %s: %v", kubeconfig, err)
+		case err != nil:
+			logrus.WithError(err).Warn("failed to load any kubeconfig files")
+		default:
+			_, currentContextHasConfig := cfg.Contexts[cfg.CurrentContext]
+			if cfg.CurrentContext != "" && currentContextHasConfig {
+				defaultContext = &cfg.CurrentContext
+				logrus.WithField("context", defaultContext).Info("setting default context from current context in kubeconfig")
 			}
-			configs[context] = *contextCfg
-		}
-	}
 
-	if buildCluster != "" { // load from --build-cluster
+			for context := range cfg.Contexts {
+				contextCfg, err := clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, loader).ClientConfig()
+				if err != nil {
+					return nil, nil, fmt.Errorf("failed to create client for context %s: %v", context, err)
+				}
+				logrus.WithField("context", context).Info("loaded build cluster config from kubeconfig")
+				configurations[context] = *contextCfg
+			}
+		}
+		return configurations, defaultContext, nil
+	}
+}
+
+// buildClusterConfigLoader returns a loader for build cluster configurations from a
+// clusters.yaml file, where cluster contexts are the aliases given in that file.
+// This loader will not attempt to specify a default context
+func buildClusterConfigLoader(buildCluster string) clusterConfigLoader {
+	return func() (configurations map[string]rest.Config, defaultContext *string, err error) {
+		configurations = map[string]rest.Config{}
 		data, err := ioutil.ReadFile(buildCluster)
 		if err != nil {
-			return nil, "", fmt.Errorf("read build clusters: %v", err)
+			return nil, nil, fmt.Errorf("read build clusters: %v", err)
 		}
 		raw, err := UnmarshalClusterMap(data)
 		if err != nil {
-			return nil, "", fmt.Errorf("unmarshal build clusters: %v", err)
+			return nil, nil, fmt.Errorf("unmarshal build clusters: %v", err)
 		}
-		cfg = &clientcmdapi.Config{
+		cfg := &clientcmdapi.Config{
 			Clusters:  map[string]*clientcmdapi.Cluster{},
 			AuthInfos: map[string]*clientcmdapi.AuthInfo{},
 			Contexts:  map[string]*clientcmdapi.Context{},
 		}
 		for alias, config := range raw {
+			fmt.Printf("working on alias %q\n", alias)
 			cfg.Clusters[alias] = &clientcmdapi.Cluster{
 				Server:                   config.Endpoint,
 				CertificateAuthorityData: config.ClusterCACertificate,
@@ -107,17 +153,46 @@ func LoadClusterConfigs(kubeconfig, buildCluster string) (configurations map[str
 			}
 		}
 		for context := range cfg.Contexts {
-			logrus.Infof("* %s", context)
+			fmt.Printf("working on context %q\n", context)
 			contextCfg, err := clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, nil).ClientConfig()
 			if err != nil {
-				return nil, "", fmt.Errorf("create %s client: %v", context, err)
+				return nil, nil, fmt.Errorf("failed to create client for context %s: %v", context, err)
 			}
-			configs[context] = *contextCfg
+			logrus.WithField("context", context).Info("loaded build cluster config from cluster YAML")
+			configurations[context] = *contextCfg
 		}
+		return configurations, nil, nil
 	}
+}
 
-	if len(configs) == 0 {
-		return nil, "", errors.New("no clients found")
+func aggregateClusterConfigLoader(loaders ...clusterConfigLoader) clusterConfigLoader {
+	return func() (configurations map[string]rest.Config, defaultContext *string, err error) {
+		configurations = map[string]rest.Config{}
+		for _, loader := range loaders {
+			configurationSubset, localDefault, loadErr := loader()
+			if loadErr != nil {
+				return nil, nil, fmt.Errorf("failed to load cluster configurations: %v", loadErr)
+			}
+			for context, config := range configurationSubset {
+				if _, alreadyPresent := configurations[context]; alreadyPresent {
+					return nil, nil, fmt.Errorf("failed to load cluster configurations, context %q provided twice", context)
+				}
+				configurations[context] = config
+			}
+			if localDefault != nil {
+				if defaultContext != nil {
+					return nil, nil, fmt.Errorf("failed to load cluster configurations, default context provided twice (%q, %q)", *defaultContext, *localDefault)
+				}
+				defaultContext = localDefault
+			}
+		}
+		// if no default context was set, we should use the in-cluster context
+		if defaultContext == nil {
+			if _, inClusterConfigExists := configurations[*inClusterContext()]; !inClusterConfigExists {
+				return nil, nil, errors.New("failed to load cluster configurations, no default context provided and no in-cluster config loaded")
+			}
+			defaultContext = inClusterContext()
+		}
+		return configurations, defaultContext, nil
 	}
-	return configs, *defCtx, nil
 }
