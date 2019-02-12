@@ -160,6 +160,7 @@ func (d *Deployer) getKubeConfigPath() (string, error) {
 func (d *Deployer) setKubeConfigEnv() error {
 	path, err := d.getKubeConfigPath()
 	if err != nil {
+		log.Print("WARNING: could not obtain the kubeconfig path for the kind cluster")
 		return err
 	}
 	if err = os.Setenv("KUBECONFIG", path); err != nil {
@@ -297,6 +298,11 @@ func (d *Deployer) Up() error {
 	if err := d.control.FinishRunning(cmd); err != nil {
 		return err
 	}
+
+	// set KUBECONFIG
+	if err := d.setKubeConfigEnv(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -333,10 +339,9 @@ func (d *Deployer) DumpClusterLogs(localPath, gcsPath string) error {
 
 // TestSetup is a NO-OP in this deployer.
 func (d *Deployer) TestSetup() error {
-	// set KUBECONFIG
-	if err := d.setKubeConfigEnv(); err != nil {
-		return err
-	}
+	// set KUBECONFIG, but ignore the error if a cluster is not up yet.
+	_ = d.setKubeConfigEnv()
+
 	// set conformance env so ginkgo.sh etc won't try to do provider setup
 	os.Setenv("KUBERNETES_CONFORMANCE_TEST", "y")
 	return nil
