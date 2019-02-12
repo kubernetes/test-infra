@@ -6,7 +6,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190212-fdfa7b47f-1.11
       args:
       - --repo=k8s.io/kubernetes=release-1.11
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -33,7 +33,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190212-fdfa7b47f-1.12
       args:
       - --repo=k8s.io/kubernetes=release-1.12
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -60,7 +60,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190212-fdfa7b47f-1.13
       args:
       - --repo=k8s.io/kubernetes=release-1.13
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -78,6 +78,33 @@ periodics:
       - --provider=skeleton
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m
+
+- name: ci-kubernetes-e2e-kubeadm-gce-1-14
+  interval: 12h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-bazel-scratch-dir: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190212-fdfa7b47f-1.14
+        args:
+          - --repo=k8s.io/kubernetes=release-1.14
+          - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
+          - --timeout=320
+          - --upload=gs://kubernetes-jenkins/logs
+          - --scenario=kubernetes_e2e
+          - --
+          - --cluster=
+          - --deployment=kubernetes-anywhere
+          - --extract=ci/latest-bazel-1.14
+          - --gcp-zone=us-west1-b
+          - --kubeadm=ci
+          - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.14
+          - --kubernetes-anywhere-kubernetes-version=ci/latest-1.14
+          - --provider=skeleton
+          - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
+          - --timeout=300m
 
 - name: ci-kubernetes-e2e-kubeadm-gce-master
   interval: 2h

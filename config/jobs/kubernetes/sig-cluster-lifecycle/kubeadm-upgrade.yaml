@@ -1,36 +1,6 @@
 # kubeadm upgrade tests
 periodics:
 # manual-release-bump-required (create a new job and delete the oldest)
-- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
-  interval: 12h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
-      args:
-      - --repo=k8s.io/kubernetes=release-1.11
-      - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
-      - --timeout=320
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-version-skew=false
-      - --cluster=
-      - --deployment=kubernetes-anywhere
-      - --extract=release/latest-1.11
-      - --extract=ci/latest-bazel-1.10
-      - --gcp-zone=us-west1-b
-      - --kubeadm=periodic
-      - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.10
-      - --kubernetes-anywhere-kubernetes-version=ci/latest-1.10
-      - --kubernetes-anywhere-upgrade-method=upgrade
-      - --provider=skeleton
-      - --skew
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
-      - --timeout=300m
-      - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --ginkgo.skip=statefulset-upgrade|hpa-upgrade|service-upgrade --upgrade-target=release/latest-1.11
 
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
   interval: 12h
@@ -39,7 +9,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190212-fdfa7b47f-master
       args:
       - --repo=k8s.io/kubernetes=release-1.12
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -70,7 +40,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190212-fdfa7b47f-master
       args:
       - --repo=k8s.io/kubernetes=release-1.13
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -101,7 +71,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190207-c706a2422-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190212-fdfa7b47f-master
         args:
           - --repo=k8s.io/kubernetes=release-1.14
           - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -132,7 +102,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190212-fdfa7b47f-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
