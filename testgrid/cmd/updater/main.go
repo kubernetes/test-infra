@@ -101,28 +101,6 @@ func testGroupPath(g gcs.Path, name string) (*gcs.Path, error) {
 	return np, nil
 }
 
-// Message extracts the message for the junit test case.
-//
-// Will use the first non-empty <failure/>, <skipped/>, <output/> value.
-func message(jr junit.Result) string {
-	const max = 140
-	var msg string
-	switch {
-	case jr.Failure != nil && *jr.Failure != "":
-		msg = *jr.Failure
-	case jr.Skipped != nil && *jr.Skipped != "":
-		msg = *jr.Skipped
-	case jr.Output != nil && *jr.Output != "":
-		msg = *jr.Output
-	}
-	l := len(msg)
-	if max == 0 || l <= max {
-		return msg
-	}
-	h := max / 2
-	return msg[:h] + "..." + msg[l-h-1:]
-}
-
 // Row converts the junit result into a Row result, prepending the suite name.
 func row(jr junit.Result, suite string) (string, Row) {
 	n := jr.Name
@@ -138,7 +116,7 @@ func row(jr junit.Result, suite string) (string, Row) {
 	if jr.Time > 0 {
 		r.Metrics[elapsedKey] = jr.Time
 	}
-	if msg := message(jr); msg != "" {
+	if msg := jr.Message(); msg != "" {
 		r.Message = msg
 	}
 	switch {
