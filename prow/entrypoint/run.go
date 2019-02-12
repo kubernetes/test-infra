@@ -49,6 +49,10 @@ const (
 	// indicate that we were terminated via a signal.
 	AbortedErrorCode = 130
 
+	// SkipCode indicates either this step was skipped
+	// or all next steps should be skipped
+	SkipCode = 111
+
 	// PreviousErrorCode indicates a previous step failed so we
 	// did not run this step.
 	PreviousErrorCode = internalCode + AbortedErrorCode
@@ -128,6 +132,9 @@ func (o Options) ExecuteProcess() (int, error) {
 		}
 		if code != 0 {
 			logrus.Infof("Skipping as previous step exited %d", code)
+			if code == SkipCode {
+				return SkipCode, nil
+			}
 			return PreviousErrorCode, nil
 		}
 	}
@@ -184,11 +191,19 @@ func (o Options) ExecuteProcess() (int, error) {
 			returnCode = 1
 		}
 
-		if returnCode != 0 {
+		if returnCode == SkipCode {
+			commandErr = nil
+		} else if returnCode != 0 {
 			commandErr = fmt.Errorf("wrapped process failed: %v", commandErr)
 		}
 	}
 	return returnCode, commandErr
+}
+
+// IsSuccessCode returns whether an exit code indicates
+// a given step completed successfully
+func IsSuccessCode(exitCode int) bool {
+	return exitCode == 0 || exitCode == SkipCode
 }
 
 func (o *Options) mark(exitCode int) error {

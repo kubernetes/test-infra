@@ -49,9 +49,9 @@ func wait(ctx context.Context, entries []wrapper.Options) (bool, bool, int) {
 
 	for _, opt := range entries {
 		returnCode, err := wrapper.WaitForMarker(ctx, opt.MarkerFile)
-		passed = passed && err == nil && returnCode == 0
+		passed = passed && err == nil && entrypoint.IsSuccessCode(returnCode)
 		aborted = aborted || returnCode == entrypoint.AbortedErrorCode
-		if returnCode != 0 && returnCode != entrypoint.PreviousErrorCode {
+		if !entrypoint.IsSuccessCode(returnCode) && returnCode != entrypoint.PreviousErrorCode {
 			failures++
 		}
 	}
