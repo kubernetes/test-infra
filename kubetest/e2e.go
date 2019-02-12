@@ -536,6 +536,12 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 		return fmt.Errorf("Cannot find ssh key from: %v, err : %v", sshKeyPath, err)
 	}
 
+	artifactsDir, ok := os.LookupEnv("ARTIFACTS")
+	if !ok {
+		// TODO(krzyzacy): old behavior, consider deprecate
+		artifactsDir = filepath.Join(os.Getenv("WORKSPACE"), "_artifacts")
+	}
+
 	// prep node args
 	runner := []string{
 		"run",
@@ -544,7 +550,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 		"--logtostderr",
 		"--vmodule=*=4",
 		"--ssh-env=gce",
-		fmt.Sprintf("--results-dir=%s/_artifacts", os.Getenv("WORKSPACE")),
+		fmt.Sprintf("--results-dir=%s", artifactsDir),
 		fmt.Sprintf("--project=%s", project),
 		fmt.Sprintf("--zone=%s", zone),
 		fmt.Sprintf("--ssh-user=%s", os.Getenv("USER")),
