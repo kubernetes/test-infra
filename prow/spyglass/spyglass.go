@@ -86,10 +86,12 @@ func (s *Spyglass) Lenses(matchCache map[string][]string) []lenses.Lens {
 	}
 	// Make sure lenses are rendered in order by ascending priority
 	sort.Slice(ls, func(i, j int) bool {
-		iname := ls[i].Name()
-		jname := ls[j].Name()
-		pi := ls[i].Priority()
-		pj := ls[j].Priority()
+		iconf := ls[i].Config()
+		jconf := ls[j].Config()
+		iname := iconf.Name
+		jname := jconf.Name
+		pi := iconf.Priority
+		pj := jconf.Priority
 		if pi == pj {
 			return iname < jname
 		}

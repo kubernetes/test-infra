@@ -163,16 +163,11 @@ test/e2e/e2e.go:137 BeforeSuite on Node 1 failed test/e2e/e2e.go:137
 
 type dumpLens struct{}
 
-func (dumpLens) Name() string {
-	return "dump"
-}
-
-func (dumpLens) Title() string {
-	return "Dump View"
-}
-
-func (dumpLens) Priority() int {
-	return 1
+func (dumpLens) Config() lenses.LensConfig {
+	return lenses.LensConfig{
+		Name:  "dump",
+		Title: "Dump View",
+	}
 }
 
 func (dumpLens) Header(artifacts []lenses.Artifact, resourceDir string) string {
@@ -232,18 +227,18 @@ func TestViews(t *testing.T) {
 			for _, l := range lenses {
 				var found bool
 				for _, title := range tc.expectedLensTitles {
-					if title == l.Title() {
+					if title == l.Config().Title {
 						found = true
 					}
 				}
 				if !found {
-					t.Errorf("lens title %s not found in expected titles.", l.Title())
+					t.Errorf("lens title %s not found in expected titles.", l.Config().Title)
 				}
 			}
 			for _, title := range tc.expectedLensTitles {
 				var found bool
 				for _, l := range lenses {
-					if title == l.Title() {
+					if title == l.Config().Title {
 						found = true
 					}
 				}
