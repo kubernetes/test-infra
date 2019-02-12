@@ -592,7 +592,7 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 
 	// Run tests on the kubemark cluster.
 	if err := control.XMLWrap(&suite, "Kubemark Test", func() error {
-		testArgs = util.SetFieldDefault(testArgs, "--ginkgo.focus", "starting\\s30\\pods")
+		testArgs = util.SetFieldDefault(testArgs, "--ginkgo.focus", "starting\\s30\\spods")
 
 		// detect master IP
 		if err := os.Setenv("MASTER_NAME", os.Getenv("INSTANCE_PREFIX")+"-kubemark-master"); err != nil {
