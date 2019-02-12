@@ -101,7 +101,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190207-c706a2422-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190212-fdfa7b47f-master
         args:
           - --repo=k8s.io/kubernetes=release-1.14
           - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e

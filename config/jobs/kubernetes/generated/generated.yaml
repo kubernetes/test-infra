@@ -1245,7 +1245,7 @@ periodics:
     containers:
     - args:
       - --timeout=320
-      - --repo=k8s.io/kubernetes=release-1.13
+      - --repo=k8s.io/kubernetes=release-1.14
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -2080,7 +2080,7 @@ periodics:
     containers:
     - args:
       - --timeout=320
-      - --repo=k8s.io/kubernetes=release-1.13
+      - --repo=k8s.io/kubernetes=release-1.14
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -2644,7 +2644,7 @@ periodics:
     containers:
     - args:
       - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.13
+      - --repo=k8s.io/kubernetes=release-1.14
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -4149,7 +4149,7 @@ periodics:
     containers:
     - args:
       - --timeout=320
-      - --repo=k8s.io/kubernetes=release-1.13
+      - --repo=k8s.io/kubernetes=release-1.14
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -4406,7 +4406,7 @@ periodics:
     containers:
     - args:
       - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.13
+      - --repo=k8s.io/kubernetes=release-1.14
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -5003,7 +5003,7 @@ periodics:
     containers:
     - args:
       - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.13
+      - --repo=k8s.io/kubernetes=release-1.14
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -6222,7 +6222,7 @@ periodics:
     containers:
     - args:
       - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.13
+      - --repo=k8s.io/kubernetes=release-1.14
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -6356,7 +6356,7 @@ periodics:
     containers:
     - args:
       - --timeout=320
-      - --repo=k8s.io/kubernetes=release-1.13
+      - --repo=k8s.io/kubernetes=release-1.14
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
