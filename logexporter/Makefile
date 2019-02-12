@@ -14,7 +14,7 @@
 
 PROJECT = k8s-testimages
 IMG = gcr.io/$(PROJECT)/logexporter
-TAG = v0.1.4
+TAG = v0.1.5
 
 .PHONY: build push
 
