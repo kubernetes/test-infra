@@ -40,7 +40,10 @@ func LoadClusterConfigs(kubeconfig, buildCluster string) (configurations map[str
 	if localCfg, err := rest.InClusterConfig(); err != nil {
 		logrus.Warnf("Failed to create in-cluster config: %v", err)
 	} else {
-		defCtx = new(string)
+		//defCtx = new(string)
+		// TODO(or): remove this when https://github.com/kubernetes/test-infra/issues/11029 is fixed
+		s := "default"
+		defCtx = &s
 		logrus.Info("* in-cluster")
 		configs[*defCtx] = *localCfg
 	}
@@ -93,7 +96,7 @@ func LoadClusterConfigs(kubeconfig, buildCluster string) (configurations map[str
 		}
 		for alias, config := range raw {
 			cfg.Clusters[alias] = &clientcmdapi.Cluster{
-				Server:                   config.Endpoint,
+				Server: config.Endpoint,
 				CertificateAuthorityData: config.ClusterCACertificate,
 			}
 			cfg.AuthInfos[alias] = &clientcmdapi.AuthInfo{
