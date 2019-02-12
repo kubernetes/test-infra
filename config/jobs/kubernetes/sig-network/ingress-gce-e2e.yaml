@@ -123,31 +123,8 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]
       - --timeout=320m
 
-- name: ci-ingress-gce-e2e-release-1-1
-  interval: 480m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
-      args:
-      - --timeout=340
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --cluster=
-      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:release-1.1
-      - --extract=ci/latest
-      - --gcp-project-type=ingress-project
-      - --ginkgo-parallel=1
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\]
-      - --timeout=320m
-
 - name: ci-ingress-gce-e2e-release-1-2
-  interval: 240m
+  interval: 480m
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -170,7 +147,7 @@ periodics:
       - --timeout=320m
 
 - name: ci-ingress-gce-e2e-release-1-3
-  interval: 180m
+  interval: 240m
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -185,6 +162,29 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:release-1.3
+      - --extract=ci/latest
+      - --gcp-project-type=ingress-project
+      - --ginkgo-parallel=1
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\] 
+      - --timeout=320m
+
+- name: ci-ingress-gce-e2e-release-1-4
+  interval: 180m
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
+      args:
+      - --timeout=340
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:release-1.4
       - --extract=ci/latest
       - --gcp-project-type=ingress-project
       - --ginkgo-parallel=1
@@ -231,7 +231,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --cluster=
-      - --env=GCE_GLBC_IMAGE=k8s.gcr.io/ingress-gce-glbc-amd64:v1.1.1
+      - --env=GCE_GLBC_IMAGE=k8s.gcr.io/ingress-gce-glbc-amd64:v1.4.3
       - --extract=ci/latest
       - --gcp-project-type=ingress-project
       - --gcp-zone=us-west1-b
