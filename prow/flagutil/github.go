@@ -34,6 +34,9 @@ type GitHubOptions struct {
 	GitEndpoint         string
 	TokenPath           string
 	deprecatedTokenFile string
+
+	// parsed from the flags
+	gitEndpoint *url.URL
 }
 
 // AddFlags injects GitHub options into the given FlagSet.
@@ -68,9 +71,11 @@ func (o *GitHubOptions) Validate(dryRun bool) error {
 		}
 	}
 
-	if _, err := url.ParseRequestURI(o.GitEndpoint); err != nil {
+	gitEndpoint, err := url.ParseRequestURI(o.GitEndpoint)
+	if err != nil {
 		return fmt.Errorf("invalid -git-endpoint URI: %q", o.GitEndpoint)
 	}
+	o.gitEndpoint = gitEndpoint
 
 	if o.deprecatedTokenFile != "" {
 		o.TokenPath = o.deprecatedTokenFile
@@ -108,22 +113,6 @@ func (o *GitHubOptions) GitHubClient(secretAgent *secret.Agent, dryRun bool) (cl
 
 // GitClient returns a Git client.
 func (o *GitHubOptions) GitClient(secretAgent *secret.Agent, dryRun bool) (client *git.Client, err error) {
-	// We already validated this during flag validation
-	gitURL, _ := url.Parse(o.GitEndpoint)
-	client, err = git.NewClient(gitURL)
-	if err != nil {
-		return nil, err
-	}
-
-	// We must capture the value of client here to prevent issues related
-	// to the use of named return values when an error is encountered.
-	// Without this, we risk a nil pointer dereference.
-	defer func(client *git.Client) {
-		if err != nil {
-			client.Clean()
-		}
-	}(client)
-
 	// Get the bot's name in order to set credentials for the Git client.
 	githubClient, err := o.GitHubClient(secretAgent, dryRun)
 	if err != nil {
@@ -133,7 +122,24 @@ func (o *GitHubOptions) GitClient(secretAgent *secret.Agent, dryRun bool) (clien
 	if err != nil {
 		return nil, fmt.Errorf("error getting bot name: %v", err)
 	}
-	client.SetCredentials(botName, secretAgent.GetTokenGenerator(o.TokenPath))
+	endpoint := *o.gitEndpoint
+	endpoint.User = url.UserPassword(botName, string(secretAgent.GetTokenGenerator(o.TokenPath)()))
+
+	client, err = git.NewClient(&endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	// We must capture the value of client here to prevent issues related
+	// to the use of named return values when an error is encountered.
+	// Without this, we risk a nil pointer dereference.
+	defer func(client *git.Client) {
+		if err != nil {
+			if err := client.Clean(); err != nil {
+				logrus.WithError(err).Error("failed to clean up git client")
+			}
+		}
+	}(client)
 
 	return client, nil
 }

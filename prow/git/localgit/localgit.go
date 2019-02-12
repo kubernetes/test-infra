@@ -27,6 +27,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/git"
 )
 
@@ -49,23 +50,17 @@ func New() (*LocalGit, *git.Client, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	c, err := git.NewClient(&url.URL{Host: "https://github.com"})
-	if err != nil {
-		os.RemoveAll(t)
-		return nil, nil, err
-	}
 
-	getSecret := func() []byte {
-		return []byte("")
-	}
-
-	c.SetCredentials("", getSecret)
-
-	c.SetRemote(&url.URL{
+	c, err := git.NewClient(&url.URL{
 		Scheme: "file",
 		Host:   "",
 		Path:   t,
 	})
+	if err != nil {
+		err := os.RemoveAll(t)
+		return nil, nil, err
+	}
+
 	return &LocalGit{
 		Dir: t,
 		Git: g,
@@ -78,6 +73,7 @@ func (lg *LocalGit) Clean() error {
 }
 
 func runCmd(cmd, dir string, arg ...string) error {
+	logrus.WithFields(logrus.Fields{"args": strings.Join(append([]string{cmd}, arg...), " "), "dir": dir}).Info("Running command")
 	c := exec.Command(cmd, arg...)
 	c.Dir = dir
 	if b, err := c.CombinedOutput(); err != nil {

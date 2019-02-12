@@ -18,7 +18,6 @@ package verifyowners
 
 import (
 	"fmt"
-	"io/ioutil"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -96,10 +95,10 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 	}
 
 	// List modified OWNERS files.
-	var modifiedOwnersFiles []github.PullRequestChange
+	modifiedOwnersFiles := map[string]github.PullRequestChange{}
 	for _, change := range changes {
 		if filepath.Base(change.Filename) == ownersFileName {
-			modifiedOwnersFiles = append(modifiedOwnersFiles, change)
+			modifiedOwnersFiles[change.Filename] = change
 		}
 	}
 	if len(modifiedOwnersFiles) == 0 {
@@ -128,68 +127,69 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 
 	// Check each OWNERS file.
 	for _, c := range modifiedOwnersFiles {
-		// Try to load OWNERS file.
-		path := filepath.Join(r.Dir, c.Filename)
-		b, err := ioutil.ReadFile(path)
-		if err != nil {
-			log.WithError(err).Warningf("Failed to read %s.", path)
-			return nil
-		}
-		var approvers []string
-		var labels []string
-		// by default we bind errors to line 1
-		lineNumber := 1
-		simple, err := repoowners.ParseSimpleConfig(b)
-		if err != nil || simple.Empty() {
-			full, err := repoowners.ParseFullConfig(b)
+		// we don't error on loading
+		_ = r.OperateOnFileData(c.Filename, func(contents []byte, err error) error {
 			if err != nil {
-				lineNumberRe, _ := regexp.Compile(`line (\d+)`)
-				lineNumberMatches := lineNumberRe.FindStringSubmatch(err.Error())
-				// try to find a line number for the error
-				if len(lineNumberMatches) > 1 {
-					// we're sure it will convert as it passed the regexp already
-					absoluteLineNumber, _ := strconv.Atoi(lineNumberMatches[1])
-					// we need to convert it to a line number relative to the patch
-					al, err := golint.AddedLines(c.Patch)
-					if err != nil {
-						log.WithError(err).Errorf("Failed to compute added lines in %s: %v", c.Filename, err)
-					} else if val, ok := al[absoluteLineNumber]; ok {
-						lineNumber = val
+				log.WithError(err).Warningf("Failed to read %s.", c.Filename)
+				return nil
+			}
+			var approvers []string
+			var labels []string
+			// by default we bind errors to line 1
+			lineNumber := 1
+			simple, err := repoowners.ParseSimpleConfig(contents)
+			if err != nil || simple.Empty() {
+				full, err := repoowners.ParseFullConfig(contents)
+				if err != nil {
+					lineNumberRe, _ := regexp.Compile(`line (\d+)`)
+					lineNumberMatches := lineNumberRe.FindStringSubmatch(err.Error())
+					// try to find a line number for the error
+					if len(lineNumberMatches) > 1 {
+						// we're sure it will convert as it passed the regexp already
+						absoluteLineNumber, _ := strconv.Atoi(lineNumberMatches[1])
+						// we need to convert it to a line number relative to the patch
+						al, err := golint.AddedLines(c.Patch)
+						if err != nil {
+							log.WithError(err).Errorf("Failed to compute added lines in %s: %v", c.Filename, err)
+						} else if val, ok := al[absoluteLineNumber]; ok {
+							lineNumber = val
+						}
+					}
+					wrongOwnersFiles[c.Filename] = messageWithLine{
+						lineNumber,
+						fmt.Sprintf("Cannot parse file: %v.", err),
+					}
+					return nil
+				} else {
+					// it's a FullConfig
+					for _, config := range full.Filters {
+						approvers = append(approvers, config.Approvers...)
+						labels = append(labels, config.Labels...)
 					}
 				}
+			} else {
+				// it's a SimpleConfig
+				approvers = simple.Config.Approvers
+				labels = simple.Config.Labels
+			}
+			// Check labels against blacklist
+			if sets.NewString(labels...).HasAny(labelsBlackList...) {
 				wrongOwnersFiles[c.Filename] = messageWithLine{
 					lineNumber,
-					fmt.Sprintf("Cannot parse file: %v.", err),
+					fmt.Sprintf("File contains blacklisted labels: %s.", sets.NewString(labels...).Intersection(sets.NewString(labelsBlackList...)).List()),
 				}
-				continue
-			} else {
-				// it's a FullConfig
-				for _, config := range full.Filters {
-					approvers = append(approvers, config.Approvers...)
-					labels = append(labels, config.Labels...)
+				return nil
+			}
+			// Check approvers isn't empty
+			if filepath.Dir(c.Filename) == "." && len(approvers) == 0 {
+				wrongOwnersFiles[c.Filename] = messageWithLine{
+					lineNumber,
+					fmt.Sprintf("No approvers defined in this root directory %s file.", ownersFileName),
 				}
+				return nil
 			}
-		} else {
-			// it's a SimpleConfig
-			approvers = simple.Config.Approvers
-			labels = simple.Config.Labels
-		}
-		// Check labels against blacklist
-		if sets.NewString(labels...).HasAny(labelsBlackList...) {
-			wrongOwnersFiles[c.Filename] = messageWithLine{
-				lineNumber,
-				fmt.Sprintf("File contains blacklisted labels: %s.", sets.NewString(labels...).Intersection(sets.NewString(labelsBlackList...)).List()),
-			}
-			continue
-		}
-		// Check approvers isn't empty
-		if filepath.Dir(c.Filename) == "." && len(approvers) == 0 {
-			wrongOwnersFiles[c.Filename] = messageWithLine{
-				lineNumber,
-				fmt.Sprintf("No approvers defined in this root directory %s file.", ownersFileName),
-			}
-			continue
-		}
+			return nil
+		})
 	}
 	// React if we saw something.
 	if len(wrongOwnersFiles) > 0 {

@@ -79,7 +79,7 @@ type Server struct {
 
 	gc *git.Client
 	// Used for unit testing
-	push func(repo, newBranch string) error
+	push func(newBranch string) error
 	ghc  githubClient
 	log  *logrus.Entry
 
@@ -382,7 +382,7 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment github.IssueC
 		push = s.push
 	}
 	// Push the new branch in the bot's fork.
-	if err := push(repo, newBranch); err != nil {
+	if err := push(newBranch); err != nil {
 		resp := fmt.Sprintf("failed to push cherry-picked changes in Github: %v", err)
 		s.log.WithFields(l.Data).Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp))

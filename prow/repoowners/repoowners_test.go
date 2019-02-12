@@ -25,6 +25,7 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	prowConf "k8s.io/test-infra/prow/config"
@@ -513,12 +514,8 @@ func TestLoadRepoOwners(t *testing.T) {
 		}
 		ro := r.(*RepoOwners)
 
-		if ro.baseDir == "" {
-			t.Errorf("Expected 'baseDir' to be populated.")
-			continue
-		}
 		if (ro.RepoAliases != nil) != test.aliasesFileExists {
-			t.Errorf("Expected 'RepoAliases' to be poplulated: %t, but got %t.", test.aliasesFileExists, ro.RepoAliases != nil)
+			t.Errorf("Expected 'RepoAliases' to be populated: %t, but got %t.", test.aliasesFileExists, ro.RepoAliases != nil)
 			continue
 		}
 		if ro.enableMDYAML != test.mdEnabled {
@@ -539,7 +536,7 @@ func TestLoadRepoOwners(t *testing.T) {
 				}
 			}
 			if !reflect.DeepEqual(expected, converted) {
-				t.Errorf("Expected %s to be:\n%+v\ngot:\n%+v.", field, expected, converted)
+				t.Errorf("Did not get expected %s: %s.", field, diff.ObjectReflectDiff(expected, converted))
 			}
 		}
 		check("approvers", test.expectedApprovers, ro.approvers)
@@ -610,7 +607,7 @@ func TestLoadRepoAliases(t *testing.T) {
 			continue
 		}
 		if !reflect.DeepEqual(got, test.expectedRepoAliases) {
-			t.Errorf("[%s] Expected RepoAliases: %#v, but got: %#v.", test.name, test.expectedRepoAliases, got)
+			t.Errorf("[%s] Got unexpected RepoAliases: %s.", test.name, diff.ObjectReflectDiff(test.expectedRepoAliases, got))
 		}
 		cleanup()
 	}

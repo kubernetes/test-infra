@@ -18,7 +18,6 @@ package golint
 
 import (
 	"fmt"
-	"io/ioutil"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -27,7 +26,6 @@ import (
 
 	"github.com/golang/lint"
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/test-infra/prow/genfiles"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
@@ -148,51 +146,54 @@ func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]l
 	l := new(lint.Linter)
 	for f, patch := range files {
 		problems[f] = make(map[int]lint.Problem)
-		src, err := ioutil.ReadFile(filepath.Join(r.Dir, f))
-		if err != nil {
-			lintErrorComments = append(lintErrorComments, github.DraftReviewComment{
-				Path: f,
-				Body: fmt.Sprintf("%v", err),
-			})
-		}
-		ps, err := l.Lint(f, src)
-		if err != nil {
-			// Get error line by parsing the error message
-			errLineIndexStart := strings.LastIndex(err.Error(), f) + len(f)
-			reNumber := regexp.MustCompile(`:([0-9]+):`)
-			matches := reNumber.FindStringSubmatch(err.Error()[errLineIndexStart:])
-			newComment := github.DraftReviewComment{
-				Path: f,
-				Body: err.Error(),
-			}
-			if len(matches) > 1 {
-				errLineString := matches[1]
-				errLine, errAtoi := strconv.Atoi(errLineString)
-				if errAtoi == nil {
-					newComment.Position = errLine
-				}
-				// Trim error message to after the line and column numbers
-				reTrimError := regexp.MustCompile(`(:[0-9]+:[0-9]+: )`)
-				matches = reTrimError.FindStringSubmatch(err.Error())
-				if len(matches) > 0 {
-					newComment.Body = err.Error()[len(matches[0])+errLineIndexStart:]
-				}
-			}
-			lintErrorComments = append(lintErrorComments, newComment)
-		}
-		al, err := AddedLines(patch)
-		if err != nil {
-			lintErrorComments = append(lintErrorComments,
-				github.DraftReviewComment{
+		// we emit no errors
+		_ = r.OperateOnFileData(f, func(src []byte, err error) error {
+			if err != nil {
+				lintErrorComments = append(lintErrorComments, github.DraftReviewComment{
 					Path: f,
-					Body: fmt.Sprintf("computing added lines in %s: %v", f, err),
+					Body: fmt.Sprintf("%v", err),
 				})
-		}
-		for _, p := range ps {
-			if pl, ok := al[p.Position.Line]; ok {
-				problems[f][pl] = p
 			}
-		}
+			ps, err := l.Lint(f, src)
+			if err != nil {
+				// Get error line by parsing the error message
+				errLineIndexStart := strings.LastIndex(err.Error(), f) + len(f)
+				reNumber := regexp.MustCompile(`:([0-9]+):`)
+				matches := reNumber.FindStringSubmatch(err.Error()[errLineIndexStart:])
+				newComment := github.DraftReviewComment{
+					Path: f,
+					Body: err.Error(),
+				}
+				if len(matches) > 1 {
+					errLineString := matches[1]
+					errLine, errAtoi := strconv.Atoi(errLineString)
+					if errAtoi == nil {
+						newComment.Position = errLine
+					}
+					// Trim error message to after the line and column numbers
+					reTrimError := regexp.MustCompile(`(:[0-9]+:[0-9]+: )`)
+					matches = reTrimError.FindStringSubmatch(err.Error())
+					if len(matches) > 0 {
+						newComment.Body = err.Error()[len(matches[0])+errLineIndexStart:]
+					}
+				}
+				lintErrorComments = append(lintErrorComments, newComment)
+			}
+			al, err := AddedLines(patch)
+			if err != nil {
+				lintErrorComments = append(lintErrorComments,
+					github.DraftReviewComment{
+						Path: f,
+						Body: fmt.Sprintf("computing added lines in %s: %v", f, err),
+					})
+			}
+			for _, p := range ps {
+				if pl, ok := al[p.Position.Line]; ok {
+					problems[f][pl] = p
+				}
+			}
+			return nil
+		})
 	}
 	return problems, lintErrorComments
 }

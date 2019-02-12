@@ -21,7 +21,6 @@ package buildifier
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -127,23 +126,24 @@ func uniqProblems(problems []string) []string {
 func problemsInFiles(r *git.Repo, files map[string]string) (map[string][]string, error) {
 	problems := make(map[string][]string)
 	for f := range files {
-		src, err := ioutil.ReadFile(filepath.Join(r.Dir, f))
-		if err != nil {
+		if err := r.OperateOnFileData(f, func(src []byte, err error) error {
+			// This is modeled after the logic from buildifier:
+			// https://github.com/bazelbuild/buildtools/blob/8818289/buildifier/buildifier.go#L261
+			content, err := build.Parse(f, src)
+			if err != nil {
+				return fmt.Errorf("parsing as Bazel file %v", err)
+			}
+			beforeRewrite := build.Format(content)
+			var rewriteInfo build.RewriteInfo
+			build.Rewrite(content, &rewriteInfo)
+			ndata := build.Format(content)
+			if !bytes.Equal(src, ndata) && !bytes.Equal(src, beforeRewrite) {
+				// TODO(mattmoor): This always seems to be empty?
+				problems[f] = uniqProblems(rewriteInfo.Log)
+			}
+			return nil
+		}); err != nil {
 			return nil, err
-		}
-		// This is modeled after the logic from buildifier:
-		// https://github.com/bazelbuild/buildtools/blob/8818289/buildifier/buildifier.go#L261
-		content, err := build.Parse(f, src)
-		if err != nil {
-			return nil, fmt.Errorf("parsing as Bazel file %v", err)
-		}
-		beforeRewrite := build.Format(content)
-		var info build.RewriteInfo
-		build.Rewrite(content, &info)
-		ndata := build.Format(content)
-		if !bytes.Equal(src, ndata) && !bytes.Equal(src, beforeRewrite) {
-			// TODO(mattmoor): This always seems to be empty?
-			problems[f] = uniqProblems(info.Log)
 		}
 	}
 	return problems, nil

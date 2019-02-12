@@ -157,7 +157,6 @@ type RepoOwners struct {
 	labels            map[string]map[*regexp.Regexp]sets.String
 	options           map[string]dirOptions
 
-	baseDir      string
 	enableMDYAML bool
 	dirBlacklist sets.String
 
@@ -186,12 +185,16 @@ func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
 		}
-		defer gitRepo.Clean()
+		defer func() {
+			if err := gitRepo.Clean(); err != nil {
+				c.logger.WithError(err).Error("Failed to clean git client.")
+			}
+		}()
 		if err := gitRepo.Checkout(base); err != nil {
 			return nil, err
 		}
 
-		entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
+		entry.aliases = loadAliasesFrom(gitRepo, log)
 		entry.sha = sha
 		c.cache[fullName] = entry
 	}
@@ -220,14 +223,18 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
 		}
-		defer gitRepo.Clean()
+		defer func() {
+			if err := gitRepo.Clean(); err != nil {
+				c.logger.WithError(err).Error("Failed to clean git client.")
+			}
+		}()
 		if err := gitRepo.Checkout(base); err != nil {
 			return nil, err
 		}
 
 		if entry.aliases == nil || entry.sha != sha {
 			// aliases must be loaded
-			entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
+			entry.aliases = loadAliasesFrom(gitRepo, log)
 		}
 
 		blacklistConfig := c.config.OwnersDirBlacklist
@@ -239,8 +246,8 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 		if bl, ok := blacklistConfig.Repos[org+"/"+repo]; ok {
 			dirBlacklist.Insert(bl...)
 		}
-		entry.owners, err = loadOwnersFrom(gitRepo.Dir, mdYaml, entry.aliases, dirBlacklist, log)
-		if err != nil {
+		entry.owners = newRepoOwnersClient(mdYaml, entry.aliases, dirBlacklist, log)
+		if err := gitRepo.Walk(entry.owners.walkFunc); err != nil {
 			return nil, fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
 		}
 		entry.sha = sha
@@ -289,21 +296,29 @@ func (a RepoAliases) ExpandAliases(logins sets.String) sets.String {
 	return logins
 }
 
-func loadAliasesFrom(baseDir string, log *logrus.Entry) RepoAliases {
-	path := filepath.Join(baseDir, aliasesFileName)
-	b, err := ioutil.ReadFile(path)
-	if os.IsNotExist(err) {
-		log.WithError(err).Infof("No alias file exists at %q. Using empty alias map.", path)
-		return nil
-	} else if err != nil {
-		log.WithError(err).Warnf("Failed to read alias file %q. Using empty alias map.", path)
-		return nil
-	}
+func loadAliasesFrom(repo *git.Repo, log *logrus.Entry) RepoAliases {
 	config := &struct {
 		Data map[string][]string `json:"aliases,omitempty"`
 	}{}
-	if err := yaml.Unmarshal(b, config); err != nil {
-		log.WithError(err).Errorf("Failed to unmarshal aliases from %q. Using empty alias map.", path)
+	if err := repo.OperateOnFileData(aliasesFileName, func(contents []byte, err error) error {
+		if os.IsNotExist(err) {
+			log.WithError(err).Infof("No alias file exists at %q. Using empty alias map.", aliasesFileName)
+			return nil
+		} else if err != nil {
+			log.WithError(err).Warnf("Failed to read alias file %q. Using empty alias map.", aliasesFileName)
+			return nil
+		}
+		if err := yaml.Unmarshal(contents, config); err != nil {
+			log.WithError(err).Errorf("Failed to unmarshal aliases from %q. Using empty alias map.", aliasesFileName)
+			return nil
+		}
+		return nil
+	}); err != nil {
+		log.WithError(err).Errorf("Failed to load aliases from %q.", aliasesFileName)
+		return nil
+	}
+
+	if len(config.Data) == 0 {
 		return nil
 	}
 
@@ -311,14 +326,13 @@ func loadAliasesFrom(baseDir string, log *logrus.Entry) RepoAliases {
 	for alias, expanded := range config.Data {
 		result[github.NormLogin(alias)] = normLogins(expanded)
 	}
-	log.Infof("Loaded %d aliases from %q.", len(result), path)
+	log.Infof("Loaded %d aliases.", len(result))
 	return result
 }
 
-func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirBlacklist sets.String, log *logrus.Entry) (*RepoOwners, error) {
-	o := &RepoOwners{
+func newRepoOwnersClient(mdYaml bool, aliases RepoAliases, dirBlacklist sets.String, log *logrus.Entry) *RepoOwners {
+	return &RepoOwners{
 		RepoAliases:  aliases,
-		baseDir:      baseDir,
 		enableMDYAML: mdYaml,
 		log:          log,
 
@@ -330,8 +344,6 @@ func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirBlackli
 
 		dirBlacklist: dirBlacklist,
 	}
-
-	return o, filepath.Walk(o.baseDir, o.walkFunc)
 }
 
 // by default, github's api doesn't root the project directory at "/" and instead uses the empty string for the base dir
@@ -344,84 +356,86 @@ func canonicalize(path string) string {
 	return strings.TrimSuffix(path, "/")
 }
 
-func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
-	log := o.log.WithField("path", path)
-	if err != nil {
-		log.WithError(err).Error("Error while walking OWNERS files.")
-		return nil
-	}
-	filename := filepath.Base(path)
+func (o *RepoOwners) walkFunc(baseDir string) filepath.WalkFunc {
+	return func(path string, info os.FileInfo, err error) error {
+		log := o.log.WithField("path", path)
+		if err != nil {
+			log.WithError(err).Error("Error while walking OWNERS files.")
+			return nil
+		}
+		filename := filepath.Base(path)
 
-	if info.Mode().IsDir() && o.dirBlacklist.Has(filename) {
-		return filepath.SkipDir
-	}
-	if !info.Mode().IsRegular() {
-		return nil
-	}
-
-	// '.md' files may contain assignees at the top of the file in a yaml header
-	// Note that these assignees only apply to the file itself.
-	if o.enableMDYAML && strings.HasSuffix(filename, ".md") {
-		// Parse the yaml header from the file if it exists and marshal into the config
-		simple := &SimpleConfig{}
-		if err := decodeOwnersMdConfig(path, simple); err != nil {
-			log.WithError(err).Error("Error decoding OWNERS config from '*.md' file.")
+		if info.Mode().IsDir() && o.dirBlacklist.Has(filename) {
+			return filepath.SkipDir
+		}
+		if !info.Mode().IsRegular() {
 			return nil
 		}
 
-		// Set owners for this file (not the directory) using the relative path if they were found
-		relPath, err := filepath.Rel(o.baseDir, path)
+		// '.md' files may contain assignees at the top of the file in a yaml header
+		// Note that these assignees only apply to the file itself.
+		if o.enableMDYAML && strings.HasSuffix(filename, ".md") {
+			// Parse the yaml header from the file if it exists and marshal into the config
+			simple := &SimpleConfig{}
+			if err := decodeOwnersMdConfig(path, simple); err != nil {
+				log.WithError(err).Error("Error decoding OWNERS config from '*.md' file.")
+				return nil
+			}
+
+			// Set owners for this file (not the directory) using the relative path if they were found
+			relPath, err := filepath.Rel(baseDir, path)
+			if err != nil {
+				log.WithError(err).Errorf("Unable to find relative path between baseDir: %q and path.", baseDir)
+				return err
+			}
+			o.applyConfigToPath(relPath, nil, &simple.Config)
+			o.applyOptionsToPath(relPath, simple.Options)
+			return nil
+		}
+
+		if filename != ownersFileName {
+			return nil
+		}
+
+		b, err := ioutil.ReadFile(path)
 		if err != nil {
-			log.WithError(err).Errorf("Unable to find relative path between baseDir: %q and path.", o.baseDir)
+			log.WithError(err).Errorf("Failed to read the OWNERS file.")
+			return nil
+		}
+
+		relPath, err := filepath.Rel(baseDir, path)
+		if err != nil {
+			log.WithError(err).Errorf("Unable to find relative path between baseDir: %q and path.", baseDir)
 			return err
 		}
-		o.applyConfigToPath(relPath, nil, &simple.Config)
-		o.applyOptionsToPath(relPath, simple.Options)
-		return nil
-	}
+		relPathDir := canonicalize(filepath.Dir(relPath))
 
-	if filename != ownersFileName {
-		return nil
-	}
-
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.WithError(err).Errorf("Failed to read the OWNERS file.")
-		return nil
-	}
-
-	relPath, err := filepath.Rel(o.baseDir, path)
-	if err != nil {
-		log.WithError(err).Errorf("Unable to find relative path between baseDir: %q and path.", o.baseDir)
-		return err
-	}
-	relPathDir := canonicalize(filepath.Dir(relPath))
-
-	simple, err := ParseSimpleConfig(b)
-	if err != nil || simple.Empty() {
-		c, err := ParseFullConfig(b)
-		if err != nil {
-			log.WithError(err).Errorf("Failed to unmarshal %s into either Simple or FullConfig.", path)
-		} else {
-			// it's a FullConfig
-			for pattern, config := range c.Filters {
-				var re *regexp.Regexp
-				if pattern != ".*" {
-					if re, err = regexp.Compile(pattern); err != nil {
-						log.WithError(err).Errorf("Invalid regexp %q.", pattern)
-						continue
+		simple, err := ParseSimpleConfig(b)
+		if err != nil || simple.Empty() {
+			c, err := ParseFullConfig(b)
+			if err != nil {
+				log.WithError(err).Errorf("Failed to unmarshal %s into either Simple or FullConfig.", path)
+			} else {
+				// it's a FullConfig
+				for pattern, config := range c.Filters {
+					var re *regexp.Regexp
+					if pattern != ".*" {
+						if re, err = regexp.Compile(pattern); err != nil {
+							log.WithError(err).Errorf("Invalid regexp %q.", pattern)
+							continue
+						}
 					}
+					o.applyConfigToPath(relPathDir, re, &config)
 				}
-				o.applyConfigToPath(relPathDir, re, &config)
+				o.applyOptionsToPath(relPathDir, c.Options)
 			}
-			o.applyOptionsToPath(relPathDir, c.Options)
+		} else {
+			// it's a SimpleConfig
+			o.applyConfigToPath(relPathDir, nil, &simple.Config)
+			o.applyOptionsToPath(relPathDir, simple.Options)
 		}
-	} else {
-		// it's a SimpleConfig
-		o.applyConfigToPath(relPathDir, nil, &simple.Config)
-		o.applyOptionsToPath(relPathDir, simple.Options)
+		return nil
 	}
-	return nil
 }
 
 // ParseFullConfig will unmarshal OWNERS file's content into a FullConfig
