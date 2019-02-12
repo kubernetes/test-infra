@@ -1002,6 +1002,12 @@ repos:
         prowPlugin: label
         addedBy: anyone
       - color: e9b3f9
+        description: Issues or PRs related to French language
+        name: language/fr
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
         description: Issues or PRs related to Japanese language
         name: language/ja
         target: both
