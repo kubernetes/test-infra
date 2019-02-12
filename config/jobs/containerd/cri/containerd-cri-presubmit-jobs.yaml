@@ -48,6 +48,8 @@ presubmits:
           runner.sh
           ./test/build.sh
           &&
+          cd ${GOPATH}/src/k8s.io/kubernetes
+          &&
           /workspace/scenarios/kubernetes_e2e.py
           --deployment=node
           --gcp-project=cri-c8d-pr-node-e2e
@@ -90,6 +92,8 @@ presubmits:
           runner.sh
           ./test/build.sh
           &&
+          cd ${GOPATH}/src/k8s.io/kubernetes
+          &&
           /workspace/scenarios/kubernetes_e2e.py
           --deployment=node
           --gcp-project=cri-c8d-pr-node-e2e
@@ -131,6 +135,8 @@ presubmits:
         - >
           runner.sh
           ./test/build.sh
+          &&
+          cd ${GOPATH}/src/k8s.io/kubernetes
           &&
           /workspace/scenarios/kubernetes_e2e.py
           --deployment=node
