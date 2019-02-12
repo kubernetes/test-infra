@@ -21,6 +21,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"net/url"
 	"reflect"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -148,33 +149,33 @@ func TestGetFiles(t *testing.T) {
 			testName:          "Single Root File PR Approved",
 			filenames:         []string{"kubernetes.go"},
 			currentlyApproved: sets.NewString(rootApprovers.List()[0]),
-			expectedFiles:     []File{ApprovedFile{"", sets.NewString(rootApprovers.List()[0]), "org", "repo", "master"}},
+			expectedFiles:     []File{ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "", sets.NewString(rootApprovers.List()[0]), "master"}},
 		},
 		{
 			testName:          "Single File PR in B No One Approved",
 			filenames:         []string{"b/test.go"},
 			currentlyApproved: sets.NewString(),
-			expectedFiles:     []File{UnapprovedFile{"b", "org", "repo", "master"}},
+			expectedFiles:     []File{UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "b", "master"}},
 		},
 		{
 			testName:          "Single File PR in B Fully Approved",
 			filenames:         []string{"b/test.go"},
 			currentlyApproved: bApprovers,
-			expectedFiles:     []File{ApprovedFile{"b", bApprovers, "org", "repo", "master"}},
+			expectedFiles:     []File{ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "b", bApprovers, "master"}},
 		},
 		{
 			testName:          "Single Root File PR No One Approved",
 			filenames:         []string{"kubernetes.go"},
 			currentlyApproved: sets.NewString(),
-			expectedFiles:     []File{UnapprovedFile{"", "org", "repo", "master"}},
+			expectedFiles:     []File{UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "", "master"}},
 		},
 		{
 			testName:          "Combo and Other; Neither Approved",
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
 			currentlyApproved: sets.NewString(),
 			expectedFiles: []File{
-				UnapprovedFile{"a/combo", "org", "repo", "master"},
-				UnapprovedFile{"a/d", "org", "repo", "master"},
+				UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/combo", "master"},
+				UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/d", "master"},
 			},
 		},
 		{
@@ -182,8 +183,8 @@ func TestGetFiles(t *testing.T) {
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
 			currentlyApproved: eApprovers,
 			expectedFiles: []File{
-				ApprovedFile{"a/combo", eApprovers, "org", "repo", "master"},
-				UnapprovedFile{"a/d", "org", "repo", "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/combo", eApprovers, "master"},
+				UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/d", "master"},
 			},
 		},
 		{
@@ -191,8 +192,8 @@ func TestGetFiles(t *testing.T) {
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
 			currentlyApproved: edcApprovers.Intersection(dApprovers),
 			expectedFiles: []File{
-				ApprovedFile{"a/combo", edcApprovers.Intersection(dApprovers), "org", "repo", "master"},
-				ApprovedFile{"a/d", edcApprovers.Intersection(dApprovers), "org", "repo", "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/combo", edcApprovers.Intersection(dApprovers), "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/d", edcApprovers.Intersection(dApprovers), "master"},
 			},
 		},
 		{
@@ -200,9 +201,9 @@ func TestGetFiles(t *testing.T) {
 			filenames:         []string{"a/combo/test.go", "a/d/test.go", "c/test"},
 			currentlyApproved: cApprovers,
 			expectedFiles: []File{
-				ApprovedFile{"a/combo", cApprovers, "org", "repo", "master"},
-				UnapprovedFile{"a/d", "org", "repo", "master"},
-				ApprovedFile{"c", cApprovers, "org", "repo", "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/combo", cApprovers, "master"},
+				UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/d", "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "c", cApprovers, "master"},
 			},
 		},
 		{
@@ -210,8 +211,8 @@ func TestGetFiles(t *testing.T) {
 			filenames:         []string{"a/test.go", "a/d/test.go", "b/test"},
 			currentlyApproved: rootApprovers.Union(aApprovers).Union(bApprovers),
 			expectedFiles: []File{
-				ApprovedFile{"a", rootApprovers.Union(aApprovers), "org", "repo", "master"},
-				ApprovedFile{"b", rootApprovers.Union(bApprovers), "org", "repo", "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a", rootApprovers.Union(aApprovers), "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "b", rootApprovers.Union(bApprovers), "master"},
 			},
 		},
 	}
@@ -222,7 +223,7 @@ func TestGetFiles(t *testing.T) {
 		for approver := range test.currentlyApproved {
 			testApprovers.AddApprover(approver, "REFERENCE", false)
 		}
-		calculated := testApprovers.GetFiles("org", "repo", "master")
+		calculated := testApprovers.GetFiles(&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "master")
 		if !reflect.DeepEqual(test.expectedFiles, calculated) {
 			t.Errorf("Failed for test %v.  Expected files: %v. Found %v", test.testName, test.expectedFiles, calculated)
 		}
@@ -729,7 +730,7 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice"]} -->`
-	if got := GetMessage(ap, "org", "repo", "dev"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "dev"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -771,7 +772,7 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`
-	if got := GetMessage(ap, "org", "repo", "master"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -815,7 +816,7 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice","bill"]} -->`
-	if got := GetMessage(ap, "org", "repo", "master"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -859,7 +860,7 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`
-	if got := GetMessage(ap, "org", "repo", "master"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -902,7 +903,7 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`
-	if got := GetMessage(ap, "org", "repo", "master"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -947,7 +948,52 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice","doctor"]} -->`
-	if got := GetMessage(ap, "org", "repo", "master"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master"); got == nil {
+		t.Error("GetMessage() failed")
+	} else if *got != want {
+		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
+	}
+}
+
+func TestGetMessageDifferentGitHubLink(t *testing.T) {
+	ap := NewApprovers(
+		Owners{
+			filenames: []string{"a/a.go", "b/README.md"},
+			repo: createFakeRepo(map[string]sets.String{
+				"a":           sets.NewString("Alice"),
+				"b":           sets.NewString("Bill"),
+				"b/README.md": sets.NewString("Doctor"),
+			}),
+			log: logrus.WithField("plugin", "some_plugin"),
+		},
+	)
+	ap.AddAuthorSelfApprover("John", "REFERENCE", false)
+	ap.RequireIssue = true
+	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: *<a href="REFERENCE" title="Author self-approved">John</a>*
+To fully approve this pull request, please assign additional approvers.
+We suggest the following additional approvers: **alice**, **doctor**
+
+If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @alice @doctor`" + ` in a comment when ready.
+
+*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- **[a/OWNERS](https://github.mycorp.com/org/repo/blob/master/a/OWNERS)**
+- **[b/README.md](https://github.mycorp.com/org/repo/blob/master/b/README.md)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["alice","doctor"]} -->`
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.mycorp.com"}, "org", "repo", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
