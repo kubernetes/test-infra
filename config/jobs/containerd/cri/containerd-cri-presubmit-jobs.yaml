@@ -59,7 +59,7 @@ presubmits:
           --provider=gce
           '--test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2'
           --timeout=65m
-          "--node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml -node-env=PULL_REFS=$(PULL_REFS)"
+          "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/cri-master/image-config-pr.yaml -node-env=PULL_REFS=$(PULL_REFS)"
 
   - name: pull-cri-containerd-node-e2e
     always_run: true
@@ -103,7 +103,7 @@ presubmits:
           --provider=gce
           '--test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2'
           --timeout=65m
-          "--node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml -node-env=PULL_REFS=$(PULL_REFS)"
+          "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/cri-master/image-config-pr.yaml -node-env=PULL_REFS=$(PULL_REFS)"
 
   - name: pull-cri-containerd-node-e2e
     always_run: true
@@ -147,7 +147,7 @@ presubmits:
           --provider=gce
           '--test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2'
           --timeout=65m
-          "--node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml -node-env=PULL_REFS=$(PULL_REFS)"
+          "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/cri-master/image-config-pr.yaml -node-env=PULL_REFS=$(PULL_REFS)"
 
   - name: pull-cri-containerd-verify
     always_run: true
