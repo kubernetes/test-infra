@@ -48,6 +48,9 @@ window.addEventListener('message', async (e) => {
       case "contentUpdated":
         frame.style.height = `${message.height}px`;
         frame.style.visibility = 'visible';
+        if (frame.dataset.hideTitle) {
+          frame.parentElement!.parentElement!.classList.add('hidden-title');
+        }
         document.querySelector<HTMLElement>(`#${lens}-loading`)!.style.display = 'none';
         respond('');
         break;

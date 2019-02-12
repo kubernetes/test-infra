@@ -51,6 +51,8 @@ type LensConfig struct {
 	Title string
 	// Priority is used to determine where to position the lens. Higher is better.
 	Priority uint
+	// HideTitle will hide the lens title after loading if set to true.
+	HideTitle bool
 }
 
 // Lens defines the interface that lenses are required to implement in order to be used by Spyglass.

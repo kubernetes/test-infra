@@ -32,6 +32,10 @@ body {
   padding-bottom: 0;
 }
 
+.mdl-card.hidden-title .lens-title {
+  display: none;
+}
+
 #lens-container .lens-view-content {
   width: 100%;
   padding: 0;
