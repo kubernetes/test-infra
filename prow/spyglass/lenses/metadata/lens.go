@@ -44,19 +44,13 @@ func init() {
 	lenses.RegisterLens(Lens{})
 }
 
-// Title returns the title.
-func (lens Lens) Title() string {
-	return title
-}
-
-// Name returns the name.
-func (lens Lens) Name() string {
-	return name
-}
-
-// Priority returns the priority.
-func (lens Lens) Priority() int {
-	return priority
+// Config returns the lens's configuration.
+func (lens Lens) Config() lenses.LensConfig {
+	return lenses.LensConfig{
+		Title:    title,
+		Name:     name,
+		Priority: priority,
+	}
 }
 
 // Header renders the <head> from template.html.

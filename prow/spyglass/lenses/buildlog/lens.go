@@ -42,19 +42,13 @@ const (
 // Lens implements the build lens.
 type Lens struct{}
 
-// Name returns the name.
-func (lens Lens) Name() string {
-	return name
-}
-
-// Title returns the title.
-func (lens Lens) Title() string {
-	return title
-}
-
-// Priority returns the priority.
-func (lens Lens) Priority() int {
-	return priority
+// Config returns the lens's configuration.
+func (lens Lens) Config() lenses.LensConfig {
+	return lenses.LensConfig{
+		Name:     name,
+		Title:    title,
+		Priority: priority,
+	}
 }
 
 // Header executes the "header" section of the template.

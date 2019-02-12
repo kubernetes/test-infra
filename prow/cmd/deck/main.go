@@ -654,11 +654,12 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 	ls := sg.Lenses(viewerCache)
 	lensNames := []string{}
 	for _, l := range ls {
-		lensNames = append(lensNames, l.Name())
+		lensNames = append(lensNames, l.Config().Name)
 	}
 
 	jobHistLink := ""
 	jobPath, err := sg.JobPath(src)
+
 	if err == nil {
 		jobHistLink = path.Join("/job-history", jobPath)
 	}
@@ -722,7 +723,8 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, cfg config.Getter) htt
 			return
 		}
 
-		lensResourcesDir := lenses.ResourceDirForLens(o.spyglassFilesLocation, lens.Name())
+		lensConfig := lens.Config()
+		lensResourcesDir := lenses.ResourceDirForLens(o.spyglassFilesLocation, lensConfig.Name)
 
 		reqString := r.URL.Query().Get("req")
 		var request spyglass.LensRequest
@@ -753,7 +755,7 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, cfg config.Getter) htt
 				Head    template.HTML
 				Body    template.HTML
 			}{
-				lens.Title(),
+				lensConfig.Title,
 				"/spyglass/static/" + lensName + "/",
 				template.HTML(lens.Header(artifacts, lensResourcesDir)),
 				template.HTML(lens.Body(artifacts, lensResourcesDir, "")),
