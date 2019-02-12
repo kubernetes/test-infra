@@ -60,7 +60,7 @@
     <tbody id="skipped-tbody" class="hidden-tests">
     {{range .Skipped}}
     <tr>
-      <td class="mdl-data-table__cell--non-numeric test-name">{.Junit.Name}}</td>
+      <td class="mdl-data-table__cell--non-numeric test-name">{{.Junit.Name}}</td>
       <td class="mdl-data-table__cell--non-numeric">{{.Junit.Duration}}</td>
     </tr>
     {{end}}
