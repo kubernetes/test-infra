@@ -21,11 +21,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"regexp"
+	"sort"
+	"strings"
 	"sync"
 
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
+	"vbom.ml/util/sortorder"
 
 	"k8s.io/test-infra/testgrid/metadata"
 	"k8s.io/test-infra/testgrid/metadata/junit"
@@ -50,6 +54,78 @@ type Build struct {
 
 func (build Build) String() string {
 	return "gs://" + build.BucketPath + "/" + build.Prefix
+}
+
+// Builds is a slice of builds.
+type Builds []Build
+
+func (b Builds) Len() int      { return len(b) }
+func (b Builds) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
+
+// Expect builds to be in monotonically increasing order.
+// So build8 < build9 < build10 < build888
+func (b Builds) Less(i, j int) bool {
+	return sortorder.NaturalLess(b[i].Prefix, b[j].Prefix)
+}
+
+// ListBuilds returns the array of builds under path, sorted in monotonically decreasing order.
+func ListBuilds(ctx context.Context, client *storage.Client, path Path) (Builds, error) {
+	p := path.Object()
+	if !strings.HasSuffix(p, "/") {
+		p += "/"
+	}
+	bkt := client.Bucket(path.Bucket())
+	it := bkt.Objects(ctx, &storage.Query{
+		Delimiter: "/",
+		Prefix:    p,
+	})
+	var all Builds
+	for {
+		objAttrs, err := it.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("failed to list objects: %v", err)
+		}
+
+		// if this is a link under directory, resolve the build value
+		if link := objAttrs.Metadata["link"]; len(link) > 0 {
+			// links created by bootstrap.py have a space
+			link = strings.TrimSpace(link)
+			u, err := url.Parse(link)
+			if err != nil {
+				return nil, fmt.Errorf("could not parse link for key %s: %v", objAttrs.Name, err)
+			}
+			if !strings.HasSuffix(u.Path, "/") {
+				u.Path += "/"
+			}
+			var linkPath Path
+			if err := linkPath.SetURL(u); err != nil {
+				return nil, fmt.Errorf("could not make GCS path for key %s: %v", objAttrs.Name, err)
+			}
+			all = append(all, Build{
+				Bucket:     bkt,
+				Context:    ctx,
+				Prefix:     linkPath.Object(),
+				BucketPath: path.Bucket(),
+			})
+			continue
+		}
+
+		if len(objAttrs.Prefix) == 0 {
+			continue
+		}
+
+		all = append(all, Build{
+			Bucket:     bkt,
+			Context:    ctx,
+			Prefix:     objAttrs.Prefix,
+			BucketPath: path.Bucket(),
+		})
+	}
+	sort.Sort(sort.Reverse(all))
+	return all, nil
 }
 
 // junit_CONTEXT_TIMESTAMP_THREAD.xml

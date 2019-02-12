@@ -23,7 +23,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/url"
 	"path"
@@ -40,12 +39,14 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/golang/protobuf/proto"
-	"google.golang.org/api/iterator"
 	"vbom.ml/util/sortorder"
 )
 
 // Build holds data to builds stored in GCS.
 type Build = gcs.Build
+
+// Builds holds a slice of builds, which will sort naturally (aka 2 < 10).
+type Builds = gcs.Builds
 
 // options configures the updater
 type options struct {
@@ -578,76 +579,6 @@ func ReadBuild(build Build) (*Column, error) {
 	return &br, nil
 }
 
-// Builds is a slice of builds.
-type Builds []Build
-
-func (b Builds) Len() int      { return len(b) }
-func (b Builds) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
-func (b Builds) Less(i, j int) bool {
-	return sortorder.NaturalLess(b[i].Prefix, b[j].Prefix)
-}
-
-// listBuilds lists and sorts builds under path, sending them to the builds channel.
-func listBuilds(ctx context.Context, client *storage.Client, path gcs.Path) (Builds, error) {
-	log.Printf("LIST: %s", path)
-	p := path.Object()
-	if !strings.HasSuffix(p, "/") {
-		p += "/"
-	}
-	bkt := client.Bucket(path.Bucket())
-	it := bkt.Objects(ctx, &storage.Query{
-		Delimiter: "/",
-		Prefix:    p,
-	})
-	var all Builds
-	for {
-		objAttrs, err := it.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return nil, fmt.Errorf("failed to list objects: %v", err)
-		}
-
-		// if this is a link under directory, resolve the build value
-		if link := objAttrs.Metadata["link"]; len(link) > 0 {
-			// links created by bootstrap.py have a space
-			link = strings.TrimSpace(link)
-			u, err := url.Parse(link)
-			if err != nil {
-				return nil, fmt.Errorf("could not parse link for key %s: %v", objAttrs.Name, err)
-			}
-			if !strings.HasSuffix(u.Path, "/") {
-				u.Path += "/"
-			}
-			var linkPath gcs.Path
-			if err := linkPath.SetURL(u); err != nil {
-				return nil, fmt.Errorf("could not make GCS path for key %s: %v", objAttrs.Name, err)
-			}
-			all = append(all, Build{
-				Bucket:  bkt,
-				Context: ctx,
-				Prefix:  linkPath.Object(),
-			})
-			continue
-		}
-
-		if len(objAttrs.Prefix) == 0 {
-			continue
-		}
-
-		all = append(all, Build{
-			Bucket:  bkt,
-			Context: ctx,
-			Prefix:  objAttrs.Prefix,
-		})
-	}
-	// Expect builds to be in monotonically increasing order.
-	// So build9 should be followed by build10 or build888 but not build8
-	sort.Sort(sort.Reverse(all))
-	return all, nil
-}
-
 // Headers returns the list of ColumnHeader ConfigurationValues for this group.
 func Headers(group config.TestGroup) []string {
 	var extra []string
@@ -793,33 +724,6 @@ func Days(d float64) time.Duration {
 	return time.Duration(24*d) * time.Hour // Close enough
 }
 
-// ReadConfig reads the config from gcs and unmarshals it into a Configuration struct.
-func ReadConfig(ctx context.Context, obj *storage.ObjectHandle) (*config.Configuration, error) {
-	r, err := obj.NewReader(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open config: %v", err)
-	}
-	buf, err := ioutil.ReadAll(r)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read config: %v", err)
-	}
-	var cfg config.Configuration
-	if err = proto.Unmarshal(buf, &cfg); err != nil {
-		return nil, fmt.Errorf("failed to parse: %v", err)
-	}
-	return &cfg, nil
-}
-
-// Group finds the test group in cfg matching name.
-func Group(cfg config.Configuration, name string) (*config.TestGroup, bool) {
-	for _, g := range cfg.TestGroups {
-		if g.Name == name {
-			return g, true
-		}
-	}
-	return nil, false
-}
-
 func main() {
 	opt := gatherOptions()
 	if err := opt.validate(); err != nil {
@@ -835,7 +739,7 @@ func main() {
 		log.Fatalf("Failed to create storage client: %v", err)
 	}
 
-	cfg, err := ReadConfig(ctx, client.Bucket(opt.config.Bucket()).Object(opt.config.Object()))
+	cfg, err := config.ReadGCS(ctx, client.Bucket(opt.config.Bucket()).Object(opt.config.Object()))
 	if err != nil {
 		log.Fatalf("Failed to read %s: %v", opt.config, err)
 	}
@@ -866,11 +770,11 @@ func main() {
 		// gs://kubernetes-jenkins/logs/ci-kubernetes-test-go
 		// gs://kubernetes-jenkins/pr-logs/pull-ingress-gce-e2e
 		o := opt.group
-		if tg, ok := Group(*cfg, o); !ok {
+		tg := cfg.FindTestGroup(o)
+		if tg == nil {
 			log.Fatalf("Failed to find %s in %s", o, opt.config)
-		} else {
-			groups <- *tg
 		}
+		groups <- *tg
 	} else { // All groups
 		for _, tg := range cfg.TestGroups {
 			groups <- *tg
@@ -890,7 +794,8 @@ func updateGroup(ctx context.Context, client *storage.Client, tg config.TestGrou
 
 	g := state.Grid{}
 	g.Columns = append(g.Columns, &state.Column{Build: "first", Started: 1})
-	builds, err := listBuilds(ctx, client, tgPath)
+	log.Printf("LIST: %s", tgPath)
+	builds, err := gcs.ListBuilds(ctx, client, tgPath)
 	if err != nil {
 		return fmt.Errorf("failed to list %s builds: %v", o, err)
 	}

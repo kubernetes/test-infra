@@ -23,7 +23,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//prow/config:go_default_library",
-        "//testgrid:config",
+        "//testgrid/config:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
@@ -36,7 +36,7 @@ go_library(
     ],
     importpath = "k8s.io/test-infra/testgrid/cmd/configurator",
     deps = [
-        "//testgrid:config",
+        "//testgrid/config:go_default_library",
         "//testgrid/util/gcs:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
