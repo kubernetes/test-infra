@@ -160,7 +160,6 @@ func (d *Deployer) getKubeConfigPath() (string, error) {
 func (d *Deployer) setKubeConfigEnv() error {
 	path, err := d.getKubeConfigPath()
 	if err != nil {
-		log.Print("WARNING: could not obtain the kubeconfig path for the kind cluster")
 		return err
 	}
 	if err = os.Setenv("KUBECONFIG", path); err != nil {
@@ -275,26 +274,22 @@ func (d *Deployer) Build() error {
 	return nil
 }
 
-// Up builds kind and the node image and then deploys a cluster based on the kind config.
+// Up creates a kind cluster. Allows passing node image and config.
 func (d *Deployer) Up() error {
+	args := []string{"create", "cluster", "--retain", "--wait=1m", "--loglevel=info"}
+
 	// Handle the config flag.
-	configFlag := ""
 	if d.configPath != "" {
-		configFlag = "--config=" + d.configPath
+		args = append(args, "--config="+d.configPath)
 	}
 
 	// Handle the node image flag if we built a new node image.
-	nodeImageFlag := ""
 	if d.kindNodeImage != "" {
-		nodeImageFlag = "--image=" + d.kindNodeImage
+		args = append(args, "--image="+d.kindNodeImage)
 	}
 
 	// Build the kind cluster.
-	cmd := exec.Command(
-		"kind", "create", "cluster",
-		nodeImageFlag, configFlag,
-		"--retain", "--wait=1m", "--loglevel=info",
-	)
+	cmd := exec.Command("kind", args...)
 	if err := d.control.FinishRunning(cmd); err != nil {
 		return err
 	}
@@ -350,9 +345,9 @@ func (d *Deployer) TestSetup() error {
 // Down tears down the cluster.
 func (d *Deployer) Down() error {
 	cmd := exec.Command("kind", "delete", "cluster")
-	if err := d.control.FinishRunning(cmd); err != nil {
-		return err
-	}
+	// This function seems to be called even for --up only,
+	// so don't treat this as a fatal error.
+	_ = d.control.FinishRunning(cmd)
 	return nil
 }
 
@@ -365,13 +360,7 @@ func (d *Deployer) GetClusterCreated(gcpProject string) (time.Time, error) {
 func (d *Deployer) KubectlCommand() (*exec.Cmd, error) {
 	// Avoid using ./cluster/kubectl.sh
 	// TODO(bentheelder): cache this
-	kubeConfigPath, err := d.getKubeConfigPath()
-	if err != nil {
-		return nil, err
-	}
-	cmd := exec.Command("kubectl")
-	cmd.Env = append(os.Environ(), fmt.Sprintf("KUBECONFIG=%s", kubeConfigPath))
-	return cmd, nil
+	return exec.Command("kubectl"), nil
 }
 
 // downloadFromURL downloads from a url to f
