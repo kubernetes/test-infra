@@ -43,7 +43,6 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = [
-        "github_test.go",
         "kubernetes_cluster_clients_test.go",
         "kubernetes_test.go",
     ],
