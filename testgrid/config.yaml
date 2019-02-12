@@ -2143,6 +2143,8 @@ test_groups:
 # packages tests
 - name: periodic-kubernetes-e2e-packages-pushed
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-packages-pushed
+- name: periodic-kubernetes-e2e-packages-install-deb
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-packages-install-deb
 # manifest list tests
 - name: periodic-kubernetes-e2e-manifest-lists
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-manifest-lists
@@ -5894,6 +5896,8 @@ dashboards:
 # packages tests
   - name: periodic-packages-pushed
     test_group_name: periodic-kubernetes-e2e-packages-pushed
+  - name: periodic-packages-install-deb
+    test_group_name: periodic-kubernetes-e2e-packages-install-deb
 # manifest list tests
   - name: periodic-manifest-lists
     test_group_name: periodic-kubernetes-e2e-manifest-lists
