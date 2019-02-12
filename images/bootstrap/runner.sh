@@ -111,8 +111,10 @@ if [[ "${METADATA_BANDAID:-false}" == "true" ]]; then
 fi
 
 # actually start bootstrap and the job
+set -o xtrace
 "$@"
 EXIT_VALUE=$?
+set +o xtrace
 
 # cleanup after job
 if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
