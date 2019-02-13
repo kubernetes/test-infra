@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"path"
 	"sort"
+	"strconv"
 	"strings"
 
 	"cloud.google.com/go/storage"
@@ -176,5 +177,56 @@ func (s *Spyglass) RunPath(src string) (string, error) {
 		return gcsPath, nil
 	default:
 		return "", fmt.Errorf("unrecognized key type for src: %v", src)
+	}
+}
+
+func (s *Spyglass) RunPR(src string) (string, string, int, error) {
+	src = strings.TrimSuffix(src, "/")
+	keyType, key, err := splitSrc(src)
+	if err != nil {
+		return "", "", 0, fmt.Errorf("error parsing src: %v", src)
+	}
+	split := strings.Split(key, "/")
+	switch keyType {
+	case gcsKeyType:
+		logType := split[1]
+		if logType == "logs" {
+			return "", "", 0, fmt.Errorf("not a PR URL: %q", key)
+		} else if logType == "pr-logs" {
+			prNum, err := strconv.Atoi(split[len(split)-3])
+			if err != nil {
+				return "", "", 0, fmt.Errorf("couldn't parse PR number %q in %q: %v", split[5], key, err)
+			}
+			// Assumption: we can derive the type of URL from how many components it has
+			defaultConfig := s.config().Plank.DefaultDecorationConfig.GCSConfiguration
+			switch len(split) {
+			case 8:
+				return split[3], split[4], prNum, nil
+			case 7:
+				return defaultConfig.DefaultOrg, split[3], prNum, nil
+			case 6:
+				return defaultConfig.DefaultOrg, defaultConfig.DefaultRepo, prNum, nil
+			default:
+				return "", "", 0, fmt.Errorf("didn't understand the GCS URL %q", key)
+			}
+		} else {
+			return "", "", 0, fmt.Errorf("unknown log type: %q", logType)
+		}
+	case prowKeyType:
+		if len(split) < 2 {
+			return "", "", 0, fmt.Errorf("invalid key %s: expected <job-name>/<build-id>", key)
+		}
+		jobName := split[0]
+		buildID := split[1]
+		job, err := s.jobAgent.GetProwJob(jobName, buildID)
+		if err != nil {
+			return "", "", 0, fmt.Errorf("failed to get prow job from src %q: %v", key, err)
+		}
+		if len(job.Spec.Refs.Pulls) == 0 {
+			return "", "", 0, fmt.Errorf("no PRs on job %q", job.Name)
+		}
+		return job.Spec.Refs.Org, job.Spec.Refs.Repo, job.Spec.Refs.Pulls[0].Number, nil
+	default:
+		return "", "", 0, fmt.Errorf("unrecognized key type for src: %v", src)
 	}
 }

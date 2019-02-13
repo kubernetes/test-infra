@@ -13,12 +13,11 @@
 {{define "content"}}
 {{$source:=.Source}}
 <div id="lens-container">
-  {{if or .JobHistLink .ArtifactsLink}}
+  {{if or .JobHistLink .ArtifactsLink .PRHistLink}}
   <div id="links-card" class="mdl-card mdl-shadow--2dp lens-card">
     {{if .JobHistLink}}<a href="{{.JobHistLink}}">Job History</a>{{end}}
-    {{/*<a href="https://prow.k8s.io/pr-history/kubernetes/kubernetes/73930">PR History</a>*/}}
+    {{if .PRHistLink}}<a href="{{.PRHistLink}}">PR History</a>{{end}}
     {{if .ArtifactsLink}}<a href="{{.ArtifactsLink}}">Artifacts</a>{{end}}
-    {{/*<a href="{{.JobHistLink}}">Testgrid</a>*/}}
   </div>
   {{end}}
   {{range .Lenses}}

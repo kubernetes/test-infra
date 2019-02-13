@@ -30,6 +30,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -672,6 +673,12 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		}
 	}
 
+	prHistLink := ""
+	org, repo, number, err := sg.RunPR(src)
+	if err == nil {
+		prHistLink = path.Join("/pr-history", org, repo, strconv.Itoa(number))
+	}
+
 	var viewBuf bytes.Buffer
 	type lensesTemplate struct {
 		Lenses        []lenses.Lens
@@ -680,6 +687,7 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		LensArtifacts map[string][]string
 		JobHistLink   string
 		ArtifactsLink string
+		PRHistLink string
 	}
 	lTmpl := lensesTemplate{
 		Lenses:        ls,
@@ -688,6 +696,7 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		LensArtifacts: viewerCache,
 		JobHistLink:   jobHistLink,
 		ArtifactsLink: artifactsLink,
+		PRHistLink:    prHistLink,
 	}
 	t := template.New("spyglass.html")
 
