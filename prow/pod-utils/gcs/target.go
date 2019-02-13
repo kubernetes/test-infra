@@ -29,7 +29,9 @@ import (
 )
 
 const (
-	PRLogs    = "pr-logs"
+	// PRLogs is the name of the directory we put PR logs in.
+	PRLogs = "pr-logs"
+	// NonPRLogs is the name of directory we put logs that are not PR logs in.
 	NonPRLogs = "logs"
 )
 

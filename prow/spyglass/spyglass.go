@@ -214,9 +214,8 @@ func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
 				parts := strings.SplitN(split[3], "_", 2)
 				if len(parts) == 1 {
 					return c.DefaultOrg, parts[0], prNum, nil
-				} else {
-					return parts[0], parts[1], prNum, nil
 				}
+				return parts[0], parts[1], prNum, nil
 			case 6:
 				return c.DefaultOrg, c.DefaultRepo, prNum, nil
 			default:
