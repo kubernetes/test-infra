@@ -31,6 +31,7 @@ import (
 // GitHubOptions holds options for interacting with GitHub.
 type GitHubOptions struct {
 	endpoint            Strings
+	GitEndpoint         string
 	TokenPath           string
 	deprecatedTokenFile string
 }
@@ -50,6 +51,7 @@ func (o *GitHubOptions) AddFlagsWithoutDefaultGithubTokenPath(fs *flag.FlagSet) 
 func (o *GitHubOptions) addFlags(wantDefaultGithubTokenPath bool, fs *flag.FlagSet) {
 	o.endpoint = NewStrings("https://api.github.com")
 	fs.Var(&o.endpoint, "github-endpoint", "GitHub's API endpoint (may differ for enterprise).")
+	fs.StringVar(&o.GitEndpoint, "git-endpoint", "https://github.com", "GitHub endpoint (may differ for enterprise).")
 	defaultGithubTokenPath := ""
 	if wantDefaultGithubTokenPath {
 		defaultGithubTokenPath = "/etc/github/oauth"
@@ -64,6 +66,10 @@ func (o *GitHubOptions) Validate(dryRun bool) error {
 		if _, err := url.ParseRequestURI(uri); err != nil {
 			return fmt.Errorf("invalid -github-endpoint URI: %q", uri)
 		}
+	}
+
+	if _, err := url.ParseRequestURI(o.GitEndpoint); err != nil {
+		return fmt.Errorf("invalid -git-endpoint URI: %q", o.GitEndpoint)
 	}
 
 	if o.deprecatedTokenFile != "" {
@@ -102,7 +108,9 @@ func (o *GitHubOptions) GitHubClient(secretAgent *secret.Agent, dryRun bool) (cl
 
 // GitClient returns a Git client.
 func (o *GitHubOptions) GitClient(secretAgent *secret.Agent, dryRun bool) (client *git.Client, err error) {
-	client, err = git.NewClient()
+	// We already validated this during flag validation
+	gitURL, _ := url.Parse(o.GitEndpoint)
+	client, err = git.NewClient(gitURL)
 	if err != nil {
 		return nil, err
 	}
