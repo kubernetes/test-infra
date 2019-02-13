@@ -150,6 +150,7 @@ func (s *Spyglass) JobPath(src string) (string, error) {
 	}
 }
 
+// RunPath returns the path to the GCS directory for the job run specified in src.
 func (s *Spyglass) RunPath(src string) (string, error) {
 	src = strings.TrimSuffix(src, "/")
 	keyType, key, err := splitSrc(src)
@@ -166,6 +167,8 @@ func (s *Spyglass) RunPath(src string) (string, error) {
 	}
 }
 
+// RunToPR returns the (org, repo, pr#) tuple referenced by the provided src.
+// Returns an error if src does not reference a job with an associated PR.
 func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
 	src = strings.TrimSuffix(src, "/")
 	keyType, key, err := splitSrc(src)
@@ -178,6 +181,11 @@ func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
 	}
 	switch keyType {
 	case gcsKeyType:
+		// In theory, we could derive this information without trying to parse the URL by instead fetching the
+		// data from uploaded artifacts. In practice, that would not be a great solution: it would require us
+		// to try pulling two different metadata files (one for bootstrap and one for podutils), then parse them
+		// in unintended ways to infer the original PR. Aside from this being some work to do, it's also slow: we would
+		// like to be able to always answer this request without needing to call out to GCS.
 		logType := split[1]
 		if logType == "logs" {
 			return "", "", 0, fmt.Errorf("not a PR URL: %q", key)
@@ -186,6 +194,10 @@ func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
 			if err != nil {
 				return "", "", 0, fmt.Errorf("couldn't parse PR number %q in %q: %v", split[5], key, err)
 			}
+			// We don't actually attempt to look up the job's own configuration.
+			// In practice, this shouldn't matter: we only want to read DefaultOrg and DefaultRepo, and overriding those
+			// per job would probably be a bad idea (indeed, not even the tests try to actually do this - is it actually possible?).
+			// This decision should probably be revisited if we ever want other information from it.
 			if s.config().Plank.DefaultDecorationConfig == nil || s.config().Plank.DefaultDecorationConfig.GCSConfiguration == nil {
 				return "", "", 0, fmt.Errorf("couldn't look up a GCS configuration")
 			}
