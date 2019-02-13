@@ -18,6 +18,8 @@ package spyglass
 
 import (
 	"fmt"
+	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"os"
 	"strings"
 	"testing"
@@ -474,7 +476,7 @@ func TestRunPath(t *testing.T) {
 			Status: prowapi.ProwJobStatus{
 				PodName: "flying-whales",
 				BuildID: "2222",
-				URL:     "http://magic/view/gcs/chum-bucket/pr-logs/pull/some-org/some-repo/42/example-presubmit-job/2222",
+				URL:     "http://magic/view/gcs/chum-bucket/pr-logs/pull/some-org_some-repo/42/example-presubmit-job/2222",
 			},
 		},
 	}
@@ -515,7 +517,7 @@ func TestRunPath(t *testing.T) {
 		{
 			name:       "Prow presubmit job with full path",
 			src:        "prowjob/example-presubmit-job/2222",
-			expRunPath: "chum-bucket/pr-logs/pull/some-org/some-repo/42/example-presubmit-job/2222",
+			expRunPath: "chum-bucket/pr-logs/pull/some-org_some-repo/42/example-presubmit-job/2222",
 		},
 		{
 			name:     "nonexistent job",
@@ -615,14 +617,14 @@ func TestRunToPR(t *testing.T) {
 	}{
 		{
 			name:      "presubmit job in GCS with trailing /",
-			src:       "gcs/kubernetes-jenkins/pr-logs/pull/Katharine/test-infra/1234/example-job-name/314159/",
+			src:       "gcs/kubernetes-jenkins/pr-logs/pull/Katharine_test-infra/1234/example-job-name/314159/",
 			expOrg:    "Katharine",
 			expRepo:   "test-infra",
 			expNumber: 1234,
 		},
 		{
 			name:      "presubmit job in GCS without trailing /",
-			src:       "gcs/kubernetes-jenkins/pr-logs/pull/Katharine/test-infra/1234/example-job-name/314159",
+			src:       "gcs/kubernetes-jenkins/pr-logs/pull/Katharine_test-infra/1234/example-job-name/314159",
 			expOrg:    "Katharine",
 			expRepo:   "test-infra",
 			expNumber: 1234,
@@ -791,6 +793,146 @@ func TestProwToGCS(t *testing.T) {
 		}
 		if p != tc.expectedPath {
 			t.Errorf("test %q: expected '%s' but got '%s'", tc.key, tc.expectedPath, p)
+		}
+	}
+}
+
+func TestGCSPathRoundTrip(t *testing.T) {
+	testCases := []struct {
+		name         string
+		pathStrategy string
+		defaultOrg   string
+		defaultRepo  string
+		org          string
+		repo         string
+	}{
+		{
+			name:         "simple explicit path",
+			pathStrategy: "explicit",
+			org:          "test-org",
+			repo:         "test-repo",
+		},
+		{
+			name:         "explicit path with underscores",
+			pathStrategy: "explicit",
+			org:          "test-org",
+			repo:         "underscore_repo",
+		},
+		{
+			name:         "'single' path with default repo",
+			pathStrategy: "single",
+			defaultOrg:   "default-org",
+			defaultRepo:  "default-repo",
+			org:          "default-org",
+			repo:         "default-repo",
+		},
+		{
+			name:         "'single' path with non-default repo",
+			pathStrategy: "single",
+			defaultOrg:   "default-org",
+			defaultRepo:  "default-repo",
+			org:          "default-org",
+			repo:         "random-repo",
+		},
+		{
+			name:         "'single' path with non-default org but default repo",
+			pathStrategy: "single",
+			defaultOrg:   "default-org",
+			defaultRepo:  "default-repo",
+			org:          "random-org",
+			repo:         "default-repo",
+		},
+		{
+			name:         "'single' path with non-default org and repo",
+			pathStrategy: "single",
+			defaultOrg:   "default-org",
+			defaultRepo:  "default-repo",
+			org:          "random-org",
+			repo:         "random-repo",
+		},
+		{
+			name:         "legacy path with default repo",
+			pathStrategy: "legacy",
+			defaultOrg:   "default-org",
+			defaultRepo:  "default-repo",
+			org:          "default-org",
+			repo:         "default-repo",
+		},
+		{
+			name:         "legacy path with non-default repo",
+			pathStrategy: "legacy",
+			defaultOrg:   "default-org",
+			defaultRepo:  "default-repo",
+			org:          "default-org",
+			repo:         "random-repo",
+		},
+		{
+			name:         "legacy path with non-default org but default repo",
+			pathStrategy: "legacy",
+			defaultOrg:   "default-org",
+			defaultRepo:  "default-repo",
+			org:          "random-org",
+			repo:         "default-repo",
+		},
+		{
+			name:         "legacy path with non-default org and repo",
+			pathStrategy: "legacy",
+			defaultOrg:   "default-org",
+			defaultRepo:  "default-repo",
+			org:          "random-org",
+			repo:         "random-repo",
+		},
+		{
+			name:         "legacy path with non-default org and repo with underscores",
+			pathStrategy: "legacy",
+			defaultOrg:   "default-org",
+			defaultRepo:  "default-repo",
+			org:          "random-org",
+			repo:         "underscore_repo",
+		},
+	}
+
+	for _, tc := range testCases {
+		kc := fkc{}
+		fakeConfigAgent := fca{
+			c: config.Config{
+				ProwConfig: config.ProwConfig{
+					Plank: config.Plank{
+						DefaultDecorationConfig: &prowapi.DecorationConfig{
+							GCSConfiguration: &prowapi.GCSConfiguration{
+								DefaultOrg:  tc.defaultOrg,
+								DefaultRepo: tc.defaultRepo,
+							},
+						},
+					},
+				},
+			},
+		}
+		fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA")}, fakeConfigAgent.Config)
+		fakeJa.Start()
+
+		fakeGCSClient := fakeGCSServer.Client()
+
+		sg := New(fakeJa, fakeConfigAgent.Config, fakeGCSClient)
+		gcspath, _, _ := gcsupload.PathsForJob(
+			&prowapi.GCSConfiguration{Bucket: "test-bucket", PathStrategy: tc.pathStrategy},
+			&downwardapi.JobSpec{
+				Job:     "test-job",
+				BuildID: "1234",
+				Type:    prowapi.PresubmitJob,
+				Refs: &prowapi.Refs{
+					Org: tc.org, Repo: tc.repo,
+					Pulls: []prowapi.Pull{{Number: 42}},
+				},
+			}, "")
+		fmt.Println(gcspath)
+		org, repo, prnum, err := sg.RunToPR("gcs/test-bucket/" + gcspath)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			continue
+		}
+		if org != tc.org || repo != tc.repo || prnum != 42 {
+			t.Errorf("expected %s/%s#42, got %s/%s#%d", tc.org, tc.repo, org, repo, prnum)
 		}
 	}
 }

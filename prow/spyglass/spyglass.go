@@ -196,7 +196,7 @@ func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
 			}
 			// We don't actually attempt to look up the job's own configuration.
 			// In practice, this shouldn't matter: we only want to read DefaultOrg and DefaultRepo, and overriding those
-			// per job would probably be a bad idea (indeed, not even the tests try to actually do this - is it actually possible?).
+			// per job would probably be a bad idea (indeed, not even the tests try to do this).
 			// This decision should probably be revisited if we ever want other information from it.
 			if s.config().Plank.DefaultDecorationConfig == nil || s.config().Plank.DefaultDecorationConfig.GCSConfiguration == nil {
 				return "", "", 0, fmt.Errorf("couldn't look up a GCS configuration")
@@ -205,10 +205,17 @@ func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
 			// Assumption: we can derive the type of URL from how many components it has, without worrying much about
 			// what the actual path configuration is.
 			switch len(split) {
-			case 8:
-				return split[3], split[4], prNum, nil
 			case 7:
-				return c.DefaultOrg, split[3], prNum, nil
+				// In this case we suffer an ambiguity when using 'path_strategy: legacy', and the repo
+				// is in the default repo, and the repo name contains an underscore.
+				// Currently this affects no actual repo. Hopefully we will soon deprecate 'legacy' and
+				// ensure it never does.
+				parts := strings.SplitN(split[3], "_", 2)
+				if len(parts) == 1 {
+					return c.DefaultOrg, parts[0], prNum, nil
+				} else {
+					return parts[0], parts[1], prNum, nil
+				}
 			case 6:
 				return c.DefaultOrg, c.DefaultRepo, prNum, nil
 			default:
