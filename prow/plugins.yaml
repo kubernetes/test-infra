@@ -691,6 +691,10 @@ external_plugins:
   - name: needs-rebase
     events:
       - pull_request
+  kubernetes/cloud-provider-openstack:
+  - name: needs-rebase
+    events:
+      - pull_request
   kubernetes/kops:
   - name: needs-rebase
     events:
@@ -724,6 +728,10 @@ external_plugins:
     events:
       - pull_request
   kubernetes-sigs/cluster-api-provider-digitalocean:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes-sigs/cluster-api-provider-openstack:
   - name: needs-rebase
     events:
       - pull_request
