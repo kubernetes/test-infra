@@ -47,6 +47,15 @@ type Path struct {
 	url url.URL
 }
 
+func NewPath(path string) (*Path, error) {
+	var p Path
+	err := p.Set(path)
+	if err != nil {
+		return nil, err
+	}
+	return &p, nil
+}
+
 // String returns the gs://bucket/obj url
 func (g Path) String() string {
 	return g.url.String()
