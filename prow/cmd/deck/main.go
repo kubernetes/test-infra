@@ -674,7 +674,7 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 	}
 
 	prHistLink := ""
-	org, repo, number, err := sg.RunPR(src)
+	org, repo, number, err := sg.RunToPR(src)
 	if err == nil {
 		prHistLink = path.Join("/pr-history", org, repo, strconv.Itoa(number))
 	}
@@ -687,7 +687,7 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		LensArtifacts map[string][]string
 		JobHistLink   string
 		ArtifactsLink string
-		PRHistLink string
+		PRHistLink    string
 	}
 	lTmpl := lensesTemplate{
 		Lenses:        ls,

@@ -30,8 +30,6 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
-	"k8s.io/test-infra/prow/gcsupload"
-	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
@@ -158,29 +156,17 @@ func (s *Spyglass) RunPath(src string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error parsing src: %v", src)
 	}
-	split := strings.Split(key, "/")
 	switch keyType {
 	case gcsKeyType:
 		return key, nil
 	case prowKeyType:
-		if len(split) < 2 {
-			return "", fmt.Errorf("invalid key %s: expected <job-name>/<build-id>", key)
-		}
-		jobName := split[0]
-		buildID := split[1]
-		job, err := s.jobAgent.GetProwJob(jobName, buildID)
-		if err != nil {
-			return "", fmt.Errorf("failed to get prow job from src %q: %v", key, err)
-		}
-		jobSpec := downwardapi.NewJobSpec(job.Spec, job.Status.BuildID, job.Name)
-		gcsPath, _, _ := gcsupload.PathsForJob(job.Spec.DecorationConfig.GCSConfiguration, &jobSpec, "")
-		return gcsPath, nil
+		return s.prowToGCS(key)
 	default:
 		return "", fmt.Errorf("unrecognized key type for src: %v", src)
 	}
 }
 
-func (s *Spyglass) RunPR(src string) (string, string, int, error) {
+func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
 	src = strings.TrimSuffix(src, "/")
 	keyType, key, err := splitSrc(src)
 	if err != nil {
@@ -197,15 +183,19 @@ func (s *Spyglass) RunPR(src string) (string, string, int, error) {
 			if err != nil {
 				return "", "", 0, fmt.Errorf("couldn't parse PR number %q in %q: %v", split[5], key, err)
 			}
-			// Assumption: we can derive the type of URL from how many components it has
-			defaultConfig := s.config().Plank.DefaultDecorationConfig.GCSConfiguration
+			if s.config().Plank.DefaultDecorationConfig == nil || s.config().Plank.DefaultDecorationConfig.GCSConfiguration == nil {
+				return "", "", 0, fmt.Errorf("couldn't look up a GCS configuration")
+			}
+			c := s.config().Plank.DefaultDecorationConfig.GCSConfiguration
+			// Assumption: we can derive the type of URL from how many components it has, without worrying much about
+			// what the actual path configuration is.
 			switch len(split) {
 			case 8:
 				return split[3], split[4], prNum, nil
 			case 7:
-				return defaultConfig.DefaultOrg, split[3], prNum, nil
+				return c.DefaultOrg, split[3], prNum, nil
 			case 6:
-				return defaultConfig.DefaultOrg, defaultConfig.DefaultRepo, prNum, nil
+				return c.DefaultOrg, c.DefaultRepo, prNum, nil
 			default:
 				return "", "", 0, fmt.Errorf("didn't understand the GCS URL %q", key)
 			}
