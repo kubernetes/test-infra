@@ -30,6 +30,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
+	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
@@ -118,10 +119,10 @@ func (s *Spyglass) JobPath(src string) (string, error) {
 		bktName := split[0]
 		logType := split[1]
 		jobName := split[len(split)-2]
-		if logType == "logs" {
+		if logType == gcs.NonPRLogs {
 			return path.Dir(key), nil
-		} else if logType == "pr-logs" {
-			return path.Join(bktName, "pr-logs/directory", jobName), nil
+		} else if logType == gcs.PRLogs {
+			return path.Join(bktName, gcs.PRLogs, "directory", jobName), nil
 		}
 		return "", fmt.Errorf("unrecognized GCS key: %s", key)
 	case prowKeyType:
@@ -142,9 +143,9 @@ func (s *Spyglass) JobPath(src string) (string, error) {
 		}
 		bktName := job.Spec.DecorationConfig.GCSConfiguration.Bucket
 		if job.Spec.Type == prowapi.PresubmitJob {
-			return path.Join(bktName, "pr-logs/directory", jobName), nil
+			return path.Join(bktName, gcs.PRLogs, "directory", jobName), nil
 		}
-		return path.Join(bktName, "logs", jobName), nil
+		return path.Join(bktName, gcs.NonPRLogs, jobName), nil
 	default:
 		return "", fmt.Errorf("unrecognized key type for src: %v", src)
 	}
@@ -187,9 +188,9 @@ func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
 		// in unintended ways to infer the original PR. Aside from this being some work to do, it's also slow: we would
 		// like to be able to always answer this request without needing to call out to GCS.
 		logType := split[1]
-		if logType == "logs" {
+		if logType == gcs.NonPRLogs {
 			return "", "", 0, fmt.Errorf("not a PR URL: %q", key)
-		} else if logType == "pr-logs" {
+		} else if logType == gcs.PRLogs {
 			prNum, err := strconv.Atoi(split[len(split)-3])
 			if err != nil {
 				return "", "", 0, fmt.Errorf("couldn't parse PR number %q in %q: %v", split[5], key, err)

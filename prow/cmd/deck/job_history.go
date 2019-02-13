@@ -43,8 +43,7 @@ const (
 
 	// ** Job history assumes the GCS layout specified here:
 	// https://github.com/kubernetes/test-infra/tree/master/gubernator#gcs-bucket-layout
-	logsPrefix     = "logs"
-	symLinkPrefix  = "pr-logs/directory"
+	logsPrefix     = gcs.NonPRLogs
 	spyglassPrefix = "/view/gcs"
 	emptyID        = int64(-1) // indicates no build id was specified
 )
