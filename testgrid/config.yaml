@@ -7771,6 +7771,7 @@ dashboard_groups:
   dashboard_names:
   - sig-scalability-gce
   - sig-scalability-gke
+  - sig-scalability-node
   - sig-scalability-kubemark
   - sig-scalability-perf-tests
   - sig-scalability-benchmarks
