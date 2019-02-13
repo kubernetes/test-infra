@@ -1,23 +1,28 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "k8s.io/test-infra/maintenance/aws-janitor",
+    importpath = "k8s.io/test-infra/maintenance/aws-janitor/cmd/aws-janitor-boskos",
     visibility = ["//visibility:private"],
     deps = [
+        "//boskos/client:go_default_library",
+        "//boskos/common:go_default_library",
+        "//boskos/common/aws:go_default_library",
         "//maintenance/aws-janitor/account:go_default_library",
         "//maintenance/aws-janitor/regions:go_default_library",
         "//maintenance/aws-janitor/resources:go_default_library",
-        "//maintenance/aws-janitor/s3:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/credentials:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
-        "//vendor/k8s.io/klog:go_default_library",
+        "//vendor/github.com/pkg/errors:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 
 go_binary(
-    name = "aws-janitor",
+    name = "aws-janitor-boskos",
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
@@ -31,15 +36,12 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [
-        ":package-srcs",
-        "//maintenance/aws-janitor/account:all-srcs",
-        "//maintenance/aws-janitor/cmd/aws-janitor-boskos:all-srcs",
-        "//maintenance/aws-janitor/cmd/aws-resources-list:all-srcs",
-        "//maintenance/aws-janitor/regions:all-srcs",
-        "//maintenance/aws-janitor/resources:all-srcs",
-        "//maintenance/aws-janitor/s3:all-srcs",
-    ],
+    srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
+)
+
+go_image(
+    name = "aws-janitor-boskos-image",
+    embed = [":go_default_library"],
 )

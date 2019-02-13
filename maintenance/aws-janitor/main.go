@@ -23,37 +23,17 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog"
 	"k8s.io/test-infra/maintenance/aws-janitor/account"
+	"k8s.io/test-infra/maintenance/aws-janitor/regions"
 	"k8s.io/test-infra/maintenance/aws-janitor/resources"
 	s3path "k8s.io/test-infra/maintenance/aws-janitor/s3"
-)
-
-const (
-	defaultRegion = "us-east-1"
 )
 
 var (
 	maxTTL = flag.Duration("ttl", 24*time.Hour, "Maximum time before we attempt deletion of a resource. Set to 0s to nuke all non-default resources.")
 	path   = flag.String("path", "", "S3 path to store mark data in (required)")
 )
-
-func getRegions(sess *session.Session) ([]string, error) {
-	svc := ec2.New(sess, &aws.Config{Region: aws.String(defaultRegion)})
-
-	resp, err := svc.DescribeRegions(nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var regions []string
-	for _, region := range resp.Regions {
-		regions = append(regions, *region.RegionName)
-	}
-
-	return regions, nil
-}
 
 func main() {
 	klog.InitFlags(nil)
@@ -71,13 +51,12 @@ func main() {
 	if err != nil {
 		klog.Fatalf("--path %q isn't a valid S3 path: %v", *path, err)
 	}
-	acct, err := account.GetAccount(sess, defaultRegion)
+	acct, err := account.GetAccount(sess, regions.Default)
 	if err != nil {
 		klog.Fatalf("Error getting current user: %v", err)
 	}
-	klog.Infof("Account: %s", acct)
-
-	regions, err := getRegions(sess)
+	klog.V(1).Infof("account: %s", acct)
+	regions, err := regions.GetAll(sess)
 	if err != nil {
 		klog.Fatalf("Error getting available regions: %v", err)
 	}

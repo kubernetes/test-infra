@@ -19,6 +19,7 @@ package client
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -32,6 +33,13 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/storage"
+)
+
+var (
+	// ErrNotFound is returned by Acquire() when no resources are available.
+	ErrNotFound = errors.New("resources not found")
+	// ErrAlreadyInUse is returned by Acquire when resources are already being requested.
+	ErrAlreadyInUse = errors.New("resources already used by another user")
 )
 
 // Client defines the public Boskos client object
@@ -255,7 +263,7 @@ func (c *Client) acquire(rtype, state, dest string) (*common.Resource, error) {
 		}
 		return &res, nil
 	} else if resp.StatusCode == http.StatusNotFound {
-		return nil, fmt.Errorf("resource not found")
+		return nil, ErrNotFound
 	}
 	return nil, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode)
 }
@@ -276,10 +284,9 @@ func (c *Client) acquireByState(state, dest string, names []string) ([]common.Re
 		}
 		return resources, nil
 	case http.StatusUnauthorized:
-		return nil, fmt.Errorf("resources already used by another user")
-
+		return nil, ErrAlreadyInUse
 	case http.StatusNotFound:
-		return nil, fmt.Errorf("resources not found")
+		return nil, ErrNotFound
 	}
 	return nil, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode)
 }
