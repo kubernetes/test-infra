@@ -29,6 +29,8 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
+	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
@@ -144,6 +146,34 @@ func (s *Spyglass) JobPath(src string) (string, error) {
 			return path.Join(bktName, "pr-logs/directory", jobName), nil
 		}
 		return path.Join(bktName, "logs", jobName), nil
+	default:
+		return "", fmt.Errorf("unrecognized key type for src: %v", src)
+	}
+}
+
+func (s *Spyglass) RunPath(src string) (string, error) {
+	src = strings.TrimSuffix(src, "/")
+	keyType, key, err := splitSrc(src)
+	if err != nil {
+		return "", fmt.Errorf("error parsing src: %v", src)
+	}
+	split := strings.Split(key, "/")
+	switch keyType {
+	case gcsKeyType:
+		return key, nil
+	case prowKeyType:
+		if len(split) < 2 {
+			return "", fmt.Errorf("invalid key %s: expected <job-name>/<build-id>", key)
+		}
+		jobName := split[0]
+		buildID := split[1]
+		job, err := s.jobAgent.GetProwJob(jobName, buildID)
+		if err != nil {
+			return "", fmt.Errorf("failed to get prow job from src %q: %v", key, err)
+		}
+		jobSpec := downwardapi.NewJobSpec(job.Spec, job.Status.BuildID, job.Name)
+		gcsPath, _, _ := gcsupload.PathsForJob(job.Spec.DecorationConfig.GCSConfiguration, &jobSpec, "")
+		return gcsPath, nil
 	default:
 		return "", fmt.Errorf("unrecognized key type for src: %v", src)
 	}

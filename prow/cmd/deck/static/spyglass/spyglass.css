@@ -24,6 +24,7 @@ body {
 }
 
 #lens-container {
+  padding-top: 30px;
   flex-direction: column;
   flex-wrap: nowrap;
 }
@@ -56,4 +57,15 @@ a:visited {
 
 .mdl-card.lens-card {
   min-height: 0;
+}
+
+#links-card {
+  display: flex;
+  flex-direction: row;
+  padding: 15px;
+}
+
+#links-card a {
+  flex: 1;
+  text-align: center;
 }
