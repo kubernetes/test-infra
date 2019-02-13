@@ -146,8 +146,10 @@ presets:
     value: "--enable-pprof"
   - name: CONTROLLER_MANAGER_TEST_ARGS
     value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
+  # We need to also bump max-pods, because there are more than 10 pods
+  # that are scheduled on that node (in 1-node cluster).
   - name: KUBELET_TEST_ARGS
-    value: "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
+    value: "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100 --max-pods=120"
   - name: KUBEPROXY_TEST_ARGS
     value: "--profiling"
   - name: SCHEDULER_TEST_ARGS
