@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"path"
 	"sort"
+	"strconv"
 	"strings"
 
 	"cloud.google.com/go/storage"
@@ -29,6 +30,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
+	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
@@ -117,10 +119,10 @@ func (s *Spyglass) JobPath(src string) (string, error) {
 		bktName := split[0]
 		logType := split[1]
 		jobName := split[len(split)-2]
-		if logType == "logs" {
+		if logType == gcs.NonPRLogs {
 			return path.Dir(key), nil
-		} else if logType == "pr-logs" {
-			return path.Join(bktName, "pr-logs/directory", jobName), nil
+		} else if logType == gcs.PRLogs {
+			return path.Join(bktName, gcs.PRLogs, "directory", jobName), nil
 		}
 		return "", fmt.Errorf("unrecognized GCS key: %s", key)
 	case prowKeyType:
@@ -141,10 +143,102 @@ func (s *Spyglass) JobPath(src string) (string, error) {
 		}
 		bktName := job.Spec.DecorationConfig.GCSConfiguration.Bucket
 		if job.Spec.Type == prowapi.PresubmitJob {
-			return path.Join(bktName, "pr-logs/directory", jobName), nil
+			return path.Join(bktName, gcs.PRLogs, "directory", jobName), nil
 		}
-		return path.Join(bktName, "logs", jobName), nil
+		return path.Join(bktName, gcs.NonPRLogs, jobName), nil
 	default:
 		return "", fmt.Errorf("unrecognized key type for src: %v", src)
+	}
+}
+
+// RunPath returns the path to the GCS directory for the job run specified in src.
+func (s *Spyglass) RunPath(src string) (string, error) {
+	src = strings.TrimSuffix(src, "/")
+	keyType, key, err := splitSrc(src)
+	if err != nil {
+		return "", fmt.Errorf("error parsing src: %v", src)
+	}
+	switch keyType {
+	case gcsKeyType:
+		return key, nil
+	case prowKeyType:
+		return s.prowToGCS(key)
+	default:
+		return "", fmt.Errorf("unrecognized key type for src: %v", src)
+	}
+}
+
+// RunToPR returns the (org, repo, pr#) tuple referenced by the provided src.
+// Returns an error if src does not reference a job with an associated PR.
+func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
+	src = strings.TrimSuffix(src, "/")
+	keyType, key, err := splitSrc(src)
+	if err != nil {
+		return "", "", 0, fmt.Errorf("error parsing src: %v", src)
+	}
+	split := strings.Split(key, "/")
+	if len(split) < 2 {
+		return "", "", 0, fmt.Errorf("expected more URL components in %q", src)
+	}
+	switch keyType {
+	case gcsKeyType:
+		// In theory, we could derive this information without trying to parse the URL by instead fetching the
+		// data from uploaded artifacts. In practice, that would not be a great solution: it would require us
+		// to try pulling two different metadata files (one for bootstrap and one for podutils), then parse them
+		// in unintended ways to infer the original PR. Aside from this being some work to do, it's also slow: we would
+		// like to be able to always answer this request without needing to call out to GCS.
+		logType := split[1]
+		if logType == gcs.NonPRLogs {
+			return "", "", 0, fmt.Errorf("not a PR URL: %q", key)
+		} else if logType == gcs.PRLogs {
+			prNum, err := strconv.Atoi(split[len(split)-3])
+			if err != nil {
+				return "", "", 0, fmt.Errorf("couldn't parse PR number %q in %q: %v", split[5], key, err)
+			}
+			// We don't actually attempt to look up the job's own configuration.
+			// In practice, this shouldn't matter: we only want to read DefaultOrg and DefaultRepo, and overriding those
+			// per job would probably be a bad idea (indeed, not even the tests try to do this).
+			// This decision should probably be revisited if we ever want other information from it.
+			if s.config().Plank.DefaultDecorationConfig == nil || s.config().Plank.DefaultDecorationConfig.GCSConfiguration == nil {
+				return "", "", 0, fmt.Errorf("couldn't look up a GCS configuration")
+			}
+			c := s.config().Plank.DefaultDecorationConfig.GCSConfiguration
+			// Assumption: we can derive the type of URL from how many components it has, without worrying much about
+			// what the actual path configuration is.
+			switch len(split) {
+			case 7:
+				// In this case we suffer an ambiguity when using 'path_strategy: legacy', and the repo
+				// is in the default repo, and the repo name contains an underscore.
+				// Currently this affects no actual repo. Hopefully we will soon deprecate 'legacy' and
+				// ensure it never does.
+				parts := strings.SplitN(split[3], "_", 2)
+				if len(parts) == 1 {
+					return c.DefaultOrg, parts[0], prNum, nil
+				}
+				return parts[0], parts[1], prNum, nil
+			case 6:
+				return c.DefaultOrg, c.DefaultRepo, prNum, nil
+			default:
+				return "", "", 0, fmt.Errorf("didn't understand the GCS URL %q", key)
+			}
+		} else {
+			return "", "", 0, fmt.Errorf("unknown log type: %q", logType)
+		}
+	case prowKeyType:
+		if len(split) < 2 {
+			return "", "", 0, fmt.Errorf("invalid key %s: expected <job-name>/<build-id>", key)
+		}
+		jobName := split[0]
+		buildID := split[1]
+		job, err := s.jobAgent.GetProwJob(jobName, buildID)
+		if err != nil {
+			return "", "", 0, fmt.Errorf("failed to get prow job from src %q: %v", key, err)
+		}
+		if job.Spec.Refs == nil || len(job.Spec.Refs.Pulls) == 0 {
+			return "", "", 0, fmt.Errorf("no PRs on job %q", job.Name)
+		}
+		return job.Spec.Refs.Org, job.Spec.Refs.Repo, job.Spec.Refs.Pulls[0].Number, nil
+	default:
+		return "", "", 0, fmt.Errorf("unrecognized key type for src: %v", src)
 	}
 }

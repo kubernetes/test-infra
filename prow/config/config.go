@@ -237,6 +237,10 @@ type Spyglass struct {
 	// expected file size + variance. To include all artifacts with high
 	// probability, use 2*maximum observed artifact size.
 	SizeLimit int64 `json:"size_limit,omitempty"`
+	// GCSBrowserPrefix is used to generate a link to a human-usable GCS browser.
+	// If left empty, the link will be not be shown. Otherwise, a GCS path (with no
+	// prefix or scheme) will be appended to GCSBrowserPrefix and shown to the user.
+	GCSBrowserPrefix string `json:"gcs_browser_prefix,omitempty"`
 }
 
 // Deck holds config for deck.

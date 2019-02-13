@@ -30,6 +30,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -659,11 +660,24 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 
 	jobHistLink := ""
 	jobPath, err := sg.JobPath(src)
-
 	if err == nil {
 		jobHistLink = path.Join("/job-history", jobPath)
 	}
-	logrus.Infof("job history link: %s", jobHistLink)
+
+	artifactsLink := ""
+	gcswebPrefix := cfg().Deck.Spyglass.GCSBrowserPrefix
+	if gcswebPrefix != "" {
+		runPath, err := sg.RunPath(src)
+		if err == nil {
+			artifactsLink = gcswebPrefix + runPath
+		}
+	}
+
+	prHistLink := ""
+	org, repo, number, err := sg.RunToPR(src)
+	if err == nil {
+		prHistLink = "/pr-history?org=" + org + "&repo=" + repo + "&pr=" + strconv.Itoa(number)
+	}
 
 	var viewBuf bytes.Buffer
 	type lensesTemplate struct {
@@ -672,6 +686,8 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		Source        string
 		LensArtifacts map[string][]string
 		JobHistLink   string
+		ArtifactsLink string
+		PRHistLink    string
 	}
 	lTmpl := lensesTemplate{
 		Lenses:        ls,
@@ -679,6 +695,8 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		Source:        src,
 		LensArtifacts: viewerCache,
 		JobHistLink:   jobHistLink,
+		ArtifactsLink: artifactsLink,
+		PRHistLink:    prHistLink,
 	}
 	t := template.New("spyglass.html")
 

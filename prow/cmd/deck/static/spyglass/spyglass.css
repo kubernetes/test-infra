@@ -24,6 +24,7 @@ body {
 }
 
 #lens-container {
+  padding-top: 30px;
   flex-direction: column;
   flex-wrap: nowrap;
 }
@@ -46,14 +47,25 @@ body {
 }
 
 .mdl-layout__content a:link {
-  text-decoration: none;
-  color: #798bef;
+  text-decoration: underline;
+  color: #ff8caa;
 }
 
 a:visited {
-  color: #798bef;
+  color: #ff8caa;
 }
 
 .mdl-card.lens-card {
   min-height: 0;
+}
+
+#links-card {
+  display: flex;
+  flex-direction: row;
+  padding: 15px;
+}
+
+#links-card a {
+  flex: 1;
+  text-align: center;
 }

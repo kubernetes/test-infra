@@ -12,10 +12,14 @@
 
 {{define "content"}}
 {{$source:=.Source}}
-{{if .JobHistLink}}
-<h4>&nbsp;<a href="{{.JobHistLink}}">Job History</a></h4>
-{{end}}
 <div id="lens-container">
+  {{if or .JobHistLink .ArtifactsLink .PRHistLink}}
+  <div id="links-card" class="mdl-card mdl-shadow--2dp lens-card">
+    {{if .JobHistLink}}<a href="{{.JobHistLink}}">Job History</a>{{end}}
+    {{if .PRHistLink}}<a href="{{.PRHistLink}}">PR History</a>{{end}}
+    {{if .ArtifactsLink}}<a href="{{.ArtifactsLink}}">Artifacts</a>{{end}}
+  </div>
+  {{end}}
   {{range .Lenses}}
   {{$config:=.Config}}
   <div class="mdl-card mdl-shadow--2dp lens-card">
