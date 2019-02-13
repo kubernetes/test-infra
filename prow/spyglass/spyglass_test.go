@@ -434,6 +434,279 @@ func TestJobPath(t *testing.T) {
 	}
 }
 
+func TestRunPath(t *testing.T) {
+	kc := fkc{
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PeriodicJob,
+				Job:  "example-periodic-job",
+				DecorationConfig: &prowapi.DecorationConfig{
+					GCSConfiguration: &prowapi.GCSConfiguration{
+						Bucket: "chum-bucket",
+					},
+				},
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName: "flying-whales",
+				BuildID: "1111",
+				URL:     "http://magic/view/gcs/chum-bucket/logs/example-periodic-job/1111",
+			},
+		},
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Job:  "example-presubmit-job",
+				DecorationConfig: &prowapi.DecorationConfig{
+					GCSConfiguration: &prowapi.GCSConfiguration{
+						Bucket: "chum-bucket",
+					},
+				},
+				Refs: &prowapi.Refs{
+					Org:  "some-org",
+					Repo: "some-repo",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 42,
+						},
+					},
+				},
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName: "flying-whales",
+				BuildID: "2222",
+				URL:     "http://magic/view/gcs/chum-bucket/pr-logs/pull/some-org/some-repo/42/example-presubmit-job/2222",
+			},
+		},
+	}
+	fca := config.Agent{}
+	fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca.Config)
+	fakeJa.Start()
+	testCases := []struct {
+		name       string
+		src        string
+		expRunPath string
+		expError   bool
+	}{
+		{
+			name:       "non-presubmit job in GCS with trailing /",
+			src:        "gcs/kubernetes-jenkins/logs/example-job-name/123/",
+			expRunPath: "kubernetes-jenkins/logs/example-job-name/123",
+		},
+		{
+			name:       "non-presubmit job in GCS without trailing /",
+			src:        "gcs/kubernetes-jenkins/logs/example-job-name/123",
+			expRunPath: "kubernetes-jenkins/logs/example-job-name/123",
+		},
+		{
+			name:       "presubmit job in GCS with trailing /",
+			src:        "gcs/kubernetes-jenkins/pr-logs/pull/test-infra/0000/example-job-name/314159/",
+			expRunPath: "kubernetes-jenkins/pr-logs/pull/test-infra/0000/example-job-name/314159",
+		},
+		{
+			name:       "presubmit job in GCS without trailing /",
+			src:        "gcs/kubernetes-jenkins/pr-logs/pull/test-infra/0000/example-job-name/314159",
+			expRunPath: "kubernetes-jenkins/pr-logs/pull/test-infra/0000/example-job-name/314159",
+		},
+		{
+			name:       "non-presubmit Prow job",
+			src:        "prowjob/example-periodic-job/1111",
+			expRunPath: "chum-bucket/logs/example-periodic-job/1111",
+		},
+		{
+			name:       "Prow presubmit job with full path",
+			src:        "prowjob/example-presubmit-job/2222",
+			expRunPath: "chum-bucket/pr-logs/pull/some-org/some-repo/42/example-presubmit-job/2222",
+		},
+		{
+			name:     "nonexistent job",
+			src:      "prowjob/example-periodic-job/0000",
+			expError: true,
+		},
+		{
+			name:     "invalid key type",
+			src:      "oh/my/glob/drama/bomb",
+			expError: true,
+		},
+		{
+			name:     "nonsense string errors",
+			src:      "this is not useful",
+			expError: true,
+		},
+	}
+	for _, tc := range testCases {
+		fakeGCSClient := fakeGCSServer.Client()
+		fca := config.Agent{}
+		fca.Set(&config.Config{
+			ProwConfig: config.ProwConfig{
+				Plank: config.Plank{
+					JobURLPrefix: "http://magic/view/gcs/",
+				},
+			},
+		})
+		sg := New(fakeJa, fca.Config, fakeGCSClient)
+		jobPath, err := sg.RunPath(tc.src)
+		if tc.expError && err == nil {
+			t.Errorf("test %q: RunPath(%q) expected error, got  %q", tc.name, tc.src, jobPath)
+			continue
+		}
+		if !tc.expError && err != nil {
+			t.Errorf("test %q: RunPath(%q) returned unexpected error %v", tc.name, tc.src, err)
+			continue
+		}
+		if jobPath != tc.expRunPath {
+			t.Errorf("test %q: RunPath(%q) expected %q, got %q", tc.name, tc.src, tc.expRunPath, jobPath)
+		}
+	}
+}
+
+func TestRunToPR(t *testing.T) {
+	kc := fkc{
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PeriodicJob,
+				Job:  "example-periodic-job",
+				DecorationConfig: &prowapi.DecorationConfig{
+					GCSConfiguration: &prowapi.GCSConfiguration{
+						Bucket: "chum-bucket",
+					},
+				},
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName: "flying-whales",
+				BuildID: "1111",
+				URL:     "http://magic/view/gcs/chum-bucket/logs/example-periodic-job/1111",
+			},
+		},
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Job:  "example-presubmit-job",
+				DecorationConfig: &prowapi.DecorationConfig{
+					GCSConfiguration: &prowapi.GCSConfiguration{
+						Bucket: "chum-bucket",
+					},
+				},
+				Refs: &prowapi.Refs{
+					Org:  "some-org",
+					Repo: "some-repo",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 42,
+						},
+					},
+				},
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName: "flying-whales",
+				BuildID: "2222",
+			},
+		},
+	}
+	fca := config.Agent{}
+	fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca.Config)
+	fakeJa.Start()
+	testCases := []struct {
+		name      string
+		src       string
+		expOrg    string
+		expRepo   string
+		expNumber int
+		expError  bool
+	}{
+		{
+			name:      "presubmit job in GCS with trailing /",
+			src:       "gcs/kubernetes-jenkins/pr-logs/pull/Katharine/test-infra/1234/example-job-name/314159/",
+			expOrg:    "Katharine",
+			expRepo:   "test-infra",
+			expNumber: 1234,
+		},
+		{
+			name:      "presubmit job in GCS without trailing /",
+			src:       "gcs/kubernetes-jenkins/pr-logs/pull/Katharine/test-infra/1234/example-job-name/314159",
+			expOrg:    "Katharine",
+			expRepo:   "test-infra",
+			expNumber: 1234,
+		},
+		{
+			name:      "presubmit job in GCS without org name",
+			src:       "gcs/kubernetes-jenkins/pr-logs/pull/test-infra/2345/example-job-name/314159",
+			expOrg:    "kubernetes",
+			expRepo:   "test-infra",
+			expNumber: 2345,
+		},
+		{
+			name:      "presubmit job in GCS without org or repo name",
+			src:       "gcs/kubernetes-jenkins/pr-logs/pull/3456/example-job-name/314159",
+			expOrg:    "kubernetes",
+			expRepo:   "kubernetes",
+			expNumber: 3456,
+		},
+		{
+			name:      "Prow presubmit job",
+			src:       "prowjob/example-presubmit-job/2222",
+			expOrg:    "some-org",
+			expRepo:   "some-repo",
+			expNumber: 42,
+		},
+		{
+			name:     "Prow periodic job errors",
+			src:      "prowjob/example-periodic-job/1111",
+			expError: true,
+		},
+		{
+			name:     "GCS periodic job errors",
+			src:      "gcs/kuberneretes-jenkins/logs/example-periodic-job/1111",
+			expError: true,
+		},
+		{
+			name:     "GCS job with non-numeric PR number errors",
+			src:      "gcs/kubernetes-jenkins/pr-logs/pull/asdf/example-job-name/314159",
+			expError: true,
+		},
+		{
+			name:     "Bad GCS key errors",
+			src:      "gcs/this is just nonsense",
+			expError: true,
+		},
+		{
+			name:     "Nonsense string errors",
+			src:      "friendship is magic",
+			expError: true,
+		},
+	}
+	for _, tc := range testCases {
+		fakeGCSClient := fakeGCSServer.Client()
+		fca := config.Agent{}
+		fca.Set(&config.Config{
+			ProwConfig: config.ProwConfig{
+				Plank: config.Plank{
+					DefaultDecorationConfig: &prowapi.DecorationConfig{
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							Bucket:       "kubernetes-jenkins",
+							DefaultOrg:   "kubernetes",
+							DefaultRepo:  "kubernetes",
+							PathStrategy: "legacy",
+						},
+					},
+				},
+			},
+		})
+		sg := New(fakeJa, fca.Config, fakeGCSClient)
+		org, repo, num, err := sg.RunToPR(tc.src)
+		if tc.expError && err == nil {
+			t.Errorf("test %q: RunToPR(%q) expected error", tc.name, tc.src)
+			continue
+		}
+		if !tc.expError && err != nil {
+			t.Errorf("test %q: RunToPR(%q) returned unexpected error %v", tc.name, tc.src, err)
+			continue
+		}
+		if org != tc.expOrg || repo != tc.expRepo || num != tc.expNumber {
+			t.Errorf("test %q: RunToPR(%q) expected %s/%s#%d, got %s/%s#%d", tc.name, tc.src, tc.expOrg, tc.expRepo, tc.expNumber, org, repo, num)
+		}
+	}
+}
+
 func TestProwToGCS(t *testing.T) {
 	testCases := []struct {
 		name         string

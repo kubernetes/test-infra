@@ -173,6 +173,9 @@ func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
 		return "", "", 0, fmt.Errorf("error parsing src: %v", src)
 	}
 	split := strings.Split(key, "/")
+	if len(split) < 2 {
+		return "", "", 0, fmt.Errorf("expected more URL components in %q", src)
+	}
 	switch keyType {
 	case gcsKeyType:
 		logType := split[1]
@@ -212,7 +215,7 @@ func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
 		if err != nil {
 			return "", "", 0, fmt.Errorf("failed to get prow job from src %q: %v", key, err)
 		}
-		if len(job.Spec.Refs.Pulls) == 0 {
+		if job.Spec.Refs == nil || len(job.Spec.Refs.Pulls) == 0 {
 			return "", "", 0, fmt.Errorf("no PRs on job %q", job.Name)
 		}
 		return job.Spec.Refs.Org, job.Spec.Refs.Repo, job.Spec.Refs.Pulls[0].Number, nil
