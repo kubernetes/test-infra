@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	"cloud.google.com/go/storage"
 	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
@@ -30,21 +31,21 @@ type downloadResult struct {
 	suiteMetas   []gcs.SuitesMeta
 }
 
-func download(ctx context.Context, opt options) (*downloadResult, error) {
+func storageClient(ctx context.Context, account string) (*storage.Client, error) {
 	var creds []string
-	if opt.account != "" {
-		creds = append(creds, opt.account)
+	if account != "" {
+		creds = append(creds, account)
 	}
-	client, err := gcs.ClientWithCreds(ctx, creds...)
-	if err != nil {
-		return nil, fmt.Errorf("client: %v", err)
-	}
+	return gcs.ClientWithCreds(ctx, creds...)
+}
+
+func download(ctx context.Context, client *storage.Client, path gcs.Path) (*downloadResult, error) {
 
 	build := gcs.Build{
-		Bucket:     client.Bucket(opt.path.Bucket()),
+		Bucket:     client.Bucket(path.Bucket()),
 		Context:    ctx,
-		Prefix:     trailingSlash(opt.path.Object()),
-		BucketPath: opt.path.Bucket(),
+		Prefix:     trailingSlash(path.Object()),
+		BucketPath: path.Bucket(),
 	}
 
 	fmt.Println("Read started...")

@@ -41,7 +41,8 @@ type Started = metadata.Started
 // Finished holds finished.json data.
 type Finished struct {
 	metadata.Finished
-	Running bool
+	// Running when the job hasn't finished and finished.json doesn't exist
+	Running bool // TODO(fejta): remove?
 }
 
 // Build points to a build stored under a particular gcs prefix.
@@ -163,6 +164,9 @@ func parseSuitesMeta(name string) map[string]string {
 // readJSON will decode the json object stored in GCS.
 func readJSON(ctx context.Context, obj *storage.ObjectHandle, i interface{}) error {
 	reader, err := obj.NewReader(ctx)
+	if err == storage.ErrObjectNotExist {
+		return err
+	}
 	if err != nil {
 		return fmt.Errorf("open: %v", err)
 	}
@@ -186,7 +190,12 @@ func (build Build) Started() (*Started, error) {
 func (build Build) Finished() (*Finished, error) {
 	uri := build.Prefix + "finished.json"
 	var finished Finished
-	if err := readJSON(build.Context, build.Bucket.Object(uri), &finished); err != nil {
+	err := readJSON(build.Context, build.Bucket.Object(uri), &finished)
+	if err == storage.ErrObjectNotExist {
+		finished.Running = true
+		return &finished, nil
+	}
+	if err != nil {
 		return nil, fmt.Errorf("read %s: %v", uri, err)
 	}
 	return &finished, nil
