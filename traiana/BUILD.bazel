@@ -22,6 +22,7 @@ filegroup(
         "//traiana/fakestorage:all-srcs",
         "//traiana/prow/awsupload:all-srcs",
         "//traiana/prow/plugins/force-merge:all-srcs",
+        "//traiana/prow/plugins/undoer:all-srcs",
         "//traiana/storage:all-srcs",
     ],
     tags = ["automanaged"],

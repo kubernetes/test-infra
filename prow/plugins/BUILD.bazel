@@ -25,6 +25,7 @@ go_library(
     srcs = [
         "config.go",
         "plugins.go",
+        "priority_handlers.go",
         "respond.go",
     ],
     importpath = "k8s.io/test-infra/prow/plugins",

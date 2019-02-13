@@ -48,19 +48,23 @@ docker_push(
 )
 
 container_bundle(
-    name = "prow-build",
+    name = "okro-release",
     images = tags(
-        "build",
-        "deck",
         "sidecar",
         "initupload",
+        "entrypoint",
+        "deck",
+        "hook",
+        "plank",
+        "crier",
+        "build",
     ),
     stamp = True,
 )
 
 docker_push(
-    name = "prow-build-push",
-    bundle = ":prow-build",
+    name = "okro-release-push",
+    bundle = ":okro-release",
 )
 
 filegroup(
