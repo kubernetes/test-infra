@@ -1571,7 +1571,7 @@ presubmits:
         - --env=KUBE_RELEASE_RUN_TESTS=n
         - make
         - release
-        image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+        image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
         name: ""
         resources:
           requests:
@@ -1614,7 +1614,7 @@ presubmits:
         - --env=KUBE_RELEASE_RUN_TESTS=n
         - make
         - release
-        image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+        image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
         name: ""
         resources:
           requests:
