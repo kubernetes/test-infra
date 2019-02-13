@@ -43,7 +43,7 @@ periodics:
         value: "true"
       - name: KUBE_GCE_ENABLE_IP_ALIASES
         value: "true"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190212-fdfa7b47f-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190213-f6a16b59b-master
       resources:
         requests:
           memory: "8Gi"
@@ -83,4 +83,4 @@ periodics:
         value: "3"
       - name: KUBERNETES_NODE_PLATFORM
         value: "windows"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190212-bdf6cd2e3-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190213-f6a16b59b-master
