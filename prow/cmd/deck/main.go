@@ -676,7 +676,7 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 	prHistLink := ""
 	org, repo, number, err := sg.RunToPR(src)
 	if err == nil {
-		prHistLink = path.Join("/pr-history", org, repo, strconv.Itoa(number))
+		prHistLink = "/pr-history?org=" + org + "&repo=" + repo + "&pr=" + strconv.Itoa(number)
 	}
 
 	var viewBuf bytes.Buffer
