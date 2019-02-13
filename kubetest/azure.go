@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/url"
 	"os"
 	"os/exec"
@@ -116,7 +117,21 @@ func (c *Cluster) getAzCredentials() error {
 	return nil
 }
 
+func randomAcsEngineLocation() string {
+	var AzureLocations = []string{
+		"westeurope",
+		"westus2",
+		"eastus2",
+		"southcentralus",
+	}
+
+	return AzureLocations[rand.Intn(len(AzureLocations))]
+}
+
 func checkParams() error {
+	if *acsLocation == "" {
+		*acsLocation = randomAcsEngineLocation()
+	}
 	if *acsCredentialsFile == "" {
 		return fmt.Errorf("no credentials file path specified")
 	}
