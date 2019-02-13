@@ -3294,7 +3294,7 @@ presubmits:
           value: /workspace/k8s.io/kubernetes
         - name: METADATA_BANDAID
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190212-fdfa7b47f-1.14
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190213-f6a16b59b-1.14
         imagePullPolicy: Always
         name: ""
         resources:
