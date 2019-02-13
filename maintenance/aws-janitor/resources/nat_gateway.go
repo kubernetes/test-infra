@@ -29,8 +29,10 @@ import (
 
 // VPCs: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeVpcs
 
+// NATGateway is a VPC component: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html
 type NATGateway struct{}
 
+// MarkAndSweep looks at the provided set, and removes resources older than its TTL that have been previously tagged.
 func (NATGateway) MarkAndSweep(sess *session.Session, acct string, region string, set *Set) error {
 	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
 
@@ -58,6 +60,7 @@ func (NATGateway) MarkAndSweep(sess *session.Session, acct string, region string
 	return nil
 }
 
+// ListAll populates a set will all available NATGateway resources.
 func (NATGateway) ListAll(sess *session.Session, acct, region string) (*Set, error) {
 	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
 	set := NewSet(0)
