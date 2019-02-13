@@ -40,7 +40,7 @@ type KubernetesOptions struct {
 	kubeconfig   string
 	infraContext string
 
-	deckURI string
+	DeckURI string
 
 	// from resolution
 	resolved                   bool
@@ -54,18 +54,18 @@ func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.buildCluster, "build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster. All clusters are used as build clusters. Cannot be combined with --kubeconfig.")
 	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If empty, uses the local cluster. All contexts other than the default or whichever is passed to --context are used as build clusters. . Cannot be combined with --build-cluster.")
 	fs.StringVar(&o.infraContext, "context", "", "The name of the kubeconfig context to use for the infrastructure client. If empty and --kubeconfig is not set, uses the local cluster.")
-	fs.StringVar(&o.deckURI, "deck-url", "", "Deck URI for read-only access to the infrastructure cluster.")
+	fs.StringVar(&o.DeckURI, "deck-url", "", "Deck URI for read-only access to the infrastructure cluster.")
 }
 
 // Validate validates Kubernetes options.
 func (o *KubernetesOptions) Validate(dryRun bool) error {
-	if dryRun && o.deckURI == "" {
+	if dryRun && o.DeckURI == "" {
 		return errors.New("a dry-run was requested but required flag -deck-url was unset")
 	}
 
-	if o.deckURI != "" {
-		if _, err := url.ParseRequestURI(o.deckURI); err != nil {
-			return fmt.Errorf("invalid -deck-url URI: %q", o.deckURI)
+	if o.DeckURI != "" {
+		if _, err := url.ParseRequestURI(o.DeckURI); err != nil {
+			return fmt.Errorf("invalid -deck-url URI: %q", o.DeckURI)
 		}
 	}
 
@@ -146,7 +146,7 @@ func (o *KubernetesOptions) ProwJobClient(namespace string, dryRun bool) (prowJo
 	}
 
 	if o.dryRun {
-		return kube.NewDryRunProwJobClient(o.deckURI), nil
+		return kube.NewDryRunProwJobClient(o.DeckURI), nil
 	}
 
 	return o.prowJobClientset.ProwV1().ProwJobs(namespace), nil

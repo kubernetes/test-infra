@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -40,43 +41,57 @@ type options struct {
 	jobConfigPath string
 
 	kubernetes flagutil.KubernetesOptions
-	dryRun     bool
+	dryRun     flagutil.Bool
 }
 
-func gatherOptions() options {
-	o := options{}
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+// TODO(fejta): require setting this explicitly
+const defaultConfigPath = "/etc/config/config.yaml"
 
-	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+func gatherOptions(fs *flag.FlagSet, args ...string) options {
+	var o options
+	fs.StringVar(&o.configPath, "config-path", defaultConfigPath, "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 
-	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
+	// TODO(fejta): switch dryRun to be a bool, defaulting to true after March 15, 2019.
+	fs.Var(&o.dryRun, "dry-run", "Whether or not to make mutating API calls to Kubernetes.")
 	o.kubernetes.AddFlags(fs)
 
-	fs.Parse(os.Args[1:])
+	fs.Parse(args)
 	return o
 }
 
 func (o *options) Validate() error {
-	if err := o.kubernetes.Validate(o.dryRun); err != nil {
+	if err := o.kubernetes.Validate(o.dryRun.Value); err != nil {
 		return err
+	}
+
+	if o.configPath == "" {
+		return errors.New("--config-path is required")
 	}
 
 	return nil
 }
 
 func main() {
-	o := gatherOptions()
+	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
+	if err := o.Validate(); err != nil {
+		logrus.WithError(err).Fatal("Invalid options")
+	}
+
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "horologium"}),
 	)
+	if !o.dryRun.Explicit {
+		logrus.Warning("Horologium requies --dry-run=false to function correctly in production.")
+		logrus.Warning("--dry-run will soon default to true. Set --dry-run=false by March 15.")
+	}
 
 	configAgent := config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	prowJobClient, err := o.kubernetes.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun)
+	prowJobClient, err := o.kubernetes.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun.Value)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
 	}
