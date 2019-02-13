@@ -52,7 +52,10 @@ func (InternetGateways) MarkAndSweep(sess *session.Session, acct string, region 
 		return err
 	}
 
-	defaultVpc := vpcResp.Vpcs[0]
+	var defaultVPC string
+	if len(vpcResp.Vpcs) != 0 {
+		defaultVPC = aws.StringValue(vpcResp.Vpcs[0].VpcId)
+	}
 
 	for _, ig := range resp.InternetGateways {
 		i := &internetGateway{Account: acct, Region: region, ID: *ig.InternetGatewayId}
@@ -62,7 +65,7 @@ func (InternetGateways) MarkAndSweep(sess *session.Session, acct string, region 
 			klog.Warningf("%s: deleting %T: %v", i.ARN(), ig, ig)
 
 			for _, att := range ig.Attachments {
-				if att.VpcId == defaultVpc.VpcId {
+				if aws.StringValue(att.VpcId) == defaultVPC {
 					isDefault = true
 					break
 				}
