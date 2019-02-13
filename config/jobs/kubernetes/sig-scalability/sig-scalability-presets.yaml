@@ -97,7 +97,8 @@ presets:
   - name: KUBELET_TEST_ARGS
     value: "--enable-debugging-handlers"
   - name: KUBEPROXY_TEST_ARGS
-    value: "--profiling"
+  # TODO(#74011): Remove metrics-bind-address if the default is set.
+    value: "--profiling --metrics-bind-address=0.0.0.0"
   - name: SCHEDULER_TEST_ARGS
     value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
   # Switch off image puller to workaround #44701
