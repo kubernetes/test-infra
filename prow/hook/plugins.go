@@ -60,4 +60,5 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/yuks"
 
 	_ "k8s.io/test-infra/traiana/prow/plugins/force-merge"
+	_ "k8s.io/test-infra/traiana/prow/plugins/undoer"
 )

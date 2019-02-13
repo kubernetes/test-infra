@@ -161,20 +161,39 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 		"url":               pr.PullRequest.HTMLURL,
 	})
 	l.Infof("Pull request %s.", pr.Action)
-	for p, h := range s.Plugins.PullRequestHandlers(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name) {
-		s.wg.Add(1)
-		go func(p string, h plugins.PullRequestHandler) {
-			defer s.wg.Done()
-			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, l.WithField("plugin", p))
-			agent.InitializeCommentPruner(
-				pr.Repo.Owner.Login,
-				pr.Repo.Name,
-				pr.PullRequest.Number,
-			)
-			if err := h(agent, pr); err != nil {
-				agent.Logger.WithError(err).Error("Error handling PullRequestEvent.")
-			}
-		}(p, h)
+	handlerResult := plugins.ContinueResult
+	for p, h := range s.Plugins.PriorityPullRequestHandlers(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name) {
+		agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, l.WithField("plugin", p))
+		agent.InitializeCommentPruner(
+			pr.Repo.Owner.Login,
+			pr.Repo.Name,
+			pr.PullRequest.Number,
+		)
+		var err error
+		handlerResult, err = h(agent, pr)
+		if err != nil {
+			agent.Logger.WithError(err).Error("Error handling PullRequestEvent.")
+		}
+		if handlerResult == plugins.BreakResult {
+			break
+		}
+	}
+	if handlerResult == plugins.ContinueResult {
+		for p, h := range s.Plugins.PullRequestHandlers(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name) {
+			s.wg.Add(1)
+			go func(p string, h plugins.PullRequestHandler) {
+				defer s.wg.Done()
+				agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, l.WithField("plugin", p))
+				agent.InitializeCommentPruner(
+					pr.Repo.Owner.Login,
+					pr.Repo.Name,
+					pr.PullRequest.Number,
+				)
+				if err := h(agent, pr); err != nil {
+					agent.Logger.WithError(err).Error("Error handling PullRequestEvent.")
+				}
+			}(p, h)
+		}
 	}
 	action := genericCommentAction(string(pr.Action))
 	if action == "" {

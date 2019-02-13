@@ -423,5 +423,6 @@ func EventsForPlugin(name string) []string {
 	if _, ok := genericCommentHandlers[name]; ok {
 		events = append(events, "GenericCommentEvent (any event for user text)")
 	}
+	events = append(events, priorityEventsForPlugin(name)...)
 	return events
 }
