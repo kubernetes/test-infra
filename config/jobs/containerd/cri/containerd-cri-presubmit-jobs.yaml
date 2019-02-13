@@ -40,7 +40,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190212-bdf6cd2e3-master
         command:
         - sh
         - -c
@@ -84,7 +84,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190212-bdf6cd2e3-master
         command:
         - sh
         - -c
@@ -128,7 +128,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190212-bdf6cd2e3-master
         command:
         - sh
         - -c
