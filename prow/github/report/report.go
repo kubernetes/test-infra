@@ -81,10 +81,8 @@ func truncate(in string) string {
 	return in[:half] + elide + in[len(in)-half:]
 }
 
-// reportStatus should be called on status different from Success.
-// Once a parent ProwJob is pending, all children should be marked as Pending
-// Same goes for failed status.
-func reportStatus(ghc GithubClient, pj prowapi.ProwJob, childDescription string) error {
+// reportStatus should be called on any prowjob status changes
+func reportStatus(ghc GithubClient, pj prowapi.ProwJob) error {
 	refs := pj.Spec.Refs
 	if pj.Spec.Report {
 		contextState, err := prowjobStateToGithubStatus(pj.Status.State)
@@ -107,24 +105,45 @@ func reportStatus(ghc GithubClient, pj prowapi.ProwJob, childDescription string)
 	return nil
 }
 
+// TODO(krzyzacy):
+// Move this logic into github/reporter, once we unify all reporting logic to crier
+func ShouldReport(pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) bool {
+	valid := false
+	for _, t := range validTypes {
+		if pj.Spec.Type == t {
+			valid = true
+		}
+	}
+
+	if !valid {
+		return false
+	}
+
+	if !pj.Spec.Report {
+		return false
+	}
+
+	return true
+}
+
 // Report is creating/updating/removing reports in Github based on the state of
 // the provided ProwJob.
-func Report(ghc GithubClient, reportTemplate *template.Template, pj prowapi.ProwJob) error {
+func Report(ghc GithubClient, reportTemplate *template.Template, pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) error {
 	if ghc == nil {
 		return fmt.Errorf("trying to report pj %s, but found empty github client", pj.ObjectMeta.Name)
 	}
 
-	if !pj.Spec.Report {
+	if !ShouldReport(pj, validTypes) {
 		return nil
 	}
 
 	refs := pj.Spec.Refs
+	// we are not reporting for batch jobs, we can consider support that in the future
 	if len(refs.Pulls) > 1 {
-		return nil // we are not reporting for batch jobs
+		return nil
 	}
 
-	childDescription := fmt.Sprintf("Waiting on: %s", pj.Spec.Context)
-	if err := reportStatus(ghc, pj, childDescription); err != nil {
+	if err := reportStatus(ghc, pj); err != nil {
 		return fmt.Errorf("error setting status: %v", err)
 	}
 

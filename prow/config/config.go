@@ -73,6 +73,7 @@ type ProwConfig struct {
 	BranchProtection BranchProtection      `json:"branch-protection,omitempty"`
 	Orgs             map[string]org.Config `json:"orgs,omitempty"`
 	Gerrit           Gerrit                `json:"gerrit,omitempty"`
+	GithubReporter   GithubReporter        `json:"github_reporter,omitempty"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
@@ -202,6 +203,16 @@ type JenkinsOperator struct {
 	// LabelSelector is used so different jenkins-operator replicas
 	// can use their own configuration.
 	LabelSelector labels.Selector `json:"-"`
+}
+
+// GithubReporter holds the config for report behavior in github
+type GithubReporter struct {
+	// JobTypesToReport is used to determine which type of prowjob
+	// should be reported to github
+	//
+	// defaults to presubmit job only.
+	// Will default to both presubmit and postsubmit jobs by April.1st.2019
+	JobTypesToReport []prowapi.ProwJobType `json:"job_types_to_report,omitempty"`
 }
 
 // Sinker is config for the sinker controller.
@@ -730,6 +741,19 @@ func parseProwConfig(c *Config) error {
 
 	if c.Gerrit.RateLimit == 0 {
 		c.Gerrit.RateLimit = 5
+	}
+
+	if len(c.GithubReporter.JobTypesToReport) == 0 {
+		// TODO(krzyzacy): The default will be changed to presubmit + postsubmit by April.
+		c.GithubReporter.JobTypesToReport = append(c.GithubReporter.JobTypesToReport, prowapi.PresubmitJob)
+	}
+
+	// validate entries are valid job types
+	// Currently only presubmit and postsubmit can be reported to github
+	for _, t := range c.GithubReporter.JobTypesToReport {
+		if t != prowapi.PresubmitJob && t != prowapi.PostsubmitJob {
+			return fmt.Errorf("invalid job_types_to_report: %v", t)
+		}
 	}
 
 	for i := range c.JenkinsOperators {
