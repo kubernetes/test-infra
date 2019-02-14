@@ -241,6 +241,10 @@ type Spyglass struct {
 	// If left empty, the link will be not be shown. Otherwise, a GCS path (with no
 	// prefix or scheme) will be appended to GCSBrowserPrefix and shown to the user.
 	GCSBrowserPrefix string `json:"gcs_browser_prefix,omitempty"`
+	// If set, Announcement is used as a Go HTML template string to be displayed at the top of
+	// each spyglass page. Using HTML in the template is acceptable.
+	// Currently the only variable available is .ArtifactPath, which contains the GCS path for the job artifacts.
+	Announcement string `json:"announcement,omitempty"`
 }
 
 // Deck holds config for deck.
