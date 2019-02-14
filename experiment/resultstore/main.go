@@ -27,8 +27,11 @@ import (
 	"strings"
 	"time"
 
+	"cloud.google.com/go/storage"
 	"sigs.k8s.io/yaml"
 
+	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/testgrid/config"
 	"k8s.io/test-infra/testgrid/resultstore"
 	"k8s.io/test-infra/testgrid/util/gcs"
 )
@@ -53,15 +56,27 @@ func stripTags(str string) (string, []string) {
 }
 
 type options struct {
-	path    gcs.Path
-	account string
-	project string
-	secret  string
+	path           gcs.Path
+	jobs           flagutil.Strings
+	latest         int
+	override       bool
+	update         bool
+	account        string
+	gcsAuth        bool
+	project        string
+	secret         string
+	testgridConfig string
 }
 
 func (o *options) parse(flags *flag.FlagSet, args []string) error {
-	flags.Var(&o.path, "build", "The gs://bucket/to/job/build-1234/ url")
+	flags.Var(&o.path, "build", "Download a specific gs://bucket/to/job/build-1234 url (instead of latest builds for each --job)")
+	flags.Var(&o.jobs, "job", "Configures specific jobs to update (repeatable, all jobs when --job and --build are both empty)")
+	flags.StringVar(&o.testgridConfig, "config", "gs://k8s-testgrid/config", "Path to local/testgrid/config.pb or gs://bucket/testgrid/config.pb")
+	flags.IntVar(&o.latest, "latest", 1, "Configures the number of latest builds to migrate")
+	flags.BoolVar(&o.override, "override", false, "Replace the existing ResultStore data for each build")
+	flags.BoolVar(&o.update, "update", false, "Attempt to update the existing invocation before creating a new one")
 	flags.StringVar(&o.account, "service-account", "", "Authenticate with the service account at specified path")
+	flags.BoolVar(&o.gcsAuth, "gcs-auth", false, "Use service account for gcs auth if set (default if set)")
 	flags.StringVar(&o.project, "upload", "", "Upload results to specified gcp project instead of stdout")
 	flags.StringVar(&o.secret, "secret", "", "Use the specified secret guid instead of randomly generating one.")
 	flags.Parse(args)
@@ -107,59 +122,124 @@ func run(opt options) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	result, err := download(ctx, opt)
+	var gcsAccount string
+	if opt.gcsAuth {
+		gcsAccount = opt.account
+	}
+	storageClient, err := storageClient(ctx, gcsAccount)
 	if err != nil {
-		return fmt.Errorf("download %s: %v", opt.path, err)
+		return fmt.Errorf("storage client: %v", err)
 	}
 
-	inv, target, test := convert(
-		opt.project,
-		"hello again",
-		opt.path,
-		*result,
-	)
-	print(inv.To(), test.To())
-
-	if opt.project == "" {
-		return nil
+	fmt.Println("Reading testgrid config...")
+	cfg, err := config.Read(opt.testgridConfig, ctx, storageClient)
+	if err != nil {
+		return fmt.Errorf("read testgrid config: %v", err)
 	}
 
-	conn, err := resultstore.Connect(ctx, opt.account)
-	if err != nil {
-		return fmt.Errorf("resultstore connection: %v", err)
-	}
-	rsClient := resultstore.NewClient(conn).WithContext(ctx)
-	if opt.secret != "" {
-		rsClient = rsClient.WithSecret(resultstore.Secret(opt.secret))
-	} else {
-		secret := resultstore.NewSecret()
-		fmt.Println("Secret:", secret)
-		rsClient = rsClient.WithSecret(secret)
+	var rsClient *resultstore.Client
+	if opt.project != "" {
+		rsClient, err = resultstoreClient(ctx, opt.account, resultstore.Secret(opt.secret))
+		if err != nil {
+			return fmt.Errorf("resultstore client: %v", err)
+		}
 	}
 
-	targetID := test.Name
-	const configID = resultstore.Default
-	invName, err := rsClient.Invocations().Create(inv)
-	if err != nil {
-		return fmt.Errorf("create invocation: %v", err)
+	// Should we just transfer a specific build?
+	if opt.path.Bucket() != "" { // All valid --build=gs://whatever values have a non-empty bucket.
+		return transfer(ctx, storageClient, rsClient, opt.project, opt.path)
 	}
-	targetName, err := rsClient.Targets(invName).Create(targetID, target)
+
+	groups, err := findGroups(cfg, opt.jobs.Strings()...)
 	if err != nil {
-		fmt.Println(resultstore.URL(invName))
-		return fmt.Errorf("create target: %v", err)
+		return fmt.Errorf("find groups: %v", err)
 	}
-	fmt.Println(resultstore.URL(targetName))
-	_, err = rsClient.Configurations(invName).Create(configID)
-	if err != nil {
-		return fmt.Errorf("create configuration: %v", err)
+
+	fmt.Printf("Finding latest builds for %d groups...\n", len(groups))
+	buildsChan, buildsErrChan := findBuilds(ctx, storageClient, groups)
+	for builds := range buildsChan {
+		if err := transferLatest(ctx, storageClient, rsClient, opt.project, builds, opt.latest); err != nil {
+			return fmt.Errorf("transfer: %v", err)
+		}
 	}
-	ctName, err := rsClient.ConfiguredTargets(targetName, configID).Create()
-	if err != nil {
-		return fmt.Errorf("create configured target: %v", err)
+
+	return <-buildsErrChan
+
+	return nil
+}
+
+func findGroups(cfg *config.Configuration, jobs ...string) ([]config.TestGroup, error) {
+	var groups []config.TestGroup
+	for _, job := range jobs {
+		tg := cfg.FindTestGroup(job)
+		if tg == nil {
+			return nil, fmt.Errorf("job %s not found in test groups", job)
+		}
+		groups = append(groups, *tg)
 	}
-	_, err = rsClient.Actions(ctName).Create("primary", test)
+	if len(jobs) == 0 {
+		for _, tg := range cfg.TestGroups {
+			groups = append(groups, *tg)
+		}
+	}
+	return groups, nil
+}
+
+func findBuilds(ctx context.Context, storageClient *storage.Client, groups []config.TestGroup) (<-chan []gcs.Build, <-chan error) {
+	buildsChan := make(chan []gcs.Build)
+	errChan := make(chan error, 1)
+	go func() {
+		defer close(buildsChan)
+		defer close(errChan)
+		// TODO(fejta): concurrently list groups
+		for _, testGroup := range groups {
+			fmt.Printf("Finding latest %s builds in gs://%s...\n", testGroup.Name, testGroup.GcsPrefix)
+			tgPath, err := gcs.NewPath("gs://" + testGroup.GcsPrefix)
+			if err != nil {
+				errChan <- fmt.Errorf("test group %s has invalid gcs_prefix %s: %v", testGroup.Name, testGroup.GcsPrefix, err)
+				return
+			}
+			builds, err := gcs.ListBuilds(ctx, storageClient, *tgPath)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			buildsChan <- builds
+		}
+		errChan <- nil
+	}()
+	return buildsChan, errChan
+}
+
+func transferLatest(ctx context.Context, storageClient *storage.Client, rsClient *resultstore.Client, project string, builds gcs.Builds, max int) error {
+	for i, build := range builds {
+		if i >= max {
+			break
+		}
+		path, err := gcs.NewPath(fmt.Sprintf("gs://%s/%s", build.BucketPath, build.Prefix))
+		if err != nil {
+			return fmt.Errorf("bad %s path: %v", build, err)
+		}
+		if err := transfer(ctx, storageClient, rsClient, project, *path); err != nil {
+			return fmt.Errorf("%s: %v", build, err)
+		}
+	}
+	return nil
+}
+
+func transfer(ctx context.Context, storageClient *storage.Client, rsClient *resultstore.Client, project string, path gcs.Path) error {
+
+	result, err := download(ctx, storageClient, path)
 	if err != nil {
-		return fmt.Errorf("create action: %v", err)
+		return fmt.Errorf("download: %v", err)
+	}
+
+	viewURL, err := upload(rsClient, project, path, *result)
+	if viewURL != "" {
+		fmt.Println("See results at " + viewURL)
+	}
+	if err != nil {
+		return fmt.Errorf("upload: %v", err)
 	}
 	return nil
 }

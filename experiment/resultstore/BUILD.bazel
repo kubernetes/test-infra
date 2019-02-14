@@ -6,12 +6,16 @@ go_library(
         "convert.go",
         "download.go",
         "main.go",
+        "upload.go",
     ],
     importpath = "k8s.io/test-infra/experiment/resultstore",
     visibility = ["//visibility:private"],
     deps = [
+        "//prow/flagutil:go_default_library",
+        "//testgrid/config:go_default_library",
         "//testgrid/resultstore:go_default_library",
         "//testgrid/util/gcs:go_default_library",
+        "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )

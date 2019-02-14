@@ -18,4 +18,5 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-go vet $(go list ./... | grep -v 'k8s.io/test-infra/testgrid')
+# TODO(fejta): check in testgrid pb.go files
+bazel run //:govet -- $(bazel run //:go -- list ./... | grep -v -E 'k8s.io/test-infra/(testgrid|experiment/resultstore)')
