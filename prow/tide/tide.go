@@ -855,7 +855,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 					log.WithError(err).Warning("Merge failed: PR was modified.")
 					break
 				} else if _, ok = err.(github.UnmergablePRBaseChangedError); ok {
-					// Github complained that the base branch was modified. This is a
+					// GitHub complained that the base branch was modified. This is a
 					// strange error because the API doesn't even allow the request to
 					// specify the base branch sha, only the head sha.
 					// We suspect that github is complaining because we are making the
@@ -869,7 +869,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 						backoff *= 2
 					}
 				} else if _, ok = err.(github.UnauthorizedToPushError); ok {
-					// Github let us know that the token used cannot push to the branch.
+					// GitHub let us know that the token used cannot push to the branch.
 					// Even if the robot is set up to have write access to the repo, an
 					// overzealous branch protection setting will not allow the robot to
 					// push to a specific branch.
@@ -877,7 +877,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 					// We won't be able to merge the other PRs.
 					return augmentError(err, pr)
 				} else if _, ok = err.(github.MergeCommitsForbiddenError); ok {
-					// Github let us know that the merge method configured for this repo
+					// GitHub let us know that the merge method configured for this repo
 					// is not allowed by other repo settings, so we should let the admins
 					// know that the configuration needs to be updated.
 					log.WithError(err).Error("Merge failed: Tide needs to be configured to use the 'rebase' merge method for this repo or the repo needs to allow merge commits.")
@@ -893,7 +893,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 			} else {
 				log.Info("Merged.")
 				merged = append(merged, int(pr.Number))
-				// If we have more PRs to merge, sleep to give Github time to recalculate
+				// If we have more PRs to merge, sleep to give GitHub time to recalculate
 				// mergeability.
 				if i+1 < len(prs) {
 					time.Sleep(time.Second * 3)
@@ -1327,7 +1327,7 @@ func (pr *PullRequest) logFields() logrus.Fields {
 // not commit date so if commits are reordered non-chronologically on the PR
 // branch the 'last' commit isn't necessarily the logically last commit.
 // We list multiple commits with the query to increase our chance of success,
-// but if we don't find the head commit we have to ask Github for it
+// but if we don't find the head commit we have to ask GitHub for it
 // specifically (this costs an API token).
 func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Context, error) {
 	for _, node := range pr.Commits.Nodes {
@@ -1336,12 +1336,12 @@ func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Conte
 		}
 	}
 	// We didn't get the head commit from the query (the commits must not be
-	// logically ordered) so we need to specifically ask Github for the status
+	// logically ordered) so we need to specifically ask GitHub for the status
 	// and coerce it to a graphql type.
 	org := string(pr.Repository.Owner.Login)
 	repo := string(pr.Repository.Name)
 	// Log this event so we can tune the number of commits we list to minimize this.
-	log.Warnf("'last' %d commits didn't contain logical last commit. Querying Github...", len(pr.Commits.Nodes))
+	log.Warnf("'last' %d commits didn't contain logical last commit. Querying GitHub...", len(pr.Commits.Nodes))
 	combined, err := ghc.GetCombinedStatus(org, repo, string(pr.HeadRefOID))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the combined status: %v", err)

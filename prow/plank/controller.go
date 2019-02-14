@@ -164,7 +164,7 @@ func (c *Controller) setPreviousReportState(pj prowapi.ProwJob) error {
 	if latestPJ.Status.PrevReportStates == nil {
 		latestPJ.Status.PrevReportStates = map[string]prowapi.ProwJobState{}
 	}
-	latestPJ.Status.PrevReportStates[reporter.GithubReporterName] = latestPJ.Status.State
+	latestPJ.Status.PrevReportStates[reporter.GitHubReporterName] = latestPJ.Status.State
 	_, err = c.kc.ReplaceProwJob(latestPJ.ObjectMeta.Name, latestPJ)
 	return err
 }
@@ -235,7 +235,7 @@ func (c *Controller) Sync() error {
 	var reportErrs []error
 	if !c.skipReport {
 		reportTemplate := c.config().Plank.ReportTemplate
-		reportTypes := c.config().GithubReporter.JobTypesToReport
+		reportTypes := c.config().GitHubReporter.JobTypesToReport
 		for report := range reportCh {
 			if err := reportlib.Report(c.ghc, reportTemplate, report, reportTypes); err != nil {
 				reportErrs = append(reportErrs, err)
@@ -285,7 +285,7 @@ func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, pm map[string]coreapi
 		}
 		toCancel := pjs[cancelIndex]
 		// Allow aborting presubmit jobs for commits that have been superseded by
-		// newer commits in Github pull requests.
+		// newer commits in GitHub pull requests.
 		if c.config().Plank.AllowCancellations {
 			if pod, exists := pm[toCancel.ObjectMeta.Name]; exists {
 				if client, ok := c.pkcs[toCancel.ClusterAlias()]; !ok {
@@ -416,7 +416,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			}
 
 			// Pod is stuck in pending state longer than maxPodPending
-			// abort the job, and talk to Github
+			// abort the job, and talk to GitHub
 			pj.SetComplete()
 			pj.Status.State = prowapi.ErrorState
 			pj.Status.Description = "Pod pending timeout."

@@ -149,7 +149,7 @@ function redraw(prData: UserData): void {
     if (prData && prData.Login) {
         loadPrStatus(prData);
     } else {
-        forceGithubLogin();
+        forceGitHubLogin();
     }
 }
 
@@ -319,7 +319,7 @@ function createSearchCard(): HTMLElement {
     inputContainer.appendChild(actionCtn);
 
     const title = document.createElement("h6");
-    title.textContent = "Github search query";
+    title.textContent = "GitHub search query";
     const infoBtn = createIcon("info", "More information about the search query", ["search-info"], true);
     const titleCtn = document.createElement("div");
     titleCtn.appendChild(title);
@@ -359,13 +359,13 @@ function getFullPRContext(builds: Job[], contexts: Context[]): UnifiedContext[] 
     if (builds) {
         for (const build of builds) {
             let discrepancy = null;
-            // If Github context exits, check if mismatch or not.
+            // If GitHub context exits, check if mismatch or not.
             if (contextMap.has(build.context)) {
                 const githubContext = contextMap.get(build.context)!;
-                // TODO (qhuynh96): ProwJob's states and Github contexts states
+                // TODO (qhuynh96): ProwJob's states and GitHub contexts states
                 // are not equivalent in some states.
                 if (githubContext.state !== build.state) {
-                    discrepancy = "Github context and Prow Job states mismatch";
+                    discrepancy = "GitHub context and Prow Job states mismatch";
                 }
             }
             contextMap.set(build.context, {
@@ -1152,7 +1152,7 @@ function createPRCard(pr: PullRequest, builds: UnifiedContext[] = [], queries: P
 /**
  * Redirect to initiate github login flow.
  */
-function forceGithubLogin(): void {
+function forceGitHubLogin(): void {
     window.location.href = window.location.origin + "/github-login";
 }
 

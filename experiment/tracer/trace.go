@@ -85,7 +85,7 @@ func (l linesByTimestamp) String() string {
 	return fmt.Sprintf("[%s]", log)
 }
 
-// ic is the prefix of a URL fragment for a Github comment.
+// ic is the prefix of a URL fragment for a GitHub comment.
 // The URL fragment has the following format:
 //
 // issuecomment-#id

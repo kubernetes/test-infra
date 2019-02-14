@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // Package reporter contains helpers for publishing statues to Pub
-// statuses in Github.
+// statuses in GitHub.
 package reporter
 
 import (

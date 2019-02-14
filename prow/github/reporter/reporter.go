@@ -25,19 +25,19 @@ import (
 )
 
 const (
-	// GithubReporterName is the name for github reporter
-	GithubReporterName = "github-reporter"
+	// GitHubReporterName is the name for github reporter
+	GitHubReporterName = "github-reporter"
 )
 
 // Client is a github reporter client
 type Client struct {
-	gc          report.GithubClient
+	gc          report.GitHubClient
 	config      config.Getter
 	reportAgent v1.ProwJobAgent
 }
 
 // NewReporter returns a reporter client
-func NewReporter(gc report.GithubClient, cfg config.Getter, reportAgent v1.ProwJobAgent) *Client {
+func NewReporter(gc report.GitHubClient, cfg config.Getter, reportAgent v1.ProwJobAgent) *Client {
 	return &Client{
 		gc:          gc,
 		config:      cfg,
@@ -47,7 +47,7 @@ func NewReporter(gc report.GithubClient, cfg config.Getter, reportAgent v1.ProwJ
 
 // GetName returns the name of the reporter
 func (c *Client) GetName() string {
-	return GithubReporterName
+	return GitHubReporterName
 }
 
 // ShouldReport returns if this prowjob should be reported by the github reporter
@@ -74,5 +74,5 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 // Report will report via reportlib
 func (c *Client) Report(pj *v1.ProwJob) error {
 	// TODO(krzyzacy): ditch ReportTemplate, and we can drop reference to config.Getter
-	return report.Report(c.gc, c.config().Plank.ReportTemplate, *pj, c.config().GithubReporter.JobTypesToReport)
+	return report.Report(c.gc, c.config().Plank.ReportTemplate, *pj, c.config().GitHubReporter.JobTypesToReport)
 }

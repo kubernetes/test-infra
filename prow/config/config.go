@@ -73,7 +73,7 @@ type ProwConfig struct {
 	BranchProtection BranchProtection      `json:"branch-protection,omitempty"`
 	Orgs             map[string]org.Config `json:"orgs,omitempty"`
 	Gerrit           Gerrit                `json:"gerrit,omitempty"`
-	GithubReporter   GithubReporter        `json:"github_reporter,omitempty"`
+	GitHubReporter   GitHubReporter        `json:"github_reporter,omitempty"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
@@ -172,7 +172,7 @@ type Controller struct {
 	MaxGoroutines int `json:"max_goroutines,omitempty"`
 
 	// AllowCancellations enables aborting presubmit jobs for commits that
-	// have been superseded by newer commits in Github pull requests.
+	// have been superseded by newer commits in GitHub pull requests.
 	AllowCancellations bool `json:"allow_cancellations,omitempty"`
 }
 
@@ -236,8 +236,8 @@ type JenkinsOperator struct {
 	LabelSelector labels.Selector `json:"-"`
 }
 
-// GithubReporter holds the config for report behavior in github
-type GithubReporter struct {
+// GitHubReporter holds the config for report behavior in github
+type GitHubReporter struct {
 	// JobTypesToReport is used to determine which type of prowjob
 	// should be reported to github
 	//
@@ -794,14 +794,14 @@ func parseProwConfig(c *Config) error {
 		c.Gerrit.RateLimit = 5
 	}
 
-	if len(c.GithubReporter.JobTypesToReport) == 0 {
+	if len(c.GitHubReporter.JobTypesToReport) == 0 {
 		// TODO(krzyzacy): The default will be changed to presubmit + postsubmit by April.
-		c.GithubReporter.JobTypesToReport = append(c.GithubReporter.JobTypesToReport, prowapi.PresubmitJob)
+		c.GitHubReporter.JobTypesToReport = append(c.GitHubReporter.JobTypesToReport, prowapi.PresubmitJob)
 	}
 
 	// validate entries are valid job types
 	// Currently only presubmit and postsubmit can be reported to github
-	for _, t := range c.GithubReporter.JobTypesToReport {
+	for _, t := range c.GitHubReporter.JobTypesToReport {
 		if t != prowapi.PresubmitJob && t != prowapi.PostsubmitJob {
 			return fmt.Errorf("invalid job_types_to_report: %v", t)
 		}

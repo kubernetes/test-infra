@@ -60,7 +60,7 @@ class AppTest(TestBase):
             body = json.dumps(body)
         signature = handlers.make_signature(body)
         resp = app.post('/webhook', body,
-            {'X-Github-Event': event,
+            {'X-GitHub-Event': event,
              'X-Hub-Signature': signature})
         for task in self.taskqueue.get_filtered_tasks():
             deferred.run(task.payload)
@@ -68,7 +68,7 @@ class AppTest(TestBase):
 
     def test_webhook(self):
         self.get_response('test', {'action': 'blah'})
-        hooks = list(models.GithubWebhookRaw.query())
+        hooks = list(models.GitHubWebhookRaw.query())
         self.assertEqual(len(hooks), 1)
         self.assertIsNotNone(hooks[0].timestamp)
 
@@ -76,12 +76,12 @@ class AppTest(TestBase):
         body = json.dumps({'action': 'blah'})
         signature = handlers.make_signature(body + 'foo')
         app.post('/webhook', body,
-            {'X-Github-Event': 'test',
+            {'X-GitHub-Event': 'test',
              'X-Hub-Signature': signature}, status=400)
 
     def test_webhook_missing_sig(self):
         app.post('/webhook', '{}',
-            {'X-Github-Event': 'test'}, status=400)
+            {'X-GitHub-Event': 'test'}, status=400)
 
     def test_webhook_unicode(self):
         self.get_response('test', {'action': u'blah\u03BA'})

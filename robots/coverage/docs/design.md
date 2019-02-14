@@ -100,14 +100,14 @@ use 'local-presubmit' will run the presubmit workflow without posting result on 
 ## Covbot
 As mentioned in the presubmit workflow section, covbot is the short name for the robot github 
 account used to report code coverage change results. It can be created as a regular github 
-account - it does not need to be named covbot as that name is already taken on Github. It only need a 
+account - it does not need to be named covbot as that name is already taken on GitHub. It only need a 
 comment access to the repo it need to be run on. If the repo is private, it also need read access. 
   
 After the robot account is created, download the github token and supply the path to the token 
 file to code coverage binary, as the value for parameter "github-token"
 
 # Usage with container based CI/CD system
-We pack the test coverage feature in a container, that is triggered to run by a CI/CD system such as [prow](https://github.com/kubernetes/test-infra/tree/master/prow), in response to Github events such as pulls and merges.
+We pack the test coverage feature in a container, that is triggered to run by a CI/CD system such as [prow](https://github.com/kubernetes/test-infra/tree/master/prow), in response to GitHub events such as pulls and merges.
 
 Here is [an example of a dockerfile](https://github.com/kubernetes/test-infra/blob/a1e910ae6811a1821ad98fa28e6fad03972a8c20/coverage/Dockerfile) using [Docker](https://www.docker.com/). 
 Here is [an example of a Makefile](https://github.com/kubernetes/test-infra/blob/a1e910ae6811a1821ad98fa28e6fad03972a8c20/coverage/Makefile) that builds and pushes the docker image on [Google Container Registry](https://cloud.google.com/container-registry/).
@@ -115,10 +115,10 @@ Here is [an example of a Makefile](https://github.com/kubernetes/test-infra/blob
 ## Usage with prow
 Prow is tested working well with this Code Coverage tool. It's usage is described below
 
-- Prow can be used as the system to handle Github events mentioned in the two workflows. 
+- Prow can be used as the system to handle GitHub events mentioned in the two workflows. 
 - Prow, in both workflows, supplies the flags and secrets for the binary, clones the repository, and uploads logs & artifacts to GCS bucket.
 
-  - The pre-submit prow job is triggered by any new commit to a PR. At the end of the binary run, it can return a pass or fail status context to Github. [Tide](https://github.com/kubernetes/test-infra/tree/master/prow/cmd/tide) can use that status to block PR with low coverage.
+  - The pre-submit prow job is triggered by any new commit to a PR. At the end of the binary run, it can return a pass or fail status context to GitHub. [Tide](https://github.com/kubernetes/test-infra/tree/master/prow/cmd/tide) can use that status to block PR with low coverage.
 
   - The post-submit prow job is triggered by merge events to the base branch.
 

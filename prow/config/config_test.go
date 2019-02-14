@@ -1782,7 +1782,7 @@ func TestSecretAgentLoading(t *testing.T) {
 
 }
 
-func TestValidGithubReportType(t *testing.T) {
+func TestValidGitHubReportType(t *testing.T) {
 	var testCases = []struct {
 		name        string
 		prowConfig  string
@@ -1837,8 +1837,8 @@ github_reporter:
 		}
 
 		if err == nil {
-			if !reflect.DeepEqual(cfg.GithubReporter.JobTypesToReport, tc.expectTypes) {
-				t.Errorf("tc %s: expected %#v\n!=\nactual %#v", tc.name, tc.expectTypes, cfg.GithubReporter.JobTypesToReport)
+			if !reflect.DeepEqual(cfg.GitHubReporter.JobTypesToReport, tc.expectTypes) {
+				t.Errorf("tc %s: expected %#v\n!=\nactual %#v", tc.name, tc.expectTypes, cfg.GitHubReporter.JobTypesToReport)
 			}
 		}
 	}

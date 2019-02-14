@@ -58,7 +58,7 @@ func (o *options) getPullRequest() (*github.PullRequest, error) {
 	}
 	pr, err := o.githubClient.GetPullRequest(o.org, o.repo, o.pullNumber)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch PullRequest from Github: %v", err)
+		return nil, fmt.Errorf("failed to fetch PullRequest from GitHub: %v", err)
 	}
 	o.pullRequest = pr
 	return pr, nil
@@ -149,7 +149,7 @@ func gatherOptions() options {
 	fs.IntVar(&o.pullNumber, "pull-number", 0, "Git pull number under test")
 	fs.StringVar(&o.pullSha, "pull-sha", "", "Git pull SHA under test")
 	fs.StringVar(&o.pullAuthor, "pull-author", "", "Git pull author under test")
-	o.github.AddFlagsWithoutDefaultGithubTokenPath(fs)
+	o.github.AddFlagsWithoutDefaultGitHubTokenPath(fs)
 	fs.Parse(os.Args[1:])
 	return o
 }
@@ -174,7 +174,7 @@ func main() {
 	}
 	o.githubClient, err = o.github.GitHubClient(secretAgent, false)
 	if err != nil {
-		logrus.Fatalf("failed to get Github client: %v", err)
+		logrus.Fatalf("failed to get GitHub client: %v", err)
 	}
 
 	var pjs prowapi.ProwJobSpec

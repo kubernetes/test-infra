@@ -268,3 +268,16 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-experimental
         command:
         - ./hack/verify-file-perms.sh
+
+  - name: pull-test-infra-verify-github-spelling
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-experimental
+        command:
+        - ./hack/verify-github-spelling.sh

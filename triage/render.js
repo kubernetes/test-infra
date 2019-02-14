@@ -244,7 +244,7 @@ function renderSpans(text, spans) {
   return out;
 }
 
-function makeGithubIssue(id, text, owner, latestBuilds) {
+function makeGitHubIssue(id, text, owner, latestBuilds) {
   let title = `Failure cluster [${id.slice(0, 8)}...]`;
   let body = `### Failure cluster [${id}](https://go.k8s.io/triage#{id})
 
@@ -308,7 +308,7 @@ function renderCluster(top, cluster) {
   var latestBuilds = renderLatest(latest, id);
 
   fileBug.addEventListener('click', () => {
-    let [title, body] = makeGithubIssue(id, text, owner, latestBuilds);
+    let [title, body] = makeGitHubIssue(id, text, owner, latestBuilds);
     title = encodeURIComponent(title);
     body = encodeURIComponent(body);
     fileBug.href = `https://github.com/kubernetes/kubernetes/issues/new?body=${body}&title=${title}`;

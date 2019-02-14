@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Refresh retries Github status updates for stale PR statuses.
+// Refresh retries GitHub status updates for stale PR statuses.
 package main
 
 import (

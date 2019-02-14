@@ -300,7 +300,7 @@ func (a Approve) ConsiderReviewState() bool {
 type Lgtm struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
-	// ReviewActsAsLgtm indicates that a Github review of "approve" or "request changes"
+	// ReviewActsAsLgtm indicates that a GitHub review of "approve" or "request changes"
 	// acts as adding or removing the lgtm label
 	ReviewActsAsLgtm bool `json:"review_acts_as_lgtm,omitempty"`
 	// StoreTreeHash indicates if tree_hash should be stored inside a comment to detect
@@ -309,7 +309,7 @@ type Lgtm struct {
 	// WARNING: This disables the security mechanism that prevents a malicious member (or
 	// compromised GitHub account) from merging arbitrary code. Use with caution.
 	//
-	// StickyLgtmTeam specifies the Github team whose members are trusted with sticky LGTM,
+	// StickyLgtmTeam specifies the GitHub team whose members are trusted with sticky LGTM,
 	// which eliminates the need to re-lgtm minor fixes/updates.
 	StickyLgtmTeam string `json:"trusted_team_for_sticky_lgtm,omitempty"`
 }
@@ -338,7 +338,7 @@ type Trigger struct {
 	TrustedOrg string `json:"trusted_org,omitempty"`
 	// JoinOrgURL is a link that redirects users to a location where they
 	// should be able to read more about joining the organization in order
-	// to become trusted members. Defaults to the Github link of TrustedOrg.
+	// to become trusted members. Defaults to the GitHub link of TrustedOrg.
 	JoinOrgURL string `json:"join_org_url,omitempty"`
 	// OnlyOrgMembers requires PRs and/or /ok-to-test comments to come from org members.
 	// By default, trigger also include repo collaborators.
