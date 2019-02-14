@@ -27,6 +27,8 @@ deck:
   spyglass:
     size_limit: 500000000 # 500MB
     gcs_browser_prefix: http://gcsweb.k8s.io/gcs/
+    testgrid_config: gs://k8s-testgrid/config
+    testgrid_root: https://testgrid.k8s.io/
     viewers:
       "started.json|finished.json":
       - "metadata"

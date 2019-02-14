@@ -245,6 +245,13 @@ type Spyglass struct {
 	// each spyglass page. Using HTML in the template is acceptable.
 	// Currently the only variable available is .ArtifactPath, which contains the GCS path for the job artifacts.
 	Announcement string `json:"announcement,omitempty"`
+	// TestGridConfig is the path to the TestGrid config proto. If the path begins with
+	// "gs://" it is assumed to be a GCS reference, otherwise it is read from the local filesystem.
+	// If left blank, TestGrid links will not appear.
+	TestGridConfig string `json:"testgrid_config,omitempty"`
+	// TestGridRoot is the root URL to the TestGrid frontend, e.g. "https://testgrid.k8s.io/".
+	// If left blank, TestGrid links will not appear.
+	TestGridRoot string `json:"testgrid_root,omitempty"`
 }
 
 // Deck holds config for deck.

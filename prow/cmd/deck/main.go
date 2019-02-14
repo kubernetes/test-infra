@@ -416,7 +416,8 @@ func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.Job
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GCS client")
 	}
-	sg := spyglass.New(ja, cfg, c)
+	sg := spyglass.New(ja, cfg, c, context.Background())
+	sg.Start()
 
 	mux.Handle("/spyglass/static/", http.StripPrefix("/spyglass/static", staticHandlerFromDir(o.spyglassFilesLocation)))
 	mux.Handle("/spyglass/lens/", gziphandler.GzipHandler(http.StripPrefix("/spyglass/lens/", handleArtifactView(o, sg, cfg))))
@@ -701,6 +702,11 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		announcement = announcementBuf.String()
 	}
 
+	tgLink, err := sg.TestgridLink(src)
+	if err != nil {
+		tgLink = ""
+	}
+
 	var viewBuf bytes.Buffer
 	type lensesTemplate struct {
 		Lenses        []lenses.Lens
@@ -711,6 +717,7 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		ArtifactsLink string
 		PRHistLink    string
 		Announcement  template.HTML
+		TestgridLink  string
 	}
 	lTmpl := lensesTemplate{
 		Lenses:        ls,
@@ -721,6 +728,7 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		ArtifactsLink: artifactsLink,
 		PRHistLink:    prHistLink,
 		Announcement:  template.HTML(announcement),
+		TestgridLink:  tgLink,
 	}
 	t := template.New("spyglass.html")
 

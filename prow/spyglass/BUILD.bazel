@@ -8,6 +8,7 @@ go_test(
         "podlogartifact_fetcher_test.go",
         "podlogartifact_test.go",
         "spyglass_test.go",
+        "testgrid_test.go",
     ],
     embed = [":go_default_library"],
     deps = [
@@ -51,6 +52,7 @@ go_library(
         "podlogartifact.go",
         "podlogartifact_fetcher.go",
         "spyglass.go",
+        "testgrid.go",
     ],
     importpath = "k8s.io/test-infra/prow/spyglass",
     visibility = ["//visibility:public"],
@@ -60,6 +62,7 @@ go_library(
         "//prow/deck/jobs:go_default_library",
         "//prow/pod-utils/gcs:go_default_library",
         "//prow/spyglass/lenses:go_default_library",
+        "//testgrid/config:go_default_library",
         "//testgrid/util/gcs:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
