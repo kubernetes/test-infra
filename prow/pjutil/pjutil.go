@@ -121,7 +121,7 @@ func PostsubmitSpec(p config.Postsubmit, refs prowapi.Refs) prowapi.ProwJobSpec 
 	pjs := specFromJobBase(p.JobBase)
 	pjs.Type = prowapi.PostsubmitJob
 	pjs.Context = p.Context
-	pjs.Report = p.Report
+	pjs.Report = !p.SkipReport
 	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
 
 	return pjs

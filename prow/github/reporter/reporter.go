@@ -74,5 +74,5 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 // Report will report via reportlib
 func (c *Client) Report(pj *v1.ProwJob) error {
 	// TODO(krzyzacy): ditch ReportTemplate, and we can drop reference to config.Getter
-	return report.Report(c.gc, c.config().Plank.ReportTemplate, *pj)
+	return report.Report(c.gc, c.config().Plank.ReportTemplate, *pj, c.config().GithubReporter.JobTypesToReport)
 }

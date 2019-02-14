@@ -1,7 +1,19 @@
 # Announcements
 
 New features added to each component:
-
+ - *February 13, 2019* prow (both plank and crier) can set status on the commit
+   for postsubmit jobs on github now! 
+   Type of jobs can be reported to github is gated by a config field like
+   ```yaml
+   github_reporter: 
+     job_types_to_report:
+     - presubmit
+     - postsubmit
+   ```
+   now and default to report for presubmit only.
+   *** The default will change in April to include postsubmit jobs as well ***
+   You can also add `skip_report: true` to your post-submit jobs to skip reporting
+    if you enable postsubmit reporting on.
  - *January 15, 2019* `approve` now considers self-approval and github review
    state by default. Configure with `require_self_approval` and
    `ignore_review_state`. Temporarily revert to old defaults with `use_deprecated_2018_implicit_self_approve_default_migrate_before_july_2019` and `use_deprecated_2018_review_acts_as_approve_default_migrate_before_july_2019`.

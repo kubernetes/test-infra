@@ -1781,3 +1781,65 @@ func TestSecretAgentLoading(t *testing.T) {
 	}
 
 }
+
+func TestValidGithubReportType(t *testing.T) {
+	var testCases = []struct {
+		name        string
+		prowConfig  string
+		expectError bool
+		expectTypes []prowapi.ProwJobType
+	}{
+		{
+			name:        "empty config should default to report for presubmit only",
+			prowConfig:  ``,
+			expectTypes: []prowapi.ProwJobType{prowapi.PresubmitJob},
+		},
+		{
+			name: "reject unsupported job types",
+			prowConfig: `
+github_reporter:
+  job_types_to_report:
+  - presubmit
+  - batch
+`,
+			expectError: true,
+		},
+		{
+			name: "accept valid job types",
+			prowConfig: `
+github_reporter:
+  job_types_to_report:
+  - presubmit
+  - postsubmit
+`,
+			expectTypes: []prowapi.ProwJobType{prowapi.PresubmitJob, prowapi.PostsubmitJob},
+		},
+	}
+
+	for _, tc := range testCases {
+		// save the config
+		prowConfigDir, err := ioutil.TempDir("", "prowConfig")
+		if err != nil {
+			t.Fatalf("fail to make tempdir: %v", err)
+		}
+		defer os.RemoveAll(prowConfigDir)
+
+		prowConfig := filepath.Join(prowConfigDir, "config.yaml")
+		if err := ioutil.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
+			t.Fatalf("fail to write prow config: %v", err)
+		}
+
+		cfg, err := Load(prowConfig, "")
+		if tc.expectError && err == nil {
+			t.Errorf("tc %s: Expect error, but got nil", tc.name)
+		} else if !tc.expectError && err != nil {
+			t.Errorf("tc %s: Expect no error, but got error %v", tc.name, err)
+		}
+
+		if err == nil {
+			if !reflect.DeepEqual(cfg.GithubReporter.JobTypesToReport, tc.expectTypes) {
+				t.Errorf("tc %s: expected %#v\n!=\nactual %#v", tc.name, tc.expectTypes, cfg.GithubReporter.JobTypesToReport)
+			}
+		}
+	}
+}
