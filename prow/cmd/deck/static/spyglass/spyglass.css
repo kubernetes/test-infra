@@ -4,7 +4,7 @@
   text-align: center;
   font-size: 16px;
   transition: opacity;
-  transition-duration: 3600s;
+  transition-duration: 60s;
   transition-timing-function: ease-in-out;
 }
 
