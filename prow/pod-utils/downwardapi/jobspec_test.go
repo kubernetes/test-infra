@@ -189,3 +189,64 @@ func TestEnvironmentForSpec(t *testing.T) {
 		}
 	}
 }
+
+func TestGetRevisionFromSpec(t *testing.T) {
+	var tests = []struct {
+		name     string
+		spec     JobSpec
+		expected string
+	}{
+		{
+			name: "Refs with Pull",
+			spec: JobSpec{
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 123,
+							SHA:    "abcd1234",
+						},
+					},
+				},
+			},
+			expected: "abcd1234",
+		},
+		{
+			name: "Refs with BaseSHA",
+			spec: JobSpec{
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+				},
+			},
+			expected: "deadbeef",
+		},
+		{
+			name: "Refs with BaseRef",
+			spec: JobSpec{
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+				},
+			},
+			expected: "master",
+		},
+		{
+			name: "Refs from extra_refs",
+			spec: JobSpec{
+				ExtraRefs: []prowapi.Refs{
+					{
+						BaseRef: "master",
+					},
+				},
+			},
+			expected: "master",
+		},
+	}
+
+	for _, test := range tests {
+		if actual, expected := GetRevisionFromSpec(&test.spec), test.expected; actual != expected {
+			t.Errorf("%s: got revision:%s but expected: %s", test.name, actual, expected)
+		}
+	}
+}
