@@ -14,8 +14,11 @@
 {{$source:=.Source}}
 {{if .Announcement}}
 <div id="announcement">
-  {{.Announcement}}
+  <div>{{.Announcement}}</div>
 </div>
+<script type="text/javascript">
+  setTimeout(() => document.getElementById('announcement').style.opacity = '0', 120000); // wait two minutes
+</script>
 {{end}}
 <div id="lens-container">
   {{if or .JobHistLink .ArtifactsLink .PRHistLink}}
