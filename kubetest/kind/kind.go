@@ -48,6 +48,10 @@ const (
 
 	// If a new version of kind is released this value has to be updated.
 	kindBinaryStableTag = "0.1.0"
+
+	kindClusterNameDefault = "kind-kubetest"
+
+	flagLogLevel = "--loglevel=info"
 )
 
 var (
@@ -56,6 +60,8 @@ var (
 	kindBinaryVersion = flag.String("kind-binary-version", kindBinaryStable,
 		fmt.Sprintf("(kind only) This flag can be either %q (build from source) "+
 			"or %q (download a stable binary).", kindBinaryBuild, kindBinaryStable))
+	kindClusterName = flag.String("kind-cluster-name", kindClusterNameDefault,
+		"(kind only) Name of the kind cluster.")
 )
 
 var (
@@ -76,6 +82,7 @@ type Deployer struct {
 	kindBinaryVersion string
 	kindBinaryPath    string
 	kindNodeImage     string
+	kindClusterName   string
 }
 
 type kindReleaseAsset struct {
@@ -139,6 +146,7 @@ func initializeDeployer(ctl *process.Control, buildType string) (*Deployer, erro
 		kindBinaryPath:    filepath.Join(kindBinaryDir, "kind"),
 		kindBinaryVersion: *kindBinaryVersion,
 		kindNodeImage:     kindNodeImageLatest,
+		kindClusterName:   *kindClusterName,
 	}
 	// ensure we have the kind binary
 	if err := d.prepareKindBinary(); err != nil {
@@ -149,7 +157,14 @@ func initializeDeployer(ctl *process.Control, buildType string) (*Deployer, erro
 
 // getKubeConfigPath returns the path to the kubeconfig file.
 func (d *Deployer) getKubeConfigPath() (string, error) {
-	o, err := d.control.Output(exec.Command("kind", "get", "kubeconfig-path"))
+	args := []string{"get", "kubeconfig-path", flagLogLevel}
+
+	// Use a specific cluster name.
+	if d.kindClusterName != "" {
+		args = append(args, "--name="+d.kindClusterName)
+	}
+
+	o, err := d.control.Output(exec.Command("kind", args...))
 	if err != nil {
 		return "", err
 	}
@@ -226,8 +241,13 @@ func (d *Deployer) Build() error {
 		buildType = d.buildType
 	}
 
+	args := []string{"build", "node-image", "--type=" + buildType, flagLogLevel}
+	if d.kindNodeImage != "" {
+		args = append(args, "--image="+d.kindNodeImage)
+	}
+
 	// Build the node image (including kubernetes)
-	cmd := exec.Command("kind", "build", "node-image", "--image="+d.kindNodeImage, "--type="+buildType)
+	cmd := exec.Command("kind", args...)
 	if err := d.control.FinishRunning(cmd); err != nil {
 		return err
 	}
@@ -276,7 +296,7 @@ func (d *Deployer) Build() error {
 
 // Up creates a kind cluster. Allows passing node image and config.
 func (d *Deployer) Up() error {
-	args := []string{"create", "cluster", "--retain", "--wait=1m", "--loglevel=info"}
+	args := []string{"create", "cluster", "--retain", "--wait=1m", flagLogLevel}
 
 	// Handle the config flag.
 	if d.configPath != "" {
@@ -286,6 +306,11 @@ func (d *Deployer) Up() error {
 	// Handle the node image flag if we built a new node image.
 	if d.kindNodeImage != "" {
 		args = append(args, "--image="+d.kindNodeImage)
+	}
+
+	// Use a specific cluster name.
+	if d.kindClusterName != "" {
+		args = append(args, "--name="+d.kindClusterName)
 	}
 
 	// Build the kind cluster.
@@ -303,7 +328,16 @@ func (d *Deployer) Up() error {
 
 // IsUp verifies if the cluster created by Up() is functional.
 func (d *Deployer) IsUp() error {
+	// Obtain the path of the kubeconfig.
+	// This also acts as a quick exit if no cluster with that name exists.
+	path, err := d.getKubeConfigPath()
+	if err != nil {
+		return err
+	}
+
+	// Check if kubectl reports nodes for that kubeconfig file.
 	cmd, err := d.KubectlCommand()
+	cmd.Env = append(cmd.Env, "KUBECONFIG="+path)
 	if err != nil {
 		return err
 	}
@@ -325,7 +359,14 @@ func (d *Deployer) IsUp() error {
 
 // DumpClusterLogs dumps the logs for this cluster in localPath.
 func (d *Deployer) DumpClusterLogs(localPath, gcsPath string) error {
-	cmd := exec.Command("kind", "export", "logs", localPath)
+	args := []string{"export", "logs", localPath, flagLogLevel}
+
+	// Use a specific cluster name.
+	if d.kindClusterName != "" {
+		args = append(args, "--name="+d.kindClusterName)
+	}
+
+	cmd := exec.Command("kind", args...)
 	if err := d.control.FinishRunning(cmd); err != nil {
 		return err
 	}
@@ -344,10 +385,23 @@ func (d *Deployer) TestSetup() error {
 
 // Down tears down the cluster.
 func (d *Deployer) Down() error {
-	cmd := exec.Command("kind", "delete", "cluster")
-	// This function seems to be called even for --up only,
-	// so don't treat this as a fatal error.
-	_ = d.control.FinishRunning(cmd)
+	// Proceed only if a cluster is up.
+	if err := d.IsUp(); err != nil {
+		return nil
+	}
+
+	args := []string{"delete", "cluster", flagLogLevel}
+
+	// Use a specific cluster name.
+	if d.kindClusterName != "" {
+		args = append(args, "--name="+d.kindClusterName)
+	}
+
+	// Delete the cluster.
+	cmd := exec.Command("kind", args...)
+	if err := d.control.FinishRunning(cmd); err != nil {
+		return err
+	}
 	return nil
 }
 
