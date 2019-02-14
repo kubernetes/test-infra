@@ -1,3 +1,10 @@
+#announcement {
+  background-color: #424242;
+  padding: 10px;
+  text-align: center;
+  font-size: 16px;
+}
+
 .lens-card.mdl-card {
   width: calc(100% - 30px);
   align-content: center;

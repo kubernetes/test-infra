@@ -679,6 +679,28 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		prHistLink = "/pr-history?org=" + org + "&repo=" + repo + "&pr=" + strconv.Itoa(number)
 	}
 
+	announcement := ""
+	if cfg().Deck.Spyglass.Announcement != "" {
+		announcementTmpl, err := template.New("announcement").Parse(cfg().Deck.Spyglass.Announcement)
+		if err != nil {
+			return "", fmt.Errorf("error parsing announcement template: %v", err)
+		}
+		runPath, err := sg.RunPath(src)
+		if err != nil {
+			runPath = ""
+		}
+		var announcementBuf bytes.Buffer
+		err = announcementTmpl.Execute(&announcementBuf, struct {
+			ArtifactPath string
+		}{
+			ArtifactPath: runPath,
+		})
+		if err != nil {
+			return "", fmt.Errorf("error executing announcement template: %v", err)
+		}
+		announcement = announcementBuf.String()
+	}
+
 	var viewBuf bytes.Buffer
 	type lensesTemplate struct {
 		Lenses        []lenses.Lens
@@ -688,6 +710,7 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		JobHistLink   string
 		ArtifactsLink string
 		PRHistLink    string
+		Announcement  template.HTML
 	}
 	lTmpl := lensesTemplate{
 		Lenses:        ls,
@@ -697,6 +720,7 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		JobHistLink:   jobHistLink,
 		ArtifactsLink: artifactsLink,
 		PRHistLink:    prHistLink,
+		Announcement:  template.HTML(announcement),
 	}
 	t := template.New("spyglass.html")
 

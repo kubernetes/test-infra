@@ -12,6 +12,11 @@
 
 {{define "content"}}
 {{$source:=.Source}}
+{{if .Announcement}}
+<div id="announcement">
+  {{.Announcement}}
+</div>
+{{end}}
 <div id="lens-container">
   {{if or .JobHistLink .ArtifactsLink .PRHistLink}}
   <div id="links-card" class="mdl-card mdl-shadow--2dp lens-card">
