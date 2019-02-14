@@ -427,21 +427,16 @@ func finalState(status prowjobv1.ProwJobState) bool {
 
 // description computes the ProwJobStatus description for this condition or falling back to a default if none is provided.
 func description(cond duckv1alpha1.Condition, fallback string) string {
-	switch {
-	case cond.Message != "":
-		return cond.Message
-	case cond.Reason != "":
-		return cond.Reason
-	}
+	// the condition is too verbose, so just use the fallback
 	return fallback
 }
 
 const (
-	descScheduling       = "scheduling"
-	descInitializing     = "initializing"
-	descRunning          = "running"
-	descSucceeded        = "succeeded"
-	descFailed           = "failed"
+	descScheduling       = "Job is scheduling."
+	descInitializing     = "Job is initializing."
+	descRunning          = "Job is running."
+	descSucceeded        = "Job succeeded."
+	descFailed           = "Job failed."
 	descUnknown          = "unknown status"
 	descMissingCondition = "missing end condition"
 )
