@@ -66,3 +66,8 @@ tr {
 .ansi-13 { color: #f935f8; }  /* Magenta */
 .ansi-14 { color: #14f0f0; }  /* Cyan */
 .ansi-15 { color: #e9ebeb; }  /* White */
+
+/* support nice display of JSON objects */
+.loglines td span span {
+    white-space: pre-wrap;
+}
