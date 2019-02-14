@@ -29,7 +29,7 @@ periodics:
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=210m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-master
       resources:
         requests:
           cpu: 6
@@ -73,7 +73,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1050m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-master
       resources:
         requests:
           cpu: 6
@@ -91,7 +91,7 @@ periodics:
     preset-e2e-scalability-common: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-master
       args:
       - --timeout=140
       - --repo=k8s.io/kubernetes=master
@@ -158,7 +158,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-master
 
 # This is a sig-release-<stable1>-blocking job.
 - cron: "0 0/12 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable2 and ci-kubernetes-e2e-gci-gce-scalability-stable3
@@ -201,7 +201,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-master
 
 # This is a sig-release-<stable2>-blocking job.
 - cron: "0 4-16/12 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable1 and ci-kubernetes-e2e-gci-gce-scalability-stable3
@@ -244,7 +244,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-master
 
 # This is a sig-release-<stable3>-blocking job.
 - cron: "0 8-20/12 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable1 and ci-kubernetes-e2e-gci-gce-scalability-stable2
@@ -287,4 +287,4 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-master
