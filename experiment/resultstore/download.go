@@ -39,14 +39,7 @@ func storageClient(ctx context.Context, account string) (*storage.Client, error)
 	return gcs.ClientWithCreds(ctx, creds...)
 }
 
-func download(ctx context.Context, client *storage.Client, path gcs.Path) (*downloadResult, error) {
-
-	build := gcs.Build{
-		Bucket:     client.Bucket(path.Bucket()),
-		Context:    ctx,
-		Prefix:     trailingSlash(path.Object()),
-		BucketPath: path.Bucket(),
-	}
+func download(ctx context.Context, client *storage.Client, build gcs.Build) (*downloadResult, error) {
 
 	fmt.Println("Read started...")
 	started, err := build.Started()
