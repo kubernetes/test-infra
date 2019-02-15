@@ -335,6 +335,16 @@ func (d *Deployer) Up() error {
 func (d *Deployer) IsUp() error {
 	log.Println("kind.go:IsUp()")
 
+	// Proceed only if a cluster exists.
+	exists, err := d.clusterExists()
+	if err != nil {
+		return err
+	}
+	if !exists {
+		log.Printf("kind.go:IsUp(): no such cluster %q; skipping IsUp()!", d.kindClusterName)
+		return nil
+	}
+
 	// Obtain the path of the kubeconfig.
 	path, err := d.getKubeConfigPath()
 	if err != nil {
@@ -383,11 +393,25 @@ func (d *Deployer) DumpClusterLogs(localPath, gcsPath string) error {
 // TestSetup is a NO-OP in this deployer.
 func (d *Deployer) TestSetup() error {
 	log.Println("kind.go:TestSetup()")
-	// set KUBECONFIG, but ignore the error if a cluster is not up yet.
-	_ = d.setKubeConfigEnv()
 
 	// set conformance env so ginkgo.sh etc won't try to do provider setup
 	os.Setenv("KUBERNETES_CONFORMANCE_TEST", "y")
+
+	// Proceed only if a cluster exists.
+	exists, err := d.clusterExists()
+	if err != nil {
+		return err
+	}
+	if !exists {
+		log.Printf("kind.go:TestSetup(): no such cluster %q; skipping the setup of KUBECONFIG!", d.kindClusterName)
+		return nil
+	}
+
+	// set KUBECONFIG
+	if err = d.setKubeConfigEnv(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -402,8 +426,11 @@ func (d *Deployer) clusterExists() (bool, error) {
 		return false, err
 	}
 
-	if strings.Contains(string(out), d.kindClusterName) {
-		return true, nil
+	lines := strings.Split(string(out), "\n")
+	for _, line := range lines {
+		if strings.Contains(line, d.kindClusterName) {
+			return true, nil
+		}
 	}
 	return false, nil
 }
@@ -412,10 +439,10 @@ func (d *Deployer) clusterExists() (bool, error) {
 func (d *Deployer) Down() error {
 	log.Println("kind.go:Down()")
 
-	// Proceed only if a cluster is up.
+	// Proceed only if a cluster exists.
 	exists, err := d.clusterExists()
 	if err != nil {
-		return nil
+		return err
 	}
 	if !exists {
 		log.Printf("kind.go:Down(): no such cluster %q; skipping 'delete'!", d.kindClusterName)
