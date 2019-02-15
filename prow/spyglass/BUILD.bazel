@@ -19,6 +19,7 @@ go_test(
         "//prow/kube:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",
         "//prow/spyglass/lenses:go_default_library",
+        "//testgrid/config:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/fsouza/fake-gcs-server/fakestorage:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

@@ -67,7 +67,7 @@ func (tg *TestGrid) FindQuery(jobName string) (string, error) {
 			}
 			if tab.TestGroupName == jobName {
 				score := -len(dashboard.DashboardTab) + penalty
-				if bestOption == "" || score > bestScore {
+				if bestOption == "" || score < bestScore {
 					bestScore = score
 					bestOption = dashboard.Name + "#" + tab.Name
 				}
