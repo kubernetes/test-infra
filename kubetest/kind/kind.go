@@ -157,6 +157,7 @@ func initializeDeployer(ctl *process.Control, buildType string) (*Deployer, erro
 
 // getKubeConfigPath returns the path to the kubeconfig file.
 func (d *Deployer) getKubeConfigPath() (string, error) {
+	log.Println("kind.go:getKubeConfigPath()")
 	args := []string{"get", "kubeconfig-path", flagLogLevel}
 
 	// Use a specific cluster name.
@@ -173,6 +174,7 @@ func (d *Deployer) getKubeConfigPath() (string, error) {
 
 // setKubeConfigEnv sets the KUBECONFIG environment variable.
 func (d *Deployer) setKubeConfigEnv() error {
+	log.Println("kind.go:setKubeConfigEnv()")
 	path, err := d.getKubeConfigPath()
 	if err != nil {
 		return err
@@ -185,6 +187,7 @@ func (d *Deployer) setKubeConfigEnv() error {
 
 // prepareKindBinary either builds kind from source or pulls a binary from GitHub.
 func (d *Deployer) prepareKindBinary() error {
+	log.Println("kind.go:prepareKindBinary()")
 	switch d.kindBinaryVersion {
 	case kindBinaryBuild:
 		importPathKind, err := getImportPath("sigs.k8s.io/kind")
@@ -225,6 +228,7 @@ func (d *Deployer) prepareKindBinary() error {
 
 // Build handles building kubernetes / kubectl / the node image.
 func (d *Deployer) Build() error {
+	log.Println("kind.go:Build()")
 	// Adapt the build type if needed.
 	var buildType string
 	switch d.buildType {
@@ -296,6 +300,7 @@ func (d *Deployer) Build() error {
 
 // Up creates a kind cluster. Allows passing node image and config.
 func (d *Deployer) Up() error {
+	log.Println("kind.go:Up()")
 	args := []string{"create", "cluster", "--retain", "--wait=1m", flagLogLevel}
 
 	// Handle the config flag.
@@ -328,8 +333,9 @@ func (d *Deployer) Up() error {
 
 // IsUp verifies if the cluster created by Up() is functional.
 func (d *Deployer) IsUp() error {
+	log.Println("kind.go:IsUp()")
+
 	// Obtain the path of the kubeconfig.
-	// This also acts as a quick exit if no cluster with that name exists.
 	path, err := d.getKubeConfigPath()
 	if err != nil {
 		return err
@@ -359,6 +365,7 @@ func (d *Deployer) IsUp() error {
 
 // DumpClusterLogs dumps the logs for this cluster in localPath.
 func (d *Deployer) DumpClusterLogs(localPath, gcsPath string) error {
+	log.Println("kind.go:DumpClusterLogs()")
 	args := []string{"export", "logs", localPath, flagLogLevel}
 
 	// Use a specific cluster name.
@@ -375,6 +382,7 @@ func (d *Deployer) DumpClusterLogs(localPath, gcsPath string) error {
 
 // TestSetup is a NO-OP in this deployer.
 func (d *Deployer) TestSetup() error {
+	log.Println("kind.go:TestSetup()")
 	// set KUBECONFIG, but ignore the error if a cluster is not up yet.
 	_ = d.setKubeConfigEnv()
 
@@ -383,13 +391,38 @@ func (d *Deployer) TestSetup() error {
 	return nil
 }
 
+// clusterExists checks if a kind cluster with 'name' exists
+func (d *Deployer) clusterExists() (bool, error) {
+	log.Printf("kind.go:clusterExists(): %s", d.kindClusterName)
+
+	cmd := exec.Command("kind")
+	cmd.Args = append(cmd.Args, []string{"get", "clusters", flagLogLevel}...)
+	out, err := d.control.Output(cmd)
+	if err != nil {
+		return false, err
+	}
+
+	if strings.Contains(string(out), d.kindClusterName) {
+		return true, nil
+	}
+	return false, nil
+}
+
 // Down tears down the cluster.
 func (d *Deployer) Down() error {
+	log.Println("kind.go:Down()")
+
 	// Proceed only if a cluster is up.
-	if err := d.IsUp(); err != nil {
+	exists, err := d.clusterExists()
+	if err != nil {
+		return nil
+	}
+	if !exists {
+		log.Printf("kind.go:Down(): no such cluster %q; skipping 'delete'!", d.kindClusterName)
 		return nil
 	}
 
+	log.Printf("kind.go:Down(): deleting cluster: %s", d.kindClusterName)
 	args := []string{"delete", "cluster", flagLogLevel}
 
 	// Use a specific cluster name.
@@ -407,11 +440,13 @@ func (d *Deployer) Down() error {
 
 // GetClusterCreated is unimplemented.GetClusterCreated
 func (d *Deployer) GetClusterCreated(gcpProject string) (time.Time, error) {
+	log.Println("kind.go:GetClusterCreated()")
 	return time.Time{}, errors.New("not implemented")
 }
 
 // KubectlCommand returns the exec.Cmd command for kubectl.
 func (d *Deployer) KubectlCommand() (*exec.Cmd, error) {
+	log.Println("kind.go:KubectlCommand()")
 	// Avoid using ./cluster/kubectl.sh
 	// TODO(bentheelder): cache this
 	return exec.Command("kubectl"), nil
@@ -419,6 +454,7 @@ func (d *Deployer) KubectlCommand() (*exec.Cmd, error) {
 
 // downloadFromURL downloads from a url to f
 func downloadFromURL(url string, f *os.File) error {
+	log.Printf("kind.go:downloadFromURL(): %s\n", url)
 	// TODO(bentheelder): is this long enough?
 	timeout := time.Duration(60 * time.Second)
 	client := http.Client{
