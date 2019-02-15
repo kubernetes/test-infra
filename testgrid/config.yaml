@@ -2531,6 +2531,9 @@ test_groups:
 - name: pull-cluster-api-provider-vsphere-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-vsphere-e2e
   num_columns_recent: 20
+- name: ci-cluster-api-provider-vsphere-ova-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/ci-cluster-api-provider-vsphere-ova-e2e
+  num_columns_recent: 20
 - name: pull-cluster-api-provider-openstack-make
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-openstack-make
   num_columns_recent: 20
@@ -3735,6 +3738,11 @@ dashboards:
     test_group_name: pull-cluster-api-provider-vsphere-e2e
     alert_options:
       alert_mail_to_addresses: cnx+clusterapi@vmware.com
+  - name: periodic-e2e
+    description: Runs periodic e2e tests
+    test_group_name: ci-cluster-api-provider-vsphere-ova-e2e
+    alert_options:
+      alert_mail_to_addresses: cnx+clusterapi@vmware.co
 
 # Alibaba Cloud Provider Dashboard
 - name: conformance-alibaba-cloud-provider
@@ -6004,6 +6012,8 @@ dashboards:
     test_group_name: pull-cluster-api-provider-vsphere-test
   - name: pr-e2e
     test_group_name: pull-cluster-api-provider-vsphere-e2e
+  - name: periodic-e2e
+    test_group_name: ci-cluster-api-provider-vsphere-ova-e2e
 
 - name: sig-cluster-lifecycle-cluster-api-provider-openstack
   dashboard_tab:
