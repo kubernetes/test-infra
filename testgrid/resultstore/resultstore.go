@@ -106,6 +106,9 @@ func dur(d time.Duration) *duration.Duration {
 }
 
 func stamp(when time.Time) *timestamp.Timestamp {
+	if when.IsZero() {
+		return nil
+	}
 	return &timestamp.Timestamp{
 		Seconds: when.Unix(),
 		Nanos:   int32(when.UnixNano() % int64(time.Second)),
