@@ -145,7 +145,7 @@ func write(ctx context.Context, client *storage.Client, path string, bytes []byt
 	if err = p.SetURL(u); err != nil {
 		return err
 	}
-	return gcs.Upload(ctx, client, p, bytes)
+	return gcs.Upload(ctx, client, p, bytes, true)
 }
 
 func doOneshot(ctx context.Context, client *storage.Client, opt options) error {
