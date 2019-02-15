@@ -38,6 +38,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 
+	"k8s.io/test-infra/ghproxy/ghcache"
 	"k8s.io/test-infra/prow/errorutil"
 )
 
@@ -146,9 +147,33 @@ func (t *throttler) Wait() {
 	}
 }
 
+func (t *throttler) Refund() {
+	t.lock.RLock()
+	defer t.lock.RUnlock()
+	select {
+	case t.throttle <- time.Now():
+	default:
+	}
+}
+
 func (t *throttler) Do(req *http.Request) (*http.Response, error) {
 	t.Wait()
-	return t.http.Do(req)
+	resp, err := t.http.Do(req)
+	if err != nil {
+		cacheMode := ghcache.CacheResponseMode(resp.Header.Get(ghcache.CacheModeHeader))
+		if ghcache.CacheModeIsFree(cacheMode) {
+			// This request was fulfilled by ghcache without using an API token.
+			// Refund the throttling token we preemptively consumed.
+			log := logrus.WithFields(logrus.Fields{
+				"client":     "github",
+				"throttled":  true,
+				"cache-mode": string(cacheMode),
+			})
+			log.Debug("Throttler refunding token for free response from ghcache.")
+			t.Refund()
+		}
+	}
+	return resp, err
 }
 
 func (t *throttler) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
