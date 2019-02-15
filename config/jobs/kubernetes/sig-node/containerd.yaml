@@ -283,7 +283,7 @@ periodics:
       - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --redirect-container-streaming" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]" --flakeAttempts=2
+      - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Serial\]" --flakeAttempts=2
       - --timeout=65m
       env:
       - name: GOPATH
@@ -337,6 +337,34 @@ periodics:
       - --gcp-project=cri-containerd-node-e2e
       - --gcp-zone=us-west1-b
       - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Serial\]" --flakeAttempts=2
+      - --timeout=65m
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-containerd-node-e2e-features-1-1
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190211-76e197f51-1.11
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes=release-1.11
+      - --repo=github.com/containerd/cri=release/1.0
+      - --timeout=90
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1/image-config.yaml
+      - --deployment=node
+      - --gcp-project=cri-containerd-node-e2e
+      - --gcp-zone=us-west1-b
+      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --redirect-container-streaming" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
       - --node-tests=true
       - --provider=gce
       - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Serial\]" --flakeAttempts=2
