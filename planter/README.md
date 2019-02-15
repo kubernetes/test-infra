@@ -28,8 +28,10 @@ Planter respects the following environment variables:
 
  - `TAG`: The Planter image tag. This will default to the current stable
    version used to build Kubernetes, but you may override it with EG
-   `TAG=0.9.0 ./planter.sh bazel build //...`
-   - These should now match bazel release versions eg `0.8.0rc2`
+   `TAG=0.21.0 ./planter.sh bazel build //...`
+   - These should match bazel release versions eg `0.23.0rc1`
+ - `CROSS`: If set, a larger Planter image which contains the
+   crossbuild-essential packages will be used.
  - `DRY_RUN`: If set, Planter will only echo the Docker command that would have
    been run.
  - `HOME`: Your home directory. This will be mounted in to the container.

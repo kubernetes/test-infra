@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM debian:jessie
+FROM debian:stretch
 
 # Includes everything needed to build and test github.com/kubernetes/kubernetes
 # and github.com/kubernetes/test-infra with bazel and run bazel as the host UID
