@@ -1,5 +1,4 @@
 periodics:
-  #kubernetes-sigs/cluster-api-provider-vsphere:
   - name: ci-cluster-api-provider-vsphere-ova-e2e
     labels:
       preset-dind-enabled: "true"
@@ -7,7 +6,11 @@ periodics:
       preset-cluster-api-provider-vsphere-e2e-creds: "true"
     decorate: true
     interval: 24h
-    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-vsphere
+      base_ref: master
+      path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-master
