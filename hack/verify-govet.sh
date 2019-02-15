@@ -19,4 +19,5 @@ set -o pipefail
 set -o xtrace
 
 # TODO(fejta): check in testgrid pb.go files
-bazel run //:govet -- $(bazel run //:go -- list ./... | grep -v -E 'k8s.io/test-infra/(testgrid|experiment/resultstore)')
+# TODO(Katharine): get spyglass and deck out of the skip list
+bazel run //:govet -- $(bazel run //:go -- list ./... | grep -v -E 'k8s.io/test-infra/(testgrid|experiment/resultstore|prow/spyglass|prow/cmd/deck)')
