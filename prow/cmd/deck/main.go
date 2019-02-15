@@ -702,7 +702,7 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		announcement = announcementBuf.String()
 	}
 
-	tgLink, err := sg.TestgridLink(src)
+	tgLink, err := sg.TestGridLink(src)
 	if err != nil {
 		tgLink = ""
 	}

@@ -29,6 +29,7 @@ import (
 	tgconf "k8s.io/test-infra/testgrid/config"
 )
 
+// TestGrid manages a TestGrid configuration, and handles lookups of TestGrid configuration.
 type TestGrid struct {
 	mut    sync.RWMutex
 	c      *tgconf.Configuration
@@ -37,6 +38,7 @@ type TestGrid struct {
 	client *storage.Client
 }
 
+// Start synchronously requests the testgrid config, then continues to update it periodically.
 func (tg *TestGrid) Start() {
 	if err := tg.updateConfig(); err != nil {
 		logrus.WithError(err).Error("Couldn't fetch TestGrid config.")
@@ -80,6 +82,7 @@ func (tg *TestGrid) FindQuery(jobName string) (string, error) {
 	return bestOption, nil
 }
 
+// Ready returns true if a usable TestGrid config is loaded, otherwise false.
 func (tg *TestGrid) Ready() bool {
 	return tg.c != nil
 }

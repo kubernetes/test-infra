@@ -254,7 +254,10 @@ func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
 	}
 }
 
-func (sg *Spyglass) TestgridLink(src string) (string, error) {
+// TestGridLink returns a link to a relevant TestGrid tab for the given source string.
+// Because there is a one-to-many mapping from job names to TestGrid tabs, the returned tab
+// link may not be deterministic.
+func (sg *Spyglass) TestGridLink(src string) (string, error) {
 	if !sg.testgrid.Ready() || sg.config().Deck.Spyglass.TestGridRoot == "" {
 		return "", fmt.Errorf("testgrid is not configured")
 	}
