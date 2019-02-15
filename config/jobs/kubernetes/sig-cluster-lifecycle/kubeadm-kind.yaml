@@ -32,6 +32,7 @@ periodics:
       - name: REPO_NAME
         value: kubernetes
       command:
+      - runner.sh
       - kubetest
       args:
       - --build=bazel
