@@ -20,6 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 )
 
+// Type is any resource that can be listed and deleted.
 type Type interface {
 	// MarkAndSweep queries the resource in a specific region, using
 	// the provided session (which has account-number acct), calling
@@ -31,12 +32,14 @@ type Type interface {
 	ListAll(sess *session.Session, acct string, region string) (*Set, error)
 }
 
-// AWS resource types known to this script, in dependency order.
+// RegionalTypeList is AWS resource types known to this script, in dependency order.
 var RegionalTypeList = []Type{
 	LoadBalancers{},
 	AutoScalingGroups{},
 	LaunchConfigurations{},
 	Instances{},
+	KeyPairs{},
+	CloudFormationStacks{}, // Might depend on key pairs
 	// Addresses
 	// NetworkInterfaces
 	Subnets{},
@@ -52,7 +55,7 @@ var RegionalTypeList = []Type{
 	Addresses{},
 }
 
-// Non-regional AWS resource types, in dependency order
+// GlobalTypeList is Non-regional AWS resource types, in dependency order
 var GlobalTypeList = []Type{
 	IAMInstanceProfiles{},
 	IAMRoles{},

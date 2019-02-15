@@ -27,8 +27,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// VPCs: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeVpcs
-
 // NATGateway is a VPC component: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html
 type NATGateway struct{}
 
@@ -91,7 +89,7 @@ type natGateway struct {
 }
 
 func (ng natGateway) ARN() string {
-	return fmt.Sprintf("arn:aws-cn:ec2:%s:%s:natgateway/%s", ng.Region, ng.Account, ng.ID)
+	return fmt.Sprintf("arn:aws:ec2:%s:%s:natgateway/%s", ng.Region, ng.Account, ng.ID)
 }
 
 func (ng natGateway) ResourceKey() string {
