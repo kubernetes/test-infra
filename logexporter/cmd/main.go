@@ -20,6 +20,7 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
@@ -77,8 +78,14 @@ func checkConfigValidity() error {
 	if _, err := os.Stat(*gcloudAuthFilePath); err != nil {
 		return fmt.Errorf("Could not find the gcloud service account file: %v", err)
 	} else {
+		glog.Infof("Running gcloud auth activate-service-account --key-file=%s\n", *gcloudAuthFilePath)
 		cmd := exec.Command("gcloud", "auth", "activate-service-account", "--key-file="+*gcloudAuthFilePath)
-		if err := cmd.Run(); err != nil {
+		var stderr, stdout bytes.Buffer
+		cmd.Stderr, cmd.Stdout = &stderr, &stdout
+		err = cmd.Run()
+		glog.Infof("Stdout:\n%s\n", stdout.String())
+		glog.Infof("Stderr:\n%s\n", stderr.String())
+		if err != nil {
 			return fmt.Errorf("Failed to activate gcloud service account: %v", err)
 		}
 	}
