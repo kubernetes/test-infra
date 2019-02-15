@@ -126,7 +126,7 @@ func convert(project, details string, url gcs.Path, result downloadResult) (resu
 	}
 
 	// Files need a unique identifier, trim the common prefix and provide this.
-	uniqPath := func(s string) string { return strings.TrimPrefix(basePath, s) }
+	uniqPath := func(s string) string { return strings.TrimPrefix(s, basePath) }
 
 	for i, a := range artifacts {
 		artifacts[i] = "gs://" + bucket + "/" + a
