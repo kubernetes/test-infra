@@ -214,6 +214,13 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
+- name: ci-containerd-node-e2e-features-1-1
+  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e-features-1-1
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-containerd-node-e2e-features-1-2
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e-features-1-2
   test_name_config:
@@ -6367,6 +6374,8 @@ dashboards:
     test_group_name: ci-containerd-node-e2e-1-2
   - name: containerd-node-e2e-features
     test_group_name: ci-containerd-node-e2e-features
+  - name: containerd-node-e2e-features-1.1
+    test_group_name: ci-containerd-node-e2e-features-1-1
   - name: containerd-node-e2e-features-1.2
     test_group_name: ci-containerd-node-e2e-features-1-2
   - name: containerd-e2e-gci
