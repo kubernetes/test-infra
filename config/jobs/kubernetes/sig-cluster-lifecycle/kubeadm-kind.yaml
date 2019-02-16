@@ -48,7 +48,7 @@ periodics:
       - --down
       # specific e2e test args
       # TODO(bentheelder): num-nodes in particular is brittle. it would be better for kubetest to handle this
-      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\] --disable-log-dump=true --num-nodes=3
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\] --num-nodes=3
       - --ginkgo-parallel
       - --timeout=30m
       # we need privileged mode in order to do docker in docker
