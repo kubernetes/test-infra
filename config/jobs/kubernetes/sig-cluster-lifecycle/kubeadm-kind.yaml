@@ -35,13 +35,18 @@ periodics:
       - runner.sh
       - kubetest
       args:
-      - --build=bazel
+      # kind specific args
       - --provider=skeleton
       - --deployment=kind
       - --kind-binary-version=build
       - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/single-cp/single-cp.yaml
+      # generic e2e test args
+      - --build=bazel
+      - --up
       - --test
       - --check-version-skew=false
+      - --down
+      # specific e2e test args
       # TODO(bentheelder): num-nodes in particular is brittle. it would be better for kubetest to handle this
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\] --disable-log-dump=true --num-nodes=3
       - --ginkgo-parallel
