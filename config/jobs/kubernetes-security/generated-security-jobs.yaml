@@ -115,7 +115,7 @@ presubmits:
         - --repo=k8s.io/release
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
+        - --timeout=85
         - --scenario=kubernetes_e2e
         - --
         - --aws
@@ -131,7 +131,7 @@ presubmits:
         - --provider=aws
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws
         - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-        - --timeout=55m
+        - --timeout=65m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-master
         name: ""

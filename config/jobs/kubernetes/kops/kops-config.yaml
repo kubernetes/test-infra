@@ -87,7 +87,7 @@ presubmits:
         - --kops-build
         - --provider=aws
         - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-        - --timeout=55m
+        - --timeout=65m
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -126,7 +126,7 @@ presubmits:
         - --kops-build
         - --provider=aws
         - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-        - --timeout=55m
+        - --timeout=65m
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -165,7 +165,7 @@ presubmits:
         - --kops-build
         - --provider=aws
         - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-        - --timeout=55m
+        - --timeout=65m
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -204,7 +204,7 @@ presubmits:
         - --kops-build
         - --provider=aws
         - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-        - --timeout=55m
+        - --timeout=65m
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true

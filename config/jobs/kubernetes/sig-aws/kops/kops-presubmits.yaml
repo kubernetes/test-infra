@@ -27,7 +27,7 @@ presubmits:
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=75"
+        - "--timeout=85"
         - --scenario=kubernetes_e2e
         - --
         - --aws
@@ -43,7 +43,7 @@ presubmits:
         - --provider=aws
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws
         - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-        - --timeout=55m
+        - --timeout=65m
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
