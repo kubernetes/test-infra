@@ -42,7 +42,7 @@ func handlePR(c Client, trigger *plugins.Trigger, pr github.PullRequestEvent) er
 		}
 		if member {
 			c.Logger.Info("Starting all jobs for new PR.")
-			return buildAll(c, &pr.PullRequest, pr.GUID)
+			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
 		}
 		c.Logger.Infof("Welcome message to PR author %q.", author)
 		if err := welcomeMsg(c.GitHubClient, trigger, pr.PullRequest); err != nil {
@@ -63,7 +63,7 @@ func handlePR(c Client, trigger *plugins.Trigger, pr github.PullRequestEvent) er
 				}
 			}
 			c.Logger.Info("Starting all jobs for updated PR.")
-			return buildAll(c, &pr.PullRequest, pr.GUID)
+			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
 		}
 	case github.PullRequestActionEdited:
 		// if someone changes the base of their PR, we will get this
@@ -97,7 +97,7 @@ func handlePR(c Client, trigger *plugins.Trigger, pr github.PullRequestEvent) er
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
 				c.Logger.Info("Starting all jobs for untrusted PR with LGTM.")
-				return buildAll(c, &pr.PullRequest, pr.GUID)
+				return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
 			}
 		}
 	}
@@ -132,7 +132,7 @@ func buildAllIfTrusted(c Client, trigger *plugins.Trigger, pr github.PullRequest
 			}
 		}
 		c.Logger.Info("Starting all jobs for updated PR.")
-		return buildAll(c, &pr.PullRequest, pr.GUID)
+		return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
 	}
 	return nil
 }
@@ -217,10 +217,10 @@ func TrustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org,
 }
 
 // buildAll ensures that all builds that should run and will be required are built
-func buildAll(c Client, pr *github.PullRequest, eventGUID string) error {
-	toTest, err := filterPresubmits(testAllFilter(), c.GitHubClient, pr, c.Config.Presubmits[pr.Base.Repo.FullName])
+func buildAll(c Client, pr *github.PullRequest, eventGUID string, elideSkippedContexts bool) error {
+	toTest, toSkip, err := filterPresubmits(testAllFilter(), c.GitHubClient, pr, c.Config.Presubmits[pr.Base.Repo.FullName])
 	if err != nil {
 		return err
 	}
-	return RunRequested(c, pr, toTest, eventGUID)
+	return runAndSkipJobs(c, pr, toTest, toSkip, eventGUID, elideSkippedContexts)
 }

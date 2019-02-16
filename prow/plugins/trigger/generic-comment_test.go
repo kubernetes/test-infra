@@ -24,6 +24,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	clienttesting "k8s.io/client-go/testing"
 
@@ -47,20 +48,21 @@ func issueLabels(labels ...string) []string {
 type testcase struct {
 	name string
 
-	Author         string
-	PRAuthor       string
-	Body           string
-	State          string
-	IsPR           bool
-	Branch         string
-	ShouldBuild    bool
-	ShouldReport   bool
-	AddedLabels    []string
-	RemovedLabels  []string
-	StartsExactly  string
-	Presubmits     map[string][]config.Presubmit
-	IssueLabels    []string
-	IgnoreOkToTest bool
+	Author               string
+	PRAuthor             string
+	Body                 string
+	State                string
+	IsPR                 bool
+	Branch               string
+	ShouldBuild          bool
+	ShouldReport         bool
+	AddedLabels          []string
+	RemovedLabels        []string
+	StartsExactly        string
+	Presubmits           map[string][]config.Presubmit
+	IssueLabels          []string
+	IgnoreOkToTest       bool
+	ElideSkippedContexts bool
 }
 
 func TestHandleGenericComment(t *testing.T) {
@@ -206,7 +208,19 @@ func TestHandleGenericComment(t *testing.T) {
 			IsPR:         true,
 			Branch:       "other",
 			ShouldBuild:  false,
-			ShouldReport: false,
+			ShouldReport: true,
+		},
+		{
+			name: "Wrong branch. Skipped statuses elided.",
+
+			Author:               "trusted-member",
+			Body:                 "/test all",
+			State:                "open",
+			IsPR:                 true,
+			Branch:               "other",
+			ShouldBuild:          false,
+			ElideSkippedContexts: true,
+			ShouldReport:         false,
 		},
 		{
 			name: "Retest with one running and one failed",
@@ -417,7 +431,35 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ShouldBuild: false,
+			ShouldBuild:  false,
+			ShouldReport: true,
+		},
+		{
+			name:   "Retest of run_if_changed job that failed. Changes do not require the job. Skipped statuses elided.",
+			Author: "trusted-member",
+			Body:   "/retest",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
+							RunIfChanged: "CHANGED2",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jib",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jib(?: .*?)?$`,
+						RerunCommand: `/test jib`,
+					},
+				},
+			},
+			ShouldBuild:          false,
+			ElideSkippedContexts: true,
+			ShouldReport:         false,
 		},
 		{
 			name:   "Run if changed job triggered by /ok-to-test",
@@ -516,7 +558,43 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ShouldReport: false,
+			ShouldReport: true,
+		},
+		{
+			name:   "branch-sharded job. no shard matches base branch. Skipped statuses elided.",
+			Author: "trusted-member",
+			Branch: "branch",
+			Body:   "/test jab",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jab",
+						},
+						Brancher: config.Brancher{Branches: []string{"master"}},
+						Reporter: config.Reporter{
+							Context: "pull-jab",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jab(?: .*?)?$`,
+						RerunCommand: `/test jab`,
+					},
+					{
+						JobBase: config.JobBase{
+							Name: "jab",
+						},
+						Brancher: config.Brancher{Branches: []string{"release"}},
+						Reporter: config.Reporter{
+							Context: "pull-jab",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jab(?: .*?)?$`,
+						RerunCommand: `/test jab`,
+					},
+				},
+			},
+			ElideSkippedContexts: true,
+			ShouldReport:         false,
 		},
 		{
 			name: "/retest of RunIfChanged job that doesn't need to run and hasn't run",
@@ -542,7 +620,34 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ShouldReport: false,
+			ShouldReport: true,
+		},
+		{
+			name: "/retest of RunIfChanged job that doesn't need to run and hasn't run. Skipped statuses elided.",
+
+			Author: "trusted-member",
+			Body:   "/retest",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jeb",
+						},
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
+							RunIfChanged: "CHANGED2",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jeb",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jeb(?: .*?)?$`,
+						RerunCommand: `/test jeb`,
+					},
+				},
+			},
+			ElideSkippedContexts: true,
+			ShouldReport:         false,
 		},
 		{
 			name: "explicit /test for RunIfChanged job that doesn't need to run",
@@ -619,7 +724,33 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ShouldReport: false,
+			ShouldReport: true,
+		},
+		{
+			name:   "/test all of run_if_changed job that has passed and doesn't need to run. Skipped statuses elided.",
+			Author: "trusted-member",
+			Body:   "/test all",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jub",
+						},
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
+							RunIfChanged: "CHANGED2",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jub",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jub(?: .*?)?$`,
+						RerunCommand: `/test jub`,
+					},
+				},
+			},
+			ElideSkippedContexts: true,
+			ShouldReport:         false,
 		},
 		{
 			name:        "accept /test all from trusted user",
@@ -734,7 +865,8 @@ func TestHandleGenericComment(t *testing.T) {
 		}
 
 		trigger := plugins.Trigger{
-			IgnoreOkToTest: tc.IgnoreOkToTest,
+			IgnoreOkToTest:       tc.IgnoreOkToTest,
+			ElideSkippedContexts: tc.ElideSkippedContexts,
 		}
 
 		log.Printf("running case %s", tc.name)
@@ -1446,6 +1578,283 @@ func TestTestAllFilter(t *testing.T) {
 				if actualDefault != expectedDefault {
 					t.Errorf("%s: filter did not determine default correctly, expected %v but got %v for %v", testCase.name, expectedDefault, actualDefault, presubmit.Name)
 				}
+			}
+		})
+	}
+}
+
+func TestDetermineSkippedPresubmits(t *testing.T) {
+	var testCases = []struct {
+		name                      string
+		toTrigger, toSkipSuperset []config.Presubmit
+		expectedToSkip            []config.Presubmit
+	}{
+		{
+			name:           "no inputs leads to no output",
+			toTrigger:      []config.Presubmit{},
+			toSkipSuperset: []config.Presubmit{},
+			expectedToSkip: nil,
+		},
+		{
+			name:           "no superset of skips to choose from leads to no output",
+			toTrigger:      []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}},
+			toSkipSuperset: []config.Presubmit{},
+			expectedToSkip: nil,
+		},
+		{
+			name:           "disjoint sets of contexts leads to full skip set",
+			toTrigger:      []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "bar"}}},
+			toSkipSuperset: []config.Presubmit{{Reporter: config.Reporter{Context: "oof"}}, {Reporter: config.Reporter{Context: "rab"}}},
+			expectedToSkip: []config.Presubmit{{Reporter: config.Reporter{Context: "oof"}}, {Reporter: config.Reporter{Context: "rab"}}},
+		},
+		{
+			name:           "overlaps on context removes from skip set",
+			toTrigger:      []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "bar"}}},
+			toSkipSuperset: []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "rab"}}},
+			expectedToSkip: []config.Presubmit{{Reporter: config.Reporter{Context: "rab"}}},
+		},
+		{
+			name:           "full set of overlaps on context removes everything from skip set",
+			toTrigger:      []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "bar"}}},
+			toSkipSuperset: []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "bar"}}},
+			expectedToSkip: nil,
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			if actual, expected := determineSkippedPresubmits(testCase.toTrigger, testCase.toSkipSuperset), testCase.expectedToSkip; !reflect.DeepEqual(actual, expected) {
+				t.Errorf("%s: incorrect skipped presubmits determined: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			}
+		})
+	}
+}
+
+type fakeChangesGetter struct {
+	shouldError bool
+}
+
+func (c *fakeChangesGetter) GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error) {
+	if c.shouldError {
+		return nil, errors.New("error getting changes")
+	}
+	return nil, nil
+}
+
+func TestFilterPresubmits(t *testing.T) {
+	var testCases = []struct {
+		name                              string
+		filter                            filter
+		presubmits                        []config.Presubmit
+		changesError                      bool
+		expectedToTrigger, expectedToSkip []config.Presubmit
+		expectErr                         bool
+	}{
+		{
+			name: "nothing matches, nothing to run or skip",
+			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+				return false, false, false
+			},
+			presubmits: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "ignored"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "ignored"},
+				Reporter: config.Reporter{Context: "second"},
+			}},
+			changesError:      false,
+			expectedToTrigger: nil,
+			expectedToSkip:    nil,
+			expectErr:         false,
+		},
+		{
+			name: "everything matches and is forced to run, nothing to skip",
+			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+				return true, true, true
+			},
+			presubmits: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "second"},
+			}},
+			changesError: false,
+			expectedToTrigger: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "second"},
+			}},
+			expectedToSkip: nil,
+			expectErr:      false,
+		},
+		{
+			name: "error detecting if something should run, nothing to run or skip",
+			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+				return true, false, false
+			},
+			presubmits: []config.Presubmit{{
+				JobBase:             config.JobBase{Name: "errors"},
+				Reporter:            config.Reporter{Context: "first"},
+				RegexpChangeMatcher: config.RegexpChangeMatcher{RunIfChanged: "oopsie"},
+			}, {
+				JobBase:  config.JobBase{Name: "ignored"},
+				Reporter: config.Reporter{Context: "second"},
+			}},
+			changesError:      true,
+			expectedToTrigger: nil,
+			expectedToSkip:    nil,
+			expectErr:         true,
+		},
+		{
+			name: "some things match and are forced to run, nothing to skip",
+			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+				return p.Name == "should-trigger", true, true
+			},
+			presubmits: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "ignored"},
+				Reporter: config.Reporter{Context: "second"},
+			}},
+			changesError: false,
+			expectedToTrigger: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "first"},
+			}},
+			expectedToSkip: nil,
+			expectErr:      false,
+		},
+		{
+			name: "everything matches and some things are forced to run, others should be skipped",
+			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+				return true, p.Name == "should-trigger", p.Name == "should-trigger"
+			},
+			presubmits: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "second"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-skip"},
+				Reporter: config.Reporter{Context: "third"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-skip"},
+				Reporter: config.Reporter{Context: "fourth"},
+			}},
+			changesError: false,
+			expectedToTrigger: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "second"},
+			}},
+			expectedToSkip: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-skip"},
+				Reporter: config.Reporter{Context: "third"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-skip"},
+				Reporter: config.Reporter{Context: "fourth"},
+			}},
+			expectErr: false,
+		},
+		{
+			name: "everything matches and some things are forced to run, others should be skipped, overlapping contexts filtered out",
+			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+				return true, p.Name == "should-trigger", p.Name == "should-trigger"
+			},
+			presubmits: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "second"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-skip"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-skip"},
+				Reporter: config.Reporter{Context: "fourth"},
+			}},
+			changesError: false,
+			expectedToTrigger: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "second"},
+			}},
+			expectedToSkip: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-skip"},
+				Reporter: config.Reporter{Context: "fourth"},
+			}},
+			expectErr: false,
+		},
+		{
+			name: "everything matches and some things are forced to run, others should be skipped, overlapping contexts filtered out even if skipped comes first in the list",
+			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+				return true, p.Name == "should-trigger", p.Name == "should-trigger"
+			},
+			presubmits: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-skip"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "second"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-skip"},
+				Reporter: config.Reporter{Context: "fourth"},
+			}},
+			changesError: false,
+			expectedToTrigger: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "second"},
+			}},
+			expectedToSkip: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-skip"},
+				Reporter: config.Reporter{Context: "fourth"},
+			}},
+			expectErr: false,
+		},
+	}
+
+	pr := &github.PullRequest{
+		Base: github.PullRequestBranch{
+			Repo: github.Repo{
+				Owner: github.User{
+					Login: "org",
+				},
+				Name: "repo",
+			},
+			Ref: "foobar",
+		},
+		Number: 1,
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actualToTrigger, actualToSkip, err := filterPresubmits(testCase.filter, &fakeChangesGetter{shouldError: testCase.changesError}, pr, testCase.presubmits)
+			if testCase.expectErr && err == nil {
+				t.Errorf("%s: expected an error filtering presubmits, but got none", testCase.name)
+			}
+			if !testCase.expectErr && err != nil {
+				t.Errorf("%s: expected no error filtering presubmits, but got one: %v", testCase.name, err)
+			}
+			if !reflect.DeepEqual(actualToTrigger, testCase.expectedToTrigger) {
+				t.Errorf("%s: incorrect set of presubmits to skip: %s", testCase.name, diff.ObjectReflectDiff(actualToTrigger, testCase.expectedToTrigger))
+			}
+			if !reflect.DeepEqual(actualToSkip, testCase.expectedToSkip) {
+				t.Errorf("%s: incorrect set of presubmits to skip: %s", testCase.name, diff.ObjectReflectDiff(actualToSkip, testCase.expectedToSkip))
 			}
 		})
 	}

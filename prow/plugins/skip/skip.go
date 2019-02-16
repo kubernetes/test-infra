@@ -95,7 +95,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 	}
 
-	filteredPresubmits, err := trigger.FilterPresubmits(honorOkToTest, gc, e.Body, pr, presubmits)
+	filteredPresubmits, _, err := trigger.FilterPresubmits(honorOkToTest, gc, e.Body, pr, presubmits)
 	if err != nil {
 		resp := fmt.Sprintf("Cannot get combined status for PR #%d in %s/%s: %v", number, org, repo, err)
 		log.Warn(resp)

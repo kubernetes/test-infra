@@ -110,11 +110,11 @@ func handleGenericComment(c Client, trigger *plugins.Trigger, gc github.GenericC
 		}
 	}
 
-	toTest, err := FilterPresubmits(HonorOkToTest(trigger), c.GitHubClient, gc.Body, pr, c.Config.Presubmits[gc.Repo.FullName])
+	toTest, toSkip, err := FilterPresubmits(HonorOkToTest(trigger), c.GitHubClient, gc.Body, pr, c.Config.Presubmits[gc.Repo.FullName])
 	if err != nil {
 		return err
 	}
-	return RunRequested(c, pr, toTest, gc.GUID)
+	return runAndSkipJobs(c, pr, toTest, toSkip, gc.GUID, trigger.ElideSkippedContexts)
 }
 
 func HonorOkToTest(trigger *plugins.Trigger) bool {
@@ -141,22 +141,27 @@ type GitHubClient interface {
 // If a comment that we get matches more than one of the above patterns, we
 // consider the set of matching presubmits the union of the results from the
 // matching cases.
-func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string, pr *github.PullRequest, presubmits []config.Presubmit) ([]config.Presubmit, error) {
+func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string, pr *github.PullRequest, presubmits []config.Presubmit) ([]config.Presubmit, []config.Presubmit, error) {
 	org, repo, sha := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Head.SHA
 	filter, err := presubmitFilter(honorOkToTest, gitHubClient, body, org, repo, sha)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	return filterPresubmits(filter, gitHubClient, pr, presubmits)
 }
 
-// filterPresubmits determines which presubmits should run by evaluating the
-// user-provided filter.
-func filterPresubmits(filter filter, gitHubClient GitHubClient, pr *github.PullRequest, presubmits []config.Presubmit) ([]config.Presubmit, error) {
+type changesGetter interface {
+	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+}
+
+// filterPresubmits determines which presubmits should run and which should be skipped
+// by evaluating the user-provided filter.
+func filterPresubmits(filter filter, gitHubClient changesGetter, pr *github.PullRequest, presubmits []config.Presubmit) ([]config.Presubmit, []config.Presubmit, error) {
 	org, repo, number, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Base.Ref
 	changes := config.NewGitHubDeferredChangedFilesProvider(gitHubClient, org, repo, number)
-	var filteredPresubmits []config.Presubmit
+	var toTrigger []config.Presubmit
+	var toSkipSuperset []config.Presubmit
 	for _, presubmit := range presubmits {
 		matches, forced, defaults := filter(presubmit)
 		if !matches {
@@ -164,13 +169,33 @@ func filterPresubmits(filter filter, gitHubClient GitHubClient, pr *github.PullR
 		}
 		shouldRun, err := presubmit.ShouldRun(branch, changes, forced, defaults)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if shouldRun {
-			filteredPresubmits = append(filteredPresubmits, presubmit)
+			toTrigger = append(toTrigger, presubmit)
+		} else {
+			toSkipSuperset = append(toSkipSuperset, presubmit)
 		}
 	}
-	return filteredPresubmits, nil
+	return toTrigger, determineSkippedPresubmits(toTrigger, toSkipSuperset), nil
+}
+
+// determineSkippedPresubmits identifies the largest set of contexts we can actually
+// post skipped contexts for, given a set of presubmits we're triggering. We don't
+// want to skip a job that posts a context that will be written to by a job we just
+// identified for triggering or the skipped context will override the triggered one
+func determineSkippedPresubmits(toTrigger, toSkipSuperset []config.Presubmit) []config.Presubmit {
+	triggeredContexts := sets.NewString()
+	for _, presubmit := range toTrigger {
+		triggeredContexts.Insert(presubmit.Context)
+	}
+	var toSkip []config.Presubmit
+	for _, presubmit := range toSkipSuperset {
+		if !triggeredContexts.Has(presubmit.Context) {
+			toSkip = append(toSkip, presubmit)
+		}
+	}
+	return toSkip
 }
 
 type statusGetter interface {

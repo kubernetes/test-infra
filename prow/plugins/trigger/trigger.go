@@ -21,9 +21,10 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-
+	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -184,6 +185,47 @@ func TrustedUser(ghc trustedUserClient, trigger *plugins.Trigger, user, org, rep
 	return member, nil
 }
 
+func skippedStatusFor(context string) github.Status {
+	return github.Status{
+		State:       github.StatusSuccess,
+		Context:     context,
+		Description: "Skipped.",
+	}
+}
+
+// runAndSkipJobs executes the config.Presubmits that are requested and posts skipped statuses
+// for the reporting jobs that are skipped
+func runAndSkipJobs(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, skippedJobs []config.Presubmit, eventGUID string, elideSkippedContexts bool) error {
+	if err := validateContextOverlap(requestedJobs, skippedJobs); err != nil {
+		c.Logger.WithError(err).Warn("Could not run or skip requested jobs, overlapping contexts.")
+		return err
+	}
+	runErr := RunRequested(c, pr, requestedJobs, eventGUID)
+	var skipErr error
+	if !elideSkippedContexts {
+		skipErr = skipRequested(c, pr, skippedJobs)
+	}
+
+	return errorutil.NewAggregate(runErr, skipErr)
+}
+
+// validateContextOverlap ensures that there will be no overlap in contexts between a set of jobs running and a set to skip
+func validateContextOverlap(toRun, toSkip []config.Presubmit) error {
+	requestedContexts := sets.NewString()
+	for _, job := range toRun {
+		requestedContexts.Insert(job.Context)
+	}
+	skippedContexts := sets.NewString()
+	for _, job := range toSkip {
+		skippedContexts.Insert(job.Context)
+	}
+	if overlap := requestedContexts.Intersection(skippedContexts).List(); len(overlap) > 0 {
+		return fmt.Errorf("the following contexts are both triggered and skipped: %s", strings.Join(overlap, ", "))
+	}
+
+	return nil
+}
+
 // RunRequested executes the config.Presubmits that are requested
 func RunRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, eventGUID string) error {
 	baseSHA, err := c.GitHubClient.GetRef(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, "heads/"+pr.Base.Ref)
@@ -197,11 +239,24 @@ func RunRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presu
 		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
 		if _, err := c.ProwJobClient.Create(&pj); err != nil {
+			c.Logger.WithError(err).Error("Failed to create prowjob.")
 			errors = append(errors, err)
 		}
 	}
-	if len(errors) > 0 {
-		return fmt.Errorf("errors starting jobs: %v", errors)
+	return errorutil.NewAggregate(errors...)
+}
+
+// skipRequested posts skipped statuses for the config.Presubmits that are requested
+func skipRequested(c Client, pr *github.PullRequest, skippedJobs []config.Presubmit) error {
+	var errors []error
+	for _, job := range skippedJobs {
+		if job.SkipReport {
+			continue
+		}
+		c.Logger.Infof("Skipping %s build.", job.Name)
+		if err := c.GitHubClient.CreateStatus(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Head.SHA, skippedStatusFor(job.Context)); err != nil {
+			errors = append(errors, err)
+		}
 	}
-	return nil
+	return errorutil.NewAggregate(errors...)
 }
