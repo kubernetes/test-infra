@@ -111,10 +111,15 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	approveConfig := map[string]string{}
 	for _, repo := range enabledRepos {
 		parts := strings.Split(repo, "/")
-		if len(parts) != 2 {
+		var opts *plugins.Approve
+		switch len(parts) {
+		case 1:
+			opts = optionsForRepo(config, repo, "")
+		case 2:
+			opts = optionsForRepo(config, parts[0], parts[1])
+		default:
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
 		}
-		opts := optionsForRepo(config, parts[0], parts[1])
 		approveConfig[repo] = fmt.Sprintf("Pull requests %s require an associated issue.<br>Pull request authors %s implicitly approve their own PRs.<br>The /lgtm [cancel] command(s) %s act as approval.<br>A GitHub approved or changes requested review %s act as approval or cancel respectively.", doNot(opts.IssueRequired), doNot(opts.HasSelfApproval()), willNot(opts.LgtmActsAsApprove), willNot(opts.ConsiderReviewState()))
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
