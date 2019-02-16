@@ -44,11 +44,17 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	configInfo := map[string]string{}
 	for _, orgRepo := range enabledRepos {
 		parts := strings.Split(orgRepo, "/")
-		if len(parts) != 2 {
+		var trigger *plugins.Trigger
+		switch len(parts) {
+		case 1:
+			trigger = config.TriggerFor(orgRepo, "")
+		case 2:
+			trigger = config.TriggerFor(parts[0], parts[1])
+		default:
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", orgRepo)
 		}
-		org, repoName := parts[0], parts[1]
-		if trigger := config.TriggerFor(org, repoName); trigger != nil && trigger.TrustedOrg != "" {
+		org := parts[0]
+		if trigger != nil && trigger.TrustedOrg != "" {
 			org = trigger.TrustedOrg
 		}
 		configInfo[orgRepo] = fmt.Sprintf("The trusted Github organization for this repository is %q.", org)
