@@ -57,6 +57,7 @@ func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, e
 	if err := runCommands(g.commandsForBaseRef(refs, gitUserName, gitUserEmail, cookiePath)); err != nil {
 		return record
 	}
+
 	timestamp, err := g.gitHeadTimestamp()
 	if err != nil {
 		timestamp = int(time.Now().Unix())
@@ -64,6 +65,14 @@ func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, e
 	if err := runCommands(g.commandsForPullRefs(refs, timestamp)); err != nil {
 		return record
 	}
+
+	finalSHA, err := g.gitRevParse()
+	if err != nil {
+		logrus.WithError(err).Warnf("Cannot resolve finalSHA for ref %#v", refs)
+	} else {
+		record.FinalSHA = finalSHA
+	}
+
 	return record
 }
 
@@ -166,6 +175,17 @@ func gitTimestampEnvs(timestamp int) []string {
 		fmt.Sprintf("GIT_AUTHOR_DATE=%d", timestamp),
 		fmt.Sprintf("GIT_COMMITTER_DATE=%d", timestamp),
 	}
+}
+
+// gitRevParse returns current commit from HEAD in a git tree
+func (g *gitCtx) gitRevParse() (string, error) {
+	gitRevParseCommand := g.gitCommand("rev-parse", "HEAD")
+	_, commit, err := gitRevParseCommand.run()
+	if err != nil {
+		logrus.WithError(err).Error("git rev-parse HEAD failed!")
+		return "", err
+	}
+	return commit, nil
 }
 
 // commandsForPullRefs returns the list of commands needed to fetch and
