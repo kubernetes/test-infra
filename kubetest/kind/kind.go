@@ -335,28 +335,8 @@ func (d *Deployer) Up() error {
 func (d *Deployer) IsUp() error {
 	log.Println("kind.go:IsUp()")
 
-	// Proceed only if a cluster exists.
-	exists, err := d.clusterExists()
-	if err != nil {
-		return err
-	}
-	if !exists {
-		log.Printf("kind.go:IsUp(): no such cluster %q; skipping IsUp()!", d.kindClusterName)
-		return nil
-	}
-
-	// Obtain the path of the kubeconfig.
-	path, err := d.getKubeConfigPath()
-	if err != nil {
-		return err
-	}
-
-	// Check if kubectl reports nodes for that kubeconfig file.
+	// Check if kubectl reports nodes.
 	cmd, err := d.KubectlCommand()
-	cmd.Env = append(cmd.Env, "KUBECONFIG="+path)
-	if err != nil {
-		return err
-	}
 	cmd.Args = append(cmd.Args, []string{"get", "nodes", "--no-headers"}...)
 	o, err := d.control.Output(cmd)
 	if err != nil {
@@ -417,7 +397,7 @@ func (d *Deployer) TestSetup() error {
 
 // clusterExists checks if a kind cluster with 'name' exists
 func (d *Deployer) clusterExists() (bool, error) {
-	log.Printf("kind.go:clusterExists(): %s", d.kindClusterName)
+	log.Printf("kind.go:clusterExists()")
 
 	cmd := exec.Command("kind")
 	cmd.Args = append(cmd.Args, []string{"get", "clusters", flagLogLevel}...)
@@ -428,7 +408,8 @@ func (d *Deployer) clusterExists() (bool, error) {
 
 	lines := strings.Split(string(out), "\n")
 	for _, line := range lines {
-		if strings.Contains(line, d.kindClusterName) {
+		if line == d.kindClusterName {
+			log.Printf("kind.go:clusterExists(): found %q", d.kindClusterName)
 			return true, nil
 		}
 	}
