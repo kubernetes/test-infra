@@ -2218,6 +2218,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-rotten
 - name: periodic-test-infra-close
   gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-close
+- name: periodic-api-review-help
+  gcs_prefix: kubernetes-jenkins/logs/periodic-api-review-help
 - name: periodic-test-infra-retester
   gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-retester
 - name: periodic-secping
@@ -6763,6 +6765,9 @@ dashboards:
   - name: close
     description: Closes rotten issues after 30d of inactivity
     test_group_name: periodic-test-infra-close
+  - name: api-review-help
+    description: Adds API review process description to kind/api-change PRs
+    test_group_name: periodic-api-review-help
   - name: secping
     description: files bugs for SECURITY_CONTACTS
     test_group_name: periodic-secping
