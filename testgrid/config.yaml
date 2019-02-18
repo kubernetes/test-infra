@@ -4669,9 +4669,8 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet
   - name: gce-cos-master-default
     test_group_name: ci-kubernetes-e2e-gci-gce
-  # https://github.com/kubernetes/kubernetes/issues/73444
-  #- name: kops-aws-master
-  #  test_group_name: ci-kubernetes-e2e-kops-aws
+  - name: kops-aws-master
+    test_group_name: ci-kubernetes-e2e-kops-aws
   - name: gce-device-plugin-gpu-master
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
   - name: gce-cos-master-slow
@@ -4873,9 +4872,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
   - name: gce-device-plugin-gpu-1.13
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
-  # https://github.com/kubernetes/kubernetes/issues/73444
-  #- name: kops-aws-1.13
-  #  test_group_name: ci-kubernetes-e2e-kops-aws-beta
+  - name: kops-aws-1.13
+    test_group_name: ci-kubernetes-e2e-kops-aws-beta
   - name: node-kubelet-1.13
     test_group_name: ci-kubernetes-node-kubelet-beta
   - name: gci-gce-scalability-1.13
@@ -5028,9 +5026,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
   - name: gce-cos-1.12-reboot
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-reboot
-  # https://github.com/kubernetes/kubernetes/issues/73444
-  #- name: kops-aws-1.12
-  #  test_group_name: ci-kubernetes-e2e-kops-aws-stable1
+  - name: kops-aws-1.12
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable1
   - name: node-kubelet-1.12
     test_group_name: ci-kubernetes-node-kubelet-stable1
   - name: gce-device-plugin-gpu-1.12
@@ -5276,9 +5273,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-serial
   - name: gce-cos-1.10-slow
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-slow
-  # https://github.com/kubernetes/kubernetes/issues/73444
-  #- name: kops-aws-1.10
-  #  test_group_name: ci-kubernetes-e2e-kops-aws-stable3
+  - name: kops-aws-1.10
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: gci-gce-scalability-1.10
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable3
 
