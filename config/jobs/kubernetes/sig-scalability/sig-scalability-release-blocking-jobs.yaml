@@ -140,6 +140,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=e2e-big-beta
+      # Don't override metrics-bind-address in 1.13
+      - --env=KUBEPROXY_TEST_ARGS=--profiling
       - --extract=ci/k8s-beta
       - --gcp-node-image=gci
       - --gcp-nodes=100
@@ -183,6 +185,8 @@ periodics:
       # Use default kube-qps and kube-api-burst flag values.
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling
       - --env=SCHEDULER_TEST_ARGS=--profiling
+      # Don't override metrics-bind-address in 1.12
+      - --env=KUBEPROXY_TEST_ARGS=--profiling
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
       - --gcp-nodes=100
@@ -226,6 +230,8 @@ periodics:
       # Use default kube-qps and kube-api-burst flag values.
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling
       - --env=SCHEDULER_TEST_ARGS=--profiling
+      # Don't override metrics-bind-address in 1.11
+      - --env=KUBEPROXY_TEST_ARGS=--profiling
       - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
       - --gcp-nodes=100
