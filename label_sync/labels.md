@@ -47,6 +47,7 @@ larger set of contributors to apply/remove them.
 
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
+| <a id="api-review" href="#api-review">`api-review`</a> | Categorizes an issue or PR as actively needing an API review. See https://git.k8s.io/community/sig-architecture/api-review-process.md| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/licensing" href="#area/licensing">`area/licensing`</a> | Issues or PRs related to Kubernetes licensing| label | |
 | <a id="committee/conduct" href="#committee/conduct">`committee/conduct`</a> | Denotes an issue or PR intended to be handled by the code of conduct committee.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="committee/product-security" href="#committee/product-security">`committee/product-security`</a> | Denotes an issue or PR intended to be handled by the product security committee.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
