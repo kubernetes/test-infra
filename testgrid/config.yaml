@@ -3350,8 +3350,11 @@ test_groups:
 - name: pull-aws-alb-ingress-controller-lint
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-alb-ingress-controller-lint
   num_columns_recent: 30
-- name: pull-aws-alb-ingress-controller-test
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-alb-ingress-controller-test
+- name: pull-aws-alb-ingress-controller-unit-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-alb-ingress-controller-unit-test
+  num_columns_recent: 30
+- name: pull-aws-alb-ingress-controller-e2e-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-alb-ingress-controller-e2e-test
   num_columns_recent: 30
 - name: pull-cloud-provider-aws-check
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-aws-check
@@ -5734,9 +5737,12 @@ dashboards:
   - name: lint
     test_group_name: pull-aws-alb-ingress-controller-lint
     description: "aws alb ingress controller code lint"
-  - name: test
-    test_group_name: pull-aws-alb-ingress-controller-test
-    description: "aws alb ingress controller tests"
+  - name: unit test
+    test_group_name: pull-aws-alb-ingress-controller-unit-test
+    description: "aws alb ingress controller unit tests"
+  - name: e2e test
+    test_group_name: pull-aws-alb-ingress-controller-e2e-test
+    description: "aws alb ingress controller e2e tests"
 
 - name: sig-aws-cloud-provider-aws
   dashboard_tab:
