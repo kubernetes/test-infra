@@ -82,7 +82,9 @@ Once your deployment files are updated, please update these resources on your cl
 
 ```shell
 # Set the kubectl context you want to use
-export STABLE_PROW_CLUSTER=gke_my-project_my-zone_my-cluster # or whatever the correct value is
+export PROW_CLUSTER_OVERRIDE=gke_my-project_my-zone_my-cluster # or whatever the correct value is
+export BUILD_CLUSTER_OVERRIDE=gke_my-project_my-zone_my-cluster # or whatever the correct value is
+
 # Generally just do
 bazel run //prow/cluster:production.apply # deploy everything
 
