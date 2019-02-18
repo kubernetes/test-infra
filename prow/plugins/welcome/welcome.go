@@ -51,10 +51,15 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	welcomeConfig := map[string]string{}
 	for _, repo := range enabledRepos {
 		parts := strings.Split(repo, "/")
-		if len(parts) != 2 {
+		var messageTemplate string
+		switch len(parts) {
+		case 1:
+			messageTemplate = welcomeMessageForRepo(config, repo, "")
+		case 2:
+			messageTemplate = welcomeMessageForRepo(config, parts[0], parts[1])
+		default:
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
 		}
-		messageTemplate := welcomeMessageForRepo(config, parts[0], parts[1])
 		welcomeConfig[repo] = fmt.Sprintf("The welcome plugin is configured to post using following welcome template: %s.", messageTemplate)
 	}
 
