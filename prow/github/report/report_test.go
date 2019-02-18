@@ -18,6 +18,7 @@ package report
 
 import (
 	"fmt"
+	"k8s.io/test-infra/prow/plugins"
 	"strings"
 	"testing"
 
@@ -31,38 +32,11 @@ func TestParseIssueComment(t *testing.T) {
 		context          string
 		state            string
 		ics              []github.IssueComment
+		sha              string
 		expectedDeletes  []int
 		expectedContexts []string
 		expectedUpdate   int
 	}{
-		{
-			name:    "should delete old style comments",
-			context: "Jenkins foo test",
-			state:   github.StatusSuccess,
-			ics: []github.IssueComment{
-				{
-					User: github.User{Login: "k8s-ci-robot"},
-					Body: "Jenkins foo test **failed** for such-and-such.",
-					ID:   12345,
-				},
-				{
-					User: github.User{Login: "someone-else"},
-					Body: "Jenkins foo test **failed**!? Why?",
-					ID:   12356,
-				},
-				{
-					User: github.User{Login: "k8s-ci-robot"},
-					Body: "Jenkins foo test **failed** for so-and-so.",
-					ID:   12367,
-				},
-				{
-					User: github.User{Login: "k8s-ci-robot"},
-					Body: "Jenkins bar test **failed** for something-or-other.",
-					ID:   12378,
-				},
-			},
-			expectedDeletes: []int{12345, 12367},
-		},
 		{
 			name:             "should create a new comment",
 			context:          "bla test",
@@ -120,8 +94,8 @@ func TestParseIssueComment(t *testing.T) {
 					ID:   123,
 				},
 			},
-			expectedDeletes:  []int{123},
 			expectedContexts: []string{"bla test"},
+			expectedUpdate:   123,
 		},
 		{
 			name:    "should preserve old results when updating",
@@ -134,8 +108,8 @@ func TestParseIssueComment(t *testing.T) {
 					ID:   123,
 				},
 			},
-			expectedDeletes:  []int{123},
 			expectedContexts: []string{"bla test", "foo test"},
+			expectedUpdate:   123,
 		},
 		{
 			name:    "should merge duplicates",
@@ -153,11 +127,12 @@ func TestParseIssueComment(t *testing.T) {
 					ID:   124,
 				},
 			},
-			expectedDeletes:  []int{123, 124},
+			expectedDeletes:  []int{123},
+			expectedUpdate:   124,
 			expectedContexts: []string{"bla test", "foo test"},
 		},
 		{
-			name:    "should update an old comment when a test passes",
+			name:    "should update existing comment to remove job that passes",
 			context: "bla test",
 			state:   github.StatusSuccess,
 			ics: []github.IssueComment{
@@ -171,12 +146,74 @@ func TestParseIssueComment(t *testing.T) {
 			expectedContexts: []string{"foo test"},
 			expectedUpdate:   123,
 		},
+		{
+			name:    "should update existing comment for existing job on the same commit",
+			context: "bla test",
+			state:   github.StatusFailure,
+			ics: []github.IssueComment{
+				{
+					User: github.User{Login: "k8s-ci-robot"},
+					Body: "sha123\n--- | --- | ---\nbla test | wow | aye\n\n" + commentTag,
+					ID:   123,
+				},
+			},
+			sha:              "sha123",
+			expectedDeletes:  []int{},
+			expectedContexts: []string{"bla test"},
+			expectedUpdate:   123,
+		},
+		{
+			name:    "should update existing comment to add failure about new job on the same commit",
+			context: "foo test",
+			state:   github.StatusFailure,
+			ics: []github.IssueComment{
+				{
+					User: github.User{Login: "k8s-ci-robot"},
+					Body: "sha123\n--- | --- | ---\nbla test | wow | aye\n\n" + commentTag,
+					ID:   123,
+				},
+			},
+			sha:              "sha123",
+			expectedDeletes:  []int{},
+			expectedContexts: []string{"bla test", "foo test"},
+			expectedUpdate:   123,
+		},
+		{
+			name:    "should create new comment for the same job but on a new commit",
+			context: "bla test",
+			state:   github.StatusFailure,
+			ics: []github.IssueComment{
+				{
+					User: github.User{Login: "k8s-ci-robot"},
+					Body: "sha123\n--- | --- | ---\nbla test | wow | aye\n\n" + commentTag,
+					ID:   123,
+				},
+			},
+			sha:              "sha456",
+			expectedDeletes:  []int{123},
+			expectedContexts: []string{"bla test"},
+		},
+		{
+			name:    "should create new comment for a new job on a new commit",
+			context: "foo test",
+			state:   github.StatusFailure,
+			ics: []github.IssueComment{
+				{
+					User: github.User{Login: "k8s-ci-robot"},
+					Body: "sha123\n--- | --- | ---\nbla test | wow | aye\n\n" + commentTag,
+					ID:   123,
+				},
+			},
+			sha:              "sha456",
+			expectedDeletes:  []int{123},
+			expectedContexts: []string{"foo test"},
+		},
 	}
 	for _, tc := range testcases {
 		pj := prowapi.ProwJob{
 			Spec: prowapi.ProwJobSpec{
 				Context: tc.context,
-				Refs:    &prowapi.Refs{Pulls: []prowapi.Pull{{}}},
+				Refs:    &prowapi.Refs{Pulls: []prowapi.Pull{{SHA: tc.sha}}},
 			},
 			Status: prowapi.ProwJobStatus{
 				State: prowapi.ProwJobState(tc.state),
@@ -235,6 +272,9 @@ func (gh *fakeGhClient) CreateStatus(org, repo, ref string, s github.Status) err
 	gh.status = append(gh.status, s)
 	return nil
 
+}
+func (gh fakeGhClient) GetPullRequest(org, repo string, number int) (*github.PullRequest, error) {
+	return nil, nil
 }
 func (gh fakeGhClient) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
 	return nil, nil
@@ -535,5 +575,245 @@ func TestShouldReport(t *testing.T) {
 			t.Errorf("Unexpected result from test: %s.\nExpected: %v\nGot: %v",
 				tc.name, tc.report, r)
 		}
+	}
+}
+
+func TestGetOldEntries(t *testing.T) {
+	cases := []struct {
+		name            string
+		bodyLines       []string
+		expectedEntries []string
+	}{
+		{
+			name: "should parse a regular list of entries",
+			bodyLines: []string{
+				tableLine,
+				"a | foo | bar",
+				"b | foo | bar",
+			},
+			expectedEntries: []string{
+				"a | foo | bar",
+				"b | foo | bar",
+			},
+		},
+		{
+			name: "should stop tracking on empty line",
+			bodyLines: []string{
+				tableLine,
+				"a | foo | bar",
+				"b | foo | bar",
+				"",
+			},
+			expectedEntries: []string{
+				"a | foo | bar",
+				"b | foo | bar",
+			},
+		},
+		{
+			name: "should trim space in lines",
+			bodyLines: []string{
+				tableLine,
+				"    a | foo | bar",
+				"b | foo | bar    ",
+			},
+			expectedEntries: []string{
+				"a | foo | bar",
+				"b | foo | bar",
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			body := strings.Join(tc.bodyLines, "\n")
+			entries := strings.Join(getOldEntries(body), "\n")
+			expectedEntries := strings.Join(tc.expectedEntries, "\n")
+			if entries != expectedEntries {
+				t.Errorf("%s\nexpected entries:\n\n%s\n\nfound:\n\n%s", tc.name, expectedEntries, entries)
+			}
+		})
+	}
+}
+
+func TestGetNewEntries(t *testing.T) {
+	cases := []struct {
+		name            string
+		context         string
+		entries         []string
+		expectedEntries []string
+	}{
+		{
+			name: "should remove duplicate entry [1]",
+			entries: []string{
+				"a | foo | bar",
+				"a | foo | bar",
+			},
+			expectedEntries: []string{
+				"a | foo | bar",
+			},
+		},
+		{
+			name: "should remove duplicate entry [2]",
+			entries: []string{
+				"a | foo | bar",
+				"a | foo | bar",
+				"b | foo | bar",
+				"b | foo | bar",
+			},
+			expectedEntries: []string{
+				"a | foo | bar",
+				"b | foo | bar",
+			},
+		},
+		{
+			name:    "should remove existing entry if context is found [1]",
+			context: "test",
+			entries: []string{
+				"a | foo | bar",
+				"test | foo | bar",
+			},
+			expectedEntries: []string{
+				"a | foo | bar",
+			},
+		},
+		{
+			name:    "should remove existing entry if context is found [2]",
+			context: "test",
+			entries: []string{
+				"test | foo | bar",
+			},
+		},
+		{
+			name:    "should remove existing entry if context is found [3]",
+			context: "test",
+			entries: []string{
+				"test | foo | bar",
+				"test | foo | bar",
+			},
+			expectedEntries: []string{},
+		},
+		{
+			name: "should keep unique old context entries",
+			entries: []string{
+				"a | foo | bar",
+				"b | foo | bar",
+			},
+			expectedEntries: []string{
+				"a | foo | bar",
+				"b | foo | bar",
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			exp := strings.Join(tc.expectedEntries, "\n")
+			res := strings.Join(getNewEntries(tc.context, tc.entries), "\n")
+			if res != exp {
+				t.Errorf("%s\nexpected entries:\n\n%s\n\nfound:\n\n%s", tc.name, exp, res)
+			}
+		})
+	}
+}
+
+func TestCreateComment(t *testing.T) {
+	cases := []struct {
+		name          string
+		pj            prowapi.ProwJob
+		entries       []string
+		commits       []github.RepositoryCommit
+		expectedLines []string
+	}{
+		{
+			name:    "should return valid comment for single entry",
+			commits: []github.RepositoryCommit{{SHA: "1234"}, {SHA: "5678"}},
+			entries: []string{"context | foo | bar"},
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					Refs: &prowapi.Refs{
+						Pulls: []prowapi.Pull{
+							{Author: "someuser", SHA: "135734"},
+						},
+					},
+				},
+			},
+			expectedLines: []string{
+				"@someuser: The following test **failed** for commit 135734, say `/retest` to rerun them:",
+				"",
+				"Test name | Details | Rerun command",
+				"--- | --- | ---",
+				"context | foo | bar",
+				"",
+				"<details>",
+				"",
+				plugins.AboutThisBot,
+				"</details>",
+				commentTag,
+			},
+		},
+		{
+			name:    "should return valid comment for multiple entries",
+			commits: []github.RepositoryCommit{{SHA: "1234"}, {SHA: "5678"}},
+			entries: []string{"context | foo | bar", "context2 | foo | bar"},
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					Refs: &prowapi.Refs{
+						Pulls: []prowapi.Pull{
+							{Author: "someuser", SHA: "135734"},
+						},
+					},
+				},
+			},
+			expectedLines: []string{
+				"@someuser: The following tests **failed** for commit 135734, say `/retest` to rerun them:",
+				"",
+				"Test name | Details | Rerun command",
+				"--- | --- | ---",
+				"context | foo | bar",
+				"context2 | foo | bar",
+				"",
+				"<details>",
+				"",
+				plugins.AboutThisBot,
+				"</details>",
+				commentTag,
+			},
+		},
+		{
+			name:    "should return valid comment without commit list",
+			entries: []string{"context | foo | bar"},
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					Refs: &prowapi.Refs{
+						Pulls: []prowapi.Pull{
+							{Author: "someuser", SHA: "135734"},
+						},
+					},
+				},
+			},
+			expectedLines: []string{
+				"@someuser: The following test **failed** for commit 135734, say `/retest` to rerun them:",
+				"",
+				"Test name | Details | Rerun command",
+				"--- | --- | ---",
+				"context | foo | bar",
+				"",
+				"<details>",
+				"",
+				plugins.AboutThisBot,
+				"</details>",
+				commentTag,
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			comment, _ := createComment(nil, tc.pj, tc.entries)
+			lines := strings.Join(tc.expectedLines, "\n")
+			if comment != lines {
+				t.Errorf("%s\nexpected result:\n\n%s\n\ngot:\n\n%s\n", tc.name, lines, comment)
+			}
+		})
 	}
 }
