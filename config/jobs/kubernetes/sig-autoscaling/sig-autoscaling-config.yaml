@@ -84,7 +84,7 @@ periodics:
         privileged: true
 
 - name: ci-kubernetes-e2e-autoscaling-vpa-recommender
-  interval: 2h
+  interval: 3h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -95,7 +95,7 @@ periodics:
       args:
       - --repo=k8s.io/autoscaler=master
       - --root=/go/src
-      - --timeout=80
+      - --timeout=150
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
@@ -106,7 +106,7 @@ periodics:
       - --test=false
       - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
       - --test-cmd-args=recommender
-      - --timeout=60m
+      - --timeout=120m
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
