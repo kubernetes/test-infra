@@ -40,6 +40,8 @@ presets:
   # Allow one node to not be ready after cluster creation.
   - name: ALLOWED_NOTREADY_NODES
     value: 1
+  - name: LOG_DUMP_SYSTEMD_JOURNAL
+    value: "true"
 ### kubemark-gce-big
 - labels:
     preset-e2e-kubemark-gce-big: "true"
