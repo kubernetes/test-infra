@@ -40,6 +40,7 @@ presubmits:
         - "--root=/go/src"
         - "--service-account=/etc/service-account/service-account.json"
         - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=460"
         - "--scenario=kubernetes_e2e"
