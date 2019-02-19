@@ -74,13 +74,15 @@ periodics:
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
-      - --test-cmd-args=--ginkgo.focus=\[Conformance\] --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\] --minStartupPods=8
       - --timeout=120m
       env:
       - name: KUBE_GCE_ENABLE_IP_ALIASES
         value: "true"
       - name: NUM_WINDOWS_NODES
         value: "3"
+      - name: NUM_NODES
+        value: "2"
       - name: KUBERNETES_NODE_PLATFORM
         value: "windows"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-master
