@@ -25,11 +25,10 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/diff"
-	"sigs.k8s.io/yaml"
-
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
+	"sigs.k8s.io/yaml"
 )
 
 func TestOptions_Validate(t *testing.T) {
@@ -42,10 +41,7 @@ func TestOptions_Validate(t *testing.T) {
 			name: "all ok",
 			opt: options{
 				config: "dummy",
-				github: flagutil.GitHubOptions{
-					GitEndpoint: "https://github.com",
-					TokenPath:   "fake",
-				},
+				github: flagutil.NewGitHubOptions("fake"),
 			},
 			expectedErr: false,
 		},
@@ -53,10 +49,7 @@ func TestOptions_Validate(t *testing.T) {
 			name: "no config",
 			opt: options{
 				config: "",
-				github: flagutil.GitHubOptions{
-					GitEndpoint: "https://github.com",
-					TokenPath:   "fake",
-				},
+				github: flagutil.NewGitHubOptions("fake"),
 			},
 			expectedErr: true,
 		},
@@ -64,9 +57,7 @@ func TestOptions_Validate(t *testing.T) {
 			name: "no token, allow",
 			opt: options{
 				config: "dummy",
-				github: flagutil.GitHubOptions{
-					GitEndpoint: "https://github.com",
-				},
+				github: flagutil.NewGitHubOptions(""),
 			},
 			expectedErr: false,
 		},

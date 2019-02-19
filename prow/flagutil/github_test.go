@@ -17,6 +17,7 @@ limitations under the License.
 package flagutil
 
 import (
+	"flag"
 	"testing"
 )
 
@@ -24,54 +25,72 @@ func TestGithubOptions(t *testing.T) {
 
 	testCases := []struct {
 		name        string
-		endpoints   Strings
-		gitEndpoint string
-		tokenPath   string
+		flags       []string
 		expectedErr bool
 	}{
 		{
-			name:        "No token provided, we expect no errors",
-			endpoints:   NewStrings("https://github.mycorp.com/apis/v3"),
-			gitEndpoint: "https://github.mycorp.com",
-			tokenPath:   "",
+			name: "No token provided, we expect no errors",
+			flags: []string{
+				"--github-endpoint=https://github.mycorp.com/apis/v3",
+				"--git-endpoint=https://github.mycorp.com",
+			},
 			expectedErr: false,
 		},
 		{
-			name:        "Good github options provided, we expect no errors",
-			endpoints:   NewStrings("http://ghproxy", "https://api.github.com"),
-			gitEndpoint: "https://github.com",
-			tokenPath:   "token",
+			name: "multiple GitHub API endpoints provided, we expect no errors",
+			flags: []string{
+				"--github-endpoint=http://ghproxy",
+				"--github-endpoint=https://api.github.com",
+				"--git-endpoint=https://github.com",
+				"--github-token-path=token",
+			},
 			expectedErr: false,
 		},
 		{
-			name:        "Invalid git url provided, we expect an error",
-			endpoints:   NewStrings("http://github.mycorp.com/apis/v3", "http://apisgateway.mycorp.com/github"),
-			gitEndpoint: "://github.com",
-			tokenPath:   "token",
+			name: "Invalid git url provided, we expect an error",
+			flags: []string{
+				"--github-endpoint=http://github.mycorp.com/apis/v3",
+				"--github-endpoint=http://apisgateway.mycorp.com/github",
+				"--git-endpoint=://github.com",
+				"--github-token-path=token",
+			},
 			expectedErr: true,
 		},
 		{
-			name:        "Invalid github endpoint provided, we expect an error",
-			endpoints:   NewStrings("://github.mycorp.com/apis/v3", "http://apisgateway.mycorp.com/github"),
-			gitEndpoint: "http://github.com",
-			tokenPath:   "token",
+			name: "Invalid github endpoint provided, we expect an error",
+			flags: []string{
+				"--github-endpoint=://github.mycorp.com/apis/v3",
+				"--github-endpoint=http://apisgateway.mycorp.com/github",
+				"--git-endpoint=://github.com",
+				"--github-token-path=token",
+			},
 			expectedErr: true,
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			o := GitHubOptions{
-				endpoint:    testCase.endpoints,
-				GitEndpoint: testCase.gitEndpoint,
-				TokenPath:   testCase.tokenPath,
+			o := GitHubOptions{}
+			fs := flag.NewFlagSet(t.Name(), flag.ContinueOnError)
+			o.AddFlagsWithoutDefaultGithubTokenPath(fs)
+			err := fs.Parse(testCase.flags)
+			errNoDryRun := err
+			errWithDryRun := err
+			if err == nil {
+				errNoDryRun = o.Validate(false)
+				errWithDryRun = o.Validate(true)
 			}
-			err := o.Validate(false)
-			if testCase.expectedErr && err == nil {
-				t.Errorf("%s: expected an error but got none", testCase.name)
+			if testCase.expectedErr && errNoDryRun == nil {
+				t.Errorf("expected an error but got none")
 			}
-			if !testCase.expectedErr && err != nil {
-				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
+			if !testCase.expectedErr && errNoDryRun != nil {
+				t.Errorf("expected no error but got one: %v", err)
+			}
+			if testCase.expectedErr && errWithDryRun == nil {
+				t.Errorf("expected an error but got none")
+			}
+			if !testCase.expectedErr && errWithDryRun != nil {
+				t.Errorf("expected no error but got one: %v", err)
 			}
 		})
 	}

@@ -49,8 +49,11 @@ func New() (*LocalGit, *git.Client, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	base, _ := url.Parse("https://github.com")
-	c, err := git.NewClient(base)
+	c, err := git.NewClient(&url.URL{
+		Scheme: "",
+		Host:   "",
+		Path:   t,
+	})
 	if err != nil {
 		os.RemoveAll(t)
 		return nil, nil, err
@@ -62,11 +65,6 @@ func New() (*LocalGit, *git.Client, error) {
 
 	c.SetCredentials("", getSecret)
 
-	c.SetRemote(&url.URL{
-		Scheme: "",
-		Host:   "",
-		Path:   t,
-	})
 	return &LocalGit{
 		Dir: t,
 		Git: g,

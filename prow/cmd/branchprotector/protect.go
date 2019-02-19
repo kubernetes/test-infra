@@ -25,7 +25,6 @@ import (
 	"sync"
 
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"

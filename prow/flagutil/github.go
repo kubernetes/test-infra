@@ -22,18 +22,31 @@ import (
 	"net/url"
 
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 )
 
+const (
+	defaultAPIEndpoint = "https://api.github.com"
+	defaultGitEndpoint = "https://github.com"
+)
+
 // GitHubOptions holds options for interacting with GitHub.
 type GitHubOptions struct {
 	endpoint            Strings
-	GitEndpoint         string
+	gitEndpoint         URL
 	TokenPath           string
 	deprecatedTokenFile string
+}
+
+// NewGitHubOptions creates a new GitHup options instance with defaults.
+func NewGitHubOptions(tokenPath string) GitHubOptions {
+	return GitHubOptions{
+		endpoint:    NewStrings(defaultAPIEndpoint),
+		gitEndpoint: MustParseURL(defaultGitEndpoint),
+		TokenPath:   tokenPath,
+	}
 }
 
 // AddFlags injects GitHub options into the given FlagSet.
@@ -49,9 +62,10 @@ func (o *GitHubOptions) AddFlagsWithoutDefaultGithubTokenPath(fs *flag.FlagSet) 
 }
 
 func (o *GitHubOptions) addFlags(wantDefaultGithubTokenPath bool, fs *flag.FlagSet) {
-	o.endpoint = NewStrings("https://api.github.com")
+	o.endpoint = NewStrings(defaultAPIEndpoint)
 	fs.Var(&o.endpoint, "github-endpoint", "GitHub's API endpoint (may differ for enterprise).")
-	fs.StringVar(&o.GitEndpoint, "git-endpoint", "https://github.com", "GitHub endpoint (may differ for enterprise).")
+	o.gitEndpoint = MustParseURL(defaultGitEndpoint)
+	fs.Var(&o.gitEndpoint, "git-endpoint", "Base url for git repositories (may differ for enterprise).")
 	defaultGithubTokenPath := ""
 	if wantDefaultGithubTokenPath {
 		defaultGithubTokenPath = "/etc/github/oauth"
@@ -66,10 +80,6 @@ func (o *GitHubOptions) Validate(dryRun bool) error {
 		if _, err := url.ParseRequestURI(uri); err != nil {
 			return fmt.Errorf("invalid --github-endpoint URI: %q", uri)
 		}
-	}
-
-	if _, err := url.ParseRequestURI(o.GitEndpoint); err != nil {
-		return fmt.Errorf("invalid --git-endpoint URI: %q", o.GitEndpoint)
 	}
 
 	if o.deprecatedTokenFile != "" {
@@ -108,9 +118,7 @@ func (o *GitHubOptions) GitHubClient(secretAgent *secret.Agent, dryRun bool) (cl
 
 // GitClient returns a Git client.
 func (o *GitHubOptions) GitClient(secretAgent *secret.Agent, dryRun bool) (client *git.Client, err error) {
-	// We already validated this during flag validation
-	gitURL, _ := url.Parse(o.GitEndpoint)
-	client, err = git.NewClient(gitURL)
+	client, err = git.NewClient(o.gitEndpoint.URL)
 	if err != nil {
 		return nil, err
 	}

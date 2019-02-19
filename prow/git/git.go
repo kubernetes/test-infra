@@ -90,13 +90,6 @@ func NewClient(base *url.URL) (*Client, error) {
 	}, nil
 }
 
-// SetRemote sets the remote for the client. This is not thread-safe, and is
-// useful for testing. The client will clone from remote/org/repo, and Repo
-// objects spun out of the client will also hit that path.
-func (c *Client) SetRemote(remote *url.URL) {
-	c.base = remote
-}
-
 // SetCredentials sets credentials in the client to be used for pushing to
 // or pulling from remote repositories.
 func (c *Client) SetCredentials(user string, tokenGenerator func() []byte) {
@@ -110,11 +103,6 @@ func (c *Client) getCredentials() (string, string) {
 	c.credLock.RLock()
 	defer c.credLock.RUnlock()
 	return c.user, string(c.tokenGenerator())
-}
-
-// GetBase returns Client.base as a *url.URL
-func (c *Client) GetBase() *url.URL {
-	return c.base
 }
 
 func (c *Client) lockRepo(repo string) {
@@ -159,8 +147,8 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 		if err := os.MkdirAll(filepath.Dir(cache), os.ModePerm); err != nil && !os.IsExist(err) {
 			return nil, err
 		}
-		remote := Remote(c.base, user, pass, repo)
-		if b, err := retryCmd(c.logger, "", c.git, "clone", "--mirror", remote.String(), cache); err != nil {
+		remoteURL := remote(c.base, user, pass, repo)
+		if b, err := retryCmd(c.logger, "", c.git, "clone", "--mirror", remoteURL.String(), cache); err != nil {
 			return nil, fmt.Errorf("git cache clone error: %v. output: %s", err, string(b))
 		}
 	} else if err != nil {
@@ -294,17 +282,17 @@ func (r *Repo) Push(repo, branch string) error {
 		return errors.New("cannot push without credentials - configure your git client")
 	}
 	r.logger.Infof("Pushing to '%s/%s (branch: %s)'.", r.user, repo, branch)
-
-	remote := Remote(r.base, r.user, r.pass, r.user, repo)
-
-	_, err := r.gitCommand("push", remote.String(), branch)
-	return err
+	remoteURL := remote(r.base, r.user, r.pass, r.user, repo)
+	if b, err := r.gitCommand("push", remoteURL.String(), branch); err != nil {
+		return fmt.Errorf("git push failed: %v. output: %s", err, string(b))
+	}
+	return nil
 }
 
 // CheckoutPullRequest does exactly that.
 func (r *Repo) CheckoutPullRequest(number int) error {
 	r.logger.Infof("Fetching and checking out %s#%d.", r.repo, number)
-	if b, err := retryCmd(r.logger, r.Dir, r.git, "fetch", r.base.String()+"/"+r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number)); err != nil {
+	if b, err := retryCmd(r.logger, r.Dir, r.git, "fetch", remote(r.base, r.user, r.pass, r.repo).String(), fmt.Sprintf("pull/%d/head:pull%d", number, number)); err != nil {
 		return fmt.Errorf("git fetch failed for PR %d: %v. output: %s", number, err, string(b))
 	}
 	if b, err := r.gitCommand("checkout", fmt.Sprintf("pull%d", number)); err != nil {
@@ -322,16 +310,14 @@ func (r *Repo) Config(key, value string) error {
 	return nil
 }
 
-// Remote builds a remote url from user, pasword, and a slice of path items
-func Remote(base *url.URL, user string, pass string, pathItems ...string) *url.URL {
+// remote builds a remote url from user, pasword, and a slice of path items
+func remote(base *url.URL, user string, pass string, pathItems ...string) *url.URL {
 	copy := *base
 	if user != "" && pass != "" {
 		copy.User = url.UserPassword(user, pass)
 	}
-	if len(pathItems) != 0 {
-		fullpath := append([]string{copy.Path}, pathItems...)
-		copy.Path = filepath.Join(fullpath...)
-	}
+	fullpath := append([]string{copy.Path}, pathItems...)
+	copy.Path = filepath.Join(fullpath...)
 	return &copy
 }
 
@@ -342,7 +328,7 @@ func retryCmd(l *logrus.Entry, dir, cmd string, arg ...string) ([]byte, error) {
 	var err error
 	sleepyTime := time.Second
 	for i := 0; i < 3; i++ {
-		b, err := execWithDir(dir, cmd, arg...)
+		b, err = execWithDir(dir, cmd, arg...)
 		if err != nil {
 			l.Warningf("Running %s %v returned error %v with output %s.", cmd, arg, err, string(b))
 			time.Sleep(sleepyTime)
@@ -356,7 +342,7 @@ func retryCmd(l *logrus.Entry, dir, cmd string, arg ...string) ([]byte, error) {
 
 func (r *Repo) Diff(head, sha string) (changes []string, err error) {
 	r.logger.Infof("Diff head with %s'.", sha)
-	output, err := r.gitCommand("diff", head, sha, "--name-only").CombinedOutput()
+	output, err := r.gitCommand("diff", head, sha, "--name-only")
 	if err != nil {
 		return nil, err
 	}
