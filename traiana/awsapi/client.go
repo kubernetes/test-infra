@@ -4,6 +4,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/sirupsen/logrus"
+	"os"
+	"path/filepath"
 )
 
 type Client struct {
@@ -11,16 +14,27 @@ type Client struct {
 }
 
 func NewClient(o ClientOption) (*Client, error) {
-	config := aws.Config{
-		Region:      aws.String("eu-west-1"),
-	}
+	config := aws.Config{}
+	var sharedConfigFiles []string
 
+	// use the gcs CredentialsFile for AWS and assume that the config file is next to it
 	if o.CredentialsFile != "" {
 		config.Credentials = credentials.NewSharedCredentials(o.CredentialsFile, "default")
+
+		//k create secret generic aws-secret --from-file=service-account.json --from-file=config
+		dir, _ := filepath.Split(o.CredentialsFile)
+		configFile := filepath.Join(dir, "config")
+
+		if _, err := os.Stat(configFile); err != nil {
+			logrus.Warn("Config file not found: " + configFile)
+		} else {
+			sharedConfigFiles = append(sharedConfigFiles, configFile)
+		}
 	}
 
 	opts := session.Options {
 		Config: config,
+		SharedConfigFiles: sharedConfigFiles,
 		SharedConfigState: session.SharedConfigEnable,
 	}
 
