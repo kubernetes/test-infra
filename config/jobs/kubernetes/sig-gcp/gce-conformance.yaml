@@ -22,27 +22,6 @@ periodics:
 
 # manual-release-bump-required (add a job for the new version and delete the job for the oldest version)
 - interval: 6h
-  name: ci-kubernetes-gce-conformance-latest-1-10
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=220
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --extract=ci/latest-1.10
-      - --gcp-master-image=gci
-      - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
-      - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.10
-
-- interval: 6h
   name: ci-kubernetes-gce-conformance-latest-1-11
   labels:
     preset-service-account: "true"
@@ -117,14 +96,14 @@ periodics:
       - --bare
       - --scenario=kubernetes_e2e
       - --
-      - --extract=release/stable-1.10
+      - --extract=release/stable-1.14
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.10
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.14
 
 # manual-release-bump-required (add a job for the new version and delete the job for the oldest version)
 - interval: 6h

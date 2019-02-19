@@ -30,13 +30,13 @@ presubmits:
     always_run: true
     skip_report: false
     branches:
-      - release-1.14 # per-release job
+    - release-1.14 # per-release job
     spec:
       containers:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.13
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.14
         args:
         - verify
         env:
@@ -55,7 +55,7 @@ presubmits:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.12
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.13
         args:
         - verify
         env:
@@ -74,7 +74,7 @@ presubmits:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.11
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.12
         args:
         - verify
         env:
@@ -93,7 +93,7 @@ presubmits:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.11
         args:
         - verify
         env:

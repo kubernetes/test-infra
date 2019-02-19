@@ -52,44 +52,44 @@ presubmits:
     always_run: false
     optional: true
     branches:
-      - release-1.14 # per-release image
+    - release-1.14 # per-release image
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-        - args:
-            - --root=/go/src
-            - --repo=k8s.io/kubernetes=$(PULL_REFS)
-            - --repo=k8s.io/release
-            - --upload=gs://kubernetes-jenkins/pr-logs
-            - --timeout=90
-            - --scenario=kubernetes_e2e
-            - --
-            - --build=bazel
-            - --cluster=
-            - --deployment=gke
-            - --extract=local
-            - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-            - --gcp-node-image=gci
-            - --gcp-zone=us-west1-b
-            - --ginkgo-parallel=30
-            - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard
-            - --gke-environment=test
-            - '--gke-shape={"default":{"Nodes":4,"MachineType":"n1-standard-2"}}'
-            - --provider=gke
-            - --stage=gs://kubernetes-release-dev/ci
-            - --stage-suffix=pull-kubernetes-e2e-gke
-            - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-            - --timeout=65m
-          # Bazel needs privileged mode in order to sandbox builds.
-          securityContext:
-            privileged: true
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.14
-          resources:
-            requests:
-              memory: "6Gi"
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=90
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --deployment=gke
+        - --extract=local
+        - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+        - --gcp-node-image=gci
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard
+        - --gke-environment=test
+        - '--gke-shape={"default":{"Nodes":4,"MachineType":"n1-standard-2"}}'
+        - --provider=gke
+        - --stage=gs://kubernetes-release-dev/ci
+        - --stage-suffix=pull-kubernetes-e2e-gke
+        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+        - --timeout=65m
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.14
+        resources:
+          requests:
+            memory: "6Gi"
   - name: pull-kubernetes-e2e-gke
     always_run: false
     optional: true
@@ -212,7 +212,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.11
         resources:
           requests:
             memory: "6Gi"
