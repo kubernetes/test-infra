@@ -153,7 +153,7 @@ periodics:
         requests:
           cpu: 4
 
-  # manual-release-bump-required
+# manual-release-bump-required
 - interval: 2h
   name: ci-kubernetes-verify-beta
   labels:
@@ -218,7 +218,7 @@ periodics:
           cpu: 4
 
 # manual-release-bump-required
-- interval: 2h
+- interval: 6h
   name: ci-kubernetes-verify-stable2
   labels:
     preset-service-account: "true"
@@ -242,7 +242,7 @@ periodics:
           cpu: 4
 
 # manual-release-bump-required
-- interval: 6h
+- interval: 24h
   name: ci-kubernetes-verify-stable3
   labels:
     preset-service-account: "true"

@@ -96,7 +96,7 @@ periodics:
       - --bare
       - --scenario=kubernetes_e2e
       - --
-      - --extract=release/stable-1.14
+      - --extract=release/latest-1.14
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b

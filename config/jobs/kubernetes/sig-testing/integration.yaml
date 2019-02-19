@@ -131,7 +131,7 @@ periodics:
           cpu: 4
 
 # manual-release-bump-required
-- interval: 2h
+- interval: 6h
   name: ci-kubernetes-integration-stable2
   labels:
     preset-service-account: "true"
@@ -155,7 +155,7 @@ periodics:
           cpu: 4
 
 # manual-release-bump-required
-- interval: 6h
+- interval: 24h
   name: ci-kubernetes-integration-stable3
   labels:
     preset-service-account: "true"

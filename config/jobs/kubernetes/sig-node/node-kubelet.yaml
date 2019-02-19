@@ -332,7 +332,7 @@ periodics:
 
 # manual-release-bump-required
 - name: ci-kubernetes-node-kubelet-stable2
-  interval: 2h
+  interval: 6h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -360,7 +360,7 @@ periodics:
 
 # manual-release-bump-required
 - name: ci-kubernetes-node-kubelet-stable3
-  interval: 6h
+  interval: 24h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"

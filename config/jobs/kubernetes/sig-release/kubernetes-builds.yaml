@@ -76,7 +76,7 @@ periodics:
           cpu: 4
           memory: "8Gi"
 
-  # manual-release-bump-required
+# manual-release-bump-required
 - interval: 1h
   name: ci-kubernetes-build-beta
   labels:
@@ -86,35 +86,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
       args:
-      - --repo=k8s.io/kubernetes=release-1.13
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=180
-      - --scenario=kubernetes_build
-      - --
-      - --allow-dup
-      - --extra-publish-file=k8s-beta
-      - --hyperkube
-      - --registry=gcr.io/kubernetes-ci-images
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          cpu: 4
-          memory: "8Gi"
-
-# manual-release-bump-required
-- interval: 1h
-  name: ci-kubernetes-build-stable1
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
-      args:
-      - --repo=k8s.io/kubernetes=release-1.13
+      - --repo=k8s.io/kubernetes=release-1.14
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=180
@@ -134,7 +106,7 @@ periodics:
 
 # manual-release-bump-required
 - interval: 30m
-  name: ci-kubernetes-build-stable2
+  name: ci-kubernetes-build-stable1
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -142,7 +114,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
       args:
-      - --repo=k8s.io/kubernetes=release-1.12
+      - --repo=k8s.io/kubernetes=release-1.13
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=180
@@ -162,6 +134,34 @@ periodics:
 
 # manual-release-bump-required
 - interval: 1h
+  name: ci-kubernetes-build-stable2
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
+      args:
+      - --repo=k8s.io/kubernetes=release-1.12
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=180
+      - --scenario=kubernetes_build
+      - --
+      - --allow-dup
+      - --extra-publish-file=k8s-stable2
+      - --hyperkube
+      - --registry=gcr.io/kubernetes-ci-images
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4
+          memory: "8Gi"
+
+# manual-release-bump-required
+- interval: 2h
   name: ci-kubernetes-build-stable3
   labels:
     preset-service-account: "true"
@@ -177,7 +177,7 @@ periodics:
       - --scenario=kubernetes_build
       - --
       - --allow-dup
-      - --extra-publish-file=k8s-stable2
+      - --extra-publish-file=k8s-stable3
       - --hyperkube
       - --registry=gcr.io/kubernetes-ci-images
       # docker-in-docker needs privileged mode
