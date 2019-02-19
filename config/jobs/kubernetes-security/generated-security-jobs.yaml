@@ -410,6 +410,7 @@ presubmits:
         - --root=/go/src
         - --service-account=/etc/service-account/service-account.json
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=460
         - --scenario=kubernetes_e2e
