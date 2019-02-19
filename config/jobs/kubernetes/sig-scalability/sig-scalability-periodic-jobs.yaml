@@ -73,45 +73,6 @@ periodics:
       - --use-logexporter
 
 # gke
-# Temporary job for clusterloader gke 100 nodes test.
-# TODO(krzysied): Remove the job when the testing is done.
-- cron: "0 */3 * * 1,2,3,4,5" # Run every 3h from Mon to Fri.
-  name: ci-kubernetes-e2e-gke-small-performance
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=gke-small-cluster
-      - --deployment=gke
-      - --extract=gke-default
-      - --gcp-node-image=gci
-      - --gcp-project-type=scalability-project
-      - --gcp-zone=us-east1-b
-      - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19
-      - --gke-environment=prod
-      - '--gke-shape={"default":{"Nodes":99,"MachineType":"n1-standard-1"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-2"}}'
-      - --provider=gke
-      - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-      - --test-cmd-args=cluster-loader2
-      - --test-cmd-args=--nodes=100
-      - --test-cmd-args=--provider=gke
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
-      - --test-cmd-args=--testconfig=testing/density/config.yaml
-      - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-name=ClusterLoaderV2
-      - --timeout=120m
-      - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-master
-
 - cron: '1 8 * * 0' # Run at 00:01PST (8:01 UTC) on sunday
   name: ci-kubernetes-e2e-gke-large-performance
   tags:
