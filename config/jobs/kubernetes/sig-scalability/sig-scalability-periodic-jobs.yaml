@@ -99,7 +99,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=kubernetes-scale
-      - --gcp-zone=us-east1-a
+      - --gcp-zone=us-east1-b
       - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19
       - --gke-environment=staging
       - '--gke-shape={"default":{"Nodes":1999,"MachineType":"n1-standard-1"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-8"}}'
@@ -149,7 +149,7 @@ periodics:
       - --gcp-region=us-east1
       - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet-regional --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19
       - --gke-environment=staging
-      - --gke-node-locations=us-east1-a
+      - --gke-node-locations=us-east1-b
       - '--gke-shape={"default":{"Nodes":1999,"MachineType":"n1-standard-1"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-8"}}'
       - --provider=gke
       - --test=false
@@ -189,7 +189,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=kubernetes-scale
-      - --gcp-zone=us-east1-a
+      - --gcp-zone=us-east1-b
       - --ginkgo-parallel=30
       - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/11 --services-ipv4-cidr=/18 --timeout=2700
       - --gke-environment=staging
@@ -228,7 +228,7 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=kubernetes-scale
-      - --gcp-zone=us-east1-a
+      - --gcp-zone=us-east1-b
       - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/11 --services-ipv4-cidr=/18 --timeout=2700
       - --gke-environment=staging
       - '--gke-shape={"default":{"Nodes":4999,"MachineType":"n1-standard-1"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-32"}}'
