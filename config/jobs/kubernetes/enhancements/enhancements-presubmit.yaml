@@ -1,11 +1,12 @@
 presubmits:
   kubernetes/enhancements:
-  - name: pull-enhancements-verify
-    always_run: false  # TODO(Katharine,nikhita): Turn this back on when the job works.
-    decorate: true
-    spec:
-      containers:
-      - image: golang:1.11
-        command:
-        - export PATH=$PATH:$GOPATH/bin
-        - ./hack/verify.sh
+    - name: pull-enhancements-verify
+      always_run: false # TODO(Katharine,nikhita): Turn this back on when the job works.
+      decorate: true
+      spec:
+        containers:
+          - image: golang:1.11
+            command:
+              - sh
+              - c
+              - "export PATH=$PATH:$GOPATH/bin && ./hack/verify.sh"
