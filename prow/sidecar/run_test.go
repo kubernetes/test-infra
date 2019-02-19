@@ -28,7 +28,6 @@ import (
 	"strings"
 	"testing"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/entrypoint"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
 
@@ -36,50 +35,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
-
-func TestGetRevisionFromRef(t *testing.T) {
-	var tests = []struct {
-		name     string
-		refs     *prowapi.Refs
-		expected string
-	}{
-		{
-			name: "Refs with Pull",
-			refs: &prowapi.Refs{
-				BaseRef: "master",
-				BaseSHA: "deadbeef",
-				Pulls: []prowapi.Pull{
-					{
-						Number: 123,
-						SHA:    "abcd1234",
-					},
-				},
-			},
-			expected: "abcd1234",
-		},
-		{
-			name: "Refs with BaseSHA",
-			refs: &prowapi.Refs{
-				BaseRef: "master",
-				BaseSHA: "deadbeef",
-			},
-			expected: "deadbeef",
-		},
-		{
-			name: "Refs with BaseRef",
-			refs: &prowapi.Refs{
-				BaseRef: "master",
-			},
-			expected: "master",
-		},
-	}
-
-	for _, test := range tests {
-		if actual, expected := getRevisionFromRef(test.refs), test.expected; actual != expected {
-			t.Errorf("%s: got revision:%s but expected: %s", test.name, actual, expected)
-		}
-	}
-}
 
 func TestWait(t *testing.T) {
 	aborted := strconv.Itoa(entrypoint.AbortedErrorCode)
