@@ -118,6 +118,13 @@ func calcCRC(buf []byte) uint32 {
 	return crc32.Checksum(buf, crc32.MakeTable(crc32.Castagnoli))
 }
 
+const (
+	// Default ACLs for this upload
+	Default = false
+	// PublicRead ACL for this upload.
+	PublicRead = true
+)
+
 // Upload writes bytes to the specified Path
 func Upload(ctx context.Context, client *storage.Client, path Path, buf []byte, worldReadable bool) error {
 	crc := calcCRC(buf)

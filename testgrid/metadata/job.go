@@ -72,7 +72,7 @@ type Finished struct {
 // Special values: infra-commit, repos, repo, repo-commit, others
 type Metadata map[string]interface{}
 
-// String returns the name key if its value is a string.
+// String returns the name key if its value is a string, and true if the key is present.
 func (m Metadata) String(name string) (*string, bool) {
 	if v, ok := m[name]; !ok {
 		return nil, false
@@ -83,12 +83,12 @@ func (m Metadata) String(name string) (*string, bool) {
 	}
 }
 
-// Meta returns the name key if its value is a child object.
+// Meta returns the name key if its value is a child object, and true if they key is present.
 func (m Metadata) Meta(name string) (*Metadata, bool) {
 	if v, ok := m[name]; !ok {
-		return nil, true
-	} else if t, good := v.(Metadata); !good {
 		return nil, false
+	} else if t, good := v.(Metadata); !good {
+		return nil, true
 	} else {
 		return &t, true
 	}

@@ -19,9 +19,11 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -32,6 +34,7 @@ import (
 
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/testgrid/config"
+	"k8s.io/test-infra/testgrid/metadata"
 	"k8s.io/test-infra/testgrid/resultstore"
 	"k8s.io/test-infra/testgrid/util/gcs"
 )
@@ -228,18 +231,107 @@ func transferLatest(ctx context.Context, storageClient *storage.Client, rsClient
 }
 
 func transfer(ctx context.Context, storageClient *storage.Client, rsClient *resultstore.Client, project string, path gcs.Path) error {
+	build := gcs.Build{
+		Bucket:     storageClient.Bucket(path.Bucket()),
+		Context:    ctx,
+		Prefix:     trailingSlash(path.Object()),
+		BucketPath: path.Bucket(),
+	}
 
-	result, err := download(ctx, storageClient, path)
+	result, err := download(ctx, storageClient, build)
 	if err != nil {
 		return fmt.Errorf("download: %v", err)
 	}
 
-	viewURL, err := upload(rsClient, project, path, *result)
+	desc := "Results of " + path.String()
+	inv, target, test := convert(project, desc, path, *result)
+	print(inv.To(), test.To())
+
+	if project == "" {
+		return nil
+	}
+
+	viewURL, err := upload(rsClient, inv, target, test)
 	if viewURL != "" {
 		fmt.Println("See results at " + viewURL)
 	}
 	if err != nil {
 		return fmt.Errorf("upload: %v", err)
+	}
+	if result.started.Metadata == nil {
+		result.started.Metadata = metadata.Metadata{}
+	}
+	changed, err := insertLink(result.started.Metadata, viewURL)
+	if err != nil {
+		return fmt.Errorf("insert resultstore link into metadata: %v", err)
+	}
+	if !changed { // already has the link
+		return nil
+	}
+	if err := updateStarted(ctx, storageClient, path, result.started); err != nil {
+		return fmt.Errorf("update started.json: %v", err)
+	}
+	return nil
+}
+
+const (
+	linksKey       = "links"
+	resultstoreKey = "resultstore"
+	urlKey         = "url"
+)
+
+// insertLink attempts to set metadata.links.resultstore.url to viewURL.
+//
+// returns true if started metadata was updated.
+func insertLink(meta metadata.Metadata, viewURL string) (bool, error) {
+	var changed bool
+	top, present := meta.String(resultstoreKey)
+	if !present || top == nil || *top != viewURL {
+		changed = true
+		meta[resultstoreKey] = viewURL
+	}
+	links, present := meta.Meta(linksKey)
+	if present && links == nil {
+		return false, fmt.Errorf("metadata.links is not a Metadata value: %v", meta[linksKey])
+	}
+	if links == nil {
+		links = &metadata.Metadata{}
+		changed = true
+	}
+	resultstoreMeta, present := links.Meta(resultstoreKey)
+	if present && resultstoreMeta == nil {
+		return false, fmt.Errorf("metadata.links.resultstore is not a Metadata value: %v", (*links)[resultstoreKey])
+	}
+	if resultstoreMeta == nil {
+		resultstoreMeta = &metadata.Metadata{}
+		changed = true
+	}
+	val, present := resultstoreMeta.String(urlKey)
+	if present && val == nil {
+		return false, fmt.Errorf("metadata.links.resultstore.url is not a string value: %v", (*resultstoreMeta)[urlKey])
+	}
+	if !changed && val != nil && *val == viewURL {
+		return false, nil
+	}
+
+	(*resultstoreMeta)[urlKey] = viewURL
+	(*links)[resultstoreKey] = *resultstoreMeta
+	meta[linksKey] = *links
+	return true, nil
+}
+
+func updateStarted(ctx context.Context, storageClient *storage.Client, path gcs.Path, started gcs.Started) error {
+	startedPath, err := path.ResolveReference(&url.URL{Path: "started.json"})
+	if err != nil {
+		return fmt.Errorf("resolve started.json: %v", err)
+	}
+	buf, err := json.Marshal(started)
+	if err != nil {
+		return fmt.Errorf("encode started.json: %v", err)
+	}
+	// TODO(fejta): compare and swap
+	if err := gcs.Upload(ctx, storageClient, *startedPath, buf, gcs.Default); err != nil {
+		return fmt.Errorf("upload started.json: %v", err)
 	}
 	return nil
 }

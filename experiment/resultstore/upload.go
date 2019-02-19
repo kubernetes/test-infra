@@ -22,7 +22,6 @@ import (
 	"fmt"
 
 	"k8s.io/test-infra/testgrid/resultstore"
-	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
 func resultstoreClient(ctx context.Context, account string, secret resultstore.Secret) (*resultstore.Client, error) {
@@ -42,18 +41,7 @@ func resultstoreClient(ctx context.Context, account string, secret resultstore.S
 }
 
 // upload the result downloaded from path into project.
-func upload(rsClient *resultstore.Client, project string, path gcs.Path, result downloadResult) (string, error) {
-	inv, target, test := convert(
-		project,
-		"Results of "+path.String(),
-		path,
-		result,
-	)
-	print(inv.To(), test.To())
-
-	if project == "" {
-		return "", nil
-	}
+func upload(rsClient *resultstore.Client, inv resultstore.Invocation, target resultstore.Target, test resultstore.Test) (string, error) {
 
 	targetID := test.Name
 	const configID = resultstore.Default
