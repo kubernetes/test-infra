@@ -125,6 +125,6 @@ func (c *Client) generateMessageFromPJ(pj *prowapi.ProwJob) *ReportMessage {
 		RunID:   pubSubMap[PubSubRunIDLabel],
 		Status:  pj.Status.State,
 		URL:     pj.Status.URL,
-		GCSPath: strings.Replace(pj.Status.URL, c.config().Plank.JobURLPrefix, GCSPrefix, 1),
+		GCSPath: strings.Replace(pj.Status.URL, c.config().Plank.JobURLPrefix(pj.Spec.Refs), GCSPrefix, 1),
 	}
 }

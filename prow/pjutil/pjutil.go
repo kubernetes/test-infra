@@ -247,12 +247,12 @@ func ProwJobFields(pj *prowapi.ProwJob) logrus.Fields {
 //
 // TODO(fejta): consider moving default JobURLTemplate and JobURLPrefix out of plank
 func JobURL(plank config.Plank, pj prowapi.ProwJob, log *logrus.Entry) string {
-	if pj.Spec.DecorationConfig != nil && plank.JobURLPrefix != "" {
+	if pj.Spec.DecorationConfig != nil && plank.JobURLPrefix(pj.Spec.Refs) != "" {
 		spec := downwardapi.NewJobSpec(pj.Spec, pj.Status.BuildID, pj.Name)
 		gcsConfig := pj.Spec.DecorationConfig.GCSConfiguration
 		_, gcsPath, _ := gcsupload.PathsForJob(gcsConfig, &spec, "")
 
-		prefix, _ := url.Parse(plank.JobURLPrefix)
+		prefix, _ := url.Parse(plank.JobURLPrefix(pj.Spec.Refs))
 		prefix.Path = path.Join(prefix.Path, gcsConfig.Bucket, gcsPath)
 		return prefix.String()
 	}

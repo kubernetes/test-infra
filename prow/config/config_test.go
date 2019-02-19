@@ -1843,3 +1843,167 @@ github_reporter:
 		}
 	}
 }
+
+func TestPlankJobUrlPrefix(t *testing.T) {
+	testCases := []struct {
+		name                 string
+		plank                Plank
+		refs                 *prowapi.Refs
+		expectedJobURLPrefix string
+	}{
+		{
+			name:                 "Nil refs returns jobUrlPrefix",
+			plank:                Plank{jobURLPrefix: "https://my-prow"},
+			expectedJobURLPrefix: "https://my-prow",
+		},
+		{
+			name:                 "No overrideJobUrlPrefix returns jobURLPrefix",
+			plank:                Plank{jobURLPrefix: "https://my-prow"},
+			refs:                 &prowapi.Refs{Org: "my-org", Repo: "my-repo"},
+			expectedJobURLPrefix: "https://my-prow",
+		},
+		{
+			name: "No matching refs returns jobURLPrefx",
+			plank: Plank{
+				jobURLPrefix: "https://my-prow",
+				overrideJobUrlPrefix: map[string]*overrideJobUrlPrefix{
+					"my-org": {url: "https://my-alternate-prow"},
+				},
+			},
+			refs:                 &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
+			expectedJobURLPrefix: "https://my-prow",
+		},
+		{
+			name: "Matching repo returns overrideJobUrlPrefix from repo",
+			plank: Plank{
+				jobURLPrefix: "https://my-prow",
+				overrideJobUrlPrefix: map[string]*overrideJobUrlPrefix{
+					"my-alternate-org": {
+						url:   "https://my-third-prow",
+						repos: map[string]string{"my-repo": "https://my-alternate-prow"}}},
+			},
+			refs:                 &prowapi.Refs{Org: "my-alternate-org", Repo: "my-repo"},
+			expectedJobURLPrefix: "https://my-alternate-prow",
+		},
+		{
+			name: "Matching org and not matching repo returns overrideJobUrlPrefix from org",
+			plank: Plank{
+				jobURLPrefix: "https://my-prow",
+				overrideJobUrlPrefix: map[string]*overrideJobUrlPrefix{
+					"my-alternate-org": {
+						url:   "https://my-third-prow",
+						repos: map[string]string{"my-repo": "https://my-alternate-prow"}}},
+			},
+			refs:                 &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"},
+			expectedJobURLPrefix: "https://my-third-prow",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if prefix := tc.plank.JobURLPrefix(tc.refs); prefix != tc.expectedJobURLPrefix {
+				t.Errorf("expected JobUrlPrefix to be '%s' but was '%s'", tc.expectedJobURLPrefix, prefix)
+			}
+		})
+	}
+}
+
+func TestValidateComponentConfig(t *testing.T) {
+	testCases := []struct {
+		Name       string
+		config     *Config
+		errEpexted bool
+	}{
+		{
+			Name: "Empty jobURLPrefix and overrideJobUrlPrefixes, err",
+			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
+				overrideJobUrlPrefix: map[string]*overrideJobUrlPrefix{
+					"my-org": {url: "https://my-alternate-prow"},
+				},
+			}}},
+			errEpexted: true,
+		},
+		{
+			Name:       "No overrides, valid url,  no err",
+			config:     &Config{ProwConfig: ProwConfig{Plank: Plank{jobURLPrefix: "https://my-prow"}}},
+			errEpexted: false,
+		},
+		{
+			Name:       "No overrides, invalid url,  err",
+			config:     &Config{ProwConfig: ProwConfig{Plank: Plank{jobURLPrefix: "https:// my-prow"}}},
+			errEpexted: true,
+		},
+		{
+			Name: "Org override, valid urls, no err",
+			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
+				jobURLPrefix: "https://my-prow",
+				overrideJobUrlPrefix: map[string]*overrideJobUrlPrefix{
+					"my-org": {url: "https://my-alternate-prow"},
+				},
+			}}},
+			errEpexted: false,
+		},
+		{
+			Name: "Org override, invalid jobUrlPrefix, err",
+			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
+				jobURLPrefix: "https:// my-prow",
+				overrideJobUrlPrefix: map[string]*overrideJobUrlPrefix{
+					"my-org": {url: "https://my-alternate-prow"},
+				},
+			}}},
+			errEpexted: true,
+		},
+		{
+			Name: "Org override, invalid org url, err",
+			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
+				jobURLPrefix: "https://my-prow",
+				overrideJobUrlPrefix: map[string]*overrideJobUrlPrefix{
+					"my-org": {url: "https:// my-alternate-prow"},
+				},
+			}}},
+			errEpexted: true,
+		},
+		{
+			Name: "Org override, invalid urls, err",
+			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
+				jobURLPrefix: "https:// my-prow",
+				overrideJobUrlPrefix: map[string]*overrideJobUrlPrefix{
+					"my-org": {url: "https:// my-alternate-prow"},
+				},
+			}}},
+			errEpexted: true,
+		},
+		{
+			Name: "Repo override, valid urls, no err",
+			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
+				jobURLPrefix: "https://my-prow",
+				overrideJobUrlPrefix: map[string]*overrideJobUrlPrefix{
+					"my-org": {
+						url:   "https://my-alternate-prow",
+						repos: map[string]string{"my-repo": "https://my-third-prow"}},
+				},
+			}}},
+			errEpexted: false,
+		},
+		{
+			Name: "Repo override, invalid repo url, err",
+			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
+				jobURLPrefix: "https://my-prow",
+				overrideJobUrlPrefix: map[string]*overrideJobUrlPrefix{
+					"my-org": {
+						url:   "https://my-alternate-prow",
+						repos: map[string]string{"my-repo": "https:// my-third-prow"}},
+				},
+			}}},
+			errEpexted: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.Name, func(t *testing.T) {
+			if hasErr := tc.config.validateComponentConfig() != nil; hasErr != tc.errEpexted {
+				t.Errorf("expected err: %t but was %t", tc.errEpexted, hasErr)
+			}
+		})
+	}
+}

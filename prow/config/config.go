@@ -174,9 +174,30 @@ type Plank struct {
 	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
 	// that request to have their PodSpecs decorated
 	DefaultDecorationConfig *prowapi.DecorationConfig `json:"default_decoration_config,omitempty"`
-	// JobURLPrefix is the host and path prefix under
+	// jobURLPrefix is the host and path prefix under
 	// which job details will be viewable
-	JobURLPrefix string `json:"job_url_prefix,omitempty"`
+	jobURLPrefix string `json:"job_url_prefix,omitempty"`
+	// overrideJobUrlPrefix allows to override the default jobURLPrefix on
+	// an organization or repo level
+	overrideJobUrlPrefix map[string]*overrideJobUrlPrefix `json:"override_job_url_prefix,omitempty"`
+}
+
+type overrideJobUrlPrefix struct {
+	url   string            `json:"url,omitempty"`
+	repos map[string]string `json:"repos,omitempty"`
+}
+
+func (p Plank) JobURLPrefix(refs *prowapi.Refs) string {
+	if refs == nil {
+		return p.jobURLPrefix
+	}
+	if p.overrideJobUrlPrefix[refs.Org] == nil {
+		return p.jobURLPrefix
+	}
+	if p.overrideJobUrlPrefix[refs.Org].repos[refs.Repo] != "" {
+		return p.overrideJobUrlPrefix[refs.Org].repos[refs.Repo]
+	}
+	return p.overrideJobUrlPrefix[refs.Org].url
 }
 
 // Gerrit is config for the gerrit controller.
@@ -611,8 +632,21 @@ func (c *Config) finalizeJobConfig() error {
 
 // validateComponentConfig validates the infrastructure component configuration
 func (c *Config) validateComponentConfig() error {
-	if _, err := url.Parse(c.Plank.JobURLPrefix); c.Plank.JobURLPrefix != "" && err != nil {
-		return fmt.Errorf("plank declares an invalid job URL prefix %q: %v", c.Plank.JobURLPrefix, err)
+	if c.Plank.overrideJobUrlPrefix != nil && c.Plank.jobURLPrefix == "" {
+		return errors.New("Planks override_job_url_prefix can only be set when override_job_url_prefix is set")
+	}
+	if _, err := url.Parse(c.Plank.jobURLPrefix); c.Plank.jobURLPrefix != "" && err != nil {
+		return fmt.Errorf("plank declares an invalid job URL prefix %q: %v", c.Plank.jobURLPrefix, err)
+	}
+	for org, v := range c.Plank.overrideJobUrlPrefix {
+		if _, err := url.Parse(v.url); v.url != "" && err != nil {
+			return fmt.Errorf("plank declares an invalid override_job_url_prefix for org %s: %v", org, err)
+		}
+		for repo, repoOverrideURL := range v.repos {
+			if _, err := url.Parse(repoOverrideURL); err != nil {
+				return fmt.Errorf("plank declares an invalid override_job_url_prefix for %s/%s: %v", org, repo, err)
+			}
+		}
 	}
 	return nil
 }
