@@ -87,7 +87,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190213-f6a16b59b-1.14
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-1.14
         args:
           - --repo=k8s.io/kubernetes=release-1.14
           - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
