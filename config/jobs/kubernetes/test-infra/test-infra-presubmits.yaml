@@ -255,3 +255,16 @@ presubmits:
         resources:
           requests:
             memory: "2Gi"
+
+  - name: pull-test-infra-verify-file-perms
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-experimental
+        command:
+        - ./hack/verify-file-perms.sh
