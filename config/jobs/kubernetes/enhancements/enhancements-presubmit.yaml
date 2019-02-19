@@ -8,5 +8,5 @@ presubmits:
           - image: golang:1.11
             command:
               - sh
-              - c
+              - "-c"
               - "export PATH=$PATH:$GOPATH/bin && ./hack/verify.sh"
