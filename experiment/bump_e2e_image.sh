@@ -29,24 +29,24 @@ if ! (${SED} --version 2>&1 | grep -q GNU); then
   exit 1
 fi
 
-#dirty="$(git status --porcelain)"
-#if [[ -n "${dirty}" ]]; then
-#  echo "Tree not clean:"
-#  echo "${dirty}"
-#  exit 1
-#fi
+dirty="$(git status --porcelain)"
+if [[ -n "${dirty}" ]]; then
+  echo "Tree not clean:"
+  echo "${dirty}"
+  exit 1
+fi
 
 TREE="$(git rev-parse --show-toplevel)"
 
 DATE="$(date +v%Y%m%d)"
-TAG="v20190214-f4092ae69"
+TAG="${DATE}-$(git describe --tags --always --dirty)"
  
-#make -C "${TREE}/images/kubekins-e2e" push
-#K8S=experimental make -C "${TREE}/images/kubekins-e2e" push
-#K8S=1.14 make -C "${TREE}/images/kubekins-e2e" push
-#K8S=1.13 make -C "${TREE}/images/kubekins-e2e" push
-#K8S=1.12 make -C "${TREE}/images/kubekins-e2e" push
-#K8S=1.11 make -C "${TREE}/images/kubekins-e2e" push
+make -C "${TREE}/images/kubekins-e2e" push
+K8S=experimental make -C "${TREE}/images/kubekins-e2e" push
+K8S=1.14 make -C "${TREE}/images/kubekins-e2e" push
+K8S=1.13 make -C "${TREE}/images/kubekins-e2e" push
+K8S=1.12 make -C "${TREE}/images/kubekins-e2e" push
+K8S=1.11 make -C "${TREE}/images/kubekins-e2e" push
 
 echo "TAG = ${TAG}"
 
