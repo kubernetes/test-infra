@@ -119,9 +119,12 @@ func calcCRC(buf []byte) uint32 {
 }
 
 // Upload writes bytes to the specified Path
-func Upload(ctx context.Context, client *storage.Client, path Path, buf []byte) error {
+func Upload(ctx context.Context, client *storage.Client, path Path, buf []byte, worldReadable bool) error {
 	crc := calcCRC(buf)
 	w := client.Bucket(path.Bucket()).Object(path.Object()).NewWriter(ctx)
+	if worldReadable {
+		w.ACL = []storage.ACLRule{{Entity: storage.AllUsers, Role: storage.RoleReader}}
+	}
 	w.SendCRC32C = true
 	// Send our CRC32 to ensure google received the same data we sent.
 	// See checksum example at:
