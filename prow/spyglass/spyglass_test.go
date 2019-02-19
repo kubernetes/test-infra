@@ -17,6 +17,7 @@ limitations under the License.
 package spyglass
 
 import (
+	"context"
 	"fmt"
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
@@ -33,6 +34,7 @@ import (
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/spyglass/lenses"
+	tgconf "k8s.io/test-infra/testgrid/config"
 )
 
 var (
@@ -224,7 +226,7 @@ func TestViews(t *testing.T) {
 				lenses.RegisterLens(l)
 			}
 			fca := config.Agent{}
-			sg := New(fakeJa, fca.Config, fakeGCSClient)
+			sg := New(fakeJa, fca.Config, fakeGCSClient, context.Background())
 			lenses := sg.Lenses(tc.matchCache)
 			for _, l := range lenses {
 				var found bool
@@ -420,7 +422,7 @@ func TestJobPath(t *testing.T) {
 	for _, tc := range testCases {
 		fakeGCSClient := fakeGCSServer.Client()
 		fca := config.Agent{}
-		sg := New(fakeJa, fca.Config, fakeGCSClient)
+		sg := New(fakeJa, fca.Config, fakeGCSClient, context.Background())
 		jobPath, err := sg.JobPath(tc.src)
 		if tc.expError && err == nil {
 			t.Errorf("test %q: JobPath(%q) expected error", tc.name, tc.src)
@@ -545,7 +547,7 @@ func TestRunPath(t *testing.T) {
 				},
 			},
 		})
-		sg := New(fakeJa, fca.Config, fakeGCSClient)
+		sg := New(fakeJa, fca.Config, fakeGCSClient, context.Background())
 		jobPath, err := sg.RunPath(tc.src)
 		if tc.expError && err == nil {
 			t.Errorf("test %q: RunPath(%q) expected error, got  %q", tc.name, tc.src, jobPath)
@@ -693,7 +695,7 @@ func TestRunToPR(t *testing.T) {
 				},
 			},
 		})
-		sg := New(fakeJa, fca.Config, fakeGCSClient)
+		sg := New(fakeJa, fca.Config, fakeGCSClient, context.Background())
 		org, repo, num, err := sg.RunToPR(tc.src)
 		if tc.expError && err == nil {
 			t.Errorf("test %q: RunToPR(%q) expected error", tc.name, tc.src)
@@ -780,7 +782,7 @@ func TestProwToGCS(t *testing.T) {
 		}
 		fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
 		fakeJa.Start()
-		sg := New(fakeJa, fakeConfigAgent.Config, fakeGCSClient)
+		sg := New(fakeJa, fakeConfigAgent.Config, fakeGCSClient, context.Background())
 
 		p, err := sg.prowToGCS(tc.key)
 		if err != nil && !tc.expectError {
@@ -913,7 +915,7 @@ func TestGCSPathRoundTrip(t *testing.T) {
 
 		fakeGCSClient := fakeGCSServer.Client()
 
-		sg := New(fakeJa, fakeConfigAgent.Config, fakeGCSClient)
+		sg := New(fakeJa, fakeConfigAgent.Config, fakeGCSClient, context.Background())
 		gcspath, _, _ := gcsupload.PathsForJob(
 			&prowapi.GCSConfiguration{Bucket: "test-bucket", PathStrategy: tc.pathStrategy},
 			&downwardapi.JobSpec{
@@ -933,6 +935,113 @@ func TestGCSPathRoundTrip(t *testing.T) {
 		}
 		if org != tc.org || repo != tc.repo || prnum != 42 {
 			t.Errorf("expected %s/%s#42, got %s/%s#%d", tc.org, tc.repo, org, repo, prnum)
+		}
+	}
+}
+
+func TestTestGridLink(t *testing.T) {
+	testCases := []struct {
+		name     string
+		src      string
+		expQuery string
+		expError bool
+	}{
+		{
+			name:     "non-presubmit job in GCS with trailing /",
+			src:      "gcs/kubernetes-jenkins/logs/periodic-job/123/",
+			expQuery: "some-dashboard#periodic",
+		},
+		{
+			name:     "non-presubmit job in GCS without trailing /",
+			src:      "gcs/kubernetes-jenkins/logs/periodic-job/123",
+			expQuery: "some-dashboard#periodic",
+		},
+		{
+			name:     "presubmit job in GCS",
+			src:      "gcs/kubernetes-jenkins/pr-logs/pull/test-infra/0000/presubmit-job/314159/",
+			expQuery: "some-dashboard#presubmit",
+		},
+		{
+			name:     "non-presubmit Prow job",
+			src:      "prowjob/periodic-job/1111",
+			expQuery: "some-dashboard#periodic",
+		},
+		{
+			name:     "presubmit Prow job",
+			src:      "prowjob/presubmit-job/2222",
+			expQuery: "some-dashboard#presubmit",
+		},
+		{
+			name:     "nonexistent job",
+			src:      "prowjob/nonexistent-job/0000",
+			expError: true,
+		},
+		{
+			name:     "invalid key type",
+			src:      "oh/my/glob/drama/bomb",
+			expError: true,
+		},
+		{
+			name:     "nonsense string errors",
+			src:      "this is not useful",
+			expError: true,
+		},
+	}
+
+	kc := fkc{}
+	fca := config.Agent{}
+	fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca.Config)
+	fakeJa.Start()
+
+	tg := TestGrid{c: &tgconf.Configuration{
+		Dashboards: []*tgconf.Dashboard{
+			{
+				Name: "some-dashboard",
+				DashboardTab: []*tgconf.DashboardTab{
+					{
+						Name:          "periodic",
+						TestGroupName: "periodic-job",
+					},
+					{
+						Name:          "presubmit",
+						TestGroupName: "presubmit-job",
+					},
+					{
+						Name:          "some-other-job",
+						TestGroupName: "some-other-job",
+					},
+				},
+			},
+		},
+	}}
+
+	for _, tc := range testCases {
+		fakeGCSClient := fakeGCSServer.Client()
+		fca := config.Agent{}
+		fca.Set(&config.Config{
+			ProwConfig: config.ProwConfig{
+				Deck: config.Deck{
+					Spyglass: config.Spyglass{
+						TestGridRoot: "https://testgrid.com/",
+					},
+				},
+			},
+		})
+		sg := New(fakeJa, fca.Config, fakeGCSClient, context.Background())
+		sg.testgrid = &tg
+		link, err := sg.TestGridLink(tc.src)
+		if tc.expError {
+			if err == nil {
+				t.Errorf("test %q: TestGridLink(%q) expected error, got  %q", tc.name, tc.src, link)
+			}
+			continue
+		}
+		if err != nil {
+			t.Errorf("test %q: TestGridLink(%q) returned unexpected error %v", tc.name, tc.src, err)
+			continue
+		}
+		if link != "https://testgrid.com/"+tc.expQuery {
+			t.Errorf("test %q: TestGridLink(%q) expected %q, got %q", tc.name, tc.src, "https://testgrid.com/"+tc.expQuery, link)
 		}
 	}
 }
@@ -965,7 +1074,7 @@ func TestFetchArtifactsPodLog(t *testing.T) {
 
 	fakeGCSClient := fakeGCSServer.Client()
 
-	sg := New(fakeJa, fakeConfigAgent.Config, fakeGCSClient)
+	sg := New(fakeJa, fakeConfigAgent.Config, fakeGCSClient, context.Background())
 	testKeys := []string{
 		"prowjob/job/123",
 		"gcs/kubernetes-jenkins/logs/job/123/",

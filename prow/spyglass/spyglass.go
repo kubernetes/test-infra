@@ -18,6 +18,7 @@ limitations under the License.
 package spyglass
 
 import (
+	"context"
 	"fmt"
 	"path"
 	"sort"
@@ -50,7 +51,8 @@ type Spyglass struct {
 	// JobAgent contains information about the current jobs in deck
 	JobAgent *jobs.JobAgent
 
-	config config.Getter
+	config   config.Getter
+	testgrid *TestGrid
 
 	*GCSArtifactFetcher
 	*PodLogArtifactFetcher
@@ -63,13 +65,22 @@ type LensRequest struct {
 }
 
 // New constructs a Spyglass object from a JobAgent, a config.Agent, and a storage Client.
-func New(ja *jobs.JobAgent, cfg config.Getter, c *storage.Client) *Spyglass {
+func New(ja *jobs.JobAgent, cfg config.Getter, c *storage.Client, ctx context.Context) *Spyglass {
 	return &Spyglass{
 		JobAgent:              ja,
 		config:                cfg,
 		PodLogArtifactFetcher: NewPodLogArtifactFetcher(ja),
 		GCSArtifactFetcher:    NewGCSArtifactFetcher(c),
+		testgrid: &TestGrid{
+			conf:   cfg,
+			client: c,
+			ctx:    ctx,
+		},
 	}
+}
+
+func (sg *Spyglass) Start() {
+	sg.testgrid.Start()
 }
 
 // Lenses gets all views of all artifact files matching each regexp with a registered lens
@@ -241,4 +252,25 @@ func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
 	default:
 		return "", "", 0, fmt.Errorf("unrecognized key type for src: %v", src)
 	}
+}
+
+// TestGridLink returns a link to a relevant TestGrid tab for the given source string.
+// Because there is a one-to-many mapping from job names to TestGrid tabs, the returned tab
+// link may not be deterministic.
+func (sg *Spyglass) TestGridLink(src string) (string, error) {
+	if !sg.testgrid.Ready() || sg.config().Deck.Spyglass.TestGridRoot == "" {
+		return "", fmt.Errorf("testgrid is not configured")
+	}
+
+	src = strings.TrimSuffix(src, "/")
+	split := strings.Split(src, "/")
+	if len(split) < 2 {
+		return "", fmt.Errorf("couldn't parse src %q", src)
+	}
+	jobName := split[len(split)-2]
+	q, err := sg.testgrid.FindQuery(jobName)
+	if err != nil {
+		return "", fmt.Errorf("failed to find query: %v", err)
+	}
+	return sg.config().Deck.Spyglass.TestGridRoot + q, nil
 }
