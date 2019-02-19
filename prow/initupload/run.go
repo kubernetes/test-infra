@@ -47,10 +47,10 @@ func specToStarted(spec *downwardapi.JobSpec) gcs.Started {
 	started.Repos = map[string]string{}
 
 	if spec.Refs != nil {
-		started.Repos[spec.Refs.Org+"/"+spec.Refs.Repo] = downwardapi.GetRevisionFromRef(spec.Refs)
+		started.Repos[spec.Refs.Org+"/"+spec.Refs.Repo] = spec.Refs.String()
 	}
 	for _, ref := range spec.ExtraRefs {
-		started.Repos[ref.Org+"/"+ref.Repo] = downwardapi.GetRevisionFromRef(&ref)
+		started.Repos[ref.Org+"/"+ref.Repo] = ref.String()
 	}
 
 	return started

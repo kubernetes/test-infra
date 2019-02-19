@@ -476,7 +476,13 @@ type Refs struct {
 }
 
 func (r Refs) String() string {
-	rs := []string{fmt.Sprintf("%s:%s", r.BaseRef, r.BaseSHA)}
+	rs := []string{}
+	if r.BaseSHA != "" {
+		rs = append(rs, fmt.Sprintf("%s:%s", r.BaseRef, r.BaseSHA))
+	} else {
+		rs = append(rs, r.BaseRef)
+	}
+
 	for _, pull := range r.Pulls {
 		ref := fmt.Sprintf("%d:%s", pull.Number, pull.SHA)
 
