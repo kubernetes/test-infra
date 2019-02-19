@@ -36,7 +36,7 @@ periodics:
       - --provider=gce
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
-      - --test-cmd-args=--ginkgo.focus=\[Conformance\] --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\] --minStartupPods=8
       - --timeout=120m
       env:
       - name: USE_RELEASE_NODE_BINARIES
