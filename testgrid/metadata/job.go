@@ -87,11 +87,13 @@ func (m Metadata) String(name string) (*string, bool) {
 func (m Metadata) Meta(name string) (*Metadata, bool) {
 	if v, ok := m[name]; !ok {
 		return nil, false
-	} else if t, good := v.(Metadata); !good {
-		return nil, true
-	} else {
+	} else if t, good := v.(Metadata); good {
 		return &t, true
+	} else if t, good := v.(map[string]interface{}); good {
+		child := Metadata(t)
+		return &child, true
 	}
+	return nil, true
 }
 
 // Strings returns the submap of values in the map that are strings.
