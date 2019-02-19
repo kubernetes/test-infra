@@ -1346,27 +1346,27 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.14
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-1.14
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.14
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.13
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-1.13
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.13
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.12
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-1.12
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.12
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.11
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-1.11
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.11
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.10
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-1.10
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.10
 
 nodeTestSuites:
   default:
