@@ -174,30 +174,32 @@ type Plank struct {
 	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
 	// that request to have their PodSpecs decorated
 	DefaultDecorationConfig *prowapi.DecorationConfig `json:"default_decoration_config,omitempty"`
-	// jobURLPrefix is the host and path prefix under
+	// JobURLPrefix is the host and path prefix under
 	// which job details will be viewable
-	jobURLPrefix string `json:"job_url_prefix,omitempty"`
-	// overrideJobUrlPrefix allows to override the default jobURLPrefix on
+	// It should never be accessed directly, use `GetJobURLPrefix` instead
+	JobURLPrefix string `json:"job_url_prefix,omitempty"`
+	// OverrideJobURLPrefix allows to override the default jobURLPrefix on
 	// an organization or repo level
-	overrideJobUrlPrefix map[string]*overrideJobUrlPrefix `json:"override_job_url_prefix,omitempty"`
+	// It should never be accessed directly, use `GetJobURLPrefix` instead
+	OverrideJobURLPrefix map[string]*overrideJobURLPrefix `json:"override_job_url_prefix,omitempty"`
 }
 
-type overrideJobUrlPrefix struct {
-	url   string            `json:"url,omitempty"`
-	repos map[string]string `json:"repos,omitempty"`
+type overrideJobURLPrefix struct {
+	URL   string            `json:"url,omitempty"`
+	Repos map[string]string `json:"repos,omitempty"`
 }
 
-func (p Plank) JobURLPrefix(refs *prowapi.Refs) string {
+func (p Plank) GetJobURLPrefix(refs *prowapi.Refs) string {
 	if refs == nil {
-		return p.jobURLPrefix
+		return p.JobURLPrefix
 	}
-	if p.overrideJobUrlPrefix[refs.Org] == nil {
-		return p.jobURLPrefix
+	if p.OverrideJobURLPrefix[refs.Org] == nil {
+		return p.JobURLPrefix
 	}
-	if p.overrideJobUrlPrefix[refs.Org].repos[refs.Repo] != "" {
-		return p.overrideJobUrlPrefix[refs.Org].repos[refs.Repo]
+	if p.OverrideJobURLPrefix[refs.Org].Repos[refs.Repo] != "" {
+		return p.OverrideJobURLPrefix[refs.Org].Repos[refs.Repo]
 	}
-	return p.overrideJobUrlPrefix[refs.Org].url
+	return p.OverrideJobURLPrefix[refs.Org].URL
 }
 
 // Gerrit is config for the gerrit controller.
@@ -632,17 +634,17 @@ func (c *Config) finalizeJobConfig() error {
 
 // validateComponentConfig validates the infrastructure component configuration
 func (c *Config) validateComponentConfig() error {
-	if c.Plank.overrideJobUrlPrefix != nil && c.Plank.jobURLPrefix == "" {
+	if c.Plank.OverrideJobURLPrefix != nil && c.Plank.JobURLPrefix == "" {
 		return errors.New("Planks override_job_url_prefix can only be set when override_job_url_prefix is set")
 	}
-	if _, err := url.Parse(c.Plank.jobURLPrefix); c.Plank.jobURLPrefix != "" && err != nil {
-		return fmt.Errorf("plank declares an invalid job URL prefix %q: %v", c.Plank.jobURLPrefix, err)
+	if _, err := url.Parse(c.Plank.JobURLPrefix); c.Plank.JobURLPrefix != "" && err != nil {
+		return fmt.Errorf("plank declares an invalid job URL prefix %q: %v", c.Plank.JobURLPrefix, err)
 	}
-	for org, v := range c.Plank.overrideJobUrlPrefix {
-		if _, err := url.Parse(v.url); v.url != "" && err != nil {
+	for org, v := range c.Plank.OverrideJobURLPrefix {
+		if _, err := url.Parse(v.URL); v.URL != "" && err != nil {
 			return fmt.Errorf("plank declares an invalid override_job_url_prefix for org %s: %v", org, err)
 		}
-		for repo, repoOverrideURL := range v.repos {
+		for repo, repoOverrideURL := range v.Repos {
 			if _, err := url.Parse(repoOverrideURL); err != nil {
 				return fmt.Errorf("plank declares an invalid override_job_url_prefix for %s/%s: %v", org, repo, err)
 			}
