@@ -552,6 +552,7 @@ plugins:
   - yuks
 
   kubernetes-sigs/kind:
+  - override
   - trigger
   - welcome
 
