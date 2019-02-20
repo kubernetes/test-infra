@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package app implements the kubetest2 kind deployer
+// Package deployer implements the kubetest2 kind deployer
 package deployer
 
 // TODO(bentheelder): actually implement!
