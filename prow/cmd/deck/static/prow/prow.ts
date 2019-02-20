@@ -519,13 +519,10 @@ function redraw(fz: FuzzySearch): void {
                     build.build_id;
                 r.appendChild(createSpyglassCell(url));
             } else {
-                const buildIndex = build.url.indexOf('/build/');
-                if (buildIndex === -1) {
+                if (build.url === "") {
                     r.appendChild(cell.text(''));
                 } else {
-                    let url = window.location.origin + '/view/s3/' +
-                        build.url.substring(buildIndex + '/build/'.length);
-                    r.appendChild(createSpyglassCell(url));
+                    r.appendChild(createSpyglassCell(build.url));
                 }
             }
         } else {
