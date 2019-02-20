@@ -4685,9 +4685,9 @@ dashboards:
     test_group_name: ci-kubernetes-verify-beta
   - name: integration-1.14
     test_group_name: ci-kubernetes-integration-beta
-  - name: gce-conformance-latest-1.13
-    description: Runs conformance tests using kubetest against kubernetes release 1.13 branch on GCE
-    test_group_name: ci-kubernetes-gce-conformance-latest-1-13
+  - name: gce-conformance-latest-1.14
+    description: Runs conformance tests using kubetest against kubernetes release 1.14 branch on GCE
+    test_group_name: ci-kubernetes-gce-conformance-latest-1-14
   - name: gce-cos-1.14-default
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
   - name: gce-cos-1.14-reboot
@@ -4791,9 +4791,9 @@ dashboards:
     test_group_name: ci-kubernetes-verify-beta
   - name: integration-1.14
     test_group_name: ci-kubernetes-integration-beta
-  - name: gce-conformance-latest-1.13
-    description: Runs conformance tests using kubetest against kubernetes release 1.13 branch on GCE
-    test_group_name: ci-kubernetes-gce-conformance-latest-1-13
+  - name: gce-conformance-latest-1.14
+    description: Runs conformance tests using kubetest against kubernetes release 1.14 branch on GCE
+    test_group_name: ci-kubernetes-gce-conformance-latest-1-14
   - name: gce-cos-1.14-default
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
   - name: gce-cos-1.14-reboot
@@ -4815,10 +4815,10 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-beta
   - name: gci-gce-scalability-1.14
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
-  - name: bazel-build-1.13
-    test_group_name: ci-kubernetes-bazel-build-1-13
-  - name: bazel-test-1.13
-    test_group_name: ci-kubernetes-bazel-test-1-13
+  - name: bazel-build-1.14
+    test_group_name: ci-kubernetes-bazel-build-1-14
+  - name: bazel-test-1.14
+    test_group_name: ci-kubernetes-bazel-test-1-14
   - name: periodic-bazel-build-1.14
     test_group_name: periodic-kubernetes-bazel-build-1-14
   - name: periodic-bazel-test-1.14
