@@ -11,7 +11,7 @@ presets:
   - name: AZ_STORAGE_CONTAINER_NAME
     value: mystoragecontainer
   - name: REGISTRY
-    value: gcr.io/win-e2e-test/win-e2e-hyperkube
+    value: k8se2eimages.azurecr.io
   - name: WIN_BUILD
     value: https://raw.githubusercontent.com/Azure/acs-engine/master/scripts/build-windows-k8s.sh
   - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
@@ -34,7 +34,7 @@ presets:
 
 periodics:
 - interval: 6h
-  name: ci-kubernetes-e2e-win-1-13
+  name: ci-kubernetes-e2e-aks-engine-azure-master-windows
   labels:
     preset-service-account: "true"
     preset-azure-acsengine: "true"
@@ -42,7 +42,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-93b67c55b-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -69,6 +69,46 @@ periodics:
       - "--acsengine-win-binaries"
       - "--acsengine-agentpoolcount=3"
       - "--test_args=--node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob --ginkgo.skip=\\[LinuxOnly\\]|\\[k8s.io\\].Pods.*should.cap.back-off.at.MaxContainerBackOff.\\[Slow\\]\\[NodeConformance\\]|\\[k8s.io\\].Pods.*should.have.their.auto-restart.back-off.timer.reset.on.image.update.\\[Slow\\]\\[NodeConformance\\]"
+      - "--timeout=450m"
+      securityContext:
+        privileged: true
+
+- interval: 6h
+  name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
+  labels:
+    preset-service-account: "true"
+    preset-azure-acsengine: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-93b67c55b-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=k8s.io/kubernetes=master"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=480"
+      - "--scenario=kubernetes_e2e"
+      - --
+      - "--test=true"
+      - "--up=true"
+      - "--down=true"
+      - "--deployment=acsengine"
+      - "--provider=skeleton"
+      - "--build=bazel"
+      - "--acsengine-admin-username=azureuser"
+      - "--acsengine-admin-password=AdminPassw0rd"
+      - "--acsengine-creds=$AZURE_CREDENTIALS"
+      - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.1/aks-engine-v0.31.1-linux-amd64.tar.gz"
+      - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--acsengine-winZipBuildScript=$WIN_BUILD"
+      - "--acsengine-orchestratorRelease=1.14"
+      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
+      - "--acsengine-win-binaries"
+      - "--acsengine-hyperkube"
+      - "--acsengine-agentpoolcount=2"
+      - "--test_args=--node-os-distro=windows --ginkgo.focus=\\[k8s.io\\].Pods.*should.cap.back-off.at.MaxContainerBackOff.\\[Slow\\]\\[NodeConformance\\]|\\[sig-network\\].DNS.should.provide.DNS.for.services.\\[Conformance\\]|\\[sig-storage\\].Secrets.should.be.consumable.from.pods.in.volume.\\[NodeConformance\\]\\[Conformance\\]|\\[k8s.io\\].Kubelet.when.scheduling.a.busybox.command.in.a.pod.should.print.the.output.to.logs.\\[NodeConformance\\]\\[Conformance\\]|\\[k8s.io\\].Kubelet.when.scheduling.a.busybox.command.that.always.fails.in.a.pod.should.be.possible.to.delete.\\[NodeConformance\\]\\[Conformance\\]"
       - "--timeout=450m"
       securityContext:
         privileged: true
