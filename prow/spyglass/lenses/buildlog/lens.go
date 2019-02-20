@@ -57,7 +57,7 @@ func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string) string 
 }
 
 // errRE matches keywords and glog error messages
-var errRE = regexp.MustCompile(`(?i)(\s|^)timed out\b|(\s|^)error(s)?\b|(\s|^)fail(ure|ed)?\b|(\s|^)fatal\b|(\s|^)panic\b|^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]`)
+var errRE = regexp.MustCompile(`timed out|ERROR:|(\s|^)(FAIL|Failure \[)\b|(\s|^)panic\b|^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]`)
 
 func init() {
 	lenses.RegisterLens(Lens{})
