@@ -78,9 +78,17 @@ type options struct {
 	// pushGateway fields are used to configure pushing prometheus metrics.
 	pushGateway         string
 	pushGatewayInterval time.Duration
+
+	logLevel string
 }
 
 func (o *options) validate() error {
+	level, err := logrus.ParseLevel(o.logLevel)
+	if err != nil {
+		return fmt.Errorf("invalid log level specified: %v", err)
+	}
+	logrus.SetLevel(level)
+
 	if (o.dir == "") != (o.sizeGB == 0) {
 		return errors.New("--cache-dir and --cache-sizeGB must be specified together to enable the disk cache (otherwise a memory cache is used)")
 	}
@@ -101,6 +109,7 @@ func flagOptions() *options {
 	flag.IntVar(&o.maxConcurrency, "concurrency", 25, "Maximum number of concurrent in-flight requests to GitHub.")
 	flag.StringVar(&o.pushGateway, "push-gateway", "", "If specified, push prometheus metrics to this endpoint.")
 	flag.DurationVar(&o.pushGatewayInterval, "push-gateway-interval", time.Minute, "Interval at which prometheus metrics are pushed.")
+	flag.StringVar(&o.logLevel, "log-level", "debug", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
 	return o
 }
 
