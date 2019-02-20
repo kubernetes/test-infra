@@ -21,6 +21,8 @@ import (
 	"fmt"
 
 	"cloud.google.com/go/storage"
+	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
@@ -41,12 +43,13 @@ func storageClient(ctx context.Context, account string) (*storage.Client, error)
 
 func download(ctx context.Context, client *storage.Client, build gcs.Build) (*downloadResult, error) {
 
-	fmt.Println("Read started...")
+	log := logrus.WithFields(logrus.Fields{"build": build})
+	log.Debug("Read started...")
 	started, err := build.Started()
 	if err != nil {
 		return nil, fmt.Errorf("started: %v", err)
 	}
-	fmt.Println("Read finished...")
+	log.Debug("Read finished...")
 	finished, err := build.Finished()
 	if err != nil {
 		return nil, fmt.Errorf("finished: %v", err)
@@ -55,8 +58,7 @@ func download(ctx context.Context, client *storage.Client, build gcs.Build) (*do
 	ec := make(chan error, 2)
 	artifacts := make(chan string)
 	suitesChan := make(chan gcs.SuitesMeta)
-	fmt.Println("List suites...")
-
+	log.Debug("List suites...")
 	go func() { // err1
 		defer close(artifacts)
 		err := build.Artifacts(artifacts)

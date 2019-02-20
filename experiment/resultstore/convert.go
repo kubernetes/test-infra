@@ -71,7 +71,8 @@ func convertSuiteMeta(suiteMeta gcs.SuitesMeta) resultstore.Suite {
 				Duration: dur(result.Time),
 				Result:   resultstore.Completed,
 			}
-			msg := result.Message()
+			const max = 5000 // truncate messages to this length
+			msg := result.Message(max)
 			switch {
 			case result.Failure != nil:
 				// failing tests have a completed result with an error

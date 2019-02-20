@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"k8s.io/test-infra/testgrid/metadata"
+	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
 func TestInsertLink(t *testing.T) {
@@ -131,7 +132,7 @@ func TestInsertLink(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			changed, err := insertLink(tc.input, viewURL)
+			changed, err := insertLink(&gcs.Started{Metadata: tc.input}, viewURL)
 			switch {
 			case err != nil:
 				if !tc.err {

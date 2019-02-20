@@ -12,11 +12,13 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//prow/flagutil:go_default_library",
+        "//prow/logrusutil:go_default_library",
         "//testgrid/config:go_default_library",
         "//testgrid/metadata:go_default_library",
         "//testgrid/resultstore:go_default_library",
         "//testgrid/util/gcs:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
@@ -45,5 +47,8 @@ go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
-    deps = ["//testgrid/metadata:go_default_library"],
+    deps = [
+        "//testgrid/metadata:go_default_library",
+        "//testgrid/util/gcs:go_default_library",
+    ],
 )
