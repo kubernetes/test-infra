@@ -66,6 +66,12 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 		return false
 	}
 
+	if pj.Status.State == v1.AbortedState {
+		// aborted (new patchset)
+		logrus.WithField("prowjob", pj.ObjectMeta.Name).Info("PJ aborted")
+		return false
+	}
+
 	// has gerrit metadata (scheduled by gerrit adapter)
 	if pj.ObjectMeta.Annotations[client.GerritID] == "" ||
 		pj.ObjectMeta.Annotations[client.GerritInstance] == "" ||
@@ -117,7 +123,7 @@ func (c *Client) Report(pj *v1.ProwJob) error {
 	}
 
 	// generate an aggregated report:
-	total := len(pjsOnRevision)
+	total := 0
 	success := 0
 	message := ""
 
@@ -127,6 +133,11 @@ func (c *Client) Report(pj *v1.ProwJob) error {
 			return nil
 		}
 
+		if pjOnRevision.Status.State == v1.AbortedState {
+			continue
+		}
+
+		total++
 		if pjOnRevision.Status.State == v1.SuccessState {
 			success++
 		}

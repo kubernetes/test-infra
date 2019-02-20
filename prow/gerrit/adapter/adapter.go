@@ -306,6 +306,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		if _, err := c.kc.CreateProwJob(pj); err != nil {
 			logger.WithError(err).Errorf("fail to create prowjob %v", pj)
 		} else {
+			logger.Infof("Triggered Prowjob %s", jSpec.spec.Job)
 			triggeredJobs = append(triggeredJobs, jSpec.spec.Job)
 		}
 	}
