@@ -25,6 +25,7 @@ sinker:
 
 deck:
   spyglass:
+    announcement: "{{if .ArtifactPath}}This job view page will soon replace Gubernator's. For now, you can still <a href='https://gubernator.k8s.io/build/{{.ArtifactPath}}'>visit the Gubernator page</a>. Please send feedback to sig-testing.{{end}}"
     size_limit: 500000000 # 500MB
     gcs_browser_prefix: http://gcsweb.k8s.io/gcs/
     testgrid_config: gs://k8s-testgrid/config
