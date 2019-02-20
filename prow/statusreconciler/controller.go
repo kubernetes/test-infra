@@ -283,7 +283,7 @@ func addedBlockingPresubmits(old, new map[string][]config.Presubmit) map[string]
 	for repo, oldPresubmits := range old {
 		added[repo] = []config.Presubmit{}
 		for _, newPresubmit := range new[repo] {
-			if !newPresubmit.ContextRequired() {
+			if !newPresubmit.ContextRequired() || newPresubmit.NeedsExplicitTrigger() {
 				continue
 			}
 			var found bool
