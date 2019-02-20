@@ -2,44 +2,12 @@ presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-cross
     run_if_changed: '^((build\/|hack\/lib\/).*)|(.*Makefile.*)$'
-    skip_branches:
-    - release-1.9
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
-        - --scenario=execute
-        - --
-        - --env=KUBE_RELEASE_RUN_TESTS=n
-        - make
-        - release
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 7
-            memory: "41Gi"
-
-  - name: pull-kubernetes-cross
-    # typecheck doesn't exist for < 1.10 currently, so we still run cross more often
-    run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
-    branches:
-    - release-1.9
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+      - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -67,7 +35,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+    - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
@@ -92,7 +60,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+    - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
       args:
       - --repo=k8s.io/release
       - --root=/go/src
@@ -116,9 +84,9 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+    - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
       args:
-      - --repo=k8s.io/kubernetes=release-1.13
+      - --repo=k8s.io/kubernetes=release-1.14
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=180
@@ -144,9 +112,9 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+    - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
       args:
-      - --repo=k8s.io/kubernetes=release-1.12
+      - --repo=k8s.io/kubernetes=release-1.13
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=180
@@ -172,9 +140,9 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+    - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
       args:
-      - --repo=k8s.io/kubernetes=release-1.11
+      - --repo=k8s.io/kubernetes=release-1.12
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=180
@@ -200,9 +168,9 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+    - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
       args:
-      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/kubernetes=release-1.11
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=180
@@ -227,7 +195,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+    - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release

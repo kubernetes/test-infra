@@ -6,17 +6,17 @@ presubmits:
     always_run: true
     decorate: true
     skip_branches:
+    - release-1.14
     - release-1.13
     - release-1.12
     - release-1.11
-    - release-1.10
     path_alias: k8s.io/kubernetes
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -45,6 +45,44 @@ presubmits:
             cpu: 4
   - name: pull-kubernetes-verify
     always_run: true
+    decorate: true
+    branches:
+      - release-1.14
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.14
+          imagePullPolicy: Always
+          command:
+            - runner.sh
+          args:
+            - ./hack/jenkins/verify-dockerized.sh
+          env:
+            - name: KUBE_FORCE_VERIFY_CHECKS
+              value: "n"
+            - name: EXCLUDE_TYPECHECK
+              value: "y"
+            - name: EXCLUDE_GODEP
+              value: "y"
+            - name: KUBE_VERIFY_GIT_BRANCH
+              value: master
+            - name: REPO_DIR
+              value: /workspace/k8s.io/kubernetes
+            # TODO(bentheelder): remove bandaid once we have this metadata exposed
+            # properly, first-class
+            - name: METADATA_BANDAID
+              value: "true"
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 4
+  - name: pull-kubernetes-verify
+    always_run: true
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -53,7 +91,6 @@ presubmits:
     - release-1.13
     - release-1.12
     - release-1.11
-    - release-1.10
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
@@ -90,7 +127,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190214-f4092ae69-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -122,23 +159,39 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
+  decorate: true
+  extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: release-1.14
+      path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
-      args:
-      - --repo=k8s.io/kubernetes=release-1.13
-      - --timeout=75
-      - --scenario=kubernetes_verify
-      - --
-      - --branch=release-1.13
-      - --force
-      - --script=./hack/jenkins/verify-dockerized.sh
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          cpu: 4
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.14
+        imagePullPolicy: Always
+        command:
+          - runner.sh
+        args:
+          - ./hack/jenkins/verify-dockerized.sh
+        env:
+          - name: KUBE_FORCE_VERIFY_CHECKS
+            value: "y"
+          - name: EXCLUDE_READONLY_PACKAGE
+            value: "y"
+          - name: KUBE_VERIFY_GIT_BRANCH
+            value: master
+          - name: REPO_DIR
+            value: /workspace/k8s.io/kubernetes
+          # TODO(bentheelder): remove bandaid once we have this metadata exposed
+          # properly, first-class
+          - name: METADATA_BANDAID
+            value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 4
 
 # manual-release-bump-required
 - interval: 2h
@@ -148,13 +201,13 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+    - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
       args:
-      - --repo=k8s.io/kubernetes=release-1.12
+      - --repo=k8s.io/kubernetes=release-1.13
       - --timeout=75
       - --scenario=kubernetes_verify
       - --
-      - --branch=release-1.12
+      - --branch=release-1.13
       - --force
       - --script=./hack/jenkins/verify-dockerized.sh
       # docker-in-docker needs privileged mode
@@ -172,13 +225,13 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+    - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
       args:
-      - --repo=k8s.io/kubernetes=release-1.11
+      - --repo=k8s.io/kubernetes=release-1.12
       - --timeout=75
       - --scenario=kubernetes_verify
       - --
-      - --branch=release-1.11
+      - --branch=release-1.12
       - --force
       - --script=./hack/jenkins/verify-dockerized.sh
       # docker-in-docker needs privileged mode
@@ -196,13 +249,13 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+    - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
       args:
-      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/kubernetes=release-1.11
       - --timeout=75
       - --scenario=kubernetes_verify
       - --
-      - --branch=release-1.10
+      - --branch=release-1.11
       - --force
       - --script=./hack/jenkins/verify-dockerized.sh
       # docker-in-docker needs privileged mode

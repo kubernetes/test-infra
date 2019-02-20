@@ -82,7 +82,7 @@ periodics:
         requests:
           cpu: 4
 
-# manual-release-bump-required
+  # manual-release-bump-required
 - interval: 2h
   name: ci-kubernetes-integration-beta
   labels:
@@ -116,11 +116,11 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
       args:
-      - --repo=k8s.io/kubernetes=release-1.12
+      - --repo=k8s.io/kubernetes=release-1.13
       - --timeout=100
       - --scenario=kubernetes_verify
       - --
-      - --branch=release-1.12
+      - --branch=release-1.13
       - --force
       - --prow
       # docker-in-docker needs privileged mode
@@ -140,11 +140,11 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
       args:
-      - --repo=k8s.io/kubernetes=release-1.11
+      - --repo=k8s.io/kubernetes=release-1.12
       - --timeout=100
       - --scenario=kubernetes_verify
       - --
-      - --branch=release-1.11
+      - --branch=release-1.12
       - --force
       - --prow
       # docker-in-docker needs privileged mode
@@ -164,11 +164,11 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
       args:
-      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/kubernetes=release-1.11
       - --timeout=100
       - --scenario=kubernetes_verify
       - --
-      - --branch=release-1.10
+      - --branch=release-1.11
       - --force
       - --prow
       # docker-in-docker needs privileged mode
