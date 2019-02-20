@@ -120,6 +120,19 @@ type OwnersDirBlacklist struct {
 	Default []string `json:"default"`
 }
 
+// DirBlacklist returns directories which are used to ignore when
+// searching for OWNERS{,_ALIAS} files in a repo.
+func (ownersDirBlacklist OwnersDirBlacklist) DirBlacklist(org, repo string) (blacklist []string) {
+	blacklist = append(blacklist, ownersDirBlacklist.Default...)
+	if bl, ok := ownersDirBlacklist.Repos[org]; ok {
+		blacklist = append(blacklist, bl...)
+	}
+	if bl, ok := ownersDirBlacklist.Repos[org+"/"+repo]; ok {
+		blacklist = append(blacklist, bl...)
+	}
+	return
+}
+
 // PushGateway is a prometheus push gateway.
 type PushGateway struct {
 	// Endpoint is the location of the prometheus pushgateway
