@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	masterRef = "heads/master"
+	masterRef   = "heads/master"
+	tideContext = "tide"
 )
 
 var (
@@ -124,9 +125,15 @@ func HandleGenericComment(ghc githubClient, gc gitClient, oc ownersClient, ce *g
 		return err
 	}
 
+	// Set the state of both the validation job and tide contexts to success,
+	// as they are both required and will prevent the merge
 	if err := ghc.CreateStatus(org, repo, pr.Head.SHA, github.Status{State: "success", Context: validateJobContext}); err != nil {
-		return fmt.Errorf("failed to create status in %s/%s#%d", org, repo, ce.Number)
+		return fmt.Errorf("failed to create %s status in %s/%s#%d", validateJobContext, org, repo, ce.Number)
 	}
+	if err := ghc.CreateStatus(org, repo, pr.Head.SHA, github.Status{State: "success", Context: tideContext}); err != nil {
+		return fmt.Errorf("failed to create %s status in %s/%s#%d", tideContext, org, repo, ce.Number)
+	}
+
 	if err := ghc.Merge(org, repo, pr.Number, github.MergeDetails{SHA: pr.Head.SHA}); err != nil {
 		return createResponseComment(ghc, ce, fmt.Sprintf("Merge failed: %v", err))
 	}

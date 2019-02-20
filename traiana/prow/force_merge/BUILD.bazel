@@ -2,7 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["force_merge.go"],
+    srcs = [
+        "construct_error.go",
+        "force_merge.go",
+    ],
     importpath = "k8s.io/test-infra/traiana/prow/force_merge",
     visibility = ["//visibility:public"],
     deps = [
