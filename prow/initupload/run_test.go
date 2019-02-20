@@ -51,7 +51,7 @@ func TestSpecToStarted(t *testing.T) {
 				RepoVersion: "abcd1234",
 				Pull:        "123",
 				Repos: map[string]string{
-					"kubernetes/test-infra": "abcd1234",
+					"kubernetes/test-infra": "master:deadbeef,123:abcd1234",
 				},
 			},
 		},
@@ -91,7 +91,7 @@ func TestSpecToStarted(t *testing.T) {
 			expected: gcs.Started{
 				RepoVersion: "deadbeef",
 				Repos: map[string]string{
-					"kubernetes/test-infra": "deadbeef",
+					"kubernetes/test-infra": "master:deadbeef",
 					"kubernetes/release":    "v1.10",
 				},
 			},
