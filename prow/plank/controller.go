@@ -411,8 +411,8 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			// Pod is stuck in pending state longer than maxPodPending
 			// abort the job, and talk to Github
 			pj.SetComplete()
-			pj.Status.State = prowapi.AbortedState
-			pj.Status.Description = "Job aborted."
+			pj.Status.State = prowapi.ErrorState
+			pj.Status.Description = "Pod pending timeout."
 
 		default:
 			// Pod is running. Do nothing.
