@@ -13,8 +13,8 @@
     {{if $g.Skip}}
       <tbody class="show-skipped" data-artifact="{{$log.ArtifactName}}" data-offset="{{$g.ByteOffset}}" data-length="{{$g.ByteLength}}" data-start-line="{{$g.Start}}">
       <tr>
-        <td></td>
-        <td><button> skipped {{$g.LinesSkipped}} lines <i class="material-icons" style="font-size: 1em; vertical-align: middle;">unfold_more</i></button></td>
+        <td class="linenum"></td>
+        <td class="linetext"><button> skipped {{$g.LinesSkipped}} lines <i class="material-icons" style="font-size: 1em; vertical-align: middle;">unfold_more</i></button></td>
       </tr>
       </tbody>
     {{else}}
@@ -33,7 +33,7 @@
   {{range .}}
     <tr>
       <td class="linenum">{{.Number}}</td>
-      <td>
+      <td class="linetext">
         <span {{if .Highlighted}}class="line-highlighted"{{end}}>
           {{- range .SubLines -}}<span {{if .Highlighted}}class="match-highlighted"{{end}}>{{.Text}}</span>{{- end -}}
         </span>

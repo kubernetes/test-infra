@@ -1,7 +1,10 @@
 body {
     padding-left: 15px;
     padding-bottom: 10px;
-    width: calc(100% - 15px);
+}
+
+html {
+    overflow-x: hidden;
 }
 
 table button {
@@ -21,6 +24,8 @@ table button {
     margin: 0;
     line-height:1.2;
     color: #fff;
+    table-layout: fixed;
+    width: calc(100% - 30px);
     /*background-color: #212121;*/
 }
 .loglines td {
@@ -41,11 +46,18 @@ td {
 tr {
     border: none;
 }
+
 .linenum {
     user-select: none;
     color: rgba(255,255,2552,0.6);
     text-align: right;
     vertical-align: top;
+    width: 50px;
+    text-overflow: ellipsis;
+}
+
+.linetext {
+    width: calc(100% - 50px);
 }
 
 /* ansi colors from https://en.wikipedia.org/wiki/ANSI_escape_code#Colors */
