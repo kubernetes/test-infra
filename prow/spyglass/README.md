@@ -1,7 +1,7 @@
 [![GoDoc Widget]][GoDoc]
 
 # Spyglass
-A spyglass is an lensed monocular maritime instrument used to see things that may have been
+A spyglass is a lensed monocular maritime instrument used to see things that may have been
 difficult to see otherwise.
 
 Spyglass is a pluggable artifact viewer framework for [Prow](..) and a crude
@@ -79,12 +79,8 @@ Next, implement the necessary functions for a viewer. More specifically,
 implement the following interface (defined in lenses.go):
 ```go
 type Lens interface {
-    // Name returns the name of your lens (which must match the name of the directory it lives in)
-	Name() string
-	// Title returns a human-readable title for your lens.
-	Title() string
-	// Priority returns a number that is used to determine the ordering of your lens (lower is more important)
-	Priority() int
+	// Config returns the name, title, priority, and other information about your lens.
+	Config() LensConfig
 	// Header is used to inject content into the lens's <head>. It will only ever be called once per load.
 	Header(artifacts []Artifact, resourceDir string) string
 	// Body is used to generate the contents of the lens's <body>. It will initially be called with empty data, but
@@ -160,9 +156,9 @@ deck:
   spyglass:
     size_limit: 500e+6 # 500MB
     viewers:
-      "started.json|finished.json": ["metadata-viewer"]
-      "build-log.txt": ["build-log-viewer"]
-      "artifacts/junit.*\\.xml": ["junit-viewer"] # Remember to escape your '\' in yaml strings!
+      "started.json|finished.json": ["metadata"]
+      "build-log.txt": ["buildlog"]
+      "artifacts/junit.*\\.xml": ["junit"] # Remember to escape your '\' in yaml strings!
 ```
 
 More formally, it is a single `spyglass` object under the top-level `deck`
