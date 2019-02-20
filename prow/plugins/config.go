@@ -345,6 +345,9 @@ type Trigger struct {
 	// IgnoreOkToTest makes trigger ignore /ok-to-test comments.
 	// This is a security mitigation to only allow testing from trusted users.
 	IgnoreOkToTest bool `json:"ignore_ok_to_test,omitempty"`
+	// ElideSkippedContexts makes trigger not post "Skipped" contexts for jobs
+	// that could run but do not run.
+	ElideSkippedContexts bool `json:"elide_skipped_contexts,omitempty"`
 }
 
 // Heart contains the configuration for the heart plugin.
