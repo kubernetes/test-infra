@@ -194,11 +194,11 @@ func init() {
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, gcsObj *storage.ObjectHandle, logger *logrus.Entry) (*Controller, error) {
+func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, historyHandle *storage.ObjectHandle, logger *logrus.Entry) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
-	hist, err := history.New(maxRecordsPerPool, gcsObj)
+	hist, err := history.New(maxRecordsPerPool, historyHandle)
 	if err != nil {
 		return nil, fmt.Errorf("error initializing history client: %v", err)
 	}

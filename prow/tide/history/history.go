@@ -39,19 +39,19 @@ import (
 var now = time.Now
 
 type storageObject interface {
-	NewReader(context.Context) (io.ReadCloser, error)
-	NewWriter(context.Context) io.WriteCloser
+	NewReader() (io.ReadCloser, error)
+	NewWriter() io.WriteCloser
 }
 
 type gcsStorageObject struct {
 	*storage.ObjectHandle
 }
 
-func (o gcsStorageObject) NewReader(c context.Context) (io.ReadCloser, error) {
-	return o.ObjectHandle.NewReader(c)
+func (o gcsStorageObject) NewReader() (io.ReadCloser, error) {
+	return o.ObjectHandle.NewReader(context.Background())
 }
-func (o gcsStorageObject) NewWriter(c context.Context) io.WriteCloser {
-	return o.ObjectHandle.NewWriter(c)
+func (o gcsStorageObject) NewWriter() io.WriteCloser {
+	return o.ObjectHandle.NewWriter(context.Background())
 }
 
 // History uses a `*recordLog` per pool to store a record of recent actions that
@@ -66,7 +66,7 @@ type History struct {
 }
 
 func readHistory(maxRecordsPerKey int, obj storageObject) (map[string]*recordLog, error) {
-	reader, err := obj.NewReader(context.Background())
+	reader, err := obj.NewReader()
 	if err == storage.ErrObjectNotExist {
 		// No history exists yet. This is not an error.
 		return map[string]*recordLog{}, nil
@@ -83,38 +83,32 @@ func readHistory(maxRecordsPerKey int, obj storageObject) (map[string]*recordLog
 	if err != nil {
 		return nil, fmt.Errorf("error reading GCS object: %v", err)
 	}
-	var recLogs map[string]*recordLog
-	if err := json.Unmarshal(raw, &recLogs); err != nil {
+	var recordsByPool map[string][]*Record
+	if err := json.Unmarshal(raw, &recordsByPool); err != nil {
 		return nil, fmt.Errorf("error unmarshaling GCS object: %v", err)
 	}
 
-	// Resize recordLogs if needed.
-	for _, recLog := range recLogs {
-		if recLog.Limit != maxRecordsPerKey {
-			// Loop through records oldest to newest starting from the
-			// 'maxRecordsPerKey'th oldest (or the oldest if that DNE).
-			toCopy := maxRecordsPerKey
-			if toCopy > len(recLog.Buff) {
-				toCopy = len(recLog.Buff)
-			}
-			ordered := recLog.toSlice()
-			resizedLog := newRecordLog(maxRecordsPerKey)
-			for i := toCopy - 1; i >= 0; i-- {
-				resizedLog.add(ordered[i])
-			}
-			// Replace with the resized record log.
-			*recLog = *resizedLog
+	// Load records into a new recordLog map.
+	logsByPool := make(map[string]*recordLog, len(recordsByPool))
+	for poolKey, records := range recordsByPool {
+		logsByPool[poolKey] = newRecordLog(maxRecordsPerKey)
+		limit := maxRecordsPerKey
+		if len(records) < limit {
+			limit = len(records)
+		}
+		for i := limit - 1; i >= 0; i-- {
+			logsByPool[poolKey].add(records[i])
 		}
 	}
-	return recLogs, nil
+	return logsByPool, nil
 }
 
-func writeHistory(obj storageObject, hist map[string]*recordLog) error {
+func writeHistory(obj storageObject, hist map[string][]*Record) error {
 	b, err := json.Marshal(hist)
 	if err != nil {
 		return fmt.Errorf("error marshaling history: %v", err)
 	}
-	writer := obj.NewWriter(context.Background())
+	writer := obj.NewWriter()
 	if _, err := fmt.Fprint(writer, string(b)); err != nil {
 		return fmt.Errorf("error writing GCS object: %v", err)
 	}
@@ -198,10 +192,9 @@ func (h *History) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // Flush writes the action history to persistent storage if configured to do so.
 func (h *History) Flush() {
 	if h.gcsObj != nil {
-		h.Lock()
-		defer h.Unlock()
+		records := h.AllRecords()
 		start := time.Now()
-		err := writeHistory(gcsStorageObject{h.gcsObj}, h.logs)
+		err := writeHistory(gcsStorageObject{h.gcsObj}, records)
 		log := logrus.WithField("duration", time.Since(start).String())
 		if err != nil {
 			log.WithError(err).Error("Error flushing action history to GCS.")
@@ -225,9 +218,9 @@ func (h *History) AllRecords() map[string][]*Record {
 
 // recordLog is a space efficient, limited size, append only list.
 type recordLog struct {
-	Buff  []*Record
-	Head  int
-	Limit int
+	buff  []*Record
+	head  int
+	limit int
 
 	// cachedSlice is the cached, in-order slice. Use toSlice(), don't access directly.
 	// We cache this value because most pools don't change between sync loops.
@@ -236,8 +229,8 @@ type recordLog struct {
 
 func newRecordLog(sizeLimit int) *recordLog {
 	return &recordLog{
-		Head:  -1,
-		Limit: sizeLimit,
+		head:  -1,
+		limit: sizeLimit,
 	}
 }
 
@@ -245,13 +238,13 @@ func (rl *recordLog) add(rec *Record) {
 	// Start by invalidating cached slice.
 	rl.cachedSlice = nil
 
-	rl.Head = (rl.Head + 1) % rl.Limit
-	if len(rl.Buff) < rl.Limit {
+	rl.head = (rl.head + 1) % rl.limit
+	if len(rl.buff) < rl.limit {
 		// The log is not yet full. Append the record.
-		rl.Buff = append(rl.Buff, rec)
+		rl.buff = append(rl.buff, rec)
 	} else {
 		// The log is full. Overwrite the oldest record.
-		rl.Buff[rl.Head] = rec
+		rl.buff[rl.head] = rec
 	}
 }
 
@@ -260,10 +253,10 @@ func (rl *recordLog) toSlice() []*Record {
 		return rl.cachedSlice
 	}
 
-	res := make([]*Record, 0, len(rl.Buff))
-	for i := 0; i < len(rl.Buff); i++ {
-		index := (rl.Limit + rl.Head - i) % rl.Limit
-		res = append(res, rl.Buff[index])
+	res := make([]*Record, 0, len(rl.buff))
+	for i := 0; i < len(rl.buff); i++ {
+		index := (rl.limit + rl.head - i) % rl.limit
+		res = append(res, rl.buff[index])
 	}
 	rl.cachedSlice = res
 	return res

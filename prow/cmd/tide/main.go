@@ -57,11 +57,14 @@ type options struct {
 	github     prowflagutil.GitHubOptions
 
 	maxRecordsPerPool int
-
 	// The following are used for persisting action history in GCS.
 	gcsCredentialsFile string
-	historyURI         gcs.Path
-	historyGCSObj      *storage.ObjectHandle // Generated using the above two values.
+	// historyURI is the GCS object URI where Tide should store its action
+	// history. The object should not be publicly readable if any repos handled
+	// by the Tide instance are sensitive, but otherwise can be any object path
+	// that the credentials can write to.
+	historyURI    gcs.Path
+	historyGCSObj *storage.ObjectHandle // Generated using the above two values.
 }
 
 func (o *options) Validate() error {
@@ -107,8 +110,8 @@ func gatherOptions() options {
 	fs.IntVar(&o.statusThrottle, "status-hourly-tokens", 400, "The maximum number of tokens per hour to be used by the status controller.")
 
 	fs.IntVar(&o.maxRecordsPerPool, "max-records-per-pool", 1000, "The maximum number of history records stored for an individual Tide pool.")
-	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "File where Google Cloud authentication credentials are stored.")
-	fs.Var(&o.historyURI, "history-uri", "The URI at which Tide action history should be stored. Currently this must be a GCS URI like 'gs://bucket/path/to/object'.")
+	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "File where Google Cloud authentication credentials are stored. Required with --history-uri.")
+	fs.Var(&o.historyURI, "history-uri", "The URI at which Tide action history should be stored. It should not be publicly readable if any repos are sensitive. Must be a GCS URI like 'gs://bucket/path/to/object'.")
 
 	fs.Parse(os.Args[1:])
 	return o

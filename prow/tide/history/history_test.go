@@ -17,7 +17,6 @@ limitations under the License.
 package history
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -27,8 +26,8 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
-
 	"k8s.io/apimachinery/pkg/util/diff"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
@@ -135,14 +134,14 @@ type testStorage struct {
 	dne     bool
 }
 
-func (t *testStorage) NewReader(context.Context) (io.ReadCloser, error) {
+func (t *testStorage) NewReader() (io.ReadCloser, error) {
 	if t.dne {
 		return nil, storage.ErrObjectNotExist
 	}
 	return t, nil
 }
 
-func (t *testStorage) NewWriter(context.Context) io.WriteCloser {
+func (t *testStorage) NewWriter() io.WriteCloser {
 	return t
 }
 
@@ -195,75 +194,43 @@ func TestReadHistory(t *testing.T) {
 		},
 		{
 			name:           "read simple history",
-			raw:            `{"o/r:b":{"Buff":[{"time":"0001-01-01T00:00:00Z","action":"MERGE"}],"Head":0,"Limit":3}}`,
+			raw:            `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE"}]}`,
 			maxRecsPerPool: 3,
 			expectedHist: map[string]*recordLog{
-				"o/r:b": {Buff: []*Record{{Action: "MERGE"}}, Head: 0, Limit: 3},
+				"o/r:b": {buff: []*Record{{Action: "MERGE"}}, head: 0, limit: 3},
 			},
 		},
 		{
-			name:           "read history with wrapped recordLog",
-			raw:            `{"o/r:b":{"Buff":[{"time":"0001-01-01T00:00:00Z","action":"MERGE4"},{"time":"0001-01-01T00:00:00Z","action":"MERGE2"},{"time":"0001-01-01T00:00:00Z","action":"MERGE3"}],"Head":0,"Limit":3}}`,
+			name:           "read history with full recordLog",
+			raw:            `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE4"},{"time":"0001-01-01T00:00:00Z","action":"MERGE3"},{"time":"0001-01-01T00:00:00Z","action":"MERGE2"}]}`,
 			maxRecsPerPool: 3,
 			expectedHist: map[string]*recordLog{
-				"o/r:b": {Buff: []*Record{{Action: "MERGE4"}, {Action: "MERGE2"}, {Action: "MERGE3"}}, Head: 0, Limit: 3},
+				"o/r:b": {buff: []*Record{{Action: "MERGE2"}, {Action: "MERGE3"}, {Action: "MERGE4"}}, head: 2, limit: 3},
 			},
 		},
 		{
 			name:           "read history, with multiple pools",
-			raw:            `{"o/r:b":{"Buff":[{"time":"0001-01-01T00:00:00Z","action":"MERGE"}],"Head":0,"Limit":3},"o/r:b2":{"Buff":[{"time":"0001-01-01T00:00:00Z","action":"MERGE"},{"time":"0001-01-01T00:00:00Z","action":"MERGE2"}],"Head":1,"Limit":3}}`,
+			raw:            `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE"}],"o/r:b2":[{"time":"0001-01-01T00:00:00Z","action":"MERGE2"},{"time":"0001-01-01T00:00:00Z","action":"MERGE"}]}`,
 			maxRecsPerPool: 3,
 			expectedHist: map[string]*recordLog{
-				"o/r:b":  {Buff: []*Record{{Action: "MERGE"}}, Head: 0, Limit: 3},
-				"o/r:b2": {Buff: []*Record{{Action: "MERGE"}, {Action: "MERGE2"}}, Head: 1, Limit: 3},
-			},
-		},
-		{
-			name:           "read and truncate unused space",
-			raw:            `{"o/r:b":{"Buff":[{"time":"0001-01-01T00:00:00Z","action":"MERGE1"},{"time":"0001-01-01T00:00:00Z","action":"MERGE2"},{"time":"0001-01-01T00:00:00Z","action":"MERGE3"}],"Head":2,"Limit":4}}`,
-			maxRecsPerPool: 3,
-			expectedHist: map[string]*recordLog{
-				"o/r:b": {Buff: []*Record{{Action: "MERGE1"}, {Action: "MERGE2"}, {Action: "MERGE3"}}, Head: 2, Limit: 3},
+				"o/r:b":  {buff: []*Record{{Action: "MERGE"}}, head: 0, limit: 3},
+				"o/r:b2": {buff: []*Record{{Action: "MERGE"}, {Action: "MERGE2"}}, head: 1, limit: 3},
 			},
 		},
 		{
 			name:           "read and truncate",
-			raw:            `{"o/r:b":{"Buff":[{"time":"0001-01-01T00:00:00Z","action":"MERGE1"},{"time":"0001-01-01T00:00:00Z","action":"MERGE2"},{"time":"0001-01-01T00:00:00Z","action":"MERGE3"}],"Head":2,"Limit":4}}`,
+			raw:            `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE3"},{"time":"0001-01-01T00:00:00Z","action":"MERGE2"},{"time":"0001-01-01T00:00:00Z","action":"MERGE1"}]}`,
 			maxRecsPerPool: 2,
 			expectedHist: map[string]*recordLog{
-				"o/r:b": {Buff: []*Record{{Action: "MERGE2"}, {Action: "MERGE3"}}, Head: 1, Limit: 2},
-			},
-		},
-		{
-			name:           "read and truncate full record log",
-			raw:            `{"o/r:b":{"Buff":[{"time":"0001-01-01T00:00:00Z","action":"MERGE1"},{"time":"0001-01-01T00:00:00Z","action":"MERGE2"},{"time":"0001-01-01T00:00:00Z","action":"MERGE3"}],"Head":2,"Limit":3}}`,
-			maxRecsPerPool: 2,
-			expectedHist: map[string]*recordLog{
-				"o/r:b": {Buff: []*Record{{Action: "MERGE2"}, {Action: "MERGE3"}}, Head: 1, Limit: 2},
-			},
-		},
-		{
-			name:           "read and truncate history with wrapped recordLog",
-			raw:            `{"o/r:b":{"Buff":[{"time":"0001-01-01T00:00:00Z","action":"MERGE4"},{"time":"0001-01-01T00:00:00Z","action":"MERGE5"},{"time":"0001-01-01T00:00:00Z","action":"MERGE2"},{"time":"0001-01-01T00:00:00Z","action":"MERGE3"}],"Head":1,"Limit":4}}`,
-			maxRecsPerPool: 3,
-			expectedHist: map[string]*recordLog{
-				"o/r:b": {Buff: []*Record{{Action: "MERGE3"}, {Action: "MERGE4"}, {Action: "MERGE5"}}, Head: 2, Limit: 3},
+				"o/r:b": {buff: []*Record{{Action: "MERGE2"}, {Action: "MERGE3"}}, head: 1, limit: 2},
 			},
 		},
 		{
 			name:           "read and grow record log",
-			raw:            `{"o/r:b":{"Buff":[{"time":"0001-01-01T00:00:00Z","action":"MERGE1"},{"time":"0001-01-01T00:00:00Z","action":"MERGE2"},{"time":"0001-01-01T00:00:00Z","action":"MERGE3"}],"Head":2,"Limit":3}}`,
+			raw:            `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE3"},{"time":"0001-01-01T00:00:00Z","action":"MERGE2"},{"time":"0001-01-01T00:00:00Z","action":"MERGE1"}]}`,
 			maxRecsPerPool: 5,
 			expectedHist: map[string]*recordLog{
-				"o/r:b": {Buff: []*Record{{Action: "MERGE1"}, {Action: "MERGE2"}, {Action: "MERGE3"}}, Head: 2, Limit: 5},
-			},
-		},
-		{
-			name:           "read and grow wrapped record log",
-			raw:            `{"o/r:b":{"Buff":[{"time":"0001-01-01T00:00:00Z","action":"MERGE4"},{"time":"0001-01-01T00:00:00Z","action":"MERGE2"},{"time":"0001-01-01T00:00:00Z","action":"MERGE3"}],"Head":0,"Limit":3}}`,
-			maxRecsPerPool: 5,
-			expectedHist: map[string]*recordLog{
-				"o/r:b": {Buff: []*Record{{Action: "MERGE2"}, {Action: "MERGE3"}, {Action: "MERGE4"}}, Head: 2, Limit: 5},
+				"o/r:b": {buff: []*Record{{Action: "MERGE1"}, {Action: "MERGE2"}, {Action: "MERGE3"}}, head: 2, limit: 5},
 			},
 		},
 	}
@@ -288,49 +255,42 @@ func TestReadHistory(t *testing.T) {
 func TestWriteHistory(t *testing.T) {
 	tcs := []struct {
 		name            string
-		hist            map[string]*recordLog
+		recMap          map[string][]*Record
 		expectedWritten string
 	}{
 		{
 			name:            "write empty history",
-			hist:            map[string]*recordLog{},
+			recMap:          map[string][]*Record{},
 			expectedWritten: `{}`,
 		},
 		{
 			name: "write simple history",
-			hist: map[string]*recordLog{
-				"o/r:b": {Buff: []*Record{{Action: "MERGE"}}, Head: 0, Limit: 3},
+			recMap: map[string][]*Record{
+				"o/r:b": {{Action: "MERGE"}},
 			},
-			expectedWritten: `{"o/r:b":{"Buff":[{"time":"0001-01-01T00:00:00Z","action":"MERGE"}],"Head":0,"Limit":3}}`,
+			expectedWritten: `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE"}]}`,
 		},
 		{
-			name: "don't write cachedSlice",
-			hist: map[string]*recordLog{
-				"o/r:b": {Buff: []*Record{{Action: "MERGE"}}, Head: 0, Limit: 3, cachedSlice: []*Record{{Action: "MERGE"}}},
+			name: "write history with multiple records",
+			recMap: map[string][]*Record{
+				"o/r:b": {{Action: "MERGE3"}, {Action: "MERGE2"}, {Action: "MERGE1"}},
 			},
-			expectedWritten: `{"o/r:b":{"Buff":[{"time":"0001-01-01T00:00:00Z","action":"MERGE"}],"Head":0,"Limit":3}}`,
-		},
-		{
-			name: "write history with wrapped recordLog",
-			hist: map[string]*recordLog{
-				"o/r:b": {Buff: []*Record{{Action: "MERGE4"}, {Action: "MERGE2"}, {Action: "MERGE3"}}, Head: 0, Limit: 3},
-			},
-			expectedWritten: `{"o/r:b":{"Buff":[{"time":"0001-01-01T00:00:00Z","action":"MERGE4"},{"time":"0001-01-01T00:00:00Z","action":"MERGE2"},{"time":"0001-01-01T00:00:00Z","action":"MERGE3"}],"Head":0,"Limit":3}}`,
+			expectedWritten: `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE3"},{"time":"0001-01-01T00:00:00Z","action":"MERGE2"},{"time":"0001-01-01T00:00:00Z","action":"MERGE1"}]}`,
 		},
 		{
 			name: "write history, with multiple pools",
-			hist: map[string]*recordLog{
-				"o/r:b":  {Buff: []*Record{{Action: "MERGE"}}, Head: 0, Limit: 3},
-				"o/r:b2": {Buff: []*Record{{Action: "MERGE"}, {Action: "MERGE2"}}, Head: 1, Limit: 3},
+			recMap: map[string][]*Record{
+				"o/r:b":  {{Action: "MERGE"}},
+				"o/r:b2": {{Action: "MERGE2"}, {Action: "MERGE1"}},
 			},
-			expectedWritten: `{"o/r:b":{"Buff":[{"time":"0001-01-01T00:00:00Z","action":"MERGE"}],"Head":0,"Limit":3},"o/r:b2":{"Buff":[{"time":"0001-01-01T00:00:00Z","action":"MERGE"},{"time":"0001-01-01T00:00:00Z","action":"MERGE2"}],"Head":1,"Limit":3}}`,
+			expectedWritten: `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE"}],"o/r:b2":[{"time":"0001-01-01T00:00:00Z","action":"MERGE2"},{"time":"0001-01-01T00:00:00Z","action":"MERGE1"}]}`,
 		},
 	}
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
 			obj := &testStorage{}
-			if err := writeHistory(obj, tc.hist); err != nil {
+			if err := writeHistory(obj, tc.recMap); err != nil {
 				t.Fatalf("Unexpected error writing history: %v.", err)
 			}
 			if obj.content != tc.expectedWritten {
