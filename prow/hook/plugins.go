@@ -59,6 +59,7 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/wip"
 	_ "k8s.io/test-infra/prow/plugins/yuks"
 
-	_ "k8s.io/test-infra/traiana/prow/plugins/force-merge"
+	_ "k8s.io/test-infra/traiana/prow/plugins/catalog_force_merge"
+	_ "k8s.io/test-infra/traiana/prow/plugins/domain_force_merge"
 	_ "k8s.io/test-infra/traiana/prow/plugins/undoer"
 )

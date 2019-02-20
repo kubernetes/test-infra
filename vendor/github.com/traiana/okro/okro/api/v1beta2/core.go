@@ -19,13 +19,16 @@ type Meta struct {
 
 type Env struct {
 	// environment name
-	Name string `json:"string"`
+	Name string `json:"name"`
 
 	// object metadata
 	Meta `json:",inline"`
 
 	// user-facing name
 	DisplayName string `json:"display_name"`
+
+	// sensitive flag (prod-like)
+	Sensitive bool `json:"sensitive,omitempty"`
 
 	// tenants hosting domains in this env (read only)
 	Tenants []string `json:"tenants"`

@@ -2,6 +2,7 @@ package v1beta2
 
 import (
 	. "github.com/go-ozzo/ozzo-validation"
+	"github.com/traiana/okro/okro/pkg/util/validation"
 )
 
 func (e Env) Validate() error {
@@ -22,10 +23,10 @@ func (t Tenant) Validate() error {
 		return err
 	}
 
-	ddDomainURLs := deduper{}
+	ddDomainURLs := validation.Deduper{}
 	for i, ds := range t.DomainURLs {
-		if dup := ddDomainURLs.add(ds.Env, "domains", i); dup != nil {
-			return dup.asNested("domain")
+		if dup := ddDomainURLs.Add(ds.Env, "domains", i); dup != nil {
+			return dup.AsNested("domain")
 		}
 	}
 

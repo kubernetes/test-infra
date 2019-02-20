@@ -4,6 +4,7 @@ import (
 	. "github.com/go-ozzo/ozzo-validation"
 
 	"github.com/traiana/okro/okro/pkg/util/errorx"
+	"github.com/traiana/okro/okro/pkg/util/validation"
 )
 
 func (b Build) Validate() error {
@@ -12,7 +13,9 @@ func (b Build) Validate() error {
 		Field(&b.Labels, labelsRule),
 		Field(&b.Pipeline, Required),
 		Field(&b.PipelineRevision, Required),
-		Field(&b.Source, Required),
+		Field(&b.SourceURL, Required),
+		Field(&b.SourceOwner, Required),
+		Field(&b.SourceName, Required),
 		Field(&b.SourceRef, Required),
 		Field(&b.SourceRevision, Required),
 		Field(&b.Artifacts),
@@ -30,20 +33,20 @@ func (b Build) Validate() error {
 	}
 
 	// unique artifact name
-	ddArtifact := deduper{}
+	ddArtifact := validation.Deduper{}
 	for i, a := range b.Artifacts {
-		if dup := ddArtifact.add(a.Name, "artifacts", i); dup != nil {
-			return dup.asNested("artifact")
+		if dup := ddArtifact.Add(a.Name, "artifacts", i); dup != nil {
+			return dup.AsNested("artifact")
 		}
 	}
 
 	// unique module name, valid module artifact
-	ddModule := deduper{}
+	ddModule := validation.Deduper{}
 	for i, m := range b.Modules {
-		if dup := ddModule.add(m.Name, "modules", i); dup != nil {
-			return dup.asNested("module")
+		if dup := ddModule.Add(m.Name, "modules", i); dup != nil {
+			return dup.AsNested("module")
 		}
-		if !ddArtifact.has(m.Artifact) {
+		if !ddArtifact.Has(m.Artifact) {
 			err := errorx.Newf("unknown artifact reference %q", m.Artifact)
 			return errorx.Deep(err, "modules", i)
 		}
@@ -74,10 +77,10 @@ func (m Module) Validate() error {
 	}
 
 	// unique endpoint name
-	ddEndpoint := deduper{}
+	ddEndpoint := validation.Deduper{}
 	for i, ep := range m.Endpoints {
-		if dup := ddEndpoint.add(ep.Name, "endpoints", i); dup != nil {
-			return dup.asNested("endpoint")
+		if dup := ddEndpoint.Add(ep.Name, "endpoints", i); dup != nil {
+			return dup.AsNested("endpoint")
 		}
 	}
 
@@ -95,11 +98,11 @@ func (ep Endpoint) Validate() error {
 	}
 
 	// unique serve
-	ddSrv := deduper{}
+	ddSrv := validation.Deduper{}
 	for i, s := range ep.Serves {
 		key := aggr(s.Tenant, s.APIGroup, s.API)
-		if dup := ddSrv.add(key, "serves", i); dup != nil {
-			return dup.asNested("serve")
+		if dup := ddSrv.Add(key, "serves", i); dup != nil {
+			return dup.AsNested("serve")
 		}
 	}
 
@@ -115,20 +118,20 @@ func (w Wants) Validate() error {
 	}
 
 	// unique apis
-	ddAPIs := deduper{}
+	ddAPIs := validation.Deduper{}
 	for i, a := range w.APIs {
 		key := aggr(a.Tenant, a.APIGroup, a.API)
-		if dup := ddAPIs.add(key, "apis", i); dup != nil {
-			return dup.asNested("api dependency")
+		if dup := ddAPIs.Add(key, "apis", i); dup != nil {
+			return dup.AsNested("api dependency")
 		}
 	}
 
 	// unique topics
-	ddTopics := deduper{}
+	ddTopics := validation.Deduper{}
 	for i, a := range w.Topics {
 		key := aggr(a.Tenant, a.Topic)
-		if dup := ddTopics.add(key, "topics", i); dup != nil {
-			return dup.asNested("topic dependency")
+		if dup := ddTopics.Add(key, "topics", i); dup != nil {
+			return dup.AsNested("topic dependency")
 		}
 	}
 

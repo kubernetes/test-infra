@@ -38,7 +38,7 @@ type Exposure struct {
 }
 
 type APIGroup struct {
-	// api group name (should be namespaced and globally unique)
+	// api group name
 	Name string `json:"name"`
 
 	// object metadata
@@ -55,7 +55,7 @@ type APIGroup struct {
 }
 
 type API struct {
-	// api name (e.g. v1alpha1, v1beta3, v1, v2).
+	// api name (e.g. v1alpha1, v1beta3, v1-http, v2-grpc).
 	// all implementations of a given api are implicitly regarded as backwards compatible.
 	// breaking changes should create a new api under the same group.
 	Name string `json:"name"`

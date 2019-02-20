@@ -4,6 +4,7 @@ import (
 	. "github.com/go-ozzo/ozzo-validation"
 
 	"github.com/traiana/okro/okro/pkg/util/errorx"
+	"github.com/traiana/okro/okro/pkg/util/validation"
 )
 
 var (
@@ -20,18 +21,18 @@ func (c Catalog) Validate() error {
 	}
 
 	// unique api group name
-	ddAPIGroup := deduper{}
+	ddAPIGroup := validation.Deduper{}
 	for i, a := range c.APIGroups {
-		if dup := ddAPIGroup.add(a.Name, "apigroups", i); dup != nil {
-			return dup.asNested("api group")
+		if dup := ddAPIGroup.Add(a.Name, "apigroups", i); dup != nil {
+			return dup.AsNested("api group")
 		}
 	}
 
 	// unique topic name
-	ddTopic := deduper{}
+	ddTopic := validation.Deduper{}
 	for i, p := range c.Topics {
-		if dup := ddTopic.add(p.Name, "topics", i); dup != nil {
-			return dup.asNested("topic")
+		if dup := ddTopic.Add(p.Name, "topics", i); dup != nil {
+			return dup.AsNested("topic")
 		}
 	}
 
@@ -49,26 +50,26 @@ func (ag APIGroup) Validate() error {
 	}
 
 	// unique api name per group
-	ddAPI := deduper{}
+	ddAPI := validation.Deduper{}
 	for i, v := range ag.APIs {
-		if dup := ddAPI.add(v.Name, "apis", i); dup != nil {
-			return dup.asNested("api")
+		if dup := ddAPI.Add(v.Name, "apis", i); dup != nil {
+			return dup.AsNested("api")
 		}
 	}
 
 	// preferred api declared
-	if !ddAPI.has(ag.PreferredAPI) {
+	if !ddAPI.Has(ag.PreferredAPI) {
 		err := errorx.Newf("unknown api %q", ag.PreferredAPI)
 		return errorx.Errors{"preferred_api": err}
 	}
 
 	// unique path per api group (only http/grpc)
-	ddPath := deduper{}
+	ddPath := validation.Deduper{}
 	for i, a := range ag.APIs {
 		switch a.Protocol {
 		case ProtocolHTTP, ProtocolGRPC:
-			if dup := ddPath.add(a.Path, "apis", i); dup != nil {
-				return dup.asNested("api path")
+			if dup := ddPath.Add(a.Path, "apis", i); dup != nil {
+				return dup.AsNested("api path")
 			}
 		}
 	}

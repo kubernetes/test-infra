@@ -6,6 +6,7 @@ import (
 	. "github.com/go-ozzo/ozzo-validation"
 
 	"github.com/traiana/okro/okro/pkg/util/errorx"
+	"github.com/traiana/okro/okro/pkg/util/validation"
 )
 
 var (
@@ -50,15 +51,15 @@ func (d Domain) Validate() error {
 
 	if len(d.Realms) > 0 {
 		// unique realm name
-		ddRealm := deduper{}
+		ddRealm := validation.Deduper{}
 		for i, r := range d.Realms {
-			if dup := ddRealm.add(r.Name, "realms", i); dup != nil {
-				return dup.asNested("realm")
+			if dup := ddRealm.Add(r.Name, "realms", i); dup != nil {
+				return dup.AsNested("realm")
 			}
 		}
 
 		// main realm exists
-		if !ddRealm.has(ResolverMain) {
+		if !ddRealm.Has(ResolverMain) {
 			return errorx.New("a non-empty domain must contain a main realm")
 		}
 	}
@@ -70,7 +71,7 @@ func (r Realm) Validate() error {
 	if err := ValidateStruct(&r,
 		Field(&r.Name, nameRule),
 		Field(&r.Labels, labelsRule),
-		Field(&r.Resolver, resolverRule),
+		Field(&r.Resolver, Required, resolverRule),
 		Field(&r.Tasks),
 		Field(&r.Resources),
 	); err != nil {
@@ -78,10 +79,10 @@ func (r Realm) Validate() error {
 	}
 
 	// unique task name
-	ddTask := deduper{}
+	ddTask := validation.Deduper{}
 	for i, t := range r.Tasks {
-		if dup := ddTask.add(t.Name, "tasks", i); dup != nil {
-			return dup.asNested("task")
+		if dup := ddTask.Add(t.Name, "tasks", i); dup != nil {
+			return dup.AsNested("task")
 		}
 	}
 
@@ -100,11 +101,11 @@ func (t Task) Validate() error {
 
 	// unique module (build.module).
 	// releases must be resolved into builds before this runs
-	ddModule := deduper{}
+	ddModule := validation.Deduper{}
 	for i, m := range t.Modules {
 		key := aggr(m.Build, m.Module)
-		if dup := ddModule.add(key, "modules", i); dup != nil {
-			return dup.asNested("module")
+		if dup := ddModule.Add(key, "modules", i); dup != nil {
+			return dup.AsNested("module")
 		}
 	}
 
@@ -138,23 +139,23 @@ func (s StaticDependencyManagement) Validate() error {
 	}
 
 	// unique modify target
-	ddMod := deduper{}
+	ddMod := validation.Deduper{}
 	for i, m := range s.Modify {
 		key := aggr(m.TargetKind, m.Target)
-		if dup := ddMod.add(key, "modify", i); dup != nil {
-			return dup.asNested("dependency modification")
+		if dup := ddMod.Add(key, "modify", i); dup != nil {
+			return dup.AsNested("dependency modification")
 		}
 	}
 
 	return nil
 }
 
-func (dr DependencyRule) Validate() error {
-	return ValidateStruct(&dr,
-		Field(&dr.TargetKind, Required, targetKindRule),
-		Field(&dr.Target, Required, nameRefRule, targetRule),
-		Field(&dr.Resolver, getResolverRule(dr.TargetKind)),
-		Field(&dr.Constraints, labelsRule),
+func (d DependencyRule) Validate() error {
+	return ValidateStruct(&d,
+		Field(&d.TargetKind, Required, targetKindRule),
+		Field(&d.Target, Required, nameRefRule, targetRule),
+		Field(&d.Resolver, getResolverRule(d.TargetKind)),
+		Field(&d.Constraints, labelsRule),
 	)
 }
 
@@ -167,33 +168,33 @@ func (d DynamicDependencyManagement) Validate() error {
 	}
 
 	// unique add
-	ddAdd := deduper{}
+	ddAdd := validation.Deduper{}
 	for i, a := range d.Add {
 		key := aggr(a.TargetKind, a.Target)
-		if dup := ddAdd.add(key, "add", i); dup != nil {
-			return dup.asNested("dependency addition")
+		if dup := ddAdd.Add(key, "add", i); dup != nil {
+			return dup.AsNested("dependency addition")
 		}
 	}
 
 	// unique select
-	ddSel := deduper{}
+	ddSel := validation.Deduper{}
 	for i, s := range d.AddSelection {
-		key := s.Sig()
-		if dup := ddSel.add(key, "select", i); dup != nil {
-			return dup.asNested("dependency selection (catalog+kind+match signature)")
+		key := s.GeneratedName()
+		if dup := ddSel.Add(key, "select", i); dup != nil {
+			return dup.AsNested("dependency selection (catalog+kind+match signature)")
 		}
 	}
 
 	return nil
 }
 
-func (ds DependencySelection) Validate() error {
-	return ValidateStruct(&ds,
-		Field(&ds.Catalog, Required, nameRefRule),
-		Field(&ds.TargetKind, Required, targetKindRule),
-		Field(&ds.Resolver, getResolverRule(ds.TargetKind)),
-		Field(&ds.MatchLabels, Required, labelsRule),
-		Field(&ds.Constraints, labelsRule),
+func (d DependencySelection) Validate() error {
+	return ValidateStruct(&d,
+		Field(&d.Catalog, Required, nameRefRule),
+		Field(&d.TargetKind, Required, targetKindRule),
+		Field(&d.Resolver, getResolverRule(d.TargetKind)),
+		Field(&d.MatchLabels, Required, labelsRule),
+		Field(&d.Constraints, labelsRule),
 	)
 }
 
@@ -205,10 +206,10 @@ func (r Resources) Validate() error {
 	}
 
 	// unique topic
-	ddTopic := deduper{}
+	ddTopic := validation.Deduper{}
 	for i, t := range r.Topics {
-		if dup := ddTopic.add(t.Name, "topics", i); dup != nil {
-			return dup.asNested("topic projection")
+		if dup := ddTopic.Add(t.Name, "topics", i); dup != nil {
+			return dup.AsNested("topic projection")
 		}
 	}
 

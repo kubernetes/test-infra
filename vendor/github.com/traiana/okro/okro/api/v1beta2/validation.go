@@ -6,7 +6,8 @@ import (
 	"strings"
 
 	. "github.com/go-ozzo/ozzo-validation"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/validation"
+	k8sval1 "k8s.io/apimachinery/pkg/apis/meta/v1/validation"
+	k8sval2 "k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 
 	"github.com/traiana/okro/okro/pkg/util/errorx"
@@ -76,40 +77,6 @@ func valuesIn(values []interface{}) *InRule {
 	return In(values...).Error(err)
 }
 
-// helps check for duplicate keys in a nested structure
-type deduper map[string][]interface{}
-
-func (d deduper) add(key string, path ...interface{}) *dup {
-	if prev, ok := d[key]; ok {
-		return &dup{
-			Key:   key,
-			Path1: prev,
-			Path2: path,
-		}
-	}
-	d[key] = path
-	return nil
-}
-
-func (d deduper) has(key string) bool {
-	_, ok := d[key]
-	return ok
-}
-
-type dup struct {
-	Key   string
-	Path1 []interface{}
-	Path2 []interface{}
-}
-
-func (d *dup) asNested(subject string) error {
-	cause := fmt.Errorf("duplicate %s found: %q", subject, d.Key)
-	es := errorx.Errors{}
-	es.Insert(cause, d.Path1)
-	es.Insert(cause, d.Path2)
-	return es
-}
-
 func aggr(v ...interface{}) string {
 	fmts := strings.Repeat("%v.", len(v))
 	str := fmt.Sprintf(fmts, v...)
@@ -117,6 +84,16 @@ func aggr(v ...interface{}) string {
 }
 
 func validateLabels(labels map[string]string) error {
-	errlist := validation.ValidateLabels(labels, field.NewPath("labels"))
-	return errlist.ToAggregate()
+	es := errorx.Errors{}
+	fld := field.NewPath("label")
+	for k, v := range labels {
+		errs := k8sval1.ValidateLabelName(k, field.NewPath(k))
+		for _, msg := range k8sval2.IsValidLabelValue(v) {
+			errs = append(errs, field.Invalid(fld, v, msg))
+		}
+		if err := errs.ToAggregate(); err != nil {
+			es.InsertVar(err, k)
+		}
+	}
+	return es.Normalize()
 }

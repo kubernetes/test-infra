@@ -1,0 +1,29 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["force_merge.go"],
+    importpath = "k8s.io/test-infra/traiana/prow/force_merge",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//prow/git:go_default_library",
+        "//prow/github:go_default_library",
+        "//prow/plugins:go_default_library",
+        "//prow/repoowners:go_default_library",
+        "//vendor/github.com/traiana/okro/okro/api/v1beta2:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

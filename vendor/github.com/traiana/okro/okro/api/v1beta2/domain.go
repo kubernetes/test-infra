@@ -1,6 +1,10 @@
 package v1beta2
 
-import "github.com/traiana/okro/okro/pkg/util/hashx"
+import (
+	"fmt"
+
+	"github.com/traiana/okro/okro/pkg/util/hashx"
+)
 
 const (
 	ResolverTask  = "task"
@@ -94,10 +98,14 @@ type ModuleProjection struct {
 	DependencyManagement *DependencyManagement `json:"dependency_management,omitempty"`
 
 	// allocated ports (set by the server)
-	Ports []*Port `json:"ports"`
+	Ports []*Port `json:"ports,omitempty"`
 
 	// bindings (set by the server)
-	Bindings []*Binding `json:"bindings"`
+	Bindings []*Binding `json:"bindings,omitempty"`
+}
+
+func (m ModuleProjection) GeneratedName() string {
+	return fmt.Sprintf("%s-%s", m.Build, m.Module)
 }
 
 // todo query undeclared bindings
@@ -139,8 +147,8 @@ type DependencyRule struct {
 	Constraints map[string]string `json:"constraints,omitempty"`
 }
 
-func (d DependencyRule) Sig() string {
-	return hashx.Short(d.TargetKind, d.Target)
+func (d DependencyRule) GeneratedName(dep string) string {
+	return hashx.Short(dep, d.TargetKind, d.Target)
 }
 
 type DependencySelection struct {
@@ -165,7 +173,7 @@ type DependencySelection struct {
 	Constraints map[string]string `json:"constraints,omitempty"`
 }
 
-func (d DependencySelection) Sig() string {
+func (d DependencySelection) GeneratedName() string {
 	s := []string{d.Catalog, d.TargetKind}
 	for k, v := range d.MatchLabels {
 		s = append(s, k, v)

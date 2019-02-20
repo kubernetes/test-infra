@@ -1,0 +1,33 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "artifact.go",
+        "build_metadata.go",
+        "manifests.go",
+        "pipeline.go",
+    ],
+    importmap = "k8s.io/test-infra/vendor/github.com/traiana/okro/okro/api/ci/v1beta2",
+    importpath = "github.com/traiana/okro/okro/api/ci/v1beta2",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/go-ozzo/ozzo-validation:go_default_library",
+        "//vendor/github.com/traiana/okro/okro/api/v1beta2:go_default_library",
+        "//vendor/github.com/traiana/okro/okro/pkg/util/validation:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

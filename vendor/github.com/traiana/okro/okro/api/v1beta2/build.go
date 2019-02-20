@@ -2,7 +2,7 @@ package v1beta2
 
 type Build struct {
 	// build name.
-	// format: <short-source>-<sourceRevision>-<shorthash(pipeline,pipelineRevision,sourceRef)>
+	// format: <short-source>-<sourceRevision>-<shorthash(pipeline,pipelineRevision)>
 	Name string `json:"name"`
 
 	// object metadata
@@ -18,7 +18,13 @@ type Build struct {
 	PipelineRevision string `json:"pipeline_revision"`
 
 	// source repo url
-	Source string `json:"source"`
+	SourceURL string `json:"source_url"`
+
+	// source repo owner
+	SourceOwner string `json:"source_owner"`
+
+	// source repo name
+	SourceName string `json:"source_name"`
 
 	// source ref (branch)
 	SourceRef string `json:"source_ref"`

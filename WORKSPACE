@@ -1531,7 +1531,7 @@ go_repository(
 
 go_repository(
     name = "com_github_traiana_okro",
-    commit = "614847a0ec95",
+    commit = "b00cf08a2843",
     importpath = "github.com/traiana/okro",
 )
 
@@ -1539,4 +1539,10 @@ go_repository(
     name = "io_k8s_klog",
     importpath = "k8s.io/klog",
     tag = "v0.1.0",
+)
+
+go_repository(
+    name = "com_github_traiana_prow_jobs",
+    commit = "0ec733360227",
+    importpath = "github.com/traiana/prow-jobs",
 )
