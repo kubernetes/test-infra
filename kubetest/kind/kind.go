@@ -51,7 +51,7 @@ const (
 
 	kindClusterNameDefault = "kind-kubetest"
 
-	flagLogLevel = "--loglevel=info"
+	flagLogLevel = "--loglevel=debug"
 )
 
 var (
