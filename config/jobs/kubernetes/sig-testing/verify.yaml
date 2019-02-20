@@ -179,7 +179,7 @@ periodics:
           - name: EXCLUDE_READONLY_PACKAGE
             value: "y"
           - name: KUBE_VERIFY_GIT_BRANCH
-            value: master
+            value: release-1.14
           - name: REPO_DIR
             value: /workspace/k8s.io/kubernetes
           # TODO(bentheelder): remove bandaid once we have this metadata exposed
