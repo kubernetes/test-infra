@@ -3547,6 +3547,8 @@ dashboards:
   - name: kind, master (dev) [non-serial]
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
     test_group_name: ci-kubernetes-kind-conformance-parallel
+    alert_options:
+      alert_mail_to_addresses: bentheelder@google.com
   - name: kind, v1.13 (dev)
     description: Runs conformance tests using kubetest against latest kubernetes release-1.13 with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance-latest-1-13
