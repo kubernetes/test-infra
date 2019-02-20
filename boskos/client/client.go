@@ -42,6 +42,9 @@ var (
 	ErrNotFound = errors.New("resources not found")
 	// ErrAlreadyInUse is returned by Acquire when resources are already being requested.
 	ErrAlreadyInUse = errors.New("resources already used by another user")
+	// ErrContextRequired is returned by AcquireWait and AcquireByStateWait when
+	// they are invoked with a nil context.
+	ErrContextRequired = errors.New("context required")
 )
 
 // Client defines the public Boskos client object
@@ -97,11 +100,11 @@ func (c *Client) Acquire(rtype, state, dest string) (*common.Resource, error) {
 // AcquireWait blocks until Acquire returns the specified resource or the
 // provided context is cancelled or its deadline exceeded.
 func (c *Client) AcquireWait(ctx context.Context, rtype, state, dest string) (*common.Resource, error) {
+	if ctx == nil {
+		return nil, ErrContextRequired
+	}
 	// Try to acquire the resource until available or the context is
 	// cancelled or its deadline exceeded.
-	if ctx == nil {
-		ctx = context.Background()
-	}
 	for {
 		r, err := c.Acquire(rtype, state, dest)
 		if err != nil {
@@ -138,11 +141,11 @@ func (c *Client) AcquireByState(state, dest string, names []string) ([]common.Re
 // resource(s) or the provided context is cancelled or its deadline
 // exceeded.
 func (c *Client) AcquireByStateWait(ctx context.Context, state, dest string, names []string) ([]common.Resource, error) {
+	if ctx == nil {
+		return nil, ErrContextRequired
+	}
 	// Try to acquire the resource(s) until available or the context is
 	// cancelled or its deadline exceeded.
-	if ctx == nil {
-		ctx = context.Background()
-	}
 	for {
 		r, err := c.AcquireByState(state, dest, names)
 		if err != nil {
