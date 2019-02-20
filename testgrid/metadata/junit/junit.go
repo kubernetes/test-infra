@@ -58,8 +58,7 @@ type Result struct {
 // Message extracts the message for the junit test case.
 //
 // Will use the first non-empty <failure/>, <skipped/>, <system-err/>, <system-out/> value.
-func (jr Result) Message() string {
-	const max = 140
+func (jr Result) Message(max int) string {
 	var msg string
 	switch {
 	case jr.Failure != nil && *jr.Failure != "":
