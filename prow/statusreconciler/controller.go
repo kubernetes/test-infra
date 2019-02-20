@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 
 	"k8s.io/test-infra/maintenance/migratestatus/migrator"
@@ -34,9 +35,10 @@ import (
 )
 
 // NewController constructs a new controller to reconcile stauses on config change
-func NewController(continueOnError bool, prowJobClient prowv1.ProwJobInterface, githubClient *github.Client, configAgent *config.Agent, pluginAgent *plugins.ConfigAgent) *Controller {
+func NewController(continueOnError bool, addedPresubmitBlacklist sets.String, prowJobClient prowv1.ProwJobInterface, githubClient *github.Client, configAgent *config.Agent, pluginAgent *plugins.ConfigAgent) *Controller {
 	return &Controller{
-		continueOnError: continueOnError,
+		continueOnError:         continueOnError,
+		addedPresubmitBlacklist: addedPresubmitBlacklist,
 		prowJobTriggerer: &kubeProwJobTriggerer{
 			prowJobClient: prowJobClient,
 			githubClient:  githubClient,
@@ -124,11 +126,12 @@ func (c *githubTrustedChecker) trustedPullRequest(author, org, repo string, num 
 
 // Controller reconciles statuses on PRs when config changes impact blocking presubmits
 type Controller struct {
-	continueOnError  bool
-	prowJobTriggerer prowJobTriggerer
-	githubClient     githubClient
-	statusMigrator   statusMigrator
-	trustedChecker   trustedChecker
+	continueOnError         bool
+	addedPresubmitBlacklist sets.String
+	prowJobTriggerer        prowJobTriggerer
+	githubClient            githubClient
+	statusMigrator          statusMigrator
+	trustedChecker          trustedChecker
 }
 
 // Run monitors the incoming configuration changes to determine when statuses need to be
@@ -183,6 +186,9 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 		}
 		parts := strings.SplitN(orgrepo, "/", 2)
 		org, repo := parts[0], parts[1]
+		if c.addedPresubmitBlacklist.Has(org) || c.addedPresubmitBlacklist.Has(orgrepo) {
+			continue
+		}
 		prs, err := c.githubClient.GetPullRequests(org, repo)
 		if err != nil {
 			triggerErrors = append(triggerErrors, fmt.Errorf("failed to list pull requests for %s: %v", orgrepo, err))
