@@ -32,12 +32,11 @@ import collections
 
 
 class Version(object):
-    # CURRENT is also termed as beta.
-    CURRENT = "1.13" # also known as beta in some other places.
-    STABLE1 = "1.12"
-    STABLE2 = "1.11"
-    STABLE3 = "1.10"
-    DEPRECATED = "1.9"
+    CURRENT = "1.14" # also known as beta in some other places.
+    STABLE1 = "1.13"
+    STABLE2 = "1.12"
+    STABLE3 = "1.11"
+    DEPRECATED = "1.10"
 
 # ordered-dict that keeps the mapping of the rotations.
 # we need a ordered dict to make sure we rotate in the
