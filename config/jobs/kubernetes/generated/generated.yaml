@@ -3762,7 +3762,7 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable2
       - --timeout=180m
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-master
@@ -5360,7 +5360,7 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable1
       - --timeout=180m
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-master
@@ -7270,7 +7270,7 @@ periodics:
       - --extract=ci/k8s-stable3
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-master
 - tags:
