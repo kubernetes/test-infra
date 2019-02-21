@@ -71,6 +71,39 @@ postsubmits:
       - name: creds
         secret:
           secretName: pusher-service-account
+  kubernetes/k8s.io:
+  - name: post-k8sio-cip
+    cluster: test-infra-trusted
+    decorate: true
+    run_if_changed: ".*/manifest.yaml"
+    # Never run more than 1 job at a time. This is because we don't want to run
+    # into a case where an older manifest PR merge gets run last (after a newer
+    # one).
+    max_concurrency: 1
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/cip-demo-staging/cip:20190401-v1.0.0-3-g44d6169
+        command:
+        - multirun.sh
+        args:
+        - /app/cip-docker-image.binary
+        - k8s-staging-cluster-api/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
+        - k8s-staging-coredns/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
+        - k8s-staging-csi/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
+        env:
+        - name: CIP_OPTS
+          value: "-dry-run=false"
+        volumeMounts:
+        - name: k8s-gcr-prod-service-account-creds
+          mountPath: /etc/k8s-gcr-prod-service-account
+          readOnly: true
+      volumes:
+      - name: k8s-gcr-prod-service-account-creds
+        secret:
+          secretName: k8s-gcr-prod-service-account
+
 
 periodics:
 - interval: 24h
@@ -319,4 +352,69 @@ periodics:
     - name: config
       configMap:
         name: label-config
-
+# ci-k8sio-cip runs daily, to make sure that the destination GCRs do not deviate
+# away from the intent of the manifest.
+- interval: 24h
+  max_concurrency: 1
+  # This name is the "job name", passed in as "--job=NAME" for mkpj.
+  name: ci-k8sio-cip
+  # Enable Pod Utilities. See https://github.com/kubernetes/test-infra/blob/master/prow/pod-utilities.md.
+  decorate: true
+  extra_refs:
+  # Because of Pod Utilities, we clone the below repo automatically, and, get
+  # dropped into /home/prow/go/src/github.com/kubernetes/k8s.io.
+  - org: kubernetes
+    repo: k8s.io
+    base_ref: master
+  spec:
+    containers:
+    # TODO: Move the official cip image to a more serious location.
+    #
+    # To check the Go binary version in the image, run:
+    #
+    #   docker run --rm -it gcr.io/cip-demo-staging/cip:20190401-v1.0.0-3-g44d6169 "cip -version"
+    #
+    # You can also nspect the /cip folder in the image's filesystem with an
+    # interactive bash session:
+    #
+    #   docker run --rm -it gcr.io/cip-demo-staging/cip:20190401-v1.0.0-3-g44d6169 "cd /cip && bash"
+    - image: gcr.io/cip-demo-staging/cip:20190401-v1.0.0-3-g44d6169
+      command:
+      - multirun.sh
+      args:
+      # This is aided by Pod Utilities because of "decorate: true", which
+      # populates the manifest repo for us. There is also PULL_REFS and
+      # PULL_BASE_SHA defined for us.
+      #
+      # If you run mkpj for this postsubmit, the job will query you for the base
+      # ref to fetch (name of a branch, not a SHA, e.g. "master").
+      - /app/cip-docker-image.binary
+      - k8s-staging-cluster-api/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
+      - k8s-staging-coredns/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
+      - k8s-staging-csi/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
+      env:
+      - name: CIP_OPTS
+        value: "-dry-run=false"
+      # TODO: Uncomment this once
+      # https://github.com/GoogleCloudPlatform/k8s-container-image-promoter/issues/16
+      # lands.
+      #- name: CIP_OPTS
+      #  # Be aggressive about keeping the prod registry clean.
+      #  value: "-delete-extra-tags"
+      volumeMounts:
+      - name: k8s-gcr-prod-service-account-creds
+        mountPath: /etc/k8s-gcr-prod-service-account
+        readOnly: true
+    # Create a volume from a Kubernetes Secret. The Secret can be created as
+    # per: https://kubernetes.io/docs/concepts/configuration/secret/.
+    #
+    # In our case we downloaded a service account secret key file from GCP, then ran
+    #
+    #   kubectl create secret generic k8s-gcr-prod-service-account \
+    #     --from-file=service-account.json=PATH/TO/cip-demo-staging-e881274d0046.json
+    #
+    # and so our secretName is k8s-gcr-prod-service-account.
+    volumes:
+    - name: k8s-gcr-prod-service-account-creds
+      secret:
+        secretName: k8s-gcr-prod-service-account
