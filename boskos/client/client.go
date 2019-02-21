@@ -44,6 +44,9 @@ var (
 	ErrNotFound = errors.New("resources not found")
 	// ErrAlreadyInUse is returned by Acquire when resources are already being requested.
 	ErrAlreadyInUse = errors.New("resources already used by another user")
+	// ErrContextRequired is returned by AcquireWait and AcquireByStateWait when
+	// they are invoked with a nil context.
+	ErrContextRequired = errors.New("context required")
 )
 
 // Client defines the public Boskos client object
@@ -120,6 +123,31 @@ func (c *Client) Acquire(rtype, state, dest string) (*common.Resource, error) {
 	return r, nil
 }
 
+// AcquireWait blocks until Acquire returns the specified resource or the
+// provided context is cancelled or its deadline exceeded.
+func (c *Client) AcquireWait(ctx context.Context, rtype, state, dest string) (*common.Resource, error) {
+	if ctx == nil {
+		return nil, ErrContextRequired
+	}
+	// Try to acquire the resource until available or the context is
+	// cancelled or its deadline exceeded.
+	for {
+		r, err := c.Acquire(rtype, state, dest)
+		if err != nil {
+			if err == ErrAlreadyInUse || err == ErrNotFound {
+				select {
+				case <-ctx.Done():
+					return nil, err
+				case <-time.After(3 * time.Second):
+					continue
+				}
+			}
+			return nil, err
+		}
+		return r, nil
+	}
+}
+
 // AcquireByState asks boskos for a resources of certain type, and set the resource to dest state.
 // Returns a list of resources on success.
 func (c *Client) AcquireByState(state, dest string, names []string) ([]common.Resource, error) {
@@ -133,6 +161,32 @@ func (c *Client) AcquireByState(state, dest string, names []string) ([]common.Re
 		c.storage.Add(r)
 	}
 	return resources, nil
+}
+
+// AcquireByStateWait blocks until AcquireByState returns the specified
+// resource(s) or the provided context is cancelled or its deadline
+// exceeded.
+func (c *Client) AcquireByStateWait(ctx context.Context, state, dest string, names []string) ([]common.Resource, error) {
+	if ctx == nil {
+		return nil, ErrContextRequired
+	}
+	// Try to acquire the resource(s) until available or the context is
+	// cancelled or its deadline exceeded.
+	for {
+		r, err := c.AcquireByState(state, dest, names)
+		if err != nil {
+			if err == ErrAlreadyInUse || err == ErrNotFound {
+				select {
+				case <-ctx.Done():
+					return nil, err
+				case <-time.After(3 * time.Second):
+					continue
+				}
+			}
+			return nil, err
+		}
+		return r, nil
+	}
 }
 
 // ReleaseAll returns all resources hold by the client back to boskos and set them to dest state.
@@ -286,7 +340,8 @@ func (c *Client) acquire(rtype, state, dest string) (*common.Resource, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusOK {
+	switch resp.StatusCode {
+	case http.StatusOK:
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
@@ -301,7 +356,9 @@ func (c *Client) acquire(rtype, state, dest string) (*common.Resource, error) {
 			return nil, fmt.Errorf("unable to parse resource")
 		}
 		return &res, nil
-	} else if resp.StatusCode == http.StatusNotFound {
+	case http.StatusUnauthorized:
+		return nil, ErrAlreadyInUse
+	case http.StatusNotFound:
 		return nil, ErrNotFound
 	}
 	return nil, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode)
