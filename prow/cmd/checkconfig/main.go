@@ -156,7 +156,7 @@ func main() {
 	// detect them here but don't necessarily want to stop config re-load
 	// in all components on their failure.
 	var errs []error
-	if o.warningEnabled(mismatchedTideWarning) {
+	if pcfg != nil && o.warningEnabled(mismatchedTideWarning) {
 		if err := validateTideRequirements(cfg, pcfg); err != nil {
 			errs = append(errs, err)
 		}
@@ -295,18 +295,16 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration) e
 
 	// Now actually execute the checks we just configured.
 	var validationErrs []error
-	if pcfg != nil {
-		for _, pluginConfig := range configs {
-			err := ensureValidConfiguration(
-				pluginConfig.plugin,
-				pluginConfig.label,
-				pluginConfig.matcher.verb,
-				pluginConfig.config,
-				overallTideConfig,
-				enabledOrgReposForPlugin(pcfg, pluginConfig.plugin, pluginConfig.external),
-			)
-			validationErrs = append(validationErrs, err)
-		}
+	for _, pluginConfig := range configs {
+		err := ensureValidConfiguration(
+			pluginConfig.plugin,
+			pluginConfig.label,
+			pluginConfig.matcher.verb,
+			pluginConfig.config,
+			overallTideConfig,
+			enabledOrgReposForPlugin(pcfg, pluginConfig.plugin, pluginConfig.external),
+		)
+		validationErrs = append(validationErrs, err)
 	}
 
 	return errorutil.NewAggregate(validationErrs...)
