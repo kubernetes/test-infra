@@ -42,7 +42,7 @@ type Started = metadata.Started
 type Finished struct {
 	metadata.Finished
 	// Running when the job hasn't finished and finished.json doesn't exist
-	Running bool // TODO(fejta): remove?
+	Running bool
 }
 
 // Build points to a build stored under a particular gcs prefix.
@@ -296,10 +296,15 @@ func (build Build) Suites(artifacts <-chan string, suites chan<- SuitesMeta) err
 		close(ec) // no one will send t
 	}()
 
+	// TODO(fejta): refactor to return the suites chan, so we can control channel closure
+	// Until then don't return until all go functions return
 	select {
 	case <-ctx.Done(): // parent context marked as finished.
+		wg.Wait()
 		return ctx.Err()
 	case err := <-ec: // finished listing
+		cancel()
+		wg.Wait()
 		return err
 	}
 }

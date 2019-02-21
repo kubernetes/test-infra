@@ -117,7 +117,8 @@ func row(jr junit.Result, suite string) (string, Row) {
 	if jr.Time > 0 {
 		r.Metrics[elapsedKey] = jr.Time
 	}
-	if msg := jr.Message(); msg != "" {
+	const max = 140
+	if msg := jr.Message(max); msg != "" {
 		r.Message = msg
 	}
 	switch {

@@ -22,17 +22,19 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"log"
 	"net/url"
 	"os"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/testgrid/config"
 	"k8s.io/test-infra/testgrid/metadata"
 	"k8s.io/test-infra/testgrid/resultstore"
@@ -61,11 +63,13 @@ func stripTags(str string) (string, []string) {
 type options struct {
 	path           gcs.Path
 	jobs           flagutil.Strings
+	deadline       time.Duration
 	latest         int
 	override       bool
-	update         bool
 	account        string
 	gcsAuth        bool
+	pending        bool
+	repeat         time.Duration
 	project        string
 	secret         string
 	testgridConfig string
@@ -77,11 +81,13 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	flags.StringVar(&o.testgridConfig, "config", "gs://k8s-testgrid/config", "Path to local/testgrid/config.pb or gs://bucket/testgrid/config.pb")
 	flags.IntVar(&o.latest, "latest", 1, "Configures the number of latest builds to migrate")
 	flags.BoolVar(&o.override, "override", false, "Replace the existing ResultStore data for each build")
-	flags.BoolVar(&o.update, "update", false, "Attempt to update the existing invocation before creating a new one")
 	flags.StringVar(&o.account, "service-account", "", "Authenticate with the service account at specified path")
-	flags.BoolVar(&o.gcsAuth, "gcs-auth", false, "Use service account for gcs auth if set (default if set)")
+	flags.BoolVar(&o.gcsAuth, "gcs-auth", false, "Use service account for gcs auth if set (default auth if unset)")
+	flags.BoolVar(&o.pending, "pending", false, "Include pending results when set (otherwise ignore them)")
 	flags.StringVar(&o.project, "upload", "", "Upload results to specified gcp project instead of stdout")
 	flags.StringVar(&o.secret, "secret", "", "Use the specified secret guid instead of randomly generating one.")
+	flags.DurationVar(&o.deadline, "deadline", 0, "Timeout after the specified deadling duration (use 0 for no deadline)")
+	flags.DurationVar(&o.repeat, "repeat", 0, "Repeatedly transfer after sleeping for this duration (exit after one run when 0)")
 	flags.Parse(args)
 	return nil
 }
@@ -89,14 +95,29 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 func parseOptions() options {
 	var o options
 	if err := o.parse(flag.CommandLine, os.Args[1:]); err != nil {
-		log.Fatalf("Invalid flags: %v", err)
+		logrus.WithError(err).Fatal("Invalid flags")
 	}
 	return o
 }
 
 func main() {
-	if err := run(parseOptions()); err != nil {
-		log.Fatalf("Failed: %v", err)
+	logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "storeship"})
+	opt := parseOptions()
+	for {
+		err := run(opt)
+		if opt.repeat == 0 {
+			if err != nil {
+				logrus.WithError(err).Fatal("Failed transfer")
+			}
+			return
+		}
+		if err != nil {
+			logrus.WithError(err).Error("Failed transfer")
+		}
+		if opt.repeat > time.Second {
+			logrus.Infof("Sleeping for %s...", opt.repeat)
+		}
+		time.Sleep(opt.repeat)
 	}
 }
 
@@ -122,7 +143,13 @@ func trailingSlash(s string) string {
 }
 
 func run(opt options) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	var ctx context.Context
+	var cancel context.CancelFunc
+	if opt.deadline > 0 {
+		ctx, cancel = context.WithTimeout(context.Background(), opt.deadline)
+	} else {
+		ctx, cancel = context.WithCancel(context.Background())
+	}
 	defer cancel()
 
 	var gcsAccount string
@@ -134,7 +161,7 @@ func run(opt options) error {
 		return fmt.Errorf("storage client: %v", err)
 	}
 
-	fmt.Println("Reading testgrid config...")
+	logrus.WithFields(logrus.Fields{"testgrid": opt.testgridConfig}).Info("Reading testgrid config...")
 	cfg, err := config.Read(opt.testgridConfig, ctx, storageClient)
 	if err != nil {
 		return fmt.Errorf("read testgrid config: %v", err)
@@ -150,7 +177,7 @@ func run(opt options) error {
 
 	// Should we just transfer a specific build?
 	if opt.path.Bucket() != "" { // All valid --build=gs://whatever values have a non-empty bucket.
-		return transfer(ctx, storageClient, rsClient, opt.project, opt.path)
+		return transferBuild(ctx, storageClient, rsClient, opt.project, opt.path, opt.override, true)
 	}
 
 	groups, err := findGroups(cfg, opt.jobs.Strings()...)
@@ -158,17 +185,106 @@ func run(opt options) error {
 		return fmt.Errorf("find groups: %v", err)
 	}
 
-	fmt.Printf("Finding latest builds for %d groups...\n", len(groups))
+	logrus.Infof("Finding latest builds for %d groups...\n", len(groups))
 	buildsChan, buildsErrChan := findBuilds(ctx, storageClient, groups)
-	for builds := range buildsChan {
-		if err := transferLatest(ctx, storageClient, rsClient, opt.project, builds, opt.latest); err != nil {
+	transferErrChan := transfer(ctx, storageClient, rsClient, opt, buildsChan)
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case err := <-buildsErrChan:
+		if err != nil {
+			return fmt.Errorf("find builds: %v", err)
+		}
+	}
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case err := <-transferErrChan:
+		if err != nil {
 			return fmt.Errorf("transfer: %v", err)
 		}
 	}
-
-	return <-buildsErrChan
-
 	return nil
+}
+
+func joinErrs(errs []error, sep string) string {
+	var out []string
+	for _, e := range errs {
+		out = append(out, e.Error())
+	}
+	return strings.Join(out, sep)
+}
+
+func transfer(ctx context.Context, storageClient *storage.Client, rsClient *resultstore.Client, opt options, buildsChan <-chan buildsInfo) <-chan error {
+	retChan := make(chan error)
+	go func() {
+		transferErrChan := make(chan error)
+		var wg sync.WaitGroup
+		var total int
+		for info := range buildsChan {
+			total++
+			wg.Add(1)
+			go func(info buildsInfo) {
+				defer wg.Done()
+				if err := transferLatest(ctx, storageClient, rsClient, opt.project, info.builds, opt.latest, opt.override, opt.pending); err != nil {
+					logrus.WithError(err).Error("Transfer failed")
+					select {
+					case <-ctx.Done():
+					case transferErrChan <- fmt.Errorf("transfer %s in %s: %v", info.name, info.prefix, err):
+					}
+				}
+			}(info)
+		}
+		go func() {
+			defer close(transferErrChan)
+			wg.Wait()
+		}()
+		var errs []error
+		for err := range transferErrChan {
+			errs = append(errs, err)
+		}
+		var err error
+		if n := len(errs); n > 0 {
+			err = fmt.Errorf("%d errors transferring %d groups: %v", n, total, joinErrs(errs, ", "))
+		}
+		select {
+		case <-ctx.Done():
+		case retChan <- err:
+		}
+
+	}()
+	return retChan
+}
+
+type bucketChecker struct {
+	buckets map[string]bool
+	client  *storage.Client
+	lock    sync.RWMutex
+}
+
+func (bc *bucketChecker) writable(ctx context.Context, path gcs.Path) bool {
+	name := path.Bucket()
+	bc.lock.RLock()
+	writable, present := bc.buckets[name]
+	bc.lock.RUnlock()
+	if present {
+		return writable
+	}
+	bc.lock.Lock()
+	defer bc.lock.Unlock()
+	writable, present = bc.buckets[name]
+	if present {
+		return writable
+	}
+	const want = "storage.objects.create"
+	have, err := bc.client.Bucket(name).IAM().TestPermissions(ctx, []string{want})
+	if err != nil || len(have) != 1 || have[0] != want {
+		bc.buckets[name] = false
+		logrus.WithError(err).WithFields(logrus.Fields{"bucket": name, "want": want, "have": have}).Error("No write access")
+	} else {
+		bc.buckets[name] = true
+	}
+	return bc.buckets[name]
 }
 
 func findGroups(cfg *config.Configuration, jobs ...string) ([]config.TestGroup, error) {
@@ -188,33 +304,100 @@ func findGroups(cfg *config.Configuration, jobs ...string) ([]config.TestGroup, 
 	return groups, nil
 }
 
-func findBuilds(ctx context.Context, storageClient *storage.Client, groups []config.TestGroup) (<-chan []gcs.Build, <-chan error) {
-	buildsChan := make(chan []gcs.Build)
-	errChan := make(chan error, 1)
+type buildsInfo struct {
+	name   string
+	prefix gcs.Path
+	builds []gcs.Build
+}
+
+func findGroupBuilds(ctx context.Context, storageClient *storage.Client, bc *bucketChecker, group config.TestGroup, buildsChan chan<- buildsInfo, errChan chan<- error) {
+	log := logrus.WithFields(logrus.Fields{
+		"testgroup":  group.Name,
+		"gcs_prefix": "gs://" + group.GcsPrefix,
+	})
+	log.Debug("Get latest builds...")
+	tgPath, err := gcs.NewPath("gs://" + group.GcsPrefix)
+	if err != nil {
+		log.WithError(err).Error("Bad build URL")
+		err = fmt.Errorf("test group %s: gs://%s prefix invalid: %v", group.Name, group.GcsPrefix, err)
+		select {
+		case <-ctx.Done():
+		case errChan <- err:
+		}
+		return
+	}
+	if !bc.writable(ctx, *tgPath) {
+		log.Debug("Skip unwritable group")
+		return
+	}
+
+	builds, err := gcs.ListBuilds(ctx, storageClient, *tgPath)
+	if err != nil {
+		log.WithError(err).Error("Failed to list builds")
+		err := fmt.Errorf("test group %s: list %s: %v", group.Name, *tgPath, err)
+		select {
+		case <-ctx.Done():
+		case errChan <- err:
+		}
+		return
+	}
+	info := buildsInfo{
+		name:   group.Name,
+		prefix: *tgPath,
+		builds: builds,
+	}
+	select {
+	case <-ctx.Done():
+	case buildsChan <- info:
+	}
+}
+
+func findBuilds(ctx context.Context, storageClient *storage.Client, groups []config.TestGroup) (<-chan buildsInfo, <-chan error) {
+	buildsChan := make(chan buildsInfo)
+	errChan := make(chan error)
+	bc := bucketChecker{
+		buckets: map[string]bool{},
+		client:  storageClient,
+	}
 	go func() {
+		innerErrChan := make(chan error)
 		defer close(buildsChan)
 		defer close(errChan)
-		// TODO(fejta): concurrently list groups
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
+
+		var wg sync.WaitGroup
 		for _, testGroup := range groups {
-			fmt.Printf("Finding latest %s builds in gs://%s...\n", testGroup.Name, testGroup.GcsPrefix)
-			tgPath, err := gcs.NewPath("gs://" + testGroup.GcsPrefix)
-			if err != nil {
-				errChan <- fmt.Errorf("test group %s has invalid gcs_prefix %s: %v", testGroup.Name, testGroup.GcsPrefix, err)
-				return
-			}
-			builds, err := gcs.ListBuilds(ctx, storageClient, *tgPath)
-			if err != nil {
-				errChan <- err
-				return
-			}
-			buildsChan <- builds
+			wg.Add(1)
+			go func(testGroup config.TestGroup) {
+				defer wg.Done()
+				findGroupBuilds(ctx, storageClient, &bc, testGroup, buildsChan, innerErrChan)
+			}(testGroup)
 		}
-		errChan <- nil
+		go func() {
+			defer close(innerErrChan)
+			wg.Wait()
+		}()
+		var errs []error
+		for err := range innerErrChan {
+			errs = append(errs, err)
+		}
+
+		var err error
+		if n := len(errs); n > 0 {
+			err = fmt.Errorf("%d errors finding builds from %d groups: %v", n, len(groups), joinErrs(errs, ", "))
+		}
+
+		select {
+		case <-ctx.Done():
+		case errChan <- err:
+		}
 	}()
 	return buildsChan, errChan
 }
 
-func transferLatest(ctx context.Context, storageClient *storage.Client, rsClient *resultstore.Client, project string, builds gcs.Builds, max int) error {
+func transferLatest(ctx context.Context, storageClient *storage.Client, rsClient *resultstore.Client, project string, builds gcs.Builds, max int, override bool, includePending bool) error {
+
 	for i, build := range builds {
 		if i >= max {
 			break
@@ -223,14 +406,14 @@ func transferLatest(ctx context.Context, storageClient *storage.Client, rsClient
 		if err != nil {
 			return fmt.Errorf("bad %s path: %v", build, err)
 		}
-		if err := transfer(ctx, storageClient, rsClient, project, *path); err != nil {
+		if err := transferBuild(ctx, storageClient, rsClient, project, *path, override, includePending); err != nil {
 			return fmt.Errorf("%s: %v", build, err)
 		}
 	}
 	return nil
 }
 
-func transfer(ctx context.Context, storageClient *storage.Client, rsClient *resultstore.Client, project string, path gcs.Path) error {
+func transferBuild(ctx context.Context, storageClient *storage.Client, rsClient *resultstore.Client, project string, path gcs.Path, override bool, includePending bool) error {
 	build := gcs.Build{
 		Bucket:     storageClient.Bucket(path.Bucket()),
 		Context:    ctx,
@@ -238,36 +421,54 @@ func transfer(ctx context.Context, storageClient *storage.Client, rsClient *resu
 		BucketPath: path.Bucket(),
 	}
 
+	log := logrus.WithFields(logrus.Fields{"build": build})
+
+	log.Debug("Downloading...")
 	result, err := download(ctx, storageClient, build)
 	if err != nil {
 		return fmt.Errorf("download: %v", err)
 	}
 
-	desc := "Results of " + path.String()
-	inv, target, test := convert(project, desc, path, *result)
-	print(inv.To(), test.To())
-
-	if project == "" {
+	switch val, _ := result.started.Metadata.String(resultstoreKey); {
+	case val != nil && override:
+		log = log.WithFields(logrus.Fields{"previously": *val})
+		log.Warn("Replacing result...")
+	case val != nil:
+		log.WithFields(logrus.Fields{
+			"resultstore": *val,
+		}).Debug("Already transferred")
 		return nil
 	}
 
+	if result.finished.Running && !includePending {
+		log.Debug("Skip pending result")
+		return nil
+	}
+
+	desc := "Results of " + path.String()
+	log.Debug("Converting...")
+	inv, target, test := convert(project, desc, path, *result)
+
+	if project == "" {
+		print(inv.To(), test.To())
+		return nil
+	}
+
+	log.Debug("Uploading...")
 	viewURL, err := upload(rsClient, inv, target, test)
-	if viewURL != "" {
-		fmt.Println("See results at " + viewURL)
-	}
 	if err != nil {
-		return fmt.Errorf("upload: %v", err)
+		return fmt.Errorf("upload %s: %v", viewURL, err)
 	}
-	if result.started.Metadata == nil {
-		result.started.Metadata = metadata.Metadata{}
-	}
-	changed, err := insertLink(result.started.Metadata, viewURL)
+	log = log.WithFields(logrus.Fields{"resultstore": viewURL})
+	log.Info("Transferred result")
+	changed, err := insertLink(&result.started, viewURL)
 	if err != nil {
 		return fmt.Errorf("insert resultstore link into metadata: %v", err)
 	}
 	if !changed { // already has the link
 		return nil
 	}
+	log.Debug("Inserting link...")
 	if err := updateStarted(ctx, storageClient, path, result.started); err != nil {
 		return fmt.Errorf("update started.json: %v", err)
 	}
@@ -283,7 +484,11 @@ const (
 // insertLink attempts to set metadata.links.resultstore.url to viewURL.
 //
 // returns true if started metadata was updated.
-func insertLink(meta metadata.Metadata, viewURL string) (bool, error) {
+func insertLink(started *gcs.Started, viewURL string) (bool, error) {
+	if started.Metadata == nil {
+		started.Metadata = metadata.Metadata{}
+	}
+	meta := started.Metadata
 	var changed bool
 	top, present := meta.String(resultstoreKey)
 	if !present || top == nil || *top != viewURL {
