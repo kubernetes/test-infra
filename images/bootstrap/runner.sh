@@ -20,15 +20,7 @@
 export BAZEL_REMOTE_CACHE_ENABLED=${BAZEL_REMOTE_CACHE_ENABLED:-false}
 if [[ "${BAZEL_REMOTE_CACHE_ENABLED}" == "true" ]]; then
     echo "Bazel remote cache is enabled, generating .bazelrcs ..."
-    # if we have a test-infra checkout (because bootstrap), use that since
-    # it is newer and this is probably k/k so we can push fixes faster this way
-    # otherwise run the one baked into the image
-    # TODO(bentheelder): someday only support the pod-utils
-    if [[ -d "./test-infra" ]]; then
-        ./test-infra/images/bootstrap/create_bazel_cache_rcs.sh
-    else
-        /usr/local/bin/create_bazel_cache_rcs.sh
-    fi
+    /usr/local/bin/create_bazel_cache_rcs.sh
 fi
 
 
