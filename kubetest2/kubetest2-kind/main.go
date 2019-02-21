@@ -16,15 +16,12 @@ limitations under the License.
 
 package main
 
+import (
+	"k8s.io/test-infra/kubetest2/pkg/app"
+
+	"k8s.io/test-infra/kubetest2/kubetest2-kind/deployer"
+)
+
 func main() {
-	/*
-		TODO(bentheelder):
-		- create the deployer interface package
-		- implement the high level kubetest2 app as a package
-		- import the package here
-		- implement the deployer for kind in a package
-		- load the kind deployer here
-		- call the kubetest2 app here with the kind deployer selected
-	*/
-	panic("unimplemented, come back later!")
+	app.Main(deployer.Name, deployer.New)
 }
