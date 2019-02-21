@@ -9,7 +9,7 @@
 default:
   labels:
     - color: e11d21
-      description: Categorizes an issue or PR as actively needing an API review. See https://git.k8s.io/community/sig-architecture/api-review-process.md
+      description: Categorizes an issue or PR as actively needing an API review.
       name: api-review
       target: both
       prowPlugin: label
