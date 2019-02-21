@@ -95,9 +95,6 @@ func (o *options) Validate() error {
 	if o.configPath == "" {
 		return errors.New("required flag --config-path was unset")
 	}
-	if o.pluginConfig == "" {
-		return errors.New("required flag --plugin-config was unset")
-	}
 	for _, warning := range o.warnings.Strings() {
 		found := false
 		for _, registeredWarning := range allWarnings {
@@ -146,10 +143,13 @@ func main() {
 	cfg := configAgent.Config()
 
 	pluginAgent := plugins.ConfigAgent{}
-	if err := pluginAgent.Load(o.pluginConfig); err != nil {
-		logrus.WithError(err).Fatal("Error loading Prow plugin config.")
+	var pcfg *plugins.Configuration
+	if o.pluginConfig != "" {
+		if err := pluginAgent.Load(o.pluginConfig); err != nil {
+			logrus.WithError(err).Fatal("Error loading Prow plugin config.")
+		}
+		pcfg = pluginAgent.Config()
 	}
-	pcfg := pluginAgent.Config()
 
 	// the following checks are useful in finding user errors but their
 	// presence won't lead to strictly incorrect behavior, so we can
@@ -176,7 +176,7 @@ func main() {
 			errs = append(errs, err)
 		}
 	}
-	if o.warningEnabled(validateOwnersWarning) {
+	if pcfg != nil && o.warningEnabled(validateOwnersWarning) {
 		if err := verifyOwnersPlugin(pcfg); err != nil {
 			errs = append(errs, err)
 		}
@@ -295,16 +295,18 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration) e
 
 	// Now actually execute the checks we just configured.
 	var validationErrs []error
-	for _, pluginConfig := range configs {
-		err := ensureValidConfiguration(
-			pluginConfig.plugin,
-			pluginConfig.label,
-			pluginConfig.matcher.verb,
-			pluginConfig.config,
-			overallTideConfig,
-			enabledOrgReposForPlugin(pcfg, pluginConfig.plugin, pluginConfig.external),
-		)
-		validationErrs = append(validationErrs, err)
+	if pcfg != nil {
+		for _, pluginConfig := range configs {
+			err := ensureValidConfiguration(
+				pluginConfig.plugin,
+				pluginConfig.label,
+				pluginConfig.matcher.verb,
+				pluginConfig.config,
+				overallTideConfig,
+				enabledOrgReposForPlugin(pcfg, pluginConfig.plugin, pluginConfig.external),
+			)
+			validationErrs = append(validationErrs, err)
+		}
 	}
 
 	return errorutil.NewAggregate(validationErrs...)
