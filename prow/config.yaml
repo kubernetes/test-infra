@@ -473,6 +473,10 @@ tide:
 push_gateway:
   endpoint: pushgateway
 
+github_reporter: 
+  job_types_to_report:
+  - presubmit
+  - postsubmit
 
 presets:
 # credential presets
