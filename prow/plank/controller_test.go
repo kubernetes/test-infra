@@ -122,6 +122,9 @@ func (f *fghc) GetPullRequestChanges(org, repo string, number int) ([]github.Pul
 
 func (f *fghc) BotName() (string, error)                                  { return "bot", nil }
 func (f *fghc) CreateStatus(org, repo, ref string, s github.Status) error { return nil }
+func (f *fghc) GetPullRequest(org, repo string, number int) (*github.PullRequest, error) {
+	return nil, nil
+}
 func (f *fghc) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
 	return nil, nil
 }

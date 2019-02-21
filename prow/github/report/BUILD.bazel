@@ -15,6 +15,7 @@ go_test(
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/github:go_default_library",
+        "//prow/plugins:go_default_library",
     ],
 )
 

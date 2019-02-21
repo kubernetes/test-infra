@@ -55,6 +55,7 @@ type prowJobClient interface {
 type GitHubClient interface {
 	BotName() (string, error)
 	CreateStatus(org, repo, ref string, s github.Status) error
+	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	CreateComment(org, repo string, number int, comment string) error
 	DeleteComment(org, repo string, ID int) error
