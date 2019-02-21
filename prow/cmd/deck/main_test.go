@@ -32,11 +32,9 @@ import (
 	"testing"
 	"time"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/tide"
@@ -194,14 +192,16 @@ func TestHandleLog(t *testing.T) {
 	}
 }
 
+type fpjc prowapi.ProwJob
+
+func (fc *fpjc) GetProwJob(name string) (prowapi.ProwJob, error) {
+	return prowapi.ProwJob(*fc), nil
+}
+
 // TestRerun just checks that the result can be unmarshaled properly, has an
 // updated status, and has equal spec.
 func TestRerun(t *testing.T) {
-	fakeProwJobClient := fake.NewSimpleClientset(&prowapi.ProwJob{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "wowsuch",
-			Namespace: "prowjobs",
-		},
+	fc := fpjc(prowapi.ProwJob{
 		Spec: prowapi.ProwJobSpec{
 			Job:  "whoa",
 			Type: prowapi.PresubmitJob,
@@ -217,7 +217,7 @@ func TestRerun(t *testing.T) {
 			State: prowapi.PendingState,
 		},
 	})
-	handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"))
+	handler := handleRerun(&fc)
 	req, err := http.NewRequest(http.MethodGet, "/rerun?prowjob=wowsuch", nil)
 	if err != nil {
 		t.Fatalf("Error making request: %v", err)
@@ -263,7 +263,7 @@ func TestTide(t *testing.T) {
 		ProwConfig: config.ProwConfig{
 			Tide: config.Tide{
 				Queries: []config.TideQuery{
-					{Repos: []string{"prowapi.netes/test-infra"}},
+					{Repos: []string{"kubernetes/test-infra"}},
 				},
 			},
 		},
@@ -310,7 +310,7 @@ func TestTide(t *testing.T) {
 	if len(res.Queries) != 1 {
 		t.Fatalf("Wrong number of pools. Got %d, expected 1 in %v", len(res.Queries), res.Queries)
 	}
-	if expected := "is:pr state:open repo:\"prowapi.netes/test-infra\""; res.Queries[0] != expected {
+	if expected := "is:pr state:open repo:\"kubernetes/test-infra\""; res.Queries[0] != expected {
 		t.Errorf("Wrong query. Got %s, expected %s", res.Queries[0], expected)
 	}
 }
