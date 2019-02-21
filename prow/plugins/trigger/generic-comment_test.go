@@ -1343,7 +1343,7 @@ func TestPresubmitFilter(t *testing.T) {
 			} else {
 				fsg.status[key] = statuses
 			}
-			filter, err := presubmitFilter(testCase.honorOkToTest, fsg, testCase.body, testCase.org, testCase.repo, testCase.ref)
+			filter, err := presubmitFilter(testCase.honorOkToTest, fsg, testCase.body, testCase.org, testCase.repo, testCase.ref, logrus.WithField("test-case", testCase.name))
 			if testCase.expectErr && err == nil {
 				t.Errorf("%s: expected an error creating the filter, but got none", testCase.name)
 			}
@@ -1622,7 +1622,7 @@ func TestDetermineSkippedPresubmits(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			if actual, expected := determineSkippedPresubmits(testCase.toTrigger, testCase.toSkipSuperset), testCase.expectedToSkip; !reflect.DeepEqual(actual, expected) {
+			if actual, expected := determineSkippedPresubmits(testCase.toTrigger, testCase.toSkipSuperset, logrus.WithField("test-case", testCase.name)), testCase.expectedToSkip; !reflect.DeepEqual(actual, expected) {
 				t.Errorf("%s: incorrect skipped presubmits determined: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
 			}
 		})
@@ -1843,7 +1843,7 @@ func TestFilterPresubmits(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			actualToTrigger, actualToSkip, err := filterPresubmits(testCase.filter, &fakeChangesGetter{shouldError: testCase.changesError}, pr, testCase.presubmits)
+			actualToTrigger, actualToSkip, err := filterPresubmits(testCase.filter, &fakeChangesGetter{shouldError: testCase.changesError}, pr, testCase.presubmits, logrus.WithField("test-case", testCase.name))
 			if testCase.expectErr && err == nil {
 				t.Errorf("%s: expected an error filtering presubmits, but got none", testCase.name)
 			}
