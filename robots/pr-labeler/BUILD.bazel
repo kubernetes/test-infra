@@ -1,30 +1,18 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
-load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
-load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("//prow:def.bzl", "prow_push", "prow_image")
 
-container_bundle(
-    name = "bundle",
+prow_push(
+    name = "push",
     images = {
-        "{STABLE_DOCKER_REPO}/pr-labeler:{DOCKER_TAG}": ":pr-labeler-image",
-        "{STABLE_DOCKER_REPO}/pr-labeler:latest": ":pr-labeler-image",
-        "{STABLE_DOCKER_REPO}/pr-labeler:latest-{BUILD_USER}": ":pr-labeler-image",
+        "{STABLE_DOCKER_REPO}/pr-labeler:{DOCKER_TAG}": ":image",
+        "{STABLE_DOCKER_REPO}/pr-labeler:latest": ":image",
+        "{STABLE_DOCKER_REPO}/pr-labeler:latest-{BUILD_USER}": ":image",
     },
 )
 
-docker_push(
-    name = "push",
-    bundle = ":bundle",
-)
-
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
-
-go_image(
-    name = "pr-labeler-image",
-    base = "@distroless-base//image",
-    embed = [":go_default_library"],
-)
+prow_image(name = "image")
 
 go_library(
     name = "go_default_library",
