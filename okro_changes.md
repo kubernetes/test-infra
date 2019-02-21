@@ -1,0 +1,39 @@
+# Okro changes
+
+This is a list of all the changes made to this repository to support Okro use cases:
+
+- Prow plugins (traiana/prow/plugins):
+  - okro/undoer
+  - okro/catalog_force_merge
+  - okro/domain_force_merge
+  - both force_merge plugins use a common force_merge library (traiana/prow/force_merge)
+  
+- Allow spyglass links without '/build/' ([commit](https://github.com/Traiana/test-infra/commit/d9beb7fe4ad8a03df4a7e4170a5fd55eb86e8cd6))
+  - to determine whether to show the "eye" icon to link to Spyglass, deck searched the prowjob URL for
+    the '/build/' string. Because we wanted the prowjob URL (that also appears on Github) to be the Spyglass URL, we removed this check.
+
+- Support nice JSON logging in spyglass build logs ([commit](https://github.com/Traiana/test-infra/commit/4718ac8f7f44c9f6c830541d93c08d6290580618))
+  - make build logs in Spyglass respect whitespace so we can print JSON responses from our API in human-readable format.
+
+- Reduce verbosity of failed build jobs statuses ([commit](https://github.com/Traiana/test-infra/commit/6b1c7d0613ff48c3182e3e284778f83221f0f012))
+  - make Github status description for knative-build prowjobs be similar to kubernetes prowjobs (e.g "Job failed" instead of "step X exited with status 1")
+  
+- Temp patch for [kubernetes#11029](https://github.com/kubernetes/test-infra/issues/11029) ([commit](https://github.com/Traiana/test-infra/commit/21874a4440ff701907cfef95b448f2e2c57def66))
+
+- Allow skipping build jobs steps ([commit](https://github.com/Traiana/test-infra/commit/5b8af55c4fa160a26cbf558c7b9001b2531ac99e))
+  - Tide may run presubmit jobs multiple times before it merges a PR. The validate_build step during our build process
+    used to fail if the build existed, which would fail the whole presubmit job if ran more than once. It now checks
+    whether the build is exactly the same as the existing one and if it is - mark the step as passed and skip all other
+    steps (pushing images, registering the build, etc).
+
+- Allow authors to lgtm their own PRs when they're the only reviewers ([commit](https://github.com/Traiana/test-infra/commit/f2077f6c5fc22de520af5dd86c47725fc4ed7334))
+  - to allow users to merge changes to their own realms.
+
+- Change `/test` and `/retest` commands to `/run` and `/rerun` ([commit](https://github.com/Traiana/test-infra/commit/262ef6edb8b8c684b164b776ad34c63223c928a3))
+  - because they are also used to run validate jobs and builds.
+  
+- Add short sha env variables to decorated pods ([commit](https://github.com/Traiana/test-infra/commit/2a9a0e38373a9d0d71934eb5177a9b4e17793e32))
+  - add the PULL_BASE_SHA_SHORT and PULL_PULL_SHA_SHORT env variables which contain the short version (7 characters) of
+    PULL_BASE_SHA and PULL_PULL_SHA respectively. Used for interpolation when creating image names.
+
+- Add CreateIssue method to github client ([commit](https://github.com/Traiana/test-infra/commit/c4eb98e3974952579becad07fd7b9c6ebd05c181))
