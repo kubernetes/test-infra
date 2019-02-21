@@ -27,7 +27,6 @@ import (
 
 	"github.com/fsouza/fake-gcs-server/fakestorage"
 	"github.com/sirupsen/logrus"
-	coreapi "k8s.io/api/core/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -48,17 +47,45 @@ const (
 
 type fkc []prowapi.ProwJob
 
+
+func (f fkc) GetLog(pod string) ([]byte, error) {
+	return nil, nil
+}
+
+func (f fkc) ListPods(selector string) ([]kube.Pod, error) {
+	return nil, nil
+}
+
 func (f fkc) ListProwJobs(s string) ([]prowapi.ProwJob, error) {
 	return f, nil
 }
 
 type fpkc string
 
-func (f fpkc) GetLogs(name string, opts *coreapi.PodLogOptions) ([]byte, error) {
-	if name == "wowowow" || name == "powowow" {
+func (f fpkc) GetLog(pod string) ([]byte, error) {
+	if pod == "wowowow" || pod == "powowow" {
 		return []byte(f), nil
 	}
-	return nil, fmt.Errorf("pod not found: %s", name)
+	return nil, fmt.Errorf("pod not found: %s", pod)
+}
+
+func (f fpkc) GetContainerLog(pod, container string) ([]byte, error) {
+	if pod == "wowowow" || pod == "powowow" {
+		return []byte(f), nil
+	}
+	return nil, fmt.Errorf("pod not found: %s", pod)
+}
+
+func (f fpkc) GetLogTail(pod, container string, n int64) ([]byte, error) {
+	if pod == "wowowow" || pod == "powowow" {
+		tailBytes := []byte(f)
+		lenTailBytes := int64(len(tailBytes))
+		if lenTailBytes < n {
+			return tailBytes, nil
+		}
+		return tailBytes[lenTailBytes-n-1:], nil
+	}
+	return nil, fmt.Errorf("pod not found: %s", pod)
 }
 
 type fca struct {
