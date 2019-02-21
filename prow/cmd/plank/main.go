@@ -28,7 +28,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
@@ -117,17 +116,30 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
-	kubeClient, defaultContext, kubernetesClients, err := o.kubernetes.Client(cfg().ProwJobNamespace, o.dryRun)
+	kubeClient, _, _, err := o.kubernetes.Client(cfg().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
 
-	buildClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, o.dryRun)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting build cluster clients.")
+	var pkcs map[string]*kube.Client
+	if o.dryRun {
+		pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: kubeClient}
+	} else {
+		if o.buildCluster == "" {
+			pkc, err := kube.NewClientInCluster(cfg().PodNamespace)
+			if err != nil {
+				logrus.WithError(err).Fatal("Error getting kube client.")
+			}
+			pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: pkc}
+		} else {
+			pkcs, err = kube.ClientMapFromFile(o.buildCluster, cfg().PodNamespace)
+			if err != nil {
+				logrus.WithError(err).Fatal("Error getting kube client to build cluster.")
+			}
+		}
 	}
 
-	c, err := plank.NewController(kubeClient, buildClients, githubClient, nil, cfg, o.totURL, o.selector, o.skipReport)
+	c, err := plank.NewController(kubeClient, pkcs, githubClient, nil, cfg, o.totURL, o.selector, o.skipReport)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating plank controller.")
 	}
