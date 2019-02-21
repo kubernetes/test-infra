@@ -27,9 +27,10 @@ import (
 
 func TestSpecToStarted(t *testing.T) {
 	var tests = []struct {
-		name     string
-		spec     downwardapi.JobSpec
-		expected gcs.Started
+		name       string
+		spec       downwardapi.JobSpec
+		mainRefSHA string
+		expected   gcs.Started
 	}{
 		{
 			name: "Refs with Pull",
@@ -96,10 +97,35 @@ func TestSpecToStarted(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Refs with ExtraRef and mainRefSHA override",
+			spec: downwardapi.JobSpec{
+				Refs: &prowapi.Refs{
+					Org:     "kubernetes",
+					Repo:    "test-infra",
+					BaseRef: "master",
+				},
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:     "kubernetes",
+						Repo:    "release",
+						BaseRef: "v1.10",
+					},
+				},
+			},
+			mainRefSHA: "aaaaaaaa",
+			expected: gcs.Started{
+				RepoVersion: "aaaaaaaa",
+				Repos: map[string]string{
+					"kubernetes/test-infra": "master",
+					"kubernetes/release":    "v1.10",
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
-		actual, expected := specToStarted(&test.spec), test.expected
+		actual, expected := specToStarted(&test.spec, test.mainRefSHA), test.expected
 		expected.Timestamp = actual.Timestamp
 		if !reflect.DeepEqual(actual, expected) {
 			t.Errorf("%s: got started: %#v, but expected: %#v", test.name, actual, expected)
