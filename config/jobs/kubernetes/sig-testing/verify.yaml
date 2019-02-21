@@ -16,7 +16,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -54,7 +54,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.14
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-1.14
           imagePullPolicy: Always
           command:
             - runner.sh
@@ -127,7 +127,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -167,7 +167,7 @@ periodics:
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190219-caa48e6c3-1.14
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-1.14
         imagePullPolicy: Always
         command:
           - runner.sh
