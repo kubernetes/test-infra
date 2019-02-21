@@ -47,7 +47,6 @@ const (
 
 type fkc []prowapi.ProwJob
 
-
 func (f fkc) GetLog(pod string) ([]byte, error) {
 	return nil, nil
 }

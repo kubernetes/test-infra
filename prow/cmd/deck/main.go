@@ -40,9 +40,9 @@ import (
 	"google.golang.org/api/option"
 	"sigs.k8s.io/yaml"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/githuboauth"
