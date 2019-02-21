@@ -5,6 +5,10 @@ go_library(
     srcs = ["main.go"],
     importpath = "k8s.io/test-infra/kubetest2/kubetest2-kind",
     visibility = ["//visibility:private"],
+    deps = [
+        "//kubetest2/kubetest2-kind/deployer:go_default_library",
+        "//kubetest2/pkg/app:go_default_library",
+    ],
 )
 
 go_binary(
