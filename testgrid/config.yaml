@@ -3292,6 +3292,10 @@ test_groups:
 - name: ci-kubernetes-e2e-windows-gce-poc
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-windows-gce-poc
 
+# Pivotal Windows test groups
+- name: ci-kubernetes-e2e-windows-cfcr
+  gcs_prefix: pivotal-e2e-results/kubo-windows-2019
+
 # bazelbuild/rules_k8s tests
 - name: pull-rules-k8s-e2e
   gcs_prefix: kubernetes-jenkins/logs/pull-rules-k8s-e2e
@@ -7516,6 +7520,9 @@ dashboards:
   - name: gce-windows-master
     description: Runs tests on a Kubernetes cluster with Windows nodes on GCE"
     test_group_name: ci-kubernetes-e2e-windows-gce
+  - name: cfcr-vsphere-windows-master
+    description: Runs Windows verification tests on a master-branch Kubernetes cluster provided by CFCR (https://github.com/cloudfoundry-incubator/kubo-release) on vSphere"
+    test_group_name: ci-kubernetes-e2e-windows-cfcr
 
 # sig-azure dashboard
 - name: sig-azure-master
