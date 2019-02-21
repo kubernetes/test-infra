@@ -39,8 +39,6 @@ import (
 	pluginhelp "k8s.io/test-infra/prow/pluginhelp/hook"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/slack"
-
-	okroclient "github.com/traiana/okro/okro/client"
 )
 
 type options struct {
@@ -57,9 +55,6 @@ type options struct {
 
 	webhookSecretFile string
 	slackTokenFile    string
-
-	okroURL string
-	tenant  string
 }
 
 func (o *options) Validate() error {
@@ -90,9 +85,6 @@ func gatherOptions() options {
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to the file containing the Slack token to use.")
 
-	fs.StringVar(&o.okroURL, "okro-url", "", "okro server's URL")
-	fs.StringVar(&o.tenant, "tenant", "", "Tenant name")
-
 	fs.Parse(os.Args[1:])
 	return o
 }
@@ -104,11 +96,7 @@ func main() {
 	}
 	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "hook"}))
 
-	configAgent := &config.Agent{
-		OkroConfig: &config.OkroConfig{
-			Tenant: o.tenant,
-		},
-	}
+	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
@@ -159,14 +147,12 @@ func main() {
 		slackClient = slack.NewFakeClient()
 	}
 
-	okroClient := okroclient.New(o.okroURL)
 	clientAgent := &plugins.ClientAgent{
 		GitHubClient:     githubClient,
 		ProwJobClient:    prowJobClient,
 		KubernetesClient: infrastructureClient,
 		GitClient:        gitClient,
 		SlackClient:      slackClient,
-		OkroClient:       okroClient,
 	}
 
 	pluginAgent := &plugins.ConfigAgent{}

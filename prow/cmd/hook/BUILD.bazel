@@ -45,7 +45,6 @@ go_library(
         "//prow/slack:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus/promhttp:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
-        "//vendor/github.com/traiana/okro/okro/client:go_default_library",
     ],
 )
 

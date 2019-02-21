@@ -22,8 +22,6 @@ github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 h1:d+Bc7a5rLufV
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
 github.com/andygrunwald/go-gerrit v0.0.0-20171029143327-95b11af228a1 h1:2Qp3BQZ7r1z+oMUnFhD6FQ86Hh1PO+59yoUNNJ5Dn0M=
 github.com/andygrunwald/go-gerrit v0.0.0-20171029143327-95b11af228a1/go.mod h1:0iuRQp6WJ44ts+iihy5E/WlPqfg5RNeQxOmzRkxCdtk=
-github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf h1:eg0MeVzsP1G42dRafH3vf+al2vQIJU0YHX+1Tw87oco=
-github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf/go.mod h1:lB+ZfQJz7igIIfQNfa7Ml4HSf2uFQQRzpGGRXenZAgY=
 github.com/aws/aws-k8s-tester v0.0.0-20190114231546-b411acf57dfe h1:B7prfUXk9GHnMc/a7NrEY29IJRgI4/2cCbHDqQJGgLs=
 github.com/aws/aws-k8s-tester v0.0.0-20190114231546-b411acf57dfe/go.mod h1:1ADF5tAtU1/mVtfMcHAYSm2fPw71DA7fFk0yed64/0I=
 github.com/aws/aws-sdk-go v1.16.18 h1:ZXmG9Uexu2f2kKK0Onlod3Hl4X77qQvCGx2725fSubI=
@@ -82,8 +80,6 @@ github.com/go-openapi/spec v0.0.0-20171219195406-fa03337d7da5 h1:/4LLqbrF/Zoeyra
 github.com/go-openapi/spec v0.0.0-20171219195406-fa03337d7da5/go.mod h1:J8+jY1nAiCcj+friV/PDoE1/3eeccG9LYBs0tYvLOWc=
 github.com/go-openapi/swag v0.0.0-20171111214437-cf0bdb963811 h1:r38dWW65/T34YOCwzGTAoDxP16l+OpDJl/n07P+pvUo=
 github.com/go-openapi/swag v0.0.0-20171111214437-cf0bdb963811/go.mod h1:DXUve3Dpr1UfpPtxFw+EFuQ41HhCWZfha5jSVRG7C7I=
-github.com/go-ozzo/ozzo-validation v3.5.0+incompatible h1:sUy/in/P6askYr16XJgTKq/0SZhiWsdg4WZGaLsGQkM=
-github.com/go-ozzo/ozzo-validation v3.5.0+incompatible/go.mod h1:gsEKFIVnabGBt6mXmxK0MoFy+cZoTJY6mu5Ll3LVLBU=
 github.com/go-sql-driver/mysql v0.0.0-20160411075031-7ebe0a500653 h1:cRYCw9putX9pmpNdGkE/rWrY6gNGqZvdgGT1RPl6K18=
 github.com/go-sql-driver/mysql v0.0.0-20160411075031-7ebe0a500653/go.mod h1:zAC/RDZ24gD3HViQzih4MyKcchzm+sOG5ZlKdlhCg5w=
 github.com/go-yaml/yaml v2.1.0+incompatible h1:RYi2hDdss1u4YE7GwixGzWwVo47T8UQwnTLB6vQiq+o=
@@ -245,10 +241,6 @@ github.com/spf13/pflag v1.0.3/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnIn
 github.com/stretchr/testify v1.2.2 h1:bSDNvY7ZPG5RlJ8otE/7V6gMiyenm9RtJ7IUVIAoJ1w=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
-github.com/traiana/okro v0.0.0-20190219154907-b00cf08a2843 h1:gqbFRNHIr+y48Lv1g8Z7/DbkLfSzfWOGqM7Dc3V2ZVM=
-github.com/traiana/okro v0.0.0-20190219154907-b00cf08a2843/go.mod h1:t3BWSgPh5HhVvtSMGFKISvzis9JFwy4yu0+hCut/6hw=
-github.com/traiana/prow-jobs v0.0.0-20190219133008-0ec733360227 h1:ahV2BqViY9yxUfVQnBmaZGI3BVIZAkto6DMBi5yelmY=
-github.com/traiana/prow-jobs v0.0.0-20190219133008-0ec733360227/go.mod h1:JgTySTd6hAaVDVnll4ev9JmNqqrQr4ecFNj6B8fivQQ=
 github.com/ugorji/go v1.1.1/go.mod h1:hnLbHMwcvSihnDhEfx2/BzKp2xb0Y+ErdfYcrs9tkJQ=
 github.com/urfave/cli v1.18.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
 github.com/xiang90/probing v0.0.0-20160813154853-07dd2e8dfe18/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=

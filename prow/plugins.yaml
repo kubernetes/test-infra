@@ -682,6 +682,17 @@ plugins:
   - cat # /meow replies with cat pictures
   - dog # /bark replies with dog pictures
 
+  osela/app-repo:
+  - approve
+  - lgtm
+  - okro/undoer
+
+  osela/github-app-test:
+  - approve
+  - lgtm
+  - okro/undoer
+  - okro/domain-force-merge
+
 external_plugins:
   kubernetes/community:
   - name: needs-rebase

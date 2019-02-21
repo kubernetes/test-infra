@@ -12,7 +12,6 @@ require (
 	github.com/PuerkitoBio/purell v1.1.0 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/andygrunwald/go-gerrit v0.0.0-20171029143327-95b11af228a1
-	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf // indirect
 	github.com/aws/aws-k8s-tester v0.0.0-20190114231546-b411acf57dfe
 	github.com/aws/aws-sdk-go v1.16.22
 	github.com/bazelbuild/buildtools v0.0.0-20180226164855-80c7f0d45d7e
@@ -32,7 +31,6 @@ require (
 	github.com/go-openapi/jsonreference v0.0.0-20161105162150-36d33bfe519e // indirect
 	github.com/go-openapi/spec v0.0.0-20171219195406-fa03337d7da5
 	github.com/go-openapi/swag v0.0.0-20171111214437-cf0bdb963811 // indirect
-	github.com/go-ozzo/ozzo-validation v3.5.0+incompatible // indirect
 	github.com/go-sql-driver/mysql v0.0.0-20160411075031-7ebe0a500653 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/groupcache v0.0.0-20180513044358-24b0969c4cb7 // indirect
@@ -76,8 +74,6 @@ require (
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.2.2
-	github.com/traiana/okro v0.0.0-20190219154907-b00cf08a2843
-	github.com/traiana/prow-jobs v0.0.0-20190219133008-0ec733360227
 	github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1 // indirect
 	golang.org/x/crypto v0.0.0-20181015023909-0c41d7ab0a0e
 	golang.org/x/net v0.0.0-20180906233101-161cd47e91fd
