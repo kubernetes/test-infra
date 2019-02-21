@@ -293,10 +293,13 @@ func (c *Controller) Sync() error {
 	var blocks blockers.Blockers
 	var err error
 	if len(prs) > 0 {
+		start := time.Now()
 		pjList, err := c.prowJobClient.List(metav1.ListOptions{LabelSelector: labels.Everything().String()})
 		if err != nil {
+			c.logger.WithField("duration", time.Since(start).String()).Debug("Failed to list ProwJobs from the cluster.")
 			return err
 		}
+		c.logger.WithField("duration", time.Since(start).String()).Debug("Listed ProwJobs from the cluster.")
 		pjs = pjList.Items
 
 		if label := c.config().Tide.BlockerLabel; label != "" {
@@ -927,9 +930,12 @@ func (c *Controller) trigger(sp subpool, presubmits map[int][]config.Presubmit, 
 				spec = pjutil.BatchSpec(ps, refs)
 			}
 			pj := pjutil.NewProwJob(spec, ps.Labels)
+			start := time.Now()
 			if _, err := c.prowJobClient.Create(&pj); err != nil {
+				c.logger.WithField("duration", time.Since(start).String()).Debug("Failed to create ProwJob on the cluster.")
 				return fmt.Errorf("failed to create a ProwJob for job: %q, PRs: %v: %v", spec.Job, prNumbers(prs), err)
 			}
+			c.logger.WithField("duration", time.Since(start).String()).Debug("Created ProwJob on the cluster.")
 		}
 	}
 	return nil
