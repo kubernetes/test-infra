@@ -3,10 +3,7 @@
 This is a list of all the changes made to this repository to support Okro use cases:
 
 - Prow plugins (traiana/prow/plugins):
-  - okro/undoer
-  - okro/catalog_force_merge
-  - okro/domain_force_merge
-  - both force_merge plugins use a common force_merge library (traiana/prow/force_merge)
+  - okro/undoer ([commit](https://github.com/Traiana/test-infra/commit/42d85973f83e4f39cd592543be144cef7a4f6d09))
   
 - Allow spyglass links without '/build/' ([commit](https://github.com/Traiana/test-infra/commit/d9beb7fe4ad8a03df4a7e4170a5fd55eb86e8cd6))
   - to determine whether to show the "eye" icon to link to Spyglass, deck searched the prowjob URL for
