@@ -1109,11 +1109,11 @@ func TestSyncPendingJob(t *testing.T) {
 					},
 				},
 			},
-			expectedState:    prowapi.AbortedState,
+			expectedState:    prowapi.ErrorState,
 			expectedNumPods:  1,
 			expectedComplete: true,
 			expectedReport:   true,
-			expectedURL:      "nightmare/aborted",
+			expectedURL:      "nightmare/error",
 		},
 	}
 	for _, tc := range testcases {
