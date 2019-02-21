@@ -8,6 +8,12 @@
 ---
 default:
   labels:
+    - color: e11d21
+      description: Categorizes an issue or PR as actively needing an API review. See https://git.k8s.io/community/sig-architecture/api-review-process.md
+      name: api-review
+      target: both
+      prowPlugin: label
+      addedBy: anyone
     - color: 0052cc
       description: Issues or PRs related to Kubernetes licensing
       name: area/licensing
