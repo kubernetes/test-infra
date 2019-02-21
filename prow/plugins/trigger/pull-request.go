@@ -218,7 +218,7 @@ func TrustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org,
 
 // buildAll ensures that all builds that should run and will be required are built
 func buildAll(c Client, pr *github.PullRequest, eventGUID string, elideSkippedContexts bool) error {
-	toTest, toSkip, err := filterPresubmits(testAllFilter(), c.GitHubClient, pr, c.Config.Presubmits[pr.Base.Repo.FullName])
+	toTest, toSkip, err := filterPresubmits(testAllFilter(), c.GitHubClient, pr, c.Config.Presubmits[pr.Base.Repo.FullName], c.Logger)
 	if err != nil {
 		return err
 	}
