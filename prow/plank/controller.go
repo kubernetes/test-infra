@@ -24,17 +24,15 @@ import (
 
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
-	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/test-infra/prow/kube"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	reportlib "k8s.io/test-infra/prow/github/report"
 	"k8s.io/test-infra/prow/github/reporter"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 )
@@ -43,11 +41,11 @@ const (
 	testInfra = "https://github.com/kubernetes/test-infra/issues"
 )
 
-type prowJobClient interface {
-	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
-	Update(*prowapi.ProwJob) (*prowapi.ProwJob, error)
-	Get(name string, options metav1.GetOptions) (*prowapi.ProwJob, error)
-	List(opts metav1.ListOptions) (*prowapi.ProwJobList, error)
+type kubeClient interface {
+	CreateProwJob(prowapi.ProwJob) (prowapi.ProwJob, error)
+	GetProwJob(string) (prowapi.ProwJob, error)
+	ListProwJobs(string) ([]prowapi.ProwJob, error)
+	ReplaceProwJob(string, prowapi.ProwJob) (prowapi.ProwJob, error)
 }
 
 // GitHubClient contains the methods used by plank on k8s.io/test-infra/prow/github.Client
@@ -68,12 +66,12 @@ type syncFn func(pj prowapi.ProwJob, pm map[string]coreapi.Pod, reports chan<- p
 
 // Controller manages ProwJobs.
 type Controller struct {
-	prowJobClient prowJobClient
-	buildClients  map[string]corev1.PodInterface
-	ghc           GitHubClient
-	log           *logrus.Entry
-	config        config.Getter
-	totURL        string
+	kc           kubeClient
+	buildClients map[string]corev1.PodInterface
+	ghc          GitHubClient
+	log          *logrus.Entry
+	config       config.Getter
+	totURL       string
 	// selector that will be applied on prowjobs and pods.
 	selector string
 
@@ -91,20 +89,20 @@ type Controller struct {
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(prowJobClient prowv1.ProwJobInterface, buildClients map[string]corev1.PodInterface, ghc GitHubClient, logger *logrus.Entry, cfg config.Getter, totURL, selector string, skipReport bool) (*Controller, error) {
+func NewController(kc *kube.Client, buildClients map[string]corev1.PodInterface, ghc GitHubClient, logger *logrus.Entry, cfg config.Getter, totURL, selector string, skipReport bool) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
 	return &Controller{
-		prowJobClient: prowJobClient,
-		buildClients:  buildClients,
-		ghc:           ghc,
-		log:           logger,
-		config:        cfg,
-		pendingJobs:   make(map[string]int),
-		totURL:        totURL,
-		selector:      selector,
-		skipReport:    skipReport,
+		kc:           kc,
+		buildClients: buildClients,
+		ghc:          ghc,
+		log:          logger,
+		config:       cfg,
+		pendingJobs:  make(map[string]int),
+		totURL:       totURL,
+		selector:     selector,
+		skipReport:   skipReport,
 	}, nil
 }
 
@@ -152,7 +150,7 @@ func (c *Controller) incrementNumPendingJobs(job string) {
 // migration to become seamless.
 func (c *Controller) setPreviousReportState(pj prowapi.ProwJob) error {
 	// fetch latest before replace
-	latestPJ, err := c.prowJobClient.Get(pj.ObjectMeta.Name, metav1.GetOptions{})
+	latestPJ, err := c.kc.GetProwJob(pj.ObjectMeta.Name)
 	if err != nil {
 		return err
 	}
@@ -161,13 +159,13 @@ func (c *Controller) setPreviousReportState(pj prowapi.ProwJob) error {
 		latestPJ.Status.PrevReportStates = map[string]prowapi.ProwJobState{}
 	}
 	latestPJ.Status.PrevReportStates[reporter.GithubReporterName] = latestPJ.Status.State
-	_, err = c.prowJobClient.Update(latestPJ)
+	_, err = c.kc.ReplaceProwJob(latestPJ.ObjectMeta.Name, latestPJ)
 	return err
 }
 
 // Sync does one sync iteration.
 func (c *Controller) Sync() error {
-	pjs, err := c.prowJobClient.List(metav1.ListOptions{LabelSelector: c.selector})
+	pjs, err := c.kc.ListProwJobs(c.selector)
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
@@ -189,25 +187,26 @@ func (c *Controller) Sync() error {
 	// TODO: Replace the following filtering with a field selector once CRDs support field selectors.
 	// https://github.com/kubernetes/kubernetes/issues/53459
 	var k8sJobs []prowapi.ProwJob
-	for _, pj := range pjs.Items {
+	for _, pj := range pjs {
 		if pj.Spec.Agent == prowapi.KubernetesAgent {
 			k8sJobs = append(k8sJobs, pj)
 		}
 	}
+	pjs = k8sJobs
 
 	var syncErrs []error
-	if err := c.terminateDupes(k8sJobs, pm); err != nil {
+	if err := c.terminateDupes(pjs, pm); err != nil {
 		syncErrs = append(syncErrs, err)
 	}
 
 	// Share what we have for gathering metrics.
 	c.pjLock.Lock()
-	c.pjs = k8sJobs
+	c.pjs = pjs
 	c.pjLock.Unlock()
 
-	pendingCh, triggeredCh := pjutil.PartitionActive(k8sJobs)
-	errCh := make(chan error, len(k8sJobs))
-	reportCh := make(chan prowapi.ProwJob, len(k8sJobs))
+	pendingCh, triggeredCh := pjutil.PartitionActive(pjs)
+	errCh := make(chan error, len(pjs))
+	reportCh := make(chan prowapi.ProwJob, len(pjs))
 
 	// Reinstantiate on every resync of the controller instead of trying
 	// to keep this in sync with the state of the world.
@@ -296,11 +295,11 @@ func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, pm map[string]coreapi
 		c.log.WithFields(pjutil.ProwJobFields(&toCancel)).
 			WithField("from", prevState).
 			WithField("to", toCancel.Status.State).Info("Transitioning states.")
-		npj, err := c.prowJobClient.Update(&toCancel)
+		npj, err := c.kc.ReplaceProwJob(toCancel.ObjectMeta.Name, toCancel)
 		if err != nil {
 			return err
 		}
-		pjs[cancelIndex] = *npj
+		pjs[cancelIndex] = npj
 	}
 	return nil
 }
@@ -346,7 +345,8 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 		// a rescheduler. Start a new pod.
 		id, pn, err := c.startPod(pj)
 		if err != nil {
-			if !kerrors.IsInvalid(err) {
+			_, isUnprocessable := err.(kube.UnprocessableEntityError)
+			if !isUnprocessable {
 				return fmt.Errorf("error starting pod: %v", err)
 			}
 			pj.Status.State = prowapi.ErrorState
@@ -431,7 +431,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := c.prowJobClient.Update(&pj)
+	_, err := c.kc.ReplaceProwJob(pj.ObjectMeta.Name, pj)
 	return err
 }
 
@@ -454,7 +454,8 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]coreapi.
 		var err error
 		id, pn, err = c.startPod(pj)
 		if err != nil {
-			if !kerrors.IsInvalid(err) {
+			_, isUnprocessable := err.(kube.UnprocessableEntityError)
+			if !isUnprocessable {
 				return fmt.Errorf("error starting pod: %v", err)
 			}
 			pj.Status.State = prowapi.ErrorState
@@ -481,7 +482,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]coreapi.
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := c.prowJobClient.Update(&pj)
+	_, err := c.kc.ReplaceProwJob(pj.ObjectMeta.Name, pj)
 	return err
 }
 
