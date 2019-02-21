@@ -18,14 +18,17 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
-	"net/url"
+	"os"
 	"strings"
+	"syscall"
 	"time"
 
 	"sync"
@@ -45,13 +48,12 @@ var (
 
 // Client defines the public Boskos client object
 type Client struct {
-	// RetryCount is the number of times an HTTP request issued by this client
-	// is retried when the initial request fails due an inaccessible endpoint.
-	RetryCount uint
+	// Dialer is the net.Dialer used to establish connections to the remote
+	// boskos endpoint.
+	Dialer DialerWithRetry
 
-	// RetryDuration is the interval to wait before retrying an HTTP operation
-	// that failed due to an inaccessible endpoint.
-	RetryWait time.Duration
+	// http is the http.Client used to interact with the boskos REST API
+	http http.Client
 
 	owner string
 	url   string
@@ -60,16 +62,41 @@ type Client struct {
 	storage storage.PersistenceLayer
 }
 
-// NewClient creates a boskos client, with boskos url, owner of the client,
-// a RetryCount of 3, and a RetryWait interval of 10s.
+// NewClient creates a Boskos client for the specified URL and resource owner.
+//
+// Clients created with this function default to retrying failed connection
+// attempts three times with a ten second pause between each attempt.
 func NewClient(owner string, url string) *Client {
 
 	client := &Client{
-		RetryCount: 3,
-		RetryWait:  10 * time.Second,
-		url:        url,
-		owner:      owner,
-		storage:    storage.NewMemoryStorage(),
+		url:     url,
+		owner:   owner,
+		storage: storage.NewMemoryStorage(),
+	}
+
+	// Configure the dialer to attempt three additional times to establish
+	// a connection after a failed dial attempt. The dialer should wait 10
+	// seconds between each attempt.
+	client.Dialer.RetryCount = 3
+	client.Dialer.RetrySleep = time.Second * 10
+
+	// Configure the dialer and HTTP client transport to mimic the configuration
+	// of the http.DefaultTransport with the exception that the Dialer's Dial
+	// and DialContext functions are assigned to the client transport.
+	//
+	// See https://golang.org/pkg/net/http/#RoundTripper for the values
+	// values used for the http.DefaultTransport.
+	client.Dialer.Timeout = 30 * time.Second
+	client.Dialer.KeepAlive = 30 * time.Second
+	client.Dialer.DualStack = true
+	client.http.Transport = &http.Transport{
+		Proxy:                 http.ProxyFromEnvironment,
+		Dial:                  client.Dialer.Dial,
+		DialContext:           client.Dialer.DialContext,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
 	}
 
 	return client
@@ -388,7 +415,7 @@ func (c *Client) httpGet(url string) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	return c.httpDo(req)
+	return c.http.Do(req)
 }
 
 func (c *Client) httpPost(url, contentType string, body io.Reader) (*http.Response, error) {
@@ -399,29 +426,77 @@ func (c *Client) httpPost(url, contentType string, body io.Reader) (*http.Respon
 	if contentType != "" {
 		req.Header.Set("Content-Type", contentType)
 	}
-	return c.httpDo(req)
+	return c.http.Do(req)
 }
 
-func (c *Client) httpDo(req *http.Request) (*http.Response, error) {
-	// Always bump the retryCount by 1 in order to equal the actual number of
-	// attempts. For example, if a retryCount of 2 is specified, the intent
+// DialerWithRetry is a composite version of the net.Dialer that retries
+// connection attempts.
+type DialerWithRetry struct {
+	net.Dialer
+
+	// RetryCount is the number of times to retry a connection attempt.
+	RetryCount uint
+
+	// RetrySleep is the length of time to pause between retry attempts.
+	RetrySleep time.Duration
+}
+
+// Dial connects to the address on the named network.
+func (d *DialerWithRetry) Dial(network, address string) (net.Conn, error) {
+	return d.DialContext(context.Background(), network, address)
+}
+
+// DialContext connects to the address on the named network using the provided context.
+func (d *DialerWithRetry) DialContext(ctx context.Context, network, address string) (net.Conn, error) {
+	// Always bump the retry count by 1 in order to equal the actual number of
+	// attempts. For example, if a retry count of 2 is specified, the intent
 	// is for three attempts -- the initial attempt with two retries in case
 	// the initial attempt times out.
-	retryCount := c.RetryCount + 1
-	retryWait := c.RetryWait
+	count := d.RetryCount + 1
+	sleep := d.RetrySleep
 	i := uint(0)
 	for {
-		res, err := http.DefaultClient.Do(req)
+		conn, err := d.Dialer.DialContext(ctx, network, address)
 		if err != nil {
-			if err2, ok := err.(*url.Error); ok && err2.Timeout() {
-				if i < retryCount-1 {
-					i++
-					time.Sleep(retryWait)
-					continue
+			if isDialErrorRetriable(err) {
+				if i < count-1 {
+					select {
+					case <-time.After(sleep):
+						i++
+						continue
+					case <-ctx.Done():
+						return nil, err
+					}
 				}
 			}
 			return nil, err
 		}
-		return res, nil
+		return conn, nil
 	}
+}
+
+// isDialErrorRetriable determines whether or not a dialer should retry
+// a failed connection attempt by examining the connection error to see
+// if it is one of the following error types:
+//  * Timeout
+//  * Temporary
+//  * ECONNREFUSED
+//  * ECONNRESET
+func isDialErrorRetriable(err error) bool {
+	opErr, isOpErr := err.(*net.OpError)
+	if !isOpErr {
+		return false
+	}
+	if opErr.Timeout() || opErr.Temporary() {
+		return true
+	}
+	sysErr, isSysErr := opErr.Err.(*os.SyscallError)
+	if !isSysErr {
+		return false
+	}
+	switch sysErr.Err {
+	case syscall.ECONNREFUSED, syscall.ECONNRESET:
+		return true
+	}
+	return false
 }
