@@ -205,7 +205,7 @@ func (t TokenHandler) Process() {
 func (t TokenHandler) ProcessNow() (*github.Rate, error) {
 	newRate, err := t.getCoreRate()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get CoreRate: ", err)
+		return nil, fmt.Errorf("failed to get CoreRate: %v", err)
 	}
 	return newRate, nil
 }
@@ -243,7 +243,6 @@ func runProgram(flags *tokenCounterFlags) error {
 	// if we only serve prometheus metrics, stop here
 	if flags.promOnly {
 		select {}
-		return nil
 	}
 
 	for _, token := range tokens {
