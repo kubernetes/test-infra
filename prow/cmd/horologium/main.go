@@ -40,7 +40,7 @@ type options struct {
 	configPath    string
 	jobConfigPath string
 
-	kubernetes flagutil.ExperimentalKubernetesOptions
+	kubernetes flagutil.KubernetesOptions
 	dryRun     flagutil.Bool
 }
 

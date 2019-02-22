@@ -41,7 +41,7 @@ type options struct {
 	configPath    string
 	jobConfigPath string
 	dryRun        flagutil.Bool
-	kubernetes    flagutil.ExperimentalKubernetesOptions
+	kubernetes    flagutil.KubernetesOptions
 }
 
 // TODO(fejta): require setting this explicitly
@@ -98,7 +98,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating ProwJob client.")
 	}
 
-	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, o.dryRun.Value)
+	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, o.dryRun.Value, cfg().AllClusterAliases())
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating build cluster clients.")
 	}
