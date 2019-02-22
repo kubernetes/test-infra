@@ -2569,6 +2569,11 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
+- name: pull-kubernetes-e2e-kind
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kind
+  num_columns_recent: 20
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 10
 - name: pull-kubernetes-e2e-gce-100-performance
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-100-performance
   days_of_results: 60
@@ -7052,6 +7057,11 @@ dashboards:
 
 - name: presubmits-kubernetes-nonblocking
   dashboard_tab:
+  - name: pull-kubernetes-e2e-kind
+    test_group_name: pull-kubernetes-e2e-kind
+    base_options: width=10
+    alert_options:
+      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: pull-kubernetes-cross
     test_group_name: pull-kubernetes-cross
     base_options: width=10
