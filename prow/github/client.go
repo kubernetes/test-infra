@@ -197,15 +197,16 @@ func (c *Client) Throttle(hourlyTokens, burst int) {
 	c.throttle.throttle = throttle
 }
 
-// NewClient creates a new fully operational GitHub client.
+// NewClientWithFields creates a new fully operational GitHub client. With
+// added logging fields.
 // 'getToken' is a generator for the GitHub access token to use.
 // 'bases' is a variadic slice of endpoints to use in order of preference.
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewClient(getToken func() []byte, bases ...string) *Client {
+func NewClientWithFields(fields logrus.Fields, getToken func() []byte, bases ...string) *Client {
 	return &Client{
-		logger: logrus.WithField("client", "github"),
+		logger: logrus.WithFields(fields).WithField("client", "github"),
 		time:   &standardTime{},
 		gqlc: githubql.NewClient(&http.Client{
 			Timeout:   maxRequestTime,
@@ -218,17 +219,22 @@ func NewClient(getToken func() []byte, bases ...string) *Client {
 	}
 }
 
-// NewDryRunClient creates a new client that will not perform mutating actions
+// NewClient creates a new fully operational GitHub client.
+func NewClient(getToken func() []byte, bases ...string) *Client {
+	return NewClientWithFields(logrus.Fields{}, getToken, bases...)
+}
+
+// NewDryRunClientWithFields creates a new client that will not perform mutating actions
 // such as setting statuses or commenting, but it will still query GitHub and
-// use up API tokens.
+// use up API tokens. Additional fields are added to the logger.
 // 'getToken' is a generator the GitHub access token to use.
 // 'bases' is a variadic slice of endpoints to use in order of preference.
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewDryRunClient(getToken func() []byte, bases ...string) *Client {
+func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, bases ...string) *Client {
 	return &Client{
-		logger: logrus.WithField("client", "github"),
+		logger: logrus.WithFields(fields).WithField("client", "github"),
 		time:   &standardTime{},
 		gqlc: githubql.NewClient(&http.Client{
 			Timeout:   maxRequestTime,
@@ -239,6 +245,18 @@ func NewDryRunClient(getToken func() []byte, bases ...string) *Client {
 		getToken: getToken,
 		dry:      true,
 	}
+}
+
+// NewDryRunClient creates a new client that will not perform mutating actions
+// such as setting statuses or commenting, but it will still query GitHub and
+// use up API tokens.
+// 'getToken' is a generator the GitHub access token to use.
+// 'bases' is a variadic slice of endpoints to use in order of preference.
+//   An endpoint is used when all preceding endpoints have returned a conn err.
+//   This should be used when using the ghproxy GitHub proxy cache to allow
+//   this client to bypass the cache if it is temporarily unavailable.
+func NewDryRunClient(getToken func() []byte, bases ...string) *Client {
+	return NewDryRunClientWithFields(logrus.Fields{}, getToken, bases...)
 }
 
 // NewFakeClient creates a new client that will not perform any actions at all.

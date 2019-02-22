@@ -101,12 +101,12 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	githubSync, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	githubSync, err := o.github.GitHubClientWithLogFields(secretAgent, o.dryRun, logrus.Fields{"controller": "sync"})
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
-	githubStatus, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	githubStatus, err := o.github.GitHubClientWithLogFields(secretAgent, o.dryRun, logrus.Fields{"controller": "status-update"})
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
