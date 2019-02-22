@@ -3379,6 +3379,25 @@ test_groups:
 - name: post-sig-storage-local-static-provisioner-build-release
   gcs_prefix: kubernetes-jenkins/logs/post-sig-storage-local-static-provisioner-build-release
 
+# Docker node conformance test group
+- name: ce18.09-ubuntu16.04-k8s1.13.x-conformance
+  gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ce-ubuntu16.04-k8s1.13.x
+  column_header:
+  - configuration_value: platform
+  - configuration_value: kube_version
+  - configuration_value: docker_version
+- name: ee18.09-ubuntu16.04-k8s1.13.x-conformance
+  gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ee-ubuntu16.04-k8s1.13.x
+  column_header:
+  - configuration_value: platform
+  - configuration_value: kube_version
+  - configuration_value: docker_version
+- name: ee17.06-ubuntu16.04-k8s1.12.x-conformance
+  gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ee17.06-ubuntu16.04-k8s1.12.x
+  column_header:
+  - configuration_value: platform
+  - configuration_value: kube_version
+  - configuration_value: docker_version
 
 #
 # Start dashboards
@@ -7552,6 +7571,31 @@ dashboards:
     test_group_name: release-openshift-origin-installer-e2e-aws-4.0
     base_options: width=10
 
+#Docker node conformance dashboard
+- name: sig-node-docker
+  dashboard_tab:
+  - name: ce18.09-node.e2e-ubuntu-k8s1.13
+    test_group_name: ce18.09-ubuntu16.04-k8s1.13.x-conformance
+    description: k8s1.13.x node conformance test results for docker ce-18.09 on ubuntu16.04
+    column_header:
+    - configuration_value: platform
+    - configuration_value: kube_version
+    - configuration_value: docker_version
+  - name: ee18.09-node.e2e-ubuntu-k8s1.13
+    test_group_name: ee18.09-ubuntu16.04-k8s1.13.x-conformance
+    description: k8s1.13.x node conformance test results for ee-18.09 on ubuntu16.04
+    column_header:
+    - configuration_value: platform
+    - configuration_value: kube_version
+    - configuration_value: docker_version
+  - name: ee17.06-node.e2e-ubuntu-k8s1.12
+    test_group_name: ee17.06-ubuntu16.04-k8s1.12.x-conformance
+    description: k8s1.12.x node conformance test results for ee-17.06 on ubuntu16.04
+    column_header:
+    - configuration_value: platform
+    - configuration_value: kube_version
+    - configuration_value: docker_version
+
 #
 # Start dashboard groups
 #
@@ -7668,6 +7712,7 @@ dashboard_groups:
   - sig-node-cri
   - sig-node-cri-1.12
   - sig-node-arm64
+  - sig-node-docker
 
 - name: sig-release
   dashboard_names:
