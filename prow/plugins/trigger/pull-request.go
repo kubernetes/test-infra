@@ -132,7 +132,11 @@ func buildAllIfTrusted(c Client, trigger *plugins.Trigger, pr github.PullRequest
 			}
 		}
 		c.Logger.Info("Starting all jobs for updated PR.")
-		return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
+		elide := false
+		if trigger != nil {
+			elide = trigger.ElideSkippedContexts
+		}
+		return buildAll(c, &pr.PullRequest, pr.GUID, elide)
 	}
 	return nil
 }
