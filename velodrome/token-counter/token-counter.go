@@ -27,6 +27,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/golang/glog"
@@ -52,7 +53,7 @@ func NewCollector(tokens []TokenHandler) prometheus.Collector {
 		tokenCounter: prometheus.NewDesc(
 			"github_token_count",
 			"Number of counted API calls against the github API within a reset window",
-			[]string{"login"}, nil),
+			[]string{"login", "rate"}, nil),
 	}
 }
 
@@ -66,14 +67,21 @@ func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *Collector) Collect(ch chan<- prometheus.Metric) {
+	var wg sync.WaitGroup
+	wg.Add(len(c.tokens))
 	for _, handler := range c.tokens {
-		rate, err := handler.ProcessNow()
-		if err != nil {
-			logrus.WithError(err).WithField("login", handler.login).Errorf("Failed to fetch rate limits for login '%s'", handler.login)
-			return
-		}
-		ch <- prometheus.MustNewConstMetric(c.tokenCounter, prometheus.GaugeValue, float64(rate.Limit-rate.Remaining), handler.login)
+		go func(handler TokenHandler) {
+			defer wg.Done()
+			rate, err := handler.ProcessNow()
+			if err != nil {
+				logrus.WithError(err).WithField("login", handler.login).Errorf("Failed to fetch rate limits for login '%s'", handler.login)
+			} else {
+				ch <- prometheus.MustNewConstMetric(c.tokenCounter, prometheus.GaugeValue, float64(rate.Limit-rate.Remaining), handler.login, "used")
+				ch <- prometheus.MustNewConstMetric(c.tokenCounter, prometheus.GaugeValue, float64(rate.Remaining), handler.login, "remaining")
+			}
+		}(handler)
 	}
+	wg.Wait()
 }
 
 func (flags *tokenCounterFlags) AddFlags(cmd *cobra.Command) {
