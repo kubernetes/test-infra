@@ -1,5 +1,7 @@
 import moment from "moment";
 
+const DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss ZZ';
+
 function handleClick(e: MouseEvent): void {
   e.preventDefault();
   const button = document.getElementById('show-table-link')!;
@@ -16,7 +18,7 @@ function handleClick(e: MouseEvent): void {
 function getLocalStartTime(): void {
   document.getElementById('show-table-link')!.onclick = handleClick;
   const elem = document.getElementById("summary-start-time")!;
-  elem.innerText = moment(elem.innerText).calendar().replace(/Last|Yesterday|Today|Tomorrow/,
+  elem.innerText = moment(elem.innerText, DATE_FORMAT).calendar().replace(/Last|Yesterday|Today|Tomorrow/,
       (m) => m.charAt(0).toLowerCase() + m.substr(1));
 }
 
