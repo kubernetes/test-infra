@@ -7054,6 +7054,9 @@ dashboards:
   - name: pull-kubernetes-godeps
     test_group_name: pull-kubernetes-godeps
     base_options: width=10
+  - name: pull-kubernetes-cross
+    test_group_name: pull-kubernetes-cross
+    base_options: width=10
 
 - name: presubmits-kubernetes-nonblocking
   dashboard_tab:
@@ -7062,9 +7065,6 @@ dashboards:
     base_options: width=10
     alert_options:
       alert_mail_to_addresses: bentheelder+alerts@google.com
-  - name: pull-kubernetes-cross
-    test_group_name: pull-kubernetes-cross
-    base_options: width=10
   - name: pull-kubernetes-e2e-aks-engine-azure
     test_group_name: pull-kubernetes-e2e-aks-engine-azure
     base_options: width=10
