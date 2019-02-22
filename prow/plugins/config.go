@@ -31,10 +31,6 @@ import (
 	"k8s.io/test-infra/prow/labels"
 )
 
-const (
-	defaultBlunderbussReviewerCount = 2
-)
-
 // Configuration is the top-level serialization target for plugin Configuration.
 type Configuration struct {
 	// Plugins is a map of repositories (eg "k/k") to lists of
@@ -55,7 +51,7 @@ type Configuration struct {
 	UseDeprecatedSelfApprove   bool                   `json:"use_deprecated_2018_implicit_self_approve_default_migrate_before_july_2019,omitempty"`
 	UseDeprecatedReviewApprove bool                   `json:"use_deprecated_2018_review_acts_as_approve_default_migrate_before_july_2019,omitempty"`
 	Blockades                  []Blockade             `json:"blockades,omitempty"`
-	Blunderbuss                Blunderbuss            `json:"blunderbuss,omitempty"`
+	Blunderbuss                *Blunderbuss           `json:"blunderbuss,omitempty"`
 	Cat                        Cat                    `json:"cat,omitempty"`
 	CherryPickUnapproved       CherryPickUnapproved   `json:"cherry_pick_unapproved,omitempty"`
 	ConfigUpdater              ConfigUpdater          `json:"config_updater,omitempty"`
@@ -659,10 +655,6 @@ func (c *Configuration) setDefaults() {
 			c.ExternalPlugins[repo][i].Endpoint = fmt.Sprintf("http://%s", p.Name)
 		}
 	}
-	if c.Blunderbuss.ReviewerCount == nil && c.Blunderbuss.FileWeightCount == nil {
-		c.Blunderbuss.ReviewerCount = new(int)
-		*c.Blunderbuss.ReviewerCount = defaultBlunderbussReviewerCount
-	}
 	for i, trigger := range c.Triggers {
 		if trigger.TrustedOrg == "" || trigger.JoinOrgURL != "" {
 			continue
@@ -780,6 +772,9 @@ func validateExternalPlugins(pluginMap map[string][]ExternalPlugin) error {
 }
 
 func validateBlunderbuss(b *Blunderbuss) error {
+	if b == nil {
+		return nil
+	}
 	if b.ReviewerCount != nil && b.FileWeightCount != nil {
 		return errors.New("cannot use both request_count and file_weight_count in blunderbuss")
 	}
@@ -882,7 +877,7 @@ func (c *Configuration) Validate() error {
 	if err := validateExternalPlugins(c.ExternalPlugins); err != nil {
 		return err
 	}
-	if err := validateBlunderbuss(&c.Blunderbuss); err != nil {
+	if err := validateBlunderbuss(c.Blunderbuss); err != nil {
 		return err
 	}
 	if err := validateConfigUpdater(&c.ConfigUpdater); err != nil {

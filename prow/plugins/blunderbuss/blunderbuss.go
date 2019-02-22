@@ -35,7 +35,8 @@ import (
 
 const (
 	// PluginName defines this plugin's registered name.
-	PluginName = "blunderbuss"
+	PluginName                      = "blunderbuss"
+	defaultBlunderbussReviewerCount = 2
 )
 
 var (
@@ -50,9 +51,9 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	var pluralSuffix string
 	var reviewCount int
-	if config.Blunderbuss.ReviewerCount != nil {
+	if config.Blunderbuss != nil && config.Blunderbuss.ReviewerCount != nil {
 		reviewCount = *config.Blunderbuss.ReviewerCount
-	} else if config.Blunderbuss.ReviewerCount != nil {
+	} else if config.Blunderbuss != nil && config.Blunderbuss.FileWeightCount != nil {
 		reviewCount = *config.Blunderbuss.FileWeightCount
 	}
 	if reviewCount != 1 {
@@ -120,7 +121,7 @@ func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error
 		pc.GitHubClient,
 		pc.OwnersClient,
 		pc.Logger,
-		pc.PluginConfig.Blunderbuss,
+		ensureConfig(pc.PluginConfig.Blunderbuss),
 		pre.Action,
 		&pre.PullRequest,
 		&pre.Repo,
@@ -150,7 +151,7 @@ func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) 
 		pc.GitHubClient,
 		pc.OwnersClient,
 		pc.Logger,
-		pc.PluginConfig.Blunderbuss,
+		ensureConfig(pc.PluginConfig.Blunderbuss),
 		ce.Action,
 		ce.IsPR,
 		ce.Number,
@@ -383,4 +384,15 @@ func selectMultipleReviewers(log *logrus.Entry, potentialReviewers weightMap, we
 
 func chance(val, total int64) float64 {
 	return 100.0 * float64(val) / float64(total)
+}
+
+func ensureConfig(opts *plugins.Blunderbuss) plugins.Blunderbuss {
+	if opts == nil {
+		opts = &plugins.Blunderbuss{}
+	}
+	if opts.ReviewerCount == nil && opts.FileWeightCount == nil {
+		opts.ReviewerCount = new(int)
+		*opts.ReviewerCount = defaultBlunderbussReviewerCount
+	}
+	return *opts
 }
