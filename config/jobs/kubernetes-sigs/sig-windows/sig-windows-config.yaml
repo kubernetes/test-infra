@@ -50,7 +50,7 @@ periodics:
       - "--root=/go/src"
       - "--repo=k8s.io/kubernetes=master"
       - "--upload=gs://kubernetes-jenkins/logs/"
-      - "--timeout=480"
+      - "--timeout=630"
       - "--scenario=kubernetes_e2e"
       - --
       - "--test=true"
@@ -63,15 +63,16 @@ periodics:
       - "--acsengine-admin-username=azureuser"
       - "--acsengine-admin-password=AdminPassw0rd"
       - "--acsengine-creds=$AZURE_CREDENTIALS"
-      - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.0/aks-engine-v0.31.0-linux-amd64.tar.gz"
+      - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.1/aks-engine-v0.31.1-linux-amd64.tar.gz"
       - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--acsengine-winZipBuildScript=$WIN_BUILD"
       - "--acsengine-orchestratorRelease=1.14"
       - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release.json"
       - "--acsengine-win-binaries"
+      - "--acsengine-hyperkube"
       - "--acsengine-agentpoolcount=3"
       - "--test_args=--node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob --ginkgo.skip=\\[LinuxOnly\\]|\\[k8s.io\\].Pods.*should.cap.back-off.at.MaxContainerBackOff.\\[Slow\\]\\[NodeConformance\\]|\\[k8s.io\\].Pods.*should.have.their.auto-restart.back-off.timer.reset.on.image.update.\\[Slow\\]\\[NodeConformance\\]"
-      - "--timeout=450m"
+      - "--timeout=600m"
       securityContext:
         privileged: true
 
