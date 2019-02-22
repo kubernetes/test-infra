@@ -2485,8 +2485,8 @@ test_groups:
 - name: pull-cluster-api-provider-aws-bazel-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-test
   num_columns_recent: 20
-- name: pull-cluster-api-provider-aws-bazel-e2e
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-e2e
+- name: pull-cluster-api-provider-aws-bazel-integration
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-integration
   num_columns_recent: 20
 - name: pull-cluster-api-provider-azure-bazel-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-bazel-verify
@@ -5879,8 +5879,8 @@ dashboards:
     test_group_name: pull-cluster-api-provider-aws-bazel-build
   - name: bazel-pr-test
     test_group_name: pull-cluster-api-provider-aws-bazel-test
-  - name: bazel-pr-e2e
-    test_group_name: pull-cluster-api-provider-aws-bazel-e2e
+  - name: bazel-pr-integration
+    test_group_name: pull-cluster-api-provider-aws-bazel-integration
   - name: test-creds
     test_group_name: periodic-cluster-api-provider-aws-test-creds
 

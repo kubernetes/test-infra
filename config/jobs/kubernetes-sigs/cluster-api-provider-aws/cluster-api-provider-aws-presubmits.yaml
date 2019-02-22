@@ -30,7 +30,7 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-1.13
         command:
         - "./scripts/ci-bazel-build.sh"
-  - name: pull-cluster-api-provider-aws-bazel-e2e
+  - name: pull-cluster-api-provider-aws-bazel-integration
     always_run: true
     optional: true
     decorate: true
@@ -42,7 +42,7 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-master # needs bazel 0.18+
         command:
         - "runner.sh"
-        - "./scripts/ci-bazel-e2e.sh"
+        - "./scripts/ci-bazel-integration.sh"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
