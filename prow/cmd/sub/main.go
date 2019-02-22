@@ -46,7 +46,7 @@ var (
 )
 
 type options struct {
-	client         flagutil.KubernetesOptions
+	client         flagutil.ExperimentalKubernetesOptions
 	port           int
 	pushSecretFile string
 

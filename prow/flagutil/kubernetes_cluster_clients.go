@@ -23,7 +23,6 @@ import (
 	"net/url"
 	"os"
 
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	prow "k8s.io/test-infra/prow/client/clientset/versioned"
@@ -31,11 +30,11 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
-// KubernetesOptions holds options for interacting with Kubernetes.
+// ExperimentalKubernetesOptions holds options for interacting with Kubernetes.
 // These options are both useful for clients interacting with ProwJobs
 // and other resources on the infrastructure cluster, as well as Pods
 // on build clusters.
-type KubernetesOptions struct {
+type ExperimentalKubernetesOptions struct {
 	buildCluster string
 	kubeconfig   string
 	infraContext string
@@ -50,7 +49,7 @@ type KubernetesOptions struct {
 }
 
 // AddFlags injects Kubernetes options into the given FlagSet.
-func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
+func (o *ExperimentalKubernetesOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.buildCluster, "build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster. All clusters are used as build clusters. Cannot be combined with --kubeconfig.")
 	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If empty, uses the local cluster. All contexts other than the default or whichever is passed to --context are used as build clusters. . Cannot be combined with --build-cluster.")
 	fs.StringVar(&o.infraContext, "context", "", "The name of the kubeconfig context to use for the infrastructure client. If empty and --kubeconfig is not set, uses the local cluster.")
@@ -58,7 +57,7 @@ func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
 }
 
 // Validate validates Kubernetes options.
-func (o *KubernetesOptions) Validate(dryRun bool) error {
+func (o *ExperimentalKubernetesOptions) Validate(dryRun bool) error {
 	if dryRun && o.DeckURI == "" {
 		return errors.New("a dry-run was requested but required flag -deck-url was unset")
 	}
@@ -87,7 +86,7 @@ func (o *KubernetesOptions) Validate(dryRun bool) error {
 }
 
 // resolve loads all of the clients we need and caches them for future calls.
-func (o *KubernetesOptions) resolve(dryRun bool) (err error) {
+func (o *ExperimentalKubernetesOptions) resolve(dryRun bool) (err error) {
 	if o.resolved {
 		return nil
 	}
@@ -127,7 +126,7 @@ func (o *KubernetesOptions) resolve(dryRun bool) (err error) {
 }
 
 // ProwJobClientset returns a ProwJob clientset for use in informer factories.
-func (o *KubernetesOptions) ProwJobClientset(namespace string, dryRun bool) (prowJobClientset prow.Interface, err error) {
+func (o *ExperimentalKubernetesOptions) ProwJobClientset(namespace string, dryRun bool) (prowJobClientset prow.Interface, err error) {
 	if o.dryRun {
 		return nil, errors.New("no dry-run prowjob clientset is supported in dry-run mode")
 	}
@@ -140,7 +139,7 @@ func (o *KubernetesOptions) ProwJobClientset(namespace string, dryRun bool) (pro
 }
 
 // ProwJobClient returns a ProwJob client.
-func (o *KubernetesOptions) ProwJobClient(namespace string, dryRun bool) (prowJobClient prowv1.ProwJobInterface, err error) {
+func (o *ExperimentalKubernetesOptions) ProwJobClient(namespace string, dryRun bool) (prowJobClient prowv1.ProwJobInterface, err error) {
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}
@@ -153,7 +152,7 @@ func (o *KubernetesOptions) ProwJobClient(namespace string, dryRun bool) (prowJo
 }
 
 // InfrastructureClusterClient returns a Kubernetes client for the infrastructure cluster.
-func (o *KubernetesOptions) InfrastructureClusterClient(dryRun bool) (kubernetesClient kubernetes.Interface, err error) {
+func (o *ExperimentalKubernetesOptions) InfrastructureClusterClient(dryRun bool) (kubernetesClient kubernetes.Interface, err error) {
 	if o.dryRun {
 		return nil, errors.New("no dry-run kubernetes client is supported in dry-run mode")
 	}
@@ -166,7 +165,7 @@ func (o *KubernetesOptions) InfrastructureClusterClient(dryRun bool) (kubernetes
 }
 
 // BuildClusterClients returns Pod clients for build clusters, mapped by their buildCluster alias, not by context.
-func (o *KubernetesOptions) BuildClusterClients(namespace string, dryRun bool, knownAliases sets.String) (buildClusterClients map[string]corev1.PodInterface, err error) {
+func (o *ExperimentalKubernetesOptions) BuildClusterClients(namespace string, dryRun bool) (buildClusterClients map[string]corev1.PodInterface, err error) {
 	if o.dryRun {
 		return nil, errors.New("no dry-run pod client is supported for build clusters in dry-run mode")
 	}
@@ -175,33 +174,16 @@ func (o *KubernetesOptions) BuildClusterClients(namespace string, dryRun bool, k
 		return nil, err
 	}
 
-	buildClusterAliases := sets.NewString()
 	buildClients := map[string]corev1.PodInterface{}
-	for alias, client := range contextsToAliases(o.kubernetesClientsByContext, o.infraContext) {
-		buildClusterAliases.Insert(alias)
-		buildClients[alias] = client.CoreV1().Pods(namespace)
-	}
-	if !buildClusterAliases.HasAll(knownAliases.UnsortedList()...) {
-		return nil, fmt.Errorf("the following cluster aliases declared for jobs were not found in loaded clusters: %v", knownAliases.Difference(buildClusterAliases).List())
+	for context, client := range o.kubernetesClientsByContext {
+		// we want to map build cluster clients by their alias, not their context
+		// the only context that is not the alias is the default context, so
+		// we can simply overwrite that one and be content that our build cluster
+		// mapping is correct for the controller
+		if context == o.infraContext {
+			context = kube.DefaultClusterAlias
+		}
+		buildClients[context] = client.CoreV1().Pods(namespace)
 	}
 	return buildClients, nil
-}
-
-// contextsToAliases remaps Kubernetes clients from context to alias. This is
-// almost always a no-op except for when there is no literal "default" context
-// provided in the input map. In this case, the default context is the infra
-// cluster context (often the in-cluster context ("")) but the default alias
-// is Prow-specific ("default") and we need to ensure that the default alias
-// always exists.
-func contextsToAliases(clientsByContext map[string]kubernetes.Interface, infraContext string) map[string]kubernetes.Interface {
-	_, literalDefaultProvided := clientsByContext[kube.DefaultClusterAlias]
-	clientsByAlias := map[string]kubernetes.Interface{}
-	for context, client := range clientsByContext {
-		alias := context
-		if !literalDefaultProvided && context == infraContext {
-			alias = kube.DefaultClusterAlias
-		}
-		clientsByAlias[alias] = client
-	}
-	return clientsByAlias
 }
