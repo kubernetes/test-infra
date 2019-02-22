@@ -60,7 +60,7 @@ type options struct {
 	csrfProtect            bool
 
 	dryRun     bool
-	kubernetes prowflagutil.KubernetesOptions
+	kubernetes prowflagutil.ExperimentalKubernetesOptions
 	github     prowflagutil.GitHubOptions
 }
 

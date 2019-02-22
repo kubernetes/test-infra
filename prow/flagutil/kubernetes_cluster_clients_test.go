@@ -22,7 +22,7 @@ import (
 	"k8s.io/test-infra/pkg/flagutil"
 )
 
-func TestKubernetesOptions_Validate(t *testing.T) {
+func TestExperimentalKubernetesOptions_Validate(t *testing.T) {
 	var testCases = []struct {
 		name        string
 		dryRun      bool
@@ -32,13 +32,13 @@ func TestKubernetesOptions_Validate(t *testing.T) {
 		{
 			name:        "all ok without dry-run",
 			dryRun:      false,
-			kubernetes:  &KubernetesOptions{},
+			kubernetes:  &ExperimentalKubernetesOptions{},
 			expectedErr: false,
 		},
 		{
 			name:   "all ok with dry-run",
 			dryRun: true,
-			kubernetes: &KubernetesOptions{
+			kubernetes: &ExperimentalKubernetesOptions{
 				DeckURI: "https://example.com",
 			},
 			expectedErr: false,
@@ -46,7 +46,7 @@ func TestKubernetesOptions_Validate(t *testing.T) {
 		{
 			name:        "missing deck endpoint with dry-run",
 			dryRun:      true,
-			kubernetes:  &KubernetesOptions{},
+			kubernetes:  &ExperimentalKubernetesOptions{},
 			expectedErr: true,
 		},
 	}

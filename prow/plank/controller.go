@@ -24,6 +24,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
+	coreapi "k8s.io/api/core/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -40,13 +41,13 @@ const (
 )
 
 type kubeClient interface {
-	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
-	GetProwJob(string) (kube.ProwJob, error)
-	ListProwJobs(string) ([]kube.ProwJob, error)
-	ReplaceProwJob(string, kube.ProwJob) (kube.ProwJob, error)
+	CreateProwJob(prowapi.ProwJob) (prowapi.ProwJob, error)
+	GetProwJob(string) (prowapi.ProwJob, error)
+	ListProwJobs(string) ([]prowapi.ProwJob, error)
+	ReplaceProwJob(string, prowapi.ProwJob) (prowapi.ProwJob, error)
 
-	CreatePod(v1.Pod) (kube.Pod, error)
-	ListPods(string) ([]kube.Pod, error)
+	CreatePod(v1.Pod) (coreapi.Pod, error)
+	ListPods(string) ([]coreapi.Pod, error)
 	DeletePod(string) error
 }
 

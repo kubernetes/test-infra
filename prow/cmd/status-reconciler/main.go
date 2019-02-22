@@ -41,7 +41,7 @@ type options struct {
 
 	continueOnError bool
 	dryRun          bool
-	kubernetes      prowflagutil.KubernetesOptions
+	kubernetes      prowflagutil.ExperimentalKubernetesOptions
 	github          prowflagutil.GitHubOptions
 }
 

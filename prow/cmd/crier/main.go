@@ -47,7 +47,7 @@ const (
 )
 
 type options struct {
-	client         prowflagutil.KubernetesOptions
+	client         prowflagutil.ExperimentalKubernetesOptions
 	cookiefilePath string
 	gerritProjects gerritclient.ProjectsFlag
 	github         prowflagutil.GitHubOptions
