@@ -32,7 +32,7 @@ var okToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
 var testAllRe = regexp.MustCompile(`(?m)^/test all,?($|\s.*)`)
 var retestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
 
-func handleGenericComment(c Client, trigger *plugins.Trigger, gc github.GenericCommentEvent) error {
+func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCommentEvent) error {
 	org := gc.Repo.Owner.Login
 	repo := gc.Repo.Name
 	number := gc.Number
@@ -118,8 +118,8 @@ func handleGenericComment(c Client, trigger *plugins.Trigger, gc github.GenericC
 	return runAndSkipJobs(c, pr, toTest, toSkip, gc.GUID, trigger.ElideSkippedContexts)
 }
 
-func HonorOkToTest(trigger *plugins.Trigger) bool {
-	return trigger == nil || !trigger.IgnoreOkToTest
+func HonorOkToTest(trigger plugins.Trigger) bool {
+	return !trigger.IgnoreOkToTest
 }
 
 type GitHubClient interface {
