@@ -28,6 +28,7 @@ filegroup(
         "//kubetest2/kubetest2-kind:all-srcs",
         "//kubetest2/pkg/app:all-srcs",
         "//kubetest2/pkg/process:all-srcs",
+        "//kubetest2/pkg/types:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

@@ -2,20 +2,12 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "app.go",
-        "cmd.go",
-        "doc.go",
-    ],
-    importpath = "k8s.io/test-infra/kubetest2/pkg/app",
+    srcs = ["testers.go"],
+    importpath = "k8s.io/test-infra/kubetest2/pkg/app/testers",
     visibility = ["//visibility:public"],
     deps = [
-        "//kubetest2/pkg/app/shim:go_default_library",
-        "//kubetest2/pkg/app/testers:go_default_library",
         "//kubetest2/pkg/types:go_default_library",
         "//vendor/github.com/pkg/errors:go_default_library",
-        "//vendor/github.com/spf13/cobra:go_default_library",
-        "//vendor/github.com/spf13/pflag:go_default_library",
     ],
 )
 
@@ -28,11 +20,7 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [
-        ":package-srcs",
-        "//kubetest2/pkg/app/shim:all-srcs",
-        "//kubetest2/pkg/app/testers:all-srcs",
-    ],
+    srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
