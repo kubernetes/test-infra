@@ -158,7 +158,7 @@ func initializeDeployer(ctl *process.Control, buildType string) (*Deployer, erro
 // getKubeConfigPath returns the path to the kubeconfig file.
 func (d *Deployer) getKubeConfigPath() (string, error) {
 	log.Println("kind.go:getKubeConfigPath()")
-	args := []string{"get", "kubeconfig-path", flagLogLevel}
+	args := []string{"get", "kubeconfig-path"}
 
 	// Use a specific cluster name.
 	if d.kindClusterName != "" {
@@ -400,7 +400,7 @@ func (d *Deployer) clusterExists() (bool, error) {
 	log.Printf("kind.go:clusterExists()")
 
 	cmd := exec.Command("kind")
-	cmd.Args = append(cmd.Args, []string{"get", "clusters", flagLogLevel}...)
+	cmd.Args = append(cmd.Args, []string{"get", "clusters"}...)
 	out, err := d.control.Output(cmd)
 	if err != nil {
 		return false, err
