@@ -28,7 +28,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
 	"strconv"
 	"strings"
@@ -38,20 +37,14 @@ import (
 	"github.com/NYTimes/gziphandler"
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/github"
 	"google.golang.org/api/option"
-	coreapi "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"sigs.k8s.io/yaml"
 
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/github"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
-	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -72,7 +65,6 @@ type options struct {
 	configPath            string
 	jobConfigPath         string
 	buildCluster          string
-	kubernetes            prowflagutil.KubernetesOptions
 	tideURL               string
 	hookURL               string
 	oauthURL              string
@@ -89,10 +81,6 @@ type options struct {
 }
 
 func (o *options) Validate() error {
-	if err := o.kubernetes.Validate(false); err != nil {
-		return err
-	}
-
 	if o.configPath == "" {
 		return errors.New("required flag --config-path was unset")
 	}
@@ -109,26 +97,25 @@ func (o *options) Validate() error {
 
 func gatherOptions() options {
 	o := options{}
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	fs.StringVar(&o.tideURL, "tide-url", "", "Path to tide. If empty, do not serve tide data.")
-	fs.StringVar(&o.hookURL, "hook-url", "", "Path to hook plugin help endpoint.")
-	fs.StringVar(&o.oauthURL, "oauth-url", "", "Path to deck user dashboard endpoint.")
-	fs.StringVar(&o.githubOAuthConfigFile, "github-oauth-config-file", "/etc/github/secret", "Path to the file containing the GitHub App Client secret.")
-	fs.StringVar(&o.cookieSecretFile, "cookie-secret", "/etc/cookie/secret", "Path to the file containing the cookie secret key.")
+	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	flag.StringVar(&o.buildCluster, "build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
+	flag.StringVar(&o.tideURL, "tide-url", "", "Path to tide. If empty, do not serve tide data.")
+	flag.StringVar(&o.hookURL, "hook-url", "", "Path to hook plugin help endpoint.")
+	flag.StringVar(&o.oauthURL, "oauth-url", "", "Path to deck user dashboard endpoint.")
+	flag.StringVar(&o.githubOAuthConfigFile, "github-oauth-config-file", "/etc/github/secret", "Path to the file containing the GitHub App Client secret.")
+	flag.StringVar(&o.cookieSecretFile, "cookie-secret", "/etc/cookie/secret", "Path to the file containing the cookie secret key.")
 	// use when behind a load balancer
-	fs.StringVar(&o.redirectHTTPTo, "redirect-http-to", "", "Host to redirect http->https to based on x-forwarded-proto == http.")
+	flag.StringVar(&o.redirectHTTPTo, "redirect-http-to", "", "Host to redirect http->https to based on x-forwarded-proto == http.")
 	// use when behind an oauth proxy
-	fs.BoolVar(&o.hiddenOnly, "hidden-only", false, "Show only hidden jobs. Useful for serving hidden jobs behind an oauth proxy.")
-	fs.StringVar(&o.pregeneratedData, "pregenerated-data", "", "Use API output from another prow instance. Used by the prow/cmd/deck/runlocal script")
-	fs.BoolVar(&o.spyglass, "spyglass", false, "Use Prow built-in job viewing instead of Gubernator")
-	fs.StringVar(&o.spyglassFilesLocation, "spyglass-files-location", "/lenses", "Location of the static files for spyglass.")
-	fs.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
-	fs.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
-	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the GCS credentials file")
-	o.kubernetes.AddFlags(fs)
-	fs.Parse(os.Args[1:])
+	flag.BoolVar(&o.hiddenOnly, "hidden-only", false, "Show only hidden jobs. Useful for serving hidden jobs behind an oauth proxy.")
+	flag.StringVar(&o.pregeneratedData, "pregenerated-data", "", "Use API output from another prow instance. Used by the prow/cmd/deck/runlocal script")
+	flag.BoolVar(&o.spyglass, "spyglass", false, "Use Prow built-in job viewing instead of Gubernator")
+	flag.StringVar(&o.spyglassFilesLocation, "spyglass-files-location", "/lenses", "Location of the static files for spyglass.")
+	flag.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
+	flag.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
+	flag.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the GCS credentials file")
+	flag.Parse()
 	return o
 }
 
@@ -210,75 +197,29 @@ func localOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.Serve
 	return mux
 }
 
-type podLogClient struct {
-	client corev1.PodInterface
-}
-
-func (c *podLogClient) GetLogs(name string, opts *coreapi.PodLogOptions) ([]byte, error) {
-	reader, err := c.client.GetLogs(name, &coreapi.PodLogOptions{Container: kube.TestContainerName}).Stream()
-	if err != nil {
-		return nil, err
-	}
-	defer reader.Close()
-	return ioutil.ReadAll(reader)
-}
-
-type filteringProwJobLister struct {
-	client      prowv1.ProwJobInterface
-	hiddenRepos sets.String
-	hiddenOnly  bool
-}
-
-func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJob, error) {
-	prowJobList, err := c.client.List(metav1.ListOptions{LabelSelector: selector})
-	if err != nil {
-		return nil, err
-	}
-
-	var filtered []prowapi.ProwJob
-	for _, item := range prowJobList.Items {
-		if item.Spec.Refs == nil && len(item.Spec.ExtraRefs) == 0 {
-			// periodic jobs with no refs cannot be filtered
-			filtered = append(filtered, item)
-			continue
-		}
-
-		refs := item.Spec.Refs
-		if refs == nil {
-			refs = &item.Spec.ExtraRefs[0]
-		}
-		shouldHide := c.hiddenRepos.HasAny(fmt.Sprintf("%s/%s", refs.Org, refs.Repo), refs.Org)
-		if shouldHide == c.hiddenOnly {
-			// this is a hidden job, show it if we're asked
-			// to only show hidden jobs otherwise hide it
-			filtered = append(filtered, item)
-		}
-	}
-	return filtered, nil
-}
-
 // prodOnlyMain contains logic only used when running deployed, not locally
 func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeMux {
-	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, false)
+	kc, err := kube.NewClientInCluster(cfg().ProwJobNamespace)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting ProwJob client for infrastructure cluster.")
+		logrus.WithError(err).Fatal("Error getting client.")
+	}
+	kc.SetHiddenReposProvider(func() []string { return cfg().Deck.HiddenRepos }, o.hiddenOnly)
+
+	var pkcs map[string]*kube.Client
+	if o.buildCluster == "" {
+		pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: kc.Namespace(cfg().PodNamespace)}
+	} else {
+		pkcs, err = kube.ClientMapFromFile(o.buildCluster, cfg().PodNamespace)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting kube client to build cluster.")
+		}
+	}
+	plClients := map[string]jobs.PodLogClient{}
+	for alias, client := range pkcs {
+		plClients[alias] = client
 	}
 
-	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, false, cfg().AllClusterAliases())
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
-	}
-
-	podLogClients := map[string]jobs.PodLogClient{}
-	for clusterContext, client := range buildClusterClients {
-		podLogClients[clusterContext] = &podLogClient{client: client}
-	}
-
-	ja := jobs.NewJobAgent(&filteringProwJobLister{
-		client:      prowJobClient,
-		hiddenRepos: sets.NewString(cfg().Deck.HiddenRepos...),
-		hiddenOnly:  o.hiddenOnly,
-	}, podLogClients, cfg)
+	ja := jobs.NewJobAgent(kc, plClients, cfg)
 	ja.Start()
 
 	// setup prod only handlers
@@ -286,7 +227,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 	mux.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja)))
 	mux.Handle("/badge.svg", gziphandler.GzipHandler(handleBadge(ja)))
 	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
-	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient)))
+	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
 
 	if o.spyglass {
 		initSpyglass(cfg, o, mux, ja)
@@ -963,14 +904,18 @@ func validateLogRequest(r *http.Request) error {
 	return nil
 }
 
-func handleRerun(prowJobClient prowv1.ProwJobInterface) http.HandlerFunc {
+type pjClient interface {
+	GetProwJob(string) (prowapi.ProwJob, error)
+}
+
+func handleRerun(kc pjClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("prowjob")
 		if name == "" {
 			http.Error(w, "request did not provide the 'name' query parameter", http.StatusBadRequest)
 			return
 		}
-		pj, err := prowJobClient.Get(name, metav1.GetOptions{})
+		pj, err := kc.GetProwJob(name)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("ProwJob not found: %v", err), http.StatusNotFound)
 			logrus.WithError(err).Warning("ProwJob not found.")

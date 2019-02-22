@@ -55,11 +55,6 @@ func (o *LegacyKubernetesOptions) Validate(dryRun bool) error {
 	return nil
 }
 
-// InjectBuildCluster is needed for backwards compatibility for Deck. Remove later.
-func (o *LegacyKubernetesOptions) InjectBuildCluster(buildCluster string) {
-	o.cluster = buildCluster
-}
-
 // Client returns a Kubernetes client.
 func (o *LegacyKubernetesOptions) Client(namespace string, dryRun bool) (client *kube.Client, defaultContext string, clientsets map[string]kubernetes.Interface, err error) {
 	if dryRun {
