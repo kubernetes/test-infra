@@ -48,7 +48,7 @@ type options struct {
 
 	dryRun     bool
 	runOnce    bool
-	kubernetes prowflagutil.ExperimentalKubernetesOptions
+	kubernetes prowflagutil.KubernetesOptions
 	github     prowflagutil.GitHubOptions
 }
 
@@ -126,7 +126,7 @@ func main() {
 	}
 	defer gitClient.Clean()
 
-	kubeClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, o.dryRun)
+	kubeClient, _, _, err := o.kubernetes.Client(cfg().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
 	}
