@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -30,17 +31,56 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
 )
 
 type tokenCounterFlags struct {
-	influx InfluxConfig
-	tokens []string
+	influx      InfluxConfig
+	tokens      []string
+	metricsPort int
+	host        string
+	promOnly    bool
+}
+
+func NewCollector(tokens []TokenHandler) prometheus.Collector {
+	return &Collector{
+		tokens: tokens,
+		tokenCounter: prometheus.NewDesc(
+			"github_token_count",
+			"Number of counted API calls against the github API within a reset window",
+			[]string{"login"}, nil),
+	}
+}
+
+type Collector struct {
+	tokenCounter *prometheus.Desc
+	tokens       []TokenHandler
+}
+
+func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
+	ch <- c.tokenCounter
+}
+
+func (c *Collector) Collect(ch chan<- prometheus.Metric) {
+	for _, handler := range c.tokens {
+		rate, err := handler.ProcessNow()
+		if err != nil {
+			logrus.WithError(err).WithField("login", handler.login).Errorf("Failed to fetch rate limits for login '%s'", handler.login)
+			return
+		}
+		ch <- prometheus.MustNewConstMetric(c.tokenCounter, prometheus.GaugeValue, float64(rate.Limit-rate.Remaining), handler.login)
+	}
 }
 
 func (flags *tokenCounterFlags) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&flags.tokens, "token", []string{}, "List of tokens")
+	cmd.Flags().IntVar(&flags.metricsPort, "metrics-port", 9090, "port to listen on for prometheus metrics scraping")
+	cmd.Flags().StringVar(&flags.host, "host", "", "host address to listen on for prometheus metrics scraping")
+	cmd.Flags().BoolVar(&flags.promOnly, "prom-only", false, "Only expose prometheus metrics, don't push to influxdb")
 	cmd.Flags().AddGoFlagSet(flag.CommandLine)
 }
 
@@ -162,7 +202,16 @@ func (t TokenHandler) Process() {
 	}
 }
 
+func (t TokenHandler) ProcessNow() (*github.Rate, error) {
+	newRate, err := t.getCoreRate()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get CoreRate: ", err)
+	}
+	return newRate, nil
+}
+
 func runProgram(flags *tokenCounterFlags) error {
+
 	influxdb, err := flags.influx.CreateDatabaseClient()
 	if err != nil {
 		return err
@@ -175,6 +224,25 @@ func runProgram(flags *tokenCounterFlags) error {
 
 	if len(tokens) == 0 {
 		glog.Warning("No token given, nothing to do. Leaving...")
+		return nil
+	}
+
+	tokenCounter := NewCollector(tokens)
+	prometheus.MustRegister(tokenCounter)
+	// listen for prometheus scraping
+	metricsMux := http.NewServeMux()
+	metricsMux.Handle("/metrics", promhttp.Handler())
+	metricsAddr := fmt.Sprintf("%s:%d", flags.host, flags.metricsPort)
+	go func() {
+		logrus.Infof("Metrics Listening on: %s", metricsAddr)
+		logrus.WithField("mux", "metrics").WithError(
+			http.ListenAndServe(metricsAddr, metricsMux),
+		).Fatal("ListenAndServe returned.")
+	}()
+
+	// if we only serve prometheus metrics, stop here
+	if flags.promOnly {
+		select {}
 		return nil
 	}
 
