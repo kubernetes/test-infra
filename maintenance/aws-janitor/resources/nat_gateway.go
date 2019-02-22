@@ -23,8 +23,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"k8s.io/klog"
 )
 
 // VPCs: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeVpcs
@@ -48,7 +48,7 @@ func (NATGateway) MarkAndSweep(sess *session.Session, acct string, region string
 			if set.Mark(g) {
 				inp := &ec2.DeleteNatGatewayInput{NatGatewayId: gw.NatGatewayId}
 				if _, err := svc.DeleteNatGateway(inp); err != nil {
-					glog.Warningf("%v: delete failed: %v", g.ARN(), err)
+					klog.Warningf("%v: delete failed: %v", g.ARN(), err)
 				}
 			}
 		}
