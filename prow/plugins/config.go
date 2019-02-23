@@ -566,15 +566,15 @@ func (r RequireMatchingLabel) Describe() string {
 // TriggerFor finds the Trigger for a repo, if one exists
 // a trigger can be listed for the repo itself or for the
 // owning organization
-func (c *Configuration) TriggerFor(org, repo string) *Trigger {
+func (c *Configuration) TriggerFor(org, repo string) Trigger {
 	for _, tr := range c.Triggers {
 		for _, r := range tr.Repos {
 			if r == org || r == fmt.Sprintf("%s/%s", org, repo) {
-				return &tr
+				return tr
 			}
 		}
 	}
-	return nil
+	return Trigger{}
 }
 
 // EnabledReposForPlugin returns the orgs and repos that have enabled the passed plugin.

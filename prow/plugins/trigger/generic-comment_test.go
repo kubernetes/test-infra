@@ -873,11 +873,11 @@ func TestHandleGenericComment(t *testing.T) {
 		// In some cases handleGenericComment can be called twice for the same event.
 		// For instance on Issue/PR creation and modification.
 		// Let's call it twice to ensure idempotency.
-		if err := handleGenericComment(c, &trigger, event); err != nil {
+		if err := handleGenericComment(c, trigger, event); err != nil {
 			t.Fatalf("%s: didn't expect error: %s", tc.name, err)
 		}
 		validate(tc.name, fakeProwJobClient.Fake.Actions(), g, tc, t)
-		if err := handleGenericComment(c, &trigger, event); err != nil {
+		if err := handleGenericComment(c, trigger, event); err != nil {
 			t.Fatalf("%s: didn't expect error: %s", tc.name, err)
 		}
 		validate(tc.name, fakeProwJobClient.Fake.Actions(), g, tc, t)

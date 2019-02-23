@@ -45,7 +45,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	configInfo := map[string]string{}
 	for _, orgRepo := range enabledRepos {
 		parts := strings.Split(orgRepo, "/")
-		var trigger *plugins.Trigger
+		var trigger plugins.Trigger
 		switch len(parts) {
 		case 1:
 			trigger = config.TriggerFor(orgRepo, "")
@@ -55,7 +55,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", orgRepo)
 		}
 		org := parts[0]
-		if trigger != nil && trigger.TrustedOrg != "" {
+		if trigger.TrustedOrg != "" {
 			org = trigger.TrustedOrg
 		}
 		configInfo[orgRepo] = fmt.Sprintf("The trusted Github organization for this repository is %q.", org)
@@ -152,10 +152,9 @@ func handlePush(pc plugins.Agent, pe github.PushEvent) error {
 //
 // Trusted users are either repo collaborators, org members or trusted org members.
 // Whether repo collaborators and/or a second org is trusted is configured by trigger.
-func TrustedUser(ghc trustedUserClient, trigger *plugins.Trigger, user, org, repo string) (bool, error) {
+func TrustedUser(ghc trustedUserClient, trigger plugins.Trigger, user, org, repo string) (bool, error) {
 	// First check if user is a collaborator, assuming this is allowed
-	allowCollaborators := trigger == nil || !trigger.OnlyOrgMembers
-	if allowCollaborators {
+	if !trigger.OnlyOrgMembers {
 		if ok, err := ghc.IsCollaborator(org, repo, user); err != nil {
 			return false, fmt.Errorf("error in IsCollaborator: %v", err)
 		} else if ok {
@@ -173,7 +172,7 @@ func TrustedUser(ghc trustedUserClient, trigger *plugins.Trigger, user, org, rep
 	}
 
 	// Determine if there is a second org to check
-	if trigger == nil || trigger.TrustedOrg == "" || trigger.TrustedOrg == org {
+	if trigger.TrustedOrg == "" || trigger.TrustedOrg == org {
 		return false, nil // No trusted org and/or it is the same
 	}
 

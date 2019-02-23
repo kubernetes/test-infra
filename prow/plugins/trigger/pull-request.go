@@ -27,7 +27,7 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-func handlePR(c Client, trigger *plugins.Trigger, pr github.PullRequestEvent) error {
+func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) error {
 	org, repo, a := orgRepoAuthor(pr.PullRequest)
 	author := string(a)
 	num := pr.PullRequest.Number
@@ -113,7 +113,7 @@ func orgRepoAuthor(pr github.PullRequest) (string, string, login) {
 	return org, repo, login(author)
 }
 
-func buildAllIfTrusted(c Client, trigger *plugins.Trigger, pr github.PullRequestEvent) error {
+func buildAllIfTrusted(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) error {
 	// When a PR is updated, check that the user is in the org or that an org
 	// member has said "/ok-to-test" before building. There's no need to ask
 	// for "/ok-to-test" because we do that once when the PR is created.
@@ -132,34 +132,30 @@ func buildAllIfTrusted(c Client, trigger *plugins.Trigger, pr github.PullRequest
 			}
 		}
 		c.Logger.Info("Starting all jobs for updated PR.")
-		elide := false
-		if trigger != nil {
-			elide = trigger.ElideSkippedContexts
-		}
-		return buildAll(c, &pr.PullRequest, pr.GUID, elide)
+		return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
 	}
 	return nil
 }
 
-func welcomeMsg(ghc githubClient, trigger *plugins.Trigger, pr github.PullRequest) error {
+func welcomeMsg(ghc githubClient, trigger plugins.Trigger, pr github.PullRequest) error {
 	var errors []error
 	org, repo, a := orgRepoAuthor(pr)
 	author := string(a)
 	encodedRepoFullName := url.QueryEscape(pr.Base.Repo.FullName)
 	var more string
-	if trigger != nil && trigger.TrustedOrg != "" && trigger.TrustedOrg != org {
+	if trigger.TrustedOrg != "" && trigger.TrustedOrg != org {
 		more = fmt.Sprintf("or [%s](https://github.com/orgs/%s/people) ", trigger.TrustedOrg, trigger.TrustedOrg)
 	}
 
 	var joinOrgURL string
-	if trigger != nil && trigger.JoinOrgURL != "" {
+	if trigger.JoinOrgURL != "" {
 		joinOrgURL = trigger.JoinOrgURL
 	} else {
 		joinOrgURL = fmt.Sprintf("https://github.com/orgs/%s/people", org)
 	}
 
 	var comment string
-	if trigger != nil && trigger.IgnoreOkToTest {
+	if trigger.IgnoreOkToTest {
 		comment = fmt.Sprintf(`Hi @%s. Thanks for your PR.
 
 PRs from untrusted users cannot be marked as trusted with `+"`/ok-to-test`"+` in this repo meaning untrusted PR authors can never trigger tests themselves. Collaborators can still trigger tests on the PR using `+"`/test all`"+`.
@@ -202,7 +198,7 @@ I understand the commands that are listed [here](https://go.k8s.io/bot-commands?
 
 // TrustedPullRequest returns whether or not the given PR should be tested.
 // It first checks if the author is in the org, then looks for "ok-to-test" label.
-func TrustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org, repo string, num int, l []github.Label) ([]github.Label, bool, error) {
+func TrustedPullRequest(ghc githubClient, trigger plugins.Trigger, author, org, repo string, num int, l []github.Label) ([]github.Label, bool, error) {
 	// First check if the author is a member of the org.
 	if orgMember, err := TrustedUser(ghc, trigger, author, org, repo); err != nil {
 		return l, false, fmt.Errorf("error checking %s for trust: %v", author, err)
