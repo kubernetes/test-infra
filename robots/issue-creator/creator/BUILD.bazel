@@ -9,7 +9,7 @@ go_library(
         "//pkg/ghclient:go_default_library",
         "//robots/issue-creator/testowner:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
-        "//vendor/github.com/google/go-github/github:go_default_library",
+        "//vendor/github.com/google/go-github/v24/github:go_default_library",
     ],
 )
 
@@ -19,7 +19,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//robots/issue-creator/testowner:go_default_library",
-        "//vendor/github.com/google/go-github/github:go_default_library",
+        "//vendor/github.com/google/go-github/v24/github:go_default_library",
     ],
 )
 

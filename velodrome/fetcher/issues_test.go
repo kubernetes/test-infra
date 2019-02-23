@@ -24,7 +24,7 @@ import (
 	"k8s.io/test-infra/velodrome/sql"
 	sqltest "k8s.io/test-infra/velodrome/sql/testing"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v24/github"
 )
 
 func TestFindLatestIssueUpdate(t *testing.T) {

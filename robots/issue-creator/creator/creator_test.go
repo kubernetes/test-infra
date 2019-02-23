@@ -27,7 +27,7 @@ import (
 
 	"k8s.io/test-infra/robots/issue-creator/testowner"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v24/github"
 )
 
 // fakeClient implements the RepoClient interface in order to be substituted for a

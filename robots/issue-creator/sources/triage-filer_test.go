@@ -23,7 +23,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v24/github"
 	"k8s.io/test-infra/robots/issue-creator/creator"
 	"k8s.io/test-infra/robots/issue-creator/testowner"
 )

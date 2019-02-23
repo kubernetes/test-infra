@@ -28,7 +28,7 @@ import (
 
 	"golang.org/x/oauth2"
 
-	gogithub "github.com/google/go-github/github"
+	gogithub "github.com/google/go-github/v24/github"
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"

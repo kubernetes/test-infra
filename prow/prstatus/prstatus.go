@@ -25,7 +25,7 @@ import (
 	"strings"
 	"time"
 
-	gogithub "github.com/google/go-github/github"
+	gogithub "github.com/google/go-github/v24/github"
 	"github.com/gorilla/sessions"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"

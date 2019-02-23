@@ -20,7 +20,7 @@ import (
 	"strconv"
 
 	"github.com/golang/glog"
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v24/github"
 	"github.com/jinzhu/gorm"
 	"k8s.io/test-infra/velodrome/sql"
 )

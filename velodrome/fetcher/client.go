@@ -26,7 +26,7 @@ import (
 	"golang.org/x/oauth2"
 
 	"github.com/golang/glog"
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v24/github"
 	"github.com/spf13/cobra"
 )
 

@@ -24,7 +24,7 @@ import (
 
 	"k8s.io/test-infra/velodrome/sql"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v24/github"
 )
 
 func makeIssue(number int,
