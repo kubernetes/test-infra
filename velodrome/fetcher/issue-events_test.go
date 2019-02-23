@@ -32,7 +32,7 @@ func TestFindLatestUpdate(t *testing.T) {
 	config := sqltest.SQLiteConfig{File: ":memory:"}
 	tests := []struct {
 		events         []sql.IssueEvent
-		expectedLatest int
+		expectedLatest int64
 		repository     string
 		issueID        int
 	}{

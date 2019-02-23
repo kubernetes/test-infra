@@ -25,7 +25,7 @@ import (
 	"k8s.io/test-infra/velodrome/sql"
 )
 
-func findLatestEvent(issueID int, db *gorm.DB, repository string) (*int, error) {
+func findLatestEvent(issueID int, db *gorm.DB, repository string) (*int64, error) {
 	var latestEvent sql.IssueEvent
 
 	query := db.
@@ -41,7 +41,7 @@ func findLatestEvent(issueID int, db *gorm.DB, repository string) (*int, error) 
 		return nil, query.Error
 	}
 
-	id, err := strconv.Atoi(latestEvent.ID)
+	id, err := strconv.ParseInt(latestEvent.ID, 10, 64)
 	if err != nil {
 		return nil, err
 	}
