@@ -2114,7 +2114,7 @@ test_groups:
   gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-scaleway-arm64
 - name: periodic-multi-platform-kubeadm-packet-arm64
   gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-packet-arm64
-# kubeadm tests
+# kubeadm-gce tests
 - name: ci-kubernetes-e2e-kubeadm-gce-1-11
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-11
 - name: ci-kubernetes-e2e-kubeadm-gce-1-12
@@ -2125,8 +2125,15 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-14
 - name: ci-kubernetes-e2e-kubeadm-gce-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-master
+# kubeadm-kind tests
 - name: ci-kubernetes-e2e-kubeadm-kind-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kind-master
+- name: ci-kubernetes-e2e-kubeadm-kind-1-14
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kind-1-14
+- name: ci-kubernetes-e2e-kubeadm-kind-1-13
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kind-1-13
+- name: ci-kubernetes-e2e-kubeadm-kind-1-12
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kind-1-12
 # kubeadm x-on-y tests
 - name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
@@ -5791,7 +5798,7 @@ dashboards:
 
 - name: sig-cluster-lifecycle-all
   dashboard_tab:
-# kubeadm tests
+# kubeadm-gce tests
   - name: kubeadm-gce-1.11
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11
   - name: kubeadm-gce-1.12
@@ -5811,9 +5818,32 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
     alert_stale_results_hours: 24
-    num_failures_to_alert: 4 # Runs every 6h. Alert when it's been failing for 24 hours
+    num_failures_to_alert: 6 # Runs every 2h. Alert when it's been failing for 12 hours
+# kubeadm-kind tests
+  - name: kubeadm-kind-1.12
+    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-12
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    alert_stale_results_hours: 24
+    num_failures_to_alert: 6 # Runs every 4h. Alert when it's been failing for 24 hours
+  - name: kubeadm-kind-1.13
+    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-13
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    alert_stale_results_hours: 24
+    num_failures_to_alert: 6 # Runs every 4h. Alert when it's been failing for 24 hours
+  - name: kubeadm-kind-1.14
+    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-14
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    alert_stale_results_hours: 24
+    num_failures_to_alert: 6 # Runs every 4h. Alert when it's been failing for 24 hours
   - name: kubeadm-kind-master
     test_group_name: ci-kubernetes-e2e-kubeadm-kind-master
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    alert_stale_results_hours: 24
+    num_failures_to_alert: 12 # Runs every 1h. Alert when it's been failing for 12 hours
 # kubeadm x-on-y tests
   - name: kubeadm-gce-1.11-on-1.12
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
