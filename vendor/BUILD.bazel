@@ -86,7 +86,7 @@ filegroup(
         "//vendor/github.com/golang/protobuf/ptypes:all-srcs",
         "//vendor/github.com/google/btree:all-srcs",
         "//vendor/github.com/google/go-cmp/cmp:all-srcs",
-        "//vendor/github.com/google/go-github/github:all-srcs",
+        "//vendor/github.com/google/go-github/v24/github:all-srcs",
         "//vendor/github.com/google/go-querystring/query:all-srcs",
         "//vendor/github.com/google/gofuzz:all-srcs",
         "//vendor/github.com/google/uuid:all-srcs",

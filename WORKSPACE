@@ -798,14 +798,14 @@ go_repository(
 
 go_repository(
     name = "com_github_google_go_github",
-    commit = "7a51fb928f52",
     importpath = "github.com/google/go-github",
+    tag = "v17.0.0",
 )
 
 go_repository(
     name = "com_github_google_go_querystring",
-    commit = "547ef5ac9797",
     importpath = "github.com/google/go-querystring",
+    tag = "v1.0.0",
 )
 
 go_repository(
@@ -1520,4 +1520,10 @@ go_repository(
     name = "cc_mvdan_xurls_v2",
     importpath = "mvdan.cc/xurls/v2",
     tag = "v2.0.0",
+)
+
+go_repository(
+    name = "com_github_google_go_github_v24",
+    importpath = "github.com/google/go-github/v24",
+    tag = "v24.0.0",
 )
