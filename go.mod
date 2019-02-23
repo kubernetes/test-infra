@@ -37,8 +37,7 @@ require (
 	github.com/golang/lint v0.0.0-20180702182130-06c8688daad7
 	github.com/golang/mock v1.1.1
 	github.com/golang/protobuf v1.2.0
-	github.com/google/go-github v0.0.0-20170604030111-7a51fb928f52
-	github.com/google/go-querystring v0.0.0-20150414214848-547ef5ac9797 // indirect
+	github.com/google/go-github/v24 v24.0.0
 	github.com/google/uuid v1.0.0
 	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/gophercloud/gophercloud v0.0.0-20181215224939-bdd8b1ecd793 // indirect
