@@ -25,7 +25,7 @@ import (
 
 	"github.com/golang/glog"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v24/github"
 )
 
 // The following interfaces are used for dependency injection in testing. They match go-github.

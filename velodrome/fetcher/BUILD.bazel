@@ -26,7 +26,7 @@ go_test(
     deps = [
         "//velodrome/sql:go_default_library",
         "//velodrome/sql/testing:go_default_library",
-        "//vendor/github.com/google/go-github/github:go_default_library",
+        "//vendor/github.com/google/go-github/v24/github:go_default_library",
     ],
 )
 
@@ -44,7 +44,7 @@ go_library(
     deps = [
         "//velodrome/sql:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
-        "//vendor/github.com/google/go-github/github:go_default_library",
+        "//vendor/github.com/google/go-github/v24/github:go_default_library",
         "//vendor/github.com/jinzhu/gorm:go_default_library",
         "//vendor/github.com/jinzhu/gorm/dialects/mysql:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",

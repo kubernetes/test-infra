@@ -28,7 +28,7 @@ import (
 
 	"github.com/golang/glog"
 
-	githubapi "github.com/google/go-github/github"
+	githubapi "github.com/google/go-github/v24/github"
 	"k8s.io/test-infra/robots/issue-creator/creator"
 )
 
