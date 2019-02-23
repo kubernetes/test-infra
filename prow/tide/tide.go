@@ -485,8 +485,12 @@ func filterPR(ghc githubClient, sp *subpool, pr *PullRequest) bool {
 		return false
 	}
 	for _, ctx := range unsuccessfulContexts(contexts, sp.cc, log) {
-		if ctx.State != githubql.StatusStatePending || !presubmitsHaveContext(string(ctx.Context)) {
-			log.WithField("context", ctx.Context).Debug("filtering out PR as unsuccessful context is not a pending Prow-controlled context")
+		if ctx.State != githubql.StatusStatePending {
+			log.WithField("context", ctx.Context).Debug("filtering out PR as unsuccessful context is not pending")
+			return true
+		}
+		if !presubmitsHaveContext(string(ctx.Context)) {
+			log.WithField("context", ctx.Context).Debug("filtering out PR as unsuccessful context is not Prow-controlled")
 			return true
 		}
 	}
