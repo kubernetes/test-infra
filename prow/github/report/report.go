@@ -30,7 +30,6 @@ import (
 )
 
 const (
-	tableLine  = "--- | --- | ---"
 	commentTag = "<!-- test report -->"
 )
 
@@ -39,7 +38,6 @@ const (
 type GithubClient interface {
 	BotName() (string, error)
 	CreateStatus(org, repo, ref string, s github.Status) error
-	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	CreateComment(org, repo string, number int, comment string) error
 	DeleteComment(org, repo string, ID int) error
@@ -159,16 +157,6 @@ func Report(ghc GithubClient, reportTemplate *template.Template, pj prowapi.Prow
 		return nil
 	}
 
-	// Get the PullRequest object and check if the SHA of it's HEAD matches
-	// the SHA of the ProwJob. If that is not true, this ProwJob is for an old commit
-	// and we can skip the report by updating issue comments.
-	pr, err := ghc.GetPullRequest(refs.Org, refs.Repo, refs.Pulls[0].Number)
-	if err != nil {
-		return fmt.Errorf("error getting PR: %v", err)
-	}
-	if pr.Head.SHA != refs.Pulls[0].SHA {
-		return nil
-	}
 	ics, err := ghc.ListIssueComments(refs.Org, refs.Repo, refs.Pulls[0].Number)
 	if err != nil {
 		return fmt.Errorf("error listing comments: %v", err)
@@ -201,16 +189,6 @@ func Report(ghc GithubClient, reportTemplate *template.Template, pj prowapi.Prow
 	return nil
 }
 
-// commitIsLatest returns true if a given commit SHA is found
-// to be the last one in a slice of RepositoryCommits.
-func commitIsLatest(sha string, commits []github.RepositoryCommit) bool {
-	total := len(commits)
-	if total == 0 {
-		return false
-	}
-	return sha == commits[total-1].SHA
-}
-
 // parseIssueComments returns a list of comments to delete, a list of table
 // entries, and the ID of the comment to update. If there are no table entries
 // then don't make a new comment. Otherwise, if the comment to update is 0,
@@ -220,11 +198,15 @@ func parseIssueComments(pj prowapi.ProwJob, botName string, ics []github.IssueCo
 	var previousComments []int
 	var latestComment int
 	var entries []string
-	var newComment bool
 	// First accumulate result entries and comment IDs
 	for _, ic := range ics {
 		if ic.User.Login != botName {
 			continue
+		}
+		// Old report comments started with the context. Delete them.
+		// TODO(spxtr): Delete this check a few weeks after this merges.
+		if strings.HasPrefix(ic.Body, pj.Spec.Context) {
+			delete = append(delete, ic.ID)
 		}
 		if !strings.Contains(ic.Body, commentTag) {
 			continue
@@ -233,24 +215,48 @@ func parseIssueComments(pj prowapi.ProwJob, botName string, ics []github.IssueCo
 			previousComments = append(previousComments, latestComment)
 		}
 		latestComment = ic.ID
-		entries = getOldEntries(ic.Body)
-		// If the first line of the comment does not contain this Job's SHA create a new comment.
-		newComment = !strings.Contains(ic.Body, pj.Spec.Refs.Pulls[0].SHA)
-		if newComment {
-			break
+		var tracking bool
+		for _, line := range strings.Split(ic.Body, "\n") {
+			line = strings.TrimSpace(line)
+			if strings.HasPrefix(line, "---") {
+				tracking = true
+			} else if len(line) == 0 {
+				tracking = false
+			} else if tracking {
+				entries = append(entries, line)
+			}
 		}
 	}
 	var newEntries []string
-	if !newComment {
-		// Obtain a list of new entries.
-		newEntries = getNewEntries(pj.Spec.Context, entries)
+	// Next decide which entries to keep.
+	for i := range entries {
+		keep := true
+		f1 := strings.Split(entries[i], " | ")
+		for j := range entries {
+			if i == j {
+				continue
+			}
+			f2 := strings.Split(entries[j], " | ")
+			// Use the newer results if there are multiple.
+			if j > i && f2[0] == f1[0] {
+				keep = false
+			}
+		}
+		// Use the current result if there is an old one.
+		if pj.Spec.Context == f1[0] {
+			keep = false
+		}
+		if keep {
+			newEntries = append(newEntries, entries[i])
+		}
 	}
+	var createNewComment bool
 	if string(pj.Status.State) == github.StatusFailure {
 		newEntries = append(newEntries, createEntry(pj))
+		createNewComment = true
 	}
-	// Delete previous comments.
 	delete = append(delete, previousComments...)
-	if (newComment || len(newEntries) == 0) && latestComment != 0 {
+	if (createNewComment || len(newEntries) == 0) && latestComment != 0 {
 		delete = append(delete, latestComment)
 		latestComment = 0
 	}
@@ -260,6 +266,7 @@ func parseIssueComments(pj prowapi.ProwJob, botName string, ics []github.IssueCo
 func createEntry(pj prowapi.ProwJob) string {
 	return strings.Join([]string{
 		pj.Spec.Context,
+		pj.Spec.Refs.Pulls[0].SHA,
 		fmt.Sprintf("[link](%s)", pj.Status.URL),
 		fmt.Sprintf("`%s`", pj.Spec.RerunCommand),
 	}, " | ")
@@ -280,13 +287,10 @@ func createComment(reportTemplate *template.Template, pj prowapi.ProwJob, entrie
 		}
 	}
 	lines := []string{
-		fmt.Sprintf("@%s: The following test%s **failed** for commit %s, say `/retest` to rerun them:",
-			pj.Spec.Refs.Pulls[0].Author,
-			plural,
-			pj.Spec.Refs.Pulls[0].SHA),
+		fmt.Sprintf("@%s: The following test%s **failed**, say `/retest` to rerun them all:", pj.Spec.Refs.Pulls[0].Author, plural),
 		"",
-		"Test name | Details | Rerun command",
-		tableLine,
+		"Test name | Commit | Details | Rerun command",
+		"--- | --- | --- | ---",
 	}
 	lines = append(lines, entries...)
 	if reportTemplate != nil {
@@ -301,48 +305,4 @@ func createComment(reportTemplate *template.Template, pj prowapi.ProwJob, entrie
 		commentTag,
 	}...)
 	return strings.Join(lines, "\n"), nil
-}
-
-// getOldEntries processes a comment body and obtains a list of entries.
-func getOldEntries(body string) []string {
-	var entries []string
-	var tracking bool
-	for _, line := range strings.Split(body, "\n") {
-		line = strings.TrimSpace(line)
-		if strings.HasPrefix(line, tableLine) {
-			tracking = true
-		} else if len(line) == 0 {
-			tracking = false
-		} else if tracking {
-			entries = append(entries, line)
-		}
-	}
-	return entries
-}
-
-// getNewEntries determines the list of entries to keep in a test report comment.
-func getNewEntries(ctx string, entries []string) []string {
-	var newEntries []string
-	for i := range entries {
-		keep := true
-		f1 := strings.Split(entries[i], " | ")
-		for j := range entries {
-			if i == j {
-				continue
-			}
-			f2 := strings.Split(entries[j], " | ")
-			// Use the newer results if there are multiple.
-			if j > i && f2[0] == f1[0] {
-				keep = false
-			}
-		}
-		// Use the current result if there is an old one.
-		if ctx == f1[0] {
-			keep = false
-		}
-		if keep {
-			newEntries = append(newEntries, entries[i])
-		}
-	}
-	return newEntries
 }
