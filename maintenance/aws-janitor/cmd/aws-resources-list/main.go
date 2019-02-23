@@ -23,11 +23,12 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"k8s.io/test-infra/maintenance/aws-janitor/account"
+	"k8s.io/test-infra/maintenance/aws-janitor/regions"
 	"k8s.io/test-infra/maintenance/aws-janitor/resources"
 )
 
-const (
-	region = "us-east-1"
+var (
+	region = flag.String("region", regions.Default, "")
 )
 
 func main() {
@@ -35,14 +36,14 @@ func main() {
 	resourceKinds := append(resources.RegionalTypeList, resources.GlobalTypeList...)
 
 	session := session.Must(session.NewSession())
-	acct, err := account.GetAccount(session, region)
+	acct, err := account.GetAccount(session, *region)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error retrieving account: %v", err)
 		os.Exit(1)
 	}
 
 	for _, r := range resourceKinds {
-		set, err := r.ListAll(session, acct, region)
+		set, err := r.ListAll(session, acct, *region)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error listing %T: %v\n", r, err)
 			continue
