@@ -121,7 +121,7 @@ func (client *Client) limitsCheckAndWait() {
 type ClientInterface interface {
 	RepositoryName() string
 	FetchIssues(last time.Time, c chan *github.Issue)
-	FetchIssueEvents(issueID int, last *int, c chan *github.IssueEvent)
+	FetchIssueEvents(issueID int, last *int64, c chan *github.IssueEvent)
 	FetchIssueComments(issueID int, last time.Time, c chan *github.IssueComment)
 	FetchPullComments(issueID int, last time.Time, c chan *github.PullRequestComment)
 }
@@ -174,7 +174,7 @@ func (client *Client) FetchIssues(latest time.Time, c chan *github.Issue) {
 }
 
 // hasID look for a specific Id in a list of events
-func hasID(events []*github.IssueEvent, ID int) bool {
+func hasID(events []*github.IssueEvent, ID int64) bool {
 	for _, event := range events {
 		if *event.ID == ID {
 			return true
@@ -185,7 +185,7 @@ func hasID(events []*github.IssueEvent, ID int) bool {
 
 // FetchIssueEvents from github and return the full list, until it matches 'latest'
 // The entire last page will be included so you can have redundancy.
-func (client *Client) FetchIssueEvents(issueID int, latest *int, c chan *github.IssueEvent) {
+func (client *Client) FetchIssueEvents(issueID int, latest *int64, c chan *github.IssueEvent) {
 	opt := &github.ListOptions{PerPage: 100}
 
 	githubClient, err := client.getGithubClient()

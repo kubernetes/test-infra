@@ -99,7 +99,7 @@ func NewIssueEvent(gIssueEvent *github.IssueEvent, issueID int, repository strin
 	}
 
 	return &sql.IssueEvent{
-		ID:             strconv.Itoa(*gIssueEvent.ID),
+		ID:             strconv.FormatInt(*gIssueEvent.ID, 10),
 		Label:          label,
 		Event:          *gIssueEvent.Event,
 		EventCreatedAt: *gIssueEvent.CreatedAt,
@@ -163,7 +163,7 @@ func NewIssueComment(issueID int, gComment *github.IssueComment, repository stri
 	}
 
 	return &sql.Comment{
-		ID:               strconv.Itoa(*gComment.ID),
+		ID:               strconv.FormatInt(*gComment.ID, 10),
 		IssueID:          strconv.Itoa(issueID),
 		Body:             *gComment.Body,
 		User:             login,
@@ -188,7 +188,7 @@ func NewPullComment(issueID int, gComment *github.PullRequestComment, repository
 		login = *gComment.User.Login
 	}
 	return &sql.Comment{
-		ID:               strconv.Itoa(*gComment.ID),
+		ID:               strconv.FormatInt(*gComment.ID, 10),
 		IssueID:          strconv.Itoa(issueID),
 		Body:             *gComment.Body,
 		User:             login,

@@ -42,7 +42,7 @@ func (client FakeClient) FetchIssues(latest time.Time, c chan *github.Issue) {
 	close(c)
 }
 
-func (client FakeClient) FetchIssueEvents(issueID int, latest *int, c chan *github.IssueEvent) {
+func (client FakeClient) FetchIssueEvents(issueID int, latest *int64, c chan *github.IssueEvent) {
 	for _, event := range client.IssueEvents[issueID] {
 		c <- event
 	}
@@ -63,14 +63,14 @@ func (client FakeClient) FetchPullComments(issueID int, latest time.Time, c chan
 	close(c)
 }
 
-func createIssueEvent(ID int) *github.IssueEvent {
+func createIssueEvent(ID int64) *github.IssueEvent {
 	return &github.IssueEvent{ID: &ID}
 }
 
 func TestHasID(t *testing.T) {
 	tests := []struct {
 		events []*github.IssueEvent
-		ID     int
+		ID     int64
 		isIn   bool
 	}{
 		{

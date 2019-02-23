@@ -170,7 +170,7 @@ func makeIssueEvent(
 }
 
 func makeGithubIssueEvent(
-	eventID int,
+	eventID int64,
 	label, event, assignee, actor string,
 	createdAt time.Time) *github.IssueEvent {
 
@@ -274,7 +274,7 @@ func TestNewLabels(t *testing.T) {
 	}
 }
 
-func makeGithubIssueComment(id int, body, login string, createdAt, updatedAt time.Time) *github.IssueComment {
+func makeGithubIssueComment(id int64, body, login string, createdAt, updatedAt time.Time) *github.IssueComment {
 	var user *github.User
 	if login != "" {
 		user = &github.User{Login: &login}
@@ -288,7 +288,7 @@ func makeGithubIssueComment(id int, body, login string, createdAt, updatedAt tim
 	}
 }
 
-func makeGithubPullComment(id int, body, login string, createdAt, updatedAt time.Time) *github.PullRequestComment {
+func makeGithubPullComment(id int64, body, login string, createdAt, updatedAt time.Time) *github.PullRequestComment {
 	var user *github.User
 	if login != "" {
 		user = &github.User{Login: &login}
