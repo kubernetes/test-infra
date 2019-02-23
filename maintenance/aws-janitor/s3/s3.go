@@ -23,10 +23,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-)
 
-const (
-	defaultRegion = "us-east-1"
+	"k8s.io/test-infra/maintenance/aws-janitor/regions"
 )
 
 type Path struct {
@@ -45,14 +43,14 @@ func GetPath(sess *session.Session, s string) (*Path, error) {
 		return nil, fmt.Errorf("Scheme %q != 's3'", url.Scheme)
 	}
 
-	svc := s3.New(sess, &aws.Config{Region: aws.String(defaultRegion)})
+	svc := s3.New(sess, &aws.Config{Region: aws.String(regions.Default)})
 
 	resp, err := svc.GetBucketLocation(&s3.GetBucketLocationInput{Bucket: aws.String(url.Host)})
 	if err != nil {
 		return nil, err
 	}
 
-	region := defaultRegion
+	region := regions.Default
 	if resp.LocationConstraint != nil {
 		region = *resp.LocationConstraint
 	}

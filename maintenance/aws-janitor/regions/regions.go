@@ -17,13 +17,21 @@ limitations under the License.
 package regions
 
 import (
+	"os"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
 // Default is the region we use when no region is applicable
-const Default = "us-east-1"
+var Default string
+
+func init() {
+	if Default = os.Getenv("AWS_DEFAULT_REGION"); Default == "" {
+		Default = "us-east-1"
+	}
+}
 
 // GetAll retrieves all regions from the AWS API
 func GetAll(sess *session.Session) ([]string, error) {

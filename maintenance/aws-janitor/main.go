@@ -32,6 +32,7 @@ import (
 
 var (
 	maxTTL = flag.Duration("ttl", 24*time.Hour, "Maximum time before we attempt deletion of a resource. Set to 0s to nuke all non-default resources.")
+	region = flag.String("region", regions.Default, "")
 	path   = flag.String("path", "", "S3 path to store mark data in (required)")
 )
 
@@ -77,7 +78,7 @@ func main() {
 	}
 
 	for _, typ := range resources.GlobalTypeList {
-		if err := typ.MarkAndSweep(sess, acct, "us-east-1", res); err != nil {
+		if err := typ.MarkAndSweep(sess, acct, *region, res); err != nil {
 			klog.Errorf("Error sweeping %T: %v", typ, err)
 			return
 		}
