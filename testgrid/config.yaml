@@ -4681,34 +4681,6 @@ dashboards:
   - name: gce-master-scale-performance
     description: 5000-node performance test, runs once a day on weekdays
     test_group_name: ci-kubernetes-e2e-gce-scale-performance
-  # TODO(spiffxp): these are all formerly from sig-release-master-kubectl-skew
-  #                and may not even merit being on a sig-release dashboard, but
-  #                for the purposes of reducing the number of dashboards, I'm
-  #                putting them here
-  - name: skew-cluster1.14-kubectlmaster-gce
-    test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
-    description: 1.14 e2e tests run against a 1.14 gce cluster using a master kubectl binary
-  - name: skew-cluster1.14-kubectlmaster-gke
-    test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
-    description: 1.14 e2e tests run against a 1.14 gke cluster using a master kubectl binary
-  - name: skew-clustermaster-kubectl1.14-gce
-    test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
-    description: 1.14 e2e tests run against a master gce cluster using a 1.14 kubectl binary
-  - name: skew-cluster1.14-kubectl1.14-gke
-    test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
-    description: 1.14 e2e tests run against a master gke cluster using a 1.14 kubectl binary
-  - name: skew-cluster1.14-kubectlmaster-gce-serial
-    test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
-    description: 1.14 serial tests run against a 1.14 gke cluster using a master kubectl binary
-  - name: skew-cluster1.14-kubectlmaster-gke-serial
-    test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
-    description: 1.14 serial tests run against a 1.14 gce cluster using a master kubectl binary
-  - name: skew-clustermaster-kubectl1.14-gce-serial
-    test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
-    description: 1.14 serial tests run against a master gce cluster using a 1.14 kubectl binary
-  - name: skew-clustermaster-kubectl1.14-gke-serial
-    test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
-    description: 1.14 serial tests run against a master gke cluster using a 1.14 kubectl binary
 
 - name: sig-release-1.14-all
   dashboard_tab:
