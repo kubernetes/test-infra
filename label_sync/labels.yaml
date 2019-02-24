@@ -575,6 +575,12 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to wg-lts.
+      name: wg/lts
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
       description: Categorizes an issue or PR as relevant to wg-machine-learning.
       name: wg/machine-learning
       target: both

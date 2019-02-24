@@ -114,6 +114,7 @@ larger set of contributors to apply/remove them.
 | <a id="wg/iot-edge" href="#wg/iot-edge">`wg/iot-edge`</a> | Categorizes an issue or PR as relevant to wg-iot-edge.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/k8s-infra" href="#wg/k8s-infra">`wg/k8s-infra`</a> | Categorizes an issue or PR as relevant to wg-k8s-infra.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/kubeadm-adoption" href="#wg/kubeadm-adoption">`wg/kubeadm-adoption`</a> | REMOVING. This will be deleted after 2019-02-09 13:00:00 +0000 UTC <br><br> Categorizes an issue or PR as relevant to wg-kubeadm-adoption.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="wg/lts" href="#wg/lts">`wg/lts`</a> | Categorizes an issue or PR as relevant to wg-lts.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/machine-learning" href="#wg/machine-learning">`wg/machine-learning`</a> | Categorizes an issue or PR as relevant to wg-machine-learning.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/multitenancy" href="#wg/multitenancy">`wg/multitenancy`</a> | Categorizes an issue or PR as relevant to wg-multitenancy.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/policy" href="#wg/policy">`wg/policy`</a> | Categorizes an issue or PR as relevant to wg-policy.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
