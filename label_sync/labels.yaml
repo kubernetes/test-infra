@@ -406,13 +406,6 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-cluster-ops.
-      name: sig/cluster-ops
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-      deleteAfter: 2019-01-26T13:00:00Z
-    - color: d2b48c
       description: Categorizes an issue or PR as relevant to sig-contributor-experience.
       name: sig/contributor-experience
       target: both
@@ -536,22 +529,8 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to wg-app-def.
-      name: wg/app-def
-      deleteAfter: 2019-02-09T13:00:00Z
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
       description: Categorizes an issue or PR as relevant to wg-apply.
       name: wg/apply
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
-      description: Categorizes an issue or PR as relevant to wg-container-identity.
-      name: wg/container-identity
-      deleteAfter: 2019-02-09T13:00:00Z
       target: both
       prowPlugin: label
       addedBy: anyone
@@ -568,9 +547,8 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to wg-kubeadm-adoption.
-      name: wg/kubeadm-adoption
-      deleteAfter: 2019-02-09T13:00:00Z
+      description: Categorizes an issue or PR as relevant to wg-lts.
+      name: wg/lts
       target: both
       prowPlugin: label
       addedBy: anyone
