@@ -28,6 +28,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -190,6 +191,12 @@ func newKubernetesAnywhere(project, zone string) (deployer, error) {
 	// Set KUBERNETES_CONFORMANCE_TEST so the auth info is picked up
 	// from kubectl instead of bash inference.
 	if err := os.Setenv("KUBERNETES_CONFORMANCE_TEST", "yes"); err != nil {
+		return nil, err
+	}
+
+	// Set NUM_NODES based on the kubernetes-anywhere-num-nodes flag.
+	// This env variable is then read by hack/ginkgo-e2e.sh.
+	if err := os.Setenv("NUM_NODES", strconv.Itoa(k.NumNodes)); err != nil {
 		return nil, err
 	}
 
