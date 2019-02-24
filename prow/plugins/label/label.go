@@ -44,7 +44,9 @@ func init() {
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	labels := []string{"kind", "priority", "area"}
-	labels = append(labels, config.Label.AdditionalLabels...)
+	if config.Label != nil {
+		labels = append(labels, config.Label.AdditionalLabels...)
+	}
 	var formattedLabels []string
 	for _, label := range labels {
 		formattedLabels = append(formattedLabels, fmt.Sprintf(`"%s/*"`, label))
