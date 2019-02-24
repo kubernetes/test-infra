@@ -174,32 +174,31 @@ type Plank struct {
 	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
 	// that request to have their PodSpecs decorated
 	DefaultDecorationConfig *prowapi.DecorationConfig `json:"default_decoration_config,omitempty"`
+	// Deprecated, use JobURLPrefixConfig instead
 	// JobURLPrefix is the host and path prefix under
 	// which job details will be viewable
-	// It should never be accessed directly, use `GetJobURLPrefix` instead
 	JobURLPrefix string `json:"job_url_prefix,omitempty"`
-	// OverrideJobURLPrefix allows to override the default jobURLPrefix on
-	// an organization or repo level
-	// It should never be accessed directly, use `GetJobURLPrefix` instead
-	OverrideJobURLPrefix map[string]*overrideJobURLPrefix `json:"override_job_url_prefix,omitempty"`
+	// JobURLPrefixConfig is the host and path prefix under which job details
+	// will be viewable. Use `*` as key for your global default.
+	JobURLPrefixConfig map[string]JobURLPrefixConfig `json:"job_url_prefix_config,omitempty"`
 }
 
-type overrideJobURLPrefix struct {
+type JobURLPrefixConfig struct {
 	URL   string            `json:"url,omitempty"`
 	Repos map[string]string `json:"repos,omitempty"`
 }
 
 func (p Plank) GetJobURLPrefix(refs *prowapi.Refs) string {
 	if refs == nil {
-		return p.JobURLPrefix
+		return p.JobURLPrefixConfig["*"].URL
 	}
-	if p.OverrideJobURLPrefix[refs.Org] == nil {
-		return p.JobURLPrefix
+	if p.JobURLPrefixConfig[refs.Org].Repos[refs.Repo] != "" {
+		return p.JobURLPrefixConfig[refs.Org].Repos[refs.Repo]
 	}
-	if p.OverrideJobURLPrefix[refs.Org].Repos[refs.Repo] != "" {
-		return p.OverrideJobURLPrefix[refs.Org].Repos[refs.Repo]
+	if p.JobURLPrefixConfig[refs.Org].URL != "" {
+		return p.JobURLPrefixConfig[refs.Org].URL
 	}
-	return p.OverrideJobURLPrefix[refs.Org].URL
+	return p.JobURLPrefixConfig["*"].URL
 }
 
 // Gerrit is config for the gerrit controller.
@@ -634,19 +633,20 @@ func (c *Config) finalizeJobConfig() error {
 
 // validateComponentConfig validates the infrastructure component configuration
 func (c *Config) validateComponentConfig() error {
-	if c.Plank.OverrideJobURLPrefix != nil && c.Plank.JobURLPrefix == "" {
-		return errors.New("Planks override_job_url_prefix can only be set when override_job_url_prefix is set")
+	if c.Plank.JobURLPrefix != "" && c.Plank.JobURLPrefixConfig["*"].URL != "" {
+		logrus.Infof("JobURLPrefix: %s", c.Plank.JobURLPrefix)
+		return errors.New(`Planks job_url_prefix must be unset when job_url_prefix_config["*"].url is set. The former is deprecated, use the latter`)
 	}
-	if _, err := url.Parse(c.Plank.JobURLPrefix); c.Plank.JobURLPrefix != "" && err != nil {
-		return fmt.Errorf("plank declares an invalid job URL prefix %q: %v", c.Plank.JobURLPrefix, err)
+	if c.Plank.JobURLPrefixConfig["*"].Repos != nil {
+		return errors.New(`Planks job_url_prefix_config[*].url is a default, it must not contain a "repos" key`)
 	}
-	for org, v := range c.Plank.OverrideJobURLPrefix {
+	for org, v := range c.Plank.JobURLPrefixConfig {
 		if _, err := url.Parse(v.URL); v.URL != "" && err != nil {
-			return fmt.Errorf("plank declares an invalid override_job_url_prefix for org %s: %v", org, err)
+			return fmt.Errorf(`Invalid value for Planks job_url_prefix_config["%s"].url: %v`, org, err)
 		}
 		for repo, repoOverrideURL := range v.Repos {
 			if _, err := url.Parse(repoOverrideURL); err != nil {
-				return fmt.Errorf("plank declares an invalid override_job_url_prefix for %s/%s: %v", org, repo, err)
+				return fmt.Errorf(`Invalid value for Planks job_url_prefix_config["%s"].repos["%s"]: %v`, org, repo, err)
 			}
 		}
 	}
@@ -966,6 +966,19 @@ func parseProwConfig(c *Config) error {
 	}
 	if c.PodNamespace == "" {
 		c.PodNamespace = "default"
+	}
+
+	if c.Plank.JobURLPrefixConfig == nil {
+		c.Plank.JobURLPrefixConfig = map[string]JobURLPrefixConfig{}
+	}
+	if c.Plank.JobURLPrefix != "" && c.Plank.JobURLPrefixConfig["*"].URL == "" {
+		defaultJobURLPrefixConfig := c.Plank.JobURLPrefixConfig["*"]
+		defaultJobURLPrefixConfig.URL = c.Plank.JobURLPrefix
+		c.Plank.JobURLPrefixConfig["*"] = defaultJobURLPrefixConfig
+		// Set JobURLPrefix to an empty string to indicate we've moved
+		// it to JobURLPrefixConfig["*"] without overwriting the latter
+		// so validation succeeds
+		c.Plank.JobURLPrefix = ""
 	}
 
 	if c.LogLevel == "" {

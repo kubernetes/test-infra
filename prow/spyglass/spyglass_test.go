@@ -543,7 +543,7 @@ func TestRunPath(t *testing.T) {
 		fca.Set(&config.Config{
 			ProwConfig: config.ProwConfig{
 				Plank: config.Plank{
-					JobURLPrefix: "http://magic/view/gcs/",
+					JobURLPrefixConfig: map[string]config.JobURLPrefixConfig{"*": {URL: "http://magic/view/gcs/"}},
 				},
 			},
 		})
@@ -775,7 +775,7 @@ func TestProwToGCS(t *testing.T) {
 			c: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
-						JobURLPrefix: tc.configPrefix,
+						JobURLPrefixConfig: map[string]config.JobURLPrefixConfig{"*": {URL: tc.configPrefix}},
 					},
 				},
 			},
@@ -1064,7 +1064,7 @@ func TestFetchArtifactsPodLog(t *testing.T) {
 		c: config.Config{
 			ProwConfig: config.ProwConfig{
 				Plank: config.Plank{
-					JobURLPrefix: "https://gubernator.example.com/build/",
+					JobURLPrefixConfig: map[string]config.JobURLPrefixConfig{"*": {URL: "https://gubernator.example.com/build/"}},
 				},
 			},
 		},

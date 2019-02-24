@@ -149,7 +149,7 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 		c: &config.Config{
 			ProwConfig: config.ProwConfig{
 				Plank: config.Plank{
-					JobURLPrefix: "guber/",
+					JobURLPrefixConfig: map[string]config.JobURLPrefixConfig{"*": {URL: "guber/"}},
 				},
 			},
 		},
