@@ -43,13 +43,24 @@ type Options interface {
 	// if this returns true, help text will be shown to the user after instancing
 	// the deployer and tester
 	HelpRequested() bool
+	// if this is true, kubetest2 will be calling deployer.Build
 	ShouldBuild() bool
+	// if this is true, kubetest2 will be calling deployer.Up
 	ShouldUp() bool
+	// if this is true, kubetest2 will be calling deployer.Down
 	ShouldDown() bool
+	// if this is true, kubetest2 will be calling tester.Test
 	ShouldTest() bool
+	// returns the path to the directory where artifacts should be written
+	// (including metadata files like junit_runner.xml)
+	ArtifactsDir() string
 }
 
 // Deployer defines the interface between kubetest and a deployer
+//
+// If any returned error meets the:
+// k8s.io/test-infra/kubetest2/pkg/metadata.JUnitError
+// interface, then this metadata will be pulled out when writing out the results
 type Deployer interface {
 	// Up should provision a new cluster for testing
 	Up() error
@@ -60,16 +71,10 @@ type Deployer interface {
 	// DumpClusterLogs should export logs from the cluster. It may be called
 	// multiple times. Options for this should come from New(...)
 	DumpClusterLogs() error
-	// GetBuilder should return a custom build instance for the implementation
-	// It may return a custom impelementation, a common implementation provided
-	// by the kubetest2 packages, or nil. If nil is returned a default builder
-	// will be used
-	GetBuilder() Build
+	// Build should build kubernetes and package it in whatever format
+	// the deployer consumes
+	Build() error
 }
-
-// Build should build kubernetes and package it in whatever format
-// the deployer consumes
-type Build func() error
 
 // NewTester should process & store deployerArgs and the common Options
 // kubetest2 will call this once at startup

@@ -18,6 +18,7 @@ package app
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -125,6 +126,7 @@ func parseArgs(name string, opt *options, args []string) ([]string, []string, er
 	flags.BoolVar(&opt.up, "up", false, "provision the test cluster")
 	flags.BoolVar(&opt.down, "down", false, "tear down the test cluster")
 	flags.StringVar(&opt.test, "test", "", "test type to run, if unset no tests will run")
+	flags.StringVar(&opt.artifacts, "artifacts", os.Getenv("ARTIFACTS"), "directory to put artifacts, defaulting to ${ARTIFACTS}")
 
 	// finally, parse flags
 	if err := flags.Parse(args); err != nil {
@@ -135,11 +137,13 @@ func parseArgs(name string, opt *options, args []string) ([]string, []string, er
 
 // options holds flag values and implements deployer.Options
 type options struct {
-	help  bool
-	build bool
-	up    bool
-	down  bool
-	test  string
+	// options exposed via Options interface
+	help      bool
+	build     bool
+	up        bool
+	down      bool
+	test      string
+	artifacts string
 }
 
 // assert that options implements deployer options
@@ -163,4 +167,8 @@ func (o *options) ShouldDown() bool {
 
 func (o *options) ShouldTest() bool {
 	return o.test != ""
+}
+
+func (o *options) ArtifactsDir() string {
+	return o.artifacts
 }
