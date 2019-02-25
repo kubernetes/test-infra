@@ -26,7 +26,7 @@ import (
 	"k8s.io/test-infra/kubetest2/pkg/process"
 )
 
-// Main implements the kubtest2 root binary entrypoint
+// Main implements the kubetest2 root binary entrypoint
 func Main() {
 	if err := Run(); err != nil {
 		os.Exit(1)
