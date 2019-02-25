@@ -3,7 +3,6 @@ postsubmits:
   - name: post-test-infra-build-smoke
     agent: knative-build
     decorate: true
-    report: true
     build_spec:
       steps:
       - name: first
