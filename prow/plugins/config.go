@@ -39,8 +39,7 @@ const (
 type Configuration struct {
 	// Plugins is a map of repositories (eg "k/k") to lists of
 	// plugin names.
-	// TODO: Link to the list of supported plugins.
-	// https://github.com/kubernetes/test-infra/issues/3476
+	// You can find comprehensive list of plugins here https://prow.k8s.io/command-help
 	Plugins map[string][]string `json:"plugins,omitempty"`
 
 	// ExternalPlugins is a map of repositories (eg "k/k") to lists of
