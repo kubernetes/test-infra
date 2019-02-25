@@ -22,7 +22,7 @@ import (
 	"k8s.io/test-infra/kubetest2/pkg/types"
 )
 
-// Main implements the kubtest2 deployer binary entrypoint
+// Main implements the kubetest2 deployer binary entrypoint
 // Each deployer binary should invoke this, in addition to loading deployers
 func Main(deployerName string, newDeployer types.NewDeployer) {
 	// see cmd.go for the rest of the CLI boilerplate
