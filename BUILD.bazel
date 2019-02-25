@@ -121,6 +121,7 @@ filegroup(
         "//kubetest:all-srcs",
         "//kubetest2:all-srcs",
         "//label_sync:all-srcs",
+        "//linkcheck:all-srcs",
         "//logexporter/cmd:all-srcs",
         "//maintenance/aws-janitor:all-srcs",
         "//maintenance/migratestatus:all-srcs",
