@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "addresses.go",
         "asg.go",
+        "clean.go",
         "dhcp_options.go",
         "elb.go",
         "iam_instance_profiles.go",
@@ -26,6 +27,8 @@ go_library(
     importpath = "k8s.io/test-infra/maintenance/aws-janitor/resources",
     visibility = ["//visibility:public"],
     deps = [
+        "//maintenance/aws-janitor/account:go_default_library",
+        "//maintenance/aws-janitor/regions:go_default_library",
         "//maintenance/aws-janitor/s3:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library",
