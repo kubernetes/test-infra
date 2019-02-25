@@ -53,6 +53,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 			}
 		}
 		if !matched {
+			c.Logger.Debug("Comment doesn't match any triggering regex, skipping.")
 			return nil
 		}
 	}
@@ -63,6 +64,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 		return err
 	}
 	if commentAuthor == botName {
+		c.Logger.Debug("Comment is made by the bot, skipping.")
 		return nil
 	}
 
