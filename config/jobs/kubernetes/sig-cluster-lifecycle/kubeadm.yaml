@@ -103,7 +103,7 @@ periodics:
           - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.14
           - --kubernetes-anywhere-kubernetes-version=ci/latest-1.14
           - --provider=skeleton
-          - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
+          - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8 --num-nodes=4
           - --timeout=300m
 
 - name: ci-kubernetes-e2e-kubeadm-gce-master
@@ -131,6 +131,6 @@ periodics:
       - --kubernetes-anywhere-kubelet-ci-version=latest-bazel
       - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
       - --provider=skeleton
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8 --num-nodes=4
       - --timeout=300m
 

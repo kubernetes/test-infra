@@ -5788,6 +5788,12 @@ dashboards:
       alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
     alert_stale_results_hours: 24
     num_failures_to_alert: 2 # Runs every 12h. Alert when it's been failing for 24 hours
+  - name: kubeadm-gce-1.14
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-14
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    alert_stale_results_hours: 24
+    num_failures_to_alert: 2 # Runs every 12h. Alert when it's been failing for 24 hours
   - name: kubeadm-gce-master
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-master
     alert_options:
@@ -5824,6 +5830,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
   - name: kubeadm-gce-1.12-on-1.13
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-12-on-1-13
+  - name: kubeadm-gce-1.13-on-1.14
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-13-on-1-14
   - name: kubeadm-gce-stable-on-master
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
     alert_options:
@@ -5835,6 +5843,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
   - name: kubeadm-gce-upgrade-1.12-1.13
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-12-1-13
+  - name: kubeadm-gce-1.13-1.14
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-13-1-14
   - name: kubeadm-gce-upgrade-stable-master
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
 # packages tests
