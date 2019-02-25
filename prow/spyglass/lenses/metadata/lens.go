@@ -29,6 +29,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/lenses"
+	"k8s.io/test-infra/testgrid/metadata"
 )
 
 const (
@@ -116,9 +117,13 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 	}
 
 	metadataViewData.Metadata = map[string]string{"node": started.Node}
-	for k, v := range finished.Metadata {
-		if s, ok := v.(string); ok && v != "" {
-			metadataViewData.Metadata[k] = s
+
+	metadatas := []metadata.Metadata{started.Metadata, finished.Metadata}
+	for _, m := range metadatas {
+		for k, v := range m {
+			if s, ok := v.(string); ok && v != "" {
+				metadataViewData.Metadata[k] = s
+			}
 		}
 	}
 
