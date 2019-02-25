@@ -42,6 +42,7 @@ filegroup(
         "//vendor/github.com/aws/aws-sdk-go/internal/shareddefaults:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/service/autoscaling:all-srcs",
+        "//vendor/github.com/aws/aws-sdk-go/service/cloudformation:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/service/elb:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/service/iam:all-srcs",
