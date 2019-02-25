@@ -28,7 +28,6 @@ import (
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/boskos/common"
 	awsboskos "k8s.io/test-infra/boskos/common/aws"
-	"k8s.io/test-infra/maintenance/aws-janitor/account"
 	"k8s.io/test-infra/maintenance/aws-janitor/regions"
 	"k8s.io/test-infra/maintenance/aws-janitor/resources"
 )
@@ -84,47 +83,12 @@ func cleanResource(res *common.Resource) error {
 	logrus.WithField("name", res.Name).Info("beginning cleaning")
 	start := time.Now()
 
-	if err := cleanAll(s); err != nil {
+	if err := resources.CleanAll(s, regions.Default); err != nil {
 		return errors.Wrapf(err, "Failed to clean resource %q", res.Name)
 	}
 
 	duration := time.Since(start)
 
 	logrus.WithFields(logrus.Fields{"name": res.Name, "duration": duration.Seconds()}).Info("Finished cleaning")
-	return nil
-}
-
-func cleanAll(s *session.Session) error {
-	regionList, err := regions.GetAll(s)
-	if err != nil {
-		return errors.Wrap(err, "Couldn't retrieve list of regions")
-	}
-
-	acct, err := account.GetAccount(s, regions.Default)
-	if err != nil {
-		return errors.Wrap(err, "failed to retrieve account")
-	}
-
-	for _, region := range regionList {
-		for _, typ := range resources.RegionalTypeList {
-			set, err := typ.ListAll(s, acct, region)
-			if err != nil {
-				return errors.Wrapf(err, "failed to list resources of type %T", typ)
-			}
-			if err := typ.MarkAndSweep(s, acct, region, set); err != nil {
-				return errors.Wrapf(err, "couldn't sweep resources of type %T", typ)
-			}
-		}
-	}
-
-	for _, typ := range resources.GlobalTypeList {
-		set, err := typ.ListAll(s, acct, regions.Default)
-		if err != nil {
-			return errors.Wrapf(err, "failed to list resources of type %T", typ)
-		}
-		if err := typ.MarkAndSweep(s, acct, regions.Default, set); err != nil {
-			return errors.Wrapf(err, "couldn't sweep resources of type %T", typ)
-		}
-	}
 	return nil
 }

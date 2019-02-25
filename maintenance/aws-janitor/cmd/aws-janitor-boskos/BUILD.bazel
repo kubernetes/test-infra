@@ -10,7 +10,6 @@ go_library(
         "//boskos/client:go_default_library",
         "//boskos/common:go_default_library",
         "//boskos/common/aws:go_default_library",
-        "//maintenance/aws-janitor/account:go_default_library",
         "//maintenance/aws-janitor/regions:go_default_library",
         "//maintenance/aws-janitor/resources:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
