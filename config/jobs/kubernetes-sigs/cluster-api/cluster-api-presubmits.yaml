@@ -88,3 +88,22 @@ presubmits:
         - "--scenario=execute"
         - "--"
         - "./scripts/ci-is-vendor-in-sync.sh"
+  - name: pull-cluster-api-integration
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+    always_run: false
+    optional: true
+    skip_report: true
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-master
+        command:
+        - runner.sh
+        args:
+        - ./scripts/ci-integration.sh
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
