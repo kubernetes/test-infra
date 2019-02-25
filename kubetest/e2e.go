@@ -636,6 +636,11 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 			return err
 		}
 
+		// running test in clusterloader, or other custom commands, skip the ginkgo call
+		if o.testCmd != "" {
+			return nil
+		}
+
 		// TODO(krzyzacy): unsure if the envs in kubemark/util.sh makes a difference to e2e tests
 		//                 will verify and remove (or uncomment) next
 		//util := os.Getenv("WORKSPACE") + "/kubernetes/cluster/kubemark/util.sh"
