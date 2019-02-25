@@ -40,8 +40,6 @@ presets:
   # Allow one node to not be ready after cluster creation.
   - name: ALLOWED_NOTREADY_NODES
     value: 1
-  - name: LOG_DUMP_SYSTEMD_JOURNAL
-    value: "true"
 ### kubemark-gce-big
 - labels:
     preset-e2e-kubemark-gce-big: "true"
@@ -117,6 +115,9 @@ presets:
   # Increase delete collection parallelism.
   - name: TEST_CLUSTER_DELETE_COLLECTION_WORKERS
     value: --delete-collection-workers=16
+  # Dump full systemd journal on master and nodes.
+  - name: LOG_DUMP_SYSTEMD_JOURNAL
+    value: "true"
 
 ###### Scalability Envs
 ### Common env variables for all scalability-related suites.
