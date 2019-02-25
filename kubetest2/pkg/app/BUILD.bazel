@@ -12,6 +12,7 @@ go_library(
     deps = [
         "//kubetest2/pkg/app/shim:go_default_library",
         "//kubetest2/pkg/app/testers:go_default_library",
+        "//kubetest2/pkg/metadata:go_default_library",
         "//kubetest2/pkg/types:go_default_library",
         "//vendor/github.com/pkg/errors:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",
