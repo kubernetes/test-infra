@@ -59,6 +59,6 @@ func (d *deployer) DumpClusterLogs() error {
 	panic("unimplemented")
 }
 
-func (d *deployer) GetBuilder() types.Build {
+func (d *deployer) Build() error {
 	panic("unimplemented")
 }
