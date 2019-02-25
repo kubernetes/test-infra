@@ -478,6 +478,7 @@ func (c *Client) doRequest(method, path, accept string, body interface{}) (*http
 
 // Not thread-safe - callers need to hold c.mut.
 func (c *Client) getUserData() error {
+	c.log("User")
 	var u User
 	_, err := c.request(&request{
 		method:    http.MethodGet,
