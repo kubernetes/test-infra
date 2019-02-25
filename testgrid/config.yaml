@@ -2477,6 +2477,9 @@ test_groups:
 - name: pull-cluster-api-vendor-in-sync
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-vendor-in-sync
   num_columns_recent: 20
+- name: pull-cluster-api-integration
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-integration
+  num_columns_recent: 20
 - name: periodic-cluster-api-provider-aws-test-creds
   gcs_prefix: kubernetes-jenkins/logs/periodic-cluster-api-provider-aws-test-creds
   num_columns_recent: 20
@@ -5898,6 +5901,8 @@ dashboards:
     test_group_name: pull-cluster-api-test
   - name: pr-vendor
     test_group_name: pull-cluster-api-vendor-in-sync
+  - name: pr-integration
+    test_group_name: pull-cluster-api-integration
 
 - name: sig-cluster-lifecycle-cluster-api-provider-aws
   dashboard_tab:
