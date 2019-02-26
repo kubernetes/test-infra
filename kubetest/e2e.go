@@ -203,7 +203,14 @@ func run(deploy deployer, o options) error {
 
 	if o.kubemark {
 		errs = util.AppendError(errs, control.XMLWrap(&suite, "Kubemark Overall", func() error {
-			return kubemarkTest(testArgs, dump, o, deploy)
+			if err := kubemarkUp(dump, o, deploy); err != nil {
+				return err
+			}
+			// running test in clusterloader, or other custom commands, skip the ginkgo call
+			if o.testCmd != "" {
+				return nil
+			}
+			return kubemarkGinkgoTest(testArgs, dump)
 		}))
 	}
 
@@ -224,7 +231,7 @@ func run(deploy deployer, o options) error {
 	var kubemarkDownErr error
 	if o.kubemark {
 		kubemarkWg.Add(1)
-		go kubemarkDown(&kubemarkDownErr, &kubemarkWg)
+		go kubemarkDown(&kubemarkDownErr, &kubemarkWg, dump)
 	}
 
 	if o.charts {
@@ -565,7 +572,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 	return control.FinishRunning(exec.Command("go", runner...))
 }
 
-func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) error {
+func kubemarkUp(dump string, o options, deploy deployer) error {
 	// Stop previously running kubemark cluster (if any).
 	if err := control.XMLWrap(&suite, "Kubemark TearDown Previous", func() error {
 		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
@@ -581,11 +588,6 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 	if err := control.XMLWrap(&suite, "Kubemark Up", func() error {
 		return control.FinishRunning(exec.Command("./test/kubemark/start-kubemark.sh"))
 	}); err != nil {
-		if dump != "" {
-			control.XMLWrap(&suite, "Kubemark MasterLogDump (--up failed)", func() error {
-				return control.FinishRunning(exec.Command("./test/kubemark/master-log-dump.sh", dump))
-			})
-		}
 		return err
 	}
 
@@ -596,51 +598,51 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 		})
 	}
 
+	// detect master IP
+	if err := os.Setenv("MASTER_NAME", os.Getenv("INSTANCE_PREFIX")+"-kubemark-master"); err != nil {
+		return err
+	}
+
+	masterIP, err := control.Output(exec.Command(
+		"gcloud", "compute", "addresses", "describe",
+		os.Getenv("MASTER_NAME")+"-ip",
+		"--project="+o.gcpProject,
+		"--region="+o.gcpZone[:len(o.gcpZone)-2],
+		"--format=value(address)"))
+	if err != nil {
+		return fmt.Errorf("failed to get masterIP: %v", err)
+	}
+	if err := os.Setenv("KUBE_MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
+		return err
+	}
+	// MASTER_IP variable is required by the clusterloader. It requires to have master ip provided,
+	// due to master being unregistered.
+	if err := os.Setenv("MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
+		return err
+	}
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	if err := os.Setenv("KUBECONFIG", fmt.Sprintf("%s/test/kubemark/resources/kubeconfig.kubemark", cwd)); err != nil {
+		return err
+	}
+
+	// 'Stop kubemark cluster' step has now been moved outside this function
+	// to make it asynchronous with other steps (to speed test execution).
+	return nil
+}
+
+func kubemarkGinkgoTest(testArgs []string, dump string) error {
+	if os.Getenv("ENABLE_KUBEMARK_CLUSTER_AUTOSCALER") == "true" {
+		testArgs = append(testArgs, "--kubemark-external-kubeconfig="+os.Getenv("DEFAULT_KUBECONFIG"))
+	}
+
 	// Run tests on the kubemark cluster.
-	if err := control.XMLWrap(&suite, "Kubemark Test", func() error {
+	return control.XMLWrap(&suite, "Kubemark Test", func() error {
 		testArgs = util.SetFieldDefault(testArgs, "--ginkgo.focus", "starting\\s30\\spods")
-
-		// detect master IP
-		if err := os.Setenv("MASTER_NAME", os.Getenv("INSTANCE_PREFIX")+"-kubemark-master"); err != nil {
-			return err
-		}
-
-		masterIP, err := control.Output(exec.Command(
-			"gcloud", "compute", "addresses", "describe",
-			os.Getenv("MASTER_NAME")+"-ip",
-			"--project="+o.gcpProject,
-			"--region="+o.gcpZone[:len(o.gcpZone)-2],
-			"--format=value(address)"))
-		if err != nil {
-			return fmt.Errorf("failed to get masterIP: %v", err)
-		}
-		if err := os.Setenv("KUBE_MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
-			return err
-		}
-		// MASTER_IP variable is required by the clusterloader. It requires to have master ip provided,
-		// due to master being unregistered.
-		if err := os.Setenv("MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
-			return err
-		}
-
-		if os.Getenv("ENABLE_KUBEMARK_CLUSTER_AUTOSCALER") == "true" {
-			testArgs = append(testArgs, "--kubemark-external-kubeconfig="+os.Getenv("DEFAULT_KUBECONFIG"))
-		}
-
-		cwd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-
-		if err := os.Setenv("KUBECONFIG", fmt.Sprintf("%s/test/kubemark/resources/kubeconfig.kubemark", cwd)); err != nil {
-			return err
-		}
-
-		// running test in clusterloader, or other custom commands, skip the ginkgo call
-		if o.testCmd != "" {
-			return nil
-		}
-
 		// TODO(krzyzacy): unsure if the envs in kubemark/util.sh makes a difference to e2e tests
 		//                 will verify and remove (or uncomment) next
 		//util := os.Getenv("WORKSPACE") + "/kubernetes/cluster/kubemark/util.sh"
@@ -654,28 +656,15 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 		)
 
 		return control.FinishRunning(cmd)
-	}); err != nil {
-		if dump != "" {
-			control.XMLWrap(&suite, "Kubemark MasterLogDump (--test failed)", func() error {
-				return control.FinishRunning(exec.Command("./test/kubemark/master-log-dump.sh", dump))
-			})
-		}
-		return err
-	}
-
-	// Dump logs from kubemark master.
-	control.XMLWrap(&suite, "Kubemark MasterLogDump", func() error {
-		return control.FinishRunning(exec.Command("./test/kubemark/master-log-dump.sh", dump))
 	})
-
-	// 'Stop kubemark cluster' step has now been moved outside this function
-	// to make it asynchronous with other steps (to speed test execution).
-	return nil
 }
 
 // Brings down the kubemark cluster.
-func kubemarkDown(err *error, wg *sync.WaitGroup) {
+func kubemarkDown(err *error, wg *sync.WaitGroup, dump string) {
 	defer wg.Done()
+	control.XMLWrap(&suite, "Kubemark MasterLogDump", func() error {
+		return control.FinishRunning(exec.Command("./test/kubemark/master-log-dump.sh", dump))
+	})
 	*err = control.XMLWrap(&suite, "Kubemark TearDown", func() error {
 		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
 	})
