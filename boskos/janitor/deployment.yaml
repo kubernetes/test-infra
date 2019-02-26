@@ -61,4 +61,24 @@ spec:
       - name: service
         secret:
           secretName: service-account
-
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: boskos-janitor-aws
+  labels:
+    app: boskos-janitor-aws
+  namespace: test-pods
+spec:
+  replicas: 4  # 4 distributed janitor instances
+  template:
+    metadata:
+      labels:
+        app: boskos-janitor-aws
+    spec:
+      terminationGracePeriodSeconds: 300
+      containers:
+      - name: boskos-janitor-aws
+        image: gcr.io/k8s-testimages/janitor-aws:latest
+        args:
+        - --boskos-url=http://boskos.test-pods.svc.cluster.local.
