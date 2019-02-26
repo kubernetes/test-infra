@@ -52,7 +52,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	var reviewCount int
 	if config.Blunderbuss.ReviewerCount != nil {
 		reviewCount = *config.Blunderbuss.ReviewerCount
-	} else if config.Blunderbuss.ReviewerCount != nil {
+	} else if config.Blunderbuss.FileWeightCount != nil {
 		reviewCount = *config.Blunderbuss.FileWeightCount
 	}
 	if reviewCount != 1 {
