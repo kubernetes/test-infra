@@ -30,7 +30,7 @@ A general Spyglass query will proceed as follows:
 Spyglass currently exposes the following views:
 
 * `/job-history/<gcs-bucket-name>/pr-logs/directory/<job-name>` to get the history of a job
-* `/pr-history/<org>/<repo>/<pr number>` to get the history of a PR
+* `/pr-history?org=<org>&repo=<repo>&pr=<pr number>` to get the history of a PR
 * `/view/gcs/<gcs-bucket-name>/pr-logs/pull/<repo-name>/<pull-number>/<job-name>/<build-id>` to get the job result after it finished
 * `/view/prowjob/<job-name>/<build-id>` to check on the running job, this only works as long as the pod that runs the job still exists
 
