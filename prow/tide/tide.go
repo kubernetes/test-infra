@@ -887,7 +887,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 				// If we have more PRs to merge, sleep to give Github time to recalculate
 				// mergeability.
 				if i+1 < len(prs) {
-					time.Sleep(time.Second * 3)
+					time.Sleep(time.Second * 5)
 				}
 				break
 			}
