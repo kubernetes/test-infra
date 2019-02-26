@@ -240,6 +240,8 @@ type Sinker struct {
 	// MaxProwJobAge is how old a ProwJob can be before it is garbage-collected.
 	// Defaults to one week.
 	MaxProwJobAge time.Duration `json:"-"`
+	// MaxPodAge is the maximum duration a pod is kept after finishing
+	// Defaults to 24h
 	// MaxPodAgeString compiles into MaxPodAge at load time.
 	MaxPodAgeString string `json:"max_pod_age,omitempty"`
 	// MaxPodAge is how old a Pod can be before it is garbage-collected.
