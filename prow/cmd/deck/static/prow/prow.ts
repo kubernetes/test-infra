@@ -366,6 +366,13 @@ function groupKey(build: Job): string {
     return `${build.refs.repo} ${pr} ${build.refs_key}`;
 }
 
+// escapeRegexLiteral ensures the given string is escaped so that it is treated as
+// an exact value when used within a RegExp. This is the standard substitution recommended
+// by https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions.
+function escapeRegexLiteral(s: string): string {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function redraw(fz: FuzzySearch): void {
     const modal = document.getElementById('rerun')!;
     const rerunCommand = document.getElementById('rerun-content')!;
@@ -393,17 +400,20 @@ function redraw(fz: FuzzySearch): void {
         return sel;
     }
 
-    function getSelectionFuzzySearch(id: string, inputId: string): string {
+    function getSelectionFuzzySearch(id: string, inputId: string): RegExp {
         const input = document.getElementById(inputId) as HTMLInputElement;
         const inputText = input.value;
-        if (inputText !== "" && opts && !opts[id + 's' as keyof RepoOptions][inputText]) {
-            return "";
+        if (inputText === "") {
+            return new RegExp('');
+        }
+        if (inputText !== "" && opts && opts[id + 's' as keyof RepoOptions][inputText]) {
+            return new RegExp(`^${escapeRegexLiteral(inputText)}$`);
         }
         if (inputText !== "") {
             args.push(`${id}=${encodeURIComponent(inputText)}`);
         }
-
-        return inputText;
+        const expr = inputText.split('*').map(escapeRegexLiteral);
+        return new RegExp(`^${expr.join('.*')}$`);
     }
 
     const repoSel = getSelection("repo");
@@ -442,7 +452,7 @@ function redraw(fz: FuzzySearch): void {
         if (!equalSelected(stateSel, build.state)) {
             continue;
         }
-        if (!equalSelected(jobSel, build.job)) {
+        if (!jobSel.test(build.job)) {
             continue;
         }
         if (build.type === "presubmit") {
