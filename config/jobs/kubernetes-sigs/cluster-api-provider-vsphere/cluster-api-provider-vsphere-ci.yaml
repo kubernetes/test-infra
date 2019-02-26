@@ -22,3 +22,18 @@ periodics:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
+        volumeMounts:
+          - name: host-dev-loop0
+            mountPath: /dev/loop0
+          - name: host-dev-loop1
+            mountPath: /dev/loop1
+      volumes:
+      - name: host-dev-loop0
+        hostPath:
+          path: /dev/loop0
+          type: File
+      - name: host-dev-loop1
+        hostPath:
+          path: /dev/loop1
+          type: File
+
