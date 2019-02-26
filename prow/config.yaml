@@ -615,3 +615,21 @@ presets:
   volumeMounts:
   - name: docker-graph
     mountPath: /docker-graph
+# volume mounts for kind
+- labels:
+    preset-kind-volume-mounts: "true"
+  volumeMounts:
+    - mountPath: /lib/modules
+      name: modules
+      readOnly: true
+    - mountPath: /sys/fs/cgroup
+      name: cgroup
+  volumes:
+    - name: modules
+      hostPath:
+        path: /lib/modules
+        type: Directory
+    - name: cgroup
+      hostPath:
+        path: /sys/fs/cgroup
+        type: Directory
