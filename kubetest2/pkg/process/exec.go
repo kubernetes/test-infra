@@ -42,7 +42,7 @@ func execCmdWithSignals(cmd *exec.Cmd) error {
 	// TODO(bentheelder): what should this buffer size be?
 	signals := make(chan os.Signal, 5)
 	signal.Notify(signals)
-	defer close(signals)
+	defer signal.Stop(signals)
 
 	// start the process
 	if err := cmd.Start(); err != nil {

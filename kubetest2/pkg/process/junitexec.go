@@ -36,7 +36,7 @@ func (e *execJunitError) SystemOut() string {
 
 var _ metadata.JUnitError = &execJunitError{}
 
-// ExecJUnit is like exec, except that it tees the output and captures it
+// ExecJUnit is like Exec, except that it tees the output and captures it
 // for returning a metadata.JUnitError if the process does not exit success
 func ExecJUnit(argv0 string, args []string, env []string) error {
 	// construct command from inputs
