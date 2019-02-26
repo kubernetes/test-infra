@@ -14,16 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package types
 
-import (
-	"k8s.io/test-infra/kubetest2/pkg/app"
-	// import the standard set of testers so they are loaded & registered
-	_ "k8s.io/test-infra/kubetest2/pkg/app/testers/standard"
+type incorrectUsageImpl struct {
+	helpText string
+}
 
-	"k8s.io/test-infra/kubetest2/kubetest2-kind/deployer"
-)
+var _ IncorrectUsage = &incorrectUsageImpl{}
 
-func main() {
-	app.Main(deployer.Name, deployer.Usage(), deployer.New)
+func (i incorrectUsageImpl) Error() string {
+	// TODO(bentheelder): possibly this should wrap the string a bit
+	return i.helpText
+}
+
+func (i *incorrectUsageImpl) HelpText() string {
+	return i.helpText
+}
+
+// NewIncorrectUsage returns a simple IncorrectUsage implementation wrapping
+// helpText
+func NewIncorrectUsage(helpText string) error {
+	return &incorrectUsageImpl{helpText}
 }

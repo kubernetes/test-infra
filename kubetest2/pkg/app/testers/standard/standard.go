@@ -14,16 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+// Package standard imports a set of standard kubetest2 tetser implementations
+// causing them to be registered in k8s.io/test-infra/kubetest2/pkg/app/testers
+// most deployer binaries should import this package
+package standard
 
 import (
-	"k8s.io/test-infra/kubetest2/pkg/app"
-	// import the standard set of testers so they are loaded & registered
-	_ "k8s.io/test-infra/kubetest2/pkg/app/testers/standard"
-
-	"k8s.io/test-infra/kubetest2/kubetest2-kind/deployer"
+	// load standard testers
+	_ "k8s.io/test-infra/kubetest2/pkg/app/testers/standard/exec"
 )
-
-func main() {
-	app.Main(deployer.Name, deployer.Usage(), deployer.New)
-}

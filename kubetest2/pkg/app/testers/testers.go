@@ -25,29 +25,37 @@ import (
 	"k8s.io/test-infra/kubetest2/pkg/types"
 )
 
+type testerInfo struct {
+	tester types.NewTester
+	usage  string
+}
+
 var (
 	mu sync.Mutex
 	// protected by mu
-	registry map[string]types.NewTester
+	registry = make(map[string]testerInfo)
 )
 
 // Get looks up a tester implementation by name, returning the tester if
 // the name exists in the registry, it also additionally returns the existence
 // explicitly
-func Get(name string) (tester types.NewTester, exists bool) {
+func Get(name string) (tester types.NewTester, usage string, exists bool) {
 	mu.Lock()
 	defer mu.Unlock()
 	t, o := registry[name]
-	return t, o
+	return t.tester, t.usage, o
 }
 
 // Register registers a tester implementation by name
-func Register(name string, tester types.NewTester) error {
+func Register(name, usage string, tester types.NewTester) error {
 	mu.Lock()
 	defer mu.Unlock()
 	if _, exists := registry[name]; exists {
 		return errors.Errorf("tester by name %#v already exists", name)
 	}
-	registry[name] = tester
+	registry[name] = testerInfo{
+		tester: tester,
+		usage:  usage,
+	}
 	return nil
 }

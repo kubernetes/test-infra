@@ -58,8 +58,7 @@ func (w *Writer) WrapStep(name string, doStep func() error) error {
 		tc.Failure = err.Error()
 	}
 	if v, ok := err.(JUnitError); ok {
-		tc.SystemOut = v.Stdout()
-		tc.SystemErr = v.Stderr()
+		tc.SystemOut = v.SystemOut()
 	}
 	w.suite.AddTestCase(tc)
 	return err
