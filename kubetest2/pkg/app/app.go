@@ -17,6 +17,7 @@ limitations under the License.
 package app
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -28,16 +29,21 @@ import (
 
 // Main implements the kubetest2 deployer binary entrypoint
 // Each deployer binary should invoke this, in addition to loading deployers
-func Main(deployerName string, newDeployer types.NewDeployer) {
+func Main(deployerName, deployerUsage string, newDeployer types.NewDeployer) {
 	// see cmd.go for the rest of the CLI boilerplate
-	if err := Run(deployerName, newDeployer); err != nil {
+	if err := Run(deployerName, deployerUsage, newDeployer); err != nil {
+		// only print the error if it's not an IncorrectUsage (which we've)
+		// already output along with usage
+		if _, isUsage := err.(types.IncorrectUsage); !isUsage {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		}
 		os.Exit(1)
 	}
 }
 
 // RealMain contains nearly all of the application logic / control flow
 // beyond the command line boilerplate
-func RealMain(opts types.Options, d types.Deployer, tester types.Tester) error {
+func RealMain(opts types.Options, d types.Deployer, tester types.Tester) (result error) {
 	/*
 		Now for the core kubetest2 logic:
 		 - build
@@ -48,6 +54,10 @@ func RealMain(opts types.Options, d types.Deployer, tester types.Tester) error {
 	*/
 	// TODO(bentheelder): signal handling & timeout
 
+	// ensure the artifacts dir
+	if err := os.MkdirAll(opts.ArtifactsDir(), os.ModePerm); err != nil {
+		return err
+	}
 	// setup the metadata writer
 	junitRunner, err := os.Create(
 		filepath.Join(opts.ArtifactsDir(), "junit_runner.xml"),
@@ -56,11 +66,20 @@ func RealMain(opts types.Options, d types.Deployer, tester types.Tester) error {
 		return errors.Wrap(err, "could not create runner output")
 	}
 	writer := metadata.NewWriter(junitRunner)
+	// defer writing out the metadata on exit
 	// NOTE: defer is LIFO, so this should actually be the finish time
 	defer func() {
-		writer.Finish()
-		junitRunner.Sync()
-		junitRunner.Close()
+		// TODO(bentheelder): instead of keeping the first error, consider
+		// a multi-error type
+		if err := writer.Finish(); err != nil && result == nil {
+			result = err
+		}
+		if err := junitRunner.Sync(); err != nil && result == nil {
+			result = err
+		}
+		if err := junitRunner.Close(); err != nil && result == nil {
+			result = err
+		}
 	}()
 
 	// build if specified
@@ -83,13 +102,19 @@ func RealMain(opts types.Options, d types.Deployer, tester types.Tester) error {
 	// ensure tearing down the cluster happens last
 	defer func() {
 		if opts.ShouldDown() {
-			writer.WrapStep("Down", d.Down)
+			// TODO(bentheelder): instead of keeping the first error, consider
+			// a multi-error type
+			if err := writer.WrapStep("Down", d.Down); err != nil && result == nil {
+				result = err
+			}
 		}
 	}()
 
 	// and finally test, if a test was specified
 	if opts.ShouldTest() {
-		writer.WrapStep("Test", tester.Test)
+		if err := writer.WrapStep("Test", tester.Test); err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -35,9 +35,8 @@ func makeFakeNow() func() time.Time {
 
 // junitError impl for testing
 type junitError struct {
-	name   string
-	stderr string
-	stdout string
+	name      string
+	systemout string
 }
 
 // assert that junitError is actually a JUnitError
@@ -47,12 +46,8 @@ func (j junitError) Error() string {
 	return j.name
 }
 
-func (j *junitError) Stderr() string {
-	return j.stderr
-}
-
-func (j *junitError) Stdout() string {
-	return j.stdout
+func (j *junitError) SystemOut() string {
+	return j.systemout
 }
 
 func TestWriter(t *testing.T) {
@@ -109,9 +104,8 @@ func TestWriter(t *testing.T) {
 					name: "always fails (junitError)",
 					doStep: func() error {
 						return &junitError{
-							name:   "on noes",
-							stdout: "uh oh",
-							stderr: "whoops",
+							name:      "on noes",
+							systemout: "uh oh",
 						}
 					},
 					expectError: true,
@@ -123,7 +117,6 @@ func TestWriter(t *testing.T) {
     <testcase name="always fails (junitError)" time="1">
         <failure>on noes</failure>
         <system-out>uh oh</system-out>
-        <system-err>whoops</system-err>
     </testcase>
 </testsuite>`,
 				"\n",
@@ -144,9 +137,8 @@ func TestWriter(t *testing.T) {
 					name: "always fails (junitError)",
 					doStep: func() error {
 						return &junitError{
-							name:   "on noes",
-							stdout: "uh oh",
-							stderr: "whoops",
+							name:      "on noes",
+							systemout: "uh oh",
 						}
 					},
 					expectError: true,
@@ -160,7 +152,6 @@ func TestWriter(t *testing.T) {
     <testcase name="always fails (junitError)" time="1">
         <failure>on noes</failure>
         <system-out>uh oh</system-out>
-        <system-err>whoops</system-err>
     </testcase>
 </testsuite>`,
 				"\n",

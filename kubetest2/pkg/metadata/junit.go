@@ -27,8 +27,8 @@ import (
 // metadata to the output junit_runner.xml
 type JUnitError interface {
 	error
-	Stdout() string
-	Stderr() string
+	// this should be the command output (stdout/stderr)
+	SystemOut() string
 }
 
 // testSuite holds a slice of TestCase and other summary metadata.
@@ -69,5 +69,4 @@ type testCase struct {
 	Failure   string   `xml:"failure,omitempty"`
 	Skipped   string   `xml:"skipped,omitempty"`
 	SystemOut string   `xml:"system-out,omitempty"`
-	SystemErr string   `xml:"system-err,omitempty"`
 }

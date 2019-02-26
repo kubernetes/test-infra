@@ -24,6 +24,11 @@ import (
 // Name is the name of the deployer
 const Name = "kind"
 
+// Usage returns the usage for the deployer
+func Usage() string {
+	return "  NONE - kind takes no args currently.\n"
+}
+
 // New implements deployer.New for kind
 func New(common types.Options, deployerArgs []string) (types.Deployer, error) {
 	// TODO(bentheelder): process arguments for more options
