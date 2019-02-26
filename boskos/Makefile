@@ -32,6 +32,9 @@ reaper:
 janitor:
 	go build -o janitor/janitor k8s.io/test-infra/boskos/janitor/
 
+janitor-aws:
+	$(MAKE) -C ../maintenance/aws-janitor/cmd/aws-janitor-boskos
+
 metrics:
 	go build -o metrics/metrics k8s.io/test-infra/boskos/metrics/
 
@@ -52,6 +55,12 @@ janitor-image:
 	docker build --no-cache -t "$(HUB)/janitor:$(TAG)" janitor
 	docker push "$(HUB)/janitor:$(TAG)"
 	rm janitor/janitor
+
+janitor-aws-image: export DOCKER_OPTS=--no-cache
+janitor-aws-image: export IMAGE=$(HUB)/janitor-aws
+janitor-aws-image:
+	$(MAKE) -C ../maintenance/aws-janitor/cmd/aws-janitor-boskos image push
+	$(MAKE) -C ../maintenance/aws-janitor/cmd/aws-janitor-boskos clean
 
 metrics-image:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o metrics/metrics k8s.io/test-infra/boskos/metrics/
@@ -81,4 +90,4 @@ update-config: get-cluster-credentials
 get-cluster-credentials:
 	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
-.PHONY: boskos client reaper janitor metrics server-image reaper-image janitor-image metrics-image server-deployment reaper-deployment janitor-deployment metrics-deployment service update-config get-cluster-credentials
+.PHONY: boskos client reaper janitor janitor-aws metrics server-image reaper-image janitor-image janitor-aws-image metrics-image server-deployment reaper-deployment janitor-deployment metrics-deployment service update-config get-cluster-credentials
