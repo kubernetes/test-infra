@@ -19,6 +19,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"time"
 
@@ -78,6 +81,11 @@ func main() {
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
+
+	// for pprof endpoints
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "sinker"}),
