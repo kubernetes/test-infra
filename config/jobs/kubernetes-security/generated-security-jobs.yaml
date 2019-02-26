@@ -3016,6 +3016,71 @@ presubmits:
   - agent: kubernetes
     always_run: false
     cluster: security
+    context: pull-security-kubernetes-conformance-image-test
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-conformance-image-test
+    optional: true
+    rerun_command: /test pull-security-kubernetes-conformance-image-test
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --job=$(JOB_NAME)
+        - --root=/go/src
+        - --repo=k8s.io/test-infra=master
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
+        - --repo=sigs.k8s.io/kind=master
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --scenario=execute
+        - --
+        - bash
+        - --
+        - -c
+        - cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-e2e.sh
+        env:
+        - name: PARALLEL
+          value: "true"
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-master
+        name: ""
+        resources:
+          requests:
+            cpu: "2"
+            memory: 9000Mi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /sys/fs/cgroup
+          name: cgroup
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      dnsConfig:
+        options:
+        - name: ndots
+          value: "1"
+      volumes:
+      - hostPath:
+          path: /lib/modules
+          type: Directory
+        name: modules
+      - hostPath:
+          path: /sys/fs/cgroup
+          type: Directory
+        name: cgroup
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-conformance-image-test,?($|\s.*)
+  - agent: kubernetes
+    always_run: false
+    cluster: security
     context: pull-security-kubernetes-godeps
     decorate: true
     labels:
