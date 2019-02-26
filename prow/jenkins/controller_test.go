@@ -155,9 +155,6 @@ func (f *fghc) CreateStatus(org, repo, ref string, s github.Status) error {
 	defer f.Unlock()
 	return nil
 }
-func (f *fghc) GetPullRequest(org, repo string, number int) (*github.PullRequest, error) {
-	return nil, nil
-}
 func (f *fghc) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
 	f.Lock()
 	defer f.Unlock()
