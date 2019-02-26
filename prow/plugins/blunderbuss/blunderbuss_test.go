@@ -701,3 +701,71 @@ func TestHandleGenericComment(t *testing.T) {
 		})
 	}
 }
+
+func TestHandleGenericCommentEvent(t *testing.T) {
+	pc := plugins.Agent{
+		PluginConfig: &plugins.Configuration{},
+	}
+	ce := github.GenericCommentEvent{}
+	handleGenericCommentEvent(pc, ce)
+}
+
+func TestHandlePullRequestEvent(t *testing.T) {
+	pc := plugins.Agent{
+		PluginConfig: &plugins.Configuration{},
+	}
+	pre := github.PullRequestEvent{}
+	handlePullRequestEvent(pc, pre)
+}
+
+func TestHelpProvider(t *testing.T) {
+	cases := []struct {
+		name         string
+		config       *plugins.Configuration
+		enabledRepos []string
+		err          bool
+	}{
+		{
+			name:         "Empty config",
+			config:       &plugins.Configuration{},
+			enabledRepos: []string{"org1", "org2/repo"},
+		},
+		{
+			name:         "Overlapping org and org/repo",
+			config:       &plugins.Configuration{},
+			enabledRepos: []string{"org2", "org2/repo"},
+		},
+		{
+			name:         "Invalid enabledRepos",
+			config:       &plugins.Configuration{},
+			enabledRepos: []string{"org1", "org2/repo/extra"},
+			err:          true,
+		},
+		{
+			name: "ReviewerCount specified",
+			config: &plugins.Configuration{
+				Blunderbuss: plugins.Blunderbuss{
+					ReviewerCount: &[]int{1}[0],
+				},
+			},
+			enabledRepos: []string{"org1", "org2/repo"},
+		},
+		{
+			name: "FileWeightCount specified",
+			config: &plugins.Configuration{
+				Blunderbuss: plugins.Blunderbuss{
+					FileWeightCount: &[]int{1}[0],
+				},
+			},
+			enabledRepos: []string{"org1", "org2/repo"},
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			_, err := helpProvider(c.config, c.enabledRepos)
+			if err != nil && !c.err {
+				t.Fatalf("helpProvider error: %v", err)
+			}
+		})
+	}
+}
