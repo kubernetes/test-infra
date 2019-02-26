@@ -59,7 +59,7 @@ type Configuration struct {
 	Cat                        Cat                    `json:"cat,omitempty"`
 	CherryPickUnapproved       CherryPickUnapproved   `json:"cherry_pick_unapproved,omitempty"`
 	ConfigUpdater              ConfigUpdater          `json:"config_updater,omitempty"`
-	Golint                     *Golint                `json:"golint,omitempty"`
+	Golint                     Golint                 `json:"golint"`
 	Heart                      Heart                  `json:"heart,omitempty"`
 	Label                      *Label                 `json:"label,omitempty"`
 	Lgtm                       []Lgtm                 `json:"lgtm,omitempty"`

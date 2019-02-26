@@ -103,7 +103,7 @@ func TestMinConfidence(t *testing.T) {
 	half := 0.5
 	cases := []struct {
 		name     string
-		golint   *plugins.Golint
+		golint   plugins.Golint
 		expected float64
 	}{
 		{
@@ -112,17 +112,17 @@ func TestMinConfidence(t *testing.T) {
 		},
 		{
 			name:     "no confidence set",
-			golint:   &plugins.Golint{},
+			golint:   plugins.Golint{},
 			expected: defaultConfidence,
 		},
 		{
 			name:     "confidence set to zero",
-			golint:   &plugins.Golint{MinimumConfidence: &zero},
+			golint:   plugins.Golint{MinimumConfidence: &zero},
 			expected: zero,
 		},
 		{
 			name:     "confidence set positive",
-			golint:   &plugins.Golint{MinimumConfidence: &half},
+			golint:   plugins.Golint{MinimumConfidence: &half},
 			expected: half,
 		},
 	}
@@ -808,5 +808,49 @@ func TestModifiedGoFiles(t *testing.T) {
 		if !reflect.DeepEqual(tc.expectedModifiedFiles, actualModifiedFiles) {
 			t.Errorf("Expected: %#v, Got %#v in case %s.", tc.expectedModifiedFiles, actualModifiedFiles, tc.name)
 		}
+	}
+}
+
+func TestHelpProvider(t *testing.T) {
+	half := 0.5
+	cases := []struct {
+		name         string
+		config       *plugins.Configuration
+		enabledRepos []string
+		err          bool
+	}{
+		{
+			name:         "Empty config",
+			config:       &plugins.Configuration{},
+			enabledRepos: []string{"org1", "org2/repo"},
+		},
+		{
+			name:         "Overlapping org and org/repo",
+			config:       &plugins.Configuration{},
+			enabledRepos: []string{"org2", "org2/repo"},
+		},
+		{
+			name:         "Invalid enabledRepos",
+			config:       &plugins.Configuration{},
+			enabledRepos: []string{"org1", "org2/repo/extra"},
+			err:          true,
+		},
+		{
+			name: "MinimumConfidence specified",
+			config: &plugins.Configuration{
+				Golint: plugins.Golint{
+					MinimumConfidence: &half,
+				},
+			},
+			enabledRepos: []string{"org1", "org2/repo"},
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			_, err := helpProvider(c.config, c.enabledRepos)
+			if err != nil && !c.err {
+				t.Fatalf("helpProvider error: %v", err)
+			}
+		})
 	}
 }

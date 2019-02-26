@@ -76,8 +76,8 @@ type githubClient interface {
 
 const defaultConfidence = 0.8
 
-func minConfidence(g *plugins.Golint) float64 {
-	if g == nil || g.MinimumConfidence == nil {
+func minConfidence(g plugins.Golint) float64 {
+	if g.MinimumConfidence == nil {
 		return defaultConfidence
 	}
 	return *g.MinimumConfidence
