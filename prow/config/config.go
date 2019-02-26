@@ -177,6 +177,7 @@ type Plank struct {
 	// Deprecated, use JobURLPrefixConfig instead
 	// JobURLPrefix is the host and path prefix under
 	// which job details will be viewable
+	// TODO @alvaroaleman: Remove in September 2019
 	JobURLPrefix string `json:"job_url_prefix,omitempty"`
 	// JobURLPrefixConfig is the host and path prefix under which job details
 	// will be viewable. Use `*` as key for your global default.
