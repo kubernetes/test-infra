@@ -92,6 +92,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
+      preset-kind-volume-mounts: "true"
     always_run: false
     optional: true
     skip_report: true
