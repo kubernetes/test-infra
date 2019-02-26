@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//kubetest2/kubetest2-kind/deployer:go_default_library",
         "//kubetest2/pkg/app:go_default_library",
+        "//kubetest2/pkg/app/testers/standard:go_default_library",
     ],
 )
 
