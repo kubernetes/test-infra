@@ -79,6 +79,6 @@ spec:
       terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-janitor-aws
-        image: akutz/boskos-janitor-aws:v20190226-99e2515db
+        image: akutz/boskos-janitor-aws:v20190226-f06ce8bad
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
