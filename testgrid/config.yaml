@@ -4668,8 +4668,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-master
   - name: kubeadm-gce-stable-on-master
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
-  - name: packages-pushed-master
-    test_group_name: periodic-kubernetes-e2e-packages-pushed
 
 - name: sig-release-master-informing
   dashboard_tab:
@@ -4868,8 +4866,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-13
   - name: kubeadm-gce-upgrade-1.12-1.13
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-12-1-13
-  - name: periodic-packages-pushed
-    test_group_name: periodic-kubernetes-e2e-packages-pushed
   - name: gce-cos-1.13-default
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   - name: gce-cos-1.13-slow
@@ -5055,6 +5051,10 @@ dashboards:
     test_group_name: ci-kops-build
   - name: debian-unstable
     test_group_name: ci-kubernetes-build-debian-unstable
+  - name: periodic-packages-pushed
+    test_group_name: periodic-kubernetes-e2e-packages-pushed
+  - name: periodic-packages-install-deb
+    test_group_name: periodic-kubernetes-e2e-packages-install-deb
 
 - name: sig-release-1.12-all
   dashboard_tab:
@@ -5075,8 +5075,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-12
   - name: kubeadm-gce-upgrade-1.11-1.12
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
-  - name: periodic-packages-pushed
-    test_group_name: periodic-kubernetes-e2e-packages-pushed
   - name: node-kubelet-1.12
     test_group_name: ci-kubernetes-node-kubelet-stable2
   - name: gce-cos-1.12-default
