@@ -18,7 +18,28 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        # Copied from config/jobs/kubernetes/sig-testing/verify.yaml.
+        # kind needs /lib/modules and cgroups from the host
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /sys/fs/cgroup
+          name: cgroup
+        # Resource specification copied from config/jobs/kubernetes/sig-cluster-lifecycle/kubeadm-kind.yaml.
+        # This job might be similar (to be checked).
         resources:
           requests:
-            cpu: 4
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+      volumes:
+      - name: modules
+        hostPath:
+          path: /lib/modules
+          type: Directory
+      - name: cgroup
+        hostPath:
+          path: /sys/fs/cgroup
+          type: Directory
