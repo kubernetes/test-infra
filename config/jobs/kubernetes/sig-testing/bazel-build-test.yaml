@@ -470,12 +470,11 @@ postsubmits:
         - "--timeout=60"
         - "--scenario=kubernetes_bazel"
         - "--" # end bootstrap args, scenario args below
-        - "--test=//... -//build/... -//vendor/..."
-        - "--manual-test=//hack:verify-all"
-        - "--test-args=--config=unit"
-        - "--test-args=--build_tag_filters=-e2e,-integration"
-        - "--test-args=--test_tag_filters=-e2e,-integration"
-        - "--test-args=--flaky_test_attempts=3"
+        - "--build=//... -//vendor/..."
+        - "--release=//build/release-tars"
+        - "--gcs=gs://kubernetes-release-dev/ci"
+        - "--version-suffix=-bazel"
+        - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.14.txt"
         securityContext:
           privileged: true
         resources:
