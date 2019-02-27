@@ -138,7 +138,14 @@ func runE(
 		}
 	}
 
-	// if we encountered any errors with the user input, show help and return
+	// print usage and return if explicitly requested
+	if opts.HelpRequested() {
+		cmd.Print(usage.String())
+		return nil
+	}
+
+	// otherwise if we encountered any errors with the user input
+	// show the error / help, usage and then return
 	if parseError != nil {
 		// ensure this is an incorrect usage error so the top level
 		// app logic will not print the error again, see Main()
@@ -155,12 +162,6 @@ func runE(
 		cmd.Print("\n\n")
 		cmd.Print(usage.String())
 		return parseError
-	}
-
-	// print usage and return if explicitly requested
-	if opts.HelpRequested() {
-		cmd.Print(usage.String())
-		return nil
 	}
 
 	// run RealMain, which contains all of the logic beyond the CLI boilerplate
@@ -269,11 +270,11 @@ func (u *usage) String() string {
 	s := fmt.Sprintf(
 		strings.TrimPrefix(`
 Usage:
-  kubetest2 %s [Flags] [DeployerArgs] -- [TesterArgs]
+  kubetest2 %s [Flags] [DeployerFlags] -- [TesterArgs]
 
 Flags:
 %s
-DeployerArgs(%s):
+DeployerFlags(%s):
 %s
 `, "\n"),
 		u.deployerName,
