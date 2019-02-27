@@ -33,9 +33,30 @@ import (
 // Name is the name of the deployer
 const Name = "kind"
 
-// Usage returns the usage for the deployer
-func Usage() string {
-	return bindFlags(&deployer{}).FlagUsages()
+// New implements deployer.New for kind
+func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
+	// create a deployer object and set fields that are not flag controlled
+	d := &deployer{
+		commonOptions: opts,
+		logsDir:       filepath.Join(opts.ArtifactsDir(), "logs"),
+	}
+	// register flags and return
+	return d, bindFlags(d)
+}
+
+// assert that New implements types.NewDeployer
+var _ types.NewDeployer = New
+
+// TODO(bentheelder): finish implementing this stubbed-out deployer
+type deployer struct {
+	// generic parts
+	commonOptions types.Options
+	// kind specific details
+	nodeImage   string // name of the node image built / deployed
+	clusterName string // --name flag value for kind
+	logLevel    string // log level for kind commands
+	logsDir     string // dir to export logs to
+	buildType   string // --type flag to kind build node-image
 }
 
 // helper used to create & bind a flagset to the deployer
@@ -54,42 +75,6 @@ func bindFlags(d *deployer) *pflag.FlagSet {
 		&d.nodeImage, "build-type", "", "--type for kind build node-image",
 	)
 	return flags
-}
-
-// New implements deployer.New for kind
-func New(opts types.Options, hiddenKubetest2Flags *pflag.FlagSet, args []string) (types.Deployer, error) {
-	// create a deployer object and set fields that are not flag controlled
-	d := &deployer{
-		commonOptions: opts,
-		logsDir:       filepath.Join(opts.ArtifactsDir(), "logs"),
-	}
-
-	// register flags
-	flags := bindFlags(d)
-
-	// NOTE: add the hidden kubetest2 flags so they won't cause parse errors
-	flags.AddFlagSet(hiddenKubetest2Flags)
-
-	// parse args
-	if err := flags.Parse(args); err != nil {
-		return nil, err
-	}
-	return d, nil
-}
-
-// assert that New implements types.NewDeployer
-var _ types.NewDeployer = New
-
-// TODO(bentheelder): finish implementing this stubbed-out deployer
-type deployer struct {
-	// generic parts
-	commonOptions types.Options
-	// kind specific details
-	nodeImage   string // name of the node image built / deployed
-	clusterName string // --name flag value for kind
-	logLevel    string // log level for kind commands
-	logsDir     string // dir to export logs to
-	buildType   string // --type flag to kind build node-image
 }
 
 // assert that deployer implements types.Deployer

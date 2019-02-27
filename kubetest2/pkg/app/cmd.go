@@ -31,12 +31,12 @@ import (
 )
 
 // Run instantiates and executes the kubetest2 cobra command, returning the result
-func Run(deployerName, deployerUsage string, newDeployer types.NewDeployer) error {
-	return NewCommand(deployerName, deployerUsage, newDeployer).Execute()
+func Run(deployerName string, newDeployer types.NewDeployer) error {
+	return NewCommand(deployerName, newDeployer).Execute()
 }
 
 // NewCommand returns a new cobra.Command for kubetest2
-func NewCommand(deployerName, deployerUsage string, newDeployer types.NewDeployer) *cobra.Command {
+func NewCommand(deployerName string, newDeployer types.NewDeployer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use: fmt.Sprintf("%s %s", shim.BinaryName, deployerName),
 		// we defer showing usage, so that we can include deployer and test
@@ -44,7 +44,7 @@ func NewCommand(deployerName, deployerUsage string, newDeployer types.NewDeploye
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runE(cmd, args, deployerName, deployerUsage, newDeployer)
+			return runE(cmd, args, deployerName, newDeployer)
 		},
 	}
 	// we implement custom flag parsing below
@@ -55,53 +55,63 @@ func NewCommand(deployerName, deployerUsage string, newDeployer types.NewDeploye
 // runE implements the custom CLI logic
 func runE(
 	cmd *cobra.Command, args []string,
-	deployerName, deployerUsage string, newDeployer types.NewDeployer,
+	deployerName string, newDeployer types.NewDeployer,
 ) error {
 	// setup the options struct & flags, etc.
 	opts := &options{}
-	flags := pflag.NewFlagSet(deployerName, pflag.ContinueOnError)
-	opts.bindFlags(flags)
-	usage := newUsage(opts, flags, deployerName, deployerUsage)
+	kubetest2Flags := pflag.NewFlagSet(deployerName, pflag.ContinueOnError)
+	opts.bindFlags(kubetest2Flags)
+
 	// NOTE: unknown flags are forwarded to the deployer as arguments
-	flags.ParseErrorsWhitelist.UnknownFlags = true
+	kubetest2Flags.ParseErrorsWhitelist.UnknownFlags = true
 
-	// go ahead show help if there are zero arguments
-	// since there are none to parse, we cannot identify the desired tester
-	if len(args) < 1 {
-		cmd.Print(usage.String())
-		return nil
+	// parse arguments, splitting out test args (after the `--`)
+	deployerArgs, testerArgs := splitArgs(args)
+
+	// setup usage metadata for deffered usage printing
+	usage := &usage{
+		deployerName:   deployerName,
+		kubetest2Flags: kubetest2Flags,
 	}
 
-	// parse the arguments
-	deployerArgs, testerArgs, err := parseArgs(flags, args)
-	if err != nil {
-		cmd.Printf("Error: could not parse arguments: %v\n", err)
-		return err
-	}
+	// parse the kubetest2 common flags flags
+	// NOTE: parseError should contain the first error from parsing.
+	// We will later show this + usage if there is one
+	parseError := kubetest2Flags.Parse(deployerArgs)
 
 	// now that we've parsed flags we can look up the tester
 	var newTester types.NewTester
-	if usage.options.test != "" {
+	if opts.test != "" {
 		n, testerUsage, ok := testers.Get(opts.test)
-		// now that we know which tester, plumb the help info
-		usage.testerUsage = testerUsage
 		newTester = n
-		// fail if the named tester does not exist
-		if !ok {
+
+		// if the tester exists, record usage info
+		if ok {
+			usage.testerUsage = testerUsage
+			usage.testerName = opts.test
+		} else if parseError == nil {
+			// otherwise fail if the named tester does not exist
+			// NOTE: we only retain the first parse error currently, and handle below
 			// TODO(bentheelder): inform the user which testers exist
-			return errors.Errorf("no such tester: %#v", opts.test)
+			parseError = errors.Errorf("no such tester: %#v", opts.test)
 		}
 	}
 
 	// instantiate the deployer
-	deployer, err := newDeployer(opts, flagsForDeployer(deployerName), deployerArgs)
-	if err != nil {
-		if v, ok := err.(types.IncorrectUsage); ok {
-			cmd.Print(v.HelpText())
-			cmd.Print("\n\n")
-			cmd.Print(usage.String())
+	deployer, deployerFlags := newDeployer(opts)
+
+	// capture deployer flags for usage
+	usage.deployerFlags = deployerFlags
+
+	// parse the combined deployer flags and kubetest2 flags
+	allFlags := pflag.NewFlagSet(deployerName, pflag.ContinueOnError)
+	allFlags.AddFlagSet(deployerFlags)
+	allFlags.AddFlagSet(kubetest2Flags)
+	if err := allFlags.Parse(deployerArgs); err != nil {
+		// NOTE: we only retain the first parse error currently, and handle below
+		if err != nil && parseError == nil {
+			parseError = err
 		}
-		return err
 	}
 
 	// instantiate the tester if testing was specified
@@ -109,15 +119,38 @@ func runE(
 	// invalid options to the tester
 	var tester types.Tester
 	if newTester != nil {
-		tester, err = newTester(opts, testerArgs, deployer)
-		if err != nil {
-			if v, ok := err.(types.IncorrectUsage); ok {
-				cmd.Print(v.HelpText())
-				cmd.Print("\n\n")
-				cmd.Print(usage.String())
-			}
-			return err
+		t, err := newTester(opts, testerArgs, deployer)
+		tester = t
+
+		// NOTE: we only retain the first parse error currently, and handle below
+		if err != nil && parseError == nil {
+			parseError = err
 		}
+	}
+
+	// if we encountered any errors with the user input, show help and return
+	if parseError != nil {
+		// ensure this is an incorrect usage error so the top level
+		// app logic will not print the error again, see Main()
+		//
+		// also make sure we print it here before the app usage either way
+		if v, ok := parseError.(types.IncorrectUsage); ok {
+			cmd.Print(v.HelpText())
+		} else {
+			incorrectUsageString := fmt.Sprintf("Error: %s", parseError)
+			parseError = types.NewIncorrectUsage(incorrectUsageString)
+			cmd.Print(incorrectUsageString)
+		}
+		// then print the actual usage
+		cmd.Print("\n\n")
+		cmd.Print(usage.String())
+		return parseError
+	}
+
+	// print usage and return if explicitly requested
+	if opts.HelpRequested() {
+		cmd.Print(usage.String())
+		return nil
 	}
 
 	// run RealMain, which contains all of the logic beyond the CLI boilerplate
@@ -133,24 +166,8 @@ func defaultArtifactsDir() string {
 	return "./_artifacts"
 }
 
-// flagsForDeployer creates a copy of all kubetest2 flags for usage in deployer
-// parsing, these flags will be passed to the deployer
-// All flags will be marked hidden so they don't show up in the deployer usage
-func flagsForDeployer(name string) *pflag.FlagSet {
-	// create a generic flagset and bind all of the flags
-	flags := pflag.NewFlagSet(name, pflag.ContinueOnError)
-	opt := &options{}
-	opt.bindFlags(flags)
-	// mark all flags as hidden
-	flags.VisitAll(func(flag *pflag.Flag) {
-		flag.Hidden = true
-	})
-	return flags
-}
-
-// parseArgs attaches all kubetest2 first class flags to opts, parses the args,
-// and returns the kubetest2 args, test args, and error if any
-func parseArgs(flags *pflag.FlagSet, args []string) ([]string, []string, error) {
+// splitArgs splits args into deployerArgs and testerArgs at the first bare `--`
+func splitArgs(args []string) ([]string, []string) {
 	// first split into args and test args
 	testArgs := []string{}
 	for i := range args {
@@ -162,13 +179,7 @@ func parseArgs(flags *pflag.FlagSet, args []string) ([]string, []string, error) 
 			break
 		}
 	}
-
-	// finally, parse flags
-	err := flags.Parse(args)
-
-	// NOTE: we still return args in all cases so that the deployer and
-	// tester have a chance to construct help output
-	return args, testArgs, err
+	return args, testArgs
 }
 
 // options holds flag values and implements deployer.Options
@@ -218,27 +229,33 @@ func (o *options) ArtifactsDir() string {
 	return o.artifacts
 }
 
-// helper for computing the usage string & tracking usage related metadata
+// metadata used for CLI usage string
 type usage struct {
-	// cli info for String()
-	name          string
+	kubetest2Flags *pflag.FlagSet
+	deployerFlags  *pflag.FlagSet
+	deployerName   string
+	testerName     string
+	testerUsage    string
+	// purely computed fields, see Default()
 	deployerUsage string
-	testerUsage   string
-	// flags and flag variables
-	flags   *pflag.FlagSet
-	options *options
 }
 
-func newUsage(opts *options, flags *pflag.FlagSet, name, deployerUsage string) *usage {
-	return &usage{
-		name:          name,
-		deployerUsage: deployerUsage,
-		options:       opts,
-		flags:         flags,
+func (u *usage) setDefaults() {
+	u.deployerUsage = fmt.Sprintf("  NONE - %s has no flags", u.deployerName)
+	if u.deployerFlags != nil {
+		u.deployerUsage = u.deployerFlags.FlagUsages()
+	}
+	if u.testerUsage == "" {
+		u.testerUsage = fmt.Sprintf("  NONE - %s has no usage", u.testerName)
 	}
 }
 
+// helper to compute usage text
 func (u *usage) String() string {
+	// fixup any default values
+	u.setDefaults()
+
+	// build the usage string
 	s := fmt.Sprintf(
 		strings.TrimPrefix(`
 Usage:
@@ -249,21 +266,23 @@ Flags:
 DeployerArgs(%s):
 %s
 `, "\n"),
-		u.name,
-		u.flags.FlagUsages(),
-		u.name,
+		u.deployerName,
+		u.kubetest2Flags.FlagUsages(),
+		u.deployerName,
 		u.deployerUsage,
 	)
+
 	// add tester info if we selected a tester and have it
-	if u.testerUsage != "" {
+	if u.testerName != "" {
 		s += fmt.Sprintf(
 			strings.TrimPrefix(`
 TesterArgs(%s):
 %s
 `, "\n"),
-			u.options.test,
+			u.testerName,
 			u.testerUsage,
 		)
 	}
+
 	return s
 }

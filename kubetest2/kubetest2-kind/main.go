@@ -25,5 +25,5 @@ import (
 )
 
 func main() {
-	app.Main(deployer.Name, deployer.Usage(), deployer.New)
+	app.Main(deployer.Name, deployer.New)
 }

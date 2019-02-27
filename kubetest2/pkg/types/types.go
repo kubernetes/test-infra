@@ -31,21 +31,13 @@ type IncorrectUsage interface {
 	HelpText() string
 }
 
-// NewDeployer should process & store deployerArgs and the common Options
-// kubetest2 will call this once at startup
+// NewDeployer should return a new instance of a Deployer along with a flagset
+// bound to the deployer with any additional Deployer specific CLI flags
+//
+// kubetest2 will call this once at startup for the injected deployer
 //
 // opts will provide access to options defined by common flags and kubetest2 logic
-//
-// hiddenKubetest2Flags contains all top level kubetest2 flags, marked as hidden
-// so they may be included when parsing deployer flags but will not show up
-// when returning deployer flag usage
-//
-// args provides all arguments passed to kubetest2 before the first bare `--`,
-// if any. (args after the `--` are Tester args)
-//
-// When incorrect arguments or flags are supplied, the IncorrectUsage superset
-// of error can be returned. kubetest2 will display the HelpText() output
-type NewDeployer func(opts Options, hiddenKubetest2Flags *pflag.FlagSet, args []string) (Deployer, error)
+type NewDeployer func(opts Options) (deployer Deployer, flags *pflag.FlagSet)
 
 // Options is an interface to get common options supplied by kubetest2
 // to all implementations
