@@ -45,6 +45,7 @@ html {
 .linetext {
     width: calc(100% - 55px);
     margin-left: 55px;
+    min-height: 20px;
 }
 
 /* ansi colors from https://en.wikipedia.org/wiki/ANSI_escape_code#Colors */
