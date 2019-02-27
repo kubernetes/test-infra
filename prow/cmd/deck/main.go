@@ -315,10 +315,10 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 
 		mux.Handle("/pr-data.js", handleNotCached(
 			prStatusAgent.HandlePrStatus(prStatusAgent)))
-		
+
 		// The githibLoginOptionHandler requests the user to click a button whether or not they want to share
 		// private repositories with Prow or not.
-		githubLoginOptionHandler := gziphandler.GzipHandler(handleSimpleTemplate(o, cfg, "github-login-options.html", nil)).ServeHTTP
+		githubLoginOptionHandler := gziphandler.GzipHandler(handleSimpleTemplate(o, cfg, "github-login-option.html", nil)).ServeHTTP
 
 		// Handle login action, first we want to determine whether or not the user wants to Prow access to
 		// private repositories. If the user says "yes" then we add the "repo" scope to the requested scopes,
