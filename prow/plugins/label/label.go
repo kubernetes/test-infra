@@ -31,6 +31,7 @@ import (
 const pluginName = "label"
 
 var (
+	defaultLabels           = []string{"kind", "priority", "area"}
 	labelRegex              = regexp.MustCompile(`(?m)^/(area|committee|kind|language|priority|sig|triage|wg)\s*(.*)$`)
 	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|committee|kind|language|priority|sig|triage|wg)\s*(.*)$`)
 	customLabelRegex        = regexp.MustCompile(`(?m)^/label\s*(.*)$`)
@@ -42,19 +43,22 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	labels := []string{"kind", "priority", "area"}
-	if config.Label != nil {
-		labels = append(labels, config.Label.AdditionalLabels...)
-	}
+func configString(labels []string) string {
 	var formattedLabels []string
 	for _, label := range labels {
 		formattedLabels = append(formattedLabels, fmt.Sprintf(`"%s/*"`, label))
 	}
+	return fmt.Sprintf("The label plugin will work on %s and %s labels.", strings.Join(formattedLabels[:len(formattedLabels)-1], ", "), formattedLabels[len(formattedLabels)-1])
+}
+
+func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	labels := []string{}
+	labels = append(labels, defaultLabels...)
+	labels = append(labels, config.Label.AdditionalLabels...)
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The label plugin provides commands that add or remove certain types of labels. Labels of the following types can be manipulated: 'area/*', 'committee/*', 'kind/*', 'language/*', 'priority/*', 'sig/*', 'triage/*', and 'wg/*'. More labels can be configured to be used via the /label command.",
 		Config: map[string]string{
-			"": fmt.Sprintf("The label plugin will work on %s and %s labels.", strings.Join(formattedLabels[:len(formattedLabels)-2], ", "), formattedLabels[len(formattedLabels)-1]),
+			"": configString(labels),
 		},
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
@@ -68,11 +72,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 }
 
 func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
-	var labels []string
-	if pc.PluginConfig.Label != nil {
-		labels = pc.PluginConfig.Label.AdditionalLabels
-	}
-	return handle(pc.GitHubClient, pc.Logger, labels, &e)
+	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.Label.AdditionalLabels, &e)
 }
 
 type githubClient interface {

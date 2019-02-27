@@ -62,7 +62,7 @@ type Configuration struct {
 	ConfigUpdater              ConfigUpdater          `json:"config_updater,omitempty"`
 	Golint                     Golint                 `json:"golint"`
 	Heart                      Heart                  `json:"heart,omitempty"`
-	Label                      *Label                 `json:"label,omitempty"`
+	Label                      Label                  `json:"label"`
 	Lgtm                       []Lgtm                 `json:"lgtm,omitempty"`
 	RepoMilestone              map[string]Milestone   `json:"repo_milestone,omitempty"`
 	RequireMatchingLabel       []RequireMatchingLabel `json:"require_matching_label,omitempty"`
