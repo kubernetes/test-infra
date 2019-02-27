@@ -59,7 +59,6 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
 	return &pluginhelp.PluginHelp{
 			Description: `The sigmention plugin responds to SIG (Special Interest Group) Github team mentions like '@kubernetes/sig-testing-bugs'. The plugin responds in two ways:
 <ol><li> The appropriate 'sig/*' and 'kind/*' labels are applied to the issue or pull request. In this case 'sig/testing' and 'kind/bug'.</li>

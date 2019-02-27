@@ -49,7 +49,6 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The golint plugin runs golint on changes made to *.go files in a PR. It then creates a new review on the pull request and leaves golint warnings at the appropriate lines of code.",
 		Config: map[string]string{
