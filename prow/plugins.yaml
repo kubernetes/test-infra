@@ -505,6 +505,9 @@ plugins:
   kubernetes-csi/csi-lib-utils:
   - trigger
 
+  kubernetes-csi/csi-driver-host-path:
+  - trigger
+
   kubernetes-incubator:
   - approve
   - assign
