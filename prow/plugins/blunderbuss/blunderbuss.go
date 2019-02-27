@@ -47,22 +47,26 @@ func init() {
 	plugins.RegisterGenericCommentHandler(PluginName, handleGenericCommentEvent, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func configString(reviewCount int) string {
 	var pluralSuffix string
+	if reviewCount > 1 {
+		pluralSuffix = "s"
+	}
+	return fmt.Sprintf("Blunderbuss is currently configured to request reviews from %d reviewer%s.", reviewCount, pluralSuffix)
+}
+
+func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	var reviewCount int
 	if config.Blunderbuss.ReviewerCount != nil {
 		reviewCount = *config.Blunderbuss.ReviewerCount
 	} else if config.Blunderbuss.FileWeightCount != nil {
 		reviewCount = *config.Blunderbuss.FileWeightCount
 	}
-	if reviewCount != 1 {
-		pluralSuffix = "s"
-	}
 
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The blunderbuss plugin automatically requests reviews from reviewers when a new PR is created. The reviewers are selected based on the reviewers specified in the OWNERS files that apply to the files modified by the PR.",
 		Config: map[string]string{
-			"": fmt.Sprintf("Blunderbuss is currently configured to request reviews from %d reviewer%s.", reviewCount, pluralSuffix),
+			"": configString(reviewCount),
 		},
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{

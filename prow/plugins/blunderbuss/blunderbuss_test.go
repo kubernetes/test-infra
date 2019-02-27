@@ -20,6 +20,7 @@ import (
 	"errors"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -720,51 +721,62 @@ func TestHandlePullRequestEvent(t *testing.T) {
 
 func TestHelpProvider(t *testing.T) {
 	cases := []struct {
-		name         string
-		config       *plugins.Configuration
-		enabledRepos []string
-		err          bool
+		name               string
+		config             *plugins.Configuration
+		enabledRepos       []string
+		err                bool
+		configInfoIncludes []string
 	}{
 		{
-			name:         "Empty config",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo"},
+			name:               "Empty config",
+			config:             &plugins.Configuration{},
+			enabledRepos:       []string{"org1", "org2/repo"},
+			configInfoIncludes: []string{configString(0)},
 		},
 		{
-			name:         "Overlapping org and org/repo",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org2", "org2/repo"},
+			name:               "Overlapping org and org/repo",
+			config:             &plugins.Configuration{},
+			enabledRepos:       []string{"org2", "org2/repo"},
+			configInfoIncludes: []string{configString(0)},
 		},
 		{
-			name:         "Invalid enabledRepos",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo/extra"},
-			err:          true,
+			name:               "Invalid enabledRepos",
+			config:             &plugins.Configuration{},
+			enabledRepos:       []string{"org1", "org2/repo/extra"},
+			err:                true,
+			configInfoIncludes: []string{configString(0)},
 		},
 		{
 			name: "ReviewerCount specified",
 			config: &plugins.Configuration{
 				Blunderbuss: plugins.Blunderbuss{
-					ReviewerCount: &[]int{1}[0],
+					ReviewerCount: &[]int{2}[0],
 				},
 			},
-			enabledRepos: []string{"org1", "org2/repo"},
+			enabledRepos:       []string{"org1", "org2/repo"},
+			configInfoIncludes: []string{configString(2)},
 		},
 		{
 			name: "FileWeightCount specified",
 			config: &plugins.Configuration{
 				Blunderbuss: plugins.Blunderbuss{
-					FileWeightCount: &[]int{1}[0],
+					FileWeightCount: &[]int{2}[0],
 				},
 			},
-			enabledRepos: []string{"org1", "org2/repo"},
+			enabledRepos:       []string{"org1", "org2/repo"},
+			configInfoIncludes: []string{configString(2)},
 		},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			_, err := helpProvider(c.config, c.enabledRepos)
+			pluginHelp, err := helpProvider(c.config, c.enabledRepos)
 			if err != nil && !c.err {
 				t.Fatalf("helpProvider error: %v", err)
+			}
+			for _, msg := range c.configInfoIncludes {
+				if !strings.Contains(pluginHelp.Config[""], msg) {
+					t.Fatalf("helpProvider.Config error mismatch: didn't get %v, but wanted it", msg)
+				}
 			}
 		})
 	}
