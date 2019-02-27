@@ -150,7 +150,7 @@ type TideQuery struct {
 
 // Query returns the corresponding github search string for the tide query.
 func (tq *TideQuery) Query() string {
-	toks := []string{"is:pr", "state:open"}
+	toks := []string{"is:pr", "state:open", "-is:draft"}
 	for _, o := range tq.Orgs {
 		toks = append(toks, fmt.Sprintf("org:\"%s\"", o))
 	}

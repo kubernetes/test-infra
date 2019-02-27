@@ -343,7 +343,7 @@ func (da *DashboardAgent) GetHeadContexts(ghc githubClient, pr PullRequest) ([]C
 // by the user passed. The search is scoped to repositories that are configured with either Prow or
 // Tide.
 func (da *DashboardAgent) ConstructSearchQuery(login string) string {
-	tokens := []string{"is:pr", "state:open", "author:" + login}
+	tokens := []string{"is:pr", "state:open", "-is:draft", "author:" + login}
 	for i := range da.repos {
 		tokens = append(tokens, fmt.Sprintf("repo:\"%s\"", da.repos[i]))
 	}

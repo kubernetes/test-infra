@@ -46,6 +46,7 @@ func TestTideQuery(t *testing.T) {
 
 	checkTok("is:pr")
 	checkTok("state:open")
+	checkTok("-is:draft")
 	checkTok("org:\"org\"")
 	checkTok("repo:\"k/k\"")
 	checkTok("repo:\"k/t-i\"")

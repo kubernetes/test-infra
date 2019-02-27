@@ -134,7 +134,7 @@ function getPRQuery(q: string): string {
             || tkn === "type:pr");
     }).join(" ");
     // Returns the query with is:pr to the start of the query
-    result = "is:pr " + result;
+    result = "is:pr -is:draft" + result;
     return result;
 }
 
@@ -253,7 +253,7 @@ window.onload = () => {
     // ?is:pr state:open query="author:<user_login>"
     if (window.location.search === "") {
         const login = getCookieByName("github_login");
-        const searchQuery = "is:pr state:open author:" + login;
+        const searchQuery = "is:pr state:open -is:draft author:" + login;
         window.location.search = "?query=" + encodeURIComponent(searchQuery);
     }
     const request = createXMLHTTPRequest((r) => {
@@ -304,7 +304,7 @@ function createSearchCard(): HTMLElement {
     const userBtn = createIcon("person", "Show my open pull requests", ["search-button"], true);
     userBtn.addEventListener("click", () => {
         const login = getCookieByName("github_login");
-        const searchQuery = "is:pr state:open author:" + login;
+        const searchQuery = "is:pr state:open -is:draft author:" + login;
         window.location.search = "?query=" + encodeURIComponent(searchQuery);
     });
 
