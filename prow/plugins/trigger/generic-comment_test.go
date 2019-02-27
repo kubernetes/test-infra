@@ -814,7 +814,7 @@ func TestHandleGenericComment(t *testing.T) {
 			GitHubClient:  g,
 			ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(fakeConfig.ProwJobNamespace),
 			Config:        fakeConfig,
-			Logger:        logrus.WithField("plugin", pluginName),
+			Logger:        logrus.WithField("plugin", PluginName),
 		}
 		presubmits := tc.Presubmits
 		if presubmits == nil {
