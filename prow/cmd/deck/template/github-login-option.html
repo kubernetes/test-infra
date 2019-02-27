@@ -1,0 +1,22 @@
+{{define "title"}}GitHub Login{{end}}
+
+{{define "content"}}
+<div class="mdl-card mdl-shadow--2dp">
+  <div class="mdl-card__title">
+    <h2 class="mdl-card__title-text">Github Login</h2>
+  </div>
+  <div class="mdl-card__supporting-text">
+    Would you like to give this Prow instance access to private repositories when logging in with GitHub?
+  </div>
+  <div class="mdl-card__actions mdl-card--border">
+    <a href="/github-login?private_repos=yes" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
+      Yes, I want Prow to show my private repos
+    </a>
+    <a href="/github-login?private_repos=no" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
+      No, just view public repos
+    </a>
+  </div>
+</div>
+{{end}}
+
+{{template "page" (settings mobileFriendly "pr" .)}}

@@ -315,8 +315,37 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 
 		mux.Handle("/pr-data.js", handleNotCached(
 			prStatusAgent.HandlePrStatus(prStatusAgent)))
-		// Handles login request.
-		mux.Handle("/github-login", goa.HandleLogin(oauthClient))
+		
+		// The githibLoginOptionHandler requests the user to click a button whether or not they want to share
+		// private repositories with Prow or not.
+		githubLoginOptionHandler := gziphandler.GzipHandler(handleSimpleTemplate(o, cfg, "github-login-options.html", nil)).ServeHTTP
+
+		// Handle login action, first we want to determine whether or not the user wants to Prow access to
+		// private repositories. If the user says "yes" then we add the "repo" scope to the requested scopes,
+		// however if the user says no we add no additional scopes.
+		mux.Handle("/github-login", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			qv := r.URL.Query()
+			privateRepoAccess := qv.Get("private_repos")
+
+			if privateRepoAccess == "" {
+				githubLoginOptionHandler(w, r)
+				return
+			}
+
+			c := &oauth2.Config{
+				ClientID:     oauthClient.ClientID,
+				ClientSecret: oauthClient.ClientSecret,
+				Endpoint:     oauthClient.Endpoint,
+				RedirectURL:  oauthClient.RedirectURL,
+				Scopes:       oauthClient.Scopes,
+			}
+
+			if privateRepoAccess == "yes" {
+				c.Scopes = append(c.Scopes, "repo")
+			}
+
+			goa.HandleLogin(c)(w, r)
+		}))
 		// Handles redirect from Github OAuth server.
 		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient, githuboauth.NewGithubClientGetter()))
 	}
