@@ -42,7 +42,7 @@ import (
 
 var configPath = flag.String("config", "../../../prow/config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../jobs", "Path to prow job config")
-var gubernatorPath = flag.String("gubernator-path", "https://gubernator.k8s.io", "Path to linked gubernator")
+var deckPath = flag.String("deck-path", "https://prow.k8s.io", "Path to deck")
 var bucket = flag.String("bucket", "kubernetes-jenkins", "Gcs bucket for log upload")
 var k8sProw = flag.Bool("k8s-prow", true, "If the config is for k8s prow cluster")
 
@@ -77,25 +77,25 @@ func TestReportTemplate(t *testing.T) {
 			org:    "o",
 			repo:   "r",
 			number: 4,
-			suffix: "o_r/4",
+			suffix: "?org=o&repo=r&pr=4",
 		},
 		{
 			org:    "kubernetes",
 			repo:   "test-infra",
 			number: 123,
-			suffix: "test-infra/123",
+			suffix: "?org=kubernetes&repo=test-infra&pr=123",
 		},
 		{
 			org:    "kubernetes",
 			repo:   "kubernetes",
 			number: 123,
-			suffix: "123",
+			suffix: "?org=kubernetes&repo=kubernetes&pr=123",
 		},
 		{
 			org:    "o",
 			repo:   "kubernetes",
 			number: 456,
-			suffix: "o_kubernetes/456",
+			suffix: "?org=o&repo=kubernetes&pr=456",
 		},
 	}
 	for _, tc := range testcases {
@@ -116,7 +116,7 @@ func TestReportTemplate(t *testing.T) {
 			t.Errorf("Error executing template: %v", err)
 			continue
 		}
-		expectedPath := *gubernatorPath + "/pr/" + tc.suffix
+		expectedPath := *deckPath + "/pr-history" + tc.suffix
 		if !strings.Contains(b.String(), expectedPath) {
 			t.Errorf("Expected template to contain %s, but it didn't: %s", expectedPath, b.String())
 		}
@@ -141,7 +141,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "kubernetes",
 			job:     "k8s-pre-1",
 			build:   "1",
-			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/0/k8s-pre-1/1/",
+			expect:  *deckPath + "/view/" + *bucket + "/pr-logs/pull/0/k8s-pre-1/1/",
 			k8sOnly: true,
 		},
 		{
@@ -161,7 +161,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "test-infra",
 			job:     "ti-pre-1",
 			build:   "1",
-			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/test-infra/0/ti-pre-1/1/",
+			expect:  *deckPath + "/view/" + *bucket + "/pr-logs/pull/test-infra/0/ti-pre-1/1/",
 			k8sOnly: true,
 		},
 		{
@@ -171,7 +171,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "kubernetes",
 			job:     "k8s-pre-1",
 			build:   "1",
-			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/foo_kubernetes/0/k8s-pre-1/1/",
+			expect:  *deckPath + "/view/" + *bucket + "/pr-logs/pull/foo_kubernetes/0/k8s-pre-1/1/",
 		},
 		{
 			name:    "foo-bar presubmit",
@@ -180,7 +180,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "bar",
 			job:     "foo-pre-1",
 			build:   "1",
-			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/foo_bar/0/foo-pre-1/1/",
+			expect:  *deckPath + "/view/" + *bucket + "/pr-logs/pull/foo_bar/0/foo-pre-1/1/",
 		},
 		{
 			name:    "k8s postsubmit",
@@ -189,21 +189,21 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "kubernetes",
 			job:     "k8s-post-1",
 			build:   "1",
-			expect:  *gubernatorPath + "/build/" + *bucket + "/logs/k8s-post-1/1/",
+			expect:  *deckPath + "/view/" + *bucket + "/logs/k8s-post-1/1/",
 		},
 		{
 			name:    "k8s periodic",
 			jobType: prowapi.PeriodicJob,
 			job:     "k8s-peri-1",
 			build:   "1",
-			expect:  *gubernatorPath + "/build/" + *bucket + "/logs/k8s-peri-1/1/",
+			expect:  *deckPath + "/view/" + *bucket + "/logs/k8s-peri-1/1/",
 		},
 		{
 			name:    "empty periodic",
 			jobType: prowapi.PeriodicJob,
 			job:     "nan-peri-1",
 			build:   "1",
-			expect:  *gubernatorPath + "/build/" + *bucket + "/logs/nan-peri-1/1/",
+			expect:  *deckPath + "/view/" + *bucket + "/logs/nan-peri-1/1/",
 		},
 		{
 			name:    "k8s batch",
@@ -212,7 +212,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "kubernetes",
 			job:     "k8s-batch-1",
 			build:   "1",
-			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/batch/k8s-batch-1/1/",
+			expect:  *deckPath + "/view/" + *bucket + "/pr-logs/pull/batch/k8s-batch-1/1/",
 			k8sOnly: true,
 		},
 		{
@@ -222,7 +222,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "bar",
 			job:     "k8s-batch-1",
 			build:   "1",
-			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/foo_bar/batch/k8s-batch-1/1/",
+			expect:  *deckPath + "/view/" + *bucket + "/pr-logs/pull/foo_bar/batch/k8s-batch-1/1/",
 		},
 	}
 
