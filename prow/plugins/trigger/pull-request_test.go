@@ -283,7 +283,7 @@ func TestHandlePullRequest(t *testing.T) {
 			GitHubClient:  g,
 			ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("namespace"),
 			Config:        &config.Config{},
-			Logger:        logrus.WithField("plugin", pluginName),
+			Logger:        logrus.WithField("plugin", PluginName),
 		}
 
 		presubmits := map[string][]config.Presubmit{

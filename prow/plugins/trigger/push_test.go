@@ -127,7 +127,7 @@ func TestHandlePE(t *testing.T) {
 			GitHubClient:  g,
 			ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
 			Config:        &config.Config{ProwConfig: config.ProwConfig{ProwJobNamespace: "prowjobs"}},
-			Logger:        logrus.WithField("plugin", pluginName),
+			Logger:        logrus.WithField("plugin", PluginName),
 		}
 		postsubmits := map[string][]config.Postsubmit{
 			"org/repo": {
