@@ -14,16 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
-
-import (
-	"k8s.io/test-infra/kubetest2/pkg/app"
-	// import the standard set of testers so they are loaded & registered
-	_ "k8s.io/test-infra/kubetest2/pkg/app/testers/standard"
-
-	"k8s.io/test-infra/kubetest2/kubetest2-kind/deployer"
-)
-
-func main() {
-	app.Main(deployer.Name, deployer.New)
-}
+// Package exec contains an interface for executing commands, along with helpers
+// TODO(bentheelder): add standardized timeout functionality & a default timeout
+// so that commands cannot hang indefinitely (!)
+package exec

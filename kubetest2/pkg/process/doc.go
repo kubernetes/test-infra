@@ -14,5 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package process contains helpers for executing processes
+// Package process contains helpers for executing processes in ways that behave
+// similarly to syscall.Exec, but using child processes instead
 package process

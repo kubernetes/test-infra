@@ -29,16 +29,20 @@ func Exec(argv0 string, args []string, env []string) error {
 	cmd := exec.Command(argv0, args...)
 	cmd.Env = env
 
-	// inherit all standard file descriptors, as if `syscall.Exec`ed
+	// inherit some standard file descriptors, as if `syscall.Exec`ed
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
+	return execCmdWithSignals(cmd)
+}
+
+func execCmdWithSignals(cmd *exec.Cmd) error {
 	// setup listener to forward all signals
 	// TODO(bentheelder): what should this buffer size be?
 	signals := make(chan os.Signal, 5)
 	signal.Notify(signals)
-	defer close(signals)
+	defer signal.Stop(signals)
 
 	// start the process
 	if err := cmd.Start(); err != nil {

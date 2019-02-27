@@ -31,6 +31,26 @@ type JUnitError interface {
 	SystemOut() string
 }
 
+type simpleJUnitError struct {
+	error
+	systemOut string
+}
+
+// ensure simpleJUnitError implements JUnitError
+var _ JUnitError = &simpleJUnitError{}
+
+func (s *simpleJUnitError) SystemOut() string {
+	return s.systemOut
+}
+
+// NewJUnitError returns a simple instance of JUnitError wrapping systemOut
+func NewJUnitError(inner error, systemOut string) error {
+	return &simpleJUnitError{
+		error:     inner,
+		systemOut: systemOut,
+	}
+}
+
 // testSuite holds a slice of TestCase and other summary metadata.
 //
 // A build (column in testgrid) is composed of one or more TestSuites.

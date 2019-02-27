@@ -29,9 +29,9 @@ import (
 
 // Main implements the kubetest2 deployer binary entrypoint
 // Each deployer binary should invoke this, in addition to loading deployers
-func Main(deployerName, deployerUsage string, newDeployer types.NewDeployer) {
+func Main(deployerName string, newDeployer types.NewDeployer) {
 	// see cmd.go for the rest of the CLI boilerplate
-	if err := Run(deployerName, deployerUsage, newDeployer); err != nil {
+	if err := Run(deployerName, newDeployer); err != nil {
 		// only print the error if it's not an IncorrectUsage (which we've)
 		// already output along with usage
 		if _, isUsage := err.(types.IncorrectUsage); !isUsage {
