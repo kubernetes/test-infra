@@ -121,6 +121,9 @@ presets:
   # Keep all logrotated files (not just 5 latest which is a default)
   - name: LOGROTATE_FILES_MAX_COUNT
     value: 1000
+  # Experimentally use cos-69-10895-138-0 to test fs-related fixes there.
+  - name: KUBE_GCE_MASTER_IMAGE
+    value: cos-69-10895-138-0
 
 ###### Scalability Envs
 ### Common env variables for all scalability-related suites.
