@@ -69,7 +69,7 @@ type Configuration struct {
 	RequireSIG                 RequireSIG             `json:"requiresig,omitempty"`
 	Slack                      Slack                  `json:"slack,omitempty"`
 	SigMention                 SigMention             `json:"sigmention,omitempty"`
-	Size                       *Size                  `json:"size,omitempty"`
+	Size                       Size                   `json:"size"`
 	Triggers                   []Trigger              `json:"triggers,omitempty"`
 	Welcome                    []Welcome              `json:"welcome,omitempty"`
 }
@@ -728,11 +728,7 @@ func validatePlugins(plugins map[string][]string) error {
 	return nil
 }
 
-func validateSizes(size *Size) error {
-	if size == nil {
-		return nil
-	}
-
+func validateSizes(size Size) error {
 	if size.S > size.M || size.M > size.L || size.L > size.Xl || size.Xl > size.Xxl {
 		return errors.New("invalid size plugin configuration - one of the smaller sizes is bigger than a larger one")
 	}

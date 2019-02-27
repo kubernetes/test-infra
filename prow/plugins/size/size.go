@@ -49,7 +49,6 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
 	sizes := sizesOrDefault(config.Size)
 	return &pluginhelp.PluginHelp{
 			Description: "The size plugin manages the 'size/*' labels, maintaining the appropriate label on each pull request as it is updated. Generated files identified by the config file '.generated_files' at the repo root are ignored. Labels are applied based on the total number of lines of changes (additions and deletions).",
@@ -230,10 +229,18 @@ func isPRChanged(pe github.PullRequestEvent) bool {
 	}
 }
 
-func sizesOrDefault(sizes *plugins.Size) plugins.Size {
-	if sizes == nil {
-		return defaultSizes
+func defaultIfZero(value, defaultValue int) int {
+	if value == 0 {
+		return defaultValue
 	}
+	return value
+}
 
-	return *sizes
+func sizesOrDefault(sizes plugins.Size) plugins.Size {
+	sizes.S = defaultIfZero(sizes.S, defaultSizes.S)
+	sizes.M = defaultIfZero(sizes.M, defaultSizes.M)
+	sizes.L = defaultIfZero(sizes.L, defaultSizes.L)
+	sizes.Xl = defaultIfZero(sizes.Xl, defaultSizes.Xl)
+	sizes.Xxl = defaultIfZero(sizes.Xxl, defaultSizes.Xxl)
+	return sizes
 }

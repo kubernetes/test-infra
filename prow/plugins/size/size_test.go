@@ -77,15 +77,15 @@ func (c *ghc) GetPullRequestChanges(_, _ string, _ int) ([]github.PullRequestCha
 
 func TestSizesOrDefault(t *testing.T) {
 	for _, c := range []struct {
-		input    *plugins.Size
+		input    plugins.Size
 		expected plugins.Size
 	}{
 		{
-			input:    &defaultSizes,
+			input:    defaultSizes,
 			expected: defaultSizes,
 		},
 		{
-			input: &plugins.Size{
+			input: plugins.Size{
 				S:   12,
 				M:   15,
 				L:   17,
@@ -101,7 +101,7 @@ func TestSizesOrDefault(t *testing.T) {
 			},
 		},
 		{
-			input:    nil,
+			input:    plugins.Size{},
 			expected: defaultSizes,
 		},
 	} {
@@ -642,6 +642,60 @@ func TestHandlePR(t *testing.T) {
 				if !c.client.labels[l] {
 					t.Fatalf("github client labels missing %v", l)
 				}
+			}
+		})
+	}
+}
+
+func TestHelpProvider(t *testing.T) {
+	cases := []struct {
+		name         string
+		config       *plugins.Configuration
+		enabledRepos []string
+		err          bool
+	}{
+		{
+			name:         "Empty config",
+			config:       &plugins.Configuration{},
+			enabledRepos: []string{"org1", "org2/repo"},
+		},
+		{
+			name:         "Overlapping org and org/repo",
+			config:       &plugins.Configuration{},
+			enabledRepos: []string{"org2", "org2/repo"},
+		},
+		{
+			name:         "Invalid enabledRepos",
+			config:       &plugins.Configuration{},
+			enabledRepos: []string{"org1", "org2/repo/extra"},
+			err:          true,
+		},
+		{
+			name: "Empty sizes",
+			config: &plugins.Configuration{
+				Size: plugins.Size{},
+			},
+			enabledRepos: []string{"org1", "org2/repo"},
+		},
+		{
+			name: "Sizes specified",
+			config: &plugins.Configuration{
+				Size: plugins.Size{
+					S:   12,
+					M:   15,
+					L:   17,
+					Xl:  21,
+					Xxl: 51,
+				},
+			},
+			enabledRepos: []string{"org1", "org2/repo"},
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			_, err := helpProvider(c.config, c.enabledRepos)
+			if err != nil && !c.err {
+				t.Fatalf("helpProvider error: %v", err)
 			}
 		})
 	}
