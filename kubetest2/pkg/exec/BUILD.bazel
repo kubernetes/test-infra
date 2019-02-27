@@ -3,12 +3,12 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "helpers.go",
-        "types.go",
+        "doc.go",
+        "exec.go",
+        "local.go",
     ],
-    importpath = "k8s.io/test-infra/kubetest2/pkg/types",
+    importpath = "k8s.io/test-infra/kubetest2/pkg/exec",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/spf13/pflag:go_default_library"],
 )
 
 filegroup(
