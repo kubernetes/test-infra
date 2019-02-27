@@ -103,10 +103,20 @@ func runE(
 	// capture deployer flags for usage
 	usage.deployerFlags = deployerFlags
 
+	// sanity check that the deployer did not register any identical flags
+	deployerFlags.VisitAll(func(f *pflag.Flag) {
+		if kubetest2Flags.Lookup(f.Name) != nil {
+			panic(errors.Errorf("kubetest2 common flag %#v re-registered by deployer", f.Name))
+		}
+		if f.Shorthand != "" && kubetest2Flags.ShorthandLookup(f.Shorthand) != nil {
+			panic(errors.Errorf("kubetest2 common shorthand flag %#v re-registered by deployer", f.Shorthand))
+		}
+	})
+
 	// parse the combined deployer flags and kubetest2 flags
 	allFlags := pflag.NewFlagSet(deployerName, pflag.ContinueOnError)
-	allFlags.AddFlagSet(deployerFlags)
 	allFlags.AddFlagSet(kubetest2Flags)
+	allFlags.AddFlagSet(deployerFlags)
 	if err := allFlags.Parse(deployerArgs); err != nil {
 		// NOTE: we only retain the first parse error currently, and handle below
 		if err != nil && parseError == nil {
