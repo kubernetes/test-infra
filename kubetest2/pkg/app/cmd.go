@@ -57,18 +57,23 @@ func runE(
 	cmd *cobra.Command, args []string,
 	deployerName, deployerUsage string, newDeployer types.NewDeployer,
 ) error {
-	// setup the options struct & flags
-	opts := newOptions(deployerName, deployerUsage)
+	// setup the options struct & flags, etc.
+	opts := &options{}
+	flags := pflag.NewFlagSet(deployerName, pflag.ContinueOnError)
+	opts.bindFlags(flags)
+	usage := newUsage(opts, flags, deployerName, deployerUsage)
+	// NOTE: unknown flags are forwarded to the deployer as arguments
+	flags.ParseErrorsWhitelist.UnknownFlags = true
 
 	// go ahead show help if there are zero arguments
 	// since there are none to parse, we cannot identify the desired tester
 	if len(args) < 1 {
-		cmd.Print(opts.usage())
+		cmd.Print(usage.String())
 		return nil
 	}
 
 	// parse the arguments
-	deployerArgs, testerArgs, err := parseArgs(opts, args)
+	deployerArgs, testerArgs, err := parseArgs(flags, args)
 	if err != nil {
 		cmd.Printf("Error: could not parse arguments: %v\n", err)
 		return err
@@ -76,10 +81,10 @@ func runE(
 
 	// now that we've parsed flags we can look up the tester
 	var newTester types.NewTester
-	if opts.test != "" {
-		n, usage, ok := testers.Get(opts.test)
+	if usage.options.test != "" {
+		n, testerUsage, ok := testers.Get(opts.test)
 		// now that we know which tester, plumb the help info
-		opts.testerUsage = usage
+		usage.testerUsage = testerUsage
 		newTester = n
 		// fail if the named tester does not exist
 		if !ok {
@@ -89,12 +94,12 @@ func runE(
 	}
 
 	// instantiate the deployer
-	deployer, err := newDeployer(opts, deployerArgs)
+	deployer, err := newDeployer(opts, flagsForDeployer(deployerName), deployerArgs)
 	if err != nil {
-		if usage, ok := err.(types.IncorrectUsage); ok {
-			cmd.Print(usage.HelpText())
+		if v, ok := err.(types.IncorrectUsage); ok {
+			cmd.Print(v.HelpText())
 			cmd.Print("\n\n")
-			cmd.Print(opts.usage())
+			cmd.Print(usage.String())
 		}
 		return err
 	}
@@ -106,10 +111,10 @@ func runE(
 	if newTester != nil {
 		tester, err = newTester(opts, testerArgs, deployer)
 		if err != nil {
-			if usage, ok := err.(types.IncorrectUsage); ok {
-				cmd.Print(usage.HelpText())
+			if v, ok := err.(types.IncorrectUsage); ok {
+				cmd.Print(v.HelpText())
 				cmd.Print("\n\n")
-				cmd.Print(opts.usage())
+				cmd.Print(usage.String())
 			}
 			return err
 		}
@@ -119,9 +124,33 @@ func runE(
 	return RealMain(opts, deployer, tester)
 }
 
+// the default is $ARTIFACTS if set, otherwise ./_artifacts
+func defaultArtifactsDir() string {
+	path, set := os.LookupEnv("ARTIFACTS")
+	if set {
+		return path
+	}
+	return "./_artifacts"
+}
+
+// flagsForDeployer creates a copy of all kubetest2 flags for usage in deployer
+// parsing, these flags will be passed to the deployer
+// All flags will be marked hidden so they don't show up in the deployer usage
+func flagsForDeployer(name string) *pflag.FlagSet {
+	// create a generic flagset and bind all of the flags
+	flags := pflag.NewFlagSet(name, pflag.ContinueOnError)
+	opt := &options{}
+	opt.bindFlags(flags)
+	// mark all flags as hidden
+	flags.VisitAll(func(flag *pflag.Flag) {
+		flag.Hidden = true
+	})
+	return flags
+}
+
 // parseArgs attaches all kubetest2 first class flags to opts, parses the args,
-// and returns the deployer args, test args, and error if any
-func parseArgs(opt *options, args []string) ([]string, []string, error) {
+// and returns the kubetest2 args, test args, and error if any
+func parseArgs(flags *pflag.FlagSet, args []string) ([]string, []string, error) {
 	// first split into args and test args
 	testArgs := []string{}
 	for i := range args {
@@ -135,30 +164,15 @@ func parseArgs(opt *options, args []string) ([]string, []string, error) {
 	}
 
 	// finally, parse flags
-	err := opt.flags.Parse(args)
+	err := flags.Parse(args)
 
 	// NOTE: we still return args in all cases so that the deployer and
 	// tester have a chance to construct help output
-	return opt.flags.Args(), testArgs, err
-}
-
-// the default is $ARTIFACTS if set, otherwise ./_artifacts
-func defaultArtifactsDir() string {
-	path, set := os.LookupEnv("ARTIFACTS")
-	if set {
-		return path
-	}
-	return "./_artifacts"
+	return args, testArgs, err
 }
 
 // options holds flag values and implements deployer.Options
 type options struct {
-	// cli info for usage()
-	name          string
-	deployerUsage string
-	testerUsage   string
-	flags         *pflag.FlagSet
-	// options exposed via Options interface
 	help      bool
 	build     bool
 	up        bool
@@ -167,56 +181,14 @@ type options struct {
 	artifacts string
 }
 
-func newOptions(name, deployerUsage string) *options {
-	opt := &options{
-		name:          name,
-		deployerUsage: deployerUsage,
-	}
-
-	flags := pflag.NewFlagSet(name, pflag.ContinueOnError)
-	// unknown flags are forwarded to the deployer as arguments
-	flags.ParseErrorsWhitelist.UnknownFlags = true
-
-	// register all first class kubetest2 flags
-	flags.BoolVarP(&opt.help, "help", "h", false, "display help")
-	flags.BoolVar(&opt.build, "build", false, "build kubernetes")
-	flags.BoolVar(&opt.up, "up", false, "provision the test cluster")
-	flags.BoolVar(&opt.down, "down", false, "tear down the test cluster")
-	flags.StringVar(&opt.test, "test", "", "test type to run, if unset no tests will run")
-	flags.StringVar(&opt.artifacts, "artifacts", defaultArtifactsDir(), `directory to put artifacts, defaulting to "${ARTIFACTS:-./_artifacts}"`)
-
-	opt.flags = flags
-	return opt
-}
-
-func (o *options) usage() string {
-	u := fmt.Sprintf(
-		strings.TrimPrefix(`
-Usage:
-  kubetest2 %s [Flags] [DeployerArgs] -- [TesterArgs]
-
-Flags:
-%s
-DeployerArgs(%s):
-%s
-`, "\n"),
-		o.name,
-		o.flags.FlagUsages(),
-		o.name,
-		o.deployerUsage,
-	)
-	// add tester info if we selected a tester and have it
-	if o.testerUsage != "" {
-		u += fmt.Sprintf(
-			strings.TrimPrefix(`
-TesterArgs(%s):
-%s
-`, "\n"),
-			o.test,
-			o.testerUsage,
-		)
-	}
-	return u
+// bindFlags registers all first class kubetest2 flags
+func (o *options) bindFlags(flags *pflag.FlagSet) {
+	flags.BoolVarP(&o.help, "help", "h", false, "display help")
+	flags.BoolVar(&o.build, "build", false, "build kubernetes")
+	flags.BoolVar(&o.up, "up", false, "provision the test cluster")
+	flags.BoolVar(&o.down, "down", false, "tear down the test cluster")
+	flags.StringVar(&o.test, "test", "", "test type to run, if unset no tests will run")
+	flags.StringVar(&o.artifacts, "artifacts", defaultArtifactsDir(), `directory to put artifacts, defaulting to "${ARTIFACTS:-./_artifacts}"`)
 }
 
 // assert that options implements deployer options
@@ -244,4 +216,54 @@ func (o *options) ShouldTest() bool {
 
 func (o *options) ArtifactsDir() string {
 	return o.artifacts
+}
+
+// helper for computing the usage string & tracking usage related metadata
+type usage struct {
+	// cli info for String()
+	name          string
+	deployerUsage string
+	testerUsage   string
+	// flags and flag variables
+	flags   *pflag.FlagSet
+	options *options
+}
+
+func newUsage(opts *options, flags *pflag.FlagSet, name, deployerUsage string) *usage {
+	return &usage{
+		name:          name,
+		deployerUsage: deployerUsage,
+		options:       opts,
+		flags:         flags,
+	}
+}
+
+func (u *usage) String() string {
+	s := fmt.Sprintf(
+		strings.TrimPrefix(`
+Usage:
+  kubetest2 %s [Flags] [DeployerArgs] -- [TesterArgs]
+
+Flags:
+%s
+DeployerArgs(%s):
+%s
+`, "\n"),
+		u.name,
+		u.flags.FlagUsages(),
+		u.name,
+		u.deployerUsage,
+	)
+	// add tester info if we selected a tester and have it
+	if u.testerUsage != "" {
+		s += fmt.Sprintf(
+			strings.TrimPrefix(`
+TesterArgs(%s):
+%s
+`, "\n"),
+			u.options.test,
+			u.testerUsage,
+		)
+	}
+	return s
 }

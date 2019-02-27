@@ -18,6 +18,15 @@ limitations under the License.
 package deployer
 
 import (
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/spf13/pflag"
+
+	"k8s.io/test-infra/kubetest2/pkg/exec"
+	"k8s.io/test-infra/kubetest2/pkg/metadata"
+	"k8s.io/test-infra/kubetest2/pkg/process"
 	"k8s.io/test-infra/kubetest2/pkg/types"
 )
 
@@ -26,15 +35,46 @@ const Name = "kind"
 
 // Usage returns the usage for the deployer
 func Usage() string {
-	return "  NONE - kind takes no args currently.\n"
+	return bindFlags(&deployer{}).FlagUsages()
+}
+
+// helper used to create & bind a flagset to the deployer
+func bindFlags(d *deployer) *pflag.FlagSet {
+	flags := pflag.NewFlagSet(Name, pflag.ContinueOnError)
+	flags.StringVar(
+		&d.clusterName, "cluster-name", "kind-kubetest2", "the kind cluster --name",
+	)
+	flags.StringVar(
+		&d.logLevel, "loglevel", "", "--loglevel for kind commands",
+	)
+	flags.StringVar(
+		&d.nodeImage, "image-name", "", "the image name to use for build and up",
+	)
+	flags.StringVar(
+		&d.nodeImage, "build-type", "", "--type for kind build node-image",
+	)
+	return flags
 }
 
 // New implements deployer.New for kind
-func New(common types.Options, deployerArgs []string) (types.Deployer, error) {
-	// TODO(bentheelder): process arguments for more options
-	return &deployer{
-		commonOptions: common,
-	}, nil
+func New(opts types.Options, hiddenKubetest2Flags *pflag.FlagSet, args []string) (types.Deployer, error) {
+	// create a deployer object and set fields that are not flag controlled
+	d := &deployer{
+		commonOptions: opts,
+		logsDir:       filepath.Join(opts.ArtifactsDir(), "logs"),
+	}
+
+	// register flags
+	flags := bindFlags(d)
+
+	// NOTE: add the hidden kubetest2 flags so they won't cause parse errors
+	flags.AddFlagSet(hiddenKubetest2Flags)
+
+	// parse args
+	if err := flags.Parse(args); err != nil {
+		return nil, err
+	}
+	return d, nil
 }
 
 // assert that New implements types.NewDeployer
@@ -42,28 +82,107 @@ var _ types.NewDeployer = New
 
 // TODO(bentheelder): finish implementing this stubbed-out deployer
 type deployer struct {
+	// generic parts
 	commonOptions types.Options
+	// kind specific details
+	nodeImage   string // name of the node image built / deployed
+	clusterName string // --name flag value for kind
+	logLevel    string // log level for kind commands
+	logsDir     string // dir to export logs to
+	buildType   string // --type flag to kind build node-image
 }
 
 // assert that deployer implements types.Deployer
 var _ types.Deployer = &deployer{}
 
+// Deployer implementation methods below
+
 func (d *deployer) Up() error {
-	panic("unimplemented")
+	args := []string{
+		"create", "cluster",
+		"--name", d.clusterName,
+	}
+	if d.logLevel != "" {
+		args = append(args, "--loglevel", d.logLevel)
+	}
+	// set the explicitly specified image name if set
+	if d.nodeImage != "" {
+		args = append(args, "--image", d.nodeImage)
+	} else if d.commonOptions.ShouldBuild() {
+		// otherwise if we just built an image, use that
+		// NOTE: this is safe in the face of upstream changes, because
+		// we use the same logic / constant for Build()
+		args = append(args, "--image", kindDefaultBuiltImageName)
+	}
+
+	println("Up(): creating kind cluster...\n")
+	// we want to see the output so use process.ExecJUnit
+	return process.ExecJUnit("kind", args, os.Environ())
 }
 
 func (d *deployer) Down() error {
-	panic("unimplemented")
+	args := []string{
+		"delete", "cluster",
+		"--name", d.clusterName,
+	}
+	if d.logLevel != "" {
+		args = append(args, "--loglevel", d.logLevel)
+	}
+
+	println("Down(): deleting kind cluster...\n")
+	// we want to see the output so use process.ExecJUnit
+	return process.ExecJUnit("kind", args, os.Environ())
 }
 
 func (d *deployer) IsUp() (up bool, err error) {
-	panic("unimplemented")
+	// naively assume that if the api server reports nodes, the cluster is up
+	lines, err := exec.CombinedOutputLines(
+		exec.Command("kubectl", "get", "nodes", "-o=name"),
+	)
+	if err != nil {
+		return false, metadata.NewJUnitError(err, strings.Join(lines, "\n"))
+	}
+	return len(lines) > 0, nil
 }
 
 func (d *deployer) DumpClusterLogs() error {
-	panic("unimplemented")
+	args := []string{
+		"export", "logs",
+		"--name", d.clusterName,
+		d.logsDir,
+	}
+	if d.logLevel != "" {
+		args = append(args, "--loglevel", d.logLevel)
+	}
+
+	println("DumpClusterLogs(): exporting kind cluster logs...\n")
+	// we want to see the output so use process.ExecJUnit
+	return process.ExecJUnit("kind", args, os.Environ())
 }
 
 func (d *deployer) Build() error {
-	panic("unimplemented")
+	// TODO(bentheelder): build type should be configurable
+	args := []string{
+		"build", "node-image",
+	}
+	if d.logLevel != "" {
+		args = append(args, "--loglevel", d.logLevel)
+	}
+	if d.buildType != "" {
+		args = append(args, "--type", d.buildType)
+	}
+	// set the explicitly specified image name if set
+	if d.nodeImage != "" {
+		args = append(args, "--image", d.nodeImage)
+	} else if d.commonOptions.ShouldBuild() {
+		// otherwise if we just built an image, use that
+		args = append(args, "--image", kindDefaultBuiltImageName)
+	}
+
+	println("Build(): building kind node image...\n")
+	// we want to see the output so use process.ExecJUnit
+	return process.ExecJUnit("kind", args, os.Environ())
 }
+
+// well-known kind related constants
+const kindDefaultBuiltImageName = "kindest/node:latest"

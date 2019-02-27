@@ -18,6 +18,10 @@ limitations under the License.
 // and tester implementations
 package types
 
+import (
+	"github.com/spf13/pflag"
+)
+
 // IncorrectUsage is an error with an addition HelpText() method
 // NewDeployer and NewTester implementations should return a type meeting this
 // interface if they want to display usage to the user when incorrect arguments
@@ -29,12 +33,19 @@ type IncorrectUsage interface {
 
 // NewDeployer should process & store deployerArgs and the common Options
 // kubetest2 will call this once at startup
-// common will provide access to options defined by common flags and kubetest2
-// logic, while deployerArgs provides all unknown arguments passed to kubetest2
-// before the first bare `--` if any.
+//
+// opts will provide access to options defined by common flags and kubetest2 logic
+//
+// hiddenKubetest2Flags contains all top level kubetest2 flags, marked as hidden
+// so they may be included when parsing deployer flags but will not show up
+// when returning deployer flag usage
+//
+// args provides all arguments passed to kubetest2 before the first bare `--`,
+// if any. (args after the `--` are Tester args)
+//
 // When incorrect arguments or flags are supplied, the IncorrectUsage superset
 // of error can be returned. kubetest2 will display the HelpText() output
-type NewDeployer func(common Options, deployerArgs []string) (Deployer, error)
+type NewDeployer func(opts Options, hiddenKubetest2Flags *pflag.FlagSet, args []string) (Deployer, error)
 
 // Options is an interface to get common options supplied by kubetest2
 // to all implementations
