@@ -1026,7 +1026,10 @@ func (c *Client) GetPullRequests(org, repo string) ([]PullRequest, error) {
 	path := fmt.Sprintf("/repos/%s/%s/pulls", org, repo)
 	err := c.readPaginatedResults(
 		path,
-		"application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		// allow the description and draft fields
+		// https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		// https://developer.github.com/changes/2019-02-14-draft-pull-requests/
+		"application/vnd.github.symmetra-preview+json, application/vnd.github.shadow-cat-preview",
 		func() interface{} {
 			return &[]PullRequest{}
 		},
@@ -1047,6 +1050,10 @@ func (c *Client) GetPullRequest(org, repo string, number int) (*PullRequest, err
 	c.log("GetPullRequest", org, repo, number)
 	var pr PullRequest
 	_, err := c.request(&request{
+		// allow the description and draft fields
+		// https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		// https://developer.github.com/changes/2019-02-14-draft-pull-requests/
+		accept:    "application/vnd.github.symmetra-preview+json, application/vnd.github.shadow-cat-preview",
 		method:    http.MethodGet,
 		path:      fmt.Sprintf("/repos/%s/%s/pulls/%d", org, repo, number),
 		exitCodes: []int{200},
@@ -1094,6 +1101,10 @@ func (c *Client) CreatePullRequest(org, repo, title, body, head, base string, ca
 		Num int `json:"number"`
 	}
 	_, err := c.request(&request{
+		// allow the description and draft fields
+		// https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		// https://developer.github.com/changes/2019-02-14-draft-pull-requests/
+		accept:      "application/vnd.github.symmetra-preview+json, application/vnd.github.shadow-cat-preview",
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/pulls", org, repo),
 		requestBody: &data,
@@ -1130,6 +1141,10 @@ func (c *Client) UpdatePullRequest(org, repo string, number int, title, body *st
 		data.State = &cl
 	}
 	_, err := c.request(&request{
+		// allow the description and draft fields
+		// https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		// https://developer.github.com/changes/2019-02-14-draft-pull-requests/
+		accept:      "application/vnd.github.symmetra-preview+json, application/vnd.github.shadow-cat-preview",
 		method:      http.MethodPatch,
 		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d", org, repo, number),
 		requestBody: &data,
