@@ -1853,15 +1853,15 @@ func TestPlankJobURLPrefix(t *testing.T) {
 	}{
 		{
 			name:                 "Nil refs returns default JobURLPrefix",
-			plank:                Plank{JobURLPrefixConfig: map[string]JobURLPrefixConfig{"*": {URL: "https://my-prow"}}},
+			plank:                Plank{JobURLPrefixConfig: map[string]string{"*": "https://my-prow"}},
 			expectedJobURLPrefix: "https://my-prow",
 		},
 		{
 			name: "No matching refs returns default JobURLPrefx",
 			plank: Plank{
-				JobURLPrefixConfig: map[string]JobURLPrefixConfig{
-					"*":      {URL: "https://my-prow"},
-					"my-org": {URL: "https://my-alternate-prow"},
+				JobURLPrefixConfig: map[string]string{
+					"*":      "https://my-prow",
+					"my-org": "https://my-alternate-prow",
 				},
 			},
 			refs:                 &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
@@ -1870,12 +1870,10 @@ func TestPlankJobURLPrefix(t *testing.T) {
 		{
 			name: "Matching repo returns JobURLPrefix from repo",
 			plank: Plank{
-				JobURLPrefixConfig: map[string]JobURLPrefixConfig{
-					"*": {URL: "https://my-prow"},
-					"my-alternate-org": {
-						URL:   "https://my-third-prow",
-						Repos: map[string]string{"my-repo": "https://my-alternate-prow"},
-					},
+				JobURLPrefixConfig: map[string]string{
+					"*":                        "https://my-prow",
+					"my-alternate-org":         "https://my-third-prow",
+					"my-alternate-org/my-repo": "https://my-alternate-prow",
 				},
 			},
 			refs:                 &prowapi.Refs{Org: "my-alternate-org", Repo: "my-repo"},
@@ -1884,12 +1882,10 @@ func TestPlankJobURLPrefix(t *testing.T) {
 		{
 			name: "Matching org and not matching repo returns JobURLPrefix from org",
 			plank: Plank{
-				JobURLPrefixConfig: map[string]JobURLPrefixConfig{
-					"*": {URL: "https://my-prow"},
-					"my-alternate-org": {
-						URL:   "https://my-third-prow",
-						Repos: map[string]string{"my-repo": "https://my-alternate-prow"},
-					},
+				JobURLPrefixConfig: map[string]string{
+					"*":                        "https://my-prow",
+					"my-alternate-org":         "https://my-third-prow",
+					"my-alternate-org/my-repo": "https://my-alternate-prow",
 				},
 			},
 			refs:                 &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"},
@@ -1898,11 +1894,9 @@ func TestPlankJobURLPrefix(t *testing.T) {
 		{
 			name: "Matching org without url returns default JobURLPrefix",
 			plank: Plank{
-				JobURLPrefixConfig: map[string]JobURLPrefixConfig{
-					"*": {URL: "https://my-prow"},
-					"my-alternate-org": {
-						Repos: map[string]string{"my-repo": "https://my-alternate-prow"},
-					},
+				JobURLPrefixConfig: map[string]string{
+					"*":                        "https://my-prow",
+					"my-alternate-org/my-repo": "https://my-alternate-prow",
 				},
 			},
 			refs:                 &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"},
@@ -1929,8 +1923,8 @@ func TestValidateComponentConfig(t *testing.T) {
 			name: `JobURLPrefix and JobURLPrefixConfig["*"].URL set, err`,
 			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
 				JobURLPrefix: "https://my-default-prow",
-				JobURLPrefixConfig: map[string]JobURLPrefixConfig{
-					"*": {URL: "https://my-alternate-prow"},
+				JobURLPrefixConfig: map[string]string{
+					"*": "https://my-alternate-prow",
 				},
 			}}},
 			errExpected: true,
@@ -1939,42 +1933,30 @@ func TestValidateComponentConfig(t *testing.T) {
 			name: `JobURLPrefix and JobURLPrefixConfig["*"].URL unset, no err`,
 			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
 				JobURLPrefix: "https://my-default-prow",
-				JobURLPrefixConfig: map[string]JobURLPrefixConfig{
-					"my-other-org": {URL: "https://my-alternate-prow"},
+				JobURLPrefixConfig: map[string]string{
+					"my-other-org": "https://my-alternate-prow",
 				},
 			}}},
 			errExpected: false,
 		},
 		{
-			name: `JobURLPrefixConfig["*"].Repos set, err`,
-			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
-				JobURLPrefixConfig: map[string]JobURLPrefixConfig{
-					"*": {
-						URL:   "https://my-alternate-prow",
-						Repos: map[string]string{"my-repo": "https://my-third-prow"},
-					},
-				},
-			}}},
-			errExpected: true,
-		},
-		{
 			name: "Valid default URL, no err",
 			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
-				JobURLPrefixConfig: map[string]JobURLPrefixConfig{"*": {URL: "https://my-prow"}}}}},
+				JobURLPrefixConfig: map[string]string{"*": "https://my-prow"}}}},
 			errExpected: false,
 		},
 		{
 			name: "Invalid default URL, err",
 			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
-				JobURLPrefixConfig: map[string]JobURLPrefixConfig{"*": {URL: "https:// my-prow"}}}}},
+				JobURLPrefixConfig: map[string]string{"*": "https:// my-prow"}}}},
 			errExpected: true,
 		},
 		{
 			name: "Org config, valid URLs, no err",
 			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
-				JobURLPrefixConfig: map[string]JobURLPrefixConfig{
-					"*":      {URL: "https://my-prow"},
-					"my-org": {URL: "https://my-alternate-prow"},
+				JobURLPrefixConfig: map[string]string{
+					"*":      "https://my-prow",
+					"my-org": "https://my-alternate-prow",
 				},
 			}}},
 			errExpected: false,
@@ -1982,9 +1964,9 @@ func TestValidateComponentConfig(t *testing.T) {
 		{
 			name: "Org override, invalid default jobURLPrefix URL, err",
 			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
-				JobURLPrefixConfig: map[string]JobURLPrefixConfig{
-					"*":      {URL: "https:// my-prow"},
-					"my-org": {URL: "https://my-alternate-prow"},
+				JobURLPrefixConfig: map[string]string{
+					"*":      "https:// my-prow",
+					"my-org": "https://my-alternate-prow",
 				},
 			}}},
 			errExpected: true,
@@ -1992,9 +1974,9 @@ func TestValidateComponentConfig(t *testing.T) {
 		{
 			name: "Org override, invalid org URL, err",
 			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
-				JobURLPrefixConfig: map[string]JobURLPrefixConfig{
-					"*":      {URL: "https://my-prow"},
-					"my-org": {URL: "https:// my-alternate-prow"},
+				JobURLPrefixConfig: map[string]string{
+					"*":      "https://my-prow",
+					"my-org": "https:// my-alternate-prow",
 				},
 			}}},
 			errExpected: true,
@@ -2002,9 +1984,9 @@ func TestValidateComponentConfig(t *testing.T) {
 		{
 			name: "Org override, invalid URLs, err",
 			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
-				JobURLPrefixConfig: map[string]JobURLPrefixConfig{
-					"*":      {URL: "https:// my-prow"},
-					"my-org": {URL: "https:// my-alternate-prow"},
+				JobURLPrefixConfig: map[string]string{
+					"*":      "https:// my-prow",
+					"my-org": "https:// my-alternate-prow",
 				},
 			}}},
 			errExpected: true,
@@ -2012,25 +1994,21 @@ func TestValidateComponentConfig(t *testing.T) {
 		{
 			name: "Repo override, valid URLs, no err",
 			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
-				JobURLPrefixConfig: map[string]JobURLPrefixConfig{
-					"*": {URL: "https://my-prow"},
-					"my-org": {
-						URL:   "https://my-alternate-prow",
-						Repos: map[string]string{"my-repo": "https://my-third-prow"}},
-				},
-			}}},
+				JobURLPrefixConfig: map[string]string{
+					"*":              "https://my-prow",
+					"my-org":         "https://my-alternate-prow",
+					"my-org/my-repo": "https://my-third-prow",
+				}}}},
 			errExpected: false,
 		},
 		{
 			name: "Repo override, invalid repo URL, err",
 			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
-				JobURLPrefixConfig: map[string]JobURLPrefixConfig{
-					"*": {URL: "https://my-prow"},
-					"my-org": {
-						URL:   "https://my-alternate-prow",
-						Repos: map[string]string{"my-repo": "https:// my-third-prow"}},
-				},
-			}}},
+				JobURLPrefixConfig: map[string]string{
+					"*":              "https://my-prow",
+					"my-org":         "https://my-alternate-prow",
+					"my-org/my-repo": "https:// my-third-prow",
+				}}}},
 			errExpected: true,
 		},
 	}

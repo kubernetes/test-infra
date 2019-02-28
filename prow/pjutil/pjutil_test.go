@@ -628,7 +628,7 @@ func TestJobURL(t *testing.T) {
 		{
 			name: "decorated job with prefix uses gcslib",
 			plank: config.Plank{
-				JobURLPrefixConfig: map[string]config.JobURLPrefixConfig{"*": {URL: "https://gubernator.com/build"}},
+				JobURLPrefixConfig: map[string]string{"*": "https://gubernator.com/build"},
 			},
 			pj: prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
 				Type: prowapi.PresubmitJob,
