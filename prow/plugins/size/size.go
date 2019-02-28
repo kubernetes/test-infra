@@ -229,10 +229,18 @@ func isPRChanged(pe github.PullRequestEvent) bool {
 	}
 }
 
-func sizesOrDefault(sizes *plugins.Size) plugins.Size {
-	if sizes == nil {
-		return defaultSizes
+func defaultIfZero(value, defaultValue int) int {
+	if value == 0 {
+		return defaultValue
 	}
+	return value
+}
 
-	return *sizes
+func sizesOrDefault(sizes plugins.Size) plugins.Size {
+	sizes.S = defaultIfZero(sizes.S, defaultSizes.S)
+	sizes.M = defaultIfZero(sizes.M, defaultSizes.M)
+	sizes.L = defaultIfZero(sizes.L, defaultSizes.L)
+	sizes.Xl = defaultIfZero(sizes.Xl, defaultSizes.Xl)
+	sizes.Xxl = defaultIfZero(sizes.Xxl, defaultSizes.Xxl)
+	return sizes
 }
