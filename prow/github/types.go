@@ -215,6 +215,7 @@ type PullRequest struct {
 	RequestedReviewers []User            `json:"requested_reviewers"`
 	Assignees          []User            `json:"assignees"`
 	State              string            `json:"state"`
+	Draft              bool              `json:"draft"`
 	Merged             bool              `json:"merged"`
 	CreatedAt          time.Time         `json:"created_at,omitempty"`
 	UpdatedAt          time.Time         `json:"updated_at,omitempty"`
