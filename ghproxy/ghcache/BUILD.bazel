@@ -36,4 +36,5 @@ go_test(
     name = "go_default_test",
     srcs = ["coalesce_test.go"],
     embed = [":go_default_library"],
+    deps = ["//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library"],
 )

@@ -19,6 +19,7 @@ package ghcache
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -26,6 +27,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"k8s.io/apimachinery/pkg/util/diff"
 )
 
 // testDelegate is a fake upstream transport delegate that logs hits by URI and
@@ -36,6 +39,8 @@ type testDelegate struct {
 
 	hitsLock sync.Mutex
 	hits     map[string]int
+
+	responseHeader http.Header
 }
 
 func (t *testDelegate) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -48,14 +53,20 @@ func (t *testDelegate) RoundTrip(req *http.Request) (*http.Response, error) {
 		t.beginResponding.Wait()
 		t.beginResponding.L.Unlock()
 	}
+	header := t.responseHeader
+	if header == nil {
+		header = http.Header{}
+	}
 	return &http.Response{
-			Body: ioutil.NopCloser(bytes.NewBufferString("Response")),
+			Body:   ioutil.NopCloser(bytes.NewBufferString("Response")),
+			Header: header,
 		},
 		nil
 }
 
 func TestRoundTrip(t *testing.T) {
 	// Check that only 1 request goes to upstream if there are concurrent requests.
+	t.Parallel()
 	delegate := &testDelegate{
 		hits:            make(map[string]int),
 		beginResponding: sync.NewCond(&sync.Mutex{}),
@@ -68,7 +79,9 @@ func TestRoundTrip(t *testing.T) {
 	wg.Add(100)
 	for i := 0; i < 100; i++ {
 		go func() {
-			runRequest(t, coalesce, "/resource1", false)
+			if _, err := runRequest(coalesce, "/resource1", false); err != nil {
+				t.Errorf("Failed to run request: %v.", err)
+			}
 			wg.Done()
 		}()
 	}
@@ -79,50 +92,161 @@ func TestRoundTrip(t *testing.T) {
 	time.Sleep(time.Second * 5)
 
 	// Check that requests for different resources are not blocked.
-	runRequest(t, coalesce, "/resource2", true) // Doesn't return until timeout or success.
+	if _, err := runRequest(coalesce, "/resource2", true); err != nil {
+		t.Errorf("Failed to run request: %v.", err)
+	} // Doesn't return until timeout or success.
 	delegate.beginResponding.Broadcast()
 
 	// Check that non concurrent requests all hit upstream.
-	runRequest(t, coalesce, "/resource2", true)
+	if _, err := runRequest(coalesce, "/resource2", true); err != nil {
+		t.Errorf("Failed to run request: %v.", err)
+	}
 
 	wg.Wait()
 	expectedHits := map[string]int{"/resource1": 1, "/resource2": 2}
 	if !reflect.DeepEqual(delegate.hits, expectedHits) {
-		t.Errorf("Unexpected hit count(s). Expected %v, but got %v.", expectedHits, delegate.hits)
+		t.Errorf("Unexpected hit count(s). Diff: %v.", diff.ObjectReflectDiff(expectedHits, delegate.hits))
 	}
 }
 
-func runRequest(t *testing.T, rt http.RoundTripper, uri string, immediate bool) {
-	res := make(chan error)
-	run := func() {
-		u, err := url.Parse("http://foo.com" + uri)
-		if err != nil {
-			res <- err
-		}
-		req, err := http.NewRequest(http.MethodGet, u.String(), nil)
-		if err != nil {
-			res <- err
-		}
-		if immediate {
-			req.Header.Set("test-immediate-response", "true")
-		}
-		resp, err := rt.RoundTrip(req)
-		if err != nil {
-			res <- err
-		} else if b, err := ioutil.ReadAll(resp.Body); err != nil {
-			res <- err
-		} else if string(b) != "Response" {
-			res <- errors.New("unexpected response value")
-		}
-		res <- nil
+func TestCacheModeHeader(t *testing.T) {
+	t.Parallel()
+	wg := sync.WaitGroup{}
+	delegate := &testDelegate{
+		hits:            make(map[string]int),
+		beginResponding: sync.NewCond(&sync.Mutex{}),
 	}
-	go run()
+	coalesce := &requestCoalescer{
+		keys:     make(map[string]*responseWaiter),
+		delegate: delegate,
+	}
+
+	checkMode := func(resp *http.Response, expected CacheResponseMode) {
+		mode := CacheResponseMode(resp.Header.Get(CacheModeHeader))
+		if mode != expected {
+			t.Errorf("Expected cache mode %s, but got %s.", string(expected), string(mode))
+		}
+	}
+
+	// Queue an initial request for resource1.
+	// This should eventually return ModeMiss.
+	wg.Add(1)
+	go func() {
+		if resp, err := runRequest(coalesce, "/resource1", false); err != nil {
+			t.Errorf("Failed to run request: %v.", err)
+		} else {
+			checkMode(resp, ModeMiss)
+		}
+		wg.Done()
+	}()
+	// There is a race here and where sleeps are used below.
+	// We need to wait for the initial request to be made
+	// to the coalescer before letting upstream respond, but we don't have a way
+	// of knowing when the requests has actually started waiting on the
+	// responseWaiter...
+	time.Sleep(time.Second * 3)
+
+	// Queue a second request for resource1.
+	// This should coalesce and eventually return ModeCoalesced.
+	wg.Add(1)
+	go func() {
+		if resp, err := runRequest(coalesce, "/resource1", false); err != nil {
+			t.Errorf("Failed to run request: %v.", err)
+		} else {
+			checkMode(resp, ModeCoalesced)
+		}
+		wg.Done()
+	}()
+	time.Sleep(time.Second * 3)
+
+	// Requests should be waiting now. Start responding and wait for all
+	// downstream responses to return.
+	delegate.beginResponding.Broadcast()
+	wg.Wait()
+
+	// A later request for resource1 revalidates cached response.
+	// This should return ModeRevalidated.
+	header := http.Header{}
+	header.Set("Status", "304 Not Modified")
+	delegate.responseHeader = header
+	if resp, err := runRequest(coalesce, "/resource1", true); err != nil {
+		t.Errorf("Failed to run request: %v.", err)
+	} else {
+		checkMode(resp, ModeRevalidated)
+	}
+
+	// Another request for resource1 after the resource has changed.
+	// This should return ModeChanged.
+	header = http.Header{}
+	header.Set("X-Conditional-Request", "I am an E-Tag.")
+	delegate.responseHeader = header
+	if resp, err := runRequest(coalesce, "/resource1", true); err != nil {
+		t.Errorf("Failed to run request: %v.", err)
+	} else {
+		checkMode(resp, ModeChanged)
+	}
+
+	// Request for new resource2 with no concurrent requests.
+	// This should return ModeMiss.
+	delegate.responseHeader = nil
+	if resp, err := runRequest(coalesce, "/resource2", true); err != nil {
+		t.Errorf("Failed to run request: %v.", err)
+	} else {
+		checkMode(resp, ModeMiss)
+	}
+
+	// Request for uncacheable resource3.
+	// This should return ModeNoStore.
+	header = http.Header{}
+	header.Set("Cache-Control", "no-store")
+	delegate.responseHeader = header
+	if resp, err := runRequest(coalesce, "/resource3", true); err != nil {
+		t.Errorf("Failed to run request: %v.", err)
+	} else {
+		checkMode(resp, ModeNoStore)
+	}
+
+	// We never send a ModeError mode in a header because we never return a
+	// http.Response if there is an error. ModeError is only for metrics.
+
+	// Might as well mind the hit count in this test too.
+	expectedHits := map[string]int{"/resource1": 3, "/resource2": 1, "/resource3": 1}
+	if !reflect.DeepEqual(delegate.hits, expectedHits) {
+		t.Errorf("Unexpected hit count(s). Diff: %v.", diff.ObjectReflectDiff(expectedHits, delegate.hits))
+	}
+}
+
+func runRequest(rt http.RoundTripper, uri string, immediate bool) (*http.Response, error) {
+	u, err := url.Parse("http://foo.com" + uri)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	if immediate {
+		req.Header.Set("test-immediate-response", "true")
+	}
+
+	waitChan := make(chan struct{})
+	var resp *http.Response
+	go func() {
+		defer close(waitChan)
+		resp, err = rt.RoundTrip(req)
+		if err == nil {
+			if b, readErr := ioutil.ReadAll(resp.Body); readErr != nil {
+				err = readErr
+			} else if string(b) != "Response" {
+				err = errors.New("unexpected response value")
+			}
+		}
+	}()
+
 	select {
 	case <-time.After(time.Second * 10):
-		t.Errorf("Request for %q timed out.", uri)
-	case err := <-res:
-		if err != nil {
-			t.Errorf("Request error: %v.", err)
-		}
+		return nil, fmt.Errorf("Request for %q timed out.", uri)
+	case <-waitChan:
+		return resp, err
 	}
 }
