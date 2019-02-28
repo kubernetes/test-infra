@@ -612,6 +612,10 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		runPath, err := sg.RunPath(src)
 		if err == nil {
 			artifactsLink = gcswebPrefix + runPath
+			// gcsweb wants us to end URLs with a trailing slash
+			if !strings.HasSuffix(artifactsLink, "/") {
+				artifactsLink += "/"
+			}
 		}
 	}
 
