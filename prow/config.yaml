@@ -393,6 +393,7 @@ tide:
     - kubernetes/publishing-bot
     - kubernetes/release
     - kubernetes/repo-infra
+    - kubernetes/security
     - kubernetes/sig-release
     - kubernetes/steering
     - kubernetes/test-infra
