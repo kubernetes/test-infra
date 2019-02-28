@@ -29,6 +29,8 @@ import (
 	"sync"
 	"time"
 
+	"cloud.google.com/go/storage"
+
 	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
@@ -192,9 +194,13 @@ func init() {
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, cfg config.Getter, gc *git.Client, logger *logrus.Entry) *Controller {
+func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, historyHandle *storage.ObjectHandle, logger *logrus.Entry) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
+	}
+	hist, err := history.New(maxRecordsPerPool, historyHandle)
+	if err != nil {
+		return nil, fmt.Errorf("error initializing history client: %v", err)
 	}
 	sc := &statusController{
 		logger:         logger.WithField("controller", "status-update"),
@@ -218,14 +224,15 @@ func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, cfg confi
 			ghc:             ghcSync,
 			nextChangeCache: make(map[changeCacheKey][]string),
 		},
-		History: history.New(1000),
-	}
+		History: hist,
+	}, nil
 }
 
 // Shutdown signals the statusController to stop working and waits for it to
 // finish its last update loop before terminating.
 // Controller.Sync() should not be used after this function is called.
 func (c *Controller) Shutdown() {
+	c.History.Flush()
 	c.sc.shutdown()
 }
 
@@ -350,8 +357,10 @@ func (c *Controller) Sync() error {
 	}
 	sortPools(pools)
 	c.m.Lock()
-	defer c.m.Unlock()
 	c.pools = pools
+	c.m.Unlock()
+
+	c.History.Flush()
 	return nil
 }
 

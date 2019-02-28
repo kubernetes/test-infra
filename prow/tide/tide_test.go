@@ -1163,6 +1163,10 @@ func TestServeHTTP(t *testing.T) {
 		Context:     githubql.String("coverage/coveralls"),
 		Description: githubql.String("Coverage increased (+0.1%) to 27.599%"),
 	}}
+	hist, err := history.New(100, nil)
+	if err != nil {
+		t.Fatalf("Failed to create history client: %v", err)
+	}
 	c := &Controller{
 		pools: []Pool{
 			{
@@ -1170,7 +1174,7 @@ func TestServeHTTP(t *testing.T) {
 				Action:     Merge,
 			},
 		},
-		History: history.New(100),
+		History: hist,
 	}
 	s := httptest.NewServer(c)
 	defer s.Close()
@@ -1385,6 +1389,10 @@ func TestSync(t *testing.T) {
 				},
 			},
 		})
+		hist, err := history.New(100, nil)
+		if err != nil {
+			t.Fatalf("Failed to create history client: %v", err)
+		}
 		sc := &statusController{
 			logger:         logrus.WithField("controller", "status-update"),
 			ghc:            fgc,
@@ -1404,7 +1412,7 @@ func TestSync(t *testing.T) {
 				ghc:             fgc,
 				nextChangeCache: make(map[changeCacheKey][]string),
 			},
-			History: history.New(100),
+			History: hist,
 		}
 
 		if err := c.Sync(); err != nil {

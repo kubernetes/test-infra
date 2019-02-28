@@ -18,6 +18,7 @@ go_library(
         "//prow/pjutil:go_default_library",
         "//prow/tide/blockers:go_default_library",
         "//prow/tide/history:go_default_library",
+        "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/github.com/shurcooL/githubv4:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
