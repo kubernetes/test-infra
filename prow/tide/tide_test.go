@@ -473,6 +473,7 @@ type fgc struct {
 	refs      map[string]string
 	merged    int
 	setStatus bool
+	mergeErrs map[int]error
 
 	expectedSHA    string
 	combinedStatus map[string]string
@@ -499,8 +500,8 @@ func (f *fgc) Query(ctx context.Context, q interface{}, vars map[string]interfac
 }
 
 func (f *fgc) Merge(org, repo string, number int, details github.MergeDetails) error {
-	if details.SHA == "uh oh" {
-		return errors.New("invalid sha")
+	if err, ok := f.mergeErrs[number]; ok {
+		return err
 	}
 	f.merged++
 	return nil
@@ -840,11 +841,13 @@ func TestTakeAction(t *testing.T) {
 		nones        []int
 		batchMerges  []int
 		presubmits   map[int][]config.Presubmit
+		mergeErrs    map[int]error
 
 		merged           int
 		triggered        int
 		triggeredBatches int
 		action           Action
+		expectErr        bool
 	}{
 		{
 			name: "no prs to test, should do nothing",
@@ -1072,6 +1075,56 @@ func TestTakeAction(t *testing.T) {
 			triggered: 1,
 			action:    Trigger,
 		},
+		{
+			name: "batch merge errors but continues if a PR is unmergeable",
+
+			batchMerges: []int{1, 2, 3},
+			mergeErrs:   map[int]error{2: github.UnmergablePRError("test error")},
+			merged:      2,
+			triggered:   0,
+			action:      MergeBatch,
+			expectErr:   true,
+		},
+		{
+			name: "batch merge errors but continues if a PR has changed",
+
+			batchMerges: []int{1, 2, 3},
+			mergeErrs:   map[int]error{2: github.ModifiedHeadError("test error")},
+			merged:      2,
+			triggered:   0,
+			action:      MergeBatch,
+			expectErr:   true,
+		},
+		{
+			name: "batch merge errors but continues on unknown error",
+
+			batchMerges: []int{1, 2, 3},
+			mergeErrs:   map[int]error{2: errors.New("test error")},
+			merged:      2,
+			triggered:   0,
+			action:      MergeBatch,
+			expectErr:   true,
+		},
+		{
+			name: "batch merge stops on auth error",
+
+			batchMerges: []int{1, 2, 3},
+			mergeErrs:   map[int]error{2: github.UnauthorizedToPushError("test error")},
+			merged:      1,
+			triggered:   0,
+			action:      MergeBatch,
+			expectErr:   true,
+		},
+		{
+			name: "batch merge stops on invalid merge method error",
+
+			batchMerges: []int{1, 2, 3},
+			mergeErrs:   map[int]error{2: github.MergeCommitsForbiddenError("test error")},
+			merged:      1,
+			triggered:   0,
+			action:      MergeBatch,
+			expectErr:   true,
+		},
 	}
 
 	for _, tc := range testcases {
@@ -1152,7 +1205,7 @@ func TestTakeAction(t *testing.T) {
 			return prs
 		}
 		var fkc fkc
-		var fgc fgc
+		fgc := fgc{mergeErrs: tc.mergeErrs}
 		c := &Controller{
 			logger: logrus.WithField("controller", "tide"),
 			gc:     gc,
@@ -1165,9 +1218,11 @@ func TestTakeAction(t *testing.T) {
 			batchPending = []PullRequest{{}}
 		}
 		t.Logf("Test case: %s", tc.name)
-		if act, _, err := c.takeAction(sp, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges)); err != nil {
-			t.Errorf("Error in takeAction: %v", err)
+		if act, _, err := c.takeAction(sp, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges)); err != nil && !tc.expectErr {
+			t.Errorf("Unexpected error in takeAction: %v", err)
 			continue
+		} else if err == nil && tc.expectErr {
+			t.Error("Missing expected error from takeAction.")
 		} else if act != tc.action {
 			t.Errorf("Wrong action. Got %v, wanted %v.", act, tc.action)
 		}
