@@ -85,6 +85,7 @@ Prow is used by the following organizations and projects:
 - [Azure acs-engine](https://github.com/Azure/acs-engine/tree/master/.prowci)
 - [tensorflow/minigo](https://github.com/tensorflow/minigo#automated-tests)
 - [helm/charts](https://github.com/helm/charts)
+- [Daisy(google compute image tools)](https://github.com/GoogleCloudPlatform/compute-image-tools/tree/master/test-infra#prow-and-gubenator)
 
 [Jenkins X](https://jenkins-x.io/) uses [Prow as part of Serverless Jenkins](https://medium.com/@jdrawlings/serverless-jenkins-with-jenkins-x-9134cbfe6870).
 
