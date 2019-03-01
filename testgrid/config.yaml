@@ -2681,6 +2681,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-prow
 - name: ci-test-infra-autobump-prow
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-autobump-prow
+- name: ci-test-infra-update-slack-oncall
+  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-update-slack-oncall
 - name: pull-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-bazel
   num_columns_recent: 20
@@ -6800,6 +6802,13 @@ dashboards:
     test_group_name: pull-kubernetes-conformance-image-test
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: slack-oncall-updater
+    description: runs experiment/slack-oncall-updater to update the membership of the test-infra-oncall slack usergroup
+    test_group_name: ci-test-infra-update-slack-oncall
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    alert_options:
+      alert_mail_to_addresses: ktbry@google.com
 
 - name: sig-testing-canaries
   dashboard_tab:
