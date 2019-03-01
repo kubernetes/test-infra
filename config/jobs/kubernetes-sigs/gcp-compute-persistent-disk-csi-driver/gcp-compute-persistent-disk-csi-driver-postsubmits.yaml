@@ -6,7 +6,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190228-375a57997-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
