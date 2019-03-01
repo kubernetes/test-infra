@@ -871,3 +871,24 @@ Plugin Help style
     font-size: 24px;
     cursor: pointer;
 }
+
+
+@-moz-keyframes spin {
+    to { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+    to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+    to {transform:rotate(360deg);}
+}
+
+
+.loading-spinner {
+    animation: spin 1800ms linear infinite;
+    margin: 0 auto;
+    margin-top: 2px;
+    padding: 0;
+    max-width: 50px;
+    display: block;
+}
