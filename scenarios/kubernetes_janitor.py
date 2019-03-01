@@ -57,7 +57,7 @@ def clean_project(project, hours=24, dryrun=False, ratelimit=None):
         return
     CHECKED.add(project)
 
-    cmd = ['python', test_infra('boskos/janitor/janitor.py'), '--project=%s' % project]
+    cmd = ['python', test_infra('boskos/janitor/gcp_janitor.py'), '--project=%s' % project]
     cmd.append('--hour=%d' % hours)
     if dryrun:
         cmd.append('--dryrun')
@@ -166,7 +166,7 @@ if __name__ == '__main__':
         help='Which type of projects to clear')
     PARSER.add_argument(
         '--ratelimit', type=int,
-        help='Max number of resources to clear in one gcloud delete call (passed into janitor.py)')
+        help='Max number of resources to clear in one gcloud delete call (passed into gcp_janitor.py)')
     PARSER.add_argument(
         '--projects', type=str,
         help='Comma separated list of projects to clean up. Only applicable in custom mode.')
