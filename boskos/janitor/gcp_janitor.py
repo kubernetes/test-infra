@@ -103,7 +103,7 @@ def validate_item(item, age, resource, clear_all):
         if resource.managed != item['isManaged']:
             return False
 
-    # clears everything without checking creationTimestamp
+    # clears everything without checking creationTimestamp/
     if clear_all:
         return True
 
@@ -300,7 +300,25 @@ def clean_gke_cluster(project, age, filt):
 
     return err
 
-def main(project, days, hours, filt, rate_limit):
+def activate_service_account(service_account):
+    if service_account == "":
+        log('service_account was not provided, trying default')
+        service_account = os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
+
+    cmd = [
+        'gcloud', 'auth', 'activate-service-account',
+        '--key-file=%s' % service_account,
+    ]
+    log('running %s' % cmd)
+
+    try:
+        subprocess.check_call(cmd)
+    except subprocess.CalledProcessError:
+        print >>sys.stderr, 'Error try to activate service_account: %s' % service_account
+        return 1
+    return 0
+
+def main(project, days, hours, filt, rate_limit, service_account):
     """ Clean up resources from a gcp project based on it's creation time
 
     Args:
@@ -312,26 +330,31 @@ def main(project, days, hours, filt, rate_limit):
         1 if list or delete command fails
     """
 
+
     print '[=== Start Janitor on project %r ===]' % project
     err = 0
     age = datetime.datetime.utcnow() - datetime.timedelta(days=days, hours=hours)
     clear_all = (days is 0 and hours is 0)
-    for res in DEMOLISH_ORDER:
-        log('Try to search for %r with condition %r' % (res.name, res.condition))
-        try:
-            col = collect(project, age, res, filt, clear_all)
-            if col:
-                err |= clear_resources(project, col, res, rate_limit)
-        except (subprocess.CalledProcessError, ValueError):
-            err |= 1 # keep clean the other resource
-            print >>sys.stderr, 'Fail to list resource %r from project %r' % (res.name, project)
 
-    # try to clean leaking gke cluster
-    try:
-        err |= clean_gke_cluster(project, age, filt)
-    except ValueError:
-        err |= 1 # keep clean the other resource
-        print >>sys.stderr, 'Fail to clean up cluster from project %r' % project
+    print '[=== Activating service_account %s ===]' % service_account
+    err |= activate_service_account(service_account)
+    if not err:
+        for res in DEMOLISH_ORDER:
+            log('Try to search for %r with condition %r' % (res.name, res.condition))
+            try:
+                col = collect(project, age, res, filt, clear_all)
+                if col:
+                    err |= clear_resources(project, col, res, rate_limit)
+            except (subprocess.CalledProcessError, ValueError):
+                err |= 1 # keep clean the other resource
+                print >>sys.stderr, 'Fail to list resource %r from project %r' % (res.name, project)
+
+        # try to clean leaking gke cluster
+        try:
+            err |= clean_gke_cluster(project, age, filt)
+        except ValueError:
+            err |= 1 # keep clean the other resource
+            print >>sys.stderr, 'Fail to clean up cluster from project %r' % project
 
     print '[=== Finish Janitor on project %r with status %r ===]' % (project, err)
     sys.exit(err)
@@ -362,6 +385,9 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--verbose', action='store_true',
         help='Get full janitor output log')
+    PARSER.add_argument(
+        '--service_account',
+        help='GCP service account')
     ARGS = PARSER.parse_args()
 
     # We want to allow --days=0 and --hours=0, so check against None instead.
@@ -369,4 +395,4 @@ if __name__ == '__main__':
         print >>sys.stderr, 'must specify --days and/or --hours'
         sys.exit(1)
 
-    main(ARGS.project, ARGS.days or 0, ARGS.hours or 0, ARGS.filter, ARGS.ratelimit)
+    main(ARGS.project, ARGS.days or 0, ARGS.hours or 0, ARGS.filter, ARGS.ratelimit, ARGS.service_account)
