@@ -24,7 +24,6 @@ import os
 import subprocess
 import sys
 
-
 # A resource that need to be cleared.
 Resource = collections.namedtuple(
     'Resource', 'api_version group name subgroup condition managed tolerate bulk_delete')
@@ -60,10 +59,12 @@ DEMOLISH_ORDER = [
     Resource('', 'logging', 'sinks', None, None, None, False, False),
 ]
 
+
 def log(message):
     """ print a message if --verbose is set. """
     if ARGS.verbose:
         print message
+
 
 def base_command(resource):
     """ Return the base gcloud command with api_version, group and subgroup.
@@ -103,7 +104,7 @@ def validate_item(item, age, resource, clear_all):
         if resource.managed != item['isManaged']:
             return False
 
-    # clears everything without checking creationTimestamp/
+    # clears everything without checking creationTimestamp
     if clear_all:
         return True
 
@@ -202,7 +203,7 @@ def clear_resources(project, cols, resource, rate_limit):
                 (resource.name, resource.subgroup, list(items)))
             continue
 
-        manage_key = {'Yes':'managed', 'No':'unmanaged'}
+        manage_key = {'Yes': 'managed', 'No': 'unmanaged'}
 
         # construct the customized gcloud command
         base = base_command(resource)
@@ -226,7 +227,7 @@ def clear_resources(project, cols, resource, rate_limit):
         log('going to delete %d %s' % (len(items), resource.name))
         # try to delete at most $rate_limit items at a time
         for idx in xrange(0, len(items), rate_limit):
-            clean = items[idx:idx+rate_limit]
+            clean = items[idx:idx + rate_limit]
             cmd = base + list(clean)
             if condition:
                 cmd.append(condition)
@@ -236,7 +237,7 @@ def clear_resources(project, cols, resource, rate_limit):
             except subprocess.CalledProcessError as exc:
                 if not resource.tolerate:
                     err = 1
-                print >>sys.stderr, 'Error try to delete resources: %r' % exc
+                print >> sys.stderr, 'Error try to delete resources: %r' % exc
     return err
 
 
@@ -245,9 +246,9 @@ def clean_gke_cluster(project, age, filt):
 
     # a cluster can be created in one of those three endpoints
     endpoints = [
-        'https://test-container.sandbox.googleapis.com/', # test
-        'https://staging-container.sandbox.googleapis.com/', # staging
-        'https://container.googleapis.com/', # prod
+        'https://test-container.sandbox.googleapis.com/',  # test
+        'https://staging-container.sandbox.googleapis.com/',  # staging
+        'https://container.googleapis.com/',  # prod
     ]
 
     err = 0
@@ -259,7 +260,7 @@ def clean_gke_cluster(project, age, filt):
             '--project=%s' % project,
             '--filter=%s' % filt,
             '--format=json(name,createTime,zone)'
-            ]
+        ]
         log('running %s' % cmd)
 
         output = ''
@@ -296,9 +297,10 @@ def clean_gke_cluster(project, age, filt):
                     subprocess.check_call(delete)
                 except subprocess.CalledProcessError as exc:
                     err = 1
-                    print >>sys.stderr, 'Error try to delete cluster %s: %r' % (item['name'], exc)
+                    print >> sys.stderr, 'Error try to delete cluster %s: %r' % (item['name'], exc)
 
     return err
+
 
 def activate_service_account(service_account):
     if service_account == "":
@@ -314,9 +316,10 @@ def activate_service_account(service_account):
     try:
         subprocess.check_call(cmd)
     except subprocess.CalledProcessError:
-        print >>sys.stderr, 'Error try to activate service_account: %s' % service_account
+        print >> sys.stderr, 'Error try to activate service_account: %s' % service_account
         return 1
     return 0
+
 
 def main(project, days, hours, filt, rate_limit, service_account):
     """ Clean up resources from a gcp project based on it's creation time
@@ -329,7 +332,6 @@ def main(project, days, hours, filt, rate_limit, service_account):
         0 if no error
         1 if list or delete command fails
     """
-
 
     print '[=== Start Janitor on project %r ===]' % project
     err = 0
@@ -346,15 +348,16 @@ def main(project, days, hours, filt, rate_limit, service_account):
                 if col:
                     err |= clear_resources(project, col, res, rate_limit)
             except (subprocess.CalledProcessError, ValueError):
-                err |= 1 # keep clean the other resource
-                print >>sys.stderr, 'Fail to list resource %r from project %r' % (res.name, project)
+                err |= 1  # keep clean the other resource
+                print >> sys.stderr, 'Fail to list resource %r from project %r' \
+                                     % (res.name, project)
 
         # try to clean leaking gke cluster
         try:
             err |= clean_gke_cluster(project, age, filt)
         except ValueError:
-            err |= 1 # keep clean the other resource
-            print >>sys.stderr, 'Fail to clean up cluster from project %r' % project
+            err |= 1  # keep clean the other resource
+            print >> sys.stderr, 'Fail to clean up cluster from project %r' % project
 
     print '[=== Finish Janitor on project %r with status %r ===]' % (project, err)
     sys.exit(err)
@@ -392,7 +395,8 @@ if __name__ == '__main__':
 
     # We want to allow --days=0 and --hours=0, so check against None instead.
     if ARGS.days is None and ARGS.hours is None:
-        print >>sys.stderr, 'must specify --days and/or --hours'
+        print >> sys.stderr, 'must specify --days and/or --hours'
         sys.exit(1)
 
-    main(ARGS.project, ARGS.days or 0, ARGS.hours or 0, ARGS.filter, ARGS.ratelimit, ARGS.service_account)
+    main(ARGS.project, ARGS.days or 0, ARGS.hours or 0, ARGS.filter,
+         ARGS.ratelimit, ARGS.service_account)

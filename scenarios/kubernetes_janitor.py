@@ -166,7 +166,8 @@ if __name__ == '__main__':
         help='Which type of projects to clear')
     PARSER.add_argument(
         '--ratelimit', type=int,
-        help='Max number of resources to clear in one gcloud delete call (passed into gcp_janitor.py)')
+        help='Max number of resources to clear in one gcloud delete call '
+             '(passed into gcp_janitor.py)')
     PARSER.add_argument(
         '--projects', type=str,
         help='Comma separated list of projects to clean up. Only applicable in custom mode.')

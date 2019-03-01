@@ -26,6 +26,7 @@ import (
 
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/boskos/common"
+	"strings"
 )
 
 var (
@@ -65,9 +66,16 @@ func main() {
 
 type clean func(resource *common.Resource, extraFlags []string) error
 
+// TODO(amwat): remove this logic when we get rid of --project.
+
+func format(rtype string) string {
+	splits := strings.Split(rtype, "-")
+	return splits[len(splits)-1]
+}
+
 // Clean by janitor script
 func janitorClean(resource *common.Resource, flags []string) error {
-	cmd := exec.Command(*janitorPath, append([]string{fmt.Sprintf("--%s=%s", resource.Type, resource.Name)}, flags...)...)
+	cmd := exec.Command(*janitorPath, append([]string{fmt.Sprintf("--%s=%s", format(resource.Type), resource.Name)}, flags...)...)
 	b, err := cmd.CombinedOutput()
 	if err != nil {
 		logrus.WithError(err).Errorf("failed to clean up project %s, error info: %s", resource.Name, string(b))
@@ -130,7 +138,7 @@ func janitor(c boskosClient, buffer <-chan *common.Resource, fn clean, flags []s
 
 		dest := common.Free
 		if err := fn(resource, flags); err != nil {
-			logrus.WithError(err).Errorf("%s failed!", janitorPath)
+			logrus.WithError(err).Errorf("%s failed!", *janitorPath)
 			dest = common.Dirty
 		}
 
