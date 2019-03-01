@@ -420,6 +420,13 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			pj.SetComplete()
 			pj.Status.State = prowapi.ErrorState
 			pj.Status.Description = "Pod pending timeout."
+			client, ok := c.pkcs[pj.ClusterAlias()]
+			if !ok {
+				return fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
+			}
+			if err := client.DeletePod(pod.ObjectMeta.Name); err != nil {
+				return fmt.Errorf("failed to delete pod %s that was in pending timeout: %v", pod.Name, err)
+			}
 
 		default:
 			// Pod is running. Do nothing.
