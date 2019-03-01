@@ -55,19 +55,19 @@ func getCurrentOncaller() (string, error) {
 }
 
 func mapGitHubToSlack(github string) (string, error) {
-	// Maps (case-sensitive!) GitHub usernames to Slack user IDs.
+	// Maps (lowercase!) GitHub usernames to Slack user IDs.
 	// Add yourself when you join the oncall rotation.
 	// You can mostly easily find your user ID by visiting your Slack profile, clicking "...",
 	// and clicking "Copy user ID".
 	mapping := map[string]string{
 		"amwat":       "U9B1P2UGP",
-		"BenTheElder": "U1P7T516X",
+		"bentheelder": "U1P7T516X",
 		"cjwagner":    "U4QFZFMCM",
 		"fejta":       "U0E2KHQ13",
-		"Katharine":   "UBTBNJ6GL",
+		"katharine":   "UBTBNJ6GL",
 		"krzyzacy":    "U22Q65CTG",
 	}
-	id, ok := mapping[github]
+	id, ok := mapping[strings.ToLower(github)]
 	if !ok {
 		return "", fmt.Errorf("couldn't find a Slack ID for GitHub user %q", github)
 	}
