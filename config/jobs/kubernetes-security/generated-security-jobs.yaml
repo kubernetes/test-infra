@@ -3015,15 +3015,20 @@ presubmits:
     trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test,?($|\s.*)
   - agent: kubernetes
     always_run: false
+    branches:
+    - master
     cluster: security
     context: pull-security-kubernetes-conformance-image-test
     labels:
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
       preset-service-account: "true"
+    max_concurrency: 8
     name: pull-security-kubernetes-conformance-image-test
     optional: true
     rerun_command: /test pull-security-kubernetes-conformance-image-test
+    run_if_changed: conformance
     spec:
       containers:
       - args:
@@ -3053,26 +3058,9 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /lib/modules
-          name: modules
-          readOnly: true
-        - mountPath: /sys/fs/cgroup
-          name: cgroup
         - mountPath: /etc/ssh-security
           name: ssh-security
-      dnsConfig:
-        options:
-        - name: ndots
-          value: "1"
       volumes:
-      - hostPath:
-          path: /lib/modules
-          type: Directory
-        name: modules
-      - hostPath:
-          path: /sys/fs/cgroup
-          type: Directory
-        name: cgroup
       - name: ssh-security
         secret:
           defaultMode: 256
