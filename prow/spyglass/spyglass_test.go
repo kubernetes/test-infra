@@ -1127,3 +1127,77 @@ func TestFetchArtifactsPodLog(t *testing.T) {
 		}
 	}
 }
+
+func TestKeyToJob(t *testing.T) {
+	testCases := []struct {
+		name      string
+		path      string
+		jobName   string
+		buildID   string
+		expectErr bool
+	}{
+		{
+			name:    "GCS periodic path with trailing slash",
+			path:    "gcs/kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-14/40/",
+			jobName: "periodic-kubernetes-bazel-test-1-14",
+			buildID: "40",
+		},
+		{
+			name:    "GCS periodic path without trailing slash",
+			path:    "gcs/kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-14/40",
+			jobName: "periodic-kubernetes-bazel-test-1-14",
+			buildID: "40",
+		},
+		{
+			name:    "GCS PR path with trailing slash",
+			path:    "gcs/kubernetes-jenkins/pr-logs/pull/test-infra/11573/pull-test-infra-bazel/25366/",
+			jobName: "pull-test-infra-bazel",
+			buildID: "25366",
+		},
+		{
+			name:    "GCS PR path without trailing slash",
+			path:    "gcs/kubernetes-jenkins/pr-logs/pull/test-infra/11573/pull-test-infra-bazel/25366",
+			jobName: "pull-test-infra-bazel",
+			buildID: "25366",
+		},
+		{
+			name:    "Prowjob path with trailing slash",
+			path:    "prowjob/pull-test-infra-bazel/25366/",
+			jobName: "pull-test-infra-bazel",
+			buildID: "25366",
+		},
+		{
+			name:    "Prowjob path without trailing slash",
+			path:    "prowjob/pull-test-infra-bazel/25366",
+			jobName: "pull-test-infra-bazel",
+			buildID: "25366",
+		},
+		{
+			name:      "Path with only one component",
+			path:      "nope",
+			expectErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		sg := Spyglass{}
+		jobName, buildID, err := sg.KeyToJob(tc.path)
+		if err != nil {
+			if !tc.expectErr {
+				t.Errorf("%s: unexpected error %v", tc.name, err)
+			}
+			continue
+		}
+		if tc.expectErr {
+			t.Errorf("%s: expected an error, but got result %s #%s", tc.name, jobName, buildID)
+			continue
+		}
+		if jobName != tc.jobName {
+			t.Errorf("%s: expected job name %q, but got %q", tc.name, tc.jobName, jobName)
+			continue
+		}
+		if buildID != tc.buildID {
+			t.Errorf("%s: expected build ID %q, but got %q", tc.name, tc.buildID, buildID)
+		}
+	}
+}

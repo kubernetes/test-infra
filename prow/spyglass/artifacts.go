@@ -57,14 +57,24 @@ func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
 	return artifactNames, nil
 }
 
+// KeyToJob takes a spyglass URL and returns the jobName and buildID.
+func (*Spyglass) KeyToJob(src string) (jobName string, buildID string, err error) {
+	src = strings.Trim(src, "/")
+	parsed := strings.Split(src, "/")
+	if len(parsed) < 2 {
+		return "", "", fmt.Errorf("expected at least two path components in %q", src)
+	}
+	jobName = parsed[len(parsed)-2]
+	buildID = parsed[len(parsed)-1]
+	return jobName, buildID, nil
+}
+
 // prowToGCS returns the GCS key corresponding to the given prow key
 func (s *Spyglass) prowToGCS(prowKey string) (string, error) {
-	parsed := strings.Split(prowKey, "/")
-	if len(parsed) != 2 {
-		return "", fmt.Errorf("Could not get GCS src: prow src %q incorrectly formatted", prowKey)
+	jobName, buildID, err := s.KeyToJob(prowKey)
+	if err != nil {
+		return "", fmt.Errorf("could not get GCS src: %v", err)
 	}
-	jobName := parsed[0]
-	buildID := parsed[1]
 
 	job, err := s.jobAgent.GetProwJob(jobName, buildID)
 	if err != nil {
@@ -88,31 +98,20 @@ func (s *Spyglass) FetchArtifacts(src string, podName string, sizeLimit int64, a
 	if err != nil {
 		return arts, fmt.Errorf("error parsing src: %v", err)
 	}
+	jobName, buildID, err := s.KeyToJob(src)
+	if err != nil {
+		return arts, fmt.Errorf("could not derive job: %v", err)
+	}
 	gcsKey := ""
-	jobName := ""
-	buildID := ""
 	switch keyType {
 	case gcsKeyType:
 		gcsKey = strings.TrimSuffix(key, "/")
-		parts := strings.Split(gcsKey, "/")
-		if len(parts) < 2 {
-			logrus.WithField("gcs key", gcsKey).Warningf("invalid gcs key")
-		} else {
-			jobName = parts[len(parts)-2]
-			buildID = parts[len(parts)-1]
-		}
 	case prowKeyType:
-		parts := strings.Split(key, "/")
-		if len(parts) != 2 {
-			return arts, fmt.Errorf("key %q incorrectly formatted", key)
-		}
-		jobName = parts[0]
-		buildID = parts[1]
 		if gcsKey, err = s.prowToGCS(key); err != nil {
 			logrus.Warningln(err)
 		}
 	default:
-		return nil, fmt.Errorf("Invalid src: %v", src)
+		return nil, fmt.Errorf("invalid src: %v", src)
 	}
 
 	podLogNeeded := false

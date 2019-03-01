@@ -625,6 +625,11 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		prHistLink = "/pr-history?org=" + org + "&repo=" + repo + "&pr=" + strconv.Itoa(number)
 	}
 
+	jobName, buildID, err := sg.KeyToJob(src)
+	if err != nil {
+		return "", fmt.Errorf("error determining jobName / buildID: %v", err)
+	}
+
 	announcement := ""
 	if cfg().Deck.Spyglass.Announcement != "" {
 		announcementTmpl, err := template.New("announcement").Parse(cfg().Deck.Spyglass.Announcement)
@@ -663,6 +668,8 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		PRHistLink    string
 		Announcement  template.HTML
 		TestgridLink  string
+		JobName       string
+		BuildID       string
 	}
 	lTmpl := lensesTemplate{
 		Lenses:        ls,
@@ -674,6 +681,8 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		PRHistLink:    prHistLink,
 		Announcement:  template.HTML(announcement),
 		TestgridLink:  tgLink,
+		JobName:       jobName,
+		BuildID:       buildID,
 	}
 	t := template.New("spyglass.html")
 
