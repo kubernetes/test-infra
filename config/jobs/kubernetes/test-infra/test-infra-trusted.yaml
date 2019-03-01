@@ -133,3 +133,30 @@ periodics:
       secret:
         secretName: k8s-ci-robot-ssh-keys
         defaultMode: 0400
+- cron: "05 * * * *"  # Run at five minutes past the hour every day
+  name: ci-test-infra-update-slack-oncall
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+  spec:
+    containers:
+    - image: launcher.gcr.io/google/bazel
+      command:
+      - bazel
+      args:
+      - run
+      - //experiment/slack-oncall-updater
+      - --
+      - --token-path=/etc/slack-token/token
+      - --group-id=SGLF0GUQH
+      volumeMounts:
+      - name: slack
+        mountPath: /etc/slack-token
+        readOnly: true
+    volumes:
+    - name: slack
+      secret:
+        secretName: slack-usergroup-token
