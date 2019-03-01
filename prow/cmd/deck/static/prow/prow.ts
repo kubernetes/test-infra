@@ -2,6 +2,7 @@ import moment from "moment";
 import {Job, JobState, JobType} from "../api/prow";
 import {cell} from "../common/common";
 import {FuzzySearch} from './fuzzy-search';
+import {JobHistogram, JobSample} from './histogram';
 
 declare const allBuilds: Job[];
 declare const spyglass: boolean;
@@ -216,6 +217,28 @@ window.onload = (): void => {
             stateFilter.value = state;
             stateFilter.onchange!.call(stateFilter, new Event("change"));
         });
+    });
+    // Attach job histogram on click to scroll the selected build into view
+    const jobHistogram = document.getElementById("job-histogram-content") as HTMLTableSectionElement;
+    jobHistogram.addEventListener("click", (event) => {
+        const target = event.target as HTMLElement;
+        if (target == null) {
+            return;
+        }
+        if (!target.classList.contains('active')) {
+            return;
+        }
+        const row = target.dataset.sampleRow;
+        if (row == null || row.length === 0) {
+            return;
+        }
+        const rowNumber = Number(row);
+        const builds = document.getElementById("builds")!.getElementsByTagName("tbody")[0];
+        if (builds == null || rowNumber >= builds.childNodes.length) {
+            return;
+        }
+        const targetRow = builds.childNodes[rowNumber] as HTMLTableRowElement;
+        targetRow.scrollIntoView();
     });
     // set dropdown based on options from query string
     const opts = optionsForRepo("");
@@ -440,7 +463,10 @@ function redraw(fz: FuzzySearch): void {
 
     let lastKey = '';
     const jobCountMap = new Map() as Map<JobState, number>;
+    const jobHistogram = new JobHistogram();
+    const now = moment().unix();
     let totalJob = 0;
+    let displayedJob = 0;
     for (let i = 0; i < allBuilds.length; i++) {
         const build = allBuilds[i];
         if (!equalSelected(typeSel, build.type)) {
@@ -476,11 +502,15 @@ function redraw(fz: FuzzySearch): void {
         if (!jobCountMap.has(build.state)) {
           jobCountMap.set(build.state, 0);
         }
-        totalJob ++;
+        totalJob++;
         jobCountMap.set(build.state, jobCountMap.get(build.state)! + 1);
-        if (totalJob > 499) {
+        if (displayedJob >= 500) {
+            jobHistogram.add(new JobSample(Number(build.started), parseDuration(build.duration), build.state, -1));
             continue;
+        } else {
+            jobHistogram.add(new JobSample(Number(build.started), parseDuration(build.duration), build.state, builds.childElementCount));
         }
+        displayedJob++;
         const r = document.createElement("tr");
         r.appendChild(cell.state(build.state));
         if (build.pod_name) {
@@ -552,8 +582,9 @@ function redraw(fz: FuzzySearch): void {
         builds.appendChild(r);
     }
     const jobCount = document.getElementById("job-count")!;
-    jobCount.textContent = `Showing ${Math.min(totalJob, 500)}/${totalJob} jobs`;
+    jobCount.textContent = `Showing ${displayedJob}/${totalJob} jobs`;
     drawJobBar(totalJob, jobCountMap);
+    drawJobHistogram(totalJob, jobHistogram, now - (12 * 3600), now);
 }
 
 function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob: string): HTMLTableDataCellElement {
@@ -672,6 +703,127 @@ function stateToAdj(state: JobState): string {
         default:
             return state;
     }
+}
+
+function parseDuration(duration: string): number {
+    if (duration.length === 0) {
+        return 0;
+    }
+    let seconds = 0;
+    let multiple = 0;
+    for (let i = duration.length; i >= 0; i--) {
+        const ch = duration[i];
+        if (ch === 's') {
+            multiple = 1;
+        } else if (ch === 'm') {
+            multiple = 60;
+        } else if (ch === 'h') {
+            multiple = 60 * 60;
+        } else if (ch >= '0' && ch <= '9') {
+            seconds += Number(ch) * multiple;
+            multiple *= 10;
+        }
+    }
+    return seconds;
+}
+
+function formatDuration(seconds: number): string {
+    const parts: string[] = [];
+    if (seconds > 3600) {
+        const hours = Math.floor(seconds / 3600);
+        parts.push(String(hours));
+        parts.push('h');
+        seconds = seconds % 3600;
+    }
+    if (seconds > 60) {
+        const minutes = Math.floor(seconds / 60);
+        if (minutes > 0) {
+            parts.push(String(minutes));
+            parts.push('m');
+            seconds = seconds % 60;
+        }
+    }
+    if (seconds > 0) {
+        parts.push(String(seconds));
+        parts.push('s');
+    }
+    return parts.join('');
+}
+
+function drawJobHistogram(total: number, jobHistogram: JobHistogram, start: number, end: number): void {
+    const startEl = document.getElementById("job-histogram-start") as HTMLSpanElement;
+    if (startEl != null) {
+        startEl.textContent = `${formatDuration(end - start)} ago`;
+    }
+
+    // make sure the empty table is hidden
+    const tableEl = document.getElementById("job-histogram") as HTMLTableElement;
+    const labelsEl = document.getElementById("job-histogram-labels") as HTMLDivElement;
+    if (jobHistogram.length === 0) {
+        tableEl.style.display = "none";
+        labelsEl.style.display = "none";
+        return;
+    }
+    tableEl.style.display = "";
+    labelsEl.style.display = "";
+
+    const el = document.getElementById("job-histogram-content") as HTMLTableSectionElement;
+    el.title = `Showing ${jobHistogram.length} builds from last ${formatDuration(end - start)} by start time and duration, newest to oldest.`;
+    const rows = 10;
+    const width = 12;
+    const cols = Math.round(el.clientWidth / width);
+
+    // initialize the table if the row count changes
+    if (el.childNodes.length !== rows) {
+        el.innerHTML = "";
+        for (let i = 0; i < rows; i++) {
+            const tr = document.createElement('tr');
+            for (let j = 0; j < cols; j++) {
+                const td = document.createElement('td');
+                tr.appendChild(td);
+            }
+            el.appendChild(tr);
+        }
+    }
+
+    // populate the buckets
+    const buckets = jobHistogram.buckets(start, end, cols);
+    buckets.data.forEach((bucket, colIndex) => {
+        let lastRowIndex = 0;
+        buckets.linearChunks(bucket, rows).forEach((samples, rowIndex) =>  {
+            lastRowIndex = rowIndex + 1;
+            const td = el.childNodes[rows - 1 - rowIndex].childNodes[cols - colIndex - 1] as HTMLTableCellElement;
+            if (samples.length === 0) {
+                td.removeAttribute('title');
+                td.className = '';
+                return;
+            }
+            td.dataset.sampleRow = String(samples[0].row);
+            const failures = samples.reduce((sum, sample) => {
+                return sample.state !== 'success' ? sum + 1 : sum;
+            }, 0);
+            if (failures === 0) {
+                td.title = `${samples.length} succeeded`;
+            } else {
+                if (failures === samples.length) {
+                    td.title = `${failures} failed`;
+                } else {
+                    td.title = `${failures}/${samples.length} failed`;
+                }
+            }
+            td.style.opacity = String(0.2 + samples.length / bucket.length * 0.8);
+            if (samples[0].row !== -1) {
+                td.className = `active success-${Math.floor(10 - (failures / samples.length) * 10)}`;
+            } else {
+                td.className = `success-${Math.floor(10 - (failures / samples.length) * 10)}`;
+            }
+        });
+        for (let rowIndex = lastRowIndex; rowIndex < rows; rowIndex++) {
+            const td = el.childNodes[rows - 1 - rowIndex].childNodes[cols - colIndex - 1] as HTMLTableCellElement;
+            td.removeAttribute('title');
+            td.className = '';
+        }
+    });
 }
 
 function createSpyglassCell(url: string): HTMLTableDataCellElement {
