@@ -19,6 +19,7 @@ package approve
 import (
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"reflect"
 	"strings"
 	"testing"
@@ -29,6 +30,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
@@ -171,6 +173,7 @@ func TestHandle(t *testing.T) {
 		needsIssue          bool
 		lgtmActsAsApprove   bool
 		reviewActsAsApprove bool
+		githubLinkURL       *url.URL
 
 		expectDelete    bool
 		expectComment   bool
@@ -190,6 +193,7 @@ func TestHandle(t *testing.T) {
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  false,
 			expectToggle:  true,
@@ -222,6 +226,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  false,
 			expectToggle:  false,
@@ -258,6 +263,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			needsIssue:          true,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  false,
 			expectToggle:  true,
@@ -293,6 +299,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			needsIssue:          true,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  false,
 			expectToggle:  true,
@@ -330,6 +337,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			needsIssue:          true,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:    false,
 			expectToggle:    true,
@@ -368,6 +376,7 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			needsIssue:          true,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  false,
 			expectToggle:  false,
@@ -387,6 +396,7 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			needsIssue:          true,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  true,
 			expectToggle:  true,
@@ -429,6 +439,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  true,
 			expectToggle:  true,
@@ -448,6 +459,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			needsIssue:          true,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  true,
 			expectToggle:  true,
@@ -467,6 +479,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			needsIssue:          true,
 			lgtmActsAsApprove:   true,
 			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  true,
 			expectToggle:  true,
@@ -504,6 +517,7 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			needsIssue:          true,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  false,
 			expectToggle:  false,
@@ -523,6 +537,7 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			needsIssue:          true,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  true,
 			expectToggle:  true,
@@ -541,6 +556,7 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  true,
 			expectToggle:  false,
@@ -579,6 +595,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			needsIssue:          false,
 			lgtmActsAsApprove:   true,
 			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  true,
 			expectToggle:  true,
@@ -618,6 +635,7 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  false,
 			expectToggle:  false,
@@ -633,6 +651,7 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  false,
 			expectToggle:  true,
@@ -665,6 +684,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  false,
 			expectToggle:  false,
@@ -701,6 +721,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  false,
 			expectToggle:  true,
@@ -737,6 +758,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  false,
 			expectToggle:  false,
@@ -778,6 +800,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  true,
 			expectToggle:  true,
@@ -819,6 +842,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  true,
 			expectToggle:  false,
@@ -856,6 +880,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  true,
 			expectToggle:  true,
@@ -894,6 +919,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  false,
 			expectToggle:  false,
@@ -930,6 +956,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  false,
 			expectToggle:  true,
@@ -963,6 +990,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
 
 			expectDelete:  false,
 			expectToggle:  true,
@@ -979,6 +1007,40 @@ The pull request process is described [here](https://git.k8s.io/community/contri
 Needs approval from an approver in each of these files:
 
 - ~~[c/OWNERS](https://github.com/org/repo/blob/dev/c/OWNERS)~~ [cjwagner]
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":[]} -->`,
+		},
+		{
+			name:                "different GitHub link URL",
+			branch:              "dev",
+			hasLabel:            false,
+			files:               []string{"c/c.go"},
+			comments:            []github.IssueComment{},
+			reviews:             []github.Review{},
+			selfApprove:         true,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.mycorp.com"},
+
+			expectDelete:  false,
+			expectToggle:  true,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details >
+Needs approval from an approver in each of these files:
+
+- ~~[c/OWNERS](https://github.mycorp.com/org/repo/blob/dev/c/OWNERS)~~ [cjwagner]
 
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
@@ -1019,6 +1081,9 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			logrus.WithField("plugin", "approve"),
 			fghc,
 			fr,
+			config.GitHubOptions{
+				LinkURL: test.githubLinkURL,
+			},
 			&plugins.Approve{
 				Repos:               []string{"org/repo"},
 				RequireSelfApproval: &rsa,
@@ -1265,7 +1330,7 @@ func TestHandleGenericComment(t *testing.T) {
 
 	var handled bool
 	var gotState *state
-	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.Repo, opts *plugins.Approve, pr *state) error {
+	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConfig config.GitHubOptions, opts *plugins.Approve, pr *state) error {
 		gotState = pr
 		handled = true
 		return nil
@@ -1292,6 +1357,12 @@ func TestHandleGenericComment(t *testing.T) {
 
 	for _, test := range tests {
 		test.commentEvent.Repo = repo
+		githubConfig := config.GitHubOptions{
+			LinkURL: &url.URL{
+				Scheme: "https",
+				Host:   "github.com",
+			},
+		}
 		config := &plugins.Configuration{}
 		config.Approve = append(config.Approve, plugins.Approve{
 			Repos:             []string{test.commentEvent.Repo.Owner.Login},
@@ -1301,6 +1372,7 @@ func TestHandleGenericComment(t *testing.T) {
 			logrus.WithField("plugin", "approve"),
 			fghc,
 			fakeOwnersClient{},
+			githubConfig,
 			config,
 			&test.commentEvent,
 		)
@@ -1473,7 +1545,7 @@ func TestHandleReview(t *testing.T) {
 
 	var handled bool
 	var gotState *state
-	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.Repo, opts *plugins.Approve, pr *state) error {
+	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.Repo, config config.GitHubOptions, opts *plugins.Approve, pr *state) error {
 		gotState = pr
 		handled = true
 		return nil
@@ -1505,6 +1577,12 @@ func TestHandleReview(t *testing.T) {
 	for _, test := range tests {
 		test.reviewEvent.Repo = repo
 		test.reviewEvent.PullRequest = pr
+		githubConfig := config.GitHubOptions{
+			LinkURL: &url.URL{
+				Scheme: "https",
+				Host:   "github.com",
+			},
+		}
 		config := &plugins.Configuration{}
 		irs := !test.reviewActsAsApprove
 		config.Approve = append(config.Approve, plugins.Approve{
@@ -1516,6 +1594,7 @@ func TestHandleReview(t *testing.T) {
 			logrus.WithField("plugin", "approve"),
 			fghc,
 			fakeOwnersClient{},
+			githubConfig,
 			config,
 			&test.reviewEvent,
 		)
@@ -1631,7 +1710,7 @@ func TestHandlePullRequest(t *testing.T) {
 
 	var handled bool
 	var gotState *state
-	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.Repo, opts *plugins.Approve, pr *state) error {
+	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConfig config.GitHubOptions, opts *plugins.Approve, pr *state) error {
 		gotState = pr
 		handled = true
 		return nil
@@ -1654,6 +1733,12 @@ func TestHandlePullRequest(t *testing.T) {
 			logrus.WithField("plugin", "approve"),
 			fghc,
 			fakeOwnersClient{},
+			config.GitHubOptions{
+				LinkURL: &url.URL{
+					Scheme: "https",
+					Host:   "github.com",
+				},
+			},
 			&plugins.Configuration{},
 			&test.prEvent,
 		)

@@ -108,6 +108,9 @@ type ProwConfig struct {
 
 	// Pub/Sub Subscriptions that we want to listen to
 	PubSubSubscriptions PubsubSubscriptions `json:"pubsub_subscriptions,omitempty"`
+
+	// GitHubOptions allows users to control how prow applications display GitHub website links.
+	GitHubOptions GitHubOptions `json:"github,omitempty"`
 }
 
 // OwnersDirBlacklist is used to configure which directories to ignore when
@@ -347,6 +350,18 @@ type Branding struct {
 
 // PubSubSubscriptions maps GCP projects to a list of Topics.
 type PubsubSubscriptions map[string][]string
+
+// GitHubOptions allows users to control how prow applications display GitHub website links.
+type GitHubOptions struct {
+	// LinkURLFromConfig is the string representation of the link_url config parameter.
+	// This config parameter allows users to override the default GitHub link url for all plugins.
+	// If this option is not set, we assume "https://github.com".
+	LinkURLFromConfig string `json:"link_url,omitempty"`
+
+	// LinkURL is the url representation of LinkURLFromConfig. This variable should be used
+	// in all places internally.
+	LinkURL *url.URL
+}
 
 // Load loads and parses the config at path.
 func Load(prowConfig, jobConfig string) (c *Config, err error) {
@@ -978,6 +993,15 @@ func parseProwConfig(c *Config) error {
 		// so validation succeeds
 		c.Plank.JobURLPrefix = ""
 	}
+
+	if c.GitHubOptions.LinkURLFromConfig == "" {
+		c.GitHubOptions.LinkURLFromConfig = "https://github.com"
+	}
+	linkURL, err := url.Parse(c.GitHubOptions.LinkURLFromConfig)
+	if err != nil {
+		return fmt.Errorf("unable to parse github.link_url, might not be a valid url: %v", err)
+	}
+	c.GitHubOptions.LinkURL = linkURL
 
 	if c.LogLevel == "" {
 		c.LogLevel = "info"
