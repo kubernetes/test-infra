@@ -3046,9 +3046,6 @@ presubmits:
         - --
         - -c
         - cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-e2e.sh
-        env:
-        - name: PARALLEL
-          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
         name: ""
         resources:
