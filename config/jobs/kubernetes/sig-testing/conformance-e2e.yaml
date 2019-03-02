@@ -19,10 +19,6 @@ presubmits:
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
-          env:
-            # skip serial tests and run with --ginkgo-parallel
-            - name: "PARALLEL"
-              value: "true"
           args:
             - "--job=$(JOB_NAME)"
             - "--root=/go/src"
