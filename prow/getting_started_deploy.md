@@ -8,21 +8,23 @@ Both of these are focused on [Kubernetes Engine](https://cloud.google.com/kubern
 
 ## Tackle deployment
 
-Prow's tackle utility walks you through deploying a new instance of prow in a couple minutes, try it out!
+Prow's `tackle` utility walks you through deploying a new instance of prow in a couple minutes, try it out!
 
-You need three things:
-1) The prow tackle command.
-2) a [personal access token][1] for the github bot user you want to act as prow
+You need a few things:
 
+1. [`bazel`](https://bazel.build/) build tool installed and working
+1. The prow `tackle` utility. It is recommended to use it by running `bazel run //prow/cmd/takle` from `test-infra` directory, alternatively you can install it by running `go get -u k8s.io/test-infra/prow/cmd/tackle` (in that case you would also need go installed and working).
+1. A [personal access token][1] for the GitHub bot user you want to act as prow. If you're setting up prow for personal repo (not organization) then bot user == you (your GitHub account).
+
+   - Token must have `public_repo` and `repo:status` scopes (and repo for private repos), more details [here][8].
    - Prow uploads this token into a secret in your cluster
    - Bot user must have write access to the repo
-   - Token must have `public_repo` and `repo:status` scopes (and repo for private repos), more details [here][8].
 
-3) Optionally, credentials to a kubernetes cluster
+1. Optionally, credentials to a Kubernetes cluster
 
    - Otherwise the tackle command can help you create one
 
-Then run the following and follow on-screen instructions:
+To install prow run the following from the `test-infra` directory and follow the on-screen instructions:
 
 ```bash
 # Ideally use https://bazel.build, alternatively try:
@@ -34,7 +36,7 @@ The will help you through the following steps:
 
 * Choosing a kubectl context (and creating a cluster / getting its credentials if necessary)
 * Deploying prow into that cluster
-* Configuring github to send prow webhooks for your repos
+* Configuring GitHub to send prow webhooks for your repos. Please note that the absolute path to a personal access token should be specified.
 
 See the Next Steps section after running this utility.
 
