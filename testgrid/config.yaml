@@ -3181,6 +3181,9 @@ test_groups:
 - name: ci-kubernetes-conformance-image-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-conformance-image-test
   num_columns_recent: 3
+- name: ci-kubernetes-conformance-image-1-14-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-conformance-image-1-14-test
+  num_columns_recent: 3
 
 # cloud-provider-openstack e2e conformance tests
 # name format: PR trigger ci-presubmit-${zuul-job-name}
@@ -3463,6 +3466,9 @@ dashboards:
   - name: kind-image, master (dev)
     description: Runs conformance tests using image against latest kubernetes master with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-conformance-image-test
+  - name: kind-image, 1.14 (dev)
+    description: Runs conformance tests using image against kubernetes 1.14 branch with a kubernetes-in-docker cluster
+    test_group_name: ci-kubernetes-conformance-image-1-14-test
   - name: kind, master (dev) [non-serial]
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
     test_group_name: ci-kubernetes-kind-conformance-parallel
@@ -3630,6 +3636,11 @@ dashboards:
   - name: kind-image, master (dev)
     description: Runs conformance tests using image against latest kubernetes master with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-conformance-image-test
+    alert_options:
+      alert_mail_to_addresses: davanum@gmail.com
+  - name: kind-image, 1.14 (dev)
+    description: Runs conformance tests using image against kubernetes 1.14 branch with a kubernetes-in-docker cluster
+    test_group_name: ci-kubernetes-conformance-image-1-14-test
     alert_options:
       alert_mail_to_addresses: davanum@gmail.com
 
@@ -6930,6 +6941,9 @@ dashboards:
   - name: conformance-image, master (dev)
     description: Runs conformance test using connformance image against latest kubernetes master with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-conformance-image-test
+  - name: conformance-image, 1.14 (dev)
+    description: Runs conformance test using connformance image against kubernetes 1.14 branch with a kubernetes-in-docker cluster
+    test_group_name: ci-kubernetes-conformance-image-1-14-test
 
 - name: sig-gcp-master
   dashboard_tab:
