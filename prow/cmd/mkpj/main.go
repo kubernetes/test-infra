@@ -135,6 +135,10 @@ func (o *options) Validate() error {
 		return errors.New("required flag --config-path was unset")
 	}
 
+	if err := o.github.Validate(false); err != nil {
+		return err
+	}
+
 	return nil
 }
 
