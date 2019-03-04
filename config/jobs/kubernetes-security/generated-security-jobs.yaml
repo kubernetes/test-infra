@@ -3550,8 +3550,6 @@ presubmits:
           value: master
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
-        - name: METADATA_BANDAID
-          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
         imagePullPolicy: Always
         name: ""
@@ -3600,8 +3598,6 @@ presubmits:
           value: master
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
-        - name: METADATA_BANDAID
-          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.14
         imagePullPolicy: Always
         name: ""
