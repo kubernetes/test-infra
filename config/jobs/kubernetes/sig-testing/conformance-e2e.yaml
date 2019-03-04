@@ -98,7 +98,7 @@ periodics:
             - "--job=$(JOB_NAME)"
             - "--root=/go/src"
             - "--repo=k8s.io/test-infra=master"
-            - "--repo=k8s.io/kubernetes=1.14"
+            - "--repo=k8s.io/kubernetes=release-1.14"
             - "--repo=sigs.k8s.io/kind=master"
             - "--service-account=/etc/service-account/service-account.json"
             - "--upload=gs://kubernetes-jenkins/logs"
