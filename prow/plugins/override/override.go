@@ -37,7 +37,7 @@ import (
 const pluginName = "override"
 
 var (
-	overrideRe = regexp.MustCompile(`(?mi)^/override (.+?)\s*$`)
+	overrideRe = regexp.MustCompile(`(?mi)^/override( (.+?)\s*)?$`)
 )
 
 type githubClient interface {
@@ -139,6 +139,14 @@ func description(user string) string {
 	return fmt.Sprintf("Overridden by %s", user)
 }
 
+func formatList(list []string) string {
+	var lines []string
+	for _, item := range list {
+		lines = append(lines, fmt.Sprintf(" - `%s`", item))
+	}
+	return strings.Join(lines, "\n")
+}
+
 func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
 
 	if !e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
@@ -147,19 +155,23 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent)
 
 	mat := overrideRe.FindAllStringSubmatch(e.Body, -1)
 	if len(mat) == 0 {
-		return nil
-	}
-
-	overrides := sets.String{}
-
-	for _, m := range mat {
-		overrides.Insert(m[1])
+		return nil // no /override commands given in the comment
 	}
 
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 	number := e.Number
 	user := e.User.Login
+
+	overrides := sets.NewString()
+	for _, m := range mat {
+		if m[1] == "" {
+			resp := "/override requires a failed status context to operate on, but none was given"
+			log.Warn(resp)
+			return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+		}
+		overrides.Insert(m[2])
+	}
 
 	if !authorized(oc, log, org, repo, user) {
 		resp := fmt.Sprintf("%s unauthorized: /override is restricted to repo administrators", user)
@@ -178,6 +190,24 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent)
 	statuses, err := oc.ListStatuses(org, repo, sha)
 	if err != nil {
 		resp := fmt.Sprintf("Cannot get commit statuses for PR #%d in %s/%s", number, org, repo)
+		log.WithError(err).Warn(resp)
+		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+	}
+
+	contexts := sets.NewString()
+	for _, status := range statuses {
+		if status.State == github.StatusSuccess {
+			continue
+		}
+		contexts.Insert(status.Context)
+	}
+	if unknown := overrides.Difference(contexts); unknown.Len() > 0 {
+		resp := fmt.Sprintf(`/override requires a failed status context to operate on.
+The following unknown contexts were given:
+%s
+
+Only the following contexts were expected:
+%s`, formatList(unknown.List()), formatList(contexts.List()))
 		log.WithError(err).Warn(resp)
 		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}

@@ -80,7 +80,7 @@ func (c *fakeClient) CreateStatus(org, repo, ref string, s github.Status) error 
 func (c *fakeClient) GetPullRequest(org, repo string, number int) (*github.PullRequest, error) {
 	switch {
 	case number < 0:
-		return nil, errors.New("injected CreateStatus failure")
+		return nil, errors.New("injected GetPullRequest failure")
 	case org != fakeOrg:
 		return nil, fmt.Errorf("bad org: %s", org)
 	case repo != fakeRepo:
@@ -121,7 +121,7 @@ func (c *fakeClient) HasPermission(org, repo, user string, roles ...string) (boo
 	case roles[0] != github.RoleAdmin:
 		return false, fmt.Errorf("bad roles: %s", roles)
 	case user == "fail":
-		return true, errors.New("injected HasRole error")
+		return true, errors.New("injected HasPermission error")
 	}
 	return user == adminUser, nil
 }
@@ -235,6 +235,26 @@ func TestHandle(t *testing.T) {
 			},
 		},
 		{
+			name:    "comment for incorrect context",
+			comment: "/override whatever-you-want",
+			contexts: map[string]github.Status{
+				"hung-test": {
+					Context: "hung-test",
+					State:   github.StatusPending,
+				},
+			},
+			expected: map[string]github.Status{
+				"hung-test": {
+					Context: "hung-test",
+					State:   github.StatusPending,
+				},
+			},
+			checkComments: []string{
+				"The following unknown contexts were given", "whatever-you-want",
+				"Only the following contexts were expected", "hung-context",
+			},
+		},
+		{
 			name:    "refuse override from non-admin",
 			comment: "/override broken-test",
 			contexts: map[string]github.Status{
@@ -245,6 +265,24 @@ func TestHandle(t *testing.T) {
 			},
 			user:          "rando",
 			checkComments: []string{"unauthorized"},
+			expected: map[string]github.Status{
+				"broken-test": {
+					Context: "broken-test",
+					State:   github.StatusPending,
+				},
+			},
+		},
+		{
+			name:    "comment for override with no target",
+			comment: "/override",
+			contexts: map[string]github.Status{
+				"broken-test": {
+					Context: "broken-test",
+					State:   github.StatusPending,
+				},
+			},
+			user:          "rando",
+			checkComments: []string{"but none was given"},
 			expected: map[string]github.Status{
 				"broken-test": {
 					Context: "broken-test",
