@@ -67,12 +67,6 @@ workspace_binary(
 )
 
 workspace_binary(
-    name = "govet",
-    args = ["vet"],
-    cmd = "@go_sdk//:bin/go",
-)
-
-workspace_binary(
     name = "golint",
     cmd = "@com_github_golang_lint//golint",
 )

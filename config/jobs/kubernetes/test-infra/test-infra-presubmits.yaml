@@ -218,22 +218,6 @@ presubmits:
         command:
         - ./hack/verify-gofmt.sh
 
-  - name: pull-test-infra-verify-govet
-    branches:
-    - master
-    always_run: true
-    decorate: true
-    path_alias: k8s.io/test-infra
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-experimental
-        command:
-        - runner.sh
-        args:
-        - ./hack/verify-govet.sh
-
   - name: pull-test-infra-verify-labels
     branches:
     - master
