@@ -15,7 +15,7 @@ presets:
   - name: WIN_BUILD
     value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/build/build-windows-k8s.sh
   - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
-    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list-ws2019
+    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list
   - name: KUBE_VERBOSE
     value: 0
   volumes:
