@@ -25,7 +25,10 @@ nogo(
         "@org_golang_x_tools//go/analysis/passes/atomic:go_tool_library",
         "@org_golang_x_tools//go/analysis/passes/bools:go_tool_library",
         "@org_golang_x_tools//go/analysis/passes/buildtag:go_tool_library",
-        "@org_golang_x_tools//go/analysis/passes/cgocall:go_tool_library",
+        # cgocall appears to be confused by github.com/mattn/go-sqlite3 and fails
+        # even when configured not to run. Given we don't use cgocall much, skip
+        # it for now.
+        # "@org_golang_x_tools//go/analysis/passes/cgocall:go_tool_library",
         "@org_golang_x_tools//go/analysis/passes/composite:go_tool_library",
         "@org_golang_x_tools//go/analysis/passes/copylock:go_tool_library",
         "@org_golang_x_tools//go/analysis/passes/httpresponse:go_tool_library",
