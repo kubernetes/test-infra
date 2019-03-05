@@ -568,6 +568,14 @@ func handleRequestJobViews(sg *spyglass.Spyglass, cfg config.Getter, o options) 
 // renderSpyglass returns a pre-rendered Spyglass page from the given source string
 func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o options) (string, error) {
 	renderStart := time.Now()
+
+	src = strings.TrimSuffix(src, "/")
+	realPath, err := sg.ResolveSymlink(src)
+	if err != nil {
+		return "", fmt.Errorf("error when resolving real path: %v", err)
+	}
+	src = realPath
+
 	artifactNames, err := sg.ListArtifacts(src)
 	if err != nil {
 		return "", fmt.Errorf("error listing artifacts: %v", err)
