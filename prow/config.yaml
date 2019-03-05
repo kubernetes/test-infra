@@ -319,6 +319,7 @@ branch-protection:
             - continuous-integration/travis-ci
 
 tide:
+  sync_period: 2m
   queries:
   - orgs:
     - kubeflow
