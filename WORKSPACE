@@ -15,8 +15,8 @@ versions.check(minimum_bazel_version = "0.18.0")
 
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "492c3ac68ed9dcf527a07e6a1b2dcbf199c6bf8b35517951467ac32e421c06c1",
-    urls = ["https://github.com/bazelbuild/rules_go/releases/download/0.17.0/rules_go-0.17.0.tar.gz"],
+    sha256 = "6776d68ebb897625dead17ae510eac3d5f6342367327875210df44dbe2aeeb19",
+    url = "https://github.com/bazelbuild/rules_go/releases/download/0.17.1/rules_go-0.17.1.tar.gz",
 )
 
 http_archive(
@@ -29,7 +29,10 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_depe
 
 go_rules_dependencies()
 
-go_register_toolchains(go_version = "1.11.5")
+go_register_toolchains(
+    go_version = "1.11.5",
+    nogo = "@//:nogo_vet",
+)
 
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 
