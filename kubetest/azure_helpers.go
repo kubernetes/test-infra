@@ -65,15 +65,16 @@ type PublicKey struct {
 }
 
 type WindowsProfile struct {
-	AdminUsername         string `json:"adminUsername,omitempty"`
-	AdminPassword         string `json:"adminPassword,omitempty"`
-	ImageVersion          string `json:"imageVersion,omitempty"`
-	WindowsImageSourceURL string `json:"WindowsImageSourceUrl"`
-	WindowsPublisher      string `json:"WindowsPublisher"`
-	WindowsOffer          string `json:"WindowsOffer"`
-	WindowsSku            string `json:"WindowsSku"`
-	WindowsDockerVersion  string `json:"windowsDockerVersion"`
-	SSHEnabled            bool   `json:"sshEnabled,omitempty"`
+	AdminUsername          string `json:"adminUsername,omitempty"`
+	AdminPassword          string `json:"adminPassword,omitempty"`
+	ImageVersion           string `json:"imageVersion,omitempty"`
+	WindowsImageSourceURL  string `json:"WindowsImageSourceUrl"`
+	WindowsPublisher       string `json:"WindowsPublisher"`
+	WindowsOffer           string `json:"WindowsOffer"`
+	WindowsSku             string `json:"WindowsSku"`
+	WindowsDockerVersion   string `json:"windowsDockerVersion"`
+	SSHEnabled             bool   `json:"sshEnabled,omitempty"`
+	EnableAutomaticUpdates bool   `json:"enableAutomaticUpdates,omitempty"`
 }
 
 type KubernetesConfig struct {
