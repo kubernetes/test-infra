@@ -245,6 +245,11 @@ func (c *Cluster) populateApiModelTemplate() error {
 			agentPool.VMSize = c.agentVMSize
 		}
 	}
+	if c.agentPoolCount != 0 {
+		for _, agentPool := range v.Properties.AgentPoolProfiles {
+			agentPool.Count = c.agentPoolCount
+		}
+	}
 	if c.adminUsername != "" {
 		v.Properties.LinuxProfile.AdminUsername = c.adminUsername
 		if v.Properties.WindowsProfile != nil {
