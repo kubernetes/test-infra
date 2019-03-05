@@ -40,6 +40,8 @@ prow_push(
         prefix("cherrypicker"): "//prow/external-plugins/cherrypicker:image",
     }) + image_tags(**{
         prefix("refresh"): "//prow/external-plugins/refresh:image",
+    }) + image_tags(**{
+        prefix("ghproxy"): "//ghproxy:image",
     }),
 )
 

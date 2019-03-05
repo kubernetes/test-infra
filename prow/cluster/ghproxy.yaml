@@ -42,7 +42,7 @@ metadata:
   labels:
     app: ghproxy
 spec:
-  replicas: 1 
+  replicas: 1  # TODO(fejta): this should be HA
   template:
     metadata:
       labels:
@@ -50,8 +50,7 @@ spec:
     spec:
       containers:
       - name: ghproxy
-        image: gcr.io/k8s-testimages/ghproxy:latest # TODO(fejta): tagged
-        imagePullPolicy: Always
+        image: gcr.io/k8s-prow/ghproxy:v20190305-3f4f26bfa
         args:
         - --cache-dir=/cache
         - --cache-sizeGB=99
