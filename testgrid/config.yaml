@@ -783,6 +783,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-build-smoke
 - name: ci-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-bazel
+- name: ci-test-infra-resultstore-upload
+  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-resultstore-upload
 # Ubuntu node e2e tests (contact: @kubernetes/ubuntu-image on github)
 - name: ci-kubernetes-e2enode-ubuntu1-k8sbeta-gkespec
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sbeta-gkespec
@@ -6806,6 +6808,11 @@ dashboards:
   - name: post-build-smoke
     description: basic postsubmit to ensure build controller works correctly
     test_group_name: post-test-infra-build-smoke
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: resultstore-upload
+    description: transfer finished results into resultstore
+    test_group_name: ci-test-infra-resultstore-upload
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 
