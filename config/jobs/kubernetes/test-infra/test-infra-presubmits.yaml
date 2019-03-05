@@ -221,6 +221,8 @@ presubmits:
   - name: pull-test-infra-verify-govet
     branches:
     - master
+    always_run: true
+    optional: true
     decorate: true
     path_alias: k8s.io/test-infra
     labels:
