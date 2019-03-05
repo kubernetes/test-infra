@@ -46,30 +46,6 @@ postsubmits:
           privileged: true
 
 periodics:
-- name: ci-ingress-gce-downgrade-e2e
-  interval: 60m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
-      args:
-      - --timeout=340
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --cluster=
-      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
-      - --extract=ci/latest
-      - --gcp-project-type=ingress-project
-      - --gcp-zone=us-west1-b
-      - --ginkgo-parallel
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:IngressDowngrade\]
-      - --timeout=320m
-
 - name: ci-ingress-gce-e2e
   interval: 60m
   labels:
@@ -214,28 +190,4 @@ periodics:
       - --ginkgo-parallel=1
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:IngressScale\]
-      - --timeout=320m
-
-- name: ci-ingress-gce-upgrade-e2e
-  interval: 60m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
-      args:
-      - --timeout=340
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --cluster=
-      - --env=GCE_GLBC_IMAGE=k8s.gcr.io/ingress-gce-glbc-amd64:v1.4.3
-      - --extract=ci/latest
-      - --gcp-project-type=ingress-project
-      - --gcp-zone=us-west1-b
-      - --ginkgo-parallel
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:IngressUpgrade\]
       - --timeout=320m
