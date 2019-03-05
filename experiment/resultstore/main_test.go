@@ -141,7 +141,7 @@ func TestInsertLink(t *testing.T) {
 			case tc.err:
 				t.Error("failed to received an error")
 			case changed != tc.changed:
-				t.Errorf("changed %t != expected %t", changed, tc.changed)
+				t.Error("changed %t != expected %t", changed, tc.changed)
 			case !reflect.DeepEqual(tc.expected, tc.input):
 				t.Errorf("metadata %#v != expected %#v", tc.input, tc.expected)
 			}
