@@ -185,7 +185,7 @@ func (g *gitCtx) gitRevParse() (string, error) {
 		logrus.WithError(err).Error("git rev-parse HEAD failed!")
 		return "", err
 	}
-	return commit, nil
+	return strings.TrimSpace(commit), nil
 }
 
 // commandsForPullRefs returns the list of commands needed to fetch and
