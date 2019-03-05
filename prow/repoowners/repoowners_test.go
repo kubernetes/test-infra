@@ -110,12 +110,12 @@ type cacheOptions struct {
 	ownersFileChanged        bool
 }
 
-type fakeGithubClient struct {
+type fakeGitHubClient struct {
 	Collaborators []string
 	ref           string
 }
 
-func (f *fakeGithubClient) ListCollaborators(org, repo string) ([]github.User, error) {
+func (f *fakeGitHubClient) ListCollaborators(org, repo string) ([]github.User, error) {
 	result := make([]github.User, 0, len(f.Collaborators))
 	for _, login := range f.Collaborators {
 		result = append(result, github.User{Login: login})
@@ -123,7 +123,7 @@ func (f *fakeGithubClient) ListCollaborators(org, repo string) ([]github.User, e
 	return result, nil
 }
 
-func (f *fakeGithubClient) GetRef(org, repo, ref string) (string, error) {
+func (f *fakeGitHubClient) GetRef(org, repo, ref string) (string, error) {
 	return f.ref, nil
 }
 
@@ -234,7 +234,7 @@ labels:
 		// mark this entry is cache
 		entry.owners.baseDir = "cache"
 	}
-	ghc := &fakeGithubClient{Collaborators: []string{"cjwagner", "k8s-ci-robot", "alice", "bob", "carl", "mml", "maggie"}}
+	ghc := &fakeGitHubClient{Collaborators: []string{"cjwagner", "k8s-ci-robot", "alice", "bob", "carl", "mml", "maggie"}}
 	ghc.ref, err = localGit.RevParse("org", "repo", "HEAD")
 	if err != nil {
 		return nil, nil, fmt.Errorf("cannot get commit SHA: %v", err)
@@ -1053,7 +1053,7 @@ func TestCanonicalize(t *testing.T) {
 			expectedPath: "",
 		},
 		{
-			name:         "Github Style Input (No Root)",
+			name:         "GitHub Style Input (No Root)",
 			path:         "a/b/c/d.txt",
 			expectedPath: "a/b/c/d.txt",
 		},

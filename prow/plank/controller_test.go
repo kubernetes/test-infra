@@ -455,7 +455,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			expectedNumPods:    map[string]int{"default": 1},
 			expectedReport:     true,
 			expectPrevReportState: map[string]prowapi.ProwJobState{
-				reporter.GithubReporterName: prowapi.PendingState,
+				reporter.GitHubReporterName: prowapi.PendingState,
 			},
 			expectedURL: "blabla/pending",
 		},
@@ -557,7 +557,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			expectedPodHasName: true,
 			expectedReport:     true,
 			expectPrevReportState: map[string]prowapi.ProwJobState{
-				reporter.GithubReporterName: prowapi.PendingState,
+				reporter.GitHubReporterName: prowapi.PendingState,
 			},
 			expectedURL: "some/pending",
 		},
@@ -602,7 +602,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			expectedNumPods: map[string]int{"default": 1},
 			expectedReport:  true,
 			expectPrevReportState: map[string]prowapi.ProwJobState{
-				reporter.GithubReporterName: prowapi.PendingState,
+				reporter.GitHubReporterName: prowapi.PendingState,
 			},
 			expectedURL: "beer/pending",
 		},
@@ -624,7 +624,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			expectedComplete: true,
 			expectedReport:   true,
 			expectPrevReportState: map[string]prowapi.ProwJobState{
-				reporter.GithubReporterName: prowapi.ErrorState,
+				reporter.GitHubReporterName: prowapi.ErrorState,
 			},
 		},
 		{
@@ -702,7 +702,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			expectedNumPods: map[string]int{"default": 1},
 			expectedReport:  true,
 			expectPrevReportState: map[string]prowapi.ProwJobState{
-				reporter.GithubReporterName: prowapi.PendingState,
+				reporter.GitHubReporterName: prowapi.PendingState,
 			},
 			expectedURL:     "foo/pending",
 			expectedBuildID: "0987654321",

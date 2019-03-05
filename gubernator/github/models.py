@@ -19,16 +19,16 @@ import json
 import google.appengine.ext.ndb as ndb
 
 
-class GithubResource(ndb.Model):
+class GitHubResource(ndb.Model):
     # A key holder used to define an entitygroup for
     # each Issue/PR, for easy ancestor queries.
     @staticmethod
     def make_key(repo, number):
-        return ndb.Key(GithubResource, '%s %s' % (repo, number))
+        return ndb.Key(GitHubResource, '%s %s' % (repo, number))
 
 
 def shrink(body):
-    """Recursively remove Github API urls from an object to make it more human-readable."""
+    """Recursively remove GitHub API urls from an object to make it more human-readable."""
     toremove = []
     for key, value in body.iteritems():
         if isinstance(value, basestring):
@@ -47,7 +47,7 @@ def shrink(body):
     return body
 
 
-class GithubWebhookRaw(ndb.Model):
+class GitHubWebhookRaw(ndb.Model):
     repo = ndb.StringProperty()
     number = ndb.IntegerProperty(indexed=False)
     event = ndb.StringProperty()

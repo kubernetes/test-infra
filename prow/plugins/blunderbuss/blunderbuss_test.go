@@ -31,21 +31,21 @@ import (
 	"k8s.io/test-infra/prow/repoowners"
 )
 
-type fakeGithubClient struct {
+type fakeGitHubClient struct {
 	pr        *github.PullRequest
 	changes   []github.PullRequestChange
 	requested []string
 }
 
-func newFakeGithubClient(pr *github.PullRequest, filesChanged []string) *fakeGithubClient {
+func newFakeGitHubClient(pr *github.PullRequest, filesChanged []string) *fakeGitHubClient {
 	changes := make([]github.PullRequestChange, 0, len(filesChanged))
 	for _, name := range filesChanged {
 		changes = append(changes, github.PullRequestChange{Filename: name})
 	}
-	return &fakeGithubClient{pr: pr, changes: changes}
+	return &fakeGitHubClient{pr: pr, changes: changes}
 }
 
-func (c *fakeGithubClient) RequestReview(org, repo string, number int, logins []string) error {
+func (c *fakeGitHubClient) RequestReview(org, repo string, number int, logins []string) error {
 	if org != "org" {
 		return errors.New("org should be 'org'")
 	}
@@ -59,7 +59,7 @@ func (c *fakeGithubClient) RequestReview(org, repo string, number int, logins []
 	return nil
 }
 
-func (c *fakeGithubClient) GetPullRequestChanges(org, repo string, num int) ([]github.PullRequestChange, error) {
+func (c *fakeGitHubClient) GetPullRequestChanges(org, repo string, num int) ([]github.PullRequestChange, error) {
 	if org != "org" {
 		return nil, errors.New("org should be 'org'")
 	}
@@ -72,7 +72,7 @@ func (c *fakeGithubClient) GetPullRequestChanges(org, repo string, num int) ([]g
 	return c.changes, nil
 }
 
-func (c *fakeGithubClient) GetPullRequest(org, repo string, num int) (*github.PullRequest, error) {
+func (c *fakeGitHubClient) GetPullRequest(org, repo string, num int) (*github.PullRequest, error) {
 	return c.pr, nil
 }
 
@@ -260,7 +260,7 @@ func TestHandleWithExcludeApproversOnlyReviewers(t *testing.T) {
 	for _, tc := range testcases {
 		pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}}
 		repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
-		fghc := newFakeGithubClient(&pr, tc.filesChanged)
+		fghc := newFakeGitHubClient(&pr, tc.filesChanged)
 
 		if err := handle(
 			fghc, froc, logrus.WithField("plugin", PluginName),
@@ -302,7 +302,7 @@ func TestHandleWithoutExcludeApproversNoReviewers(t *testing.T) {
 	for _, tc := range testcases {
 		pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}}
 		repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
-		fghc := newFakeGithubClient(&pr, tc.filesChanged)
+		fghc := newFakeGitHubClient(&pr, tc.filesChanged)
 
 		if err := handle(
 			fghc, froc, logrus.WithField("plugin", PluginName),
@@ -423,7 +423,7 @@ func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
 	for _, tc := range testcases {
 		pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}}
 		repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
-		fghc := newFakeGithubClient(&pr, tc.filesChanged)
+		fghc := newFakeGitHubClient(&pr, tc.filesChanged)
 		if err := handle(
 			fghc, froc, logrus.WithField("plugin", PluginName),
 			&tc.reviewerCount, nil, tc.maxReviewerCount, false, &repo, &pr,
@@ -525,7 +525,7 @@ func TestHandleOld(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}}
 			repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
-			fghc := newFakeGithubClient(&pr, tc.filesChanged)
+			fghc := newFakeGitHubClient(&pr, tc.filesChanged)
 
 			err := handle(
 				fghc, froc, logrus.WithField("plugin", PluginName),
@@ -588,7 +588,7 @@ func TestHandlePullRequest(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}, Body: tc.body}
 			repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
-			fghc := newFakeGithubClient(&pr, tc.filesChanged)
+			fghc := newFakeGitHubClient(&pr, tc.filesChanged)
 			config := plugins.Blunderbuss{
 				ReviewerCount:    &tc.reviewerCount,
 				FileWeightCount:  nil,
@@ -678,7 +678,7 @@ func TestHandleGenericComment(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}}
-			fghc := newFakeGithubClient(&pr, tc.filesChanged)
+			fghc := newFakeGitHubClient(&pr, tc.filesChanged)
 			repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
 			config := plugins.Blunderbuss{
 				ReviewerCount:    &tc.reviewerCount,

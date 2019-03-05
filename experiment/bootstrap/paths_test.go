@@ -70,7 +70,7 @@ func TestPRPaths(t *testing.T) {
 	if err != nil {
 		t.Errorf("got unexpected error parsing test repos: %v", err)
 	}
-	reposGithub, err := ParseRepos([]string{"github.com/foo/bar=master:0efa7e1b,2001:8b376c6c"})
+	reposGitHub, err := ParseRepos([]string{"github.com/foo/bar=master:0efa7e1b,2001:8b376c6c"})
 	if err != nil {
 		t.Errorf("got unexpected error parsing test repos: %v", err)
 	}
@@ -152,7 +152,7 @@ func TestPRPaths(t *testing.T) {
 			Name:  "normal-github",
 			Base:  "/base",
 			Job:   "some-job",
-			Repos: reposGithub,
+			Repos: reposGitHub,
 			Build: "1337",
 			Expected: &Paths{
 				Artifacts:     filepath.Join("/base", "pull", "foo_bar", "2001", "some-job", "1337", "artifacts"),

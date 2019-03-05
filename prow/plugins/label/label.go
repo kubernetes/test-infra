@@ -163,7 +163,7 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 		}
 
 		if err := gc.AddLabel(org, repo, e.Number, RepoLabelsExisting[labelToAdd]); err != nil {
-			log.WithError(err).Errorf("Github failed to add the following label: %s", labelToAdd)
+			log.WithError(err).Errorf("GitHub failed to add the following label: %s", labelToAdd)
 		}
 	}
 
@@ -180,7 +180,7 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 		}
 
 		if err := gc.RemoveLabel(org, repo, e.Number, labelToRemove); err != nil {
-			log.WithError(err).Errorf("Github failed to remove the following label: %s", labelToRemove)
+			log.WithError(err).Errorf("GitHub failed to remove the following label: %s", labelToRemove)
 		}
 	}
 

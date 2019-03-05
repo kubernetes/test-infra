@@ -147,7 +147,7 @@ func partitionTime(start, end time.Time, count, goalSize int) time.Time {
 // dateToken generates a GitHub search query token for the specified date range.
 // See: https://help.github.com/articles/understanding-the-search-syntax/#query-for-dates
 func dateToken(start, end time.Time) string {
-	// Github's GraphQL API silently fails if you provide it with an invalid time
+	// GitHub's GraphQL API silently fails if you provide it with an invalid time
 	// string.
 	// Dates before 1970 (unix epoch) are considered invalid.
 	startString, endString := "*", "*"

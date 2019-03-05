@@ -30,7 +30,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Client can be used to run commands again Github API
+// Client can be used to run commands again GitHub API
 type Client struct {
 	Token     string
 	TokenFile string
@@ -71,8 +71,8 @@ func (client *Client) CheckFlags() error {
 	return nil
 }
 
-// getGithubClient create the github client that we use to communicate with github
-func (client *Client) getGithubClient() (*github.Client, error) {
+// getGitHubClient create the github client that we use to communicate with github
+func (client *Client) getGitHubClient() (*github.Client, error) {
 	if client.githubClient != nil {
 		return client.githubClient, nil
 	}
@@ -98,7 +98,7 @@ func (client *Client) getGithubClient() (*github.Client, error) {
 // limitsCheckAndWait make sure we have not reached the limit or wait
 func (client *Client) limitsCheckAndWait() {
 	var sleep time.Duration
-	githubClient, err := client.getGithubClient()
+	githubClient, err := client.getGitHubClient()
 	if err != nil {
 		glog.Error("Failed to get RateLimits: ", err)
 		sleep = time.Minute
@@ -131,11 +131,11 @@ func (client *Client) RepositoryName() string {
 	return fmt.Sprintf("%s/%s", client.Org, client.Project)
 }
 
-// FetchIssues from Github, until 'latest' time
+// FetchIssues from GitHub, until 'latest' time
 func (client *Client) FetchIssues(latest time.Time, c chan *github.Issue) {
 	opt := &github.IssueListByRepoOptions{Since: latest, Sort: "updated", State: "all", Direction: "asc"}
 
-	githubClient, err := client.getGithubClient()
+	githubClient, err := client.getGitHubClient()
 	if err != nil {
 		close(c)
 		glog.Error(err)
@@ -188,7 +188,7 @@ func hasID(events []*github.IssueEvent, ID int) bool {
 func (client *Client) FetchIssueEvents(issueID int, latest *int, c chan *github.IssueEvent) {
 	opt := &github.ListOptions{PerPage: 100}
 
-	githubClient, err := client.getGithubClient()
+	githubClient, err := client.getGitHubClient()
 	if err != nil {
 		close(c)
 		glog.Error(err)
@@ -230,7 +230,7 @@ func (client *Client) FetchIssueEvents(issueID int, latest *int, c chan *github.
 func (client *Client) FetchIssueComments(issueID int, latest time.Time, c chan *github.IssueComment) {
 	opt := &github.IssueListCommentsOptions{Since: latest, Sort: "updated", Direction: "asc"}
 
-	githubClient, err := client.getGithubClient()
+	githubClient, err := client.getGitHubClient()
 	if err != nil {
 		close(c)
 		glog.Error(err)
@@ -272,7 +272,7 @@ func (client *Client) FetchIssueComments(issueID int, latest time.Time, c chan *
 func (client *Client) FetchPullComments(issueID int, latest time.Time, c chan *github.PullRequestComment) {
 	opt := &github.PullRequestListCommentsOptions{Since: latest, Sort: "updated", Direction: "asc"}
 
-	githubClient, err := client.getGithubClient()
+	githubClient, err := client.getGitHubClient()
 	if err != nil {
 		close(c)
 		glog.Error(err)

@@ -100,7 +100,7 @@ func newTestReviewTime(t time.Time, user, body string, state github.ReviewState)
 	return r
 }
 
-func newFakeGithubClient(hasLabel, humanApproved bool, files []string, comments []github.IssueComment, reviews []github.Review) *fakegithub.FakeClient {
+func newFakeGitHubClient(hasLabel, humanApproved bool, files []string, comments []github.IssueComment, reviews []github.Review) *fakegithub.FakeClient {
 	labels := []string{"org/repo#1:lgtm"}
 	if hasLabel {
 		labels = append(labels, fmt.Sprintf("org/repo#%v:approved", prNumber))
@@ -1069,7 +1069,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 	}
 
 	for _, test := range tests {
-		fghc := newFakeGithubClient(test.hasLabel, test.humanApproved, test.files, test.comments, test.reviews)
+		fghc := newFakeGitHubClient(test.hasLabel, test.humanApproved, test.files, test.comments, test.reviews)
 		branch := "master"
 		if test.branch != "" {
 			branch = test.branch

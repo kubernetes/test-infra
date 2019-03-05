@@ -77,7 +77,7 @@ func run(flags *flags, cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	postContent, isCoverageLow := diff.ContentForGithubPost(baseProfiles, newProfiles, flags.jobName, flags.threshold)
+	postContent, isCoverageLow := diff.ContentForGitHubPost(baseProfiles, newProfiles, flags.jobName, flags.threshold)
 
 	var file io.WriteCloser
 	if flags.outputFile == "-" {

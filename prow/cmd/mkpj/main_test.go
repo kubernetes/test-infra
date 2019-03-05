@@ -68,12 +68,12 @@ func TestOptions_Validate(t *testing.T) {
 func TestDefaultPR(t *testing.T) {
 	author := "Bernardo Soares"
 	sha := "Esther Greenwood"
-	fakeGithubClient := &fakegithub.FakeClient{}
-	fakeGithubClient.PullRequests = map[int]*github.PullRequest{2: {
+	fakeGitHubClient := &fakegithub.FakeClient{}
+	fakeGitHubClient.PullRequests = map[int]*github.PullRequest{2: {
 		User: github.User{Login: author},
 		Head: github.PullRequestBranch{SHA: sha},
 	}}
-	o := &options{pullNumber: 2, githubClient: fakeGithubClient}
+	o := &options{pullNumber: 2, githubClient: fakeGitHubClient}
 	pjs := &prowapi.ProwJobSpec{Refs: &prowapi.Refs{Pulls: []prowapi.Pull{{Number: 2}}}}
 	if err := o.defaultPR(pjs); err != nil {
 		t.Fatalf("Expected no err when defaulting PJ, but got %v", err)
@@ -109,11 +109,11 @@ func TestDefaultBaseRef(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			fakeGithubClient := &fakegithub.FakeClient{}
-			fakeGithubClient.PullRequests = map[int]*github.PullRequest{2: {Base: github.PullRequestBranch{
+			fakeGitHubClient := &fakegithub.FakeClient{}
+			fakeGitHubClient.PullRequests = map[int]*github.PullRequest{2: {Base: github.PullRequestBranch{
 				SHA: test.prBaseSha,
 			}}}
-			o := &options{pullNumber: test.pullNumber, githubClient: fakeGithubClient}
+			o := &options{pullNumber: test.pullNumber, githubClient: fakeGitHubClient}
 			pjs := &prowapi.ProwJobSpec{Refs: &prowapi.Refs{BaseRef: test.baseRef}}
 			if err := o.defaultBaseRef(pjs); err != nil {
 				t.Fatalf("Error when calling defaultBaseRef: %v", err)

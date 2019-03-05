@@ -41,7 +41,7 @@ var refreshRe = regexp.MustCompile(`(?mi)^/refresh\s*$`)
 
 func helpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: `The refresh plugin is used for refreshing status contexts in PRs. Useful in case Github breaks down.`,
+		Description: `The refresh plugin is used for refreshing status contexts in PRs. Useful in case GitHub breaks down.`,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/refresh",
@@ -168,7 +168,7 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 
 	jenkinsConfig := s.configAgent.Config().JenkinsOperators
 	kubeReport := s.configAgent.Config().Plank.ReportTemplate
-	reportTypes := s.configAgent.Config().GithubReporter.JobTypesToReport
+	reportTypes := s.configAgent.Config().GitHubReporter.JobTypesToReport
 	for _, pj := range pjutil.GetLatestProwJobs(presubmits, prowapi.PresubmitJob) {
 		var reportTemplate *template.Template
 		switch pj.Spec.Agent {

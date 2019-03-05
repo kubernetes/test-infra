@@ -39,10 +39,10 @@ def classify_issue(repo, number):
         payload: a dict, see full description for classify below.
         last_event_timestamp: the timestamp of the most recent event.
     """
-    ancestor = models.GithubResource.make_key(repo, number)
+    ancestor = models.GitHubResource.make_key(repo, number)
     logging.info('finding webhooks for %s %s', repo, number)
-    event_keys = list(models.GithubWebhookRaw.query(ancestor=ancestor)
-        .order(models.GithubWebhookRaw.timestamp)
+    event_keys = list(models.GitHubWebhookRaw.query(ancestor=ancestor)
+        .order(models.GitHubWebhookRaw.timestamp)
         .fetch(keys_only=True))
 
     logging.info('classifying %s %s (%d events)', repo, number, len(event_keys))

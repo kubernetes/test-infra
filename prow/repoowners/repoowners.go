@@ -38,7 +38,7 @@ import (
 const (
 	ownersFileName  = "OWNERS"
 	aliasesFileName = "OWNERS_ALIASES"
-	// Github's api uses "" (empty) string as basedir by convention but it's clearer to use "/"
+	// GitHub's api uses "" (empty) string as basedir by convention but it's clearer to use "/"
 	baseDirConvention = ""
 )
 

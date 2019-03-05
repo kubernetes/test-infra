@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // Package report contains helpers for writing comments and updating
-// statuses in Github.
+// statuses in GitHub.
 package report
 
 import (
@@ -33,9 +33,9 @@ const (
 	commentTag = "<!-- test report -->"
 )
 
-// GithubClient provides a client interface to report job status updates
-// through Github comments.
-type GithubClient interface {
+// GitHubClient provides a client interface to report job status updates
+// through GitHub comments.
+type GitHubClient interface {
 	BotName() (string, error)
 	CreateStatus(org, repo, ref string, s github.Status) error
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
@@ -44,10 +44,10 @@ type GithubClient interface {
 	EditComment(org, repo string, ID int, comment string) error
 }
 
-// prowjobStateToGithubStatus maps prowjob status to github states.
-// Github states can be one of error, failure, pending, or success.
+// prowjobStateToGitHubStatus maps prowjob status to github states.
+// GitHub states can be one of error, failure, pending, or success.
 // https://developer.github.com/v3/repos/statuses/#create-a-status
-func prowjobStateToGithubStatus(pjState prowapi.ProwJobState) (string, error) {
+func prowjobStateToGitHubStatus(pjState prowapi.ProwJobState) (string, error) {
 	switch pjState {
 	case prowapi.TriggeredState:
 		return github.StatusPending, nil
@@ -82,10 +82,10 @@ func truncate(in string) string {
 }
 
 // reportStatus should be called on any prowjob status changes
-func reportStatus(ghc GithubClient, pj prowapi.ProwJob) error {
+func reportStatus(ghc GitHubClient, pj prowapi.ProwJob) error {
 	refs := pj.Spec.Refs
 	if pj.Spec.Report {
-		contextState, err := prowjobStateToGithubStatus(pj.Status.State)
+		contextState, err := prowjobStateToGitHubStatus(pj.Status.State)
 		if err != nil {
 			return err
 		}
@@ -126,9 +126,9 @@ func ShouldReport(pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) bool {
 	return true
 }
 
-// Report is creating/updating/removing reports in Github based on the state of
+// Report is creating/updating/removing reports in GitHub based on the state of
 // the provided ProwJob.
-func Report(ghc GithubClient, reportTemplate *template.Template, pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) error {
+func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) error {
 	if ghc == nil {
 		return fmt.Errorf("trying to report pj %s, but found empty github client", pj.ObjectMeta.Name)
 	}

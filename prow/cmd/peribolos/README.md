@@ -1,6 +1,6 @@
 # Peribolos Documentation
 
-Peribolos allows the org settings, teams and memberships to be declared in a yaml file. Github is then updated to match the declared configuration.
+Peribolos allows the org settings, teams and memberships to be declared in a yaml file. GitHub is then updated to match the declared configuration.
 
 See the [kubernetes/org] repo, in particular the [merge] and [`update.sh`] parts of that repo for this tool in action.
 

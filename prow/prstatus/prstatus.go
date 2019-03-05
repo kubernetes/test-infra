@@ -71,25 +71,25 @@ type PullRequestWithContexts struct {
 // It will serve a list of open pull requests owned by the user.
 type DashboardAgent struct {
 	repos []string
-	goac  *config.GithubOAuthConfig
+	goac  *config.GitHubOAuthConfig
 
 	log *logrus.Entry
 }
 
-// Label represents a Github label.
+// Label represents a GitHub label.
 type Label struct {
 	ID   githubql.ID
 	Name githubql.String
 }
 
-// Context represent a Github status check context.
+// Context represent a GitHub status check context.
 type Context struct {
 	Context     string
 	Description string
 	State       string
 }
 
-// PullRequest holds the GraphQL response data for a Github pull request.
+// PullRequest holds the GraphQL response data for a GitHub pull request.
 type PullRequest struct {
 	Number githubql.Int
 	Merged githubql.Boolean
@@ -144,7 +144,7 @@ type searchQuery struct {
 }
 
 // NewDashboardAgent creates a new user dashboard agent .
-func NewDashboardAgent(repos []string, config *config.GithubOAuthConfig, log *logrus.Entry) *DashboardAgent {
+func NewDashboardAgent(repos []string, config *config.GitHubOAuthConfig, log *logrus.Entry) *DashboardAgent {
 	return &DashboardAgent{
 		repos: repos,
 		goac:  config,
@@ -168,7 +168,7 @@ func invalidateGitHubSession(w http.ResponseWriter, r *http.Request, session *se
 }
 
 // HandlePrStatus returns a http handler function that handles request to /pr-status
-// endpoint. The handler takes user access token stored in the cookie to query to Github on behalf
+// endpoint. The handler takes user access token stored in the cookie to query to GitHub on behalf
 // of the user and serve the data in return. The Query handler is passed to the method so as it
 // can be mocked in the unit test..
 func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) http.HandlerFunc {
@@ -339,7 +339,7 @@ func (da *DashboardAgent) GetHeadContexts(ghc githubClient, pr PullRequest) ([]C
 	return contexts, nil
 }
 
-// ConstructSearchQuery returns the Github search query string for PRs that are open and authored
+// ConstructSearchQuery returns the GitHub search query string for PRs that are open and authored
 // by the user passed. The search is scoped to repositories that are configured with either Prow or
 // Tide.
 func (da *DashboardAgent) ConstructSearchQuery(login string) string {

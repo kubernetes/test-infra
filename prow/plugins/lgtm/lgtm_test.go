@@ -53,14 +53,14 @@ type fakeRepoOwners struct {
 }
 
 type fakePruner struct {
-	GithubClient  *fakegithub.FakeClient
+	GitHubClient  *fakegithub.FakeClient
 	IssueComments []github.IssueComment
 }
 
 func (fp *fakePruner) PruneComments(shouldPrune func(github.IssueComment) bool) {
 	for _, comment := range fp.IssueComments {
 		if shouldPrune(comment) {
-			fp.GithubClient.IssueCommentsDeleted = append(fp.GithubClient.IssueCommentsDeleted, comment.Body)
+			fp.GitHubClient.IssueCommentsDeleted = append(fp.GitHubClient.IssueCommentsDeleted, comment.Body)
 		}
 	}
 }
@@ -292,7 +292,7 @@ func TestLGTMComment(t *testing.T) {
 			StoreTreeHash: true,
 		})
 		fp := &fakePruner{
-			GithubClient:  fc,
+			GitHubClient:  fc,
 			IssueComments: fc.IssueComments[5],
 		}
 		if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", PluginName), fp, *e); err != nil {
@@ -446,7 +446,7 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 		oc := &fakeOwnersClient{approvers: approvers, reviewers: reviewers}
 		pc := &plugins.Configuration{}
 		fp := &fakePruner{
-			GithubClient:  fc,
+			GitHubClient:  fc,
 			IssueComments: fc.IssueComments[5],
 		}
 		if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", PluginName), fp, *e); err != nil {
@@ -612,7 +612,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			StoreTreeHash: tc.storeTreeHash,
 		})
 		fp := &fakePruner{
-			GithubClient:  fc,
+			GitHubClient:  fc,
 			IssueComments: fc.IssueComments[5],
 		}
 		if err := handlePullRequestReview(fc, pc, oc, logrus.WithField("plugin", PluginName), fp, *e); err != nil {
@@ -1078,7 +1078,7 @@ func TestRemoveTreeHashComment(t *testing.T) {
 	}
 	fc.IssueLabelsAdded = []string{"kubernetes/kubernetes#101:" + LGTMLabel}
 	fp := &fakePruner{
-		GithubClient:  fc,
+		GitHubClient:  fc,
 		IssueComments: fc.IssueComments[101],
 	}
 	handle(false, pc, &fakeOwnersClient{}, rc, fc, logrus.WithField("plugin", PluginName), fp)

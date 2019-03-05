@@ -133,10 +133,10 @@ kubectl create secret generic oauth-token --from-file=oauth=/path/to/oauth/secre
 
 #### Bot account
 
-The bot account used by prow must be granted owner level access to the Github
+The bot account used by prow must be granted owner level access to the GitHub
 orgs that prow will operate on. Note that events triggered by this account are
 ignored by some prow plugins. It is prudent to use a different bot account for
-other Github automation that prow should interact with to prevent events from
+other GitHub automation that prow should interact with to prevent events from
 being ignored unjustly.
 
 ### Add the prow components to the cluster

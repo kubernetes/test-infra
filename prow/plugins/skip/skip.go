@@ -51,11 +51,11 @@ func init() {
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The skip plugin allows users to clean up Github stale commit statuses for non-blocking jobs on a PR.",
+		Description: "The skip plugin allows users to clean up GitHub stale commit statuses for non-blocking jobs on a PR.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/skip",
-		Description: "Cleans up Github stale commit statuses for non-blocking jobs on a PR.",
+		Description: "Cleans up GitHub stale commit statuses for non-blocking jobs on a PR.",
 		Featured:    false,
 		WhoCanUse:   "Anyone can trigger this command on a PR.",
 		Examples:    []string{"/skip"},
