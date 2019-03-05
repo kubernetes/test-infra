@@ -7845,6 +7845,7 @@ dashboard_groups:
   dashboard_names:
   - sig-gcp-master
   - sig-gcp-release-1.11
+  - sig-gcp-release-1.12
   - sig-gcp-compute-persistent-disk-csi-driver
 
 - name: sig-autoscaling
