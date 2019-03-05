@@ -37,6 +37,7 @@ export interface Spyglass {
 class SpyglassImpl implements Spyglass {
   private pendingRequests = new Map<number, (v: Response) => void>();
   private messageId = 0;
+  private pendingUpdateTimer = 0;
 
   constructor() {
     window.addEventListener('message', (e) => this.handleMessage(e));
@@ -55,17 +56,15 @@ class SpyglassImpl implements Spyglass {
     return result.data;
   }
   public contentUpdated(): void {
-    // Use .then() instead of await to avoid infecting our caller with our
-    // asynchronicity.
-    this.postMessage({type: 'contentUpdated', height: document.body.offsetHeight}).then(({data}) => {
-      // If before this call we were not actually visible, recalculate our height.
-      // This works around a bizarre issue where other elements on the parent page
-      // being resized can cause us to produce an incorrect height. Recalculating
-      // after we become visible ensures we produce the correct value.
-      if (data === 'madeVisible') {
-        this.contentUpdated();
-      }
-    });
+    this.updateHeight();
+    clearTimeout(this.pendingUpdateTimer);
+    // to be honest I have zero understanding of why this helps, but apparently it does.
+    this.pendingUpdateTimer = setTimeout(() => this.updateHeight(), 0);
+  }
+
+  private updateHeight(): void {
+    // .then() to suppress complaints about unhandled promises (we just don't care here).
+    this.postMessage({type: 'contentUpdated', height: document.body.offsetHeight}).then();
   }
 
   private postMessage(message: Message): Promise<Response> {

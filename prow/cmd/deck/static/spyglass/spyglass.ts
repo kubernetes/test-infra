@@ -47,16 +47,12 @@ window.addEventListener('message', async (e) => {
     switch (message.type) {
       case "contentUpdated":
         frame.style.height = `${message.height}px`;
-        if (frame.style.visibility !== 'visible') {
-          frame.style.visibility = 'visible';
-          if (frame.dataset.hideTitle) {
-            frame.parentElement!.parentElement!.classList.add('hidden-title');
-          }
-          document.querySelector<HTMLElement>(`#${lens}-loading`)!.style.display = 'none';
-          respond('madeVisible');
-        } else {
-          respond('');
+        frame.style.visibility = 'visible';
+        if (frame.dataset.hideTitle) {
+          frame.parentElement!.parentElement!.classList.add('hidden-title');
         }
+        document.querySelector<HTMLElement>(`#${lens}-loading`)!.style.display = 'none';
+        respond('');
         break;
       case "request": {
         const req = await fetch(urlForLensRequest(lens, 'callback'),
