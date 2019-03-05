@@ -20,6 +20,7 @@ package spyglass
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/url"
 	"path"
 	"sort"
@@ -115,6 +116,7 @@ func (s *Spyglass) Lenses(matchCache map[string][]string) []lenses.Lens {
 }
 
 func (s *Spyglass) ResolveSymlink(src string) (string, error) {
+	src = strings.TrimSuffix(src, "/")
 	keyType, key, err := splitSrc(src)
 	if err != nil {
 		return "", fmt.Errorf("error parsing src: %v", src)
@@ -123,7 +125,12 @@ func (s *Spyglass) ResolveSymlink(src string) (string, error) {
 	case prowKeyType:
 		return src, nil // prowjob keys cannot be symlinks.
 	case gcsKeyType:
-		bucketName, prefix := extractBucketPrefixPair(strings.TrimSuffix(key, "/"))
+		parts := strings.SplitN(key, "/", 2)
+		if len(parts) != 2 {
+			return "", fmt.Errorf("gcs path should have both a bucket and a path")
+		}
+		bucketName := parts[0]
+		prefix := parts[1]
 		bkt := s.client.Bucket(bucketName)
 		obj := bkt.Object(prefix + ".txt")
 		reader, err := obj.NewReader(context.Background())
@@ -133,11 +140,11 @@ func (s *Spyglass) ResolveSymlink(src string) (string, error) {
 		// Avoid using ReadAll here to prevent an attacker forcing us to read a giant file into memory.
 		bytes := make([]byte, 4096) // assume we won't get more than 4 kB of symlink to read
 		n, err := reader.Read(bytes)
-		if err != nil {
+		if err != nil && err != io.EOF {
 			return "", fmt.Errorf("failed to read symlink file (which does seem to exist): %v", err)
 		}
 		if n == len(bytes) {
-			return "", fmt.Errorf("symlink destination exceeds length limit of %d bytes", len(bytes) - 1)
+			return "", fmt.Errorf("symlink destination exceeds length limit of %d bytes", len(bytes)-1)
 		}
 		u, err := url.Parse(string(bytes[:n]))
 		if err != nil {
