@@ -248,10 +248,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-release-1-4
 - name: ci-ingress-gce-e2e-scale
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-scale
-- name: ci-ingress-gce-upgrade-e2e
-  gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-upgrade-e2e
-- name: ci-ingress-gce-downgrade-e2e
-  gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-downgrade-e2e
 - name: ci-cluster-api-build
   gcs_prefix: kubernetes-jenkins/logs/ci-cluster-api-build
 - name: ci-cluster-api-test
@@ -6296,14 +6292,6 @@ dashboards:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: ingress-gce-image-push
     test_group_name: ci-ingress-gce-image-push
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: ingress-gce-upgrade-e2e
-    test_group_name: ci-ingress-gce-upgrade-e2e
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: ingress-gce-downgrade-e2e
-    test_group_name: ci-ingress-gce-downgrade-e2e
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
 
