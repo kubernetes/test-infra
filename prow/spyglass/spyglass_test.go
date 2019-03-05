@@ -160,6 +160,11 @@ test/e2e/e2e.go:137 BeforeSuite on Node 1 failed test/e2e/e2e.go:137
 						  },
 						},`),
 		},
+		{
+			BucketName: "test-bucket",
+			Name:       "logs/symlink-party/123.txt",
+			Content:    []byte(`gs://test-bucket/logs/the-actual-place/123`),
+		},
 	})
 	defer fakeGCSServer.Stop()
 	kc := fkc{
@@ -1198,6 +1203,82 @@ func TestKeyToJob(t *testing.T) {
 		}
 		if buildID != tc.buildID {
 			t.Errorf("%s: expected build ID %q, but got %q", tc.name, tc.buildID, buildID)
+		}
+	}
+}
+
+func TestResolveSymlink(t *testing.T) {
+	testCases := []struct {
+		name      string
+		path      string
+		result    string
+		expectErr bool
+	}{
+		{
+			name:   "symlink without trailing slash is resolved",
+			path:   "gcs/test-bucket/logs/symlink-party/123",
+			result: "gcs/test-bucket/logs/the-actual-place/123",
+		},
+		{
+			name:   "symlink with trailing slash is resolved",
+			path:   "gcs/test-bucket/logs/symlink-party/123/",
+			result: "gcs/test-bucket/logs/the-actual-place/123",
+		},
+		{
+			name:   "non-symlink without trailing slash is unchanged",
+			path:   "gcs/test-bucket/better-logs/42",
+			result: "gcs/test-bucket/better-logs/42",
+		},
+		{
+			name:   "non-symlink with trailing slash drops the slash",
+			path:   "gcs/test-bucket/better-logs/42/",
+			result: "gcs/test-bucket/better-logs/42",
+		},
+		{
+			name:   "prowjob without trailing slash is unchanged",
+			path:   "prowjob/better-logs/42",
+			result: "prowjob/better-logs/42",
+		},
+		{
+			name:   "prowjob with trailing slash drops the slash",
+			path:   "prowjob/better-logs/42/",
+			result: "prowjob/better-logs/42",
+		},
+		{
+			name:      "unknown key type is an error",
+			path:      "wtf/what-is-this/send-help",
+			expectErr: true,
+		},
+		{
+			name:      "insufficient path components are an error",
+			path:      "gcs/hi",
+			expectErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		fakeConfigAgent := fca{}
+		fakeJa = jobs.NewJobAgent(fkc{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA")}, fakeConfigAgent.Config)
+		fakeJa.Start()
+
+		fakeGCSClient := fakeGCSServer.Client()
+
+		sg := New(fakeJa, fakeConfigAgent.Config, fakeGCSClient, context.Background())
+
+		result, err := sg.ResolveSymlink(tc.path)
+		if err != nil {
+			if !tc.expectErr {
+				t.Errorf("test %q: unexpected error: %v", tc.name, err)
+			}
+			continue
+		}
+		if tc.expectErr {
+			t.Errorf("test %q: expected an error, but got result %q", tc.name, result)
+			continue
+		}
+		if result != tc.result {
+			t.Errorf("test %q: expected %q, but got %q", tc.name, tc.result, result)
+			continue
 		}
 	}
 }
