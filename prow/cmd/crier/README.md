@@ -34,7 +34,7 @@ Pubsub reporter will report whenever prowjob has a state transition.
 
 You can check the reported result by [list the pubsub topic](https://cloud.google.com/sdk/gcloud/reference/pubsub/topics/list). 
 
-### [Github reporter](/prow/github/reporter)
+### [GitHub reporter](/prow/github/reporter)
 
 You can enable github reporter in crier by specifying `--github-workers=n` flag.
 
