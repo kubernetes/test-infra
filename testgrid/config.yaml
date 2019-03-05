@@ -3308,6 +3308,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aks-engine-azure-master-windows
 - name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
+- name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aks-engine-azure-1-14-windows
 # Cloud-provider-azure e2e tests
 - name: ci-cloud-provider-azure-master
   gcs_prefix: kubernetes-jenkins/logs/ci-cloud-provider-azure-master
@@ -4854,6 +4856,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-13-1-14
   - name: kubeadm-kind-1.14
     test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-14
+  - name: aks-engine-azure-1-14-windows-release
+    test_group_name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
 
 - name: sig-release-1.14-blocking
   dashboard_tab:
@@ -7635,6 +7639,9 @@ dashboards:
   - name: aks-engine-azure-windows-master-staging
     description: Staging job for new Windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
     test_group_name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
+  - name: aks-engine-azure-1-14-windows
+    description: Release tests for K8s 1.14 on Clusters with Windows nodes provided by aks-engine on Azure cloud.
+    test_group_name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
   - name: gce-windows-master
     description: Runs tests on a Kubernetes cluster with Windows nodes on GCE"
     test_group_name: ci-kubernetes-e2e-windows-gce
