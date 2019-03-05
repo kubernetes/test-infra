@@ -1035,6 +1035,43 @@ func TestTakeAction(t *testing.T) {
 			triggered: 0,
 			action:    Wait,
 		},
+		{
+			name: "no pending serial or batch, should trigger batch",
+
+			batchPending: false,
+			successes:    []int{},
+			pendings:     []int{},
+			nones:        []int{1, 2, 3},
+			batchMerges:  []int{},
+			presubmits: map[int][]config.Presubmit{
+				100: {
+					{Reporter: config.Reporter{Context: "foo"}},
+					{Reporter: config.Reporter{Context: "if-changed"}},
+				},
+			},
+			merged:           0,
+			triggered:        1,
+			triggeredBatches: 1,
+			action:           TriggerBatch,
+		},
+		{
+			name: "pending batch, no serial, should trigger serial",
+
+			batchPending: true,
+			successes:    []int{},
+			pendings:     []int{},
+			nones:        []int{1, 2, 3},
+			batchMerges:  []int{},
+			presubmits: map[int][]config.Presubmit{
+				100: {
+					{Reporter: config.Reporter{Context: "foo"}},
+					{Reporter: config.Reporter{Context: "if-changed"}},
+				},
+			},
+			merged:    0,
+			triggered: 1,
+			action:    Trigger,
+		},
 	}
 
 	for _, tc := range testcases {

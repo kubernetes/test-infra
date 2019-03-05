@@ -966,12 +966,6 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, n
 	if len(sp.presubmits) == 0 {
 		return Wait, nil, nil
 	}
-	// If we have no serial jobs pending or successful, trigger one.
-	if len(nones) > 0 && len(pendings) == 0 && len(successes) == 0 {
-		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, nones, sp.cc); ok {
-			return Trigger, []PullRequest{pr}, c.trigger(sp, sp.presubmits, []PullRequest{pr})
-		}
-	}
 	// If we have no batch, trigger one.
 	if len(sp.prs) > 1 && len(batchPending) == 0 {
 		batch, err := c.pickBatch(sp, sp.cc)
@@ -980,6 +974,12 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, n
 		}
 		if len(batch) > 1 {
 			return TriggerBatch, batch, c.trigger(sp, sp.presubmits, batch)
+		}
+	}
+	// If we have no serial jobs pending or successful, trigger one.
+	if len(nones) > 0 && len(pendings) == 0 && len(successes) == 0 {
+		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, nones, sp.cc); ok {
+			return Trigger, []PullRequest{pr}, c.trigger(sp, sp.presubmits, []PullRequest{pr})
 		}
 	}
 	return Wait, nil, nil
