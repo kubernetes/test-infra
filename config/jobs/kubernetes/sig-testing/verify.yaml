@@ -33,10 +33,6 @@ presubmits:
           value: master
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
-        # TODO(bentheelder): remove bandaid once we have this metadata exposed
-        # properly, first-class
-        - name: METADATA_BANDAID
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -71,10 +67,6 @@ presubmits:
               value: master
             - name: REPO_DIR
               value: /workspace/k8s.io/kubernetes
-            # TODO(bentheelder): remove bandaid once we have this metadata exposed
-            # properly, first-class
-            - name: METADATA_BANDAID
-              value: "true"
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
@@ -142,10 +134,6 @@ periodics:
         value: master
       - name: REPO_DIR
         value: /workspace/k8s.io/kubernetes
-      # TODO(bentheelder): remove bandaid once we have this metadata exposed
-      # properly, first-class
-      - name: METADATA_BANDAID
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
@@ -182,10 +170,6 @@ periodics:
             value: release-1.14
           - name: REPO_DIR
             value: /workspace/k8s.io/kubernetes
-          # TODO(bentheelder): remove bandaid once we have this metadata exposed
-          # properly, first-class
-          - name: METADATA_BANDAID
-            value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
