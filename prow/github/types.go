@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	// EventGUID is sent by Github in a header of every webhook request.
+	// EventGUID is sent by GitHub in a header of every webhook request.
 	// Used as a log field across prow.
 	EventGUID = "event-GUID"
 	// PrLogField is the number of a PR.
@@ -146,10 +146,11 @@ type CombinedStatus struct {
 
 // User is a GitHub user account.
 type User struct {
-	Login string `json:"login"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	ID    int    `json:"id"`
+	Login   string `json:"login"`
+	Name    string `json:"name"`
+	Email   string `json:"email"`
+	ID      int    `json:"id"`
+	HTMLURL string `json:"html_url"`
 }
 
 // NormLogin normalizes GitHub login strings
@@ -198,7 +199,7 @@ type PullRequestEvent struct {
 	// and deserialize later as this is a polymorphic field
 	Changes json.RawMessage `json:"changes"`
 
-	// GUID is included in the header of the request received by Github.
+	// GUID is included in the header of the request received by GitHub.
 	GUID string
 }
 
@@ -214,6 +215,7 @@ type PullRequest struct {
 	RequestedReviewers []User            `json:"requested_reviewers"`
 	Assignees          []User            `json:"assignees"`
 	State              string            `json:"state"`
+	Draft              bool              `json:"draft"`
 	Merged             bool              `json:"merged"`
 	CreatedAt          time.Time         `json:"created_at,omitempty"`
 	UpdatedAt          time.Time         `json:"updated_at,omitempty"`
@@ -401,7 +403,7 @@ type IssueEvent struct {
 	// Label is specified for IssueActionLabeled and IssueActionUnlabeled events.
 	Label Label `json:"label"`
 
-	// GUID is included in the header of the request received by Github.
+	// GUID is included in the header of the request received by GitHub.
 	GUID string
 }
 
@@ -435,7 +437,7 @@ type IssueCommentEvent struct {
 	Comment IssueComment            `json:"comment"`
 	Repo    Repo                    `json:"repository"`
 
-	// GUID is included in the header of the request received by Github.
+	// GUID is included in the header of the request received by GitHub.
 	GUID string
 }
 
@@ -521,7 +523,7 @@ type StatusEvent struct {
 	Sender      User   `json:"sender,omitempty"`
 	Repo        Repo   `json:"repository,omitempty"`
 
-	// GUID is included in the header of the request received by Github.
+	// GUID is included in the header of the request received by GitHub.
 	GUID string
 }
 
@@ -547,7 +549,7 @@ type PushEvent struct {
 	Sender User `json:"sender"`
 	Repo   Repo `json:"repository"`
 
-	// GUID is included in the header of the request received by Github.
+	// GUID is included in the header of the request received by GitHub.
 	GUID string
 }
 
@@ -597,7 +599,7 @@ type ReviewEvent struct {
 	Repo        Repo              `json:"repository"`
 	Review      Review            `json:"review"`
 
-	// GUID is included in the header of the request received by Github.
+	// GUID is included in the header of the request received by GitHub.
 	GUID string
 }
 
@@ -644,7 +646,7 @@ type ReviewCommentEvent struct {
 	Repo        Repo                     `json:"repository"`
 	Comment     ReviewComment            `json:"comment"`
 
-	// GUID is included in the header of the request received by Github.
+	// GUID is included in the header of the request received by GitHub.
 	GUID string
 }
 

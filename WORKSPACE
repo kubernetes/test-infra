@@ -15,8 +15,8 @@ versions.check(minimum_bazel_version = "0.18.0")
 
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "ade51a315fa17347e5c31201fdc55aa5ffb913377aa315dceb56ee9725e620ee",
-    urls = ["https://github.com/bazelbuild/rules_go/releases/download/0.16.6/rules_go-0.16.6.tar.gz"],
+    sha256 = "492c3ac68ed9dcf527a07e6a1b2dcbf199c6bf8b35517951467ac32e421c06c1",
+    urls = ["https://github.com/bazelbuild/rules_go/releases/download/0.17.0/rules_go-0.17.0.tar.gz"],
 )
 
 http_archive(
@@ -25,7 +25,7 @@ http_archive(
     urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/0.16.0/bazel-gazelle-0.16.0.tar.gz"],
 )
 
-load("@io_bazel_rules_go//go:def.bzl", "go_register_toolchains", "go_rules_dependencies")
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
 
 go_rules_dependencies()
 
@@ -37,9 +37,9 @@ gazelle_dependencies()
 
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "5235045774d2f40f37331636378f21fe11f69906c0386a790c5987a09211c3c4",
-    strip_prefix = "rules_docker-8010a50ef03d1e13f1bebabfc625478da075fa60",
-    urls = ["https://github.com/bazelbuild/rules_docker/archive/8010a50ef03d1e13f1bebabfc625478da075fa60.tar.gz"],
+    sha256 = "aed1c249d4ec8f703edddf35cbe9dfaca0b5f5ea6e4cd9e83e99f3b0d1136c3d",
+    strip_prefix = "rules_docker-0.7.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.7.0.tar.gz"],
 )
 
 load(
@@ -52,10 +52,7 @@ _go_repositories()
 load(
     "@io_bazel_rules_docker//container:container.bzl",
     "container_pull",
-    container_repositories = "repositories",
 )
-
-container_repositories()
 
 container_pull(
     name = "distroless-base",
@@ -117,12 +114,8 @@ git_repository(
 git_repository(
     name = "build_bazel_rules_nodejs",
     remote = "https://github.com/bazelbuild/rules_nodejs.git",
-    tag = "0.16.5",
+    tag = "0.16.6",
 )
-
-load("@build_bazel_rules_nodejs//:package.bzl", "rules_nodejs_dependencies")
-
-rules_nodejs_dependencies()
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "yarn_install")
 
@@ -1518,31 +1511,13 @@ go_repository(
 )
 
 go_repository(
-    name = "com_github_asaskevich_govalidator",
-    commit = "f9ffefc3facf",
-    importpath = "github.com/asaskevich/govalidator",
-)
-
-go_repository(
-    name = "com_github_go_ozzo_ozzo_validation",
-    importpath = "github.com/go-ozzo/ozzo-validation",
-    tag = "v3.5.0",
-)
-
-go_repository(
-    name = "com_github_traiana_okro",
-    commit = "b00cf08a2843",
-    importpath = "github.com/traiana/okro",
-)
-
-go_repository(
     name = "io_k8s_klog",
     importpath = "k8s.io/klog",
     tag = "v0.1.0",
 )
 
 go_repository(
-    name = "com_github_traiana_prow_jobs",
-    commit = "0ec733360227",
-    importpath = "github.com/traiana/prow-jobs",
+    name = "cc_mvdan_xurls_v2",
+    importpath = "mvdan.cc/xurls/v2",
+    tag = "v2.0.0",
 )

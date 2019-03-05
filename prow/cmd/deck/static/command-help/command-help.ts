@@ -8,7 +8,7 @@ declare const dialogPolyfill: {
 };
 
 function getParameterByName(name: string): string | null {  // http://stackoverflow.com/a/5158301/3694
-    const match = new RegExp('[?&]' + name + '=([^&/]*)').exec(window.location.search);
+    const match = new RegExp(`[?&]${name}=([^&/]*)`).exec(window.location.search);
     return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 }
 
@@ -27,7 +27,7 @@ function redrawOptions(): void {
     });
 }
 
-window.onload = function (): void {
+window.onload = (): void => {
     // set dropdown based on options from query string
     const hash = window.location.hash;
     redrawOptions();
@@ -132,11 +132,11 @@ function createCommandCell(data: string | string[], styles: string[] = [], noWra
  * @param tooltip tooltip string
  * @param isButton true if icon is a button
  */
-function createIcon(no: number, iconString: string, styles: string[], tooltip: string, isButton?: false): HTMLDivElement
-function createIcon(no: number, iconString: string, styles: string[], tooltip: string, isButton?: true): HTMLButtonElement
+function createIcon(no: number, iconString: string, styles: string[], tooltip: string, isButton?: false): HTMLDivElement;
+function createIcon(no: number, iconString: string, styles: string[], tooltip: string, isButton?: true): HTMLButtonElement;
 function createIcon(no: number, iconString: string, styles: string[] = [], tooltip: string = "", isButton = false) {
     const icon = document.createElement("i");
-    icon.id = "icon-" + iconString + "-" + no;
+    icon.id = `icon-${iconString}-${no}`;
     icon.classList.add("material-icons");
     icon.classList.add(...styles);
     icon.innerHTML = iconString;
@@ -231,13 +231,13 @@ function createPluginCell(repo: string, pluginName: string, plugin: PluginHelp):
             content.appendChild(addDialogSection("Description", plugin.Description));
         }
         if (plugin.Events) {
-            const sectionContent = "[" + plugin.Events.sort().join(", ") + "]";
+            const sectionContent = `[${plugin.Events.sort().join(", ")}]`;
             content.appendChild(addDialogSection("Events handled", sectionContent));
         }
         if (plugin.Config) {
-            let sectionContent = plugin.Config ? plugin.Config[repo] : "";
-            let sectionTitle =
-                repo === "" ? "Configuration(global)" : "Configuration(" + repo + ")";
+            const sectionContent = plugin.Config ? plugin.Config[repo] : "";
+            const sectionTitle =
+                repo === "" ? "Configuration(global)" : `Configuration(${repo})`;
             if (sectionContent && sectionContent !== "") {
                 content.appendChild(addDialogSection(sectionTitle, sectionContent));
             }
@@ -284,7 +284,6 @@ function createCommandLink(name: string, no: number): HTMLTableDataCellElement {
     return link;
 }
 
-
 /**
  * Creates a row for the Command table.
  * @param repo repo name.
@@ -329,12 +328,12 @@ function redrawHelpTable(repo: string, helpMap: Map<string, {isExternal: boolean
         tableBody.removeChild(tableBody.firstChild!);
     }
     const names = Array.from(helpMap.keys());
-    const commandsWithPluginName: {pluginName: string, command: Command}[] = [];
-    for (let name of names) {
+    const commandsWithPluginName: Array<{pluginName: string, command: Command}> = [];
+    for (const name of names) {
         helpMap.get(name)!.plugin.Commands.forEach((command) => {
             commandsWithPluginName.push({
+                command,
                 pluginName: name,
-                command: command
             });
         });
     }
@@ -366,7 +365,7 @@ function redraw(): void {
             history.replaceState(null, "", "/command-help?repo="
                 + encodeURIComponent(repoSel));
         } else {
-            history.replaceState(null, "", "/command-help")
+            history.replaceState(null, "", "/command-help");
         }
     }
     redrawOptions();
@@ -379,7 +378,7 @@ function redraw(): void {
                     name,
                     {
                         isExternal: false,
-                        plugin: allHelp.PluginHelp[name]
+                        plugin: allHelp.PluginHelp[name],
                     });
             }
         });
@@ -391,13 +390,12 @@ function redraw(): void {
                     name,
                     {
                         isExternal: true,
-                        plugin: allHelp.ExternalPluginHelp[name]
+                        plugin: allHelp.ExternalPluginHelp[name],
                     });
             }
         });
     redrawHelpTable(repoSel, pluginsWithCommands);
 }
-
 
 /**
  * Extracts a command name from a command example. It takes the first example,
@@ -413,4 +411,4 @@ function extractCommandName(commandExample: string): string {
 }
 
 // This is referenced by name in the HTML.
-(window as any)['redraw'] = redraw;
+(window as any).redraw = redraw;

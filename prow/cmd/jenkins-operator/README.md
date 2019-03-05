@@ -7,7 +7,7 @@ as a backend for running jobs.
 
 A Jenkins master needs to be provided via `--jenkins-url` in order for
 the operator to make requests to. By default, `--dry-run` is set to `true`
-so the operator will not make any mutating requests to Jenkins, Github,
+so the operator will not make any mutating requests to Jenkins, GitHub,
 and Kubernetes, but you most probably want to set it to `false`.
 The Jenkins operator expects to read the Prow configuration by default
 in `/etc/config/config.yaml` which can be configured with `--config-path`.
@@ -32,9 +32,9 @@ will spin up to handle all Jenkins builds. Defaulted to 20.
 jobs that have been superseded by jobs for newer commits. By default,
 this is set to `false`.
 * `job_url_template` is a Golang-templated URL that shows up in the Details
-button next to the Github job status context. A ProwJob is provided as input
+button next to the GitHub job status context. A ProwJob is provided as input
 to the template.
-* `report_template` is a Golang-templated message that shows up in Github in
+* `report_template` is a Golang-templated message that shows up in GitHub in
 case of a job failure. A ProwJob is provided as input to the template.
 
 ### Security
@@ -137,16 +137,16 @@ The Jenkins operator acts as a Kubernetes client since it manages ProwJobs
 backed by Jenkins builds. It is expected to run as a pod inside a Kubernetes
 cluster and so it uses the in-cluster client config.
 
-## Github integration
+## GitHub integration
 
-The operator needs to talk to Github for updating commit statuses and
+The operator needs to talk to GitHub for updating commit statuses and
 adding comments about failed tests. Note that this functionality may
 potentially move into its own service, then the Jenkins operator will
-not need to contact the Github API. The required options are already
+not need to contact the GitHub API. The required options are already
 defaulted:
-* `github-token-path` set to `/etc/github/oauth`. This is the Github bot
+* `github-token-path` set to `/etc/github/oauth`. This is the GitHub bot
 oauth token that is used for updating job statuses and adding comments
-in Github.
+in GitHub.
 * `github-endpoint` set to `https://api.github.com`.
 
 

@@ -38,6 +38,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 
+	"k8s.io/test-infra/ghproxy/ghcache"
 	"k8s.io/test-infra/prow/errorutil"
 )
 
@@ -146,9 +147,33 @@ func (t *throttler) Wait() {
 	}
 }
 
+func (t *throttler) Refund() {
+	t.lock.RLock()
+	defer t.lock.RUnlock()
+	select {
+	case t.throttle <- time.Now():
+	default:
+	}
+}
+
 func (t *throttler) Do(req *http.Request) (*http.Response, error) {
 	t.Wait()
-	return t.http.Do(req)
+	resp, err := t.http.Do(req)
+	if err != nil {
+		cacheMode := ghcache.CacheResponseMode(resp.Header.Get(ghcache.CacheModeHeader))
+		if ghcache.CacheModeIsFree(cacheMode) {
+			// This request was fulfilled by ghcache without using an API token.
+			// Refund the throttling token we preemptively consumed.
+			log := logrus.WithFields(logrus.Fields{
+				"client":     "github",
+				"throttled":  true,
+				"cache-mode": string(cacheMode),
+			})
+			log.Debug("Throttler refunding token for free response from ghcache.")
+			t.Refund()
+		}
+	}
+	return resp, err
 }
 
 func (t *throttler) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
@@ -197,15 +222,16 @@ func (c *Client) Throttle(hourlyTokens, burst int) {
 	c.throttle.throttle = throttle
 }
 
-// NewClient creates a new fully operational GitHub client.
+// NewClientWithFields creates a new fully operational GitHub client. With
+// added logging fields.
 // 'getToken' is a generator for the GitHub access token to use.
 // 'bases' is a variadic slice of endpoints to use in order of preference.
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewClient(getToken func() []byte, bases ...string) *Client {
+func NewClientWithFields(fields logrus.Fields, getToken func() []byte, bases ...string) *Client {
 	return &Client{
-		logger: logrus.WithField("client", "github"),
+		logger: logrus.WithFields(fields).WithField("client", "github"),
 		time:   &standardTime{},
 		gqlc: githubql.NewClient(&http.Client{
 			Timeout:   maxRequestTime,
@@ -218,17 +244,22 @@ func NewClient(getToken func() []byte, bases ...string) *Client {
 	}
 }
 
-// NewDryRunClient creates a new client that will not perform mutating actions
+// NewClient creates a new fully operational GitHub client.
+func NewClient(getToken func() []byte, bases ...string) *Client {
+	return NewClientWithFields(logrus.Fields{}, getToken, bases...)
+}
+
+// NewDryRunClientWithFields creates a new client that will not perform mutating actions
 // such as setting statuses or commenting, but it will still query GitHub and
-// use up API tokens.
+// use up API tokens. Additional fields are added to the logger.
 // 'getToken' is a generator the GitHub access token to use.
 // 'bases' is a variadic slice of endpoints to use in order of preference.
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewDryRunClient(getToken func() []byte, bases ...string) *Client {
+func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, bases ...string) *Client {
 	return &Client{
-		logger: logrus.WithField("client", "github"),
+		logger: logrus.WithFields(fields).WithField("client", "github"),
 		time:   &standardTime{},
 		gqlc: githubql.NewClient(&http.Client{
 			Timeout:   maxRequestTime,
@@ -239,6 +270,18 @@ func NewDryRunClient(getToken func() []byte, bases ...string) *Client {
 		getToken: getToken,
 		dry:      true,
 	}
+}
+
+// NewDryRunClient creates a new client that will not perform mutating actions
+// such as setting statuses or commenting, but it will still query GitHub and
+// use up API tokens.
+// 'getToken' is a generator the GitHub access token to use.
+// 'bases' is a variadic slice of endpoints to use in order of preference.
+//   An endpoint is used when all preceding endpoints have returned a conn err.
+//   This should be used when using the ghproxy GitHub proxy cache to allow
+//   this client to bypass the cache if it is temporarily unavailable.
+func NewDryRunClient(getToken func() []byte, bases ...string) *Client {
+	return NewDryRunClientWithFields(logrus.Fields{}, getToken, bases...)
 }
 
 // NewFakeClient creates a new client that will not perform any actions at all.
@@ -460,6 +503,7 @@ func (c *Client) doRequest(method, path, accept string, body interface{}) (*http
 
 // Not thread-safe - callers need to hold c.mut.
 func (c *Client) getUserData() error {
+	c.log("User")
 	var u User
 	_, err := c.request(&request{
 		method:    http.MethodGet,
@@ -1007,7 +1051,10 @@ func (c *Client) GetPullRequests(org, repo string) ([]PullRequest, error) {
 	path := fmt.Sprintf("/repos/%s/%s/pulls", org, repo)
 	err := c.readPaginatedResults(
 		path,
-		"application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		// allow the description and draft fields
+		// https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		// https://developer.github.com/changes/2019-02-14-draft-pull-requests/
+		"application/vnd.github.symmetra-preview+json, application/vnd.github.shadow-cat-preview",
 		func() interface{} {
 			return &[]PullRequest{}
 		},
@@ -1028,6 +1075,10 @@ func (c *Client) GetPullRequest(org, repo string, number int) (*PullRequest, err
 	c.log("GetPullRequest", org, repo, number)
 	var pr PullRequest
 	_, err := c.request(&request{
+		// allow the description and draft fields
+		// https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		// https://developer.github.com/changes/2019-02-14-draft-pull-requests/
+		accept:    "application/vnd.github.symmetra-preview+json, application/vnd.github.shadow-cat-preview",
 		method:    http.MethodGet,
 		path:      fmt.Sprintf("/repos/%s/%s/pulls/%d", org, repo, number),
 		exitCodes: []int{200},
@@ -1075,6 +1126,10 @@ func (c *Client) CreatePullRequest(org, repo, title, body, head, base string, ca
 		Num int `json:"number"`
 	}
 	_, err := c.request(&request{
+		// allow the description and draft fields
+		// https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		// https://developer.github.com/changes/2019-02-14-draft-pull-requests/
+		accept:      "application/vnd.github.symmetra-preview+json, application/vnd.github.shadow-cat-preview",
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/pulls", org, repo),
 		requestBody: &data,
@@ -1111,6 +1166,10 @@ func (c *Client) UpdatePullRequest(org, repo string, number int, title, body *st
 		data.State = &cl
 	}
 	_, err := c.request(&request{
+		// allow the description and draft fields
+		// https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		// https://developer.github.com/changes/2019-02-14-draft-pull-requests/
+		accept:      "application/vnd.github.symmetra-preview+json, application/vnd.github.shadow-cat-preview",
 		method:      http.MethodPatch,
 		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d", org, repo, number),
 		requestBody: &data,
@@ -2307,7 +2366,7 @@ func (c *Client) ListCollaborators(org, repo string) ([]User, error) {
 
 // CreateFork creates a fork for the authenticated user. Forking a repository
 // happens asynchronously. Therefore, we may have to wait a short period before
-// accessing the git objects. If this takes longer than 5 minutes, Github
+// accessing the git objects. If this takes longer than 5 minutes, GitHub
 // recommends contacting their support.
 //
 // See https://developer.github.com/v3/repos/forks/#create-a-fork

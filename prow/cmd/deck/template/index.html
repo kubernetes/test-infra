@@ -24,7 +24,7 @@
         <li><select id="author"><option>all authors</option></select></li>
         <li>
           <div class="fuzzy-search" id="job">
-            <input class="fuzzy-search-input" placeholder="Search job name" type="text" id="job-input">
+            <input class="fuzzy-search-input" placeholder="Search job name, accepts '*' wildcards" type="text" id="job-input">
             <ul id="job-list" class="fuzzy-search-list"></ul>
           </div>
         </li>
@@ -48,7 +48,9 @@
     <div id="aborted-tooltip" class="mdl-tooltip" for="job-bar-aborted"></div>
     <div id="job-bar-unknown" class="job-bar-state"></div>
     <div id="unknown-tooltip" class="mdl-tooltip" for="job-bar-unknown"></div>
-  </div>
+    </div>
+    <table id="job-histogram"><tbody id="job-histogram-content"></tbody></table>
+    <div id="job-histogram-labels"><span>Now</span><span id="job-histogram-start"></span></div>
   </aside>
   <article>
     <div class="table-container">

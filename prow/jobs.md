@@ -70,7 +70,91 @@ that matches `trigger` will suffice. This is useful if you want to make one
 command that reruns all jobs. If unspecified, the default configuration makes
 `/test <job-name>` trigger the job.
 
-### Pod Utilities
+## Standard Triggering and Execution Behavior for Jobs
+
+When configuring jobs, it is necessary to keep in mind the set of rules Prow has
+for triggering jobs, the GitHub status contexts that those jobs provide, and the
+rules for protecting those contexts on branches.
+
+### Triggering Jobs
+#### Trigger Types
+
+`prow` will consider three different types of jobs that run on pull requests
+(presubmits):
+
+ 1. jobs that run unconditionally and automatically. All jobs that set
+     `always_run: true` fall into this set.
+ 2. jobs that run conditionally, but automatically. All jobs that set
+    `run_if_changed` to some value fall into this set. 
+ 3. jobs that run conditionally, but not automatically. All jobs that set
+    `always_run: false` and do not set `run_if_changed` to any value fall
+    into this set and require a human to trigger them with a command.
+
+By default, jobs fall into the third category and must have their `always_run` or
+`run_if_changed` configured to operate differently.
+
+In the rest of this document, "a job running unconditionally" indicates that the
+job will run even if it is normally conditional and the conditions are not met.
+Similarly, "a job running conditionally" indicates that the job runs if all of its
+conditions are met.
+
+#### Triggering Jobs With Comments
+
+A developer may trigger jobs by posting a comment to a pull request that contains
+one or more of the following phrases:
+ - `/test job-name` : When posting `/test job-name`, any jobs with matching triggers
+   will be triggered unconditionally.
+ - `/retest` : When posting `/retest`, two types of jobs will be triggered:
+   - all jobs that have run and failed will run unconditionally
+   - any not-yet-executed automatically run jobs will run conditionally 
+ - `/test all` : When posting `/test all`, all automatically run jobs will run
+   conditionally.
+   
+Note: is is possible to configure a job's `trigger` to match any of the above keywords
+(`/retest` and/or `/test all`) but this behavior is not suggested as it will confuse
+developers that expect consistent behavior from these commands. More generally, it is
+possible to configure a job's `trigger` to match any command that is otherwise known
+to Prow in some other context, like `/close`. It is similarly not suggested to do this.
+
+#### Posting GitHub Status Contexts
+
+Jobs that run will always post a status context to the commit under test in GitHub.
+Jobs that run conditionally but do not match the content of the pull request will
+_not_ post "Skipped" status contexts to the pull request.
+<!--- TODO(skuznets|fejta): remove mention of negative behavior by July --->
+
+If a conditional job matched a pull request at some point in the past, ran and failed
+it will post a failed status context to the pull request. If the conditional job still
+matches the pull request, a `/retest` or `/test job-name` will re-trigger it and
+potentially update the failed context to passing. If the job no longer matches the pull
+request, you may still re-trigger it with `/test job-name`, but if it is no longer
+relevant to the pull request, use the `/skip` command to dismiss the status context on
+GitHub.
+
+### Requiring Job Statuses
+#### Requiring Jobs for Auto-Merge Through Tide
+
+Tide will treat jobs in the following manner for merging:
+
+ - unconditionally run jobs with required status contexts are always required to have
+   passed on a pull request to merge
+ - conditionally run jobs with required status contexts are required to have passed on
+   a pull request to merge if they have been triggered against the pull request during
+   its lifetime
+ - jobs with optional status contexts are ignored when merging
+ 
+In order to set a job's context to be optional, set `optional: true` on the job. If it
+is required to not post the results of the job to GitHub whatsoever, the job may be set
+to be optional and silent by setting `skip_report: true`. It is valid to set both of 
+these options at the same time.
+
+#### Protecting Status Contexts 
+
+The branch protection rules will only enforce the presence of jobs that run unconditionally
+and have required status contexts. As conditionally-run jobs may or may not post a status
+context to GitHub, they cannot be required through this mechanism.
+
+## Pod Utilities
 
 If you are adding a new job that will execute on a Kubernetes cluster (`agent: kubernetes`, the default value) you should consider using the [Pod Utilities](/prow/pod-utilities.md). The pod utils decorate jobs with additional containers that transparently provide source code checkout and log/metadata/artifact uploading to GCS.
 

@@ -27,7 +27,7 @@ General upstream documentation on adding a new e2e tests is available at
 
 ## Running node e2e tests locally
 
-### Standard Kubelet
+### Kubelet
 
 It's enough to run the following command from the root `Kubernetes` repository
 directory:
@@ -40,61 +40,6 @@ make test-e2e-node TEST_ARGS="--kubelet-flags=\"${KUBELET_FLAGS}\"" \
 
 The command builds all the necessary binaries and runs the node e2e test suite.
 The RHEL requires the ``--cgroup-driver=systemd`` flag to be set.
-
-### Containerized Kubelet
-
-In this variant there are two steps required to do:
-
-1. build `hyperkube` docker image
-2. tell the node e2e tests to run the containerized variant with the `hyperkube` image
-
-**Build hyperkube docker image**
-
-Before the docker image can be created, the `hyperkube` binary needs to be built.
-Assuming the `GOPATH` is properly set and the required `golang` version installed,
-it's just enough to run:
-
-```sh
-cd $GOPATH/src/k8s.io/kubernetes
-make WHAT="cmd/hyperkube"
-```
-
-Based on your architecture and OS, the `hyperkube` binary can be written
-under `_output/local/bin/linux/amd64/` directory.
-Once written, you can build the docker image by running:
-
-```sh
-cd $GOPATH/src/k8s.io/kubernetes/cluster/images/hyperkube
-export REGISTRY=registry.access.redhat.com
-# Expected location of the hyperkube binary
-export HYPERKUBE_BIN="_output/local/bin/linux/amd64/hyperkube"
-# Either latest or the current git commit
-IMAGE_TAG=$(git describe --abbrev=0)
-make build VERSION=${IMAGE_TAG} ARCH=amd64 BASEIMAGE=rhel7
-```
-
-The docker image tag is set to reflect the current commit in the `Kubernetes`
-repository. The `rhel7` image is used as the base docker image.
-Once run, image with the `hyperkube-amd64` name is built.
-
-**Running `Conformance` tests**
-
-Once the `hyperkube` docker image is built, the node e2e tests over containerized
-`Kubelet` can be run via:
-
-```sh
-IMAGE_TAG=$(git describe --abbrev=0)
-HYPERKUBE_IMAGE="registry.access.redhat.com/hyperkube-amd64:${IMAGE_TAG}"
-# --cgroups-per-qos=true no longer available
-KUBELET_FLAGS="--cgroup-driver=systemd --cgroup-root=/"
-
-# --kubelet-containerized and --hyperkube-image introduced
-# by https://github.com/kubernetes/kubernetes/pull/56250
-make test-e2e-node TEST_ARGS="--kubelet-containerized=true \
-    --hyperkube-image=\"${HYPERKUBE_IMAGE}\" \
-    --kubelet-flags=\"${KUBELET_FLAGS}\"" \
-    FOCUS="Conformance"
-```
 
 ## Uploading test results to GCS bucket
 

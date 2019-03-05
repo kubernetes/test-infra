@@ -65,14 +65,24 @@ type PublicKey struct {
 }
 
 type WindowsProfile struct {
-	AdminUsername string `json:"adminUsername,omitempty"`
-	AdminPassword string `json:"adminPassword,omitempty"`
+	AdminUsername         string `json:"adminUsername,omitempty"`
+	AdminPassword         string `json:"adminPassword,omitempty"`
+	ImageVersion          string `json:"imageVersion,omitempty"`
+	WindowsImageSourceURL string `json:"WindowsImageSourceUrl"`
+	WindowsPublisher      string `json:"WindowsPublisher"`
+	WindowsOffer          string `json:"WindowsOffer"`
+	WindowsSku            string `json:"WindowsSku"`
+	WindowsDockerVersion  string `json:"windowsDockerVersion"`
+	SSHEnabled            bool   `json:"sshEnabled,omitempty"`
 }
 
 type KubernetesConfig struct {
-	CustomWindowsPackageURL string `json:"customWindowsPackageURL,omitempty"`
-	CustomHyperkubeImage    string `json:"customHyperkubeImage,omitempty"`
-	NetworkPlugin           string `json:"networkPlugin,omitempty"`
+	CustomWindowsPackageURL    string `json:"customWindowsPackageURL,omitempty"`
+	CustomHyperkubeImage       string `json:"customHyperkubeImage,omitempty"`
+	NetworkPlugin              string `json:"networkPlugin,omitempty"`
+	PrivateAzureRegistryServer string `json:"privateAzureRegistryServer,omitempty"`
+	AzureCNIURLLinux           string `json:"azureCNIURLLinux,omitempty"`
+	AzureCNIURLWindows         string `json:"azureCNIURLWindows,omitempty"`
 }
 type OrchestratorProfile struct {
 	OrchestratorType    string            `json:"orchestratorType"`
@@ -87,6 +97,7 @@ type MasterProfile struct {
 	VMSize         string              `json:"vmSize" validate:"required"`
 	IPAddressCount int                 `json:"ipAddressCount,omitempty"`
 	Extensions     []map[string]string `json:"extensions,omitempty"`
+	OSDiskSizeGB   int                 `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 }
 
 type AgentPoolProfile struct {
@@ -99,6 +110,7 @@ type AgentPoolProfile struct {
 	IPAddressCount        int                 `json:"ipAddressCount,omitempty"`
 	PreProvisionExtension map[string]string   `json:"preProvisionExtension,omitempty"`
 	Extensions            []map[string]string `json:"extensions,omitempty"`
+	OSDiskSizeGB          int                 `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 }
 
 type AzureClient struct {

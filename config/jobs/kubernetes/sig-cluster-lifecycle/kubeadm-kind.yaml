@@ -1,0 +1,620 @@
+# periodic jobs
+
+periodics:
+- name: ci-kubernetes-e2e-kubeadm-kind-1-12
+  interval: 4h
+  decorate: true
+  labels:
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+  decoration_config:
+    timeout: 2400000000000 #40m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.12
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: master
+    path_alias: k8s.io/kubeadm
+  - org: kubernetes-sigs
+    repo: kind
+    base_ref: master
+    path_alias: sigs.k8s.io/kind
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.12
+      imagePullPolicy: Always
+      env:
+      # for bazel caching
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: kubernetes
+      command:
+      - runner.sh
+      - kubetest
+      args:
+      # kind specific args
+      - --provider=skeleton
+      - --deployment=kind
+      - --kind-binary-version=build
+      - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/single-cp/single-cp.yaml
+      # generic e2e test args
+      - --build=bazel
+      - --up
+      - --test
+      - --check-version-skew=false
+      - --down
+      # specific e2e test args
+      # TODO(bentheelder): num-nodes in particular is brittle. it would be better for kubetest to handle this
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\] --num-nodes=3
+      - --ginkgo-parallel
+      - --timeout=30m
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      # kind needs /lib/modules and cgroups from the host
+      volumeMounts:
+      - mountPath: /lib/modules
+        name: modules
+        readOnly: true
+      - mountPath: /sys/fs/cgroup
+        name: cgroup
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
+    volumes:
+    - name: modules
+      hostPath:
+        path: /lib/modules
+        type: Directory
+    - name: cgroup
+      hostPath:
+        path: /sys/fs/cgroup
+        type: Directory
+
+- name: ci-kubernetes-e2e-kubeadm-kind-1-13
+  interval: 4h
+  decorate: true
+  labels:
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+  decoration_config:
+    timeout: 2400000000000 #40m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.13
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: master
+    path_alias: k8s.io/kubeadm
+  - org: kubernetes-sigs
+    repo: kind
+    base_ref: master
+    path_alias: sigs.k8s.io/kind
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.13
+      imagePullPolicy: Always
+      env:
+      # for bazel caching
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: kubernetes
+      command:
+      - runner.sh
+      - kubetest
+      args:
+      # kind specific args
+      - --provider=skeleton
+      - --deployment=kind
+      - --kind-binary-version=build
+      - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/single-cp/single-cp.yaml
+      # generic e2e test args
+      - --build=bazel
+      - --up
+      - --test
+      - --check-version-skew=false
+      - --down
+      # specific e2e test args
+      # TODO(bentheelder): num-nodes in particular is brittle. it would be better for kubetest to handle this
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\] --num-nodes=3
+      - --ginkgo-parallel
+      - --timeout=30m
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      # kind needs /lib/modules and cgroups from the host
+      volumeMounts:
+      - mountPath: /lib/modules
+        name: modules
+        readOnly: true
+      - mountPath: /sys/fs/cgroup
+        name: cgroup
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
+    volumes:
+    - name: modules
+      hostPath:
+        path: /lib/modules
+        type: Directory
+    - name: cgroup
+      hostPath:
+        path: /sys/fs/cgroup
+        type: Directory
+
+- name: ci-kubernetes-e2e-kubeadm-kind-1-14
+  interval: 4h
+  decorate: true
+  labels:
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+  decoration_config:
+    timeout: 2400000000000 #40m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.14
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: master
+    path_alias: k8s.io/kubeadm
+  - org: kubernetes-sigs
+    repo: kind
+    base_ref: master
+    path_alias: sigs.k8s.io/kind
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.14
+      imagePullPolicy: Always
+      env:
+      # for bazel caching
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: kubernetes
+      command:
+      - runner.sh
+      - kubetest
+      args:
+      # kind specific args
+      - --provider=skeleton
+      - --deployment=kind
+      - --kind-binary-version=build
+      - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/single-cp/single-cp.yaml
+      # generic e2e test args
+      - --build=bazel
+      - --up
+      - --test
+      - --check-version-skew=false
+      - --down
+      # specific e2e test args
+      # TODO(bentheelder): num-nodes in particular is brittle. it would be better for kubetest to handle this
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\] --num-nodes=3
+      - --ginkgo-parallel
+      - --timeout=30m
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      # kind needs /lib/modules and cgroups from the host
+      volumeMounts:
+      - mountPath: /lib/modules
+        name: modules
+        readOnly: true
+      - mountPath: /sys/fs/cgroup
+        name: cgroup
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
+    volumes:
+    - name: modules
+      hostPath:
+        path: /lib/modules
+        type: Directory
+    - name: cgroup
+      hostPath:
+        path: /sys/fs/cgroup
+        type: Directory
+
+- name: ci-kubernetes-e2e-kubeadm-kind-master
+  interval: 1h
+  decorate: true
+  labels:
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+  decoration_config:
+    timeout: 2400000000000 #40m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: master
+    path_alias: k8s.io/kubeadm
+  - org: kubernetes-sigs
+    repo: kind
+    base_ref: master
+    path_alias: sigs.k8s.io/kind
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+      env:
+      # for bazel caching
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: kubernetes
+      command:
+      - runner.sh
+      - kubetest
+      args:
+      # kind specific args
+      - --provider=skeleton
+      - --deployment=kind
+      - --kind-binary-version=build
+      - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/single-cp/single-cp.yaml
+      # generic e2e test args
+      - --build=bazel
+      - --up
+      - --test
+      - --check-version-skew=false
+      - --down
+      # specific e2e test args
+      # TODO(bentheelder): num-nodes in particular is brittle. it would be better for kubetest to handle this
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\] --num-nodes=3
+      - --ginkgo-parallel
+      - --timeout=30m
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      # kind needs /lib/modules and cgroups from the host
+      volumeMounts:
+      - mountPath: /lib/modules
+        name: modules
+        readOnly: true
+      - mountPath: /sys/fs/cgroup
+        name: cgroup
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
+    volumes:
+    - name: modules
+      hostPath:
+        path: /lib/modules
+        type: Directory
+    - name: cgroup
+      hostPath:
+        path: /sys/fs/cgroup
+        type: Directory
+
+# presubmit jobs
+
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-kind
+    optional: true
+    always_run: false
+    decorate: true
+    branches:
+    - release-1.12
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+    decoration_config:
+      timeout: 2400000000000 #40m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: kubeadm
+      base_ref: master
+      path_alias: k8s.io/kubeadm
+    - org: kubernetes-sigs
+      repo: kind
+      base_ref: master
+      path_alias: sigs.k8s.io/kind
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.12
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # kind specific args
+        - --provider=skeleton
+        - --deployment=kind
+        - --kind-binary-version=build
+        - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/single-cp/single-cp.yaml
+        # generic e2e test args
+        - --build=bazel
+        - --up
+        - --test
+        - --check-version-skew=false
+        - --down
+        # specific e2e test args
+        # TODO(bentheelder): num-nodes in particular is brittle. it would be better for kubetest to handle this
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\] --num-nodes=3
+        - --ginkgo-parallel
+        - --timeout=30m
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        # kind needs /lib/modules and cgroups from the host
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /sys/fs/cgroup
+          name: cgroup
+        resources:
+          requests:
+            # TODO(BenTheElder): adjust these everywhere
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+      volumes:
+      - name: modules
+        hostPath:
+          path: /lib/modules
+          type: Directory
+      - name: cgroup
+        hostPath:
+          path: /sys/fs/cgroup
+          type: Directory
+
+  - name: pull-kubernetes-e2e-kind
+    optional: true
+    always_run: false
+    decorate: true
+    branches:
+    - release-1.13
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+    decoration_config:
+      timeout: 2400000000000 #40m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: kubeadm
+      base_ref: master
+      path_alias: k8s.io/kubeadm
+    - org: kubernetes-sigs
+      repo: kind
+      base_ref: master
+      path_alias: sigs.k8s.io/kind
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.13
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # kind specific args
+        - --provider=skeleton
+        - --deployment=kind
+        - --kind-binary-version=build
+        - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/single-cp/single-cp.yaml
+        # generic e2e test args
+        - --build=bazel
+        - --up
+        - --test
+        - --check-version-skew=false
+        - --down
+        # specific e2e test args
+        # TODO(bentheelder): num-nodes in particular is brittle. it would be better for kubetest to handle this
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\] --num-nodes=3
+        - --ginkgo-parallel
+        - --timeout=30m
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        # kind needs /lib/modules and cgroups from the host
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /sys/fs/cgroup
+          name: cgroup
+        resources:
+          requests:
+            # TODO(BenTheElder): adjust these everywhere
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+      volumes:
+      - name: modules
+        hostPath:
+          path: /lib/modules
+          type: Directory
+      - name: cgroup
+        hostPath:
+          path: /sys/fs/cgroup
+          type: Directory
+
+  - name: pull-kubernetes-e2e-kind
+    optional: true
+    always_run: false
+    decorate: true
+    branches:
+    - release-1.14
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+    decoration_config:
+      timeout: 2400000000000 #40m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: kubeadm
+      base_ref: master
+      path_alias: k8s.io/kubeadm
+    - org: kubernetes-sigs
+      repo: kind
+      base_ref: master
+      path_alias: sigs.k8s.io/kind
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.14
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # kind specific args
+        - --provider=skeleton
+        - --deployment=kind
+        - --kind-binary-version=build
+        - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/single-cp/single-cp.yaml
+        # generic e2e test args
+        - --build=bazel
+        - --up
+        - --test
+        - --check-version-skew=false
+        - --down
+        # specific e2e test args
+        # TODO(bentheelder): num-nodes in particular is brittle. it would be better for kubetest to handle this
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\] --num-nodes=3
+        - --ginkgo-parallel
+        - --timeout=30m
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        # kind needs /lib/modules and cgroups from the host
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /sys/fs/cgroup
+          name: cgroup
+        resources:
+          requests:
+            # TODO(BenTheElder): adjust these everywhere
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+      volumes:
+      - name: modules
+        hostPath:
+          path: /lib/modules
+          type: Directory
+      - name: cgroup
+        hostPath:
+          path: /sys/fs/cgroup
+          type: Directory
+
+  - name: pull-kubernetes-e2e-kind
+    optional: true
+    always_run: false
+    decorate: true
+    skip_branches:
+    - release-1.14 # per-release job
+    - release-1.13 # per-release job
+    - release-1.12 # per-release job
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+    decoration_config:
+      timeout: 2400000000000 #40m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: kubeadm
+      base_ref: master
+      path_alias: k8s.io/kubeadm
+    - org: kubernetes-sigs
+      repo: kind
+      base_ref: master
+      path_alias: sigs.k8s.io/kind
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # kind specific args
+        - --provider=skeleton
+        - --deployment=kind
+        - --kind-binary-version=build
+        - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/single-cp/single-cp.yaml
+        # generic e2e test args
+        - --build=bazel
+        - --up
+        - --test
+        - --check-version-skew=false
+        - --down
+        # specific e2e test args
+        # TODO(bentheelder): num-nodes in particular is brittle. it would be better for kubetest to handle this
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\] --num-nodes=3
+        - --ginkgo-parallel
+        - --timeout=30m
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        # kind needs /lib/modules and cgroups from the host
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /sys/fs/cgroup
+          name: cgroup
+        resources:
+          requests:
+            # TODO(BenTheElder): adjust these everywhere
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+      volumes:
+      - name: modules
+        hostPath:
+          path: /lib/modules
+          type: Directory
+      - name: cgroup
+        hostPath:
+          path: /sys/fs/cgroup
+          type: Directory

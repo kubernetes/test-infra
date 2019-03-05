@@ -22,7 +22,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
         args:
         - "--repo=github.com/kubernetes-incubator/$(REPO_NAME)=$(PULL_REFS)"
         - "--timeout=45"
@@ -42,7 +42,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
         args:
         - "--repo=github.com/kubernetes-incubator/$(REPO_NAME)=$(PULL_REFS)"
         - "--timeout=60"

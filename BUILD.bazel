@@ -3,6 +3,7 @@
 # gazelle:exclude vendor/k8s.io/code-generator/_examples/
 
 load("@io_kubernetes_build//defs:run_in_workspace.bzl", "workspace_binary")
+load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
 
 workspace_binary(
     name = "go",
@@ -76,6 +77,14 @@ workspace_binary(
     cmd = "@io_kubernetes_build//kazel",
 )
 
+nodejs_binary(
+    name = "tslint",
+    data = [
+        "@npm//tslint",
+    ],
+    entry_point = "tslint/bin/tslint",
+)
+
 filegroup(
     name = "package-srcs",
     srcs = glob(
@@ -105,11 +114,14 @@ filegroup(
         "//greenhouse:all-srcs",
         "//hack:all-srcs",
         "//images/bootstrap/barnacle:all-srcs",
+        "//images/kubekins-e2e:all-srcs",
         "//jenkins:all-srcs",
         "//jobs:all-srcs",
         "//kettle:all-srcs",
         "//kubetest:all-srcs",
+        "//kubetest2:all-srcs",
         "//label_sync:all-srcs",
+        "//linkcheck:all-srcs",
         "//logexporter/cmd:all-srcs",
         "//maintenance/aws-janitor:all-srcs",
         "//maintenance/migratestatus:all-srcs",
@@ -130,6 +142,12 @@ filegroup(
         "//vendor:all-srcs",
     ],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "test-infra-README",
+    srcs = ["README.md"],
     visibility = ["//visibility:public"],
 )
 

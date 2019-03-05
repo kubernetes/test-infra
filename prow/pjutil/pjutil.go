@@ -19,6 +19,7 @@ package pjutil
 
 import (
 	"bytes"
+	"fmt"
 	"net/url"
 	"path"
 
@@ -65,32 +66,42 @@ func newProwJob(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[stri
 	}
 }
 
+func createRefs(pr github.PullRequest, baseSHA string) prowapi.Refs {
+	org := pr.Base.Repo.Owner.Login
+	repo := pr.Base.Repo.Name
+	repoLink := pr.Base.Repo.HTMLURL
+	number := pr.Number
+	return prowapi.Refs{
+		Org:      org,
+		Repo:     repo,
+		RepoLink: repoLink,
+		BaseRef:  pr.Base.Ref,
+		BaseSHA:  baseSHA,
+		BaseLink: fmt.Sprintf("%s/commit/%s", repoLink, baseSHA),
+		Pulls: []prowapi.Pull{
+			{
+				Number:     number,
+				Author:     pr.User.Login,
+				SHA:        pr.Head.SHA,
+				Link:       pr.HTMLURL,
+				AuthorLink: pr.User.HTMLURL,
+				CommitLink: fmt.Sprintf("%s/pull/%d/commits/%s", repoLink, number, pr.Head.SHA),
+			},
+		},
+	}
+}
+
 // NewPresubmit converts a config.Presubmit into a prowapi.ProwJob.
 // The prowapi.Refs are configured correctly per the pr, baseSHA.
 // The eventGUID becomes a github.EventGUID label.
 func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, eventGUID string) prowapi.ProwJob {
-	org := pr.Base.Repo.Owner.Login
-	repo := pr.Base.Repo.Name
-	number := pr.Number
-	kr := prowapi.Refs{
-		Org:     org,
-		Repo:    repo,
-		BaseRef: pr.Base.Ref,
-		BaseSHA: baseSHA,
-		Pulls: []prowapi.Pull{
-			{
-				Number: number,
-				Author: pr.User.Login,
-				SHA:    pr.Head.SHA,
-			},
-		},
-	}
+	refs := createRefs(pr, baseSHA)
 	labels := make(map[string]string)
 	for k, v := range job.Labels {
 		labels[k] = v
 	}
 	labels[github.EventGUID] = eventGUID
-	return NewProwJob(PresubmitSpec(job, kr), labels)
+	return NewProwJob(PresubmitSpec(job, refs), labels)
 }
 
 // PresubmitSpec initializes a ProwJobSpec for a given presubmit job.
@@ -110,7 +121,7 @@ func PostsubmitSpec(p config.Postsubmit, refs prowapi.Refs) prowapi.ProwJobSpec 
 	pjs := specFromJobBase(p.JobBase)
 	pjs.Type = prowapi.PostsubmitJob
 	pjs.Context = p.Context
-	pjs.Report = p.Report
+	pjs.Report = !p.SkipReport
 	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
 
 	return pjs
@@ -236,12 +247,12 @@ func ProwJobFields(pj *prowapi.ProwJob) logrus.Fields {
 //
 // TODO(fejta): consider moving default JobURLTemplate and JobURLPrefix out of plank
 func JobURL(plank config.Plank, pj prowapi.ProwJob, log *logrus.Entry) string {
-	if pj.Spec.DecorationConfig != nil && plank.JobURLPrefix != "" {
+	if pj.Spec.DecorationConfig != nil && plank.GetJobURLPrefix(pj.Spec.Refs) != "" {
 		spec := downwardapi.NewJobSpec(pj.Spec, pj.Status.BuildID, pj.Name)
 		gcsConfig := pj.Spec.DecorationConfig.GCSConfiguration
 		_, gcsPath, _ := gcsupload.PathsForJob(gcsConfig, &spec, "")
 
-		prefix, _ := url.Parse(plank.JobURLPrefix)
+		prefix, _ := url.Parse(plank.GetJobURLPrefix(pj.Spec.Refs))
 		prefix.Path = path.Join(prefix.Path, gcsConfig.Bucket, gcsPath)
 		return prefix.String()
 	}

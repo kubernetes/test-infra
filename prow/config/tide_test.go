@@ -311,11 +311,15 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 					Presubmits: map[string][]Presubmit{
 						"org/repo": {
 							Presubmit{
-								Context:   "pr1",
+								Reporter: Reporter{
+									Context: "pr1",
+								},
 								AlwaysRun: true,
 							},
 							Presubmit{
-								Context:   "po1",
+								Reporter: Reporter{
+									Context: "po1",
+								},
 								AlwaysRun: true,
 								Optional:  true,
 							},

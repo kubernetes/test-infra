@@ -30,6 +30,7 @@ go_library(
     ],
     importpath = "k8s.io/test-infra/prow/github",
     deps = [
+        "//ghproxy/ghcache:go_default_library",
         "//prow/errorutil:go_default_library",
         "//vendor/github.com/shurcooL/githubv4:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

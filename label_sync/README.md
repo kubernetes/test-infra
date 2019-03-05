@@ -65,9 +65,7 @@ bazel run //label_sync -- \
   --action docs \
   --config $(pwd)/label_sync/labels.yaml \
   --docs-template $(pwd)/label_sync/labels.md.tmpl \
-  --docs-output $(pwd)/label_sync/labels.md \
-  --css-template $(pwd)/label_sync/labels.css.tmpl \
-  --css-output $(pwd)/prow/cmd/deck/static/labels.css
+  --docs-output $(pwd)/label_sync/labels.md
 ```
 
 ## Our Deployment

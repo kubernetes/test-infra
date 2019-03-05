@@ -167,3 +167,26 @@ func EnvForType(jobType prowapi.ProwJobType) []string {
 		return []string{}
 	}
 }
+
+// getRevisionFromRef returns a ref or sha from a refs object
+func getRevisionFromRef(refs *prowapi.Refs) string {
+	if len(refs.Pulls) > 0 {
+		return refs.Pulls[0].SHA
+	}
+
+	if refs.BaseSHA != "" {
+		return refs.BaseSHA
+	}
+
+	return refs.BaseRef
+}
+
+// GetRevisionFromSpec returns a main ref or sha from a spec object
+func GetRevisionFromSpec(spec *JobSpec) string {
+	if spec.Refs != nil {
+		return getRevisionFromRef(spec.Refs)
+	} else if len(spec.ExtraRefs) > 0 {
+		return getRevisionFromRef(&spec.ExtraRefs[0])
+	}
+	return ""
+}

@@ -5,7 +5,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/cluster-api:v20180927-f09bc3b1b
+    - image: gcr.io/k8s-testimages/cluster-api:v20190114-652973a54
       args:
       - "--repo=sigs.k8s.io/cluster-api"
       - "--root=/go/src"
@@ -19,7 +19,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/cluster-api:v20180720-d52d72975
+    - image: gcr.io/k8s-testimages/cluster-api:v20190114-652973a54
       args:
       - "--repo=sigs.k8s.io/cluster-api"
       - "--root=/go/src"

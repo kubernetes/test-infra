@@ -49,6 +49,8 @@ DEMOLISH_ORDER = [
     Resource('', 'compute', 'instance-groups', None, 'zone', 'Yes', False, True),
     Resource('', 'compute', 'instance-groups', None, 'zone', 'No', False, True),
     Resource('', 'compute', 'instance-templates', None, None, None, False, True),
+    Resource('', 'compute', 'sole-tenancy', 'node-groups', 'zone', None, False, True),
+    Resource('', 'compute', 'sole-tenancy', 'node-templates', 'region', None, False, True),
     Resource('beta', 'compute', 'network-endpoint-groups', None, None, None, True, False),
     Resource('', 'compute', 'networks', 'subnets', 'region', None, True, True),
     Resource('', 'compute', 'networks', None, '', None, False, True),

@@ -754,7 +754,7 @@ func ensureConfigMap(kc *kubernetes.Clientset, ns, name, key string) error {
 
 func main() {
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	skipGithub := fs.Bool("skip-github", false, "Do not add github webhooks if set")
+	skipGitHub := fs.Bool("skip-github", false, "Do not add github webhooks if set")
 	opt := addFlags(fs)
 	fs.Parse(os.Args[1:])
 
@@ -793,7 +793,7 @@ func main() {
 		logrus.WithError(err).Fatal("Could not deploy prow")
 	}
 
-	if !*skipGithub {
+	if !*skipGitHub {
 		fmt.Println("Checking github credentials...")
 		// create github client
 		token, err := githubToken(opt.githubTokenPath)

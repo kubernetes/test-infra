@@ -22,11 +22,16 @@ import (
 
 // Record is a trace of what the desired
 // git state was, what steps we took to get there,
-// and whether or not we were successful.
+// what our final state ended up being, and
+// whether or not we were successful.
 type Record struct {
 	Refs     prowapi.Refs `json:"refs"`
 	Commands []Command    `json:"commands"`
 	Failed   bool         `json:"failed"`
+
+	// FinalSHA is the SHA from ultimate state of a cloned ref
+	// This is used to populate RepoCommit in started.json properly
+	FinalSHA string `json:"final_sha,omitempty"`
 }
 
 // Command is a trace of a command executed

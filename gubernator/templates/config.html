@@ -4,7 +4,7 @@
 % endblock
 % block content
 <form method="post">
-<p>These values come from the <a href="https://github.com/settings/developers">OAuth Apps Tab</a> on Github.
+<p>These values come from the <a href="https://github.com/settings/developers">OAuth Apps Tab</a> on GitHub.
 <p>New apps should be registered with "Homepage URL" set to https://{{hostname}} and "Authorization callback URL" set to https://{{hostname}}/github_auth.
 <p>GitHub OAuth Client Id: <input type="text" name="github_id"><br>
 GitHub OAuth Client Secret: <input type="text" name="github_secret"><br>
@@ -22,9 +22,9 @@ Alternate OAuth Host (optional, for custom domains, like "g8r.k8s.io:443"): <inp
 <h2>OAuth secrets set!</h2>
 % endif
 % if webhook_set
-<h2>Github Webhook secret set!</h2>
+<h2>GitHub Webhook secret set!</h2>
 % endif
 % if token_set
-<h2>Github Token set!</h2>
+<h2>GitHub Token set!</h2>
 % endif
 % endblock

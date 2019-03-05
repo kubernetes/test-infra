@@ -13,34 +13,17 @@
 # limitations under the License.
 
 load("//def:image.bzl", "tags")
-load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
-load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
-load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+load("//prow:def.bzl", "prow_push")
 
 package(default_visibility = ["//testgrid:__subpackages__"])
 
 # TODO(fejta): move registry to a variable
-container_bundle(
-    name = "images",
-    images = tags(**{
-        "gcr.io/fejta-prod/testgrid/updater": ":updater",
-        "gcr.io/fejta-prod/testgrid/configurator": ":configurator",
-    }),
-)
-
-docker_push(
+prow_push(
     name = "push",
-    bundle = ":images",
-)
-
-go_image(
-    name = "updater",
-    binary = "//testgrid/cmd/updater",
-)
-
-go_image(
-    name = "configurator",
-    binary = "//testgrid/cmd/configurator",
+    images = tags(**{
+        "gcr.io/fejta-prod/testgrid/updater": "//testgrid/cmd/updater:image",
+        "gcr.io/fejta-prod/testgrid/configurator": "//testgrid/cmd/configurator:image",
+    }),
 )
 
 filegroup(

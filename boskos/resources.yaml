@@ -523,3 +523,16 @@ resources:
   - k8s-jenkins-scalability-5
   state: dirty
   type: scalability-project
+- names:
+  - capa-user-01
+  - capa-user-02
+  - capa-user-03
+  - capa-user-04
+  - capa-user-05
+  - capa-user-06
+  - capa-user-07
+  - capa-user-08
+  - capa-user-09
+  - capa-user-00
+  state: dirty
+  type: aws-account

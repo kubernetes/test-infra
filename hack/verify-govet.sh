@@ -18,4 +18,6 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-go vet $(go list ./... | grep -v 'k8s.io/test-infra/testgrid')
+# TODO(fejta): check in testgrid pb.go files
+# TODO(Katharine): get spyglass and deck out of the skip list
+bazel run //:govet -- $(bazel run //:go -- list ./... | grep -v -E 'k8s.io/test-infra/(testgrid|experiment/resultstore|prow/spyglass|prow/cmd/deck)')

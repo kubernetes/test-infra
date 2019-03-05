@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-testimages/gcloud-in-go:v20180725-a495f0247
+FROM gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
 
 ADD ["janitor", \
      "janitor.py", \

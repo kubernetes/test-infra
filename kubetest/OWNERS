@@ -4,6 +4,7 @@ approvers:
 - BenTheElder
 - krzyzacy
 - shyamjvs
+- wojtek-t # For European timezone emergencies.
 
 labels:
 - area/kubetest

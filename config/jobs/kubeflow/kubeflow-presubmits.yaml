@@ -199,67 +199,54 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+
   kubeflow/pipelines:
-  - name: kubeflow-pipeline-build-image
+  - name: kubeflow-pipeline-e2e-test
     always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
         command:
-        - ./test/presubmit-tests.sh
+        - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
         - --workflow_file
-        - build_image.yaml
-    run_after_success:
-    - name: kubeflow-pipeline-e2e-test
-      always_run: true
-      decorate: true
-      labels:
-        preset-service-account: "true"
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
-          command:
-          - ./test/presubmit-tests-with-pipeline-deployment.sh
-          args:
-          - --workflow_file
-          - e2e_test_gke_v2.yaml
-          - --test_result_folder
-          - e2e_test
-    - name: kubeflow-pipeline-sample-test
-      always_run: true
-      decorate: true
-      skip_report: true
-      labels:
-        preset-service-account: "true"
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
-          command:
-          - ./test/presubmit-tests-with-pipeline-deployment.sh
-          args:
-          - --workflow_file
-          - sample_test_v2.yaml
-          - --test_result_folder
-          - sample_test
-          - --timeout
-          - "3600"
-    - name: kubeflow-pipeline-e2e-test-gce-minikube
-      always_run: true
-      decorate: true
-      skip_report: true
-      labels:
-        preset-service-account: "true"
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
-          command:
-          - ./test/presubmit-tests-gce-minikube.sh
-          args:
-          - --workflow_file
-          - e2e_test_gke.yaml
-          - --test_result_folder
-          - e2e_test_gke
+        - e2e_test_gke_v2.yaml
+        - --test_result_folder
+        - e2e_test
+  - name: kubeflow-pipeline-sample-test
+    always_run: true
+    decorate: true
+    skip_report: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+        command:
+        - ./test/presubmit-tests-with-pipeline-deployment.sh
+        args:
+        - --workflow_file
+        - sample_test_v2.yaml
+        - --test_result_folder
+        - sample_test
+        - --timeout
+        - "3600"
+#   - name: kubeflow-pipeline-e2e-test-gce-minikube
+#     always_run: true
+#     decorate: true
+#     skip_report: true
+#     labels:
+#       preset-service-account: "true"
+#     spec:
+#       containers:
+#       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+#         command:
+#         - ./test/presubmit-tests-gce-minikube.sh
+#         args:
+#         - --workflow_file
+#         - e2e_test_gke.yaml
+#         - --test_result_folder
+#         - e2e_test_gke

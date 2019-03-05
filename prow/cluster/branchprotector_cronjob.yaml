@@ -6,7 +6,6 @@ metadata:
 spec:
   schedule: "54 * * * *"  # Every hour at 54 minutes past the hour
   concurrencyPolicy: Forbid
-  suspend: true  # TODO(Katharine): remove this once we're up to date.
   jobTemplate:
     metadata:
       labels:
@@ -16,7 +15,7 @@ spec:
         spec:
           containers:
           - name: branchprotector
-            image: gcr.io/k8s-prow/branchprotector:v20190125-2aca69d
+            image: gcr.io/k8s-prow/branchprotector:v20190301-2d35634
             args:
             - --config-path=/etc/config/config.yaml
             - --job-config-path=/etc/job-config

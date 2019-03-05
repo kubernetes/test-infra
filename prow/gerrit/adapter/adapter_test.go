@@ -21,8 +21,12 @@ import (
 	"testing"
 	"time"
 
+	gerrit "github.com/andygrunwald/go-gerrit"
+
 	"k8s.io/test-infra/prow/gerrit/client"
 
+	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/util/diff"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 )
@@ -112,6 +116,58 @@ func TestMakeCloneURI(t *testing.T) {
 				t.Errorf("actual %q != expected %q", actual.String(), tc.expected)
 			}
 		})
+	}
+}
+
+func TestCreateRefs(t *testing.T) {
+	reviewHost := "https://cat-review.example.com"
+	change := client.ChangeInfo{
+		Number:          42,
+		Project:         "meow/purr",
+		CurrentRevision: "123456",
+		Branch:          "master",
+		Revisions: map[string]client.RevisionInfo{
+			"123456": {
+				Ref: "refs/changes/00/1/1",
+				Commit: gerrit.CommitInfo{
+					Author: gerrit.GitPersonInfo{
+						Name:  "Some Cat",
+						Email: "nyan@example.com",
+					},
+				},
+			},
+		},
+	}
+	expected := prowapi.Refs{
+		Org:      "cat-review.example.com",
+		Repo:     "meow/purr",
+		BaseRef:  "master",
+		BaseSHA:  "abcdef",
+		CloneURI: "https://cat-review.example.com/meow/purr",
+		RepoLink: "https://cat.example.com/meow/purr",
+		BaseLink: "https://cat.example.com/meow/purr/+/abcdef",
+		Pulls: []prowapi.Pull{
+			{
+				Number:     42,
+				Author:     "Some Cat",
+				SHA:        "123456",
+				Ref:        "refs/changes/00/1/1",
+				Link:       "https://cat-review.example.com/c/meow/purr/+/42",
+				CommitLink: "https://cat.example.com/meow/purr/+/123456",
+				AuthorLink: "https://cat-review.example.com/q/nyan@example.com",
+			},
+		},
+	}
+	cloneURI, err := makeCloneURI(reviewHost, change.Project)
+	if err != nil {
+		t.Errorf("failed to make clone URI: %v", err)
+	}
+	actual, err := createRefs(reviewHost, change, cloneURI, "abcdef")
+	if err != nil {
+		t.Errorf("unexpected error creating refs: %v", err)
+	}
+	if !equality.Semantic.DeepEqual(expected, actual) {
+		t.Errorf("diff between expected and actual refs:%s", diff.ObjectReflectDiff(expected, actual))
 	}
 }
 

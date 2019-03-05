@@ -18,12 +18,17 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
+	"os"
 	"strings"
+	"syscall"
 	"time"
 
 	"sync"
@@ -34,8 +39,25 @@ import (
 	"k8s.io/test-infra/boskos/storage"
 )
 
+var (
+	// ErrNotFound is returned by Acquire() when no resources are available.
+	ErrNotFound = errors.New("resources not found")
+	// ErrAlreadyInUse is returned by Acquire when resources are already being requested.
+	ErrAlreadyInUse = errors.New("resources already used by another user")
+	// ErrContextRequired is returned by AcquireWait and AcquireByStateWait when
+	// they are invoked with a nil context.
+	ErrContextRequired = errors.New("context required")
+)
+
 // Client defines the public Boskos client object
 type Client struct {
+	// Dialer is the net.Dialer used to establish connections to the remote
+	// boskos endpoint.
+	Dialer DialerWithRetry
+
+	// http is the http.Client used to interact with the boskos REST API
+	http http.Client
+
 	owner string
 	url   string
 	lock  sync.Mutex
@@ -43,13 +65,41 @@ type Client struct {
 	storage storage.PersistenceLayer
 }
 
-// NewClient creates a boskos client, with boskos url and owner of the client.
+// NewClient creates a Boskos client for the specified URL and resource owner.
+//
+// Clients created with this function default to retrying failed connection
+// attempts three times with a ten second pause between each attempt.
 func NewClient(owner string, url string) *Client {
 
 	client := &Client{
 		url:     url,
 		owner:   owner,
 		storage: storage.NewMemoryStorage(),
+	}
+
+	// Configure the dialer to attempt three additional times to establish
+	// a connection after a failed dial attempt. The dialer should wait 10
+	// seconds between each attempt.
+	client.Dialer.RetryCount = 3
+	client.Dialer.RetrySleep = time.Second * 10
+
+	// Configure the dialer and HTTP client transport to mimic the configuration
+	// of the http.DefaultTransport with the exception that the Dialer's Dial
+	// and DialContext functions are assigned to the client transport.
+	//
+	// See https://golang.org/pkg/net/http/#RoundTripper for the values
+	// values used for the http.DefaultTransport.
+	client.Dialer.Timeout = 30 * time.Second
+	client.Dialer.KeepAlive = 30 * time.Second
+	client.Dialer.DualStack = true
+	client.http.Transport = &http.Transport{
+		Proxy:                 http.ProxyFromEnvironment,
+		Dial:                  client.Dialer.Dial,
+		DialContext:           client.Dialer.DialContext,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
 	}
 
 	return client
@@ -73,6 +123,31 @@ func (c *Client) Acquire(rtype, state, dest string) (*common.Resource, error) {
 	return r, nil
 }
 
+// AcquireWait blocks until Acquire returns the specified resource or the
+// provided context is cancelled or its deadline exceeded.
+func (c *Client) AcquireWait(ctx context.Context, rtype, state, dest string) (*common.Resource, error) {
+	if ctx == nil {
+		return nil, ErrContextRequired
+	}
+	// Try to acquire the resource until available or the context is
+	// cancelled or its deadline exceeded.
+	for {
+		r, err := c.Acquire(rtype, state, dest)
+		if err != nil {
+			if err == ErrAlreadyInUse || err == ErrNotFound {
+				select {
+				case <-ctx.Done():
+					return nil, err
+				case <-time.After(3 * time.Second):
+					continue
+				}
+			}
+			return nil, err
+		}
+		return r, nil
+	}
+}
+
 // AcquireByState asks boskos for a resources of certain type, and set the resource to dest state.
 // Returns a list of resources on success.
 func (c *Client) AcquireByState(state, dest string, names []string) ([]common.Resource, error) {
@@ -86,6 +161,32 @@ func (c *Client) AcquireByState(state, dest string, names []string) ([]common.Re
 		c.storage.Add(r)
 	}
 	return resources, nil
+}
+
+// AcquireByStateWait blocks until AcquireByState returns the specified
+// resource(s) or the provided context is cancelled or its deadline
+// exceeded.
+func (c *Client) AcquireByStateWait(ctx context.Context, state, dest string, names []string) ([]common.Resource, error) {
+	if ctx == nil {
+		return nil, ErrContextRequired
+	}
+	// Try to acquire the resource(s) until available or the context is
+	// cancelled or its deadline exceeded.
+	for {
+		r, err := c.AcquireByState(state, dest, names)
+		if err != nil {
+			if err == ErrAlreadyInUse || err == ErrNotFound {
+				select {
+				case <-ctx.Done():
+					return nil, err
+				case <-time.After(3 * time.Second):
+					continue
+				}
+			}
+			return nil, err
+		}
+		return r, nil
+	}
 }
 
 // ReleaseAll returns all resources hold by the client back to boskos and set them to dest state.
@@ -232,14 +333,15 @@ func (c *Client) updateLocalResource(i common.Item, state string, data *common.U
 }
 
 func (c *Client) acquire(rtype, state, dest string) (*common.Resource, error) {
-	resp, err := http.Post(fmt.Sprintf("%v/acquire?type=%v&state=%v&dest=%v&owner=%v",
+	resp, err := c.httpPost(fmt.Sprintf("%v/acquire?type=%v&state=%v&dest=%v&owner=%v",
 		c.url, rtype, state, dest, c.owner), "", nil)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusOK {
+	switch resp.StatusCode {
+	case http.StatusOK:
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
@@ -254,14 +356,16 @@ func (c *Client) acquire(rtype, state, dest string) (*common.Resource, error) {
 			return nil, fmt.Errorf("unable to parse resource")
 		}
 		return &res, nil
-	} else if resp.StatusCode == http.StatusNotFound {
-		return nil, fmt.Errorf("resource not found")
+	case http.StatusUnauthorized:
+		return nil, ErrAlreadyInUse
+	case http.StatusNotFound:
+		return nil, ErrNotFound
 	}
 	return nil, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode)
 }
 
 func (c *Client) acquireByState(state, dest string, names []string) ([]common.Resource, error) {
-	resp, err := http.Post(fmt.Sprintf("%v/acquirebystate?state=%v&dest=%v&owner=%v&names=%v",
+	resp, err := c.httpPost(fmt.Sprintf("%v/acquirebystate?state=%v&dest=%v&owner=%v&names=%v",
 		c.url, state, dest, c.owner, strings.Join(names, ",")), "", nil)
 	if err != nil {
 		return nil, err
@@ -276,16 +380,15 @@ func (c *Client) acquireByState(state, dest string, names []string) ([]common.Re
 		}
 		return resources, nil
 	case http.StatusUnauthorized:
-		return nil, fmt.Errorf("resources already used by another user")
-
+		return nil, ErrAlreadyInUse
 	case http.StatusNotFound:
-		return nil, fmt.Errorf("resources not found")
+		return nil, ErrNotFound
 	}
 	return nil, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode)
 }
 
 func (c *Client) release(name, dest string) error {
-	resp, err := http.Post(fmt.Sprintf("%v/release?name=%v&dest=%v&owner=%v",
+	resp, err := c.httpPost(fmt.Sprintf("%v/release?name=%v&dest=%v&owner=%v",
 		c.url, name, dest, c.owner), "", nil)
 	if err != nil {
 		return err
@@ -308,7 +411,7 @@ func (c *Client) update(name, state string, userData *common.UserData) error {
 		}
 		body = b
 	}
-	resp, err := http.Post(fmt.Sprintf("%v/update?name=%v&owner=%v&state=%v",
+	resp, err := c.httpPost(fmt.Sprintf("%v/update?name=%v&owner=%v&state=%v",
 		c.url, name, c.owner, state), "application/json", body)
 	if err != nil {
 		return err
@@ -323,7 +426,7 @@ func (c *Client) update(name, state string, userData *common.UserData) error {
 
 func (c *Client) reset(rtype, state string, expire time.Duration, dest string) (map[string]string, error) {
 	rmap := make(map[string]string)
-	resp, err := http.Post(fmt.Sprintf("%v/reset?type=%v&state=%v&expire=%v&dest=%v",
+	resp, err := c.httpPost(fmt.Sprintf("%v/reset?type=%v&state=%v&expire=%v&dest=%v",
 		c.url, rtype, state, expire.String(), dest), "", nil)
 	if err != nil {
 		return rmap, err
@@ -345,7 +448,7 @@ func (c *Client) reset(rtype, state string, expire time.Duration, dest string) (
 
 func (c *Client) metric(rtype string) (common.Metric, error) {
 	var metric common.Metric
-	resp, err := http.Get(fmt.Sprintf("%v/metric?type=%v", c.url, rtype))
+	resp, err := c.httpGet(fmt.Sprintf("%v/metric?type=%v", c.url, rtype))
 	if err != nil {
 		return metric, err
 	}
@@ -362,4 +465,95 @@ func (c *Client) metric(rtype string) (common.Metric, error) {
 
 	err = json.Unmarshal(body, &metric)
 	return metric, err
+}
+
+func (c *Client) httpGet(url string) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	return c.http.Do(req)
+}
+
+func (c *Client) httpPost(url, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodPost, url, body)
+	if err != nil {
+		return nil, err
+	}
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
+	}
+	return c.http.Do(req)
+}
+
+// DialerWithRetry is a composite version of the net.Dialer that retries
+// connection attempts.
+type DialerWithRetry struct {
+	net.Dialer
+
+	// RetryCount is the number of times to retry a connection attempt.
+	RetryCount uint
+
+	// RetrySleep is the length of time to pause between retry attempts.
+	RetrySleep time.Duration
+}
+
+// Dial connects to the address on the named network.
+func (d *DialerWithRetry) Dial(network, address string) (net.Conn, error) {
+	return d.DialContext(context.Background(), network, address)
+}
+
+// DialContext connects to the address on the named network using the provided context.
+func (d *DialerWithRetry) DialContext(ctx context.Context, network, address string) (net.Conn, error) {
+	// Always bump the retry count by 1 in order to equal the actual number of
+	// attempts. For example, if a retry count of 2 is specified, the intent
+	// is for three attempts -- the initial attempt with two retries in case
+	// the initial attempt times out.
+	count := d.RetryCount + 1
+	sleep := d.RetrySleep
+	i := uint(0)
+	for {
+		conn, err := d.Dialer.DialContext(ctx, network, address)
+		if err != nil {
+			if isDialErrorRetriable(err) {
+				if i < count-1 {
+					select {
+					case <-time.After(sleep):
+						i++
+						continue
+					case <-ctx.Done():
+						return nil, err
+					}
+				}
+			}
+			return nil, err
+		}
+		return conn, nil
+	}
+}
+
+// isDialErrorRetriable determines whether or not a dialer should retry
+// a failed connection attempt by examining the connection error to see
+// if it is one of the following error types:
+//  * Timeout
+//  * Temporary
+//  * ECONNREFUSED
+//  * ECONNRESET
+func isDialErrorRetriable(err error) bool {
+	opErr, isOpErr := err.(*net.OpError)
+	if !isOpErr {
+		return false
+	}
+	if opErr.Timeout() || opErr.Temporary() {
+		return true
+	}
+	sysErr, isSysErr := opErr.Err.(*os.SyscallError)
+	if !isSysErr {
+		return false
+	}
+	switch sysErr.Err {
+	case syscall.ECONNREFUSED, syscall.ECONNRESET:
+		return true
+	}
+	return false
 }

@@ -22,11 +22,40 @@ import (
 	"github.com/sirupsen/logrus"
 	clienttesting "k8s.io/client-go/testing"
 
+	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/util/diff"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+
 	"k8s.io/test-infra/prow/github/fakegithub"
 )
+
+func TestCreateRefs(t *testing.T) {
+	pe := github.PushEvent{
+		Ref: "master",
+		Repo: github.Repo{
+			Owner: github.User{
+				Name: "kubernetes",
+			},
+			Name:    "repo",
+			HTMLURL: "https://example.com/kubernetes/repo",
+		},
+		After:   "abcdef",
+		Compare: "https://example.com/kubernetes/repo/compare/abcdee...abcdef",
+	}
+	expected := prowapi.Refs{
+		Org:      "kubernetes",
+		Repo:     "repo",
+		BaseRef:  "master",
+		BaseSHA:  "abcdef",
+		BaseLink: "https://example.com/kubernetes/repo/compare/abcdee...abcdef",
+	}
+	if actual := createRefs(pe); !equality.Semantic.DeepEqual(expected, actual) {
+		t.Errorf("diff between expected and actual refs:%s", diff.ObjectReflectDiff(expected, actual))
+	}
+}
 
 func TestHandlePE(t *testing.T) {
 	testCases := []struct {
@@ -98,7 +127,7 @@ func TestHandlePE(t *testing.T) {
 			GitHubClient:  g,
 			ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
 			Config:        &config.Config{ProwConfig: config.ProwConfig{ProwJobNamespace: "prowjobs"}},
-			Logger:        logrus.WithField("plugin", pluginName),
+			Logger:        logrus.WithField("plugin", PluginName),
 		}
 		postsubmits := map[string][]config.Postsubmit{
 			"org/repo": {

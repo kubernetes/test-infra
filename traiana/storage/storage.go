@@ -1,11 +1,21 @@
 package storage
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
+
+	"cloud.google.com/go/storage"
 	"k8s.io/test-infra/traiana"
 	"k8s.io/test-infra/traiana/awsapi"
 	"k8s.io/test-infra/traiana/storage/option"
+)
+
+const (
+	RoleOwner  = storage.RoleOwner
+	RoleReader = storage.RoleReader
+	RoleWriter = storage.RoleWriter
+
+	AllUsers              = storage.AllUsers
+	AllAuthenticatedUsers = storage.AllAuthenticatedUsers
 )
 
 // Client wrapper - AWS or GCS
@@ -72,18 +82,18 @@ func (o *ObjectHandle) NewWriter(ctx context.Context) *StorageWriter {
 	if traiana.Aws {
 		return &StorageWriter{
 			Writer: &storage.Writer{},
-			aws: o.aws.NewWriter(ctx),
+			aws:    o.aws.NewWriter(ctx),
 		}
 	} else {
 		return &StorageWriter{
 			Writer: o.gcs.NewWriter(ctx),
-	 	}
+		}
 	}
 }
 
 type StorageReader struct {
 	*storage.Reader
-	aws      *awsapi.Writer2Reader
+	aws *awsapi.Writer2Reader
 }
 
 func (sr *StorageReader) Read(p []byte) (n int, err error) {
@@ -136,7 +146,9 @@ func (o *ObjectHandle) Attrs(ctx context.Context) (attrs *ObjectAttrs, err error
 	}
 }
 
-
 type Query = storage.Query
 
 type ObjectAttrs = storage.ObjectAttrs
+
+type ACLRule = storage.ACLRule
+type ACLRole = storage.ACLRole

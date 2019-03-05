@@ -347,7 +347,7 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment github.IssueC
 	}
 	s.log.WithFields(l.Data).WithField("duration", time.Since(startClone)).Info("Cloned and checked out target branch.")
 
-	// Fetch the patch from Github
+	// Fetch the patch from GitHub
 	localPath, err := s.getPatch(org, repo, targetBranch, num)
 	if err != nil {
 		return err
@@ -383,12 +383,12 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment github.IssueC
 	}
 	// Push the new branch in the bot's fork.
 	if err := push(repo, newBranch); err != nil {
-		resp := fmt.Sprintf("failed to push cherry-picked changes in Github: %v", err)
+		resp := fmt.Sprintf("failed to push cherry-picked changes in GitHub: %v", err)
 		s.log.WithFields(l.Data).Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp))
 	}
 
-	// Open a PR in Github.
+	// Open a PR in GitHub.
 	title = fmt.Sprintf("[%s] %s", targetBranch, title)
 	cherryPickBody := fmt.Sprintf("This is an automated cherry-pick of #%d", num)
 	if s.prowAssignments {
@@ -434,7 +434,7 @@ func (s *Server) ensureForkExists(org, repo string) error {
 			return fmt.Errorf("cannot fork %s/%s: %v", org, repo, err)
 		}
 		if err := waitForRepo(s.botName, repo, s.ghc); err != nil {
-			return fmt.Errorf("fork of %s/%s cannot show up on Github: %v", org, repo, err)
+			return fmt.Errorf("fork of %s/%s cannot show up on GitHub: %v", org, repo, err)
 		}
 		s.repos = append(s.repos, github.Repo{FullName: fork, Fork: true})
 	}
@@ -442,7 +442,7 @@ func (s *Server) ensureForkExists(org, repo string) error {
 }
 
 func waitForRepo(owner, name string, ghc githubClient) error {
-	// Wait for at most 5 minutes for the fork to appear on Github.
+	// Wait for at most 5 minutes for the fork to appear on GitHub.
 	after := time.After(5 * time.Minute)
 	tick := time.Tick(5 * time.Second)
 
@@ -461,7 +461,7 @@ func waitForRepo(owner, name string, ghc githubClient) error {
 				return nil
 			}
 		case <-after:
-			return fmt.Errorf("timed out waiting for %s to appear on Github%s", owner+"/"+name, ghErr)
+			return fmt.Errorf("timed out waiting for %s to appear on GitHub%s", owner+"/"+name, ghErr)
 		}
 	}
 }

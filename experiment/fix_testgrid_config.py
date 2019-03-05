@@ -26,20 +26,20 @@ import argparse
 import ruamel.yaml as yaml
 
 MAP = {
-    "-beta": "-1.13",
-    "-stable1": "-1.12",
-    "-stable2": "-1.11",
-    "-stable3": "-1.10",
+    "-beta": "-1.14",
+    "-stable1": "-1.13",
+    "-stable2": "-1.12",
+    "-stable3": "-1.11",
 
-    "-k8sbeta": "-1.13",
-    "-k8sstable1": "-1.12",
-    "-k8sstable2": "-1.11",
-    "-k8sstable3": "-1.10",
+    "-k8sbeta": "-1.14",
+    "-k8sstable1": "-1.13",
+    "-k8sstable2": "-1.12",
+    "-k8sstable3": "-1.11",
 
+    "-1-14": "-1.14",
+    "-1-13": "-1.13",
     "-1-12": "-1.12",
     "-1-11": "-1.11",
-    "-1-10": "-1.10",
-    "-1-9": "-1.9",
 
     "ci-cri-": "",
     "ci-kubernetes-": "",

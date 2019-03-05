@@ -3,5 +3,6 @@
 approvers:
 - bentheelder
 - krzyzacy
+- wojtek-t 
 labels:
 - area/config

@@ -5,14 +5,14 @@ This document helps configure [PR Status endpoints](https://prow.k8s.io/pr).
 PR status is an OAuth App that query pull requests on behalf of the authenticated users.
 Therefore, some secret pieces of information are needed to authorize users for the app. The following
 steps will show you how to setup an oauth app that works with PR Status.
-1. Create your Github Oauth application 
+1. Create your GitHub Oauth application 
 
     https://developer.github.com/apps/building-oauth-apps/creating-an-oauth-app/
     
     The callback url should be:
     
     `<PROW_BASE_URL>/github-login/redirect`
-2. Create a secret file for github oauth that has the following content. The information can be found in the [Github OAuth developer settings](https://github.com/settings/developers):
+2. Create a secret file for github oauth that has the following content. The information can be found in the [GitHub OAuth developer settings](https://github.com/settings/developers):
     
     ```
     client_id: <APP_CLIENT_ID>
@@ -58,7 +58,7 @@ steps will show you how to setup an oauth app that works with PR Status.
 6. Set the flag `--oauth-url=/github-login` on the deck deployment.
 
 ## Run PR Status endpoint locally
-Firstly, you will need a Github OAuth app. Please visit step 1 - 3 above. 
+Firstly, you will need a GitHub OAuth app. Please visit step 1 - 3 above. 
 
 When testing locally, pass the path to your secrets to `deck` using the `--github-oauth-config-file`  and `--cookie-secret` flags.
 

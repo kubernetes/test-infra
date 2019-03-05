@@ -4,10 +4,6 @@ This is a list of all the changes made to this repository to support Okro use ca
 
 - Prow plugins (traiana/prow/plugins):
   - okro/undoer ([commit](https://github.com/Traiana/test-infra/commit/42d85973f83e4f39cd592543be144cef7a4f6d09))
-  
-- Allow spyglass links without '/build/' ([commit](https://github.com/Traiana/test-infra/commit/d9beb7fe4ad8a03df4a7e4170a5fd55eb86e8cd6))
-  - to determine whether to show the "eye" icon to link to Spyglass, deck searched the prowjob URL for
-    the '/build/' string. Because we wanted the prowjob URL (that also appears on Github) to be the Spyglass URL, we removed this check.
 
 - Support nice JSON logging in spyglass build logs ([commit](https://github.com/Traiana/test-infra/commit/4718ac8f7f44c9f6c830541d93c08d6290580618))
   - make build logs in Spyglass respect whitespace so we can print JSON responses from our API in human-readable format.
