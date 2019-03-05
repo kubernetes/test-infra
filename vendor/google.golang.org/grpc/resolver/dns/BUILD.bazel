@@ -4,8 +4,8 @@ go_library(
     name = "go_default_library",
     srcs = [
         "dns_resolver.go",
-        "go17.go",
-        "go18.go",
+        "go19.go",
+        "pre_go19.go",
     ],
     importmap = "k8s.io/test-infra/vendor/google.golang.org/grpc/resolver/dns",
     importpath = "google.golang.org/grpc/resolver/dns",

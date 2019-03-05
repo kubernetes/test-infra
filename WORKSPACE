@@ -529,7 +529,7 @@ go_repository(
 go_repository(
     name = "com_github_aws_aws_sdk_go",
     importpath = "github.com/aws/aws-sdk-go",
-    tag = "v1.16.22",
+    tag = "v1.16.36",
 )
 
 go_repository(
@@ -583,7 +583,7 @@ go_repository(
 go_repository(
     name = "com_github_burntsushi_toml",
     importpath = "github.com/BurntSushi/toml",
-    tag = "v0.3.0",
+    tag = "v0.3.1",
 )
 
 go_repository(
@@ -667,7 +667,7 @@ go_repository(
 go_repository(
     name = "com_github_docker_go_units",
     importpath = "github.com/docker/go-units",
-    tag = "v0.3.2",
+    tag = "v0.3.3",
 )
 
 go_repository(
@@ -829,7 +829,7 @@ go_repository(
 go_repository(
     name = "com_github_googleapis_gax_go",
     importpath = "github.com/googleapis/gax-go",
-    tag = "v2.0.0",
+    tag = "v2.0.2",
 )
 
 go_repository(
@@ -1056,8 +1056,8 @@ go_repository(
 
 go_repository(
     name = "com_github_mattn_go_zglob",
-    commit = "49693fbb3fe3",
     importpath = "github.com/mattn/go-zglob",
+    tag = "v0.0.1",
 )
 
 go_repository(
@@ -1069,7 +1069,7 @@ go_repository(
 go_repository(
     name = "com_github_microsoft_go_winio",
     importpath = "github.com/Microsoft/go-winio",
-    tag = "v0.4.6",
+    tag = "v0.4.12",
 )
 
 go_repository(
@@ -1105,13 +1105,13 @@ go_repository(
 go_repository(
     name = "com_github_onsi_ginkgo",
     importpath = "github.com/onsi/ginkgo",
-    tag = "v1.6.0",
+    tag = "v1.7.0",
 )
 
 go_repository(
     name = "com_github_onsi_gomega",
     importpath = "github.com/onsi/gomega",
-    tag = "v1.4.2",
+    tag = "v1.4.3",
 )
 
 go_repository(
@@ -1147,7 +1147,7 @@ go_repository(
 go_repository(
     name = "com_github_pkg_errors",
     importpath = "github.com/pkg/errors",
-    tag = "v0.8.0",
+    tag = "v0.8.1",
 )
 
 go_repository(
@@ -1159,7 +1159,7 @@ go_repository(
 go_repository(
     name = "com_github_prometheus_client_golang",
     importpath = "github.com/prometheus/client_golang",
-    tag = "v0.9.0",
+    tag = "v0.9.2",
 )
 
 go_repository(
@@ -1170,20 +1170,20 @@ go_repository(
 
 go_repository(
     name = "com_github_prometheus_common",
-    commit = "7e9e6cabbd39",
+    commit = "4724e9255275",
     importpath = "github.com/prometheus/common",
 )
 
 go_repository(
     name = "com_github_prometheus_procfs",
-    commit = "185b4288413d",
+    commit = "1dc9a6cbc91a",
     importpath = "github.com/prometheus/procfs",
 )
 
 go_repository(
     name = "com_github_puerkitobio_purell",
     importpath = "github.com/PuerkitoBio/purell",
-    tag = "v1.1.0",
+    tag = "v1.1.1",
 )
 
 go_repository(
@@ -1285,7 +1285,7 @@ go_repository(
 go_repository(
     name = "com_google_cloud_go",
     importpath = "cloud.google.com/go",
-    tag = "v0.30.0",
+    tag = "v0.33.1",
 )
 
 go_repository(
@@ -1339,7 +1339,7 @@ go_repository(
 go_repository(
     name = "in_gopkg_yaml_v2",
     importpath = "gopkg.in/yaml.v2",
-    tag = "v2.2.1",
+    tag = "v2.2.2",
 )
 
 go_repository(
@@ -1423,19 +1423,19 @@ go_repository(
 go_repository(
     name = "org_golang_google_appengine",
     importpath = "google.golang.org/appengine",
-    tag = "v1.2.0",
+    tag = "v1.3.0",
 )
 
 go_repository(
     name = "org_golang_google_genproto",
-    commit = "94acd270e44e",
+    commit = "b5d43981345b",
     importpath = "google.golang.org/genproto",
 )
 
 go_repository(
     name = "org_golang_google_grpc",
     importpath = "google.golang.org/grpc",
-    tag = "v1.15.0",
+    tag = "v1.16.0",
 )
 
 go_repository(
@@ -1452,25 +1452,25 @@ go_repository(
 
 go_repository(
     name = "org_golang_x_net",
-    commit = "161cd47e91fd",
+    commit = "351d144fa1fc",
     importpath = "golang.org/x/net",
 )
 
 go_repository(
     name = "org_golang_x_oauth2",
-    commit = "9dcd33a902f4",
+    commit = "8f65e3013eba",
     importpath = "golang.org/x/oauth2",
 )
 
 go_repository(
     name = "org_golang_x_sync",
-    commit = "1d60e4601c6f",
+    commit = "42b317875d0f",
     importpath = "golang.org/x/sync",
 )
 
 go_repository(
     name = "org_golang_x_sys",
-    commit = "8469e314837c",
+    commit = "a9d3bda3a223",
     importpath = "golang.org/x/sys",
 )
 
@@ -1488,7 +1488,7 @@ go_repository(
 
 go_repository(
     name = "org_golang_x_tools",
-    commit = "6cd1fcedba52",
+    commit = "04b5d21e00f1",
     importpath = "golang.org/x/tools",
 )
 

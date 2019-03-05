@@ -15,6 +15,7 @@
 package pubsub
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -27,7 +28,6 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	durpb "github.com/golang/protobuf/ptypes/duration"
 	gax "github.com/googleapis/gax-go"
-	"golang.org/x/net/context"
 	"golang.org/x/sync/errgroup"
 	pb "google.golang.org/genproto/googleapis/pubsub/v1"
 	fmpb "google.golang.org/genproto/protobuf/field_mask"
@@ -202,8 +202,9 @@ type ReceiveSettings struct {
 	// automatically extend the ack deadline for each message.
 	//
 	// The Subscription will automatically extend the ack deadline of all
-	// fetched Messages for the duration specified. Automatic deadline
-	// extension may be disabled by specifying a duration less than 0.
+	// fetched Messages up to the duration specified. Automatic deadline
+	// extension beyond the initial receipt may be disabled by specifying a
+	// duration less than 0.
 	MaxExtension time.Duration
 
 	// MaxOutstandingMessages is the maximum number of unprocessed messages
@@ -366,6 +367,7 @@ func (s *Subscription) updateRequest(cfg *SubscriptionConfigToUpdate) *pb.Update
 	}
 }
 
+// IAM returns the subscription's IAM handle.
 func (s *Subscription) IAM() *iam.Handle {
 	return iam.InternalNewHandle(s.c.subc.Connection(), s.name)
 }
@@ -435,7 +437,8 @@ var errReceiveInProgress = errors.New("pubsub: Receive already in progress for t
 // The context passed to f will be canceled when ctx is Done or there is a
 // fatal service error.
 //
-// Receive will automatically extend the ack deadline of all fetched Messages up to the
+// Receive will send an ack deadline extension on message receipt, then
+// automatically extend the ack deadline of all fetched Messages up to the
 // period specified by s.ReceiveSettings.MaxExtension.
 //
 // Each Subscription may have only one invocation of Receive active at a time.

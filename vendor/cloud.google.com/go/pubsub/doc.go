@@ -14,7 +14,7 @@
 
 /*
 Package pubsub provides an easy way to publish and receive Google Cloud Pub/Sub
-messages, hiding the the details of the underlying server RPCs.  Google Cloud
+messages, hiding the details of the underlying server RPCs.  Google Cloud
 Pub/Sub is a many-to-many, asynchronous messaging system that decouples senders
 and receivers.
 
@@ -116,6 +116,17 @@ percentile distribution, future message extensions are sent with a value of 3
 minutes, every 3 minutes. Suppose the application crashes 5 seconds after the
 library sends such an extension: the Pub/Sub server would wait the remaining
 2m55s before re-sending the messages out to other subscribers.
+
+Please note that the client library does not use the subscription's AckDeadline
+by default. To enforce the subscription AckDeadline, set MaxExtension to the
+subscription's AckDeadline:
+
+	cfg, err := sub.Config(ctx)
+	if err != nil {
+		// TODO handle err
+	}
+
+	sub.ReceiveSettings.MaxExtension = cfg.AckDeadline
 
 Slow Message Processing
 
