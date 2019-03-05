@@ -211,7 +211,9 @@ func (pa *ConfigAgent) Load(path string) error {
 		return err
 	}
 	np := &Configuration{}
-	if err := yaml.Unmarshal(b, np); err != nil {
+	// https://github.com/kubernetes/test-infra/issues/11621
+	// Use DisallowUnknownFields to explicitly fail for invalid config
+	if err := yaml.Unmarshal(b, np, yaml.DisallowUnknownFields); err != nil {
 		return err
 	}
 	if err := np.Validate(); err != nil {
