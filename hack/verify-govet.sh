@@ -16,8 +16,8 @@
 set -o errexit
 set -o nounset
 set -o pipefail
-set -o xtrace
 
-# TODO(fejta): check in testgrid pb.go files
-# TODO(Katharine): get spyglass and deck out of the skip list
-bazel run //:govet -- $(bazel run //:go -- list ./... | grep -v -E 'k8s.io/test-infra/(testgrid|experiment/resultstore|prow/spyglass|prow/cmd/deck)')
+echo "Calling verify-govet.sh is no longer necessary: vetting is run automatically as part of all builds."
+echo "Building all go targets to verify that we pass vetting."
+# Don't bother with go_binary because that just forces us to link code we already checked.
+bazel build $(bazel query --keep_going --noshow_progress 'kind("go_library|go_test", //...)')
