@@ -33,6 +33,7 @@ var httpTransport *http.Transport
 
 func init() {
 	httpTransport = new(http.Transport)
+	httpTransport.Proxy = http.ProxyFromEnvironment
 	httpTransport.RegisterProtocol("file", http.NewFileTransport(http.Dir("/")))
 }
 
