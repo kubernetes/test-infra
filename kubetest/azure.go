@@ -56,8 +56,9 @@ var (
 	acsEngineURL           = flag.String("acsengine-download-url", "", "Download URL for ACS engine")
 	acsEngineMD5           = flag.String("acsengine-md5-sum", "", "Checksum for acs engine download")
 	acsSSHPublicKeyPath    = flag.String("acsengine-public-key", "", "Path to SSH Public Key")
-	acsWinBinaries         = flag.Bool("acsengine-win-binaries", false, "Set to True if you want kubetest to build a custom zip with windows binaries for acs-engine")
-	acsHyperKube           = flag.Bool("acsengine-hyperkube", false, "Set to True if you want kubetest to build a custom hyperkube for acs-engine")
+	acsWinBinaries         = flag.Bool("acsengine-win-binaries", false, "Set to True if you want kubetest to build a custom zip with windows binaries for aks-engine")
+	acsHyperKube           = flag.Bool("acsengine-hyperkube", false, "Set to True if you want kubetest to build a custom hyperkube for aks-engine")
+	acsCcm                 = flag.Bool("acsengine-ccm", false, "Set to True if you want kubetest to build a custom cloud controller manager for aks-engine")
 	acsCredentialsFile     = flag.String("acsengine-creds", "", "Path to credential file for Azure")
 	acsOrchestratorRelease = flag.String("acsengine-orchestratorRelease", "", "Orchestrator Profile for acs-engine")
 	acsWinZipBuildScript   = flag.String("acsengine-winZipBuildScript", "https://raw.githubusercontent.com/Azure/acs-engine/master/scripts/build-windows-k8s.sh", "Build script to create custom zip containing win binaries for acs-engine")
@@ -96,6 +97,7 @@ type Cluster struct {
 	acsCustomHyperKubeURL   string
 	acsCustomWinBinariesURL string
 	acsEngineBinaryPath     string
+	acsCustomCcmURL         string
 	agentPoolCount          int
 	k8sVersion              string
 	networkPlugin           string
@@ -182,6 +184,7 @@ func newAcsEngine() (*Cluster, error) {
 		networkPlugin:           *acsNetworkPlugin,
 		acsCustomHyperKubeURL:   "",
 		acsCustomWinBinariesURL: "",
+		acsCustomCcmURL:         "",
 		acsEngineBinaryPath:     "aks-engine", // use the one in path by default
 	}
 	c.getAzCredentials()
@@ -270,6 +273,11 @@ func (c *Cluster) populateApiModelTemplate() error {
 	}
 	if c.acsCustomWinBinariesURL != "" {
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomWindowsPackageURL = c.acsCustomWinBinariesURL
+	}
+	if c.acsCustomCcmURL != "" {
+		useCloudControllerManager := true
+		v.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager = &useCloudControllerManager
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomCcmImage = c.acsCustomCcmURL
 	}
 	apiModel, _ := json.MarshalIndent(v, "", "    ")
 	c.apiModelPath = path.Join(c.outputDir, "kubernetes.json")
@@ -402,10 +410,7 @@ func (c *Cluster) createCluster() error {
 
 }
 
-func (c *Cluster) buildHyperKube() error {
-
-	os.Setenv("VERSION", fmt.Sprintf("azure-e2e-%v", os.Getenv("BUILD_ID")))
-
+func (c *Cluster) dockerLogin() error {
 	cwd, _ := os.Getwd()
 	log.Printf("CWD %v", cwd)
 	cmd := &exec.Cmd{}
@@ -436,21 +441,61 @@ func (c *Cluster) buildHyperKube() error {
 		return fmt.Errorf("failed Docker login with error: %v", err)
 	}
 	log.Println("Docker login success.")
-	log.Println("Building hyperkube.")
+	return nil
+}
+func dockerLogout() error {
+	log.Println("Docker logout.")
+	cmd := exec.Command("docker", "logout")
+	return cmd.Run()
+}
 
+func (c *Cluster) buildCcm() error {
+
+	image := fmt.Sprintf("%v/azure-cloud-controller-manager:%v", os.Getenv("REGISTRY"), os.Getenv("BUILD_ID"))
+	if err := c.dockerLogin(); err != nil {
+		return err
+	}
+	log.Println("Building ccm.")
+	projectPath := util.K8s("cloud-provider-azure")
+	log.Printf("projectPath %v", projectPath)
+	cmd := exec.Command("docker", "build", "-t", image, ".")
+	cmd.Dir = projectPath
+	if err := control.FinishRunning(cmd); err != nil {
+		return err
+	}
+
+ 	cmd = exec.Command("docker", "push", image)
+	cmd.Stdout = ioutil.Discard
+	if err := control.FinishRunning(cmd); err != nil {
+		return err
+	}
+	c.acsCustomCcmURL = image
+	if err := dockerLogout(); err != nil {
+		log.Println("Docker logout failed.")
+		return err
+	}
+	log.Printf("Custom cloud controller manager URL: %v .", c.acsCustomCcmURL)
+	return nil
+}
+
+func (c *Cluster) buildHyperKube() error {
+
+	os.Setenv("VERSION", fmt.Sprintf("azure-e2e-%v", os.Getenv("BUILD_ID")))
+	if err := c.dockerLogin(); err != nil {
+		return err
+	}
+	log.Println("Building and pushing hyperkube.")
 	pushHyperkube := util.K8s("kubernetes", "hack", "dev-push-hyperkube.sh")
-	cmd = exec.Command(pushHyperkube)
+	cmd := exec.Command(pushHyperkube)
 	// dev-push-hyperkube will produce a lot of output to stdout. We should capture the output here.
 	cmd.Stdout = ioutil.Discard
-	if err1 := control.FinishRunning(cmd); err1 != nil {
-		return err1
+	if err := control.FinishRunning(cmd); err != nil {
+		return err
 	}
 	c.acsCustomHyperKubeURL = fmt.Sprintf("%s/hyperkube-amd64:%s", os.Getenv("REGISTRY"), os.Getenv("VERSION"))
-
-	log.Println("Docker logout.")
-	cmd = exec.Command("docker", "logout")
-	if err = cmd.Run(); err != nil {
+	if err := dockerLogout(); err != nil {
 		log.Println("Docker logout failed.")
+		return err
 	}
 	log.Printf("Custom hyperkube URL: %v .", c.acsCustomHyperKubeURL)
 	return nil
@@ -558,6 +603,12 @@ func (c *Cluster) buildWinZip() error {
 func (c Cluster) Up() error {
 
 	var err error
+	if *acsCcm == true {
+		err = c.buildCcm()
+		if err != nil {
+			return fmt.Errorf("error building cloud controller manager %v", err)
+		}
+	}
 	if *acsHyperKube == true {
 		err = c.buildHyperKube()
 		if err != nil {
