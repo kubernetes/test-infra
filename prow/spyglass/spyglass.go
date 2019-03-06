@@ -250,7 +250,7 @@ func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
 		} else if logType == gcs.PRLogs {
 			prNum, err := strconv.Atoi(split[len(split)-3])
 			if err != nil {
-				return "", "", 0, fmt.Errorf("couldn't parse PR number %q in %q: %v", split[5], key, err)
+				return "", "", 0, fmt.Errorf("couldn't parse PR number %q in %q: %v", split[len(split)-3], key, err)
 			}
 			// We don't actually attempt to look up the job's own configuration.
 			// In practice, this shouldn't matter: we only want to read DefaultOrg and DefaultRepo, and overriding those
