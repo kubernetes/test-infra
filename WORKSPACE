@@ -1524,3 +1524,15 @@ go_repository(
     importpath = "mvdan.cc/xurls/v2",
     tag = "v2.0.0",
 )
+
+go_repository(
+    name = "io_k8s_code_generator",
+    commit = "b1289fc74931",
+    importpath = "k8s.io/code-generator",
+)
+
+go_repository(
+    name = "io_k8s_gengo",
+    commit = "7a1b7fb0289f",
+    importpath = "k8s.io/gengo",
+)

@@ -21,7 +21,6 @@ cd "$(git rev-parse --show-toplevel)"
 
 export GOPATH="${GOPATH:-$HOME/go}"
 export PATH="${GOPATH}/bin:${PATH}"
-export GO111MODULE=on
 
 ensure-in-gopath() {
   if [[ "${PWD}" != "${GOPATH}/src/k8s.io/test-infra" ]]; then
@@ -32,12 +31,7 @@ ensure-in-gopath() {
 
 codegen-init() {
   echo "Ensuring generators exist..." >&2
-  local ver=b1289fc74931d4b6b04bd1a259acfc88a2cb0a66
-  which deepcopy-gen &>/dev/null || go get k8s.io/code-generator/cmd/deepcopy-gen@${ver}
-  which client-gen &>/dev/null || go get k8s.io/code-generator/cmd/client-gen@${ver}
-  which lister-gen &>/dev/null || go get k8s.io/code-generator/cmd/lister-gen@${ver}
-  which informer-gen &>/dev/null || go get k8s.io/code-generator/cmd/informer-gen@${ver}
-  bazel run //:go -- mod tidy
+  go install ./vendor/k8s.io/code-generator/cmd/{deepcopy,client,lister,informer}-gen
 }
 
 gen-deepcopy() {
