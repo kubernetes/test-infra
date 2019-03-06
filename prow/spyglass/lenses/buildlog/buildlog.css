@@ -68,6 +68,6 @@ html {
 .ansi-15 { color: #e9ebeb; }  /* White */
 
 /* support nice display of JSON objects */
-.loglines td span span {
+.loglines .linetext span span {
     white-space: pre-wrap;
 }
