@@ -133,7 +133,7 @@ periodics:
       secret:
         secretName: k8s-ci-robot-ssh-keys
         defaultMode: 0400
-- cron: "05 * * * *"  # Run at five minutes past the hour every day
+- cron: "30 * * * *"  # Run at half past the hour, every hour, every day
   name: ci-test-infra-update-slack-oncall
   cluster: test-infra-trusted
   decorate: true
