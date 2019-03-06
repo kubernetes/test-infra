@@ -631,6 +631,9 @@ plugins:
   kubernetes-sigs/aws-ebs-csi-driver:
   - trigger
 
+  kubernetes-sigs/kubebuilder-declarative-pattern:
+  - trigger
+
   containerd/cri:
   - assign
   - cla
