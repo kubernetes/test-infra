@@ -77,6 +77,46 @@ periodics:
         privileged: true
 
 - interval: 6h
+  name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
+  labels:
+    preset-service-account: "true"
+    preset-azure-acsengine: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=k8s.io/kubernetes=release-1.14"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=650"
+      - "--scenario=kubernetes_e2e"
+      - --
+      - "--test=true"
+      - "--up=true"
+      - "--down=true"
+      - "--deployment=acsengine"
+      - "--provider=skeleton"
+      - "--build=bazel"
+      - "--acsengine-admin-username=azureuser"
+      - "--acsengine-admin-password=AdminPassw0rd"
+      - "--acsengine-creds=$AZURE_CREDENTIALS"
+      - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz"
+      - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--acsengine-winZipBuildScript=$WIN_BUILD"
+      - "--acsengine-orchestratorRelease=1.14"
+      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release.json"
+      - "--acsengine-win-binaries"
+      - "--acsengine-hyperkube"
+      - "--acsengine-agentpoolcount=2"
+      - "--test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|\\[k8s.io\\].Pods.*should.cap.back-off.at.MaxContainerBackOff.\\[Slow\\]\\[NodeConformance\\]|\\[k8s.io\\].Pods.*should.have.their.auto-restart.back-off.timer.reset.on.image.update.\\[Slow\\]\\[NodeConformance\\]"
+      - "--timeout=620m"
+      securityContext:
+        privileged: true
+
+- interval: 6h
   name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
   labels:
     preset-service-account: "true"
