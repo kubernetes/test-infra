@@ -16,6 +16,7 @@
 set -o nounset
 set -o errexit
 set -o pipefail
+set -o xtrace
 
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 cd "${TESTINFRA_ROOT}"
@@ -26,19 +27,14 @@ _tmpdir="$(pwd)"
 
 trap "rm -rf ${_tmpdir}" EXIT
 
-_tmp_gopath="${_tmpdir}/go"
-_tmp_testinfra_root="${_tmp_gopath}/src/k8s.io/test-infra"
-mkdir -p "${_tmp_testinfra_root}/.."
-cp -a "${TESTINFRA_ROOT}" "${_tmp_testinfra_root}/.."
-
-cd "${_tmp_testinfra_root}"
-GOPATH="${_tmp_gopath}" PATH="${_tmp_gopath}/bin:${PATH}" ./hack/update-deps.sh
+cp -a "${TESTINFRA_ROOT}/" "${_tmpdir}"
+./hack/update-deps.sh
 
 diff=$(diff -Nupr \
   -x ".git" \
   -x "bazel-*" \
   -x "_output" \
-  "${TESTINFRA_ROOT}" "${_tmp_testinfra_root}" 2>/dev/null || true)
+  "${TESTINFRA_ROOT}" "${_tmpdir}" 2>/dev/null || true)
 
 if [[ -n "${diff}" ]]; then
   echo "${diff}" >&2
