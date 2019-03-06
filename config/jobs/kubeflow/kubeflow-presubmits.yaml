@@ -234,6 +234,20 @@ presubmits:
         - sample_test
         - --timeout
         - "3600"
+  - name: kubeflow-pipeline-upgrade-test
+    always_run: true
+    decorate: true
+    skip_report: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+        command:
+        - ./test/upgrade-tests.sh
+        args:
+        - --test_result_folder
+        - upgrade_test
 #   - name: kubeflow-pipeline-e2e-test-gce-minikube
 #     always_run: true
 #     decorate: true
