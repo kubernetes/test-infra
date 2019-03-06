@@ -37,6 +37,8 @@ spec:
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
         - --job-config-path=/etc/job-config
+        - --gcs-credentials-file=/etc/service-account/service-account.json
+        - --history-uri=gs://k8s-prow/tide-history.json
         ports:
           - name: http
             containerPort: 8888
@@ -50,6 +52,9 @@ spec:
         - name: job-config
           mountPath: /etc/job-config
           readOnly: true
+        - name: service-account
+          mountPath: /etc/service-account
+          readOnly: true
       volumes:
       - name: oauth
         secret:
@@ -60,3 +65,6 @@ spec:
       - name: job-config
         configMap:
           name: job-config
+      - name: service-account
+        secret:
+          secretName: tide-history-service-account
