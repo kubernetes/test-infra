@@ -5,7 +5,7 @@ This is a list of all the changes made to this repository to support Okro use ca
 - Prow plugins (traiana/prow/plugins):
   - okro/undoer ([commit](https://github.com/Traiana/test-infra/commit/42d85973f83e4f39cd592543be144cef7a4f6d09))
 
-- Support nice JSON logging in spyglass build logs ([commit](https://github.com/Traiana/test-infra/commit/4718ac8f7f44c9f6c830541d93c08d6290580618))
+- Support nice JSON logging in spyglass build logs ([commit](https://github.com/Traiana/test-infra/commit/baf2edc76450eece5cf60253b899f442c7d2bfd9))
   - make build logs in Spyglass respect whitespace so we can print JSON responses from our API in human-readable format.
 
 - Reduce verbosity of failed build jobs statuses ([commit](https://github.com/Traiana/test-infra/commit/6b1c7d0613ff48c3182e3e284778f83221f0f012))
