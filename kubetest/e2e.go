@@ -626,6 +626,11 @@ func kubemarkUp(dump string, o options, deploy deployer) error {
 		return err
 	}
 
+	// Store the original KUBECONFIG in the KUBEMARK_ROOT_KUBECONFIG env variable.
+	// This will allow accessing the "root" cluster, i.e. the one where the kubemark cluster is run.
+	if err := os.Setenv("KUBEMARK_ROOT_KUBECONFIG", os.ExpandEnv("$KUBECONFIG")); err != nil {
+		return err
+	}
 	if err := os.Setenv("KUBECONFIG", fmt.Sprintf("%s/test/kubemark/resources/kubeconfig.kubemark", cwd)); err != nil {
 		return err
 	}
