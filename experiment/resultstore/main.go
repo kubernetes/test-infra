@@ -440,7 +440,7 @@ func transferBuild(ctx context.Context, storageClient *storage.Client, rsClient 
 		return nil
 	}
 
-	if result.finished.Running && !includePending {
+	if (result.started.Pending || result.finished.Running) && !includePending {
 		log.Debug("Skip pending result")
 		return nil
 	}

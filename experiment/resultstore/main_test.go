@@ -132,7 +132,9 @@ func TestInsertLink(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			changed, err := insertLink(&gcs.Started{Metadata: tc.input}, viewURL)
+			var start gcs.Started
+			start.Metadata = tc.input
+			changed, err := insertLink(&start, viewURL)
 			switch {
 			case err != nil:
 				if !tc.err {
