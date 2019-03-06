@@ -101,6 +101,72 @@ periodics:
     - name: github
       secret:
         secretName: oauth-token
+- cron: "05 15 1-7 * 1"  # Run at 7:05 PST (15:05 UTC) on first monthly monday.
+  name: ci-test-infra-autoupdate-minor
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:v20190130-b4da262c0-0.21.0
+      command:
+      - hack/autodeps.sh
+      args:
+      - k8s-ci-robot
+      - /etc/github-token/oauth
+      - "Kubernetes Prow Robot"
+      - "k8s.ci.robot@gmail.com"
+      - "--minor"
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+      - name: ssh
+        mountPath: /root/.ssh
+    volumes:
+    - name: github
+      secret:
+        secretName: oauth-token
+    - name: ssh
+      secret:
+        secretName: k8s-ci-robot-ssh-keys
+        defaultMode: 0400
+- cron: "05 15 * * 1"  # Run at 7:05 PST (15:05 UTC) every Monday
+  name: ci-test-infra-autoupdate-patch
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:v20190130-b4da262c0-0.21.0
+      command:
+      - hack/autodeps.sh
+      args:
+      - k8s-ci-robot
+      - /etc/github-token/oauth
+      - "Kubernetes Prow Robot"
+      - "k8s.ci.robot@gmail.com"
+      - "--patch"
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+      - name: ssh
+        mountPath: /root/.ssh
+    volumes:
+    - name: github
+      secret:
+        secretName: oauth-token
+    - name: ssh
+      secret:
+        secretName: k8s-ci-robot-ssh-keys
+        defaultMode: 0400
 - cron: "05 15 * * 1-5"  # Run at 7:05 PST (15:05 UTC) Mon-Fri
   name: ci-test-infra-autobump-prow
   cluster: test-infra-trusted

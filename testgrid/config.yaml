@@ -2674,6 +2674,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-deploy-prow
 - name: post-test-infra-push-prow
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-prow
+- name: ci-test-infra-autoupdate-minor
+  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-autoupdate-minor
+- name: ci-test-infra-autoupdate-patch
+  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-autoupdate-patch
 - name: ci-test-infra-autobump-prow
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-autobump-prow
 - name: ci-test-infra-update-slack-oncall
@@ -6729,6 +6733,12 @@ dashboards:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
+  - name: autoupdate-patch
+    description: Weekly module update to latest patched versions
+    test_group_name: ci-test-infra-autoupdate-patch
+  - name: autoupdate-minor
+    description: Monthly module update to latest minor versions
+    test_group_name: ci-test-infra-autoupdate-minor
 - name: sig-testing-fejtabot
   dashboard_tab:
   - name: retester
