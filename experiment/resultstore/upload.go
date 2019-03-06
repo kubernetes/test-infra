@@ -58,7 +58,7 @@ func upload(rsClient *resultstore.Client, inv resultstore.Invocation, target res
 	if err != nil {
 		return url, fmt.Errorf("create configuration: %v", err)
 	}
-	ctName, err := rsClient.ConfiguredTargets(targetName, configID).Create()
+	ctName, err := rsClient.ConfiguredTargets(targetName, configID).Create(test.Action)
 	if err != nil {
 		return url, fmt.Errorf("create configured target: %v", err)
 	}

@@ -245,11 +245,14 @@ func (c Configurations) Create(id string) (string, error) {
 // ConfiguredTarget methods
 
 // Create a new configured target, returning the fully qualified path.
-func (ct ConfiguredTargets) Create() (string, error) {
+func (ct ConfiguredTargets) Create(act Action) (string, error) {
 	resp, err := ct.up.CreateConfiguredTarget(ct.ctx, &resultstore.CreateConfiguredTargetRequest{
 		Parent:             ct.target,
 		ConfigId:           ct.config,
 		AuthorizationToken: ct.token,
+		ConfiguredTarget: &resultstore.ConfiguredTarget{
+			StatusAttributes: status(act.Status, act.Description),
+		},
 	})
 	if err != nil {
 		return "", err
