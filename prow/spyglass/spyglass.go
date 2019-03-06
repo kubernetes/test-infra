@@ -248,6 +248,9 @@ func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
 		if logType == gcs.NonPRLogs {
 			return "", "", 0, fmt.Errorf("not a PR URL: %q", key)
 		} else if logType == gcs.PRLogs {
+			if len(split) < 3 {
+				return "", "", 0, fmt.Errorf("malformed %s key %q should have at least three components", gcs.PRLogs, key)
+			}
 			prNum, err := strconv.Atoi(split[len(split)-3])
 			if err != nil {
 				return "", "", 0, fmt.Errorf("couldn't parse PR number %q in %q: %v", split[len(split)-3], key, err)

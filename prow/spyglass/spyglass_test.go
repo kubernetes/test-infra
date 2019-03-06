@@ -709,6 +709,11 @@ func TestRunToPR(t *testing.T) {
 			expError: true,
 		},
 		{
+			name:     "Longer bad GCS key errors",
+			src:      "gcs/kubernetes-jenkins/pr-logs",
+			expError: true,
+		},
+		{
 			name:     "Nonsense string errors",
 			src:      "friendship is magic",
 			expError: true,
