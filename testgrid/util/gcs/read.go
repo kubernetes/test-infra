@@ -36,7 +36,11 @@ import (
 )
 
 // Started holds started.json data.
-type Started = metadata.Started
+type Started struct {
+	metadata.Started
+	// Pending when the job has not started yet
+	Pending bool
+}
 
 // Finished holds finished.json data.
 type Finished struct {
@@ -180,7 +184,12 @@ func readJSON(ctx context.Context, obj *storage.ObjectHandle, i interface{}) err
 func (build Build) Started() (*Started, error) {
 	uri := build.Prefix + "started.json"
 	var started Started
-	if err := readJSON(build.Context, build.Bucket.Object(uri), &started); err != nil {
+	err := readJSON(build.Context, build.Bucket.Object(uri), &started)
+	if err == storage.ErrObjectNotExist {
+		started.Pending = true
+		return &started, nil
+	}
+	if err != nil {
 		return nil, fmt.Errorf("read %s: %v", uri, err)
 	}
 	return &started, nil
