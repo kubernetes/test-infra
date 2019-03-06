@@ -44,6 +44,16 @@ prune-vendor() {
     -delete
 }
 
+case "${1:-}" in
+--minor)
+    bazel run //:update-minor
+    ;;
+--patch)
+    bazel run //:update-patch
+    ;;
+esac
+
+
 rm -rf vendor
 export GO111MODULE=on
 bazel run //:go -- mod tidy
