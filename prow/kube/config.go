@@ -41,11 +41,8 @@ func LoadClusterConfigs(kubeconfig, buildCluster string) (configurations map[str
 		logrus.Warnf("Failed to create in-cluster config: %v", err)
 	} else {
 		defCtx = new(string)
-		// TODO convert the default cluster alias into a default in-cluster context
-		*defCtx = DefaultClusterAlias
 		logrus.Info("* in-cluster")
 		configs[*defCtx] = *localCfg
-		configs[""] = *localCfg
 	}
 
 	// Attempt to load external clusters too
