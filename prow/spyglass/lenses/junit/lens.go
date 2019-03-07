@@ -103,14 +103,14 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 			var contents []byte
 			contents, result.err = artifact.ReadAll()
 			if result.err != nil {
-				logrus.WithError(result.err).Error("Error reading artifact")
+				logrus.WithError(result.err).WithField("artifact", artifact.CanonicalLink()).Warn("Error reading artifact")
 				resultChan <- result
 				return
 			}
 			var suites junit.Suites
 			suites, result.err = junit.Parse(contents)
 			if result.err != nil {
-				logrus.WithError(result.err).Error("Error parsing junit file.")
+				logrus.WithError(result.err).WithField("artifact", artifact.CanonicalLink()).Info("Error parsing junit file.")
 				resultChan <- result
 				return
 			}
