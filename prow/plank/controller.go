@@ -427,6 +427,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			if err := client.DeletePod(pod.ObjectMeta.Name); err != nil {
 				return fmt.Errorf("failed to delete pod %s that was in pending timeout: %v", pod.Name, err)
 			}
+			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Deleted stale pending pod.")
 
 		default:
 			// Pod is running. Do nothing.

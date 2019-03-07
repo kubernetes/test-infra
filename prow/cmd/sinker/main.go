@@ -28,6 +28,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -152,10 +153,12 @@ func (c *controller) clean() {
 	}
 
 	// Only delete pod if its prowjob is marked as finished
-	isFinished := make(map[string]bool)
+	isExist := sets.NewString()
+	isFinished := sets.NewString()
 
 	maxProwJobAge := c.config().Sinker.MaxProwJobAge
 	for _, prowJob := range prowJobs.Items {
+		isExist.Insert(prowJob.ObjectMeta.Name)
 		// Handle periodics separately.
 		if prowJob.Spec.Type == prowapi.PeriodicJob {
 			continue
@@ -163,7 +166,7 @@ func (c *controller) clean() {
 		if !prowJob.Complete() {
 			continue
 		}
-		isFinished[prowJob.ObjectMeta.Name] = true
+		isFinished.Insert(prowJob.ObjectMeta.Name)
 		if time.Since(prowJob.Status.StartTime.Time) <= maxProwJobAge {
 			continue
 		}
@@ -197,7 +200,7 @@ func (c *controller) clean() {
 		if !prowJob.Complete() {
 			continue
 		}
-		isFinished[prowJob.ObjectMeta.Name] = true
+		isFinished.Insert(prowJob.ObjectMeta.Name)
 		if time.Since(prowJob.Status.StartTime.Time) <= maxProwJobAge {
 			continue
 		}
@@ -218,18 +221,26 @@ func (c *controller) clean() {
 		}
 		maxPodAge := c.config().Sinker.MaxPodAge
 		for _, pod := range pods.Items {
-			if _, ok := isFinished[pod.ObjectMeta.Name]; !ok {
-				// prowjob is not marked as completed yet
+			clean := !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
+			if !isFinished.Has(pod.ObjectMeta.Name) {
+				// prowjob exists and is not marked as completed yet
 				// deleting the pod now will result in plank creating a brand new pod
+				clean = false
+			}
+			if !isExist.Has(pod.ObjectMeta.Name) {
+				// prowjob has gone, we want to clean orphan pods regardless of the state
+				clean = true
+			}
+
+			if !clean {
 				continue
 			}
-			if !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge {
-				// Delete old completed pods. Don't quit if we fail to delete one.
-				if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
-					c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
-				} else {
-					c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
-				}
+
+			// Delete old finished or orphan pods. Don't quit if we fail to delete one.
+			if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
+				c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
+			} else {
+				c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
 			}
 		}
 	}
