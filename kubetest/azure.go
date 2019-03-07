@@ -464,7 +464,7 @@ func (c *Cluster) buildCcm() error {
 		return err
 	}
 
- 	cmd = exec.Command("docker", "push", image)
+	cmd = exec.Command("docker", "push", image)
 	cmd.Stdout = ioutil.Discard
 	if err := control.FinishRunning(cmd); err != nil {
 		return err
