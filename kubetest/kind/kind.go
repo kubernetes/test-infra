@@ -57,6 +57,8 @@ const (
 var (
 	kindConfigPath = flag.String("kind-config-path", "",
 		"(kind only) Path to the kind configuration file.")
+	kindBaseImage = flag.String("kind-base-image", "",
+		"(kind only) name:tag of the base image to use for building the node image for kind.")
 	kindBinaryVersion = flag.String("kind-binary-version", kindBinaryStable,
 		fmt.Sprintf("(kind only) This flag can be either %q (build from source) "+
 			"or %q (download a stable binary).", kindBinaryBuild, kindBinaryStable))
@@ -82,6 +84,7 @@ type Deployer struct {
 	kindBinaryVersion string
 	kindBinaryPath    string
 	kindNodeImage     string
+	kindBaseImage     string
 	kindClusterName   string
 }
 
@@ -147,6 +150,9 @@ func initializeDeployer(ctl *process.Control, buildType string) (*Deployer, erro
 		kindBinaryVersion: *kindBinaryVersion,
 		kindNodeImage:     kindNodeImageLatest,
 		kindClusterName:   *kindClusterName,
+	}
+	if kindBaseImage != nil {
+		d.kindBaseImage = *kindBaseImage
 	}
 	// ensure we have the kind binary
 	if err := d.prepareKindBinary(); err != nil {
@@ -248,6 +254,9 @@ func (d *Deployer) Build() error {
 	args := []string{"build", "node-image", "--type=" + buildType, flagLogLevel}
 	if d.kindNodeImage != "" {
 		args = append(args, "--image="+d.kindNodeImage)
+	}
+	if d.kindBaseImage != "" {
+		args = append(args, "--base-image="+d.kindBaseImage)
 	}
 
 	// Build the node image (including kubernetes)
