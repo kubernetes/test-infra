@@ -151,7 +151,7 @@ periodics:
       - "--acsengine-win-binaries"
       - "--acsengine-hyperkube"
       - "--acsengine-agentpoolcount=2"
-      - "--test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[k8s.io\\].Pods.*should.cap.back-off.at.MaxContainerBackOff.\\[Slow\\]\\[NodeConformance\\]|\\[sig-network\\].DNS.should.provide.DNS.for.services..\\[Conformance\\]|\\[sig-storage\\].Secrets.should.be.consumable.from.pods.in.volume.\\[NodeConformance\\].\\[Conformance\\]|\\[k8s.io\\].Kubelet.when.scheduling.a.busybox.command.in.a.pod.should.print.the.output.to.logs.\\[NodeConformance\\].\\[Conformance\\]|\\[k8s.io\\].Kubelet.when.scheduling.a.busybox.command.that.always.fails.in.a.pod.should.be.possible.to.delete.\\[NodeConformance\\].\\[Conformance\\]|\\[k8s.io\\].Pods.*should.have.their.auto-restart.back-off.timer.reset.on.image.update.\\[Slow\\]\\[NodeConformance\\]"
+      - "--test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.flakeAttempts=2 --ginkgo.focus=\\[k8s.io\\].Pods.*should.cap.back-off.at.MaxContainerBackOff.\\[Slow\\]\\[NodeConformance\\]|\\[sig-network\\].DNS.should.provide.DNS.for.services..\\[Conformance\\]|\\[sig-storage\\].Secrets.should.be.consumable.from.pods.in.volume.\\[NodeConformance\\].\\[Conformance\\]|\\[k8s.io\\].Kubelet.when.scheduling.a.busybox.command.in.a.pod.should.print.the.output.to.logs.\\[NodeConformance\\].\\[Conformance\\]|\\[k8s.io\\].Kubelet.when.scheduling.a.busybox.command.that.always.fails.in.a.pod.should.be.possible.to.delete.\\[NodeConformance\\].\\[Conformance\\]|\\[k8s.io\\].Pods.*should.have.their.auto-restart.back-off.timer.reset.on.image.update.\\[Slow\\]\\[NodeConformance\\]"
       - "--timeout=450m"
       securityContext:
         privileged: true
