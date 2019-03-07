@@ -544,7 +544,7 @@ func handlePRHistory(o options, cfg config.Getter, gcsClient *storage.Client) ht
 		tmpl, err := getPRHistory(r.URL, cfg(), gcsClient)
 		if err != nil {
 			msg := fmt.Sprintf("failed to get PR history: %v", err)
-			logrus.WithField("url", r.URL).Error(msg)
+			logrus.WithField("url", r.URL).Info(msg)
 			http.Error(w, msg, http.StatusInternalServerError)
 			return
 		}
