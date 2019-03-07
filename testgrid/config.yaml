@@ -519,6 +519,9 @@ test_groups:
 - name: ci-kubernetes-e2e-gci-gke-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-ingress
   alert_stale_results_hours: 24
+- name: ci-kubernetes-e2e-gci-gke-network-policy
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-network-policy
+  alert_stale_results_hours: 24
 - name: ci-kubernetes-e2e-gke-large-performance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-performance
   days_of_results: 60
@@ -6248,6 +6251,10 @@ dashboards:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: gci-gke-ingress
     test_group_name: ci-kubernetes-e2e-gci-gke-ingress
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+  - name: gci-gke-network-policy
+    test_group_name: ci-kubernetes-e2e-gci-gke-network-policy
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: gke-cos-1.11-ingress
