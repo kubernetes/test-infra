@@ -167,7 +167,7 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent)
 	for _, m := range mat {
 		if m[1] == "" {
 			resp := "/override requires a failed status context to operate on, but none was given"
-			log.Warn(resp)
+			log.Debug(resp)
 			return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 		}
 		overrides.Insert(m[2])
@@ -175,7 +175,7 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent)
 
 	if !authorized(oc, log, org, repo, user) {
 		resp := fmt.Sprintf("%s unauthorized: /override is restricted to repo administrators", user)
-		log.Warn(resp)
+		log.Debug(resp)
 		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
 
@@ -208,7 +208,7 @@ The following unknown contexts were given:
 
 Only the following contexts were expected:
 %s`, formatList(unknown.List()), formatList(contexts.List()))
-		log.WithError(err).Warn(resp)
+		log.Debug(resp)
 		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
 
