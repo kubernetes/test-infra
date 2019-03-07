@@ -133,8 +133,6 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "deck"}),
 	)
 
-	mux := http.NewServeMux()
-
 	// setup config agent, pod log clients etc.
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
@@ -142,6 +140,14 @@ func main() {
 	}
 	cfg := configAgent.Config
 
+	// signal to the world that we are healthy
+	// this needs to be in a separate port as we don't start the
+	// main server with the main mux until we're ready
+	healthMux := http.NewServeMux()
+	healthMux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, "OK") })
+	go logrus.WithError(http.ListenAndServe(":8081", healthMux)).Fatal("ListenAndServe returned.")
+
+	mux := http.NewServeMux()
 	// setup common handlers for local and deployed runs
 	mux.Handle("/static/", http.StripPrefix("/static", staticHandlerFromDir(o.staticFilesLocation)))
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(cfg)))
@@ -181,6 +187,8 @@ func main() {
 		mux = prodOnlyMain(cfg, o, mux)
 	}
 
+	// signal to the world that we're ready
+	healthMux.HandleFunc("/healthz/ready", func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, "OK") })
 	// setup done, actually start the server
 	logrus.WithError(http.ListenAndServe(":8080", mux)).Fatal("ListenAndServe returned.")
 }
@@ -343,6 +351,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 		}(mux, o.redirectHTTPTo))
 		mux = redirectMux
 	}
+
 	return mux
 }
 
