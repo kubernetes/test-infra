@@ -116,7 +116,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
-	kubeClient, _, _, err := o.kubernetes.Client(cfg().ProwJobNamespace, o.dryRun)
+	kubeClient, err := o.kubernetes.Client(cfg().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}

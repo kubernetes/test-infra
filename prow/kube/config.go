@@ -27,24 +27,11 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
-// LoadClusterConfigs loads rest.Configs for creation of clients, by using either a normal
-// .kube/config file, a custom `Cluster` file, or both. The configs are returned in a mapping
-// of context --> config. The default context is included in this mapping and specified as a
-// return vaule. Errors are returned if .kube/config is specified and invalid or if no valid
-// contexts are found.
-func LoadClusterConfigs(kubeconfig, buildCluster string) (configurations map[string]rest.Config, defaultContext string, err error) {
-	logrus.Infof("Loading cluster contexts...")
-	configs := map[string]rest.Config{}
-	var defCtx *string
-	// This will work if we are running inside kubernetes
-	if localCfg, err := rest.InClusterConfig(); err != nil {
-		logrus.Warnf("Failed to create in-cluster config: %v", err)
-	} else {
-		defCtx = new(string)
-		logrus.Info("* in-cluster")
-		configs[*defCtx] = *localCfg
-	}
+func localConfig() (*rest.Config, error) {
+	return rest.InClusterConfig()
+}
 
+func kubeConfigs(kubeconfig string) (map[string]rest.Config, string, error) {
 	// Attempt to load external clusters too
 	var loader clientcmd.ClientConfigLoader
 	if kubeconfig != "" { // load from --kubeconfig
@@ -54,70 +41,122 @@ func LoadClusterConfigs(kubeconfig, buildCluster string) (configurations map[str
 	}
 
 	cfg, err := loader.Load()
-	switch {
-	case err != nil && kubeconfig != "":
-		return nil, "", fmt.Errorf("load %s kubecfg: %v", kubeconfig, err)
-	case err != nil:
-		logrus.Warnf("failed to load any kubecfg files: %v", err)
-	default:
-		// normally defCtx is in cluster (""), but we may be a dev running on their workstation
-		// in which case rest.InClusterConfig() will fail, so use the current context as default
-		// (which is where we look for prowjobs)
-		if defCtx == nil && cfg.CurrentContext != "" {
-			defCtx = &cfg.CurrentContext
-		}
-
-		for context := range cfg.Contexts {
-			logrus.Infof("* %s", context)
-			contextCfg, err := clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, loader).ClientConfig()
-			if err != nil {
-				return nil, "", fmt.Errorf("create %s client: %v", context, err)
-			}
-			configs[context] = *contextCfg
-		}
+	if err != nil && kubeconfig != "" {
+		return nil, "", fmt.Errorf("load: %v", err)
 	}
-
-	if buildCluster != "" { // load from --build-cluster
-		data, err := ioutil.ReadFile(buildCluster)
+	if err != nil {
+		logrus.WithError(err).Warn("Cannot load kubecfg")
+		return nil, "", nil
+	}
+	configs := map[string]rest.Config{}
+	for context := range cfg.Contexts {
+		logrus.Infof("* %s", context)
+		contextCfg, err := clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, loader).ClientConfig()
 		if err != nil {
-			return nil, "", fmt.Errorf("read build clusters: %v", err)
+			return nil, "", fmt.Errorf("create %s client: %v", context, err)
 		}
-		raw, err := UnmarshalClusterMap(data)
+		configs[context] = *contextCfg
+	}
+	return configs, cfg.CurrentContext, nil
+}
+
+func buildConfigs(buildCluster string) (map[string]rest.Config, error) {
+	if buildCluster == "" { // load from --build-cluster
+		return nil, nil
+	}
+	data, err := ioutil.ReadFile(buildCluster)
+	if err != nil {
+		return nil, fmt.Errorf("read: %v", err)
+	}
+	raw, err := UnmarshalClusterMap(data)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal: %v", err)
+	}
+	cfg := &clientcmdapi.Config{
+		Clusters:  map[string]*clientcmdapi.Cluster{},
+		AuthInfos: map[string]*clientcmdapi.AuthInfo{},
+		Contexts:  map[string]*clientcmdapi.Context{},
+	}
+	for alias, config := range raw {
+		cfg.Clusters[alias] = &clientcmdapi.Cluster{
+			Server:                   config.Endpoint,
+			CertificateAuthorityData: config.ClusterCACertificate,
+		}
+		cfg.AuthInfos[alias] = &clientcmdapi.AuthInfo{
+			ClientCertificateData: config.ClientCertificate,
+			ClientKeyData:         config.ClientKey,
+		}
+		cfg.Contexts[alias] = &clientcmdapi.Context{
+			Cluster:  alias,
+			AuthInfo: alias,
+			// TODO(fejta): Namespace?
+		}
+	}
+	configs := map[string]rest.Config{}
+	for context := range cfg.Contexts {
+		logrus.Infof("* %s", context)
+		contextCfg, err := clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, nil).ClientConfig()
 		if err != nil {
-			return nil, "", fmt.Errorf("unmarshal build clusters: %v", err)
+			return nil, fmt.Errorf("create %s client: %v", context, err)
 		}
-		cfg = &clientcmdapi.Config{
-			Clusters:  map[string]*clientcmdapi.Cluster{},
-			AuthInfos: map[string]*clientcmdapi.AuthInfo{},
-			Contexts:  map[string]*clientcmdapi.Context{},
+		configs[context] = *contextCfg
+	}
+	return configs, nil
+}
+
+func mergeConfigs(local *rest.Config, foreign map[string]rest.Config, currentContext string, buildClusters map[string]rest.Config) (map[string]rest.Config, error) {
+	if buildClusters != nil {
+		if _, ok := buildClusters[DefaultClusterAlias]; !ok {
+			return nil, fmt.Errorf("build-cluster must have a %s context", DefaultClusterAlias)
 		}
-		for alias, config := range raw {
-			cfg.Clusters[alias] = &clientcmdapi.Cluster{
-				Server:                   config.Endpoint,
-				CertificateAuthorityData: config.ClusterCACertificate,
-			}
-			cfg.AuthInfos[alias] = &clientcmdapi.AuthInfo{
-				ClientCertificateData: config.ClientCertificate,
-				ClientKeyData:         config.ClientKey,
-			}
-			cfg.Contexts[alias] = &clientcmdapi.Context{
-				Cluster:  alias,
-				AuthInfo: alias,
-				// TODO(fejta): Namespace?
-			}
-		}
-		for context := range cfg.Contexts {
-			logrus.Infof("* %s", context)
-			contextCfg, err := clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, nil).ClientConfig()
-			if err != nil {
-				return nil, "", fmt.Errorf("create %s client: %v", context, err)
-			}
-			configs[context] = *contextCfg
-		}
+	}
+	ret := map[string]rest.Config{}
+	for ctx, cfg := range foreign {
+		ret[ctx] = cfg
+	}
+	for ctx, cfg := range buildClusters {
+		ret[ctx] = cfg
+	}
+	if local != nil {
+		ret[InClusterContext] = *local
+	} else if currentContext != "" {
+		ret[InClusterContext] = ret[currentContext]
+	} else {
+		return nil, errors.New("no prow cluster access: in-cluster current kubecfg context required")
+	}
+	if len(ret) == 0 {
+		return nil, errors.New("no client contexts found")
+	}
+	if _, ok := ret[DefaultClusterAlias]; !ok {
+		ret[DefaultClusterAlias] = ret[InClusterContext]
+	}
+	return ret, nil
+}
+
+// LoadClusterConfigs loads rest.Configs for creation of clients, by using either a normal
+// .kube/config file, a custom `Cluster` file, or both. The configs are returned in a mapping
+// of context --> config. The default context is included in this mapping and specified as a
+// return vaule. Errors are returned if .kube/config is specified and invalid or if no valid
+// contexts are found.
+func LoadClusterConfigs(kubeconfig, buildCluster string) (map[string]rest.Config, error) {
+
+	logrus.Infof("Loading cluster contexts...")
+	// This will work if we are running inside kubernetes
+	localCfg, err := localConfig()
+	if err != nil {
+		logrus.WithError(err).Warn("Failed to create in-cluster config")
 	}
 
-	if len(configs) == 0 {
-		return nil, "", errors.New("no clients found")
+	kubeCfgs, currentContext, err := kubeConfigs(kubeconfig)
+	if err != nil {
+		return nil, fmt.Errorf("kubecfg: %v", err)
 	}
-	return configs, *defCtx, nil
+
+	// TODO(fejta): drop build-cluster support
+	buildCfgs, err := buildConfigs(buildCluster)
+	if err != nil {
+		return nil, fmt.Errorf("build-cluster: %v", err)
+	}
+
+	return mergeConfigs(localCfg, kubeCfgs, currentContext, buildCfgs)
 }

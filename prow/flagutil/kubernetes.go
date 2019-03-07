@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"net/url"
 
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -56,30 +55,14 @@ func (o *KubernetesOptions) Validate(dryRun bool) error {
 }
 
 // Client returns a Kubernetes client.
-func (o *KubernetesOptions) Client(namespace string, dryRun bool) (client *kube.Client, defaultContext string, clientsets map[string]kubernetes.Interface, err error) {
+func (o *KubernetesOptions) Client(namespace string, dryRun bool) (*kube.Client, error) {
 	if dryRun {
-		return kube.NewFakeClient(o.deckURI), "", map[string]kubernetes.Interface{}, nil
-	}
-
-	clusterConfigs, defaultContext, err := kube.LoadClusterConfigs(o.kubeconfig, o.cluster)
-	clients := map[string]kubernetes.Interface{}
-	for context, config := range clusterConfigs {
-		client, err := kubernetes.NewForConfig(&config)
-		if err != nil {
-			return nil, "", nil, err
-		}
-		clients[context] = client
+		return kube.NewFakeClient(o.deckURI), nil
 	}
 
 	if o.cluster == "" {
-		client, err = kube.NewClientInCluster(namespace)
-		if err != nil {
-			return nil, "", nil, err
-		}
-
-		return client, defaultContext, clients, nil
+		return kube.NewClientInCluster(namespace)
 	}
 
-	legacyClient, err := kube.NewClientFromFile(o.cluster, namespace)
-	return legacyClient, defaultContext, clients, err
+	return kube.NewClientFromFile(o.cluster, namespace)
 }

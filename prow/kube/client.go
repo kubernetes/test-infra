@@ -50,8 +50,10 @@ const (
 	// EmptySelector selects everything
 	EmptySelector = ""
 
-	// DefaultClusterAlias specifies the default cluster key to schedule jobs.
-	DefaultClusterAlias = "default"
+	// DefaultClusterAlias specifies the default context for resources owned by jobs (pods/builds).
+	DefaultClusterAlias = "default" // TODO(fejta): rename to context
+	// InClusterContext specifies the context for prowjob resources.
+	InClusterContext = ""
 )
 
 // newClient is used to allow mocking out the behavior of 'NewClient' while testing.

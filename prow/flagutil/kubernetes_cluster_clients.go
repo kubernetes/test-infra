@@ -37,7 +37,6 @@ import (
 type ExperimentalKubernetesOptions struct {
 	buildCluster string
 	kubeconfig   string
-	infraContext string
 
 	DeckURI string
 
@@ -52,7 +51,6 @@ type ExperimentalKubernetesOptions struct {
 func (o *ExperimentalKubernetesOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.buildCluster, "build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster. All clusters are used as build clusters. Cannot be combined with --kubeconfig.")
 	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If empty, uses the local cluster. All contexts other than the default or whichever is passed to --context are used as build clusters. . Cannot be combined with --build-cluster.")
-	fs.StringVar(&o.infraContext, "context", "", "The name of the kubeconfig context to use for the infrastructure client. If empty and --kubeconfig is not set, uses the local cluster.")
 	fs.StringVar(&o.DeckURI, "deck-url", "", "Deck URI for read-only access to the infrastructure cluster.")
 }
 
@@ -74,10 +72,6 @@ func (o *ExperimentalKubernetesOptions) Validate(dryRun bool) error {
 		}
 	}
 
-	if o.infraContext != "" && o.kubeconfig == "" {
-		return errors.New("cannot provide --context without --kubeconfig")
-	}
-
 	if o.kubeconfig != "" && o.buildCluster != "" {
 		return errors.New("must provide only --build-cluster OR --kubeconfig")
 	}
@@ -96,24 +90,21 @@ func (o *ExperimentalKubernetesOptions) resolve(dryRun bool) (err error) {
 		return nil
 	}
 
-	clusterConfigs, defaultContext, err := kube.LoadClusterConfigs(o.kubeconfig, o.buildCluster)
+	clusterConfigs, err := kube.LoadClusterConfigs(o.kubeconfig, o.buildCluster)
+	if err != nil {
+		return fmt.Errorf("load --kubeconfig=%q --build-cluster=%q configs: %v", o.kubeconfig, o.buildCluster, err)
+	}
 	clients := map[string]kubernetes.Interface{}
 	for context, config := range clusterConfigs {
 		client, err := kubernetes.NewForConfig(&config)
 		if err != nil {
-			return err
+			return fmt.Errorf("create %s kubernetes client: %v", context, err)
 		}
 		clients[context] = client
 	}
 
-	if o.infraContext == "" {
-		o.infraContext = defaultContext
-	}
-	infraConfig, ok := clusterConfigs[o.infraContext]
-	if !ok {
-		return fmt.Errorf("resolved infrastructure cluster context to %q but did not find it in the kubeconfig", o.infraContext)
-	}
-	pjClient, err := prow.NewForConfig(&infraConfig)
+	localCfg := clusterConfigs[kube.InClusterContext]
+	pjClient, err := prow.NewForConfig(&localCfg)
 	if err != nil {
 		return err
 	}
@@ -161,10 +152,10 @@ func (o *ExperimentalKubernetesOptions) InfrastructureClusterClient(dryRun bool)
 		return nil, err
 	}
 
-	return o.kubernetesClientsByContext[o.infraContext], nil
+	return o.kubernetesClientsByContext[kube.InClusterContext], nil
 }
 
-// BuildClusterClients returns Pod clients for build clusters, mapped by their buildCluster alias, not by context.
+// BuildClusterClients returns Pod clients for build clusters.
 func (o *ExperimentalKubernetesOptions) BuildClusterClients(namespace string, dryRun bool) (buildClusterClients map[string]corev1.PodInterface, err error) {
 	if o.dryRun {
 		return nil, errors.New("no dry-run pod client is supported for build clusters in dry-run mode")
@@ -176,13 +167,6 @@ func (o *ExperimentalKubernetesOptions) BuildClusterClients(namespace string, dr
 
 	buildClients := map[string]corev1.PodInterface{}
 	for context, client := range o.kubernetesClientsByContext {
-		// we want to map build cluster clients by their alias, not their context
-		// the only context that is not the alias is the default context, so
-		// we can simply overwrite that one and be content that our build cluster
-		// mapping is correct for the controller
-		if context == o.infraContext {
-			context = kube.DefaultClusterAlias
-		}
 		buildClients[context] = client.CoreV1().Pods(namespace)
 	}
 	return buildClients, nil
