@@ -178,6 +178,8 @@ func (t *throttler) Do(req *http.Request) (*http.Response, error) {
 
 func (t *throttler) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
 	t.Wait()
+	t.lock.Lock()
+	defer t.lock.Unlock()
 	return t.graph.Query(ctx, q, vars)
 }
 
