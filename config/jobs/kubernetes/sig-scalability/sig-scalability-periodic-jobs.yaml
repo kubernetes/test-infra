@@ -388,7 +388,6 @@ periodics:
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1080m
-      - --use-logexporter
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
