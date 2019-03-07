@@ -35,10 +35,6 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 )
 
-const (
-	testInfra = "https://github.com/kubernetes/test-infra/issues"
-)
-
 type prowJobClient interface {
 	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
 	List(opts metav1.ListOptions) (*prowapi.ProwJobList, error)
@@ -345,7 +341,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, reports chan<- prowapi.P
 	if !jbExists {
 		pj.SetComplete()
 		pj.Status.State = prowapi.ErrorState
-		pj.Status.URL = testInfra
+		pj.Status.URL = c.cfg().StatusErrorLink
 		pj.Status.Description = "Error finding Jenkins job."
 	} else {
 		switch {
@@ -418,7 +414,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, reports chan<- prowapi
 			c.log.WithError(err).WithFields(pjutil.ProwJobFields(&pj)).Warn("Cannot start Jenkins build")
 			pj.SetComplete()
 			pj.Status.State = prowapi.ErrorState
-			pj.Status.URL = testInfra
+			pj.Status.URL = c.cfg().StatusErrorLink
 			pj.Status.Description = "Error starting Jenkins job."
 		} else {
 			pj.Status.State = prowapi.PendingState

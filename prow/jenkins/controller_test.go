@@ -81,6 +81,7 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int, operators []config.Jen
 						},
 					},
 				},
+				StatusErrorLink: "https://github.com/kubernetes/test-infra/issues",
 			},
 			JobConfig: config.JobConfig{
 				Presubmits: presubmitMap,

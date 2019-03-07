@@ -111,6 +111,11 @@ type ProwConfig struct {
 
 	// GitHubOptions allows users to control how prow applications display GitHub website links.
 	GitHubOptions GitHubOptions `json:"github,omitempty"`
+
+	// StatusErrorLink is the url that will be used for jenkins prowJobs that can't be
+	// found, or have another generic issue. The default that will be used if this is not set
+	// is: https://github.com/kubernetes/test-infra/issues
+	StatusErrorLink string `json:"status_error_link,omitempty"`
 }
 
 // OwnersDirBlacklist is used to configure which directories to ignore when
@@ -1002,6 +1007,10 @@ func parseProwConfig(c *Config) error {
 		return fmt.Errorf("unable to parse github.link_url, might not be a valid url: %v", err)
 	}
 	c.GitHubOptions.LinkURL = linkURL
+
+	if c.StatusErrorLink == "" {
+		c.StatusErrorLink = "https://github.com/kubernetes/test-infra/issues"
+	}
 
 	if c.LogLevel == "" {
 		c.LogLevel = "info"
