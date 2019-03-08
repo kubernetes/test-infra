@@ -10,13 +10,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
         command:
         - "./hack/ci/build-all.sh"
-      # trialing this on kind jobs, we are using FQDN for in-cluster services, now
-      # so use ndots 1 to improve dns performance
-      # TODO(bentheelder): consider setting this at the cluster level instead
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
   - name: pull-kind-verify
     decorate: true
     path_alias: sigs.k8s.io/kind
@@ -30,13 +23,6 @@ presubmits:
         # skip dep verification in the main CI job, use verify-deps for that
         - name: VERIFY_DEPS
           value: "false"
-      # trialing this on kind jobs, we are using FQDN for in-cluster services, now
-      # so use ndots 1 to improve dns performance
-      # TODO(bentheelder): consider setting this at the cluster level instead
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
   - name: pull-kind-verify-deps
     decorate: true
     path_alias: sigs.k8s.io/kind
@@ -46,13 +32,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-experimental
         command:
         - "./hack/verify-deps.sh"
-      # trialing this on kind jobs, we are using FQDN for in-cluster services, now
-      # so use ndots 1 to improve dns performance
-      # TODO(bentheelder): consider setting this at the cluster level instead
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
   # conformance test against kubernetes master branch with `kind`, skipping
   # serial tests so it runs in ~20m
   - name: pull-kind-conformance-parallel
@@ -109,13 +88,6 @@ presubmits:
         hostPath:
           path: /sys/fs/cgroup
           type: Directory
-      # trialing this on kind jobs, we are using FQDN for in-cluster services, now
-      # so use ndots 1 to improve dns performance
-      # TODO(bentheelder): consider setting this at the cluster level instead
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
   # conformance test against kubernetes release-1.13 branch with `kind`, skipping
   # serial tests so it runs in ~20m
   - name: pull-kind-conformance-parallel-1-13
@@ -172,13 +144,6 @@ presubmits:
         hostPath:
           path: /sys/fs/cgroup
           type: Directory
-      # trialing this on kind jobs, we are using FQDN for in-cluster services, now
-      # so use ndots 1 to improve dns performance
-      # TODO(bentheelder): consider setting this at the cluster level instead
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
   # conformance test against kubernetes release-1.12 branch with `kind`, skipping
   # serial tests so it runs in ~20m
   - name: pull-kind-conformance-parallel-1-12
@@ -235,13 +200,6 @@ presubmits:
         hostPath:
           path: /sys/fs/cgroup
           type: Directory
-      # trialing this on kind jobs, we are using FQDN for in-cluster services, now
-      # so use ndots 1 to improve dns performance
-      # TODO(bentheelder): consider setting this at the cluster level instead
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
   # conformance test against kubernetes release-1.11 branch with `kind`, skipping
   # serial tests so it runs in ~20m
   - name: pull-kind-conformance-parallel-1-11
@@ -298,10 +256,3 @@ presubmits:
         hostPath:
           path: /sys/fs/cgroup
           type: Directory
-      # trialing this on kind jobs, we are using FQDN for in-cluster services, now
-      # so use ndots 1 to improve dns performance
-      # TODO(bentheelder): consider setting this at the cluster level instead
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
