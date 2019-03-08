@@ -17,7 +17,6 @@ limitations under the License.
 package tide
 
 import (
-	"context"
 	"fmt"
 	"net/url"
 	"sort"
@@ -57,16 +56,9 @@ type statusController struct {
 	// lastSyncStart is used to ensure that the status update period is at least
 	// the minimum status update period.
 	lastSyncStart time.Time
-	// lastSuccessfulQueryStart is used to only list PRs that have changed since
-	// we last successfully listed PRs in order to make status context updates
-	// cheaper.
-	lastSuccessfulQueryStart time.Time
-
-	// trackedOrgs and trackedRepos are the sets of orgs and repos that are
-	// 'up to date' on, in the sense that we have already processed all open PRs
-	// updated before lastSuccessfulQueryStart for these orgs and repos.
-	trackedOrgs  sets.String
-	trackedRepos sets.String
+	// latestPR is the time of the most recent result
+	latestPR      time.Time
+	previousQuery string
 
 	sync.Mutex
 	poolPRs map[string]PullRequest
@@ -380,70 +372,43 @@ func (sc *statusController) search() []PullRequest {
 	// adding statuses to excluded repos.
 	orgExceptions, repos := sc.config().Tide.Queries.OrgExceptionsAndRepos()
 	orgs := sets.StringKeySet(orgExceptions)
-	freshOrgs, freshRepos := orgs.Difference(sc.trackedOrgs), repos.Difference(sc.trackedRepos)
-	oldOrgs, oldRepos := sc.trackedOrgs.Difference(orgs), sc.trackedRepos.Difference(repos)
-	// Stop tracking orgs and repos that aren't queried this loop.
-	sc.trackedOrgs.Delete(oldOrgs.UnsortedList()...)
-	sc.trackedRepos.Delete(oldRepos.UnsortedList()...)
-	// Determine the query for tracked PRs now before we modify 'trackedOrgs' and 'trackedRepos'.
-	var trackedQuery string
-	if sc.trackedOrgs.Len() > 0 || sc.trackedRepos.Len() > 0 {
-		trackedQuery = openPRsQuery(sc.trackedOrgs.UnsortedList(), sc.trackedRepos.UnsortedList(), orgExceptions)
+	query := openPRsQuery(orgs.List(), repos.List(), orgExceptions)
+	if query != sc.previousQuery {
+		// Query changed and/or tide restarted, recompute everything
+		sc.latestPR = time.Time{}
+		sc.previousQuery = query
 	}
-	queryStartTime := time.Now()
+	start := time.Now()
 
-	var lock sync.Mutex
-	var wg sync.WaitGroup
-	var allPRs []PullRequest
-	// Query fresh orgs and repos individually and since the beginning of time.
-	// These queries are larger and more likely to fail so we query for targets individually.
-	singleTargetSearch := func(query, target string, tracked sets.String) {
-		defer wg.Done()
-		searcher := newSearchExecutor(context.Background(), sc.ghc, sc.logger, query)
-		prs, err := searcher.search()
-		if err != nil {
-			sc.logger.WithError(err).Errorf("Searching for open PRs in %s.", target)
-			return
+	prs, err := search(sc.ghc.Query, sc.logger, query, sc.latestPR, start)
+	log := sc.logger.WithFields(logrus.Fields{
+		"query":    query,
+		"duration": time.Since(start).String(),
+	})
+	log.Debugf("Found %d open PRs.", len(prs))
+	if err != nil {
+		log = log.WithError(err)
+		if len(prs) == 0 {
+			log.Error("Search failed")
+			return nil
 		}
-		func() {
-			lock.Lock()
-			defer lock.Unlock()
-			allPRs = append(allPRs, prs...)
-			tracked.Insert(target)
-		}()
+		log.Warn("Search partially completed")
+	}
+	if len(prs) == 0 {
+		log.WithField("latestPR", sc.latestPR).Debug("no new results")
+		return nil
 	}
 
-	wg.Add(freshOrgs.Len() + freshRepos.Len())
-	for _, org := range freshOrgs.UnsortedList() {
-		go singleTargetSearch(openPRsQuery([]string{org}, nil, orgExceptions), org, sc.trackedOrgs)
+	latest := prs[len(prs)-1].UpdatedAt.Time
+	if latest.IsZero() {
+		log.WithField("latestPR", sc.latestPR).Debug("latest PR has zero time")
+		return prs
 	}
-	for _, repo := range freshRepos.UnsortedList() {
-		go singleTargetSearch(openPRsQuery(nil, []string{repo}, nil), repo, sc.trackedRepos)
-	}
-	wg.Wait()
-
-	// Query tracked orgs and repos together and only since the last time we queried.
-	// We offset for 30 seconds of overlap because GitHub sometimes doesn't
-	// include recently changed/new PRs in the query results.
-	if trackedQuery != "" {
-		sinceTime := sc.lastSuccessfulQueryStart.Add(-30 * time.Second)
-		searcher := newSearchExecutor(context.Background(), sc.ghc, sc.logger, trackedQuery)
-		prs, err := searcher.searchSince(sinceTime)
-		if err != nil {
-			sc.logger.WithError(err).Error("Searching for open PRs from 'tracked' orgs and repos.")
-		} else {
-			allPRs = append(allPRs, prs...)
-		}
-	}
-	sc.logger.WithField(
-		"duration", time.Since(queryStartTime).String(),
-	).Debugf("Found %d open PRs.", len(allPRs))
-
-	// We were able to find all open PRs so update the last successful query time.
-	sc.lastSuccessfulQueryStart = queryStartTime
-	return allPRs
+	sc.latestPR = latest.Add(-30 * time.Second)
+	log.WithField("latestPR", sc.latestPR).Debug("Advanced start time")
+	return prs
 }
 
 func openPRsQuery(orgs, repos []string, orgExceptions map[string]sets.String) string {
-	return "is:pr state:open " + orgRepoQueryString(orgs, repos, orgExceptions)
+	return "is:pr state:open sort:updated-asc " + orgRepoQueryString(orgs, repos, orgExceptions)
 }
