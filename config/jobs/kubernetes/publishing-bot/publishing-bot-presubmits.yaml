@@ -9,6 +9,7 @@ presubmits:
       - image: golang:1.11
         command:
         - make
+
   kubernetes/kubernetes:
     - name: pull-publishing-bot-validate
       always_run: false
@@ -31,3 +32,120 @@ presubmits:
               - run
               - k8s.io/publishing-bot/cmd/validate-rules
               - /home/prow/go/src/k8s.io/kubernetes/staging/publishing/rules.yaml
+
+  kubernetes/kubernetes:
+    - name: pull-publishing-bot-dry-run
+      always_run: false
+      decorate: true
+      path_alias: k8s.io/kubernetes
+      skip_report: false
+      optional: true
+      run_if_changed: '^staging/publishing.*$'
+      extra_refs:
+        - org: kubernetes
+          repo: publishing-bot
+          base_ref: master
+          path_alias: k8s.io/publishing-bot
+        - org: kubernetes
+          repo: api
+          base_ref: master
+          path_alias: k8s.io/api
+        - org: kubernetes
+          repo: apiextensions-apiserver
+          base_ref: master
+          path_alias: k8s.io/apiextensions-apiserver
+        - org: kubernetes
+          repo: apimachinery
+          base_ref: master
+          path_alias: k8s.io/apimachinery
+        - org: kubernetes
+          repo: apiserver
+          base_ref: master
+          path_alias: k8s.io/apiserver
+        - org: kubernetes
+          repo: client-go
+          base_ref: master
+          path_alias: k8s.io/client-go
+        - org: kubernetes
+          repo: cli-runtime
+          base_ref: master
+          path_alias: k8s.io/cli-runtime
+        - org: kubernetes
+          repo: cloud-provider
+          base_ref: master
+          path_alias: k8s.io/cloud-provider
+        - org: kubernetes
+          repo: cluster-bootstrap
+          base_ref: master
+          path_alias: k8s.io/cluster-bootstrap
+        - org: kubernetes
+          repo: code-generator
+          base_ref: master
+          path_alias: k8s.io/code-generator
+        - org: kubernetes
+          repo: component-base
+          base_ref: master
+          path_alias: k8s.io/component-base
+        - org: kubernetes
+          repo: csi-api
+          base_ref: master
+          path_alias: k8s.io/csi-api
+        - org: kubernetes
+          repo: csi-translation-lib
+          base_ref: master
+          path_alias: k8s.io/csi-translation-lib
+        - org: kubernetes
+          repo: kube-aggregator
+          base_ref: master
+          path_alias: k8s.io/kube-aggregator
+        - org: kubernetes
+          repo: kube-controller-manager
+          base_ref: master
+          path_alias: k8s.io/kube-controller-manager
+        - org: kubernetes
+          repo: kubelet
+          base_ref: master
+          path_alias: k8s.io/kubelet
+        - org: kubernetes
+          repo: kube-proxy
+          base_ref: master
+          path_alias: k8s.io/kube-proxy
+        - org: kubernetes
+          repo: kube-scheduler
+          base_ref: master
+          path_alias: k8s.io/kube-scheduler
+        - org: kubernetes
+          repo: metrics
+          base_ref: master
+          path_alias: k8s.io/metrics
+        - org: kubernetes
+          repo: node-api
+          base_ref: master
+          path_alias: k8s.io/node-api
+        - org: kubernetes
+          repo: sample-apiserver
+          base_ref: master
+          path_alias: k8s.io/sample-apiserver
+        - org: kubernetes
+          repo: sample-cli-plugin
+          base_ref: master
+          path_alias: k8s.io/sample-cli-plugin
+        - org: kubernetes
+          repo: sample-controller
+          base_ref: master
+          path_alias: k8s.io/sample-controller
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+            command:
+            - make
+            args:
+            - run
+            env:
+            - name: CONFIG
+              value: "https://raw.githubusercontent.com/kubernetes/publishing-bot/master/configs/kubernetes"
+            - name: DRYRUN
+              value: "true"
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
