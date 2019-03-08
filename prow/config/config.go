@@ -198,6 +198,8 @@ type Plank struct {
 	// JobURLPrefixConfig is the host and path prefix under which job details
 	// will be viewable. Use `org/repo`, `org` or `*`as key and an url as value
 	JobURLPrefixConfig map[string]string `json:"job_url_prefix_config,omitempty"`
+	// SkipRestartMissingPod will mark prowjob as error when associated pod is missing
+	SkipRestartMissingPod bool `json:"skip_restart_missing_pod,omitempty"`
 }
 
 func (p Plank) GetJobURLPrefix(refs *prowapi.Refs) string {

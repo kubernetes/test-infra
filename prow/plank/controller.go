@@ -348,21 +348,30 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 	if !podExists {
 		c.incrementNumPendingJobs(pj.Spec.Job)
 		// Pod is missing. This can happen in case the previous pod was deleted manually or by
-		// a rescheduler. Start a new pod.
-		id, pn, err := c.startPod(pj)
-		if err != nil {
-			_, isUnprocessable := err.(kube.UnprocessableEntityError)
-			if !isUnprocessable {
-				return fmt.Errorf("error starting pod: %v", err)
-			}
+		// a rescheduler.
+		if c.config().Plank.SkipRestartMissingPod {
+			// don't try to restart a cron based prowjob
 			pj.Status.State = prowapi.ErrorState
 			pj.SetComplete()
-			pj.Status.Description = "Job cannot be processed."
-			c.log.WithFields(pjutil.ProwJobFields(&pj)).WithError(err).Warning("Unprocessable pod.")
+			pj.Status.Description = "Pod is missing"
+			c.log.WithFields(pjutil.ProwJobFields(&pj)).Warning("Missing pod, set pj to error state.")
 		} else {
-			pj.Status.BuildID = id
-			pj.Status.PodName = pn
-			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Pod is missing, starting a new pod")
+			// Start a new pod.
+			id, pn, err := c.startPod(pj)
+			if err != nil {
+				_, isUnprocessable := err.(kube.UnprocessableEntityError)
+				if !isUnprocessable {
+					return fmt.Errorf("error starting pod: %v", err)
+				}
+				pj.Status.State = prowapi.ErrorState
+				pj.SetComplete()
+				pj.Status.Description = "Job cannot be processed."
+				c.log.WithFields(pjutil.ProwJobFields(&pj)).WithError(err).Warning("Unprocessable pod.")
+			} else {
+				pj.Status.BuildID = id
+				pj.Status.PodName = pn
+				c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Pod is missing, starting a new pod")
+			}
 		}
 	} else {
 		switch pod.Status.Phase {

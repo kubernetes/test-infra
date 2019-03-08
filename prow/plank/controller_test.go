@@ -48,7 +48,7 @@ const (
 	podPendingTimeout = time.Hour
 )
 
-func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
+func newFakeConfigAgent(t *testing.T, maxConcurrency int, skipRestartMissingPod bool) *fca {
 	presubmits := []config.Presubmit{
 		{
 			JobBase: config.JobBase{
@@ -83,7 +83,8 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 						MaxConcurrency: maxConcurrency,
 						MaxGoroutines:  20,
 					},
-					PodPendingTimeout: podPendingTimeout,
+					PodPendingTimeout:     podPendingTimeout,
+					SkipRestartMissingPod: skipRestartMissingPod,
 				},
 			},
 			JobConfig: config.JobConfig{
@@ -731,7 +732,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			kc:          fc,
 			pkcs:        pkcs,
 			log:         logrus.NewEntry(logrus.StandardLogger()),
-			config:      newFakeConfigAgent(t, tc.maxConcurrency).Config,
+			config:      newFakeConfigAgent(t, tc.maxConcurrency, false).Config,
 			totURL:      totServ.URL,
 			pendingJobs: make(map[string]int),
 		}
@@ -806,9 +807,10 @@ func TestSyncPendingJob(t *testing.T) {
 	var testcases = []struct {
 		name string
 
-		pj   prowapi.ProwJob
-		pods []kube.Pod
-		err  error
+		pj                    prowapi.ProwJob
+		pods                  []kube.Pod
+		err                   error
+		skipRestartMissingPod bool
 
 		expectedState      prowapi.ProwJobState
 		expectedNumPods    int
@@ -837,6 +839,29 @@ func TestSyncPendingJob(t *testing.T) {
 			expectedReport:  true,
 			expectedNumPods: 1,
 			expectedURL:     "boop-41/pending",
+		},
+		{
+			name: "don't reset when pod goes missing and set skipRestartMissingPod",
+			pj: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "boop-41",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Type:    prowapi.PostsubmitJob,
+					PodSpec: &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
+					Refs:    &prowapi.Refs{Org: "fejtaverse"},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "boop-41",
+				},
+			},
+			skipRestartMissingPod: true,
+			expectedComplete:      true,
+			expectedState:         prowapi.ErrorState,
+			expectedReport:        true,
+			expectedNumPods:       0,
+			expectedURL:           "boop-41/error",
 		},
 		{
 			name: "delete pod in unknown state",
@@ -1121,7 +1146,7 @@ func TestSyncPendingJob(t *testing.T) {
 			kc:          fc,
 			pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: fpc},
 			log:         logrus.NewEntry(logrus.StandardLogger()),
-			config:      newFakeConfigAgent(t, 0).Config,
+			config:      newFakeConfigAgent(t, 0, tc.skipRestartMissingPod).Config,
 			totURL:      totServ.URL,
 			pendingJobs: make(map[string]int),
 		}
@@ -1183,7 +1208,7 @@ func TestPeriodic(t *testing.T) {
 		ghc:         &fghc{},
 		pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: &fkc{}, "trusted": fc},
 		log:         logrus.NewEntry(logrus.StandardLogger()),
-		config:      newFakeConfigAgent(t, 0).Config,
+		config:      newFakeConfigAgent(t, 0, false).Config,
 		totURL:      totServ.URL,
 		pendingJobs: make(map[string]int),
 		lock:        sync.RWMutex{},
@@ -1345,7 +1370,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			kc:          fc,
 			pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: fpc},
 			log:         logrus.NewEntry(logrus.StandardLogger()),
-			config:      newFakeConfigAgent(t, 0).Config,
+			config:      newFakeConfigAgent(t, 0, false).Config,
 			pendingJobs: test.pendingJobs,
 		}
 
