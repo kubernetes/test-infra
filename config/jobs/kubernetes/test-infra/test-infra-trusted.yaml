@@ -29,6 +29,7 @@ postsubmits:
   kubernetes/test-infra:
   - name: post-test-infra-deploy-prow
     cluster: test-infra-trusted
+    run_if_changed: 'prow/cluster/'
     decorate: true
     branches:
     - master
@@ -52,6 +53,7 @@ postsubmits:
 
   - name: post-test-infra-push-prow
     cluster: test-infra-trusted
+    run_if_changed: 'prow/'
     decorate: true
     spec:
       containers:
