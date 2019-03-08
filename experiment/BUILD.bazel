@@ -56,6 +56,7 @@ filegroup(
         "//experiment/coverage:all-srcs",
         "//experiment/manual-trigger:all-srcs",
         "//experiment/resultstore:all-srcs",
+        "//experiment/slack-event-log:all-srcs",
         "//experiment/slack-oncall-updater:all-srcs",
         "//experiment/tracer:all-srcs",
     ],
