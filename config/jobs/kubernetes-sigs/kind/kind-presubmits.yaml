@@ -26,6 +26,26 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-experimental
         command:
         - "./hack/verify-all.sh"
+        env:
+        # skip dep verification in the main CI job, use verify-deps for that
+        - name: VERIFY_DEPS
+          value: "false"
+      # trialing this on kind jobs, we are using FQDN for in-cluster services, now
+      # so use ndots 1 to improve dns performance
+      # TODO(bentheelder): consider setting this at the cluster level instead
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "1"
+  - name: pull-kind-verify-deps
+    decorate: true
+    path_alias: sigs.k8s.io/kind
+    run_if_changed: ^(go\.mod)|(go\.sum)|(vendor/.*)$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-experimental
+        command:
+        - "./hack/verify-deps.sh"
       # trialing this on kind jobs, we are using FQDN for in-cluster services, now
       # so use ndots 1 to improve dns performance
       # TODO(bentheelder): consider setting this at the cluster level instead
