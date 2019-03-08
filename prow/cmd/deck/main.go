@@ -141,7 +141,7 @@ func main() {
 	pprofMux.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	pprofMux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 	pprofMux.HandleFunc("/debug/pprof/trace", pprof.Trace)
-	go logrus.WithError(http.ListenAndServe(":8082", pprofMux)).Fatal("ListenAndServe returned.")
+	go func() { logrus.WithError(http.ListenAndServe(":8082", pprofMux)).Fatal("ListenAndServe returned.") }()
 
 	// setup config agent, pod log clients etc.
 	configAgent := &config.Agent{}
@@ -155,7 +155,7 @@ func main() {
 	// main server with the main mux until we're ready
 	healthMux := http.NewServeMux()
 	healthMux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, "OK") })
-	go logrus.WithError(http.ListenAndServe(":8081", healthMux)).Fatal("ListenAndServe returned.")
+	go func() { logrus.WithError(http.ListenAndServe(":8081", healthMux)).Fatal("ListenAndServe returned.") }()
 
 	mux := http.NewServeMux()
 	// setup common handlers for local and deployed runs
