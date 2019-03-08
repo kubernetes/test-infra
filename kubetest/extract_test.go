@@ -164,6 +164,20 @@ func TestExtractStrategies(t *testing.T) {
 		if !strings.HasPrefix(path.Dir(url), "gs:/") {
 			return []byte{}, fmt.Errorf("url %s must starts with gs:/", path.Dir(url))
 		}
+
+		return []byte("v1.2.3+abcde"), nil
+	}
+
+	oldHTTPCat := httpCat
+	defer func() { httpCat = oldHTTPCat }()
+	httpCat = func(url string) ([]byte, error) {
+		if path.Ext(url) != ".txt" {
+			return []byte{}, fmt.Errorf("url %s must end with .txt", url)
+		}
+		if !strings.HasPrefix(url, "https://") {
+			return []byte{}, fmt.Errorf("url %s must starts with https://", url)
+		}
+
 		return []byte("v1.2.3+abcde"), nil
 	}
 
