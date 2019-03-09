@@ -3338,6 +3338,9 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-windows-gce-alpha-features
 - name: ci-kubernetes-e2e-windows-gce-poc
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-windows-gce-poc
+- name: ci-kubernetes-e2e-windows-gce-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-windows-gce-serial
+
 - name: ci-kubernetes-e2e-windows-gce-k8sbeta
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-windows-gce-k8sbeta
 
@@ -4660,10 +4663,12 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-windows-gce-poc
   - name: windows-gce
     test_group_name: ci-kubernetes-e2e-windows-gce
-  - name: windows-gce-1.14
-    test_group_name: ci-kubernetes-e2e-windows-gce-k8sbeta
+  - name: windows-gce-serial
+    test_group_name: ci-kubernetes-e2e-windows-gce-serial
   - name: windows-gce-alpha-features
     test_group_name: ci-kubernetes-e2e-windows-gce-alpha-features
+  - name: windows-gce-1.14
+    test_group_name: ci-kubernetes-e2e-windows-gce-k8sbeta
 
 - name: sig-release-master-upgrade
   dashboard_tab:
