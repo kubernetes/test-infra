@@ -1,5 +1,5 @@
 import {PullRequest, TideData, TidePool} from '../api/tide';
-import {tooltip} from '../common/common';
+import {tidehistory, tooltip} from '../common/common';
 
 declare const tideData: TideData;
 
@@ -216,13 +216,8 @@ function redrawPools(): void {
     for (const pool of tideData.Pools) {
         const r = document.createElement("tr");
 
-        const deckLink = `/?repo=${pool.Org}%2F${pool.Repo}`;
-        const branchLink = `https://github.com/${pool.Org}/${pool.Repo}/tree/${pool.Branch}`;
-        const linksTD = document.createElement("td");
-        linksTD.appendChild(createLink(deckLink, `${pool.Org}/${pool.Repo}`));
-        linksTD.appendChild(document.createTextNode(" "));
-        linksTD.appendChild(createLink(branchLink, pool.Branch));
-        r.appendChild(linksTD);
+        r.appendChild(createHistoryCell(pool));
+        r.appendChild(createRepoCell(pool));
         r.appendChild(createActionCell(pool));
         r.appendChild(createBatchCell(pool));
         r.appendChild(createPRCell(pool, pool.SuccessPRs));
@@ -231,6 +226,22 @@ function redrawPools(): void {
 
         pools.appendChild(r);
     }
+}
+
+function createHistoryCell(pool: TidePool): HTMLTableDataCellElement {
+    const td = document.createElement("td");
+    td.appendChild(tidehistory.poolIcon(pool.Org, pool.Repo, pool.Branch));
+    return td;
+}
+
+function createRepoCell(pool: TidePool): HTMLTableDataCellElement {
+    const deckLink = `/?repo=` + encodeURIComponent(`${pool.Org}/${pool.Repo}`);
+    const branchLink = `https://github.com/${pool.Org}/${pool.Repo}/tree/${pool.Branch}`;
+    const linksTD = document.createElement("td");
+    linksTD.appendChild(createLink(deckLink, `${pool.Org}/${pool.Repo}`));
+    linksTD.appendChild(document.createTextNode(" "));
+    linksTD.appendChild(createLink(branchLink, pool.Branch));
+    return linksTD;
 }
 
 function createActionCell(pool: TidePool): HTMLTableDataCellElement {

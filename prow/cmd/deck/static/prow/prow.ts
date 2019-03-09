@@ -1,6 +1,6 @@
 import moment from "moment";
 import {Job, JobState, JobType} from "../api/prow";
-import {cell} from "../common/common";
+import {cell, icon} from "../common/common";
 import {FuzzySearch} from './fuzzy-search';
 import {JobHistogram, JobSample} from './histogram';
 
@@ -514,11 +514,11 @@ function redraw(fz: FuzzySearch): void {
         const r = document.createElement("tr");
         r.appendChild(cell.state(build.state));
         if (build.pod_name) {
-            const icon = createIcon("description", "Build log");
-            icon.href = `log?job=${build.job}&id=${build.build_id}`;
+            const logIcon = icon.create("description", "Build log");
+            logIcon.href = `log?job=${build.job}&id=${build.build_id}`;
             const c = document.createElement("td");
             c.classList.add("icon-cell");
-            c.appendChild(icon);
+            c.appendChild(logIcon);
             r.appendChild(c);
         } else {
             r.appendChild(cell.text(""));
@@ -590,8 +590,8 @@ function redraw(fz: FuzzySearch): void {
 function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob: string): HTMLTableDataCellElement {
     const url = `https://${window.location.hostname}/rerun?prowjob=${prowjob}`;
     const c = document.createElement("td");
-    const icon = createIcon("refresh", "Show instructions for rerunning this job");
-    icon.onclick = () => {
+    const i = icon.create("refresh", "Show instructions for rerunning this job");
+    i.onclick = () => {
         modal.style.display = "block";
         rerunElement.innerHTML = `kubectl create -f "<a href="${url}">${url}</a>"`;
         const copyButton = document.createElement('a');
@@ -600,7 +600,7 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
         copyButton.innerHTML = "<i class='material-icons state triggered' style='color: gray'>file_copy</i>";
         rerunElement.appendChild(copyButton);
     };
-    c.appendChild(icon);
+    c.appendChild(i);
     c.classList.add("icon-cell");
     return c;
 }
@@ -827,25 +827,10 @@ function drawJobHistogram(total: number, jobHistogram: JobHistogram, start: numb
 }
 
 function createSpyglassCell(url: string): HTMLTableDataCellElement {
-    const icon = createIcon('visibility', 'View in Spyglass');
-    icon.href = url;
+    const i = icon.create('visibility', 'View in Spyglass');
+    i.href = url;
     const c = document.createElement('td');
     c.classList.add('icon-cell');
-    c.appendChild(icon);
+    c.appendChild(i);
     return c;
-}
-
-function createIcon(iconString: string, tooltip: string = ""): HTMLAnchorElement {
-    const icon = document.createElement("i");
-    icon.classList.add("icon-button", "material-icons");
-    icon.innerHTML = iconString;
-    if (tooltip !== "") {
-        icon.title = tooltip;
-    }
-
-    const container = document.createElement("a");
-    container.appendChild(icon);
-    container.classList.add("mdl-button", "mdl-js-button", "mdl-button--icon");
-
-    return container;
 }
