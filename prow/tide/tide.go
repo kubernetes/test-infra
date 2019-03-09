@@ -1374,7 +1374,7 @@ func orgRepoQueryString(orgs, repos []string, orgExceptions map[string]sets.Stri
 	for _, o := range orgs {
 		toks = append(toks, fmt.Sprintf("org:\"%s\"", o))
 
-		for _, e := range orgExceptions[o].UnsortedList() {
+		for _, e := range orgExceptions[o].List() {
 			toks = append(toks, fmt.Sprintf("-repo:\"%s\"", e))
 		}
 	}
