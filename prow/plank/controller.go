@@ -36,10 +36,6 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 )
 
-const (
-	testInfra = "https://github.com/kubernetes/test-infra/issues"
-)
-
 type kubeClient interface {
 	CreateProwJob(prowapi.ProwJob) (prowapi.ProwJob, error)
 	GetProwJob(string) (prowapi.ProwJob, error)

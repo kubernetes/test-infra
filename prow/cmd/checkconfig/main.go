@@ -21,6 +21,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -83,6 +84,7 @@ const (
 	needsOkToTestWarning    = "needs-ok-to-test"
 	validateOwnersWarning   = "validate-owners"
 	missingTriggerWarning   = "missing-trigger"
+	validateURLsWarning     = "validate-urls"
 )
 
 var allWarnings = []string{
@@ -92,6 +94,7 @@ var allWarnings = []string{
 	needsOkToTestWarning,
 	validateOwnersWarning,
 	missingTriggerWarning,
+	validateURLsWarning,
 }
 
 func (o *options) Validate() error {
@@ -189,9 +192,24 @@ func main() {
 			errs = append(errs, err)
 		}
 	}
+	if pcfg != nil && o.warningEnabled(validateURLsWarning) {
+		if err := validateURLs(cfg.ProwConfig); err != nil {
+			errs = append(errs, err)
+		}
+	}
 	if len(errs) > 0 {
 		reportWarning(o.strict, errorutil.NewAggregate(errs...))
 	}
+}
+
+func validateURLs(c config.ProwConfig) error {
+	var validationErrs []error
+
+	if _, err := url.Parse(c.StatusErrorLink); err != nil {
+		validationErrs = append(validationErrs, fmt.Errorf("status_error_link is not a valid url: %s", c.StatusErrorLink))
+	}
+
+	return errorutil.NewAggregate(validationErrs...)
 }
 
 func validateJobRequirements(c config.JobConfig) error {
