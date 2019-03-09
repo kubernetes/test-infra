@@ -25,7 +25,7 @@ func (h *Handler) handleURLVerification(body []byte) ([]byte, error) {
 	request := struct {
 		Challenge string `json:"challenge"`
 	}{}
-	if err := json.Unmarshal(body, request); err != nil {
+	if err := json.Unmarshal(body, &request); err != nil {
 		return nil, fmt.Errorf("error parsing request: %v", err)
 	}
 	response := map[string]string{"challenge": request.Challenge}
