@@ -373,21 +373,19 @@ func (sc *statusController) search() []PullRequest {
 	orgExceptions, repos := sc.config().Tide.Queries.OrgExceptionsAndRepos()
 	orgs := sets.StringKeySet(orgExceptions)
 	query := openPRsQuery(orgs.List(), repos.List(), orgExceptions)
+	now := time.Now()
+	log := sc.logger.WithField("query", query)
 	if query != sc.previousQuery {
 		// Query changed and/or tide restarted, recompute everything
+		log.WithField("previously", sc.previousQuery).Info("Query changed, resetting start time to zero")
 		sc.latestPR = time.Time{}
 		sc.previousQuery = query
 	}
-	start := time.Now()
 
-	prs, err := search(sc.ghc.Query, sc.logger, query, sc.latestPR, start)
-	log := sc.logger.WithFields(logrus.Fields{
-		"query":    query,
-		"duration": time.Since(start).String(),
-	})
-	log.Debugf("Found %d open PRs.", len(prs))
+	prs, err := search(sc.ghc.Query, sc.logger, query, sc.latestPR, now)
+	log.WithField("duration", time.Since(now).String()).Debugf("Found %d open PRs.", len(prs))
 	if err != nil {
-		log = log.WithError(err)
+		log := log.WithError(err)
 		if len(prs) == 0 {
 			log.Error("Search failed")
 			return nil
