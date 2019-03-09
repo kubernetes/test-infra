@@ -18,6 +18,8 @@ limitations under the License.
 package config
 
 import (
+	"bytes"
+	"compress/gzip"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -484,7 +486,7 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 
 // yamlToConfig converts a yaml file into a Config object
 func yamlToConfig(path string, nc interface{}) error {
-	b, err := ioutil.ReadFile(path)
+	b, err := ReadFileMaybeGZIP(path)
 	if err != nil {
 		return fmt.Errorf("error reading %s: %v", path, err)
 	}
@@ -525,6 +527,26 @@ func yamlToConfig(path string, nc interface{}) error {
 		fix(&jc.Periodics[i])
 	}
 	return nil
+}
+
+// ReadFileMaybeGZIP wraps ioutil.ReadFile, returning the decompressed contents
+// if the file is gzipped, or otherwise the raw contents
+func ReadFileMaybeGZIP(path string) ([]byte, error) {
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	// check if file contains gzip header: http://www.zlib.org/rfc-gzip.html
+	if !bytes.HasPrefix(b, []byte("\x1F\x8B")) {
+		// go ahead and return the contents if not gzipped
+		return b, nil
+	}
+	// otherwise decode
+	gzipReader, err := gzip.NewReader(bytes.NewBuffer(b))
+	if err != nil {
+		return nil, err
+	}
+	return ioutil.ReadAll(gzipReader)
 }
 
 // mergeConfig merges two JobConfig together

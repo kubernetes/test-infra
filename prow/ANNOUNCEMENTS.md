@@ -1,6 +1,7 @@
 # Announcements
 
 New features added to each component:
+ - *March 9, 2019* prow components now support reading gzipped config files
  - *February 13, 2019* prow (both plank and crier) can set status on the commit
    for postsubmit jobs on github now! 
    Type of jobs can be reported to github is gated by a config field like
