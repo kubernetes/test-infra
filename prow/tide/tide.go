@@ -208,9 +208,6 @@ func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, cfg confi
 		config:         cfg,
 		newPoolPending: make(chan bool, 1),
 		shutDown:       make(chan bool),
-
-		trackedOrgs:  sets.NewString(),
-		trackedRepos: sets.NewString(),
 	}
 	go sc.run()
 	return &Controller{
@@ -278,13 +275,16 @@ func (c *Controller) Sync() error {
 	}()
 	defer c.changedFiles.prune()
 
-	ctx := context.Background()
 	c.logger.Debug("Building tide pool.")
 	prs := make(map[string]PullRequest)
-	for _, q := range c.config().Tide.Queries {
-		results, err := newSearchExecutor(ctx, c.ghc, c.logger, q.Query()).search()
+	for _, query := range c.config().Tide.Queries {
+		q := query.Query()
+		results, err := search(c.ghc.Query, c.logger, q, time.Time{}, time.Now())
+		if err != nil && len(results) == 0 {
+			return fmt.Errorf("query %q, err: %v", q, err)
+		}
 		if err != nil {
-			return err
+			c.logger.WithError(err).WithField("query", q).Warning("found partial results")
 		}
 		for _, pr := range results {
 			prs[prKey(&pr)] = pr
@@ -1276,7 +1276,8 @@ type PullRequest struct {
 	Milestone *struct {
 		Title githubql.String
 	}
-	Title githubql.String
+	Title     githubql.String
+	UpdatedAt githubql.DateTime
 }
 
 // Commit holds graphql data about commits and which contexts they have
@@ -1304,8 +1305,7 @@ type searchQuery struct {
 			HasNextPage githubql.Boolean
 			EndCursor   githubql.String
 		}
-		IssueCount githubql.Int
-		Nodes      []struct {
+		Nodes []struct {
 			PullRequest PullRequest `graphql:"... on PullRequest"`
 		}
 	} `graphql:"search(type: ISSUE, first: 100, after: $searchCursor, query: $query)"`
