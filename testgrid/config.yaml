@@ -3426,6 +3426,10 @@ test_groups:
 - name: post-sig-storage-local-static-provisioner-build-release
   gcs_prefix: kubernetes-jenkins/logs/post-sig-storage-local-static-provisioner-build-release
 
+# Kubernetes-CSI test groups
+- name: ci-kubernetes-csi-stable
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-stable
+
 # Docker node conformance test group
 - name: ce18.09-ubuntu16.04-k8s1.13.x-conformance
   gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ce-ubuntu16.04-k8s1.13.x
@@ -6787,6 +6791,13 @@ dashboards:
     test_group_name: post-sig-storage-local-static-provisioner-build-release
     description: Release image build against tagged releases
 
+- name: sig-storage-csi
+  dashboard_tab:
+  - name: stable
+    test_group_name: ci-kubernetes-csi-stable
+    base_options: include-filter-by-regex=^External%7CStorage|^test-
+    description: Kubernetes-CSI tests with lastest Kubernetes and stable sidecars
+
 - name: sig-testing-maintenance
   dashboard_tab:
   - name: boskos-config-upload
@@ -7975,6 +7986,7 @@ dashboard_groups:
   dashboard_names:
   - sig-storage-kubernetes
   - sig-storage-local-static-provisioner
+  - sig-storage-csi
 
 - name: conformance
   dashboard_names:
