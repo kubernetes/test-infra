@@ -401,6 +401,12 @@ func TestClean(t *testing.T) {
 	assertSetsEqual(deletedPods, getDeletedObjectNames(fkc[0].Fake.Actions()), t, "did not delete correct Pods")
 	assertSetsEqual(deletedPodsTrusted, getDeletedObjectNames(fkc[1].Fake.Actions()), t, "did not delete correct trusted Pods")
 	assertSetsEqual(deletedProwJobs, getDeletedObjectNames(fpjc.Fake.Actions()), t, "did not delete correct ProwJobs")
+
+	metrics:=c.currentMetrics
+	podsTotalRemovedByProwExpected := len(deletedPods) + len(deletedPodsTrusted)
+	if metrics.podsTotalRemovedByProw != podsTotalRemovedByProwExpected {
+		t.Errorf("metrics.podsTotalRemovedByProw: %d, expected: %d", metrics.podsTotalRemovedByProw, podsTotalRemovedByProwExpected)
+	}
 }
 
 func getDeletedObjectNames(actions []clienttesting.Action) sets.String {

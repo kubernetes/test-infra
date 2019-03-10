@@ -138,10 +138,11 @@ func main() {
 }
 
 type controller struct {
-	logger        *logrus.Entry
-	prowJobClient prowv1.ProwJobInterface
-	podClients    []corev1.PodInterface
-	config        config.Getter
+	logger         *logrus.Entry
+	prowJobClient  prowv1.ProwJobInterface
+	podClients     []corev1.PodInterface
+	config         config.Getter
+	currentMetrics *sinkerReconciliationMetrics
 }
 
 type sinkerReconciliationMetrics struct {
@@ -152,10 +153,22 @@ type sinkerReconciliationMetrics struct {
 	podsRemovedByProw      map[string]int
 }
 
+func (c *sinkerReconciliationMetrics) addPodByReason(reason string, logger *logrus.Entry) {
+	if c.podsRemovedByProw == nil {
+		c.podsRemovedByProw = make(map[string]int)
+	}
+	if len(reason)==0 {
+		logger.Warn("Warn len(reason) is 0.")
+		return
+	}
+	c.podsRemovedByProw[reason]++
+}
+
 func (c *controller) clean() {
 
-	sinkerReconciliationMetrics := sinkerReconciliationMetrics{}
-	sinkerReconciliationMetrics.startAt = time.Now()
+	metrics := sinkerReconciliationMetrics{}
+	c.currentMetrics = &metrics
+	c.currentMetrics.startAt = time.Now()
 
 	// Clean up old prow jobs first.
 	prowJobs, err := c.prowJobClient.List(metav1.ListOptions{})
@@ -231,7 +244,7 @@ func (c *controller) clean() {
 			c.logger.WithError(err).Error("Error listing pods.")
 			return
 		}
-		sinkerReconciliationMetrics.podsCreatedByProw = len(pods.Items)
+		c.currentMetrics.podsCreatedByProw = len(pods.Items)
 		maxPodAge := c.config().Sinker.MaxPodAge
 		for _, pod := range pods.Items {
 			clean := !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
@@ -251,24 +264,21 @@ func (c *controller) clean() {
 
 			// Delete old finished or orphan pods. Don't quit if we fail to delete one.
 			if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
-				sinkerReconciliationMetrics.podsTotalRemovedByProw++
 				c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
+				c.currentMetrics.podsTotalRemovedByProw++
+				// TODO(hongkliu) replace this with the real reason
+				c.currentMetrics.addPodByReason("unknown", c.logger)
 			} else {
 				c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
 			}
 		}
 	}
 
-	sinkerReconciliationMetrics.finishedAt = time.Now()
-	// TODO(hongkliu) replace this with the real reason
-	sinkerReconciliationMetrics.podsRemovedByProw = make(map[string]int)
-	sinkerReconciliationMetrics.podsRemovedByProw["a"] = 3
-
+	c.currentMetrics.finishedAt = time.Now()
 	c.logger.WithFields(logrus.Fields{
-		"podsCreatedByProw": sinkerReconciliationMetrics.podsCreatedByProw,
-		"timeUsed": sinkerReconciliationMetrics.finishedAt.Truncate(time.Second).
-			Sub(sinkerReconciliationMetrics.startAt.Truncate(time.Second)),
-		"podsTotalRemovedByProw": sinkerReconciliationMetrics.podsTotalRemovedByProw,
-		"podsRemovedByProw":      sinkerReconciliationMetrics.podsRemovedByProw,}).
+		"podsCreatedByProw": c.currentMetrics.podsCreatedByProw,
+		"timeUsed": c.currentMetrics.finishedAt.Truncate(time.Second). Sub(c.currentMetrics.startAt.Truncate(time.Second)),
+		"podsTotalRemovedByProw": c.currentMetrics.podsTotalRemovedByProw,
+		"podsRemovedByProw":      c.currentMetrics.podsRemovedByProw,}).
 		Info("Show sinkerReconciliationMetrics.")
 }
