@@ -29,31 +29,39 @@ import (
 
 type querier func(ctx context.Context, result interface{}, vars map[string]interface{}) error
 
+func datedQuery(q string, start, end time.Time) string {
+	return fmt.Sprintf("%s %s", q, dateToken(start, end))
+}
+
+func floor(t time.Time) time.Time {
+	if t.Before(github.FoundingYear) {
+		return github.FoundingYear
+	}
+	return t
+}
+
 func search(query querier, log *logrus.Entry, q string, start, end time.Time) ([]PullRequest, error) {
-	if start.Before(github.FoundingYear) {
-		start = github.FoundingYear
-	}
-	if end.Before(github.FoundingYear) {
-		end = github.FoundingYear
-	}
+	start = floor(start)
+	end = floor(end)
 	log = log.WithFields(logrus.Fields{
 		"query": q,
 		"start": start.String(),
 		"end":   end.String(),
 	})
 	requestStart := time.Now()
-	datedQuery := fmt.Sprintf("%s %s", q, dateToken(start, end))
 	var cursor *githubql.String
 	vars := map[string]interface{}{
-		"query":        githubql.String(datedQuery),
+		"query":        githubql.String(datedQuery(q, start, end)),
 		"searchCursor": cursor,
 	}
+
 	var totalCost, remaining int
 	var ret []PullRequest
 	var sq searchQuery
+	ctx := context.Background()
 	for {
 		log.Debug("Sending query")
-		if err := query(context.Background(), &sq, vars); err != nil {
+		if err := query(ctx, &sq, vars); err != nil {
 			if cursor != nil {
 				err = fmt.Errorf("cursor: %q, err: %v", *cursor, err)
 			}
