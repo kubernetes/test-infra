@@ -27,6 +27,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -147,6 +148,9 @@ func (o Options) ExecuteProcess() (int, error) {
 	command := exec.Command(executable, arguments...)
 	command.Stderr = output
 	command.Stdout = output
+
+	traianaExapndEnv(command)
+
 	if err := command.Start(); err != nil {
 		return InternalErrorCode, fmt.Errorf("could not start the process: %v", err)
 	}
@@ -231,6 +235,40 @@ func (o *Options) mark(exitCode int) error {
 		return fmt.Errorf("could not move marker file to destination path (%s): %v", o.MarkerFile, err)
 	}
 	return nil
+}
+
+func traianaExapndEnv(cmd *exec.Cmd) {
+	if cmd.Env == nil {
+		cmd.Env = os.Environ()
+	}
+
+	deepExpand := func(val string) string {
+		old := val
+		new := os.ExpandEnv(old)
+
+		// recursive expand
+		for ; new != old; new = os.ExpandEnv(old) {
+			old = new
+		}
+
+		return new
+	}
+
+	expand := func(name string) {
+		for i, e := range cmd.Env {
+			if strings.HasPrefix(e, name) {
+				cmd.Env[i] = deepExpand(e)
+			}
+		}
+
+		for i, a := range cmd.Args {
+			if strings.Contains(a, name) {
+				cmd.Args[i] = deepExpand(a)
+			}
+		}
+	}
+
+	expand("BUILD_VERSION")
 }
 
 // optionOrDefault defaults to a value if option
