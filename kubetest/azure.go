@@ -458,7 +458,7 @@ func dockerLogout() error {
 
 func (c *Cluster) buildCcm() error {
 
-	image := fmt.Sprintf("%v/azure-cloud-controller-manager:%v", os.Getenv("REGISTRY"), os.Getenv("BUILD_ID"))
+	image := fmt.Sprintf("%v/azure-cloud-controller-manager:%v-%v", os.Getenv("REGISTRY"), os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8])
 	if err := c.dockerLogin(); err != nil {
 		return err
 	}
@@ -487,7 +487,7 @@ func (c *Cluster) buildCcm() error {
 
 func (c *Cluster) buildHyperKube() error {
 
-	os.Setenv("VERSION", fmt.Sprintf("azure-e2e-%v", os.Getenv("BUILD_ID")))
+	os.Setenv("VERSION", fmt.Sprintf("azure-e2e-%v-%v", os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8]))
 	if err := c.dockerLogin(); err != nil {
 		return err
 	}
@@ -586,7 +586,7 @@ func getZipBuildScript(buildScriptURL string, retry int) (string, error) {
 
 func (c *Cluster) buildWinZip() error {
 
-	zipName := fmt.Sprintf("%s.zip", os.Getenv("BUILD_ID"))
+	zipName := fmt.Sprintf("%s%s.zip", os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8])
 	buildFolder := path.Join(os.Getenv("HOME"), "winbuild")
 	zipPath := path.Join(os.Getenv("HOME"), zipName)
 	log.Printf("Building %s", zipName)
