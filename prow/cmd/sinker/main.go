@@ -144,7 +144,19 @@ type controller struct {
 	config        config.Getter
 }
 
+type sinkerReconciliationMetrics struct {
+	podsCreatedByProw      int
+	startAt                time.Time
+	finishedAt             time.Time
+	podsTotalRemovedByProw int
+	podsRemovedByProw      map[string]int
+}
+
 func (c *controller) clean() {
+
+	sinkerReconciliationMetrics := sinkerReconciliationMetrics{}
+	sinkerReconciliationMetrics.startAt = time.Now()
+
 	// Clean up old prow jobs first.
 	prowJobs, err := c.prowJobClient.List(metav1.ListOptions{})
 	if err != nil {
@@ -219,6 +231,7 @@ func (c *controller) clean() {
 			c.logger.WithError(err).Error("Error listing pods.")
 			return
 		}
+		sinkerReconciliationMetrics.podsCreatedByProw = len(pods.Items)
 		maxPodAge := c.config().Sinker.MaxPodAge
 		for _, pod := range pods.Items {
 			clean := !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
@@ -238,10 +251,24 @@ func (c *controller) clean() {
 
 			// Delete old finished or orphan pods. Don't quit if we fail to delete one.
 			if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
+				sinkerReconciliationMetrics.podsTotalRemovedByProw++
 				c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
 			} else {
 				c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
 			}
 		}
 	}
+
+	sinkerReconciliationMetrics.finishedAt = time.Now()
+	// TODO(hongkliu) replace this with the real reason
+	sinkerReconciliationMetrics.podsRemovedByProw = make(map[string]int)
+	sinkerReconciliationMetrics.podsRemovedByProw["a"] = 3
+
+	c.logger.WithFields(logrus.Fields{
+		"podsCreatedByProw": sinkerReconciliationMetrics.podsCreatedByProw,
+		"timeUsed": sinkerReconciliationMetrics.finishedAt.Truncate(time.Second).
+			Sub(sinkerReconciliationMetrics.startAt.Truncate(time.Second)),
+		"podsTotalRemovedByProw": sinkerReconciliationMetrics.podsTotalRemovedByProw,
+		"podsRemovedByProw":      sinkerReconciliationMetrics.podsRemovedByProw,}).
+		Info("Show sinkerReconciliationMetrics.")
 }
