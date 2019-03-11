@@ -1295,6 +1295,10 @@ type Context struct {
 	State       githubql.StatusState
 }
 
+type PRNode struct {
+	PullRequest PullRequest `graphql:"... on PullRequest"`
+}
+
 type searchQuery struct {
 	RateLimit struct {
 		Cost      githubql.Int
@@ -1305,9 +1309,7 @@ type searchQuery struct {
 			HasNextPage githubql.Boolean
 			EndCursor   githubql.String
 		}
-		Nodes []struct {
-			PullRequest PullRequest `graphql:"... on PullRequest"`
-		}
+		Nodes []PRNode
 	} `graphql:"search(type: ISSUE, first: 100, after: $searchCursor, query: $query)"`
 }
 
