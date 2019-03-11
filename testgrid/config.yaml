@@ -240,12 +240,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e
 - name: ci-ingress-gce-e2e-multi-zone
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-multi-zone
-- name: ci-ingress-gce-e2e-release-1-2
-  gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-release-1-2
 - name: ci-ingress-gce-e2e-release-1-3
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-release-1-3
 - name: ci-ingress-gce-e2e-release-1-4
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-release-1-4
+- name: ci-ingress-gce-e2e-release-1-5
+  gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-release-1-5
 - name: ci-ingress-gce-e2e-scale
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-scale
 - name: ci-cluster-api-build
@@ -6299,16 +6299,16 @@ dashboards:
     test_group_name: ci-ingress-gce-e2e-multi-zone
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: ingress-gce-e2e-release-1.2
-    test_group_name: ci-ingress-gce-e2e-release-1-2
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: ingress-gce-e2e-release-1.3
     test_group_name: ci-ingress-gce-e2e-release-1-3
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: ingress-gce-e2e-release-1.4
     test_group_name: ci-ingress-gce-e2e-release-1-4
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+  - name: ingress-gce-e2e-release-1.5
+    test_group_name: ci-ingress-gce-e2e-release-1-5
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: ingress-gce-e2e-scale
