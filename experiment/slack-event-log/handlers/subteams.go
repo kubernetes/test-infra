@@ -44,7 +44,8 @@ func (h *Handler) handleSubteamUpdated(body []byte) ([]byte, error) {
 		return nil, nil
 	}
 
-	// This group is "modified" hourly and it is an uninteresting a noop, just filter it all.
+	// This group (@test-infra-oncall) is "modified" hourly and is usually an uninteresting noop,
+	// just filter it all.
 	// TODO(Katharine): make this configurable (or maintain enough state to know this is a noop)
 	if subteam.ID == "SGLF0GUQH" {
 		return nil, nil
