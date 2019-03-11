@@ -44,7 +44,14 @@ func (h *Handler) handleSubteamUpdated(body []byte) ([]byte, error) {
 		return nil, nil
 	}
 
-	h.sendMessage("Usergroup <@%s> (%q) was *updated* by <@%s>", subteam.ID, slack.EscapeMessage(subteam.Name), subteam.UpdatedBy)
+	// This group (@test-infra-oncall) is "modified" hourly and is usually an uninteresting noop,
+	// just filter it all.
+	// TODO(Katharine): make this configurable (or maintain enough state to know this is a noop)
+	if subteam.ID == "SGLF0GUQH" {
+		return nil, nil
+	}
+
+	h.sendMessage("Usergroup <!subteam^%s|%s> (%q) was *updated* by <@%s>", subteam.ID, subteam.Handle, slack.EscapeMessage(subteam.Name), subteam.UpdatedBy)
 	return nil, nil
 }
 
@@ -64,6 +71,6 @@ func (h *Handler) handleSubteamCreated(body []byte) ([]byte, error) {
 		return nil, nil
 	}
 
-	h.sendMessage("Usergroup <@%s> (%q) was *created* by <@%s>", subteam.ID, slack.EscapeMessage(subteam.Name), subteam.CreatedBy)
+	h.sendMessage("Usergroup <!subteam^%s|%s> (%q) was *created* by <@%s>", subteam.ID, subteam.Handle, slack.EscapeMessage(subteam.Name), subteam.CreatedBy)
 	return nil, nil
 }
