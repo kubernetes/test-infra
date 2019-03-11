@@ -283,5 +283,5 @@ func (c *controller) clean() {
 	}
 
 	metrics.finishedAt = time.Now()
-	c.logger.WithFields(metrics.logFields()).Info("Show sinkerReconciliationMetrics.")
+	c.logger.WithFields(metrics.logFields()).Info("Sinker reconciliation complete.")
 }
