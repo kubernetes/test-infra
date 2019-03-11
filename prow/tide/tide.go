@@ -38,6 +38,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -801,7 +802,7 @@ func (c *Controller) pickBatch(sp subpool, cc contextChecker) ([]PullRequest, er
 }
 
 func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
-	var merged []int
+	var merged, failed []int
 	defer func() {
 		if len(merged) == 0 {
 			return
@@ -809,21 +810,9 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 		tideMetrics.merges.WithLabelValues(sp.org, sp.repo, sp.branch).Observe(float64(len(merged)))
 	}()
 
-	augmentError := func(e error, pr PullRequest) error {
-		var batch string
-		if len(prs) > 1 {
-			batch = fmt.Sprintf(" from batch %v", prNumbers(prs))
-			if len(merged) > 0 {
-				batch = fmt.Sprintf("%s, partial merge %v", batch, merged)
-			}
-		}
-		return fmt.Errorf("failed merging #%d%s: %v", int(pr.Number), batch, e)
-	}
-
+	var errs []error
 	log := sp.log.WithField("merge-targets", prNumbers(prs))
-	maxRetries := 3
 	for i, pr := range prs {
-		backoff := time.Second * 4
 		log := log.WithFields(pr.logFields())
 		mergeMethod := c.config().Tide.MergeMethod(sp.org, sp.repo)
 		if squashLabel := c.config().Tide.SquashLabel; squashLabel != "" {
@@ -834,75 +823,106 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 				}
 			}
 		}
-		for retry := 0; retry < maxRetries; retry++ {
-			if err := c.ghc.Merge(sp.org, sp.repo, int(pr.Number), github.MergeDetails{
+
+		keepTrying, err := tryMerge(func() error {
+			return c.ghc.Merge(sp.org, sp.repo, int(pr.Number), github.MergeDetails{
 				SHA:         string(pr.HeadRefOID),
 				MergeMethod: string(mergeMethod),
-			}); err != nil {
-				// TODO: Add a config option to abort batches if a PR in the batch
-				// cannot be merged for any reason. This would skip merging
-				// not just the changed PR, but also the other PRs in the batch.
-				// This shouldn't be the default behavior as merging batches is high
-				// priority and this is unlikely to be problematic.
-				// Note: We would also need to be able to roll back any merges for the
-				// batch that were already successfully completed before the failure.
-				// Ref: https://github.com/kubernetes/test-infra/issues/10621
-				if _, ok := err.(github.ModifiedHeadError); ok {
-					// This is a possible source of incorrect behavior. If someone
-					// modifies their PR as we try to merge it in a batch then we
-					// end up in an untested state. This is unlikely to cause any
-					// real problems.
-					log.WithError(err).Warning("Merge failed: PR was modified.")
-					break
-				} else if _, ok = err.(github.UnmergablePRBaseChangedError); ok {
-					// GitHub complained that the base branch was modified. This is a
-					// strange error because the API doesn't even allow the request to
-					// specify the base branch sha, only the head sha.
-					// We suspect that github is complaining because we are making the
-					// merge requests too rapidly and it cannot recompute mergability
-					// in time. https://github.com/kubernetes/test-infra/issues/5171
-					// We handle this by sleeping for a few seconds before trying to
-					// merge again.
-					log.WithError(err).Warning("Merge failed: Base branch was modified.")
-					if retry+1 < maxRetries {
-						time.Sleep(backoff)
-						backoff *= 2
-					}
-				} else if _, ok = err.(github.UnauthorizedToPushError); ok {
-					// GitHub let us know that the token used cannot push to the branch.
-					// Even if the robot is set up to have write access to the repo, an
-					// overzealous branch protection setting will not allow the robot to
-					// push to a specific branch.
-					log.WithError(err).Error("Merge failed: Branch needs to be configured to allow this robot to push.")
-					// We won't be able to merge the other PRs.
-					return augmentError(err, pr)
-				} else if _, ok = err.(github.MergeCommitsForbiddenError); ok {
-					// GitHub let us know that the merge method configured for this repo
-					// is not allowed by other repo settings, so we should let the admins
-					// know that the configuration needs to be updated.
-					log.WithError(err).Error("Merge failed: Tide needs to be configured to use the 'rebase' merge method for this repo or the repo needs to allow merge commits.")
-					// We won't be able to merge the other PRs.
-					return augmentError(err, pr)
-				} else if _, ok = err.(github.UnmergablePRError); ok {
-					log.WithError(err).Error("Merge failed: PR is unmergable. Do the Tide merge requirements match the GitHub settings for the repo?")
-					break
-				} else {
-					log.WithError(err).Error("Merge failed.")
-					return augmentError(err, pr)
-				}
-			} else {
-				log.Info("Merged.")
-				merged = append(merged, int(pr.Number))
-				// If we have more PRs to merge, sleep to give GitHub time to recalculate
-				// mergeability.
-				if i+1 < len(prs) {
-					time.Sleep(time.Second * 5)
-				}
-				break
-			}
+			})
+		})
+		if err != nil {
+			log.WithError(err).Error("Merge failed.")
+			errs = append(errs, err)
+			failed = append(failed, int(pr.Number))
+		} else {
+			log.Info("Merged.")
+			merged = append(merged, int(pr.Number))
+		}
+		if !keepTrying {
+			break
+		}
+		// If we successfully merged this PR and have more to merge, sleep to give
+		// GitHub time to recalculate mergeability.
+		if err == nil && i+1 < len(prs) {
+			time.Sleep(time.Second * 5)
 		}
 	}
-	return nil
+
+	if len(errs) == 0 {
+		return nil
+	}
+
+	// Construct a more informative error.
+	var batch string
+	if len(prs) > 1 {
+		batch = fmt.Sprintf(" from batch %v", prNumbers(prs))
+		if len(merged) > 0 {
+			batch = fmt.Sprintf("%s, partial merge %v", batch, merged)
+		}
+	}
+	return fmt.Errorf("failed merging %v%s: %v", failed, batch, errorutil.NewAggregate(errs...))
+}
+
+// tryMerge attempts 1 merge and returns a bool indicating if we should try
+// to merge the remaining PRs and possibly an error.
+func tryMerge(mergeFunc func() error) (bool, error) {
+	var err error
+	const maxRetries = 3
+	backoff := time.Second * 4
+	for retry := 0; retry < maxRetries; retry++ {
+		if err = mergeFunc(); err == nil {
+			// Successful merge!
+			return true, nil
+		}
+		// TODO: Add a config option to abort batches if a PR in the batch
+		// cannot be merged for any reason. This would skip merging
+		// not just the changed PR, but also the other PRs in the batch.
+		// This shouldn't be the default behavior as merging batches is high
+		// priority and this is unlikely to be problematic.
+		// Note: We would also need to be able to roll back any merges for the
+		// batch that were already successfully completed before the failure.
+		// Ref: https://github.com/kubernetes/test-infra/issues/10621
+		if _, ok := err.(github.ModifiedHeadError); ok {
+			// This is a possible source of incorrect behavior. If someone
+			// modifies their PR as we try to merge it in a batch then we
+			// end up in an untested state. This is unlikely to cause any
+			// real problems.
+			return true, fmt.Errorf("PR was modified: %v", err)
+		} else if _, ok = err.(github.UnmergablePRBaseChangedError); ok {
+			//  complained that the base branch was modified. This is a
+			// strange error because the API doesn't even allow the request to
+			// specify the base branch sha, only the head sha.
+			// We suspect that github is complaining because we are making the
+			// merge requests too rapidly and it cannot recompute mergability
+			// in time. https://github.com/kubernetes/test-infra/issues/5171
+			// We handle this by sleeping for a few seconds before trying to
+			// merge again.
+			err = fmt.Errorf("base branch was modified: %v", err)
+			if retry+1 < maxRetries {
+				time.Sleep(backoff)
+				backoff *= 2
+			}
+		} else if _, ok = err.(github.UnauthorizedToPushError); ok {
+			// GitHub let us know that the token used cannot push to the branch.
+			// Even if the robot is set up to have write access to the repo, an
+			// overzealous branch protection setting will not allow the robot to
+			// push to a specific branch.
+			// We won't be able to merge the other PRs.
+			return false, fmt.Errorf("branch needs to be configured to allow this robot to push: %v", err)
+		} else if _, ok = err.(github.MergeCommitsForbiddenError); ok {
+			// GitHub let us know that the merge method configured for this repo
+			// is not allowed by other repo settings, so we should let the admins
+			// know that the configuration needs to be updated.
+			// We won't be able to merge the other PRs.
+			return false, fmt.Errorf("Tide needs to be configured to use the 'rebase' merge method for this repo or the repo needs to allow merge commits: %v", err)
+		} else if _, ok = err.(github.UnmergablePRError); ok {
+			return true, fmt.Errorf("PR is unmergable. Do the Tide merge requirements match the GitHub settings for the repo? %v", err)
+		} else {
+			return true, err
+		}
+	}
+	// We ran out of retries. Return the last transient error.
+	return true, err
 }
 
 func (c *Controller) trigger(sp subpool, presubmits map[int][]config.Presubmit, prs []PullRequest) error {
