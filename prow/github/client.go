@@ -452,7 +452,11 @@ func (c *Client) requestRetry(method, path, accept string, body interface{}) (*h
 						break
 					}
 				} else if oauthScopes := resp.Header.Get("X-Accepted-OAuth-Scopes"); len(oauthScopes) > 0 {
-					err = fmt.Errorf("is the account using at least one of the following oauth scopes?: %s", oauthScopes)
+					authorizedScopes := resp.Header.Get("X-OAuth-Scopes")
+					if authorizedScopes == "" {
+						authorizedScopes = "no"
+					}
+					err = fmt.Errorf("the account is using %s oauth scopes, please make sure you are using at least one of the following oauth scopes: %s", authorizedScopes, oauthScopes)
 					resp.Body.Close()
 					break
 				}
