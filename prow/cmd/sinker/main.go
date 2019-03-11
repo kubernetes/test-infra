@@ -168,7 +168,7 @@ func (m *sinkerReconciliationMetrics) getPodsTotalRemoved() int {
 func (m *sinkerReconciliationMetrics) logFields() logrus.Fields {
 	return logrus.Fields{
 		"podsCreated":      m.podsCreated,
-		"timeUsed":         m.finishedAt.Truncate(time.Second).Sub(m.startAt.Truncate(time.Second)),
+		"timeUsed":         m.finishedAt.Sub(m.startAt),
 		"podsTotalRemoved": m.getPodsTotalRemoved(),
 		"podsRemoved":      m.podsRemoved,
 	}
