@@ -234,7 +234,7 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/resultstore:v20190306-5f9ba571c
+    - image: gcr.io/k8s-testimages/resultstore:v20190311-3fc08c042
       command:
       - /app/experiment/resultstore/app.binary
       args:
