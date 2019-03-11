@@ -1,4 +1,4 @@
-# Prow
+![prow logo](logo_horizontal_solid.png)
 
 Prow is a Kubernetes based CI/CD system. Jobs can be triggered by various types of events and report their status to many different services. In addition to job execution, Prow provides GitHub automation in the form of policy enforcement, chat-ops via `/foo` style commands, and automatic PR merging.
 

@@ -31,7 +31,7 @@
   <div class="mdl-card mdl-shadow--2dp lens-card">
     <div class="mdl-card__title lens-title"><h3 class="mdl-card__title-text">{{$config.Title}}</h3></div>
     <div id="{{.Config.Name}}-view-container" class="lens-view-content mdl-card__supporting-text">
-      <img src="/static/logo-wheel.svg" alt="loading spinner" class="loading-spinner is-active lens-card-loading" id="{{$config.Name}}-loading">
+      <img src="/static/kubernetes-wheel.svg" alt="loading spinner" class="loading-spinner is-active lens-card-loading" id="{{$config.Name}}-loading">
       <iframe class="lens-container" style="visibility: hidden;" id="iframe-{{$config.Name}}" sandbox="allow-scripts allow-top-navigation allow-popups" data-lens="{{$config.Name}}"{{if $config.HideTitle}} data-hide-title="true"{{end}}></iframe>
     </div>
   </div>
@@ -39,4 +39,4 @@
 </div>
 {{end}}
 
-{{template "page" (settings mobileUnfriendly "spyglass" .)}}
+{{template "page" (settings mobileUnfriendly darkMode "spyglass" .)}}
