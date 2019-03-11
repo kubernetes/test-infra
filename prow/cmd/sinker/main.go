@@ -143,11 +143,10 @@ func main() {
 }
 
 type controller struct {
-	logger         *logrus.Entry
-	prowJobClient  prowv1.ProwJobInterface
-	podClients     []corev1.PodInterface
-	config         config.Getter
-	currentMetrics *sinkerReconciliationMetrics
+	logger        *logrus.Entry
+	prowJobClient prowv1.ProwJobInterface
+	podClients    []corev1.PodInterface
+	config        config.Getter
 }
 
 type sinkerReconciliationMetrics struct {
@@ -177,8 +176,7 @@ func (m *sinkerReconciliationMetrics) logFields() logrus.Fields {
 func (c *controller) clean() {
 
 	metrics := sinkerReconciliationMetrics{podsRemoved: make(map[string]int)}
-	c.currentMetrics = &metrics
-	c.currentMetrics.startAt = time.Now()
+	metrics.startAt = time.Now()
 
 	// Clean up old prow jobs first.
 	prowJobs, err := c.prowJobClient.List(metav1.ListOptions{})
@@ -254,7 +252,7 @@ func (c *controller) clean() {
 			c.logger.WithError(err).Error("Error listing pods.")
 			return
 		}
-		c.currentMetrics.podsCreated = len(pods.Items)
+		metrics.podsCreated = len(pods.Items)
 		maxPodAge := c.config().Sinker.MaxPodAge
 		for _, pod := range pods.Items {
 			clean := !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
@@ -277,13 +275,13 @@ func (c *controller) clean() {
 			// Delete old finished or orphan pods. Don't quit if we fail to delete one.
 			if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
 				c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
-				c.currentMetrics.podsRemoved[reason]++
+				metrics.podsRemoved[reason]++
 			} else {
 				c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
 			}
 		}
 	}
 
-	c.currentMetrics.finishedAt = time.Now()
-	c.logger.WithFields(c.currentMetrics.logFields()).Info("Show sinkerReconciliationMetrics.")
+	metrics.finishedAt = time.Now()
+	c.logger.WithFields(metrics.logFields()).Info("Show sinkerReconciliationMetrics.")
 }
