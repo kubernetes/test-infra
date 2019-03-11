@@ -1,3 +1,9 @@
+#empty-junit-container {
+  color: #e8e8e8;
+  text-align: center;
+  padding-bottom: 10px;
+}
+
 .hidden-tests {
   visibility: collapse;
   display: none;

@@ -158,9 +158,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		}
 	}
 
-	if jvd.NumTests = len(jvd.Passed) + len(jvd.Failed) + len(jvd.Skipped); jvd.NumTests == 0 {
-		return "Found no valid JUnit test results"
-	}
+	jvd.NumTests = len(jvd.Passed) + len(jvd.Failed) + len(jvd.Skipped)
 
 	junitTemplate, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
 	if err != nil {
