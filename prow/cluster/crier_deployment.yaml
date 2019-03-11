@@ -29,7 +29,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:v20190309-2ba9602
+        image: gcr.io/k8s-prow/crier:v20190311-a967141
         args:
         - --github-workers=1
         - --report-agent=knative-build
