@@ -439,6 +439,7 @@ plugins:
 
   kubernetes/publishing-bot:
   - trigger
+  - override
 
   kubernetes/release:
   - trigger
