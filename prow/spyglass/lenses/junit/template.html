@@ -7,6 +7,11 @@
 {{$numF := len .Failed}}
 {{$numP := len .Passed}}
 {{$numS := len .Skipped}}
+{{if eq .NumTests 0}}
+  <div id="empty-junit-container">
+    No tests were recorded.
+  </div>
+{{else}}
 <div id="junit-container">
   <table id="junit-table" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
   {{if gt $numF 0}}
@@ -68,4 +73,5 @@
   {{end}}
   </table>
 </div>
+{{end}}
 {{end}}
