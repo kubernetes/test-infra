@@ -48,8 +48,13 @@ type options struct {
 	kubernetes    flagutil.ExperimentalKubernetesOptions
 }
 
-// TODO(fejta): require setting this explicitly
-const defaultConfigPath = "/etc/config/config.yaml"
+const (
+	// TODO(fejta): require setting this explicitly
+	defaultConfigPath = "/etc/config/config.yaml"
+
+	reasonAged     = "aged"
+	reasonOrphaned = "orphaned"
+)
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o := options{}
@@ -146,27 +151,32 @@ type controller struct {
 }
 
 type sinkerReconciliationMetrics struct {
-	podsCreatedByProw      int
-	startAt                time.Time
-	finishedAt             time.Time
-	podsTotalRemovedByProw int
-	podsRemovedByProw      map[string]int
+	podsCreated int
+	startAt     time.Time
+	finishedAt  time.Time
+	podsRemoved map[string]int
 }
 
-func (c *sinkerReconciliationMetrics) addPodByReason(reason string, logger *logrus.Entry) {
-	if c.podsRemovedByProw == nil {
-		c.podsRemovedByProw = make(map[string]int)
+func (m *sinkerReconciliationMetrics) getPodsTotalRemoved() int {
+	result := 0
+	for _, v := range m.podsRemoved {
+		result += v
 	}
-	if len(reason)==0 {
-		logger.Warn("Warn len(reason) is 0.")
-		return
+	return result
+}
+
+func (m *sinkerReconciliationMetrics) logFields() logrus.Fields {
+	return logrus.Fields{
+		"podsCreated":      m.podsCreated,
+		"timeUsed":         m.finishedAt.Truncate(time.Second).Sub(m.startAt.Truncate(time.Second)),
+		"podsTotalRemoved": m.getPodsTotalRemoved(),
+		"podsRemoved":      m.podsRemoved,
 	}
-	c.podsRemovedByProw[reason]++
 }
 
 func (c *controller) clean() {
 
-	metrics := sinkerReconciliationMetrics{}
+	metrics := sinkerReconciliationMetrics{podsRemoved: make(map[string]int)}
 	c.currentMetrics = &metrics
 	c.currentMetrics.startAt = time.Now()
 
@@ -244,10 +254,11 @@ func (c *controller) clean() {
 			c.logger.WithError(err).Error("Error listing pods.")
 			return
 		}
-		c.currentMetrics.podsCreatedByProw = len(pods.Items)
+		c.currentMetrics.podsCreated = len(pods.Items)
 		maxPodAge := c.config().Sinker.MaxPodAge
 		for _, pod := range pods.Items {
 			clean := !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
+			reason := reasonAged
 			if !isFinished.Has(pod.ObjectMeta.Name) {
 				// prowjob exists and is not marked as completed yet
 				// deleting the pod now will result in plank creating a brand new pod
@@ -255,6 +266,7 @@ func (c *controller) clean() {
 			}
 			if !isExist.Has(pod.ObjectMeta.Name) {
 				// prowjob has gone, we want to clean orphan pods regardless of the state
+				reason = reasonOrphaned
 				clean = true
 			}
 
@@ -265,9 +277,7 @@ func (c *controller) clean() {
 			// Delete old finished or orphan pods. Don't quit if we fail to delete one.
 			if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
 				c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
-				c.currentMetrics.podsTotalRemovedByProw++
-				// TODO(hongkliu) replace this with the real reason
-				c.currentMetrics.addPodByReason("unknown", c.logger)
+				c.currentMetrics.podsRemoved[reason]++
 			} else {
 				c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
 			}
@@ -275,10 +285,5 @@ func (c *controller) clean() {
 	}
 
 	c.currentMetrics.finishedAt = time.Now()
-	c.logger.WithFields(logrus.Fields{
-		"podsCreatedByProw": c.currentMetrics.podsCreatedByProw,
-		"timeUsed": c.currentMetrics.finishedAt.Truncate(time.Second). Sub(c.currentMetrics.startAt.Truncate(time.Second)),
-		"podsTotalRemovedByProw": c.currentMetrics.podsTotalRemovedByProw,
-		"podsRemovedByProw":      c.currentMetrics.podsRemovedByProw,}).
-		Info("Show sinkerReconciliationMetrics.")
+	c.logger.WithFields(c.currentMetrics.logFields()).Info("Show sinkerReconciliationMetrics.")
 }

@@ -402,10 +402,16 @@ func TestClean(t *testing.T) {
 	assertSetsEqual(deletedPodsTrusted, getDeletedObjectNames(fkc[1].Fake.Actions()), t, "did not delete correct trusted Pods")
 	assertSetsEqual(deletedProwJobs, getDeletedObjectNames(fpjc.Fake.Actions()), t, "did not delete correct ProwJobs")
 
-	metrics:=c.currentMetrics
+	metrics := c.currentMetrics
 	podsTotalRemovedByProwExpected := len(deletedPods) + len(deletedPodsTrusted)
-	if metrics.podsTotalRemovedByProw != podsTotalRemovedByProwExpected {
-		t.Errorf("metrics.podsTotalRemovedByProw: %d, expected: %d", metrics.podsTotalRemovedByProw, podsTotalRemovedByProwExpected)
+	if metrics.getPodsTotalRemoved() != podsTotalRemovedByProwExpected {
+		t.Errorf("metrics.getPodsTotalRemoved(): %d, expected: %d", metrics.getPodsTotalRemoved(), podsTotalRemovedByProwExpected)
+	}
+	if metrics.podsRemoved[reasonAged] != 4 {
+		t.Errorf("metrics.podsRemoved[reasonAged]: %d, expected: %d", metrics.podsRemoved[reasonAged], 4)
+	}
+	if metrics.podsRemoved[reasonOrphaned] != 2 {
+		t.Errorf("metrics.podsRemoved[reasonOrphaned]: %d, expected: %d", metrics.podsRemoved[reasonOrphaned], 2)
 	}
 }
 
