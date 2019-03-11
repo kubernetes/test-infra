@@ -55,7 +55,7 @@ func (o *KubernetesOptions) Validate(dryRun bool) error {
 }
 
 // InjectBuildCluster is needed for backwards compatibility for Deck. Remove later.
-func (o *LegacyKubernetesOptions) InjectBuildCluster(buildCluster string) {
+func (o *KubernetesOptions) InjectBuildCluster(buildCluster string) {
 	o.cluster = buildCluster
 }
 
