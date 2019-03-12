@@ -259,7 +259,7 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 
 	opt := &gerrit.QueryChangeOptions{}
 	opt.Query = append(opt.Query, "project:"+project)
-	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT", "CURRENT_FILES"}
+	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT", "CURRENT_FILES", "MESSAGES"}
 
 	start := 0
 
@@ -324,7 +324,24 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 						continue
 					}
 
-					if created.Before(lastUpdate) {
+					changeMessages := change.Messages
+					newMessages := false
+
+					for _, message := range changeMessages {
+						if message.RevisionNumber == rev.Number {
+							messageTime, err := time.Parse(layout, message.Date)
+							if err != nil {
+								logrus.WithError(err).Errorf("Parse time %v failed", message.Date)
+								continue
+							}
+							if messageTime.After(lastUpdate) {
+								newMessages = true
+								break
+							}
+						}
+					}
+
+					if !newMessages && created.Before(lastUpdate) {
 						// stale commit
 						logrus.Infof("Change %d, latest revision updated %s before lastUpdate %s, skipping this patchset", change.Number, created, lastUpdate)
 						continue

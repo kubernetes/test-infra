@@ -100,6 +100,35 @@ func TestQueryChange(t *testing.T) {
 			revisions: map[string][]string{},
 		},
 		{
+			name:       "one outdated change, but there's a new message",
+			lastUpdate: now,
+			changes: map[string][]gerrit.ChangeInfo{
+				"foo": {
+					{
+						Project:         "bar",
+						ID:              "100",
+						CurrentRevision: "1-1",
+						Updated:         now.Add(time.Hour).Format(layout),
+						Revisions: map[string]gerrit.RevisionInfo{
+							"1-1": {
+								Created: now.Add(-time.Hour).Format(layout),
+								Number:  1,
+							},
+						},
+						Status: "NEW",
+						Messages: []gerrit.ChangeMessageInfo{
+							{
+								Date:           now.Add(time.Hour).Format(layout),
+								Message:        "some message",
+								RevisionNumber: 1,
+							},
+						},
+					},
+				},
+			},
+			revisions: map[string][]string{"foo": {"1-1"}},
+		},
+		{
 			name:       "one up-to-date change",
 			lastUpdate: now.Add(-time.Minute),
 			changes: map[string][]gerrit.ChangeInfo{
