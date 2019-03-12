@@ -17,8 +17,13 @@ limitations under the License.
 package pjutil
 
 import (
+	"errors"
+	"reflect"
 	"testing"
 
+	"github.com/sirupsen/logrus"
+
+	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/test-infra/prow/config"
 )
 
@@ -148,6 +153,160 @@ func TestCommandFilter(t *testing.T) {
 				if actualDefault != expectedDefault {
 					t.Errorf("%s: filter did not determine default correctly, expected %v but got %v for %v", testCase.name, expectedDefault, actualDefault, presubmit.Name)
 				}
+			}
+		})
+	}
+}
+
+func fakeChangedFilesProvider(shouldError bool) config.ChangedFilesProvider {
+	return func() ([]string, error) {
+		if shouldError {
+			return nil, errors.New("error getting changes")
+		}
+		return nil, nil
+	}
+}
+
+func TestFilterPresubmits(t *testing.T) {
+	var testCases = []struct {
+		name                              string
+		filter                            Filter
+		presubmits                        []config.Presubmit
+		changesError                      bool
+		expectedToTrigger, expectedToSkip []config.Presubmit
+		expectErr                         bool
+	}{
+		{
+			name: "nothing matches, nothing to run or skip",
+			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+				return false, false, false
+			},
+			presubmits: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "ignored"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "ignored"},
+				Reporter: config.Reporter{Context: "second"},
+			}},
+			changesError:      false,
+			expectedToTrigger: nil,
+			expectedToSkip:    nil,
+			expectErr:         false,
+		},
+		{
+			name: "everything matches and is forced to run, nothing to skip",
+			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+				return true, true, true
+			},
+			presubmits: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "second"},
+			}},
+			changesError: false,
+			expectedToTrigger: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "second"},
+			}},
+			expectedToSkip: nil,
+			expectErr:      false,
+		},
+		{
+			name: "error detecting if something should run, nothing to run or skip",
+			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+				return true, false, false
+			},
+			presubmits: []config.Presubmit{{
+				JobBase:             config.JobBase{Name: "errors"},
+				Reporter:            config.Reporter{Context: "first"},
+				RegexpChangeMatcher: config.RegexpChangeMatcher{RunIfChanged: "oopsie"},
+			}, {
+				JobBase:  config.JobBase{Name: "ignored"},
+				Reporter: config.Reporter{Context: "second"},
+			}},
+			changesError:      true,
+			expectedToTrigger: nil,
+			expectedToSkip:    nil,
+			expectErr:         true,
+		},
+		{
+			name: "some things match and are forced to run, nothing to skip",
+			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+				return p.Name == "should-trigger", true, true
+			},
+			presubmits: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "ignored"},
+				Reporter: config.Reporter{Context: "second"},
+			}},
+			changesError: false,
+			expectedToTrigger: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "first"},
+			}},
+			expectedToSkip: nil,
+			expectErr:      false,
+		},
+		{
+			name: "everything matches and some things are forced to run, others should be skipped",
+			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+				return true, p.Name == "should-trigger", p.Name == "should-trigger"
+			},
+			presubmits: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "second"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-skip"},
+				Reporter: config.Reporter{Context: "third"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-skip"},
+				Reporter: config.Reporter{Context: "fourth"},
+			}},
+			changesError: false,
+			expectedToTrigger: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "second"},
+			}},
+			expectedToSkip: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-skip"},
+				Reporter: config.Reporter{Context: "third"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-skip"},
+				Reporter: config.Reporter{Context: "fourth"},
+			}},
+			expectErr: false,
+		},
+	}
+
+	branch := "foobar"
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actualToTrigger, actualToSkip, err := FilterPresubmits(testCase.filter, fakeChangedFilesProvider(testCase.changesError), branch, testCase.presubmits, logrus.WithField("test-case", testCase.name))
+			if testCase.expectErr && err == nil {
+				t.Errorf("%s: expected an error filtering presubmits, but got none", testCase.name)
+			}
+			if !testCase.expectErr && err != nil {
+				t.Errorf("%s: expected no error filtering presubmits, but got one: %v", testCase.name, err)
+			}
+			if !reflect.DeepEqual(actualToTrigger, testCase.expectedToTrigger) {
+				t.Errorf("%s: incorrect set of presubmits to skip: %s", testCase.name, diff.ObjectReflectDiff(actualToTrigger, testCase.expectedToTrigger))
+			}
+			if !reflect.DeepEqual(actualToSkip, testCase.expectedToSkip) {
+				t.Errorf("%s: incorrect set of presubmits to skip: %s", testCase.name, diff.ObjectReflectDiff(actualToSkip, testCase.expectedToSkip))
 			}
 		})
 	}

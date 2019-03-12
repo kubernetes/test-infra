@@ -151,38 +151,14 @@ func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string
 		return nil, nil, err
 	}
 
-	return filterPresubmits(filter, gitHubClient, pr, presubmits, logger)
-}
-
-type changesGetter interface {
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
-}
-
-// filterPresubmits determines which presubmits should run and which should be skipped
-// by evaluating the user-provided filter.
-func filterPresubmits(filter pjutil.Filter, gitHubClient changesGetter, pr *github.PullRequest, presubmits []config.Presubmit, logger *logrus.Entry) ([]config.Presubmit, []config.Presubmit, error) {
-	org, repo, number, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Base.Ref
+	number, branch := pr.Number, pr.Base.Ref
 	changes := config.NewGitHubDeferredChangedFilesProvider(gitHubClient, org, repo, number)
-	var toTrigger []config.Presubmit
-	var toSkipSuperset []config.Presubmit
-	for _, presubmit := range presubmits {
-		matches, forced, defaults := filter(presubmit)
-		if !matches {
-			continue
-		}
-		shouldRun, err := presubmit.ShouldRun(branch, changes, forced, defaults)
-		if err != nil {
-			return nil, nil, err
-		}
-		if shouldRun {
-			toTrigger = append(toTrigger, presubmit)
-		} else {
-			toSkipSuperset = append(toSkipSuperset, presubmit)
-		}
+	toTrigger, toSkipSuperset, err := pjutil.FilterPresubmits(filter, changes, branch, presubmits, logger)
+	if err != nil {
+		return nil, nil, err
 	}
 	toSkip := determineSkippedPresubmits(toTrigger, toSkipSuperset, logger)
-	logger.WithFields(logrus.Fields{"to-trigger": toTrigger, "to-skip": toSkip}).Debugf("Filtered %d jobs, found %d to trigger and %d to skip.", len(presubmits), len(toTrigger), len(toSkip))
-	return toTrigger, toSkip, nil
+	return toTrigger, toSkip, err
 }
 
 // determineSkippedPresubmits identifies the largest set of contexts we can actually

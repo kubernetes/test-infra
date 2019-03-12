@@ -286,7 +286,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 			filters = append(filters, filter)
 		}
 		filters = append(filters, oldRevisionFilter(c.lastUpdate, change.Revisions[change.CurrentRevision]))
-		toTrigger, _, err := filterPresubmits(pjutil.AggregateFilter(filters), change, presubmits)
+		toTrigger, _, err := pjutil.FilterPresubmits(pjutil.AggregateFilter(filters), listChangedFiles(change), change.Branch, presubmits, logger)
 		if err != nil {
 			return fmt.Errorf("failed to filter presubmits: %v", err)
 		}

@@ -19,6 +19,7 @@ package pjutil
 import (
 	"regexp"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/config"
 )
 
@@ -58,4 +59,30 @@ func AggregateFilter(filters []Filter) Filter {
 		}
 		return false, false, false
 	}
+}
+
+// FilterPresubmits determines which presubmits should run and which should be skipped
+// by evaluating the user-provided filter.
+func FilterPresubmits(filter Filter, changes config.ChangedFilesProvider, branch string, presubmits []config.Presubmit, logger *logrus.Entry) ([]config.Presubmit, []config.Presubmit, error) {
+
+	var toTrigger []config.Presubmit
+	var toSkip []config.Presubmit
+	for _, presubmit := range presubmits {
+		matches, forced, defaults := filter(presubmit)
+		if !matches {
+			continue
+		}
+		shouldRun, err := presubmit.ShouldRun(branch, changes, forced, defaults)
+		if err != nil {
+			return nil, nil, err
+		}
+		if shouldRun {
+			toTrigger = append(toTrigger, presubmit)
+		} else {
+			toSkip = append(toSkip, presubmit)
+		}
+	}
+
+	logger.WithFields(logrus.Fields{"to-trigger": toTrigger, "to-skip": toSkip}).Debugf("Filtered %d jobs, found %d to trigger and %d to skip.", len(presubmits), len(toTrigger), len(toSkip))
+	return toTrigger, toSkip, nil
 }

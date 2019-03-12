@@ -17,7 +17,6 @@ limitations under the License.
 package adapter
 
 import (
-	"fmt"
 	"k8s.io/test-infra/prow/pjutil"
 	"time"
 
@@ -28,32 +27,6 @@ import (
 )
 
 const layout = "2006-01-02 15:04:05"
-
-func filterPresubmits(filter pjutil.Filter, change client.ChangeInfo, presubmits []config.Presubmit) ([]config.Presubmit, []config.Presubmit, error) {
-	var toTrigger []config.Presubmit
-	var toSkip []config.Presubmit
-
-	for _, presubmit := range presubmits {
-		matches, forced, defaults := filter(presubmit)
-		fmt.Printf("job name: %v, matches: %v\n", presubmit.Name, matches)
-		if !matches {
-			continue
-		}
-
-		shouldRun, err := presubmit.ShouldRun(change.Branch, listChangedFiles(change), forced, defaults)
-		if err != nil {
-			return nil, nil, fmt.Errorf("failed to determine if presubmit %q should run: %v", presubmit.Name, err)
-		}
-
-		if shouldRun {
-			toTrigger = append(toTrigger, presubmit)
-		} else {
-			toSkip = append(toSkip, presubmit)
-		}
-	}
-	logrus.WithFields(logrus.Fields{"gerrit change": change.Number, "to-trigger": toTrigger, "to-skip": toSkip}).Debugf("Filtered %d jobs, found %d to trigger and %d to skip.", len(presubmits), len(toTrigger), len(toSkip))
-	return toTrigger, toSkip, nil
-}
 
 // messageFilter builds a filter for jobs based on the messageBody matching the trigger regex of the jobs.
 func messageFilter(lastUpdate time.Time, change client.ChangeInfo, presubmits []config.Presubmit) (pjutil.Filter, error) {

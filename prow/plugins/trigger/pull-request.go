@@ -22,6 +22,7 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 	"net/url"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
@@ -219,9 +220,13 @@ func TrustedPullRequest(ghc githubClient, trigger plugins.Trigger, author, org, 
 
 // buildAll ensures that all builds that should run and will be required are built
 func buildAll(c Client, pr *github.PullRequest, eventGUID string, elideSkippedContexts bool) error {
-	toTest, toSkip, err := filterPresubmits(pjutil.TestAllFilter(), c.GitHubClient, pr, c.Config.Presubmits[pr.Base.Repo.FullName], c.Logger)
+	org, repo, number, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Base.Ref
+	changes := config.NewGitHubDeferredChangedFilesProvider(c.GitHubClient, org, repo, number)
+	toTest, toSkipSuperset, err := pjutil.FilterPresubmits(pjutil.TestAllFilter(), changes, branch, c.Config.Presubmits[pr.Base.Repo.FullName], c.Logger)
 	if err != nil {
 		return err
 	}
+
+	toSkip := determineSkippedPresubmits(toTest, toSkipSuperset, c.Logger)
 	return runAndSkipJobs(c, pr, toTest, toSkip, eventGUID, elideSkippedContexts)
 }
