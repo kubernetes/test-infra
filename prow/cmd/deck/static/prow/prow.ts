@@ -429,11 +429,11 @@ function redraw(fz: FuzzySearch): void {
         if (inputText === "") {
             return new RegExp('');
         }
-        if (inputText !== "" && opts && opts[id + 's' as keyof RepoOptions][inputText]) {
-            return new RegExp(`^${escapeRegexLiteral(inputText)}$`);
-        }
         if (inputText !== "") {
             args.push(`${id}=${encodeURIComponent(inputText)}`);
+        }
+        if (inputText !== "" && opts && opts[id + 's' as keyof RepoOptions][inputText]) {
+            return new RegExp(`^${escapeRegexLiteral(inputText)}$`);
         }
         const expr = inputText.split('*').map(escapeRegexLiteral);
         return new RegExp(`^${expr.join('.*')}$`);
