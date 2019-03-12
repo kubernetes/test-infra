@@ -81,6 +81,7 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int, operators []config.Jen
 						},
 					},
 				},
+				StatusErrorLink: "https://github.com/kubernetes/test-infra/issues",
 			},
 			JobConfig: config.JobConfig{
 				Presubmits: presubmitMap,
@@ -588,7 +589,9 @@ func TestBatch(t *testing.T) {
 			Name:  "pr-some-job",
 			Agent: "jenkins",
 		},
-		Context: "Some Job Context",
+		Reporter: config.Reporter{
+			Context: "Some Job Context",
+		},
 	}
 	pj := pjutil.NewProwJob(pjutil.BatchSpec(pre, prowapi.Refs{
 		Org:     "o",

@@ -29,11 +29,11 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/test-infra/traiana/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
+	"k8s.io/test-infra/traiana/storage"
 )
 
 const (
@@ -43,8 +43,7 @@ const (
 
 	// ** Job history assumes the GCS layout specified here:
 	// https://github.com/kubernetes/test-infra/tree/master/gubernator#gcs-bucket-layout
-	logsPrefix     = "logs"
-	symLinkPrefix  = "pr-logs/directory"
+	logsPrefix     = gcs.NonPRLogs
 	spyglassPrefix = "/view/s3"
 	emptyID        = int64(-1) // indicates no build id was specified
 )
@@ -401,8 +400,7 @@ func getJobHistory(url *url.URL, config *config.Config, gcsClient *storage.Clien
 		go func(i int, buildID int64) {
 			id := strconv.FormatInt(buildID, 10)
 			dir, err := bucket.getPath(root, id, "")
-			if err != nil {
-				logrus.Errorf("failed to get path: %v", err)
+			if err != nil {"failed to get path: %v", err)
 				bch <- buildData{}
 				return
 			}

@@ -138,7 +138,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20190125-2aca69d
+        image: gcr.io/k8s-prow/hook:v20190311-a967141
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -203,7 +203,7 @@ spec:
       serviceAccountName: "plank"
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20190125-2aca69d
+        image: gcr.io/k8s-prow/plank:v20190311-a967141
         args:
         - --dry-run=false
         volumeMounts:
@@ -238,7 +238,7 @@ spec:
       serviceAccountName: "sinker"
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:v20190125-2aca69d
+        image: gcr.io/k8s-prow/sinker:v20190311-a967141
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -271,7 +271,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20190125-2aca69d
+        image: gcr.io/k8s-prow/deck:v20190311-a967141
         args:
         - --tide-url=http://tide/
         - --hook-url=http://hook:8888/plugin-help
@@ -282,6 +282,19 @@ spec:
         - name: config
           mountPath: /etc/config
           readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz/ready
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 3
+          timeoutSeconds: 600
       volumes:
       - name: config
         configMap:
@@ -320,7 +333,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20190125-2aca69d
+        image: gcr.io/k8s-prow/horologium:v20190311-a967141
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -349,7 +362,7 @@ spec:
       serviceAccountName: "tide"
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20190125-2aca69d
+        image: gcr.io/k8s-prow/tide:v20190311-a967141
         args:
         - --dry-run=false
         ports:

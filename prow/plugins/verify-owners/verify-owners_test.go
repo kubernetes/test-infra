@@ -127,7 +127,7 @@ func IssueLabelsAddedContain(arr []string, str string) bool {
 	return false
 }
 
-func newFakeGithubClient(files []string, pr int) *fakegithub.FakeClient {
+func newFakeGitHubClient(files []string, pr int) *fakegithub.FakeClient {
 	var changes []github.PullRequestChange
 	for _, file := range files {
 		changes = append(changes, github.PullRequestChange{Filename: file})
@@ -279,7 +279,7 @@ func TestHandle(t *testing.T) {
 			},
 			Repo: github.Repo{FullName: "org/repo"},
 		}
-		fghc := newFakeGithubClient(test.filesChanged, pr)
+		fghc := newFakeGitHubClient(test.filesChanged, pr)
 		if err := handle(fghc, c, logrus.WithField("plugin", PluginName), pre, []string{labels.Approved, labels.LGTM}); err != nil {
 			t.Fatalf("Handle PR: %v", err)
 		}

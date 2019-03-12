@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,122 +17,157 @@ limitations under the License.
 package tide
 
 import (
+	"context"
+	"errors"
+	"reflect"
 	"testing"
 	"time"
 
 	githubql "github.com/shurcooL/githubv4"
-
-	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/github"
+	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/util/diff"
 )
 
-func uniformRangeAgeFunc(start, end time.Time, count int) func(int) time.Time {
-	diff := end.Sub(start)
-	step := diff / time.Duration(count)
-	return func(prNum int) time.Time {
-		return start.Add(step * time.Duration(prNum))
-	}
-}
-
-func testSearchExecutor(ageFunc func(int) time.Time, count int) searchExecutor {
-	prs := make(map[time.Time]PullRequest, count)
-	for i := 0; i < count; i++ {
-		prs[ageFunc(i)] = PullRequest{Number: githubql.Int(i)}
-	}
-	return func(start, end time.Time) ([]PullRequest, int, error) {
-		var res []PullRequest
-		for t, pr := range prs {
-			if t.Before(start) || t.After(end) {
-				continue
-			}
-			res = append(res, pr)
-		}
-		return res, len(res), nil
-	}
-}
-
 func TestSearch(t *testing.T) {
-	month := time.Hour * time.Duration(24*30)
-
+	const q = "random search string"
 	now := time.Now()
-	recent := now.Add(-month)
-	old := now.Add(-month * time.Duration(24))
-	ancient := github.FoundingYear.Add(month * time.Duration(12))
+	earlier := now.Add(-5 * time.Hour)
+	makePRs := func(numbers ...int) []PullRequest {
+		var prs []PullRequest
+		for _, n := range numbers {
+			prs = append(prs, PullRequest{Number: githubql.Int(n)})
+		}
+		return prs
+	}
+	makeQuery := func(more bool, cursor string, numbers ...int) searchQuery {
+		var sq searchQuery
+		sq.Search.PageInfo.HasNextPage = githubql.Boolean(more)
+		sq.Search.PageInfo.EndCursor = githubql.String(cursor)
+		for _, pr := range makePRs(numbers...) {
+			sq.Search.Nodes = append(sq.Search.Nodes, PRNode{pr})
+		}
+		return sq
+	}
 
-	// For each test case, create 'count' PRs using 'ageFunc' to define their
-	// distribution over time. Validate that all 'count' PRs are found.
-	tcs := []struct {
-		name    string
-		ageFunc func(prNum int) time.Time
-		count   int
+	cases := []struct {
+		name     string
+		start    time.Time
+		end      time.Time
+		q        string
+		cursors  []*githubql.String
+		sqs      []searchQuery
+		errs     []error
+		expected []PullRequest
+		err      bool
 	}{
 		{
-			name:    "less than 1000, recent->now",
-			ageFunc: uniformRangeAgeFunc(recent, now, 900),
-			count:   900,
+			name:    "single page works",
+			start:   earlier,
+			end:     now,
+			q:       datedQuery(q, earlier, now),
+			cursors: []*githubql.String{nil},
+			sqs: []searchQuery{
+				makeQuery(false, "", 1, 2),
+			},
+			errs:     []error{nil},
+			expected: makePRs(1, 2),
 		},
 		{
-			name:    "exactly 1000, old->now",
-			ageFunc: uniformRangeAgeFunc(old, now, 1000),
-			count:   1000,
+			name:    "fail on first page",
+			start:   earlier,
+			end:     now,
+			q:       datedQuery(q, earlier, now),
+			cursors: []*githubql.String{nil},
+			sqs: []searchQuery{
+				{},
+			},
+			errs: []error{errors.New("injected error")},
+			err:  true,
 		},
 		{
-			name:    "1500, recent->now",
-			ageFunc: uniformRangeAgeFunc(recent, now, 1500),
-			count:   1500,
+			name:    "set minimum start time",
+			start:   time.Time{},
+			end:     now,
+			q:       datedQuery(q, floor(time.Time{}), now),
+			cursors: []*githubql.String{nil},
+			sqs: []searchQuery{
+				makeQuery(false, "", 1, 2),
+			},
+			errs:     []error{nil},
+			expected: makePRs(1, 2),
 		},
 		{
-			name:    "3500, recent->now",
-			ageFunc: uniformRangeAgeFunc(recent, now, 3500),
-			count:   3500,
+			name:  "can handle multiple pages of results",
+			start: earlier,
+			end:   now,
+			q:     datedQuery(q, earlier, now),
+			cursors: []*githubql.String{
+				nil,
+				githubql.NewString("first"),
+				githubql.NewString("second"),
+			},
+			sqs: []searchQuery{
+				makeQuery(true, "first", 1, 2),
+				makeQuery(true, "second", 3, 4),
+				makeQuery(false, "", 5, 6),
+			},
+			errs:     []error{nil, nil, nil},
+			expected: makePRs(1, 2, 3, 4, 5, 6),
 		},
 		{
-			name:    "1500, ancient->now",
-			ageFunc: uniformRangeAgeFunc(ancient, now, 1500),
-			count:   1500,
-		},
-		{
-			name:    "3500, ancient->now",
-			ageFunc: uniformRangeAgeFunc(ancient, now, 3500),
-			count:   3500,
-		},
-		{
-			name:    "1500, ancient->old",
-			ageFunc: uniformRangeAgeFunc(ancient, old, 1500),
-			count:   1500,
-		},
-		{
-			name:    "3500, ancient->old",
-			ageFunc: uniformRangeAgeFunc(ancient, old, 3500),
-			count:   3500,
-		},
-		{
-			name:    "7000, old->now",
-			ageFunc: uniformRangeAgeFunc(old, now, 7000),
-			count:   7000,
-		},
-		{
-			name:  "0 PRs",
-			count: 0,
+			name:  "return partial results on later page failure",
+			start: earlier,
+			end:   now,
+			q:     datedQuery(q, earlier, now),
+			cursors: []*githubql.String{
+				nil,
+				githubql.NewString("first"),
+			},
+			sqs: []searchQuery{
+				makeQuery(true, "first", 1, 2),
+				{},
+			},
+			errs:     []error{nil, errors.New("second page error")},
+			expected: makePRs(1, 2),
+			err:      true,
 		},
 	}
 
-	for _, tc := range tcs {
-		prs, err := testSearchExecutor(tc.ageFunc, tc.count).search()
-		if err != nil {
-			t.Fatalf("Unexpected error: %v.", err)
-		}
-
-		// Validate that there are 'tc.count' unique PRs in 'prs'.
-		found := sets.NewInt()
-		for _, pr := range prs {
-			if found.Has(int(pr.Number)) {
-				t.Errorf("Found PR #%d multiple times.", int(pr.Number))
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var i int
+			querier := func(_ context.Context, result interface{}, actual map[string]interface{}) error {
+				expected := map[string]interface{}{
+					"query":        githubql.String(tc.q),
+					"searchCursor": tc.cursors[i],
+				}
+				if !equality.Semantic.DeepEqual(expected, actual) {
+					t.Errorf("call %d vars do not match:\n%s", i, diff.ObjectReflectDiff(expected, actual))
+				}
+				ret := result.(*searchQuery)
+				err := tc.errs[i]
+				sq := tc.sqs[i]
+				i++
+				if err != nil {
+					return err
+				}
+				*ret = sq
+				return nil
 			}
-			found.Insert(int(pr.Number))
-		}
-		if found.Len() != tc.count {
-			t.Errorf("Expected to find %d PRs, but found %d instead.", tc.count, found.Len())
-		}
+			prs, err := search(querier, logrus.WithField("test", tc.name), q, tc.start, tc.end)
+			switch {
+			case err != nil:
+				if !tc.err {
+					t.Errorf("unexpected error: %v", err)
+				}
+			case tc.err:
+				t.Errorf("failed to receive expected error")
+			}
+			// Always check prs because we might return some results on error
+			if !reflect.DeepEqual(tc.expected, prs) {
+				t.Errorf("prs do not match:\n%s", diff.ObjectReflectDiff(tc.expected, prs))
+			}
+		})
 	}
 }

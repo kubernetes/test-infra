@@ -29,6 +29,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/lenses"
+	"k8s.io/test-infra/testgrid/metadata"
 )
 
 const (
@@ -44,19 +45,14 @@ func init() {
 	lenses.RegisterLens(Lens{})
 }
 
-// Title returns the title.
-func (lens Lens) Title() string {
-	return title
-}
-
-// Name returns the name.
-func (lens Lens) Name() string {
-	return name
-}
-
-// Priority returns the priority.
-func (lens Lens) Priority() int {
-	return priority
+// Config returns the lens's configuration.
+func (lens Lens) Config() lenses.LensConfig {
+	return lenses.LensConfig{
+		Title:     title,
+		Name:      name,
+		Priority:  priority,
+		HideTitle: true,
+	}
 }
 
 // Header renders the <head> from template.html.
@@ -121,9 +117,13 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 	}
 
 	metadataViewData.Metadata = map[string]string{"node": started.Node}
-	for k, v := range finished.Metadata {
-		if s, ok := v.(string); ok && v != "" {
-			metadataViewData.Metadata[k] = s
+
+	metadatas := []metadata.Metadata{started.Metadata, finished.Metadata}
+	for _, m := range metadatas {
+		for k, v := range m {
+			if s, ok := v.(string); ok && v != "" {
+				metadataViewData.Metadata[k] = s
+			}
 		}
 	}
 

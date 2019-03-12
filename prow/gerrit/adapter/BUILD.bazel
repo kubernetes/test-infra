@@ -23,6 +23,9 @@ go_test(
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/gerrit/client:go_default_library",
+        "//vendor/github.com/andygrunwald/go-gerrit:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
     ],
 )
 

@@ -48,6 +48,9 @@ dumped for automatic upload to GCS upon job completion.
 
 ### How to configure
 
+In order to use the pod utilities, you will need to configure plank with some settings first.
+See plank's [README](/prow/cmd/plank) for reference.
+
 ProwJobs may request Pod Utility decoration by setting `decorate: true` in their config.
 Example ProwJob configuration:
 ```yaml

@@ -1,12 +1,16 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
-load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
-load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("//prow:def.bzl", "prow_image", "prow_push")
 
-container_bundle(
-    name = "bundle",
+go_binary(
+    name = "ghproxy",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
+prow_push(
+    name = "push",
     images = {
         "{STABLE_DOCKER_REPO}/ghproxy:{DOCKER_TAG}": ":image",
         "{STABLE_DOCKER_REPO}/ghproxy:latest": ":image",
@@ -14,18 +18,9 @@ container_bundle(
     },
 )
 
-docker_push(
-    name = "push",
-    bundle = ":bundle",
-)
-
-go_image(
+prow_image(
     name = "image",
     base = "@alpine-base//image",
-    embed = [":go_default_library"],
-    goarch = "amd64",
-    goos = "linux",
-    pure = "on",
     visibility = ["//visibility:public"],
 )
 
@@ -42,12 +37,6 @@ go_library(
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
-)
-
-go_binary(
-    name = "ghproxy",
-    embed = [":go_default_library"],
-    visibility = ["//visibility:public"],
 )
 
 filegroup(

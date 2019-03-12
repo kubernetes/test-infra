@@ -61,8 +61,8 @@ step() {
 failing=()
 step hack/verify-bazel.sh hack/verify-bazel.sh || failing+=("bazel")
 step hack/verify-gofmt.sh hack/verify-gofmt.sh || failing+=("gofmt")
+step hack/verify-tslint.sh hack/verify-tslint.sh || failing+=("tslint")
 step //:golint bazel run //:golint -- "${dirs[@]}" || failing+=("golint")
-step //:govet bazel run //:govet -- "${dirs[@]}" || failing+=("govet")
 step "bazel test" bazel test --build_tests_only "${tests[@]}" || failing+=("bazel test")
 step hack/verify_boilerplate.py hack/verify_boilerplate.py || failing+=("boilerplate")
 

@@ -51,11 +51,11 @@ func init() {
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The skip plugin allows users to clean up Github stale commit statuses for non-blocking jobs on a PR.",
+		Description: "The skip plugin allows users to clean up GitHub stale commit statuses for non-blocking jobs on a PR.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/skip",
-		Description: "Cleans up Github stale commit statuses for non-blocking jobs on a PR.",
+		Description: "Cleans up GitHub stale commit statuses for non-blocking jobs on a PR.",
 		Featured:    false,
 		WhoCanUse:   "Anyone can trigger this command on a PR.",
 		Examples:    []string{"/skip"},
@@ -95,7 +95,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 	}
 
-	filteredPresubmits, err := trigger.FilterPresubmits(honorOkToTest, gc, e.Body, pr, presubmits)
+	filteredPresubmits, _, err := trigger.FilterPresubmits(honorOkToTest, gc, e.Body, pr, presubmits, log)
 	if err != nil {
 		resp := fmt.Sprintf("Cannot get combined status for PR #%d in %s/%s: %v", number, org, repo, err)
 		log.Warn(resp)

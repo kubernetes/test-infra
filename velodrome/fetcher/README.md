@@ -17,7 +17,7 @@ All of these resources will allow us to:
 The model is described more precisely in [../sql](../sql/).
 
 Fetcher only downloads what is not already in the SQL database by trying to find
-the latest events it knows about. It will poll from Github on a regular basis,
+the latest events it knows about. It will poll from GitHub on a regular basis,
 and this can be configured with the `--frequency` flag.
 
 There is no set-up required as `fetcher` will create the github database if it

@@ -15,6 +15,7 @@
 package pubsub
 
 import (
+	"context"
 	"io"
 	"sync"
 	"time"
@@ -22,7 +23,6 @@ import (
 	vkit "cloud.google.com/go/pubsub/apiv1"
 	"cloud.google.com/go/pubsub/internal/distribution"
 	gax "github.com/googleapis/gax-go"
-	"golang.org/x/net/context"
 	pb "google.golang.org/genproto/googleapis/pubsub/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

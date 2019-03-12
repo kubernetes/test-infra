@@ -41,8 +41,18 @@ prune-vendor() {
     -not -iname "COPYING*" \
     -not -iname "LICENSE*" \
     -not -iname "NOTICE*" \
-    -exec rm '{}' \;
+    -delete
 }
+
+case "${1:-}" in
+--minor)
+    bazel run //:update-minor
+    ;;
+--patch)
+    bazel run //:update-patch
+    ;;
+esac
+
 
 rm -rf vendor
 export GO111MODULE=on

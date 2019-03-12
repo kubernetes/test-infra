@@ -20,7 +20,7 @@ import {enumerate, map} from './utils';
 declare const embeddedProfiles: Array<{path: string, content: string}>;
 
 let coverageFiles: Array<{name: string, coverage: Coverage}> = [];
-let prefix = 'k8s.io/kubernetes/';
+let gPrefix = 'k8s.io/kubernetes/';
 
 function filenameForDisplay(path: string): string {
   const basename = path.split('/').pop()!;
@@ -30,9 +30,9 @@ function filenameForDisplay(path: string): string {
 
 function loadEmbeddedProfiles(): Array<{name: string, coverage: Coverage}> {
   return embeddedProfiles.map(({path, content}) => ({
-                                name: filenameForDisplay(path),
-                                coverage: parseCoverage(content),
-                              }));
+    coverage: parseCoverage(content),
+    name: filenameForDisplay(path),
+  }));
 }
 
 async function loadProfile(path: string): Promise<Coverage> {
@@ -43,16 +43,16 @@ async function loadProfile(path: string): Promise<Coverage> {
 
 async function init(): Promise<void> {
   if (location.hash.length > 1) {
-    prefix = location.hash.substring(1);
+    gPrefix = location.hash.substring(1);
   }
 
   coverageFiles = loadEmbeddedProfiles();
-  google.charts.load('current', {'packages': ['table']});
+  google.charts.load('current', {packages: ['table']});
   google.charts.setOnLoadCallback(drawTable);
 }
 
 function updateBreadcrumb(): void {
-  const parts = prefix.split('/');
+  const parts = gPrefix.split('/');
   const parent = document.getElementById('breadcrumbs')!;
   parent.innerHTML = '';
   let prefixSoFar = '';
@@ -98,17 +98,17 @@ function coveragesForPrefix(coverages: Coverage[], prefix: string):
               }
               const percentage = `${(coverage * 100).toFixed(1)}%`;
               return {
+                f: `<span class="arrow">${arrow}</span> ${percentage}`,
                 v: coverage,
-                    f: `<span class="arrow">${arrow}</span> ${percentage}`,
-              }
-            }))
+              };
+            })),
       }));
 }
 
 function mergeMaps<T, U>(maps: Iterable<Map<T, U>>): Map<T, U[]> {
   const result = new Map();
-  for (const [i, map] of enumerate(maps)) {
-    for (const [key, value] of map.entries()) {
+  for (const [i, m] of enumerate(maps)) {
+    for (const [key, value] of m.entries()) {
       if (!result.has(key)) {
         result.set(key, Array(i).fill(null));
       }
@@ -125,14 +125,14 @@ function mergeMaps<T, U>(maps: Iterable<Map<T, U>>): Map<T, U[]> {
 
 function drawTable(): void {
   const rows = Array.from(
-      coveragesForPrefix(coverageFiles.map((x) => x.coverage), prefix));
+      coveragesForPrefix(coverageFiles.map((x) => x.coverage), gPrefix));
   const cols = coverageFiles.map(
       (x, i) => ({id: `file-${i}`, label: x.name, type: 'number'}));
   const dataTable = new google.visualization.DataTable({
     cols: [
       {id: 'child', label: 'File', type: 'string'},
     ].concat(cols),
-    rows
+    rows,
   });
 
   const colourFormatter = new google.visualization.ColorFormat();
@@ -148,7 +148,7 @@ function drawTable(): void {
   google.visualization.events.addListener(table, 'select', () => {
     const child = rows[table.getSelection()[0].row!].c[0].v as string;
     if (child.endsWith('/')) {
-      location.hash = prefix + child;
+      location.hash = gPrefix + child;
     } else {
       // TODO: this shouldn't be hardcoded.
       // location.href = 'profiles/everything-diff.html#file' +
@@ -160,6 +160,6 @@ function drawTable(): void {
 
 document.addEventListener('DOMContentLoaded', () => init());
 window.addEventListener('hashchange', () => {
-  prefix = location.hash.substring(1);
+  gPrefix = location.hash.substring(1);
   drawTable();
 });

@@ -59,7 +59,7 @@ editor and then send out a PR. When the PR merges prow pushes the updated config
 
 #### Fields
 
-See [`branch_protection.go`] and Github's [protection api] for a complete list of fields allowed
+See [`branch_protection.go`] and GitHub's [protection api] for a complete list of fields allowed
 inside `branch-protection` and their meanings. The format is:
 
 ```yaml

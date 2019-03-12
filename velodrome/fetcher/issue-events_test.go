@@ -133,7 +133,7 @@ func TestUpdateEvents(t *testing.T) {
 			},
 			new: map[int][]*github.IssueEvent{
 				2: {
-					makeGithubIssueEvent(2, "Label", "Event", "Assignee", "Actor",
+					makeGitHubIssueEvent(2, "Label", "Event", "Assignee", "Actor",
 						time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
 				},
 			},
@@ -156,9 +156,9 @@ func TestUpdateEvents(t *testing.T) {
 			},
 			new: map[int][]*github.IssueEvent{
 				2: {
-					makeGithubIssueEvent(1, "", "EventNameChanged", "", "",
+					makeGitHubIssueEvent(1, "", "EventNameChanged", "", "",
 						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
-					makeGithubIssueEvent(3, "Label", "Event", "Assignee", "",
+					makeGitHubIssueEvent(3, "Label", "Event", "Assignee", "",
 						time.Date(2002, time.January, 1, 19, 30, 0, 0, time.UTC)),
 				},
 			},
@@ -181,7 +181,7 @@ func TestUpdateEvents(t *testing.T) {
 			},
 			new: map[int][]*github.IssueEvent{
 				2: {
-					makeGithubIssueEvent(1, "", "EventNameOther", "", "",
+					makeGitHubIssueEvent(1, "", "EventNameOther", "", "",
 						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 				},
 			},

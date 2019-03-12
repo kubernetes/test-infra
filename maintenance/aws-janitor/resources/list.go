@@ -33,6 +33,7 @@ type Type interface {
 
 // AWS resource types known to this script, in dependency order.
 var RegionalTypeList = []Type{
+	CloudFormationStacks{},
 	LoadBalancers{},
 	AutoScalingGroups{},
 	LaunchConfigurations{},
@@ -45,6 +46,7 @@ var RegionalTypeList = []Type{
 	// VPN Connections
 	InternetGateways{},
 	RouteTables{},
+	NATGateway{},
 	VPCs{},
 	DHCPOptions{},
 	Volumes{},

@@ -58,7 +58,7 @@ type TideRepoContextPolicy struct {
 // TideContextPolicyOptions holds the default policy, and any org overrides.
 type TideContextPolicyOptions struct {
 	TideContextPolicy
-	// Github Orgs
+	// GitHub Orgs
 	Orgs map[string]TideOrgContextPolicy `json:"orgs,omitempty"`
 }
 
@@ -66,11 +66,11 @@ type TideContextPolicyOptions struct {
 type Tide struct {
 	// SyncPeriodString compiles into SyncPeriod at load time.
 	SyncPeriodString string `json:"sync_period,omitempty"`
-	// SyncPeriod specifies how often Tide will sync jobs with Github. Defaults to 1m.
+	// SyncPeriod specifies how often Tide will sync jobs with GitHub. Defaults to 1m.
 	SyncPeriod time.Duration `json:"-"`
 	// StatusUpdatePeriodString compiles into StatusUpdatePeriod at load time.
 	StatusUpdatePeriodString string `json:"status_update_period,omitempty"`
-	// StatusUpdatePeriod specifies how often Tide will update Github status contexts.
+	// StatusUpdatePeriod specifies how often Tide will update GitHub status contexts.
 	// Defaults to the value of SyncPeriod.
 	StatusUpdatePeriod time.Duration `json:"-"`
 	// Queries represents a list of GitHub search queries that collectively
@@ -92,7 +92,7 @@ type Tide struct {
 	PRStatusBaseURL string `json:"pr_status_base_url,omitempty"`
 
 	// BlockerLabel is an optional label that is used to identify merge blocking
-	// Github issues.
+	// GitHub issues.
 	// Leave this blank to disable this feature and save 1 API token per sync loop.
 	BlockerLabel string `json:"blocker_label,omitempty"`
 

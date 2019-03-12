@@ -24,7 +24,7 @@ import (
 )
 
 // ValidateWebhook ensures that the provided request conforms to the
-// format of a Github webhook and the payload can be validated with
+// format of a GitHub webhook and the payload can be validated with
 // the provided hmac secret. It returns the event type, the event guid,
 // the payload of the request, whether the webhook is valid or not,
 // and finally the resultant HTTP status code

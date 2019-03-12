@@ -37,6 +37,9 @@ presets:
   # See https://github.com/kubernetes/kubernetes/issues/67120 for context.
   - name: KUBE_FEATURE_GATES
     value: "TaintBasedEvictions=true"
+  # Allow one node to not be ready after cluster creation.
+  - name: ALLOWED_NOTREADY_NODES
+    value: 1
 ### kubemark-gce-big
 - labels:
     preset-e2e-kubemark-gce-big: "true"
@@ -63,7 +66,7 @@ presets:
   - name: HOLLOW_PROXY_TEST_ARGS
     value: "--use-real-proxier=false"
 
-###### Scalability Envs    
+###### Scalability Envs
 ### Common env variables for all scalability-related suites.
 - labels:
     preset-e2e-scalability-common: "true"
@@ -91,6 +94,73 @@ presets:
     value: "--enable-pprof"
   - name: CONTROLLER_MANAGER_TEST_ARGS
     value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
+  - name: KUBELET_TEST_ARGS
+    value: "--enable-debugging-handlers"
+  - name: KUBEPROXY_TEST_ARGS
+  # TODO(#74011): Remove metrics-bind-address if the default is set.
+    value: "--profiling --metrics-bind-address=0.0.0.0"
+  - name: SCHEDULER_TEST_ARGS
+    value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
+  # Switch off image puller to workaround #44701
+  - name: PREPULL_E2E_IMAGES
+    value: "false"
+  # Reduce logs verbosity.
+  - name: TEST_CLUSTER_LOG_LEVEL
+    value: --v=2
+  - name: API_SERVER_TEST_LOG_LEVEL
+    value: "--v=3"
+  # Increase resync period to simulate production.
+  - name: TEST_CLUSTER_RESYNC_PERIOD
+    value: --min-resync-period=12h
+  # Increase delete collection parallelism.
+  - name: TEST_CLUSTER_DELETE_COLLECTION_WORKERS
+    value: --delete-collection-workers=16
+  # Dump full systemd journal on master and nodes.
+  - name: LOG_DUMP_SYSTEMD_JOURNAL
+    value: "true"
+  # Keep all logrotated files (not just 5 latest which is a default)
+  - name: LOGROTATE_FILES_MAX_COUNT
+    value: 1000
+  # Experimentally use cos-69-10895-138-0 to test fs-related fixes there.
+  - name: KUBE_GCE_MASTER_IMAGE
+    value: cos-69-10895-138-0
+  - name: ENABLE_PROMETHEUS_SERVER
+    value: "true"
+
+###### Scalability Envs
+### Common env variables for all scalability-related suites.
+- labels:
+    preset-e2e-scalability-node: "true"
+  env:
+  # Override GCE defaults.
+  - name: MASTER_SIZE
+    value: "n1-standard-4"
+  - name: NODE_SIZE
+    value: "n1-standard-8"
+  - name: NODE_DISK_SIZE
+    value: "100GB"
+  - name: REGISTER_MASTER
+    value: "true"
+  - name: LOGROTATE_MAX_SIZE
+    value: "5G"
+  # Use IP-aliases for scalability tests.
+  - name: KUBE_GCE_ENABLE_IP_ALIASES
+    value: "true"
+  - name: CREATE_CUSTOM_NETWORK
+    value: "true"
+  # Ensure good enough architecture for master machines.
+  - name: MASTER_MIN_CPU_ARCHITECTURE
+    value: "Intel Broadwell"
+  # Turn on profiling for various components and
+  # increase throughput in master components and Kubelet.
+  - name: ETCD_EXTRA_ARGS
+    value: "--enable-pprof"
+  - name: CONTROLLER_MANAGER_TEST_ARGS
+    value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
+  # Bump max pods per node in Kubelet, because there are more than 10
+  # system pods in 1-node cluster.
+  - name: MAX_PODS_PER_NODE
+    value: "128"
   - name: KUBELET_TEST_ARGS
     value: "--enable-debugging-handlers"
   - name: KUBEPROXY_TEST_ARGS

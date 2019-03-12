@@ -192,3 +192,66 @@ func TestDecorationDefaulting(t *testing.T) {
 		})
 	}
 }
+
+func TestRefsToString(t *testing.T) {
+	var tests = []struct {
+		name     string
+		ref      Refs
+		expected string
+	}{
+		{
+			name: "Refs with Pull",
+			ref: Refs{
+				BaseRef: "master",
+				BaseSHA: "deadbeef",
+				Pulls: []Pull{
+					{
+						Number: 123,
+						SHA:    "abcd1234",
+					},
+				},
+			},
+			expected: "master:deadbeef,123:abcd1234",
+		},
+		{
+			name: "Refs with multiple Pulls",
+			ref: Refs{
+				BaseRef: "master",
+				BaseSHA: "deadbeef",
+				Pulls: []Pull{
+					{
+						Number: 123,
+						SHA:    "abcd1234",
+					},
+					{
+						Number: 456,
+						SHA:    "dcba4321",
+					},
+				},
+			},
+			expected: "master:deadbeef,123:abcd1234,456:dcba4321",
+		},
+		{
+			name: "Refs with BaseRef only",
+			ref: Refs{
+				BaseRef: "master",
+			},
+			expected: "master",
+		},
+		{
+			name: "Refs with BaseRef and BaseSHA",
+			ref: Refs{
+				BaseRef: "master",
+				BaseSHA: "deadbeef",
+			},
+			expected: "master:deadbeef",
+		},
+	}
+
+	for _, test := range tests {
+		actual, expected := test.ref.String(), test.expected
+		if actual != expected {
+			t.Errorf("%s: got ref string: %s, but expected: %s", test.name, actual, expected)
+		}
+	}
+}

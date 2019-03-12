@@ -51,10 +51,10 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The {WhoCanUse, Usage, Examples} fields are omitted because this plugin is not triggered with commands.
 	return &pluginhelp.PluginHelp{
-			Description: "The heart plugin celebrates certain Github actions with the reaction emojis. Emojis are added to pull requests that make additions to OWNERS or OWNERS_ALIASES files and to comments left by specified \"adorees\".",
+			Description: "The heart plugin celebrates certain GitHub actions with the reaction emojis. Emojis are added to pull requests that make additions to OWNERS or OWNERS_ALIASES files and to comments left by specified \"adorees\".",
 			Config: map[string]string{
 				"": fmt.Sprintf(
-					"The heart plugin is configured to react to comments,  satisfying the regular expression %s, left by the following Github users: %s.",
+					"The heart plugin is configured to react to comments,  satisfying the regular expression %s, left by the following GitHub users: %s.",
 					config.Heart.CommentRegexp,
 					strings.Join(config.Heart.Adorees, ", "),
 				),

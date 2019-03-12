@@ -11,7 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-pods
+---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -28,9 +32,40 @@ spec:
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  gcePersistentDisk:
-    pdName: boskos-storage
-    fsType: ext4
+  hostPath:
+    path: "/tmp/dir"
+    type: "DirectoryOrCreate"
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: boskos
+rules:
+- apiGroups: ["apiextensions.k8s.io"]
+  verbs: ["*"]
+  resources: ["customresourcedefinitions"]
+- apiGroups: ["boskos.k8s.io"]
+  verbs: ["*"]
+  resources: ["*"]
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: boskos
+  namespace: test-pods
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: crd-creator
+subjects:
+- kind: ServiceAccount
+  name: boskos
+  namespace: test-pods
+roleRef:
+  kind: ClusterRole
+  name: boskos
+  apiGroup: rbac.authorization.k8s.io
 ---
 # Start of StatefulSet
 apiVersion: apps/v1beta1
@@ -47,6 +82,7 @@ spec:
         app: boskos
       namespace: test-pods
     spec:
+      serviceAccountName: boskos
       terminationGracePeriodSeconds: 30
       containers:
       - name: boskos

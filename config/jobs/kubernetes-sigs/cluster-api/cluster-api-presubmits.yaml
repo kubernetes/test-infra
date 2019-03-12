@@ -1,23 +1,11 @@
 presubmits:
   kubernetes-sigs/cluster-api:
-  - name: pull-cluster-api-bazel-verify
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/cluster-api:v20180927-f09bc3b1b
-        args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
-        - "./hack/verify-bazel.sh"
   - name: pull-cluster-api-build
     always_run: true
     labels:
       preset-service-account: "true"
+    skip_branches:
+    - gh-pages
     spec:
       containers:
       - image: gcr.io/k8s-testimages/cluster-api:v20190114-652973a54
@@ -33,6 +21,8 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
+    skip_branches:
+    - gh-pages
     spec:
       containers:
       - args:
@@ -46,7 +36,7 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.12
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.13
         resources:
           requests:
             memory: "6Gi"
@@ -54,9 +44,11 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    skip_branches:
+    - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/cluster-api:v20190114-652973a54
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-master
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -68,6 +60,8 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    skip_branches:
+    - gh-pages
     spec:
       containers:
       - image: gcr.io/k8s-testimages/cluster-api:v20190114-652973a54
@@ -78,3 +72,21 @@ presubmits:
         - "--scenario=execute"
         - "--"
         - "./scripts/ci-is-vendor-in-sync.sh"
+  - name: pull-cluster-api-integration
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+        command:
+        - runner.sh
+        args:
+        - ./scripts/ci-integration.sh
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true

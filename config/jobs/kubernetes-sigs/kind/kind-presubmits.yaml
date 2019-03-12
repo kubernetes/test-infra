@@ -7,32 +7,31 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
         command:
         - "./hack/ci/build-all.sh"
-      # trialing this on kind jobs, we are using FQDN for in-cluster services, now
-      # so use ndots 1 to improve dns performance
-      # TODO(bentheelder): consider setting this at the cluster level instead
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
   - name: pull-kind-verify
     decorate: true
     path_alias: sigs.k8s.io/kind
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-experimental
         command:
         - "./hack/verify-all.sh"
-      # trialing this on kind jobs, we are using FQDN for in-cluster services, now
-      # so use ndots 1 to improve dns performance
-      # TODO(bentheelder): consider setting this at the cluster level instead
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
+        env:
+        # skip dep verification in the main CI job, use verify-deps for that
+        - name: VERIFY_DEPS
+          value: "false"
+  - name: pull-kind-verify-deps
+    decorate: true
+    path_alias: sigs.k8s.io/kind
+    run_if_changed: ^(go\.mod)|(go\.sum)|(vendor/.*)$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-experimental
+        command:
+        - "./hack/verify-deps.sh"
   # conformance test against kubernetes master branch with `kind`, skipping
   # serial tests so it runs in ~20m
   - name: pull-kind-conformance-parallel
@@ -44,7 +43,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -89,13 +88,6 @@ presubmits:
         hostPath:
           path: /sys/fs/cgroup
           type: Directory
-      # trialing this on kind jobs, we are using FQDN for in-cluster services, now
-      # so use ndots 1 to improve dns performance
-      # TODO(bentheelder): consider setting this at the cluster level instead
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
   # conformance test against kubernetes release-1.13 branch with `kind`, skipping
   # serial tests so it runs in ~20m
   - name: pull-kind-conformance-parallel-1-13
@@ -107,7 +99,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.13
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.13
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -152,13 +144,6 @@ presubmits:
         hostPath:
           path: /sys/fs/cgroup
           type: Directory
-      # trialing this on kind jobs, we are using FQDN for in-cluster services, now
-      # so use ndots 1 to improve dns performance
-      # TODO(bentheelder): consider setting this at the cluster level instead
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
   # conformance test against kubernetes release-1.12 branch with `kind`, skipping
   # serial tests so it runs in ~20m
   - name: pull-kind-conformance-parallel-1-12
@@ -170,7 +155,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.12
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -215,13 +200,6 @@ presubmits:
         hostPath:
           path: /sys/fs/cgroup
           type: Directory
-      # trialing this on kind jobs, we are using FQDN for in-cluster services, now
-      # so use ndots 1 to improve dns performance
-      # TODO(bentheelder): consider setting this at the cluster level instead
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
   # conformance test against kubernetes release-1.11 branch with `kind`, skipping
   # serial tests so it runs in ~20m
   - name: pull-kind-conformance-parallel-1-11
@@ -233,7 +211,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.11
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.11
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -278,10 +256,3 @@ presubmits:
         hostPath:
           path: /sys/fs/cgroup
           type: Directory
-      # trialing this on kind jobs, we are using FQDN for in-cluster services, now
-      # so use ndots 1 to improve dns performance
-      # TODO(bentheelder): consider setting this at the cluster level instead
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"

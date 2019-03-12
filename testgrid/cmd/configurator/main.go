@@ -51,6 +51,7 @@ type options struct {
 	output             string
 	printText          bool
 	validateConfigFile bool
+	worldReadable      bool
 }
 
 func gatherOptions() (options, error) {
@@ -60,6 +61,7 @@ func gatherOptions() (options, error) {
 	flag.StringVar(&o.output, "output", "", "write proto to gs://bucket/obj or /local/path")
 	flag.BoolVar(&o.printText, "print-text", false, "print generated proto in text format to stdout")
 	flag.BoolVar(&o.validateConfigFile, "validate-config-file", false, "validate that the given config files are syntactically correct and exit (proto is not written anywhere)")
+	flag.BoolVar(&o.worldReadable, "world-readable", false, "when uploading the proto to GCS, makes it world readable. Has no effect on writing to the local filesystem.")
 	flag.Var(&o.inputs, "yaml", "comma-separated list of input YAML files")
 	flag.Parse()
 	if len(o.inputs) == 0 || o.inputs[0] == "" {
@@ -133,7 +135,7 @@ func readConfig(paths []string) (*Config, error) {
 	return &c, nil
 }
 
-func write(ctx context.Context, client *storage.Client, path string, bytes []byte) error {
+func write(ctx context.Context, client *storage.Client, path string, bytes []byte, worldReadable bool) error {
 	u, err := url.Parse(path)
 	if err != nil {
 		return fmt.Errorf("invalid url %s: %v", path, err)
@@ -145,7 +147,7 @@ func write(ctx context.Context, client *storage.Client, path string, bytes []byt
 	if err = p.SetURL(u); err != nil {
 		return err
 	}
-	return gcs.Upload(ctx, client, p, bytes)
+	return gcs.Upload(ctx, client, p, bytes, worldReadable)
 }
 
 func doOneshot(ctx context.Context, client *storage.Client, opt options) error {
@@ -166,7 +168,7 @@ func doOneshot(ctx context.Context, client *storage.Client, opt options) error {
 	if opt.output != "" {
 		b, err := c.MarshalBytes()
 		if err == nil {
-			err = write(ctx, client, opt.output, b)
+			err = write(ctx, client, opt.output, b, opt.worldReadable)
 		}
 		if err != nil {
 			return fmt.Errorf("could not write config: %v", err)

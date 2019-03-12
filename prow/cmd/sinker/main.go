@@ -19,12 +19,16 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -40,25 +44,29 @@ type options struct {
 	runOnce       bool
 	configPath    string
 	jobConfigPath string
-	dryRun        bool
-	kubernetes    flagutil.KubernetesOptions
+	dryRun        flagutil.Bool
+	kubernetes    flagutil.ExperimentalKubernetesOptions
 }
 
-func gatherOptions() options {
+// TODO(fejta): require setting this explicitly
+const defaultConfigPath = "/etc/config/config.yaml"
+
+func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o := options{}
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
-	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	fs.StringVar(&o.configPath, "config-path", defaultConfigPath, "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 
-	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to Kubernetes.")
+	// TODO(fejta): switch dryRun to be a bool, defaulting to true after March 15, 2019.
+	fs.Var(&o.dryRun, "dry-run", "Whether or not to make mutating API calls to Kubernetes.")
+
 	o.kubernetes.AddFlags(fs)
-	fs.Parse(os.Args[1:])
+	fs.Parse(args)
 	return o
 }
 
 func (o *options) Validate() error {
-	if err := o.kubernetes.Validate(o.dryRun); err != nil {
+	if err := o.kubernetes.Validate(o.dryRun.Value); err != nil {
 		return err
 	}
 
@@ -70,14 +78,23 @@ func (o *options) Validate() error {
 }
 
 func main() {
-	o := gatherOptions()
+	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
+	// for pprof endpoints
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
+
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "sinker"}),
 	)
+	if !o.dryRun.Explicit {
+		logrus.Warning("Sinker requies --dry-run=false to function correctly in production.")
+		logrus.Warning("--dry-run will soon default to true. Set --dry-run=false by March 15.")
+	}
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
@@ -85,12 +102,12 @@ func main() {
 	}
 	cfg := configAgent.Config
 
-	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, o.dryRun)
+	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, o.dryRun.Value)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating ProwJob client.")
 	}
 
-	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, o.dryRun)
+	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, o.dryRun.Value)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating build cluster clients.")
 	}
@@ -136,10 +153,12 @@ func (c *controller) clean() {
 	}
 
 	// Only delete pod if its prowjob is marked as finished
-	isFinished := make(map[string]bool)
+	isExist := sets.NewString()
+	isFinished := sets.NewString()
 
 	maxProwJobAge := c.config().Sinker.MaxProwJobAge
 	for _, prowJob := range prowJobs.Items {
+		isExist.Insert(prowJob.ObjectMeta.Name)
 		// Handle periodics separately.
 		if prowJob.Spec.Type == prowapi.PeriodicJob {
 			continue
@@ -147,7 +166,7 @@ func (c *controller) clean() {
 		if !prowJob.Complete() {
 			continue
 		}
-		isFinished[prowJob.ObjectMeta.Name] = true
+		isFinished.Insert(prowJob.ObjectMeta.Name)
 		if time.Since(prowJob.Status.StartTime.Time) <= maxProwJobAge {
 			continue
 		}
@@ -181,7 +200,7 @@ func (c *controller) clean() {
 		if !prowJob.Complete() {
 			continue
 		}
-		isFinished[prowJob.ObjectMeta.Name] = true
+		isFinished.Insert(prowJob.ObjectMeta.Name)
 		if time.Since(prowJob.Status.StartTime.Time) <= maxProwJobAge {
 			continue
 		}
@@ -202,18 +221,26 @@ func (c *controller) clean() {
 		}
 		maxPodAge := c.config().Sinker.MaxPodAge
 		for _, pod := range pods.Items {
-			if _, ok := isFinished[pod.ObjectMeta.Name]; !ok {
-				// prowjob is not marked as completed yet
+			clean := !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
+			if !isFinished.Has(pod.ObjectMeta.Name) {
+				// prowjob exists and is not marked as completed yet
 				// deleting the pod now will result in plank creating a brand new pod
+				clean = false
+			}
+			if !isExist.Has(pod.ObjectMeta.Name) {
+				// prowjob has gone, we want to clean orphan pods regardless of the state
+				clean = true
+			}
+
+			if !clean {
 				continue
 			}
-			if !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge {
-				// Delete old completed pods. Don't quit if we fail to delete one.
-				if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
-					c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
-				} else {
-					c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
-				}
+
+			// Delete old finished or orphan pods. Don't quit if we fail to delete one.
+			if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
+				c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
+			} else {
+				c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
 			}
 		}
 	}

@@ -284,6 +284,16 @@ func main() {
 	if os.Getenv("KUBETEST_IN_DOCKER") == "true" {
 		o.flushMemAfterBuild = true
 	}
+	// sanity fix for kind deployer, not set for other deployers to avoid
+	// breaking changes...
+	if o.deployment == "kind" {
+		// always default --dump for kind, in CI use $ARTIFACTS
+		artifacts := os.Getenv("ARTIFACTS")
+		if artifacts == "" {
+			artifacts = "./_artifacts"
+		}
+		o.dump = artifacts
+	}
 
 	err := complete(o)
 

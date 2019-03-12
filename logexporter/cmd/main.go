@@ -20,6 +20,7 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
@@ -36,6 +37,7 @@ import (
 var (
 	nodeName             = flag.String("node-name", "", "Name of the node this log exporter is running on")
 	gcsPath              = flag.String("gcs-path", "", "Path to the GCS directory under which to upload logs, for eg: gs://my-logs-bucket/logs")
+	journalPath          = flag.String("journal-path", "/var/log/journal", "Path where the systemd journal dir is mounted")
 	cloudProvider        = flag.String("cloud-provider", "", "Cloud provider for this node (gce/gke/aws/kubemark/..)")
 	gcloudAuthFilePath   = flag.String("gcloud-auth-file-path", "/etc/service-account/service-account.json", "Path to gcloud service account file, for authenticating gsutil to write to GCS bucket")
 	enableHollowNodeLogs = flag.Bool("enable-hollow-node-logs", false, "Enable uploading hollow node logs too. Relevant only for kubemark nodes")
@@ -76,8 +78,14 @@ func checkConfigValidity() error {
 	if _, err := os.Stat(*gcloudAuthFilePath); err != nil {
 		return fmt.Errorf("Could not find the gcloud service account file: %v", err)
 	} else {
+		glog.Infof("Running gcloud auth activate-service-account --key-file=%s\n", *gcloudAuthFilePath)
 		cmd := exec.Command("gcloud", "auth", "activate-service-account", "--key-file="+*gcloudAuthFilePath)
-		if err := cmd.Run(); err != nil {
+		var stderr, stdout bytes.Buffer
+		cmd.Stderr, cmd.Stdout = &stderr, &stdout
+		err = cmd.Run()
+		glog.Infof("Stdout:\n%s\n", stdout.String())
+		glog.Infof("Stderr:\n%s\n", stderr.String())
+		if err != nil {
 			return fmt.Errorf("Failed to activate gcloud service account: %v", err)
 		}
 	}
@@ -87,7 +95,7 @@ func checkConfigValidity() error {
 // Create logfile for systemd service in outputDir with the given journalctl outputMode.
 func createSystemdLogfile(service string, outputMode string, outputDir string) error {
 	// Generate the journalctl command.
-	journalCmdArgs := []string{fmt.Sprintf("--output=%v", outputMode), "-D", "/var/log/journal"}
+	journalCmdArgs := []string{fmt.Sprintf("--output=%v", outputMode), "-D", *journalPath}
 	if service == "kern" {
 		journalCmdArgs = append(journalCmdArgs, "-k")
 	} else {
@@ -109,7 +117,7 @@ func createSystemdLogfile(service string, outputMode string, outputDir string) e
 
 // createFullSystemdLogfile creates logfile for full systemd journal in the outputDir.
 func createFullSystemdLogfile(outputDir string) error {
-	cmd := exec.Command("journalctl", "--output=short-precise")
+	cmd := exec.Command("journalctl", "--output=short-precise", "-D", *journalPath)
 	// Run the command and record the output to a file.
 	output, err := cmd.Output()
 	if err != nil {

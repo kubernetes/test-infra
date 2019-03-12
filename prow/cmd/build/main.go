@@ -140,24 +140,27 @@ func main() {
 		}
 	}
 
-	configs, defaultContext, err := kube.LoadClusterConfigs(o.kubeconfig, o.buildCluster)
+	configs, err := kube.LoadClusterConfigs(o.kubeconfig, o.buildCluster)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error building client configs")
 	}
 
 	if !o.allContexts { // Just the default context please
-		logrus.Warnf("Truncating to a single cluster: %s", defaultContext)
-		configs = map[string]rest.Config{defaultContext: configs[defaultContext]}
+		logrus.Warn("Truncating to local and default contexts")
+		configs = map[string]rest.Config{
+			kube.InClusterContext:    configs[kube.InClusterContext],
+			kube.DefaultClusterAlias: configs[kube.DefaultClusterAlias],
+		}
 	}
-	defaultConfig := configs[defaultContext]
+	local := configs[kube.InClusterContext]
 
 	stop := stopper()
 
-	kc, err := kubernetes.NewForConfig(&defaultConfig)
+	kc, err := kubernetes.NewForConfig(&local)
 	if err != nil {
-		logrus.WithError(err).Fatalf("Failed to create %s kubernetes client", defaultContext)
+		logrus.WithError(err).Fatal("Failed to create local kubernetes client")
 	}
-	pjc, err := prowjobset.NewForConfig(&defaultConfig)
+	pjc, err := prowjobset.NewForConfig(&local)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to create prowjob client")
 	}

@@ -168,6 +168,32 @@ func TestReport(t *testing.T) {
 			expectLabel:   map[string]string{client.CodeReview: client.LGTM},
 		},
 		{
+			name: "1 job, aborted, should not report",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritRevision: "abc",
+						kube.ProwJobTypeLabel: "presubmit",
+					},
+					Annotations: map[string]string{
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.AbortedState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job: "ci-foo",
+				},
+			},
+			expectReport: false,
+		},
+		{
 			name: "1 job, passed, with customized label, should report to customized label",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
@@ -459,6 +485,59 @@ func TestReport(t *testing.T) {
 			expectReport:  true,
 			reportInclude: []string{"2 out of 2", "ci-foo", "success", "ci-bar", "guber/foo", "guber/bar"},
 			reportExclude: []string{"1", "0", "failure"},
+			expectLabel:   map[string]string{client.CodeReview: client.LGTM},
+		},
+		{
+			name: "2 jobs, one passed, one aborted, should report but skip aborted job",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritRevision: "abc",
+						kube.ProwJobTypeLabel: "presubmit",
+					},
+					Annotations: map[string]string{
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job: "ci-foo",
+				},
+			},
+			existingPJs: []*v1.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							client.GerritRevision: "abc",
+							kube.ProwJobTypeLabel: "presubmit",
+						},
+						Annotations: map[string]string{
+							client.GerritID:       "123-abc",
+							client.GerritInstance: "gerrit",
+						},
+					},
+					Status: v1.ProwJobStatus{
+						State: v1.AbortedState,
+						URL:   "guber/bar",
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "bar",
+						},
+						Job: "ci-bar",
+					},
+				},
+			},
+			expectReport:  true,
+			reportInclude: []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
+			reportExclude: []string{"2", "0", "failure", "aborted", "ci-bar", "guber/bar"},
 			expectLabel:   map[string]string{client.CodeReview: client.LGTM},
 		},
 		{

@@ -27,9 +27,11 @@ import (
 	"html/template"
 	"io/ioutil"
 	"net/http"
+	"net/http/pprof"
 	"net/url"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -72,7 +74,7 @@ type options struct {
 	configPath            string
 	jobConfigPath         string
 	buildCluster          string
-	kubernetes            prowflagutil.KubernetesOptions
+	kubernetes            prowflagutil.ExperimentalKubernetesOptions
 	tideURL               string
 	hookURL               string
 	oauthURL              string
@@ -146,7 +148,14 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "deck"}),
 	)
 
-	mux := http.NewServeMux()
+	// serve debug info
+	pprofMux := http.NewServeMux()
+	pprofMux.HandleFunc("/debug/pprof/", pprof.Index)
+	pprofMux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	pprofMux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	pprofMux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	pprofMux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	go func() { logrus.WithError(http.ListenAndServe(":8082", pprofMux)).Fatal("ListenAndServe returned.") }()
 
 	// setup config agent, pod log clients etc.
 	configAgent := &config.Agent{}
@@ -155,6 +164,14 @@ func main() {
 	}
 	cfg := configAgent.Config
 
+	// signal to the world that we are healthy
+	// this needs to be in a separate port as we don't start the
+	// main server with the main mux until we're ready
+	healthMux := http.NewServeMux()
+	healthMux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, "OK") })
+	go func() { logrus.WithError(http.ListenAndServe(":8081", healthMux)).Fatal("ListenAndServe returned.") }()
+
+	mux := http.NewServeMux()
 	// setup common handlers for local and deployed runs
 	mux.Handle("/static/", http.StripPrefix("/static", staticHandlerFromDir(o.staticFilesLocation)))
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(cfg)))
@@ -194,6 +211,8 @@ func main() {
 		mux = prodOnlyMain(cfg, o, mux)
 	}
 
+	// signal to the world that we're ready
+	healthMux.HandleFunc("/healthz/ready", func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, "OK") })
 	// setup done, actually start the server
 	logrus.WithError(http.ListenAndServe(":8080", mux)).Fatal("ListenAndServe returned.")
 }
@@ -324,7 +343,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 			logrus.WithError(err).Fatal("Could not read cookie secret file.")
 		}
 
-		var githubOAuthConfig config.GithubOAuthConfig
+		var githubOAuthConfig config.GitHubOAuthConfig
 		if err := yaml.Unmarshal(githubOAuthConfigRaw, &githubOAuthConfig); err != nil {
 			logrus.WithError(err).Fatal("Error unmarshalling github oauth config")
 		}
@@ -340,7 +359,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 			logrus.Fatal("Cookie secret should not be empty")
 		}
 		cookie := sessions.NewCookieStore(decodedSecret)
-		githubOAuthConfig.InitGithubOAuthConfig(cookie)
+		githubOAuthConfig.InitGitHubOAuthConfig(cookie)
 
 		goa := githuboauth.NewAgent(&githubOAuthConfig, logrus.WithField("client", "githuboauth"))
 		oauthClient := &oauth2.Config{
@@ -376,8 +395,8 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 			prStatusAgent.HandlePrStatus(prStatusAgent)))
 		// Handles login request.
 		mux.Handle("/github-login", goa.HandleLogin(oauthClient))
-		// Handles redirect from Github OAuth server.
-		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient, githuboauth.NewGithubClientGetter()))
+		// Handles redirect from GitHub OAuth server.
+		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient, githuboauth.NewGitHubClientGetter()))
 	}
 
 	// optionally inject http->https redirect handler when behind loadbalancer
@@ -402,6 +421,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 		}(mux, o.redirectHTTPTo))
 		mux = redirectMux
 	}
+
 	return mux
 }
 
@@ -416,7 +436,8 @@ func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.Job
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GCS client")
 	}
-	sg := spyglass.New(ja, cfg, c)
+	sg := spyglass.New(ja, cfg, c, context.Background())
+	sg.Start()
 
 	mux.Handle("/spyglass/static/", http.StripPrefix("/spyglass/static", staticHandlerFromDir(o.spyglassFilesLocation)))
 	mux.Handle("/spyglass/lens/", gziphandler.GzipHandler(http.StripPrefix("/spyglass/lens/", handleArtifactView(o, sg, cfg))))
@@ -583,7 +604,7 @@ func handlePRHistory(o options, cfg config.Getter, gcsClient *storage.Client) ht
 		tmpl, err := getPRHistory(r.URL, cfg(), gcsClient)
 		if err != nil {
 			msg := fmt.Sprintf("failed to get PR history: %v", err)
-			logrus.WithField("url", r.URL).Error(msg)
+			logrus.WithField("url", r.URL).Info(msg)
 			http.Error(w, msg, http.StatusInternalServerError)
 			return
 		}
@@ -626,6 +647,14 @@ func handleRequestJobViews(sg *spyglass.Spyglass, cfg config.Getter, o options) 
 // renderSpyglass returns a pre-rendered Spyglass page from the given source string
 func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o options) (string, error) {
 	renderStart := time.Now()
+
+	src = strings.TrimSuffix(src, "/")
+	realPath, err := sg.ResolveSymlink(src)
+	if err != nil {
+		return "", fmt.Errorf("error when resolving real path: %v", err)
+	}
+	src = realPath
+
 	artifactNames, err := sg.ListArtifacts(src)
 	if err != nil {
 		return "", fmt.Errorf("error listing artifacts: %v", err)
@@ -655,7 +684,7 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 	ls := sg.Lenses(viewerCache)
 	lensNames := []string{}
 	for _, l := range ls {
-		lensNames = append(lensNames, l.Name())
+		lensNames = append(lensNames, l.Config().Name)
 	}
 
 	jobHistLink := ""
@@ -663,7 +692,57 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 	if err == nil {
 		jobHistLink = path.Join("/job-history", jobPath)
 	}
-	logrus.Infof("job history link: %s", jobHistLink)
+
+	artifactsLink := ""
+	gcswebPrefix := cfg().Deck.Spyglass.GCSBrowserPrefix
+	if gcswebPrefix != "" {
+		runPath, err := sg.RunPath(src)
+		if err == nil {
+			artifactsLink = gcswebPrefix + runPath
+			// gcsweb wants us to end URLs with a trailing slash
+			if !strings.HasSuffix(artifactsLink, "/") {
+				artifactsLink += "/"
+			}
+		}
+	}
+
+	prHistLink := ""
+	org, repo, number, err := sg.RunToPR(src)
+	if err == nil {
+		prHistLink = "/pr-history?org=" + org + "&repo=" + repo + "&pr=" + strconv.Itoa(number)
+	}
+
+	jobName, buildID, err := sg.KeyToJob(src)
+	if err != nil {
+		return "", fmt.Errorf("error determining jobName / buildID: %v", err)
+	}
+
+	announcement := ""
+	if cfg().Deck.Spyglass.Announcement != "" {
+		announcementTmpl, err := template.New("announcement").Parse(cfg().Deck.Spyglass.Announcement)
+		if err != nil {
+			return "", fmt.Errorf("error parsing announcement template: %v", err)
+		}
+		runPath, err := sg.RunPath(src)
+		if err != nil {
+			runPath = ""
+		}
+		var announcementBuf bytes.Buffer
+		err = announcementTmpl.Execute(&announcementBuf, struct {
+			ArtifactPath string
+		}{
+			ArtifactPath: runPath,
+		})
+		if err != nil {
+			return "", fmt.Errorf("error executing announcement template: %v", err)
+		}
+		announcement = announcementBuf.String()
+	}
+
+	tgLink, err := sg.TestGridLink(src)
+	if err != nil {
+		tgLink = ""
+	}
 
 	var viewBuf bytes.Buffer
 	type lensesTemplate struct {
@@ -672,6 +751,12 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		Source        string
 		LensArtifacts map[string][]string
 		JobHistLink   string
+		ArtifactsLink string
+		PRHistLink    string
+		Announcement  template.HTML
+		TestgridLink  string
+		JobName       string
+		BuildID       string
 	}
 	lTmpl := lensesTemplate{
 		Lenses:        ls,
@@ -679,6 +764,12 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		Source:        src,
 		LensArtifacts: viewerCache,
 		JobHistLink:   jobHistLink,
+		ArtifactsLink: artifactsLink,
+		PRHistLink:    prHistLink,
+		Announcement:  template.HTML(announcement),
+		TestgridLink:  tgLink,
+		JobName:       jobName,
+		BuildID:       buildID,
 	}
 	t := template.New("spyglass.html")
 
@@ -723,7 +814,8 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, cfg config.Getter) htt
 			return
 		}
 
-		lensResourcesDir := lenses.ResourceDirForLens(o.spyglassFilesLocation, lens.Name())
+		lensConfig := lens.Config()
+		lensResourcesDir := lenses.ResourceDirForLens(o.spyglassFilesLocation, lensConfig.Name)
 
 		reqString := r.URL.Query().Get("req")
 		var request spyglass.LensRequest
@@ -754,7 +846,7 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, cfg config.Getter) htt
 				Head    template.HTML
 				Body    template.HTML
 			}{
-				lens.Title(),
+				lensConfig.Title,
 				"/spyglass/static/" + lensName + "/",
 				template.HTML(lens.Header(artifacts, lensResourcesDir)),
 				template.HTML(lens.Body(artifacts, lensResourcesDir, "")),
@@ -969,7 +1061,7 @@ func handleFavicon(staticFilesLocation string, cfg config.Getter) http.HandlerFu
 	}
 }
 
-func isValidatedGitOAuthConfig(githubOAuthConfig *config.GithubOAuthConfig) bool {
+func isValidatedGitOAuthConfig(githubOAuthConfig *config.GitHubOAuthConfig) bool {
 	return githubOAuthConfig.ClientID != "" && githubOAuthConfig.ClientSecret != "" &&
 		githubOAuthConfig.RedirectURL != "" &&
 		githubOAuthConfig.FinalRedirectURL != ""

@@ -53,7 +53,7 @@ func makeIssue(number int,
 	}
 }
 
-func makeGithubIssue(number int,
+func makeGitHubIssue(number int,
 	title, body, state, user, prURL string,
 	comments int,
 	isPullRequest bool,
@@ -94,7 +94,7 @@ func TestNewIssue(t *testing.T) {
 	}{
 		// Only mandatory
 		{
-			gIssue: makeGithubIssue(1, "Title", "", "State", "User", "",
+			gIssue: makeGitHubIssue(1, "Title", "", "State", "User", "",
 				5, false,
 				time.Date(1900, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
@@ -107,7 +107,7 @@ func TestNewIssue(t *testing.T) {
 		},
 		// All fields
 		{
-			gIssue: makeGithubIssue(1, "Title", "Body", "State", "User",
+			gIssue: makeGitHubIssue(1, "Title", "Body", "State", "User",
 				"PRLink", 5, true,
 				time.Date(1900, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
@@ -169,7 +169,7 @@ func makeIssueEvent(
 	}
 }
 
-func makeGithubIssueEvent(
+func makeGitHubIssueEvent(
 	eventID int,
 	label, event, assignee, actor string,
 	createdAt time.Time) *github.IssueEvent {
@@ -206,7 +206,7 @@ func TestNewIssueEvent(t *testing.T) {
 	}{
 		// Only mandatory
 		{
-			gIssueEvent: makeGithubIssueEvent(1, "", "Event", "", "",
+			gIssueEvent: makeGitHubIssueEvent(1, "", "Event", "", "",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			issueID: 2,
 			mIssueEvent: makeIssueEvent(1, 2, "", "Event", "", "", "full/repo",
@@ -214,7 +214,7 @@ func TestNewIssueEvent(t *testing.T) {
 		},
 		// All fields
 		{
-			gIssueEvent: makeGithubIssueEvent(1, "Label", "Event", "Assignee", "Actor",
+			gIssueEvent: makeGitHubIssueEvent(1, "Label", "Event", "Assignee", "Actor",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			issueID: 2,
 			mIssueEvent: makeIssueEvent(1, 2, "Label", "Event", "Assignee", "Actor", "full/repo",
@@ -274,7 +274,7 @@ func TestNewLabels(t *testing.T) {
 	}
 }
 
-func makeGithubIssueComment(id int, body, login string, createdAt, updatedAt time.Time) *github.IssueComment {
+func makeGitHubIssueComment(id int, body, login string, createdAt, updatedAt time.Time) *github.IssueComment {
 	var user *github.User
 	if login != "" {
 		user = &github.User{Login: &login}
@@ -288,7 +288,7 @@ func makeGithubIssueComment(id int, body, login string, createdAt, updatedAt tim
 	}
 }
 
-func makeGithubPullComment(id int, body, login string, createdAt, updatedAt time.Time) *github.PullRequestComment {
+func makeGitHubPullComment(id int, body, login string, createdAt, updatedAt time.Time) *github.PullRequestComment {
 	var user *github.User
 	if login != "" {
 		user = &github.User{Login: &login}
@@ -322,7 +322,7 @@ func TestNewIssueComment(t *testing.T) {
 		expectedComment *sql.Comment
 	}{
 		{
-			gComment: makeGithubIssueComment(1, "Body", "Login",
+			gComment: makeGitHubIssueComment(1, "Body", "Login",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			issueID: 12,
@@ -331,7 +331,7 @@ func TestNewIssueComment(t *testing.T) {
 				time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), false),
 		},
 		{
-			gComment: makeGithubIssueComment(1, "Body", "",
+			gComment: makeGitHubIssueComment(1, "Body", "",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			issueID: 12,
@@ -358,7 +358,7 @@ func TestNewPullComment(t *testing.T) {
 		expectedComment *sql.Comment
 	}{
 		{
-			gComment: makeGithubPullComment(1, "Body", "Login",
+			gComment: makeGitHubPullComment(1, "Body", "Login",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			issueID:    12,
@@ -368,7 +368,7 @@ func TestNewPullComment(t *testing.T) {
 				time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
 		},
 		{
-			gComment: makeGithubPullComment(1, "Body", "",
+			gComment: makeGitHubPullComment(1, "Body", "",
 				time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 				time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			issueID:    12,

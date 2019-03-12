@@ -20,7 +20,10 @@ go_library(
         "//prow/logrusutil:go_default_library",
         "//prow/metrics:go_default_library",
         "//prow/tide:go_default_library",
+        "//testgrid/util/gcs:go_default_library",
+        "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/google.golang.org/api/option:go_default_library",
     ],
 )
 

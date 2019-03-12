@@ -15,7 +15,7 @@ presets:
 
 presubmits:
   kubernetes/minikube:
-  - name: pull-minikube-linux-kvm
+  - name: pull-minikube-platform-tests
     labels:
         preset-minikube-e2e-creds: "true"
         preset-k8s-ssh: "true"
@@ -26,6 +26,4 @@ presubmits:
       containers:
       - image: gcr.io/k8s-minikube/minikube-e2e:v20181022-a850455f-experimental
         command:
-        - make
-        args:
-        - "test-linux-kvm"
+        - hack/prow/minkube_build_and_test.sh

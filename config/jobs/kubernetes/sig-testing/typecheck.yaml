@@ -8,16 +8,35 @@ presubmits:
     skip_report: false
     # branched per release (older go versions)
     skip_branches:
-    - release-1.10
     - release-1.11
     - release-1.12
     - release-1.13
+    - release-1.14
     spec:
       containers:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+        args:
+        - verify
+        env:
+        # Space separated list of the checks to run
+        - name: WHAT
+          value: typecheck
+  - name: pull-kubernetes-typecheck
+    path_alias: "k8s.io/kubernetes"
+    decorate: true
+    always_run: true
+    skip_report: false
+    branches:
+    - release-1.14 # per-release job
+    spec:
+      containers:
+      - name: main
+        command:
+        - make
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.14
         args:
         - verify
         env:
@@ -36,7 +55,7 @@ presubmits:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.13
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.13
         args:
         - verify
         env:
@@ -55,7 +74,7 @@ presubmits:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.12
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.12
         args:
         - verify
         env:
@@ -74,30 +93,10 @@ presubmits:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.11
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.11
         args:
         - verify
         env:
         # Space separated list of the checks to run
         - name: WHAT
           value: typecheck
-  - name: pull-kubernetes-typecheck
-    path_alias: "k8s.io/kubernetes"
-    decorate: true
-    always_run: true
-    skip_report: false
-    branches:
-    - release-1.10
-    spec:
-      containers:
-      - name: main
-        command:
-        - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
-        args:
-        - verify
-        env:
-        # Space separated list of the checks to run
-        - name: WHAT
-          value: typecheck
-

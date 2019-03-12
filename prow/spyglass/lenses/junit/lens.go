@@ -44,19 +44,13 @@ func init() {
 // Lens is the implementation of a JUnit-rendering Spyglass lens.
 type Lens struct{}
 
-// Name returns the name.
-func (lens Lens) Name() string {
-	return name
-}
-
-// Title returns the title.
-func (lens Lens) Title() string {
-	return title
-}
-
-// Priority returns the priority.
-func (lens Lens) Priority() int {
-	return priority
+// Config returns the lens's configuration.
+func (lens Lens) Config() lenses.LensConfig {
+	return lenses.LensConfig{
+		Name:     name,
+		Title:    title,
+		Priority: priority,
+	}
 }
 
 // Header renders the content of <head> from template.html.
@@ -82,7 +76,7 @@ type JunitResult struct {
 }
 
 func (jr JunitResult) Duration() time.Duration {
-	return time.Duration(jr.Time * float64(time.Second))
+	return time.Duration(jr.Time * float64(time.Second)).Round(time.Second)
 }
 
 // TestResult holds data about a test extracted from junit output
@@ -109,14 +103,14 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 			var contents []byte
 			contents, result.err = artifact.ReadAll()
 			if result.err != nil {
-				logrus.WithError(result.err).Error("Error reading artifact")
+				logrus.WithError(result.err).WithField("artifact", artifact.CanonicalLink()).Warn("Error reading artifact")
 				resultChan <- result
 				return
 			}
 			var suites junit.Suites
 			suites, result.err = junit.Parse(contents)
 			if result.err != nil {
-				logrus.WithError(result.err).Error("Error parsing junit file.")
+				logrus.WithError(result.err).WithField("artifact", artifact.CanonicalLink()).Info("Error parsing junit file.")
 				resultChan <- result
 				return
 			}
@@ -164,9 +158,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		}
 	}
 
-	if jvd.NumTests = len(jvd.Passed) + len(jvd.Failed) + len(jvd.Skipped); jvd.NumTests == 0 {
-		return "Found no valid JUnit test results"
-	}
+	jvd.NumTests = len(jvd.Passed) + len(jvd.Failed) + len(jvd.Skipped)
 
 	junitTemplate, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
 	if err != nil {

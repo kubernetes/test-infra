@@ -25,7 +25,7 @@ import re
 import subprocess
 import sys
 
-
+# This is deprecated from 1.14 onwards.
 VERSION_TAG = {
     '1.10': '1.10-v20180221-3655e24ae',
     '1.11': '1.11-v20190125-cc5d6ecff3',

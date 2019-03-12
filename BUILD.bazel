@@ -1,12 +1,50 @@
 # gazelle:prefix k8s.io/test-infra
 # gazelle:proto disable_global
 # gazelle:exclude vendor/k8s.io/code-generator/_examples/
+# gazelle:exclude hack
 
 load("@io_kubernetes_build//defs:run_in_workspace.bzl", "workspace_binary")
+load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
+load("@io_bazel_rules_go//go:def.bzl", "nogo")
 
 workspace_binary(
     name = "go",
     cmd = "@go_sdk//:bin/go",
+)
+
+nogo(
+    name = "nogo_vet",
+    config = "nogo_config.json",
+    visibility = ["//visibility:public"],
+    # These deps enable the analyses equivalent to running `go vet`.
+    # Passing vet = True enables only a tiny subset of these (the ones
+    # that are always correct).
+    # You can see the what `go vet` does by running `go doc cmd/vet`.
+    deps = [
+        "@org_golang_x_tools//go/analysis/passes/asmdecl:go_tool_library",
+        "@org_golang_x_tools//go/analysis/passes/assign:go_tool_library",
+        "@org_golang_x_tools//go/analysis/passes/atomic:go_tool_library",
+        "@org_golang_x_tools//go/analysis/passes/bools:go_tool_library",
+        "@org_golang_x_tools//go/analysis/passes/buildtag:go_tool_library",
+        # cgocall appears to be confused by github.com/mattn/go-sqlite3 and fails
+        # even when configured not to run. Given we don't use cgocall much, skip
+        # it for now.
+        # "@org_golang_x_tools//go/analysis/passes/cgocall:go_tool_library",
+        "@org_golang_x_tools//go/analysis/passes/composite:go_tool_library",
+        "@org_golang_x_tools//go/analysis/passes/copylock:go_tool_library",
+        "@org_golang_x_tools//go/analysis/passes/httpresponse:go_tool_library",
+        "@org_golang_x_tools//go/analysis/passes/loopclosure:go_tool_library",
+        "@org_golang_x_tools//go/analysis/passes/lostcancel:go_tool_library",
+        "@org_golang_x_tools//go/analysis/passes/nilfunc:go_tool_library",
+        "@org_golang_x_tools//go/analysis/passes/printf:go_tool_library",
+        "@org_golang_x_tools//go/analysis/passes/shift:go_tool_library",
+        "@org_golang_x_tools//go/analysis/passes/stdmethods:go_tool_library",
+        "@org_golang_x_tools//go/analysis/passes/structtag:go_tool_library",
+        "@org_golang_x_tools//go/analysis/passes/tests:go_tool_library",
+        "@org_golang_x_tools//go/analysis/passes/unreachable:go_tool_library",
+        "@org_golang_x_tools//go/analysis/passes/unsafeptr:go_tool_library",
+        "@org_golang_x_tools//go/analysis/passes/unusedresult:go_tool_library",
+    ],
 )
 
 workspace_binary(
@@ -30,12 +68,6 @@ workspace_binary(
 workspace_binary(
     name = "gofmt",
     cmd = "@go_sdk//:bin/gofmt",
-)
-
-workspace_binary(
-    name = "govet",
-    args = ["vet"],
-    cmd = "@go_sdk//:bin/go",
 )
 
 workspace_binary(
@@ -76,6 +108,14 @@ workspace_binary(
     cmd = "@io_kubernetes_build//kazel",
 )
 
+nodejs_binary(
+    name = "tslint",
+    data = [
+        "@npm//tslint",
+    ],
+    entry_point = "tslint/bin/tslint",
+)
+
 filegroup(
     name = "package-srcs",
     srcs = glob(
@@ -105,11 +145,14 @@ filegroup(
         "//greenhouse:all-srcs",
         "//hack:all-srcs",
         "//images/bootstrap/barnacle:all-srcs",
+        "//images/kubekins-e2e:all-srcs",
         "//jenkins:all-srcs",
         "//jobs:all-srcs",
         "//kettle:all-srcs",
         "//kubetest:all-srcs",
+        "//kubetest2:all-srcs",
         "//label_sync:all-srcs",
+        "//linkcheck:all-srcs",
         "//logexporter/cmd:all-srcs",
         "//maintenance/aws-janitor:all-srcs",
         "//maintenance/migratestatus:all-srcs",
@@ -130,6 +173,12 @@ filegroup(
         "//vendor:all-srcs",
     ],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "test-infra-README",
+    srcs = ["README.md"],
     visibility = ["//visibility:public"],
 )
 

@@ -8,8 +8,6 @@ go_library(
         "exportdata.go",
         "gcimporter.go",
         "iimport.go",
-        "isAlias18.go",
-        "isAlias19.go",
         "newInterface10.go",
         "newInterface11.go",
     ],

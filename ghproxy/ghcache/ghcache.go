@@ -39,17 +39,36 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
+type CacheResponseMode string
+
 // Cache response modes describe how ghcache fulfilled a request.
 const (
-	ModeError   = "ERROR"    // internal error handling request
-	ModeNoStore = "NO-STORE" // response not cacheable
-	ModeMiss    = "MISS"     // not in cache, request proxied and response cached.
-	ModeChanged = "CHANGED"  // cache value invalid: resource changed, cache updated
+	CacheModeHeader = "X-Cache-Mode"
+
+	ModeError   CacheResponseMode = "ERROR"    // internal error handling request
+	ModeNoStore CacheResponseMode = "NO-STORE" // response not cacheable
+	ModeMiss    CacheResponseMode = "MISS"     // not in cache, request proxied and response cached.
+	ModeChanged CacheResponseMode = "CHANGED"  // cache value invalid: resource changed, cache updated
 	// The modes below are the happy cases in which the request is fulfilled for
 	// free (no API tokens used).
-	ModeCoalesced   = "COALESCED"   // coalesced request, this is a copied response
-	ModeRevalidated = "REVALIDATED" // cached value revalidated and returned
+	ModeCoalesced   CacheResponseMode = "COALESCED"   // coalesced request, this is a copied response
+	ModeRevalidated CacheResponseMode = "REVALIDATED" // cached value revalidated and returned
 )
+
+func CacheModeIsFree(mode CacheResponseMode) bool {
+	switch mode {
+	case ModeCoalesced:
+		return true
+	case ModeRevalidated:
+		return true
+	case ModeError:
+		// In this case we did not successfully communicate with the GH API, so no
+		// token is used, but we also don't return a response, so ModeError won't
+		// ever be returned as a value of CacheModeHeader.
+		return true
+	}
+	return false
+}
 
 // cacheCounter provides the 'ghcache_responses' counter vec that is indexed
 // by the cache response mode.
@@ -81,7 +100,7 @@ func init() {
 	prometheus.MustRegister(pendingOutboundConnectionsGauge)
 }
 
-func cacheResponseMode(headers http.Header) string {
+func cacheResponseMode(headers http.Header) CacheResponseMode {
 	if strings.Contains(headers.Get("Cache-Control"), "no-store") {
 		return ModeNoStore
 	}

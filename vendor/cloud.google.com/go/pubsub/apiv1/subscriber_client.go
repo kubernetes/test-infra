@@ -17,13 +17,12 @@
 package pubsub
 
 import (
+	"context"
 	"math"
 	"time"
 
-	"cloud.google.com/go/internal/version"
 	"github.com/golang/protobuf/proto"
 	gax "github.com/googleapis/gax-go"
-	"golang.org/x/net/context"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 	"google.golang.org/api/transport"
@@ -185,8 +184,8 @@ func (c *SubscriberClient) Close() error {
 // the `x-goog-api-client` header passed on each request. Intended for
 // use by Google-written clients.
 func (c *SubscriberClient) SetGoogleClientInfo(keyval ...string) {
-	kv := append([]string{"gl-go", version.Go()}, keyval...)
-	kv = append(kv, "gapic", version.Repo, "gax", gax.Version, "grpc", grpc.Version)
+	kv := append([]string{"gl-go", versionGo()}, keyval...)
+	kv = append(kv, "gapic", versionClient, "gax", gax.Version, "grpc", grpc.Version)
 	c.xGoogMetadata = metadata.Pairs("x-goog-api-client", gax.XGoogHeader(kv...))
 }
 
@@ -336,8 +335,7 @@ func (c *SubscriberClient) Acknowledge(ctx context.Context, req *pubsubpb.Acknow
 	return err
 }
 
-// Pull pulls messages from the server. Returns an empty list if there are no
-// messages available in the backlog. The server may return UNAVAILABLE if
+// Pull pulls messages from the server. The server may return UNAVAILABLE if
 // there are too many concurrent pull requests pending for the given
 // subscription.
 func (c *SubscriberClient) Pull(ctx context.Context, req *pubsubpb.PullRequest, opts ...gax.CallOption) (*pubsubpb.PullResponse, error) {
@@ -437,7 +435,7 @@ func (c *SubscriberClient) ListSnapshots(ctx context.Context, req *pubsubpb.List
 // CreateSnapshot creates a snapshot from the requested subscription.<br><br>
 // <b>ALPHA:</b> This feature is part of an alpha release. This API might be
 // changed in backward-incompatible ways and is not recommended for production
-// use. It is not subject to any SLA or deprecation policy.
+// use. It is not subject to any SLA or deprecation policy.<br><br>
 // If the snapshot already exists, returns ALREADY_EXISTS.
 // If the requested subscription doesn't exist, returns NOT_FOUND.
 // If the backlog in the subscription is too old -- and the resulting snapshot

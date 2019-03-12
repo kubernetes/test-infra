@@ -29,6 +29,7 @@ postsubmits:
   kubernetes/test-infra:
   - name: post-test-infra-deploy-prow
     cluster: test-infra-trusted
+    run_if_changed: 'prow/cluster/'
     decorate: true
     branches:
     - master
@@ -52,6 +53,7 @@ postsubmits:
 
   - name: post-test-infra-push-prow
     cluster: test-infra-trusted
+    run_if_changed: 'prow/'
     decorate: true
     spec:
       containers:
@@ -101,6 +103,72 @@ periodics:
     - name: github
       secret:
         secretName: oauth-token
+- cron: "05 15 1-7 * 1"  # Run at 7:05 PST (15:05 UTC) on first monthly monday.
+  name: ci-test-infra-autoupdate-minor
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:v20190130-b4da262c0-0.21.0
+      command:
+      - hack/autodeps.sh
+      args:
+      - k8s-ci-robot
+      - /etc/github-token/oauth
+      - "Kubernetes Prow Robot"
+      - "k8s.ci.robot@gmail.com"
+      - "--minor"
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+      - name: ssh
+        mountPath: /root/.ssh
+    volumes:
+    - name: github
+      secret:
+        secretName: oauth-token
+    - name: ssh
+      secret:
+        secretName: k8s-ci-robot-ssh-keys
+        defaultMode: 0400
+- cron: "05 15 * * 1"  # Run at 7:05 PST (15:05 UTC) every Monday
+  name: ci-test-infra-autoupdate-patch
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:v20190130-b4da262c0-0.21.0
+      command:
+      - hack/autodeps.sh
+      args:
+      - k8s-ci-robot
+      - /etc/github-token/oauth
+      - "Kubernetes Prow Robot"
+      - "k8s.ci.robot@gmail.com"
+      - "--patch"
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+      - name: ssh
+        mountPath: /root/.ssh
+    volumes:
+    - name: github
+      secret:
+        secretName: oauth-token
+    - name: ssh
+      secret:
+        secretName: k8s-ci-robot-ssh-keys
+        defaultMode: 0400
 - cron: "05 15 * * 1-5"  # Run at 7:05 PST (15:05 UTC) Mon-Fri
   name: ci-test-infra-autobump-prow
   cluster: test-infra-trusted
@@ -133,3 +201,53 @@ periodics:
       secret:
         secretName: k8s-ci-robot-ssh-keys
         defaultMode: 0400
+- cron: "30 * * * *"  # Run at half past the hour, every hour, every day
+  name: ci-test-infra-update-slack-oncall
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+  spec:
+    containers:
+    - image: launcher.gcr.io/google/bazel
+      command:
+      - bazel
+      args:
+      - run
+      - //experiment/slack-oncall-updater
+      - --
+      - --token-path=/etc/slack-token/token
+      - --group-id=SGLF0GUQH
+      volumeMounts:
+      - name: slack
+        mountPath: /etc/slack-token
+        readOnly: true
+    volumes:
+    - name: slack
+      secret:
+        secretName: slack-usergroup-token
+- interval: 5m
+  name: ci-test-infra-resultstore-upload
+  cluster: test-infra-trusted
+  decorate: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/resultstore:v20190311-3fc08c042
+      command:
+      - /app/experiment/resultstore/app.binary
+      args:
+      - --service-account=/etc/creds/service-account.json
+      - --upload=k8s-prow
+      - --deadline=10m
+      - --latest=5
+      - --gcs-auth
+      volumeMounts:
+      - name: creds
+        mountPath: /etc/creds
+        readOnly: true
+    volumes:
+    - name: creds
+      secret:
+        secretName: resultstore-service-account

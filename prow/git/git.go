@@ -18,6 +18,8 @@ limitations under the License.
 package git
 
 import (
+	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -335,4 +337,18 @@ func retryCmd(l *logrus.Entry, dir, cmd string, arg ...string) ([]byte, error) {
 		break
 	}
 	return b, err
+}
+
+func (r *Repo) Diff(head, sha string) (changes []string, err error) {
+	r.logger.Infof("Diff head with %s'.", sha)
+	output, err := r.gitCommand("diff", head, sha, "--name-only").CombinedOutput()
+	if err != nil {
+		return nil, err
+	}
+	scan := bufio.NewScanner(bytes.NewReader(output))
+	scan.Split(bufio.ScanLines)
+	for scan.Scan() {
+		changes = append(changes, scan.Text())
+	}
+	return
 }
