@@ -30,12 +30,11 @@ import (
 )
 
 var (
-	bufferSize     = 1 // Maximum holding resources
-	serviceAccount = flag.String("service-account", "", "Path to projects service account")
-	rTypes         common.CommaSeparatedStrings
-	poolSize       int
-	janitorPath    = flag.String("janitor-path", "/bin/gcp_janitor.py", "Path to janitor binary path")
-	boskosURL      = flag.String("boskos-url", "http://boskos", "Boskos URL")
+	bufferSize  = 1 // Maximum holding resources
+	rTypes      common.CommaSeparatedStrings
+	poolSize    int
+	janitorPath = flag.String("janitor-path", "/bin/gcp_janitor.py", "Path to janitor binary path")
+	boskosURL   = flag.String("boskos-url", "http://boskos", "Boskos URL")
 )
 
 func init() {

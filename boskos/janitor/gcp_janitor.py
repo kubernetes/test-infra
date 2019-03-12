@@ -307,6 +307,7 @@ def activate_service_account(service_account):
         log('service_account was not provided, trying default')
         service_account = os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
 
+    print '[=== Activating service_account %s ===]' % service_account
     cmd = [
         'gcloud', 'auth', 'activate-service-account',
         '--key-file=%s' % service_account,
@@ -338,8 +339,9 @@ def main(project, days, hours, filt, rate_limit, service_account):
     age = datetime.datetime.utcnow() - datetime.timedelta(days=days, hours=hours)
     clear_all = (days is 0 and hours is 0)
 
-    print '[=== Activating service_account %s ===]' % service_account
-    err |= activate_service_account(service_account)
+    if service_account != "" or os.environ["GOOGLE_APPLICATION_CREDENTIALS"] != "":
+        err |= activate_service_account(service_account)
+
     if not err:
         for res in DEMOLISH_ORDER:
             log('Try to search for %r with condition %r' % (res.name, res.condition))

@@ -36,7 +36,6 @@ import (
 var (
 	configPath        = flag.String("config", "config.yaml", "Path to init resource file")
 	storagePath       = flag.String("storage", "", "Path to persistent volume to load the state")
-	heartBeat         = flag.Int("heartbeat", 10, "Duration (in minutes) after which boskos updates all the resources.")
 	kubeClientOptions crds.KubernetesClientOptions
 )
 
@@ -70,7 +69,7 @@ func main() {
 
 	go func() {
 		logTick := time.NewTicker(time.Minute).C
-		configTick := time.NewTicker(time.Minute * time.Duration(*heartBeat)).C
+		configTick := time.NewTicker(time.Minute * 10).C
 		for {
 			select {
 			case <-logTick:
