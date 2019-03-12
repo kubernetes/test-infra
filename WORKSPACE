@@ -1845,6 +1845,20 @@ go_repository(
 )
 
 go_repository(
+    name = "com_github_klauspost_compress",
+    importpath = "github.com/klauspost/compress",
+    sum = "h1:8VMb5+0wMgdBykOV96DwNwKFQ+WTI4pzYURP99CcB9E=",
+    version = "v1.4.1",
+)
+
+go_repository(
+    name = "com_github_klauspost_cpuid",
+    importpath = "github.com/klauspost/cpuid",
+    sum = "h1:NMpwD2G9JSFOE1/TJjGSo5zG7Yb2bTe7eq1jH+irmeE=",
+    version = "v1.2.0",
+)
+
+go_repository(
     name = "com_github_kr_logfmt",
     importpath = "github.com/kr/logfmt",
     sum = "h1:T+h1c/A9Gawja4Y9mFVWj2vyii2bbUNDw3kt9VxK2EY=",
@@ -1996,4 +2010,11 @@ go_repository(
     importpath = "github.com/Shopify/toxiproxy",
     sum = "h1:TKdv8HiTLgE5wdJuEML90aBgNWsokNbMijUGhmcoBJc=",
     version = "v2.1.4+incompatible",
+)
+
+go_repository(
+    name = "com_github_klauspost_pgzip",
+    importpath = "github.com/klauspost/pgzip",
+    sum = "h1:oIPZROsWuPHpOdMVWLuJZXwgjhrW8r1yEX8UqMyeNHM=",
+    version = "v1.2.1",
 )
