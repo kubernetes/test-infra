@@ -32,11 +32,12 @@ import (
 )
 
 const (
-	name            = "buildlog"
-	title           = "Build Log"
-	priority        = 10
-	neighborLines   = 5 // number of "important" lines to be displayed in either direction
-	minLinesSkipped = 5
+	name               = "buildlog"
+	title              = "Build Log"
+	priority           = 10
+	neighborLines      = 5 // number of "important" lines to be displayed in either direction
+	minLinesSkipped    = 5
+	maxHighlightLength = 10000 // Maximum length of a line worth highlighting
 )
 
 // Lens implements the build lens.
@@ -210,12 +211,14 @@ func highlightLines(lines []string, startLine int) []LogLine {
 	for i, text := range lines {
 		length := len(text)
 		subLines := []SubLine{}
-		loc := errRE.FindStringIndex(text)
-		for loc != nil {
-			subLines = append(subLines, SubLine{false, text[:loc[0]]})
-			subLines = append(subLines, SubLine{true, text[loc[0]:loc[1]]})
-			text = text[loc[1]:]
-			loc = errRE.FindStringIndex(text)
+		if length <= maxHighlightLength {
+			loc := errRE.FindStringIndex(text)
+			for loc != nil {
+				subLines = append(subLines, SubLine{false, text[:loc[0]]})
+				subLines = append(subLines, SubLine{true, text[loc[0]:loc[1]]})
+				text = text[loc[1]:]
+				loc = errRE.FindStringIndex(text)
+			}
 		}
 		subLines = append(subLines, SubLine{false, text})
 		logLines = append(logLines, LogLine{
