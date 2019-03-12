@@ -143,7 +143,7 @@ periodics:
       - "--acsengine-admin-username=azureuser"
       - "--acsengine-admin-password=AdminPassw0rd"
       - "--acsengine-creds=$AZURE_CREDENTIALS"
-      - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz"
+      - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.32.0/aks-engine-v0.32.0-linux-amd64.tar.gz"
       - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--acsengine-winZipBuildScript=$WIN_BUILD"
       - "--acsengine-orchestratorRelease=1.14"
