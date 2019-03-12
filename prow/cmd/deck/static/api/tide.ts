@@ -16,14 +16,14 @@ export interface PullRequest extends BasePullRequest {
   Title: string;
   HeadRefName: string;
   Commits: {
-    Nodes: Array<{
+    Nodes: {
       Commit: Commit;
-    }>;
+    }[];
   };
   Labels: {
-    Nodes: Array<{
+    Nodes: {
       Name: string;
-    }>;
+    }[];
   };
   Milestone?: {
     Title: string;

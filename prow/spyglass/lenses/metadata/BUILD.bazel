@@ -10,7 +10,6 @@ go_library(
     deps = [
         "//prow/pod-utils/gcs:go_default_library",
         "//prow/spyglass/lenses:go_default_library",
-        "//testgrid/metadata:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
@@ -20,7 +19,6 @@ ts_library(
     srcs = ["metadata.ts"],
     deps = [
         "//prow/spyglass/lenses:lens_api",
-        "@npm//moment",
     ],
 )
 
@@ -29,7 +27,6 @@ rollup_bundle(
     entry_point = "prow/spyglass/lenses/metadata/metadata",
     deps = [
         ":script",
-        "@npm//moment",
     ],
 )
 

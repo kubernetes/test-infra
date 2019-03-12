@@ -29,7 +29,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-
+	coreapi "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -48,8 +48,13 @@ var (
 // TODO(#5216): Remove this, and all associated machinery.
 type Job struct {
 	Type        string               `json:"type"`
-	Refs        prowapi.Refs         `json:"refs"`
-	RefsKey     string               `json:"refs_key"`
+	Repo        string               `json:"repo"`
+	Refs        string               `json:"refs"`
+	BaseRef     string               `json:"base_ref"`
+	BaseSHA     string               `json:"base_sha"`
+	PullSHA     string               `json:"pull_sha"`
+	Number      int                  `json:"number"`
+	Author      string               `json:"author"`
 	Job         string               `json:"job"`
 	BuildID     string               `json:"build_id"`
 	Context     string               `json:"context"`
@@ -68,17 +73,12 @@ type Job struct {
 }
 
 type serviceClusterClient interface {
-	GetLog(pod string) ([]byte, error)
-	ListPods(selector string) ([]kube.Pod, error)
 	ListProwJobs(selector string) ([]prowapi.ProwJob, error)
 }
 
 // PodLogClient is an interface for interacting with the pod logs.
 type PodLogClient interface {
-	// GetContainerLog returns the pod log of the specified container
-	GetContainerLog(pod, container string) ([]byte, error)
-	// GetLogTail returns the last n bytes of the pod log of the specified container
-	GetLogTail(pod, container string, n int64) ([]byte, error)
+	GetLogs(name string, opts *coreapi.PodLogOptions) ([]byte, error)
 }
 
 // NewJobAgent is a JobAgent constructor.
@@ -151,56 +151,6 @@ func (ja *JobAgent) GetProwJob(job, id string) (prowapi.ProwJob, error) {
 	return j, nil
 }
 
-// GetJobLogTail returns the last n bytes of the job logs, works for both kubernetes and jenkins agent types.
-func (ja *JobAgent) GetJobLogTail(job, id string, n int64) ([]byte, error) {
-	j, err := ja.GetProwJob(job, id)
-	if err != nil {
-		return nil, fmt.Errorf("error getting prowjob: %v", err)
-	}
-	if j.Spec.Agent == prowapi.KubernetesAgent {
-		client, ok := ja.pkcs[j.ClusterAlias()]
-		if !ok {
-			return nil, fmt.Errorf("cannot get logs for prowjob %q with agent %q: unknown cluster alias %q", j.ObjectMeta.Name, j.Spec.Agent, j.ClusterAlias())
-		}
-		return client.GetLogTail(j.Status.PodName, kube.TestContainerName, n)
-	}
-	for _, agentToTmpl := range ja.config().Deck.ExternalAgentLogs {
-		if agentToTmpl.Agent != string(j.Spec.Agent) {
-			continue
-		}
-		if !agentToTmpl.Selector.Matches(labels.Set(j.ObjectMeta.Labels)) {
-			continue
-		}
-		var b bytes.Buffer
-		if err := agentToTmpl.URLTemplate.Execute(&b, &j); err != nil {
-			return nil, fmt.Errorf("cannot execute URL template for prowjob %q with agent %q: %v", j.ObjectMeta.Name, j.Spec.Agent, err)
-		}
-		resp, err := http.Get(b.String())
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-		content, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		lenContent := int64(len(content))
-		bytesToRead := n
-		if lenContent < bytesToRead {
-			bytesToRead = lenContent
-			logrus.WithField("contentLen", lenContent).Warn("Tried to read more pod logs than exist, reading all instead")
-		}
-		cr := bytes.NewReader(content)
-		contentTail := make([]byte, bytesToRead)
-		bytesRead, err := cr.ReadAt(contentTail, lenContent-bytesToRead)
-		if int64(bytesRead) < bytesToRead {
-			logrus.WithFields(logrus.Fields{"prowjob": j.ObjectMeta.Name, "bytesRead": bytesRead, "bytesIntended": bytesToRead}).Error("Read fewer bytes than intended")
-		}
-		return contentTail, err
-	}
-	return nil, fmt.Errorf("cannot get logs for prowjob %q with agent %q: the agent is missing from the prow config file", j.ObjectMeta.Name, j.Spec.Agent)
-}
-
 // GetJobLog returns the job logs, works for both kubernetes and jenkins agent types.
 func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
 	j, err := ja.GetProwJob(job, id)
@@ -212,7 +162,7 @@ func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
 		if !ok {
 			return nil, fmt.Errorf("cannot get logs for prowjob %q with agent %q: unknown cluster alias %q", j.ObjectMeta.Name, j.Spec.Agent, j.ClusterAlias())
 		}
-		return client.GetContainerLog(j.Status.PodName, kube.TestContainerName)
+		return client.GetLogs(j.Status.PodName, &coreapi.PodLogOptions{Container: kube.TestContainerName})
 	}
 	for _, agentToTmpl := range ja.config().Deck.ExternalAgentLogs {
 		if agentToTmpl.Agent != string(j.Spec.Agent) {
@@ -249,7 +199,7 @@ func (a byStartTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a byStartTime) Less(i, j int) bool { return a[i].st.After(a[j].st) }
 
 func (ja *JobAgent) update() error {
-	pjs, err := ja.kc.ListProwJobs(kube.EmptySelector)
+	pjs, err := ja.kc.ListProwJobs(labels.Everything().String())
 	if err != nil {
 		return err
 	}
@@ -286,8 +236,15 @@ func (ja *JobAgent) update() error {
 			nj.Duration = duration.String()
 		}
 		if j.Spec.Refs != nil {
-			nj.Refs = *j.Spec.Refs
-			nj.RefsKey = j.Spec.Refs.String()
+			nj.Repo = fmt.Sprintf("%s/%s", j.Spec.Refs.Org, j.Spec.Refs.Repo)
+			nj.Refs = j.Spec.Refs.String()
+			nj.BaseRef = j.Spec.Refs.BaseRef
+			nj.BaseSHA = j.Spec.Refs.BaseSHA
+			if len(j.Spec.Refs.Pulls) == 1 {
+				nj.Number = j.Spec.Refs.Pulls[0].Number
+				nj.Author = j.Spec.Refs.Pulls[0].Author
+				nj.PullSHA = j.Spec.Refs.Pulls[0].SHA
+			}
 		}
 		njs = append(njs, nj)
 		if nj.PodName != "" {

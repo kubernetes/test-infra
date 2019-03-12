@@ -1,47 +1,5 @@
 # this file should contain all periodic jobs that use the fejta-bot token
 periodics:
-- name: periodic-api-review-help
-  interval: 1h
-  decorate: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
-      command:
-      - /commenter
-      args:
-      # pull requests against master branches in the kubernetes org labeled kind/api-change
-      # exclude PRs that are in progress, held, or need rebase (typically aren't ready for API review).
-      # exclude PRs already labeled api-review or tracked in the API review project
-      # exclude PRs that already have the comment text
-      - |-
-        --query=org:kubernetes
-        is:pr
-        base:master
-        label:kind/api-change
-        -label:do-not-merge/work-in-progress
-        -label:do-not-merge/hold
-        -label:needs-rebase
-        -label:api-review
-        -project:kubernetes/13
-        NOT "complete the pre-review checklist and request an API review"
-      - --updated=5m
-      - --token=/etc/token/bot-github-token
-      - |-
-        --comment=This PR [may require API review](https://git.k8s.io/community/sig-architecture/api-review-process.md#what-apis-need-to-be-reviewed).
-        
-        If so, when the changes are ready, [complete the pre-review checklist and request an API review](https://git.k8s.io/community/sig-architecture/api-review-process.md#mechanics).
-        
-        Status of requested reviews is tracked in the [API Review project](https://github.com/orgs/kubernetes/projects/13).
-      - --ceiling=10
-      - --confirm
-      volumeMounts:
-      - name: token
-        mountPath: /etc/token
-    volumes:
-    - name: token
-      secret:
-        secretName: fejta-bot-token
-
 - name: periodic-test-infra-close
   interval: 1h
   decorate: true

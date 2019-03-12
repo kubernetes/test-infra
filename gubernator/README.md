@@ -29,7 +29,7 @@ only updates after the webhook is added will be shown on the dashboard.
 
 # Deployment
 
-- Visit /config on the new deployment to configure GitHub [OAuth logins](https://github.com/settings/applications)
+- Visit /config on the new deployment to configure Github [OAuth logins](https://github.com/settings/applications)
   and webhook secrets.
 
 # GCS Layout
@@ -131,5 +131,5 @@ the different types of jobs:
 
 # Migrations
 
-1. 2018-01-09: GitHub webhook and oauth secrets must be reconfigured. Visit
+1. 2018-01-09: Github webhook and oauth secrets must be reconfigured. Visit
    /config on your deployment to enter the new values.

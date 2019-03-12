@@ -588,9 +588,7 @@ func TestBatch(t *testing.T) {
 			Name:  "pr-some-job",
 			Agent: "jenkins",
 		},
-		Reporter: config.Reporter{
-			Context: "Some Job Context",
-		},
+		Context: "Some Job Context",
 	}
 	pj := pjutil.NewProwJob(pjutil.BatchSpec(pre, prowapi.Refs{
 		Org:     "o",

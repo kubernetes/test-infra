@@ -303,46 +303,36 @@ func TestBranchRequirements(t *testing.T) {
 			name: "basic",
 			config: []Presubmit{
 				{
-					AlwaysRun: true,
-					Reporter: Reporter{
-						Context:    "always-run",
-						SkipReport: false,
-					},
+					Context:    "always-run",
+					AlwaysRun:  true,
+					SkipReport: false,
 				},
 				{
+					Context: "run-if-changed",
 					RegexpChangeMatcher: RegexpChangeMatcher{
 						RunIfChanged: "foo",
 					},
-					AlwaysRun: false,
-					Reporter: Reporter{
-						Context:    "run-if-changed",
-						SkipReport: false,
-					},
+					AlwaysRun:  false,
+					SkipReport: false,
 				},
 				{
-					AlwaysRun: false,
-					Reporter: Reporter{
-						Context:    "not-always",
-						SkipReport: false,
-					},
+					Context:    "not-always",
+					AlwaysRun:  false,
+					SkipReport: false,
 				},
 				{
-					AlwaysRun: true,
-					Reporter: Reporter{
-						Context:    "skip-report",
-						SkipReport: true,
-					},
+					Context:    "skip-report",
+					AlwaysRun:  true,
+					SkipReport: true,
 					Brancher: Brancher{
 						SkipBranches: []string{"master"},
 					},
 				},
 				{
-					AlwaysRun: true,
-					Reporter: Reporter{
-						Context:    "optional",
-						SkipReport: false,
-					},
-					Optional: true,
+					Context:    "optional",
+					AlwaysRun:  true,
+					SkipReport: false,
+					Optional:   true,
 				},
 			},
 			masterExpected:  []string{"always-run"},
@@ -616,9 +606,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 								JobBase: JobBase{
 									Name: "required presubmit",
 								},
-								Reporter: Reporter{
-									Context: "required presubmit",
-								},
+								Context:   "required presubmit",
 								AlwaysRun: true,
 							},
 						},
@@ -650,9 +638,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 								JobBase: JobBase{
 									Name: "required presubmit",
 								},
-								Reporter: Reporter{
-									Context: "required presubmit",
-								},
+								Context:   "required presubmit",
 								AlwaysRun: true,
 							},
 						},
@@ -686,9 +672,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 								JobBase: JobBase{
 									Name: "required presubmit",
 								},
-								Reporter: Reporter{
-									Context: "required presubmit",
-								},
+								Context:   "required presubmit",
 								AlwaysRun: true,
 							},
 						},
@@ -715,9 +699,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 								JobBase: JobBase{
 									Name: "optional presubmit",
 								},
-								Reporter: Reporter{
-									Context: "optional presubmit",
-								},
+								Context:   "optional presubmit",
 								AlwaysRun: true,
 								Optional:  true,
 							},
@@ -748,9 +730,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 								JobBase: JobBase{
 									Name: "optional presubmit",
 								},
-								Reporter: Reporter{
-									Context: "optional presubmit",
-								},
+								Context:   "optional presubmit",
 								AlwaysRun: true,
 								Optional:  true,
 							},

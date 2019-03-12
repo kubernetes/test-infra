@@ -427,37 +427,26 @@ func (j *ProwJob) ClusterAlias() string {
 
 // Pull describes a pull request at a particular point in time.
 type Pull struct {
-	Number int    `json:"number"`
-	Author string `json:"author"`
-	SHA    string `json:"sha"`
-	Title  string `json:"title,omitempty"`
+	Number int    `json:"number,omitempty"`
+	Author string `json:"author,omitempty"`
+	SHA    string `json:"sha,omitempty"`
 
 	// Ref is git ref can be checked out for a change
 	// for example,
 	// github: pull/123/head
 	// gerrit: refs/changes/00/123/1
 	Ref string `json:"ref,omitempty"`
-	// Link links to the pull request itself.
-	Link string `json:"link,omitempty"`
-	// CommitLink links to the commit identified by the SHA.
-	CommitLink string `json:"commit_link,omitempty"`
-	// AuthorLink links to the author of the pull request.
-	AuthorLink string `json:"author_link,omitempty"`
 }
 
 // Refs describes how the repo was constructed.
 type Refs struct {
 	// Org is something like kubernetes or k8s.io
-	Org string `json:"org"`
+	Org string `json:"org,omitempty"`
 	// Repo is something like test-infra
-	Repo string `json:"repo"`
-	// RepoLink links to the source for Repo.
-	RepoLink string `json:"repo_link,omitempty"`
+	Repo string `json:"repo,omitempty"`
 
 	BaseRef string `json:"base_ref,omitempty"`
 	BaseSHA string `json:"base_sha,omitempty"`
-	// BaseLink is a link to the commit identified by BaseSHA.
-	BaseLink string `json:"base_link,omitempty"`
 
 	Pulls []Pull `json:"pulls,omitempty"`
 
@@ -476,13 +465,7 @@ type Refs struct {
 }
 
 func (r Refs) String() string {
-	rs := []string{}
-	if r.BaseSHA != "" {
-		rs = append(rs, fmt.Sprintf("%s:%s", r.BaseRef, r.BaseSHA))
-	} else {
-		rs = append(rs, r.BaseRef)
-	}
-
+	rs := []string{fmt.Sprintf("%s:%s", r.BaseRef, r.BaseSHA)}
 	for _, pull := range r.Pulls {
 		ref := fmt.Sprintf("%d:%s", pull.Number, pull.SHA)
 

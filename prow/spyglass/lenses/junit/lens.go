@@ -44,13 +44,19 @@ func init() {
 // Lens is the implementation of a JUnit-rendering Spyglass lens.
 type Lens struct{}
 
-// Config returns the lens's configuration.
-func (lens Lens) Config() lenses.LensConfig {
-	return lenses.LensConfig{
-		Name:     name,
-		Title:    title,
-		Priority: priority,
-	}
+// Name returns the name.
+func (lens Lens) Name() string {
+	return name
+}
+
+// Title returns the title.
+func (lens Lens) Title() string {
+	return title
+}
+
+// Priority returns the priority.
+func (lens Lens) Priority() int {
+	return priority
 }
 
 // Header renders the content of <head> from template.html.
@@ -76,7 +82,7 @@ type JunitResult struct {
 }
 
 func (jr JunitResult) Duration() time.Duration {
-	return time.Duration(jr.Time * float64(time.Second)).Round(time.Second)
+	return time.Duration(jr.Time * float64(time.Second))
 }
 
 // TestResult holds data about a test extracted from junit output

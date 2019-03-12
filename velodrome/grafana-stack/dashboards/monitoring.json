@@ -863,7 +863,7 @@
           ],
           "timeFrom": null,
           "timeShift": null,
-          "title": "GitHub Token usage",
+          "title": "Github Token usage",
           "tooltip": {
             "msResolution": false,
             "shared": false,

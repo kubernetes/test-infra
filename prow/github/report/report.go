@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // Package report contains helpers for writing comments and updating
-// statuses in GitHub.
+// statuses in Github.
 package report
 
 import (
@@ -33,9 +33,9 @@ const (
 	commentTag = "<!-- test report -->"
 )
 
-// GitHubClient provides a client interface to report job status updates
-// through GitHub comments.
-type GitHubClient interface {
+// GithubClient provides a client interface to report job status updates
+// through Github comments.
+type GithubClient interface {
 	BotName() (string, error)
 	CreateStatus(org, repo, ref string, s github.Status) error
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
@@ -44,10 +44,10 @@ type GitHubClient interface {
 	EditComment(org, repo string, ID int, comment string) error
 }
 
-// prowjobStateToGitHubStatus maps prowjob status to github states.
-// GitHub states can be one of error, failure, pending, or success.
+// prowjobStateToGithubStatus maps prowjob status to github states.
+// Github states can be one of error, failure, pending, or success.
 // https://developer.github.com/v3/repos/statuses/#create-a-status
-func prowjobStateToGitHubStatus(pjState prowapi.ProwJobState) (string, error) {
+func prowjobStateToGithubStatus(pjState prowapi.ProwJobState) (string, error) {
 	switch pjState {
 	case prowapi.TriggeredState:
 		return github.StatusPending, nil
@@ -81,11 +81,13 @@ func truncate(in string) string {
 	return in[:half] + elide + in[len(in)-half:]
 }
 
-// reportStatus should be called on any prowjob status changes
-func reportStatus(ghc GitHubClient, pj prowapi.ProwJob) error {
+// reportStatus should be called on status different from Success.
+// Once a parent ProwJob is pending, all children should be marked as Pending
+// Same goes for failed status.
+func reportStatus(ghc GithubClient, pj prowapi.ProwJob, childDescription string) error {
 	refs := pj.Spec.Refs
 	if pj.Spec.Report {
-		contextState, err := prowjobStateToGitHubStatus(pj.Status.State)
+		contextState, err := prowjobStateToGithubStatus(pj.Status.State)
 		if err != nil {
 			return err
 		}
@@ -105,45 +107,24 @@ func reportStatus(ghc GitHubClient, pj prowapi.ProwJob) error {
 	return nil
 }
 
-// TODO(krzyzacy):
-// Move this logic into github/reporter, once we unify all reporting logic to crier
-func ShouldReport(pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) bool {
-	valid := false
-	for _, t := range validTypes {
-		if pj.Spec.Type == t {
-			valid = true
-		}
-	}
-
-	if !valid {
-		return false
-	}
-
-	if !pj.Spec.Report {
-		return false
-	}
-
-	return true
-}
-
-// Report is creating/updating/removing reports in GitHub based on the state of
+// Report is creating/updating/removing reports in Github based on the state of
 // the provided ProwJob.
-func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) error {
+func Report(ghc GithubClient, reportTemplate *template.Template, pj prowapi.ProwJob) error {
 	if ghc == nil {
 		return fmt.Errorf("trying to report pj %s, but found empty github client", pj.ObjectMeta.Name)
 	}
 
-	if !ShouldReport(pj, validTypes) {
+	if !pj.Spec.Report {
 		return nil
 	}
 
 	refs := pj.Spec.Refs
-	// we are not reporting for batch jobs, we can consider support that in the future
 	if len(refs.Pulls) > 1 {
-		return nil
+		return nil // we are not reporting for batch jobs
 	}
 
-	if err := reportStatus(ghc, pj); err != nil {
+	childDescription := fmt.Sprintf("Waiting on: %s", pj.Spec.Context)
+	if err := reportStatus(ghc, pj, childDescription); err != nil {
 		return fmt.Errorf("error setting status: %v", err)
 	}
 

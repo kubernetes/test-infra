@@ -40,21 +40,21 @@ func (o *GitHubOptions) AddFlags(fs *flag.FlagSet) {
 	o.addFlags(true, fs)
 }
 
-// AddFlagsWithoutDefaultGitHubTokenPath injects GitHub options into the given
+// AddFlagsWithoutDefaultGithubTokenPath injects GitHub options into the given
 // Flagset without setting a default for for the githubTokenPath, allowing to
-// use an anonymous GitHub client
-func (o *GitHubOptions) AddFlagsWithoutDefaultGitHubTokenPath(fs *flag.FlagSet) {
+// use an anonymous Github client
+func (o *GitHubOptions) AddFlagsWithoutDefaultGithubTokenPath(fs *flag.FlagSet) {
 	o.addFlags(false, fs)
 }
 
-func (o *GitHubOptions) addFlags(wantDefaultGitHubTokenPath bool, fs *flag.FlagSet) {
+func (o *GitHubOptions) addFlags(wantDefaultGithubTokenPath bool, fs *flag.FlagSet) {
 	o.endpoint = NewStrings("https://api.github.com")
 	fs.Var(&o.endpoint, "github-endpoint", "GitHub's API endpoint (may differ for enterprise).")
-	defaultGitHubTokenPath := ""
-	if wantDefaultGitHubTokenPath {
-		defaultGitHubTokenPath = "/etc/github/oauth"
+	defaultGithubTokenPath := ""
+	if wantDefaultGithubTokenPath {
+		defaultGithubTokenPath = "/etc/github/oauth"
 	}
-	fs.StringVar(&o.TokenPath, "github-token-path", defaultGitHubTokenPath, "Path to the file containing the GitHub OAuth secret.")
+	fs.StringVar(&o.TokenPath, "github-token-path", defaultGithubTokenPath, "Path to the file containing the GitHub OAuth secret.")
 	fs.StringVar(&o.deprecatedTokenFile, "github-token-file", "", "DEPRECATED: use -github-token-path instead.  -github-token-file may be removed anytime after 2019-01-01.")
 }
 
@@ -78,8 +78,8 @@ func (o *GitHubOptions) Validate(dryRun bool) error {
 	return nil
 }
 
-// GitHubClientWithLogFields returns a GitHub client with extra logging fields
-func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, dryRun bool, fields logrus.Fields) (client *github.Client, err error) {
+// GitHubClient returns a GitHub client.
+func (o *GitHubOptions) GitHubClient(secretAgent *secret.Agent, dryRun bool) (client *github.Client, err error) {
 	var generator *func() []byte
 	if o.TokenPath == "" {
 		generatorFunc := func() []byte {
@@ -95,14 +95,9 @@ func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, dry
 	}
 
 	if dryRun {
-		return github.NewDryRunClientWithFields(fields, *generator, o.endpoint.Strings()...), nil
+		return github.NewDryRunClient(*generator, o.endpoint.Strings()...), nil
 	}
-	return github.NewClientWithFields(fields, *generator, o.endpoint.Strings()...), nil
-}
-
-// GitHubClient returns a GitHub client.
-func (o *GitHubOptions) GitHubClient(secretAgent *secret.Agent, dryRun bool) (client *github.Client, err error) {
-	return o.GitHubClientWithLogFields(secretAgent, dryRun, logrus.Fields{})
+	return github.NewClient(*generator, o.endpoint.Strings()...), nil
 }
 
 // GitClient returns a Git client.

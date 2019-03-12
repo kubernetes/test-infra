@@ -31,7 +31,6 @@ import (
 const pluginName = "label"
 
 var (
-	defaultLabels           = []string{"kind", "priority", "area"}
 	labelRegex              = regexp.MustCompile(`(?m)^/(area|committee|kind|language|priority|sig|triage|wg)\s*(.*)$`)
 	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|committee|kind|language|priority|sig|triage|wg)\s*(.*)$`)
 	customLabelRegex        = regexp.MustCompile(`(?m)^/label\s*(.*)$`)
@@ -43,23 +42,10 @@ func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }
 
-func configString(labels []string) string {
-	var formattedLabels []string
-	for _, label := range labels {
-		formattedLabels = append(formattedLabels, fmt.Sprintf(`"%s/*"`, label))
-	}
-	return fmt.Sprintf("The label plugin will work on %s and %s labels.", strings.Join(formattedLabels[:len(formattedLabels)-1], ", "), formattedLabels[len(formattedLabels)-1])
-}
-
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	labels := []string{}
-	labels = append(labels, defaultLabels...)
-	labels = append(labels, config.Label.AdditionalLabels...)
+	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The label plugin provides commands that add or remove certain types of labels. Labels of the following types can be manipulated: 'area/*', 'committee/*', 'kind/*', 'language/*', 'priority/*', 'sig/*', 'triage/*', and 'wg/*'. More labels can be configured to be used via the /label command.",
-		Config: map[string]string{
-			"": configString(labels),
-		},
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/[remove-](area|committee|kind|language|priority|sig|triage|wg|label) <target>",
@@ -72,7 +58,11 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 }
 
 func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.Label.AdditionalLabels, &e)
+	var labels []string
+	if pc.PluginConfig.Label != nil {
+		labels = pc.PluginConfig.Label.AdditionalLabels
+	}
+	return handle(pc.GitHubClient, pc.Logger, labels, &e)
 }
 
 type githubClient interface {
@@ -163,7 +153,7 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 		}
 
 		if err := gc.AddLabel(org, repo, e.Number, RepoLabelsExisting[labelToAdd]); err != nil {
-			log.WithError(err).Errorf("GitHub failed to add the following label: %s", labelToAdd)
+			log.WithError(err).Errorf("Github failed to add the following label: %s", labelToAdd)
 		}
 	}
 
@@ -180,7 +170,7 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 		}
 
 		if err := gc.RemoveLabel(org, repo, e.Number, labelToRemove); err != nil {
-			log.WithError(err).Errorf("GitHub failed to remove the following label: %s", labelToRemove)
+			log.WithError(err).Errorf("Github failed to remove the following label: %s", labelToRemove)
 		}
 	}
 

@@ -28,64 +28,38 @@ import (
 )
 
 func TestWipLabel(t *testing.T) {
-	const (
-		wipTitle     = "[WIP] title"
-		regularTitle = "title"
-	)
-
 	var testcases = []struct {
 		name          string
-		title         string
-		draft         bool
 		hasLabel      bool
+		needsLabel    bool
 		shouldLabel   bool
 		shouldUnlabel bool
 	}{
 		{
-			name:          "regular PR, need nothing",
-			title:         regularTitle,
-			draft:         false,
+			name:          "nothing to do, need nothing",
 			hasLabel:      false,
+			needsLabel:    false,
 			shouldLabel:   false,
 			shouldUnlabel: false,
 		},
 		{
-			name:          "wip title PR, needs label",
-			title:         wipTitle,
-			draft:         false,
+			name:          "needs Label and comment",
 			hasLabel:      false,
+			needsLabel:    true,
 			shouldLabel:   true,
 			shouldUnlabel: false,
 		},
 		{
-			name:          "draft PR, needs label",
-			title:         regularTitle,
-			draft:         true,
-			hasLabel:      false,
-			shouldLabel:   true,
-			shouldUnlabel: false,
-		},
-		{
-			name:          "regular PR, remove label",
-			title:         regularTitle,
-			draft:         false,
+			name:          "unnecessary Label should be removed",
 			hasLabel:      true,
+			needsLabel:    false,
 			shouldLabel:   false,
 			shouldUnlabel: true,
 		},
 		{
-			name:          "wip title PR, nothing to do",
-			title:         wipTitle,
-			draft:         false,
+			name:          "nothing to do, have everything",
 			hasLabel:      true,
-			shouldLabel:   false,
-			shouldUnlabel: false,
-		},
-		{
-			name:          "draft PR, nothing to do",
-			title:         regularTitle,
-			draft:         true,
-			hasLabel:      true,
+			needsLabel:    true,
 			shouldLabel:   false,
 			shouldUnlabel: false,
 		},
@@ -97,12 +71,11 @@ func TestWipLabel(t *testing.T) {
 		}
 		org, repo, number := "org", "repo", 5
 		e := &event{
-			org:      org,
-			repo:     repo,
-			number:   number,
-			title:    tc.title,
-			draft:    tc.draft,
-			hasLabel: tc.hasLabel,
+			org:        org,
+			repo:       repo,
+			number:     number,
+			hasLabel:   tc.hasLabel,
+			needsLabel: tc.needsLabel,
 		}
 
 		if err := handle(fc, logrus.WithField("plugin", PluginName), e); err != nil {

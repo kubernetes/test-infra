@@ -47,15 +47,6 @@ type Path struct {
 	url url.URL
 }
 
-func NewPath(path string) (*Path, error) {
-	var p Path
-	err := p.Set(path)
-	if err != nil {
-		return nil, err
-	}
-	return &p, nil
-}
-
 // String returns the gs://bucket/obj url
 func (g Path) String() string {
 	return g.url.String()
@@ -118,20 +109,10 @@ func calcCRC(buf []byte) uint32 {
 	return crc32.Checksum(buf, crc32.MakeTable(crc32.Castagnoli))
 }
 
-const (
-	// Default ACLs for this upload
-	Default = false
-	// PublicRead ACL for this upload.
-	PublicRead = true
-)
-
 // Upload writes bytes to the specified Path
-func Upload(ctx context.Context, client *storage.Client, path Path, buf []byte, worldReadable bool) error {
+func Upload(ctx context.Context, client *storage.Client, path Path, buf []byte) error {
 	crc := calcCRC(buf)
 	w := client.Bucket(path.Bucket()).Object(path.Object()).NewWriter(ctx)
-	if worldReadable {
-		w.ACL = []storage.ACLRule{{Entity: storage.AllUsers, Role: storage.RoleReader}}
-	}
 	w.SendCRC32C = true
 	// Send our CRC32 to ensure google received the same data we sent.
 	// See checksum example at:

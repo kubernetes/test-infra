@@ -14,111 +14,130 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Resultstore converts --build=gs://prefix/JOB/NUMBER from prow's pod-utils to a ResultStore invocation suite, which it optionally will --upload=gcp-project.
 package main
 
 import (
 	"context"
-	"encoding/json"
-	"flag"
+	"crypto/x509"
 	"fmt"
-	"net/url"
+	"log"
+	"math/rand"
 	"os"
-	"regexp"
-	"strings"
-	"sync"
+	"strconv"
 	"time"
 
-	"cloud.google.com/go/storage"
-	"github.com/sirupsen/logrus"
+	"github.com/golang/protobuf/ptypes/duration"
+	"github.com/golang/protobuf/ptypes/timestamp"
+	"github.com/golang/protobuf/ptypes/wrappers"
+	"github.com/google/uuid"
+	resultstore "google.golang.org/genproto/googleapis/devtools/resultstore/v2"
+	"google.golang.org/genproto/protobuf/field_mask"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/oauth"
 	"sigs.k8s.io/yaml"
-
-	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/logrusutil"
-	"k8s.io/test-infra/testgrid/config"
-	"k8s.io/test-infra/testgrid/metadata"
-	"k8s.io/test-infra/testgrid/resultstore"
-	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
-var re = regexp.MustCompile(`( ?|^)\[[^]]+\]( |$)`)
-
-// Converts "[k8s.io] hello world [foo]" into "hello world", []string{"k8s.io", "foo"}
-func stripTags(str string) (string, []string) {
-	tags := re.FindAllString(str, -1)
-	for i, w := range tags {
-		w = strings.TrimSpace(w)
-		tags[i] = w[1 : len(w)-1]
-	}
-	var reals []string
-	for _, p := range re.Split(str, -1) {
-		if p == "" {
-			continue
-		}
-		reals = append(reals, p)
-	}
-	return strings.Join(reals, " "), tags
-}
-
-type options struct {
-	path           gcs.Path
-	jobs           flagutil.Strings
-	deadline       time.Duration
-	latest         int
-	override       bool
-	account        string
-	gcsAuth        bool
-	pending        bool
-	repeat         time.Duration
-	project        string
-	secret         string
-	testgridConfig string
-}
-
-func (o *options) parse(flags *flag.FlagSet, args []string) error {
-	flags.Var(&o.path, "build", "Download a specific gs://bucket/to/job/build-1234 url (instead of latest builds for each --job)")
-	flags.Var(&o.jobs, "job", "Configures specific jobs to update (repeatable, all jobs when --job and --build are both empty)")
-	flags.StringVar(&o.testgridConfig, "config", "gs://k8s-testgrid/config", "Path to local/testgrid/config.pb or gs://bucket/testgrid/config.pb")
-	flags.IntVar(&o.latest, "latest", 1, "Configures the number of latest builds to migrate")
-	flags.BoolVar(&o.override, "override", false, "Replace the existing ResultStore data for each build")
-	flags.StringVar(&o.account, "service-account", "", "Authenticate with the service account at specified path")
-	flags.BoolVar(&o.gcsAuth, "gcs-auth", false, "Use service account for gcs auth if set (default auth if unset)")
-	flags.BoolVar(&o.pending, "pending", false, "Include pending results when set (otherwise ignore them)")
-	flags.StringVar(&o.project, "upload", "", "Upload results to specified gcp project instead of stdout")
-	flags.StringVar(&o.secret, "secret", "", "Use the specified secret guid instead of randomly generating one.")
-	flags.DurationVar(&o.deadline, "deadline", 0, "Timeout after the specified deadling duration (use 0 for no deadline)")
-	flags.DurationVar(&o.repeat, "repeat", 0, "Repeatedly transfer after sleeping for this duration (exit after one run when 0)")
-	flags.Parse(args)
-	return nil
-}
-
-func parseOptions() options {
-	var o options
-	if err := o.parse(flag.CommandLine, os.Args[1:]); err != nil {
-		logrus.WithError(err).Fatal("Invalid flags")
-	}
-	return o
-}
+// See https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2
 
 func main() {
-	logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "storeship"})
-	opt := parseOptions()
-	for {
-		err := run(opt)
-		if opt.repeat == 0 {
-			if err != nil {
-				logrus.WithError(err).Fatal("Failed transfer")
-			}
-			return
-		}
-		if err != nil {
-			logrus.WithError(err).Error("Failed transfer")
-		}
-		if opt.repeat > time.Second {
-			logrus.Infof("Sleeping for %s...", opt.repeat)
-		}
-		time.Sleep(opt.repeat)
+	var invID, tok string
+	creds := os.Args[1]
+	if len(os.Args) > 2 {
+		tok = os.Args[2]
 	}
+	if len(os.Args) > 3 {
+		invID = os.Args[3]
+	}
+	if err := setup(creds, tok, invID); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func newUUID() string {
+	return uuid.New().String()
+}
+
+func prop(key, value string) *resultstore.Property {
+	return &resultstore.Property{
+		Key:   key,
+		Value: value,
+	}
+}
+
+func timing(when time.Time) *resultstore.Timing {
+	return &resultstore.Timing{
+		StartTime: stamp(when),
+	}
+}
+
+func timingEnd(when time.Time, seconds int64, nanos int32) *resultstore.Timing {
+	t := timing(when)
+	t.Duration = dur(seconds, nanos)
+	return t
+}
+
+func stamp(when time.Time) *timestamp.Timestamp {
+	return &timestamp.Timestamp{
+		Seconds: when.Unix(),
+	}
+}
+
+func dur(seconds int64, nanos int32) *duration.Duration {
+	return &duration.Duration{
+		Seconds: seconds,
+		Nanos:   nanos,
+	}
+}
+
+func grpcConn(accountPath string) (*grpc.ClientConn, error) {
+	pool, err := x509.SystemCertPool()
+	if err != nil {
+		return nil, fmt.Errorf("system cert pool: %v", err)
+	}
+	creds := credentials.NewClientTLSFromCert(pool, "")
+	const scope = "https://www.googleapis.com/auth/cloud-platform"
+	perRPC, err := oauth.NewServiceAccountFromFile(accountPath, scope)
+	if err != nil {
+		return nil, fmt.Errorf("create oauth: %v", err)
+	}
+	conn, err := grpc.Dial(
+		"resultstore.googleapis.com:443",
+		grpc.WithTransportCredentials(creds),
+		grpc.WithPerRPCCredentials(perRPC),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("dial: %v", err)
+	}
+
+	return conn, nil
+}
+
+type (
+	uploadClient   = resultstore.ResultStoreUploadClient
+	downloadClient = resultstore.ResultStoreDownloadClient
+)
+
+func clients(conn *grpc.ClientConn) (uploadClient, downloadClient) {
+	up := resultstore.NewResultStoreUploadClient(conn)
+	down := resultstore.NewResultStoreDownloadClient(conn)
+	return up, down
+}
+
+func createInvocation(ctx context.Context, up uploadClient) (*resultstore.Invocation, string, error) {
+	tok := newUUID()
+	fmt.Println("Auth token", tok)
+	inv, err := up.CreateInvocation(ctx, &resultstore.CreateInvocationRequest{
+		Invocation: &resultstore.Invocation{
+			InvocationAttributes: &resultstore.InvocationAttributes{
+				ProjectId:   "fejta-prod",
+				Description: "hello world",
+			},
+			Timing: timing(time.Now()),
+		},
+		AuthorizationToken: tok,
+	})
+	return inv, tok, err
 }
 
 func str(inv interface{}) string {
@@ -135,408 +154,560 @@ func print(inv ...interface{}) {
 	}
 }
 
-func trailingSlash(s string) string {
-	if strings.HasSuffix(s, "/") {
-		return s
-	}
-	return s + "/"
+const (
+	finishConfiguredTarget = false
+	finishTarget           = false
+	finishInvocation       = false
+)
+
+func pick(choices ...string) string {
+	return choices[rand.Intn(len(choices))]
 }
 
-func run(opt options) error {
-	var ctx context.Context
-	var cancel context.CancelFunc
-	if opt.deadline > 0 {
-		ctx, cancel = context.WithTimeout(context.Background(), opt.deadline)
-	} else {
-		ctx, cancel = context.WithCancel(context.Background())
-	}
-	defer cancel()
-
-	var gcsAccount string
-	if opt.gcsAuth {
-		gcsAccount = opt.account
-	}
-	storageClient, err := storageClient(ctx, gcsAccount)
-	if err != nil {
-		return fmt.Errorf("storage client: %v", err)
-	}
-
-	logrus.WithFields(logrus.Fields{"testgrid": opt.testgridConfig}).Info("Reading testgrid config...")
-	cfg, err := config.Read(opt.testgridConfig, ctx, storageClient)
-	if err != nil {
-		return fmt.Errorf("read testgrid config: %v", err)
-	}
-
-	var rsClient *resultstore.Client
-	if opt.project != "" {
-		rsClient, err = resultstoreClient(ctx, opt.account, resultstore.Secret(opt.secret))
-		if err != nil {
-			return fmt.Errorf("resultstore client: %v", err)
-		}
-	}
-
-	// Should we just transfer a specific build?
-	if opt.path.Bucket() != "" { // All valid --build=gs://whatever values have a non-empty bucket.
-		return transferBuild(ctx, storageClient, rsClient, opt.project, opt.path, opt.override, true)
-	}
-
-	groups, err := findGroups(cfg, opt.jobs.Strings()...)
-	if err != nil {
-		return fmt.Errorf("find groups: %v", err)
-	}
-
-	logrus.Infof("Finding latest builds for %d groups...\n", len(groups))
-	buildsChan, buildsErrChan := findBuilds(ctx, storageClient, groups)
-	transferErrChan := transfer(ctx, storageClient, rsClient, opt, buildsChan)
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case err := <-buildsErrChan:
-		if err != nil {
-			return fmt.Errorf("find builds: %v", err)
-		}
-	}
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case err := <-transferErrChan:
-		if err != nil {
-			return fmt.Errorf("transfer: %v", err)
-		}
-	}
-	return nil
+func caseName() string {
+	return pick(
+		"testFoo",
+		"testBar",
+		"testSanta",
+		"testGeorge",
+		"testAbstractFactoryBuilderBuilderBuilderFactory",
+		"testCRUD [Feature:Demo]",
+	)
 }
 
-func joinErrs(errs []error, sep string) string {
-	var out []string
-	for _, e := range errs {
-		out = append(out, e.Error())
-	}
-	return strings.Join(out, sep)
+func className() string {
+	return pick(
+		"com.google.omg",
+		"com.google.whynot",
+		"io.k8s.java",
+		"k8s.io/golang",
+		"ignore",
+	)
 }
 
-func transfer(ctx context.Context, storageClient *storage.Client, rsClient *resultstore.Client, opt options, buildsChan <-chan buildsInfo) <-chan error {
-	retChan := make(chan error)
-	go func() {
-		transferErrChan := make(chan error)
-		var wg sync.WaitGroup
-		var total int
-		for info := range buildsChan {
-			total++
-			wg.Add(1)
-			go func(info buildsInfo) {
-				defer wg.Done()
-				if err := transferLatest(ctx, storageClient, rsClient, opt.project, info.builds, opt.latest, opt.override, opt.pending); err != nil {
-					logrus.WithError(err).Error("Transfer failed")
-					select {
-					case <-ctx.Done():
-					case transferErrChan <- fmt.Errorf("transfer %s in %s: %v", info.name, info.prefix, err):
-					}
-				}
-			}(info)
-		}
-		go func() {
-			defer close(transferErrChan)
-			wg.Wait()
-		}()
-		var errs []error
-		for err := range transferErrChan {
-			errs = append(errs, err)
-		}
-		var err error
-		if n := len(errs); n > 0 {
-			err = fmt.Errorf("%d errors transferring %d groups: %v", n, total, joinErrs(errs, ", "))
-		}
-		select {
-		case <-ctx.Done():
-		case retChan <- err:
-		}
-
-	}()
-	return retChan
+func flip() bool {
+	return rand.Int()%2 == 0
 }
 
-type bucketChecker struct {
-	buckets map[string]bool
-	client  *storage.Client
-	lock    sync.RWMutex
-}
+func randomTestCase() *resultstore.Test {
+	c := &resultstore.TestCase{
+		CaseName:  caseName(),
+		ClassName: className(),
+		Timing:    timingEnd(time.Now(), 15, 30),
+		Properties: []*resultstore.Property{
+			prop("whatever", "yo"),
+		},
+		Files: manyFiles,
+	}
 
-func (bc *bucketChecker) writable(ctx context.Context, path gcs.Path) bool {
-	name := path.Bucket()
-	bc.lock.RLock()
-	writable, present := bc.buckets[name]
-	bc.lock.RUnlock()
-	if present {
-		return writable
-	}
-	bc.lock.Lock()
-	defer bc.lock.Unlock()
-	writable, present = bc.buckets[name]
-	if present {
-		return writable
-	}
-	const want = "storage.objects.create"
-	have, err := bc.client.Bucket(name).IAM().TestPermissions(ctx, []string{want})
-	if err != nil || len(have) != 1 || have[0] != want {
-		bc.buckets[name] = false
-		logrus.WithError(err).WithFields(logrus.Fields{"bucket": name, "want": want, "have": have}).Error("No write access")
-	} else {
-		bc.buckets[name] = true
-	}
-	return bc.buckets[name]
-}
-
-func findGroups(cfg *config.Configuration, jobs ...string) ([]config.TestGroup, error) {
-	var groups []config.TestGroup
-	for _, job := range jobs {
-		tg := cfg.FindTestGroup(job)
-		if tg == nil {
-			return nil, fmt.Errorf("job %s not found in test groups", job)
+	failed, errored := flip(), flip()
+	switch {
+	case errored:
+		if flip() {
+			c.Result = resultstore.TestCase_INTERRUPTED
+		} else {
+			c.Result = resultstore.TestCase_CANCELLED
 		}
-		groups = append(groups, *tg)
-	}
-	if len(jobs) == 0 {
-		for _, tg := range cfg.TestGroups {
-			groups = append(groups, *tg)
-		}
-	}
-	return groups, nil
-}
-
-type buildsInfo struct {
-	name   string
-	prefix gcs.Path
-	builds []gcs.Build
-}
-
-func findGroupBuilds(ctx context.Context, storageClient *storage.Client, bc *bucketChecker, group config.TestGroup, buildsChan chan<- buildsInfo, errChan chan<- error) {
-	log := logrus.WithFields(logrus.Fields{
-		"testgroup":  group.Name,
-		"gcs_prefix": "gs://" + group.GcsPrefix,
-	})
-	log.Debug("Get latest builds...")
-	tgPath, err := gcs.NewPath("gs://" + group.GcsPrefix)
-	if err != nil {
-		log.WithError(err).Error("Bad build URL")
-		err = fmt.Errorf("test group %s: gs://%s prefix invalid: %v", group.Name, group.GcsPrefix, err)
-		select {
-		case <-ctx.Done():
-		case errChan <- err:
-		}
-		return
-	}
-	if !bc.writable(ctx, *tgPath) {
-		log.Debug("Skip unwritable group")
-		return
+	case failed || flip():
+		c.Result = resultstore.TestCase_COMPLETED
+	case flip():
+		c.Result = resultstore.TestCase_SKIPPED
+	case flip():
+		c.Result = resultstore.TestCase_SUPPRESSED
+	case flip():
+		c.Result = resultstore.TestCase_FILTERED
+	default:
+		c.Result = resultstore.TestCase_COMPLETED
 	}
 
-	builds, err := gcs.ListBuilds(ctx, storageClient, *tgPath)
-	if err != nil {
-		log.WithError(err).Error("Failed to list builds")
-		err := fmt.Errorf("test group %s: list %s: %v", group.Name, *tgPath, err)
-		select {
-		case <-ctx.Done():
-		case errChan <- err:
-		}
-		return
-	}
-	info := buildsInfo{
-		name:   group.Name,
-		prefix: *tgPath,
-		builds: builds,
-	}
-	select {
-	case <-ctx.Done():
-	case buildsChan <- info:
-	}
-}
-
-func findBuilds(ctx context.Context, storageClient *storage.Client, groups []config.TestGroup) (<-chan buildsInfo, <-chan error) {
-	buildsChan := make(chan buildsInfo)
-	errChan := make(chan error)
-	bc := bucketChecker{
-		buckets: map[string]bool{},
-		client:  storageClient,
-	}
-	go func() {
-		innerErrChan := make(chan error)
-		defer close(buildsChan)
-		defer close(errChan)
-		ctx, cancel := context.WithCancel(ctx)
-		defer cancel()
-
-		var wg sync.WaitGroup
-		for _, testGroup := range groups {
-			wg.Add(1)
-			go func(testGroup config.TestGroup) {
-				defer wg.Done()
-				findGroupBuilds(ctx, storageClient, &bc, testGroup, buildsChan, innerErrChan)
-			}(testGroup)
-		}
-		go func() {
-			defer close(innerErrChan)
-			wg.Wait()
-		}()
-		var errs []error
-		for err := range innerErrChan {
-			errs = append(errs, err)
-		}
-
-		var err error
-		if n := len(errs); n > 0 {
-			err = fmt.Errorf("%d errors finding builds from %d groups: %v", n, len(groups), joinErrs(errs, ", "))
-		}
-
-		select {
-		case <-ctx.Done():
-		case errChan <- err:
-		}
-	}()
-	return buildsChan, errChan
-}
-
-func transferLatest(ctx context.Context, storageClient *storage.Client, rsClient *resultstore.Client, project string, builds gcs.Builds, max int, override bool, includePending bool) error {
-
-	for i, build := range builds {
-		if i >= max {
-			break
-		}
-		path, err := gcs.NewPath(fmt.Sprintf("gs://%s/%s", build.BucketPath, build.Prefix))
-		if err != nil {
-			return fmt.Errorf("bad %s path: %v", build, err)
-		}
-		if err := transferBuild(ctx, storageClient, rsClient, project, *path, override, includePending); err != nil {
-			return fmt.Errorf("%s: %v", build, err)
+	if failed {
+		c.Failures = []*resultstore.TestFailure{
+			{
+				FailureMessage: "Expected err not to have occurred",
+				ExceptionType:  "NotEverythingIsJavaException",
+				StackTrace:     "TODO: stacktrace joke",
+				Expected: []string{
+					"foo",
+					"bar",
+				},
+				Actual: []string{
+					"spam",
+					"eggs",
+				},
+			},
 		}
 	}
-	return nil
-}
 
-func transferBuild(ctx context.Context, storageClient *storage.Client, rsClient *resultstore.Client, project string, path gcs.Path, override bool, includePending bool) error {
-	build := gcs.Build{
-		Bucket:     storageClient.Bucket(path.Bucket()),
-		Context:    ctx,
-		Prefix:     trailingSlash(path.Object()),
-		BucketPath: path.Bucket(),
-	}
-
-	log := logrus.WithFields(logrus.Fields{"build": build})
-
-	log.Debug("Downloading...")
-	result, err := download(ctx, storageClient, build)
-	if err != nil {
-		return fmt.Errorf("download: %v", err)
+	if errored {
+		c.Errors = []*resultstore.TestError{
+			{
+				ErrorMessage:  "true != false",
+				ExceptionType: "panic",
+				StackTrace:    "lines",
+			},
+		}
 	}
 
-	switch val, _ := result.started.Metadata.String(resultstoreKey); {
-	case val != nil && override:
-		log = log.WithFields(logrus.Fields{"previously": *val})
-		log.Warn("Replacing result...")
-	case val != nil:
-		log.WithFields(logrus.Fields{
-			"resultstore": *val,
-		}).Debug("Already transferred")
-		return nil
+	return &resultstore.Test{
+		TestType: &resultstore.Test_TestCase{
+			TestCase: c,
+		},
 	}
-
-	if result.finished.Running && !includePending {
-		log.Debug("Skip pending result")
-		return nil
-	}
-
-	desc := "Results of " + path.String()
-	log.Debug("Converting...")
-	inv, target, test := convert(project, desc, path, *result)
-
-	if project == "" {
-		print(inv.To(), test.To())
-		return nil
-	}
-
-	log.Debug("Uploading...")
-	viewURL, err := upload(rsClient, inv, target, test)
-	if err != nil {
-		return fmt.Errorf("upload %s: %v", viewURL, err)
-	}
-	log = log.WithFields(logrus.Fields{"resultstore": viewURL})
-	log.Info("Transferred result")
-	changed, err := insertLink(&result.started, viewURL)
-	if err != nil {
-		return fmt.Errorf("insert resultstore link into metadata: %v", err)
-	}
-	if !changed { // already has the link
-		return nil
-	}
-	log.Debug("Inserting link...")
-	if err := updateStarted(ctx, storageClient, path, result.started); err != nil {
-		return fmt.Errorf("update started.json: %v", err)
-	}
-	return nil
 }
 
 const (
-	linksKey       = "links"
-	resultstoreKey = "resultstore"
-	urlKey         = "url"
+	e2eLog        = "gs://kubernetes-jenkins/logs/ci-kubernetes-local-e2e/3355/build-log.txt"
+	compressedLog = e2eLog
+	pushLog       = "gs://kubernetes-jenkins/logs/post-test-infra-push-prow/1079/build-log.txt"
+	bumpLog       = "gs://kubernetes-jenkins/logs/ci-test-infra-autobump-prow/67/build-log.txt"
+	oldPushLog    = "gs://kubernetes-jenkins/logs/post-test-infra-push-prow/1077/build-log.txt"
+	erickLog      = "gs://kubernetes-jenkins/erick.txt"
+	fejtaLog      = "gs://kubernetes-jenkins/erick-fejta.txt"
 )
 
-// insertLink attempts to set metadata.links.resultstore.url to viewURL.
-//
-// returns true if started metadata was updated.
-func insertLink(started *gcs.Started, viewURL string) (bool, error) {
-	if started.Metadata == nil {
-		started.Metadata = metadata.Metadata{}
+var (
+	testLog = &resultstore.File{
+		Uid:           "test.log",
+		Uri:           pushLog,
+		ContentViewer: "https://storage.googleapis.com/kubernetes-jenkins/logs/ci-kubernetes-local-e2e/3355/build-log.txt",
 	}
-	meta := started.Metadata
-	var changed bool
-	top, present := meta.String(resultstoreKey)
-	if !present || top == nil || *top != viewURL {
-		changed = true
-		meta[resultstoreKey] = viewURL
+	buildLog = &resultstore.File{
+		Uid: "build.log",
+		Uri: bumpLog,
 	}
-	links, present := meta.Meta(linksKey)
-	if present && links == nil {
-		return false, fmt.Errorf("metadata.links is not a Metadata value: %v", meta[linksKey])
+	stdout = &resultstore.File{
+		Uid: "stdout",
+		Uri: erickLog,
 	}
-	if links == nil {
-		links = &metadata.Metadata{}
-		changed = true
+	stderr = &resultstore.File{
+		Uid: "stderr",
+		Uri: fejtaLog,
 	}
-	resultstoreMeta, present := links.Meta(resultstoreKey)
-	if present && resultstoreMeta == nil {
-		return false, fmt.Errorf("metadata.links.resultstore is not a Metadata value: %v", (*links)[resultstoreKey])
+	manyFiles = []*resultstore.File{ // special ids: build: stdout,stderr,baseline.lcov; test: test.xml,test.log,test.lcov
+		buildLog, testLog, stdout, stderr,
 	}
-	if resultstoreMeta == nil {
-		resultstoreMeta = &metadata.Metadata{}
-		changed = true
+)
+
+func setup(account, tok, invID string) error {
+	// create connection and clients
+	conn, err := grpcConn(account)
+	if err != nil {
+		return fmt.Errorf("setup: %v", err)
 	}
-	val, present := resultstoreMeta.String(urlKey)
-	if present && val == nil {
-		return false, fmt.Errorf("metadata.links.resultstore.url is not a string value: %v", (*resultstoreMeta)[urlKey])
+	up, down := clients(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// ensure invocation
+
+	var inv *resultstore.Invocation
+	if invID == "" {
+		inv, tok, err = createInvocation(ctx, up)
+		if err != nil {
+			return fmt.Errorf("create invocation: %v", err)
+		}
+		invID = inv.Id.InvocationId
 	}
-	if !changed && val != nil && *val == viewURL {
-		return false, nil
+	invName := "invocations/" + invID
+	inv, err = down.GetInvocation(ctx, &resultstore.GetInvocationRequest{
+		Name: invName,
+	})
+	if err != nil {
+		return fmt.Errorf("get invocation %s: %v", invName, err)
+	}
+	print("gi", tok, inv)
+
+	inv.Files = manyFiles
+	inv, err = up.UpdateInvocation(ctx, &resultstore.UpdateInvocationRequest{
+		Invocation: inv,
+		UpdateMask: &field_mask.FieldMask{
+			Paths: []string{"files"},
+		},
+		AuthorizationToken: tok,
+	})
+	if err != nil {
+		return fmt.Errorf("update invocation %s: %v", invName, err)
 	}
 
-	(*resultstoreMeta)[urlKey] = viewURL
-	(*links)[resultstoreKey] = *resultstoreMeta
-	meta[linksKey] = *links
-	return true, nil
-}
+	// add a target
 
-func updateStarted(ctx context.Context, storageClient *storage.Client, path gcs.Path, started gcs.Started) error {
-	startedPath, err := path.ResolveReference(&url.URL{Path: "started.json"})
+	t, err := up.CreateTarget(ctx, &resultstore.CreateTargetRequest{
+		Parent:   inv.Name,
+		TargetId: "//erick//fejta:stardate-" + strconv.FormatInt(time.Now().Unix(), 10),
+		Target: &resultstore.Target{ // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#Target
+			StatusAttributes: &resultstore.StatusAttributes{
+				Status:      resultstore.Status_BUILDING,
+				Description: "fun fun",
+			},
+			Visible: true, // Will not appear in UI otherwise
+			//   Timing
+			//   TargetAttributes
+			//   TestAttributes
+			//   Properties
+			//   Files
+		},
+		AuthorizationToken: tok,
+	})
 	if err != nil {
-		return fmt.Errorf("resolve started.json: %v", err)
+		return fmt.Errorf("create target: %v", err)
 	}
-	buf, err := json.Marshal(started)
+	print("ct", t)
+
+	tr, err := down.ListTargets(ctx, &resultstore.ListTargetsRequest{
+		Parent: inv.Name,
+		// PageSize
+		// PageStart
+	})
 	if err != nil {
-		return fmt.Errorf("encode started.json: %v", err)
+		return fmt.Errorf("list targets: %v", err)
 	}
-	// TODO(fejta): compare and swap
-	if err := gcs.Upload(ctx, storageClient, *startedPath, buf, gcs.Default); err != nil {
-		return fmt.Errorf("upload started.json: %v", err)
+	print("lt", inv, tr)
+
+	// create a configuration
+	c, err := up.CreateConfiguration(ctx, &resultstore.CreateConfigurationRequest{
+		Parent:             inv.Name,
+		ConfigId:           "default",
+		AuthorizationToken: tok,
+		Configuration: &resultstore.Configuration{
+			// Overall status of this config
+			StatusAttributes: &resultstore.StatusAttributes{
+				Status:      resultstore.Status_BUILDING, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#Status
+				Description: "very exciting",
+			},
+			ConfigurationAttributes: &resultstore.ConfigurationAttributes{
+				Cpu: "amd64", // this is the only value, LOL
+			},
+			Properties: []*resultstore.Property{
+				prop("something", fmt.Sprintf("exciting-%d", time.Now().Unix())),
+				prop("more", "excitement"),
+			},
+		},
+	})
+	if err != nil {
+		print("create failed (already exists?", err)
 	}
+	print("cc", c)
+
+	lr, err := down.ListConfigurations(ctx, &resultstore.ListConfigurationsRequest{
+		Parent: inv.Name,
+		// PageSize, PageStart
+	})
+	if err != nil {
+		return fmt.Errorf("list configurations: %v", err)
+	}
+	print("lc", lr)
+
+	cfgs := lr.Configurations
+
+	// create a configured target
+
+	ct, err := up.CreateConfiguredTarget(ctx, &resultstore.CreateConfiguredTargetRequest{
+		Parent:             t.Name,
+		ConfigId:           cfgs[len(cfgs)-1].Id.ConfigurationId,
+		AuthorizationToken: tok,
+		ConfiguredTarget: &resultstore.ConfiguredTarget{
+			StatusAttributes: &resultstore.StatusAttributes{
+				Status:      resultstore.Status_TESTING,
+				Description: "oh wow",
+			},
+			Timing: timingEnd(time.Now(), 50, 7),
+			TestAttributes: &resultstore.ConfiguredTestAttributes{
+				TotalRunCount:   1,
+				TotalShardCount: 1,
+				TimeoutDuration: dur(500, 0),
+			},
+			Properties: []*resultstore.Property{
+				prop("fun", fmt.Sprintf("times-%d", time.Now().Unix())),
+			},
+			Files: []*resultstore.File{
+				{
+					Uid: newUUID(),
+					Uri: "gs://erick/fejta/likes/uuids",
+					Length: &wrappers.Int64Value{
+						Value: 19,
+					},
+					ContentType: "orange",
+					ArchiveEntry: &resultstore.ArchiveEntry{
+						Path: "/freedom",
+						Length: &wrappers.Int64Value{
+							Value: 10000,
+						},
+						ContentType: "text/plain",
+					},
+					ContentViewer: "https://prow.k8s.io/tide",
+					Hidden:        false,
+					Description:   "many thanks",
+					Digest:        "yes", // what is hexadecimal-"like"
+					HashType:      resultstore.File_SHA256,
+				},
+			},
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("create configured target: %v", err)
+	}
+	print("cct", ct)
+
+	lctr, err := down.ListConfiguredTargets(ctx, &resultstore.ListConfiguredTargetsRequest{
+		Parent: t.Name,
+		// pagesize/start
+	})
+	if err != nil {
+		return fmt.Errorf("list %s configured targets: %v", t.Name, err)
+	}
+	print("lct", lctr)
+
+	cts := lctr.ConfiguredTargets
+	ct = cts[len(cts)-1]
+
+	a, err := up.CreateAction(ctx, &resultstore.CreateActionRequest{
+		Parent:             ct.Name,
+		ActionId:           "build",
+		AuthorizationToken: tok,
+		Action: &resultstore.Action{
+			StatusAttributes: &resultstore.StatusAttributes{
+				Status:      resultstore.Status_BUILT,
+				Description: "so built",
+			},
+			// Timing
+			ActionType: &resultstore.Action_BuildAction{
+				BuildAction: &resultstore.BuildAction{
+					Type:              "javac",
+					PrimaryInputPath:  "java/com/google/whatever/foo.java",
+					PrimaryOutputPath: "whatever.o",
+				},
+			},
+			// ActionType: Action_BuildAction / Test
+			ActionAttributes: &resultstore.ActionAttributes{
+				ExecutionStrategy: resultstore.ExecutionStrategy_LOCAL_SEQUENTIAL, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#ExecutionStrategy
+				ExitCode:          1,
+				Hostname:          "foo",
+				InputFileInfo: &resultstore.InputFileInfo{
+					Count:             3,
+					DistinctCount:     2,
+					CountLimit:        12,
+					DistinctBytes:     100,
+					DistinctByteLimit: 1000,
+				},
+			},
+			ActionDependencies: []*resultstore.Dependency{
+				{
+					Resource: &resultstore.Dependency_Target{
+						Target: t.Name,
+					},
+					Label: "Root Cause", // exact resource that caused falure
+				},
+			},
+			Properties: nil,
+			Files: []*resultstore.File{ // special ids: build: stdout,stderr,baseline.lcov; test: test.xml,test.log,test.lcov
+				stdout,
+				stderr,
+			},
+			Coverage: nil, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#ActionCoverage
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("create build action: %v", err)
+	}
+	print("ca#build", a)
+
+	a, err = up.CreateAction(ctx, &resultstore.CreateActionRequest{
+		Parent:             ct.Name,
+		ActionId:           "test",
+		AuthorizationToken: tok,
+		Action: &resultstore.Action{
+			StatusAttributes: &resultstore.StatusAttributes{
+				Status:      resultstore.Status_PASSED,
+				Description: "hello again",
+			},
+			// Timing
+			ActionType: &resultstore.Action_TestAction{
+				TestAction: &resultstore.TestAction{
+					TestTiming: &resultstore.TestTiming{
+						Location: &resultstore.TestTiming_Remote{
+							// Local: &resultstore.LocalTestTiming{
+							//   TestProcessDuration: &duration.Duration{},
+							// }
+							Remote: &resultstore.RemoteTestTiming{
+								LocalAnalysisDuration: dur(2, 0),
+								Attempts: []*resultstore.RemoteTestAttemptTiming{
+									{
+										// https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#RemoteTestAttemptTiming
+										QueueDuration:        dur(3, 4),
+										UploadDuration:       dur(30, 40),
+										MachineSetupDuration: dur(5, 0),
+										TestProcessDuration:  dur(6, 0),
+										DownloadDuration:     dur(7, 0),
+									},
+								},
+							},
+						},
+						SystemTimeDuration: dur(5, 0),
+						UserTimeDuration:   dur(10, 0),
+						TestCaching:        resultstore.TestCaching_CACHE_MISS, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#TestCaching
+					},
+					ShardNumber:          0,
+					RunNumber:            1,
+					AttemptNumber:        2,
+					EstimatedMemoryBytes: 3,
+					Warnings: []*resultstore.TestWarning{
+						{
+							WarningMessage: "google sure loves themselves some proto fields",
+						},
+					},
+					TestSuite: &resultstore.TestSuite{
+						SuiteName: "sweeeeet",
+						Tests: []*resultstore.Test{
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							randomTestCase(),
+							// TestType: &resultstore.Test_TestSuite{TestSuite: &resultstore.TestSuite{}},
+						},
+						Failures: []*resultstore.TestFailure{ // suite level failures
+							{
+								FailureMessage: "bitter",
+								ExceptionType:  "VegetableException",
+								Expected: []string{
+									"candy",
+									"fruit",
+									"meat",
+								},
+								Actual: []string{
+									"broccoli",
+									"kale",
+									"cucumber",
+								},
+							},
+						},
+						Errors: []*resultstore.TestError{ // suite level errors
+							{
+								ErrorMessage:  "salty",
+								ExceptionType: "wounded",
+							},
+						},
+						Timing: timingEnd(time.Now(), 173, 0), // time to complete suite
+						Properties: []*resultstore.Property{
+							prop("sweet", "success"),
+						},
+						Files: manyFiles, // files produced by this test suite
+					},
+				},
+			},
+			ActionAttributes: &resultstore.ActionAttributes{
+				ExecutionStrategy: resultstore.ExecutionStrategy_LOCAL_SEQUENTIAL, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#ExecutionStrategy
+				ExitCode:          1,
+				Hostname:          "foo",
+				InputFileInfo: &resultstore.InputFileInfo{
+					Count:             3,
+					DistinctCount:     2,
+					CountLimit:        12,
+					DistinctBytes:     100,
+					DistinctByteLimit: 1000,
+				},
+			},
+			ActionDependencies: []*resultstore.Dependency{
+				{
+					Resource: &resultstore.Dependency_Target{
+						Target: t.Name,
+					},
+					Label: "Root Cause", // exact resource that caused falure
+				},
+			},
+			Properties: nil,
+			Files: []*resultstore.File{ // special ids: build: stdout,stderr,baseline.lcov; test: test.xml,test.log,test.lcov
+				testLog,
+			},
+			Coverage: nil, // https://godoc.org/google.golang.org/genproto/googleapis/devtools/resultstore/v2#ActionCoverage
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("create test action: %v", err)
+	}
+	print("ca#test", a)
+
+	lar, err := down.ListActions(ctx, &resultstore.ListActionsRequest{
+		Parent: ct.Name,
+		// pagesizestart
+	})
+	print("la", lar, err)
+
+	if finishConfiguredTarget {
+		fct, err := up.FinishConfiguredTarget(ctx, &resultstore.FinishConfiguredTargetRequest{
+			Name:               ct.Name,
+			AuthorizationToken: tok,
+		})
+		if err != nil {
+			return fmt.Errorf("finish %s: %v", ct.Name, err)
+		}
+		print("fct", fct)
+	}
+
+	if finishTarget {
+		ft, err := up.FinishTarget(ctx, &resultstore.FinishTargetRequest{
+			Name:               t.Name,
+			AuthorizationToken: tok,
+		})
+		if err != nil {
+			return fmt.Errorf("finish %s: %v", t.Name, err)
+		}
+		print("ft", ft)
+	}
+
+	if finishInvocation {
+		fi, err := up.FinishInvocation(ctx, &resultstore.FinishInvocationRequest{
+			Name:               inv.Name,
+			AuthorizationToken: tok,
+		})
+		if err != nil {
+			return fmt.Errorf("finish %s: %v", inv.Name, err)
+		}
+		print("fi", fi)
+
+	}
+
+	fmt.Println("Token: " + tok)
+	fmt.Printf("See https://source.cloud.google.com/results/invocations/%s\n", inv.Id.InvocationId)
 	return nil
 }

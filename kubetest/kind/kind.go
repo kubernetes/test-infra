@@ -48,10 +48,6 @@ const (
 
 	// If a new version of kind is released this value has to be updated.
 	kindBinaryStableTag = "0.1.0"
-
-	kindClusterNameDefault = "kind-kubetest"
-
-	flagLogLevel = "--loglevel=debug"
 )
 
 var (
@@ -60,8 +56,6 @@ var (
 	kindBinaryVersion = flag.String("kind-binary-version", kindBinaryStable,
 		fmt.Sprintf("(kind only) This flag can be either %q (build from source) "+
 			"or %q (download a stable binary).", kindBinaryBuild, kindBinaryStable))
-	kindClusterName = flag.String("kind-cluster-name", kindClusterNameDefault,
-		"(kind only) Name of the kind cluster.")
 )
 
 var (
@@ -82,7 +76,6 @@ type Deployer struct {
 	kindBinaryVersion string
 	kindBinaryPath    string
 	kindNodeImage     string
-	kindClusterName   string
 }
 
 type kindReleaseAsset struct {
@@ -146,7 +139,6 @@ func initializeDeployer(ctl *process.Control, buildType string) (*Deployer, erro
 		kindBinaryPath:    filepath.Join(kindBinaryDir, "kind"),
 		kindBinaryVersion: *kindBinaryVersion,
 		kindNodeImage:     kindNodeImageLatest,
-		kindClusterName:   *kindClusterName,
 	}
 	// ensure we have the kind binary
 	if err := d.prepareKindBinary(); err != nil {
@@ -157,15 +149,7 @@ func initializeDeployer(ctl *process.Control, buildType string) (*Deployer, erro
 
 // getKubeConfigPath returns the path to the kubeconfig file.
 func (d *Deployer) getKubeConfigPath() (string, error) {
-	log.Println("kind.go:getKubeConfigPath()")
-	args := []string{"get", "kubeconfig-path"}
-
-	// Use a specific cluster name.
-	if d.kindClusterName != "" {
-		args = append(args, "--name="+d.kindClusterName)
-	}
-
-	o, err := d.control.Output(exec.Command("kind", args...))
+	o, err := d.control.Output(exec.Command("kind", "get", "kubeconfig-path"))
 	if err != nil {
 		return "", err
 	}
@@ -174,7 +158,6 @@ func (d *Deployer) getKubeConfigPath() (string, error) {
 
 // setKubeConfigEnv sets the KUBECONFIG environment variable.
 func (d *Deployer) setKubeConfigEnv() error {
-	log.Println("kind.go:setKubeConfigEnv()")
 	path, err := d.getKubeConfigPath()
 	if err != nil {
 		return err
@@ -187,7 +170,6 @@ func (d *Deployer) setKubeConfigEnv() error {
 
 // prepareKindBinary either builds kind from source or pulls a binary from GitHub.
 func (d *Deployer) prepareKindBinary() error {
-	log.Println("kind.go:prepareKindBinary()")
 	switch d.kindBinaryVersion {
 	case kindBinaryBuild:
 		importPathKind, err := getImportPath("sigs.k8s.io/kind")
@@ -196,7 +178,7 @@ func (d *Deployer) prepareKindBinary() error {
 		}
 		log.Println("Building a kind binary from source.")
 		// Build the kind binary.
-		cmd := exec.Command("go", "build", "-o", d.kindBinaryPath)
+		cmd := exec.Command("go", "build", "-o", filepath.Join(d.kindBinaryPath, "kind"))
 		cmd.Dir = importPathKind
 		if err := d.control.FinishRunning(cmd); err != nil {
 			return err
@@ -220,15 +202,12 @@ func (d *Deployer) prepareKindBinary() error {
 		if err := downloadFromURL(url, f); err != nil {
 			return err
 		}
-	default:
-		return fmt.Errorf("uknown kind binary version value: %s", d.kindBinaryVersion)
 	}
 	return nil
 }
 
 // Build handles building kubernetes / kubectl / the node image.
 func (d *Deployer) Build() error {
-	log.Println("kind.go:Build()")
 	// Adapt the build type if needed.
 	var buildType string
 	switch d.buildType {
@@ -245,13 +224,8 @@ func (d *Deployer) Build() error {
 		buildType = d.buildType
 	}
 
-	args := []string{"build", "node-image", "--type=" + buildType, flagLogLevel}
-	if d.kindNodeImage != "" {
-		args = append(args, "--image="+d.kindNodeImage)
-	}
-
 	// Build the node image (including kubernetes)
-	cmd := exec.Command("kind", args...)
+	cmd := exec.Command("kind", "build", "node-image", "--image="+d.kindNodeImage, "--type="+buildType)
 	if err := d.control.FinishRunning(cmd); err != nil {
 		return err
 	}
@@ -293,39 +267,43 @@ func (d *Deployer) Build() error {
 		if err := d.control.FinishRunning(cmd); err != nil {
 			return err
 		}
+		/*
+			e2e.test does not show up in a path with platform in it and will
+			not be found by kube::util::find-binary, so we will copy it to an
+			acceptable location until this is fixed upstream
+			https://github.com/kubernetes/kubernetes/issues/68306
+		*/
+		cmd = exec.Command("cp", "-r", "bazel-bin/test/e2e/e2e.test", "./_output/bin/")
+		cmd.Dir = d.importPathK8s
+		if err := d.control.FinishRunning(cmd); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-// Up creates a kind cluster. Allows passing node image and config.
+// Up builds kind and the node image and then deploys a cluster based on the kind config.
 func (d *Deployer) Up() error {
-	log.Println("kind.go:Up()")
-	args := []string{"create", "cluster", "--retain", "--wait=1m", flagLogLevel}
-
 	// Handle the config flag.
+	configFlag := ""
 	if d.configPath != "" {
-		args = append(args, "--config="+d.configPath)
+		configFlag = "--config=" + d.configPath
 	}
 
 	// Handle the node image flag if we built a new node image.
+	nodeImageFlag := ""
 	if d.kindNodeImage != "" {
-		args = append(args, "--image="+d.kindNodeImage)
-	}
-
-	// Use a specific cluster name.
-	if d.kindClusterName != "" {
-		args = append(args, "--name="+d.kindClusterName)
+		nodeImageFlag = "--image=" + d.kindNodeImage
 	}
 
 	// Build the kind cluster.
-	cmd := exec.Command("kind", args...)
+	cmd := exec.Command(
+		"kind", "create", "cluster",
+		nodeImageFlag, configFlag,
+		"--retain", "--wait=1m", "--loglevel=info",
+	)
 	if err := d.control.FinishRunning(cmd); err != nil {
-		return err
-	}
-
-	// set KUBECONFIG
-	if err := d.setKubeConfigEnv(); err != nil {
 		return err
 	}
 	return nil
@@ -333,10 +311,10 @@ func (d *Deployer) Up() error {
 
 // IsUp verifies if the cluster created by Up() is functional.
 func (d *Deployer) IsUp() error {
-	log.Println("kind.go:IsUp()")
-
-	// Check if kubectl reports nodes.
 	cmd, err := d.KubectlCommand()
+	if err != nil {
+		return err
+	}
 	cmd.Args = append(cmd.Args, []string{"get", "nodes", "--no-headers"}...)
 	o, err := d.control.Output(cmd)
 	if err != nil {
@@ -355,15 +333,7 @@ func (d *Deployer) IsUp() error {
 
 // DumpClusterLogs dumps the logs for this cluster in localPath.
 func (d *Deployer) DumpClusterLogs(localPath, gcsPath string) error {
-	log.Println("kind.go:DumpClusterLogs()")
-	args := []string{"export", "logs", localPath, flagLogLevel}
-
-	// Use a specific cluster name.
-	if d.kindClusterName != "" {
-		args = append(args, "--name="+d.kindClusterName)
-	}
-
-	cmd := exec.Command("kind", args...)
+	cmd := exec.Command("kind", "export", "logs", localPath)
 	if err := d.control.FinishRunning(cmd); err != nil {
 		return err
 	}
@@ -372,74 +342,18 @@ func (d *Deployer) DumpClusterLogs(localPath, gcsPath string) error {
 
 // TestSetup is a NO-OP in this deployer.
 func (d *Deployer) TestSetup() error {
-	log.Println("kind.go:TestSetup()")
-
+	// set KUBECONFIG
+	if err := d.setKubeConfigEnv(); err != nil {
+		return err
+	}
 	// set conformance env so ginkgo.sh etc won't try to do provider setup
 	os.Setenv("KUBERNETES_CONFORMANCE_TEST", "y")
-
-	// Proceed only if a cluster exists.
-	exists, err := d.clusterExists()
-	if err != nil {
-		return err
-	}
-	if !exists {
-		log.Printf("kind.go:TestSetup(): no such cluster %q; skipping the setup of KUBECONFIG!", d.kindClusterName)
-		return nil
-	}
-
-	// set KUBECONFIG
-	if err = d.setKubeConfigEnv(); err != nil {
-		return err
-	}
-
 	return nil
-}
-
-// clusterExists checks if a kind cluster with 'name' exists
-func (d *Deployer) clusterExists() (bool, error) {
-	log.Printf("kind.go:clusterExists()")
-
-	cmd := exec.Command("kind")
-	cmd.Args = append(cmd.Args, []string{"get", "clusters"}...)
-	out, err := d.control.Output(cmd)
-	if err != nil {
-		return false, err
-	}
-
-	lines := strings.Split(string(out), "\n")
-	for _, line := range lines {
-		if line == d.kindClusterName {
-			log.Printf("kind.go:clusterExists(): found %q", d.kindClusterName)
-			return true, nil
-		}
-	}
-	return false, nil
 }
 
 // Down tears down the cluster.
 func (d *Deployer) Down() error {
-	log.Println("kind.go:Down()")
-
-	// Proceed only if a cluster exists.
-	exists, err := d.clusterExists()
-	if err != nil {
-		return err
-	}
-	if !exists {
-		log.Printf("kind.go:Down(): no such cluster %q; skipping 'delete'!", d.kindClusterName)
-		return nil
-	}
-
-	log.Printf("kind.go:Down(): deleting cluster: %s", d.kindClusterName)
-	args := []string{"delete", "cluster", flagLogLevel}
-
-	// Use a specific cluster name.
-	if d.kindClusterName != "" {
-		args = append(args, "--name="+d.kindClusterName)
-	}
-
-	// Delete the cluster.
-	cmd := exec.Command("kind", args...)
+	cmd := exec.Command("kind", "delete", "cluster")
 	if err := d.control.FinishRunning(cmd); err != nil {
 		return err
 	}
@@ -448,21 +362,24 @@ func (d *Deployer) Down() error {
 
 // GetClusterCreated is unimplemented.GetClusterCreated
 func (d *Deployer) GetClusterCreated(gcpProject string) (time.Time, error) {
-	log.Println("kind.go:GetClusterCreated()")
 	return time.Time{}, errors.New("not implemented")
 }
 
 // KubectlCommand returns the exec.Cmd command for kubectl.
 func (d *Deployer) KubectlCommand() (*exec.Cmd, error) {
-	log.Println("kind.go:KubectlCommand()")
 	// Avoid using ./cluster/kubectl.sh
 	// TODO(bentheelder): cache this
-	return exec.Command("kubectl"), nil
+	kubeConfigPath, err := d.getKubeConfigPath()
+	if err != nil {
+		return nil, err
+	}
+	cmd := exec.Command("kubectl")
+	cmd.Env = append(os.Environ(), fmt.Sprintf("KUBECONFIG=%s", kubeConfigPath))
+	return cmd, nil
 }
 
 // downloadFromURL downloads from a url to f
 func downloadFromURL(url string, f *os.File) error {
-	log.Printf("kind.go:downloadFromURL(): %s\n", url)
 	// TODO(bentheelder): is this long enough?
 	timeout := time.Duration(60 * time.Second)
 	client := http.Client{

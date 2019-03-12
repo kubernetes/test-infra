@@ -38,11 +38,11 @@ import (
 const (
 	ownersFileName  = "OWNERS"
 	aliasesFileName = "OWNERS_ALIASES"
-	// GitHub's api uses "" (empty) string as basedir by convention but it's clearer to use "/"
+	// Github's api uses "" (empty) string as basedir by convention but it's clearer to use "/"
 	baseDirConvention = ""
 )
 
-var commonDirBlacklist = sets.NewString(".git", "_output")
+var defaultDirBlacklist = sets.NewString(".git", "_output")
 
 type dirOptions struct {
 	NoParentOwners bool `json:"no_parent_owners,omitempty"`
@@ -84,14 +84,6 @@ type cacheEntry struct {
 	owners  *RepoOwners
 }
 
-func (entry cacheEntry) matchesMDYAML(mdYAML bool) bool {
-	return entry.owners.enableMDYAML == mdYAML
-}
-
-func (entry cacheEntry) fullyLoaded() bool {
-	return entry.sha != "" && entry.aliases != nil && entry.owners != nil
-}
-
 // Interface is an interface to work with OWNERS files.
 type Interface interface {
 	LoadRepoAliases(org, repo, base string) (RepoAliases, error)
@@ -103,13 +95,14 @@ var _ Interface = &Client{}
 
 // Client is the repoowners client
 type Client struct {
+	config *prowConf.Config
+
 	git    *git.Client
 	ghc    githubClient
 	logger *logrus.Entry
 
-	mdYAMLEnabled      func(org, repo string) bool
-	skipCollaborators  func(org, repo string) bool
-	ownersDirBlacklist func() prowConf.OwnersDirBlacklist
+	mdYAMLEnabled     func(org, repo string) bool
+	skipCollaborators func(org, repo string) bool
 
 	lock  sync.Mutex
 	cache map[string]cacheEntry
@@ -119,9 +112,9 @@ type Client struct {
 func NewClient(
 	gc *git.Client,
 	ghc *github.Client,
+	config *prowConf.Config,
 	mdYAMLEnabled func(org, repo string) bool,
 	skipCollaborators func(org, repo string) bool,
-	ownersDirBlacklist func() prowConf.OwnersDirBlacklist,
 ) *Client {
 	return &Client{
 		git:    gc,
@@ -129,9 +122,10 @@ func NewClient(
 		logger: logrus.WithField("client", "repoowners"),
 		cache:  make(map[string]cacheEntry),
 
-		mdYAMLEnabled:      mdYAMLEnabled,
-		skipCollaborators:  skipCollaborators,
-		ownersDirBlacklist: ownersDirBlacklist,
+		mdYAMLEnabled:     mdYAMLEnabled,
+		skipCollaborators: skipCollaborators,
+
+		config: config,
 	}
 }
 
@@ -221,51 +215,36 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	entry, ok := c.cache[fullName]
-	if !ok || entry.sha != sha || entry.owners == nil || !entry.matchesMDYAML(mdYaml) {
+	if !ok || entry.sha != sha || entry.owners == nil || entry.owners.enableMDYAML != mdYaml {
 		gitRepo, err := c.git.Clone(cloneRef)
 		if err != nil {
 			return nil, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
 		}
 		defer gitRepo.Clean()
-
-		reusable := entry.fullyLoaded() && entry.matchesMDYAML(mdYaml)
-		// In most sha changed cases, the files associated with the owners are unchanged.
-		// The cached entry can continue to be used, so need do git diff
-		if reusable {
-			changes, err := gitRepo.Diff(sha, entry.sha)
-			if err != nil {
-				return nil, fmt.Errorf("failed to diff %s with %s", sha, entry.sha)
-			}
-			for _, change := range changes {
-				if mdYaml && strings.HasSuffix(change, ".md") ||
-					strings.HasSuffix(change, aliasesFileName) ||
-					strings.HasSuffix(change, ownersFileName) {
-					reusable = false
-					break
-				}
-			}
+		if err := gitRepo.Checkout(base); err != nil {
+			return nil, err
 		}
-		if reusable {
-			entry.sha = sha
-		} else {
-			if err := gitRepo.Checkout(base); err != nil {
-				return nil, err
-			}
 
-			if entry.aliases == nil || entry.sha != sha {
-				// aliases must be loaded
-				entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
-			}
-
-			dirBlacklist := commonDirBlacklist.Union(sets.NewString(c.ownersDirBlacklist().DirBlacklist(org, repo)...))
-
-			entry.owners, err = loadOwnersFrom(gitRepo.Dir, mdYaml, entry.aliases, dirBlacklist, log)
-			if err != nil {
-				return nil, fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
-			}
-			entry.sha = sha
-			c.cache[fullName] = entry
+		if entry.aliases == nil || entry.sha != sha {
+			// aliases must be loaded
+			entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
 		}
+
+		blacklistConfig := c.config.OwnersDirBlacklist
+
+		dirBlacklist := defaultDirBlacklist.Union(sets.NewString(blacklistConfig.Default...))
+		if bl, ok := blacklistConfig.Repos[org]; ok {
+			dirBlacklist.Insert(bl...)
+		}
+		if bl, ok := blacklistConfig.Repos[org+"/"+repo]; ok {
+			dirBlacklist.Insert(bl...)
+		}
+		entry.owners, err = loadOwnersFrom(gitRepo.Dir, mdYaml, entry.aliases, dirBlacklist, log)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
+		}
+		entry.sha = sha
+		c.cache[fullName] = entry
 	}
 
 	if c.skipCollaborators(org, repo) {

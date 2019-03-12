@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // Package reporter contains helpers for publishing statues to Pub
-// statuses in GitHub.
+// statuses in Github.
 package reporter
 
 import (
@@ -125,6 +125,6 @@ func (c *Client) generateMessageFromPJ(pj *prowapi.ProwJob) *ReportMessage {
 		RunID:   pubSubMap[PubSubRunIDLabel],
 		Status:  pj.Status.State,
 		URL:     pj.Status.URL,
-		GCSPath: strings.Replace(pj.Status.URL, c.config().Plank.GetJobURLPrefix(pj.Spec.Refs), GCSPrefix, 1),
+		GCSPath: strings.Replace(pj.Status.URL, c.config().Plank.JobURLPrefix, GCSPrefix, 1),
 	}
 }

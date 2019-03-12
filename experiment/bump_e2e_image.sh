@@ -36,17 +36,17 @@ if [[ -n "${dirty}" ]]; then
   exit 1
 fi
 
-TREE="$(git rev-parse --show-toplevel)"
+TREE="$(dirname "${BASH_SOURCE[0]}")/.."
 
 DATE="$(date +v%Y%m%d)"
 TAG="${DATE}-$(git describe --tags --always --dirty)"
  
 make -C "${TREE}/images/kubekins-e2e" push
 K8S=experimental make -C "${TREE}/images/kubekins-e2e" push
-K8S=1.14 make -C "${TREE}/images/kubekins-e2e" push
 K8S=1.13 make -C "${TREE}/images/kubekins-e2e" push
 K8S=1.12 make -C "${TREE}/images/kubekins-e2e" push
 K8S=1.11 make -C "${TREE}/images/kubekins-e2e" push
+K8S=1.10 make -C "${TREE}/images/kubekins-e2e" push
 
 echo "TAG = ${TAG}"
 

@@ -18,8 +18,6 @@
 #
 # Environment variable options:
 # - $TAG can be overridden to choose a bazel version eg `TAG=0.8.0 planter.sh ...`
-# - $CROSS can be set to use the larger image containing the
-#   crossbuild-essential packages.
 # - Alternatively $IMAGE or $IMAGE_NAME can be overridden to set the exact image
 # - $NO_PULL will disable pulling the image before running if set
 # - $DOCKER_EXTRA can be set to supply extra args in the docker call
@@ -32,7 +30,7 @@
 # Then you can build with:
 # $ cd $GOPATH/src/k8s.io/kubernetes
 # $ $GOPATH/src/k8s.io/test-infra/planter/planter.sh make bazel-release
-#
+# 
 # or build a specific binary like:
 # $ cd $GOPATH/src/k8s.io/kubernetes
 # $ $GOPATH/src/k8s.io/test-infra/planter/planter.sh bazel build //cmd/kubectl
@@ -44,8 +42,8 @@ set -o nounset
 # these can be overridden but otherwise default to the current stable image
 # used to build kubernetes from the master branch
 IMAGE_NAME="${IMAGE_NAME:-gcr.io/k8s-testimages/planter}"
-TAG="${TAG:-0.22.0}"
-IMAGE=${IMAGE:-${IMAGE_NAME}:${TAG}${CROSS+-cross}}
+TAG="${TAG:-0.21.0}"
+IMAGE=${IMAGE:-${IMAGE_NAME}:${TAG}}
 
 # We want to mount our bazel workspace and the bazel cache
 # - WORKSPACE is assumed to be in your current git repo, or alternatively $PWD

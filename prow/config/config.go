@@ -73,7 +73,6 @@ type ProwConfig struct {
 	BranchProtection BranchProtection      `json:"branch-protection,omitempty"`
 	Orgs             map[string]org.Config `json:"orgs,omitempty"`
 	Gerrit           Gerrit                `json:"gerrit,omitempty"`
-	GitHubReporter   GitHubReporter        `json:"github_reporter,omitempty"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
@@ -108,9 +107,6 @@ type ProwConfig struct {
 
 	// Pub/Sub Subscriptions that we want to listen to
 	PubSubSubscriptions PubsubSubscriptions `json:"pubsub_subscriptions,omitempty"`
-
-	// GitHubOptions allows users to control how prow applications display GitHub website links.
-	GitHubOptions GitHubOptions `json:"github,omitempty"`
 }
 
 // OwnersDirBlacklist is used to configure which directories to ignore when
@@ -121,19 +117,6 @@ type OwnersDirBlacklist struct {
 	// Default configures a default blacklist for repos (or orgs) not
 	// specifically configured
 	Default []string `json:"default"`
-}
-
-// DirBlacklist returns directories which are used to ignore when
-// searching for OWNERS{,_ALIAS} files in a repo.
-func (ownersDirBlacklist OwnersDirBlacklist) DirBlacklist(org, repo string) (blacklist []string) {
-	blacklist = append(blacklist, ownersDirBlacklist.Default...)
-	if bl, ok := ownersDirBlacklist.Repos[org]; ok {
-		blacklist = append(blacklist, bl...)
-	}
-	if bl, ok := ownersDirBlacklist.Repos[org+"/"+repo]; ok {
-		blacklist = append(blacklist, bl...)
-	}
-	return
 }
 
 // PushGateway is a prometheus push gateway.
@@ -175,7 +158,7 @@ type Controller struct {
 	MaxGoroutines int `json:"max_goroutines,omitempty"`
 
 	// AllowCancellations enables aborting presubmit jobs for commits that
-	// have been superseded by newer commits in GitHub pull requests.
+	// have been superseded by newer commits in Github pull requests.
 	AllowCancellations bool `json:"allow_cancellations,omitempty"`
 }
 
@@ -190,27 +173,9 @@ type Plank struct {
 	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
 	// that request to have their PodSpecs decorated
 	DefaultDecorationConfig *prowapi.DecorationConfig `json:"default_decoration_config,omitempty"`
-	// Deprecated, use JobURLPrefixConfig instead
 	// JobURLPrefix is the host and path prefix under
 	// which job details will be viewable
-	// TODO @alvaroaleman: Remove in September 2019
 	JobURLPrefix string `json:"job_url_prefix,omitempty"`
-	// JobURLPrefixConfig is the host and path prefix under which job details
-	// will be viewable. Use `org/repo`, `org` or `*`as key and an url as value
-	JobURLPrefixConfig map[string]string `json:"job_url_prefix_config,omitempty"`
-}
-
-func (p Plank) GetJobURLPrefix(refs *prowapi.Refs) string {
-	if refs == nil {
-		return p.JobURLPrefixConfig["*"]
-	}
-	if p.JobURLPrefixConfig[fmt.Sprintf("%s/%s", refs.Org, refs.Repo)] != "" {
-		return p.JobURLPrefixConfig[fmt.Sprintf("%s/%s", refs.Org, refs.Repo)]
-	}
-	if p.JobURLPrefixConfig[refs.Org] != "" {
-		return p.JobURLPrefixConfig[refs.Org]
-	}
-	return p.JobURLPrefixConfig["*"]
 }
 
 // Gerrit is config for the gerrit controller.
@@ -237,16 +202,6 @@ type JenkinsOperator struct {
 	// LabelSelector is used so different jenkins-operator replicas
 	// can use their own configuration.
 	LabelSelector labels.Selector `json:"-"`
-}
-
-// GitHubReporter holds the config for report behavior in github
-type GitHubReporter struct {
-	// JobTypesToReport is used to determine which type of prowjob
-	// should be reported to github
-	//
-	// defaults to presubmit job only.
-	// Will default to both presubmit and postsubmit jobs by April.1st.2019
-	JobTypesToReport []prowapi.ProwJobType `json:"job_types_to_report,omitempty"`
 }
 
 // Sinker is config for the sinker controller.
@@ -282,21 +237,6 @@ type Spyglass struct {
 	// expected file size + variance. To include all artifacts with high
 	// probability, use 2*maximum observed artifact size.
 	SizeLimit int64 `json:"size_limit,omitempty"`
-	// GCSBrowserPrefix is used to generate a link to a human-usable GCS browser.
-	// If left empty, the link will be not be shown. Otherwise, a GCS path (with no
-	// prefix or scheme) will be appended to GCSBrowserPrefix and shown to the user.
-	GCSBrowserPrefix string `json:"gcs_browser_prefix,omitempty"`
-	// If set, Announcement is used as a Go HTML template string to be displayed at the top of
-	// each spyglass page. Using HTML in the template is acceptable.
-	// Currently the only variable available is .ArtifactPath, which contains the GCS path for the job artifacts.
-	Announcement string `json:"announcement,omitempty"`
-	// TestGridConfig is the path to the TestGrid config proto. If the path begins with
-	// "gs://" it is assumed to be a GCS reference, otherwise it is read from the local filesystem.
-	// If left blank, TestGrid links will not appear.
-	TestGridConfig string `json:"testgrid_config,omitempty"`
-	// TestGridRoot is the root URL to the TestGrid frontend, e.g. "https://testgrid.k8s.io/".
-	// If left blank, TestGrid links will not appear.
-	TestGridRoot string `json:"testgrid_root,omitempty"`
 }
 
 // Deck holds config for deck.
@@ -350,18 +290,6 @@ type Branding struct {
 
 // PubSubSubscriptions maps GCP projects to a list of Topics.
 type PubsubSubscriptions map[string][]string
-
-// GitHubOptions allows users to control how prow applications display GitHub website links.
-type GitHubOptions struct {
-	// LinkURLFromConfig is the string representation of the link_url config parameter.
-	// This config parameter allows users to override the default GitHub link url for all plugins.
-	// If this option is not set, we assume "https://github.com".
-	LinkURLFromConfig string `json:"link_url,omitempty"`
-
-	// LinkURL is the url representation of LinkURLFromConfig. This variable should be used
-	// in all places internally.
-	LinkURL *url.URL
-}
 
 // Load loads and parses the config at path.
 func Load(prowConfig, jobConfig string) (c *Config, err error) {
@@ -657,13 +585,8 @@ func (c *Config) finalizeJobConfig() error {
 
 // validateComponentConfig validates the infrastructure component configuration
 func (c *Config) validateComponentConfig() error {
-	if c.Plank.JobURLPrefix != "" && c.Plank.JobURLPrefixConfig["*"] != "" {
-		return errors.New(`Planks job_url_prefix must be unset when job_url_prefix_config["*"] is set. The former is deprecated, use the latter`)
-	}
-	for k, v := range c.Plank.JobURLPrefixConfig {
-		if _, err := url.Parse(v); err != nil {
-			return fmt.Errorf(`Invalid value for Planks job_url_prefix_config["%s"]: %v`, k, err)
-		}
+	if _, err := url.Parse(c.Plank.JobURLPrefix); c.Plank.JobURLPrefix != "" && err != nil {
+		return fmt.Errorf("plank declares an invalid job URL prefix %q: %v", c.Plank.JobURLPrefix, err)
 	}
 	return nil
 }
@@ -807,19 +730,6 @@ func parseProwConfig(c *Config) error {
 
 	if c.Gerrit.RateLimit == 0 {
 		c.Gerrit.RateLimit = 5
-	}
-
-	if len(c.GitHubReporter.JobTypesToReport) == 0 {
-		// TODO(krzyzacy): The default will be changed to presubmit + postsubmit by April.
-		c.GitHubReporter.JobTypesToReport = append(c.GitHubReporter.JobTypesToReport, prowapi.PresubmitJob)
-	}
-
-	// validate entries are valid job types
-	// Currently only presubmit and postsubmit can be reported to github
-	for _, t := range c.GitHubReporter.JobTypesToReport {
-		if t != prowapi.PresubmitJob && t != prowapi.PostsubmitJob {
-			return fmt.Errorf("invalid job_types_to_report: %v", t)
-		}
 	}
 
 	for i := range c.JenkinsOperators {
@@ -982,26 +892,6 @@ func parseProwConfig(c *Config) error {
 	if c.PodNamespace == "" {
 		c.PodNamespace = "default"
 	}
-
-	if c.Plank.JobURLPrefixConfig == nil {
-		c.Plank.JobURLPrefixConfig = map[string]string{}
-	}
-	if c.Plank.JobURLPrefix != "" && c.Plank.JobURLPrefixConfig["*"] == "" {
-		c.Plank.JobURLPrefixConfig["*"] = c.Plank.JobURLPrefix
-		// Set JobURLPrefix to an empty string to indicate we've moved
-		// it to JobURLPrefixConfig["*"] without overwriting the latter
-		// so validation succeeds
-		c.Plank.JobURLPrefix = ""
-	}
-
-	if c.GitHubOptions.LinkURLFromConfig == "" {
-		c.GitHubOptions.LinkURLFromConfig = "https://github.com"
-	}
-	linkURL, err := url.Parse(c.GitHubOptions.LinkURLFromConfig)
-	if err != nil {
-		return fmt.Errorf("unable to parse github.link_url, might not be a valid url: %v", err)
-	}
-	c.GitHubOptions.LinkURL = linkURL
 
 	if c.LogLevel == "" {
 		c.LogLevel = "info"

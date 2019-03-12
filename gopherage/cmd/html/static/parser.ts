@@ -28,12 +28,13 @@ export interface Block {
   end: Pos;
 }
 
+
 export class FileCoverage {
-  public blocks: Block[] = [];
+  blocks: Block[] = [];
 
   constructor(readonly filename: string, readonly fileNumber: number) {}
 
-  public addBlock(block: Block) {
+  addBlock(block: Block) {
     this.blocks.push(block);
   }
 
@@ -48,24 +49,24 @@ export class FileCoverage {
 }
 
 export class Coverage {
-  public files = new Map<string, FileCoverage>();
+  files = new Map<string, FileCoverage>();
 
   constructor(readonly mode: string, readonly prefix = '') {}
 
-  public addFile(file: FileCoverage): void {
+  addFile(file: FileCoverage): void {
     this.files.set(file.filename, file);
   }
 
-  public getFile(name: string): FileCoverage|undefined {
+  getFile(name: string): FileCoverage|undefined {
     return this.files.get(name);
   }
 
-  public getFilesWithPrefix(prefix: string): Map<string, FileCoverage> {
+  getFilesWithPrefix(prefix: string): Map<string, FileCoverage> {
     return new Map(filter(
         this.files.entries(), ([k]) => k.startsWith(this.prefix + prefix)));
   }
 
-  public getCoverageForPrefix(prefix: string): Coverage {
+  getCoverageForPrefix(prefix: string): Coverage {
     const subCoverage = new Coverage(this.mode, this.prefix + prefix);
     for (const [filename, file] of this.files) {
       if (filename.startsWith(this.prefix + prefix)) {
@@ -78,7 +79,6 @@ export class Coverage {
   get children(): Map<string, Coverage> {
     const children = new Map();
     for (const path of this.files.keys()) {
-      // tslint:disable-next-line:prefer-const
       let [dir, rest] = path.substr(this.prefix.length).split('/', 2);
       if (!children.has(dir)) {
         if (rest) {
@@ -121,7 +121,7 @@ export class Coverage {
 export function parseCoverage(content: string): Coverage {
   const lines = content.split('\n');
   const modeLine = lines.shift()!;
-  const [modeLabel, mode] = modeLine.split(':').map((x) => x.trim());
+  const [modeLabel, mode] = modeLine.split(':').map(x => x.trim());
   if (modeLabel !== 'mode') {
     throw new Error('Expected to start with mode line.');
   }
@@ -151,16 +151,16 @@ function parseLine(line: string): Block&{filename: string} {
   const [startLine, startCol] = start.split('.').map(parseInt);
   const [endLine, endCol] = end.split('.').map(parseInt);
   return {
-    end: {
-      col: endCol,
-      line: endLine,
-    },
     filename,
+    statements: Number(statements),
     hits: Math.max(0, Number(hits)),
     start: {
-      col: startCol,
       line: startLine,
+      col: startCol,
     },
-    statements: Number(statements),
+    end: {
+      line: endLine,
+      col: endCol,
+    },
   };
 }

@@ -45,16 +45,6 @@ func listPushEventChanges(pe github.PushEvent) config.ChangedFilesProvider {
 	}
 }
 
-func createRefs(pe github.PushEvent) prowapi.Refs {
-	return prowapi.Refs{
-		Org:      pe.Repo.Owner.Name,
-		Repo:     pe.Repo.Name,
-		BaseRef:  pe.Branch(),
-		BaseSHA:  pe.After,
-		BaseLink: pe.Compare,
-	}
-}
-
 func handlePE(c Client, pe github.PushEvent) error {
 	if pe.Deleted {
 		// we should not trigger jobs for a branch deletion
@@ -66,13 +56,18 @@ func handlePE(c Client, pe github.PushEvent) error {
 		} else if !shouldRun {
 			continue
 		}
-		refs := createRefs(pe)
+		kr := prowapi.Refs{
+			Org:     pe.Repo.Owner.Name,
+			Repo:    pe.Repo.Name,
+			BaseRef: pe.Branch(),
+			BaseSHA: pe.After,
+		}
 		labels := make(map[string]string)
 		for k, v := range j.Labels {
 			labels[k] = v
 		}
 		labels[github.EventGUID] = pe.GUID
-		pj := pjutil.NewProwJob(pjutil.PostsubmitSpec(j, refs), labels)
+		pj := pjutil.NewProwJob(pjutil.PostsubmitSpec(j, kr), labels)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
 		if _, err := c.ProwJobClient.Create(&pj); err != nil {
 			return err

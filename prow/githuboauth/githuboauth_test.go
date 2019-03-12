@@ -48,13 +48,13 @@ func (c *MockOAuthClient) AuthCodeURL(state string, opts ...oauth2.AuthCodeOptio
 	return "mock-auth-url"
 }
 
-func getMockConfig(cookie *sessions.CookieStore) *config.GitHubOAuthConfig {
+func getMockConfig(cookie *sessions.CookieStore) *config.GithubOAuthConfig {
 	clientID := "mock-client-id"
 	clientSecret := "mock-client-secret"
 	redirectURL := "/uni-test/redirect-url"
 	scopes := []string{}
 
-	return &config.GitHubOAuthConfig{
+	return &config.GithubOAuthConfig{
 		ClientID:         clientID,
 		ClientSecret:     clientSecret,
 		RedirectURL:      redirectURL,
@@ -65,7 +65,7 @@ func getMockConfig(cookie *sessions.CookieStore) *config.GitHubOAuthConfig {
 	}
 }
 
-func createMockStateToken(config *config.GitHubOAuthConfig) string {
+func createMockStateToken(config *config.GithubOAuthConfig) string {
 	stateToken := xsrftoken.Generate(config.ClientSecret, "", "")
 	state := hex.EncodeToString([]byte(stateToken))
 
@@ -208,11 +208,11 @@ func TestHandleLogoutWithLoginSession(t *testing.T) {
 	}
 }
 
-type fakeGitHubClient struct {
+type fakeGithubClient struct {
 	login string
 }
 
-func (fgc *fakeGitHubClient) GetUser(login string) (*github.User, error) {
+func (fgc *fakeGithubClient) GetUser(login string) (*github.User, error) {
 	return &github.User{
 		Login: &fgc.login,
 	}, nil
@@ -222,8 +222,8 @@ type fakeGetter struct {
 	login string
 }
 
-func (fgc *fakeGetter) GetGitHubClient(accessToken string, dryRun bool) GitHubClientWrapper {
-	return &fakeGitHubClient{login: fgc.login}
+func (fgc *fakeGetter) GetGithubClient(accessToken string, dryRun bool) GithubClientWrapper {
+	return &fakeGithubClient{login: fgc.login}
 }
 
 func TestHandleRedirectWithInvalidState(t *testing.T) {

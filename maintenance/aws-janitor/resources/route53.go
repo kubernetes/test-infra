@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"k8s.io/klog"
 )
@@ -181,7 +182,7 @@ func (Route53ResourceRecordSets) ListAll(sess *session.Session, acct, region str
 				return true
 			})
 			if err != nil {
-				klog.Errorf("couldn't describe route53 resources for %q in %q zone %q: %v", acct, region, *z.Id, err)
+				glog.Errorf("couldn't describe route53 resources for %q in %q zone %q: %v", acct, region, *z.Id, err)
 			}
 
 		}

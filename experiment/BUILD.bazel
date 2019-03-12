@@ -5,19 +5,6 @@ py_binary(
 )
 
 py_binary(
-    name = "manage_release_versions",
-    srcs = ["manage_release_versions.py"],
-    data = [
-        "//:test-infra-README",
-        "//config:prowjobs",
-        "//experiment:fix_testgrid_config.py",
-        "//images/kubekins-e2e:all-srcs",
-        "//scenarios:kubernetes_verify.py",
-        "//testgrid:config-yaml",
-    ],
-)
-
-py_binary(
     name = "generate_tests",
     srcs = ["generate_tests.py"],
     data = [
@@ -56,7 +43,6 @@ filegroup(
         "//experiment/coverage:all-srcs",
         "//experiment/manual-trigger:all-srcs",
         "//experiment/resultstore:all-srcs",
-        "//experiment/slack-oncall-updater:all-srcs",
         "//experiment/tracer:all-srcs",
     ],
     tags = ["automanaged"],

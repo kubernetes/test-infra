@@ -55,29 +55,6 @@ type Result struct {
 	Skipped   *string `xml:"skipped,omitempty"`
 }
 
-// Message extracts the message for the junit test case.
-//
-// Will use the first non-empty <failure/>, <skipped/>, <system-err/>, <system-out/> value.
-func (jr Result) Message(max int) string {
-	var msg string
-	switch {
-	case jr.Failure != nil && *jr.Failure != "":
-		msg = *jr.Failure
-	case jr.Skipped != nil && *jr.Skipped != "":
-		msg = *jr.Skipped
-	case jr.Error != nil && *jr.Error != "":
-		msg = *jr.Error
-	case jr.Output != nil && *jr.Output != "":
-		msg = *jr.Output
-	}
-	l := len(msg)
-	if max == 0 || l <= max {
-		return msg
-	}
-	h := max / 2
-	return msg[:h] + "..." + msg[l-h-1:]
-}
-
 func unmarshalXML(buf []byte, i interface{}) error {
 	reader := bytes.NewReader(buf)
 	dec := xml.NewDecoder(reader)

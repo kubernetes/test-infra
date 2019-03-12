@@ -28,9 +28,9 @@ type Cookie struct {
 	Secret string `json:"secret,omitempty"`
 }
 
-// GitHubOAuthConfig is a config for requesting users access tokens from GitHub API. It also has
-// a Cookie Store that retains user credentials deriving from GitHub API.
-type GitHubOAuthConfig struct {
+// GithubOAuthConfig is a config for requesting users access tokens from Github API. It also has
+// a Cookie Store that retains user credentials deriving from Github API.
+type GithubOAuthConfig struct {
 	ClientID         string   `json:"client_id"`
 	ClientSecret     string   `json:"client_secret"`
 	RedirectURL      string   `json:"redirect_url"`
@@ -40,9 +40,9 @@ type GitHubOAuthConfig struct {
 	CookieStore *sessions.CookieStore `json:"-"`
 }
 
-// InitGitHubOAuthConfig creates an OAuthClient using GitHubOAuth config and a Cookie Store
+// InitGithubOAuthConfig creates an OAuthClient using GithubOAuth config and a Cookie Store
 // to retain user credentials.
-func (gac *GitHubOAuthConfig) InitGitHubOAuthConfig(cookie *sessions.CookieStore) {
+func (gac *GithubOAuthConfig) InitGithubOAuthConfig(cookie *sessions.CookieStore) {
 	gob.Register(&oauth2.Token{})
 	gac.CookieStore = cookie
 }

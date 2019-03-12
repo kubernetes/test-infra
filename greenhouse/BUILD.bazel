@@ -1,6 +1,6 @@
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
-load("//prow:def.bzl", "prow_image")
 
 go_library(
     name = "go_default_library",
@@ -46,9 +46,10 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-prow_image(
+go_image(
     name = "image",
     base = "@alpine-base//image",
+    binary = ":greenhouse",
     visibility = ["//visibility:public"],
 )
 

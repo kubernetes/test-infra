@@ -19,9 +19,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
-	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"time"
 
@@ -43,29 +40,25 @@ type options struct {
 	runOnce       bool
 	configPath    string
 	jobConfigPath string
-	dryRun        flagutil.Bool
-	kubernetes    flagutil.ExperimentalKubernetesOptions
+	dryRun        bool
+	kubernetes    flagutil.KubernetesOptions
 }
 
-// TODO(fejta): require setting this explicitly
-const defaultConfigPath = "/etc/config/config.yaml"
-
-func gatherOptions(fs *flag.FlagSet, args ...string) options {
+func gatherOptions() options {
 	o := options{}
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
-	fs.StringVar(&o.configPath, "config-path", defaultConfigPath, "Path to config.yaml.")
+	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 
-	// TODO(fejta): switch dryRun to be a bool, defaulting to true after March 15, 2019.
-	fs.Var(&o.dryRun, "dry-run", "Whether or not to make mutating API calls to Kubernetes.")
-
+	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to Kubernetes.")
 	o.kubernetes.AddFlags(fs)
-	fs.Parse(args)
+	fs.Parse(os.Args[1:])
 	return o
 }
 
 func (o *options) Validate() error {
-	if err := o.kubernetes.Validate(o.dryRun.Value); err != nil {
+	if err := o.kubernetes.Validate(o.dryRun); err != nil {
 		return err
 	}
 
@@ -77,23 +70,14 @@ func (o *options) Validate() error {
 }
 
 func main() {
-	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
+	o := gatherOptions()
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
-	// for pprof endpoints
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
-
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "sinker"}),
 	)
-	if !o.dryRun.Explicit {
-		logrus.Warning("Sinker requies --dry-run=false to function correctly in production.")
-		logrus.Warning("--dry-run will soon default to true. Set --dry-run=false by March 15.")
-	}
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
@@ -101,12 +85,12 @@ func main() {
 	}
 	cfg := configAgent.Config
 
-	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, o.dryRun.Value)
+	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating ProwJob client.")
 	}
 
-	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, o.dryRun.Value)
+	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating build cluster clients.")
 	}

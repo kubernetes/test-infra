@@ -8,12 +8,6 @@
 ---
 default:
   labels:
-    - color: e11d21
-      description: Categorizes an issue or PR as actively needing an API review.
-      name: api-review
-      target: both
-      prowPlugin: label
-      addedBy: anyone
     - color: 0052cc
       description: Issues or PRs related to Kubernetes licensing
       name: area/licensing
@@ -406,6 +400,13 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to sig-cluster-ops.
+      name: sig/cluster-ops
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+      deleteAfter: 2019-01-26T13:00:00Z
+    - color: d2b48c
       description: Categorizes an issue or PR as relevant to sig-contributor-experience.
       name: sig/contributor-experience
       target: both
@@ -529,8 +530,20 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to wg-app-def.
+      name: wg/app-def
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
       description: Categorizes an issue or PR as relevant to wg-apply.
       name: wg/apply
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
+      description: Categorizes an issue or PR as relevant to wg-container-identity.
+      name: wg/container-identity
       target: both
       prowPlugin: label
       addedBy: anyone
@@ -547,8 +560,8 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to wg-lts.
-      name: wg/lts
+      description: Categorizes an issue or PR as relevant to wg-kubeadm-adoption.
+      name: wg/kubeadm-adoption
       target: both
       prowPlugin: label
       addedBy: anyone
@@ -982,18 +995,6 @@ repos:
       - color: e9b3f9
         description: Issues or PRs related to English language
         name: language/en
-        target: both
-        prowPlugin: label
-        addedBy: anyone
-      - color: e9b3f9
-        description: Issues or PRs related to French language
-        name: language/fr
-        target: both
-        prowPlugin: label
-        addedBy: anyone
-      - color: e9b3f9
-        description: Issues or PRs related to Italian language
-        name: language/it
         target: both
         prowPlugin: label
         addedBy: anyone

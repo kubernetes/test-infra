@@ -7,25 +7,25 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
         command:
         - runner.sh
         args:
         - make
         - lint
-  - name: pull-aws-alb-ingress-controller-unit-test
+  - name: pull-aws-alb-ingress-controller-test
     always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
         command:
         - runner.sh
         args:
         - make
-        - unit-test
+        - test
         volumeMounts:
         - name: coveralls
           mountPath: /etc/coveralls-token
@@ -34,21 +34,3 @@ presubmits:
       - name: coveralls
         secret:
           secretName: k8s-aws-alb-ingress-coveralls-token
-  - name: pull-aws-alb-ingress-controller-e2e-test
-    always_run: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential-aws-oss-testing: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - e2e-test
-        securityContext:
-          privileged: true

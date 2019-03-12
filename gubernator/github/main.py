@@ -29,7 +29,7 @@ class Warmup(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/_ah/warmup', Warmup),
-    (r'/webhook', handlers.GitHubHandler),
+    (r'/webhook', handlers.GithubHandler),
     (r'/events', handlers.Events),
     (r'/status', handlers.Status),
     (r'/timeline', handlers.Timeline),

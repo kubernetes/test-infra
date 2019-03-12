@@ -41,7 +41,7 @@ prune-vendor() {
     -not -iname "COPYING*" \
     -not -iname "LICENSE*" \
     -not -iname "NOTICE*" \
-    -delete
+    -exec rm '{}' \;
 }
 
 rm -rf vendor

@@ -1,24 +1,20 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "convert.go",
-        "download.go",
-        "main.go",
-        "upload.go",
-    ],
+    srcs = ["main.go"],
     importpath = "k8s.io/test-infra/experiment/resultstore",
     visibility = ["//visibility:private"],
     deps = [
-        "//prow/flagutil:go_default_library",
-        "//prow/logrusutil:go_default_library",
-        "//testgrid/config:go_default_library",
-        "//testgrid/metadata:go_default_library",
-        "//testgrid/resultstore:go_default_library",
-        "//testgrid/util/gcs:go_default_library",
-        "//vendor/cloud.google.com/go/storage:go_default_library",
-        "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes/duration:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes/timestamp:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes/wrappers:go_default_library",
+        "//vendor/github.com/google/uuid:go_default_library",
+        "//vendor/google.golang.org/genproto/googleapis/devtools/resultstore/v2:go_default_library",
+        "//vendor/google.golang.org/genproto/protobuf/field_mask:go_default_library",
+        "//vendor/google.golang.org/grpc:go_default_library",
+        "//vendor/google.golang.org/grpc/credentials:go_default_library",
+        "//vendor/google.golang.org/grpc/credentials/oauth:go_default_library",
         "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
@@ -41,14 +37,4 @@ filegroup(
     srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["main_test.go"],
-    embed = [":go_default_library"],
-    deps = [
-        "//testgrid/metadata:go_default_library",
-        "//testgrid/util/gcs:go_default_library",
-    ],
 )

@@ -290,7 +290,7 @@ func TestComment(t *testing.T) {
 			SentMessages: make(map[string][]string),
 		}
 		client := client{
-			GitHubClient: &fakegithub.FakeClient{},
+			GithubClient: &fakegithub.FakeClient{},
 			SlackClient:  fakeSlackClient,
 			SlackConfig:  plugins.Slack{MentionChannels: []string{"sig-node", "sig-api-machinery"}},
 		}
@@ -315,58 +315,5 @@ func TestComment(t *testing.T) {
 				t.Fatalf("All messages are not delivered to the channel %s", k)
 			}
 		}
-	}
-}
-
-func TestHelpProvider(t *testing.T) {
-	cases := []struct {
-		name         string
-		config       *plugins.Configuration
-		enabledRepos []string
-		err          bool
-	}{
-		{
-			name:         "Empty config",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo"},
-		},
-		{
-			name:         "Overlapping org and org/repo",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org2", "org2/repo"},
-		},
-		{
-			name:         "Invalid enabledRepos",
-			config:       &plugins.Configuration{},
-			enabledRepos: []string{"org1", "org2/repo/extra"},
-			err:          true,
-		},
-		{
-			name: "All configs enabled",
-			config: &plugins.Configuration{
-				Slack: plugins.Slack{
-					MentionChannels: []string{"chan1", "chan2"},
-					MergeWarnings: []plugins.MergeWarning{
-						{
-							Repos:     []string{"org2/repo"},
-							Channels:  []string{"chan1", "chan2"},
-							WhiteList: []string{"k8s-merge-robot"},
-							BranchWhiteList: map[string][]string{
-								"warrens-branch": {"wteened"},
-							},
-						},
-					},
-				},
-			},
-			enabledRepos: []string{"org1", "org2/repo"},
-		},
-	}
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			_, err := helpProvider(c.config, c.enabledRepos)
-			if err != nil && !c.err {
-				t.Fatalf("helpProvider error: %v", err)
-			}
-		})
 	}
 }

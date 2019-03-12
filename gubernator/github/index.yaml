@@ -2,7 +2,7 @@ indexes:
 
 # This index allows us to iterate through events sorted by timestamp,
 # without fetching all the events into memory first.
-- kind: GitHubWebhookRaw
+- kind: GithubWebhookRaw
   ancestor: yes
   properties:
   - name: timestamp
@@ -17,7 +17,7 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
-- kind: GitHubWebhookRaw
+- kind: GithubWebhookRaw
   properties:
   - name: event
   - name: timestamp

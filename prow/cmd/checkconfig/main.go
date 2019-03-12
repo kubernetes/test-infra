@@ -26,7 +26,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
-	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/errorutil"
 	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
@@ -36,10 +36,9 @@ import (
 	"k8s.io/test-infra/prow/plugins/blunderbuss"
 	"k8s.io/test-infra/prow/plugins/cherrypickunapproved"
 	"k8s.io/test-infra/prow/plugins/hold"
-	ownerslabel "k8s.io/test-infra/prow/plugins/owners-label"
+	"k8s.io/test-infra/prow/plugins/owners-label"
 	"k8s.io/test-infra/prow/plugins/releasenote"
-	"k8s.io/test-infra/prow/plugins/trigger"
-	verifyowners "k8s.io/test-infra/prow/plugins/verify-owners"
+	"k8s.io/test-infra/prow/plugins/verify-owners"
 	"k8s.io/test-infra/prow/plugins/wip"
 
 	"k8s.io/test-infra/prow/config"
@@ -82,7 +81,6 @@ const (
 	jobNameLengthWarning    = "long-job-names"
 	needsOkToTestWarning    = "needs-ok-to-test"
 	validateOwnersWarning   = "validate-owners"
-	missingTriggerWarning   = "missing-trigger"
 )
 
 var allWarnings = []string{
@@ -91,12 +89,14 @@ var allWarnings = []string{
 	jobNameLengthWarning,
 	needsOkToTestWarning,
 	validateOwnersWarning,
-	missingTriggerWarning,
 }
 
 func (o *options) Validate() error {
 	if o.configPath == "" {
 		return errors.New("required flag --config-path was unset")
+	}
+	if o.pluginConfig == "" {
+		return errors.New("required flag --plugin-config was unset")
 	}
 	for _, warning := range o.warnings.Strings() {
 		found := false
@@ -146,20 +146,17 @@ func main() {
 	cfg := configAgent.Config()
 
 	pluginAgent := plugins.ConfigAgent{}
-	var pcfg *plugins.Configuration
-	if o.pluginConfig != "" {
-		if err := pluginAgent.Load(o.pluginConfig); err != nil {
-			logrus.WithError(err).Fatal("Error loading Prow plugin config.")
-		}
-		pcfg = pluginAgent.Config()
+	if err := pluginAgent.Load(o.pluginConfig); err != nil {
+		logrus.WithError(err).Fatal("Error loading Prow plugin config.")
 	}
+	pcfg := pluginAgent.Config()
 
 	// the following checks are useful in finding user errors but their
 	// presence won't lead to strictly incorrect behavior, so we can
 	// detect them here but don't necessarily want to stop config re-load
 	// in all components on their failure.
 	var errs []error
-	if pcfg != nil && o.warningEnabled(mismatchedTideWarning) {
+	if o.warningEnabled(mismatchedTideWarning) {
 		if err := validateTideRequirements(cfg, pcfg); err != nil {
 			errs = append(errs, err)
 		}
@@ -179,13 +176,8 @@ func main() {
 			errs = append(errs, err)
 		}
 	}
-	if pcfg != nil && o.warningEnabled(validateOwnersWarning) {
+	if o.warningEnabled(validateOwnersWarning) {
 		if err := verifyOwnersPlugin(pcfg); err != nil {
-			errs = append(errs, err)
-		}
-	}
-	if pcfg != nil && o.warningEnabled(missingTriggerWarning) {
-		if err := validateTriggers(cfg, pcfg); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -575,24 +567,6 @@ func verifyOwnersPlugin(cfg *plugins.Configuration) error {
 			strings.Join([]string{approve.PluginName, blunderbuss.PluginName, ownerslabel.PluginName}, ", "),
 			verifyowners.PluginName, invalid,
 		)
-	}
-	return nil
-}
-
-func validateTriggers(cfg *config.Config, pcfg *plugins.Configuration) error {
-	configuredRepos := sets.NewString()
-	for orgRepo := range cfg.JobConfig.Presubmits {
-		configuredRepos.Insert(orgRepo)
-	}
-	for orgRepo := range cfg.JobConfig.Postsubmits {
-		configuredRepos.Insert(orgRepo)
-	}
-
-	configured := newOrgRepoConfig(map[string]sets.String{}, configuredRepos)
-	enabled := enabledOrgReposForPlugin(pcfg, trigger.PluginName, false)
-
-	if missing := configured.difference(enabled).items(); len(missing) > 0 {
-		return fmt.Errorf("the following repos have jobs configured but do not have the %s plugin enabled: %s", trigger.PluginName, strings.Join(missing, ", "))
 	}
 	return nil
 }

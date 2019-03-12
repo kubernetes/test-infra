@@ -9,13 +9,13 @@ export interface PullRequest extends BasePullRequest {
   Merged: boolean;
   Title: string;
   Labels: {
-    Nodes: Array<{
+    Nodes: {
       Label: Label;
-    }>;
+    }[];
   };
   Milestone: {
     Title: string;
-  };
+  }
 }
 
 export interface PullRequestWithContext {

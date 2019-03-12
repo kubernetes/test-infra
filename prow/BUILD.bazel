@@ -2,15 +2,14 @@ package(default_visibility = ["//visibility:public"])
 
 load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
-load("//prow:def.bzl", "prefix", "tags", "prow_push")
+load("//prow:def.bzl", "prefix", "tags")
 load(
     "//def:image.bzl",
     image_tags = "tags",
 )
 
-prow_push(
-    name = "release-push",
-    bundle_name = "release",
+container_bundle(
+    name = "release",
     images = tags(
         "artifact-uploader",
         "branchprotector",
@@ -40,14 +39,16 @@ prow_push(
         prefix("cherrypicker"): "//prow/external-plugins/cherrypicker:image",
     }) + image_tags(**{
         prefix("refresh"): "//prow/external-plugins/refresh:image",
-    }) + image_tags(**{
-        prefix("ghproxy"): "//ghproxy:image",
     }),
 )
 
-prow_push(
-    name = "okro-release-push",
-    bundle_name = "okro-release",
+docker_push(
+    name = "release-push",
+    bundle = ":release",
+)
+
+container_bundle(
+    name = "okro-release",
     images = tags(
         "sidecar",
         "initupload",
@@ -58,6 +59,12 @@ prow_push(
         "crier",
         "build",
     ),
+    stamp = True,
+)
+
+docker_push(
+    name = "okro-release-push",
+    bundle = ":okro-release",
 )
 
 filegroup(

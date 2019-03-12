@@ -23,20 +23,37 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/pkg/errors"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog"
 	"k8s.io/test-infra/maintenance/aws-janitor/account"
-	"k8s.io/test-infra/maintenance/aws-janitor/regions"
 	"k8s.io/test-infra/maintenance/aws-janitor/resources"
 	s3path "k8s.io/test-infra/maintenance/aws-janitor/s3"
 )
 
-var (
-	maxTTL   = flag.Duration("ttl", 24*time.Hour, "Maximum time before attempting to delete a resource. Set to 0s to nuke all non-default resources.")
-	region   = flag.String("region", regions.Default, "The default AWS region")
-	path     = flag.String("path", "", "S3 path for mark data (required when -all=false)")
-	cleanAll = flag.Bool("all", false, "Clean all resources (ignores -path)")
+const (
+	defaultRegion = "us-east-1"
 )
+
+var (
+	maxTTL = flag.Duration("ttl", 24*time.Hour, "Maximum time before we attempt deletion of a resource. Set to 0s to nuke all non-default resources.")
+	path   = flag.String("path", "", "S3 path to store mark data in (required)")
+)
+
+func getRegions(sess *session.Session) ([]string, error) {
+	svc := ec2.New(sess, &aws.Config{Region: aws.String(defaultRegion)})
+
+	resp, err := svc.DescribeRegions(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var regions []string
+	for _, region := range resp.Regions {
+		regions = append(regions, *region.RegionName)
+	}
+
+	return regions, nil
+}
 
 func main() {
 	klog.InitFlags(nil)
@@ -50,58 +67,49 @@ func main() {
 	// to delete.
 	sess := session.Must(session.NewSessionWithOptions(session.Options{Config: aws.Config{MaxRetries: aws.Int(100)}}))
 
-	if *cleanAll {
-		if err := resources.CleanAll(sess, *region); err != nil {
-			klog.Fatalf("Error cleaning all resources: %v", err)
-		}
-	} else if ok, err := markAndSweep(sess); err != nil {
-		klog.Fatalf("Error marking and sweeping resources: %v", err)
-	} else if !ok {
-		os.Exit(1)
-	}
-}
-
-func markAndSweep(sess *session.Session) (bool, error) {
 	s3p, err := s3path.GetPath(sess, *path)
 	if err != nil {
-		return false, errors.Wrapf(err, "-path %q isn't a valid S3 path", *path)
+		klog.Fatalf("--path %q isn't a valid S3 path: %v", *path, err)
 	}
-
-	acct, err := account.GetAccount(sess, regions.Default)
+	acct, err := account.GetAccount(sess, defaultRegion)
 	if err != nil {
-		return false, errors.Wrap(err, "Error getting current user")
+		klog.Fatalf("Error getting current user: %v", err)
 	}
-	klog.V(1).Infof("account: %s", acct)
+	klog.Infof("Account: %s", acct)
 
-	regionList, err := regions.GetAll(sess)
+	regions, err := getRegions(sess)
 	if err != nil {
-		return false, errors.Wrap(err, "Error getting available regions")
+		klog.Fatalf("Error getting available regions: %v", err)
 	}
-	klog.Infof("Regions: %+v", regionList)
+	klog.Infof("Regions: %+v", regions)
 
 	res, err := resources.LoadSet(sess, s3p, *maxTTL)
 	if err != nil {
-		return false, errors.Wrapf(err, "Error loading %q", *path)
+		klog.Fatalf("Error loading %q: %v", *path, err)
 	}
 
-	for _, region := range regionList {
+	for _, region := range regions {
 		for _, typ := range resources.RegionalTypeList {
 			if err := typ.MarkAndSweep(sess, acct, region, res); err != nil {
-				return false, errors.Wrapf(err, "Error sweeping %T", typ)
+				klog.Errorf("Error sweeping %T: %v", typ, err)
+				return
 			}
 		}
 	}
 
 	for _, typ := range resources.GlobalTypeList {
-		if err := typ.MarkAndSweep(sess, acct, *region, res); err != nil {
-			return false, errors.Wrapf(err, "Error sweeping %T", typ)
+		if err := typ.MarkAndSweep(sess, acct, "us-east-1", res); err != nil {
+			klog.Errorf("Error sweeping %T: %v", typ, err)
+			return
 		}
 	}
 
 	swept := res.MarkComplete()
 	if err := res.Save(sess, s3p); err != nil {
-		return false, errors.Wrapf(err, "Error saving %q", *path)
+		klog.Fatalf("Error saving %q: %v", *path, err)
 	}
 
-	return swept == 0, nil
+	if swept > 0 {
+		os.Exit(1)
+	}
 }

@@ -258,7 +258,8 @@ func shout(i int) string {
 
 func TestReportStatus(t *testing.T) {
 	const (
-		defMsg = "default-message"
+		defMsg   = "default-message"
+		childMsg = "Parent Status Changed"
 	)
 	tests := []struct {
 		name string
@@ -364,7 +365,7 @@ func TestReportStatus(t *testing.T) {
 				},
 			}
 			// Run
-			if err := reportStatus(ghc, pj); err != nil {
+			if err := reportStatus(ghc, pj, childMsg); err != nil {
 				t.Error(err)
 			}
 			// Check
@@ -474,66 +475,5 @@ func TestTruncate(t *testing.T) {
 				t.Errorf("%s != expected %s", out, tc.out)
 			}
 		})
-	}
-}
-
-func TestShouldReport(t *testing.T) {
-	var testcases = []struct {
-		name       string
-		pj         prowapi.ProwJob
-		validTypes []prowapi.ProwJobType
-		report     bool
-	}{
-		{
-			name: "should not report skip report job",
-			pj: prowapi.ProwJob{
-				Spec: prowapi.ProwJobSpec{
-					Type:   prowapi.PresubmitJob,
-					Report: false,
-				},
-			},
-			validTypes: []prowapi.ProwJobType{prowapi.PresubmitJob},
-		},
-		{
-			name: "should report presubmit job",
-			pj: prowapi.ProwJob{
-				Spec: prowapi.ProwJobSpec{
-					Type:   prowapi.PresubmitJob,
-					Report: true,
-				},
-			},
-			validTypes: []prowapi.ProwJobType{prowapi.PresubmitJob},
-			report:     true,
-		},
-		{
-			name: "should not report postsubmit job",
-			pj: prowapi.ProwJob{
-				Spec: prowapi.ProwJobSpec{
-					Type:   prowapi.PostsubmitJob,
-					Report: true,
-				},
-			},
-			validTypes: []prowapi.ProwJobType{prowapi.PresubmitJob},
-		},
-		{
-			name: "should report postsubmit job if told to",
-			pj: prowapi.ProwJob{
-				Spec: prowapi.ProwJobSpec{
-					Type:   prowapi.PostsubmitJob,
-					Report: true,
-				},
-			},
-			validTypes: []prowapi.ProwJobType{prowapi.PresubmitJob, prowapi.PostsubmitJob},
-			report:     true,
-		},
-	}
-
-	for _, tc := range testcases {
-		r := ShouldReport(tc.pj, tc.validTypes)
-
-		if r != tc.report {
-			t.Errorf("Unexpected result from test: %s.\nExpected: %v\nGot: %v",
-				tc.name, tc.report, r)
-		}
 	}
 }

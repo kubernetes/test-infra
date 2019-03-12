@@ -43,12 +43,11 @@ var (
 )
 
 type event struct {
-	org      string
-	repo     string
-	number   int
-	title    string
-	draft    bool
-	hasLabel bool
+	org        string
+	repo       string
+	number     int
+	hasLabel   bool
+	needsLabel bool
 }
 
 func init() {
@@ -83,7 +82,6 @@ func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
 		repo   = pe.PullRequest.Base.Repo.Name
 		number = pe.PullRequest.Number
 		title  = pe.PullRequest.Title
-		draft  = pe.PullRequest.Draft
 	)
 
 	currentLabels, err := pc.GitHubClient.GetIssueLabels(org, repo, number)
@@ -96,13 +94,15 @@ func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
 			hasLabel = true
 		}
 	}
+
+	needsLabel := titleRegex.MatchString(title)
+
 	e := &event{
-		org:      org,
-		repo:     repo,
-		number:   number,
-		title:    title,
-		draft:    draft,
-		hasLabel: hasLabel,
+		org:        org,
+		repo:       repo,
+		number:     number,
+		hasLabel:   hasLabel,
+		needsLabel: needsLabel,
 	}
 	return handle(pc.GitHubClient, pc.Logger, e)
 }
@@ -112,14 +112,12 @@ func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
 // PR has a WIP prefix, it needs an explanatory comment and label.
 // Otherwise, neither should be present.
 func handle(gc githubClient, le *logrus.Entry, e *event) error {
-	needsLabel := e.draft || titleRegex.MatchString(e.title)
-
-	if needsLabel && !e.hasLabel {
+	if e.needsLabel && !e.hasLabel {
 		if err := gc.AddLabel(e.org, e.repo, e.number, labels.WorkInProgress); err != nil {
 			le.Warnf("error while adding Label %q: %v", labels.WorkInProgress, err)
 			return err
 		}
-	} else if !needsLabel && e.hasLabel {
+	} else if !e.needsLabel && e.hasLabel {
 		if err := gc.RemoveLabel(e.org, e.repo, e.number, labels.WorkInProgress); err != nil {
 			le.Warnf("error while removing Label %q: %v", labels.WorkInProgress, err)
 			return err

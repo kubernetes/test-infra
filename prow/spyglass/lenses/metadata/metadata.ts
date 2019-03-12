@@ -1,25 +1,22 @@
-import moment from "moment";
-
-const DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss ZZ';
-
-function handleClick(e: MouseEvent): void {
-  e.preventDefault();
-  const button = document.getElementById('show-table-link')!;
-  const table = document.getElementById('data-table')!;
-  table.classList.toggle('hidden');
-  if (table.classList.contains('hidden')) {
-    button.innerText = 'more info';
+function toggleExpansion(dataId: string, textId: string, iconId: string): void {
+  const body = document.getElementById(dataId)!;
+  body.classList.toggle('hidden');
+  const icon = document.getElementById(iconId)!;
+  const textElem = document.getElementById(textId)!;
+  if (body.classList.contains('hidden')) {
+    icon.innerHTML = 'expand_more';
+    textElem.innerText = 'Show more'
   } else {
-    button.innerText = 'less info';
+    icon.innerHTML = 'expand_less';
+    textElem.innerText = 'Show less'
   }
   spyglass.contentUpdated();
 }
 
 function getLocalStartTime(): void {
-  document.getElementById('show-table-link')!.onclick = handleClick;
-  const elem = document.getElementById("summary-start-time")!;
-  elem.innerText = moment(elem.innerText, DATE_FORMAT).calendar().replace(/Last|Yesterday|Today|Tomorrow/,
-      (m) => m.charAt(0).toLowerCase() + m.substr(1));
+  const elem = document.getElementById("start_time")!;
+  elem.innerText = (new Date(elem.innerText)).toString();
 }
 
+(window as any).toggleExpansion = toggleExpansion;
 window.onload = getLocalStartTime;

@@ -18,9 +18,7 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -28,9 +26,7 @@ import (
 	"syscall"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/api/option"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
@@ -39,7 +35,6 @@ import (
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/tide"
-	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
 type options struct {
@@ -55,16 +50,6 @@ type options struct {
 	runOnce    bool
 	kubernetes prowflagutil.KubernetesOptions
 	github     prowflagutil.GitHubOptions
-
-	maxRecordsPerPool int
-	// The following are used for persisting action history in GCS.
-	gcsCredentialsFile string
-	// historyURI is the GCS object URI where Tide should store its action
-	// history. The object should not be publicly readable if any repos handled
-	// by the Tide instance are sensitive, but otherwise can be any object path
-	// that the credentials can write to.
-	historyURI    gcs.Path
-	historyGCSObj *storage.ObjectHandle // Generated using the above two values.
 }
 
 func (o *options) Validate() error {
@@ -72,24 +57,6 @@ func (o *options) Validate() error {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
-	}
-
-	if (o.gcsCredentialsFile == "") != (o.historyURI.String() == "") {
-		return errors.New("these flags must be specified together or not at all: --gcs-credentials-file, --history-uri")
-	}
-	if o.historyURI.String() != "" {
-		if o.historyURI.Bucket() == "" || o.historyURI.Object() == "" {
-			return fmt.Errorf("history URI %q does not specify a bucket and object path in the form %q.",
-				o.historyURI.String(),
-				"gs://bucket/path/to/object",
-			)
-		}
-		// Try to generate o.historyGCSObj
-		client, err := storage.NewClient(context.Background(), option.WithCredentialsFile(o.gcsCredentialsFile))
-		if err != nil {
-			return fmt.Errorf("error creating GCS client: %v", err)
-		}
-		o.historyGCSObj = client.Bucket(o.historyURI.Bucket()).Object(o.historyURI.Object())
 	}
 
 	return nil
@@ -109,23 +76,19 @@ func gatherOptions() options {
 	fs.IntVar(&o.syncThrottle, "sync-hourly-tokens", 800, "The maximum number of tokens per hour to be used by the sync controller.")
 	fs.IntVar(&o.statusThrottle, "status-hourly-tokens", 400, "The maximum number of tokens per hour to be used by the status controller.")
 
-	fs.IntVar(&o.maxRecordsPerPool, "max-records-per-pool", 1000, "The maximum number of history records stored for an individual Tide pool.")
-	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "File where Google Cloud authentication credentials are stored. Required with --history-uri.")
-	fs.Var(&o.historyURI, "history-uri", "The URI at which Tide action history should be stored. It should not be publicly readable if any repos are sensitive. Must be a GCS URI like 'gs://bucket/path/to/object'.")
-
 	fs.Parse(os.Args[1:])
 	return o
 }
 
 func main() {
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tide"}),
-	)
-
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
+
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tide"}),
+	)
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
@@ -138,12 +101,12 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	githubSync, err := o.github.GitHubClientWithLogFields(secretAgent, o.dryRun, logrus.Fields{"controller": "sync"})
+	githubSync, err := o.github.GitHubClient(secretAgent, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
-	githubStatus, err := o.github.GitHubClientWithLogFields(secretAgent, o.dryRun, logrus.Fields{"controller": "status-update"})
+	githubStatus, err := o.github.GitHubClient(secretAgent, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
@@ -163,15 +126,12 @@ func main() {
 	}
 	defer gitClient.Clean()
 
-	kubeClient, _, _, err := o.kubernetes.Client(cfg().ProwJobNamespace, o.dryRun)
+	kubeClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
 	}
 
-	c, err := tide.NewController(githubSync, githubStatus, kubeClient, cfg, gitClient, o.maxRecordsPerPool, o.historyGCSObj, nil)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error creating Tide controller.")
-	}
+	c := tide.NewController(githubSync, githubStatus, kubeClient, cfg, gitClient, nil)
 	defer c.Shutdown()
 	http.Handle("/", c)
 	http.Handle("/history", c.History)

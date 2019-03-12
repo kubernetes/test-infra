@@ -131,10 +131,6 @@ func defaultLookingDHCPOptions(dhcp *ec2.DhcpOptions, region string) bool {
 		switch *conf.Key {
 		case "domain-name":
 			var domain string
-			// TODO(akutz): Should this be updated to regions.Default, or is
-			// this relying on the default region for EC2 for North America?
-			// Because EC2's default region changed from us-east-1 to us-east-2
-			// depending on when the account was created.
 			if region == "us-east-1" {
 				domain = "ec2.internal"
 			} else {

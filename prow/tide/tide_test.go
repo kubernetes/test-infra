@@ -30,8 +30,10 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
+	clienttesting "k8s.io/client-go/testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
@@ -58,17 +60,7 @@ func testPullsMatchList(t *testing.T, test string, actual []PullRequest, expecte
 }
 
 func TestAccumulateBatch(t *testing.T) {
-	jobSet := []config.Presubmit{
-		{
-			Reporter: config.Reporter{Context: "foo"},
-		},
-		{
-			Reporter: config.Reporter{Context: "bar"},
-		},
-		{
-			Reporter: config.Reporter{Context: "baz"},
-		},
-	}
+	jobSet := []config.Presubmit{{Context: "foo"}, {Context: "bar"}, {Context: "baz"}}
 	type pull struct {
 		number int
 		sha    string
@@ -91,14 +83,11 @@ func TestAccumulateBatch(t *testing.T) {
 			name: "no batches running",
 		},
 		{
-			name: "batch pending",
-			presubmits: map[int][]config.Presubmit{
-				1: {{Reporter: config.Reporter{Context: "foo"}}},
-				2: {{Reporter: config.Reporter{Context: "foo"}}},
-			},
-			pulls:    []pull{{1, "a"}, {2, "b"}},
-			prowJobs: []prowjob{{job: "foo", state: prowapi.PendingState, prs: []pull{{1, "a"}}}},
-			pending:  true,
+			name:       "batch pending",
+			presubmits: map[int][]config.Presubmit{1: {{Context: "foo"}}, 2: {{Context: "foo"}}},
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs:   []prowjob{{job: "foo", state: prowapi.PendingState, prs: []pull{{1, "a"}}}},
+			pending:    true,
 		},
 		{
 			name:       "pending batch missing presubmits is ignored",
@@ -170,7 +159,7 @@ func TestAccumulateBatch(t *testing.T) {
 		},
 		{
 			name:       "missing job required by one PR",
-			presubmits: map[int][]config.Presubmit{1: jobSet, 2: append(jobSet, config.Presubmit{Reporter: config.Reporter{Context: "boo"}})},
+			presubmits: map[int][]config.Presubmit{1: jobSet, 2: append(jobSet, config.Presubmit{Context: "boo"})},
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs: []prowjob{
 				{job: "foo", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
@@ -180,7 +169,7 @@ func TestAccumulateBatch(t *testing.T) {
 		},
 		{
 			name:       "successful run with PR that requires additional job",
-			presubmits: map[int][]config.Presubmit{1: jobSet, 2: append(jobSet, config.Presubmit{Reporter: config.Reporter{Context: "boo"}})},
+			presubmits: map[int][]config.Presubmit{1: jobSet, 2: append(jobSet, config.Presubmit{Context: "boo"})},
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs: []prowjob{
 				{job: "foo", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
@@ -246,18 +235,7 @@ func TestAccumulateBatch(t *testing.T) {
 }
 
 func TestAccumulate(t *testing.T) {
-	jobSet := []config.Presubmit{
-		{
-			Reporter: config.Reporter{
-				Context: "job1",
-			},
-		},
-		{
-			Reporter: config.Reporter{
-				Context: "job2",
-			},
-		},
-	}
+	jobSet := []config.Presubmit{{Context: "job1"}, {Context: "job2"}}
 	type prowjob struct {
 		prNumber int
 		job      string
@@ -306,14 +284,7 @@ func TestAccumulate(t *testing.T) {
 		},
 		{
 			pullRequests: map[int]string{7: ""},
-			presubmits: map[int][]config.Presubmit{
-				7: {
-					{Reporter: config.Reporter{Context: "job1"}},
-					{Reporter: config.Reporter{Context: "job2"}},
-					{Reporter: config.Reporter{Context: "job3"}},
-					{Reporter: config.Reporter{Context: "job4"}},
-				},
-			},
+			presubmits:   map[int][]config.Presubmit{7: {{Context: "job1"}, {Context: "job2"}, {Context: "job3"}, {Context: "job4"}}},
 			prowJobs: []prowjob{
 				{7, "job1", prowapi.SuccessState, ""},
 				{7, "job2", prowapi.FailureState, ""},
@@ -332,14 +303,7 @@ func TestAccumulate(t *testing.T) {
 		},
 		{
 			pullRequests: map[int]string{7: ""},
-			presubmits: map[int][]config.Presubmit{
-				7: {
-					{Reporter: config.Reporter{Context: "job1"}},
-					{Reporter: config.Reporter{Context: "job2"}},
-					{Reporter: config.Reporter{Context: "job3"}},
-					{Reporter: config.Reporter{Context: "job4"}},
-				},
-			},
+			presubmits:   map[int][]config.Presubmit{7: {{Context: "job1"}, {Context: "job2"}, {Context: "job3"}, {Context: "job4"}}},
 			prowJobs: []prowjob{
 				{7, "job1", prowapi.FailureState, ""},
 				{7, "job2", prowapi.FailureState, ""},
@@ -358,14 +322,7 @@ func TestAccumulate(t *testing.T) {
 		},
 		{
 			pullRequests: map[int]string{7: ""},
-			presubmits: map[int][]config.Presubmit{
-				7: {
-					{Reporter: config.Reporter{Context: "job1"}},
-					{Reporter: config.Reporter{Context: "job2"}},
-					{Reporter: config.Reporter{Context: "job3"}},
-					{Reporter: config.Reporter{Context: "job4"}},
-				},
-			},
+			presubmits:   map[int][]config.Presubmit{7: {{Context: "job1"}, {Context: "job2"}, {Context: "job3"}, {Context: "job4"}}},
 			prowJobs: []prowjob{
 				{7, "job1", prowapi.SuccessState, ""},
 				{7, "job2", prowapi.FailureState, ""},
@@ -385,14 +342,7 @@ func TestAccumulate(t *testing.T) {
 		},
 		{
 			pullRequests: map[int]string{7: ""},
-			presubmits: map[int][]config.Presubmit{
-				7: {
-					{Reporter: config.Reporter{Context: "job1"}},
-					{Reporter: config.Reporter{Context: "job2"}},
-					{Reporter: config.Reporter{Context: "job3"}},
-					{Reporter: config.Reporter{Context: "job4"}},
-				},
-			},
+			presubmits:   map[int][]config.Presubmit{7: {{Context: "job1"}, {Context: "job2"}, {Context: "job3"}, {Context: "job4"}}},
 			prowJobs: []prowjob{
 				{7, "job1", prowapi.SuccessState, ""},
 				{7, "job2", prowapi.FailureState, ""},
@@ -411,11 +361,7 @@ func TestAccumulate(t *testing.T) {
 			none:      []int{},
 		},
 		{
-			presubmits: map[int][]config.Presubmit{
-				7: {
-					{Reporter: config.Reporter{Context: "job1"}},
-				},
-			},
+			presubmits:   map[int][]config.Presubmit{7: {{Context: "job1"}}},
 			pullRequests: map[int]string{7: "new", 8: "new"},
 			prowJobs: []prowjob{
 				{7, "job1", prowapi.SuccessState, "old"},
@@ -816,19 +762,6 @@ func TestPickBatch(t *testing.T) {
 	}
 }
 
-type fkc struct {
-	createdJobs []prowapi.ProwJob
-}
-
-func (c *fkc) ListProwJobs(string) ([]prowapi.ProwJob, error) {
-	return nil, nil
-}
-
-func (c *fkc) CreateProwJob(pj prowapi.ProwJob) (prowapi.ProwJob, error) {
-	c.createdJobs = append(c.createdJobs, pj)
-	return pj, nil
-}
-
 func TestTakeAction(t *testing.T) {
 	// PRs 0-9 exist. All are mergable, and all are passing tests.
 	testcases := []struct {
@@ -854,12 +787,8 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{},
 			nones:        []int{},
 			batchMerges:  []int{},
-			presubmits: map[int][]config.Presubmit{
-				100: {
-					{Reporter: config.Reporter{Context: "foo"}},
-					{Reporter: config.Reporter{Context: "if-changed"}},
-				},
-			},
+			presubmits:   map[int][]config.Presubmit{100: {{Context: "foo"}, {Context: "if-changed"}}},
+
 			merged:    0,
 			triggered: 0,
 			action:    Wait,
@@ -872,12 +801,8 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{1},
 			nones:        []int{0, 2},
 			batchMerges:  []int{},
-			presubmits: map[int][]config.Presubmit{
-				100: {
-					{Reporter: config.Reporter{Context: "foo"}},
-					{Reporter: config.Reporter{Context: "if-changed"}},
-				},
-			},
+			presubmits:   map[int][]config.Presubmit{100: {{Context: "foo"}, {Context: "if-changed"}}},
+
 			merged:    0,
 			triggered: 0,
 			action:    Wait,
@@ -890,12 +815,8 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{},
 			nones:        []int{0, 2},
 			batchMerges:  []int{},
-			presubmits: map[int][]config.Presubmit{
-				100: {
-					{Reporter: config.Reporter{Context: "foo"}},
-					{Reporter: config.Reporter{Context: "if-changed"}},
-				},
-			},
+			presubmits:   map[int][]config.Presubmit{100: {{Context: "foo"}, {Context: "if-changed"}}},
+
 			merged:    0,
 			triggered: 0,
 			action:    Wait,
@@ -908,12 +829,8 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{},
 			nones:        []int{0, 1, 2},
 			batchMerges:  []int{},
-			presubmits: map[int][]config.Presubmit{
-				100: {
-					{Reporter: config.Reporter{Context: "foo"}},
-					{Reporter: config.Reporter{Context: "if-changed"}},
-				},
-			},
+			presubmits:   map[int][]config.Presubmit{100: {{Context: "foo"}, {Context: "if-changed"}}},
+
 			merged:    0,
 			triggered: 1,
 			action:    Trigger,
@@ -926,12 +843,8 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{0},
 			nones:        []int{1, 2, 3},
 			batchMerges:  []int{},
-			presubmits: map[int][]config.Presubmit{
-				100: {
-					{Reporter: config.Reporter{Context: "foo"}},
-					{Reporter: config.Reporter{Context: "if-changed"}},
-				},
-			},
+			presubmits:   map[int][]config.Presubmit{100: {{Context: "foo"}, {Context: "if-changed"}}},
+
 			merged:           0,
 			triggered:        1,
 			triggeredBatches: 1,
@@ -945,12 +858,8 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{},
 			nones:        []int{0},
 			batchMerges:  []int{},
-			presubmits: map[int][]config.Presubmit{
-				100: {
-					{Reporter: config.Reporter{Context: "foo"}},
-					{Reporter: config.Reporter{Context: "if-changed"}},
-				},
-			},
+			presubmits:   map[int][]config.Presubmit{100: {{Context: "foo"}, {Context: "if-changed"}}},
+
 			merged:    0,
 			triggered: 1,
 			action:    Trigger,
@@ -963,12 +872,8 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{},
 			nones:        []int{1, 2, 3},
 			batchMerges:  []int{},
-			presubmits: map[int][]config.Presubmit{
-				100: {
-					{Reporter: config.Reporter{Context: "foo"}},
-					{Reporter: config.Reporter{Context: "if-changed"}},
-				},
-			},
+			presubmits:   map[int][]config.Presubmit{100: {{Context: "foo"}, {Context: "if-changed"}}},
+
 			merged:    1,
 			triggered: 0,
 			action:    Merge,
@@ -981,12 +886,8 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{2, 3},
 			nones:        []int{4, 5},
 			batchMerges:  []int{6, 7, 8},
-			presubmits: map[int][]config.Presubmit{
-				100: {
-					{Reporter: config.Reporter{Context: "foo"}},
-					{Reporter: config.Reporter{Context: "if-changed"}},
-				},
-			},
+			presubmits:   map[int][]config.Presubmit{100: {{Context: "foo"}, {Context: "if-changed"}}},
+
 			merged:    3,
 			triggered: 0,
 			action:    MergeBatch,
@@ -999,12 +900,8 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{},
 			nones:        []int{100},
 			batchMerges:  []int{},
-			presubmits: map[int][]config.Presubmit{
-				100: {
-					{Reporter: config.Reporter{Context: "foo"}},
-					{Reporter: config.Reporter{Context: "if-changed"}},
-				},
-			},
+			presubmits:   map[int][]config.Presubmit{100: {{Context: "foo"}, {Context: "if-changed"}}},
+
 			merged:    0,
 			triggered: 2,
 			action:    Trigger,
@@ -1044,13 +941,13 @@ func TestTakeAction(t *testing.T) {
 			map[string][]config.Presubmit{
 				"o/r": {
 					{
-						Reporter:     config.Reporter{Context: "foo"},
+						Context:      "foo",
 						Trigger:      "/test all",
 						RerunCommand: "/test all",
 						AlwaysRun:    true,
 					},
 					{
-						Reporter:     config.Reporter{Context: "if-changed"},
+						Context:      "if-changed",
 						Trigger:      "/test if-changed",
 						RerunCommand: "/test if-changed",
 						RegexpChangeMatcher: config.RegexpChangeMatcher{
@@ -1065,7 +962,7 @@ func TestTakeAction(t *testing.T) {
 		ca.Set(cfg)
 		if len(tc.presubmits) > 0 {
 			for i := 0; i <= 8; i++ {
-				tc.presubmits[i] = []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}}
+				tc.presubmits[i] = []config.Presubmit{{Context: "foo"}}
 			}
 		}
 		lg, gc, err := localgit.New()
@@ -1114,14 +1011,14 @@ func TestTakeAction(t *testing.T) {
 			}
 			return prs
 		}
-		var fkc fkc
+		fakeProwJobClient := fake.NewSimpleClientset()
 		var fgc fgc
 		c := &Controller{
-			logger: logrus.WithField("controller", "tide"),
-			gc:     gc,
-			config: ca.Config,
-			ghc:    &fgc,
-			kc:     &fkc,
+			logger:        logrus.WithField("controller", "tide"),
+			gc:            gc,
+			config:        ca.Config,
+			ghc:           &fgc,
+			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
 		}
 		var batchPending []PullRequest
 		if tc.batchPending {
@@ -1134,24 +1031,32 @@ func TestTakeAction(t *testing.T) {
 		} else if act != tc.action {
 			t.Errorf("Wrong action. Got %v, wanted %v.", act, tc.action)
 		}
-		if tc.triggered != len(fkc.createdJobs) {
-			t.Errorf("Wrong number of jobs triggered. Got %d, expected %d.", len(fkc.createdJobs), tc.triggered)
+
+		numCreated := 0
+		var batchJobs []*prowapi.ProwJob
+		for _, action := range fakeProwJobClient.Actions() {
+			switch action := action.(type) {
+			case clienttesting.CreateActionImpl:
+				numCreated++
+				if prowJob, ok := action.Object.(*prowapi.ProwJob); ok && prowJob.Spec.Type == prowapi.BatchJob {
+					batchJobs = append(batchJobs, prowJob)
+				}
+			}
+		}
+		if tc.triggered != numCreated {
+			t.Errorf("Wrong number of jobs triggered. Got %d, expected %d.", numCreated, tc.triggered)
 		}
 		if tc.merged != fgc.merged {
 			t.Errorf("Wrong number of merges. Got %d, expected %d.", fgc.merged, tc.merged)
 		}
 		// Ensure that the correct number of batch jobs were triggered
-		batches := 0
-		for _, job := range fkc.createdJobs {
-			if (len(job.Spec.Refs.Pulls) > 1) != (job.Spec.Type == prowapi.BatchJob) {
+		if tc.triggeredBatches != len(batchJobs) {
+			t.Errorf("Wrong number of batches triggered. Got %d, expected %d.", len(batchJobs), tc.triggeredBatches)
+		}
+		for _, job := range batchJobs {
+			if len(job.Spec.Refs.Pulls) <= 1 {
 				t.Error("Found a batch job that doesn't contain multiple pull refs!")
 			}
-			if len(job.Spec.Refs.Pulls) > 1 {
-				batches++
-			}
-		}
-		if tc.triggeredBatches != batches {
-			t.Errorf("Wrong number of batches triggered. Got %d, expected %d.", batches, tc.triggeredBatches)
 		}
 	}
 }
@@ -1163,10 +1068,6 @@ func TestServeHTTP(t *testing.T) {
 		Context:     githubql.String("coverage/coveralls"),
 		Description: githubql.String("Coverage increased (+0.1%) to 27.599%"),
 	}}
-	hist, err := history.New(100, nil)
-	if err != nil {
-		t.Fatalf("Failed to create history client: %v", err)
-	}
 	c := &Controller{
 		pools: []Pool{
 			{
@@ -1174,7 +1075,7 @@ func TestServeHTTP(t *testing.T) {
 				Action:     Merge,
 			},
 		},
-		History: hist,
+		History: history.New(100),
 	}
 	s := httptest.NewServer(c)
 	defer s.Close()
@@ -1379,7 +1280,7 @@ func TestSync(t *testing.T) {
 	for _, tc := range testcases {
 		t.Logf("Starting case %q...", tc.name)
 		fgc := &fgc{prs: tc.prs}
-		fkc := &fkc{}
+		fakeProwJobClient := fake.NewSimpleClientset()
 		ca := &config.Agent{}
 		ca.Set(&config.Config{
 			ProwConfig: config.ProwConfig{
@@ -1389,10 +1290,6 @@ func TestSync(t *testing.T) {
 				},
 			},
 		})
-		hist, err := history.New(100, nil)
-		if err != nil {
-			t.Fatalf("Failed to create history client: %v", err)
-		}
 		sc := &statusController{
 			logger:         logrus.WithField("controller", "status-update"),
 			ghc:            fgc,
@@ -1403,16 +1300,16 @@ func TestSync(t *testing.T) {
 		go sc.run()
 		defer sc.shutdown()
 		c := &Controller{
-			config: ca.Config,
-			ghc:    fgc,
-			kc:     fkc,
-			logger: logrus.WithField("controller", "sync"),
-			sc:     sc,
+			config:        ca.Config,
+			ghc:           fgc,
+			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			logger:        logrus.WithField("controller", "sync"),
+			sc:            sc,
 			changedFiles: &changedFilesAgent{
 				ghc:             fgc,
 				nextChangeCache: make(map[changeCacheKey][]string),
 			},
-			History: hist,
+			History: history.New(100),
 		}
 
 		if err := c.Sync(); err != nil {
@@ -1441,8 +1338,8 @@ func TestSync(t *testing.T) {
 
 func TestFilterSubpool(t *testing.T) {
 	presubmits := map[int][]config.Presubmit{
-		1: {{Reporter: config.Reporter{Context: "pj-a"}}},
-		2: {{Reporter: config.Reporter{Context: "pj-a"}}, {Reporter: config.Reporter{Context: "pj-b"}}},
+		1: {{Context: "pj-a"}},
+		2: {{Context: "pj-a"}, {Context: "pj-b"}},
 	}
 
 	trueVar := true
@@ -1902,13 +1799,13 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "no matching presubmits",
 			presubmits: []config.Presubmit{
 				{
-					Reporter: config.Reporter{Context: "always"},
+					Context: "always",
 					RegexpChangeMatcher: config.RegexpChangeMatcher{
 						RunIfChanged: "foo",
 					},
 				},
 				{
-					Reporter: config.Reporter{Context: "never"},
+					Context: "never",
 				},
 			},
 			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"CHANGED"}},
@@ -1923,7 +1820,7 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "no matching presubmits (check cache eviction)",
 			presubmits: []config.Presubmit{
 				{
-					Reporter: config.Reporter{Context: "never"},
+					Context: "never",
 				},
 			},
 			initialChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
@@ -1933,13 +1830,13 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "no matching presubmits (check cache retention)",
 			presubmits: []config.Presubmit{
 				{
-					Reporter: config.Reporter{Context: "always"},
+					Context: "always",
 					RegexpChangeMatcher: config.RegexpChangeMatcher{
 						RunIfChanged: "foo",
 					},
 				},
 				{
-					Reporter: config.Reporter{Context: "never"},
+					Context: "never",
 				},
 			},
 			initialChangeCache:  map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
@@ -1950,15 +1847,15 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "always_run",
 			presubmits: []config.Presubmit{
 				{
-					Reporter:  config.Reporter{Context: "always"},
+					Context:   "always",
 					AlwaysRun: true,
 				},
 				{
-					Reporter: config.Reporter{Context: "never"},
+					Context: "never",
 				},
 			},
 			expectedPresubmits: map[int][]config.Presubmit{100: {{
-				Reporter:  config.Reporter{Context: "always"},
+				Context:   "always",
 				AlwaysRun: true,
 			}}},
 		},
@@ -1966,18 +1863,18 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "runs against branch",
 			presubmits: []config.Presubmit{
 				{
-					Reporter:  config.Reporter{Context: "presubmit"},
+					Context:   "presubmit",
 					AlwaysRun: true,
 					Brancher: config.Brancher{
 						Branches: []string{"master", "dev"},
 					},
 				},
 				{
-					Reporter: config.Reporter{Context: "never"},
+					Context: "never",
 				},
 			},
 			expectedPresubmits: map[int][]config.Presubmit{100: {{
-				Reporter:  config.Reporter{Context: "presubmit"},
+				Context:   "presubmit",
 				AlwaysRun: true,
 				Brancher: config.Brancher{
 					Branches: []string{"master", "dev"},
@@ -1988,22 +1885,22 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "doesn't run against branch",
 			presubmits: []config.Presubmit{
 				{
-					Reporter:  config.Reporter{Context: "presubmit"},
+					Context:   "presubmit",
 					AlwaysRun: true,
 					Brancher: config.Brancher{
 						Branches: []string{"release", "dev"},
 					},
 				},
 				{
-					Reporter:  config.Reporter{Context: "always"},
+					Context:   "always",
 					AlwaysRun: true,
 				},
 				{
-					Reporter: config.Reporter{Context: "never"},
+					Context: "never",
 				},
 			},
 			expectedPresubmits: map[int][]config.Presubmit{100: {{
-				Reporter:  config.Reporter{Context: "always"},
+				Context:   "always",
 				AlwaysRun: true,
 			}}},
 		},
@@ -2011,26 +1908,26 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "run_if_changed (uncached)",
 			presubmits: []config.Presubmit{
 				{
-					Reporter: config.Reporter{Context: "presubmit"},
+					Context: "presubmit",
 					RegexpChangeMatcher: config.RegexpChangeMatcher{
 						RunIfChanged: "^CHANGE.$",
 					},
 				},
 				{
-					Reporter:  config.Reporter{Context: "always"},
+					Context:   "always",
 					AlwaysRun: true,
 				},
 				{
-					Reporter: config.Reporter{Context: "never"},
+					Context: "never",
 				},
 			},
 			expectedPresubmits: map[int][]config.Presubmit{100: {{
-				Reporter: config.Reporter{Context: "presubmit"},
+				Context: "presubmit",
 				RegexpChangeMatcher: config.RegexpChangeMatcher{
 					RunIfChanged: "^CHANGE.$",
 				},
 			}, {
-				Reporter:  config.Reporter{Context: "always"},
+				Context:   "always",
 				AlwaysRun: true,
 			}}},
 			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"CHANGED"}},
@@ -2039,28 +1936,28 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "run_if_changed (cached)",
 			presubmits: []config.Presubmit{
 				{
-					Reporter: config.Reporter{Context: "presubmit"},
+					Context: "presubmit",
 					RegexpChangeMatcher: config.RegexpChangeMatcher{
 						RunIfChanged: "^FIL.$",
 					},
 				},
 				{
-					Reporter:  config.Reporter{Context: "always"},
+					Context:   "always",
 					AlwaysRun: true,
 				},
 				{
-					Reporter: config.Reporter{Context: "never"},
+					Context: "never",
 				},
 			},
 			initialChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
 			expectedPresubmits: map[int][]config.Presubmit{100: {{
-				Reporter: config.Reporter{Context: "presubmit"},
+				Context: "presubmit",
 				RegexpChangeMatcher: config.RegexpChangeMatcher{
 					RunIfChanged: "^FIL.$",
 				},
 			},
 				{
-					Reporter:  config.Reporter{Context: "always"},
+					Context:   "always",
 					AlwaysRun: true,
 				}}},
 			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
@@ -2069,22 +1966,22 @@ func TestPresubmitsByPull(t *testing.T) {
 			name: "run_if_changed (cached) (skippable)",
 			presubmits: []config.Presubmit{
 				{
-					Reporter: config.Reporter{Context: "presubmit"},
+					Context: "presubmit",
 					RegexpChangeMatcher: config.RegexpChangeMatcher{
 						RunIfChanged: "^CHANGE.$",
 					},
 				},
 				{
-					Reporter:  config.Reporter{Context: "always"},
+					Context:   "always",
 					AlwaysRun: true,
 				},
 				{
-					Reporter: config.Reporter{Context: "never"},
+					Context: "never",
 				},
 			},
 			initialChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
 			expectedPresubmits: map[int][]config.Presubmit{100: {{
-				Reporter:  config.Reporter{Context: "always"},
+				Context:   "always",
 				AlwaysRun: true,
 			}}},
 			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
@@ -2104,7 +2001,7 @@ func TestPresubmitsByPull(t *testing.T) {
 		cfg := &config.Config{}
 		cfg.SetPresubmits(map[string][]config.Presubmit{
 			"/":       tc.presubmits,
-			"foo/bar": {{Reporter: config.Reporter{Context: "wrong-repo"}, AlwaysRun: true}},
+			"foo/bar": {{Context: "wrong-repo", AlwaysRun: true}},
 		})
 		cfgAgent := &config.Agent{}
 		cfgAgent.Set(cfg)

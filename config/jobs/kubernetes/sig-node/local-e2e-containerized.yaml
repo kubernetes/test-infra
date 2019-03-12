@@ -1,0 +1,80 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-local-e2e-containerized
+    branches:
+    - master
+    always_run: false
+    skip_report: false
+    optional: true
+    run_if_changed: '^(pkg|cmd)/kubelet.*$'
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
+        args:
+        - --root=/go/src
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=140"
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --deployment=local
+        - --ginkgo-parallel
+        - --provider=local
+        - --test_args=--ginkgo.focus=\[Conformance\]|\[Containerized\] --ginkgo.skip=\[Disruptive\]|\[sig\-apps\]\sDaemon\sset\s\[Serial\]\sshould\srollback\swithout\sunnecessary\srestarts\s\[Conformance\]
+        - --timeout=120m
+        env:
+        - name: DOCKERIZE_KUBELET
+          value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+
+periodics:
+- name: ci-kubernetes-local-e2e-containerized
+  interval: 60m
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
+      args:
+      - "--timeout=140"
+      - "--bare"
+      - --scenario=kubernetes_e2e
+      - --
+      - --deployment=local
+      - --extract=ci/latest
+      - --extract-source
+      - --ginkgo-parallel
+      - --provider=local
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[Containerized\] --ginkgo.skip=\[Disruptive\]|\[sig\-apps\]\sDaemon\sset\s\[Serial\]\sshould\srollback\swithout\sunnecessary\srestarts\s\[Conformance\]|\[sig\-apps\]\sDaemon\sset\s[Serial]\sshould\srun\sand\sstop\scomplex\sdaemon\s\[Conformance\]
+      - --timeout=120m
+      env:
+      - name: DOCKERIZE_KUBELET
+        value: "true"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m

@@ -29,26 +29,26 @@ import (
 	"sync"
 	"time"
 
-	"cloud.google.com/go/storage"
-
 	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
-
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/tide/blockers"
 	"k8s.io/test-infra/prow/tide/history"
 )
 
-type kubeClient interface {
-	ListProwJobs(string) ([]prowapi.ProwJob, error)
-	CreateProwJob(prowapi.ProwJob) (prowapi.ProwJob, error)
+type prowJobClient interface {
+	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
+	List(opts metav1.ListOptions) (*prowapi.ProwJobList, error)
 }
 
 type githubClient interface {
@@ -69,11 +69,11 @@ type contextChecker interface {
 
 // Controller knows how to sync PRs and PJs.
 type Controller struct {
-	logger *logrus.Entry
-	config config.Getter
-	ghc    githubClient
-	kc     kubeClient
-	gc     *git.Client
+	logger        *logrus.Entry
+	config        config.Getter
+	ghc           githubClient
+	prowJobClient prowJobClient
+	gc            *git.Client
 
 	sc *statusController
 
@@ -194,13 +194,9 @@ func init() {
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, historyHandle *storage.ObjectHandle, logger *logrus.Entry) (*Controller, error) {
+func NewController(ghcSync, ghcStatus *github.Client, prowJobClient prowv1.ProwJobInterface, cfg config.Getter, gc *git.Client, logger *logrus.Entry) *Controller {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
-	}
-	hist, err := history.New(maxRecordsPerPool, historyHandle)
-	if err != nil {
-		return nil, fmt.Errorf("error initializing history client: %v", err)
 	}
 	sc := &statusController{
 		logger:         logger.WithField("controller", "status-update"),
@@ -214,25 +210,24 @@ func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, cfg confi
 	}
 	go sc.run()
 	return &Controller{
-		logger: logger.WithField("controller", "sync"),
-		ghc:    ghcSync,
-		kc:     kc,
-		config: cfg,
-		gc:     gc,
-		sc:     sc,
+		logger:        logger.WithField("controller", "sync"),
+		ghc:           ghcSync,
+		prowJobClient: prowJobClient,
+		config:        cfg,
+		gc:            gc,
+		sc:            sc,
 		changedFiles: &changedFilesAgent{
 			ghc:             ghcSync,
 			nextChangeCache: make(map[changeCacheKey][]string),
 		},
-		History: hist,
-	}, nil
+		History: history.New(1000),
+	}
 }
 
 // Shutdown signals the statusController to stop working and waits for it to
 // finish its last update loop before terminating.
 // Controller.Sync() should not be used after this function is called.
 func (c *Controller) Shutdown() {
-	c.History.Flush()
 	c.sc.shutdown()
 }
 
@@ -298,13 +293,11 @@ func (c *Controller) Sync() error {
 	var blocks blockers.Blockers
 	var err error
 	if len(prs) > 0 {
-		start := time.Now()
-		pjs, err = c.kc.ListProwJobs(kube.EmptySelector)
+		pjList, err := c.prowJobClient.List(metav1.ListOptions{LabelSelector: labels.Everything().String()})
 		if err != nil {
-			c.logger.WithField("duration", time.Since(start).String()).Debug("Failed to list ProwJobs from the cluster.")
 			return err
 		}
-		c.logger.WithField("duration", time.Since(start).String()).Debug("Listed ProwJobs from the cluster.")
+		pjs = pjList.Items
 
 		if label := c.config().Tide.BlockerLabel; label != "" {
 			c.logger.Debugf("Searching for blocking issues (label %q).", label)
@@ -357,10 +350,8 @@ func (c *Controller) Sync() error {
 	}
 	sortPools(pools)
 	c.m.Lock()
+	defer c.m.Unlock()
 	c.pools = pools
-	c.m.Unlock()
-
-	c.History.Flush()
 	return nil
 }
 
@@ -494,12 +485,8 @@ func filterPR(ghc githubClient, sp *subpool, pr *PullRequest) bool {
 		return false
 	}
 	for _, ctx := range unsuccessfulContexts(contexts, sp.cc, log) {
-		if ctx.State != githubql.StatusStatePending {
-			log.WithField("context", ctx.Context).Debug("filtering out PR as unsuccessful context is not pending")
-			return true
-		}
-		if !presubmitsHaveContext(string(ctx.Context)) {
-			log.WithField("context", ctx.Context).Debug("filtering out PR as unsuccessful context is not Prow-controlled")
+		if ctx.State != githubql.StatusStatePending || !presubmitsHaveContext(string(ctx.Context)) {
+			log.WithField("context", ctx.Context).Debug("filtering out PR as unsuccessful context is not a pending Prow-controlled context")
 			return true
 		}
 	}
@@ -855,7 +842,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 					log.WithError(err).Warning("Merge failed: PR was modified.")
 					break
 				} else if _, ok = err.(github.UnmergablePRBaseChangedError); ok {
-					// GitHub complained that the base branch was modified. This is a
+					// Github complained that the base branch was modified. This is a
 					// strange error because the API doesn't even allow the request to
 					// specify the base branch sha, only the head sha.
 					// We suspect that github is complaining because we are making the
@@ -869,7 +856,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 						backoff *= 2
 					}
 				} else if _, ok = err.(github.UnauthorizedToPushError); ok {
-					// GitHub let us know that the token used cannot push to the branch.
+					// Github let us know that the token used cannot push to the branch.
 					// Even if the robot is set up to have write access to the repo, an
 					// overzealous branch protection setting will not allow the robot to
 					// push to a specific branch.
@@ -877,7 +864,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 					// We won't be able to merge the other PRs.
 					return augmentError(err, pr)
 				} else if _, ok = err.(github.MergeCommitsForbiddenError); ok {
-					// GitHub let us know that the merge method configured for this repo
+					// Github let us know that the merge method configured for this repo
 					// is not allowed by other repo settings, so we should let the admins
 					// know that the configuration needs to be updated.
 					log.WithError(err).Error("Merge failed: Tide needs to be configured to use the 'rebase' merge method for this repo or the repo needs to allow merge commits.")
@@ -893,7 +880,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 			} else {
 				log.Info("Merged.")
 				merged = append(merged, int(pr.Number))
-				// If we have more PRs to merge, sleep to give GitHub time to recalculate
+				// If we have more PRs to merge, sleep to give Github time to recalculate
 				// mergeability.
 				if i+1 < len(prs) {
 					time.Sleep(time.Second * 3)
@@ -940,11 +927,9 @@ func (c *Controller) trigger(sp subpool, presubmits map[int][]config.Presubmit, 
 				spec = pjutil.BatchSpec(ps, refs)
 			}
 			pj := pjutil.NewProwJob(spec, ps.Labels)
-			start := time.Now()
-			if _, err := c.kc.CreateProwJob(pj); err != nil {
+			if _, err := c.prowJobClient.Create(&pj); err != nil {
 				return fmt.Errorf("failed to create a ProwJob for job: %q, PRs: %v: %v", spec.Job, prNumbers(prs), err)
 			}
-			c.logger.WithField("duration", time.Since(start).String()).Debug("Created ProwJob on the cluster.")
 		}
 	}
 	return nil
@@ -1142,11 +1127,11 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 		err
 }
 
-func prMeta(prs ...PullRequest) []prowapi.Pull {
-	var res []prowapi.Pull
+func prMeta(prs ...PullRequest) []history.PRMeta {
+	var res []history.PRMeta
 	for _, pr := range prs {
-		res = append(res, prowapi.Pull{
-			Number: int(pr.Number),
+		res = append(res, history.PRMeta{
+			Num:    int(pr.Number),
 			Author: string(pr.Author.Login),
 			Title:  string(pr.Title),
 			SHA:    string(pr.HeadRefOID),
@@ -1327,7 +1312,7 @@ func (pr *PullRequest) logFields() logrus.Fields {
 // not commit date so if commits are reordered non-chronologically on the PR
 // branch the 'last' commit isn't necessarily the logically last commit.
 // We list multiple commits with the query to increase our chance of success,
-// but if we don't find the head commit we have to ask GitHub for it
+// but if we don't find the head commit we have to ask Github for it
 // specifically (this costs an API token).
 func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Context, error) {
 	for _, node := range pr.Commits.Nodes {
@@ -1336,12 +1321,12 @@ func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Conte
 		}
 	}
 	// We didn't get the head commit from the query (the commits must not be
-	// logically ordered) so we need to specifically ask GitHub for the status
+	// logically ordered) so we need to specifically ask Github for the status
 	// and coerce it to a graphql type.
 	org := string(pr.Repository.Owner.Login)
 	repo := string(pr.Repository.Name)
 	// Log this event so we can tune the number of commits we list to minimize this.
-	log.Warnf("'last' %d commits didn't contain logical last commit. Querying GitHub...", len(pr.Commits.Nodes))
+	log.Warnf("'last' %d commits didn't contain logical last commit. Querying Github...", len(pr.Commits.Nodes))
 	combined, err := ghc.GetCombinedStatus(org, repo, string(pr.HeadRefOID))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the combined status: %v", err)

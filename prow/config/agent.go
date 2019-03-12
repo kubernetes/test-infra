@@ -38,6 +38,8 @@ type Agent struct {
 	mut           sync.RWMutex // do not export Lock, etc methods
 	c             *Config
 	subscriptions []DeltaChan
+
+	OkroConfig *OkroConfig
 }
 
 // Start will begin polling the config file at the path. If the first load

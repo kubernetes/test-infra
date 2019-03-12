@@ -28,23 +28,16 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
-const (
-	// PRLogs is the name of the directory we put PR logs in.
-	PRLogs = "pr-logs"
-	// NonPRLogs is the name of directory we put logs that are not PR logs in.
-	NonPRLogs = "logs"
-)
-
 // PathForSpec determines the GCS path prefix for files uploaded
 // for a specific job spec
 func PathForSpec(spec *downwardapi.JobSpec, pathSegment RepoPathBuilder) string {
 	switch spec.Type {
 	case prowapi.PeriodicJob, prowapi.PostsubmitJob:
-		return path.Join(NonPRLogs, spec.Job, spec.BuildID)
+		return path.Join("logs", spec.Job, spec.BuildID)
 	case prowapi.PresubmitJob:
-		return path.Join(PRLogs, "pull", pathSegment(spec.Refs.Org, spec.Refs.Repo), strconv.Itoa(spec.Refs.Pulls[0].Number), spec.Job, spec.BuildID)
+		return path.Join("pr-logs", "pull", pathSegment(spec.Refs.Org, spec.Refs.Repo), strconv.Itoa(spec.Refs.Pulls[0].Number), spec.Job, spec.BuildID)
 	case prowapi.BatchJob:
-		return path.Join(PRLogs, "pull", "batch", spec.Job, spec.BuildID)
+		return path.Join("pr-logs", "pull", "batch", spec.Job, spec.BuildID)
 	default:
 		logrus.Fatalf("unknown job spec type: %v", spec.Type)
 	}
@@ -57,7 +50,7 @@ func AliasForSpec(spec *downwardapi.JobSpec) string {
 	case prowapi.PeriodicJob, prowapi.PostsubmitJob, prowapi.BatchJob:
 		return ""
 	case prowapi.PresubmitJob:
-		return path.Join(PRLogs, "directory", spec.Job, fmt.Sprintf("%s.txt", spec.BuildID))
+		return path.Join("pr-logs", "directory", spec.Job, fmt.Sprintf("%s.txt", spec.BuildID))
 	default:
 		logrus.Fatalf("unknown job spec type: %v", spec.Type)
 	}
@@ -72,16 +65,16 @@ func LatestBuildForSpec(spec *downwardapi.JobSpec, pathSegment RepoPathBuilder) 
 	var latestBuilds []string
 	switch spec.Type {
 	case prowapi.PeriodicJob, prowapi.PostsubmitJob:
-		latestBuilds = append(latestBuilds, path.Join(NonPRLogs, spec.Job, "latest-build.txt"))
+		latestBuilds = append(latestBuilds, path.Join("logs", spec.Job, "latest-build.txt"))
 	case prowapi.PresubmitJob:
-		latestBuilds = append(latestBuilds, path.Join(PRLogs, "directory", spec.Job, "latest-build.txt"))
+		latestBuilds = append(latestBuilds, path.Join("pr-logs", "directory", spec.Job, "latest-build.txt"))
 		// Gubernator expects presubmit tests to upload latest-build.txt
 		// under the PR-specific directory too.
 		if pathSegment != nil {
-			latestBuilds = append(latestBuilds, path.Join(PRLogs, "pull", pathSegment(spec.Refs.Org, spec.Refs.Repo), strconv.Itoa(spec.Refs.Pulls[0].Number), spec.Job, "latest-build.txt"))
+			latestBuilds = append(latestBuilds, path.Join("pr-logs", "pull", pathSegment(spec.Refs.Org, spec.Refs.Repo), strconv.Itoa(spec.Refs.Pulls[0].Number), spec.Job, "latest-build.txt"))
 		}
 	case prowapi.BatchJob:
-		latestBuilds = append(latestBuilds, path.Join(PRLogs, "directory", spec.Job, "latest-build.txt"))
+		latestBuilds = append(latestBuilds, path.Join("pr-logs", "directory", spec.Job, "latest-build.txt"))
 	default:
 		logrus.Errorf("unknown job spec type: %v", spec.Type)
 		return nil
@@ -94,9 +87,9 @@ func LatestBuildForSpec(spec *downwardapi.JobSpec, pathSegment RepoPathBuilder) 
 func RootForSpec(spec *downwardapi.JobSpec) string {
 	switch spec.Type {
 	case prowapi.PeriodicJob, prowapi.PostsubmitJob:
-		return path.Join(NonPRLogs, spec.Job)
+		return path.Join("logs", spec.Job)
 	case prowapi.PresubmitJob, prowapi.BatchJob:
-		return path.Join(PRLogs, "directory", spec.Job)
+		return path.Join("pr-logs", "directory", spec.Job)
 	default:
 		logrus.Errorf("unknown job spec type: %v", spec.Type)
 	}

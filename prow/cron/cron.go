@@ -23,9 +23,7 @@ import (
 	"sync"
 
 	"github.com/sirupsen/logrus"
-	cron "gopkg.in/robfig/cron.v2" // using v2 api, doc at https://godoc.org/gopkg.in/robfig/cron.v2
-	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/errorutil"
+	"gopkg.in/robfig/cron.v2" // using v2 api, doc at https://godoc.org/gopkg.in/robfig/cron.v2
 
 	"k8s.io/test-infra/prow/config"
 )
@@ -96,24 +94,18 @@ func (c *Cron) SyncConfig(cfg *config.Config) error {
 		}
 	}
 
-	periodicNames := sets.NewString()
+	exist := map[string]bool{}
 	for _, p := range cfg.AllPeriodics() {
-		periodicNames.Insert(p.Name)
+		exist[p.Name] = true
 	}
 
-	existing := sets.NewString()
 	for k := range c.jobs {
-		existing.Insert(k)
-	}
-
-	var removalErrors []error
-	for _, job := range existing.Difference(periodicNames).List() {
-		if err := c.removeJob(job); err != nil {
-			removalErrors = append(removalErrors, err)
+		if _, ok := exist[k]; !ok {
+			defer c.removeJob(k)
 		}
 	}
 
-	return errorutil.NewAggregate(removalErrors...)
+	return nil
 }
 
 // HasJob returns if a job has been scheduled in cronAgent or not

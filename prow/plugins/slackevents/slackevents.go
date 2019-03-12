@@ -41,7 +41,7 @@ type githubClient interface {
 }
 
 type client struct {
-	GitHubClient githubClient
+	GithubClient githubClient
 	SlackClient  slackClient
 	SlackConfig  plugins.Slack
 }
@@ -53,20 +53,14 @@ func init() {
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	configInfo := map[string]string{
-		"": fmt.Sprintf("SIG mentions on GitHub are reiterated for the following SIG Slack channels: %s.", strings.Join(config.Slack.MentionChannels, ", ")),
+		"": fmt.Sprintf("SIG mentions on Github are reiterated for the following SIG Slack channels: %s.", strings.Join(config.Slack.MentionChannels, ", ")),
 	}
 	for _, repo := range enabledRepos {
 		parts := strings.Split(repo, "/")
-		var mw *plugins.MergeWarning
-		switch len(parts) {
-		case 1:
-			mw = getMergeWarning(config.Slack.MergeWarnings, parts[0], "")
-		case 2:
-			mw = getMergeWarning(config.Slack.MergeWarnings, parts[0], parts[1])
-		default:
+		if len(parts) != 2 {
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
 		}
-		if mw != nil {
+		if mw := getMergeWarning(config.Slack.MergeWarnings, parts[0], parts[1]); mw != nil {
 			configInfo[repo] = fmt.Sprintf("In this repo merges are considered "+
 				"manual and trigger manual merge warnings if the user who merged is not "+
 				"a member of this universal whitelist: %s or merged to a branch they "+
@@ -78,9 +72,9 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		}
 	}
 	return &pluginhelp.PluginHelp{
-			Description: `The slackevents plugin reacts to various GitHub events by commenting in Slack channels.
+			Description: `The slackevents plugin reacts to various Github events by commenting in Slack channels.
 <ol><li>The plugin can create comments to alert on manual merges. Manual merges are merges made by a normal user instead of a bot or trusted user.</li>
-<li>The plugin can create comments to reiterate SIG mentions like '@kubernetes/sig-testing-bugs' from GitHub.</li></ol>`,
+<li>The plugin can create comments to reiterate SIG mentions like '@kubernetes/sig-testing-bugs' from Github.</li></ol>`,
 			Config: configInfo,
 		},
 		nil
@@ -88,7 +82,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 
 func handleComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	c := client{
-		GitHubClient: pc.GitHubClient,
+		GithubClient: pc.GitHubClient,
 		SlackConfig:  pc.PluginConfig.Slack,
 		SlackClient:  pc.SlackClient,
 	}
@@ -97,7 +91,7 @@ func handleComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 
 func handlePush(pc plugins.Agent, pe github.PushEvent) error {
 	c := client{
-		GitHubClient: pc.GitHubClient,
+		GithubClient: pc.GitHubClient,
 		SlackConfig:  pc.PluginConfig.Slack,
 		SlackClient:  pc.SlackClient,
 	}
@@ -157,7 +151,7 @@ func stringInArray(str string, list []string) bool {
 
 func echoToSlack(pc client, e github.GenericCommentEvent) error {
 	// Ignore bot comments and comments that aren't new.
-	botName, err := pc.GitHubClient.BotName()
+	botName, err := pc.GithubClient.BotName()
 	if err != nil {
 		return err
 	}
@@ -184,7 +178,7 @@ func echoToSlack(pc client, e github.GenericCommentEvent) error {
 			continue
 		}
 
-		msg := fmt.Sprintf("%s was mentioned by %s (<@%s>) on GitHub. (%s)\n>>>%s", sig, e.User.Login, e.User.Login, e.HTMLURL, e.Body)
+		msg := fmt.Sprintf("%s was mentioned by %s (<@%s>) on Github. (%s)\n>>>%s", sig, e.User.Login, e.User.Login, e.HTMLURL, e.Body)
 		if err := pc.SlackClient.WriteMessage(msg, sig); err != nil {
 			return fmt.Errorf("Failed to send message on slack channel: %q with message %q. Err: %v", sig, msg, err)
 		}

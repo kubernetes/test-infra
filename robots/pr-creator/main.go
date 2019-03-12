@@ -68,8 +68,8 @@ func optionsFromFlags() options {
 	var o options
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	o.github.AddFlags(fs)
-	fs.StringVar(&o.repo, "repo", "", "GitHub repo")
-	fs.StringVar(&o.org, "org", "", "GitHub org")
+	fs.StringVar(&o.repo, "repo", "", "Github repo")
+	fs.StringVar(&o.org, "org", "", "Github org")
 	fs.StringVar(&o.branch, "branch", "", "Repo branch to merge into")
 	fs.StringVar(&o.source, "source", "", "The user:branch to merge from")
 

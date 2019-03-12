@@ -44,21 +44,14 @@ var (
 	ErrContextUnsupported = errors.New("artifact does not support context operations")
 )
 
-type LensConfig struct {
-	// Name is the name of the lens. It must match the package name.
-	Name string
-	// Title is a human-readable title for the lens.
-	Title string
-	// Priority is used to determine where to position the lens. Higher is better.
-	Priority uint
-	// HideTitle will hide the lens title after loading if set to true.
-	HideTitle bool
-}
-
 // Lens defines the interface that lenses are required to implement in order to be used by Spyglass.
 type Lens interface {
-	// Config returns a LensConfig that describes the lens.
-	Config() LensConfig
+	// Name returns the name of the lens. It must match the package name.
+	Name() string
+	// Title returns a human-readable title for the lens.
+	Title() string
+	// Priority returns a number used to sort viewers. Lower is more important.
+	Priority() int
 	// Header returns a a string that is injected into the rendered lens's <head>
 	Header(artifacts []Artifact, resourceDir string) string
 	// Body returns a string that is initially injected into the rendered lens's <body>.
@@ -94,20 +87,19 @@ func ResourceDirForLens(baseDir, name string) string {
 
 // RegisterLens registers new viewers
 func RegisterLens(lens Lens) error {
-	config := lens.Config()
-	_, ok := lensReg[config.Name]
+	_, ok := lensReg[lens.Name()]
 	if ok {
-		return fmt.Errorf("viewer already registered with name %s", config.Name)
+		return fmt.Errorf("viewer already registered with name %s", lens.Name())
 	}
 
-	if config.Title == "" {
+	if lens.Title() == "" {
 		return errors.New("empty title field in view metadata")
 	}
-	if config.Priority < 0 {
+	if lens.Priority() < 0 {
 		return errors.New("priority must be >=0")
 	}
-	lensReg[config.Name] = lens
-	logrus.Infof("Spyglass registered viewer %s with title %s.", config.Name, config.Title)
+	lensReg[lens.Name()] = lens
+	logrus.Infof("Spyglass registered viewer %s with title %s.", lens.Name(), lens.Title())
 	return nil
 }
 

@@ -48,7 +48,7 @@ def make_signature(body):
     return 'sha1=' + hmac_instance.hexdigest()
 
 
-class GitHubHandler(webapp2.RequestHandler):
+class GithubHandler(webapp2.RequestHandler):
     """
     Handle POSTs delivered using GitHub's webhook interface. Posts are
     authenticated with HMAC signatures and a shared secret.
@@ -76,7 +76,7 @@ class GitHubHandler(webapp2.RequestHandler):
 
         parent = None
         if number:
-            parent = models.GitHubResource.make_key(repo, number)
+            parent = models.GithubResource.make_key(repo, number)
 
         kwargs = {}
         timestamp = self.request.headers.get('x-timestamp')
@@ -84,7 +84,7 @@ class GitHubHandler(webapp2.RequestHandler):
             kwargs['timestamp'] = datetime.datetime.strptime(
                 timestamp, '%Y-%m-%d %H:%M:%S.%f')
 
-        webhook = models.GitHubWebhookRaw(
+        webhook = models.GithubWebhookRaw(
             parent=parent,
             repo=repo,
             number=number,
@@ -136,12 +136,12 @@ class Events(BaseHandler):
         number = int(self.request.get('number', 0)) or None
         count = int(self.request.get('count', 500))
         if repo is not None and number is not None:
-            q = models.GitHubWebhookRaw.query(
-                models.GitHubWebhookRaw.repo == repo,
-                models.GitHubWebhookRaw.number == number)
+            q = models.GithubWebhookRaw.query(
+                models.GithubWebhookRaw.repo == repo,
+                models.GithubWebhookRaw.number == number)
         else:
-            q = models.GitHubWebhookRaw.query()
-        q = q.order(models.GitHubWebhookRaw.timestamp)
+            q = models.GithubWebhookRaw.query()
+        q = q.order(models.GithubWebhookRaw.timestamp)
         events, next_cursor, more = q.fetch_page(count, start_cursor=cursor)
         out = []
         for event in events:
@@ -189,9 +189,9 @@ class Timeline(BaseHandler):
             self.response.write('<pre>%s</pre>' % traceback.format_exc())
 
     def emit_events(self, repo, number):
-        ancestor = models.GitHubResource.make_key(repo, number)
-        events = list(models.GitHubWebhookRaw.query(ancestor=ancestor)
-            .order(models.GitHubWebhookRaw.timestamp))
+        ancestor = models.GithubResource.make_key(repo, number)
+        events = list(models.GithubWebhookRaw.query(ancestor=ancestor)
+            .order(models.GithubWebhookRaw.timestamp))
 
         self.response.write('<h3>Distilled Events</h3>')
         self.response.write('<pre>')
@@ -228,8 +228,8 @@ class Timeline(BaseHandler):
         repo = self.request.get('repo')
         number = self.request.get('number')
         if self.request.get('format') == 'json':
-            ancestor = models.GitHubResource.make_key(repo, number)
-            events = list(models.GitHubWebhookRaw.query(ancestor=ancestor))
+            ancestor = models.GithubResource.make_key(repo, number)
+            events = list(models.GithubWebhookRaw.query(ancestor=ancestor))
             self.response.headers['content-type'] = 'application/json'
             self.response.write(json.dumps([e.body for e in events], indent=True))
             return

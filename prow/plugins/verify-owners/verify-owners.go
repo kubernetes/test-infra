@@ -22,7 +22,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -47,17 +46,10 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	pluginHelp := &pluginhelp.PluginHelp{
-		Description: fmt.Sprintf("The verify-owners plugin validates %s files if they are modified in a PR. On validation failure it automatically adds the '%s' label to the PR, and a review comment on the incriminating file(s).", ownersFileName, labels.InvalidOwners),
-	}
-	if config.Owners.LabelsBlackList != nil {
-		pluginHelp.Config = map[string]string{
-			"": fmt.Sprintf(`The verify-owners plugin will complain if %s files contain any of the following blacklisted labels: %s.`,
-				ownersFileName,
-				strings.Join(config.Owners.LabelsBlackList, ", ")),
-		}
-	}
-	return pluginHelp, nil
+	return &pluginhelp.PluginHelp{
+			Description: fmt.Sprintf("The verify-owners plugin validates %s files if they are modified in a PR. On validation failure it automatically adds the '%s' label to the PR, and a review comment on the incriminating file(s).", ownersFileName, labels.InvalidOwners),
+		},
+		nil
 }
 
 type ownersClient interface {

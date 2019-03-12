@@ -1,15 +1,13 @@
 package(default_visibility = ["//visibility:public"])
 
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
-load("//prow:def.bzl", "prow_image")
 
 go_binary(
     name = "configurator",
     embed = [":go_default_library"],
     pure = "on",
+    visibility = ["//visibility:public"],
 )
-
-prow_image(name = "image")
 
 go_test(
     name = "go_default_test",
@@ -25,7 +23,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//prow/config:go_default_library",
-        "//testgrid/config:go_default_library",
+        "//testgrid:config",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
@@ -38,7 +36,7 @@ go_library(
     ],
     importpath = "k8s.io/test-infra/testgrid/cmd/configurator",
     deps = [
-        "//testgrid/config:go_default_library",
+        "//testgrid:config",
         "//testgrid/util/gcs:go_default_library",
         "//traiana/storage:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

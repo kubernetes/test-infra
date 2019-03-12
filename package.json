@@ -8,7 +8,6 @@
     "@types/google.visualization": "^0.0.43",
     "@types/jasmine": "~2.8.0",
     "jasmine": "~2.8.0",
-    "tslint": "^5.12.1",
     "typescript": ">=2.8 <2.9"
   }
 }

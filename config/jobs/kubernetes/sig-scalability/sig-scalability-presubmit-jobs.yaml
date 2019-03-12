@@ -16,7 +16,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/perf-tests=master
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --timeout=120
@@ -31,22 +30,13 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance
         - --tear-down-previous
-        - --test=false
-        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-        - --test-cmd-args=cluster-loader2
-        - --test-cmd-args=--nodes=100
-        - --test-cmd-args=--provider=gce
-        - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
-        - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/density/100_nodes/override.yaml
-        - --test-cmd-name=ClusterLoaderV2
+        - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=true --gather-metrics-at-teardown=true
         - --timeout=100m
         - --use-logexporter
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
         resources:
           requests:
             memory: "6Gi"
@@ -66,7 +56,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/perf-tests=master
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --timeout=270
@@ -82,21 +71,13 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-big-performance
         - --tear-down-previous
-        - --test=false
-        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-        - --test-cmd-args=cluster-loader2
-        - --test-cmd-args=--nodes=500
-        - --test-cmd-args=--provider=gce
-        - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
-        - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-name=ClusterLoaderV2
+        - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=masteranddns --gather-metrics-at-teardown=master
         - --timeout=240m
         - --use-logexporter
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
         resources:
           requests:
             memory: "6Gi"
@@ -116,7 +97,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/perf-tests=master
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --timeout=570
@@ -131,22 +111,13 @@ presubmits:
         - --gcp-zone=us-east1-a
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-large-performance
-        - --test=false
-        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-        - --test-cmd-args=cluster-loader2
-        - --test-cmd-args=--nodes=2000
-        - --test-cmd-args=--provider=gce
-        - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
-        - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/density/2000_nodes/override.yaml
-        - --test-cmd-name=ClusterLoaderV2
+        - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=masteranddns --gather-metrics-at-teardown=master
         - --timeout=540m
         - --use-logexporter
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
         resources:
           requests:
             memory: "6Gi"
@@ -157,10 +128,10 @@ presubmits:
     skip_report: false
     max_concurrency: 12
     skip_branches:
-    - release-1.14  # per-release image
     - release-1.13  # per-release image
     - release-1.12  # per-release image
     - release-1.11  # per-release image
+    - release-1.10  # per-release image
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -170,12 +141,11 @@ presubmits:
       preset-e2e-kubemark-gce-big: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/perf-tests=master"
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -196,79 +166,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big
         - --tear-down-previous
         - --test=false
-        - --test_args=--ginkgo.focus=xxxx
-        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-        - --test-cmd-args=cluster-loader2
-        - --test-cmd-args=--nodes=500
-        - --test-cmd-args=--provider=kubemark
-        - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
-        - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
-        - --test-cmd-name=ClusterLoaderV2
-        - --timeout=100m
-        # TODO(krzyzacy): Figure out bazel built kubemark image
-        #env:
-        # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-
-  - name: pull-kubernetes-kubemark-e2e-gce-big
-    always_run: true
-    skip_report: false
-    max_concurrency: 12
-    branches:
-      - release-1.14  # per-release image
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-dind-enabled: "true"
-      preset-e2e-kubemark-common: "true"
-      preset-e2e-kubemark-gce-big: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.14
-        args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/perf-tests=master"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=120"
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
-        - --cluster=
-        - --extract=local
-        - --gcp-master-size=n1-standard-4
-        - --gcp-node-size=n1-standard-8
-        - --gcp-nodes=7
-        - --gcp-project=k8s-presubmit-scale
-        - --gcp-zone=us-east1-b
-        - --kubemark
-        - --kubemark-nodes=500
-        - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big
-        - --tear-down-previous
-        - --test=false
-        - --test_args=--ginkgo.focus=xxxx
-        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-        - --test-cmd-args=cluster-loader2
-        - --test-cmd-args=--nodes=500
-        - --test-cmd-args=--provider=kubemark
-        - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
-        - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
-        - --test-cmd-name=ClusterLoaderV2
+        - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
         - --timeout=100m
         # TODO(krzyzacy): Figure out bazel built kubemark image
         #env:
@@ -296,12 +194,11 @@ presubmits:
       preset-e2e-kubemark-gce-big: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.13
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.13
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/perf-tests=master"
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -322,16 +219,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big
         - --tear-down-previous
         - --test=false
-        - --test_args=--ginkgo.focus=xxxx
-        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-        - --test-cmd-args=cluster-loader2
-        - --test-cmd-args=--nodes=500
-        - --test-cmd-args=--provider=kubemark
-        - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
-        - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
-        - --test-cmd-name=ClusterLoaderV2
+        - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
         - --timeout=100m
         # TODO(krzyzacy): Figure out bazel built kubemark image
         #env:
@@ -359,12 +247,11 @@ presubmits:
       preset-e2e-kubemark-gce-big: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.12
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/perf-tests=master"
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -385,16 +272,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big
         - --tear-down-previous
         - --test=false
-        - --test_args=--ginkgo.focus=xxxx
-        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-        - --test-cmd-args=cluster-loader2
-        - --test-cmd-args=--nodes=500
-        - --test-cmd-args=--provider=kubemark
-        - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
-        - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
-        - --test-cmd-name=ClusterLoaderV2
+        - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
         - --timeout=100m
         # TODO(krzyzacy): Figure out bazel built kubemark image
         #env:
@@ -422,12 +300,11 @@ presubmits:
       preset-e2e-kubemark-gce-big: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.11
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.11
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/perf-tests=master"
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -448,16 +325,60 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big
         - --tear-down-previous
         - --test=false
-        - --test_args=--ginkgo.focus=xxxx
-        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-        - --test-cmd-args=cluster-loader2
-        - --test-cmd-args=--nodes=500
-        - --test-cmd-args=--provider=kubemark
-        - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
-        - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
-        - --test-cmd-name=ClusterLoaderV2
+        - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
+        - --timeout=100m
+        # TODO(krzyzacy): Figure out bazel built kubemark image
+        #env:
+        # - name: KUBEMARK_BAZEL_BUILD
+        # value: "y"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+
+  - name: pull-kubernetes-kubemark-e2e-gce-big
+    always_run: true
+    skip_report: false
+    max_concurrency: 12
+    branches:
+    - release-1.10  # per-release image
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-kubemark-common: "true"
+      preset-e2e-kubemark-gce-big: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-1.10
+        args:
+        - --root=/go/src
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=120"
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --gcp-master-size=n1-standard-4
+        - --gcp-node-size=n1-standard-8
+        - --gcp-nodes=7
+        - --gcp-project=k8s-presubmit-scale
+        - --gcp-zone=us-east1-b
+        - --kubemark
+        - --kubemark-nodes=500
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big
+        - --tear-down-previous
+        - --test=false
+        - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
         - --timeout=100m
         # TODO(krzyzacy): Figure out bazel built kubemark image
         #env:
@@ -484,12 +405,11 @@ presubmits:
       preset-e2e-kubemark-gce-scale: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190205-d83780367-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/perf-tests=master"
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -508,15 +428,7 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-scale
         - --test=false
-        - --test_args=--ginkgo.focus=xxxx
-        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-        - --test-cmd-args=cluster-loader2
-        - --test-cmd-args=--nodes=5000
-        - --test-cmd-args=--provider=kubemark
-        - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
-        - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-name=ClusterLoaderV2
+        - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
         - --timeout=1200m
         # TODO(krzyzacy): Figure out bazel built kubemark image
         #env:

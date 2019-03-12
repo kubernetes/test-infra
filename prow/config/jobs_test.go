@@ -131,7 +131,7 @@ func TestPostsubmits(t *testing.T) {
 				t.Errorf("Job %v needs a name.", job)
 				continue
 			}
-			if !job.SkipReport && job.Context == "" {
+			if job.Report && job.Context == "" {
 				t.Errorf("Job %s needs a context.", job.Name)
 			}
 
@@ -196,35 +196,25 @@ func TestRetestPresubmits(t *testing.T) {
 			Presubmits: map[string][]Presubmit{
 				"org/repo": {
 					{
-						Reporter: Reporter{
-							Context: "gce",
-						},
+						Context:   "gce",
 						AlwaysRun: true,
 					},
 					{
-						Reporter: Reporter{
-							Context: "unit",
-						},
+						Context:   "unit",
 						AlwaysRun: true,
 					},
 					{
-						Reporter: Reporter{
-							Context: "gke",
-						},
+						Context:   "gke",
 						AlwaysRun: false,
 					},
 					{
-						Reporter: Reporter{
-							Context: "federation",
-						},
+						Context:   "federation",
 						AlwaysRun: false,
 					},
 				},
 				"org/repo2": {
 					{
-						Reporter: Reporter{
-							Context: "shouldneverrun",
-						},
+						Context:   "shouldneverrun",
 						AlwaysRun: true,
 					},
 				},

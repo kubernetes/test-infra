@@ -60,8 +60,8 @@ func makeTable(baseCovList, newCovList *calculation.CoverageList, coverageThresh
 	return strings.Join(rows, "\n"), isCoverageLow
 }
 
-// ContentForGitHubPost constructs the message covbot posts
-func ContentForGitHubPost(baseProfiles, newProfiles []*cover.Profile, jobName string, coverageThreshold float32) (
+// ContentForGithubPost constructs the message covbot posts
+func ContentForGithubPost(baseProfiles, newProfiles []*cover.Profile, jobName string, coverageThreshold float32) (
 	string, bool) {
 
 	rows := []string{

@@ -24,7 +24,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"math/rand"
 	"net/url"
 	"os"
 	"os/exec"
@@ -117,21 +116,7 @@ func (c *Cluster) getAzCredentials() error {
 	return nil
 }
 
-func randomAcsEngineLocation() string {
-	var AzureLocations = []string{
-		"westeurope",
-		"westus2",
-		"eastus2",
-		"southcentralus",
-	}
-
-	return AzureLocations[rand.Intn(len(AzureLocations))]
-}
-
 func checkParams() error {
-	if *acsLocation == "" {
-		*acsLocation = randomAcsEngineLocation()
-	}
 	if *acsCredentialsFile == "" {
 		return fmt.Errorf("no credentials file path specified")
 	}
@@ -264,9 +249,6 @@ func (c *Cluster) populateApiModelTemplate() error {
 
 	if c.acsCustomHyperKubeURL != "" {
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage = c.acsCustomHyperKubeURL
-		if strings.Contains(os.Getenv("REGISTRY"), "azurecr") {
-			v.Properties.OrchestratorProfile.KubernetesConfig.PrivateAzureRegistryServer = os.Getenv("REGISTRY")
-		}
 	}
 	if c.acsCustomWinBinariesURL != "" {
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomWindowsPackageURL = c.acsCustomWinBinariesURL
@@ -408,32 +390,18 @@ func (c *Cluster) buildHyperKube() error {
 
 	cwd, _ := os.Getwd()
 	log.Printf("CWD %v", cwd)
-	cmd := &exec.Cmd{}
-	username := ""
-	pwd := ""
-	server := ""
-	var err error
 
-	if !strings.Contains(os.Getenv("REGISTRY"), "azurecr.io") {
-		// if REGISTRY is not ACR, then use docker cred
-		log.Println("Attempting Docker login with docker cred.")
-		username = os.Getenv("DOCKER_USERNAME")
-		passwordFile := os.Getenv("DOCKER_PASSWORD_FILE")
-		password, err := ioutil.ReadFile(passwordFile)
-		if err != nil {
-			return fmt.Errorf("error reading docker passoword file %v: %v", passwordFile, err)
-		}
-		pwd = strings.TrimSuffix(string(password), "\n")
-	} else {
-		// if REGISTRY is ACR, then use azure credential
-		log.Println("Attempting Docker login with azure cred.")
-		username = c.credentials.ClientID
-		pwd = c.credentials.ClientSecret
-		server = os.Getenv("REGISTRY")
+	username := os.Getenv("DOCKER_USERNAME")
+	password_file := os.Getenv("DOCKER_PASSWORD_FILE")
+	password, err := ioutil.ReadFile(password_file)
+	if err != nil {
+		return fmt.Errorf("error reading docker passoword file %v: %v.", password_file, err)
 	}
-	cmd = exec.Command("docker", "login", fmt.Sprintf("--username=%s", username), fmt.Sprintf("--password=%s", pwd), server)
-	if err = cmd.Run(); err != nil {
-		return fmt.Errorf("failed Docker login with error: %v", err)
+
+	log.Println("Attempting Docker login.")
+	cmd := exec.Command("docker", "login", fmt.Sprintf("--username=%s", username), fmt.Sprintf("--password=%s", strings.TrimSuffix(string(password), "\n")))
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("Docker login failed with error: %v.", err)
 	}
 	log.Println("Docker login success.")
 	log.Println("Building hyperkube.")
@@ -449,7 +417,7 @@ func (c *Cluster) buildHyperKube() error {
 
 	log.Println("Docker logout.")
 	cmd = exec.Command("docker", "logout")
-	if err = cmd.Run(); err != nil {
+	if err := cmd.Run(); err != nil {
 		log.Println("Docker logout failed.")
 	}
 	log.Printf("Custom hyperkube URL: %v .", c.acsCustomHyperKubeURL)

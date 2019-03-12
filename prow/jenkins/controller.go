@@ -219,9 +219,8 @@ func (c *Controller) Sync() error {
 
 	var reportErrs []error
 	reportTemplate := c.config().ReportTemplate
-	reportTypes := c.cfg().GitHubReporter.JobTypesToReport
 	for report := range reportCh {
-		if err := reportlib.Report(c.ghc, reportTemplate, report, reportTypes); err != nil {
+		if err := reportlib.Report(c.ghc, reportTemplate, report); err != nil {
 			reportErrs = append(reportErrs, err)
 			c.log.WithFields(pjutil.ProwJobFields(&report)).WithError(err).Warn("Failed to report ProwJob status")
 		}
@@ -279,7 +278,7 @@ func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, jbs map[string]Build)
 		}
 		toCancel := pjs[cancelIndex]
 		// Allow aborting presubmit jobs for commits that have been superseded by
-		// newer commits in GitHub pull requests.
+		// newer commits in Github pull requests.
 		if c.config().AllowCancellations {
 			build, buildExists := jbs[toCancel.ObjectMeta.Name]
 			// Avoid cancelling enqueued builds.
@@ -389,7 +388,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, reports chan<- prowapi.P
 			pj.Status.URL = b.String()
 		}
 	}
-	// Report to GitHub.
+	// Report to Github.
 	reports <- pj
 	if prevState != pj.Status.State {
 		c.log.WithFields(pjutil.ProwJobFields(&pj)).
@@ -430,7 +429,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, reports chan<- prowapi
 		pj.Status.State = prowapi.PendingState
 		pj.Status.Description = "Jenkins job enqueued."
 	}
-	// Report to GitHub.
+	// Report to Github.
 	reports <- pj
 
 	if prevState != pj.Status.State {

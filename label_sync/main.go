@@ -247,28 +247,29 @@ func (c Configuration) Labels() []Label {
 // TODO(spiffxp): needs to validate labels duped across repos are identical
 // Ensures the config does not duplicate label names between default and repo
 func (c Configuration) validate(orgs string) error {
-	// Check default labels
-	seen, err := validate(c.Default.Labels, "default", make(map[string]string))
-	if err != nil {
-		return fmt.Errorf("invalid config: %v", err)
+	if len(orgs) == 0 {
+		return nil
 	}
 
 	// Generate list of orgs
 	sortedOrgs := strings.Split(orgs, ",")
 	sort.Strings(sortedOrgs)
+	// Check default labels
+	seen, err := validate(c.Default.Labels, "default", make(map[string]string))
+	if err != nil {
+		return fmt.Errorf("invalid config: %v", err)
+	}
 	// Check other repos labels
 	for repo, repoconfig := range c.Repos {
 		// Will complain if a label is both in default and repo
 		if _, err := validate(repoconfig.Labels, repo, seen); err != nil {
 			return fmt.Errorf("invalid config: %v", err)
 		}
-		// If orgs have been specified, warn if repo isn't under orgs
-		if len(orgs) != 0 {
-			data := strings.Split(repo, "/")
-			if len(data) == 2 {
-				if !stringInSortedSlice(data[0], sortedOrgs) {
-					logrus.WithField("orgs", orgs).WithField("org", data[0]).WithField("repo", repo).Warn("Repo isn't inside orgs")
-				}
+		// Warn if repo isn't under orgs
+		data := strings.Split(repo, "/")
+		if len(data) == 2 {
+			if !stringInSortedSlice(data[0], sortedOrgs) {
+				logrus.WithField("orgs", orgs).WithField("org", data[0]).WithField("repo", repo).Warn("Repo isn't inside orgs")
 			}
 		}
 	}

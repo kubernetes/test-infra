@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -32,7 +31,7 @@ var okToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
 var testAllRe = regexp.MustCompile(`(?m)^/run all,?($|\s.*)`)
 var retestRe = regexp.MustCompile(`(?m)^/rerun\s*$`)
 
-func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCommentEvent) error {
+func handleGenericComment(c Client, trigger *plugins.Trigger, gc github.GenericCommentEvent) error {
 	org := gc.Repo.Owner.Login
 	repo := gc.Repo.Name
 	number := gc.Number
@@ -43,28 +42,12 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	if gc.Action != github.GenericCommentActionCreated || !gc.IsPR || gc.IssueState != "open" {
 		return nil
 	}
-	// Skip comments not germane to this plugin
-	if !retestRe.MatchString(gc.Body) && !okToTestRe.MatchString(gc.Body) && !testAllRe.MatchString(gc.Body) {
-		matched := false
-		for _, presubmit := range c.Config.Presubmits[gc.Repo.FullName] {
-			matched = matched || presubmit.TriggerMatches(gc.Body)
-			if matched {
-				break
-			}
-		}
-		if !matched {
-			c.Logger.Debug("Comment doesn't match any triggering regex, skipping.")
-			return nil
-		}
-	}
-
 	// Skip bot comments.
 	botName, err := c.GitHubClient.BotName()
 	if err != nil {
 		return err
 	}
 	if commentAuthor == botName {
-		c.Logger.Debug("Comment is made by the bot, skipping.")
 		return nil
 	}
 
@@ -113,15 +96,15 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 		}
 	}
 
-	toTest, toSkip, err := FilterPresubmits(HonorOkToTest(trigger), c.GitHubClient, gc.Body, pr, c.Config.Presubmits[gc.Repo.FullName], c.Logger)
+	toTest, err := FilterPresubmits(HonorOkToTest(trigger), c.GitHubClient, gc.Body, pr, c.Config.Presubmits[gc.Repo.FullName])
 	if err != nil {
 		return err
 	}
-	return runAndSkipJobs(c, pr, toTest, toSkip, gc.GUID, trigger.ElideSkippedContexts)
+	return RunRequested(c, pr, toTest, gc.GUID)
 }
 
-func HonorOkToTest(trigger plugins.Trigger) bool {
-	return !trigger.IgnoreOkToTest
+func HonorOkToTest(trigger *plugins.Trigger) bool {
+	return trigger == nil || !trigger.IgnoreOkToTest
 }
 
 type GitHubClient interface {
@@ -144,27 +127,15 @@ type GitHubClient interface {
 // If a comment that we get matches more than one of the above patterns, we
 // consider the set of matching presubmits the union of the results from the
 // matching cases.
-func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string, pr *github.PullRequest, presubmits []config.Presubmit, logger *logrus.Entry) ([]config.Presubmit, []config.Presubmit, error) {
-	org, repo, sha := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Head.SHA
-	filter, err := presubmitFilter(honorOkToTest, gitHubClient, body, org, repo, sha, logger)
+func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string, pr *github.PullRequest, presubmits []config.Presubmit) ([]config.Presubmit, error) {
+	org, repo, number, sha, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Head.SHA, pr.Base.Ref
+	filter, err := presubmitFilter(honorOkToTest, gitHubClient, body, org, repo, sha)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return filterPresubmits(filter, gitHubClient, pr, presubmits, logger)
-}
-
-type changesGetter interface {
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
-}
-
-// filterPresubmits determines which presubmits should run and which should be skipped
-// by evaluating the user-provided filter.
-func filterPresubmits(filter filter, gitHubClient changesGetter, pr *github.PullRequest, presubmits []config.Presubmit, logger *logrus.Entry) ([]config.Presubmit, []config.Presubmit, error) {
-	org, repo, number, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Base.Ref
 	changes := config.NewGitHubDeferredChangedFilesProvider(gitHubClient, org, repo, number)
-	var toTrigger []config.Presubmit
-	var toSkipSuperset []config.Presubmit
+	var filteredPresubmits []config.Presubmit
 	for _, presubmit := range presubmits {
 		matches, forced, defaults := filter(presubmit)
 		if !matches {
@@ -172,54 +143,32 @@ func filterPresubmits(filter filter, gitHubClient changesGetter, pr *github.Pull
 		}
 		shouldRun, err := presubmit.ShouldRun(branch, changes, forced, defaults)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 		if shouldRun {
-			toTrigger = append(toTrigger, presubmit)
-		} else {
-			toSkipSuperset = append(toSkipSuperset, presubmit)
+			filteredPresubmits = append(filteredPresubmits, presubmit)
 		}
 	}
-	toSkip := determineSkippedPresubmits(toTrigger, toSkipSuperset, logger)
-	logger.WithFields(logrus.Fields{"to-trigger": toTrigger, "to-skip": toSkip}).Debugf("Filtered %d jobs, found %d to trigger and %d to skip.", len(presubmits), len(toTrigger), len(toSkip))
-	return toTrigger, toSkip, nil
-}
-
-// determineSkippedPresubmits identifies the largest set of contexts we can actually
-// post skipped contexts for, given a set of presubmits we're triggering. We don't
-// want to skip a job that posts a context that will be written to by a job we just
-// identified for triggering or the skipped context will override the triggered one
-func determineSkippedPresubmits(toTrigger, toSkipSuperset []config.Presubmit, logger *logrus.Entry) []config.Presubmit {
-	triggeredContexts := sets.NewString()
-	for _, presubmit := range toTrigger {
-		triggeredContexts.Insert(presubmit.Context)
-	}
-	var toSkip []config.Presubmit
-	for _, presubmit := range toSkipSuperset {
-		if triggeredContexts.Has(presubmit.Context) {
-			logger.WithFields(logrus.Fields{"context": presubmit.Context, "job": presubmit.Name}).Debug("Not skipping job as context will be created by a triggered job.")
-			continue
-		}
-		toSkip = append(toSkip, presubmit)
-	}
-	return toSkip
+	return filteredPresubmits, nil
 }
 
 type statusGetter interface {
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 }
 
-func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, repo, sha string, logger *logrus.Entry) (filter, error) {
+func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, repo, sha string) (func(config.Presubmit) (bool, bool, bool), error) {
 	// the filters determine if we should check whether a job should run, whether
 	// it should run regardless of whether its triggering conditions match, and
 	// what the default behavior should be for that check. Multiple filters
 	// can match a single presubmit, so it is important to order them correctly
 	// as they have precedence -- filters that override the false default should
 	// match before others. We order filters by amount of specificity.
-	var filters []filter
-	filters = append(filters, commandFilter(body))
+	var filters []func(config.Presubmit) (bool, bool, bool)
+	filters = append(filters, func(p config.Presubmit) (bool, bool, bool) {
+		// filter for `/test foo`
+		return p.TriggerMatches(body), p.TriggerMatches(body), true
+	})
 	if retestRe.MatchString(body) {
-		logger.Debug("Using retest filter.")
 		combinedStatus, err := statusGetter.GetCombinedStatus(org, repo, sha)
 		if err != nil {
 			return nil, err
@@ -232,49 +181,17 @@ func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, r
 				failedContexts.Insert(status.Context)
 			}
 		}
-
-		filters = append(filters, retestFilter(failedContexts, allContexts))
+		filters = append(filters, func(p config.Presubmit) (bool, bool, bool) {
+			// filter for `/retest`
+			return failedContexts.Has(p.Context) || (!p.NeedsExplicitTrigger() && !allContexts.Has(p.Context)), false, true
+		})
 	}
 	if (honorOkToTest && okToTestRe.MatchString(body)) || testAllRe.MatchString(body) {
-		logger.Debug("Using test-all filter.")
-		filters = append(filters, testAllFilter())
+		filters = append(filters, func(p config.Presubmit) (bool, bool, bool) {
+			// filter for `/test all`
+			return !p.NeedsExplicitTrigger(), false, false
+		})
 	}
-	return aggregateFilter(filters), nil
-}
-
-// filter digests a presubmit config to determine if:
-//  - we can be certain that the presubmit should run
-//  - we know that the presubmit is forced to run
-//  - what the default behavior should be if the presubmit
-//    runs conditionally and does not match trigger conditions
-type filter func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool)
-
-// commandFilter builds a filter for `/test foo`
-func commandFilter(body string) filter {
-	return func(p config.Presubmit) (bool, bool, bool) {
-		return p.TriggerMatches(body), p.TriggerMatches(body), true
-	}
-}
-
-// retestFilter builds a filter for `/retest`
-func retestFilter(failedContexts, allContexts sets.String) filter {
-	return func(p config.Presubmit) (bool, bool, bool) {
-		return failedContexts.Has(p.Context) || (!p.NeedsExplicitTrigger() && !allContexts.Has(p.Context)), false, true
-	}
-}
-
-// testAllFilter builds a filter for the automatic behavior of `/test all`.
-// Jobs that explicitly match `/test all` in their trigger regex will be
-// handled by a commandFilter for the comment in question.
-func testAllFilter() filter {
-	return func(p config.Presubmit) (bool, bool, bool) {
-		return !p.NeedsExplicitTrigger(), false, false
-	}
-}
-
-// aggregateFilter builds a filter that evaluates the child filters in order
-// and returns the first match
-func aggregateFilter(filters []filter) filter {
 	return func(presubmit config.Presubmit) (bool, bool, bool) {
 		for _, filter := range filters {
 			if shouldRun, forced, defaults := filter(presubmit); shouldRun {
@@ -282,5 +199,5 @@ func aggregateFilter(filters []filter) filter {
 			}
 		}
 		return false, false, false
-	}
+	}, nil
 }

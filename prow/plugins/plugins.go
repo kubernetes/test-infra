@@ -162,10 +162,14 @@ func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientA
 		ProwJobClient:    clientAgent.ProwJobClient,
 		GitClient:        clientAgent.GitClient,
 		SlackClient:      clientAgent.SlackClient,
-		OwnersClient:     clientAgent.OwnersClient,
-		Config:           prowConfig,
-		PluginConfig:     pluginConfig,
-		Logger:           logger,
+		OwnersClient: repoowners.NewClient(
+			clientAgent.GitClient, clientAgent.GitHubClient,
+			prowConfig, pluginConfig.MDYAMLEnabled,
+			pluginConfig.SkipCollaborators,
+		),
+		Config:       prowConfig,
+		PluginConfig: pluginConfig,
+		Logger:       logger,
 	}
 }
 
@@ -194,7 +198,6 @@ type ClientAgent struct {
 	KubernetesClient kubernetes.Interface
 	GitClient        *git.Client
 	SlackClient      *slack.Client
-	OwnersClient     *repoowners.Client
 }
 
 // ConfigAgent contains the agent mutex and the Agent configuration.
