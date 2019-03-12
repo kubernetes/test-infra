@@ -150,10 +150,11 @@ type controller struct {
 }
 
 type sinkerReconciliationMetrics struct {
-	podsCreated int
-	startAt     time.Time
-	finishedAt  time.Time
-	podsRemoved map[string]int
+	podsCreated      int
+	startAt          time.Time
+	finishedAt       time.Time
+	podsRemoved      map[string]int
+	podRemovalErrors map[string]int
 }
 
 func (m *sinkerReconciliationMetrics) getPodsTotalRemoved() int {
@@ -170,13 +171,14 @@ func (m *sinkerReconciliationMetrics) logFields() logrus.Fields {
 		"timeUsed":         m.finishedAt.Sub(m.startAt),
 		"podsTotalRemoved": m.getPodsTotalRemoved(),
 		"podsRemoved":      m.podsRemoved,
+		"podRemovalErrors": m.podRemovalErrors,
 	}
 }
 
 func (c *controller) clean() {
 
-	metrics := sinkerReconciliationMetrics{podsRemoved: make(map[string]int)}
-	metrics.startAt = time.Now()
+	metrics := sinkerReconciliationMetrics{startAt: time.Now(), podsRemoved: map[string]int{},
+		podRemovalErrors: map[string]int{}}
 
 	// Clean up old prow jobs first.
 	prowJobs, err := c.prowJobClient.List(metav1.ListOptions{})
@@ -278,6 +280,7 @@ func (c *controller) clean() {
 				metrics.podsRemoved[reason]++
 			} else {
 				c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
+				metrics.podRemovalErrors[err.Error()]++
 			}
 		}
 	}
