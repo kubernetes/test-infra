@@ -278,15 +278,23 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 	case client.New:
 		presubmits := c.config().Presubmits[cloneURI.String()]
 		presubmits = append(presubmits, c.config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
-		for _, presubmit := range presubmits {
-			if shouldRun, err := presubmit.ShouldRun(change.Branch, changedFiles, false, false); err != nil {
-				return fmt.Errorf("failed to determine if presubmit %q should run: %v", presubmit.Name, err)
-			} else if shouldRun {
-				jobSpecs = append(jobSpecs, jobSpec{
-					spec:   pjutil.PresubmitSpec(presubmit, refs),
-					labels: presubmit.Labels,
-				})
-			}
+		var filters []pjutil.Filter
+		filter, err := messageFilter(c.lastUpdate, change, presubmits)
+		if err != nil {
+			logger.WithError(err).Warn("failed to create filter on messages for presubmits")
+		} else {
+			filters = append(filters, filter)
+		}
+		filters = append(filters, oldRevisionFilter(c.lastUpdate, change.Revisions[change.CurrentRevision]))
+		toTrigger, _, err := filterPresubmits(pjutil.AggregateFilter(filters), change, presubmits)
+		if err != nil {
+			return fmt.Errorf("failed to filter presubmits: %v", err)
+		}
+		for _, presubmit := range toTrigger {
+			jobSpecs = append(jobSpecs, jobSpec{
+				spec:   pjutil.PresubmitSpec(presubmit, refs),
+				labels: presubmit.Labels,
+			})
 		}
 	}
 
@@ -301,6 +309,11 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 			labels[k] = v
 		}
 		labels[client.GerritRevision] = change.CurrentRevision
+
+		gerritLabel, ok := labels[client.GerritReportLabel]
+		if !ok || gerritLabel == "" {
+			labels[client.GerritReportLabel] = client.CodeReview
+		}
 
 		pj := pjutil.NewProwJobWithAnnotation(jSpec.spec, labels, annotations)
 		if _, err := c.kc.CreateProwJob(pj); err != nil {
