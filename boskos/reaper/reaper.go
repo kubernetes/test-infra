@@ -28,7 +28,7 @@ import (
 var (
 	rTypes         common.CommaSeparatedStrings
 	boskosURL      = flag.String("boskos-url", "http://boskos", "Boskos URL")
-	expiryDuration = flag.Int("expire", 30, "The expiry time (in minutes) after which reaper will reset resources.")
+	expiryDuration = flag.Duration("expire", 30*time.Minute, "The expiry time (in minutes) after which reaper will reset resources.")
 )
 
 func init() {
@@ -38,17 +38,14 @@ func init() {
 func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	boskos := client.NewClient("Reaper", *boskosURL)
-	logrus.Infof("Initialzied boskos client!")
+	logrus.Infof("Initialized boskos client!")
 	flag.Parse()
 
 	if len(rTypes) == 0 {
 		logrus.Fatal("--resource-type must not be empty!")
 	}
-	frequency := (*expiryDuration) / 6
-	if frequency < 1 {
-		frequency = 1
-	}
-	for range time.Tick(time.Duration(frequency) * time.Minute) {
+
+	for range time.Tick(time.Minute) {
 		for _, r := range rTypes {
 			sync(boskos, r)
 		}
@@ -56,23 +53,22 @@ func main() {
 }
 
 func sync(c *client.Client, res string) {
-	expire := time.Duration(*expiryDuration) * time.Minute
 	// kubetest busted
-	if owners, err := c.Reset(res, common.Busy, expire, common.Dirty); err != nil {
+	if owners, err := c.Reset(res, common.Busy, *expiryDuration, common.Dirty); err != nil {
 		logrus.WithError(err).Error("Reset busy failed!")
 	} else {
 		logrus.Infof("Reset busy to dirty! Proj-owner: %v", owners)
 	}
 
 	// janitor, mason busted
-	if owners, err := c.Reset(res, common.Cleaning, expire, common.Dirty); err != nil {
+	if owners, err := c.Reset(res, common.Cleaning, *expiryDuration, common.Dirty); err != nil {
 		logrus.WithError(err).Error("Reset cleaning failed!")
 	} else {
 		logrus.Infof("Reset cleaning to dirty! Proj-owner: %v", owners)
 	}
 
 	// mason busted
-	if owners, err := c.Reset(res, common.Leased, expire, common.Dirty); err != nil {
+	if owners, err := c.Reset(res, common.Leased, *expiryDuration, common.Dirty); err != nil {
 		logrus.WithError(err).Error("Reset busy failed!")
 	} else {
 		logrus.Infof("Reset leased to dirty! Proj-owner: %v", owners)
