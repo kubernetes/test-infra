@@ -54,6 +54,9 @@ require (
 	github.com/jinzhu/inflection v0.0.0-20151009084129-3272df6c21d0 // indirect
 	github.com/jinzhu/now v0.0.0-20181116074157-8ec929ed50c3 // indirect
 	github.com/json-iterator/go v1.1.6 // indirect
+	github.com/klauspost/compress v1.4.1 // indirect
+	github.com/klauspost/cpuid v1.2.0 // indirect
+	github.com/klauspost/pgzip v1.2.1
 	github.com/knative/build v0.3.1-0.20190330033454-38ace00371c7
 	github.com/knative/pkg v0.0.0-20190330034653-916205998db9
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
