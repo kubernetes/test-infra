@@ -48,8 +48,13 @@ type options struct {
 	kubernetes    flagutil.ExperimentalKubernetesOptions
 }
 
-// TODO(fejta): require setting this explicitly
-const defaultConfigPath = "/etc/config/config.yaml"
+const (
+	// TODO(fejta): require setting this explicitly
+	defaultConfigPath = "/etc/config/config.yaml"
+
+	reasonAged     = "aged"
+	reasonOrphaned = "orphaned"
+)
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o := options{}
@@ -144,7 +149,37 @@ type controller struct {
 	config        config.Getter
 }
 
+type sinkerReconciliationMetrics struct {
+	podsCreated      int
+	startAt          time.Time
+	finishedAt       time.Time
+	podsRemoved      map[string]int
+	podRemovalErrors map[string]int
+}
+
+func (m *sinkerReconciliationMetrics) getPodsTotalRemoved() int {
+	result := 0
+	for _, v := range m.podsRemoved {
+		result += v
+	}
+	return result
+}
+
+func (m *sinkerReconciliationMetrics) logFields() logrus.Fields {
+	return logrus.Fields{
+		"podsCreated":      m.podsCreated,
+		"timeUsed":         m.finishedAt.Sub(m.startAt),
+		"podsTotalRemoved": m.getPodsTotalRemoved(),
+		"podsRemoved":      m.podsRemoved,
+		"podRemovalErrors": m.podRemovalErrors,
+	}
+}
+
 func (c *controller) clean() {
+
+	metrics := sinkerReconciliationMetrics{startAt: time.Now(), podsRemoved: map[string]int{},
+		podRemovalErrors: map[string]int{}}
+
 	// Clean up old prow jobs first.
 	prowJobs, err := c.prowJobClient.List(metav1.ListOptions{})
 	if err != nil {
@@ -219,9 +254,11 @@ func (c *controller) clean() {
 			c.logger.WithError(err).Error("Error listing pods.")
 			return
 		}
+		metrics.podsCreated = len(pods.Items)
 		maxPodAge := c.config().Sinker.MaxPodAge
 		for _, pod := range pods.Items {
 			clean := !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
+			reason := reasonAged
 			if !isFinished.Has(pod.ObjectMeta.Name) {
 				// prowjob exists and is not marked as completed yet
 				// deleting the pod now will result in plank creating a brand new pod
@@ -229,6 +266,7 @@ func (c *controller) clean() {
 			}
 			if !isExist.Has(pod.ObjectMeta.Name) {
 				// prowjob has gone, we want to clean orphan pods regardless of the state
+				reason = reasonOrphaned
 				clean = true
 			}
 
@@ -239,9 +277,14 @@ func (c *controller) clean() {
 			// Delete old finished or orphan pods. Don't quit if we fail to delete one.
 			if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
 				c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
+				metrics.podsRemoved[reason]++
 			} else {
 				c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
+				metrics.podRemovalErrors[err.Error()]++
 			}
 		}
 	}
+
+	metrics.finishedAt = time.Now()
+	c.logger.WithFields(metrics.logFields()).Info("Sinker reconciliation complete.")
 }
