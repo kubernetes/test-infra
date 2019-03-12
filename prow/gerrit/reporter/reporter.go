@@ -82,10 +82,17 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 
 	// Only report when all jobs of the same type on the same revision finished
 	selector := labels.Set{
-		client.GerritRevision:    pj.ObjectMeta.Labels[client.GerritRevision],
-		kube.ProwJobTypeLabel:    pj.ObjectMeta.Labels[kube.ProwJobTypeLabel],
-		client.GerritReportLabel: pj.ObjectMeta.Labels[client.GerritReportLabel],
+		client.GerritRevision: pj.ObjectMeta.Labels[client.GerritRevision],
+		kube.ProwJobTypeLabel: pj.ObjectMeta.Labels[kube.ProwJobTypeLabel],
 	}
+
+	if pj.ObjectMeta.Labels[client.GerritReportLabel] == "" {
+		// Shouldn't happen, adapter should already have defaulted to Code-Review
+		logrus.Errorf("Gerrit report label not set for job %s", pj.Spec.Job)
+	} else {
+		selector[client.GerritReportLabel] = pj.ObjectMeta.Labels[client.GerritReportLabel]
+	}
+
 	pjs, err := c.lister.List(selector.AsSelector())
 	if err != nil {
 		logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
@@ -107,21 +114,30 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	// If you are hitting here, which means the entire patchset has been finished :-)
 
+	logger := logrus.WithField("prowjob", pj)
+
 	clientGerritRevision := client.GerritRevision
 	clientGerritID := client.GerritID
 	clientGerritInstance := client.GerritInstance
 	pjTypeLabel := kube.ProwJobTypeLabel
 	gerritReportLabel := client.GerritReportLabel
 
-	// list all prowjobs in the patchset matching pj's type (pre- or post-submit)
 	selector := labels.Set{
 		clientGerritRevision: pj.ObjectMeta.Labels[clientGerritRevision],
 		pjTypeLabel:          pj.ObjectMeta.Labels[pjTypeLabel],
-		gerritReportLabel:    pj.ObjectMeta.Labels[gerritReportLabel],
 	}
+	if pj.ObjectMeta.Labels[gerritReportLabel] == "" {
+		// Shouldn't happen, adapter should already have defaulted to Code-Review
+		logger.Errorf("Gerrit report label not set for job %s", pj.Spec.Job)
+	} else {
+		selector[gerritReportLabel] = pj.ObjectMeta.Labels[gerritReportLabel]
+	}
+
+	// list all prowjobs in the patchset matching pj's type (pre- or post-submit)
+
 	pjsOnRevisionWithSameLabel, err := c.lister.List(selector.AsSelector())
 	if err != nil {
-		logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
+		logger.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
 		return nil, err
 	}
 
@@ -130,12 +146,14 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	success := 0
 	message := ""
 	var toReportJobs []*v1.ProwJob
+	mostRecentJob := map[string]*v1.ProwJob{}
 	for _, pjOnRevisionWithSameLabel := range pjsOnRevisionWithSameLabel {
-		if pjOnRevisionWithSameLabel.Status.PrevReportStates[c.GetName()] == pjOnRevisionWithSameLabel.Status.State {
-			logrus.Infof("Job %s has been reported already", pjOnRevisionWithSameLabel.Name)
-			continue
+		job, ok := mostRecentJob[pjOnRevisionWithSameLabel.Spec.Job]
+		if !ok || job.CreationTimestamp.Time.Before(pjOnRevisionWithSameLabel.CreationTimestamp.Time) {
+			mostRecentJob[pjOnRevisionWithSameLabel.Spec.Job] = pjOnRevisionWithSameLabel
 		}
-
+	}
+	for _, pjOnRevisionWithSameLabel := range mostRecentJob {
 		if pjOnRevisionWithSameLabel.Status.State == v1.AbortedState {
 			continue
 		}
@@ -146,6 +164,12 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 		}
 
 		message = fmt.Sprintf("%s\nJob %s finished with %s -- URL: %s", message, pjOnRevisionWithSameLabel.Spec.Job, pjOnRevisionWithSameLabel.Status.State, pjOnRevisionWithSameLabel.Status.URL)
+	}
+
+	if total <= 0 {
+		// Shouldn't happen but return if does
+		logger.Warn("Tried to report empty or aborted jobs.")
+		return nil, nil
 	}
 
 	message = fmt.Sprintf("%d out of %d jobs passed!\n%s", success, total, message)
@@ -163,20 +187,20 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	if success == total {
 		vote = client.LGTM
 	}
-	labels := map[string]string{reportLabel: vote}
+	reviewLabels := map[string]string{reportLabel: vote}
 
-	logrus.Infof("Reporting to instance %s on id %s with message %s", gerritInstance, gerritID, message)
-	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, labels); err != nil {
-		logrus.WithError(err).Errorf("fail to set review with %s label on change ID %s", reportLabel, gerritID)
+	logger.Infof("Reporting to instance %s on id %s with message %s", gerritInstance, gerritID, message)
+	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, reviewLabels); err != nil {
+		logger.WithError(err).Errorf("fail to set review with %s label on change ID %s", reportLabel, gerritID)
 
 		// possibly don't have label permissions, try without labels
 		message = fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", reportLabel, message)
 		if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, nil); err != nil {
-			logrus.WithError(err).Errorf("fail to set plain review on change ID %s", gerritID)
+			logger.WithError(err).Errorf("fail to set plain review on change ID %s", gerritID)
 			return nil, err
 		}
 	}
-	logrus.Infof("Review Complete")
+	logger.Infof("Review Complete, reported jobs: %v", toReportJobs)
 
 	return toReportJobs, nil
 }
