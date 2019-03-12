@@ -89,20 +89,20 @@ func (c *Client) ShouldReport(pj *prowapi.ProwJob) bool {
 
 // Report takes a prowjob, and generate a pubsub ReportMessage and publish to specific Pub/Sub topic
 // based on Pub/Sub related labels if they exist in this prowjob
-func (c *Client) Report(pj *prowapi.ProwJob) error {
+func (c *Client) Report(pj *prowapi.ProwJob) ([]*prowapi.ProwJob, error) {
 	message := c.generateMessageFromPJ(pj)
 
 	ctx := context.Background()
 	client, err := pubsub.NewClient(ctx, message.Project)
 
 	if err != nil {
-		return fmt.Errorf("could not create pubsub Client: %v", err)
+		return nil, fmt.Errorf("could not create pubsub Client: %v", err)
 	}
 	topic := client.Topic(message.Topic)
 
 	d, err := json.Marshal(message)
 	if err != nil {
-		return fmt.Errorf("could not marshal pubsub report: %v", err)
+		return nil, fmt.Errorf("could not marshal pubsub report: %v", err)
 	}
 
 	res := topic.Publish(ctx, &pubsub.Message{
@@ -111,10 +111,10 @@ func (c *Client) Report(pj *prowapi.ProwJob) error {
 
 	_, err = res.Get(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to publish pubsub message: %v", err)
+		return nil, fmt.Errorf("failed to publish pubsub message: %v", err)
 	}
 
-	return nil
+	return []*prowapi.ProwJob{pj}, nil
 }
 
 func (c *Client) generateMessageFromPJ(pj *prowapi.ProwJob) *ReportMessage {

@@ -39,7 +39,7 @@ import (
 )
 
 type reportClient interface {
-	Report(pj *v1.ProwJob) error
+	Report(pj *v1.ProwJob) ([]*v1.ProwJob, error)
 	GetName() string
 	ShouldReport(pj *v1.ProwJob) bool
 }
@@ -240,37 +240,37 @@ func (c *Controller) processNextItem() bool {
 	}
 
 	logrus.WithField("prowjob", keyRaw).Infof("Will report state : %s", pj.Status.State)
-
-	if err := c.reporter.Report(pj); err != nil {
+	pjs, err := c.reporter.Report(pj)
+	if err != nil {
 		logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to report job")
 		return c.retry(key, err)
 	}
 
 	logrus.WithField("prowjob", keyRaw).Info("Updated job, now will update pj")
+	for _, pjob := range pjs {
+		if err := c.updateReportState(pjob); err != nil {
+			logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to update report state")
 
-	if err := c.updateReportState(pj); err != nil {
-		logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to update report state")
+			// theoretically patch should not have this issue, but in case:
+			// it might be out-dated, try to re-fetch pj and try again
 
-		// theoretically patch should not have this issue, but in case:
-		// it might be out-dated, try to re-fetch pj and try again
+			updatedPJ, err := c.pjclientset.Prow().ProwJobs(pjob.Namespace).Get(pjob.Name, metav1.GetOptions{})
+			if err != nil {
+				logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to get prowjob from apiserver")
+				c.queue.Forget(key)
+				return true
+			}
 
-		updatedPJ, err := c.pjclientset.Prow().ProwJobs(pj.Namespace).Get(pj.Name, metav1.GetOptions{})
-		if err != nil {
-			logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to get prowjob from apiserver")
-			c.queue.Forget(key)
-			return true
+			if err := c.updateReportState(updatedPJ); err != nil {
+				// shrug
+				logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to update report state again, give up")
+				c.queue.Forget(key)
+				return true
+			}
 		}
 
-		if err := c.updateReportState(updatedPJ); err != nil {
-			// shrug
-			logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to update report state again, give up")
-			c.queue.Forget(key)
-			return true
-		}
+		logrus.WithField("prowjob", keyRaw).Infof("Hunky Dory!, pj : %v, state : %s", pjob.Spec.Job, pjob.Status.State)
 	}
-
-	logrus.WithField("prowjob", keyRaw).Infof("Hunky Dory!, pj : %v, state : %s", pj.Spec.Job, pj.Status.State)
-
 	c.queue.Forget(key)
 	return true
 }

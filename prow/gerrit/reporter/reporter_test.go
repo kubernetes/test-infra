@@ -666,6 +666,63 @@ func TestReport(t *testing.T) {
 			expectLabel:   map[string]string{"label-foo": client.LGTM},
 		},
 		{
+			name: "2 runs of same job, one reported, should report by itself",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    "presubmit",
+						client.GerritReportLabel: "label-foo",
+					},
+					Annotations: map[string]string{
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job: "ci-foo",
+				},
+			},
+			existingPJs: []*v1.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							client.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:    "presubmit",
+							client.GerritReportLabel: "label-foo",
+						},
+						Annotations: map[string]string{
+							client.GerritID:       "123-abc",
+							client.GerritInstance: "gerrit",
+						},
+					},
+					Status: v1.ProwJobStatus{
+						PrevReportStates: map[string]v1.ProwJobState{
+							"gerrit-reporter": v1.FailureState,
+						},
+						State: v1.FailureState,
+						URL:   "guber/foo",
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "foo",
+						},
+						Job: "ci-foo",
+					},
+				},
+			},
+			expectReport:  true,
+			reportInclude: []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
+			expectLabel:   map[string]string{"label-foo": client.LGTM},
+		},
+		{
 			name: "2 jobs, one success one pending, different label, should report by itself",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
@@ -740,7 +797,7 @@ func TestReport(t *testing.T) {
 			continue
 		}
 
-		err := reporter.Report(tc.pj)
+		_, err := reporter.Report(tc.pj)
 		if err != nil {
 			t.Errorf("test: %s: expect no error but got error %v", tc.name, err)
 		}

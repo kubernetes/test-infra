@@ -104,7 +104,7 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 }
 
 // Report will send the current prowjob status as a gerrit review
-func (c *Client) Report(pj *v1.ProwJob) error {
+func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	// If you are hitting here, which means the entire patchset has been finished :-)
 
 	clientGerritRevision := client.GerritRevision
@@ -122,24 +122,24 @@ func (c *Client) Report(pj *v1.ProwJob) error {
 	pjsOnRevisionWithSameLabel, err := c.lister.List(selector.AsSelector())
 	if err != nil {
 		logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
-		return err
+		return nil, err
 	}
 
 	// generate an aggregated report:
 	total := 0
 	success := 0
 	message := ""
-
+	var toReportJobs []*v1.ProwJob
 	for _, pjOnRevisionWithSameLabel := range pjsOnRevisionWithSameLabel {
 		if pjOnRevisionWithSameLabel.Status.PrevReportStates[c.GetName()] == pjOnRevisionWithSameLabel.Status.State {
-			logrus.Infof("Revision %s has been reported already", pj.ObjectMeta.Labels[clientGerritRevision])
-			return nil
+			logrus.Infof("Job %s has been reported already", pjOnRevisionWithSameLabel.Name)
+			continue
 		}
 
 		if pjOnRevisionWithSameLabel.Status.State == v1.AbortedState {
 			continue
 		}
-
+		toReportJobs = append(toReportJobs, pjOnRevisionWithSameLabel)
 		total++
 		if pjOnRevisionWithSameLabel.Status.State == v1.SuccessState {
 			success++
@@ -173,10 +173,10 @@ func (c *Client) Report(pj *v1.ProwJob) error {
 		message = fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", reportLabel, message)
 		if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, nil); err != nil {
 			logrus.WithError(err).Errorf("fail to set plain review on change ID %s", gerritID)
-			return err
+			return nil, err
 		}
 	}
 	logrus.Infof("Review Complete")
 
-	return nil
+	return toReportJobs, nil
 }

@@ -91,7 +91,7 @@ type messageInterface interface {
 }
 
 type reportClient interface {
-	Report(pj *prowapi.ProwJob) error
+	Report(pj *prowapi.ProwJob) ([]*prowapi.ProwJob, error)
 	ShouldReport(pj *prowapi.ProwJob) bool
 }
 
