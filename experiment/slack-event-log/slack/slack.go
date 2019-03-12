@@ -41,17 +41,19 @@ func New(config Config) *Slack {
 	return &Slack{Config: config}
 }
 
-// SendMessage sends a simple message to Slack.
-func (slack *Slack) SendMessage(message string) error {
-	toSend := struct {
-		Text string `json:"text"`
-	}{message}
-	marshalled, err := json.Marshal(toSend)
+// Calls most Slack API methods by name. If the API is normal but the URL is weird,
+// providing a complete https:// URL as the API name also works.
+func (slack *Slack) CallMethod(api string, args interface{}) error {
+	marshalled, err := json.Marshal(args)
 	if err != nil {
-		return fmt.Errorf("failed to marshall slack message: %v", err)
+		return fmt.Errorf("failed to marshal slack message: %v", err)
 	}
 	b := bytes.NewBuffer(marshalled)
-	response, err := http.Post(slack.Config.WebhookURL, "application/json", b)
+	url := api
+	if !strings.HasPrefix(url, "https://") {
+		url = "https://slack.com/api/" + api
+	}
+	response, err := http.Post(url, "application/json", b)
 	if err != nil {
 		return fmt.Errorf("failed to POST message to Slack: %v", err)
 	}
@@ -59,6 +61,14 @@ func (slack *Slack) SendMessage(message string) error {
 		return fmt.Errorf("sending message to Slack failed")
 	}
 	return nil
+}
+
+// SendMessage sends a simple message to Slack.
+func (slack *Slack) SendMessage(message string) error {
+	toSend := struct {
+		Text string `json:"text"`
+	}{message}
+	return slack.CallMethod(slack.Config.WebhookURL, toSend)
 }
 
 // VerifySignature verifies the signature on a message from Slack to ensure it is real.
