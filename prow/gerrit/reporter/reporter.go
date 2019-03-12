@@ -82,8 +82,9 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 
 	// Only report when all jobs of the same type on the same revision finished
 	selector := labels.Set{
-		client.GerritRevision: pj.ObjectMeta.Labels[client.GerritRevision],
-		kube.ProwJobTypeLabel: pj.ObjectMeta.Labels[kube.ProwJobTypeLabel],
+		client.GerritRevision:    pj.ObjectMeta.Labels[client.GerritRevision],
+		kube.ProwJobTypeLabel:    pj.ObjectMeta.Labels[kube.ProwJobTypeLabel],
+		client.GerritReportLabel: pj.ObjectMeta.Labels[client.GerritReportLabel],
 	}
 	pjs, err := c.lister.List(selector.AsSelector())
 	if err != nil {
@@ -91,10 +92,10 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 		return false
 	}
 
-	for _, pj := range pjs {
-		if pj.Status.State == v1.TriggeredState || pj.Status.State == v1.PendingState {
-			// other jobs are still running on this revision, skip report
-			logrus.WithField("prowjob", pj.ObjectMeta.Name).Info("Other jobs are still running on this revision")
+	for _, pjob := range pjs {
+		if pjob.Status.State == v1.TriggeredState || pjob.Status.State == v1.PendingState {
+			// other jobs with same label are still running on this revision, skip report
+			logrus.WithField("prowjob", pjob.ObjectMeta.Name).Info("Other jobs with same label are still running on this revision")
 			return false
 		}
 	}
@@ -110,13 +111,15 @@ func (c *Client) Report(pj *v1.ProwJob) error {
 	clientGerritID := client.GerritID
 	clientGerritInstance := client.GerritInstance
 	pjTypeLabel := kube.ProwJobTypeLabel
+	gerritReportLabel := client.GerritReportLabel
 
 	// list all prowjobs in the patchset matching pj's type (pre- or post-submit)
 	selector := labels.Set{
 		clientGerritRevision: pj.ObjectMeta.Labels[clientGerritRevision],
 		pjTypeLabel:          pj.ObjectMeta.Labels[pjTypeLabel],
+		gerritReportLabel:    pj.ObjectMeta.Labels[gerritReportLabel],
 	}
-	pjsOnRevision, err := c.lister.List(selector.AsSelector())
+	pjsOnRevisionWithSameLabel, err := c.lister.List(selector.AsSelector())
 	if err != nil {
 		logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
 		return err
@@ -127,22 +130,22 @@ func (c *Client) Report(pj *v1.ProwJob) error {
 	success := 0
 	message := ""
 
-	for _, pjOnRevision := range pjsOnRevision {
-		if pjOnRevision.Status.PrevReportStates[c.GetName()] == pjOnRevision.Status.State {
+	for _, pjOnRevisionWithSameLabel := range pjsOnRevisionWithSameLabel {
+		if pjOnRevisionWithSameLabel.Status.PrevReportStates[c.GetName()] == pjOnRevisionWithSameLabel.Status.State {
 			logrus.Infof("Revision %s has been reported already", pj.ObjectMeta.Labels[clientGerritRevision])
 			return nil
 		}
 
-		if pjOnRevision.Status.State == v1.AbortedState {
+		if pjOnRevisionWithSameLabel.Status.State == v1.AbortedState {
 			continue
 		}
 
 		total++
-		if pjOnRevision.Status.State == v1.SuccessState {
+		if pjOnRevisionWithSameLabel.Status.State == v1.SuccessState {
 			success++
 		}
 
-		message = fmt.Sprintf("%s\nJob %s finished with %s -- URL: %s", message, pjOnRevision.Spec.Job, pjOnRevision.Status.State, pjOnRevision.Status.URL)
+		message = fmt.Sprintf("%s\nJob %s finished with %s -- URL: %s", message, pjOnRevisionWithSameLabel.Spec.Job, pjOnRevisionWithSameLabel.Status.State, pjOnRevisionWithSameLabel.Status.URL)
 	}
 
 	message = fmt.Sprintf("%d out of %d jobs passed!\n%s", success, total, message)
