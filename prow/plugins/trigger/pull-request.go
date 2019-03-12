@@ -19,6 +19,7 @@ package trigger
 import (
 	"encoding/json"
 	"fmt"
+	"k8s.io/test-infra/prow/pjutil"
 	"net/url"
 
 	"k8s.io/test-infra/prow/errorutil"
@@ -218,7 +219,7 @@ func TrustedPullRequest(ghc githubClient, trigger plugins.Trigger, author, org, 
 
 // buildAll ensures that all builds that should run and will be required are built
 func buildAll(c Client, pr *github.PullRequest, eventGUID string, elideSkippedContexts bool) error {
-	toTest, toSkip, err := filterPresubmits(testAllFilter(), c.GitHubClient, pr, c.Config.Presubmits[pr.Base.Repo.FullName], c.Logger)
+	toTest, toSkip, err := filterPresubmits(pjutil.TestAllFilter(), c.GitHubClient, pr, c.Config.Presubmits[pr.Base.Repo.FullName], c.Logger)
 	if err != nil {
 		return err
 	}
