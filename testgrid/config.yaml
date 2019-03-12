@@ -3427,8 +3427,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/post-sig-storage-local-static-provisioner-build-release
 
 # Kubernetes-CSI test groups
-- name: ci-kubernetes-csi-stable
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-stable
+- name: ci-kubernetes-csi-stable-on-kubernetes-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-stable-on-kubernetes-master
+- name: ci-kubernetes-csi-stable-on-kubernetes-1-13
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-stable-on-kubernetes-1-13
 
 # Docker node conformance test group
 - name: ce18.09-ubuntu16.04-k8s1.13.x-conformance
@@ -6793,10 +6795,14 @@ dashboards:
 
 - name: sig-storage-csi
   dashboard_tab:
-  - name: stable
-    test_group_name: ci-kubernetes-csi-stable
+  - name: stable-on-master
+    test_group_name: ci-kubernetes-csi-stable-on-kubernetes-master
     base_options: include-filter-by-regex=^External%7CStorage|^test-
     description: Kubernetes-CSI tests with lastest Kubernetes and stable sidecars
+  - name: stable-on-1-13
+    test_group_name: ci-kubernetes-csi-stable-on-kubernetes-1-13
+    base_options: include-filter-by-regex=^External%7CStorage|^test-
+    description: Kubernetes-CSI tests with lastest Kubernetes 1.13.x and stable sidecars
 
 - name: sig-testing-maintenance
   dashboard_tab:
