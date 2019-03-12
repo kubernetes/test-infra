@@ -41,6 +41,7 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/logrusutil"
 )
 
 const maxConcurrentWorkers = 20
@@ -673,6 +674,10 @@ func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, hosts ...s
 // It took about 10 minutes to process all my 8 repos with all wanted "kubernetes" labels (70+)
 // Next run takes about 22 seconds to check if all labels are correct on all repos
 func main() {
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "label_sync"}),
+	)
+
 	flag.Parse()
 	if *debug {
 		logrus.SetLevel(logrus.DebugLevel)
