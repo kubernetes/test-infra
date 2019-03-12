@@ -30,3 +30,8 @@ This is a list of all the changes made to this repository to support Okro use ca
     PULL_BASE_SHA and PULL_PULL_SHA respectively. Used for interpolation when creating image names.
 
 - Add CreateIssue method to github client ([commit](https://github.com/Traiana/test-infra/commit/c4eb98e3974952579becad07fd7b9c6ebd05c181))
+
+- Add download/upload support for AWS ([commit](https://github.com/traiana/test-infra/commit/399221e950277f1a3fd58408628e207bf96d6ca2))
+
+- Exapnd BUILD_VERSION environment variable in entrypoint ([commit](https://github.com/traiana/test-infra/commit/dcff9a87d60d9ea8a02f4111e075b92714c6ddaf))
+
