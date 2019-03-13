@@ -674,7 +674,7 @@ func TestUpdateConfig(t *testing.T) {
 
 		m.SetDefaults()
 
-		if err := handle(fgc, fkc.CoreV1(), defaultNamespace, log, event, m.Maps); err != nil {
+		if err := handle(fgc, fkc.CoreV1(), defaultNamespace, log, event, &m); err != nil {
 			t.Errorf("%s: unexpected error handling: %s", tc.name, err)
 			continue
 		}

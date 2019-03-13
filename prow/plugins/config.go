@@ -421,6 +421,9 @@ type ConfigUpdater struct {
 	// github.com/kubernetes/test-infra/prow/plugins.yaml assuming the config-updater
 	// plugin is enabled for kubernetes/test-infra. Defaults to "prow/plugins.yaml".
 	PluginFile string `json:"plugin_file,omitempty"`
+	// If GZIP is true then files will be gzipped before insertion into
+	// their corresponding configmap
+	GZIP bool `json:"gzip"`
 }
 
 // MergeWarning is a config for the slackevents plugin's manual merge warnings.
