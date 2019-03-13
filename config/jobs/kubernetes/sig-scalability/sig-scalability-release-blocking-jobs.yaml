@@ -138,9 +138,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=e2e-big-beta
-      # TODO(mm4tt): Remove once beta corresponds to 1.14 or a newer release.
-      # Don't override metrics-bind-address in older releases, see https://github.com/kubernetes/kubernetes/issues/74123
-      - --env=KUBEPROXY_TEST_ARGS=--profiling
       - --extract=ci/k8s-beta
       - --gcp-node-image=gci
       - --gcp-nodes=100
@@ -184,9 +181,6 @@ periodics:
       # Use default kube-qps and kube-api-burst flag values.
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling
       - --env=SCHEDULER_TEST_ARGS=--profiling
-      # TODO(mm4tt): Remove once stable1 corresponds to 1.14 or a newer release.
-      # Don't override metrics-bind-address in older releases, see https://github.com/kubernetes/kubernetes/issues/74123
-      - --env=KUBEPROXY_TEST_ARGS=--profiling
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
       - --gcp-nodes=100
@@ -230,9 +224,6 @@ periodics:
       # Use default kube-qps and kube-api-burst flag values.
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling
       - --env=SCHEDULER_TEST_ARGS=--profiling
-      # TODO(mm4tt): Remove once stable2 corresponds to 1.14 or a newer release.
-      # Don't override metrics-bind-address in older releases, see https://github.com/kubernetes/kubernetes/issues/74123
-      - --env=KUBEPROXY_TEST_ARGS=--profiling
       - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
       - --gcp-nodes=100
@@ -276,9 +267,6 @@ periodics:
       # Use default kube-qps and kube-api-burst flag values.
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling
       - --env=SCHEDULER_TEST_ARGS=--profiling
-      # TODO(mm4tt): Remove once stable3 corresponds to 1.14 or a newer release.
-      # Don't override metrics-bind-address in older releases, see https://github.com/kubernetes/kubernetes/issues/74123
-      - --env=KUBEPROXY_TEST_ARGS=--profiling
       - --extract=ci/k8s-stable3
       - --gcp-node-image=gci
       - --gcp-nodes=100
