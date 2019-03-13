@@ -34,22 +34,24 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
-
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/tide/blockers"
 	"k8s.io/test-infra/prow/tide/history"
 )
 
-type kubeClient interface {
-	ListProwJobs(string) ([]prowapi.ProwJob, error)
-	CreateProwJob(prowapi.ProwJob) (prowapi.ProwJob, error)
+type prowJobClient interface {
+	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
+	List(opts metav1.ListOptions) (*prowapi.ProwJobList, error)
 }
 
 type githubClient interface {
@@ -70,11 +72,11 @@ type contextChecker interface {
 
 // Controller knows how to sync PRs and PJs.
 type Controller struct {
-	logger *logrus.Entry
-	config config.Getter
-	ghc    githubClient
-	kc     kubeClient
-	gc     *git.Client
+	logger        *logrus.Entry
+	config        config.Getter
+	ghc           githubClient
+	prowJobClient prowJobClient
+	gc            *git.Client
 
 	sc *statusController
 
@@ -195,7 +197,7 @@ func init() {
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, historyHandle *storage.ObjectHandle, logger *logrus.Entry) (*Controller, error) {
+func NewController(ghcSync, ghcStatus *github.Client, prowJobClient prowv1.ProwJobInterface, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, historyHandle *storage.ObjectHandle, logger *logrus.Entry) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
@@ -212,12 +214,12 @@ func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, cfg confi
 	}
 	go sc.run()
 	return &Controller{
-		logger: logger.WithField("controller", "sync"),
-		ghc:    ghcSync,
-		kc:     kc,
-		config: cfg,
-		gc:     gc,
-		sc:     sc,
+		logger:        logger.WithField("controller", "sync"),
+		ghc:           ghcSync,
+		prowJobClient: prowJobClient,
+		config:        cfg,
+		gc:            gc,
+		sc:            sc,
 		changedFiles: &changedFilesAgent{
 			ghc:             ghcSync,
 			nextChangeCache: make(map[changeCacheKey][]string),
@@ -300,12 +302,13 @@ func (c *Controller) Sync() error {
 	var err error
 	if len(prs) > 0 {
 		start := time.Now()
-		pjs, err = c.kc.ListProwJobs(kube.EmptySelector)
+		pjList, err := c.prowJobClient.List(metav1.ListOptions{LabelSelector: labels.Everything().String()})
 		if err != nil {
 			c.logger.WithField("duration", time.Since(start).String()).Debug("Failed to list ProwJobs from the cluster.")
 			return err
 		}
 		c.logger.WithField("duration", time.Since(start).String()).Debug("Listed ProwJobs from the cluster.")
+		pjs = pjList.Items
 
 		if label := c.config().Tide.BlockerLabel; label != "" {
 			c.logger.Debugf("Searching for blocking issues (label %q).", label)
@@ -961,7 +964,8 @@ func (c *Controller) trigger(sp subpool, presubmits map[int][]config.Presubmit, 
 			}
 			pj := pjutil.NewProwJob(spec, ps.Labels)
 			start := time.Now()
-			if _, err := c.kc.CreateProwJob(pj); err != nil {
+			if _, err := c.prowJobClient.Create(&pj); err != nil {
+				c.logger.WithField("duration", time.Since(start).String()).Debug("Failed to create ProwJob on the cluster.")
 				return fmt.Errorf("failed to create a ProwJob for job: %q, PRs: %v: %v", spec.Job, prNumbers(prs), err)
 			}
 			c.logger.WithField("duration", time.Since(start).String()).Debug("Created ProwJob on the cluster.")
