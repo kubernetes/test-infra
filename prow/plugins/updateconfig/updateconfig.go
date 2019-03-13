@@ -17,6 +17,8 @@ limitations under the License.
 package updateconfig
 
 import (
+	"bytes"
+	"compress/gzip"
 	"fmt"
 	"path"
 
@@ -66,11 +68,7 @@ type githubClient interface {
 }
 
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
-	return handle(pc.GitHubClient, pc.KubernetesClient.CoreV1(), pc.Config.ProwJobNamespace, pc.Logger, pre, maps(pc))
-}
-
-func maps(pc plugins.Agent) map[string]plugins.ConfigMapSpec {
-	return pc.PluginConfig.ConfigUpdater.Maps
+	return handle(pc.GitHubClient, pc.KubernetesClient.CoreV1(), pc.Config.ProwJobNamespace, pc.Logger, pre, &pc.PluginConfig.ConfigUpdater)
 }
 
 // FileGetter knows how to get the contents of a file by name
@@ -88,7 +86,7 @@ func (g *gitHubFileGetter) GetFile(filename string) ([]byte, error) {
 }
 
 // Update updates the configmap with the data from the identified files
-func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string, updates map[string]string, logger *logrus.Entry) error {
+func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string, updates map[string]string, gzipContent bool, logger *logrus.Entry) error {
 	cm, getErr := kc.Get(name, metav1.GetOptions{})
 	isNotFound := errors.IsNotFound(getErr)
 	if getErr != nil && !isNotFound {
@@ -119,7 +117,19 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 			return fmt.Errorf("get file err: %v", err)
 		}
 		logger.WithFields(logrus.Fields{"key": key, "filename": filename}).Debug("Populating key.")
-		cm.Data[key] = string(content)
+		value := string(content)
+		if gzipContent {
+			buff := bytes.NewBuffer([]byte{})
+			// TODO(bentheelder): this error is wildly unlikely for anything that
+			// would actually fit in a configmap, we could just as well return
+			// the error instead of falling back to the raw content
+			if _, err := gzip.NewWriter(buff).Write(content); err != nil {
+				logger.WithError(err).Error("failed to gzip content, falling back to raw")
+			} else {
+				value = buff.String()
+			}
+		}
+		cm.Data[key] = value
 	}
 
 	var updateErr error
@@ -194,13 +204,13 @@ func FilterChanges(configMaps map[string]plugins.ConfigMapSpec, changes []github
 	return toUpdate
 }
 
-func handle(gc githubClient, kc corev1.ConfigMapsGetter, defaultNamespace string, log *logrus.Entry, pre github.PullRequestEvent, configMaps map[string]plugins.ConfigMapSpec) error {
+func handle(gc githubClient, kc corev1.ConfigMapsGetter, defaultNamespace string, log *logrus.Entry, pre github.PullRequestEvent, config *plugins.ConfigUpdater) error {
 	// Only consider newly merged PRs
 	if pre.Action != github.PullRequestActionClosed {
 		return nil
 	}
 
-	if len(configMaps) == 0 { // Nothing to update
+	if len(config.Maps) == 0 { // Nothing to update
 		return nil
 	}
 
@@ -232,7 +242,7 @@ func handle(gc githubClient, kc corev1.ConfigMapsGetter, defaultNamespace string
 	}
 
 	// Are any of the changes files ones that define a configmap we want to update?
-	toUpdate := FilterChanges(configMaps, changes, log)
+	toUpdate := FilterChanges(config.Maps, changes, log)
 
 	var updated []string
 	indent := " " // one space
@@ -244,7 +254,7 @@ func handle(gc githubClient, kc corev1.ConfigMapsGetter, defaultNamespace string
 			cm.Namespace = defaultNamespace
 		}
 		logger := log.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace}})
-		if err := Update(&gitHubFileGetter{org: org, repo: repo, commit: *pr.MergeSHA, client: gc}, kc.ConfigMaps(cm.Namespace), cm.Name, cm.Namespace, data, logger); err != nil {
+		if err := Update(&gitHubFileGetter{org: org, repo: repo, commit: *pr.MergeSHA, client: gc}, kc.ConfigMaps(cm.Namespace), cm.Name, cm.Namespace, data, config.GZIP, logger); err != nil {
 			return err
 		}
 		updated = append(updated, message(cm.Name, cm.Namespace, data, indent))

@@ -41,6 +41,8 @@ type options struct {
 	jobConfigPath string
 	pluginConfig  string
 
+	gzip bool
+
 	dryRun     bool
 	kubernetes prowflagutil.ExperimentalKubernetesOptions
 }
@@ -54,6 +56,8 @@ func gatherOptions() options {
 	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
+
+	fs.BoolVar(&o.gzip, "gzip", false, "Wether or not to GZIP the configmap keys")
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 	o.kubernetes.AddFlags(fs)
@@ -124,7 +128,7 @@ func main() {
 			cm.Namespace = configAgent.Config().ProwJobNamespace
 		}
 		logger := logrus.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace}})
-		if err := updateconfig.Update(&osFileGetter{root: o.sourcePath}, client.CoreV1().ConfigMaps(cm.Namespace), cm.Name, cm.Namespace, data, logger); err != nil {
+		if err := updateconfig.Update(&osFileGetter{root: o.sourcePath}, client.CoreV1().ConfigMaps(cm.Namespace), cm.Name, cm.Namespace, data, o.gzip, logger); err != nil {
 			logger.WithError(err).Error("failed to update config on cluster")
 		}
 	}
