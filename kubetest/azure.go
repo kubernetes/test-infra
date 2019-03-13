@@ -34,6 +34,8 @@ import (
 	"time"
 
 	"github.com/pelletier/go-toml"
+	"k8s.io/test-infra/kubetest/e2e"
+	"k8s.io/test-infra/kubetest/process"
 	"k8s.io/test-infra/kubetest/util"
 
 	"github.com/Azure/azure-storage-blob-go/2016-05-31/azblob"
@@ -63,6 +65,7 @@ var (
 	acsOrchestratorRelease = flag.String("acsengine-orchestratorRelease", "", "Orchestrator Profile for acs-engine")
 	acsWinZipBuildScript   = flag.String("acsengine-winZipBuildScript", "https://raw.githubusercontent.com/Azure/acs-engine/master/scripts/build-windows-k8s.sh", "Build script to create custom zip containing win binaries for acs-engine")
 	acsNetworkPlugin       = flag.String("acsengine-networkPlugin", "azure", "Network pluging to use with acs-engine")
+	testCcm                = flag.Bool("test-ccm", false, "Set to True if you want kubetest to run e2e tests for ccm")
 )
 
 type Creds struct {
@@ -141,7 +144,7 @@ func checkParams() error {
 		*acsResourceName = "kubetest-" + uuid.NewV1().String()
 	}
 	if *acsResourceGroupName == "" {
-		*acsResourceGroupName = *acsResourceName + "-rg"
+		*acsResourceGroupName = *acsResourceName
 	}
 	if *acsDnsPrefix == "" {
 		*acsDnsPrefix = *acsResourceName
@@ -236,7 +239,11 @@ func (c *Cluster) populateApiModelTemplate() error {
 	if v.Properties.OrchestratorProfile.KubernetesConfig == nil {
 		v.Properties.OrchestratorProfile.KubernetesConfig = &KubernetesConfig{}
 	}
-	v.Properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = c.networkPlugin // default Azure
+	// to support aks-engine validation logic `networkPolicy 'none' is not supported with networkPlugin 'azure'`
+	if v.Properties.OrchestratorProfile.KubernetesConfig.NetworkPolicy != "none" && v.Properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin == "" {
+		// default NetworkPlugin to Azure if not provided
+		v.Properties.OrchestratorProfile.KubernetesConfig.NetworkPlugin = c.networkPlugin
+	}
 	if c.dnsPrefix != "" {
 		v.Properties.MasterProfile.DNSPrefix = c.dnsPrefix
 	}
@@ -451,7 +458,7 @@ func dockerLogout() error {
 
 func (c *Cluster) buildCcm() error {
 
-	image := fmt.Sprintf("%v/azure-cloud-controller-manager:%v", os.Getenv("REGISTRY"), os.Getenv("BUILD_ID"))
+	image := fmt.Sprintf("%v/azure-cloud-controller-manager:%v-%v", os.Getenv("REGISTRY"), os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8])
 	if err := c.dockerLogin(); err != nil {
 		return err
 	}
@@ -480,7 +487,7 @@ func (c *Cluster) buildCcm() error {
 
 func (c *Cluster) buildHyperKube() error {
 
-	os.Setenv("VERSION", fmt.Sprintf("azure-e2e-%v", os.Getenv("BUILD_ID")))
+	os.Setenv("VERSION", fmt.Sprintf("azure-e2e-%v-%v", os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8]))
 	if err := c.dockerLogin(); err != nil {
 		return err
 	}
@@ -579,7 +586,7 @@ func getZipBuildScript(buildScriptURL string, retry int) (string, error) {
 
 func (c *Cluster) buildWinZip() error {
 
-	zipName := fmt.Sprintf("%s.zip", os.Getenv("BUILD_ID"))
+	zipName := fmt.Sprintf("%s%s.zip", os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8])
 	buildFolder := path.Join(os.Getenv("HOME"), "winbuild")
 	zipPath := path.Join(os.Getenv("HOME"), zipName)
 	log.Printf("Building %s", zipName)
@@ -670,6 +677,25 @@ func (c Cluster) GetClusterCreated(clusterName string) (time.Time, error) {
 
 func (c Cluster) TestSetup() error {
 
+	// set env vars required by the ccm e2e tests
+	if *testCcm == true {
+		if err := os.Setenv("K8S_AZURE_TENANTID", c.credentials.TenantID); err != nil {
+			return err
+		}
+		if err := os.Setenv("K8S_AZURE_SUBSID", c.credentials.SubscriptionID); err != nil {
+			return err
+		}
+		if err := os.Setenv("K8S_AZURE_SPID", c.credentials.ClientID); err != nil {
+			return err
+		}
+		if err := os.Setenv("K8S_AZURE_SPSEC", c.credentials.ClientSecret); err != nil {
+			return err
+		}
+		if err := os.Setenv("K8S_AZURE_LOCATION", c.location); err != nil {
+			return err
+		}
+	}
+
 	// Download repo-list that defines repositories for Windows test images.
 
 	downloadUrl, ok := os.LookupEnv("KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION")
@@ -704,3 +730,34 @@ func (c Cluster) IsUp() error {
 }
 
 func (_ Cluster) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
+
+// BuildTester returns a standard ginkgo-script tester or a custom one if testCcm is enabled
+func (c *Cluster) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
+	if *testCcm != true {
+		return &GinkgoScriptTester{}, nil
+	}
+	log.Printf("running go tests directly")
+	return &GinkgoCustomTester{}, nil
+}
+
+// GinkgoCustomTester implements Tester by calling a custom ginkgo script
+type GinkgoCustomTester struct {
+}
+
+// Run executes custom ginkgo script
+func (t *GinkgoCustomTester) Run(control *process.Control, testArgs []string) error {
+	artifactsDir, ok := os.LookupEnv("ARTIFACTS")
+	if !ok {
+		artifactsDir = filepath.Join(os.Getenv("WORKSPACE"), "_artifacts")
+	}
+	log.Printf("artifactsDir %v", artifactsDir)
+	// set CCM_JUNIT_REPORT_DIR for ccm e2e test to use the same dir
+	if err := os.Setenv("CCM_JUNIT_REPORT_DIR", artifactsDir); err != nil {
+		return err
+	}
+	cmd := exec.Command("make", "test-ccm-e2e")
+	projectPath := util.K8s("cloud-provider-azure")
+	cmd.Dir = projectPath
+	testErr := control.FinishRunning(cmd)
+	return testErr
+}
