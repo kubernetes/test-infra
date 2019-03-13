@@ -29,8 +29,8 @@ import (
 	"sync"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/traiana/storage"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )

@@ -45,6 +45,21 @@ prow_push(
     }),
 )
 
+prow_push(
+    name = "okro-release-push",
+    bundle_name = "okro-release",
+    images = tags(
+        "sidecar",
+        "initupload",
+        "entrypoint",
+        "deck",
+        "hook",
+        "plank",
+        "crier",
+        "build",
+    ),
+)
+
 filegroup(
     name = "configs",
     srcs = glob(["*.yaml"]),

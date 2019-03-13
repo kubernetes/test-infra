@@ -27,8 +27,8 @@ import (
 	"strings"
 	"sync"
 
-	"cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
+	"k8s.io/test-infra/traiana/storage"
 	"vbom.ml/util/sortorder"
 
 	"k8s.io/test-infra/testgrid/metadata"

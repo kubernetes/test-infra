@@ -1,8 +1,9 @@
 package storage
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
+
+	"cloud.google.com/go/storage"
 	"k8s.io/test-infra/traiana"
 	"k8s.io/test-infra/traiana/awsapi"
 )
@@ -43,7 +44,7 @@ func (b *BucketHandle) Objects(ctx context.Context, q *Query) *ObjectIterator {
 	if traiana.Aws {
 		return &ObjectIterator{
 			ObjectIterator: &storage.ObjectIterator{},
-			aws: b.aws.Objects(q),
+			aws:            b.aws.Objects(q),
 		}
 	} else {
 		return &ObjectIterator{

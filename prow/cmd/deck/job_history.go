@@ -400,7 +400,8 @@ func getJobHistory(url *url.URL, config *config.Config, gcsClient *storage.Clien
 		go func(i int, buildID int64) {
 			id := strconv.FormatInt(buildID, 10)
 			dir, err := bucket.getPath(root, id, "")
-			if err != nil {"failed to get path: %v", err)
+			if err != nil {
+				logrus.Errorf("failed to get path: %v", err)
 				bch <- buildData{}
 				return
 			}

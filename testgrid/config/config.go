@@ -24,8 +24,8 @@ import (
 	"os"
 	"strings"
 
-	"cloud.google.com/go/storage"
 	"github.com/golang/protobuf/proto"
+	"k8s.io/test-infra/traiana/storage"
 
 	"k8s.io/test-infra/testgrid/util/gcs"
 )

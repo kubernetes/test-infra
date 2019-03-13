@@ -1,8 +1,9 @@
 package awsapi
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
+
+	"cloud.google.com/go/storage"
 )
 
 type BucketHandle struct {
@@ -49,7 +50,7 @@ func (o *ObjectHandle) Attrs() (*ObjectAttrs, error) {
 
 func (b *BucketHandle) Object(name string) *ObjectHandle {
 	return &ObjectHandle{
-		b: b,
+		b:   b,
 		key: name,
 	}
 }

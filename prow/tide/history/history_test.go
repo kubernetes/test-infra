@@ -25,8 +25,8 @@ import (
 	"testing"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"k8s.io/apimachinery/pkg/util/diff"
+	"k8s.io/test-infra/traiana/storage"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )

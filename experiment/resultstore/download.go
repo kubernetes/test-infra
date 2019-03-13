@@ -20,8 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/traiana/storage"
 
 	"k8s.io/test-infra/testgrid/util/gcs"
 )

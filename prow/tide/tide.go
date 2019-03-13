@@ -29,7 +29,7 @@ import (
 	"sync"
 	"time"
 
-	"cloud.google.com/go/storage"
+	"k8s.io/test-infra/traiana/storage"
 
 	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"

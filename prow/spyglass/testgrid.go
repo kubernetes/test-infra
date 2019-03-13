@@ -22,8 +22,8 @@ import (
 	"sync"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/traiana/storage"
 
 	"k8s.io/test-infra/prow/config"
 	tgconf "k8s.io/test-infra/testgrid/config"

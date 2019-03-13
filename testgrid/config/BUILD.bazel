@@ -11,7 +11,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//testgrid/util/gcs:go_default_library",
-        "//vendor/cloud.google.com/go/storage:go_default_library",
+        "//traiana/storage:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
     ],
 )

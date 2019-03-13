@@ -66,7 +66,6 @@ go_library(
         "//testgrid/config:go_default_library",
         "//testgrid/util/gcs:go_default_library",
         "//traiana/storage:go_default_library",
-        "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/google.golang.org/api/iterator:go_default_library",
     ],

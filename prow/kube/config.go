@@ -79,7 +79,7 @@ func buildConfigs(buildCluster string) (map[string]rest.Config, error) {
 	}
 	for alias, config := range raw {
 		cfg.Clusters[alias] = &clientcmdapi.Cluster{
-			Server:                   config.Endpoint,
+			Server: config.Endpoint,
 			CertificateAuthorityData: config.ClusterCACertificate,
 		}
 		cfg.AuthInfos[alias] = &clientcmdapi.AuthInfo{
@@ -130,6 +130,7 @@ func mergeConfigs(local *rest.Config, foreign map[string]rest.Config, currentCon
 	if _, ok := ret[DefaultClusterAlias]; !ok {
 		ret[DefaultClusterAlias] = ret[InClusterContext]
 	}
+	logrus.Infof("%+v", ret)
 	return ret, nil
 }
 

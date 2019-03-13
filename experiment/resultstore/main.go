@@ -29,8 +29,8 @@ import (
 	"sync"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/traiana/storage"
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/flagutil"

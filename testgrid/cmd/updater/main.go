@@ -37,8 +37,8 @@ import (
 	"k8s.io/test-infra/testgrid/state"
 	"k8s.io/test-infra/testgrid/util/gcs"
 
-	"cloud.google.com/go/storage"
 	"github.com/golang/protobuf/proto"
+	"k8s.io/test-infra/traiana/storage"
 	"vbom.ml/util/sortorder"
 )
 
