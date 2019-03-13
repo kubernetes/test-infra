@@ -63,6 +63,7 @@ func TestUpdateConfig(t *testing.T) {
 		changes            []github.PullRequestChange
 		existConfigMaps    []runtime.Object
 		expectedConfigMaps []*coreapi.ConfigMap
+		config             *plugins.ConfigUpdater
 	}{
 		{
 			name:     "Opened PR, no update",
@@ -583,6 +584,145 @@ func TestUpdateConfig(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:        "gzips all content if the top level gzip flag is set",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "prow/config.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+			},
+			existConfigMaps: []runtime.Object{},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"config.yaml": "\x1f\x8b\b\x00\x00\x00\x00\x00\x00\xff",
+					},
+				},
+			},
+			config: &plugins.ConfigUpdater{
+				GZIP: true,
+				Maps: map[string]plugins.ConfigMapSpec{
+					"prow/config.yaml": {
+						Name: "config",
+					},
+					"prow/plugins.yaml": {
+						Name: "plugins",
+						Key:  "test-key",
+					},
+				},
+			},
+		},
+		{
+			name:        "gzips all content except one marked false if the top level gzip flag is set",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "prow/config.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+				{
+					Filename:  "prow/plugins.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+			},
+			existConfigMaps: []runtime.Object{},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"config.yaml": "\x1f\x8b\b\x00\x00\x00\x00\x00\x00\xff",
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "plugins",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"plugins.yaml": "new-plugins",
+					},
+				},
+			},
+			config: &plugins.ConfigUpdater{
+				GZIP: true,
+				Maps: map[string]plugins.ConfigMapSpec{
+					"prow/config.yaml": {
+						Name: "config",
+					},
+					"prow/plugins.yaml": {
+						Name: "plugins",
+						GZIP: boolPtr(false),
+					},
+				},
+			},
+		},
+		{
+			name:        "gzips only one marked file if the top level gzip flag is set to false",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "prow/config.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+				{
+					Filename:  "prow/plugins.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+			},
+			existConfigMaps: []runtime.Object{},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"config.yaml": "\x1f\x8b\b\x00\x00\x00\x00\x00\x00\xff",
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "plugins",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"plugins.yaml": "new-plugins",
+					},
+				},
+			},
+			config: &plugins.ConfigUpdater{
+				GZIP: false,
+				Maps: map[string]plugins.ConfigMapSpec{
+					"prow/config.yaml": {
+						Name: "config",
+						GZIP: boolPtr(true),
+					},
+					"prow/plugins.yaml": {
+						Name: "plugins",
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -647,34 +787,36 @@ func TestUpdateConfig(t *testing.T) {
 		}
 		fkc := fake.NewSimpleClientset(tc.existConfigMaps...)
 
-		m := plugins.ConfigUpdater{
-			Maps: map[string]plugins.ConfigMapSpec{
-				"prow/config.yaml": {
-					Name: "config",
+		m := tc.config
+		if m == nil {
+			m = &plugins.ConfigUpdater{
+				Maps: map[string]plugins.ConfigMapSpec{
+					"prow/config.yaml": {
+						Name: "config",
+					},
+					"prow/plugins.yaml": {
+						Name: "plugins",
+						Key:  "test-key",
+					},
+					"boskos/resources.yaml": {
+						Name:      "boskos-config",
+						Namespace: "boskos",
+					},
+					"config/foo.yaml": {
+						Name: "multikey-config",
+					},
+					"config/bar.yaml": {
+						Name: "multikey-config",
+					},
+					"dir/subdir/**/*.yaml": {
+						Name: "glob-config",
+					},
 				},
-				"prow/plugins.yaml": {
-					Name: "plugins",
-					Key:  "test-key",
-				},
-				"boskos/resources.yaml": {
-					Name:      "boskos-config",
-					Namespace: "boskos",
-				},
-				"config/foo.yaml": {
-					Name: "multikey-config",
-				},
-				"config/bar.yaml": {
-					Name: "multikey-config",
-				},
-				"dir/subdir/**/*.yaml": {
-					Name: "glob-config",
-				},
-			},
+			}
 		}
-
 		m.SetDefaults()
 
-		if err := handle(fgc, fkc.CoreV1(), defaultNamespace, log, event, &m); err != nil {
+		if err := handle(fgc, fkc.CoreV1(), defaultNamespace, log, event, m); err != nil {
 			t.Errorf("%s: unexpected error handling: %s", tc.name, err)
 			continue
 		}
@@ -737,4 +879,8 @@ func TestUpdateConfig(t *testing.T) {
 			}
 		}
 	}
+}
+
+func boolPtr(b bool) *bool {
+	return &b
 }
