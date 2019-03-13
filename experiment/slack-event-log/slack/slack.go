@@ -53,12 +53,37 @@ func (slack *Slack) CallMethod(api string, args interface{}) error {
 	if !strings.HasPrefix(url, "https://") {
 		url = "https://slack.com/api/" + api
 	}
-	response, err := http.Post(url, "application/json", b)
+	req, err := http.NewRequest("POST", url, b)
+	if err != nil {
+		return fmt.Errorf("failed to create HTTP request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.Header.Set("Authorization", "Bearer "+slack.Config.AccessToken)
+	client := http.Client{}
+	response, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to POST message to Slack: %v", err)
 	}
 	if response.StatusCode != http.StatusOK {
+		if response.StatusCode == http.StatusTooManyRequests {
+			return fmt.Errorf("slack has rate limited us for the next %s seconds", response.Header.Get("Retry-After"))
+		}
 		return fmt.Errorf("sending message to Slack failed")
+	}
+	if strings.HasPrefix(response.Header.Get("Content-Type"), "application/json") {
+		result := struct {
+			OK       bool   `json:"ok"`
+			Error    string `json:"error"`
+			Metadata struct {
+				Messages []string `json:"messages"`
+			} `json:"response_metadata"`
+		}{}
+		if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
+			return fmt.Errorf("failed to decode JSON response: %v", err)
+		}
+		if !result.OK {
+			return fmt.Errorf("slack call failed: %s (%v)", result.Error, result.Metadata.Messages)
+		}
 	}
 	return nil
 }
