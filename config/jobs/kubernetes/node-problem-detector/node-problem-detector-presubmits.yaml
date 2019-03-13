@@ -13,8 +13,11 @@ presubmits:
         command:
         - runner.sh
         args:
-        - make
-        - build
+        - bash
+        - -c
+        - |
+          ./test/build.sh install-lib &&
+          make build
 
   - name: pull-npd-test
     branches:
@@ -29,8 +32,11 @@ presubmits:
         command:
         - runner.sh
         args:
-        - make
-        - test
+        - bash
+        - -c
+        - |
+          ./test/build.sh install-lib &&
+          make test
 
   - name: pull-npd-e2e-node
     branches:
