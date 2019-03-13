@@ -83,6 +83,22 @@ type FakeClient struct {
 
 	// A list of refs that got deleted via DeleteRef
 	RefsDeleted []struct{ Org, Repo, Ref string }
+
+	// A map of repo names to projects
+	RepoProjects map[string][]github.Project
+
+	// A map of project name to columns
+	ProjectColumnsMap map[string][]github.ProjectColumn
+
+	// Maps column ID to the list of project cards
+	ColumnCardsMap map[int][]github.ProjectCard
+
+	// Maps project name to maps of column ID to columnName
+	ColumnIDMap map[string]map[int]string
+
+	// The project and column names for an issue or PR
+	Project string
+	Column  string
 }
 
 // BotName returns authenticated login.
@@ -418,4 +434,163 @@ func (f *FakeClient) ListMilestones(org, repo string) ([]github.Milestone, error
 func (f *FakeClient) ListPRCommits(org, repo string, prNumber int) ([]github.RepositoryCommit, error) {
 	k := fmt.Sprintf("%s/%s#%d", org, repo, prNumber)
 	return f.CommitMap[k], nil
+}
+
+// GetRepoProjects returns the list of projects under a repo.
+func (f *FakeClient) GetRepoProjects(owner, repo string) ([]github.Project, error) {
+	return f.RepoProjects[fmt.Sprintf("%s/%s", owner, repo)], nil
+}
+
+// GetOrgProjects returns the list of projects under an org
+func (f *FakeClient) GetOrgProjects(org string) ([]github.Project, error) {
+	return f.RepoProjects[fmt.Sprintf("%s/*", org)], nil
+}
+
+// GetProjectColumns returns the list of columns for a given project.
+func (f *FakeClient) GetProjectColumns(projectID int) ([]github.ProjectColumn, error) {
+	// Get project name
+	for _, projects := range f.RepoProjects {
+		for _, project := range projects {
+			if projectID == project.ID {
+				return f.ProjectColumnsMap[project.Name], nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("Cannot find project ID")
+}
+
+// CreateProjectCard creates a project card under a given column.
+func (f *FakeClient) CreateProjectCard(columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error) {
+	if f.ColumnCardsMap == nil {
+		f.ColumnCardsMap = make(map[int][]github.ProjectCard)
+	}
+
+	for project, columnIDMap := range f.ColumnIDMap {
+		columnName, exists := columnIDMap[columnID]
+		if exists {
+			f.ColumnCardsMap[columnID] = append(
+				f.ColumnCardsMap[columnID],
+				projectCard,
+			)
+			f.Column = columnName
+			f.Project = project
+			return &projectCard, nil
+		}
+	}
+	return nil, fmt.Errorf("Provided column %d does not exist, ColumnIDMap is %v", columnID, f.ColumnIDMap)
+}
+
+// DeleteProjectCard deletes the project card of a specific issue or PR
+func (f *FakeClient) DeleteProjectCard(projectCardID int) error {
+	if f.ColumnCardsMap == nil {
+		return fmt.Errorf("Project card doesn't exist")
+	}
+	f.Project = ""
+	f.Column = ""
+	newCards := []github.ProjectCard{}
+	oldColumnID := -1
+	for column, cards := range f.ColumnCardsMap {
+		removalIndex := -1
+		for i, existingCard := range cards {
+			if existingCard.ContentID == projectCardID {
+				oldColumnID = column
+				removalIndex = i
+				break
+			}
+		}
+		if removalIndex != -1 {
+			newCards = cards
+			newCards[removalIndex] = newCards[len(newCards)-1]
+			newCards = newCards[:len(newCards)-1]
+			break
+		}
+	}
+	// Update the old column's list of project cards
+	if oldColumnID != -1 {
+		f.ColumnCardsMap[oldColumnID] = newCards
+	}
+	return nil
+}
+
+func (f *FakeClient) GetColumnProjectCard(columnID int, cardNumber int) (*github.ProjectCard, error) {
+	if f.ColumnCardsMap == nil {
+		f.ColumnCardsMap = make(map[int][]github.ProjectCard)
+	}
+	for _, existingCard := range f.ColumnCardsMap[columnID] {
+		if existingCard.ContentID == cardNumber {
+			return &existingCard, nil
+		}
+	}
+	return nil, nil
+}
+
+func (f *FakeClient) GetRepos(org string, isUser bool) ([]github.Repo, error) {
+	return []github.Repo{
+		{
+			Owner: github.User{
+				Login: "kubernetes",
+			},
+			Name: "kubernetes",
+		},
+		{
+			Owner: github.User{
+				Login: "kubernetes",
+			},
+			Name: "community",
+		},
+	}, nil
+}
+
+// MoveProjectCard moves a specific project card to a specified column in the same project
+func (f *FakeClient) MoveProjectCard(projectCardID int, newColumnID int) error {
+	// Remove project card from old column
+	newCards := []github.ProjectCard{}
+	oldColumnID := -1
+	projectCard := github.ProjectCard{}
+	for column, cards := range f.ColumnCardsMap {
+		removalIndex := -1
+		for i, existingCard := range cards {
+			if existingCard.ContentID == projectCardID {
+				oldColumnID = column
+				removalIndex = i
+				projectCard = existingCard
+				break
+			}
+		}
+		if removalIndex != -1 {
+			newCards = cards
+			newCards[removalIndex] = newCards[len(newCards)-1]
+			newCards = newCards[:len(newCards)-1]
+		}
+	}
+	if oldColumnID != -1 {
+		// Update the old column's list of project cards
+		f.ColumnCardsMap[oldColumnID] = newCards
+	}
+
+	for project, columnIDMap := range f.ColumnIDMap {
+		if columnName, exists := columnIDMap[newColumnID]; exists {
+			// Add project card to new column
+			f.ColumnCardsMap[newColumnID] = append(
+				f.ColumnCardsMap[newColumnID],
+				projectCard,
+			)
+			f.Column = columnName
+			f.Project = project
+			break
+		}
+	}
+
+	return nil
+}
+
+// TeamHasMember checks if a user belongs to a team
+func (f *FakeClient) TeamHasMember(teamID int, memberLogin string) (bool, error) {
+	teamMembers, _ := f.ListTeamMembers(teamID, github.RoleAll)
+	for _, member := range teamMembers {
+		if member.Login == memberLogin {
+			return true, nil
+		}
+	}
+	return false, nil
 }

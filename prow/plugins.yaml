@@ -232,6 +232,29 @@ repo_milestone:
     maintainers_team: cluster-api-provider-azure-maintainers
     maintainers_friendly_name: Cluster API Provider Azure Maintainers
 
+project_config:
+  project_org_configs:
+    kubernetes:
+      org_maintainers_team_id: 2460384
+      org_maintainers_team_name: kubernetes-milestone-maintainers
+      org_default_column_map:
+        1.14 CI Signal:
+          Start here
+        KEP Implementation Tracking:
+          To do
+      project_repo_configs:
+        kubernetes:
+          repo_maintainers_team_id: 2460384
+          repo_maintainers_team_name: kubernetes-milestone-maintainers
+          repo_default_column_map:
+            component-base:
+              To do
+            Workloads:
+              Backlog
+    kubeflow:
+      org_maintainers_team_id: 2460384
+      org_maintainers_team_name: kubernetes-milestone-maintainers
+
 config_updater:
   maps:
     label_sync/labels.yaml:

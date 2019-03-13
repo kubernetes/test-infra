@@ -833,3 +833,21 @@ type GitCommit struct {
 	SHA     string `json:"sha,omitempty"`
 	Message string `json:"message,omitempty"`
 }
+
+// Project is a github project
+type Project struct {
+	Name string `json:"name"`
+	ID   int    `json:"id"`
+}
+
+// ProjectColumn is a colunm in a github project
+type ProjectColumn struct {
+	Name string `json:"name"`
+	ID   int    `json:"id"`
+}
+
+// ProjectCard is a github project card
+type ProjectCard struct {
+	ContentID   int    `json:"content_id"`
+	ContentType string `json:"content_type"`
+}
