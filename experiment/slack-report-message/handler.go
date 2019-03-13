@@ -166,6 +166,14 @@ func (h *handler) handleReportSubmission(interaction slackInteraction, rw http.R
 		}
 	}
 
+	var author string
+	if senderName, err := h.getDisplayName(state.Sender); err == nil {
+		author = fmt.Sprintf("<@%s|%s>", state.Sender, senderName)
+	} else {
+		author = fmt.Sprintf("<@%s>", state.Sender)
+		log.Printf("Failed to look up sender: %v", err)
+	}
+
 	report := map[string]interface{}{
 		"text": summary,
 		"attachments": []map[string]interface{}{
@@ -177,7 +185,7 @@ func (h *handler) handleReportSubmission(interaction slackInteraction, rw http.R
 			},
 			{
 				"pretext":     fmt.Sprintf("The %s was:", messageLink),
-				"author_name": "<@" + state.Sender + ">",
+				"author_name": author,
 				"text":        state.Content,
 				"ts":          ts,
 				"mrkdwn_in":   []string{"text", "pretext", "author_name"},
@@ -202,6 +210,7 @@ func (h *handler) handleReportSubmission(interaction slackInteraction, rw http.R
 	}
 }
 
+// getPermalink is a weirdly special slack API, so we implement it separately.
 func (h *handler) getPermalink(channel string, ts string) (string, error) {
 	q := url.Values{
 		"token":      []string{h.slack.Config.AccessToken},
@@ -227,6 +236,32 @@ func (h *handler) getPermalink(channel string, ts string) (string, error) {
 	return permalink.Permalink, nil
 }
 
+// users.info is also weirdly special. Thanks, Slack.
+func (h *handler) getDisplayName(id string) (string, error) {
+	q := url.Values{
+		"token": []string{h.slack.Config.AccessToken},
+		"user":  []string{id},
+	}
+	resp, err := http.Get("https://slack.com/api/users.info?" + q.Encode())
+	if err != nil {
+		return "", fmt.Errorf("failed to get a user: %v", err)
+	}
+	user := struct {
+		Ok    bool       `json:"ok"`
+		Error string     `json:"error"`
+		User  slack.User `json:"user"`
+	}{}
+	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
+		return "", fmt.Errorf("failed decode user: %v", err)
+	}
+	if !user.Ok {
+		return "", fmt.Errorf("failed get user: %s", user.Error)
+	}
+	return user.User.Name, nil
+}
+
+// The JSON strings here are short because we can only put a limited amount of information in
+// the dialog state.
 type dialogState struct {
 	Sender  string `json:"s"`
 	TS      string `json:"t"`
