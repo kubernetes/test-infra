@@ -10,6 +10,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/tide",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/io:go_default_library",
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/client/clientset/versioned/typed/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
@@ -19,13 +20,13 @@ go_library(
         "//prow/pjutil:go_default_library",
         "//prow/tide/blockers:go_default_library",
         "//prow/tide/history:go_default_library",
-        "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/github.com/shurcooL/githubv4:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
 

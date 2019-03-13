@@ -17,7 +17,9 @@ limitations under the License.
 package tide
 
 import (
+	"context"
 	"fmt"
+	"io/ioutil"
 	"net/url"
 	"sort"
 	"strings"
@@ -26,8 +28,11 @@ import (
 
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
-
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"sigs.k8s.io/yaml"
+
+	"k8s.io/test-infra/pkg/io"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 )
@@ -40,6 +45,13 @@ const (
 	// tide pool or the empty string if the reason is unknown. See requirementDiff.
 	statusNotInPool = "Not mergeable.%s"
 )
+
+type storedState struct {
+	// LatestPR is the update time of the most recent result
+	LatestPR metav1.Time
+	// PreviousQuery is the query most recently used for results
+	PreviousQuery string
+}
 
 type statusController struct {
 	logger *logrus.Entry
@@ -56,12 +68,13 @@ type statusController struct {
 	// lastSyncStart is used to ensure that the status update period is at least
 	// the minimum status update period.
 	lastSyncStart time.Time
-	// latestPR is the time of the most recent result
-	latestPR      time.Time
-	previousQuery string
 
 	sync.Mutex
 	poolPRs map[string]PullRequest
+
+	storedState
+	opener io.Opener
+	path   string
 }
 
 func (sc *statusController) shutdown() {
@@ -317,7 +330,67 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 	}
 }
 
+func (sc *statusController) load() {
+	if sc.path == "" {
+		sc.logger.Debug("No stored state configured")
+		return
+	}
+	entry := sc.logger.WithField("path", sc.path)
+	reader, err := sc.opener.Reader(context.Background(), sc.path)
+	if err != nil {
+		entry.WithError(err).Warn("Cannot open stored state")
+		return
+	}
+	defer io.LogClose(reader)
+
+	buf, err := ioutil.ReadAll(reader)
+	if err != nil {
+		entry.WithError(err).Warn("Cannot read stored state")
+		return
+	}
+
+	var stored storedState
+	if err := yaml.Unmarshal(buf, &stored); err != nil {
+		entry.WithError(err).Warn("Cannot unmarshal stored state")
+		return
+	}
+	sc.storedState = stored
+}
+
+func (sc *statusController) save(ticker *time.Ticker) {
+	for range ticker.C {
+		if sc.path == "" {
+			return
+		}
+		entry := sc.logger.WithField("path", sc.path)
+		current := sc.storedState
+		buf, err := yaml.Marshal(current)
+		if err != nil {
+			entry.WithError(err).Warn("Cannot marshal state")
+			continue
+		}
+		writer, err := sc.opener.Writer(context.Background(), sc.path)
+		if err != nil {
+			entry.WithError(err).Warn("Cannot open state writer")
+			continue
+		}
+		if _, err = writer.Write(buf); err != nil {
+			entry.WithError(err).Warn("Cannot write state")
+			io.LogClose(writer)
+			continue
+		}
+		if err := writer.Close(); err != nil {
+			entry.WithError(err).Warn("Failed to close written state")
+		}
+		entry.Debug("Saved status state")
+	}
+}
+
 func (sc *statusController) run() {
+	sc.load()
+	ticks := time.NewTicker(time.Hour)
+	defer ticks.Stop()
+	go sc.save(ticks)
 	for {
 		// wait for a new pool
 		if !<-sc.newPoolPending {
@@ -375,14 +448,14 @@ func (sc *statusController) search() []PullRequest {
 	query := openPRsQuery(orgs.List(), repos.List(), orgExceptions)
 	now := time.Now()
 	log := sc.logger.WithField("query", query)
-	if query != sc.previousQuery {
+	if query != sc.PreviousQuery {
 		// Query changed and/or tide restarted, recompute everything
-		log.WithField("previously", sc.previousQuery).Info("Query changed, resetting start time to zero")
-		sc.latestPR = time.Time{}
-		sc.previousQuery = query
+		log.WithField("previously", sc.PreviousQuery).Info("Query changed, resetting start time to zero")
+		sc.LatestPR = metav1.Time{}
+		sc.PreviousQuery = query
 	}
 
-	prs, err := search(sc.ghc.Query, sc.logger, query, sc.latestPR, now)
+	prs, err := search(sc.ghc.Query, sc.logger, query, sc.LatestPR.Time, now)
 	log.WithField("duration", time.Since(now).String()).Debugf("Found %d open PRs.", len(prs))
 	if err != nil {
 		log := log.WithError(err)
@@ -393,17 +466,17 @@ func (sc *statusController) search() []PullRequest {
 		log.Warn("Search partially completed")
 	}
 	if len(prs) == 0 {
-		log.WithField("latestPR", sc.latestPR).Debug("no new results")
+		log.WithField("latestPR", sc.LatestPR).Debug("no new results")
 		return nil
 	}
 
 	latest := prs[len(prs)-1].UpdatedAt.Time
 	if latest.IsZero() {
-		log.WithField("latestPR", sc.latestPR).Debug("latest PR has zero time")
+		log.WithField("latestPR", sc.LatestPR).Debug("latest PR has zero time")
 		return prs
 	}
-	sc.latestPR = latest.Add(-30 * time.Second)
-	log.WithField("latestPR", sc.latestPR).Debug("Advanced start time")
+	sc.LatestPR.Time = latest.Add(-30 * time.Second)
+	log.WithField("latestPR", sc.LatestPR).Debug("Advanced start time")
 	return prs
 }
 

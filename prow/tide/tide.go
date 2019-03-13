@@ -29,8 +29,6 @@ import (
 	"sync"
 	"time"
 
-	"cloud.google.com/go/storage"
-
 	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
@@ -38,6 +36,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	"k8s.io/test-infra/pkg/io"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -197,13 +196,13 @@ func init() {
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(ghcSync, ghcStatus *github.Client, prowJobClient prowv1.ProwJobInterface, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, historyHandle *storage.ObjectHandle, logger *logrus.Entry) (*Controller, error) {
+func NewController(ghcSync, ghcStatus *github.Client, prowJobClient prowv1.ProwJobInterface, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, opener io.Opener, historyURI, statusURI string, logger *logrus.Entry) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
-	hist, err := history.New(maxRecordsPerPool, historyHandle)
+	hist, err := history.New(maxRecordsPerPool, opener, historyURI)
 	if err != nil {
-		return nil, fmt.Errorf("error initializing history client: %v", err)
+		return nil, fmt.Errorf("error initializing history client from %q: %v", historyURI, err)
 	}
 	sc := &statusController{
 		logger:         logger.WithField("controller", "status-update"),
@@ -211,6 +210,8 @@ func NewController(ghcSync, ghcStatus *github.Client, prowJobClient prowv1.ProwJ
 		config:         cfg,
 		newPoolPending: make(chan bool, 1),
 		shutDown:       make(chan bool),
+		opener:         opener,
+		path:           statusURI,
 	}
 	go sc.run()
 	return &Controller{
