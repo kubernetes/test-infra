@@ -1,0 +1,134 @@
+periodics:
+- name: ci-npd-build
+  interval: 2h
+  decorate: true
+  labels:
+    preset-service-account: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: node-problem-detector
+    base_ref: master
+    path_alias: k8s.io/node-problem-detector
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      command:
+      - runner.sh
+      args:
+      - ./test/build.sh ci
+
+- name: ci-npd-test
+  interval: 2h
+  decorate: true
+  labels:
+    preset-service-account: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: node-problem-detector
+    base_ref: master
+    path_alias: k8s.io/node-problem-detector
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - test
+
+- name: ci-npd-e2e-node
+  interval: 2h
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: node-problem-detector
+    base_ref: master
+    path_alias: k8s.io/node-problem-detector
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        ./test/build.sh get-ci-env &&
+        source ci.env &&
+        /workspace/scenarios/kubernetes_e2e.py
+        --extract=ci-latest
+        --deployment=node
+        --provider=gce
+        --gcp-zone=us-west1-b
+        --node-tests=true
+        --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
+        --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+        --test_args="--nodes=8 --focus=NodeProblemDetector"
+        --timeout=60m
+
+- name: ci-npd-e2e-kubernetes-gce-gci
+  interval: 2h
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: node-problem-detector
+    base_ref: master
+    path_alias: k8s.io/node-problem-detector
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        ./test/build.sh get-ci-env &&
+        source ci.env &&
+        /workspace/scenarios/kubernetes_e2e.py
+        --cluster=
+        --extract=ci-latest
+        --provider=gce
+        --gcp-node-image=gci
+        --gcp-zone=us-west1-b
+        --ginkgo-parallel=30
+        --test_args=--ginkgo.focus=NodeProblemDetector
+        --timeout=60m
+
+- name: ci-npd-e2e-kubernetes-gce-ubuntu
+  interval: 2h
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: node-problem-detector
+    base_ref: master
+    path_alias: k8s.io/node-problem-detector
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        ./test/build.sh get-ci-env &&
+        source ci.env &&
+        /workspace/scenarios/kubernetes_e2e.py
+        --cluster=
+        --extract=ci-latest
+        --provider=gce
+        --gcp-node-image=ubuntu
+        --gcp-zone=us-west1-b
+        --ginkgo-parallel=30
+        --test_args=--ginkgo.focus=NodeProblemDetector
+        --timeout=60m

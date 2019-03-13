@@ -3446,6 +3446,49 @@ test_groups:
   - configuration_value: kube_version
   - configuration_value: docker_version
 
+# node-problem-detector
+- name: pull-npd-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-npd-build
+  num_columns_recent: 30
+- name: pull-npd-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-npd-test
+  num_columns_recent: 30
+- name: pull-npd-e2e-node
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-npd-e2e-node
+  num_columns_recent: 30
+- name: pull-npd-e2e-kubernetes-gce-gci
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-npd-e2e-kubernetes-gce-gci
+  num_columns_recent: 30
+- name: pull-npd-e2e-kubernetes-gce-ubuntu
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-npd-e2e-kubernetes-gce-ubuntu
+  num_columns_recent: 30
+
+- name: ci-npd-build
+  gcs_prefix: kubernetes-jenkins/logs/ci-npd-build
+  num_columns_recent: 30
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
+- name: ci-npd-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-npd-test
+  num_columns_recent: 30
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
+- name: ci-npd-e2e-node
+  gcs_prefix: kubernetes-jenkins/logs/ci-npd-e2e-node
+  num_columns_recent: 30
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
+- name: ci-npd-e2e-kubernetes-gce-gci
+  gcs_prefix: kubernetes-jenkins/logs/ci-npd-e2e-kubernetes-gce-gci
+  num_columns_recent: 30
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
+- name: ci-npd-e2e-kubernetes-gce-ubuntu
+  gcs_prefix: kubernetes-jenkins/logs/ci-npd-e2e-kubernetes-gce-ubuntu
+  num_columns_recent: 30
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
+
 #
 # Start dashboards
 #
@@ -6520,6 +6563,29 @@ dashboards:
     test_group_name: arm64-conformance
     description: Runs conformance test by using kubetest against latest version of kubernetes on arm64
 
+- name: sig-node-node-problem-detector
+  dashboard_tab:
+  - name: ci-npd-build
+    test_group_name: ci-npd-build
+    alert_options:
+      alert_mail_to_addresses: zhenw@google.com,lantaol@google.com
+  - name: ci-npd-test
+    test_group_name: ci-npd-test
+    alert_options:
+      alert_mail_to_addresses: zhenw@google.com,lantaol@google.com
+  - name: ci-npd-e2e-node
+    test_group_name: ci-npd-e2e-node
+    alert_options:
+      alert_mail_to_addresses: zhenw@google.com,lantaol@google.com
+  - name: ci-npd-e2e-kubernetes-gce-gci
+    test_group_name: ci-npd-e2e-kubernetes-gce-gci
+    alert_options:
+      alert_mail_to_addresses: zhenw@google.com,lantaol@google.com
+  - name: ci-npd-e2e-kubernetes-gce-ubuntu
+    test_group_name: ci-npd-e2e-kubernetes-gce-ubuntu
+    alert_options:
+      alert_mail_to_addresses: zhenw@google.com,lantaol@google.com
+
 # Move sig-release here
 
 - name: sig-scalability-gce
@@ -7351,6 +7417,19 @@ dashboards:
   - name: e2e
     test_group_name: ci-poseidon-e2e-gce
 
+- name: presubmits-node-problem-detector
+  dashboard_tab:
+  - name: pull-npd-build
+    test_group_name: pull-npd-build
+  - name: pull-npd-test
+    test_group_name: pull-npd-test
+  - name: pull-npd-e2e-node
+    test_group_name: pull-npd-e2e-node
+  - name: pull-npd-e2e-kubernetes-gce-gci
+    test_group_name: pull-npd-e2e-kubernetes-gce-gci
+  - name: pull-npd-e2e-kubernetes-gce-ubuntu
+    test_group_name: pull-npd-e2e-kubernetes-gce-ubuntu
+
 - name: google-rules_k8s
   dashboard_tab:
   - name: pull-rules-k8s-e2e
@@ -7783,6 +7862,7 @@ dashboard_groups:
   - presubmits-kubernetes-scalability
   - presubmits-test-infra
   - presubmits-kops
+  - presubmits-node-problem-detector
   - presubmits-poseidon
   - presubmits-misc
 
@@ -7841,6 +7921,7 @@ dashboard_groups:
   - sig-node-cri-1.12
   - sig-node-arm64
   - sig-node-docker
+  - sig-node-node-problem-detector
 
 - name: sig-release
   dashboard_names:
