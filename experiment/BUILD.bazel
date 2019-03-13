@@ -58,6 +58,7 @@ filegroup(
         "//experiment/resultstore:all-srcs",
         "//experiment/slack-event-log:all-srcs",
         "//experiment/slack-oncall-updater:all-srcs",
+        "//experiment/slack-report-message:all-srcs",
         "//experiment/tracer:all-srcs",
     ],
     tags = ["automanaged"],

@@ -41,24 +41,59 @@ func New(config Config) *Slack {
 	return &Slack{Config: config}
 }
 
+// Calls most Slack API methods by name. If the API is normal but the URL is weird,
+// providing a complete https:// URL as the API name also works.
+func (slack *Slack) CallMethod(api string, args interface{}) error {
+	marshalled, err := json.Marshal(args)
+	if err != nil {
+		return fmt.Errorf("failed to marshal slack message: %v", err)
+	}
+	b := bytes.NewBuffer(marshalled)
+	url := api
+	if !strings.HasPrefix(url, "https://") {
+		url = "https://slack.com/api/" + api
+	}
+	req, err := http.NewRequest("POST", url, b)
+	if err != nil {
+		return fmt.Errorf("failed to create HTTP request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.Header.Set("Authorization", "Bearer "+slack.Config.AccessToken)
+	client := http.Client{}
+	response, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to POST message to Slack: %v", err)
+	}
+	if response.StatusCode != http.StatusOK {
+		if response.StatusCode == http.StatusTooManyRequests {
+			return fmt.Errorf("slack has rate limited us for the next %s seconds", response.Header.Get("Retry-After"))
+		}
+		return fmt.Errorf("sending message to Slack failed")
+	}
+	if strings.HasPrefix(response.Header.Get("Content-Type"), "application/json") {
+		result := struct {
+			OK       bool   `json:"ok"`
+			Error    string `json:"error"`
+			Metadata struct {
+				Messages []string `json:"messages"`
+			} `json:"response_metadata"`
+		}{}
+		if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
+			return fmt.Errorf("failed to decode JSON response: %v", err)
+		}
+		if !result.OK {
+			return fmt.Errorf("slack call failed: %s (%v)", result.Error, result.Metadata.Messages)
+		}
+	}
+	return nil
+}
+
 // SendMessage sends a simple message to Slack.
 func (slack *Slack) SendMessage(message string) error {
 	toSend := struct {
 		Text string `json:"text"`
 	}{message}
-	marshalled, err := json.Marshal(toSend)
-	if err != nil {
-		return fmt.Errorf("failed to marshall slack message: %v", err)
-	}
-	b := bytes.NewBuffer(marshalled)
-	response, err := http.Post(slack.Config.WebhookURL, "application/json", b)
-	if err != nil {
-		return fmt.Errorf("failed to POST message to Slack: %v", err)
-	}
-	if response.StatusCode != http.StatusOK {
-		return fmt.Errorf("sending message to Slack failed")
-	}
-	return nil
+	return slack.CallMethod(slack.Config.WebhookURL, toSend)
 }
 
 // VerifySignature verifies the signature on a message from Slack to ensure it is real.
