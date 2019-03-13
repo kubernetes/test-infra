@@ -165,6 +165,9 @@ func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjo
 	})
 
 	for ctx, cfg := range buildConfigs {
+		if ctx == "" {
+			continue
+		}
 		// Reconcile whenever a build changes.
 		ctx := ctx // otherwise it will change
 		cfg.informer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
