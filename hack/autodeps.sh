@@ -37,6 +37,7 @@ if ! git config user.name &>/dev/null && git config user.email &>/dev/null; then
     exit 1
 fi
 
+export GO111MODULE=on
 ./hack/update-deps.sh "$@"  # --patch or --minor
 
 
