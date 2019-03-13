@@ -743,6 +743,12 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		tgLink = ""
 	}
 
+	extraLinks, err := sg.ExtraLinks(src)
+	if err != nil {
+		logrus.WithError(err).WithField("page", src).Warn("Failed to fetch extra links")
+		extraLinks = nil
+	}
+
 	var viewBuf bytes.Buffer
 	type lensesTemplate struct {
 		Lenses        []lenses.Lens
@@ -756,6 +762,7 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		TestgridLink  string
 		JobName       string
 		BuildID       string
+		ExtraLinks    []spyglass.ExtraLink
 	}
 	lTmpl := lensesTemplate{
 		Lenses:        ls,
@@ -769,6 +776,7 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		TestgridLink:  tgLink,
 		JobName:       jobName,
 		BuildID:       buildID,
+		ExtraLinks:    extraLinks,
 	}
 	t := template.New("spyglass.html")
 

@@ -22,6 +22,8 @@ import (
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"os"
+	"reflect"
+	"sort"
 	"strings"
 	"testing"
 
@@ -1264,5 +1266,95 @@ func TestResolveSymlink(t *testing.T) {
 			t.Errorf("test %q: expected %q, but got %q", tc.name, tc.result, result)
 			continue
 		}
+	}
+}
+
+func TestExtraLinks(t *testing.T) {
+	testCases := []struct {
+		name      string
+		content   string
+		links     []ExtraLink
+		expectErr bool
+	}{
+		{
+			name:  "does nothing without error given no started.json",
+			links: nil,
+		},
+		{
+			name:      "errors given a malformed started.json",
+			content:   "this isn't json",
+			expectErr: true,
+		},
+		{
+			name:    "does nothing given metadata with no links",
+			content: `{"metadata": {"somethingThatIsntLinks": 23}}`,
+			links:   nil,
+		},
+		{
+			name:    "returns well-formed links",
+			content: `{"metadata": {"links": {"ResultStore": {"url": "http://resultstore", "description": "The thing that isn't spyglass"}}}}`,
+			links:   []ExtraLink{{Name: "ResultStore", URL: "http://resultstore", Description: "The thing that isn't spyglass"}},
+		},
+		{
+			name:    "returns links without a description",
+			content: `{"metadata": {"links": {"ResultStore": {"url": "http://resultstore"}}}}`,
+			links:   []ExtraLink{{Name: "ResultStore", URL: "http://resultstore"}},
+		},
+		{
+			name:    "skips links without a URL",
+			content: `{"metadata": {"links": {"No Link": {"description": "bad link"}, "ResultStore": {"url": "http://resultstore"}}}}`,
+			links:   []ExtraLink{{Name: "ResultStore", URL: "http://resultstore"}},
+		},
+		{
+			name:    "skips links without a name",
+			content: `{"metadata": {"links": {"": {"url": "http://resultstore"}}}}`,
+			links:   []ExtraLink{},
+		},
+		{
+			name:    "returns no links when links is empty",
+			content: `{"metadata": {"links": {}}}`,
+			links:   []ExtraLink{},
+		},
+		{
+			name:    "returns multiple links",
+			content: `{"metadata": {"links": {"A": {"url": "http://a", "description": "A!"}, "B": {"url": "http://b"}}}}`,
+			links:   []ExtraLink{{Name: "A", URL: "http://a", Description: "A!"}, {Name: "B", URL: "http://b"}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var objects []fakestorage.Object
+			if tc.content != "" {
+				objects = []fakestorage.Object{
+					{
+						BucketName: "test-bucket",
+						Name:       "logs/some-job/42/started.json",
+						Content:    []byte(tc.content),
+					},
+				}
+			}
+			gcsServer := fakestorage.NewServer(objects)
+			defer gcsServer.Stop()
+
+			gcsClient := gcsServer.Client()
+			fakeConfigAgent := fca{}
+			fakeJa = jobs.NewJobAgent(fkc{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA")}, fakeConfigAgent.Config)
+			fakeJa.Start()
+			sg := New(fakeJa, fakeConfigAgent.Config, gcsClient, context.Background())
+
+			result, err := sg.ExtraLinks("gcs/test-bucket/logs/some-job/42")
+			if err != nil {
+				if !tc.expectErr {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				return
+			}
+			sort.Slice(result, func(i, j int) bool { return result[i].Name < result[j].Name })
+			sort.Slice(tc.links, func(i, j int) bool { return tc.links[i].Name < tc.links[j].Name })
+			if !reflect.DeepEqual(result, tc.links) {
+				t.Fatalf("Expected links %#v, got %#v", tc.links, result)
+			}
+		})
 	}
 }

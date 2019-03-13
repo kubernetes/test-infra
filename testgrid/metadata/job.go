@@ -69,7 +69,7 @@ type Finished struct {
 // Metadata values can either be string or string map of strings
 //
 // TODO(fejta): figure out which of these we want and document them
-// Special values: infra-commit, repos, repo, repo-commit, others
+// Special values: infra-commit, repos, repo, repo-commit, links, others
 type Metadata map[string]interface{}
 
 // String returns the name key if its value is a string, and true if the key is present.
@@ -94,6 +94,17 @@ func (m Metadata) Meta(name string) (*Metadata, bool) {
 		return &child, true
 	}
 	return nil, true
+}
+
+// Keys returns an array of the keys of all valid Metadata values.
+func (m Metadata) Keys() []string {
+	ka := make([]string, 0, len(m))
+	for k := range m {
+		if _, ok := m.Meta(k); ok {
+			ka = append(ka, k)
+		}
+	}
+	return ka
 }
 
 // Strings returns the submap of values in the map that are strings.

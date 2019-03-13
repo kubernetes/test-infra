@@ -126,8 +126,6 @@ func (s *Spyglass) FetchArtifacts(src string, podName string, sizeLimit int64, a
 		if err != nil {
 			if name == "build-log.txt" {
 				podLogNeeded = true
-			} else {
-				logrus.Errorf("Failed to fetch artifact %s: %v", name, err)
 			}
 			continue
 		}
