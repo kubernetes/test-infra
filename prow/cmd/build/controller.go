@@ -55,6 +55,8 @@ import (
 
 const (
 	controllerName = "prow-build-crd"
+
+	buildIDLabel = "prow/buildID"
 )
 
 type controller struct {
@@ -261,7 +263,8 @@ type reconciler interface {
 	createBuild(context, namespace string, b *buildv1alpha1.Build) (*buildv1alpha1.Build, error)
 	updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error)
 	now() metav1.Time
-	buildID(prowjobv1.ProwJob) (string, string, error)
+	buildID(prowjobv1.ProwJob) (string, error)
+	jobURL(prowjobv1.ProwJob) string
 }
 
 func (c *controller) getProwJob(name string) (*prowjobv1.ProwJob, error) {
@@ -300,14 +303,16 @@ func (c *controller) now() metav1.Time {
 	return metav1.Now()
 }
 
-func (c *controller) buildID(pj prowjobv1.ProwJob) (string, string, error) {
+func (c *controller) buildID(pj prowjobv1.ProwJob) (string, error) {
 	id, err := pjutil.GetBuildID(pj.Spec.Job, c.totURL)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
-	pj.Status.BuildID = id
-	url := pjutil.JobURL(c.config().Plank, pj, logrus.NewEntry(logrus.StandardLogger()))
-	return id, url, nil
+	return id, nil
+}
+
+func (c *controller) jobURL(pj prowjobv1.ProwJob) string {
+	return pjutil.JobURL(c.config().Plank, pj, logrus.NewEntry(logrus.StandardLogger()))
 }
 
 var (
@@ -380,12 +385,11 @@ func reconcile(c reconciler, key string) error {
 	case wantBuild && pj.Spec.BuildSpec == nil:
 		return errors.New("nil BuildSpec")
 	case wantBuild && !haveBuild:
-		id, url, err := c.buildID(*pj)
+		id, err := c.buildID(*pj)
 		if err != nil {
 			return fmt.Errorf("failed to get build id: %v", err)
 		}
 		pj.Status.BuildID = id
-		pj.Status.URL = url
 		newBuildID = true
 		if b, err = makeBuild(*pj); err != nil {
 			return fmt.Errorf("make build: %v", err)
@@ -400,7 +404,9 @@ func reconcile(c reconciler, key string) error {
 	haveState := pj.Status.State
 	haveMsg := pj.Status.Description
 	wantState, wantMsg := prowJobStatus(b.Status)
-	if newBuildID || haveState != wantState || haveMsg != wantMsg {
+	haveBuildID := pj.Status.BuildID
+	wantBuildID := b.Labels[buildIDLabel]
+	if newBuildID || haveState != wantState || haveMsg != wantMsg || haveBuildID != wantBuildID {
 		npj := pj.DeepCopy()
 		if npj.Status.StartTime.IsZero() {
 			npj.Status.StartTime = c.now()
@@ -411,6 +417,11 @@ func reconcile(c reconciler, key string) error {
 		}
 		npj.Status.State = wantState
 		npj.Status.Description = wantMsg
+
+		if newBuildID || haveBuildID != wantBuildID {
+			npj.Status.BuildID = wantBuildID
+			npj.Status.URL = c.jobURL(*npj)
+		}
 		logrus.Infof("Update prowjobs/%s", key)
 		if _, err = c.updateProwJob(npj); err != nil {
 			return fmt.Errorf("update prow status: %v", err)
@@ -489,8 +500,9 @@ var (
 	}
 )
 
-func buildMeta(pj prowjobv1.ProwJob) metav1.ObjectMeta {
+func buildMeta(pj prowjobv1.ProwJob, buildID string) metav1.ObjectMeta {
 	podLabels, annotations := decorate.LabelsAndAnnotationsForJob(pj)
+	podLabels[buildIDLabel] = buildID
 	return metav1.ObjectMeta{
 		Annotations: annotations,
 		Name:        pj.Name,
@@ -680,7 +692,7 @@ func makeBuild(pj prowjobv1.ProwJob) (*buildv1alpha1.Build, error) {
 		return nil, errors.New("empty BuildID in status")
 	}
 	b := buildv1alpha1.Build{
-		ObjectMeta: buildMeta(pj),
+		ObjectMeta: buildMeta(pj, buildID),
 		Spec:       *pj.Spec.BuildSpec.DeepCopy(),
 	}
 	rawEnv, err := buildEnv(pj, buildID)
