@@ -66,6 +66,7 @@ var (
 	acsWinZipBuildScript   = flag.String("acsengine-winZipBuildScript", "https://raw.githubusercontent.com/Azure/acs-engine/master/scripts/build-windows-k8s.sh", "Build script to create custom zip containing win binaries for acs-engine")
 	acsNetworkPlugin       = flag.String("acsengine-networkPlugin", "azure", "Network pluging to use with acs-engine")
 	testCcm                = flag.Bool("test-ccm", false, "Set to True if you want kubetest to run e2e tests for ccm")
+	testCcmArgs            = flag.String("test-ccm-args", "", "Args to customize ccm test cases")
 )
 
 type Creds struct {
@@ -756,6 +757,9 @@ func (t *GinkgoCustomTester) Run(control *process.Control, testArgs []string) er
 		return err
 	}
 	cmd := exec.Command("make", "test-ccm-e2e")
+	if *testCcmArgs != "" {
+		cmd = exec.Command("make", "test-ccm-e2e", "CCM_E2E_ARGS="+*testCcmArgs)
+	}
 	projectPath := util.K8s("cloud-provider-azure")
 	cmd.Dir = projectPath
 	testErr := control.FinishRunning(cmd)
