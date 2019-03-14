@@ -454,6 +454,9 @@ plugins:
   - require-matching-label
   - trigger
 
+  kubernetes/node-problem-detector:
+  - trigger
+
   kubernetes/org:
   - trigger
 
