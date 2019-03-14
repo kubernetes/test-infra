@@ -997,7 +997,7 @@ go_repository(
 go_repository(
     name = "com_github_json_iterator_go",
     importpath = "github.com/json-iterator/go",
-    tag = "v1.1.5",
+    tag = "v1.1.6",
 )
 
 go_repository(
