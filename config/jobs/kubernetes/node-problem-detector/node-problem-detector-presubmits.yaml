@@ -17,7 +17,7 @@ presubmits:
         args:
         - bash
         - -c
-        - |
+        - >
           ./test/build.sh install-lib &&
           make build
         # docker-in-docker needs privileged mode
@@ -41,7 +41,7 @@ presubmits:
         args:
         - bash
         - -c
-        - |
+        - >
           ./test/build.sh install-lib &&
           make test
 
@@ -63,7 +63,7 @@ presubmits:
         args:
         - bash
         - -c
-        - |
+        - >
           ./test/build.sh pr $(PULL_REFS) &&
           source pr.env &&
           /workspace/scenarios/kubernetes_e2e.py
@@ -99,7 +99,7 @@ presubmits:
         args:
         - bash
         - -c
-        - |
+        - >
           ./test/build.sh pr $(PULL_REFS) &&
           source pr.env &&
           /workspace/scenarios/kubernetes_e2e.py
@@ -134,7 +134,7 @@ presubmits:
         args:
         - bash
         - -c
-        - |
+        - >
           ./test/build.sh pr $(PULL_REFS) &&
           source pr.env &&
           /workspace/scenarios/kubernetes_e2e.py
