@@ -5,6 +5,7 @@ presubmits:
     - master
     always_run: true
     decorate: true
+    path_alias: k8s.io/node-problem-detector
     labels:
       preset-service-account: "true"
     spec:
@@ -24,6 +25,7 @@ presubmits:
     - master
     always_run: true
     decorate: true
+    path_alias: k8s.io/node-problem-detector
     labels:
       preset-service-account: "true"
     spec:
@@ -43,6 +45,7 @@ presubmits:
     - master
     always_run: true
     decorate: true
+    path_alias: k8s.io/node-problem-detector
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -73,6 +76,7 @@ presubmits:
     - master
     always_run: true
     decorate: true
+    path_alias: k8s.io/node-problem-detector
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -102,6 +106,7 @@ presubmits:
     - master
     always_run: true
     decorate: true
+    path_alias: k8s.io/node-problem-detector
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
