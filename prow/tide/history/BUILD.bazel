@@ -6,8 +6,8 @@ go_library(
     importpath = "k8s.io/test-infra/prow/tide/history",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/io:go_default_library",
         "//prow/apis/prowjobs/v1:go_default_library",
-        "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )

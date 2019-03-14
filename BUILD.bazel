@@ -159,6 +159,7 @@ filegroup(
         "//metrics:all-srcs",
         "//pkg/flagutil:all-srcs",
         "//pkg/ghclient:all-srcs",
+        "//pkg/io:all-srcs",
         "//prow:all-srcs",
         "//robots/commenter:all-srcs",
         "//robots/coverage:all-srcs",

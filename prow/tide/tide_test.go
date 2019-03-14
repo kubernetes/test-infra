@@ -1252,7 +1252,7 @@ func TestServeHTTP(t *testing.T) {
 		Context:     githubql.String("coverage/coveralls"),
 		Description: githubql.String("Coverage increased (+0.1%) to 27.599%"),
 	}}
-	hist, err := history.New(100, nil)
+	hist, err := history.New(100, nil, "")
 	if err != nil {
 		t.Fatalf("Failed to create history client: %v", err)
 	}
@@ -1478,7 +1478,7 @@ func TestSync(t *testing.T) {
 				},
 			},
 		})
-		hist, err := history.New(100, nil)
+		hist, err := history.New(100, nil, "")
 		if err != nil {
 			t.Fatalf("Failed to create history client: %v", err)
 		}
