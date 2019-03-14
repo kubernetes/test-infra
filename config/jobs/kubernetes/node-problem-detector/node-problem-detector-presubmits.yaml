@@ -55,6 +55,11 @@ presubmits:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
@@ -66,8 +71,8 @@ presubmits:
         - >-
           ./test/build.sh pr $(PULL_REFS) &&
           source pr.env &&
+          cd $(GOPATH)/src/k8s.io/kubernetes &&
           /workspace/scenarios/kubernetes_e2e.py
-          --extract=ci/latest
           --deployment=node
           --provider=gce
           --gcp-zone=us-west1-b
