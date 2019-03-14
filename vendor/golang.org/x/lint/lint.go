@@ -5,7 +5,7 @@
 // https://developers.google.com/open-source/licenses/bsd.
 
 // Package lint contains a linter for Go source code.
-package lint // import "golang.org/x/lint"
+package lint
 
 import (
 	"bufio"

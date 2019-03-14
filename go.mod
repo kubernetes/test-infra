@@ -34,7 +34,6 @@ require (
 	github.com/go-sql-driver/mysql v0.0.0-20160411075031-7ebe0a500653 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/groupcache v0.0.0-20180513044358-24b0969c4cb7 // indirect
-	github.com/golang/lint v0.0.0-20181026193005-c67002cb31c3
 	github.com/golang/mock v1.1.1
 	github.com/golang/protobuf v1.2.0
 	github.com/google/go-github v0.0.0-20170604030111-7a51fb928f52
@@ -79,6 +78,7 @@ require (
 	github.com/spf13/pflag v1.0.3
 	github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1 // indirect
 	golang.org/x/crypto v0.0.0-20181015023909-0c41d7ab0a0e
+	golang.org/x/lint v0.0.0-20180702182130-06c8688daad7
 	golang.org/x/net v0.0.0-20181201002055-351d144fa1fc
 	golang.org/x/oauth2 v0.0.0-20181120190819-8f65e3013eba
 	golang.org/x/sync v0.0.0-20181108010431-42b317875d0f

@@ -25,8 +25,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/lint"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/lint"
 
 	"k8s.io/test-infra/prow/genfiles"
 	"k8s.io/test-infra/prow/git"
