@@ -27,7 +27,7 @@ _tmpdir="$(pwd)"
 
 trap "rm -rf ${_tmpdir}" EXIT
 
-cp -a "${TESTINFRA_ROOT}/" "${_tmpdir}"
+cp -a "${TESTINFRA_ROOT}/." "${_tmpdir}"
 ./hack/update-deps.sh
 
 diff=$(diff -Nupr \
