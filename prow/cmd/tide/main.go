@@ -31,6 +31,7 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
+	"k8s.io/test-infra/prow/pjutil"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
@@ -121,6 +122,8 @@ func main() {
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tide"}),
 	)
+
+	pjutil.ServePProf()
 
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {

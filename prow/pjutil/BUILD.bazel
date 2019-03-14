@@ -12,6 +12,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "pjutil.go",
+        "pprof.go",
         "tot.go",
     ],
     importpath = "k8s.io/test-infra/prow/pjutil",

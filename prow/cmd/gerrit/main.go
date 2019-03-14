@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pjutil"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/adapter"
@@ -77,6 +78,9 @@ func gatherOptions() options {
 
 func main() {
 	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "gerrit"}))
+
+	pjutil.ServePProf()
+
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)

@@ -277,6 +277,8 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tot"}),
 	)
 
+	pjutil.ServePProf()
+
 	s, err := newStore(o.storagePath)
 	if err != nil {
 		logrus.WithError(err).Fatal("newStore failed")

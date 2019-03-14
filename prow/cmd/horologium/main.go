@@ -81,6 +81,9 @@ func main() {
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "horologium"}),
 	)
+
+	pjutil.ServePProf()
+
 	if !o.dryRun.Explicit {
 		logrus.Warning("Horologium requies --dry-run=false to function correctly in production.")
 		logrus.Warning("--dry-run will soon default to true. Set --dry-run=false by March 15.")

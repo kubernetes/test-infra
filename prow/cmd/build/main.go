@@ -30,6 +30,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/pjutil"
 
 	buildset "github.com/knative/build/pkg/client/clientset/versioned"
 	buildinfo "github.com/knative/build/pkg/client/informers/externalversions"
@@ -131,6 +132,8 @@ func newBuildConfig(cfg rest.Config, stop chan struct{}) (*buildConfig, error) {
 func main() {
 	o := parseOptions()
 	logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "build"})
+
+	pjutil.ServePProf()
 
 	configAgent := &config.Agent{}
 	if o.config != "" {
