@@ -36,6 +36,7 @@
       <a class="mdl-navigation__link{{if eq .PageName "command-help"}} mdl-navigation__link--current{{end}}" href="/command-help">Command Help</a>
       {{ if sections.Tide }}
         <a class="mdl-navigation__link{{if eq .PageName "tide"}} mdl-navigation__link--current{{end}}" href="/tide">Tide Status</a>
+        <a class="mdl-navigation__link{{if eq .PageName "tide-history"}} mdl-navigation__link--current{{end}}" href="/tide-history">Tide History</a>
       {{ end }}
       <a class="mdl-navigation__link{{if eq .PageName "plugins"}} mdl-navigation__link--current{{end}}" href="/plugins">Plugins</a>
       <a class="mdl-navigation__link" href="https://github.com/kubernetes/test-infra/blob/master/prow/README.md" target="_blank">Documentation <span class="material-icons">open_in_new</span></a>

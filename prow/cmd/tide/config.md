@@ -133,6 +133,23 @@ All PRs that conform to the criteria are processed and merged.
 The processing itself can include running jobs (e.g. tests) to verify the PRs are good to go.
 All commits in PRs from `github.com/kubeflow/community` repository are squashed before merging.
 
+### Persistent Storage of Action History
+
+Tide records a history of the actions it takes (namely triggering tests and merging).
+This history is stored in memory, but can be loaded from GCS and periodically flushed
+in order to persist across pod restarts. Persisting action history to GCS is strictly
+optional, but is nice to have if the Tide instance is restarted frequently or if
+users want to view older history.
+
+Both the `--history-uri` and `--gcs-credentials-file` flags must be specified to Tide
+to persist history to GCS. The GCS credentials file should be a [GCP service account
+key](https://cloud.google.com/iam/docs/service-accounts#service_account_keys) file
+for a service account that has permission to read and write the history GCS object.
+The history URI is the GCS object path at which the history data is stored. It should
+not be publicly readable if any repos are sensitive and must be a GCS URI like `gs://bucket/path/to/object`.
+
+[Example](https://github.com/kubernetes/test-infra/blob/b4089633afbe608271a6630bb66c6d74f29f78ef/prow/cluster/tide_deployment.yaml#L40-L41)
+
 # Configuring Presubmit Jobs
 
 Before a PR is merged, Tide ensures that all jobs configured as required in the `presubmits` part of the `config.yaml` file are passing against the latest base branch commit, rerunning the jobs if necessary. **No job is required to be configured** in which case it's enough if a PR meets all GitHub search criteria.

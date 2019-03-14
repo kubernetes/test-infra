@@ -89,6 +89,7 @@ ts_library(
     srcs = glob(["pr/*.ts"]),
     deps = [
         ":api",
+        ":common",
     ],
 )
 
@@ -98,6 +99,7 @@ rollup_bundle(
     deps = [
         ":pr",
         "@npm//dialog-polyfill",
+        "@npm//moment",
     ],
 )
 
