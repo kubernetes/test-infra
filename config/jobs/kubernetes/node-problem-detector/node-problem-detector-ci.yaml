@@ -4,6 +4,7 @@ periodics:
   decorate: true
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   extra_refs:
   - org: kubernetes
     repo: node-problem-detector
@@ -17,6 +18,10 @@ periodics:
       args:
       - ./test/build.sh
       - ci
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+
 
 - name: ci-npd-test
   interval: 2h
