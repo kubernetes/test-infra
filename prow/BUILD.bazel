@@ -97,7 +97,6 @@ filegroup(
         "//prow/cmd/tackle:all-srcs",
         "//prow/cmd/tide:all-srcs",
         "//prow/cmd/tot:all-srcs",
-        "//prow/cmd/util:all-srcs",
         "//prow/commentpruner:all-srcs",
         "//prow/config:all-srcs",
         "//prow/crier:all-srcs",
