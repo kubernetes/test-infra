@@ -17,11 +17,14 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/plugins"
+	"sigs.k8s.io/yaml"
 )
 
 func TestEnsureValidConfiguration(t *testing.T) {
@@ -353,6 +356,83 @@ func TestOrgRepoUnion(t *testing.T) {
 			got := tc.a.union(tc.b)
 			if !reflect.DeepEqual(got, tc.expected) {
 				t.Errorf("%s: did not get expected config:\n%v", tc.name, diff.ObjectGoPrintDiff(tc.expected, got))
+			}
+		})
+	}
+}
+
+func TestValidateUnknownFields(t *testing.T) {
+	testCases := []struct {
+		name        string
+		configBytes []byte
+		config      interface{}
+		expectedErr error
+	}{
+		{
+			name: "valid config",
+			configBytes: []byte(`plugins:
+  kube/kube:
+  - size
+  - config-updater
+config_updater:
+  maps:
+    # Update the plugins configmap whenever plugins.yaml changes
+    kube/plugins.yaml:
+      name: plugins
+size:
+  s: 1`),
+			expectedErr: nil,
+		},
+		{
+			name: "invalid top-level property",
+			configBytes: []byte(`plugins:
+  kube/kube:
+  - size
+  - config-updater
+notconfig_updater:
+  maps:
+    # Update the plugins configmap whenever plugins.yaml changes
+    kube/plugins.yaml:
+      name: plugins
+size:
+  s: 1`),
+			expectedErr: fmt.Errorf("unknown fields present: notconfig_updater"),
+		},
+		{
+			name: "invalid second-level property",
+			configBytes: []byte(`plugins:
+  kube/kube:
+  - size
+  - config-updater
+size:
+  xs: 1
+  s: 5`),
+			expectedErr: fmt.Errorf("unknown fields present: size.xs"),
+		},
+		{
+			name: "invalid array element",
+			configBytes: []byte(`plugins:
+  kube/kube:
+  - size
+  - trigger
+triggers:
+- repos:
+  - kube/kube
+- repoz:
+  - kube/kubez`),
+			expectedErr: fmt.Errorf("unknown fields present: triggers[1].repoz"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := &plugins.Configuration{}
+			if err := yaml.Unmarshal(tc.configBytes, cfg); err != nil {
+				t.Fatalf("Unable to unmarhsal yaml: %v", err)
+			}
+			got := validateUnknownFields(cfg, tc.configBytes, "test")
+			if !reflect.DeepEqual(got, tc.expectedErr) {
+				t.Errorf("%s: did not get expected validation error:\n%v", tc.name, diff.ObjectGoPrintDiff(tc.expectedErr, got))
 			}
 		})
 	}

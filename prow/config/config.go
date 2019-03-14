@@ -490,9 +490,7 @@ func yamlToConfig(path string, nc interface{}) error {
 	if err != nil {
 		return fmt.Errorf("error reading %s: %v", path, err)
 	}
-	// https://github.com/kubernetes/test-infra/issues/11621
-	// Use DisallowUnknownFields to explicitly fail for invalid config
-	if err := yaml.Unmarshal(b, nc, yaml.DisallowUnknownFields); err != nil {
+	if err := yaml.Unmarshal(b, nc); err != nil {
 		return fmt.Errorf("error unmarshaling %s: %v", path, err)
 	}
 	var jc *JobConfig
