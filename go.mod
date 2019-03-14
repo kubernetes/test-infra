@@ -55,6 +55,7 @@ require (
 	github.com/jinzhu/gorm v0.0.0-20170316141641-572d0a0ab1eb
 	github.com/jinzhu/inflection v0.0.0-20151009084129-3272df6c21d0 // indirect
 	github.com/jinzhu/now v0.0.0-20181116074157-8ec929ed50c3 // indirect
+	github.com/json-iterator/go v1.1.6 // indirect
 	github.com/knative/build v0.2.0
 	github.com/knative/pkg v0.0.0-20181205230426-0e41760cea1d
 	github.com/lib/pq v1.0.0 // indirect
