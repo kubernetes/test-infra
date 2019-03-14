@@ -41,7 +41,7 @@ periodics:
       args:
       - bash
       - -c
-      - >
+      - >-
         ./test/build.sh install-lib &&
         make test
 
@@ -64,11 +64,11 @@ periodics:
       args:
       - bash
       - -c
-      - >
+      - >-
         ./test/build.sh get-ci-env &&
         source ci.env &&
         /workspace/scenarios/kubernetes_e2e.py
-        --extract=ci-latest
+        --extract=ci/latest
         --deployment=node
         --provider=gce
         --gcp-zone=us-west1-b
@@ -97,12 +97,12 @@ periodics:
       args:
       - bash
       - -c
-      - >
+      - >-
         ./test/build.sh get-ci-env &&
         source ci.env &&
         /workspace/scenarios/kubernetes_e2e.py
         --cluster=
-        --extract=ci-latest
+        --extract=ci/latest
         --provider=gce
         --gcp-node-image=gci
         --gcp-zone=us-west1-b
@@ -129,12 +129,12 @@ periodics:
       args:
       - bash
       - -c
-      - >
+      - >-
         ./test/build.sh get-ci-env &&
         source ci.env &&
         /workspace/scenarios/kubernetes_e2e.py
         --cluster=
-        --extract=ci-latest
+        --extract=ci/latest
         --provider=gce
         --gcp-node-image=ubuntu
         --gcp-zone=us-west1-b
