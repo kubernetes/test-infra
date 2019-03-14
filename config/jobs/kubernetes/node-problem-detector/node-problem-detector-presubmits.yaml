@@ -8,6 +8,7 @@ presubmits:
     path_alias: k8s.io/node-problem-detector
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
@@ -19,6 +20,10 @@ presubmits:
         - |
           ./test/build.sh install-lib &&
           make build
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+
 
   - name: pull-npd-test
     branches:
@@ -49,6 +54,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
@@ -70,6 +76,10 @@ presubmits:
           --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
           --test_args="--nodes=8 --focus=NodeProblemDetector"
           --timeout=60m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+
 
   - name: pull-npd-e2e-kubernetes-gce-gci
     branches:
@@ -80,6 +90,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
@@ -100,6 +111,10 @@ presubmits:
           --ginkgo-parallel=30
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+
 
   - name: pull-npd-e2e-kubernetes-gce-ubuntu
     branches:
@@ -110,6 +125,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
@@ -130,3 +146,6 @@ presubmits:
           --ginkgo-parallel=30
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
