@@ -160,7 +160,7 @@ periodics:
       - --timeout=120m
       env:
       - name: KUBE_FEATURE_GATES
-        value: "AllAlpha=true,CSIMigration=false"
+        value: "WindowsGMSA=true"
       - name: KUBE_GCE_ENABLE_IP_ALIASES
         value: "true"
       - name: NUM_WINDOWS_NODES
@@ -178,7 +178,7 @@ periodics:
     repo: gce-k8s-windows-testing
     base_ref: master
     path_alias: k8s.io/gce-k8s-windows-testing
-  interval: 2h
+  interval: 4h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -197,9 +197,9 @@ periodics:
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
-      - --test-cmd-args=--ginkgo.focus=\[Serial\]|\[Feature:Windows\] --ginkgo.skip=\[Flaky\]|\[LinuxOnly\] --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[Flaky\]|\[LinuxOnly\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
-      - --timeout=120m
+      - --timeout=240m
       env:
       - name: KUBE_GCE_ENABLE_IP_ALIASES
         value: "true"
