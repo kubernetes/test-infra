@@ -15,6 +15,7 @@ py_binary(
         "//scenarios:kubernetes_verify.py",
         "//testgrid:config-yaml",
     ],
+    deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
 )
 
 py_binary(

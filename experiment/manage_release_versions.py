@@ -27,26 +27,41 @@ Usage:
 
 import re
 import collections
-
-# Probably should just read out of a config file in the future.
-
+import ruamel.yaml as yaml
 
 class Version(object):
-    CURRENT = "1.14" # also known as beta in some other places.
-    STABLE1 = "1.13"
-    STABLE2 = "1.12"
-    STABLE3 = "1.11"
-    DEPRECATED = "1.10"
+    version_dict = {}
 
-# ordered-dict that keeps the mapping of the rotations.
-# we need a ordered dict to make sure we rotate in the
-# order of latest to oldest.
-RELEASE_VERSION_ROTATION_MAP = collections.OrderedDict([
-    (Version.STABLE1, Version.CURRENT),
-    (Version.STABLE2, Version.STABLE1),
-    (Version.STABLE3, Version.STABLE2),
-    (Version.DEPRECATED, Version.STABLE3),
-])
+    def __init__(self, yaml_config_path):
+        with open(yaml_config_path) as fp:
+            self.version_dict = yaml.safe_load(fp)
+
+    def get_current(self):
+        return self.version_dict["current"]
+
+    def get_stable1(self):
+        return self.version_dict["stable1"]
+
+    def get_stable2(self):
+        return self.version_dict["stable2"]
+
+    def get_stable3(self):
+        return self.version_dict["stable3"]
+
+    def get_deprecated(self):
+        return self.version_dict["deprecated"]
+
+    # Returns an ordered-dict that keeps the mapping of the rotations.
+    # we need a ordered dict to make sure we rotate in the
+    # order of latest to oldest.
+    def get_version_rotation_map(self):
+        return collections.OrderedDict([
+            (self.get_stable1(), self.get_current()),
+            (self.get_stable2(), self.get_stable1()),
+            (self.get_stable3(), self.get_stable2()),
+            (self.get_deprecated(), self.get_stable3()),
+        ])
+
 # List of job config locations that need version rotation.
 # We might have to do more than just rotation in these job configs.
 # Assuming that the script is executed from the test-infra root
@@ -83,10 +98,10 @@ JOB_LIST = [
 def extract_major_minor(version):
     return version.split(".")
 
-def construct_regex(version):
+def construct_regex(version, release_version_rotation_map):
     major, minor = extract_major_minor(version)
     match_regex = r"%s([\.-])%s" % (major, minor)
-    major, minor = extract_major_minor(RELEASE_VERSION_ROTATION_MAP[version])
+    major, minor = extract_major_minor(release_version_rotation_map[version])
     replace_regex = r"%s\g<1>%s" % (major, minor)
     return (match_regex, replace_regex)
 
@@ -95,8 +110,10 @@ def construct_regex(version):
 # - pattern repeats into the non-yaml machine readable files.
 
 def main():
-    for version in RELEASE_VERSION_ROTATION_MAP:
-        match_regex, replace_regex = construct_regex(version)
+    release_version_rotation_map = Version("experiment/releases.yaml").\
+        get_version_rotation_map()
+    for version in release_version_rotation_map:
+        match_regex, replace_regex = construct_regex(version, release_version_rotation_map)
         for job in JOB_LIST:
             with open(job, 'r') as fp:
                 lines = [re.sub(match_regex, replace_regex, line)
