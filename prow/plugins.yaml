@@ -259,9 +259,9 @@ config_updater:
   maps:
     label_sync/labels.yaml:
       name: label-config
-    prow/config.yaml:
+    config/config.yaml:
       name: config
-    prow/plugins.yaml:
+    config/plugins.yaml:
       name: plugins
     config/jobs/**/*.yaml:
       name: job-config
