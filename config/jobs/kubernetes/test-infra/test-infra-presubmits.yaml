@@ -171,7 +171,7 @@ presubmits:
   - name: pull-test-infra-verify-deps
     branches:
     - master
-    run_if_changed: '^(Gopkg\.|^vendor/).*$'
+    run_if_changed: '^(go\.mod|go\.sum|WORKSPACE|BUILD\.bazel|hack/verify-deps\.sh|hack/update-deps\.sh|vendor/.*)$'
     decorate: true
     labels:
       preset-service-account: "true"
