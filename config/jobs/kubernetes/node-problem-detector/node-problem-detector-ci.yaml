@@ -41,7 +41,7 @@ periodics:
       args:
       - bash
       - -c
-      - |
+      - >
         ./test/build.sh install-lib &&
         make test
 
@@ -64,7 +64,7 @@ periodics:
       args:
       - bash
       - -c
-      - |
+      - >
         ./test/build.sh get-ci-env &&
         source ci.env &&
         /workspace/scenarios/kubernetes_e2e.py
@@ -97,7 +97,7 @@ periodics:
       args:
       - bash
       - -c
-      - |
+      - >
         ./test/build.sh get-ci-env &&
         source ci.env &&
         /workspace/scenarios/kubernetes_e2e.py
@@ -129,7 +129,7 @@ periodics:
       args:
       - bash
       - -c
-      - |
+      - >
         ./test/build.sh get-ci-env &&
         source ci.env &&
         /workspace/scenarios/kubernetes_e2e.py
