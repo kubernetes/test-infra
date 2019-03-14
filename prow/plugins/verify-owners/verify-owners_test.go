@@ -17,6 +17,7 @@ limitations under the License.
 package verifyowners
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 	"testing"
@@ -27,6 +28,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 var ownerFiles = map[string][]byte{
@@ -46,22 +48,22 @@ labels:
     labels:
     - label1
 `),
-	"invalidSyntax": []byte(`approvers
+	"invalidSyntax": []byte(`approvers:
 - jdoe
 reviewers:
 - alice
 - bob
-labels:
+labels
 - label1
 `),
 	"invalidSyntaxFilters": []byte(`filters:
   ".*":
-    approvers
+    approvers:
     - jdoe
     reviewers:
     - alice
     - bob
-    labels:
+    labels
     - label1
 `),
 	"invalidLabels": []byte(`approvers:
@@ -290,5 +292,144 @@ func TestHandle(t *testing.T) {
 			t.Errorf("%s: expected label %s in %s", test.name, labels.InvalidOwners, fghc.IssueLabelsAdded)
 			continue
 		}
+	}
+}
+
+func TestParseOwnersFile(t *testing.T) {
+	cases := []struct {
+		name     string
+		document []byte
+		patch    string
+		errLine  int
+	}{
+		{
+			name:     "emptyApprovers",
+			document: ownerFiles["emptyApprovers"],
+			errLine:  1,
+		},
+		{
+			name:     "emptyApproversFilters",
+			document: ownerFiles["emptyApproversFilters"],
+			errLine:  1,
+		},
+		{
+			name:     "invalidSyntax",
+			document: ownerFiles["invalidSyntax"],
+			errLine:  7,
+		},
+		{
+			name:     "invalidSyntaxFilters",
+			document: ownerFiles["invalidSyntaxFilters"],
+			errLine:  9,
+		},
+		{
+			name:     "invalidSyntax edit",
+			document: ownerFiles["invalidSyntax"],
+			patch: `@@ -3,6 +3,6 @@ approvers:
+ reviewers:
+ - alice
+ - bob
+-labels:
++labels
+ - label1
+ `,
+			errLine: 1,
+		},
+		{
+			name:     "noApprovers",
+			document: ownerFiles["noApprovers"],
+			errLine:  1,
+		},
+		{
+			name:     "noApproversFilters",
+			document: ownerFiles["noApproversFilters"],
+			errLine:  1,
+		},
+		{
+			name:     "valid",
+			document: ownerFiles["valid"],
+		},
+		{
+			name:     "validFilters",
+			document: ownerFiles["validFilters"],
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if c.patch == "" {
+				c.patch = makePatch(c.document)
+			}
+			change := github.PullRequestChange{
+				Filename: "OWNERS",
+				Patch:    c.patch,
+			}
+			message := parseOwnersFile(c.document, change, &logrus.Entry{}, []string{})
+			if message != nil {
+				if c.errLine == 0 {
+					t.Errorf("%s: expected no error, got one: %s", c.name, message.message)
+				}
+				if message.line != c.errLine {
+					t.Errorf("%s: wrong line for message, expected %d, got %d", c.name, c.errLine, message.line)
+				}
+			} else if c.errLine != 0 {
+				t.Errorf("%s: expected an error, got none", c.name)
+			}
+		})
+	}
+}
+
+func makePatch(b []byte) string {
+	p := bytes.Replace(b, []byte{'\n'}, []byte{'\n', '+'}, -1)
+	nbLines := bytes.Count(p, []byte{'+'}) + 1
+	return fmt.Sprintf("@@ -0,0 +1,%d @@\n+%s", nbLines, p)
+}
+
+func TestHelpProvider(t *testing.T) {
+	cases := []struct {
+		name               string
+		config             *plugins.Configuration
+		enabledRepos       []string
+		err                bool
+		configInfoIncludes []string
+	}{
+		{
+			name:         "Empty config",
+			config:       &plugins.Configuration{},
+			enabledRepos: []string{"org1", "org2/repo"},
+		},
+		{
+			name:         "Overlapping org and org/repo",
+			config:       &plugins.Configuration{},
+			enabledRepos: []string{"org2", "org2/repo"},
+		},
+		{
+			name:         "Invalid enabledRepos",
+			config:       &plugins.Configuration{},
+			enabledRepos: []string{"org1", "org2/repo/extra"},
+			err:          true,
+		},
+		{
+			name: "ReviewerCount specified",
+			config: &plugins.Configuration{
+				Owners: plugins.Owners{
+					LabelsBlackList: []string{"label1", "label2"},
+				},
+			},
+			enabledRepos:       []string{"org1", "org2/repo"},
+			configInfoIncludes: []string{"label1, label2"},
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			pluginHelp, err := helpProvider(c.config, c.enabledRepos)
+			if err != nil && !c.err {
+				t.Fatalf("helpProvider error: %v", err)
+			}
+			for _, msg := range c.configInfoIncludes {
+				if !strings.Contains(pluginHelp.Config[""], msg) {
+					t.Fatalf("helpProvider.Config error mismatch: didn't get %v, but wanted it", msg)
+				}
+			}
+		})
 	}
 }
