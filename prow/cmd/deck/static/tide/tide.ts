@@ -230,6 +230,7 @@ function redrawPools(): void {
 
 function createHistoryCell(pool: TidePool): HTMLTableDataCellElement {
     const td = document.createElement("td");
+    td.classList.add("icon-cell");
     td.appendChild(tidehistory.poolIcon(pool.Org, pool.Repo, pool.Branch));
     return td;
 }
