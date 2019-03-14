@@ -596,7 +596,7 @@ func handleJobHistory(o options, cfg config.Getter, gcsClient *storage.Client) h
 // handlePRHistory handles requests to get the test history if a given PR
 // The url must look like this:
 //
-// /pr-history/<org>/<repo>/<pr number>
+// /pr-history?org=<org>&repo=<repo>&pr=<pr number>
 func handlePRHistory(o options, cfg config.Getter, gcsClient *storage.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
