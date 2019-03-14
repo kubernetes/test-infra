@@ -27,7 +27,6 @@ import (
 	"html/template"
 	"io/ioutil"
 	"net/http"
-	"net/http/pprof"
 	"net/url"
 	"os"
 	"path"
@@ -147,14 +146,7 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "deck"}),
 	)
 
-	// serve debug info
-	pprofMux := http.NewServeMux()
-	pprofMux.HandleFunc("/debug/pprof/", pprof.Index)
-	pprofMux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
-	pprofMux.HandleFunc("/debug/pprof/profile", pprof.Profile)
-	pprofMux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-	pprofMux.HandleFunc("/debug/pprof/trace", pprof.Trace)
-	go func() { logrus.WithError(http.ListenAndServe(":8082", pprofMux)).Fatal("ListenAndServe returned.") }()
+	pjutil.ServePProf()
 
 	// setup config agent, pod log clients etc.
 	configAgent := &config.Agent{}
