@@ -15,7 +15,8 @@ periodics:
       command:
       - runner.sh
       args:
-      - ./test/build.sh ci
+      - ./test/build.sh
+      - ci
 
 - name: ci-npd-test
   interval: 2h
@@ -33,8 +34,11 @@ periodics:
       command:
       - runner.sh
       args:
-      - make
-      - test
+      - bash
+      - -c
+      - |
+        ./test/build.sh install-lib &&
+        make test
 
 - name: ci-npd-e2e-node
   interval: 2h
