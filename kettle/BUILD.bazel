@@ -57,6 +57,7 @@ py_test(
     data = ["schema.json"],
     deps = [
         "@requests",
+        "@yaml",
     ],
 )
 

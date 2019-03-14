@@ -493,9 +493,24 @@ pip_import(
     requirements = "//kettle:requirements.txt",
 )
 
-load("@kettle_deps//:requirements.bzl", "pip_install")
+load(
+    "@kettle_deps//:requirements.bzl",
+    kettle_pip_install = "pip_install",
+)
 
-pip_install()
+kettle_pip_install()
+
+pip_import(
+    name = "pylint_deps",
+    requirements = "//hack:requirements.txt",
+)
+
+load(
+    "@pylint_deps//:requirements.bzl",
+    pylint_pip_install = "pip_install",
+)
+
+pylint_pip_install()
 
 go_repository(
     name = "com_github_client9_misspell",
