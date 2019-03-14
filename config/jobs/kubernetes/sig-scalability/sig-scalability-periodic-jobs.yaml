@@ -290,6 +290,8 @@ periodics:
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
+      # TODO(https://github.com/kubernetes/kubernetes/issues/74213): Confirm it works and set everywhere
+      - --test-cmd-args=--enable-prometheus-server
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=240m
       # docker-in-docker needs privileged mode
