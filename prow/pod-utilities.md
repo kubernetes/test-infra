@@ -43,8 +43,19 @@ See the `extra_refs` field if you need to clone more than one repo.
 before the job starts, and additional metadata and logs to be uploaded when the
 job completes.
 - **Artifact Directory** - Jobs can expect an `$ARTIFACTS` environment variable
-to be specified. It indicates an existent directory where job artifacts can be
-dumped for automatic upload to GCS upon job completion.
+to be specified. Please see the [Artifacts Directory](#artifacts-directory) section for additional information.
+
+### Artifacts Directory
+
+The `$ARTIFACTS` environment variable indicates an existent directory where job artifacts can be dumped for automatic upload to the following GCS paths upon job completion:
+
+| Job Type | GCS Artifacts Path | GCS Web Example |
+| --- | --- | --- |
+| Periodic | `gcs://$GCS_BUCKET/logs/$JOB_NAME/$BUILD_ID/artifacts/` | https://gcsweb.k8s.io/gcs/kubernetes-jenkins/logs/ci-kubernetes-gce-conformance/1361/artifacts/
+| Postsubmit | Same as Periodic | |
+| Presubmit | `gcs://$GCS_BUCKET/pr-logs/pull/$PULL_NUMBER/$JOB_NAME/$BUILD_ID/artifacts/` | https://gcsweb.k8s.io/gcs/kubernetes-jenkins/pr-logs/pull/75376/pull-kubernetes-bazel-build/76847/artifacts/
+
+For most jobs the value of `$GCS_BUCKET` will be `kubernetes-jenkins`, but there are jobs that upload results to a different GCS bucket. For example, the results for the Istio post-submit job `istio-integ-local-tests` are uploaded to the `istio-prow` bucket: https://gcsweb.k8s.io/gcs/istio-prow/logs/istio-integ-local-tests/6796/artifacts/.
 
 ### How to configure
 

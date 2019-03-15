@@ -180,6 +180,7 @@ Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 `PULL_REFS` | | ✓ | ✓ | ✓ | All refs to test. | `master:123abc,5:qwe456`
 `PULL_NUMBER` | | | | ✓ | Pull request number. | `5`
 `PULL_PULL_SHA` | | | | ✓ | Pull request head SHA. | `qwe456`
+`ARTIFACTS` | ✓ | ✓ | ✓ | ✓ | Path to a directory automatically uploaded to GCS upon a job's completion (requires pod utilities). | Please see the [artifacts directory](/prow/pod-utilities.md#artifacts-directory) section for more information.
 
 Examples of the JSON-encoded job specification follow for the different
 job types:
