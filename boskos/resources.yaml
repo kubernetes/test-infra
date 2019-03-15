@@ -317,7 +317,6 @@ resources:
   - k8s-boskos-gce-project-17
   - k8s-boskos-gce-project-18
   - k8s-boskos-gce-project-19
-  - k8s-boskos-gce-project-20
   - k8s-docker-validation-gci
   - k8s-e2e-gce-alpha1-5
   - k8s-e2e-gce-f8n-1-5
