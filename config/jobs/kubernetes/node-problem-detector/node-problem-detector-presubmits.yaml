@@ -73,7 +73,7 @@ presubmits:
         - bash
         - -c
         - >-
-          ./test/build.sh pr $(PULL_REFS) &&
+          ./test/build.sh pr $(PULL_NUMBER) &&
           source pr.env &&
           cd $(GOPATH)/src/k8s.io/kubernetes &&
           /workspace/scenarios/kubernetes_e2e.py
@@ -82,8 +82,8 @@ presubmits:
           --gcp-zone=us-west1-b
           --node-tests=true
           --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config.yaml
-          --node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"
-          --test_args=\"--nodes=8 --focus=NodeProblemDetector\"
+          '--node-test-args=--kubelet-flags=--cgroups-per-qos=true --cgroup-root=/'
+          '--test_args=--nodes=8 --focus=NodeProblemDetector'
           --timeout=60m
         # docker-in-docker needs privileged mode
         securityContext:
@@ -109,7 +109,7 @@ presubmits:
         - bash
         - -c
         - >-
-          ./test/build.sh pr $(PULL_REFS) &&
+          ./test/build.sh pr $(PULL_NUMBER) &&
           source pr.env &&
           /workspace/scenarios/kubernetes_e2e.py
           --cluster=
@@ -144,7 +144,7 @@ presubmits:
         - bash
         - -c
         - >-
-          ./test/build.sh pr $(PULL_REFS) &&
+          ./test/build.sh pr $(PULL_NUMBER) &&
           source pr.env &&
           /workspace/scenarios/kubernetes_e2e.py
           --cluster=
