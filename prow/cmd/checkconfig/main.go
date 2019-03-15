@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"reflect"
+	"sort"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -243,6 +244,7 @@ func validateUnknownFields(cfg interface{}, cfgBytes []byte, filePath string) er
 	}
 	unknownFields := checkUnknownFields("", obj, reflect.ValueOf(cfg))
 	if len(unknownFields) > 0 {
+		sort.Strings(unknownFields)
 		return fmt.Errorf("unknown fields present in %s: %v", filePath, strings.Join(unknownFields, ", "))
 	}
 	return nil
@@ -257,6 +259,7 @@ func checkUnknownFields(keyPref string, obj interface{}, cfg reflect.Value) []st
 			fullKey := fmt.Sprintf("%s.%s", keyPref, key)
 			subCfg := getSubCfg(key, cfg)
 			if !subCfg.IsValid() {
+				// Append fullKey without leading "."
 				uf = append(uf, fullKey[1:])
 			} else {
 				subUf := checkUnknownFields(fullKey, val, subCfg)

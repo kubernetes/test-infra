@@ -364,12 +364,14 @@ func TestOrgRepoUnion(t *testing.T) {
 func TestValidateUnknownFields(t *testing.T) {
 	testCases := []struct {
 		name        string
+		filename    string
 		configBytes []byte
 		config      interface{}
 		expectedErr error
 	}{
 		{
-			name: "valid config",
+			name:     "valid config",
+			filename: "valid-conf.yaml",
 			configBytes: []byte(`plugins:
   kube/kube:
   - size
@@ -384,7 +386,8 @@ size:
 			expectedErr: nil,
 		},
 		{
-			name: "invalid top-level property",
+			name:     "invalid top-level property",
+			filename: "toplvl.yaml",
 			configBytes: []byte(`plugins:
   kube/kube:
   - size
@@ -396,10 +399,11 @@ notconfig_updater:
       name: plugins
 size:
   s: 1`),
-			expectedErr: fmt.Errorf("unknown fields present: notconfig_updater"),
+			expectedErr: fmt.Errorf("unknown fields present in toplvl.yaml: notconfig_updater"),
 		},
 		{
-			name: "invalid second-level property",
+			name:     "invalid second-level property",
+			filename: "seclvl.yaml",
 			configBytes: []byte(`plugins:
   kube/kube:
   - size
@@ -407,10 +411,11 @@ size:
 size:
   xs: 1
   s: 5`),
-			expectedErr: fmt.Errorf("unknown fields present: size.xs"),
+			expectedErr: fmt.Errorf("unknown fields present in seclvl.yaml: size.xs"),
 		},
 		{
-			name: "invalid array element",
+			name:     "invalid array element",
+			filename: "home/array.yaml",
 			configBytes: []byte(`plugins:
   kube/kube:
   - size
@@ -420,7 +425,42 @@ triggers:
   - kube/kube
 - repoz:
   - kube/kubez`),
-			expectedErr: fmt.Errorf("unknown fields present: triggers[1].repoz"),
+			expectedErr: fmt.Errorf("unknown fields present in home/array.yaml: triggers[1].repoz"),
+		},
+		{
+			name:     "invalid map entry",
+			filename: "map.yaml",
+			configBytes: []byte(`plugins:
+  kube/kube:
+  - size
+  - config-updater
+config_updater:
+  maps:
+    # Update the plugins configmap whenever plugins.yaml changes
+    kube/plugins.yaml:
+      name: plugins
+    kube/config.yaml:
+      validation: config
+size:
+  s: 1`),
+			expectedErr: fmt.Errorf("unknown fields present in map.yaml: config_updater.maps.kube/config.yaml.validation"),
+		},
+		{
+			name:     "multiple invalid elements",
+			filename: "multiple.yaml",
+			configBytes: []byte(`plugins:
+  kube/kube:
+  - size
+  - trigger
+triggers:
+- repoz:
+  - kube/kubez
+- repos:
+  - kube/kube
+size:
+  s: 1
+  xs: 1`),
+			expectedErr: fmt.Errorf("unknown fields present in multiple.yaml: size.xs, triggers[0].repoz"),
 		},
 	}
 
@@ -430,9 +470,10 @@ triggers:
 			if err := yaml.Unmarshal(tc.configBytes, cfg); err != nil {
 				t.Fatalf("Unable to unmarhsal yaml: %v", err)
 			}
-			got := validateUnknownFields(cfg, tc.configBytes, "test")
+			got := validateUnknownFields(cfg, tc.configBytes, tc.filename)
 			if !reflect.DeepEqual(got, tc.expectedErr) {
-				t.Errorf("%s: did not get expected validation error:\n%v", tc.name, diff.ObjectGoPrintDiff(tc.expectedErr, got))
+				t.Errorf("%s: did not get expected validation error:\n%v", tc.name,
+					diff.ObjectGoPrintDiff(tc.expectedErr, got))
 			}
 		})
 	}
