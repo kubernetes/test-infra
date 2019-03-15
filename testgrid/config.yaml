@@ -2850,6 +2850,8 @@ test_groups:
 # GCE Guest compute-image-tools
 - name: ci-daisy-e2e
   gcs_prefix: compute-image-tools-test/logs/ci-daisy-e2e
+- name: ci-daisy-e2e-daily
+  gcs_prefix: compute-image-tools-test/logs/ci-daisy-e2e-daily
 - name: linux-image-tests
   gcs_prefix: compute-image-tools-test/logs/linux-image-tests
 - name: windows-image-tests
@@ -4450,6 +4452,15 @@ dashboards:
       options:
       - key: title
         value: 'ci-daisy-e2e issue: <test-name>'
+      - key: body
+        value: <test-url>
+  - name: ci-daisy-e2e-daily
+    test_group_name: ci-daisy-e2e-daily
+    file_bug_template:
+      url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
+      options:
+      - key: title
+        value: 'ci-daisy-e2e-daily issue: <test-name>'
       - key: body
         value: <test-url>
   - name: linux-image-tests
