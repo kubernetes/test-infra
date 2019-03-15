@@ -235,11 +235,11 @@ repo_milestone:
 project_config:
   project_org_configs:
     kubernetes:
-      org_maintainers_team_id: 2460384
-      org_maintainers_team_name: kubernetes-milestone-maintainers
+      org_maintainers_team_id: 3162587
+      org_maintainers_team_name: sig-testing-dummy-project-team
       org_default_column_map:
-        1.14 CI Signal:
-          Start here
+        test-infra-dummy-testing-project-plugin:
+          To do
         KEP Implementation Tracking:
           To do
       project_repo_configs:
