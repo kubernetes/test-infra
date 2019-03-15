@@ -19,7 +19,11 @@ set -o pipefail
 
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 
+GENERATED_SECURITY_CONFIG="${TESTINFRA_ROOT}/config/jobs/kubernetes-security/generated-security-jobs.yaml"
+
+rm "${GENERATED_SECURITY_CONFIG}"
+
 bazel run //config/jobs/kubernetes-security:genjobs -- \
 "--config=${TESTINFRA_ROOT}/prow/config.yaml" \
 "--jobs=${TESTINFRA_ROOT}/config/jobs" \
-"--output=${TESTINFRA_ROOT}/config/jobs/kubernetes-security/generated-security-jobs.yaml"
+"--output=${GENERATED_SECURITY_CONFIG}"
