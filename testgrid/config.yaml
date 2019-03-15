@@ -3317,7 +3317,7 @@ test_groups:
 # Cloud-provider-azure e2e tests
 - name: ci-cloud-provider-azure-master
   gcs_prefix: kubernetes-jenkins/logs/ci-cloud-provider-azure-master
-  
+
 # Flannel CNI on Windows test groups
 - name: ci-kubernetes-e2e-flannel-l2bridge-master-windows
   gcs_prefix: k8s-ovn/ci-kubernetes-e2e-flannel-l2bridge-master-windows
@@ -3467,9 +3467,6 @@ test_groups:
 - name: pull-npd-e2e-kubernetes-gce-gci
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-npd-e2e-kubernetes-gce-gci
   num_columns_recent: 30
-- name: pull-npd-e2e-kubernetes-gce-ubuntu
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-npd-e2e-kubernetes-gce-ubuntu
-  num_columns_recent: 30
 
 - name: ci-npd-build
   gcs_prefix: kubernetes-jenkins/logs/ci-npd-build
@@ -3488,11 +3485,6 @@ test_groups:
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 - name: ci-npd-e2e-kubernetes-gce-gci
   gcs_prefix: kubernetes-jenkins/logs/ci-npd-e2e-kubernetes-gce-gci
-  num_columns_recent: 30
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
-- name: ci-npd-e2e-kubernetes-gce-ubuntu
-  gcs_prefix: kubernetes-jenkins/logs/ci-npd-e2e-kubernetes-gce-ubuntu
   num_columns_recent: 30
   alert_stale_results_hours: 24
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
@@ -6598,10 +6590,6 @@ dashboards:
     test_group_name: ci-npd-e2e-kubernetes-gce-gci
     alert_options:
       alert_mail_to_addresses: zhenw@google.com,lantaol@google.com
-  - name: ci-npd-e2e-kubernetes-gce-ubuntu
-    test_group_name: ci-npd-e2e-kubernetes-gce-ubuntu
-    alert_options:
-      alert_mail_to_addresses: zhenw@google.com,lantaol@google.com
 
 # Move sig-release here
 
@@ -7455,8 +7443,6 @@ dashboards:
     test_group_name: pull-npd-e2e-node
   - name: pull-npd-e2e-kubernetes-gce-gci
     test_group_name: pull-npd-e2e-kubernetes-gce-gci
-  - name: pull-npd-e2e-kubernetes-gce-ubuntu
-    test_group_name: pull-npd-e2e-kubernetes-gce-ubuntu
 
 - name: google-rules_k8s
   dashboard_tab:

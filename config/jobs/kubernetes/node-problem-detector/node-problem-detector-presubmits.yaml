@@ -123,38 +123,3 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-
-
-  - name: pull-npd-e2e-kubernetes-gce-ubuntu
-    branches:
-    - master
-    always_run: true
-    decorate: true
-    path_alias: k8s.io/node-problem-detector
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - >-
-          ./test/build.sh pr $(PULL_NUMBER) &&
-          source pr.env &&
-          /workspace/scenarios/kubernetes_e2e.py
-          --cluster=
-          --extract=ci/latest
-          --provider=gce
-          --gcp-node-image=ubuntu
-          --gcp-zone=us-west1-b
-          --ginkgo-parallel=30
-          --test_args=--ginkgo.focus=NodeProblemDetector
-          --timeout=60m
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
