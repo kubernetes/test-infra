@@ -60,6 +60,10 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
@@ -77,7 +81,7 @@ periodics:
         --provider=gce
         --gcp-zone=us-west1-b
         --node-tests=true
-        --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
+        --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config.yaml
         --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         --test_args="--nodes=8 --focus=NodeProblemDetector"
         --timeout=60m
