@@ -20,5 +20,9 @@ set -o xtrace
 
 # This is a fake job that tests bootstrap.py behavior when checking out a
 # specific branch in a repo.
-[[ -f fake-branch-file ]]  # Added in the branch
-[[ ! -f fake-master-file ]]  # In master, removed in this branch
+if ! [[ -f fake-branch-file ]]; then  # Added in the branch
+    exit 1
+fi
+if ! [[ ! -f fake-master-file ]]; then
+    exit 1 # In master, removed in this branch
+fi

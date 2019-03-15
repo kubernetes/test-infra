@@ -69,7 +69,7 @@ py_test(
         "model.py",
         ":package-srcs",
     ],
-    data = [":buckets"],
+    data = [":buckets.yaml"],
     # idem
     local = True,
     deps = ["@yaml"],
