@@ -125,4 +125,4 @@ RUN apt-get update && \
 
 # Install any go packages
 RUN go get \
-    github.com/golang/lint/golint
+    golang.org/x/lint/golint
