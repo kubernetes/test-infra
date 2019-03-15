@@ -27,12 +27,12 @@ import sys
 
 # This is deprecated from 1.14 onwards.
 VERSION_TAG = {
-    '1.10': '1.10-v20180221-3655e24ae',
-    '1.11': '1.11-v20190125-cc5d6ecff3',
-    '1.12': '1.12-v20190125-cc5d6ecff3',
-    '1.13': '1.13-v20190125-cc5d6ecff3',
+    '1.11': '1.11-v20190315-a2a5ddb38',
+    '1.12': '1.12-v20190315-a2a5ddb38',
+    '1.13': '1.13-v20190315-a2a5ddb38',
+    '1.14': '1.14-v20190315-a2a5ddb38',
     # this is master, feature branches...
-    'default': '1.13-v20190125-cc5d6ecff3',
+    'default': '1.14-v20190315-a2a5ddb38',
 }
 
 
