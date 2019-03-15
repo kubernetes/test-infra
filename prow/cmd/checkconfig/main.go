@@ -28,6 +28,8 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/yaml"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -51,7 +53,6 @@ import (
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/lgtm"
-	"sigs.k8s.io/yaml"
 )
 
 type options struct {
@@ -285,7 +286,7 @@ func getSubCfg(key string, cfg reflect.Value) reflect.Value {
 	case reflect.Map:
 		iter := cfgElem.MapRange()
 		for iter.Next() {
-			k := iter.Key().Interface().(string)
+			k := fmt.Sprintf("%v", iter.Key().Interface())
 			if k == key {
 				return iter.Value()
 			}

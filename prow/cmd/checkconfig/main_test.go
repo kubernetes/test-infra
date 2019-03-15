@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/plugins"
 	"sigs.k8s.io/yaml"
 )
@@ -363,15 +364,16 @@ func TestOrgRepoUnion(t *testing.T) {
 
 func TestValidateUnknownFields(t *testing.T) {
 	testCases := []struct {
-		name        string
-		filename    string
-		configBytes []byte
-		config      interface{}
-		expectedErr error
+		name, filename string
+		cfg            interface{}
+		configBytes    []byte
+		config         interface{}
+		expectedErr    error
 	}{
 		{
 			name:     "valid config",
 			filename: "valid-conf.yaml",
+			cfg:      &plugins.Configuration{},
 			configBytes: []byte(`plugins:
   kube/kube:
   - size
@@ -388,6 +390,7 @@ size:
 		{
 			name:     "invalid top-level property",
 			filename: "toplvl.yaml",
+			cfg:      &plugins.Configuration{},
 			configBytes: []byte(`plugins:
   kube/kube:
   - size
@@ -404,6 +407,7 @@ size:
 		{
 			name:     "invalid second-level property",
 			filename: "seclvl.yaml",
+			cfg:      &plugins.Configuration{},
 			configBytes: []byte(`plugins:
   kube/kube:
   - size
@@ -416,6 +420,7 @@ size:
 		{
 			name:     "invalid array element",
 			filename: "home/array.yaml",
+			cfg:      &plugins.Configuration{},
 			configBytes: []byte(`plugins:
   kube/kube:
   - size
@@ -430,6 +435,7 @@ triggers:
 		{
 			name:     "invalid map entry",
 			filename: "map.yaml",
+			cfg:      &plugins.Configuration{},
 			configBytes: []byte(`plugins:
   kube/kube:
   - size
@@ -443,11 +449,13 @@ config_updater:
       validation: config
 size:
   s: 1`),
-			expectedErr: fmt.Errorf("unknown fields present in map.yaml: config_updater.maps.kube/config.yaml.validation"),
+			expectedErr: fmt.Errorf("unknown fields present in map.yaml: " +
+				"config_updater.maps.kube/config.yaml.validation"),
 		},
 		{
 			name:     "multiple invalid elements",
 			filename: "multiple.yaml",
+			cfg:      &plugins.Configuration{},
 			configBytes: []byte(`plugins:
   kube/kube:
   - size
@@ -460,17 +468,41 @@ triggers:
 size:
   s: 1
   xs: 1`),
-			expectedErr: fmt.Errorf("unknown fields present in multiple.yaml: size.xs, triggers[0].repoz"),
+			expectedErr: fmt.Errorf("unknown fields present in multiple.yaml: " +
+				"size.xs, triggers[0].repoz"),
+		},
+		{
+			name:     "embedded structs",
+			filename: "embedded.yaml",
+			cfg:      &config.Config{},
+			configBytes: []byte(`presubmits:
+  kube/kube:
+  - name: test-presubmit
+    decorate: true
+    always_run: true
+    never_run: false
+    skip_report: true
+    spec:
+      containers:
+      - image: alpine
+        command: ["/bin/printenv"]
+tide:
+  squash_label: sq
+  not-a-property: true
+size:
+  s: 1
+  xs: 1`),
+			expectedErr: fmt.Errorf("unknown fields present in embedded.yaml: " +
+				"presubmits.kube/kube[0].never_run, size, tide.not-a-property"),
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			cfg := &plugins.Configuration{}
-			if err := yaml.Unmarshal(tc.configBytes, cfg); err != nil {
+			if err := yaml.Unmarshal(tc.configBytes, tc.cfg); err != nil {
 				t.Fatalf("Unable to unmarhsal yaml: %v", err)
 			}
-			got := validateUnknownFields(cfg, tc.configBytes, tc.filename)
+			got := validateUnknownFields(tc.cfg, tc.configBytes, tc.filename)
 			if !reflect.DeepEqual(got, tc.expectedErr) {
 				t.Errorf("%s: did not get expected validation error:\n%v", tc.name,
 					diff.ObjectGoPrintDiff(tc.expectedErr, got))
