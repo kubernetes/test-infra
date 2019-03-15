@@ -12,7 +12,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
       command:
       - runner.sh
       args:
@@ -35,7 +35,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
       command:
       - runner.sh
       args:
@@ -66,7 +66,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
       command:
       - runner.sh
       args:
@@ -99,7 +99,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
       command:
       - runner.sh
       args:
@@ -131,7 +131,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
       command:
       - runner.sh
       args:

@@ -7,7 +7,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
         command:
         - runner.sh
         args:
@@ -20,7 +20,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
         command:
         - runner.sh
         args:
@@ -44,7 +44,7 @@ presubmits:
       preset-aws-credential-aws-oss-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
         command:
         - runner.sh
         args:
