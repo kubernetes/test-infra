@@ -4,7 +4,7 @@ periodics:
   extra_refs:
   - org: pjh
     repo: kubernetes
-    base_ref: windows-up
+    base_ref: windows-gce-poc
     path_alias: k8s.io/kubernetes
   - org: yujuhong
     repo: gce-k8s-windows-testing
@@ -34,16 +34,23 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
       - --provider=gce
+      - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
-      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\] --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
       env:
-      - name: USE_RELEASE_NODE_BINARIES
-        value: "true"
+      - name: OVERRIDE_NODE_BINARY_TAR_URL
+        value: "https://storage.googleapis.com/kubernetes-release/release/v1.14.0-beta.2/kubernetes-node-windows-amd64.tar.gz"
       - name: KUBE_GCE_ENABLE_IP_ALIASES
         value: "true"
+      - name: NUM_WINDOWS_NODES
+        value: "3"
+      - name: NUM_NODES
+        value: "2"
+      - name: KUBERNETES_NODE_PLATFORM
+        value: "windows"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
       resources:
         requests:
