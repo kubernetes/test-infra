@@ -25,7 +25,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-experimental
         command:
         - runner.sh
         - ./scenarios/kubernetes_bazel.py
@@ -50,7 +50,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-experimental
         command:
         - runner.sh
         args:
@@ -77,7 +77,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-experimental
         command:
         - runner.sh
         args:
