@@ -41,7 +41,8 @@ presets:
   - name: ALLOWED_NOTREADY_NODES
     value: 1
   - name: ENABLE_PROMETHEUS_SERVER
-    value: "true"
+    # TODO(https://github.com/kubernetes/kubernetes/issues/74213#issuecomment-473526965): Set back to true
+    value: "false"
 ### kubemark-gce-big
 - labels:
     preset-e2e-kubemark-gce-big: "true"
