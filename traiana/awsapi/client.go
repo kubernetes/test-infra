@@ -16,6 +16,7 @@ type Client struct {
 func NewClient(o ClientOption) (*Client, error) {
 	config := aws.Config{}
 	var sharedConfigFiles []string
+	sharedConfigState := session.SharedConfigDisable
 
 	// use the gcs CredentialsFile for AWS and assume that the config file is next to it
 	if o.CredentialsFile != "" {
@@ -29,13 +30,14 @@ func NewClient(o ClientOption) (*Client, error) {
 			logrus.Warn("Config file not found: " + configFile)
 		} else {
 			sharedConfigFiles = append(sharedConfigFiles, configFile)
+			sharedConfigState = session.SharedConfigEnable
 		}
 	}
 
 	opts := session.Options {
 		Config: config,
 		SharedConfigFiles: sharedConfigFiles,
-		SharedConfigState: session.SharedConfigEnable,
+		SharedConfigState: sharedConfigState,
 	}
 
 	session, err := session.NewSessionWithOptions(opts)
