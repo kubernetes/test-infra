@@ -25,10 +25,10 @@ fi
 
 
 # used by cleanup_dind to ensure binfmt_misc entries are not persisted
-# TODO(bentheelder): consider moving *all* cleanup into a more robust program
+# TODO: consider moving *all* cleanup into a more robust program
 cleanup_binfmt_misc() {
     # make sure the vfs is mounted
-    # TODO(bentheelder): if this logic is moved out and made more general
+    # TODO: if this logic is moved out and made more general
     # we need to check that the host actually has binfmt_misc support first.
     if [ ! -f /proc/sys/fs/binfmt_misc/status ]; then
         mount binfmt_misc -t binfmt_misc /proc/sys/fs/binfmt_misc

@@ -60,12 +60,11 @@ func mapGitHubToSlack(github string) (string, error) {
 	// You can mostly easily find your user ID by visiting your Slack profile, clicking "...",
 	// and clicking "Copy user ID".
 	mapping := map[string]string{
-		"amwat":       "U9B1P2UGP",
-		"bentheelder": "U1P7T516X",
-		"cjwagner":    "U4QFZFMCM",
-		"fejta":       "U0E2KHQ13",
-		"katharine":   "UBTBNJ6GL",
-		"krzyzacy":    "U22Q65CTG",
+		"amwat":     "U9B1P2UGP",
+		"cjwagner":  "U4QFZFMCM",
+		"fejta":     "U0E2KHQ13",
+		"katharine": "UBTBNJ6GL",
+		"krzyzacy":  "U22Q65CTG",
 	}
 	id, ok := mapping[strings.ToLower(github)]
 	if !ok {

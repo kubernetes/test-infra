@@ -32,7 +32,7 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-// TODO(bentheelder): these tests are a bit lame.
+// TODO: these tests are a bit lame.
 // There has to be a better way to write tests like this.
 
 const (

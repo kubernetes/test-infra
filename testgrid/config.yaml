@@ -3641,37 +3641,37 @@ dashboards:
   - name: GCE, v1.13 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.13 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-13
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    # TODO: there's probably a more appropriate alias to alert this to
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.13 (dev)
     description: Runs conformance tests using kubetest against kubernetes release 1.13 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-13
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    # TODO: there's probably a more appropriate alias to alert this to
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.12 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.12 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-12
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    # TODO: there's probably a more appropriate alias to alert this to
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.12 (dev)
     description: Runs conformance tests using kubetest against kubernetes release 1.12 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-12
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    # TODO: there's probably a more appropriate alias to alert this to
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.11 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.11 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-11
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    # TODO: there's probably a more appropriate alias to alert this to
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.11 (dev)
     description: Runs conformance tests using kubetest against kubernetes release 1.11 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-11
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    # TODO: there's probably a more appropriate alias to alert this to
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
 
@@ -7246,18 +7246,12 @@ dashboards:
   - name: pull-kubernetes-bazel-build
     test_group_name: pull-kubernetes-bazel-build
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: pull-kubernetes-bazel-test
     test_group_name: pull-kubernetes-bazel-test
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: pull-kubernetes-e2e-gce
     test_group_name: pull-kubernetes-e2e-gce
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: pull-kubernetes-e2e-gce-100-performance
     test_group_name: pull-kubernetes-e2e-gce-100-performance
     base_options: width=10
@@ -7350,13 +7344,9 @@ dashboards:
   - name: bazel
     test_group_name: pull-test-infra-bazel
     base_options: width=10
-    alerts_options:
-      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: lint
     test_group_name: pull-test-infra-lint
     base_options: width=10
-    alerts_options:
-      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: bazel-canary
     test_group_name: pull-test-infra-bazel-canary
     base_options: width=10
