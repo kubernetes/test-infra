@@ -13,7 +13,7 @@ Prow's `tackle` utility walks you through deploying a new instance of prow in a 
 You need a few things:
 
 1. [`bazel`](https://bazel.build/) build tool installed and working
-1. The prow `tackle` utility. It is recommended to use it by running `bazel run //prow/cmd/takle` from `test-infra` directory, alternatively you can install it by running `go get -u k8s.io/test-infra/prow/cmd/tackle` (in that case you would also need go installed and working).
+1. The prow `tackle` utility. It is recommended to use it by running `bazel run //prow/cmd/tackle` from `test-infra` directory, alternatively you can install it by running `go get -u k8s.io/test-infra/prow/cmd/tackle` (in that case you would also need go installed and working).
 1. A [personal access token][1] for the GitHub bot user you want to act as prow. If you're setting up prow for personal repo (not organization) then bot user == you (your GitHub account).
 
    - Token must have `public_repo` and `repo:status` scopes (and repo for private repos), more details [here][8].
