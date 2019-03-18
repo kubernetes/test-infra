@@ -117,7 +117,7 @@ func (h *handler) handleReportMessage(interaction slackInteraction, rw http.Resp
 			State:          string(state),
 		},
 	}
-	if err := h.client.CallMethod("dialog.open", dialog); err != nil {
+	if err := h.client.CallMethod("dialog.open", dialog, nil); err != nil {
 		logError(rw, "Failed to call dialog.open: %v", err)
 		return
 	}
@@ -193,7 +193,7 @@ func (h *handler) handleReportSubmission(interaction slackInteraction, rw http.R
 			},
 		},
 	}
-	if err := h.client.CallMethod(h.client.Config.WebhookURL, report); err != nil {
+	if err := h.client.CallMethod(h.client.Config.WebhookURL, report, nil); err != nil {
 		logError(rw, "Failed to send report: %v.", err)
 		return
 	}
@@ -204,7 +204,7 @@ func (h *handler) handleReportSubmission(interaction slackInteraction, rw http.R
 		"replace_original": false,
 	}
 
-	if h.client.CallMethod(interaction.ResponseURL, response) != nil {
+	if h.client.CallMethod(interaction.ResponseURL, response, nil) != nil {
 		logError(rw, "Failed to send response: %v.", err)
 		return
 	}
