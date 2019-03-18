@@ -287,6 +287,15 @@ require_matching_label:
   prs: true
   regexp: ^(sig|wg|committee)/
   # Define needs-sig separately for issues so that we only comment on issues.
+- missing_label: needs-triage
+  org: kubernetes
+  repo: kubernetes
+  issues: true
+  regexp: ^(lifecycle)/(ready|active|frozen)$
+  missing_comment: |
+    This issue is currently awaiting triage.
+    
+    Once it has been triaged, please assign the relevant [`lifecycle/` label](https://git.k8s.io/test-infra/label_sync/labels.md) e.g., `lifecycle/ready`, `lifecycle/active`, `lifecycle/frozen`.
 - missing_label: needs-sig
   org: kubernetes
   repo: kubernetes
