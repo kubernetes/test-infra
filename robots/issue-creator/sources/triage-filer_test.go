@@ -314,12 +314,12 @@ func TestTFPrevCloseInWindow(t *testing.T) {
 	yesterday := time.Unix(latestBuildTime, 0).AddDate(0, 0, -1)
 	five := 5
 	// Only need to populate the Issue.ClosedAt and Issue.Number field of the MungeObject.
-	prevIssues := []*github.Issue{{ClosedAt: &yesterday, Number: &five}}
+	prevIssues := []*scallywag.Issue{{ClosedAt: &yesterday, Number: &five}}
 	if clust.Body(prevIssues) != "" {
 		t.Errorf("Cluster returned an issue body when there was a recently closed issue for the cluster.")
 	}
 
-	prevIssues = []*github.Issue{{ClosedAt: &lastWeek, Number: &five}}
+	prevIssues = []*scallywag.Issue{{ClosedAt: &lastWeek, Number: &five}}
 	if clust.Body(prevIssues) == "" {
 		t.Errorf("Cluster returned an empty issue body when it should have returned a valid body.")
 	}

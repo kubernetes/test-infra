@@ -25,8 +25,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/git/localgit"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 var initialFiles = map[string][]byte{
@@ -57,22 +57,22 @@ func Qux() error {
 
 type ghc struct {
 	genfile     []byte
-	pr          github.PullRequest
-	changes     []github.PullRequestChange
-	oldComments []github.ReviewComment
-	comment     github.DraftReview
+	pr          scallywag.PullRequest
+	changes     []scallywag.PullRequestChange
+	oldComments []scallywag.ReviewComment
+	comment     scallywag.DraftReview
 }
 
-func (g *ghc) GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error) {
+func (g *ghc) GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error) {
 	return g.changes, nil
 }
 
-func (g *ghc) CreateReview(org, repo string, number int, r github.DraftReview) error {
+func (g *ghc) CreateReview(org, repo string, number int, r scallywag.DraftReview) error {
 	g.comment = r
 	return nil
 }
 
-func (g *ghc) ListPullRequestComments(org, repo string, number int) ([]github.ReviewComment, error) {
+func (g *ghc) ListPullRequestComments(org, repo string, number int) ([]scallywag.ReviewComment, error) {
 	return g.oldComments, nil
 }
 
@@ -80,19 +80,19 @@ func (g *ghc) GetFile(org, repo, filepath, commit string) ([]byte, error) {
 	return g.genfile, nil
 }
 
-func (g *ghc) GetPullRequest(org, repo string, number int) (*github.PullRequest, error) {
+func (g *ghc) GetPullRequest(org, repo string, number int) (*scallywag.PullRequest, error) {
 	return &g.pr, nil
 }
 
-var e = &github.GenericCommentEvent{
-	Action:     github.GenericCommentActionCreated,
+var e = &scallywag.GenericCommentEvent{
+	Action:     scallywag.GenericCommentActionCreated,
 	IssueState: "open",
 	Body:       "/lint",
-	User:       github.User{Login: "cjwagner"},
+	User:       scallywag.User{Login: "cjwagner"},
 	Number:     42,
 	IsPR:       true,
-	Repo: github.Repo{
-		Owner:    github.User{Login: "foo"},
+	Repo: scallywag.Repo{
+		Owner:    scallywag.User{Login: "foo"},
 		Name:     "bar",
 		FullName: "foo/bar",
 	},
@@ -164,7 +164,7 @@ func TestLint(t *testing.T) {
 
 	gh := &ghc{
 		genfile: []byte("file-prefix zz_generated"),
-		changes: []github.PullRequestChange{
+		changes: []scallywag.PullRequestChange{
 			{
 				Filename: "qux.go",
 				Patch:    "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
@@ -183,7 +183,7 @@ func TestLint(t *testing.T) {
 	}
 	for _, c := range gh.comment.Comments {
 		pos := c.Position
-		gh.oldComments = append(gh.oldComments, github.ReviewComment{
+		gh.oldComments = append(gh.oldComments, scallywag.ReviewComment{
 			Path:     c.Path,
 			Position: &pos,
 			Body:     c.Body,
@@ -201,7 +201,7 @@ func TestLint(t *testing.T) {
 	for i := 0; i < maxComments+5; i++ {
 		badFileLines = append(badFileLines, fmt.Sprintf("type PublicType%d int", i))
 	}
-	gh.changes = append(gh.changes, github.PullRequestChange{
+	gh.changes = append(gh.changes, scallywag.PullRequestChange{
 		Filename: "baz.go",
 		Patch:    fmt.Sprintf("@@ -0,0 +1,%d @@\n+%s", len(badFileLines), strings.Join(badFileLines, "\n+")),
 	})
@@ -399,7 +399,7 @@ func TestLintCodeSuggestion(t *testing.T) {
 			t.Fatalf("Adding PR commit: %v", err)
 		}
 		gh := &ghc{
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename: "qux.go",
 					Patch:    test.codeChange,
@@ -430,7 +430,7 @@ func TestLintError(t *testing.T) {
 		name       string
 		codeChange string
 		pullFiles  map[string][]byte
-		comments   []github.DraftReviewComment
+		comments   []scallywag.DraftReviewComment
 	}{
 		{
 			name: "Golint error",
@@ -463,7 +463,7 @@ func TestLintError(t *testing.T) {
 					"return nil\n" +
 					"}\n"),
 			},
-			comments: []github.DraftReviewComment{
+			comments: []scallywag.DraftReviewComment{
 				{
 					Body:     "expected declaration, found 'for'",
 					Position: 11,
@@ -543,7 +543,7 @@ func TestLintError(t *testing.T) {
 			t.Fatalf("Adding PR commit: %v", err)
 		}
 		gh := &ghc{
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename: "qux.go",
 					Patch:    test.codeChange,
@@ -676,7 +676,7 @@ func TestModifiedGoFiles(t *testing.T) {
 		{
 			name: "modified files include vendor file",
 			gh: &ghc{
-				changes: []github.PullRequestChange{
+				changes: []scallywag.PullRequestChange{
 					{
 						Filename: "qux.go",
 						Patch:    "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
@@ -694,7 +694,7 @@ func TestModifiedGoFiles(t *testing.T) {
 		{
 			name: "modified files include non go file",
 			gh: &ghc{
-				changes: []github.PullRequestChange{
+				changes: []scallywag.PullRequestChange{
 					{
 						Filename: "qux.go",
 						Patch:    "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
@@ -713,7 +713,7 @@ func TestModifiedGoFiles(t *testing.T) {
 			name: "modified files include generated file",
 			gh: &ghc{
 				genfile: []byte("file-prefix zz_generated"),
-				changes: []github.PullRequestChange{
+				changes: []scallywag.PullRequestChange{
 					{
 						Filename: "qux.go",
 						Patch:    "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
@@ -731,14 +731,14 @@ func TestModifiedGoFiles(t *testing.T) {
 		{
 			name: "modified files include removed file",
 			gh: &ghc{
-				changes: []github.PullRequestChange{
+				changes: []scallywag.PullRequestChange{
 					{
 						Filename: "qux.go",
 						Patch:    "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
 					},
 					{
 						Filename: "bar.go",
-						Status:   github.PullRequestFileRemoved,
+						Status:   scallywag.PullRequestFileRemoved,
 						Patch:    "@@ -1,5 +0,0 @@\n-package bar\n-\n-func Qux() error {\n-   return nil\n-}",
 					},
 				},
@@ -750,14 +750,14 @@ func TestModifiedGoFiles(t *testing.T) {
 		{
 			name: "modified files include renamed file",
 			gh: &ghc{
-				changes: []github.PullRequestChange{
+				changes: []scallywag.PullRequestChange{
 					{
 						Filename: "qux.go",
 						Patch:    "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
 					},
 					{
 						Filename: "bar.go",
-						Status:   github.PullRequestFileRenamed,
+						Status:   scallywag.PullRequestFileRenamed,
 					},
 				},
 			},
@@ -768,10 +768,10 @@ func TestModifiedGoFiles(t *testing.T) {
 		{
 			name: "added and modified files",
 			gh: &ghc{
-				changes: []github.PullRequestChange{
+				changes: []scallywag.PullRequestChange{
 					{
 						Filename: "qux.go",
-						Status:   github.PullRequestFileAdded,
+						Status:   scallywag.PullRequestFileAdded,
 						Patch:    "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
 					},
 					{
@@ -788,15 +788,15 @@ func TestModifiedGoFiles(t *testing.T) {
 		{
 			name: "removed and renamed files",
 			gh: &ghc{
-				changes: []github.PullRequestChange{
+				changes: []scallywag.PullRequestChange{
 					{
 						Filename: "qux.go",
-						Status:   github.PullRequestFileRemoved,
+						Status:   scallywag.PullRequestFileRemoved,
 						Patch:    "@@ -1,5 +0,0 @@\n-package bar\n-\n-func Qux() error {\n-   return nil\n-}",
 					},
 					{
 						Filename: "bar.go",
-						Status:   github.PullRequestFileRenamed,
+						Status:   scallywag.PullRequestFileRenamed,
 					},
 				},
 			},

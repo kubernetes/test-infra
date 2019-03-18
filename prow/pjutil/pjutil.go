@@ -30,10 +30,10 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gcsupload"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 // NewProwJobWithAnnotation initializes a ProwJob out of a ProwJobSpec with annotations.
@@ -67,7 +67,7 @@ func newProwJob(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[stri
 	}
 }
 
-func createRefs(pr github.PullRequest, baseSHA string) prowapi.Refs {
+func createRefs(pr scallywag.PullRequest, baseSHA string) prowapi.Refs {
 	org := pr.Base.Repo.Owner.Login
 	repo := pr.Base.Repo.Name
 	repoLink := pr.Base.Repo.HTMLURL
@@ -94,14 +94,14 @@ func createRefs(pr github.PullRequest, baseSHA string) prowapi.Refs {
 
 // NewPresubmit converts a config.Presubmit into a prowapi.ProwJob.
 // The prowapi.Refs are configured correctly per the pr, baseSHA.
-// The eventGUID becomes a github.EventGUID label.
-func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, eventGUID string) prowapi.ProwJob {
+// The eventGUID becomes a scallywag.EventGUID label.
+func NewPresubmit(pr scallywag.PullRequest, baseSHA string, job config.Presubmit, eventGUID string) prowapi.ProwJob {
 	refs := createRefs(pr, baseSHA)
 	labels := make(map[string]string)
 	for k, v := range job.Labels {
 		labels[k] = v
 	}
-	labels[github.EventGUID] = eventGUID
+	labels[scallywag.EventGUID] = eventGUID
 	return NewProwJob(PresubmitSpec(job, refs), labels)
 }
 
@@ -244,13 +244,13 @@ func ProwJobFields(pj *prowapi.ProwJob) logrus.Fields {
 	fields["name"] = pj.ObjectMeta.Name
 	fields["job"] = pj.Spec.Job
 	fields["type"] = pj.Spec.Type
-	if len(pj.ObjectMeta.Labels[github.EventGUID]) > 0 {
-		fields[github.EventGUID] = pj.ObjectMeta.Labels[github.EventGUID]
+	if len(pj.ObjectMeta.Labels[scallywag.EventGUID]) > 0 {
+		fields[scallywag.EventGUID] = pj.ObjectMeta.Labels[scallywag.EventGUID]
 	}
 	if pj.Spec.Refs != nil && len(pj.Spec.Refs.Pulls) == 1 {
-		fields[github.PrLogField] = pj.Spec.Refs.Pulls[0].Number
-		fields[github.RepoLogField] = pj.Spec.Refs.Repo
-		fields[github.OrgLogField] = pj.Spec.Refs.Org
+		fields[scallywag.PrLogField] = pj.Spec.Refs.Pulls[0].Number
+		fields[scallywag.RepoLogField] = pj.Spec.Refs.Repo
+		fields[scallywag.OrgLogField] = pj.Spec.Refs.Org
 	}
 	if pj.Spec.JenkinsSpec != nil {
 		fields["github_based_job"] = pj.Spec.JenkinsSpec.GitHubBranchSourceJob

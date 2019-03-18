@@ -32,6 +32,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -43,7 +44,7 @@ const (
 
 type githubClient interface {
 	Query(context.Context, interface{}, map[string]interface{}) error
-	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
+	GetCombinedStatus(org, repo, ref string) (*scallywag.CombinedStatus, error)
 }
 
 // PullRequestQueryHandler defines an interface that query handlers should implement.
@@ -197,13 +198,13 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 		// chance to validate whether the access token is consumable or not. If
 		// not, we invalidate the sessions and continue as if not logged in.
 		token, ok := session.Values[tokenKey].(*oauth2.Token)
-		var user *github.User
+		var user *scallywag.User
 		var botName string
 		if ok && token.Valid() {
 			githubClient := github.NewClient(func() []byte { return []byte(token.AccessToken) }, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
 			var err error
 			botName, err = githubClient.BotName()
-			user = &github.User{Login: botName}
+			user = &scallywag.User{Login: botName}
 			if err != nil {
 				if strings.Contains(err.Error(), "401") {
 					da.log.Info("Failed to access GitHub with existing access token, invalidating GitHub login session")

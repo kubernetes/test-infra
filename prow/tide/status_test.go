@@ -26,7 +26,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func TestExpectedStatus(t *testing.T) {
@@ -51,7 +51,7 @@ func TestExpectedStatus(t *testing.T) {
 			name:   "in pool",
 			inPool: true,
 
-			state: github.StatusSuccess,
+			state: scallywag.StatusSuccess,
 			desc:  statusInPool,
 		},
 		{
@@ -59,7 +59,7 @@ func TestExpectedStatus(t *testing.T) {
 			milestone: "v1.0",
 			inPool:    false,
 
-			state: github.StatusPending,
+			state: scallywag.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1, need-2 labels."),
 		},
 		{
@@ -68,7 +68,7 @@ func TestExpectedStatus(t *testing.T) {
 			milestone: "v1.0",
 			inPool:    false,
 
-			state: github.StatusPending,
+			state: scallywag.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-a-very-super-duper-extra-not-short-at-all-label-name label."),
 		},
 		{
@@ -77,7 +77,7 @@ func TestExpectedStatus(t *testing.T) {
 			milestone: "v1.0",
 			inPool:    false,
 
-			state: github.StatusPending,
+			state: scallywag.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Should not have forbidden-1, forbidden-2 labels."),
 		},
 		{
@@ -86,7 +86,7 @@ func TestExpectedStatus(t *testing.T) {
 			milestone: "v1.0",
 			inPool:    false,
 
-			state: github.StatusPending,
+			state: scallywag.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Should not have forbidden-1 label."),
 		},
 		{
@@ -95,7 +95,7 @@ func TestExpectedStatus(t *testing.T) {
 			milestone: "v1.0",
 			inPool:    false,
 
-			state: github.StatusPending,
+			state: scallywag.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1 label."),
 		},
 		{
@@ -106,7 +106,7 @@ func TestExpectedStatus(t *testing.T) {
 			labels:          neededLabels,
 			inPool:          false,
 
-			state: github.StatusPending,
+			state: scallywag.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Merging to branch bad is forbidden."),
 		},
 		{
@@ -117,7 +117,7 @@ func TestExpectedStatus(t *testing.T) {
 			labels:          neededLabels,
 			inPool:          false,
 
-			state: github.StatusPending,
+			state: scallywag.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Merging to branch bad is forbidden."),
 		},
 		{
@@ -128,7 +128,7 @@ func TestExpectedStatus(t *testing.T) {
 			labels:          neededLabels,
 			inPool:          false,
 
-			state: github.StatusPending,
+			state: scallywag.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs 1, 2, 3, 4, 5, 6, 7 labels."),
 		},
 		{
@@ -138,7 +138,7 @@ func TestExpectedStatus(t *testing.T) {
 			contexts:  []Context{{Context: githubql.String(statusContext), State: githubql.StatusStateError}},
 			inPool:    false,
 
-			state: github.StatusPending,
+			state: scallywag.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, ""),
 		},
 		{
@@ -148,7 +148,7 @@ func TestExpectedStatus(t *testing.T) {
 			milestone: "v1.0",
 			inPool:    false,
 
-			state: github.StatusPending,
+			state: scallywag.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Job job-name has not succeeded."),
 		},
 		{
@@ -161,7 +161,7 @@ func TestExpectedStatus(t *testing.T) {
 			},
 			inPool: false,
 
-			state: github.StatusPending,
+			state: scallywag.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Jobs job-name, other-job-name have not succeeded."),
 		},
 		{
@@ -171,7 +171,7 @@ func TestExpectedStatus(t *testing.T) {
 			contexts:  []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateSuccess}},
 			inPool:    false,
 
-			state: github.StatusPending,
+			state: scallywag.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Must be in milestone v1.0."),
 		},
 		{
@@ -181,7 +181,7 @@ func TestExpectedStatus(t *testing.T) {
 			contexts:  []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateSuccess}},
 			inPool:    false,
 
-			state: github.StatusPending,
+			state: scallywag.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, ""),
 		},
 		{
@@ -190,7 +190,7 @@ func TestExpectedStatus(t *testing.T) {
 			milestone: "v1.0",
 			inPool:    false,
 
-			state: github.StatusPending,
+			state: scallywag.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs 1, 2 labels."),
 		},
 	}

@@ -28,7 +28,7 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -42,7 +42,7 @@ const (
 
 type fakeClient struct {
 	comments   []string
-	statuses   map[string]github.Status
+	statuses   map[string]scallywag.Status
 	presubmits map[string]config.Presubmit
 	jobs       sets.String
 }
@@ -62,7 +62,7 @@ func (c *fakeClient) CreateComment(org, repo string, number int, comment string)
 	return nil
 }
 
-func (c *fakeClient) CreateStatus(org, repo, ref string, s github.Status) error {
+func (c *fakeClient) CreateStatus(org, repo, ref string, s scallywag.Status) error {
 	switch {
 	case s.Context == "fail-create":
 		return errors.New("injected CreateStatus failure")
@@ -77,7 +77,7 @@ func (c *fakeClient) CreateStatus(org, repo, ref string, s github.Status) error 
 	return nil
 }
 
-func (c *fakeClient) GetPullRequest(org, repo string, number int) (*github.PullRequest, error) {
+func (c *fakeClient) GetPullRequest(org, repo string, number int) (*scallywag.PullRequest, error) {
 	switch {
 	case number < 0:
 		return nil, errors.New("injected GetPullRequest failure")
@@ -88,12 +88,12 @@ func (c *fakeClient) GetPullRequest(org, repo string, number int) (*github.PullR
 	case number != fakePR:
 		return nil, fmt.Errorf("bad number: %d", number)
 	}
-	var pr github.PullRequest
+	var pr scallywag.PullRequest
 	pr.Head.SHA = fakeSHA
 	return &pr, nil
 }
 
-func (c *fakeClient) ListStatuses(org, repo, ref string) ([]github.Status, error) {
+func (c *fakeClient) ListStatuses(org, repo, ref string) ([]scallywag.Status, error) {
 	switch {
 	case org != fakeOrg:
 		return nil, fmt.Errorf("bad org: %s", org)
@@ -102,7 +102,7 @@ func (c *fakeClient) ListStatuses(org, repo, ref string) ([]github.Status, error
 	case ref != fakeSHA:
 		return nil, fmt.Errorf("bad ref: %s", ref)
 	}
-	var out []github.Status
+	var out []scallywag.Status
 	for _, s := range c.statuses {
 		if s.Context == "fail-list" {
 			return nil, errors.New("injected ListStatuses failure")
@@ -118,7 +118,7 @@ func (c *fakeClient) HasPermission(org, repo, user string, roles ...string) (boo
 		return false, fmt.Errorf("bad org: %s", org)
 	case repo != fakeRepo:
 		return false, fmt.Errorf("bad repo: %s", repo)
-	case roles[0] != github.RoleAdmin:
+	case roles[0] != scallywag.RoleAdmin:
 		return false, fmt.Errorf("bad roles: %s", roles)
 	case user == "fail":
 		return true, errors.New("injected HasPermission error")
@@ -186,15 +186,15 @@ func TestAuthorized(t *testing.T) {
 func TestHandle(t *testing.T) {
 	cases := []struct {
 		name          string
-		action        github.GenericCommentEventAction
+		action        scallywag.GenericCommentEventAction
 		issue         bool
 		state         string
 		comment       string
-		contexts      map[string]github.Status
+		contexts      map[string]scallywag.Status
 		presubmits    map[string]config.Presubmit
 		user          string
 		number        int
-		expected      map[string]github.Status
+		expected      map[string]scallywag.Status
 		jobs          sets.String
 		checkComments []string
 		err           bool
@@ -202,17 +202,17 @@ func TestHandle(t *testing.T) {
 		{
 			name:    "successfully override failure",
 			comment: "/override broken-test",
-			contexts: map[string]github.Status{
+			contexts: map[string]scallywag.Status{
 				"broken-test": {
 					Context: "broken-test",
-					State:   github.StatusFailure,
+					State:   scallywag.StatusFailure,
 				},
 			},
-			expected: map[string]github.Status{
+			expected: map[string]scallywag.Status{
 				"broken-test": {
 					Context:     "broken-test",
 					Description: description(adminUser),
-					State:       github.StatusSuccess,
+					State:       scallywag.StatusSuccess,
 				},
 			},
 			checkComments: []string{"on behalf of " + adminUser},
@@ -220,33 +220,33 @@ func TestHandle(t *testing.T) {
 		{
 			name:    "successfully override pending",
 			comment: "/override hung-test",
-			contexts: map[string]github.Status{
+			contexts: map[string]scallywag.Status{
 				"hung-test": {
 					Context: "hung-test",
-					State:   github.StatusPending,
+					State:   scallywag.StatusPending,
 				},
 			},
-			expected: map[string]github.Status{
+			expected: map[string]scallywag.Status{
 				"hung-test": {
 					Context:     "hung-test",
 					Description: description(adminUser),
-					State:       github.StatusSuccess,
+					State:       scallywag.StatusSuccess,
 				},
 			},
 		},
 		{
 			name:    "comment for incorrect context",
 			comment: "/override whatever-you-want",
-			contexts: map[string]github.Status{
+			contexts: map[string]scallywag.Status{
 				"hung-test": {
 					Context: "hung-test",
-					State:   github.StatusPending,
+					State:   scallywag.StatusPending,
 				},
 			},
-			expected: map[string]github.Status{
+			expected: map[string]scallywag.Status{
 				"hung-test": {
 					Context: "hung-test",
-					State:   github.StatusPending,
+					State:   scallywag.StatusPending,
 				},
 			},
 			checkComments: []string{
@@ -257,62 +257,62 @@ func TestHandle(t *testing.T) {
 		{
 			name:    "refuse override from non-admin",
 			comment: "/override broken-test",
-			contexts: map[string]github.Status{
+			contexts: map[string]scallywag.Status{
 				"broken-test": {
 					Context: "broken-test",
-					State:   github.StatusPending,
+					State:   scallywag.StatusPending,
 				},
 			},
 			user:          "rando",
 			checkComments: []string{"unauthorized"},
-			expected: map[string]github.Status{
+			expected: map[string]scallywag.Status{
 				"broken-test": {
 					Context: "broken-test",
-					State:   github.StatusPending,
+					State:   scallywag.StatusPending,
 				},
 			},
 		},
 		{
 			name:    "comment for override with no target",
 			comment: "/override",
-			contexts: map[string]github.Status{
+			contexts: map[string]scallywag.Status{
 				"broken-test": {
 					Context: "broken-test",
-					State:   github.StatusPending,
+					State:   scallywag.StatusPending,
 				},
 			},
 			user:          "rando",
 			checkComments: []string{"but none was given"},
-			expected: map[string]github.Status{
+			expected: map[string]scallywag.Status{
 				"broken-test": {
 					Context: "broken-test",
-					State:   github.StatusPending,
+					State:   scallywag.StatusPending,
 				},
 			},
 		},
 		{
 			name:    "override multiple",
 			comment: "/override broken-test\n/override hung-test",
-			contexts: map[string]github.Status{
+			contexts: map[string]scallywag.Status{
 				"broken-test": {
 					Context: "broken-test",
-					State:   github.StatusFailure,
+					State:   scallywag.StatusFailure,
 				},
 				"hung-test": {
 					Context: "hung-test",
-					State:   github.StatusPending,
+					State:   scallywag.StatusPending,
 				},
 			},
-			expected: map[string]github.Status{
+			expected: map[string]scallywag.Status{
 				"hung-test": {
 					Context:     "hung-test",
 					Description: description(adminUser),
-					State:       github.StatusSuccess,
+					State:       scallywag.StatusSuccess,
 				},
 				"broken-test": {
 					Context:     "broken-test",
 					Description: description(adminUser),
-					State:       github.StatusSuccess,
+					State:       scallywag.StatusSuccess,
 				},
 			},
 			checkComments: []string{fmt.Sprintf("%s: broken-test, hung-test", adminUser)},
@@ -321,16 +321,16 @@ func TestHandle(t *testing.T) {
 			name:    "ignore non-PRs",
 			issue:   true,
 			comment: "/override broken-test",
-			contexts: map[string]github.Status{
+			contexts: map[string]scallywag.Status{
 				"broken-test": {
 					Context: "broken-test",
-					State:   github.StatusPending,
+					State:   scallywag.StatusPending,
 				},
 			},
-			expected: map[string]github.Status{
+			expected: map[string]scallywag.Status{
 				"broken-test": {
 					Context: "broken-test",
-					State:   github.StatusPending,
+					State:   scallywag.StatusPending,
 				},
 			},
 		},
@@ -338,49 +338,49 @@ func TestHandle(t *testing.T) {
 			name:    "ignore closed issues",
 			state:   "closed",
 			comment: "/override broken-test",
-			contexts: map[string]github.Status{
+			contexts: map[string]scallywag.Status{
 				"broken-test": {
 					Context: "broken-test",
-					State:   github.StatusPending,
+					State:   scallywag.StatusPending,
 				},
 			},
-			expected: map[string]github.Status{
+			expected: map[string]scallywag.Status{
 				"broken-test": {
 					Context: "broken-test",
-					State:   github.StatusPending,
+					State:   scallywag.StatusPending,
 				},
 			},
 		},
 		{
 			name:    "ignore edits",
-			action:  github.GenericCommentActionEdited,
+			action:  scallywag.GenericCommentActionEdited,
 			comment: "/override broken-test",
-			contexts: map[string]github.Status{
+			contexts: map[string]scallywag.Status{
 				"broken-test": {
 					Context: "broken-test",
-					State:   github.StatusPending,
+					State:   scallywag.StatusPending,
 				},
 			},
-			expected: map[string]github.Status{
+			expected: map[string]scallywag.Status{
 				"broken-test": {
 					Context: "broken-test",
-					State:   github.StatusPending,
+					State:   scallywag.StatusPending,
 				},
 			},
 		},
 		{
 			name:    "ignore random text",
 			comment: "/test broken-test",
-			contexts: map[string]github.Status{
+			contexts: map[string]scallywag.Status{
 				"broken-test": {
 					Context: "broken-test",
-					State:   github.StatusPending,
+					State:   scallywag.StatusPending,
 				},
 			},
-			expected: map[string]github.Status{
+			expected: map[string]scallywag.Status{
 				"broken-test": {
 					Context: "broken-test",
-					State:   github.StatusPending,
+					State:   scallywag.StatusPending,
 				},
 			},
 		},
@@ -388,17 +388,17 @@ func TestHandle(t *testing.T) {
 			name:    "comment on get pr failure",
 			number:  fakePR * 2,
 			comment: "/override broken-test",
-			contexts: map[string]github.Status{
+			contexts: map[string]scallywag.Status{
 				"broken-test": {
 					Context: "broken-test",
-					State:   github.StatusFailure,
+					State:   scallywag.StatusFailure,
 				},
 			},
-			expected: map[string]github.Status{
+			expected: map[string]scallywag.Status{
 				"broken-test": {
 					Context:     "broken-test",
 					Description: description(adminUser),
-					State:       github.StatusSuccess,
+					State:       scallywag.StatusSuccess,
 				},
 			},
 			checkComments: []string{"Cannot get PR"},
@@ -406,16 +406,16 @@ func TestHandle(t *testing.T) {
 		{
 			name:    "comment on list statuses failure",
 			comment: "/override fail-list",
-			contexts: map[string]github.Status{
+			contexts: map[string]scallywag.Status{
 				"fail-list": {
 					Context: "fail-list",
-					State:   github.StatusFailure,
+					State:   scallywag.StatusFailure,
 				},
 			},
-			expected: map[string]github.Status{
+			expected: map[string]scallywag.Status{
 				"fail-list": {
 					Context: "fail-list",
-					State:   github.StatusFailure,
+					State:   scallywag.StatusFailure,
 				},
 			},
 			checkComments: []string{"Cannot get commit statuses"},
@@ -423,17 +423,17 @@ func TestHandle(t *testing.T) {
 		{
 			name:    "do not override passing contexts",
 			comment: "/override passing-test",
-			contexts: map[string]github.Status{
+			contexts: map[string]scallywag.Status{
 				"passing-test": {
 					Context:     "passing-test",
 					Description: "preserve description",
-					State:       github.StatusSuccess,
+					State:       scallywag.StatusSuccess,
 				},
 			},
-			expected: map[string]github.Status{
+			expected: map[string]scallywag.Status{
 				"passing-test": {
 					Context:     "passing-test",
-					State:       github.StatusSuccess,
+					State:       scallywag.StatusSuccess,
 					Description: "preserve description",
 				},
 			},
@@ -441,11 +441,11 @@ func TestHandle(t *testing.T) {
 		{
 			name:    "create successful prow job",
 			comment: "/override prow-job",
-			contexts: map[string]github.Status{
+			contexts: map[string]scallywag.Status{
 				"prow-job": {
 					Context:     "prow-job",
 					Description: "failed",
-					State:       github.StatusFailure,
+					State:       scallywag.StatusFailure,
 				},
 			},
 			presubmits: map[string]config.Presubmit{
@@ -456,10 +456,10 @@ func TestHandle(t *testing.T) {
 				},
 			},
 			jobs: sets.NewString("prow-job"),
-			expected: map[string]github.Status{
+			expected: map[string]scallywag.Status{
 				"prow-job": {
 					Context:     "prow-job",
-					State:       github.StatusSuccess,
+					State:       scallywag.StatusSuccess,
 					Description: description(adminUser),
 				},
 			},
@@ -467,18 +467,18 @@ func TestHandle(t *testing.T) {
 		{
 			name:    "override with explanation works",
 			comment: "/override job\r\nobnoxious flake", // github ends lines with \r\n
-			contexts: map[string]github.Status{
+			contexts: map[string]scallywag.Status{
 				"job": {
 					Context:     "job",
 					Description: "failed",
-					State:       github.StatusFailure,
+					State:       scallywag.StatusFailure,
 				},
 			},
-			expected: map[string]github.Status{
+			expected: map[string]scallywag.Status{
 				"job": {
 					Context:     "job",
 					Description: description(adminUser),
-					State:       github.StatusSuccess,
+					State:       scallywag.StatusSuccess,
 				},
 			},
 		},
@@ -487,7 +487,7 @@ func TestHandle(t *testing.T) {
 	log := logrus.WithField("plugin", pluginName)
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			var event github.GenericCommentEvent
+			var event scallywag.GenericCommentEvent
 			event.Repo.Owner.Login = fakeOrg
 			event.Repo.Name = fakeRepo
 			event.Body = tc.comment
@@ -502,11 +502,11 @@ func TestHandle(t *testing.T) {
 			}
 			event.IssueState = tc.state
 			if tc.action == "" {
-				tc.action = github.GenericCommentActionCreated
+				tc.action = scallywag.GenericCommentActionCreated
 			}
 			event.Action = tc.action
 			if tc.contexts == nil {
-				tc.contexts = map[string]github.Status{}
+				tc.contexts = map[string]scallywag.Status{}
 			}
 			fc := fakeClient{
 				statuses:   tc.contexts,

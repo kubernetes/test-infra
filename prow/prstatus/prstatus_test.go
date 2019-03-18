@@ -34,6 +34,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type MockQueryHandler struct {
@@ -49,22 +50,22 @@ func (mh *MockQueryHandler) GetHeadContexts(ghc githubClient, pr PullRequest) ([
 	return mh.contextMap[int(pr.Number)], nil
 }
 
-func (mh *MockQueryHandler) BotName(*github.Client) (*github.User, error) {
+func (mh *MockQueryHandler) BotName(*github.Client) (*scallywag.User, error) {
 	login := "random_user"
-	return &github.User{
+	return &scallywag.User{
 		Login: login,
 	}, nil
 }
 
 type fgc struct {
-	combinedStatus *github.CombinedStatus
+	combinedStatus *scallywag.CombinedStatus
 }
 
 func (c *fgc) Query(context.Context, interface{}, map[string]interface{}) error {
 	return nil
 }
 
-func (c *fgc) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error) {
+func (c *fgc) GetCombinedStatus(org, repo, ref string) (*scallywag.CombinedStatus, error) {
 	return c.combinedStatus, nil
 }
 
@@ -312,18 +313,18 @@ func TestGetHeadContexts(t *testing.T) {
 	}
 	mockAgent := createMockAgent(repos, mockConfig)
 	testCases := []struct {
-		combinedStatus   *github.CombinedStatus
+		combinedStatus   *scallywag.CombinedStatus
 		pr               PullRequest
 		expectedContexts []Context
 	}{
 		{
-			combinedStatus:   &github.CombinedStatus{},
+			combinedStatus:   &scallywag.CombinedStatus{},
 			pr:               PullRequest{},
 			expectedContexts: []Context{},
 		},
 		{
-			combinedStatus: &github.CombinedStatus{
-				Statuses: []github.Status{
+			combinedStatus: &scallywag.CombinedStatus{
+				Statuses: []scallywag.Status{
 					{
 						State:       "FAILURE",
 						Description: "job failed",

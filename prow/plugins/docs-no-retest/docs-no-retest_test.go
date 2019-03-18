@@ -21,13 +21,13 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type ghc struct {
 	*testing.T
 	labels    sets.String
-	prChanges []github.PullRequestChange
+	prChanges []scallywag.PullRequestChange
 
 	addLabelErr, removeLabelErr, getIssueLabelsErr, getPullRequestChangesErr error
 }
@@ -46,17 +46,17 @@ func (c *ghc) RemoveLabel(_, _ string, _ int, targetLabel string) error {
 	return c.removeLabelErr
 }
 
-func (c *ghc) GetIssueLabels(_, _ string, _ int) (ls []github.Label, err error) {
+func (c *ghc) GetIssueLabels(_, _ string, _ int) (ls []scallywag.Label, err error) {
 	c.T.Log("GetIssueLabels")
 	for label := range c.labels {
-		ls = append(ls, github.Label{Name: label})
+		ls = append(ls, scallywag.Label{Name: label})
 	}
 
 	err = c.getIssueLabelsErr
 	return
 }
 
-func (c *ghc) GetPullRequestChanges(_, _ string, _ int) ([]github.PullRequestChange, error) {
+func (c *ghc) GetPullRequestChanges(_, _ string, _ int) ([]scallywag.PullRequestChange, error) {
 	c.T.Log("GetPullRequestChanges")
 	return c.prChanges, c.getPullRequestChangesErr
 }
@@ -69,10 +69,10 @@ func TestHandlePR(t *testing.T) {
 	cases := []struct {
 		name             string
 		labels           sets.String
-		prChanges        []github.PullRequestChange
+		prChanges        []scallywag.PullRequestChange
 		err              error
 		shouldSkipRetest bool
-		action           github.PullRequestEventAction
+		action           scallywag.PullRequestEventAction
 		addLabelErr, removeLabelErr, getIssueLabelsErr,
 		getPullRequestChangesErr error
 	}{
@@ -80,84 +80,84 @@ func TestHandlePR(t *testing.T) {
 		{
 			name:   "change md, no label, needs label",
 			labels: sets.NewString(),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/README.md",
 				},
 			},
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: true,
 		},
 		{
 			name:   "change svg, no label, needs label",
 			labels: sets.NewString(),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/graph.svg",
 				},
 			},
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: true,
 		},
 		{
 			name:   "change OWNERS, no label, needs label",
 			labels: sets.NewString(),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/OWNERS",
 				},
 			},
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: true,
 		},
 		{
 			name:   "change LICENSE, no label, needs label",
 			labels: sets.NewString(),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/LICENSE",
 				},
 			},
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: true,
 		},
 		{
 			name:   "change SECURITY_CONTACTS, no label, needs label",
 			labels: sets.NewString(),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/SECURITY_CONTACTS",
 				},
 			},
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: true,
 		},
 		{
 			name:   "change OWNERS_ALIASES, no label, needs label",
 			labels: sets.NewString(),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/OWNERS_ALIASES",
 				},
 			},
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: true,
 		},
 		{
 			name:   "change non doc, no label, needs no label",
 			labels: sets.NewString(),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/foo.go",
 				},
 			},
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: false,
 		},
 		{
 			name:   "change mix, no label, needs label",
 			labels: sets.NewString(),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/foo.go",
 				},
@@ -165,91 +165,91 @@ func TestHandlePR(t *testing.T) {
 					Filename: "/path/to/file/foo.md",
 				},
 			},
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: false,
 		},
 		// initially has label
 		{
 			name:   "change md, has label, needs label",
 			labels: sets.NewString(labelSkipRetest),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/README.md",
 				},
 			},
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: true,
 		},
 		{
 			name:   "change svg, has label, needs label",
 			labels: sets.NewString(labelSkipRetest),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/graph.svg",
 				},
 			},
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: true,
 		},
 		{
 			name:   "change OWNERS, has label, needs label",
 			labels: sets.NewString(labelSkipRetest),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/OWNERS",
 				},
 			},
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: true,
 		},
 		{
 			name:   "change LICENSE, has label, needs label",
 			labels: sets.NewString(labelSkipRetest),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/LICENSE",
 				},
 			},
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: true,
 		},
 		{
 			name:   "change SECURITY_CONTACTS, has label, needs label",
 			labels: sets.NewString(labelSkipRetest),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/SECURITY_CONTACTS",
 				},
 			},
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: true,
 		},
 		{
 			name:   "change OWNERS_ALIASES, has label, needs label",
 			labels: sets.NewString(labelSkipRetest),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/OWNERS_ALIASES",
 				},
 			},
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: true,
 		},
 		{
 			name:   "change non doc, has label, needs no label",
 			labels: sets.NewString(labelSkipRetest),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/foo.go",
 				},
 			},
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: false,
 		},
 		{
 			name:   "change mix, has label, needs label",
 			labels: sets.NewString(labelSkipRetest),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/foo.go",
 				},
@@ -257,105 +257,105 @@ func TestHandlePR(t *testing.T) {
 					Filename: "/path/to/file/foo.md",
 				},
 			},
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: false,
 		},
 		// check action
 		{
 			name:   "action opened",
 			labels: sets.NewString(),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/foo.md",
 				},
 			},
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: true,
 		},
 		{
 			name:   "action reopened",
 			labels: sets.NewString(),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/foo.md",
 				},
 			},
-			action:           github.PullRequestActionReopened,
+			action:           scallywag.PullRequestActionReopened,
 			shouldSkipRetest: true,
 		},
 		{
 			name:   "action synchronize",
 			labels: sets.NewString(),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/foo.md",
 				},
 			},
-			action:           github.PullRequestActionSynchronize,
+			action:           scallywag.PullRequestActionSynchronize,
 			shouldSkipRetest: true,
 		},
 		{
 			name:   "action closed",
 			labels: sets.NewString(),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/foo.md",
 				},
 			},
-			action:           github.PullRequestActionClosed,
+			action:           scallywag.PullRequestActionClosed,
 			shouldSkipRetest: false, // since it is closed, should not change
 		},
 		// error handling
 		{
 			name:   "error getting pull request changes",
 			labels: sets.NewString(),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/foo.go",
 				},
 			},
 			getPullRequestChangesErr: testError,
 			err:                      testError,
-			action:                   github.PullRequestActionOpened,
+			action:                   scallywag.PullRequestActionOpened,
 			shouldSkipRetest:         false,
 		},
 		{
 			name:   "error getting labels",
 			labels: sets.NewString(),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/foo.go",
 				},
 			},
 			getIssueLabelsErr: testError,
 			err:               testError,
-			action:            github.PullRequestActionOpened,
+			action:            scallywag.PullRequestActionOpened,
 			shouldSkipRetest:  false,
 		},
 		{
 			name:   "error adding label",
 			labels: sets.NewString(),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/foo.md",
 				},
 			},
 			addLabelErr:      testError,
 			err:              testError,
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: true,
 		},
 		{
 			name:   "error removing label",
 			labels: sets.NewString(labelSkipRetest),
-			prChanges: []github.PullRequestChange{
+			prChanges: []scallywag.PullRequestChange{
 				{
 					Filename: "/path/to/file/foo.go",
 				},
 			},
 			removeLabelErr:   testError,
 			err:              testError,
-			action:           github.PullRequestActionOpened,
+			action:           scallywag.PullRequestActionOpened,
 			shouldSkipRetest: false,
 		},
 	}
@@ -372,15 +372,15 @@ func TestHandlePR(t *testing.T) {
 				T:                        t,
 			}
 
-			event := github.PullRequestEvent{
+			event := scallywag.PullRequestEvent{
 				Action: c.action,
 				Number: 101,
-				PullRequest: github.PullRequest{
+				PullRequest: scallywag.PullRequest{
 					Number: 101,
-					Base: github.PullRequestBranch{
+					Base: scallywag.PullRequestBranch{
 						SHA: "abcd",
-						Repo: github.Repo{
-							Owner: github.User{
+						Repo: scallywag.Repo{
+							Owner: scallywag.User{
 								Login: "kubernetes",
 							},
 							Name: "kubernetes",

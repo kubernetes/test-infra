@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	branchprotection "k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func TestMakeBool(t *testing.T) {
@@ -59,7 +59,7 @@ func TestMakeReviews(t *testing.T) {
 	cases := []struct {
 		name     string
 		input    *branchprotection.ReviewPolicy
-		expected *github.RequiredPullRequestReviews
+		expected *scallywag.RequiredPullRequestReviews
 	}{
 		{
 			name: "nil returns nil",
@@ -81,7 +81,7 @@ func TestMakeReviews(t *testing.T) {
 			input: &branchprotection.ReviewPolicy{
 				Approvals: &three,
 			},
-			expected: &github.RequiredPullRequestReviews{
+			expected: &scallywag.RequiredPullRequestReviews{
 				RequiredApprovingReviewCount: 3,
 			},
 		},
@@ -96,11 +96,11 @@ func TestMakeReviews(t *testing.T) {
 					Teams: []string{"megacorp", "startup"},
 				},
 			},
-			expected: &github.RequiredPullRequestReviews{
+			expected: &scallywag.RequiredPullRequestReviews{
 				RequiredApprovingReviewCount: 1,
 				RequireCodeOwnerReviews:      true,
 				DismissStaleReviews:          true,
-				DismissalRestrictions: github.Restrictions{
+				DismissalRestrictions: scallywag.Restrictions{
 					Teams: &[]string{"megacorp", "startup"},
 					Users: &[]string{"fred", "jane"},
 				},
@@ -121,7 +121,7 @@ func TestMakeRequest(t *testing.T) {
 	cases := []struct {
 		name     string
 		policy   branchprotection.Policy
-		expected github.BranchProtectionRequest
+		expected scallywag.BranchProtectionRequest
 	}{
 		{
 			name: "Empty works",
@@ -133,8 +133,8 @@ func TestMakeRequest(t *testing.T) {
 					Teams: []string{"hello"},
 				},
 			},
-			expected: github.BranchProtectionRequest{
-				Restrictions: &github.Restrictions{
+			expected: scallywag.BranchProtectionRequest{
+				Restrictions: &scallywag.Restrictions{
 					Teams: &[]string{"hello"},
 					Users: &[]string{},
 				},
@@ -147,8 +147,8 @@ func TestMakeRequest(t *testing.T) {
 					Users: []string{"there"},
 				},
 			},
-			expected: github.BranchProtectionRequest{
-				Restrictions: &github.Restrictions{
+			expected: scallywag.BranchProtectionRequest{
+				Restrictions: &scallywag.Restrictions{
 					Users: &[]string{"there"},
 					Teams: &[]string{},
 				},
@@ -161,8 +161,8 @@ func TestMakeRequest(t *testing.T) {
 					Strict: &yes,
 				},
 			},
-			expected: github.BranchProtectionRequest{
-				RequiredStatusChecks: &github.RequiredStatusChecks{
+			expected: scallywag.BranchProtectionRequest{
+				RequiredStatusChecks: &scallywag.RequiredStatusChecks{
 					Strict:   true,
 					Contexts: []string{},
 				},

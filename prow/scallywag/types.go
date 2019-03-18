@@ -14,15 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package github
+package scallywag
 
 import (
 	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
-
-	"k8s.io/test-infra/prow/errorutil"
 )
 
 const (
@@ -72,7 +70,7 @@ const (
 	ReactionConfused                  = "confused"
 	ReactionHeart                     = "heart"
 	ReactionHooray                    = "hooray"
-	stateCannotBeChangedMessagePrefix = "state cannot be changed."
+	StateCannotBeChangedMessagePrefix = "state cannot be changed."
 )
 
 // PullRequestMergeType enumerates the types of merges the GitHub API can
@@ -86,23 +84,6 @@ const (
 	MergeRebase PullRequestMergeType = "rebase"
 	MergeSquash PullRequestMergeType = "squash"
 )
-
-func unmarshalClientError(b []byte) error {
-	var errors []error
-	clientError := ClientError{}
-	err := json.Unmarshal(b, &clientError)
-	if err == nil {
-		return clientError
-	}
-	errors = append(errors, err)
-	alternativeClientError := AlternativeClientError{}
-	err = json.Unmarshal(b, &alternativeClientError)
-	if err == nil {
-		return alternativeClientError
-	}
-	errors = append(errors, err)
-	return errorutil.NewAggregate(errors...)
-}
 
 // ClientError represents https://developer.github.com/v3/#client-errors
 type ClientError struct {
@@ -918,4 +899,53 @@ type ProjectColumn struct {
 type ProjectCard struct {
 	ContentID   int    `json:"content_id"`
 	ContentType string `json:"content_type"`
+}
+
+// MergeDetails contains desired properties of the merge.
+//
+// See https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button
+type MergeDetails struct {
+	// CommitTitle defaults to the automatic message.
+	CommitTitle string `json:"commit_title,omitempty"`
+	// CommitMessage defaults to the automatic message.
+	CommitMessage string `json:"commit_message,omitempty"`
+	// The PR HEAD must match this to prevent races.
+	SHA string `json:"sha,omitempty"`
+	// Can be "merge", "squash", or "rebase". Defaults to merge.
+	MergeMethod string `json:"merge_method,omitempty"`
+}
+
+// ModifiedHeadError happens when github refuses to merge a PR because the PR changed.
+type ModifiedHeadError string
+
+func (e ModifiedHeadError) Error() string { return string(e) }
+
+// UnmergablePRError happens when github refuses to merge a PR for other reasons (merge confclit).
+type UnmergablePRError string
+
+func (e UnmergablePRError) Error() string { return string(e) }
+
+// UnmergablePRBaseChangedError happens when github refuses merging a PR because the base changed.
+type UnmergablePRBaseChangedError string
+
+func (e UnmergablePRBaseChangedError) Error() string { return string(e) }
+
+// UnauthorizedToPushError happens when client is not allowed to push to github.
+type UnauthorizedToPushError string
+
+func (e UnauthorizedToPushError) Error() string { return string(e) }
+
+// MergeCommitsForbiddenError happens when the repo disallows the merge strategy configured for the repo in Tide.
+type MergeCommitsForbiddenError string
+
+func (e MergeCommitsForbiddenError) Error() string { return string(e) }
+
+// MissingUsers is an error specifying the users that could not be unassigned.
+type MissingUsers struct {
+	Users  []string
+	Action string
+}
+
+func (m MissingUsers) Error() string {
+	return fmt.Sprintf("could not %s the following user(s): %s.", m.Action, strings.Join(m.Users, ", "))
 }

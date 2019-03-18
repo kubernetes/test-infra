@@ -176,8 +176,8 @@ func TestMakeQuery(t *testing.T) {
 	}
 }
 
-func makeIssue(owner, repo string, number int, title string) github.Issue {
-	return github.Issue{
+func makeIssue(owner, repo string, number int, title string) scallywag.Issue {
+	return scallywag.Issue{
 		HTMLURL: fmt.Sprintf("fake://localhost/%s/%s/pull/%d", owner, repo, number),
 		Title:   title,
 	}
@@ -185,7 +185,7 @@ func makeIssue(owner, repo string, number int, title string) github.Issue {
 
 type fakeClient struct {
 	comments []int
-	issues   []github.Issue
+	issues   []scallywag.Issue
 }
 
 // Fakes Creating a client, using the same signature as github.Client
@@ -198,11 +198,11 @@ func (c *fakeClient) CreateComment(owner, repo string, number int, comment strin
 }
 
 // Fakes searching for issues, using the same signature as github.Client
-func (c *fakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, error) {
+func (c *fakeClient) FindIssues(query, sort string, asc bool) ([]scallywag.Issue, error) {
 	if strings.Contains(query, "error") {
 		return nil, errors.New(query)
 	}
-	ret := []github.Issue{}
+	ret := []scallywag.Issue{}
 	for _, i := range c.issues {
 		if strings.Contains(i.Title, query) {
 			ret = append(ret, i)
@@ -212,7 +212,7 @@ func (c *fakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, e
 }
 
 func TestRun(t *testing.T) {
-	manyIssues := []github.Issue{}
+	manyIssues := []scallywag.Issue{}
 	manyComments := []int{}
 	for i := 0; i < 100; i++ {
 		manyIssues = append(manyIssues, makeIssue("o", "r", i, "many "+strconv.Itoa(i)))
@@ -261,7 +261,7 @@ func TestRun(t *testing.T) {
 			name:    "comment error",
 			query:   "problematic",
 			comment: "rolo tomassi",
-			client: fakeClient{issues: []github.Issue{
+			client: fakeClient{issues: []scallywag.Issue{
 				makeIssue("o", "r", 1, "problematic this should work"),
 				makeIssue("o", "error", 2, "problematic expect an error"),
 				makeIssue("o", "r", 3, "problematic works as well"),
@@ -327,7 +327,7 @@ func TestMakeCommenter(t *testing.T) {
 		Number: 10,
 		Org:    "org",
 		Repo:   "repo",
-		Issue: github.Issue{
+		Issue: scallywag.Issue{
 			Number:  10,
 			HTMLURL: "url",
 			Title:   "title",

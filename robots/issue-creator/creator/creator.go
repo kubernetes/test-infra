@@ -34,11 +34,11 @@ import (
 // RepoClient is the interface IssueCreator used to interact with github.
 // This interface is necessary for testing the IssueCreator with dependency injection.
 type RepoClient interface {
-	GetUser(login string) (*github.User, error)
-	GetRepoLabels(org, repo string) ([]*github.Label, error)
-	GetIssues(org, repo string, options *github.IssueListByRepoOptions) ([]*github.Issue, error)
-	CreateIssue(org, repo, title, body string, labels, owners []string) (*github.Issue, error)
-	GetCollaborators(org, repo string) ([]*github.User, error)
+	GetUser(login string) (*scallywag.User, error)
+	GetRepoLabels(org, repo string) ([]*scallywag.Label, error)
+	GetIssues(org, repo string, options *scallywag.IssueListByRepoOptions) ([]*scallywag.Issue, error)
+	CreateIssue(org, repo, title, body string, labels, owners []string) (*scallywag.Issue, error)
+	GetCollaborators(org, repo string) ([]*scallywag.User, error)
 }
 
 // gihubClient is an wrapper of ghclient.Client that implements the RepoClient interface.
@@ -47,19 +47,19 @@ type githubClient struct {
 	*ghclient.Client
 }
 
-func (c githubClient) GetUser(login string) (*github.User, error) {
+func (c githubClient) GetUser(login string) (*scallywag.User, error) {
 	return c.Client.GetUser(login)
 }
 
-func (c githubClient) GetRepoLabels(org, repo string) ([]*github.Label, error) {
+func (c githubClient) GetRepoLabels(org, repo string) ([]*scallywag.Label, error) {
 	return c.Client.GetRepoLabels(org, repo)
 }
 
-func (c githubClient) GetIssues(org, repo string, options *github.IssueListByRepoOptions) ([]*github.Issue, error) {
+func (c githubClient) GetIssues(org, repo string, options *scallywag.IssueListByRepoOptions) ([]*scallywag.Issue, error) {
 	return c.Client.GetIssues(org, repo, options)
 }
 
-func (c githubClient) CreateIssue(org, repo, title, body string, labels, owners []string) (*github.Issue, error) {
+func (c githubClient) CreateIssue(org, repo, title, body string, labels, owners []string) (*scallywag.Issue, error) {
 	return c.Client.CreateIssue(org, repo, title, body, labels, owners)
 }
 
@@ -80,7 +80,7 @@ type Issue interface {
 	// closedIssues is a (potentially empty) slice containing all closed
 	// issues authored by this bot that contain ID() in their body.
 	// if Body returns an empty string no issue is created.
-	Body(closedIssues []*github.Issue) string
+	Body(closedIssues []*scallywag.Issue) string
 	// ID returns a string that uniquely identifies this issue.
 	// This ID must appear in the body of the issue.
 	// DO NOT CHANGE how this ID is formatted or duplicate issues will be created
@@ -115,7 +115,7 @@ type IssueCreator struct {
 	authorName string
 	// allIssues is a local cache of all issues in the repo authored by the currently authenticated user.
 	// Issues are keyed by issue number.
-	allIssues map[int]*github.Issue
+	allIssues map[int]*scallywag.Issue
 
 	// ownerPath is the path the test owners csv file or "" if no assignments or SIG areas should be used.
 	ownerPath string
@@ -257,7 +257,7 @@ func (c *IssueCreator) loadCache() error {
 	issues, err := c.client.GetIssues(
 		c.org,
 		c.project,
-		&github.IssueListByRepoOptions{
+		&scallywag.IssueListByRepoOptions{
 			State:   "all",
 			Creator: c.authorName,
 		},
@@ -268,7 +268,7 @@ func (c *IssueCreator) loadCache() error {
 	if len(issues) == 0 {
 		glog.Warningf("IssueCreator found no issues in the repo '%s/%s' authored by '%s'.\n", c.org, c.project, c.authorName)
 	}
-	c.allIssues = make(map[int]*github.Issue)
+	c.allIssues = make(map[int]*scallywag.Issue)
 	for _, i := range issues {
 		c.allIssues[*i.Number] = i
 	}
@@ -316,7 +316,7 @@ func setIntersect(a, b []string) (filtered, removed []string) {
 func (c *IssueCreator) sync(issue Issue) bool {
 	// First look for existing issues with this ID.
 	id := issue.ID()
-	var closedIssues []*github.Issue
+	var closedIssues []*scallywag.Issue
 	for _, i := range c.allIssues {
 		if strings.Contains(*i.Body, id) {
 			switch *i.State {

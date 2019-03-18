@@ -34,6 +34,7 @@ import (
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -205,11 +206,11 @@ func main() {
 }
 
 type dumpClient interface {
-	GetOrg(name string) (*github.Organization, error)
-	ListOrgMembers(org, role string) ([]github.TeamMember, error)
-	ListTeams(org string) ([]github.Team, error)
-	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
-	ListTeamRepos(id int) ([]github.Repo, error)
+	GetOrg(name string) (*scallywag.Organization, error)
+	ListOrgMembers(org, role string) ([]scallywag.TeamMember, error)
+	ListTeams(org string) ([]scallywag.Team, error)
+	ListTeamMembers(id int, role string) ([]scallywag.TeamMember, error)
+	ListTeamRepos(id int) ([]scallywag.Repo, error)
 }
 
 func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*org.Config, error) {
@@ -230,7 +231,7 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 	out.Metadata.DefaultRepositoryPermission = &drp
 	out.Metadata.MembersCanCreateRepositories = &meta.MembersCanCreateRepositories
 
-	admins, err := client.ListOrgMembers(orgName, github.RoleAdmin)
+	admins, err := client.ListOrgMembers(orgName, scallywag.RoleAdmin)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list org admins: %v", err)
 	}
@@ -240,7 +241,7 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 		out.Admins = append(out.Admins, m.Login)
 	}
 
-	orgMembers, err := client.ListOrgMembers(orgName, github.RoleMember)
+	orgMembers, err := client.ListOrgMembers(orgName, scallywag.RoleMember)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list org members: %v", err)
 	}
@@ -279,7 +280,7 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 			Children:    map[string]org.Team{},
 			Repos:       map[string]github.RepoPermissionLevel{},
 		}
-		maintainers, err := client.ListTeamMembers(t.ID, github.RoleMaintainer)
+		maintainers, err := client.ListTeamMembers(t.ID, scallywag.RoleMaintainer)
 		if err != nil {
 			return nil, fmt.Errorf("failed to list team %d(%s) maintainers: %v", t.ID, t.Name, err)
 		}
@@ -288,7 +289,7 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 			logger.WithField("login", m.Login).Debug("Recording maintainer.")
 			nt.Maintainers = append(nt.Maintainers, m.Login)
 		}
-		teamMembers, err := client.ListTeamMembers(t.ID, github.RoleMember)
+		teamMembers, err := client.ListTeamMembers(t.ID, scallywag.RoleMember)
 		if err != nil {
 			return nil, fmt.Errorf("failed to list team %d(%s) members: %v", t.ID, t.Name, err)
 		}
@@ -341,9 +342,9 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 
 type orgClient interface {
 	BotName() (string, error)
-	ListOrgMembers(org, role string) ([]github.TeamMember, error)
+	ListOrgMembers(org, role string) ([]scallywag.TeamMember, error)
 	RemoveOrgMembership(org, user string) error
-	UpdateOrgMembership(org, user string, admin bool) (*github.OrgMembership, error)
+	UpdateOrgMembership(org, user string, admin bool) (*scallywag.OrgMembership, error)
 }
 
 func configureOrgMembers(opt options, client orgClient, orgName string, orgConfig org.Config, invitees sets.String) error {
@@ -375,14 +376,14 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 	// Get current state
 	haveAdmins := sets.String{}
 	haveMembers := sets.String{}
-	ms, err := client.ListOrgMembers(orgName, github.RoleAdmin)
+	ms, err := client.ListOrgMembers(orgName, scallywag.RoleAdmin)
 	if err != nil {
 		return fmt.Errorf("failed to list %s admins: %v", orgName, err)
 	}
 	for _, m := range ms {
 		haveAdmins.Insert(m.Login)
 	}
-	if ms, err = client.ListOrgMembers(orgName, github.RoleMember); err != nil {
+	if ms, err = client.ListOrgMembers(orgName, scallywag.RoleMember); err != nil {
 		return fmt.Errorf("failed to list %s members: %v", orgName, err)
 	}
 	for _, m := range ms {
@@ -433,14 +434,14 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 			logrus.Infof("Waiting for %s to accept invitation to %s", user, orgName)
 			return nil
 		}
-		role := github.RoleMember
+		role := scallywag.RoleMember
 		if super {
-			role = github.RoleAdmin
+			role = scallywag.RoleAdmin
 		}
 		om, err := client.UpdateOrgMembership(orgName, user, super)
 		if err != nil {
 			logrus.WithError(err).Warnf("UpdateOrgMembership(%s, %s, %t) failed", orgName, user, super)
-		} else if om.State == github.StatePending {
+		} else if om.State == scallywag.StatePending {
 			logrus.Infof("Invited %s to %s as a %s", user, orgName, role)
 		} else {
 			logrus.Infof("Set %s as a %s of %s", user, role, orgName)
@@ -471,7 +472,7 @@ func (m memberships) all() sets.String {
 func normalize(s sets.String) sets.String {
 	out := sets.String{}
 	for i := range s {
-		out.Insert(github.NormLogin(i))
+		out.Insert(scallywag.NormLogin(i))
 	}
 	return out
 }
@@ -517,7 +518,7 @@ func configureMembers(have, want memberships, invitees sets.String, adder func(u
 }
 
 // findTeam returns teams[n] for the first n in [name, previousNames, ...] that is in teams.
-func findTeam(teams map[string]github.Team, name string, previousNames ...string) *github.Team {
+func findTeam(teams map[string]scallywag.Team, name string, previousNames ...string) *scallywag.Team {
 	if t, ok := teams[name]; ok {
 		return &t
 	}
@@ -555,19 +556,19 @@ func validateTeamNames(orgConfig org.Config) error {
 }
 
 type teamClient interface {
-	ListTeams(org string) ([]github.Team, error)
-	CreateTeam(org string, team github.Team) (*github.Team, error)
+	ListTeams(org string) ([]scallywag.Team, error)
+	CreateTeam(org string, team scallywag.Team) (*scallywag.Team, error)
 	DeleteTeam(id int) error
 }
 
 // configureTeams returns the ids for all expected team names, creating/deleting teams as necessary.
-func configureTeams(client teamClient, orgName string, orgConfig org.Config, maxDelta float64, ignoreSecretTeams bool) (map[string]github.Team, error) {
+func configureTeams(client teamClient, orgName string, orgConfig org.Config, maxDelta float64, ignorePrivateTeams bool) (map[string]scallywag.Team, error) {
 	if err := validateTeamNames(orgConfig); err != nil {
 		return nil, err
 	}
 
 	// What teams exist?
-	ids := map[int]github.Team{}
+	ids := map[int]scallywag.Team{}
 	ints := sets.Int{}
 	teamList, err := client.ListTeams(orgName)
 	if err != nil {
@@ -586,8 +587,8 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 	}
 
 	// What is the lowest ID for each team?
-	older := map[string][]github.Team{}
-	names := map[string]github.Team{}
+	older := map[string][]scallywag.Team{}
+	names := map[string]scallywag.Team{}
 	for _, t := range ids {
 		logger := logrus.WithFields(logrus.Fields{"id": t.ID, "name": t.Name})
 		n := t.Name
@@ -606,7 +607,7 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 	}
 
 	// What team are we using for each configured name, and which names are missing?
-	matches := map[string]github.Team{}
+	matches := map[string]scallywag.Team{}
 	missing := map[string]org.Team{}
 	used := sets.Int{}
 	var match func(teams map[string]org.Team)
@@ -636,7 +637,7 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 	// Create any missing team names
 	var failures []string
 	for name, orgTeam := range missing {
-		t := &github.Team{Name: name}
+		t := &scallywag.Team{Name: name}
 		if orgTeam.Description != nil {
 			t.Description = *orgTeam.Description
 		}
@@ -711,8 +712,8 @@ func updateBool(have, want *bool) bool {
 }
 
 type orgMetadataClient interface {
-	GetOrg(name string) (*github.Organization, error)
-	EditOrg(name string, org github.Organization) (*github.Organization, error)
+	GetOrg(name string) (*scallywag.Organization, error)
+	EditOrg(name string, org scallywag.Organization) (*scallywag.Organization, error)
 }
 
 // configureOrgMeta will update github to have the non-nil wanted metadata values.
@@ -744,7 +745,7 @@ func configureOrgMeta(client orgMetadataClient, orgName string, want org.Metadat
 }
 
 type inviteClient interface {
-	ListOrgInvitations(org string) ([]github.OrgInvitation, error)
+	ListOrgInvitations(org string) ([]scallywag.OrgInvitation, error)
 }
 
 func orgInvitations(opt options, client inviteClient, orgName string) (sets.String, error) {
@@ -760,7 +761,7 @@ func orgInvitations(opt options, client inviteClient, orgName string) (sets.Stri
 		if i.Login == "" {
 			continue
 		}
-		invitees.Insert(github.NormLogin(i.Login))
+		invitees.Insert(scallywag.NormLogin(i.Login))
 	}
 	return invitees, nil
 }
@@ -813,7 +814,7 @@ func configureOrg(opt options, client *github.Client, orgName string, orgConfig 
 	return nil
 }
 
-func configureTeamAndMembers(opt options, client *github.Client, githubTeams map[string]github.Team, name, orgName string, team org.Team, parent *int) error {
+func configureTeamAndMembers(opt options, client *github.Client, githubTeams map[string]scallywag.Team, name, orgName string, team org.Team, parent *int) error {
 	gt, ok := githubTeams[name]
 	if !ok { // configureTeams is buggy if this is the case
 		return fmt.Errorf("%s not found in id list", name)
@@ -843,11 +844,11 @@ func configureTeamAndMembers(opt options, client *github.Client, githubTeams map
 }
 
 type editTeamClient interface {
-	EditTeam(team github.Team) (*github.Team, error)
+	EditTeam(team scallywag.Team) (*scallywag.Team, error)
 }
 
 // configureTeam patches the team name/description/privacy when values differ
-func configureTeam(client editTeamClient, orgName, teamName string, team org.Team, gt github.Team, parent *int) error {
+func configureTeam(client editTeamClient, orgName, teamName string, team org.Team, gt scallywag.Team, parent *int) error {
 	// Do we need to reconfigure any team settings?
 	patch := false
 	if gt.Name != teamName {
@@ -883,7 +884,7 @@ func configureTeam(client editTeamClient, orgName, teamName string, team org.Tea
 
 	} else if team.Privacy == nil && (parent != nil || len(team.Children) > 0) && gt.Privacy != "closed" {
 		patch = true
-		gt.Privacy = github.PrivacyClosed // nested teams must be closed
+		gt.Privacy = scallywag.PrivacyClosed // nested teams must be closed
 	}
 
 	if patch { // yes we need to patch
@@ -952,10 +953,10 @@ func configureTeamRepos(client teamRepoClient, githubTeams map[string]github.Tea
 
 // teamMembersClient can list/remove/update people to a team.
 type teamMembersClient interface {
-	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
-	ListTeamInvitations(id int) ([]github.OrgInvitation, error)
+	ListTeamMembers(id int, role string) ([]scallywag.TeamMember, error)
+	ListTeamInvitations(id int) ([]scallywag.OrgInvitation, error)
 	RemoveTeamMembership(id int, user string) error
-	UpdateTeamMembership(id int, user string, maintainer bool) (*github.TeamMembership, error)
+	UpdateTeamMembership(id int, user string, maintainer bool) (*scallywag.TeamMembership, error)
 }
 
 func teamInvitations(client teamMembersClient, teamID int) (sets.String, error) {
@@ -968,13 +969,13 @@ func teamInvitations(client teamMembersClient, teamID int) (sets.String, error) 
 		if i.Login == "" {
 			continue
 		}
-		invitees.Insert(github.NormLogin(i.Login))
+		invitees.Insert(scallywag.NormLogin(i.Login))
 	}
 	return invitees, nil
 }
 
 // configureTeamMembers will add/update people to the appropriate role on the team, and remove anyone else.
-func configureTeamMembers(client teamMembersClient, gt github.Team, team org.Team) error {
+func configureTeamMembers(client teamMembersClient, gt scallywag.Team, team org.Team) error {
 	// Get desired state
 	wantMaintainers := sets.NewString(team.Maintainers...)
 	wantMembers := sets.NewString(team.Members...)
@@ -983,7 +984,7 @@ func configureTeamMembers(client teamMembersClient, gt github.Team, team org.Tea
 	haveMaintainers := sets.String{}
 	haveMembers := sets.String{}
 
-	members, err := client.ListTeamMembers(gt.ID, github.RoleMember)
+	members, err := client.ListTeamMembers(gt.ID, scallywag.RoleMember)
 	if err != nil {
 		return fmt.Errorf("failed to list %d(%s) members: %v", gt.ID, gt.Name, err)
 	}
@@ -991,7 +992,7 @@ func configureTeamMembers(client teamMembersClient, gt github.Team, team org.Tea
 		haveMembers.Insert(m.Login)
 	}
 
-	maintainers, err := client.ListTeamMembers(gt.ID, github.RoleMaintainer)
+	maintainers, err := client.ListTeamMembers(gt.ID, scallywag.RoleMaintainer)
 	if err != nil {
 		return fmt.Errorf("failed to list %d(%s) maintainers: %v", gt.ID, gt.Name, err)
 	}
@@ -1009,14 +1010,14 @@ func configureTeamMembers(client teamMembersClient, gt github.Team, team org.Tea
 			logrus.Infof("Waiting for %s to accept invitation to %d(%s)", user, gt.ID, gt.Name)
 			return nil
 		}
-		role := github.RoleMember
+		role := scallywag.RoleMember
 		if super {
-			role = github.RoleMaintainer
+			role = scallywag.RoleMaintainer
 		}
 		tm, err := client.UpdateTeamMembership(gt.ID, user, super)
 		if err != nil {
 			logrus.WithError(err).Warnf("UpdateTeamMembership(%d(%s), %s, %t) failed", gt.ID, gt.Name, user, super)
-		} else if tm.State == github.StatePending {
+		} else if tm.State == scallywag.StatePending {
 			logrus.Infof("Invited %s to %d(%s) as a %s", user, gt.ID, gt.Name, role)
 		} else {
 			logrus.Infof("Set %s as a %s of %d(%s)", user, role, gt.ID, gt.Name)

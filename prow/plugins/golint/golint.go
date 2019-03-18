@@ -30,10 +30,10 @@ import (
 
 	"k8s.io/test-infra/prow/genfiles"
 	"k8s.io/test-infra/prow/git"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/golint/suggestion"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -67,10 +67,10 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 
 type githubClient interface {
 	GetFile(org, repo, filepath, commit string) ([]byte, error)
-	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
-	CreateReview(org, repo string, number int, r github.DraftReview) error
-	ListPullRequestComments(org, repo string, number int) ([]github.ReviewComment, error)
+	GetPullRequest(org, repo string, number int) (*scallywag.PullRequest, error)
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
+	CreateReview(org, repo string, number int, r scallywag.DraftReview) error
+	ListPullRequestComments(org, repo string, number int) ([]scallywag.ReviewComment, error)
 }
 
 const defaultConfidence = 0.8
@@ -82,7 +82,7 @@ func minConfidence(g plugins.Golint) float64 {
 	return *g.MinimumConfidence
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
 	return handle(minConfidence(pc.PluginConfig.Golint), pc.GitHubClient, pc.GitClient, pc.Logger, &e)
 }
 
@@ -108,7 +108,7 @@ func modifiedGoFiles(ghc githubClient, org, repo string, number int, sha string)
 			continue
 		case gfg.Match(change.Filename):
 			continue
-		case change.Status == github.PullRequestFileRemoved || change.Status == github.PullRequestFileRenamed:
+		case change.Status == scallywag.PullRequestFileRemoved || change.Status == scallywag.PullRequestFileRenamed:
 			continue
 		}
 		modifiedFiles[change.Filename] = change.Patch
@@ -118,7 +118,7 @@ func modifiedGoFiles(ghc githubClient, org, repo string, number int, sha string)
 
 // newProblems compares the list of problems with the list of past comments on
 // the PR to decide which are new.
-func newProblems(cs []github.ReviewComment, ps map[string]map[int]lint.Problem) map[string]map[int]lint.Problem {
+func newProblems(cs []scallywag.ReviewComment, ps map[string]map[int]lint.Problem) map[string]map[int]lint.Problem {
 	// Make a copy, then remove the old elements.
 	res := make(map[string]map[int]lint.Problem)
 	for f, ls := range ps {
@@ -141,15 +141,15 @@ func newProblems(cs []github.ReviewComment, ps map[string]map[int]lint.Problem) 
 
 // problemsInFiles runs golint on the files. It returns a map from the file to
 // a map from the line in the patch to the problem.
-func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]lint.Problem, []github.DraftReviewComment) {
+func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]lint.Problem, []scallywag.DraftReviewComment) {
 	problems := make(map[string]map[int]lint.Problem)
-	var lintErrorComments []github.DraftReviewComment
+	var lintErrorComments []scallywag.DraftReviewComment
 	l := new(lint.Linter)
 	for f, patch := range files {
 		problems[f] = make(map[int]lint.Problem)
 		src, err := ioutil.ReadFile(filepath.Join(r.Dir, f))
 		if err != nil {
-			lintErrorComments = append(lintErrorComments, github.DraftReviewComment{
+			lintErrorComments = append(lintErrorComments, scallywag.DraftReviewComment{
 				Path: f,
 				Body: fmt.Sprintf("%v", err),
 			})
@@ -160,7 +160,7 @@ func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]l
 			errLineIndexStart := strings.LastIndex(err.Error(), f) + len(f)
 			reNumber := regexp.MustCompile(`:([0-9]+):`)
 			matches := reNumber.FindStringSubmatch(err.Error()[errLineIndexStart:])
-			newComment := github.DraftReviewComment{
+			newComment := scallywag.DraftReviewComment{
 				Path: f,
 				Body: err.Error(),
 			}
@@ -182,7 +182,7 @@ func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]l
 		al, err := AddedLines(patch)
 		if err != nil {
 			lintErrorComments = append(lintErrorComments,
-				github.DraftReviewComment{
+				scallywag.DraftReviewComment{
 					Path: f,
 					Body: fmt.Sprintf("computing added lines in %s: %v", f, err),
 				})
@@ -196,9 +196,9 @@ func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]l
 	return problems, lintErrorComments
 }
 
-func handle(minimumConfidence float64, ghc githubClient, gc *git.Client, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(minimumConfidence float64, ghc githubClient, gc *git.Client, log *logrus.Entry, e *scallywag.GenericCommentEvent) error {
 	// Only handle open PRs and new requests.
-	if e.IssueState != "open" || !e.IsPR || e.Action != github.GenericCommentActionCreated {
+	if e.IssueState != "open" || !e.IsPR || e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 	if !lintRe.MatchString(e.Body) {
@@ -265,7 +265,7 @@ func handle(minimumConfidence float64, ghc githubClient, gc *git.Client, log *lo
 	}
 
 	// Make the list of comments.
-	var comments []github.DraftReviewComment = lintErrorComments
+	var comments []scallywag.DraftReviewComment = lintErrorComments
 	for f, ls := range nps {
 		for l, p := range ls {
 			var suggestion = suggestion.SuggestCodeChange(p)
@@ -275,7 +275,7 @@ func handle(minimumConfidence float64, ghc githubClient, gc *git.Client, log *lo
 				link = fmt.Sprintf("[More info](%s). ", p.Link)
 			}
 			body = fmt.Sprintf("%sGolint %s: %s. %s%s", suggestion, p.Category, p.Text, link, commentTag)
-			comments = append(comments, github.DraftReviewComment{
+			comments = append(comments, scallywag.DraftReviewComment{
 				Path:     f,
 				Position: l,
 				Body:     body,
@@ -308,9 +308,9 @@ func handle(minimumConfidence float64, ghc githubClient, gc *git.Client, log *lo
 		response = fmt.Sprintf("%d unresolved warning%s and %d new warning%s.", oldProblems, s, newProblems, s)
 	}
 
-	return ghc.CreateReview(org, repo, e.Number, github.DraftReview{
+	return ghc.CreateReview(org, repo, e.Number, scallywag.DraftReview{
 		Body:     plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, response),
-		Action:   github.Comment,
+		Action:   scallywag.Comment,
 		Comments: comments,
 	})
 }

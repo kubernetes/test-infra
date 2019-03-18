@@ -28,21 +28,21 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/repoowners"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type fakeGitHubClient struct {
-	pr        *github.PullRequest
-	changes   []github.PullRequestChange
+	pr        *scallywag.PullRequest
+	changes   []scallywag.PullRequestChange
 	requested []string
 }
 
-func newFakeGitHubClient(pr *github.PullRequest, filesChanged []string) *fakeGitHubClient {
-	changes := make([]github.PullRequestChange, 0, len(filesChanged))
+func newFakeGitHubClient(pr *scallywag.PullRequest, filesChanged []string) *fakeGitHubClient {
+	changes := make([]scallywag.PullRequestChange, 0, len(filesChanged))
 	for _, name := range filesChanged {
-		changes = append(changes, github.PullRequestChange{Filename: name})
+		changes = append(changes, scallywag.PullRequestChange{Filename: name})
 	}
 	return &fakeGitHubClient{pr: pr, changes: changes}
 }
@@ -61,7 +61,7 @@ func (c *fakeGitHubClient) RequestReview(org, repo string, number int, logins []
 	return nil
 }
 
-func (c *fakeGitHubClient) GetPullRequestChanges(org, repo string, num int) ([]github.PullRequestChange, error) {
+func (c *fakeGitHubClient) GetPullRequestChanges(org, repo string, num int) ([]scallywag.PullRequestChange, error) {
 	if org != "org" {
 		return nil, errors.New("org should be 'org'")
 	}
@@ -74,7 +74,7 @@ func (c *fakeGitHubClient) GetPullRequestChanges(org, repo string, num int) ([]g
 	return c.changes, nil
 }
 
-func (c *fakeGitHubClient) GetPullRequest(org, repo string, num int) (*github.PullRequest, error) {
+func (c *fakeGitHubClient) GetPullRequest(org, repo string, num int) (*scallywag.PullRequest, error) {
 	return c.pr, nil
 }
 
@@ -272,8 +272,8 @@ func TestHandleWithExcludeApproversOnlyReviewers(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}}
-		repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
+		pr := scallywag.PullRequest{Number: 5, User: scallywag.User{Login: "author"}}
+		repo := scallywag.Repo{Owner: scallywag.User{Login: "org"}, Name: "repo"}
 		fghc := newFakeGitHubClient(&pr, tc.filesChanged)
 
 		if err := handle(
@@ -314,8 +314,8 @@ func TestHandleWithoutExcludeApproversNoReviewers(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}}
-		repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
+		pr := scallywag.PullRequest{Number: 5, User: scallywag.User{Login: "author"}}
+		repo := scallywag.Repo{Owner: scallywag.User{Login: "org"}, Name: "repo"}
 		fghc := newFakeGitHubClient(&pr, tc.filesChanged)
 
 		if err := handle(
@@ -435,8 +435,8 @@ func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}}
-		repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
+		pr := scallywag.PullRequest{Number: 5, User: scallywag.User{Login: "author"}}
+		repo := scallywag.Repo{Owner: scallywag.User{Login: "org"}, Name: "repo"}
 		fghc := newFakeGitHubClient(&pr, tc.filesChanged)
 		if err := handle(
 			fghc, froc, logrus.WithField("plugin", PluginName),
@@ -537,8 +537,8 @@ func TestHandleOld(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}}
-			repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
+			pr := scallywag.PullRequest{Number: 5, User: scallywag.User{Login: "author"}}
+			repo := scallywag.Repo{Owner: scallywag.User{Login: "org"}, Name: "repo"}
 			fghc := newFakeGitHubClient(&pr, tc.filesChanged)
 
 			err := handle(
@@ -572,7 +572,7 @@ func TestHandlePullRequest(t *testing.T) {
 
 	var testcases = []struct {
 		name              string
-		action            github.PullRequestEventAction
+		action            scallywag.PullRequestEventAction
 		body              string
 		filesChanged      []string
 		reviewerCount     int
@@ -580,28 +580,28 @@ func TestHandlePullRequest(t *testing.T) {
 	}{
 		{
 			name:              "PR opened",
-			action:            github.PullRequestActionOpened,
+			action:            scallywag.PullRequestActionOpened,
 			body:              "/auto-cc",
 			filesChanged:      []string{"a.go"},
 			expectedRequested: []string{"al"},
 		},
 		{
 			name:         "PR opened with /cc command",
-			action:       github.PullRequestActionOpened,
+			action:       scallywag.PullRequestActionOpened,
 			body:         "/cc",
 			filesChanged: []string{"a.go"},
 		},
 		{
 			name:         "PR closed",
-			action:       github.PullRequestActionClosed,
+			action:       scallywag.PullRequestActionClosed,
 			body:         "/auto-cc",
 			filesChanged: []string{"a.go"},
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}, Body: tc.body}
-			repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
+			pr := scallywag.PullRequest{Number: 5, User: scallywag.User{Login: "author"}, Body: tc.body}
+			repo := scallywag.Repo{Owner: scallywag.User{Login: "org"}, Name: "repo"}
 			fghc := newFakeGitHubClient(&pr, tc.filesChanged)
 			config := plugins.Blunderbuss{
 				ReviewerCount:    &tc.reviewerCount,
@@ -640,7 +640,7 @@ func TestHandleGenericComment(t *testing.T) {
 
 	var testcases = []struct {
 		name              string
-		action            github.GenericCommentEventAction
+		action            scallywag.GenericCommentEventAction
 		issueState        string
 		isPR              bool
 		body              string
@@ -650,7 +650,7 @@ func TestHandleGenericComment(t *testing.T) {
 	}{
 		{
 			name:              "comment with a valid command in an open PR triggers auto-assignment",
-			action:            github.GenericCommentActionCreated,
+			action:            scallywag.GenericCommentActionCreated,
 			issueState:        "open",
 			isPR:              true,
 			body:              "/auto-cc",
@@ -659,7 +659,7 @@ func TestHandleGenericComment(t *testing.T) {
 		},
 		{
 			name:         "comment with an invalid command in an open PR will not trigger auto-assignment",
-			action:       github.GenericCommentActionCreated,
+			action:       scallywag.GenericCommentActionCreated,
 			issueState:   "open",
 			isPR:         true,
 			body:         "/automatic-review",
@@ -667,7 +667,7 @@ func TestHandleGenericComment(t *testing.T) {
 		},
 		{
 			name:         "comment with a valid command in a closed PR will not trigger auto-assignment",
-			action:       github.GenericCommentActionCreated,
+			action:       scallywag.GenericCommentActionCreated,
 			issueState:   "closed",
 			isPR:         true,
 			body:         "/auto-cc",
@@ -675,7 +675,7 @@ func TestHandleGenericComment(t *testing.T) {
 		},
 		{
 			name:         "comment deleted from an open PR will not trigger auto-assignment",
-			action:       github.GenericCommentActionDeleted,
+			action:       scallywag.GenericCommentActionDeleted,
 			issueState:   "open",
 			isPR:         true,
 			body:         "/auto-cc",
@@ -683,7 +683,7 @@ func TestHandleGenericComment(t *testing.T) {
 		},
 		{
 			name:       "comment with valid command in an open issue will not trigger auto-assignment",
-			action:     github.GenericCommentActionCreated,
+			action:     scallywag.GenericCommentActionCreated,
 			issueState: "open",
 			isPR:       false,
 			body:       "/auto-cc",
@@ -691,9 +691,9 @@ func TestHandleGenericComment(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}}
+			pr := scallywag.PullRequest{Number: 5, User: scallywag.User{Login: "author"}}
 			fghc := newFakeGitHubClient(&pr, tc.filesChanged)
-			repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
+			repo := scallywag.Repo{Owner: scallywag.User{Login: "org"}, Name: "repo"}
 			config := plugins.Blunderbuss{
 				ReviewerCount:    &tc.reviewerCount,
 				FileWeightCount:  nil,
@@ -721,7 +721,7 @@ func TestHandleGenericCommentEvent(t *testing.T) {
 	pc := plugins.Agent{
 		PluginConfig: &plugins.Configuration{},
 	}
-	ce := github.GenericCommentEvent{}
+	ce := scallywag.GenericCommentEvent{}
 	handleGenericCommentEvent(pc, ce)
 }
 
@@ -729,7 +729,7 @@ func TestHandlePullRequestEvent(t *testing.T) {
 	pc := plugins.Agent{
 		PluginConfig: &plugins.Configuration{},
 	}
-	pre := github.PullRequestEvent{}
+	pre := scallywag.PullRequestEvent{}
 	handlePullRequestEvent(pc, pre)
 }
 

@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 var reopenRe = regexp.MustCompile(`(?mi)^/reopen\s*$`)
@@ -35,9 +36,9 @@ type githubClient interface {
 	ReopenPR(owner, repo string, number int) error
 }
 
-func handleReopen(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handleReopen(gc githubClient, log *logrus.Entry, e *scallywag.GenericCommentEvent) error {
 	// Only consider closed issues and new comments.
-	if e.IssueState != "closed" || e.Action != github.GenericCommentActionCreated {
+	if e.IssueState != "closed" || e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 

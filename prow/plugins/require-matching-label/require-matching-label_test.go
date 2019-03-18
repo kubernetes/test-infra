@@ -22,9 +22,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type fakeGitHub struct {
@@ -58,17 +58,17 @@ func (f *fakeGitHub) CreateComment(org, repo string, number int, content string)
 	return nil
 }
 
-func (f *fakeGitHub) GetIssueLabels(org, repo string, number int) ([]github.Label, error) {
-	res := make([]github.Label, 0, len(f.labels))
+func (f *fakeGitHub) GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error) {
+	res := make([]scallywag.Label, 0, len(f.labels))
 	for label := range f.labels {
-		res = append(res, github.Label{Name: label})
+		res = append(res, scallywag.Label{Name: label})
 	}
 	return res, nil
 }
 
 type fakePruner struct{}
 
-func (fp *fakePruner) PruneComments(shouldPrune func(github.IssueComment) bool) {}
+func (fp *fakePruner) PruneComments(shouldPrune func(scallywag.IssueComment) bool) {}
 
 func TestHandle(t *testing.T) {
 	configs := []plugins.RequireMatchingLabel{

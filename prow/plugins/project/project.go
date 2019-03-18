@@ -26,9 +26,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -54,13 +54,13 @@ var (
 type githubClient interface {
 	BotName() (string, error)
 	CreateComment(owner, repo string, number int, comment string) error
-	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
-	GetRepos(org string, isUser bool) ([]github.Repo, error)
-	GetRepoProjects(owner, repo string) ([]github.Project, error)
-	GetOrgProjects(org string) ([]github.Project, error)
-	GetProjectColumns(projectID int) ([]github.ProjectColumn, error)
-	CreateProjectCard(columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error)
-	GetColumnProjectCard(columnID int, cardNumber int) (*github.ProjectCard, error)
+	ListTeamMembers(id int, role string) ([]scallywag.TeamMember, error)
+	GetRepos(org string, isUser bool) ([]scallywag.Repo, error)
+	GetRepoProjects(owner, repo string) ([]scallywag.Project, error)
+	GetOrgProjects(org string) ([]scallywag.Project, error)
+	GetProjectColumns(projectID int) ([]scallywag.ProjectColumn, error)
+	CreateProjectCard(columnID int, projectCard scallywag.ProjectCard) (*scallywag.ProjectCard, error)
+	GetColumnProjectCard(columnID int, cardNumber int) (*scallywag.ProjectCard, error)
 	MoveProjectCard(projectCardID int, newColumnID int) error
 	DeleteProjectCard(projectCardID int) error
 	TeamHasMember(teamID int, memberLogin string) (bool, error)
@@ -103,11 +103,11 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	return pluginHelp, nil
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.Project)
 }
 
-func updateProjectNameToIDMap(projects []github.Project) {
+func updateProjectNameToIDMap(projects []scallywag.Project) {
 	for _, project := range projects {
 		projectNameToIDMap[project.Name] = project.ID
 	}
@@ -137,9 +137,8 @@ func processRegexMatches(matches []string) (string, string, bool, string) {
 	return proposedProject, proposedColumnName, shouldClear, ""
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, projectConfig plugins.ProjectConfig) error {
-	// Only handle new comments
-	if e.Action != github.GenericCommentActionCreated {
+func handle(gc githubClient, log *logrus.Entry, e *scallywag.GenericCommentEvent, projectConfig plugins.ProjectConfig) error {
+	if e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 
@@ -184,7 +183,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		return err
 	}
 	// Get all projects for all repos
-	var projects []github.Project
+	var projects []scallywag.Project
 	for _, repo := range repos {
 		repoProjects, err := gc.GetRepoProjects(org, repo.Name)
 		if err != nil {
@@ -296,7 +295,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
 
-	projectCard := github.ProjectCard{}
+	projectCard := scallywag.ProjectCard{}
 	projectCard.ContentID = e.Number
 	if e.IsPR {
 		projectCard.ContentType = "PullRequest"

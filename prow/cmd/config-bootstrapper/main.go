@@ -27,11 +27,11 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // support gcp users in .kube/config
 	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/github"
 	_ "k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/updateconfig"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type options struct {
@@ -100,7 +100,7 @@ func main() {
 	}
 
 	// act like the whole repo just got committed
-	var changes []github.PullRequestChange
+	var changes []scallywag.PullRequestChange
 	filepath.Walk(o.sourcePath, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
@@ -109,9 +109,9 @@ func main() {
 		// communicate that to the filepath module. We can ignore
 		// this error as we can be certain it won't occur
 		if relPath, err := filepath.Rel(o.sourcePath, path); err == nil {
-			changes = append(changes, github.PullRequestChange{
+			changes = append(changes, scallywag.PullRequestChange{
 				Filename: relPath,
-				Status:   github.PullRequestFileAdded,
+				Status:   scallywag.PullRequestFileAdded,
 			})
 			logrus.Infof("added to mock change: %s", relPath)
 		} else {

@@ -29,8 +29,8 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func TestPostsubmitSpec(t *testing.T) {
@@ -657,23 +657,23 @@ func TestJobURL(t *testing.T) {
 }
 
 func TestCreateRefs(t *testing.T) {
-	pr := github.PullRequest{
+	pr := scallywag.PullRequest{
 		Number:  42,
 		HTMLURL: "https://github.example.com/kubernetes/Hello-World/pull/42",
-		Head: github.PullRequestBranch{
+		Head: scallywag.PullRequestBranch{
 			SHA: "123456",
 		},
-		Base: github.PullRequestBranch{
+		Base: scallywag.PullRequestBranch{
 			Ref: "master",
-			Repo: github.Repo{
+			Repo: scallywag.Repo{
 				Name:    "Hello-World",
 				HTMLURL: "https://github.example.com/kubernetes/Hello-World",
-				Owner: github.User{
+				Owner: scallywag.User{
 					Login: "kubernetes",
 				},
 			},
 		},
-		User: github.User{
+		User: scallywag.User{
 			Login:   "ibzib",
 			HTMLURL: "https://github.example.com/ibzib",
 		},

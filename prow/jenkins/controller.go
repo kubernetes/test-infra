@@ -33,6 +33,7 @@ import (
 	reportlib "k8s.io/test-infra/prow/github/report"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type prowJobClient interface {
@@ -49,12 +50,12 @@ type jenkinsClient interface {
 
 type githubClient interface {
 	BotName() (string, error)
-	CreateStatus(org, repo, ref string, s github.Status) error
-	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
+	CreateStatus(org, repo, ref string, s scallywag.Status) error
+	ListIssueComments(org, repo string, number int) ([]scallywag.IssueComment, error)
 	CreateComment(org, repo string, number int, comment string) error
 	DeleteComment(org, repo string, ID int) error
 	EditComment(org, repo string, ID int, comment string) error
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
 }
 
 type syncFn func(prowapi.ProwJob, chan<- prowapi.ProwJob, map[string]Build) error

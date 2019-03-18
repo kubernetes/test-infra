@@ -26,6 +26,7 @@ import (
 	"regexp"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/scallywag"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -129,13 +130,13 @@ func (u realPack) readDog(dogURL string) (string, error) {
 	return FormatURL(dogURL)
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, &e, dogURL)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p pack) error {
+func handle(gc githubClient, log *logrus.Entry, e *scallywag.GenericCommentEvent, p pack) error {
 	// Only consider new comments.
-	if e.Action != github.GenericCommentActionCreated {
+	if e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 	// Make sure they are requesting a dog

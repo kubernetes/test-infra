@@ -22,9 +22,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func TestWipLabel(t *testing.T) {
@@ -92,8 +92,8 @@ func TestWipLabel(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		fc := &fakegithub.FakeClient{
-			PullRequests:  make(map[int]*github.PullRequest),
-			IssueComments: make(map[int][]github.IssueComment),
+			PullRequests:  make(map[int]*scallywag.PullRequest),
+			IssueComments: make(map[int][]scallywag.IssueComment),
 		}
 		org, repo, number := "org", "repo", 5
 		e := &event{

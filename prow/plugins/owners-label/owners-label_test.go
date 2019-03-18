@@ -25,9 +25,9 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func formatLabels(labels ...string) []string {
@@ -156,32 +156,32 @@ func TestHandle(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		basicPR := github.PullRequest{
+		basicPR := scallywag.PullRequest{
 			Number: 1,
-			Base: github.PullRequestBranch{
-				Repo: github.Repo{
-					Owner: github.User{
+			Base: scallywag.PullRequestBranch{
+				Repo: scallywag.Repo{
+					Owner: scallywag.User{
 						Login: "org",
 					},
 					Name: "repo",
 				},
 			},
-			User: github.User{
+			User: scallywag.User{
 				Login: "user",
 			},
 		}
 
 		t.Logf("Running scenario %q", tc.name)
 		sort.Strings(tc.expectedNewLabels)
-		changes := make([]github.PullRequestChange, 0, len(tc.filesChanged))
+		changes := make([]scallywag.PullRequestChange, 0, len(tc.filesChanged))
 		for _, name := range tc.filesChanged {
-			changes = append(changes, github.PullRequestChange{Filename: name})
+			changes = append(changes, scallywag.PullRequestChange{Filename: name})
 		}
 		fghc := &fakegithub.FakeClient{
-			PullRequests: map[int]*github.PullRequest{
+			PullRequests: map[int]*scallywag.PullRequest{
 				basicPR.Number: &basicPR,
 			},
-			PullRequestChanges: map[int][]github.PullRequestChange{
+			PullRequestChanges: map[int][]scallywag.PullRequestChange{
 				basicPR.Number: changes,
 			},
 			RepoLabelsExisting: tc.repoLabels,
@@ -191,8 +191,8 @@ func TestHandle(t *testing.T) {
 		for _, label := range tc.issueLabels {
 			fghc.AddLabel(basicPR.Base.Repo.Owner.Login, basicPR.Base.Repo.Name, basicPR.Number, label)
 		}
-		pre := &github.PullRequestEvent{
-			Action:      github.PullRequestActionOpened,
+		pre := &scallywag.PullRequestEvent{
+			Action:      scallywag.PullRequestActionOpened,
 			Number:      basicPR.Number,
 			PullRequest: basicPR,
 			Repo:        basicPR.Base.Repo,

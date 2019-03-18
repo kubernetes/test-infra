@@ -23,8 +23,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type fakeClient struct {
@@ -61,10 +61,10 @@ func (fc *fakeClient) RemoveLabel(owner, repo string, number int, label string) 
 }
 
 // GetIssueLabels gets the current labels on the specified PR or issue
-func (fc *fakeClient) GetIssueLabels(owner, repo string, number int) ([]github.Label, error) {
-	la := []github.Label{}
+func (fc *fakeClient) GetIssueLabels(owner, repo string, number int) ([]scallywag.Label, error) {
+	la := []scallywag.Label{}
 	for _, l := range fc.labels {
-		la = append(la, github.Label{Name: l})
+		la = append(la, scallywag.Label{Name: l})
 	}
 	return la, nil
 }
@@ -86,13 +86,13 @@ func (fc *fakeClient) NumComments() int {
 
 type fakePruner struct{}
 
-func (fp *fakePruner) PruneComments(shouldPrune func(github.IssueComment) bool) {}
+func (fp *fakePruner) PruneComments(shouldPrune func(scallywag.IssueComment) bool) {}
 
-func makeFakePullRequestEvent(action github.PullRequestEventAction, branch string) github.PullRequestEvent {
-	return github.PullRequestEvent{
+func makeFakePullRequestEvent(action scallywag.PullRequestEventAction, branch string) scallywag.PullRequestEvent {
+	return scallywag.PullRequestEvent{
 		Action: action,
-		PullRequest: github.PullRequest{
-			Base: github.PullRequestBranch{
+		PullRequest: scallywag.PullRequest{
+			Base: scallywag.PullRequestBranch{
 				Ref: branch,
 			},
 		},
@@ -103,7 +103,7 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 	var testcases = []struct {
 		name          string
 		branch        string
-		action        github.PullRequestEventAction
+		action        scallywag.PullRequestEventAction
 		labels        []string
 		added         []string
 		removed       []string
@@ -112,7 +112,7 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 		{
 			name:          "unsupported PR action -> no-op",
 			branch:        "release-1.10",
-			action:        github.PullRequestActionEdited,
+			action:        scallywag.PullRequestActionEdited,
 			labels:        []string{},
 			added:         []string{},
 			removed:       []string{},
@@ -121,7 +121,7 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 		{
 			name:          "branch that does match regexp -> no-op",
 			branch:        "master",
-			action:        github.PullRequestActionOpened,
+			action:        scallywag.PullRequestActionOpened,
 			labels:        []string{},
 			added:         []string{},
 			removed:       []string{},
@@ -130,7 +130,7 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 		{
 			name:          "has cpUnapproved -> no-op",
 			branch:        "release-1.10",
-			action:        github.PullRequestActionOpened,
+			action:        scallywag.PullRequestActionOpened,
 			labels:        []string{labels.CpUnapproved},
 			added:         []string{},
 			removed:       []string{},
@@ -139,7 +139,7 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 		{
 			name:          "has both cpApproved and cpUnapproved -> remove cpUnapproved",
 			branch:        "release-1.10",
-			action:        github.PullRequestActionOpened,
+			action:        scallywag.PullRequestActionOpened,
 			labels:        []string{labels.CpApproved, labels.CpUnapproved},
 			added:         []string{},
 			removed:       []string{labels.CpUnapproved},
@@ -148,7 +148,7 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 		{
 			name:          "does not have any labels, PR opened against a release branch -> add cpUnapproved and comment",
 			branch:        "release-1.10",
-			action:        github.PullRequestActionOpened,
+			action:        scallywag.PullRequestActionOpened,
 			labels:        []string{},
 			added:         []string{labels.CpUnapproved},
 			removed:       []string{},
@@ -157,7 +157,7 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 		{
 			name:          "does not have any labels, PR reopened against a release branch -> add cpUnapproved and comment",
 			branch:        "release-1.10",
-			action:        github.PullRequestActionReopened,
+			action:        scallywag.PullRequestActionReopened,
 			labels:        []string{},
 			added:         []string{labels.CpUnapproved},
 			removed:       []string{},

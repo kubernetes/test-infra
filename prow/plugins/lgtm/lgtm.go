@@ -30,6 +30,7 @@ import (
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/repoowners"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -54,12 +55,12 @@ func configInfoStickyLgtmTeam(team string) string {
 }
 
 type commentPruner interface {
-	PruneComments(shouldPrune func(github.IssueComment) bool)
+	PruneComments(shouldPrune func(scallywag.IssueComment) bool)
 }
 
 func init() {
 	plugins.RegisterGenericCommentHandler(PluginName, handleGenericCommentEvent, helpProvider)
-	plugins.RegisterPullRequestHandler(PluginName, func(pc plugins.Agent, pe github.PullRequestEvent) error {
+	plugins.RegisterPullRequestHandler(PluginName, func(pc plugins.Agent, pe scallywag.PullRequestEvent) error {
 		return handlePullRequestEvent(pc, pe)
 	}, helpProvider)
 	plugins.RegisterReviewEventHandler(PluginName, handlePullRequestReviewEvent, helpProvider)
@@ -140,27 +141,27 @@ type githubClient interface {
 	AssignIssue(owner, repo string, number int, assignees []string) error
 	CreateComment(owner, repo string, number int, comment string) error
 	RemoveLabel(owner, repo string, number int, label string) error
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
-	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
-	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
+	GetPullRequest(org, repo string, number int) (*scallywag.PullRequest, error)
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
+	ListIssueComments(org, repo string, number int) ([]scallywag.IssueComment, error)
 	DeleteComment(org, repo string, ID int) error
 	BotName() (string, error)
-	GetSingleCommit(org, repo, SHA string) (github.SingleCommit, error)
+	GetSingleCommit(org, repo, SHA string) (scallywag.SingleCommit, error)
 	IsMember(org, user string) (bool, error)
-	ListTeams(org string) ([]github.Team, error)
-	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
+	ListTeams(org string) ([]scallywag.Team, error)
+	ListTeamMembers(id int, role string) ([]scallywag.TeamMember, error)
 }
 
 // reviewCtx contains information about each review event
 type reviewCtx struct {
 	author, issueAuthor, body, htmlURL string
-	repo                               github.Repo
-	assignees                          []github.User
+	repo                               scallywag.Repo
+	assignees                          []scallywag.User
 	number                             int
 }
 
-func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericCommentEvent(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
 	cp, err := pc.CommentPruner()
 	if err != nil {
 		return err
@@ -168,7 +169,7 @@ func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) e
 	return handleGenericComment(pc.GitHubClient, pc.PluginConfig, pc.OwnersClient, pc.Logger, cp, e)
 }
 
-func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequestEvent(pc plugins.Agent, pre scallywag.PullRequestEvent) error {
 	return handlePullRequest(
 		pc.Logger,
 		pc.GitHubClient,
@@ -177,7 +178,7 @@ func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error
 	)
 }
 
-func handlePullRequestReviewEvent(pc plugins.Agent, e github.ReviewEvent) error {
+func handlePullRequestReviewEvent(pc plugins.Agent, e scallywag.ReviewEvent) error {
 	// If ReviewActsAsLgtm is disabled, ignore review event.
 	opts := optionsForRepo(pc.PluginConfig, e.Repo.Owner.Login, e.Repo.Name)
 	if !opts.ReviewActsAsLgtm {
@@ -190,7 +191,7 @@ func handlePullRequestReviewEvent(pc plugins.Agent, e github.ReviewEvent) error 
 	return handlePullRequestReview(pc.GitHubClient, pc.PluginConfig, pc.OwnersClient, pc.Logger, cp, e)
 }
 
-func handleGenericComment(gc githubClient, config *plugins.Configuration, ownersClient repoowners.Interface, log *logrus.Entry, cp commentPruner, e github.GenericCommentEvent) error {
+func handleGenericComment(gc githubClient, config *plugins.Configuration, ownersClient repoowners.Interface, log *logrus.Entry, cp commentPruner, e scallywag.GenericCommentEvent) error {
 	rc := reviewCtx{
 		author:      e.User.Login,
 		issueAuthor: e.IssueAuthor.Login,
@@ -202,7 +203,7 @@ func handleGenericComment(gc githubClient, config *plugins.Configuration, owners
 	}
 
 	// Only consider open PRs and new comments.
-	if !e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
+	if !e.IsPR || e.IssueState != "open" || e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 
@@ -221,7 +222,7 @@ func handleGenericComment(gc githubClient, config *plugins.Configuration, owners
 	return handle(wantLGTM, config, ownersClient, rc, gc, log, cp)
 }
 
-func handlePullRequestReview(gc githubClient, config *plugins.Configuration, ownersClient repoowners.Interface, log *logrus.Entry, cp commentPruner, e github.ReviewEvent) error {
+func handlePullRequestReview(gc githubClient, config *plugins.Configuration, ownersClient repoowners.Interface, log *logrus.Entry, cp commentPruner, e scallywag.ReviewEvent) error {
 	rc := reviewCtx{
 		author:      e.Review.User.Login,
 		issueAuthor: e.PullRequest.User.Login,
@@ -246,14 +247,14 @@ func handlePullRequestReview(gc githubClient, config *plugins.Configuration, own
 	// The review webhook returns state as lowercase, while the review API
 	// returns state as uppercase. Uppercase the value here so it always
 	// matches the constant.
-	reviewState := github.ReviewState(strings.ToUpper(string(e.Review.State)))
+	reviewState := scallywag.ReviewState(strings.ToUpper(string(e.Review.State)))
 
 	// If we review with Approve, add lgtm if necessary.
 	// If we review with Request Changes, remove lgtm if necessary.
 	wantLGTM := false
-	if reviewState == github.ReviewStateApproved {
+	if reviewState == scallywag.ReviewStateApproved {
 		wantLGTM = true
-	} else if reviewState == github.ReviewStateChangesRequested {
+	} else if reviewState == scallywag.ReviewStateChangesRequested {
 		wantLGTM = false
 	} else {
 		return nil
@@ -323,7 +324,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 		if err != nil {
 			return err
 		}
-		if !loadReviewers(ro, filenames).Has(github.NormLogin(author)) {
+		if !loadReviewers(ro, filenames).Has(scallywag.NormLogin(author)) {
 			resp := "adding LGTM is restricted to approvers and reviewers in OWNERS files."
 			log.Infof("Reply to /lgtm request with comment: \"%s\"", resp)
 			return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
@@ -348,7 +349,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 			return err
 		}
 		if opts.StoreTreeHash {
-			cp.PruneComments(func(comment github.IssueComment) bool {
+			cp.PruneComments(func(comment scallywag.IssueComment) bool {
 				return addLGTMLabelNotificationRe.MatchString(comment.Body)
 			})
 		}
@@ -374,7 +375,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 				}
 			}
 			// Delete the LGTM removed noti after the LGTM label is added.
-			cp.PruneComments(func(comment github.IssueComment) bool {
+			cp.PruneComments(func(comment scallywag.IssueComment) bool {
 				return strings.Contains(comment.Body, removeLGTMLabelNoti)
 			})
 		}
@@ -389,7 +390,7 @@ func stickyLgtm(log *logrus.Entry, gc githubClient, config *plugins.Configuratio
 			for _, teamInOrg := range teams {
 				// lgtm.TrustedAuthorTeams is supposed to be a very short list.
 				if strings.Compare(teamInOrg.Name, lgtm.StickyLgtmTeam) == 0 {
-					if members, err := gc.ListTeamMembers(teamInOrg.ID, github.RoleAll); err == nil {
+					if members, err := gc.ListTeamMembers(teamInOrg.ID, scallywag.RoleAll); err == nil {
 						for _, member := range members {
 							if strings.Compare(member.Login, author) == 0 {
 								// The author is in a trusted team
@@ -408,12 +409,12 @@ func stickyLgtm(log *logrus.Entry, gc githubClient, config *plugins.Configuratio
 	return false
 }
 
-func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Configuration, pe *github.PullRequestEvent) error {
+func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Configuration, pe *scallywag.PullRequestEvent) error {
 	if pe.PullRequest.Merged {
 		return nil
 	}
 
-	if pe.Action != github.PullRequestActionSynchronize {
+	if pe.Action != scallywag.PullRequestActionSynchronize {
 		return nil
 	}
 

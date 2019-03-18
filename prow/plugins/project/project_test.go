@@ -24,43 +24,44 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
+	"k8s.io/test-infra/prow/scallywag/github"
 )
 
 func TestProjectCommand(t *testing.T) {
-	projectColumnsMap := map[string][]github.ProjectColumn{
+	projectColumnsMap := map[string][]scallywag.ProjectColumn{
 		"0.0.0": {
-			github.ProjectColumn{
+			scallywag.ProjectColumn{
 				Name: "To do",
 				ID:   00000,
 			},
-			github.ProjectColumn{
+			scallywag.ProjectColumn{
 				Name: "Backlog",
 				ID:   00001,
 			},
 		},
 		"0.1.0": {
-			github.ProjectColumn{
+			scallywag.ProjectColumn{
 				Name: "To do",
 				ID:   00002,
 			},
-			github.ProjectColumn{
+			scallywag.ProjectColumn{
 				Name: "Backlog",
 				ID:   00003,
 			},
 		},
 	}
-	repoProjects := map[string][]github.Project{
+	repoProjects := map[string][]scallywag.Project{
 		"kubernetes/*": {
-			github.Project{
+			scallywag.Project{
 				Name: "0.0.0",
 				ID:   000,
 			},
 		},
 		"kubernetes/kubernetes": {
-			github.Project{
+			scallywag.Project{
 				Name: "0.1.0",
 				ID:   010,
 			},
@@ -302,12 +303,12 @@ func TestProjectCommand(t *testing.T) {
 		fakeClient.Project = tc.previousProject
 		fakeClient.Column = tc.previousColumn
 
-		e := &github.GenericCommentEvent{
+		e := &scallywag.GenericCommentEvent{
 			Action: tc.action,
 			Body:   tc.body,
 			Number: 1,
-			Repo:   github.Repo{Owner: github.User{Login: tc.org}, Name: tc.repo},
-			User:   github.User{Login: tc.commenter},
+			Repo:   scallywag.Repo{Owner: scallywag.User{Login: tc.org}, Name: tc.repo},
+			User:   scallywag.User{Login: tc.commenter},
 		}
 		if err := handle(fakeClient, logrus.WithField("plugin", pluginName), e, projectConfig); err != nil {
 			t.Errorf("(%s): Unexpected error from handle: %v.", tc.name, err)

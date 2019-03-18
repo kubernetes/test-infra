@@ -22,11 +22,11 @@ import (
 	"time"
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
-	"k8s.io/test-infra/prow/github"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 // Preset is intended to match the k8s' PodPreset feature, and may be removed
@@ -372,7 +372,7 @@ func (ps Presubmit) ContextRequired() bool {
 type ChangedFilesProvider func() ([]string, error)
 
 type githubClient interface {
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
 }
 
 // NewGitHubDeferredChangedFilesProvider uses a closure to lazily retrieve the file changes only if they are needed.

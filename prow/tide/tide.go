@@ -45,6 +45,7 @@ import (
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/scallywag"
 	"k8s.io/test-infra/prow/tide/blockers"
 	"k8s.io/test-infra/prow/tide/history"
 )
@@ -58,11 +59,11 @@ type prowJobClient interface {
 }
 
 type githubClient interface {
-	CreateStatus(string, string, string, github.Status) error
-	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	CreateStatus(string, string, string, scallywag.Status) error
+	GetCombinedStatus(org, repo, ref string) (*scallywag.CombinedStatus, error)
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
 	GetRef(string, string, string) (string, error)
-	Merge(string, string, int, github.MergeDetails) error
+	Merge(string, string, int, scallywag.MergeDetails) error
 	Query(context.Context, interface{}, map[string]interface{}) error
 }
 
@@ -889,8 +890,15 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 		}
 
 		keepTrying, err := tryMerge(func() error {
+<<<<<<< HEAD
 			ghMergeDetails := c.prepareMergeDetails(commitTemplates, pr, mergeMethod)
 			return c.ghc.Merge(sp.org, sp.repo, int(pr.Number), ghMergeDetails)
+=======
+			return c.ghc.Merge(sp.org, sp.repo, int(pr.Number), scallywag.MergeDetails{
+				SHA:         string(pr.HeadRefOID),
+				MergeMethod: string(mergeMethod),
+			})
+>>>>>>> Refactor elements of github package into scallywag
 		})
 		if err != nil {
 			log.WithError(err).Error("Merge failed.")
@@ -944,13 +952,13 @@ func tryMerge(mergeFunc func() error) (bool, error) {
 		// Note: We would also need to be able to roll back any merges for the
 		// batch that were already successfully completed before the failure.
 		// Ref: https://github.com/kubernetes/test-infra/issues/10621
-		if _, ok := err.(github.ModifiedHeadError); ok {
+		if _, ok := err.(scallywag.ModifiedHeadError); ok {
 			// This is a possible source of incorrect behavior. If someone
 			// modifies their PR as we try to merge it in a batch then we
 			// end up in an untested state. This is unlikely to cause any
 			// real problems.
 			return true, fmt.Errorf("PR was modified: %v", err)
-		} else if _, ok = err.(github.UnmergablePRBaseChangedError); ok {
+		} else if _, ok = err.(scallywag.UnmergablePRBaseChangedError); ok {
 			//  complained that the base branch was modified. This is a
 			// strange error because the API doesn't even allow the request to
 			// specify the base branch sha, only the head sha.
@@ -964,20 +972,20 @@ func tryMerge(mergeFunc func() error) (bool, error) {
 				sleep(backoff)
 				backoff *= 2
 			}
-		} else if _, ok = err.(github.UnauthorizedToPushError); ok {
+		} else if _, ok = err.(scallywag.UnauthorizedToPushError); ok {
 			// GitHub let us know that the token used cannot push to the branch.
 			// Even if the robot is set up to have write access to the repo, an
 			// overzealous branch protection setting will not allow the robot to
 			// push to a specific branch.
 			// We won't be able to merge the other PRs.
 			return false, fmt.Errorf("branch needs to be configured to allow this robot to push: %v", err)
-		} else if _, ok = err.(github.MergeCommitsForbiddenError); ok {
+		} else if _, ok = err.(scallywag.MergeCommitsForbiddenError); ok {
 			// GitHub let us know that the merge method configured for this repo
 			// is not allowed by other repo settings, so we should let the admins
 			// know that the configuration needs to be updated.
 			// We won't be able to merge the other PRs.
 			return false, fmt.Errorf("Tide needs to be configured to use the 'rebase' merge method for this repo or the repo needs to allow merge commits: %v", err)
-		} else if _, ok = err.(github.UnmergablePRError); ok {
+		} else if _, ok = err.(scallywag.UnmergablePRError); ok {
 			return true, fmt.Errorf("PR is unmergable. Do the Tide merge requirements match the GitHub settings for the repo? %v", err)
 		} else {
 			return true, err

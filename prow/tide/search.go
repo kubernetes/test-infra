@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"time"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
@@ -34,8 +34,8 @@ func datedQuery(q string, start, end time.Time) string {
 }
 
 func floor(t time.Time) time.Time {
-	if t.Before(github.FoundingYear) {
-		return github.FoundingYear
+	if t.Before(scallywag.FoundingYear) {
+		return scallywag.FoundingYear
 	}
 	return t
 }
@@ -91,10 +91,10 @@ func dateToken(start, end time.Time) string {
 	// Dates before 1970 (unix epoch) are considered invalid.
 	startString, endString := "*", "*"
 	if start.Year() >= 1970 {
-		startString = start.Format(github.SearchTimeFormat)
+		startString = start.Format(scallywag.SearchTimeFormat)
 	}
 	if end.Year() >= 1970 {
-		endString = end.Format(github.SearchTimeFormat)
+		endString = end.Format(scallywag.SearchTimeFormat)
 	}
 	return fmt.Sprintf("updated:%s..%s", startString, endString)
 }

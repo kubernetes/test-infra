@@ -25,10 +25,10 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/git/localgit"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 var ownerFiles = map[string][]byte{
@@ -130,13 +130,13 @@ func IssueLabelsAddedContain(arr []string, str string) bool {
 }
 
 func newFakeGitHubClient(files []string, pr int) *fakegithub.FakeClient {
-	var changes []github.PullRequestChange
+	var changes []scallywag.PullRequestChange
 	for _, file := range files {
-		changes = append(changes, github.PullRequestChange{Filename: file})
+		changes = append(changes, scallywag.PullRequestChange{Filename: file})
 	}
 	return &fakegithub.FakeClient{
-		PullRequestChanges: map[int][]github.PullRequestChange{pr: changes},
-		Reviews:            map[int][]github.Review{},
+		PullRequestChanges: map[int][]scallywag.PullRequestChange{pr: changes},
+		Reviews:            map[int][]scallywag.Review{},
 	}
 }
 
@@ -271,15 +271,15 @@ func TestHandle(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Getting commit SHA: %v", err)
 		}
-		pre := &github.PullRequestEvent{
+		pre := &scallywag.PullRequestEvent{
 			Number: pr,
-			PullRequest: github.PullRequest{
-				User: github.User{Login: "author"},
-				Head: github.PullRequestBranch{
+			PullRequest: scallywag.PullRequest{
+				User: scallywag.User{Login: "author"},
+				Head: scallywag.PullRequestBranch{
 					SHA: sha,
 				},
 			},
-			Repo: github.Repo{FullName: "org/repo"},
+			Repo: scallywag.Repo{FullName: "org/repo"},
 		}
 		fghc := newFakeGitHubClient(test.filesChanged, pr)
 		if err := handle(fghc, c, logrus.WithField("plugin", PluginName), pre, []string{labels.Approved, labels.LGTM}); err != nil {
@@ -359,7 +359,7 @@ func TestParseOwnersFile(t *testing.T) {
 			if c.patch == "" {
 				c.patch = makePatch(c.document)
 			}
-			change := github.PullRequestChange{
+			change := scallywag.PullRequestChange{
 				Filename: "OWNERS",
 				Patch:    c.patch,
 			}

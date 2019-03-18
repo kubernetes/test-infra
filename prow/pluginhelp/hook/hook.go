@@ -34,10 +34,10 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 // TODO: unit test to ensure that external plugins with the same name have the same endpoint and events.
@@ -55,7 +55,7 @@ type pluginAgent interface {
 }
 
 type githubClient interface {
-	GetRepos(org string, isUser bool) ([]github.Repo, error)
+	GetRepos(org string, isUser bool) ([]scallywag.Repo, error)
 }
 
 // HelpAgent is a handler that generates and serve plugin help information.

@@ -21,15 +21,18 @@ import (
 	"fmt"
 	"net/url"
 
+	"k8s.io/test-infra/prow/pjutil"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
-func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) error {
+func handlePR(c Client, trigger plugins.Trigger, pr scallywag.PullRequestEvent) error {
 	if len(c.Config.Presubmits[pr.PullRequest.Base.Repo.FullName]) == 0 {
 		return nil
 	}
@@ -38,7 +41,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 	author := string(a)
 	num := pr.PullRequest.Number
 	switch pr.Action {
-	case github.PullRequestActionOpened:
+	case scallywag.PullRequestActionOpened:
 		// When a PR is opened, if the author is in the org then build it.
 		// Otherwise, ask for "/ok-to-test". There's no need to look for previous
 		// "/ok-to-test" comments since the PR was just opened!
@@ -54,7 +57,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 		if err := welcomeMsg(c.GitHubClient, trigger, pr.PullRequest); err != nil {
 			return fmt.Errorf("could not welcome non-org member %q: %v", author, err)
 		}
-	case github.PullRequestActionReopened:
+	case scallywag.PullRequestActionReopened:
 		// When a PR is reopened, check that the user is in the org or that an org
 		// member had said "/ok-to-test" before building, resulting in label ok-to-test.
 		l, trusted, err := TrustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, nil)
@@ -71,7 +74,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 			c.Logger.Info("Starting all jobs for updated PR.")
 			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
 		}
-	case github.PullRequestActionEdited:
+	case scallywag.PullRequestActionEdited:
 		// if someone changes the base of their PR, we will get this
 		// event and the changes field will list that the base SHA and
 		// ref changes so we can detect such a case and retrigger tests
@@ -93,9 +96,9 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 			// the base of the PR changed and we need to re-test it
 			return buildAllIfTrusted(c, trigger, pr)
 		}
-	case github.PullRequestActionSynchronize:
+	case scallywag.PullRequestActionSynchronize:
 		return buildAllIfTrusted(c, trigger, pr)
-	case github.PullRequestActionLabeled:
+	case scallywag.PullRequestActionLabeled:
 		// When a PR is LGTMd, if it is untrusted then build it once.
 		if pr.Label.Name == labels.LGTM {
 			_, trusted, err := TrustedPullRequest(c.GitHubClient, trigger, author, org, repo, num, nil)
@@ -112,14 +115,14 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 
 type login string
 
-func orgRepoAuthor(pr github.PullRequest) (string, string, login) {
+func orgRepoAuthor(pr scallywag.PullRequest) (string, string, login) {
 	org := pr.Base.Repo.Owner.Login
 	repo := pr.Base.Repo.Name
 	author := pr.User.Login
 	return org, repo, login(author)
 }
 
-func buildAllIfTrusted(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) error {
+func buildAllIfTrusted(c Client, trigger plugins.Trigger, pr scallywag.PullRequestEvent) error {
 	// When a PR is updated, check that the user is in the org or that an org
 	// member has said "/ok-to-test" before building. There's no need to ask
 	// for "/ok-to-test" because we do that once when the PR is created.
@@ -143,7 +146,7 @@ func buildAllIfTrusted(c Client, trigger plugins.Trigger, pr github.PullRequestE
 	return nil
 }
 
-func welcomeMsg(ghc githubClient, trigger plugins.Trigger, pr github.PullRequest) error {
+func welcomeMsg(ghc githubClient, trigger plugins.Trigger, pr scallywag.PullRequest) error {
 	var errors []error
 	org, repo, a := orgRepoAuthor(pr)
 	author := string(a)
@@ -204,7 +207,7 @@ I understand the commands that are listed [here](https://go.k8s.io/bot-commands?
 
 // TrustedPullRequest returns whether or not the given PR should be tested.
 // It first checks if the author is in the org, then looks for "ok-to-test" label.
-func TrustedPullRequest(ghc githubClient, trigger plugins.Trigger, author, org, repo string, num int, l []github.Label) ([]github.Label, bool, error) {
+func TrustedPullRequest(ghc githubClient, trigger plugins.Trigger, author, org, repo string, num int, l []scallywag.Label) ([]scallywag.Label, bool, error) {
 	// First check if the author is a member of the org.
 	if orgMember, err := TrustedUser(ghc, trigger, author, org, repo); err != nil {
 		return l, false, fmt.Errorf("error checking %s for trust: %v", author, err)

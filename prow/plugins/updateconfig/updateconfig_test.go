@@ -32,44 +32,44 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	clienttesting "k8s.io/client-go/testing"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const defaultNamespace = "default"
 
 func TestUpdateConfig(t *testing.T) {
-	basicPR := github.PullRequest{
+	basicPR := scallywag.PullRequest{
 		Number: 1,
-		Base: github.PullRequestBranch{
-			Repo: github.Repo{
-				Owner: github.User{
+		Base: scallywag.PullRequestBranch{
+			Repo: scallywag.Repo{
+				Owner: scallywag.User{
 					Login: "kubernetes",
 				},
 				Name: "kubernetes",
 			},
 		},
-		User: github.User{
+		User: scallywag.User{
 			Login: "foo",
 		},
 	}
 
 	testcases := []struct {
 		name               string
-		prAction           github.PullRequestEventAction
+		prAction           scallywag.PullRequestEventAction
 		merged             bool
 		mergeCommit        string
-		changes            []github.PullRequestChange
+		changes            []scallywag.PullRequestChange
 		existConfigMaps    []runtime.Object
 		expectedConfigMaps []*coreapi.ConfigMap
 		config             *plugins.ConfigUpdater
 	}{
 		{
 			name:     "Opened PR, no update",
-			prAction: github.PullRequestActionOpened,
+			prAction: scallywag.PullRequestActionOpened,
 			merged:   false,
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "prow/config.yaml",
 					Additions: 1,
@@ -80,7 +80,7 @@ func TestUpdateConfig(t *testing.T) {
 		{
 			name:   "Opened PR, not merged, no update",
 			merged: false,
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "prow/config.yaml",
 					Additions: 1,
@@ -90,9 +90,9 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:     "Closed PR, no prow changes, no update",
-			prAction: github.PullRequestActionClosed,
+			prAction: scallywag.PullRequestActionClosed,
 			merged:   false,
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "foo.txt",
 					Additions: 1,
@@ -102,9 +102,9 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:     "For whatever reason no merge commit SHA",
-			prAction: github.PullRequestActionClosed,
+			prAction: scallywag.PullRequestActionClosed,
 			merged:   true,
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "prow/config.yaml",
 					Additions: 1,
@@ -114,10 +114,10 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:        "changed config.yaml, 1 update",
-			prAction:    github.PullRequestActionClosed,
+			prAction:    scallywag.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "12345",
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "prow/config.yaml",
 					Additions: 1,
@@ -148,10 +148,10 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:        "changed config.yaml, existed configmap, 1 update",
-			prAction:    github.PullRequestActionClosed,
+			prAction:    scallywag.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "12345",
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "prow/config.yaml",
 					Additions: 1,
@@ -182,10 +182,10 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:        "changed plugins.yaml, 1 update with custom key",
-			prAction:    github.PullRequestActionClosed,
+			prAction:    scallywag.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "12345",
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "prow/plugins.yaml",
 					Additions: 1,
@@ -216,10 +216,10 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:        "changed resources.yaml, 1 update with custom namespace",
-			prAction:    github.PullRequestActionClosed,
+			prAction:    scallywag.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "12345",
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "boskos/resources.yaml",
 					Additions: 1,
@@ -250,10 +250,10 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:        "changed config.yaml, plugins.yaml and resources.yaml, 3 update",
-			prAction:    github.PullRequestActionClosed,
+			prAction:    scallywag.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "12345",
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "prow/plugins.yaml",
 					Additions: 1,
@@ -328,10 +328,10 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:        "edited both config/foo.yaml and config/bar.yaml, 2 update",
-			prAction:    github.PullRequestActionClosed,
+			prAction:    scallywag.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "12345",
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "config/foo.yaml",
 					Additions: 1,
@@ -368,10 +368,10 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:        "edited config/foo.yaml, 1 update",
-			prAction:    github.PullRequestActionClosed,
+			prAction:    scallywag.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "12345",
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "config/foo.yaml",
 					Status:    "modified",
@@ -405,10 +405,10 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:        "remove config/foo.yaml, 1 update",
-			prAction:    github.PullRequestActionClosed,
+			prAction:    scallywag.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "12345",
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename: "config/foo.yaml",
 					Status:   "removed",
@@ -440,10 +440,10 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:        "edited dir/subdir/fejtaverse/krzyzacy.yaml, 1 update",
-			prAction:    github.PullRequestActionClosed,
+			prAction:    scallywag.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "12345",
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "dir/subdir/fejtaverse/krzyzacy.yaml",
 					Status:    "modified",
@@ -477,10 +477,10 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:        "renamed dir/subdir/fejtaverse/krzyzacy.yaml, 1 update",
-			prAction:    github.PullRequestActionClosed,
+			prAction:    scallywag.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "54321",
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:         "dir/subdir/fejtaverse/fejtabot.yaml",
 					PreviousFilename: "dir/subdir/fejtaverse/krzyzacy.yaml",
@@ -513,10 +513,10 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:        "add delete edit glob config, 3 update",
-			prAction:    github.PullRequestActionClosed,
+			prAction:    scallywag.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "12345",
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "dir/subdir/fejta.yaml",
 					Status:    "modified",
@@ -561,10 +561,10 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:        "config changes without a backing configmap causes creation",
-			prAction:    github.PullRequestActionClosed,
+			prAction:    scallywag.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "12345",
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "prow/config.yaml",
 					Status:    "modified",
@@ -991,7 +991,7 @@ func TestUpdateConfig(t *testing.T) {
 
 	for _, tc := range testcases {
 		log := logrus.WithField("plugin", pluginName)
-		event := github.PullRequestEvent{
+		event := scallywag.PullRequestEvent{
 			Action:      tc.prAction,
 			Number:      basicPR.Number,
 			PullRequest: basicPR,
@@ -1002,13 +1002,13 @@ func TestUpdateConfig(t *testing.T) {
 		}
 
 		fgc := &fakegithub.FakeClient{
-			PullRequests: map[int]*github.PullRequest{
+			PullRequests: map[int]*scallywag.PullRequest{
 				basicPR.Number: &basicPR,
 			},
-			PullRequestChanges: map[int][]github.PullRequestChange{
+			PullRequestChanges: map[int][]scallywag.PullRequestChange{
 				basicPR.Number: tc.changes,
 			},
-			IssueComments: map[int][]github.IssueComment{},
+			IssueComments: map[int][]scallywag.IssueComment{},
 			RemoteFiles: map[string]map[string]string{
 				"prow/config.yaml": {
 					"master": "old-config",

@@ -57,7 +57,7 @@ func makeGitHubIssue(number int,
 	title, body, state, user, prURL string,
 	comments int,
 	isPullRequest bool,
-	createdAt, updatedAt, closedAt time.Time) *github.Issue {
+	createdAt, updatedAt, closedAt time.Time) *scallywag.Issue {
 
 	var pBody *string
 	if body != "" {
@@ -67,13 +67,13 @@ func makeGitHubIssue(number int,
 	if prURL != "" {
 		pullRequest = &github.PullRequestLinks{URL: &prURL}
 	}
-	gUser := &github.User{Login: &user}
+	gUser := &scallywag.User{Login: &user}
 	var pClosedAt *time.Time
 	if !closedAt.IsZero() {
 		pClosedAt = &closedAt
 	}
 
-	return &github.Issue{
+	return &scallywag.Issue{
 		Number:           &number,
 		Title:            &title,
 		Body:             pBody,
@@ -89,7 +89,7 @@ func makeGitHubIssue(number int,
 
 func TestNewIssue(t *testing.T) {
 	tests := []struct {
-		gIssue *github.Issue
+		gIssue *scallywag.Issue
 		mIssue *sql.Issue
 	}{
 		// Only mandatory
@@ -120,7 +120,7 @@ func TestNewIssue(t *testing.T) {
 		},
 		// Missing mandatory fields returns nil
 		{
-			&github.Issue{},
+			&scallywag.Issue{},
 			nil,
 		},
 	}
@@ -172,23 +172,23 @@ func makeIssueEvent(
 func makeGitHubIssueEvent(
 	eventID int64,
 	label, event, assignee, actor string,
-	createdAt time.Time) *github.IssueEvent {
+	createdAt time.Time) *scallywag.IssueEvent {
 
-	var gLabel *github.Label
+	var gLabel *scallywag.Label
 	if label != "" {
-		gLabel = &github.Label{Name: &label}
+		gLabel = &scallywag.Label{Name: &label}
 	}
 
-	var gAssignee, gActor *github.User
+	var gAssignee, gActor *scallywag.User
 	if assignee != "" {
-		gAssignee = &github.User{Login: &assignee}
+		gAssignee = &scallywag.User{Login: &assignee}
 	}
 
 	if actor != "" {
-		gActor = &github.User{Login: &actor}
+		gActor = &scallywag.User{Login: &actor}
 	}
 
-	return &github.IssueEvent{
+	return &scallywag.IssueEvent{
 		ID:        &eventID,
 		Label:     gLabel,
 		Event:     &event,
@@ -200,7 +200,7 @@ func makeGitHubIssueEvent(
 
 func TestNewIssueEvent(t *testing.T) {
 	tests := []struct {
-		gIssueEvent *github.IssueEvent
+		gIssueEvent *scallywag.IssueEvent
 		issueID     int
 		mIssueEvent *sql.IssueEvent
 	}{
@@ -222,7 +222,7 @@ func TestNewIssueEvent(t *testing.T) {
 		},
 		// Missing mandatory fields returns nil
 		{
-			&github.IssueEvent{},
+			&scallywag.IssueEvent{},
 			2,
 			nil,
 		},
@@ -237,25 +237,25 @@ func TestNewIssueEvent(t *testing.T) {
 	}
 }
 
-func createLabel(name string) github.Label {
-	return github.Label{Name: &name}
+func createLabel(name string) scallywag.Label {
+	return scallywag.Label{Name: &name}
 }
 
 func TestNewLabels(t *testing.T) {
 	tests := []struct {
-		gLabels        []github.Label
+		gLabels        []scallywag.Label
 		issueID        int
 		expectedLabels []sql.Label
 	}{
 		// Empty list gives empty list
 		{
-			[]github.Label{},
+			[]scallywag.Label{},
 			1,
 			[]sql.Label{},
 		},
 		// Broken label
 		{
-			[]github.Label{
+			[]scallywag.Label{
 				createLabel("SomeLabel"),
 				{},
 				createLabel("OtherLabel"),
@@ -274,12 +274,12 @@ func TestNewLabels(t *testing.T) {
 	}
 }
 
-func makeGitHubIssueComment(id int64, body, login string, createdAt, updatedAt time.Time) *github.IssueComment {
-	var user *github.User
+func makeGitHubIssueComment(id int64, body, login string, createdAt, updatedAt time.Time) *scallywag.IssueComment {
+	var user *scallywag.User
 	if login != "" {
-		user = &github.User{Login: &login}
+		user = &scallywag.User{Login: &login}
 	}
-	return &github.IssueComment{
+	return &scallywag.IssueComment{
 		ID:        &id,
 		User:      user,
 		Body:      &body,
@@ -289,9 +289,9 @@ func makeGitHubIssueComment(id int64, body, login string, createdAt, updatedAt t
 }
 
 func makeGitHubPullComment(id int64, body, login string, createdAt, updatedAt time.Time) *github.PullRequestComment {
-	var user *github.User
+	var user *scallywag.User
 	if login != "" {
-		user = &github.User{Login: &login}
+		user = &scallywag.User{Login: &login}
 	}
 	return &github.PullRequestComment{
 		ID:        &id,
@@ -317,7 +317,7 @@ func makeComment(issueID, iD int, body, login, repository string, createdAt, upd
 
 func TestNewIssueComment(t *testing.T) {
 	tests := []struct {
-		gComment        *github.IssueComment
+		gComment        *scallywag.IssueComment
 		issueID         int
 		expectedComment *sql.Comment
 	}{

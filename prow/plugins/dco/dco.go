@@ -24,9 +24,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -84,30 +84,30 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 type gitHubClient interface {
 	BotName() (string, error)
 	CreateComment(owner, repo string, number int, comment string) error
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
-	CreateStatus(owner, repo, ref string, status github.Status) error
-	ListPRCommits(org, repo string, number int) ([]github.RepositoryCommit, error)
-	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
-	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
+	CreateStatus(owner, repo, ref string, status scallywag.Status) error
+	ListPRCommits(org, repo string, number int) ([]scallywag.RepositoryCommit, error)
+	GetPullRequest(owner, repo string, number int) (*scallywag.PullRequest, error)
+	GetCombinedStatus(org, repo, ref string) (*scallywag.CombinedStatus, error)
 }
 
 type commentPruner interface {
-	PruneComments(shouldPrune func(github.IssueComment) bool)
+	PruneComments(shouldPrune func(scallywag.IssueComment) bool)
 }
 
 // checkCommitMessages will perform the actual DCO check by retrieving all
 // commits contained within the PR with the given number.
 // *All* commits in the pull request *must* match the 'testRe' in order to pass.
-func checkCommitMessages(gc gitHubClient, l *logrus.Entry, org, repo string, number int) ([]github.GitCommit, error) {
+func checkCommitMessages(gc gitHubClient, l *logrus.Entry, org, repo string, number int) ([]scallywag.GitCommit, error) {
 	allCommits, err := gc.ListPRCommits(org, repo, number)
 	if err != nil {
 		return nil, fmt.Errorf("error listing commits for pull request: %v", err)
 	}
 	l.Debugf("Found %d commits in PR", len(allCommits))
 
-	var commitsMissingDCO []github.GitCommit
+	var commitsMissingDCO []scallywag.GitCommit
 	for _, commit := range allCommits {
 		if !testRe.MatchString(commit.Commit.Message) {
 			c := commit.Commit
@@ -162,7 +162,7 @@ func checkExistingLabels(gc gitHubClient, l *logrus.Entry, org, repo string, num
 
 // takeAction will take appropriate action on the pull request according to its
 // current state.
-func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo string, pr github.PullRequest, commitsMissingDCO []github.GitCommit, existingStatus string, hasYesLabel, hasNoLabel, addComment bool) error {
+func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo string, pr scallywag.PullRequest, commitsMissingDCO []scallywag.GitCommit, existingStatus string, hasYesLabel, hasNoLabel, addComment bool) error {
 	targetURL := fmt.Sprintf("https://github.com/%s/%s/blob/master/CONTRIBUTING.md", org, repo)
 
 	signedOff := len(commitsMissingDCO) == 0
@@ -184,11 +184,11 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 				return fmt.Errorf("error adding label: %v", err)
 			}
 		}
-		if existingStatus != github.StatusSuccess {
+		if existingStatus != scallywag.StatusSuccess {
 			l.Debugf("Setting DCO status context to succeeded")
-			if err := gc.CreateStatus(org, repo, pr.Head.SHA, github.Status{
+			if err := gc.CreateStatus(org, repo, pr.Head.SHA, scallywag.Status{
 				Context:     dcoContextName,
-				State:       github.StatusSuccess,
+				State:       scallywag.StatusSuccess,
 				TargetURL:   targetURL,
 				Description: dcoContextMessageSuccess,
 			}); err != nil {
@@ -215,11 +215,11 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 			return fmt.Errorf("error removing label: %v", err)
 		}
 	}
-	if existingStatus != github.StatusFailure {
+	if existingStatus != scallywag.StatusFailure {
 		l.Debugf("Setting DCO status context to failed")
-		if err := gc.CreateStatus(org, repo, pr.Head.SHA, github.Status{
+		if err := gc.CreateStatus(org, repo, pr.Head.SHA, scallywag.Status{
 			Context:     dcoContextName,
-			State:       github.StatusFailure,
+			State:       scallywag.StatusFailure,
 			TargetURL:   targetURL,
 			Description: dcoContextMessageFailed,
 		}); err != nil {
@@ -245,7 +245,7 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 // 3. Check the existing PR labels
 // 4. If signed off, apply appropriate labels and status context.
 // 5. If not signed off, apply appropriate labels and status context and add a comment.
-func handle(gc gitHubClient, cp commentPruner, log *logrus.Entry, org, repo string, pr github.PullRequest, addComment bool) error {
+func handle(gc gitHubClient, cp commentPruner, log *logrus.Entry, org, repo string, pr scallywag.PullRequest, addComment bool) error {
 	l := log.WithField("pr", pr.Number)
 
 	commitsMissingDCO, err := checkCommitMessages(gc, l, org, repo, pr.Number)
@@ -269,8 +269,7 @@ func handle(gc gitHubClient, cp commentPruner, log *logrus.Entry, org, repo stri
 	return takeAction(gc, cp, l, org, repo, pr, commitsMissingDCO, existingStatus, hasYesLabel, hasNoLabel, addComment)
 }
 
-// MardkownSHAList prints the list of commits in a markdown-friendly way.
-func MarkdownSHAList(org, repo string, list []github.GitCommit) string {
+func markdownSHAList(org, repo string, list []scallywag.GitCommit) string {
 	lines := make([]string, len(list))
 	lineFmt := "- [%s](https://github.com/%s/%s/commits/%s) %s"
 	for i, commit := range list {
@@ -293,13 +292,13 @@ func MarkdownSHAList(org, repo string, list []github.GitCommit) string {
 }
 
 // shouldPrune finds comments left by this plugin.
-func shouldPrune(log *logrus.Entry) func(github.IssueComment) bool {
-	return func(comment github.IssueComment) bool {
+func shouldPrune(log *logrus.Entry) func(scallywag.IssueComment) bool {
+	return func(comment scallywag.IssueComment) bool {
 		return strings.Contains(comment.Body, dcoMsgPruneMatch)
 	}
 }
 
-func handlePullRequestEvent(pc plugins.Agent, pe github.PullRequestEvent) error {
+func handlePullRequestEvent(pc plugins.Agent, pe scallywag.PullRequestEvent) error {
 	cp, err := pc.CommentPruner()
 	if err != nil {
 		return err
@@ -308,27 +307,27 @@ func handlePullRequestEvent(pc plugins.Agent, pe github.PullRequestEvent) error 
 	return handlePullRequest(pc.GitHubClient, cp, pc.Logger, pe)
 }
 
-func handlePullRequest(gc gitHubClient, cp commentPruner, log *logrus.Entry, pe github.PullRequestEvent) error {
+func handlePullRequest(gc gitHubClient, cp commentPruner, log *logrus.Entry, pe scallywag.PullRequestEvent) error {
 	org := pe.Repo.Owner.Login
 	repo := pe.Repo.Name
 
 	// we only reprocess on label, unlabel, open, reopen and synchronize events
 	// this will reduce our API token usage and save processing of unrelated events
 	switch pe.Action {
-	case github.PullRequestActionOpened,
-		github.PullRequestActionReopened,
-		github.PullRequestActionSynchronize:
+	case scallywag.PullRequestActionOpened,
+		scallywag.PullRequestActionReopened,
+		scallywag.PullRequestActionSynchronize:
 	default:
 		return nil
 	}
 
-	shouldComment := pe.Action == github.PullRequestActionSynchronize ||
-		pe.Action == github.PullRequestActionOpened
+	shouldComment := pe.Action == scallywag.PullRequestActionSynchronize ||
+		pe.Action == scallywag.PullRequestActionOpened
 
 	return handle(gc, cp, log, org, repo, pe.PullRequest, shouldComment)
 }
 
-func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
+func handleCommentEvent(pc plugins.Agent, ce scallywag.GenericCommentEvent) error {
 	cp, err := pc.CommentPruner()
 	if err != nil {
 		return err
@@ -337,9 +336,9 @@ func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
 	return handleComment(pc.GitHubClient, cp, pc.Logger, ce)
 }
 
-func handleComment(gc gitHubClient, cp commentPruner, log *logrus.Entry, ce github.GenericCommentEvent) error {
+func handleComment(gc gitHubClient, cp commentPruner, log *logrus.Entry, ce scallywag.GenericCommentEvent) error {
 	// Only consider open PRs and new comments.
-	if ce.IssueState != "open" || ce.Action != github.GenericCommentActionCreated || !ce.IsPR {
+	if ce.IssueState != "open" || ce.Action != scallywag.GenericCommentActionCreated || !ce.IsPR {
 		return nil
 	}
 	// Only consider "/check-dco" comments.

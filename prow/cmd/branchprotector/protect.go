@@ -29,7 +29,8 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
+
 	"k8s.io/test-infra/prow/logrusutil"
 )
 
@@ -67,7 +68,7 @@ type requirements struct {
 	Org     string
 	Repo    string
 	Branch  string
-	Request *github.BranchProtectionRequest
+	Request *scallywag.BranchProtectionRequest
 }
 
 // Errors holds a list of errors, including a method to concurrently append.
@@ -132,10 +133,10 @@ func main() {
 
 type client interface {
 	RemoveBranchProtection(org, repo, branch string) error
-	UpdateBranchProtection(org, repo, branch string, config github.BranchProtectionRequest) error
-	GetBranches(org, repo string, onlyProtected bool) ([]github.Branch, error)
-	GetRepo(owner, name string) (github.Repo, error)
-	GetRepos(org string, user bool) ([]github.Repo, error)
+	UpdateBranchProtection(org, repo, branch string, config scallywag.BranchProtectionRequest) error
+	GetBranches(org, repo string, onlyProtected bool) ([]scallywag.Branch, error)
+	GetRepo(owner, name string) (scallywag.Repo, error)
+	GetRepos(org string, user bool) ([]scallywag.Repo, error)
 }
 
 type protector struct {
@@ -242,7 +243,7 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 		return nil
 	}
 
-	branches := map[string]github.Branch{}
+	branches := map[string]scallywag.Branch{}
 	for _, onlyProtected := range []bool{false, true} { // put true second so b.Protected is set correctly
 		bs, err := p.client.GetBranches(orgName, repoName, onlyProtected)
 		if err != nil {
@@ -276,7 +277,7 @@ func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch
 		logrus.Infof("%s/%s=%s: already unprotected", orgName, repo, branchName)
 		return nil
 	}
-	var req *github.BranchProtectionRequest
+	var req *scallywag.BranchProtectionRequest
 	if *bp.Protect {
 		r := makeRequest(*bp)
 		req = &r

@@ -130,13 +130,13 @@ func handleTrace(selector string, client corev1.PodInterface) http.HandlerFunc {
 func validateTraceRequest(r *http.Request) error {
 	icID := r.URL.Query().Get(ic)
 	pr := r.URL.Query().Get(github.PrLogField)
-	repo := r.URL.Query().Get(github.RepoLogField)
+	repo := r.URL.Query().Get(scallywag.RepoLogField)
 	org := r.URL.Query().Get(github.OrgLogField)
 	eventGUID := r.URL.Query().Get(github.EventGUID)
 
 	if (pr == "" || repo == "" || org == "") && eventGUID == "" && icID == "" {
 		return fmt.Errorf("need either %q, %q, and %q, or %q, or %q to be specified",
-			github.PrLogField, github.RepoLogField, github.OrgLogField, github.EventGUID, ic)
+			github.PrLogField, scallywag.RepoLogField, github.OrgLogField, github.EventGUID, ic)
 	}
 	if icID != "" && eventGUID != "" {
 		return fmt.Errorf("cannot specify both %s (%s) and %s (%s)", ic, icID, github.EventGUID, eventGUID)
@@ -198,7 +198,7 @@ func getPodLog(podName string, client corev1.PodInterface, r *http.Request) (lin
 	pr := r.URL.Query().Get(github.PrLogField)
 	// Error already checked in validateTraceRequest
 	prNum, _ := strconv.Atoi(pr)
-	repo := r.URL.Query().Get(github.RepoLogField)
+	repo := r.URL.Query().Get(scallywag.RepoLogField)
 	org := r.URL.Query().Get(github.OrgLogField)
 	eventGUID := r.URL.Query().Get(github.EventGUID)
 

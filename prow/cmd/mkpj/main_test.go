@@ -20,8 +20,8 @@ import (
 	"testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func TestOptions_Validate(t *testing.T) {
@@ -69,9 +69,9 @@ func TestDefaultPR(t *testing.T) {
 	author := "Bernardo Soares"
 	sha := "Esther Greenwood"
 	fakeGitHubClient := &fakegithub.FakeClient{}
-	fakeGitHubClient.PullRequests = map[int]*github.PullRequest{2: {
-		User: github.User{Login: author},
-		Head: github.PullRequestBranch{SHA: sha},
+	fakeGitHubClient.PullRequests = map[int]*scallywag.PullRequest{2: {
+		User: scallywag.User{Login: author},
+		Head: scallywag.PullRequestBranch{SHA: sha},
 	}}
 	o := &options{pullNumber: 2, githubClient: fakeGitHubClient}
 	pjs := &prowapi.ProwJobSpec{Refs: &prowapi.Refs{Pulls: []prowapi.Pull{{Number: 2}}}}
@@ -110,7 +110,7 @@ func TestDefaultBaseRef(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			fakeGitHubClient := &fakegithub.FakeClient{}
-			fakeGitHubClient.PullRequests = map[int]*github.PullRequest{2: {Base: github.PullRequestBranch{
+			fakeGitHubClient.PullRequests = map[int]*scallywag.PullRequest{2: {Base: scallywag.PullRequestBranch{
 				SHA: test.prBaseSha,
 			}}}
 			o := &options{pullNumber: test.pullNumber, githubClient: fakeGitHubClient}

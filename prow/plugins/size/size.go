@@ -27,9 +27,9 @@ import (
 
 	"k8s.io/test-infra/prow/genfiles"
 	"k8s.io/test-infra/prow/gitattributes"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 // The sizes are configurable in the `plugins.yaml` config file; the line constants
@@ -66,7 +66,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		nil
 }
 
-func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pe scallywag.PullRequestEvent) error {
 	return handlePR(pc.GitHubClient, sizesOrDefault(pc.PluginConfig.Size), pc.Logger, pe)
 }
 
@@ -74,12 +74,12 @@ func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
 type githubClient interface {
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
 	GetFile(org, repo, filepath, commit string) ([]byte, error)
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
 }
 
-func handlePR(gc githubClient, sizes plugins.Size, le *logrus.Entry, pe github.PullRequestEvent) error {
+func handlePR(gc githubClient, sizes plugins.Size, le *logrus.Entry, pe scallywag.PullRequestEvent) error {
 	if !isPRChanged(pe) {
 		return nil
 	}
@@ -214,15 +214,15 @@ func bucket(lineCount int, sizes plugins.Size) size {
 }
 
 // These are the only actions indicating the code diffs may have changed.
-func isPRChanged(pe github.PullRequestEvent) bool {
+func isPRChanged(pe scallywag.PullRequestEvent) bool {
 	switch pe.Action {
-	case github.PullRequestActionOpened:
+	case scallywag.PullRequestActionOpened:
 		return true
-	case github.PullRequestActionReopened:
+	case scallywag.PullRequestActionReopened:
 		return true
-	case github.PullRequestActionSynchronize:
+	case scallywag.PullRequestActionSynchronize:
 		return true
-	case github.PullRequestActionEdited:
+	case scallywag.PullRequestActionEdited:
 		return true
 	default:
 		return false

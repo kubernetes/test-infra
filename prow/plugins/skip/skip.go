@@ -24,10 +24,11 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/trigger"
+	"k8s.io/test-infra/prow/scallywag"
+	"k8s.io/test-infra/prow/scallywag/github"
 )
 
 const pluginName = "skip"
@@ -38,10 +39,10 @@ var (
 
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
-	CreateStatus(org, repo, ref string, s github.Status) error
-	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
-	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	CreateStatus(org, repo, ref string, s scallywag.Status) error
+	GetPullRequest(org, repo string, number int) (*scallywag.PullRequest, error)
+	GetCombinedStatus(org, repo, ref string) (*scallywag.CombinedStatus, error)
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
 }
 
 func init() {
@@ -62,13 +63,13 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	return pluginHelp, nil
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
 	honorOkToTest := trigger.HonorOkToTest(pc.PluginConfig.TriggerFor(e.Repo.Owner.Login, e.Repo.Name))
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.Config.Presubmits[e.Repo.FullName], honorOkToTest)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, presubmits []config.Presubmit, honorOkToTest bool) error {
-	if !e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
+func handle(gc githubClient, log *logrus.Entry, e *scallywag.GenericCommentEvent, presubmits []config.Presubmit, honorOkToTest bool) error {
+	if !e.IsPR || e.IssueState != "open" || e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 
@@ -132,8 +133,8 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 			continue
 		}
 		context := job.Context
-		status := github.Status{
-			State:       github.StatusSuccess,
+		status := scallywag.Status{
+			State:       scallywag.StatusSuccess,
 			Description: "Skipped",
 			Context:     context,
 		}
@@ -146,7 +147,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	return nil
 }
 
-func statusExists(job config.Presubmit, statuses []github.Status) bool {
+func statusExists(job config.Presubmit, statuses []scallywag.Status) bool {
 	for _, status := range statuses {
 		if status.Context == job.Context {
 			return true
@@ -155,9 +156,9 @@ func statusExists(job config.Presubmit, statuses []github.Status) bool {
 	return false
 }
 
-func isSuccess(job config.Presubmit, statuses []github.Status) bool {
+func isSuccess(job config.Presubmit, statuses []scallywag.Status) bool {
 	for _, status := range statuses {
-		if status.Context == job.Context && status.State == github.StatusSuccess {
+		if status.Context == job.Context && status.State == scallywag.StatusSuccess {
 			return true
 		}
 	}

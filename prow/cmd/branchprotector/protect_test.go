@@ -29,7 +29,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func TestOptions_Validate(t *testing.T) {
@@ -75,26 +75,26 @@ func TestOptions_Validate(t *testing.T) {
 }
 
 type fakeClient struct {
-	repos    map[string][]github.Repo
-	branches map[string][]github.Branch
+	repos    map[string][]scallywag.Repo
+	branches map[string][]scallywag.Branch
 	deleted  map[string]bool
-	updated  map[string]github.BranchProtectionRequest
+	updated  map[string]scallywag.BranchProtectionRequest
 }
 
-func (c fakeClient) GetRepo(org string, repo string) (github.Repo, error) {
+func (c fakeClient) GetRepo(org string, repo string) (scallywag.Repo, error) {
 	r, ok := c.repos[org]
 	if !ok {
-		return github.Repo{}, fmt.Errorf("Unknown org: %s", org)
+		return scallywag.Repo{}, fmt.Errorf("Unknown org: %s", org)
 	}
 	for _, item := range r {
 		if item.Name == repo {
 			return item, nil
 		}
 	}
-	return github.Repo{}, fmt.Errorf("Unknown repo: %s", repo)
+	return scallywag.Repo{}, fmt.Errorf("Unknown repo: %s", repo)
 }
 
-func (c fakeClient) GetRepos(org string, user bool) ([]github.Repo, error) {
+func (c fakeClient) GetRepos(org string, user bool) ([]scallywag.Repo, error) {
 	r, ok := c.repos[org]
 	if !ok {
 		return nil, fmt.Errorf("Unknown org: %s", org)
@@ -102,12 +102,12 @@ func (c fakeClient) GetRepos(org string, user bool) ([]github.Repo, error) {
 	return r, nil
 }
 
-func (c fakeClient) GetBranches(org, repo string, onlyProtected bool) ([]github.Branch, error) {
+func (c fakeClient) GetBranches(org, repo string, onlyProtected bool) ([]scallywag.Branch, error) {
 	b, ok := c.branches[org+"/"+repo]
 	if !ok {
 		return nil, fmt.Errorf("Unknown repo: %s/%s", org, repo)
 	}
-	var out []github.Branch
+	var out []scallywag.Branch
 	if onlyProtected {
 		for _, item := range b {
 			if !item.Protected {
@@ -126,12 +126,12 @@ func (c fakeClient) GetBranches(org, repo string, onlyProtected bool) ([]github.
 	return b, nil
 }
 
-func (c *fakeClient) UpdateBranchProtection(org, repo, branch string, config github.BranchProtectionRequest) error {
+func (c *fakeClient) UpdateBranchProtection(org, repo, branch string, config scallywag.BranchProtectionRequest) error {
 	if branch == "error" {
 		return errors.New("failed to update branch protection")
 	}
 	if c.updated == nil {
-		c.updated = map[string]github.BranchProtectionRequest{}
+		c.updated = map[string]scallywag.BranchProtectionRequest{}
 	}
 	ctx := org + "/" + repo + "=" + branch
 	c.updated[ctx] = config
@@ -153,8 +153,8 @@ func (c *fakeClient) RemoveBranchProtection(org, repo, branch string) error {
 func TestConfigureBranches(t *testing.T) {
 	yes := true
 
-	prot := github.BranchProtectionRequest{}
-	diffprot := github.BranchProtectionRequest{
+	prot := scallywag.BranchProtectionRequest{}
+	diffprot := scallywag.BranchProtectionRequest{
 		EnforceAdmins: &yes,
 	}
 
@@ -162,7 +162,7 @@ func TestConfigureBranches(t *testing.T) {
 		name    string
 		updates []requirements
 		deletes map[string]bool
-		sets    map[string]github.BranchProtectionRequest
+		sets    map[string]scallywag.BranchProtectionRequest
 		errors  int
 	}{
 		{
@@ -201,7 +201,7 @@ func TestConfigureBranches(t *testing.T) {
 					Request: &diffprot,
 				},
 			},
-			sets: map[string]github.BranchProtectionRequest{
+			sets: map[string]scallywag.BranchProtectionRequest{
 				"one/1=master": prot,
 				"one/1=other":  diffprot,
 			},
@@ -218,7 +218,7 @@ func TestConfigureBranches(t *testing.T) {
 			deletes: map[string]bool{
 				"remove/3=master": true,
 			},
-			sets: map[string]github.BranchProtectionRequest{
+			sets: map[string]scallywag.BranchProtectionRequest{
 				"update/1=master": prot,
 			},
 		},
@@ -296,19 +296,19 @@ branch-protection:
 					Org:     "cfgdef",
 					Repo:    "repo1",
 					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Request: &scallywag.BranchProtectionRequest{},
 				},
 				{
 					Org:     "cfgdef",
 					Repo:    "repo1",
 					Branch:  "branch",
-					Request: &github.BranchProtectionRequest{},
+					Request: &scallywag.BranchProtectionRequest{},
 				},
 				{
 					Org:     "cfgdef",
 					Repo:    "repo2",
 					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Request: &scallywag.BranchProtectionRequest{},
 				},
 			},
 		},
@@ -328,7 +328,7 @@ branch-protection:
 					Org:     "this",
 					Repo:    "yes",
 					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Request: &scallywag.BranchProtectionRequest{},
 				},
 				{
 					Org:     "that",
@@ -357,8 +357,8 @@ branch-protection:
 					Org:    "kubernetes",
 					Repo:   "test-infra",
 					Branch: "master",
-					Request: &github.BranchProtectionRequest{
-						RequiredStatusChecks: &github.RequiredStatusChecks{
+					Request: &scallywag.BranchProtectionRequest{
+						RequiredStatusChecks: &scallywag.RequiredStatusChecks{
 							Contexts: []string{"hello-world"},
 						},
 					},
@@ -367,7 +367,7 @@ branch-protection:
 					Org:     "kubernetes",
 					Repo:    "publishing-bot",
 					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Request: &scallywag.BranchProtectionRequest{},
 				},
 			},
 		},
@@ -431,13 +431,13 @@ branch-protection:
 					Org:     "org",
 					Repo:    "repo1",
 					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Request: &scallywag.BranchProtectionRequest{},
 				},
 				{
 					Org:     "org",
 					Repo:    "repo1",
 					Branch:  "branch",
-					Request: &github.BranchProtectionRequest{},
+					Request: &scallywag.BranchProtectionRequest{},
 				},
 				{
 					Org:     "org",
@@ -463,13 +463,13 @@ branch-protection:
 					Org:     "org",
 					Repo:    "repo1",
 					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Request: &scallywag.BranchProtectionRequest{},
 				},
 				{
 					Org:     "org",
 					Repo:    "repo1",
 					Branch:  "branch",
-					Request: &github.BranchProtectionRequest{},
+					Request: &scallywag.BranchProtectionRequest{},
 				},
 			},
 		},
@@ -493,8 +493,8 @@ branch-protection:
 					Org:    "org",
 					Repo:   "repo",
 					Branch: "master",
-					Request: &github.BranchProtectionRequest{
-						RequiredStatusChecks: &github.RequiredStatusChecks{
+					Request: &scallywag.BranchProtectionRequest{
+						RequiredStatusChecks: &scallywag.RequiredStatusChecks{
 							Contexts: []string{"duplicate-context", "hello-world"},
 						},
 					},
@@ -531,8 +531,8 @@ branch-protection:
 					Org:    "org",
 					Repo:   "repo",
 					Branch: "master",
-					Request: &github.BranchProtectionRequest{
-						RequiredStatusChecks: &github.RequiredStatusChecks{
+					Request: &scallywag.BranchProtectionRequest{
+						RequiredStatusChecks: &scallywag.RequiredStatusChecks{
 							Contexts: []string{"config-presubmit", "org-presubmit", "repo-presubmit", "branch-presubmit"},
 						},
 					},
@@ -569,8 +569,8 @@ branch-protection:
 					Org:    "org",
 					Repo:   "repo",
 					Branch: "master",
-					Request: &github.BranchProtectionRequest{
-						Restrictions: &github.Restrictions{
+					Request: &scallywag.BranchProtectionRequest{
+						Restrictions: &scallywag.Restrictions{
 							Users: &[]string{},
 							Teams: &[]string{"config-team", "org-team", "repo-team", "branch-team"},
 						},
@@ -619,22 +619,22 @@ branch-protection:
 					Org:    "all",
 					Repo:   "modern",
 					Branch: "master",
-					Request: &github.BranchProtectionRequest{
+					Request: &scallywag.BranchProtectionRequest{
 						EnforceAdmins: &yes,
-						RequiredStatusChecks: &github.RequiredStatusChecks{
+						RequiredStatusChecks: &scallywag.RequiredStatusChecks{
 							Strict:   true,
 							Contexts: []string{"config-presubmit", "org-presubmit"},
 						},
-						RequiredPullRequestReviews: &github.RequiredPullRequestReviews{
+						RequiredPullRequestReviews: &scallywag.RequiredPullRequestReviews{
 							DismissStaleReviews:          false,
 							RequireCodeOwnerReviews:      true,
 							RequiredApprovingReviewCount: 3,
-							DismissalRestrictions: github.Restrictions{
+							DismissalRestrictions: scallywag.Restrictions{
 								Users: &[]string{"bob", "jane"},
 								Teams: &[]string{"oncall", "sres"},
 							},
 						},
-						Restrictions: &github.Restrictions{
+						Restrictions: &scallywag.Restrictions{
 							Users: &[]string{"cindy"},
 							Teams: &[]string{"config-team", "org-team"},
 						},
@@ -693,7 +693,7 @@ branch-protection:
 					Org:     "protect",
 					Repo:    "update",
 					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Request: &scallywag.BranchProtectionRequest{},
 				},
 			},
 		},
@@ -702,11 +702,11 @@ branch-protection:
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			repos := map[string]map[string]bool{}
-			branches := map[string][]github.Branch{}
+			branches := map[string][]scallywag.Branch{}
 			for _, b := range tc.branches {
 				org, repo, branch := split(b)
 				k := org + "/" + repo
-				branches[k] = append(branches[k], github.Branch{
+				branches[k] = append(branches[k], scallywag.Branch{
 					Name:      branch,
 					Protected: !tc.startUnprotected,
 				})
@@ -718,11 +718,11 @@ branch-protection:
 			}
 			fc := fakeClient{
 				branches: branches,
-				repos:    map[string][]github.Repo{},
+				repos:    map[string][]scallywag.Repo{},
 			}
 			for org, r := range repos {
 				for rname := range r {
-					fc.repos[org] = append(fc.repos[org], github.Repo{Name: rname, FullName: org + "/" + rname, Archived: rname == tc.archived})
+					fc.repos[org] = append(fc.repos[org], scallywag.Repo{Name: rname, FullName: org + "/" + rname, Archived: rname == tc.archived})
 				}
 			}
 
@@ -794,10 +794,10 @@ func fixup(r *requirements) {
 
 func TestIgnoreArchivedRepos(t *testing.T) {
 	repos := map[string]map[string]bool{}
-	branches := map[string][]github.Branch{}
+	branches := map[string][]scallywag.Branch{}
 	org, repo, branch := "organization", "repository", "branch"
 	k := org + "/" + repo
-	branches[k] = append(branches[k], github.Branch{
+	branches[k] = append(branches[k], scallywag.Branch{
 		Name: branch,
 	})
 	r := repos[org]
@@ -807,11 +807,11 @@ func TestIgnoreArchivedRepos(t *testing.T) {
 	repos[org][repo] = true
 	fc := fakeClient{
 		branches: branches,
-		repos:    map[string][]github.Repo{},
+		repos:    map[string][]scallywag.Repo{},
 	}
 	for org, r := range repos {
 		for rname := range r {
-			fc.repos[org] = append(fc.repos[org], github.Repo{Name: rname, FullName: org + "/" + rname, Archived: true})
+			fc.repos[org] = append(fc.repos[org], scallywag.Repo{Name: rname, FullName: org + "/" + rname, Archived: true})
 		}
 	}
 

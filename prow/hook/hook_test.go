@@ -23,15 +23,15 @@ import (
 	"time"
 
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/phony"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
-var ice = github.IssueCommentEvent{
+var ice = scallywag.IssueCommentEvent{
 	Action: "reopened",
-	Repo: github.Repo{
-		Owner: github.User{
+	Repo: scallywag.Repo{
+		Owner: scallywag.User{
 			Login: "foo",
 		},
 		Name:     "bar",
@@ -50,7 +50,7 @@ func TestHook(t *testing.T) {
 	}
 	plugins.RegisterIssueHandler(
 		"baz",
-		func(pc plugins.Agent, ie github.IssueEvent) error {
+		func(pc plugins.Agent, ie scallywag.IssueEvent) error {
 			called <- true
 			return nil
 		},

@@ -24,20 +24,20 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/git/localgit"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type fghc struct {
 	sync.Mutex
-	pr       *github.PullRequest
+	pr       *scallywag.PullRequest
 	isMember bool
 
 	patch      []byte
 	comments   []string
 	prs        []string
-	prComments []github.IssueComment
+	prComments []scallywag.IssueComment
 	createdNum int
-	orgMembers []github.TeamMember
+	orgMembers []scallywag.TeamMember
 }
 
 func (f *fghc) AssignIssue(org, repo string, number int, logins []string) error {
@@ -46,7 +46,7 @@ func (f *fghc) AssignIssue(org, repo string, number int, logins []string) error 
 	return nil
 }
 
-func (f *fghc) GetPullRequest(org, repo string, number int) (*github.PullRequest, error) {
+func (f *fghc) GetPullRequest(org, repo string, number int) (*scallywag.PullRequest, error) {
 	f.Lock()
 	defer f.Unlock()
 	return f.pr, nil
@@ -71,10 +71,10 @@ func (f *fghc) IsMember(org, user string) (bool, error) {
 	return f.isMember, nil
 }
 
-func (f *fghc) GetRepo(owner, name string) (github.Repo, error) {
+func (f *fghc) GetRepo(owner, name string) (scallywag.Repo, error) {
 	f.Lock()
 	defer f.Unlock()
-	return github.Repo{}, nil
+	return scallywag.Repo{}, nil
 }
 
 var expectedFmt = `repo=%s title=%q body=%q head=%s base=%s maintainer_can_modify=%t`
@@ -86,13 +86,13 @@ func (f *fghc) CreatePullRequest(org, repo, title, body, head, base string, canM
 	return f.createdNum, nil
 }
 
-func (f *fghc) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
+func (f *fghc) ListIssueComments(org, repo string, number int) ([]scallywag.IssueComment, error) {
 	f.Lock()
 	defer f.Unlock()
 	return f.prComments, nil
 }
 
-func (f *fghc) ListOrgMembers(org, role string) ([]github.TeamMember, error) {
+func (f *fghc) ListOrgMembers(org, role string) ([]scallywag.TeamMember, error) {
 	f.Lock()
 	defer f.Unlock()
 	if role != "all" {
@@ -165,8 +165,8 @@ func TestCherryPickIC(t *testing.T) {
 	}
 
 	ghc := &fghc{
-		pr: &github.PullRequest{
-			Base: github.PullRequestBranch{
+		pr: &scallywag.PullRequest{
+			Base: scallywag.PullRequestBranch{
 				Ref: "master",
 			},
 			Merged: true,
@@ -177,22 +177,22 @@ func TestCherryPickIC(t *testing.T) {
 		createdNum: 3,
 		patch:      patch,
 	}
-	ic := github.IssueCommentEvent{
-		Action: github.IssueCommentActionCreated,
-		Repo: github.Repo{
-			Owner: github.User{
+	ic := scallywag.IssueCommentEvent{
+		Action: scallywag.IssueCommentActionCreated,
+		Repo: scallywag.Repo{
+			Owner: scallywag.User{
 				Login: "foo",
 			},
 			Name:     "bar",
 			FullName: "foo/bar",
 		},
-		Issue: github.Issue{
+		Issue: scallywag.Issue{
 			Number:      2,
 			State:       "closed",
 			PullRequest: &struct{}{},
 		},
-		Comment: github.IssueComment{
-			User: github.User{
+		Comment: scallywag.IssueComment{
+			User: scallywag.User{
 				Login: "wiseguy",
 			},
 			Body: "/cherrypick stage",
@@ -218,7 +218,7 @@ func TestCherryPickIC(t *testing.T) {
 		ghc:            ghc,
 		tokenGenerator: getSecret,
 		log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
-		repos:          []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+		repos:          []scallywag.Repo{{Fork: true, FullName: "ci-robot/bar"}},
 
 		prowAssignments: true,
 	}
@@ -258,7 +258,7 @@ func TestCherryPickPR(t *testing.T) {
 	}
 
 	ghc := &fghc{
-		orgMembers: []github.TeamMember{
+		orgMembers: []scallywag.TeamMember{
 			{
 				Login: "approver",
 			},
@@ -266,39 +266,39 @@ func TestCherryPickPR(t *testing.T) {
 				Login: "merge-bot",
 			},
 		},
-		prComments: []github.IssueComment{
+		prComments: []scallywag.IssueComment{
 			{
-				User: github.User{
+				User: scallywag.User{
 					Login: "developer",
 				},
 				Body: "a review comment",
 			},
 			{
-				User: github.User{
+				User: scallywag.User{
 					Login: "approver",
 				},
 				Body: "/cherrypick release-1.5\r",
 			},
 			{
-				User: github.User{
+				User: scallywag.User{
 					Login: "approver",
 				},
 				Body: "/cherrypick release-1.6",
 			},
 			{
-				User: github.User{
+				User: scallywag.User{
 					Login: "fan",
 				},
 				Body: "/cherrypick release-1.7",
 			},
 			{
-				User: github.User{
+				User: scallywag.User{
 					Login: "approver",
 				},
 				Body: "/approve",
 			},
 			{
-				User: github.User{
+				User: scallywag.User{
 					Login: "merge-bot",
 				},
 				Body: "Automatic merge from submit-queue.",
@@ -308,13 +308,13 @@ func TestCherryPickPR(t *testing.T) {
 		createdNum: 3,
 		patch:      patch,
 	}
-	pr := github.PullRequestEvent{
-		Action: github.PullRequestActionClosed,
-		PullRequest: github.PullRequest{
-			Base: github.PullRequestBranch{
+	pr := scallywag.PullRequestEvent{
+		Action: scallywag.PullRequestActionClosed,
+		PullRequest: scallywag.PullRequest{
+			Base: scallywag.PullRequestBranch{
 				Ref: "master",
-				Repo: github.Repo{
-					Owner: github.User{
+				Repo: scallywag.Repo{
+					Owner: scallywag.User{
 						Login: "foo",
 					},
 					Name: "bar",
@@ -340,7 +340,7 @@ func TestCherryPickPR(t *testing.T) {
 		ghc:            ghc,
 		tokenGenerator: getSecret,
 		log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
-		repos:          []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+		repos:          []scallywag.Repo{{Fork: true, FullName: "ci-robot/bar"}},
 
 		prowAssignments: false,
 	}

@@ -12,6 +12,7 @@ go_library(
     deps = [
         "//prow/github:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//prow/scallywag:go_default_library",
     ],
 )
 

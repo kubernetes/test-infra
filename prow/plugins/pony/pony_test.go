@@ -27,8 +27,8 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type fakeHerd string
@@ -205,12 +205,12 @@ func TestHttpResponse(t *testing.T) {
 
 		// github fake client
 		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
+			IssueComments: make(map[int][]scallywag.IssueComment),
 		}
 
 		// fully test handling a comment
-		e := &github.GenericCommentEvent{
-			Action:     github.GenericCommentActionCreated,
+		e := &scallywag.GenericCommentEvent{
+			Action:     scallywag.GenericCommentActionCreated,
 			Body:       testcase.comment,
 			Number:     5,
 			IssueState: "open",
@@ -233,7 +233,7 @@ func TestHttpResponse(t *testing.T) {
 func TestPonies(t *testing.T) {
 	var testcases = []struct {
 		name          string
-		action        github.GenericCommentEventAction
+		action        scallywag.GenericCommentEventAction
 		body          string
 		state         string
 		pr            bool
@@ -242,14 +242,14 @@ func TestPonies(t *testing.T) {
 		{
 			name:          "ignore edited comment",
 			state:         "open",
-			action:        github.GenericCommentActionEdited,
+			action:        scallywag.GenericCommentActionEdited,
 			body:          "/pony",
 			shouldComment: false,
 		},
 		{
 			name:          "leave pony on pr",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/pony",
 			pr:            true,
 			shouldComment: true,
@@ -257,51 +257,51 @@ func TestPonies(t *testing.T) {
 		{
 			name:          "leave pony on issue",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/pony",
 			shouldComment: true,
 		},
 		{
 			name:          "leave pony on issue, trailing space",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/pony \r",
 			shouldComment: true,
 		},
 		{
 			name:          "leave pony on issue, tag specified",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/pony Twilight Sparkle",
 			shouldComment: true,
 		},
 		{
 			name:          "leave pony on issue, tag specified, trailing space",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/pony Twilight Sparkle \r",
 			shouldComment: true,
 		},
 		{
 			name:          "don't leave cats or dogs",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/woof\n/meow",
 			shouldComment: false,
 		},
 		{
 			name:          "do nothing in the middle of a line",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "did you know that /pony makes ponies happen?",
 			shouldComment: false,
 		},
 	}
 	for _, tc := range testcases {
 		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
+			IssueComments: make(map[int][]scallywag.IssueComment),
 		}
-		e := &github.GenericCommentEvent{
+		e := &scallywag.GenericCommentEvent{
 			Action:     tc.action,
 			Body:       tc.body,
 			Number:     5,

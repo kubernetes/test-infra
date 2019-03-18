@@ -24,9 +24,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func formatLabels(labels ...string) []string {
@@ -125,13 +125,13 @@ func TestMilestoneStatus(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		fakeClient := &fakegithub.FakeClient{IssueComments: make(map[int][]github.IssueComment)}
-		e := &github.GenericCommentEvent{
-			Action: github.GenericCommentActionCreated,
+		fakeClient := &fakegithub.FakeClient{IssueComments: make(map[int][]scallywag.IssueComment)}
+		e := &scallywag.GenericCommentEvent{
+			Action: scallywag.GenericCommentActionCreated,
 			Body:   tc.body,
 			Number: 1,
-			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
-			User:   github.User{Login: tc.commenter},
+			Repo:   scallywag.Repo{Owner: scallywag.User{Login: "org"}, Name: "repo"},
+			User:   scallywag.User{Login: tc.commenter},
 		}
 
 		repoMilestone := map[string]plugins.Milestone{"": {MaintainersID: 0}}

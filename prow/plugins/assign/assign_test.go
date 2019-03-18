@@ -22,7 +22,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type fakeClient struct {
@@ -45,7 +45,7 @@ func (c *fakeClient) UnassignIssue(owner, repo string, number int, assignees []s
 }
 
 func (c *fakeClient) AssignIssue(owner, repo string, number int, assignees []string) error {
-	var missing github.MissingUsers
+	var missing scallywag.MissingUsers
 	sort.Strings(assignees)
 	if len(assignees) > 10 {
 		for _, who := range assignees[10:] {
@@ -71,7 +71,7 @@ func (c *fakeClient) AssignIssue(owner, repo string, number int, assignees []str
 }
 
 func (c *fakeClient) RequestReview(org, repo string, number int, logins []string) error {
-	var missing github.MissingUsers
+	var missing scallywag.MissingUsers
 	for _, user := range logins {
 		if c.contributors[user] {
 			c.requested[user]++
@@ -391,10 +391,10 @@ func TestAssignAndReview(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		fc := newFakeClient([]string{"hello-world", "allow_underscore", "cjwagner", "merlin", "kubernetes/sig-testing-misc"})
-		e := github.GenericCommentEvent{
+		e := scallywag.GenericCommentEvent{
 			Body:   tc.body,
-			User:   github.User{Login: tc.commenter},
-			Repo:   github.Repo{Name: "repo", Owner: github.User{Login: "org"}},
+			User:   scallywag.User{Login: tc.commenter},
+			Repo:   scallywag.Repo{Name: "repo", Owner: scallywag.User{Login: "org"}},
 			Number: 5,
 		}
 		if err := handle(newAssignHandler(e, fc, logrus.WithField("plugin", pluginName))); err != nil {

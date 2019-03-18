@@ -25,7 +25,7 @@ import (
 	"text/template"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -37,8 +37,8 @@ const (
 // through GitHub comments.
 type GitHubClient interface {
 	BotName() (string, error)
-	CreateStatus(org, repo, ref string, s github.Status) error
-	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
+	CreateStatus(org, repo, ref string, s scallywag.Status) error
+	ListIssueComments(org, repo string, number int) ([]scallywag.IssueComment, error)
 	CreateComment(org, repo string, number int, comment string) error
 	DeleteComment(org, repo string, ID int) error
 	EditComment(org, repo string, ID int, comment string) error
@@ -50,17 +50,17 @@ type GitHubClient interface {
 func prowjobStateToGitHubStatus(pjState prowapi.ProwJobState) (string, error) {
 	switch pjState {
 	case prowapi.TriggeredState:
-		return github.StatusPending, nil
+		return scallywag.StatusPending, nil
 	case prowapi.PendingState:
-		return github.StatusPending, nil
+		return scallywag.StatusPending, nil
 	case prowapi.SuccessState:
-		return github.StatusSuccess, nil
+		return scallywag.StatusSuccess, nil
 	case prowapi.ErrorState:
-		return github.StatusError, nil
+		return scallywag.StatusError, nil
 	case prowapi.FailureState:
-		return github.StatusFailure, nil
+		return scallywag.StatusFailure, nil
 	case prowapi.AbortedState:
-		return github.StatusFailure, nil
+		return scallywag.StatusFailure, nil
 	}
 	return "", fmt.Errorf("Unknown prowjob state: %v", pjState)
 }
@@ -93,7 +93,7 @@ func reportStatus(ghc GitHubClient, pj prowapi.ProwJob) error {
 		if len(refs.Pulls) > 0 {
 			sha = refs.Pulls[0].SHA
 		}
-		if err := ghc.CreateStatus(refs.Org, refs.Repo, sha, github.Status{
+		if err := ghc.CreateStatus(refs.Org, refs.Repo, sha, scallywag.Status{
 			State:       contextState,
 			Description: truncate(pj.Status.Description),
 			Context:     pj.Spec.Context, // consider truncating this too
@@ -193,7 +193,7 @@ func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.Prow
 // entries, and the ID of the comment to update. If there are no table entries
 // then don't make a new comment. Otherwise, if the comment to update is 0,
 // create a new comment.
-func parseIssueComments(pj prowapi.ProwJob, botName string, ics []github.IssueComment) ([]int, []string, int) {
+func parseIssueComments(pj prowapi.ProwJob, botName string, ics []scallywag.IssueComment) ([]int, []string, int) {
 	var delete []int
 	var previousComments []int
 	var latestComment int
@@ -251,7 +251,7 @@ func parseIssueComments(pj prowapi.ProwJob, botName string, ics []github.IssueCo
 		}
 	}
 	var createNewComment bool
-	if string(pj.Status.State) == github.StatusFailure {
+	if string(pj.Status.State) == scallywag.StatusFailure {
 		newEntries = append(newEntries, createEntry(pj))
 		createNewComment = true
 	}

@@ -31,7 +31,9 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 // Server implements http.Handler. It validates incoming GitHub webhooks and
@@ -74,8 +76,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.Header) error {
 	l := logrus.WithFields(
 		logrus.Fields{
-			"event-type":     eventType,
-			github.EventGUID: eventGUID,
+			"event-type":        eventType,
+			scallywag.EventGUID: eventGUID,
 		},
 	)
 	// We don't want to fail the webhook due to a metrics error.
@@ -87,7 +89,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 	var srcRepo string
 	switch eventType {
 	case "issues":
-		var i github.IssueEvent
+		var i scallywag.IssueEvent
 		if err := json.Unmarshal(payload, &i); err != nil {
 			return err
 		}
@@ -96,7 +98,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		s.wg.Add(1)
 		go s.handleIssueEvent(l, i)
 	case "issue_comment":
-		var ic github.IssueCommentEvent
+		var ic scallywag.IssueCommentEvent
 		if err := json.Unmarshal(payload, &ic); err != nil {
 			return err
 		}
@@ -105,7 +107,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		s.wg.Add(1)
 		go s.handleIssueCommentEvent(l, ic)
 	case "pull_request":
-		var pr github.PullRequestEvent
+		var pr scallywag.PullRequestEvent
 		if err := json.Unmarshal(payload, &pr); err != nil {
 			return err
 		}
@@ -114,7 +116,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		s.wg.Add(1)
 		go s.handlePullRequestEvent(l, pr)
 	case "pull_request_review":
-		var re github.ReviewEvent
+		var re scallywag.ReviewEvent
 		if err := json.Unmarshal(payload, &re); err != nil {
 			return err
 		}
@@ -123,7 +125,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		s.wg.Add(1)
 		go s.handleReviewEvent(l, re)
 	case "pull_request_review_comment":
-		var rce github.ReviewCommentEvent
+		var rce scallywag.ReviewCommentEvent
 		if err := json.Unmarshal(payload, &rce); err != nil {
 			return err
 		}
@@ -132,7 +134,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		s.wg.Add(1)
 		go s.handleReviewCommentEvent(l, rce)
 	case "push":
-		var pe github.PushEvent
+		var pe scallywag.PushEvent
 		if err := json.Unmarshal(payload, &pe); err != nil {
 			return err
 		}
@@ -141,7 +143,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		s.wg.Add(1)
 		go s.handlePushEvent(l, pe)
 	case "status":
-		var se github.StatusEvent
+		var se scallywag.StatusEvent
 		if err := json.Unmarshal(payload, &se); err != nil {
 			return err
 		}

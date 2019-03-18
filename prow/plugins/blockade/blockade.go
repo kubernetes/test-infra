@@ -30,10 +30,10 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -44,15 +44,15 @@ const (
 var blockedPathsBody = fmt.Sprintf("Adding label: `%s` because PR changes a protected file.", labels.BlockedPaths)
 
 type githubClient interface {
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
 	CreateComment(org, repo string, number int, comment string) error
 }
 
 type pruneClient interface {
-	PruneComments(func(ic github.IssueComment) bool)
+	PruneComments(func(ic scallywag.IssueComment) bool)
 }
 
 func init() {
@@ -84,7 +84,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		nil
 }
 
-type blockCalc func([]github.PullRequestChange, []blockade) summary
+type blockCalc func([]scallywag.PullRequestChange, []blockade) summary
 
 type client struct {
 	ghc githubClient
@@ -93,7 +93,7 @@ type client struct {
 	blockCalc blockCalc
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre scallywag.PullRequestEvent) error {
 	cp, err := pc.CommentPruner()
 	if err != nil {
 		return err
@@ -111,7 +111,7 @@ func (bd *blockade) isBlocked(file string) bool {
 	return matchesAny(file, bd.blockRegexps) && !matchesAny(file, bd.exceptionRegexps)
 }
 
-type summary map[string][]github.PullRequestChange
+type summary map[string][]scallywag.PullRequestChange
 
 func (s summary) String() string {
 	if len(s) == 0 {
@@ -128,10 +128,10 @@ func (s summary) String() string {
 	return buf.String()
 }
 
-func handle(ghc githubClient, log *logrus.Entry, config []plugins.Blockade, cp pruneClient, blockCalc blockCalc, pre *github.PullRequestEvent) error {
-	if pre.Action != github.PullRequestActionSynchronize &&
-		pre.Action != github.PullRequestActionOpened &&
-		pre.Action != github.PullRequestActionReopened {
+func handle(ghc githubClient, log *logrus.Entry, config []plugins.Blockade, cp pruneClient, blockCalc blockCalc, pre *scallywag.PullRequestEvent) error {
+	if pre.Action != scallywag.PullRequestActionSynchronize &&
+		pre.Action != scallywag.PullRequestActionOpened &&
+		pre.Action != scallywag.PullRequestActionReopened {
 		return nil
 	}
 
@@ -171,7 +171,7 @@ func handle(ghc githubClient, log *logrus.Entry, config []plugins.Blockade, cp p
 		if err := ghc.RemoveLabel(org, repo, pre.Number, labels.BlockedPaths); err != nil {
 			return err
 		}
-		cp.PruneComments(func(ic github.IssueComment) bool {
+		cp.PruneComments(func(ic scallywag.IssueComment) bool {
 			return strings.Contains(ic.Body, blockedPathsBody)
 		})
 	}
@@ -220,7 +220,7 @@ func compileApplicableBlockades(org, repo string, log *logrus.Entry, blockades [
 }
 
 // calculateBlocks determines if a PR should be blocked and returns the summary describing the block.
-func calculateBlocks(changes []github.PullRequestChange, blockades []blockade) summary {
+func calculateBlocks(changes []scallywag.PullRequestChange, blockades []blockade) summary {
 	sum := make(summary)
 	for _, change := range changes {
 		for _, b := range blockades {
@@ -232,7 +232,7 @@ func calculateBlocks(changes []github.PullRequestChange, blockades []blockade) s
 	return sum
 }
 
-func hasBlockedLabel(githubLabels []github.Label) bool {
+func hasBlockedLabel(githubLabels []scallywag.Label) bool {
 	label := strings.ToLower(labels.BlockedPaths)
 	for _, elem := range githubLabels {
 		if strings.ToLower(elem.Name) == label {

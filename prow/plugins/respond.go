@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 // AboutThisBotWithoutCommands contains the message that explains how to interact with the bot.
@@ -60,7 +60,7 @@ func FormatSimpleResponse(to, message string) string {
 }
 
 // FormatICResponse nicely formats a response to an issue comment.
-func FormatICResponse(ic github.IssueComment, s string) string {
+func FormatICResponse(ic scallywag.IssueComment, s string) string {
 	return FormatResponseRaw(ic.Body, ic.HTMLURL, ic.User.Login, s)
 }
 

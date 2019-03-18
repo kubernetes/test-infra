@@ -22,16 +22,17 @@ import (
 
 	"github.com/pkg/errors"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type modeTest struct {
 	name          string
-	start         []github.Status
-	expectedDiffs []github.Status
+	start         []scallywag.Status
+	expectedDiffs []scallywag.Status
 }
 
 // compareDiffs checks if a list of status updates matches an expected list of status updates.
-func compareDiffs(diffs []github.Status, expectedDiffs []github.Status) error {
+func compareDiffs(diffs []scallywag.Status, expectedDiffs []scallywag.Status) error {
 	if len(diffs) != len(expectedDiffs) {
 		return fmt.Errorf("failed because the returned diff had %d changes instead of %d", len(diffs), len(expectedDiffs))
 	}
@@ -45,7 +46,7 @@ func compareDiffs(diffs []github.Status, expectedDiffs []github.Status) error {
 		if diff.State == "" {
 			return fmt.Errorf("failed because the returned diff contained a Status with an empty State field")
 		}
-		var match github.Status
+		var match scallywag.Status
 		var found bool
 		for _, expected := range expectedDiffs {
 			if expected.Context == diff.Context {
@@ -86,63 +87,63 @@ func TestMoveMode(t *testing.T) {
 	tests := []*modeTest{
 		{
 			name: "simple",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus(contextA, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []github.Status{
+			expectedDiffs: []scallywag.Status{
 				makeStatus(contextA, "success", desc, ""),
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
 		},
 		{
 			name: "unrelated contexts",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus("also not related", "error", "description 4", "url 4"),
 				makeStatus(contextA, "failure", "description 1", "url 1"),
 				makeStatus("unrelated context", "success", "description 2", "url 2"),
 			},
-			expectedDiffs: []github.Status{
+			expectedDiffs: []scallywag.Status{
 				makeStatus(contextA, "success", desc, ""),
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
 		},
 		{
 			name: "unrelated contexts; missing context A",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus("also not related", "error", "description 4", "url 4"),
 				makeStatus("unrelated context", "success", "description 2", "url 2"),
 			},
-			expectedDiffs: []github.Status{},
+			expectedDiffs: []scallywag.Status{},
 		},
 		{
 			name: "unrelated contexts; already have context A and B",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus("also not related", "error", "description 4", "url 4"),
 				makeStatus(contextA, "failure", "description 1", "url 1"),
 				makeStatus("unrelated context", "success", "description 2", "url 2"),
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []github.Status{},
+			expectedDiffs: []scallywag.Status{},
 		},
 		{
 			name: "unrelated contexts; already have context B; no context A",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus("also not related", "error", "description 4", "url 4"),
 				makeStatus("unrelated context", "success", "description 2", "url 2"),
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []github.Status{},
+			expectedDiffs: []scallywag.Status{},
 		},
 		{
 			name:          "no contexts",
-			start:         []github.Status{},
-			expectedDiffs: []github.Status{},
+			start:         []scallywag.Status{},
+			expectedDiffs: []scallywag.Status{},
 		},
 	}
 
 	m := *MoveMode(contextA, contextB, "")
 	for _, test := range tests {
-		diff := m.processStatuses(&github.CombinedStatus{Statuses: test.start})
+		diff := m.processStatuses(&scallywag.CombinedStatus{Statuses: test.start})
 		if err := compareDiffs(diff, test.expectedDiffs); err != nil {
 			t.Errorf("MoveMode test '%s' %v\n", test.name, err)
 		}
@@ -156,76 +157,76 @@ func TestCopyMode(t *testing.T) {
 	tests := []*modeTest{
 		{
 			name: "simple",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus(contextA, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []github.Status{
+			expectedDiffs: []scallywag.Status{
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
 		},
 		{
 			name: "unrelated contexts",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus("unrelated context", "success", "description 2", "url 2"),
 				makeStatus(contextA, "failure", "description 1", "url 1"),
 				makeStatus("also not related", "error", "description 4", "url 4"),
 			},
-			expectedDiffs: []github.Status{
+			expectedDiffs: []scallywag.Status{
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
 		},
 		{
 			name: "already have context B",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus(contextA, "failure", "description 1", "url 1"),
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []github.Status{},
+			expectedDiffs: []scallywag.Status{},
 		},
 		{
 			name: "already have updated context B",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus(contextA, "failure", "description 1", "url 1"),
 				makeStatus(contextB, "success", "description 2", "url 2"),
 			},
-			expectedDiffs: []github.Status{},
+			expectedDiffs: []scallywag.Status{},
 		},
 		{
 			name: "unrelated contexts already have updated context B",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus("unrelated context", "success", "description 2", "url 2"),
 				makeStatus(contextA, "failure", "description 1", "url 1"),
 				makeStatus("also not related", "error", "description 4", "url 4"),
 				makeStatus(contextB, "error", "description 3", "url 3"),
 			},
-			expectedDiffs: []github.Status{},
+			expectedDiffs: []scallywag.Status{},
 		},
 		{
 			name: "only have context B",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []github.Status{},
+			expectedDiffs: []scallywag.Status{},
 		},
 		{
 			name: "unrelated contexts; context B but not A",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus("unrelated context", "success", "description 2", "url 2"),
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 				makeStatus("also not related", "error", "description 4", "url 4"),
 			},
-			expectedDiffs: []github.Status{},
+			expectedDiffs: []scallywag.Status{},
 		},
 		{
 			name:          "no contexts",
-			start:         []github.Status{},
-			expectedDiffs: []github.Status{},
+			start:         []scallywag.Status{},
+			expectedDiffs: []scallywag.Status{},
 		},
 	}
 
 	m := *CopyMode(contextA, contextB)
 	for _, test := range tests {
-		diff := m.processStatuses(&github.CombinedStatus{Statuses: test.start})
+		diff := m.processStatuses(&scallywag.CombinedStatus{Statuses: test.start})
 		if err := compareDiffs(diff, test.expectedDiffs); err != nil {
 			t.Errorf("CopyMode test '%s' %v\n", test.name, err)
 		}
@@ -240,68 +241,68 @@ func TestRetireModeReplacement(t *testing.T) {
 	tests := []*modeTest{
 		{
 			name: "simple",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus(contextA, "failure", "description 1", "url 1"),
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []github.Status{
+			expectedDiffs: []scallywag.Status{
 				makeStatus(contextA, "success", desc, ""),
 			},
 		},
 		{
 			name: "unrelated contexts;updated context B",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus("unrelated context", "success", "description 2", "url 2"),
 				makeStatus(contextA, "failure", "description 1", "url 1"),
 				makeStatus("also not related", "error", "description 4", "url 4"),
 				makeStatus(contextB, "success", "description 3", "url 3"),
 			},
-			expectedDiffs: []github.Status{
+			expectedDiffs: []scallywag.Status{
 				makeStatus(contextA, "success", desc, ""),
 			},
 		},
 		{
 			name: "missing context B",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus(contextA, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []github.Status{},
+			expectedDiffs: []scallywag.Status{},
 		},
 		{
 			name: "unrelated contexts;missing context B",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus("unrelated context", "success", "description 2", "url 2"),
 				makeStatus(contextA, "failure", "description 1", "url 1"),
 				makeStatus("also not related", "error", "description 4", "url 4"),
 			},
-			expectedDiffs: []github.Status{},
+			expectedDiffs: []scallywag.Status{},
 		},
 		{
 			name: "missing context A",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []github.Status{},
+			expectedDiffs: []scallywag.Status{},
 		},
 		{
 			name: "unrelated contexts;missing context A",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus("unrelated context", "success", "description 2", "url 2"),
 				makeStatus("also not related", "error", "description 4", "url 4"),
 				makeStatus(contextB, "success", "description 3", "url 3"),
 			},
-			expectedDiffs: []github.Status{},
+			expectedDiffs: []scallywag.Status{},
 		},
 		{
 			name:          "no contexts",
-			start:         []github.Status{},
-			expectedDiffs: []github.Status{},
+			start:         []scallywag.Status{},
+			expectedDiffs: []scallywag.Status{},
 		},
 	}
 
 	m := *RetireMode(contextA, contextB, "")
 	for _, test := range tests {
-		diff := m.processStatuses(&github.CombinedStatus{Statuses: test.start})
+		diff := m.processStatuses(&scallywag.CombinedStatus{Statuses: test.start})
 		if err := compareDiffs(diff, test.expectedDiffs); err != nil {
 			t.Errorf("RetireMode(Replacement) test '%s' %v\n", test.name, err)
 		}
@@ -315,42 +316,42 @@ func TestRetireModeNoReplacement(t *testing.T) {
 	tests := []*modeTest{
 		{
 			name: "simple",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus(contextA, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []github.Status{
+			expectedDiffs: []scallywag.Status{
 				makeStatus(contextA, "success", desc, ""),
 			},
 		},
 		{
 			name: "unrelated contexts",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus("unrelated context", "success", "description 2", "url 2"),
 				makeStatus(contextA, "failure", "description 1", "url 1"),
 				makeStatus("also not related", "error", "description 4", "url 4"),
 			},
-			expectedDiffs: []github.Status{
+			expectedDiffs: []scallywag.Status{
 				makeStatus(contextA, "success", desc, ""),
 			},
 		},
 		{
 			name:          "missing context A",
-			start:         []github.Status{},
-			expectedDiffs: []github.Status{},
+			start:         []scallywag.Status{},
+			expectedDiffs: []scallywag.Status{},
 		},
 		{
 			name: "unrelated contexts;missing context A",
-			start: []github.Status{
+			start: []scallywag.Status{
 				makeStatus("unrelated context", "success", "description 2", "url 2"),
 				makeStatus("also not related", "error", "description 4", "url 4"),
 			},
-			expectedDiffs: []github.Status{},
+			expectedDiffs: []scallywag.Status{},
 		},
 	}
 
 	m := *RetireMode(contextA, "", "")
 	for _, test := range tests {
-		diff := m.processStatuses(&github.CombinedStatus{Statuses: test.start})
+		diff := m.processStatuses(&scallywag.CombinedStatus{Statuses: test.start})
 		if err := compareDiffs(diff, test.expectedDiffs); err != nil {
 			t.Errorf("RetireMode(NoReplace) test '%s' %v\n", test.name, err)
 		}
@@ -359,12 +360,12 @@ func TestRetireModeNoReplacement(t *testing.T) {
 
 // makeStatus returns a new Status struct with the specified fields.
 // targetURL=="" means TargetURL==nil
-func makeStatus(context, state, description, targetURL string) github.Status {
+func makeStatus(context, state, description, targetURL string) scallywag.Status {
 	var url string
 	if targetURL != "" {
 		url = targetURL
 	}
-	return github.Status{
+	return scallywag.Status{
 		Context:     context,
 		State:       state,
 		Description: description,
@@ -380,17 +381,17 @@ type fakeGitHubClient struct {
 	statusesRetrieved map[refID]interface{}
 }
 
-func (c *fakeGitHubClient) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error) {
+func (c *fakeGitHubClient) GetCombinedStatus(org, repo, ref string) (*scallywag.CombinedStatus, error) {
 	c.statusesRetrieved[refID{org: org, repo: repo, ref: ref}] = nil
 	return nil, errors.New("return error to stop execution early")
 }
 
-func (c *fakeGitHubClient) CreateStatus(org, repo, SHA string, s github.Status) error {
+func (c *fakeGitHubClient) CreateStatus(org, repo, SHA string, s scallywag.Status) error {
 	return nil
 }
 
-func (c *fakeGitHubClient) GetPullRequests(org, repo string) ([]github.PullRequest, error) {
-	return []github.PullRequest{}, nil
+func (c *fakeGitHubClient) GetPullRequests(org, repo string) ([]scallywag.PullRequest, error) {
+	return []scallywag.PullRequest{}, nil
 }
 
 func TestProcessPR(t *testing.T) {
@@ -420,7 +421,7 @@ func TestProcessPR(t *testing.T) {
 			},
 			client: &client,
 		}
-		migrator.processPR(github.PullRequest{Base: github.PullRequestBranch{Ref: "branch"}, Head: github.PullRequestBranch{SHA: "fake"}})
+		migrator.processPR(scallywag.PullRequest{Base: scallywag.PullRequestBranch{Ref: "branch"}, Head: scallywag.PullRequestBranch{SHA: "fake"}})
 		if filteredBranch != "branch" {
 			t.Errorf("%s: failed to use filter on branch", testCase.name)
 		}

@@ -28,7 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowConf "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/localgit"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 var (
@@ -120,10 +120,10 @@ type fakeGitHubClient struct {
 	ref           string
 }
 
-func (f *fakeGitHubClient) ListCollaborators(org, repo string) ([]github.User, error) {
-	result := make([]github.User, 0, len(f.Collaborators))
+func (f *fakeGitHubClient) ListCollaborators(org, repo string) ([]scallywag.User, error) {
+	result := make([]scallywag.User, 0, len(f.Collaborators))
 	for _, login := range f.Collaborators {
-		result = append(result, github.User{Login: login})
+		result = append(result, scallywag.User{Login: login})
 	}
 	return result, nil
 }

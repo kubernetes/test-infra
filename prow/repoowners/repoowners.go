@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 
 	prowConf "k8s.io/test-infra/prow/config"
 )
@@ -74,7 +75,7 @@ type FullConfig struct {
 }
 
 type githubClient interface {
-	ListCollaborators(org, repo string) ([]github.User, error)
+	ListCollaborators(org, repo string) ([]scallywag.User, error)
 	GetRef(org, repo, ref string) (string, error)
 }
 
@@ -300,7 +301,7 @@ func (a RepoAliases) ExpandAlias(alias string) sets.String {
 	if a == nil {
 		return nil
 	}
-	return a[github.NormLogin(alias)]
+	return a[scallywag.NormLogin(alias)]
 }
 
 // ExpandAliases returns members of multiple aliases, duplicates are pruned
@@ -339,7 +340,7 @@ func loadAliasesFrom(baseDir string, log *logrus.Entry) RepoAliases {
 
 	result := make(RepoAliases)
 	for alias, expanded := range config.Data {
-		result[github.NormLogin(alias)] = normLogins(expanded)
+		result[scallywag.NormLogin(alias)] = normLogins(expanded)
 	}
 	log.Infof("Loaded %d aliases from %q.", len(result), path)
 	return result
@@ -488,7 +489,7 @@ func decodeOwnersMdConfig(path string, config *SimpleConfig) error {
 func normLogins(logins []string) sets.String {
 	normed := sets.NewString()
 	for _, login := range logins {
-		normed.Insert(github.NormLogin(login))
+		normed.Insert(scallywag.NormLogin(login))
 	}
 	return normed
 }
@@ -528,10 +529,10 @@ func (o *RepoOwners) applyOptionsToPath(path string, opts dirOptions) {
 	}
 }
 
-func (o *RepoOwners) filterCollaborators(toKeep []github.User) *RepoOwners {
+func (o *RepoOwners) filterCollaborators(toKeep []scallywag.User) *RepoOwners {
 	collabs := sets.NewString()
 	for _, keeper := range toKeep {
-		collabs.Insert(github.NormLogin(keeper.Login))
+		collabs.Insert(scallywag.NormLogin(keeper.Login))
 	}
 
 	filter := func(ownerMap map[string]map[*regexp.Regexp]sets.String) map[string]map[*regexp.Regexp]sets.String {

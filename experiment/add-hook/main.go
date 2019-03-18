@@ -82,7 +82,7 @@ func (o options) hmac() (string, error) {
 	return string(bytes.TrimSpace(b)), nil
 }
 
-func findHook(hooks []github.Hook, url string) *int {
+func findHook(hooks []scallywag.Hook, url string) *int {
 	for _, h := range hooks {
 		if h.Config.URL == url {
 			return &h.ID
@@ -92,9 +92,9 @@ func findHook(hooks []github.Hook, url string) *int {
 }
 
 type changer struct {
-	lister  func(org string) ([]github.Hook, error)
-	editor  func(org string, id int, req github.HookRequest) error
-	creator func(org string, req github.HookRequest) (int, error)
+	lister  func(org string) ([]scallywag.Hook, error)
+	editor  func(org string, id int, req scallywag.HookRequest) error
+	creator func(org string, req scallywag.HookRequest) (int, error)
 }
 
 func orgChanger(client *github.Client) changer {
@@ -107,13 +107,13 @@ func orgChanger(client *github.Client) changer {
 
 func repoChanger(client *github.Client, repo string) changer {
 	return changer{
-		lister: func(org string) ([]github.Hook, error) {
+		lister: func(org string) ([]scallywag.Hook, error) {
 			return client.ListRepoHooks(org, repo)
 		},
-		editor: func(org string, id int, req github.HookRequest) error {
+		editor: func(org string, id int, req scallywag.HookRequest) error {
 			return client.EditRepoHook(org, repo, id, req)
 		},
-		creator: func(org string, req github.HookRequest) (int, error) {
+		creator: func(org string, req scallywag.HookRequest) (int, error) {
 			return client.CreateRepoHook(org, repo, req)
 		},
 	}
@@ -137,10 +137,10 @@ func main() {
 
 	yes := true
 	j := "json"
-	req := github.HookRequest{
+	req := scallywag.HookRequest{
 		Name:   "web",
 		Active: &yes,
-		Config: &github.HookConfig{
+		Config: &scallywag.HookConfig{
 			URL:         o.hookURL,
 			ContentType: &j,
 			Secret:      &hmac,
@@ -163,7 +163,7 @@ func main() {
 	}
 }
 
-func reconcileHook(ch changer, org string, req github.HookRequest) error {
+func reconcileHook(ch changer, org string, req scallywag.HookRequest) error {
 	hooks, err := ch.lister(org)
 	if err != nil {
 		return fmt.Errorf("list: %v", err)

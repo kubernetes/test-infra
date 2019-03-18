@@ -21,9 +21,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func TestShrugComment(t *testing.T) {
@@ -72,13 +72,13 @@ func TestShrugComment(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
+			IssueComments: make(map[int][]scallywag.IssueComment),
 		}
-		e := &github.GenericCommentEvent{
-			Action: github.GenericCommentActionCreated,
+		e := &scallywag.GenericCommentEvent{
+			Action: scallywag.GenericCommentActionCreated,
 			Body:   tc.body,
 			Number: 5,
-			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+			Repo:   scallywag.Repo{Owner: scallywag.User{Login: "org"}, Name: "repo"},
 		}
 		if tc.hasShrug {
 			fc.IssueLabelsAdded = []string{"org/repo#5:" + labels.Shrug}

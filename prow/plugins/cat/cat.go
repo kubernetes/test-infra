@@ -34,6 +34,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 var (
@@ -175,7 +176,7 @@ func (c *realClowder) readCat(category string, movieCat bool) (string, error) {
 	return a.Format()
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
 	return handle(
 		pc.GitHubClient,
 		pc.Logger,
@@ -185,9 +186,9 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 	)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c clowder, setKey func()) error {
+func handle(gc githubClient, log *logrus.Entry, e *scallywag.GenericCommentEvent, c clowder, setKey func()) error {
 	// Only consider new comments.
-	if e.Action != github.GenericCommentActionCreated {
+	if e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 	// Make sure they are requesting a cat

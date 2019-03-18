@@ -21,10 +21,12 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 // HasLabel checks if label is in the label set "issueLabels".
-func HasLabel(label string, issueLabels []Label) bool {
+func HasLabel(label string, issueLabels []scallywag.Label) bool {
 	for _, l := range issueLabels {
 		if strings.ToLower(l.Name) == strings.ToLower(label) {
 			return true

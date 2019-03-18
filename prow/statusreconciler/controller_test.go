@@ -26,7 +26,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func TestAddedBlockingPresubmits(t *testing.T) {
@@ -640,7 +640,7 @@ type fakeProwJobTriggerer struct {
 	created map[prKey]sets.String
 }
 
-func (c *fakeProwJobTriggerer) run(pr *github.PullRequest, requestedJobs []config.Presubmit) error {
+func (c *fakeProwJobTriggerer) run(pr *scallywag.PullRequest, requestedJobs []config.Presubmit) error {
 	names := sets.NewString()
 	key := prKey{org: pr.Base.Repo.Owner.Login, repo: pr.Base.Repo.Name, num: pr.Number}
 	for _, job := range requestedJobs {
@@ -661,7 +661,7 @@ func newFakeGitHubClient(key orgRepo) fakeGitHubClient {
 	return fakeGitHubClient{
 		prErrors:  orgRepoSet{},
 		refErrors: map[orgRepo]sets.String{key: sets.NewString()},
-		prs:       map[orgRepo][]github.PullRequest{key: {}},
+		prs:       map[orgRepo][]scallywag.PullRequest{key: {}},
 		refs:      map[orgRepo]map[string]string{key: {}},
 	}
 }
@@ -670,11 +670,11 @@ type fakeGitHubClient struct {
 	prErrors  orgRepoSet
 	refErrors map[orgRepo]sets.String
 
-	prs  map[orgRepo][]github.PullRequest
+	prs  map[orgRepo][]scallywag.PullRequest
 	refs map[orgRepo]map[string]string
 }
 
-func (c *fakeGitHubClient) GetPullRequests(org, repo string) ([]github.PullRequest, error) {
+func (c *fakeGitHubClient) GetPullRequests(org, repo string) ([]scallywag.PullRequest, error) {
 	key := orgRepo{org: org, repo: repo}
 	if c.prErrors.has(key) {
 		return nil, errors.New("failed to get PRs")
@@ -766,21 +766,21 @@ func TestControllerReconcile(t *testing.T) {
 	baseRef := "base"
 	baseSha := "abc"
 	notMergable := false
-	pr := github.PullRequest{
-		User: github.User{
+	pr := scallywag.PullRequest{
+		User: scallywag.User{
 			Login: author,
 		},
 		Number: prNumber,
-		Base: github.PullRequestBranch{
-			Repo: github.Repo{
-				Owner: github.User{
+		Base: scallywag.PullRequestBranch{
+			Repo: scallywag.Repo{
+				Owner: scallywag.User{
 					Login: org,
 				},
 				Name: repo,
 			},
 			Ref: baseRef,
 		},
-		Head: github.PullRequestBranch{
+		Head: scallywag.PullRequestBranch{
 			SHA: "prsha",
 		},
 	}
@@ -879,7 +879,7 @@ func TestControllerReconcile(t *testing.T) {
 			generator: func() (Controller, func(*testing.T)) {
 				fpjt := newfakeProwJobTriggerer()
 				fghc := newFakeGitHubClient(orgRepoKey)
-				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
+				fghc.prs[orgRepoKey] = []scallywag.PullRequest{pr}
 				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
 				fsm := newFakeMigrator(orgRepoKey)
 				ftc := newFakeTrustedChecker(orgRepoKey)
@@ -912,7 +912,7 @@ func TestControllerReconcile(t *testing.T) {
 			generator: func() (Controller, func(*testing.T)) {
 				fpjt := newfakeProwJobTriggerer()
 				fghc := newFakeGitHubClient(orgRepoKey)
-				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
+				fghc.prs[orgRepoKey] = []scallywag.PullRequest{pr}
 				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
 				fsm := newFakeMigrator(orgRepoKey)
 				ftc := newFakeTrustedChecker(orgRepoKey)
@@ -976,7 +976,7 @@ func TestControllerReconcile(t *testing.T) {
 			generator: func() (Controller, func(*testing.T)) {
 				fpjt := newfakeProwJobTriggerer()
 				fghc := newFakeGitHubClient(orgRepoKey)
-				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
+				fghc.prs[orgRepoKey] = []scallywag.PullRequest{pr}
 				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
 				fsm := newFakeMigrator(orgRepoKey)
 				ftc := newFakeTrustedChecker(orgRepoKey)
@@ -1010,7 +1010,7 @@ func TestControllerReconcile(t *testing.T) {
 				fpjt := newfakeProwJobTriggerer()
 				fpjt.errors[prOrgRepoKey] = sets.NewString("new-required-job")
 				fghc := newFakeGitHubClient(orgRepoKey)
-				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
+				fghc.prs[orgRepoKey] = []scallywag.PullRequest{pr}
 				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
 				fsm := newFakeMigrator(orgRepoKey)
 				ftc := newFakeTrustedChecker(orgRepoKey)
@@ -1043,7 +1043,7 @@ func TestControllerReconcile(t *testing.T) {
 			generator: func() (Controller, func(*testing.T)) {
 				fpjt := newfakeProwJobTriggerer()
 				fghc := newFakeGitHubClient(orgRepoKey)
-				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
+				fghc.prs[orgRepoKey] = []scallywag.PullRequest{pr}
 				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
 				fsm := newFakeMigrator(orgRepoKey)
 				fsm.retireErrors = map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}
@@ -1078,7 +1078,7 @@ func TestControllerReconcile(t *testing.T) {
 			generator: func() (Controller, func(*testing.T)) {
 				fpjt := newfakeProwJobTriggerer()
 				fghc := newFakeGitHubClient(orgRepoKey)
-				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
+				fghc.prs[orgRepoKey] = []scallywag.PullRequest{pr}
 				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
 				fsm := newFakeMigrator(orgRepoKey)
 				fsm.migrateErrors = map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}}

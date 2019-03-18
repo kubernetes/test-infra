@@ -25,9 +25,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 var (
@@ -97,13 +97,13 @@ func (url realJoke) readJoke() (string, error) {
 	return a.Joke, nil
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, &e, jokeURL)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, j joker) error {
+func handle(gc githubClient, log *logrus.Entry, e *scallywag.GenericCommentEvent, j joker) error {
 	// Only consider new comments.
-	if e.Action != github.GenericCommentActionCreated {
+	if e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 	// Make sure they are requesting a joke

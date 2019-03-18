@@ -25,7 +25,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
+
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -73,7 +74,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
-	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
+	FindIssues(query, sort string, asc bool) ([]scallywag.Issue, error)
 }
 
 type client struct {
@@ -88,13 +89,13 @@ func getClient(pc plugins.Agent) client {
 	}
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre scallywag.PullRequestEvent) error {
 	return handlePR(getClient(pc), pre, welcomeMessageForRepo(pc.PluginConfig, pre.Repo.Owner.Login, pre.Repo.Name))
 }
 
-func handlePR(c client, pre github.PullRequestEvent, welcomeTemplate string) error {
+func handlePR(c client, pre scallywag.PullRequestEvent, welcomeTemplate string) error {
 	// Only consider newly opened PRs
-	if pre.Action != github.PullRequestActionOpened {
+	if pre.Action != scallywag.PullRequestActionOpened {
 		return nil
 	}
 

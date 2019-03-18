@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 var closeRe = regexp.MustCompile(`(?mi)^/close\s*$`)
@@ -33,7 +34,7 @@ type closeClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	CloseIssue(owner, repo string, number int) error
 	ClosePR(owner, repo string, number int) error
-	GetIssueLabels(owner, repo string, number int) ([]github.Label, error)
+	GetIssueLabels(owner, repo string, number int) ([]scallywag.Label, error)
 }
 
 func isActive(gc closeClient, org, repo string, number int) (bool, error) {
@@ -49,9 +50,9 @@ func isActive(gc closeClient, org, repo string, number int) (bool, error) {
 	return true, nil
 }
 
-func handleClose(gc closeClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handleClose(gc closeClient, log *logrus.Entry, e *scallywag.GenericCommentEvent) error {
 	// Only consider open issues and new comments.
-	if e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
+	if e.IssueState != "open" || e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 

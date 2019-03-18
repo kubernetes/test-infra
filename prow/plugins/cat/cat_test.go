@@ -29,8 +29,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type fakeClowder string
@@ -295,7 +295,7 @@ Available variants:
 
 	// github fake client
 	fc := &fakegithub.FakeClient{
-		IssueComments: make(map[int][]github.IssueComment),
+		IssueComments: make(map[int][]scallywag.IssueComment),
 	}
 
 	// run test for each case
@@ -314,8 +314,8 @@ Available variants:
 	// fully test handling a comment
 	comment := "/meowvie space"
 
-	e := &github.GenericCommentEvent{
-		Action:     github.GenericCommentActionCreated,
+	e := &scallywag.GenericCommentEvent{
+		Action:     scallywag.GenericCommentActionCreated,
 		Body:       comment,
 		Number:     5,
 		IssueState: "open",
@@ -340,7 +340,7 @@ Available variants:
 func TestCats(t *testing.T) {
 	var testcases = []struct {
 		name          string
-		action        github.GenericCommentEventAction
+		action        scallywag.GenericCommentEventAction
 		body          string
 		state         string
 		pr            bool
@@ -350,7 +350,7 @@ func TestCats(t *testing.T) {
 		{
 			name:          "ignore edited comment",
 			state:         "open",
-			action:        github.GenericCommentActionEdited,
+			action:        scallywag.GenericCommentActionEdited,
 			body:          "/meow",
 			shouldComment: false,
 			shouldError:   false,
@@ -358,7 +358,7 @@ func TestCats(t *testing.T) {
 		{
 			name:          "leave cat on pr",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/meow",
 			pr:            true,
 			shouldComment: true,
@@ -367,7 +367,7 @@ func TestCats(t *testing.T) {
 		{
 			name:          "leave cat on issue",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/meow",
 			shouldComment: true,
 			shouldError:   false,
@@ -375,7 +375,7 @@ func TestCats(t *testing.T) {
 		{
 			name:          "leave cat on issue, trailing space",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/meow \r",
 			shouldComment: true,
 			shouldError:   false,
@@ -383,7 +383,7 @@ func TestCats(t *testing.T) {
 		{
 			name:          "categorical cat",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/meow clothes",
 			shouldComment: true,
 			shouldError:   false,
@@ -391,7 +391,7 @@ func TestCats(t *testing.T) {
 		{
 			name:          "bad cat",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/meow error",
 			shouldComment: true,
 			shouldError:   true,
@@ -399,7 +399,7 @@ func TestCats(t *testing.T) {
 		{
 			name:          "movie cat",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/meowvie",
 			shouldComment: true,
 			shouldError:   false,
@@ -407,7 +407,7 @@ func TestCats(t *testing.T) {
 		{
 			name:          "categorical movie cat",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/meowvie space",
 			shouldComment: true,
 			shouldError:   false,
@@ -415,9 +415,9 @@ func TestCats(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
+			IssueComments: make(map[int][]scallywag.IssueComment),
 		}
-		e := &github.GenericCommentEvent{
+		e := &scallywag.GenericCommentEvent{
 			Action:     tc.action,
 			Body:       tc.body,
 			Number:     5,

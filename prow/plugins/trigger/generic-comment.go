@@ -18,8 +18,9 @@ package trigger
 
 import (
 	"fmt"
-	"k8s.io/test-infra/prow/pjutil"
 	"regexp"
+
+	"k8s.io/test-infra/prow/pjutil"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -27,12 +28,13 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 var okToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
 var retestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
 
-func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCommentEvent) error {
+func handleGenericComment(c Client, trigger plugins.Trigger, gc scallywag.GenericCommentEvent) error {
 	org := gc.Repo.Owner.Login
 	repo := gc.Repo.Name
 	number := gc.Number
@@ -40,7 +42,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	// Only take action when a comment is first created,
 	// when it belongs to a PR,
 	// and the PR is open.
-	if gc.Action != github.GenericCommentActionCreated || !gc.IsPR || gc.IssueState != "open" {
+	if gc.Action != scallywag.GenericCommentActionCreated || !gc.IsPR || gc.IssueState != "open" {
 		return nil
 	}
 	// Skip comments not germane to this plugin
@@ -78,7 +80,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	if err != nil {
 		return fmt.Errorf("error checking trust of %s: %v", commentAuthor, err)
 	}
-	var l []github.Label
+	var l []scallywag.Label
 	if !trusted {
 		// Skip untrusted PRs.
 		l, trusted, err = TrustedPullRequest(c.GitHubClient, trigger, gc.IssueAuthor.Login, org, repo, number, nil)
@@ -125,8 +127,8 @@ func HonorOkToTest(trigger plugins.Trigger) bool {
 }
 
 type GitHubClient interface {
-	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	GetCombinedStatus(org, repo, ref string) (*scallywag.CombinedStatus, error)
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
 }
 
 // FilterPresubmits determines which presubmits should run. We only want to
@@ -144,7 +146,7 @@ type GitHubClient interface {
 // If a comment that we get matches more than one of the above patterns, we
 // consider the set of matching presubmits the union of the results from the
 // matching cases.
-func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string, pr *github.PullRequest, presubmits []config.Presubmit, logger *logrus.Entry) ([]config.Presubmit, []config.Presubmit, error) {
+func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string, pr *scallywag.PullRequest, presubmits []config.Presubmit, logger *logrus.Entry) ([]config.Presubmit, []config.Presubmit, error) {
 	org, repo, sha := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Head.SHA
 	filter, err := presubmitFilter(honorOkToTest, gitHubClient, body, org, repo, sha, logger)
 	if err != nil {
@@ -152,6 +154,17 @@ func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string
 	}
 
 	number, branch := pr.Number, pr.Base.Ref
+	return filterPresubmits(filter, gitHubClient, pr, presubmits, logger)
+}
+
+type changesGetter interface {
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
+}
+
+// filterPresubmits determines which presubmits should run and which should be skipped
+// by evaluating the user-provided filter.
+func filterPresubmits(filter filter, gitHubClient changesGetter, pr *scallywag.PullRequest, presubmits []config.Presubmit, logger *logrus.Entry) ([]config.Presubmit, []config.Presubmit, error) {
+	org, repo, number, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Base.Ref
 	changes := config.NewGitHubDeferredChangedFilesProvider(gitHubClient, org, repo, number)
 	toTrigger, toSkipSuperset, err := pjutil.FilterPresubmits(filter, changes, branch, presubmits, logger)
 	if err != nil {
@@ -182,7 +195,7 @@ func determineSkippedPresubmits(toTrigger, toSkipSuperset []config.Presubmit, lo
 }
 
 type statusGetter interface {
-	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
+	GetCombinedStatus(org, repo, ref string) (*scallywag.CombinedStatus, error)
 }
 
 func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, repo, sha string, logger *logrus.Entry) (pjutil.Filter, error) {
@@ -204,7 +217,7 @@ func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, r
 		failedContexts := sets.NewString()
 		for _, status := range combinedStatus.Statuses {
 			allContexts.Insert(status.Context)
-			if status.State == github.StatusError || status.State == github.StatusFailure {
+			if status.State == scallywag.StatusError || status.State == scallywag.StatusFailure {
 				failedContexts.Insert(status.Context)
 			}
 		}

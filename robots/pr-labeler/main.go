@@ -38,9 +38,9 @@ const (
 
 type client interface {
 	AddLabel(org, repo string, number int, label string) error
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
 	GetPullRequests(org, repo string) ([]github.PullRequest, error)
-	ListCollaborators(org, repo string) ([]github.User, error)
+	ListCollaborators(org, repo string) ([]scallywag.User, error)
 	ListOrgMembers(org, role string) ([]github.TeamMember, error)
 }
 

@@ -28,10 +28,10 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const pluginName = "override"
@@ -42,11 +42,11 @@ var (
 
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
-	CreateStatus(org, repo, ref string, s github.Status) error
-	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
+	CreateStatus(org, repo, ref string, s scallywag.Status) error
+	GetPullRequest(org, repo string, number int) (*scallywag.PullRequest, error)
 	GetRef(org, repo, ref string) (string, error)
 	HasPermission(org, repo, user string, role ...string) (bool, error)
-	ListStatuses(org, repo, ref string) ([]github.Status, error)
+	ListStatuses(org, repo, ref string) ([]scallywag.Status, error)
 }
 
 type prowJobClient interface {
@@ -68,7 +68,7 @@ type client struct {
 func (c client) CreateComment(owner, repo string, number int, comment string) error {
 	return c.gc.CreateComment(owner, repo, number, comment)
 }
-func (c client) CreateStatus(org, repo, ref string, s github.Status) error {
+func (c client) CreateStatus(org, repo, ref string, s scallywag.Status) error {
 	return c.gc.CreateStatus(org, repo, ref, s)
 }
 
@@ -76,10 +76,10 @@ func (c client) GetRef(org, repo, ref string) (string, error) {
 	return c.gc.GetRef(org, repo, ref)
 }
 
-func (c client) GetPullRequest(org, repo string, number int) (*github.PullRequest, error) {
+func (c client) GetPullRequest(org, repo string, number int) (*scallywag.PullRequest, error) {
 	return c.gc.GetPullRequest(org, repo, number)
 }
-func (c client) ListStatuses(org, repo, ref string) ([]github.Status, error) {
+func (c client) ListStatuses(org, repo, ref string) ([]scallywag.Status, error) {
 	return c.gc.ListStatuses(org, repo, ref)
 }
 func (c client) HasPermission(org, repo, user string, role ...string) (bool, error) {
@@ -117,7 +117,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	return pluginHelp, nil
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
 	c := client{
 		gc:            pc.GitHubClient,
 		jc:            pc.Config.JobConfig,
@@ -127,7 +127,7 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 }
 
 func authorized(gc githubClient, log *logrus.Entry, org, repo, user string) bool {
-	ok, err := gc.HasPermission(org, repo, user, github.RoleAdmin)
+	ok, err := gc.HasPermission(org, repo, user, scallywag.RoleAdmin)
 	if err != nil {
 		log.WithError(err).Warnf("cannot determine whether %s is an admin of %s/%s", user, org, repo)
 		return false
@@ -147,9 +147,9 @@ func formatList(list []string) string {
 	return strings.Join(lines, "\n")
 }
 
-func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(oc overrideClient, log *logrus.Entry, e *scallywag.GenericCommentEvent) error {
 
-	if !e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
+	if !e.IsPR || e.IssueState != "open" || e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 
@@ -196,7 +196,7 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent)
 
 	contexts := sets.NewString()
 	for _, status := range statuses {
-		if status.State == github.StatusSuccess {
+		if status.State == scallywag.StatusSuccess {
 			continue
 		}
 		contexts.Insert(status.Context)
@@ -224,7 +224,7 @@ Only the following contexts were expected:
 	}()
 
 	for _, status := range statuses {
-		if status.State == github.StatusSuccess || !overrides.Has(status.Context) {
+		if status.State == scallywag.StatusSuccess || !overrides.Has(status.Context) {
 			continue
 		}
 		// First create the overridden prow result if necessary
@@ -252,7 +252,7 @@ Only the following contexts were expected:
 				return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 			}
 		}
-		status.State = github.StatusSuccess
+		status.State = scallywag.StatusSuccess
 		status.Description = description(user)
 		if err := oc.CreateStatus(org, repo, sha, status); err != nil {
 			resp := fmt.Sprintf("Cannot update PR status for context %s", status.Context)

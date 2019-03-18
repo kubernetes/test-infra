@@ -41,7 +41,7 @@ func findLatestCommentUpdate(issueID int, db *gorm.DB, repository string) time.T
 }
 
 func updateIssueComments(issueID int, latest time.Time, db *gorm.DB, client ClientInterface) {
-	c := make(chan *github.IssueComment, 200)
+	c := make(chan *scallywag.IssueComment, 200)
 
 	go client.FetchIssueComments(issueID, latest, c)
 

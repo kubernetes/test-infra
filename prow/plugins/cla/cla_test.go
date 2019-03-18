@@ -23,9 +23,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func TestCLALabels(t *testing.T) {
@@ -34,8 +34,8 @@ func TestCLALabels(t *testing.T) {
 		context       string
 		state         string
 		statusSHA     string
-		issues        []github.Issue
-		pullRequests  []github.PullRequest
+		issues        []scallywag.Issue
+		pullRequests  []scallywag.PullRequest
 		labels        []string
 		addedLabels   []string
 		removedLabels []string
@@ -60,11 +60,11 @@ func TestCLALabels(t *testing.T) {
 			context:   "cla/linuxfoundation",
 			state:     "success",
 			statusSHA: "a",
-			issues: []github.Issue{
-				{Number: 3, State: "open", Labels: []github.Label{}},
+			issues: []scallywag.Issue{
+				{Number: 3, State: "open", Labels: []scallywag.Label{}},
 			},
-			pullRequests: []github.PullRequest{
-				{Number: 3, Head: github.PullRequestBranch{SHA: "b"}},
+			pullRequests: []scallywag.PullRequest{
+				{Number: 3, Head: scallywag.PullRequestBranch{SHA: "b"}},
 			},
 			addedLabels:   nil,
 			removedLabels: nil,
@@ -75,11 +75,11 @@ func TestCLALabels(t *testing.T) {
 			context:   "cla/linuxfoundation",
 			state:     "failure",
 			statusSHA: "a",
-			issues: []github.Issue{
-				{Number: 3, State: "open", Labels: []github.Label{{Name: labels.ClaYes}}},
+			issues: []scallywag.Issue{
+				{Number: 3, State: "open", Labels: []scallywag.Label{{Name: labels.ClaYes}}},
 			},
-			pullRequests: []github.PullRequest{
-				{Number: 3, Head: github.PullRequestBranch{SHA: "b"}},
+			pullRequests: []scallywag.PullRequest{
+				{Number: 3, Head: scallywag.PullRequestBranch{SHA: "b"}},
 			},
 			addedLabels:   nil,
 			removedLabels: nil,
@@ -89,11 +89,11 @@ func TestCLALabels(t *testing.T) {
 			context:   "cla/linuxfoundation",
 			state:     "success",
 			statusSHA: "a",
-			issues: []github.Issue{
-				{Number: 3, State: "open", Labels: []github.Label{}},
+			issues: []scallywag.Issue{
+				{Number: 3, State: "open", Labels: []scallywag.Label{}},
 			},
-			pullRequests: []github.PullRequest{
-				{Number: 3, Head: github.PullRequestBranch{SHA: "a"}},
+			pullRequests: []scallywag.PullRequest{
+				{Number: 3, Head: scallywag.PullRequestBranch{SHA: "a"}},
 			},
 			addedLabels:   []string{fmt.Sprintf("/#3:%s", labels.ClaYes)},
 			removedLabels: nil,
@@ -103,11 +103,11 @@ func TestCLALabels(t *testing.T) {
 			context:   "cla/linuxfoundation",
 			state:     "pending",
 			statusSHA: "a",
-			issues: []github.Issue{
-				{Number: 3, State: "open", Labels: []github.Label{}},
+			issues: []scallywag.Issue{
+				{Number: 3, State: "open", Labels: []scallywag.Label{}},
 			},
-			pullRequests: []github.PullRequest{
-				{Number: 3, Head: github.PullRequestBranch{SHA: "a"}},
+			pullRequests: []scallywag.PullRequest{
+				{Number: 3, Head: scallywag.PullRequestBranch{SHA: "a"}},
 			},
 			addedLabels:   nil,
 			removedLabels: nil,
@@ -117,11 +117,11 @@ func TestCLALabels(t *testing.T) {
 			context:   "cla/linuxfoundation",
 			state:     "success",
 			statusSHA: "a",
-			issues: []github.Issue{
-				{Number: 3, State: "open", Labels: []github.Label{{Name: labels.ClaNo}}},
+			issues: []scallywag.Issue{
+				{Number: 3, State: "open", Labels: []scallywag.Label{{Name: labels.ClaNo}}},
 			},
-			pullRequests: []github.PullRequest{
-				{Number: 3, Head: github.PullRequestBranch{SHA: "a"}},
+			pullRequests: []scallywag.PullRequest{
+				{Number: 3, Head: scallywag.PullRequestBranch{SHA: "a"}},
 			},
 			addedLabels:   []string{fmt.Sprintf("/#3:%s", labels.ClaYes)},
 			removedLabels: []string{fmt.Sprintf("/#3:%s", labels.ClaNo)},
@@ -131,18 +131,18 @@ func TestCLALabels(t *testing.T) {
 			context:   "cla/linuxfoundation",
 			state:     "failure",
 			statusSHA: "a",
-			issues: []github.Issue{
-				{Number: 3, State: "open", Labels: []github.Label{{Name: labels.ClaYes}}},
+			issues: []scallywag.Issue{
+				{Number: 3, State: "open", Labels: []scallywag.Label{{Name: labels.ClaYes}}},
 			},
-			pullRequests: []github.PullRequest{
-				{Number: 3, Head: github.PullRequestBranch{SHA: "a"}},
+			pullRequests: []scallywag.PullRequest{
+				{Number: 3, Head: scallywag.PullRequestBranch{SHA: "a"}},
 			},
 			addedLabels:   []string{fmt.Sprintf("/#3:%s", labels.ClaNo)},
 			removedLabels: []string{fmt.Sprintf("/#3:%s", labels.ClaYes)},
 		},
 	}
 	for _, tc := range testcases {
-		pullRequests := make(map[int]*github.PullRequest)
+		pullRequests := make(map[int]*scallywag.PullRequest)
 		for _, pr := range tc.pullRequests {
 			pullRequests[pr.Number] = &pr
 		}
@@ -150,9 +150,9 @@ func TestCLALabels(t *testing.T) {
 		fc := &fakegithub.FakeClient{
 			PullRequests:  pullRequests,
 			Issues:        tc.issues,
-			IssueComments: make(map[int][]github.IssueComment),
+			IssueComments: make(map[int][]scallywag.IssueComment),
 		}
-		se := github.StatusEvent{
+		se := scallywag.StatusEvent{
 			Context: tc.context,
 			SHA:     tc.statusSHA,
 			State:   tc.state,
@@ -181,7 +181,7 @@ func TestCheckCLA(t *testing.T) {
 		SHA          string
 		action       string
 		body         string
-		pullRequests []github.PullRequest
+		pullRequests []scallywag.PullRequest
 		hasCLAYes    bool
 		hasCLANo     bool
 
@@ -196,8 +196,8 @@ func TestCheckCLA(t *testing.T) {
 			SHA:        "sha",
 			action:     "created",
 			body:       "/check-cla",
-			pullRequests: []github.PullRequest{
-				{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequests: []scallywag.PullRequest{
+				{Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
 		},
 		{
@@ -208,8 +208,8 @@ func TestCheckCLA(t *testing.T) {
 			SHA:        "sha",
 			action:     "created",
 			body:       "/check-cla",
-			pullRequests: []github.PullRequest{
-				{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequests: []scallywag.PullRequest{
+				{Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
 		},
 		{
@@ -220,8 +220,8 @@ func TestCheckCLA(t *testing.T) {
 			SHA:        "sha",
 			action:     "created",
 			body:       "/shrug",
-			pullRequests: []github.PullRequest{
-				{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequests: []scallywag.PullRequest{
+				{Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
 		},
 		{
@@ -232,8 +232,8 @@ func TestCheckCLA(t *testing.T) {
 			SHA:        "sha",
 			action:     "created",
 			body:       "/shrug",
-			pullRequests: []github.PullRequest{
-				{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequests: []scallywag.PullRequest{
+				{Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
 		},
 		{
@@ -244,8 +244,8 @@ func TestCheckCLA(t *testing.T) {
 			SHA:        "sha",
 			action:     "created",
 			body:       "/check-cla",
-			pullRequests: []github.PullRequest{
-				{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequests: []scallywag.PullRequest{
+				{Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
 
 			addedLabel: fmt.Sprintf("/#3:%s", labels.ClaYes),
@@ -258,8 +258,8 @@ func TestCheckCLA(t *testing.T) {
 			SHA:        "sha",
 			action:     "created",
 			body:       "/check-cla",
-			pullRequests: []github.PullRequest{
-				{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequests: []scallywag.PullRequest{
+				{Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
 			hasCLANo: true,
 
@@ -274,8 +274,8 @@ func TestCheckCLA(t *testing.T) {
 			SHA:        "sha",
 			action:     "created",
 			body:       "/check-cla",
-			pullRequests: []github.PullRequest{
-				{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequests: []scallywag.PullRequest{
+				{Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
 
 			addedLabel: fmt.Sprintf("/#3:%s", labels.ClaNo),
@@ -288,8 +288,8 @@ func TestCheckCLA(t *testing.T) {
 			SHA:        "sha",
 			action:     "created",
 			body:       "/check-cla",
-			pullRequests: []github.PullRequest{
-				{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequests: []scallywag.PullRequest{
+				{Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
 			hasCLAYes: true,
 
@@ -304,8 +304,8 @@ func TestCheckCLA(t *testing.T) {
 			SHA:        "sha",
 			action:     "created",
 			body:       "/check-cla",
-			pullRequests: []github.PullRequest{
-				{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequests: []scallywag.PullRequest{
+				{Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
 			hasCLANo:  true,
 			hasCLAYes: true,
@@ -320,8 +320,8 @@ func TestCheckCLA(t *testing.T) {
 			SHA:        "sha",
 			action:     "created",
 			body:       "/check-cla",
-			pullRequests: []github.PullRequest{
-				{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequests: []scallywag.PullRequest{
+				{Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
 			hasCLANo:  true,
 			hasCLAYes: true,
@@ -331,23 +331,23 @@ func TestCheckCLA(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			pullRequests := make(map[int]*github.PullRequest)
+			pullRequests := make(map[int]*scallywag.PullRequest)
 			for _, pr := range tc.pullRequests {
 				pullRequests[pr.Number] = &pr
 			}
 			fc := &fakegithub.FakeClient{
-				CreatedStatuses: make(map[string][]github.Status),
+				CreatedStatuses: make(map[string][]scallywag.Status),
 				PullRequests:    pullRequests,
 			}
-			e := &github.GenericCommentEvent{
-				Action:     github.GenericCommentEventAction(tc.action),
+			e := &scallywag.GenericCommentEvent{
+				Action:     scallywag.GenericCommentEventAction(tc.action),
 				Body:       tc.body,
 				Number:     3,
 				IssueState: tc.issueState,
 			}
-			fc.CombinedStatuses = map[string]*github.CombinedStatus{
+			fc.CombinedStatuses = map[string]*scallywag.CombinedStatus{
 				tc.SHA: {
-					Statuses: []github.Status{
+					Statuses: []scallywag.Status{
 						{State: tc.state, Context: tc.context},
 					},
 				},

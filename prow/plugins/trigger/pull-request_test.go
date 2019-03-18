@@ -24,10 +24,10 @@ import (
 	clienttesting "k8s.io/client-go/testing"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func TestTrusted(t *testing.T) {
@@ -85,15 +85,15 @@ func TestTrusted(t *testing.T) {
 			g := &fakegithub.FakeClient{
 				OrgMembers:    map[string][]string{"kubernetes": {sister}, "kubernetes-incubator": {member, fakegithub.Bot}},
 				Collaborators: []string{friend},
-				IssueComments: map[int][]github.IssueComment{},
+				IssueComments: map[int][]scallywag.IssueComment{},
 			}
 			trigger := plugins.Trigger{
 				TrustedOrg:     "kubernetes",
 				OnlyOrgMembers: tc.onlyOrg,
 			}
-			var labels []github.Label
+			var labels []scallywag.Label
 			for _, label := range tc.labels {
-				labels = append(labels, github.Label{
+				labels = append(labels, scallywag.Label{
 					Name: label,
 				})
 			}
@@ -118,14 +118,14 @@ func TestHandlePullRequest(t *testing.T) {
 		HasOkToTest   bool
 		prLabel       string
 		prChanges     bool
-		prAction      github.PullRequestEventAction
+		prAction      scallywag.PullRequestEventAction
 	}{
 		{
 			name: "Trusted user open PR should build",
 
 			Author:      "t",
 			ShouldBuild: true,
-			prAction:    github.PullRequestActionOpened,
+			prAction:    scallywag.PullRequestActionOpened,
 		},
 		{
 			name: "Untrusted user open PR should not build and should comment",
@@ -133,14 +133,14 @@ func TestHandlePullRequest(t *testing.T) {
 			Author:        "u",
 			ShouldBuild:   false,
 			ShouldComment: true,
-			prAction:      github.PullRequestActionOpened,
+			prAction:      scallywag.PullRequestActionOpened,
 		},
 		{
 			name: "Trusted user reopen PR should build",
 
 			Author:      "t",
 			ShouldBuild: true,
-			prAction:    github.PullRequestActionReopened,
+			prAction:    scallywag.PullRequestActionReopened,
 		},
 		{
 			name: "Untrusted user reopen PR with ok-to-test should build",
@@ -148,14 +148,14 @@ func TestHandlePullRequest(t *testing.T) {
 			Author:      "u",
 			ShouldBuild: true,
 			HasOkToTest: true,
-			prAction:    github.PullRequestActionReopened,
+			prAction:    scallywag.PullRequestActionReopened,
 		},
 		{
 			name: "Untrusted user reopen PR without ok-to-test should not build",
 
 			Author:      "u",
 			ShouldBuild: false,
-			prAction:    github.PullRequestActionReopened,
+			prAction:    scallywag.PullRequestActionReopened,
 		},
 		{
 			name: "Trusted user edit PR with changes should build",
@@ -163,21 +163,21 @@ func TestHandlePullRequest(t *testing.T) {
 			Author:      "t",
 			ShouldBuild: true,
 			prChanges:   true,
-			prAction:    github.PullRequestActionEdited,
+			prAction:    scallywag.PullRequestActionEdited,
 		},
 		{
 			name: "Trusted user edit PR without changes should not build",
 
 			Author:      "t",
 			ShouldBuild: false,
-			prAction:    github.PullRequestActionEdited,
+			prAction:    scallywag.PullRequestActionEdited,
 		},
 		{
 			name: "Untrusted user edit PR without changes and without ok-to-test should not build",
 
 			Author:      "u",
 			ShouldBuild: false,
-			prAction:    github.PullRequestActionEdited,
+			prAction:    scallywag.PullRequestActionEdited,
 		},
 		{
 			name: "Untrusted user edit PR with changes and without ok-to-test should not build",
@@ -185,7 +185,7 @@ func TestHandlePullRequest(t *testing.T) {
 			Author:      "u",
 			ShouldBuild: false,
 			prChanges:   true,
-			prAction:    github.PullRequestActionEdited,
+			prAction:    scallywag.PullRequestActionEdited,
 		},
 		{
 			name: "Untrusted user edit PR without changes and with ok-to-test should not build",
@@ -193,7 +193,7 @@ func TestHandlePullRequest(t *testing.T) {
 			Author:      "u",
 			ShouldBuild: false,
 			HasOkToTest: true,
-			prAction:    github.PullRequestActionEdited,
+			prAction:    scallywag.PullRequestActionEdited,
 		},
 		{
 			name: "Untrusted user edit PR with changes and with ok-to-test should build",
@@ -202,21 +202,21 @@ func TestHandlePullRequest(t *testing.T) {
 			ShouldBuild: true,
 			HasOkToTest: true,
 			prChanges:   true,
-			prAction:    github.PullRequestActionEdited,
+			prAction:    scallywag.PullRequestActionEdited,
 		},
 		{
 			name: "Trusted user sync PR should build",
 
 			Author:      "t",
 			ShouldBuild: true,
-			prAction:    github.PullRequestActionSynchronize,
+			prAction:    scallywag.PullRequestActionSynchronize,
 		},
 		{
 			name: "Untrusted user sync PR without ok-to-test should not build",
 
 			Author:      "u",
 			ShouldBuild: false,
-			prAction:    github.PullRequestActionSynchronize,
+			prAction:    scallywag.PullRequestActionSynchronize,
 		},
 		{
 			name: "Untrusted user sync PR with ok-to-test should build",
@@ -224,14 +224,14 @@ func TestHandlePullRequest(t *testing.T) {
 			Author:      "u",
 			ShouldBuild: true,
 			HasOkToTest: true,
-			prAction:    github.PullRequestActionSynchronize,
+			prAction:    scallywag.PullRequestActionSynchronize,
 		},
 		{
 			name: "Trusted user labeled PR with lgtm should not build",
 
 			Author:      "t",
 			ShouldBuild: false,
-			prAction:    github.PullRequestActionLabeled,
+			prAction:    scallywag.PullRequestActionLabeled,
 			prLabel:     labels.LGTM,
 		},
 		{
@@ -239,7 +239,7 @@ func TestHandlePullRequest(t *testing.T) {
 
 			Author:      "u",
 			ShouldBuild: true,
-			prAction:    github.PullRequestActionLabeled,
+			prAction:    scallywag.PullRequestActionLabeled,
 			prLabel:     labels.LGTM,
 		},
 		{
@@ -247,7 +247,7 @@ func TestHandlePullRequest(t *testing.T) {
 
 			Author:      "u",
 			ShouldBuild: false,
-			prAction:    github.PullRequestActionLabeled,
+			prAction:    scallywag.PullRequestActionLabeled,
 			prLabel:     "test",
 		},
 		{
@@ -255,23 +255,23 @@ func TestHandlePullRequest(t *testing.T) {
 
 			Author:      "t",
 			ShouldBuild: false,
-			prAction:    github.PullRequestActionClosed,
+			prAction:    scallywag.PullRequestActionClosed,
 		},
 	}
 	for _, tc := range testcases {
 		t.Logf("running scenario %q", tc.name)
 
 		g := &fakegithub.FakeClient{
-			IssueComments: map[int][]github.IssueComment{},
+			IssueComments: map[int][]scallywag.IssueComment{},
 			OrgMembers:    map[string][]string{"org": {"t"}},
-			PullRequests: map[int]*github.PullRequest{
+			PullRequests: map[int]*scallywag.PullRequest{
 				0: {
 					Number: 0,
-					User:   github.User{Login: tc.Author},
-					Base: github.PullRequestBranch{
+					User:   scallywag.User{Login: tc.Author},
+					Base: scallywag.PullRequestBranch{
 						Ref: "master",
-						Repo: github.Repo{
-							Owner: github.User{Login: "org"},
+						Repo: scallywag.Repo{
+							Owner: scallywag.User{Login: "org"},
 							Name:  "repo",
 						},
 					},
@@ -303,16 +303,16 @@ func TestHandlePullRequest(t *testing.T) {
 		if tc.HasOkToTest {
 			g.IssueLabelsExisting = append(g.IssueLabelsExisting, issueLabels(labels.OkToTest)...)
 		}
-		pr := github.PullRequestEvent{
+		pr := scallywag.PullRequestEvent{
 			Action: tc.prAction,
-			Label:  github.Label{Name: tc.prLabel},
-			PullRequest: github.PullRequest{
+			Label:  scallywag.Label{Name: tc.prLabel},
+			PullRequest: scallywag.PullRequest{
 				Number: 0,
-				User:   github.User{Login: tc.Author},
-				Base: github.PullRequestBranch{
+				User:   scallywag.User{Login: tc.Author},
+				Base: scallywag.PullRequestBranch{
 					Ref: "master",
-					Repo: github.Repo{
-						Owner:    github.User{Login: "org"},
+					Repo: scallywag.Repo{
+						Owner:    scallywag.User{Login: "org"},
 						Name:     "repo",
 						FullName: "org/repo",
 					},

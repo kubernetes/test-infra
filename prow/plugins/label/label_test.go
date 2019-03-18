@@ -24,10 +24,10 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -434,8 +434,8 @@ func TestLabel(t *testing.T) {
 		t.Logf("Running scenario %q", tc.name)
 		sort.Strings(tc.expectedNewLabels)
 		fakeClient := &fakegithub.FakeClient{
-			Issues:             make([]github.Issue, 1),
-			IssueComments:      make(map[int][]github.IssueComment),
+			Issues:             make([]scallywag.Issue, 1),
+			IssueComments:      make(map[int][]scallywag.IssueComment),
 			RepoLabelsExisting: tc.repoLabels,
 			OrgMembers:         map[string][]string{"org": {orgMember}},
 			IssueLabelsAdded:   []string{},
@@ -445,12 +445,12 @@ func TestLabel(t *testing.T) {
 		for _, label := range tc.issueLabels {
 			fakeClient.AddLabel("org", "repo", 1, label)
 		}
-		e := &github.GenericCommentEvent{
-			Action: github.GenericCommentActionCreated,
+		e := &scallywag.GenericCommentEvent{
+			Action: scallywag.GenericCommentActionCreated,
 			Body:   tc.body,
 			Number: 1,
-			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
-			User:   github.User{Login: tc.commenter},
+			Repo:   scallywag.Repo{Owner: scallywag.User{Login: "org"}, Name: "repo"},
+			User:   scallywag.User{Login: tc.commenter},
 		}
 		err := handle(fakeClient, logrus.WithField("plugin", pluginName), tc.extraLabels, e)
 		if err != nil {

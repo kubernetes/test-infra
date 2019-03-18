@@ -31,9 +31,9 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func TestHelpProvider(t *testing.T) {
@@ -95,7 +95,7 @@ func TestRunAndSkipJobs(t *testing.T) {
 		jobCreationErrs      sets.String // job names which fail creation
 
 		expectedJobs     sets.String // by name
-		expectedStatuses []github.Status
+		expectedStatuses []scallywag.Status
 		expectedErr      bool
 	}{
 		{
@@ -146,12 +146,12 @@ func TestRunAndSkipJobs(t *testing.T) {
 				},
 				Reporter: config.Reporter{Context: "second-context"},
 			}},
-			expectedStatuses: []github.Status{{
-				State:       github.StatusSuccess,
+			expectedStatuses: []scallywag.Status{{
+				State:       scallywag.StatusSuccess,
 				Context:     "first-context",
 				Description: "Skipped.",
 			}, {
-				State:       github.StatusSuccess,
+				State:       scallywag.StatusSuccess,
 				Context:     "second-context",
 				Description: "Skipped.",
 			}},
@@ -184,8 +184,8 @@ func TestRunAndSkipJobs(t *testing.T) {
 				},
 				Reporter: config.Reporter{Context: "second-context", SkipReport: true},
 			}},
-			expectedStatuses: []github.Status{{
-				State:       github.StatusSuccess,
+			expectedStatuses: []scallywag.Status{{
+				State:       scallywag.StatusSuccess,
 				Context:     "first-context",
 				Description: "Skipped.",
 			}},
@@ -236,12 +236,12 @@ func TestRunAndSkipJobs(t *testing.T) {
 				Reporter: config.Reporter{Context: "fourth-context"},
 			}},
 			expectedJobs: sets.NewString("first", "second"),
-			expectedStatuses: []github.Status{{
-				State:       github.StatusSuccess,
+			expectedStatuses: []scallywag.Status{{
+				State:       scallywag.StatusSuccess,
 				Context:     "third-context",
 				Description: "Skipped.",
 			}, {
-				State:       github.StatusSuccess,
+				State:       scallywag.StatusSuccess,
 				Context:     "fourth-context",
 				Description: "Skipped.",
 			}},
@@ -272,12 +272,12 @@ func TestRunAndSkipJobs(t *testing.T) {
 			}},
 			jobCreationErrs: sets.NewString("first"),
 			expectedJobs:    sets.NewString("second"),
-			expectedStatuses: []github.Status{{
-				State:       github.StatusSuccess,
+			expectedStatuses: []scallywag.Status{{
+				State:       scallywag.StatusSuccess,
 				Context:     "third-context",
 				Description: "Skipped.",
 			}, {
-				State:       github.StatusSuccess,
+				State:       scallywag.StatusSuccess,
 				Context:     "fourth-context",
 				Description: "Skipped.",
 			}},
@@ -285,17 +285,17 @@ func TestRunAndSkipJobs(t *testing.T) {
 		},
 	}
 
-	pr := &github.PullRequest{
-		Base: github.PullRequestBranch{
-			Repo: github.Repo{
-				Owner: github.User{
+	pr := &scallywag.PullRequest{
+		Base: scallywag.PullRequestBranch{
+			Repo: scallywag.Repo{
+				Owner: scallywag.User{
 					Login: "org",
 				},
 				Name: "repo",
 			},
 			Ref: "branch",
 		},
-		Head: github.PullRequestBranch{
+		Head: scallywag.PullRequestBranch{
 			SHA: "foobar1",
 		},
 	}
@@ -400,17 +400,17 @@ func TestRunRequested(t *testing.T) {
 		},
 	}
 
-	pr := &github.PullRequest{
-		Base: github.PullRequestBranch{
-			Repo: github.Repo{
-				Owner: github.User{
+	pr := &scallywag.PullRequest{
+		Base: scallywag.PullRequestBranch{
+			Repo: scallywag.Repo{
+				Owner: scallywag.User{
 					Login: "org",
 				},
 				Name: "repo",
 			},
 			Ref: "branch",
 		},
-		Head: github.PullRequestBranch{
+		Head: scallywag.PullRequestBranch{
 			SHA: "foobar1",
 		},
 	}

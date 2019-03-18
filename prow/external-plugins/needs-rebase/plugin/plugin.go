@@ -27,6 +27,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
+
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -41,18 +43,18 @@ const (
 var sleep = time.Sleep
 
 type githubClient interface {
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
 	CreateComment(org, repo string, number int, comment string) error
 	BotName() (string, error)
 	AddLabel(org, repo string, number int, label string) error
 	RemoveLabel(org, repo string, number int, label string) error
 	IsMergeable(org, repo string, number int, sha string) (bool, error)
-	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
+	DeleteStaleComments(org, repo string, number int, comments []scallywag.IssueComment, isStale func(scallywag.IssueComment) bool) error
 	Query(context.Context, interface{}, map[string]interface{}) error
 }
 
 type commentPruner interface {
-	PruneComments(shouldPrune func(github.IssueComment) bool)
+	PruneComments(shouldPrune func(scallywag.IssueComment) bool)
 }
 
 // HelpProvider constructs the PluginHelp for this plugin that takes into account enabled repositories.
@@ -68,8 +70,8 @@ The plugin reacts to commit changes on PRs in addition to periodically scanning 
 // HandleEvent handles a GitHub PR event to determine if the "needs-rebase"
 // label needs to be added or removed. It depends on GitHub mergeability check
 // to decide the need for a rebase.
-func HandleEvent(log *logrus.Entry, ghc githubClient, pre *github.PullRequestEvent) error {
-	if pre.Action != github.PullRequestActionOpened && pre.Action != github.PullRequestActionSynchronize && pre.Action != github.PullRequestActionReopened {
+func HandleEvent(log *logrus.Entry, ghc githubClient, pre *scallywag.PullRequestEvent) error {
+	if pre.Action != scallywag.PullRequestActionOpened && pre.Action != scallywag.PullRequestActionSynchronize && pre.Action != scallywag.PullRequestActionReopened {
 		return nil
 	}
 
@@ -180,9 +182,9 @@ func takeAction(log *logrus.Entry, ghc githubClient, org, repo string, num int, 
 	return nil
 }
 
-func shouldPrune(botName string) func(github.IssueComment) bool {
-	return func(ic github.IssueComment) bool {
-		return github.NormLogin(botName) == github.NormLogin(ic.User.Login) &&
+func shouldPrune(botName string) func(scallywag.IssueComment) bool {
+	return func(ic scallywag.IssueComment) bool {
+		return scallywag.NormLogin(botName) == scallywag.NormLogin(ic.User.Login) &&
 			strings.Contains(ic.Body, needsRebaseMessage)
 	}
 }

@@ -26,7 +26,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
+
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -45,8 +46,8 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	ClearMilestone(org, repo string, num int) error
 	SetMilestone(org, repo string, issueNum, milestoneNum int) error
-	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
-	ListMilestones(org, repo string) ([]github.Milestone, error)
+	ListTeamMembers(id int, role string) ([]scallywag.TeamMember, error)
+	ListMilestones(org, repo string) ([]scallywag.Milestone, error)
 }
 
 func init() {
@@ -82,19 +83,19 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	return pluginHelp, nil
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.RepoMilestone)
 }
 
-func buildMilestoneMap(milestones []github.Milestone) map[string]int {
+func buildMilestoneMap(milestones []scallywag.Milestone) map[string]int {
 	m := make(map[string]int)
 	for _, ms := range milestones {
 		m[ms.Title] = ms.Number
 	}
 	return m
 }
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, repoMilestone map[string]plugins.Milestone) error {
-	if e.Action != github.GenericCommentActionCreated {
+func handle(gc githubClient, log *logrus.Entry, e *scallywag.GenericCommentEvent, repoMilestone map[string]plugins.Milestone) error {
+	if e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 
@@ -112,14 +113,14 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 		milestone = repoMilestone[""]
 	}
 
-	milestoneMaintainers, err := gc.ListTeamMembers(milestone.MaintainersID, github.RoleAll)
+	milestoneMaintainers, err := gc.ListTeamMembers(milestone.MaintainersID, scallywag.RoleAll)
 	if err != nil {
 		return err
 	}
 	found := false
 	for _, person := range milestoneMaintainers {
-		login := github.NormLogin(e.User.Login)
-		if github.NormLogin(person.Login) == login {
+		login := scallywag.NormLogin(e.User.Login)
+		if scallywag.NormLogin(person.Login) == login {
 			found = true
 			break
 		}

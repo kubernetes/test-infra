@@ -28,12 +28,12 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/approve/approvers"
 	"k8s.io/test-infra/prow/repoowners"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -60,18 +60,18 @@ var (
 )
 
 type githubClient interface {
-	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
-	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
-	ListReviews(org, repo string, number int) ([]github.Review, error)
-	ListPullRequestComments(org, repo string, number int) ([]github.ReviewComment, error)
+	GetPullRequest(org, repo string, number int) (*scallywag.PullRequest, error)
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
+	ListIssueComments(org, repo string, number int) ([]scallywag.IssueComment, error)
+	ListReviews(org, repo string, number int) ([]scallywag.Review, error)
+	ListPullRequestComments(org, repo string, number int) ([]scallywag.ReviewComment, error)
 	DeleteComment(org, repo string, ID int) error
 	CreateComment(org, repo string, number int, comment string) error
 	BotName() (string, error)
 	AddLabel(org, repo string, number int, label string) error
 	RemoveLabel(org, repo string, number int, label string) error
-	ListIssueEvents(org, repo string, num int) ([]github.ListedIssueEvent, error)
+	ListIssueEvents(org, repo string, num int) ([]scallywag.ListedIssueEvent, error)
 }
 
 type ownersClient interface {
@@ -86,7 +86,7 @@ type state struct {
 
 	body      string
 	author    string
-	assignees []github.User
+	assignees []scallywag.User
 	htmlURL   string
 }
 
@@ -141,7 +141,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	return pluginHelp, nil
 }
 
-func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
+func handleGenericCommentEvent(pc plugins.Agent, ce scallywag.GenericCommentEvent) error {
 	return handleGenericComment(
 		pc.Logger,
 		pc.GitHubClient,
@@ -152,8 +152,8 @@ func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) 
 	)
 }
 
-func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, ce *github.GenericCommentEvent) error {
-	if ce.Action != github.GenericCommentActionCreated || !ce.IsPR || ce.IssueState == "closed" {
+func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, ce *scallywag.GenericCommentEvent) error {
+	if ce.Action != scallywag.GenericCommentActionCreated || !ce.IsPR || ce.IssueState == "closed" {
 		return nil
 	}
 
@@ -198,7 +198,7 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, 
 
 // handleReviewEvent should only handle reviews that have no approval command.
 // Reviews with approval commands will be handled by handleGenericCommentEvent.
-func handleReviewEvent(pc plugins.Agent, re github.ReviewEvent) error {
+func handleReviewEvent(pc plugins.Agent, re scallywag.ReviewEvent) error {
 	return handleReview(
 		pc.Logger,
 		pc.GitHubClient,
@@ -209,8 +209,8 @@ func handleReviewEvent(pc plugins.Agent, re github.ReviewEvent) error {
 	)
 }
 
-func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, re *github.ReviewEvent) error {
-	if re.Action != github.ReviewActionSubmitted && re.Action != github.ReviewActionDismissed {
+func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, re *scallywag.ReviewEvent) error {
+	if re.Action != scallywag.ReviewActionSubmitted && re.Action != scallywag.ReviewActionDismissed {
 		return nil
 	}
 
@@ -259,7 +259,7 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubCo
 
 }
 
-func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequestEvent(pc plugins.Agent, pre scallywag.PullRequestEvent) error {
 	return handlePullRequest(
 		pc.Logger,
 		pc.GitHubClient,
@@ -270,18 +270,18 @@ func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error
 	)
 }
 
-func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, pre *github.PullRequestEvent) error {
-	if pre.Action != github.PullRequestActionOpened &&
-		pre.Action != github.PullRequestActionReopened &&
-		pre.Action != github.PullRequestActionSynchronize &&
-		pre.Action != github.PullRequestActionLabeled {
+func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, pre *scallywag.PullRequestEvent) error {
+	if pre.Action != scallywag.PullRequestActionOpened &&
+		pre.Action != scallywag.PullRequestActionReopened &&
+		pre.Action != scallywag.PullRequestActionSynchronize &&
+		pre.Action != scallywag.PullRequestActionLabeled {
 		return nil
 	}
 	botName, err := ghc.BotName()
 	if err != nil {
 		return err
 	}
-	if pre.Action == github.PullRequestActionLabeled &&
+	if pre.Action == scallywag.PullRequestActionLabeled &&
 		(pre.Label.Name != labels.Approved || pre.Sender.Login == botName || pre.PullRequest.State == "closed") {
 		return nil
 	}
@@ -458,10 +458,10 @@ func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, n
 			log.WithError(err).Errorf("Failed to list issue events for %s/%s#%d.", org, repo, number)
 			return false
 		}
-		var lastAdded github.ListedIssueEvent
+		var lastAdded scallywag.ListedIssueEvent
 		for _, event := range events {
 			// Only consider "approved" label added events.
-			if event.Event != github.IssueActionLabeled || event.Label.Name != labels.Approved {
+			if event.Event != scallywag.IssueActionLabeled || event.Label.Name != labels.Approved {
 				continue
 			}
 			lastAdded = event
@@ -511,16 +511,16 @@ func isApprovalState(botName string, reviewActsAsApprove bool, c *comment) bool 
 	// The review webhook returns state as lowercase, while the review API
 	// returns state as uppercase. Uppercase the value here so it always
 	// matches the constant.
-	reviewState := github.ReviewState(strings.ToUpper(string(c.ReviewState)))
+	reviewState := scallywag.ReviewState(strings.ToUpper(string(c.ReviewState)))
 
 	// ReviewStateApproved = /approve
 	// ReviewStateChangesRequested = /approve cancel
 	// ReviewStateDismissed = remove previous approval or disapproval
 	// (Reviews can go from Approved or ChangesRequested to Dismissed
 	// state if the Dismiss action is used)
-	if reviewActsAsApprove && (reviewState == github.ReviewStateApproved ||
-		reviewState == github.ReviewStateChangesRequested ||
-		reviewState == github.ReviewStateDismissed) {
+	if reviewActsAsApprove && (reviewState == scallywag.ReviewStateApproved ||
+		reviewState == scallywag.ReviewStateChangesRequested ||
+		reviewState == scallywag.ReviewStateDismissed) {
 		return true
 	}
 	return false
@@ -555,14 +555,14 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments []*comm
 			continue
 		}
 
-		if reviewActsAsApprove && c.ReviewState == github.ReviewStateApproved {
+		if reviewActsAsApprove && c.ReviewState == scallywag.ReviewStateApproved {
 			approversHandler.AddApprover(
 				c.Author,
 				c.HTMLURL,
 				false,
 			)
 		}
-		if reviewActsAsApprove && c.ReviewState == github.ReviewStateChangesRequested {
+		if reviewActsAsApprove && c.ReviewState == scallywag.ReviewStateChangesRequested {
 			approversHandler.RemoveApprover(c.Author)
 		}
 
@@ -653,10 +653,10 @@ type comment struct {
 	CreatedAt   time.Time
 	HTMLURL     string
 	ID          int
-	ReviewState github.ReviewState
+	ReviewState scallywag.ReviewState
 }
 
-func commentFromIssueComment(ic *github.IssueComment) *comment {
+func commentFromIssueComment(ic *scallywag.IssueComment) *comment {
 	if ic == nil {
 		return nil
 	}
@@ -669,7 +669,7 @@ func commentFromIssueComment(ic *github.IssueComment) *comment {
 	}
 }
 
-func commentsFromIssueComments(ics []github.IssueComment) []*comment {
+func commentsFromIssueComments(ics []scallywag.IssueComment) []*comment {
 	comments := []*comment{}
 	for i := range ics {
 		comments = append(comments, commentFromIssueComment(&ics[i]))
@@ -677,7 +677,7 @@ func commentsFromIssueComments(ics []github.IssueComment) []*comment {
 	return comments
 }
 
-func commentFromReviewComment(rc *github.ReviewComment) *comment {
+func commentFromReviewComment(rc *scallywag.ReviewComment) *comment {
 	if rc == nil {
 		return nil
 	}
@@ -690,7 +690,7 @@ func commentFromReviewComment(rc *github.ReviewComment) *comment {
 	}
 }
 
-func commentsFromReviewComments(rcs []github.ReviewComment) []*comment {
+func commentsFromReviewComments(rcs []scallywag.ReviewComment) []*comment {
 	comments := []*comment{}
 	for i := range rcs {
 		comments = append(comments, commentFromReviewComment(&rcs[i]))
@@ -698,7 +698,7 @@ func commentsFromReviewComments(rcs []github.ReviewComment) []*comment {
 	return comments
 }
 
-func commentFromReview(review *github.Review) *comment {
+func commentFromReview(review *scallywag.Review) *comment {
 	if review == nil {
 		return nil
 	}
@@ -712,7 +712,7 @@ func commentFromReview(review *github.Review) *comment {
 	}
 }
 
-func commentsFromReviews(reviews []github.Review) []*comment {
+func commentsFromReviews(reviews []scallywag.Review) []*comment {
 	comments := []*comment{}
 	for i := range reviews {
 		comments = append(comments, commentFromReview(&reviews[i]))

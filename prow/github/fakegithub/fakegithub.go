@@ -21,7 +21,7 @@ import (
 	"regexp"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const botName = "k8s-ci-robot"
@@ -35,20 +35,20 @@ const (
 
 // FakeClient is like client, but fake.
 type FakeClient struct {
-	Issues              []github.Issue
+	Issues              []scallywag.Issue
 	OrgMembers          map[string][]string
 	Collaborators       []string
-	IssueComments       map[int][]github.IssueComment
+	IssueComments       map[int][]scallywag.IssueComment
 	IssueCommentID      int
-	PullRequests        map[int]*github.PullRequest
-	PullRequestChanges  map[int][]github.PullRequestChange
-	PullRequestComments map[int][]github.ReviewComment
+	PullRequests        map[int]*scallywag.PullRequest
+	PullRequestChanges  map[int][]scallywag.PullRequestChange
+	PullRequestComments map[int][]scallywag.ReviewComment
 	ReviewID            int
-	Reviews             map[int][]github.Review
-	CombinedStatuses    map[string]*github.CombinedStatus
-	CreatedStatuses     map[string][]github.Status
-	IssueEvents         map[int][]github.ListedIssueEvent
-	Commits             map[string]github.SingleCommit
+	Reviews             map[int][]scallywag.Review
+	CombinedStatuses    map[string]*scallywag.CombinedStatus
+	CreatedStatuses     map[string][]scallywag.Status
+	IssueEvents         map[int][]scallywag.ListedIssueEvent
+	Commits             map[string]scallywag.SingleCommit
 
 	//All Labels That Exist In The Repo
 	RepoLabelsExisting []string
@@ -75,7 +75,7 @@ type FakeClient struct {
 
 	// list of commits for each PR
 	// org/repo#number:[]commit
-	CommitMap map[string][]github.RepositoryCommit
+	CommitMap map[string][]scallywag.RepositoryCommit
 
 	// Fake remote git storage. File name are keys
 	// and values map SHA to content
@@ -85,13 +85,13 @@ type FakeClient struct {
 	RefsDeleted []struct{ Org, Repo, Ref string }
 
 	// A map of repo names to projects
-	RepoProjects map[string][]github.Project
+	RepoProjects map[string][]scallywag.Project
 
 	// A map of project name to columns
-	ProjectColumnsMap map[string][]github.ProjectColumn
+	ProjectColumnsMap map[string][]scallywag.ProjectColumn
 
 	// Maps column ID to the list of project cards
-	ColumnCardsMap map[int][]github.ProjectCard
+	ColumnCardsMap map[int][]scallywag.ProjectCard
 
 	// Maps project name to maps of column ID to columnName
 	ColumnIDMap map[string]map[int]string
@@ -117,42 +117,42 @@ func (f *FakeClient) IsMember(org, user string) (bool, error) {
 }
 
 // ListIssueComments returns comments.
-func (f *FakeClient) ListIssueComments(owner, repo string, number int) ([]github.IssueComment, error) {
-	return append([]github.IssueComment{}, f.IssueComments[number]...), nil
+func (f *FakeClient) ListIssueComments(owner, repo string, number int) ([]scallywag.IssueComment, error) {
+	return append([]scallywag.IssueComment{}, f.IssueComments[number]...), nil
 }
 
 // ListPullRequestComments returns review comments.
-func (f *FakeClient) ListPullRequestComments(owner, repo string, number int) ([]github.ReviewComment, error) {
-	return append([]github.ReviewComment{}, f.PullRequestComments[number]...), nil
+func (f *FakeClient) ListPullRequestComments(owner, repo string, number int) ([]scallywag.ReviewComment, error) {
+	return append([]scallywag.ReviewComment{}, f.PullRequestComments[number]...), nil
 }
 
 // ListReviews returns reviews.
-func (f *FakeClient) ListReviews(owner, repo string, number int) ([]github.Review, error) {
-	return append([]github.Review{}, f.Reviews[number]...), nil
+func (f *FakeClient) ListReviews(owner, repo string, number int) ([]scallywag.Review, error) {
+	return append([]scallywag.Review{}, f.Reviews[number]...), nil
 }
 
 // ListIssueEvents returns issue events
-func (f *FakeClient) ListIssueEvents(owner, repo string, number int) ([]github.ListedIssueEvent, error) {
-	return append([]github.ListedIssueEvent{}, f.IssueEvents[number]...), nil
+func (f *FakeClient) ListIssueEvents(owner, repo string, number int) ([]scallywag.ListedIssueEvent, error) {
+	return append([]scallywag.ListedIssueEvent{}, f.IssueEvents[number]...), nil
 }
 
 // CreateComment adds a comment to a PR
 func (f *FakeClient) CreateComment(owner, repo string, number int, comment string) error {
 	f.IssueCommentsAdded = append(f.IssueCommentsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, comment))
-	f.IssueComments[number] = append(f.IssueComments[number], github.IssueComment{
+	f.IssueComments[number] = append(f.IssueComments[number], scallywag.IssueComment{
 		ID:   f.IssueCommentID,
 		Body: comment,
-		User: github.User{Login: botName},
+		User: scallywag.User{Login: botName},
 	})
 	f.IssueCommentID++
 	return nil
 }
 
 // CreateReview adds a review to a PR
-func (f *FakeClient) CreateReview(org, repo string, number int, r github.DraftReview) error {
-	f.Reviews[number] = append(f.Reviews[number], github.Review{
+func (f *FakeClient) CreateReview(org, repo string, number int, r scallywag.DraftReview) error {
+	f.Reviews[number] = append(f.Reviews[number], scallywag.Review{
 		ID:   f.ReviewID,
-		User: github.User{Login: botName},
+		User: scallywag.User{Login: botName},
 		Body: r.Body,
 	})
 	f.ReviewID++
@@ -186,7 +186,7 @@ func (f *FakeClient) DeleteComment(owner, repo string, ID int) error {
 }
 
 // DeleteStaleComments deletes comments flagged by isStale.
-func (f *FakeClient) DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error {
+func (f *FakeClient) DeleteStaleComments(org, repo string, number int, comments []scallywag.IssueComment, isStale func(scallywag.IssueComment) bool) error {
 	if comments == nil {
 		comments, _ = f.ListIssueComments(org, repo, number)
 	}
@@ -201,7 +201,7 @@ func (f *FakeClient) DeleteStaleComments(org, repo string, number int, comments 
 }
 
 // GetPullRequest returns details about the PR.
-func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*github.PullRequest, error) {
+func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*scallywag.PullRequest, error) {
 	val, exists := f.PullRequests[number]
 	if !exists {
 		return nil, fmt.Errorf("Pull request number %d does not exit", number)
@@ -210,7 +210,7 @@ func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*github.Pul
 }
 
 // GetPullRequestChanges returns the file modifications in a PR.
-func (f *FakeClient) GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error) {
+func (f *FakeClient) GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error) {
 	return f.PullRequestChanges[number], nil
 }
 
@@ -226,14 +226,14 @@ func (f *FakeClient) DeleteRef(owner, repo, ref string) error {
 }
 
 // GetSingleCommit returns a single commit.
-func (f *FakeClient) GetSingleCommit(org, repo, SHA string) (github.SingleCommit, error) {
+func (f *FakeClient) GetSingleCommit(org, repo, SHA string) (scallywag.SingleCommit, error) {
 	return f.Commits[SHA], nil
 }
 
 // CreateStatus adds a status context to a commit.
-func (f *FakeClient) CreateStatus(owner, repo, SHA string, s github.Status) error {
+func (f *FakeClient) CreateStatus(owner, repo, SHA string, s scallywag.Status) error {
 	if f.CreatedStatuses == nil {
-		f.CreatedStatuses = make(map[string][]github.Status)
+		f.CreatedStatuses = make(map[string][]scallywag.Status)
 	}
 	statuses := f.CreatedStatuses[SHA]
 	var updated bool
@@ -251,35 +251,35 @@ func (f *FakeClient) CreateStatus(owner, repo, SHA string, s github.Status) erro
 }
 
 // ListStatuses returns individual status contexts on a commit.
-func (f *FakeClient) ListStatuses(org, repo, ref string) ([]github.Status, error) {
+func (f *FakeClient) ListStatuses(org, repo, ref string) ([]scallywag.Status, error) {
 	return f.CreatedStatuses[ref], nil
 }
 
 // GetCombinedStatus returns the overall status for a commit.
-func (f *FakeClient) GetCombinedStatus(owner, repo, ref string) (*github.CombinedStatus, error) {
+func (f *FakeClient) GetCombinedStatus(owner, repo, ref string) (*scallywag.CombinedStatus, error) {
 	return f.CombinedStatuses[ref], nil
 }
 
 // GetRepoLabels gets labels in a repo.
-func (f *FakeClient) GetRepoLabels(owner, repo string) ([]github.Label, error) {
-	la := []github.Label{}
+func (f *FakeClient) GetRepoLabels(owner, repo string) ([]scallywag.Label, error) {
+	la := []scallywag.Label{}
 	for _, l := range f.RepoLabelsExisting {
-		la = append(la, github.Label{Name: l})
+		la = append(la, scallywag.Label{Name: l})
 	}
 	return la, nil
 }
 
 // GetIssueLabels gets labels on an issue
-func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.Label, error) {
+func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]scallywag.Label, error) {
 	re := regexp.MustCompile(fmt.Sprintf(`^%s/%s#%d:(.*)$`, owner, repo, number))
-	la := []github.Label{}
+	la := []scallywag.Label{}
 	allLabels := sets.NewString(f.IssueLabelsExisting...)
 	allLabels.Insert(f.IssueLabelsAdded...)
 	allLabels.Delete(f.IssueLabelsRemoved...)
 	for _, l := range allLabels.List() {
 		groups := re.FindStringSubmatch(l)
 		if groups != nil {
-			la = append(la, github.Label{Name: groups[1]})
+			la = append(la, scallywag.Label{Name: groups[1]})
 		}
 	}
 	return la, nil
@@ -315,13 +315,13 @@ func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) e
 }
 
 // FindIssues returns f.Issues
-func (f *FakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, error) {
+func (f *FakeClient) FindIssues(query, sort string, asc bool) ([]scallywag.Issue, error) {
 	return f.Issues, nil
 }
 
 // AssignIssue adds assignees.
 func (f *FakeClient) AssignIssue(owner, repo string, number int, assignees []string) error {
-	var m github.MissingUsers
+	var m scallywag.MissingUsers
 	for _, a := range assignees {
 		if a == "not-in-the-org" {
 			m.Users = append(m.Users, a)
@@ -357,8 +357,8 @@ func (f *FakeClient) GetFile(org, repo, file, commit string) ([]byte, error) {
 }
 
 // ListTeams return a list of fake teams that correspond to the fake team members returned by ListTeamMembers
-func (f *FakeClient) ListTeams(org string) ([]github.Team, error) {
-	return []github.Team{
+func (f *FakeClient) ListTeams(org string) ([]scallywag.Team, error) {
+	return []scallywag.Team{
 		{
 			ID:   0,
 			Name: "Admins",
@@ -371,26 +371,26 @@ func (f *FakeClient) ListTeams(org string) ([]github.Team, error) {
 }
 
 // ListTeamMembers return a fake team with a single "sig-lead" GitHub teammember
-func (f *FakeClient) ListTeamMembers(teamID int, role string) ([]github.TeamMember, error) {
-	if role != github.RoleAll {
+func (f *FakeClient) ListTeamMembers(teamID int, role string) ([]scallywag.TeamMember, error) {
+	if role != scallywag.RoleAll {
 		return nil, fmt.Errorf("unsupported role %v (only all supported)", role)
 	}
-	teams := map[int][]github.TeamMember{
+	teams := map[int][]scallywag.TeamMember{
 		0:  {{Login: "default-sig-lead"}},
 		42: {{Login: "sig-lead"}},
 	}
 	members, ok := teams[teamID]
 	if !ok {
-		return []github.TeamMember{}, nil
+		return []scallywag.TeamMember{}, nil
 	}
 	return members, nil
 }
 
 // IsCollaborator returns true if the user is a collaborator of the repo.
 func (f *FakeClient) IsCollaborator(org, repo, login string) (bool, error) {
-	normed := github.NormLogin(login)
+	normed := scallywag.NormLogin(login)
 	for _, collab := range f.Collaborators {
-		if github.NormLogin(collab) == normed {
+		if scallywag.NormLogin(collab) == normed {
 			return true, nil
 		}
 	}
@@ -398,10 +398,10 @@ func (f *FakeClient) IsCollaborator(org, repo, login string) (bool, error) {
 }
 
 // ListCollaborators lists the collaborators.
-func (f *FakeClient) ListCollaborators(org, repo string) ([]github.User, error) {
-	result := make([]github.User, 0, len(f.Collaborators))
+func (f *FakeClient) ListCollaborators(org, repo string) ([]scallywag.User, error) {
+	result := make([]scallywag.User, 0, len(f.Collaborators))
 	for _, login := range f.Collaborators {
-		result = append(result, github.User{Login: login})
+		result = append(result, scallywag.User{Login: login})
 	}
 	return result, nil
 }
@@ -422,32 +422,32 @@ func (f *FakeClient) SetMilestone(org, repo string, issueNum, milestoneNum int) 
 }
 
 // ListMilestones lists milestones.
-func (f *FakeClient) ListMilestones(org, repo string) ([]github.Milestone, error) {
-	milestones := []github.Milestone{}
+func (f *FakeClient) ListMilestones(org, repo string) ([]scallywag.Milestone, error) {
+	milestones := []scallywag.Milestone{}
 	for k, v := range f.MilestoneMap {
-		milestones = append(milestones, github.Milestone{Title: k, Number: v})
+		milestones = append(milestones, scallywag.Milestone{Title: k, Number: v})
 	}
 	return milestones, nil
 }
 
 // ListPRCommits lists commits for a given PR.
-func (f *FakeClient) ListPRCommits(org, repo string, prNumber int) ([]github.RepositoryCommit, error) {
+func (f *FakeClient) ListPRCommits(org, repo string, prNumber int) ([]scallywag.RepositoryCommit, error) {
 	k := fmt.Sprintf("%s/%s#%d", org, repo, prNumber)
 	return f.CommitMap[k], nil
 }
 
 // GetRepoProjects returns the list of projects under a repo.
-func (f *FakeClient) GetRepoProjects(owner, repo string) ([]github.Project, error) {
+func (f *FakeClient) GetRepoProjects(owner, repo string) ([]scallywag.Project, error) {
 	return f.RepoProjects[fmt.Sprintf("%s/%s", owner, repo)], nil
 }
 
 // GetOrgProjects returns the list of projects under an org
-func (f *FakeClient) GetOrgProjects(org string) ([]github.Project, error) {
+func (f *FakeClient) GetOrgProjects(org string) ([]scallywag.Project, error) {
 	return f.RepoProjects[fmt.Sprintf("%s/*", org)], nil
 }
 
 // GetProjectColumns returns the list of columns for a given project.
-func (f *FakeClient) GetProjectColumns(projectID int) ([]github.ProjectColumn, error) {
+func (f *FakeClient) GetProjectColumns(projectID int) ([]scallywag.ProjectColumn, error) {
 	// Get project name
 	for _, projects := range f.RepoProjects {
 		for _, project := range projects {
@@ -460,9 +460,9 @@ func (f *FakeClient) GetProjectColumns(projectID int) ([]github.ProjectColumn, e
 }
 
 // CreateProjectCard creates a project card under a given column.
-func (f *FakeClient) CreateProjectCard(columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error) {
+func (f *FakeClient) CreateProjectCard(columnID int, projectCard scallywag.ProjectCard) (*scallywag.ProjectCard, error) {
 	if f.ColumnCardsMap == nil {
-		f.ColumnCardsMap = make(map[int][]github.ProjectCard)
+		f.ColumnCardsMap = make(map[int][]scallywag.ProjectCard)
 	}
 
 	for project, columnIDMap := range f.ColumnIDMap {
@@ -487,7 +487,7 @@ func (f *FakeClient) DeleteProjectCard(projectCardID int) error {
 	}
 	f.Project = ""
 	f.Column = ""
-	newCards := []github.ProjectCard{}
+	newCards := []scallywag.ProjectCard{}
 	oldColumnID := -1
 	for column, cards := range f.ColumnCardsMap {
 		removalIndex := -1
@@ -512,9 +512,9 @@ func (f *FakeClient) DeleteProjectCard(projectCardID int) error {
 	return nil
 }
 
-func (f *FakeClient) GetColumnProjectCard(columnID int, cardNumber int) (*github.ProjectCard, error) {
+func (f *FakeClient) GetColumnProjectCard(columnID int, cardNumber int) (*scallywag.ProjectCard, error) {
 	if f.ColumnCardsMap == nil {
-		f.ColumnCardsMap = make(map[int][]github.ProjectCard)
+		f.ColumnCardsMap = make(map[int][]scallywag.ProjectCard)
 	}
 	for _, existingCard := range f.ColumnCardsMap[columnID] {
 		if existingCard.ContentID == cardNumber {
@@ -524,16 +524,16 @@ func (f *FakeClient) GetColumnProjectCard(columnID int, cardNumber int) (*github
 	return nil, nil
 }
 
-func (f *FakeClient) GetRepos(org string, isUser bool) ([]github.Repo, error) {
-	return []github.Repo{
+func (f *FakeClient) GetRepos(org string, isUser bool) ([]scallywag.Repo, error) {
+	return []scallywag.Repo{
 		{
-			Owner: github.User{
+			Owner: scallywag.User{
 				Login: "kubernetes",
 			},
 			Name: "kubernetes",
 		},
 		{
-			Owner: github.User{
+			Owner: scallywag.User{
 				Login: "kubernetes",
 			},
 			Name: "community",
@@ -544,9 +544,9 @@ func (f *FakeClient) GetRepos(org string, isUser bool) ([]github.Repo, error) {
 // MoveProjectCard moves a specific project card to a specified column in the same project
 func (f *FakeClient) MoveProjectCard(projectCardID int, newColumnID int) error {
 	// Remove project card from old column
-	newCards := []github.ProjectCard{}
+	newCards := []scallywag.ProjectCard{}
 	oldColumnID := -1
-	projectCard := github.ProjectCard{}
+	projectCard := scallywag.ProjectCard{}
 	for column, cards := range f.ColumnCardsMap {
 		removalIndex := -1
 		for i, existingCard := range cards {
@@ -586,7 +586,7 @@ func (f *FakeClient) MoveProjectCard(projectCardID int, newColumnID int) error {
 
 // TeamHasMember checks if a user belongs to a team
 func (f *FakeClient) TeamHasMember(teamID int, memberLogin string) (bool, error) {
-	teamMembers, _ := f.ListTeamMembers(teamID, github.RoleAll)
+	teamMembers, _ := f.ListTeamMembers(teamID, scallywag.RoleAll)
 	for _, member := range teamMembers {
 		if member.Login == memberLogin {
 			return true, nil

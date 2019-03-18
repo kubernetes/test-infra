@@ -23,6 +23,7 @@ import (
 	"k8s.io/test-infra/prow/errorutil"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 var (
@@ -46,7 +47,7 @@ type Mode struct {
 	conditions []*contextCondition
 	// actions returns the status updates to make based on the current statuses and the sha.
 	// When actions is called, the Mode may assume that it's conditions are met.
-	actions func(statuses []github.Status, sha string) []github.Status
+	actions func(statuses []scallywag.Status, sha string) []scallywag.Status
 }
 
 // MoveMode creates a mode that both copies and retires.
@@ -62,7 +63,7 @@ func MoveMode(origContext, newContext, targetURL string) *Mode {
 			{context: origContext, state: stateAny},
 			{context: newContext, state: stateDNE},
 		},
-		actions: func(statuses []github.Status, sha string) []github.Status {
+		actions: func(statuses []scallywag.Status, sha string) []scallywag.Status {
 			return append(dup(statuses, sha), dep(statuses, sha)...)
 		},
 	}
@@ -101,9 +102,9 @@ func RetireMode(origContext, newContext, targetURL string) *Mode {
 // copyAction creates a function that returns a copy action.
 // Specifically the returned function returns a RepoStatus that will create a status for newContext
 // with state set to the state of origContext.
-func copyAction(origContext, newContext string) func(statuses []github.Status, sha string) []github.Status {
-	return func(statuses []github.Status, sha string) []github.Status {
-		var oldStatus github.Status
+func copyAction(origContext, newContext string) func(statuses []scallywag.Status, sha string) []scallywag.Status {
+	return func(statuses []scallywag.Status, sha string) []scallywag.Status {
+		var oldStatus scallywag.Status
 		var found bool
 		for _, status := range statuses {
 			if status.Context == origContext {
@@ -117,7 +118,7 @@ func copyAction(origContext, newContext string) func(statuses []github.Status, s
 			glog.Error("failed to find original context in status list thus conditions for this duplicate action were not met. This should never happen!")
 			return nil
 		}
-		return []github.Status{
+		return []scallywag.Status{
 			{
 				Context:     newContext,
 				State:       oldStatus.State,
@@ -133,7 +134,7 @@ func copyAction(origContext, newContext string) func(statuses []github.Status, s
 // to 'success' and set it's description to mark it as retired and replaced by newContext.
 // If a non-empty URL is provided to describe why the context was retired, it will be
 // set as the target URL for the context.
-func retireAction(origContext, newContext, targetURL string) func(statuses []github.Status, sha string) []github.Status {
+func retireAction(origContext, newContext, targetURL string) func(statuses []scallywag.Status, sha string) []scallywag.Status {
 	stateSuccess := "success"
 	var desc string
 	if newContext == "" {
@@ -141,8 +142,8 @@ func retireAction(origContext, newContext, targetURL string) func(statuses []git
 	} else {
 		desc = fmt.Sprintf("Context retired. Status moved to \"%s\".", newContext)
 	}
-	return func(statuses []github.Status, sha string) []github.Status {
-		return []github.Status{
+	return func(statuses []scallywag.Status, sha string) []scallywag.Status {
+		return []scallywag.Status{
 			{
 				Context:     origContext,
 				State:       stateSuccess,
@@ -154,9 +155,9 @@ func retireAction(origContext, newContext, targetURL string) func(statuses []git
 }
 
 // processStatuses checks the mode against the combined status of a PR and emits the actions to take.
-func (m Mode) processStatuses(combStatus *github.CombinedStatus) []github.Status {
+func (m Mode) processStatuses(combStatus *scallywag.CombinedStatus) []scallywag.Status {
 	for _, cond := range m.conditions {
-		var match github.Status
+		var match scallywag.Status
 		var found bool
 		for _, status := range combStatus.Statuses {
 			if status.Context == "" {
@@ -199,9 +200,9 @@ func (m Mode) processStatuses(combStatus *github.CombinedStatus) []github.Status
 }
 
 type githubClient interface {
-	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
-	CreateStatus(org, repo, SHA string, s github.Status) error
-	GetPullRequests(org, repo string) ([]github.PullRequest, error)
+	GetCombinedStatus(org, repo, ref string) (*scallywag.CombinedStatus, error)
+	CreateStatus(org, repo, SHA string, s scallywag.Status) error
+	GetPullRequests(org, repo string) ([]scallywag.PullRequest, error)
 }
 
 // Migrator will search github for PRs with a given context and migrate/retire/move them.
@@ -229,7 +230,7 @@ func New(mode Mode, client *github.Client, org, repo string, targetBranchFilter 
 	}
 }
 
-func (m *Migrator) processPR(pr github.PullRequest) error {
+func (m *Migrator) processPR(pr scallywag.PullRequest) error {
 	if !m.targetBranchFilter(pr.Base.Ref) {
 		return nil
 	}

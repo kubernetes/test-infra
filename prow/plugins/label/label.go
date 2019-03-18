@@ -26,6 +26,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const pluginName = "label"
@@ -71,7 +72,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	return pluginHelp, nil
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.Label.AdditionalLabels, &e)
 }
 
@@ -79,8 +80,8 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
-	GetRepoLabels(owner, repo string) ([]github.Label, error)
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	GetRepoLabels(owner, repo string) ([]scallywag.Label, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
 }
 
 // Get Labels from Regexp matches
@@ -115,7 +116,7 @@ func getLabelsFromGenericMatches(matches [][]string, additionalLabels []string) 
 	return labels
 }
 
-func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *github.GenericCommentEvent) error {
+func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *scallywag.GenericCommentEvent) error {
 	labelMatches := labelRegex.FindAllStringSubmatch(e.Body, -1)
 	removeLabelMatches := removeLabelRegex.FindAllStringSubmatch(e.Body, -1)
 	customLabelMatches := customLabelRegex.FindAllStringSubmatch(e.Body, -1)

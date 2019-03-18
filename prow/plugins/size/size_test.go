@@ -23,13 +23,14 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type ghc struct {
 	*testing.T
-	labels    map[github.Label]bool
+	labels    map[scallywag.Label]bool
 	files     map[string][]byte
-	prChanges []github.PullRequestChange
+	prChanges []scallywag.PullRequestChange
 
 	addLabelErr, removeLabelErr, getIssueLabelsErr,
 	getFileErr, getPullRequestChangesErr error
@@ -37,7 +38,7 @@ type ghc struct {
 
 func (c *ghc) AddLabel(_, _ string, _ int, label string) error {
 	c.T.Logf("AddLabel: %s", label)
-	c.labels[github.Label{Name: label}] = true
+	c.labels[scallywag.Label{Name: label}] = true
 
 	return c.addLabelErr
 }
@@ -53,7 +54,7 @@ func (c *ghc) RemoveLabel(_, _ string, _ int, label string) error {
 	return c.removeLabelErr
 }
 
-func (c *ghc) GetIssueLabels(_, _ string, _ int) (ls []github.Label, err error) {
+func (c *ghc) GetIssueLabels(_, _ string, _ int) (ls []scallywag.Label, err error) {
 	c.T.Log("GetIssueLabels")
 	for k, ok := range c.labels {
 		if ok {
@@ -70,7 +71,7 @@ func (c *ghc) GetFile(_, _, path, _ string) ([]byte, error) {
 	return c.files[path], c.getFileErr
 }
 
-func (c *ghc) GetPullRequestChanges(_, _ string, _ int) ([]github.PullRequestChange, error) {
+func (c *ghc) GetPullRequestChanges(_, _ string, _ int) ([]scallywag.PullRequestChange, error) {
 	c.T.Log("GetPullRequestChanges")
 	return c.prChanges, c.getPullRequestChangesErr
 }
@@ -115,17 +116,17 @@ func TestHandlePR(t *testing.T) {
 	cases := []struct {
 		name        string
 		client      *ghc
-		event       github.PullRequestEvent
+		event       scallywag.PullRequestEvent
 		err         error
 		sizes       plugins.Size
-		finalLabels []github.Label
+		finalLabels []scallywag.Label
 	}{
 		{
 			name: "simple size/S, no .generated_files",
 			client: &ghc{
-				labels:     map[github.Label]bool{},
+				labels:     map[scallywag.Label]bool{},
 				getFileErr: &github.FileNotFound{},
-				prChanges: []github.PullRequestChange{
+				prChanges: []scallywag.PullRequestChange{
 					{
 						SHA:       "abcd",
 						Filename:  "foobar",
@@ -142,15 +143,15 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			event: github.PullRequestEvent{
-				Action: github.PullRequestActionOpened,
+			event: scallywag.PullRequestEvent{
+				Action: scallywag.PullRequestActionOpened,
 				Number: 101,
-				PullRequest: github.PullRequest{
+				PullRequest: scallywag.PullRequest{
 					Number: 101,
-					Base: github.PullRequestBranch{
+					Base: scallywag.PullRequestBranch{
 						SHA: "abcd",
-						Repo: github.Repo{
-							Owner: github.User{
+						Repo: scallywag.Repo{
+							Owner: scallywag.User{
 								Login: "kubernetes",
 							},
 							Name: "kubernetes",
@@ -158,7 +159,7 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			finalLabels: []github.Label{
+			finalLabels: []scallywag.Label{
 				{Name: "size/S"},
 			},
 			sizes: defaultSizes,
@@ -166,7 +167,7 @@ func TestHandlePR(t *testing.T) {
 		{
 			name: "simple size/M, with .generated_files",
 			client: &ghc{
-				labels: map[github.Label]bool{},
+				labels: map[scallywag.Label]bool{},
 				files: map[string][]byte{
 					".generated_files": []byte(`
 						file-name foobar
@@ -174,7 +175,7 @@ func TestHandlePR(t *testing.T) {
 						path-prefix generated
 					`),
 				},
-				prChanges: []github.PullRequestChange{
+				prChanges: []scallywag.PullRequestChange{
 					{
 						SHA:       "abcd",
 						Filename:  "foobar",
@@ -205,15 +206,15 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			event: github.PullRequestEvent{
-				Action: github.PullRequestActionOpened,
+			event: scallywag.PullRequestEvent{
+				Action: scallywag.PullRequestActionOpened,
 				Number: 101,
-				PullRequest: github.PullRequest{
+				PullRequest: scallywag.PullRequest{
 					Number: 101,
-					Base: github.PullRequestBranch{
+					Base: scallywag.PullRequestBranch{
 						SHA: "abcd",
-						Repo: github.Repo{
-							Owner: github.User{
+						Repo: scallywag.Repo{
+							Owner: scallywag.User{
 								Login: "kubernetes",
 							},
 							Name: "kubernetes",
@@ -221,7 +222,7 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			finalLabels: []github.Label{
+			finalLabels: []scallywag.Label{
 				{Name: "size/M"},
 			},
 			sizes: defaultSizes,
@@ -229,7 +230,7 @@ func TestHandlePR(t *testing.T) {
 		{
 			name: "simple size/M, with .gitattributes",
 			client: &ghc{
-				labels: map[github.Label]bool{},
+				labels: map[scallywag.Label]bool{},
 				files: map[string][]byte{
 					".gitattributes": []byte(`
 						# comments
@@ -237,7 +238,7 @@ func TestHandlePR(t *testing.T) {
 						generated/**/*.txt linguist-generated=true
 					`),
 				},
-				prChanges: []github.PullRequestChange{
+				prChanges: []scallywag.PullRequestChange{
 					{
 						SHA:       "abcd",
 						Filename:  "foobar",
@@ -268,15 +269,15 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			event: github.PullRequestEvent{
-				Action: github.PullRequestActionOpened,
+			event: scallywag.PullRequestEvent{
+				Action: scallywag.PullRequestActionOpened,
 				Number: 101,
-				PullRequest: github.PullRequest{
+				PullRequest: scallywag.PullRequest{
 					Number: 101,
-					Base: github.PullRequestBranch{
+					Base: scallywag.PullRequestBranch{
 						SHA: "abcd",
-						Repo: github.Repo{
-							Owner: github.User{
+						Repo: scallywag.Repo{
+							Owner: scallywag.User{
 								Login: "kubernetes",
 							},
 							Name: "kubernetes",
@@ -284,7 +285,7 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			finalLabels: []github.Label{
+			finalLabels: []scallywag.Label{
 				{Name: "size/M"},
 			},
 			sizes: defaultSizes,
@@ -292,7 +293,7 @@ func TestHandlePR(t *testing.T) {
 		{
 			name: "simple size/XS, with .generated_files and paths-from-repo",
 			client: &ghc{
-				labels: map[github.Label]bool{},
+				labels: map[scallywag.Label]bool{},
 				files: map[string][]byte{
 					".generated_files": []byte(`
 						# Comments
@@ -312,7 +313,7 @@ func TestHandlePR(t *testing.T) {
 					mydir/mypath3
 					`),
 				},
-				prChanges: []github.PullRequestChange{
+				prChanges: []scallywag.PullRequestChange{
 					{
 						SHA:       "abcd",
 						Filename:  "foobar",
@@ -357,15 +358,15 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			event: github.PullRequestEvent{
-				Action: github.PullRequestActionOpened,
+			event: scallywag.PullRequestEvent{
+				Action: scallywag.PullRequestActionOpened,
 				Number: 101,
-				PullRequest: github.PullRequest{
+				PullRequest: scallywag.PullRequest{
 					Number: 101,
-					Base: github.PullRequestBranch{
+					Base: scallywag.PullRequestBranch{
 						SHA: "abcd",
-						Repo: github.Repo{
-							Owner: github.User{
+						Repo: scallywag.Repo{
+							Owner: scallywag.User{
 								Login: "kubernetes",
 							},
 							Name: "kubernetes",
@@ -373,7 +374,7 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			finalLabels: []github.Label{
+			finalLabels: []scallywag.Label{
 				{Name: "size/XS"},
 			},
 			sizes: defaultSizes,
@@ -381,16 +382,16 @@ func TestHandlePR(t *testing.T) {
 		{
 			name:   "pr closed event",
 			client: &ghc{},
-			event: github.PullRequestEvent{
-				Action: github.PullRequestActionClosed,
+			event: scallywag.PullRequestEvent{
+				Action: scallywag.PullRequestActionClosed,
 			},
-			finalLabels: []github.Label{},
+			finalLabels: []scallywag.Label{},
 			sizes:       defaultSizes,
 		},
 		{
 			name: "XS -> S transition",
 			client: &ghc{
-				labels: map[github.Label]bool{
+				labels: map[scallywag.Label]bool{
 					{Name: "irrelevant"}: true,
 					{Name: "size/XS"}:    true,
 				},
@@ -413,7 +414,7 @@ func TestHandlePR(t *testing.T) {
 					mydir/mypath3
 					`),
 				},
-				prChanges: []github.PullRequestChange{
+				prChanges: []scallywag.PullRequestChange{
 					{
 						SHA:       "abcd",
 						Filename:  "foobar",
@@ -458,15 +459,15 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			event: github.PullRequestEvent{
-				Action: github.PullRequestActionOpened,
+			event: scallywag.PullRequestEvent{
+				Action: scallywag.PullRequestActionOpened,
 				Number: 101,
-				PullRequest: github.PullRequest{
+				PullRequest: scallywag.PullRequest{
 					Number: 101,
-					Base: github.PullRequestBranch{
+					Base: scallywag.PullRequestBranch{
 						SHA: "abcd",
-						Repo: github.Repo{
-							Owner: github.User{
+						Repo: scallywag.Repo{
+							Owner: scallywag.User{
 								Login: "kubernetes",
 							},
 							Name: "kubernetes",
@@ -474,7 +475,7 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			finalLabels: []github.Label{
+			finalLabels: []scallywag.Label{
 				{Name: "irrelevant"},
 				{Name: "size/XS"},
 			},
@@ -483,9 +484,9 @@ func TestHandlePR(t *testing.T) {
 		{
 			name: "pull request reopened",
 			client: &ghc{
-				labels:     map[github.Label]bool{},
+				labels:     map[scallywag.Label]bool{},
 				getFileErr: &github.FileNotFound{},
-				prChanges: []github.PullRequestChange{
+				prChanges: []scallywag.PullRequestChange{
 					{
 						SHA:       "abcd",
 						Filename:  "foobar",
@@ -502,15 +503,15 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			event: github.PullRequestEvent{
-				Action: github.PullRequestActionReopened,
+			event: scallywag.PullRequestEvent{
+				Action: scallywag.PullRequestActionReopened,
 				Number: 101,
-				PullRequest: github.PullRequest{
+				PullRequest: scallywag.PullRequest{
 					Number: 101,
-					Base: github.PullRequestBranch{
+					Base: scallywag.PullRequestBranch{
 						SHA: "abcd",
-						Repo: github.Repo{
-							Owner: github.User{
+						Repo: scallywag.Repo{
+							Owner: scallywag.User{
 								Login: "kubernetes",
 							},
 							Name: "kubernetes",
@@ -518,7 +519,7 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			finalLabels: []github.Label{
+			finalLabels: []scallywag.Label{
 				{Name: "size/S"},
 			},
 			sizes: defaultSizes,
@@ -526,9 +527,9 @@ func TestHandlePR(t *testing.T) {
 		{
 			name: "pull request edited",
 			client: &ghc{
-				labels:     map[github.Label]bool{},
+				labels:     map[scallywag.Label]bool{},
 				getFileErr: &github.FileNotFound{},
-				prChanges: []github.PullRequestChange{
+				prChanges: []scallywag.PullRequestChange{
 					{
 						SHA:       "abcd",
 						Filename:  "foobar",
@@ -538,15 +539,15 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			event: github.PullRequestEvent{
-				Action: github.PullRequestActionEdited,
+			event: scallywag.PullRequestEvent{
+				Action: scallywag.PullRequestActionEdited,
 				Number: 101,
-				PullRequest: github.PullRequest{
+				PullRequest: scallywag.PullRequest{
 					Number: 101,
-					Base: github.PullRequestBranch{
+					Base: scallywag.PullRequestBranch{
 						SHA: "abcd",
-						Repo: github.Repo{
-							Owner: github.User{
+						Repo: scallywag.Repo{
+							Owner: scallywag.User{
 								Login: "kubernetes",
 							},
 							Name: "kubernetes",
@@ -554,7 +555,7 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			finalLabels: []github.Label{
+			finalLabels: []scallywag.Label{
 				{Name: "size/M"},
 			},
 			sizes: defaultSizes,
@@ -562,9 +563,9 @@ func TestHandlePR(t *testing.T) {
 		{
 			name: "different label constraints",
 			client: &ghc{
-				labels:     map[github.Label]bool{},
+				labels:     map[scallywag.Label]bool{},
 				getFileErr: &github.FileNotFound{},
-				prChanges: []github.PullRequestChange{
+				prChanges: []scallywag.PullRequestChange{
 					{
 						SHA:       "abcd",
 						Filename:  "foobar",
@@ -581,15 +582,15 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			event: github.PullRequestEvent{
-				Action: github.PullRequestActionOpened,
+			event: scallywag.PullRequestEvent{
+				Action: scallywag.PullRequestActionOpened,
 				Number: 101,
-				PullRequest: github.PullRequest{
+				PullRequest: scallywag.PullRequest{
 					Number: 101,
-					Base: github.PullRequestBranch{
+					Base: scallywag.PullRequestBranch{
 						SHA: "abcd",
-						Repo: github.Repo{
-							Owner: github.User{
+						Repo: scallywag.Repo{
+							Owner: scallywag.User{
 								Login: "kubernetes",
 							},
 							Name: "kubernetes",
@@ -597,7 +598,7 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			finalLabels: []github.Label{
+			finalLabels: []scallywag.Label{
 				{Name: "size/XXL"},
 			},
 			sizes: plugins.Size{

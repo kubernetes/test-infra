@@ -39,6 +39,7 @@ import (
 	"golang.org/x/oauth2"
 	"k8s.io/test-infra/ghproxy/ghcache"
 	"k8s.io/test-infra/prow/errorutil"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type timeClient interface {
@@ -328,7 +329,7 @@ func (r requestError) Error() string {
 }
 
 func (r requestError) ErrorMessages() []string {
-	clientErr, isClientError := r.ClientError.(ClientError)
+	clientErr, isClientError := r.ClientError.(scallywag.ClientError)
 	if isClientError {
 		errors := []string{}
 		for _, subErr := range clientErr.Errors {
@@ -336,7 +337,7 @@ func (r requestError) ErrorMessages() []string {
 		}
 		return errors
 	}
-	alternativeClientErr, isAlternativeClientError := r.ClientError.(AlternativeClientError)
+	alternativeClientErr, isAlternativeClientError := r.ClientError.(scallywag.AlternativeClientError)
 	if isAlternativeClientError {
 		return alternativeClientErr.Errors
 	}
@@ -356,6 +357,23 @@ func (c *Client) request(r *request, ret interface{}) (int, error) {
 		}
 	}
 	return statusCode, nil
+}
+
+func unmarshalClientError(b []byte) error {
+	var errors []error
+	clientError := scallywag.ClientError{}
+	err := json.Unmarshal(b, &clientError)
+	if err == nil {
+		return clientError
+	}
+	errors = append(errors, err)
+	alternativeClientError := scallywag.AlternativeClientError{}
+	err = json.Unmarshal(b, &alternativeClientError)
+	if err == nil {
+		return alternativeClientError
+	}
+	errors = append(errors, err)
+	return errorutil.NewAggregate(errors...)
 }
 
 // requestRaw makes a request with retries and returns the response body.
@@ -513,7 +531,7 @@ func (c *Client) doRequest(method, path, accept string, body interface{}) (*http
 // Not thread-safe - callers need to hold c.mut.
 func (c *Client) getUserData() error {
 	c.log("User")
-	var u User
+	var u scallywag.User
 	_, err := c.request(&request{
 		method:    http.MethodGet,
 		path:      "/user",
@@ -586,8 +604,8 @@ func (c *Client) IsMember(org, user string) (bool, error) {
 	return false, fmt.Errorf("unexpected status: %d", code)
 }
 
-func (c *Client) listHooks(org string, repo *string) ([]Hook, error) {
-	var ret []Hook
+func (c *Client) listHooks(org string, repo *string) ([]scallywag.Hook, error) {
+	var ret []scallywag.Hook
 	var path string
 	if repo != nil {
 		path = fmt.Sprintf("/repos/%s/%s/hooks", org, *repo)
@@ -598,10 +616,10 @@ func (c *Client) listHooks(org string, repo *string) ([]Hook, error) {
 		path,
 		acceptNone,
 		func() interface{} {
-			return &[]Hook{}
+			return &[]scallywag.Hook{}
 		},
 		func(obj interface{}) {
-			ret = append(ret, *(obj.(*[]Hook))...)
+			ret = append(ret, *(obj.(*[]scallywag.Hook))...)
 		},
 	)
 	if err != nil {
@@ -612,19 +630,19 @@ func (c *Client) listHooks(org string, repo *string) ([]Hook, error) {
 
 // ListOrgHooks returns a list of hooks for the org.
 // https://developer.github.com/v3/orgs/hooks/#list-hooks
-func (c *Client) ListOrgHooks(org string) ([]Hook, error) {
+func (c *Client) ListOrgHooks(org string) ([]scallywag.Hook, error) {
 	c.log("ListOrgHooks", org)
 	return c.listHooks(org, nil)
 }
 
 // ListRepoHooks returns a list of hooks for the repo.
 // https://developer.github.com/v3/repos/hooks/#list-hooks
-func (c *Client) ListRepoHooks(org, repo string) ([]Hook, error) {
+func (c *Client) ListRepoHooks(org, repo string) ([]scallywag.Hook, error) {
 	c.log("ListRepoHooks", org, repo)
 	return c.listHooks(org, &repo)
 }
 
-func (c *Client) editHook(org string, repo *string, id int, req HookRequest) error {
+func (c *Client) editHook(org string, repo *string, id int, req scallywag.HookRequest) error {
 	if c.dry {
 		return nil
 	}
@@ -646,19 +664,19 @@ func (c *Client) editHook(org string, repo *string, id int, req HookRequest) err
 
 // EditRepoHook updates an existing hook with new info (events/url/secret)
 // https://developer.github.com/v3/repos/hooks/#edit-a-hook
-func (c *Client) EditRepoHook(org, repo string, id int, req HookRequest) error {
+func (c *Client) EditRepoHook(org, repo string, id int, req scallywag.HookRequest) error {
 	c.log("EditRepoHook", org, repo, id)
 	return c.editHook(org, &repo, id, req)
 }
 
 // EditOrgHook updates an existing hook with new info (events/url/secret)
 // https://developer.github.com/v3/orgs/hooks/#edit-a-hook
-func (c *Client) EditOrgHook(org string, id int, req HookRequest) error {
+func (c *Client) EditOrgHook(org string, id int, req scallywag.HookRequest) error {
 	c.log("EditOrgHook", org, id)
 	return c.editHook(org, nil, id, req)
 }
 
-func (c *Client) createHook(org string, repo *string, req HookRequest) (int, error) {
+func (c *Client) createHook(org string, repo *string, req scallywag.HookRequest) (int, error) {
 	if c.dry {
 		return -1, nil
 	}
@@ -668,7 +686,7 @@ func (c *Client) createHook(org string, repo *string, req HookRequest) (int, err
 	} else {
 		path = fmt.Sprintf("/orgs/%s/hooks", org)
 	}
-	var ret Hook
+	var ret scallywag.Hook
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        path,
@@ -683,14 +701,14 @@ func (c *Client) createHook(org string, repo *string, req HookRequest) (int, err
 
 // CreateOrgHook creates a new hook for the org
 // https://developer.github.com/v3/orgs/hooks/#create-a-hook
-func (c *Client) CreateOrgHook(org string, req HookRequest) (int, error) {
+func (c *Client) CreateOrgHook(org string, req scallywag.HookRequest) (int, error) {
 	c.log("CreateOrgHook", org)
 	return c.createHook(org, nil, req)
 }
 
 // CreateRepoHook creates a new hook for the repo
 // https://developer.github.com/v3/repos/hooks/#create-a-hook
-func (c *Client) CreateRepoHook(org, repo string, req HookRequest) (int, error) {
+func (c *Client) CreateRepoHook(org, repo string, req scallywag.HookRequest) (int, error) {
 	c.log("CreateRepoHook", org, repo)
 	return c.createHook(org, &repo, req)
 }
@@ -698,9 +716,9 @@ func (c *Client) CreateRepoHook(org, repo string, req HookRequest) (int, error) 
 // GetOrg returns current metadata for the org
 //
 // https://developer.github.com/v3/orgs/#get-an-organization
-func (c *Client) GetOrg(name string) (*Organization, error) {
+func (c *Client) GetOrg(name string) (*scallywag.Organization, error) {
 	c.log("GetOrg", name)
-	var retOrg Organization
+	var retOrg scallywag.Organization
 	_, err := c.request(&request{
 		method:    http.MethodGet,
 		path:      fmt.Sprintf("/orgs/%s", name),
@@ -715,12 +733,12 @@ func (c *Client) GetOrg(name string) (*Organization, error) {
 // EditOrg will update the metadata for this org.
 //
 // https://developer.github.com/v3/orgs/#edit-an-organization
-func (c *Client) EditOrg(name string, config Organization) (*Organization, error) {
+func (c *Client) EditOrg(name string, config scallywag.Organization) (*scallywag.Organization, error) {
 	c.log("EditOrg", name, config)
 	if c.dry {
 		return &config, nil
 	}
-	var retOrg Organization
+	var retOrg scallywag.Organization
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
 		path:        fmt.Sprintf("/orgs/%s", name),
@@ -736,21 +754,21 @@ func (c *Client) EditOrg(name string, config Organization) (*Organization, error
 // ListOrgInvitations lists pending invitations to th org.
 //
 // https://developer.github.com/v3/orgs/members/#list-pending-organization-invitations
-func (c *Client) ListOrgInvitations(org string) ([]OrgInvitation, error) {
+func (c *Client) ListOrgInvitations(org string) ([]scallywag.OrgInvitation, error) {
 	c.log("ListOrgInvitations", org)
 	if c.fake {
 		return nil, nil
 	}
 	path := fmt.Sprintf("/orgs/%s/invitations", org)
-	var ret []OrgInvitation
+	var ret []scallywag.OrgInvitation
 	err := c.readPaginatedResults(
 		path,
 		acceptNone,
 		func() interface{} {
-			return &[]OrgInvitation{}
+			return &[]scallywag.OrgInvitation{}
 		},
 		func(obj interface{}) {
-			ret = append(ret, *(obj.(*[]OrgInvitation))...)
+			ret = append(ret, *(obj.(*[]scallywag.OrgInvitation))...)
 		},
 	)
 	if err != nil {
@@ -766,13 +784,13 @@ func (c *Client) ListOrgInvitations(org string) ([]OrgInvitation, error) {
 // Role options are "all", "admin" and "member"
 //
 // https://developer.github.com/v3/orgs/members/#members-list
-func (c *Client) ListOrgMembers(org, role string) ([]TeamMember, error) {
+func (c *Client) ListOrgMembers(org, role string) ([]scallywag.TeamMember, error) {
 	c.log("ListOrgMembers", org, role)
 	if c.fake {
 		return nil, nil
 	}
 	path := fmt.Sprintf("/orgs/%s/members", org)
-	var teamMembers []TeamMember
+	var teamMembers []scallywag.TeamMember
 	err := c.readPaginatedResultsWithValues(
 		path,
 		url.Values{
@@ -781,10 +799,10 @@ func (c *Client) ListOrgMembers(org, role string) ([]TeamMember, error) {
 		},
 		acceptNone,
 		func() interface{} {
-			return &[]TeamMember{}
+			return &[]scallywag.TeamMember{}
 		},
 		func(obj interface{}) {
-			teamMembers = append(teamMembers, *(obj.(*[]TeamMember))...)
+			teamMembers = append(teamMembers, *(obj.(*[]scallywag.TeamMember))...)
 		},
 	)
 	if err != nil {
@@ -833,13 +851,13 @@ func (c *Client) GetUserPermission(org, repo, user string) (string, error) {
 // This will also change the role to/from admin, on either the invitation or membership setting.
 //
 // https://developer.github.com/v3/orgs/members/#add-or-update-organization-membership
-func (c *Client) UpdateOrgMembership(org, user string, admin bool) (*OrgMembership, error) {
+func (c *Client) UpdateOrgMembership(org, user string, admin bool) (*scallywag.OrgMembership, error) {
 	c.log("UpdateOrgMembership", org, user, admin)
-	om := OrgMembership{}
+	om := scallywag.OrgMembership{}
 	if admin {
-		om.Role = RoleAdmin
+		om.Role = scallywag.RoleAdmin
 	} else {
-		om.Role = RoleMember
+		om.Role = scallywag.RoleMember
 	}
 	if c.dry {
 		return &om, nil
@@ -872,7 +890,7 @@ func (c *Client) RemoveOrgMembership(org, user string) error {
 // See https://developer.github.com/v3/issues/comments/#create-a-comment
 func (c *Client) CreateComment(org, repo string, number int, comment string) error {
 	c.log("CreateComment", org, repo, number, comment)
-	ic := IssueComment{
+	ic := scallywag.IssueComment{
 		Body: comment,
 	}
 	_, err := c.request(&request{
@@ -902,7 +920,7 @@ func (c *Client) DeleteComment(org, repo string, id int) error {
 // See https://developer.github.com/v3/issues/comments/#edit-a-comment
 func (c *Client) EditComment(org, repo string, id int, comment string) error {
 	c.log("EditComment", org, repo, id, comment)
-	ic := IssueComment{
+	ic := scallywag.IssueComment{
 		Body: comment,
 	}
 	_, err := c.request(&request{
@@ -919,7 +937,7 @@ func (c *Client) EditComment(org, repo string, id int, comment string) error {
 // See https://developer.github.com/v3/reactions/#create-reaction-for-an-issue-comment
 func (c *Client) CreateCommentReaction(org, repo string, id int, reaction string) error {
 	c.log("CreateCommentReaction", org, repo, id, reaction)
-	r := Reaction{Content: reaction}
+	r := scallywag.Reaction{Content: reaction}
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/issues/comments/%d/reactions", org, repo, id),
@@ -935,7 +953,7 @@ func (c *Client) CreateCommentReaction(org, repo string, id int, reaction string
 // See https://developer.github.com/v3/reactions/#create-reaction-for-an-issue
 func (c *Client) CreateIssueReaction(org, repo string, id int, reaction string) error {
 	c.log("CreateIssueReaction", org, repo, id, reaction)
-	r := Reaction{Content: reaction}
+	r := scallywag.Reaction{Content: reaction}
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/issues/%d/reactions", org, repo, id),
@@ -948,7 +966,7 @@ func (c *Client) CreateIssueReaction(org, repo string, id int, reaction string) 
 
 // DeleteStaleComments iterates over comments on an issue/PR, deleting those which the 'isStale'
 // function identifies as stale. If 'comments' is nil, the comments will be fetched from GitHub.
-func (c *Client) DeleteStaleComments(org, repo string, number int, comments []IssueComment, isStale func(IssueComment) bool) error {
+func (c *Client) DeleteStaleComments(org, repo string, number int, comments []scallywag.IssueComment, isStale func(scallywag.IssueComment) bool) error {
 	var err error
 	if comments == nil {
 		comments, err = c.ListIssueComments(org, repo, number)
@@ -1025,21 +1043,21 @@ func (c *Client) readPaginatedResultsWithValues(path string, values url.Values, 
 // Each page of results consumes one API token.
 //
 // See https://developer.github.com/v3/issues/comments/#list-comments-on-an-issue
-func (c *Client) ListIssueComments(org, repo string, number int) ([]IssueComment, error) {
+func (c *Client) ListIssueComments(org, repo string, number int) ([]scallywag.IssueComment, error) {
 	c.log("ListIssueComments", org, repo, number)
 	if c.fake {
 		return nil, nil
 	}
 	path := fmt.Sprintf("/repos/%s/%s/issues/%d/comments", org, repo, number)
-	var comments []IssueComment
+	var comments []scallywag.IssueComment
 	err := c.readPaginatedResults(
 		path,
 		acceptNone,
 		func() interface{} {
-			return &[]IssueComment{}
+			return &[]scallywag.IssueComment{}
 		},
 		func(obj interface{}) {
-			comments = append(comments, *(obj.(*[]IssueComment))...)
+			comments = append(comments, *(obj.(*[]scallywag.IssueComment))...)
 		},
 	)
 	if err != nil {
@@ -1051,9 +1069,9 @@ func (c *Client) ListIssueComments(org, repo string, number int) ([]IssueComment
 // GetPullRequests get all open pull requests for a repo.
 //
 // See https://developer.github.com/v3/pulls/#list-pull-requests
-func (c *Client) GetPullRequests(org, repo string) ([]PullRequest, error) {
+func (c *Client) GetPullRequests(org, repo string) ([]scallywag.PullRequest, error) {
 	c.log("GetPullRequests", org, repo)
-	var prs []PullRequest
+	var prs []scallywag.PullRequest
 	if c.fake {
 		return prs, nil
 	}
@@ -1065,10 +1083,10 @@ func (c *Client) GetPullRequests(org, repo string) ([]PullRequest, error) {
 		// https://developer.github.com/changes/2019-02-14-draft-pull-requests/
 		"application/vnd.github.symmetra-preview+json, application/vnd.github.shadow-cat-preview",
 		func() interface{} {
-			return &[]PullRequest{}
+			return &[]scallywag.PullRequest{}
 		},
 		func(obj interface{}) {
-			prs = append(prs, *(obj.(*[]PullRequest))...)
+			prs = append(prs, *(obj.(*[]scallywag.PullRequest))...)
 		},
 	)
 	if err != nil {
@@ -1080,9 +1098,9 @@ func (c *Client) GetPullRequests(org, repo string) ([]PullRequest, error) {
 // GetPullRequest gets a pull request.
 //
 // See https://developer.github.com/v3/pulls/#get-a-single-pull-request
-func (c *Client) GetPullRequest(org, repo string, number int) (*PullRequest, error) {
+func (c *Client) GetPullRequest(org, repo string, number int) (*scallywag.PullRequest, error) {
 	c.log("GetPullRequest", org, repo, number)
-	var pr PullRequest
+	var pr scallywag.PullRequest
 	_, err := c.request(&request{
 		// allow the description and draft fields
 		// https://developer.github.com/changes/2018-02-22-label-description-search-preview/
@@ -1190,21 +1208,21 @@ func (c *Client) UpdatePullRequest(org, repo string, number int, title, body *st
 // GetPullRequestChanges gets a list of files modified in a pull request.
 //
 // See https://developer.github.com/v3/pulls/#list-pull-requests-files
-func (c *Client) GetPullRequestChanges(org, repo string, number int) ([]PullRequestChange, error) {
+func (c *Client) GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error) {
 	c.log("GetPullRequestChanges", org, repo, number)
 	if c.fake {
-		return []PullRequestChange{}, nil
+		return []scallywag.PullRequestChange{}, nil
 	}
 	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/files", org, repo, number)
-	var changes []PullRequestChange
+	var changes []scallywag.PullRequestChange
 	err := c.readPaginatedResults(
 		path,
 		acceptNone,
 		func() interface{} {
-			return &[]PullRequestChange{}
+			return &[]scallywag.PullRequestChange{}
 		},
 		func(obj interface{}) {
-			changes = append(changes, *(obj.(*[]PullRequestChange))...)
+			changes = append(changes, *(obj.(*[]scallywag.PullRequestChange))...)
 		},
 	)
 	if err != nil {
@@ -1218,21 +1236,21 @@ func (c *Client) GetPullRequestChanges(org, repo string, number int) ([]PullRequ
 // Multiple-pages of comments consumes multiple API tokens.
 //
 // See https://developer.github.com/v3/pulls/comments/#list-comments-on-a-pull-request
-func (c *Client) ListPullRequestComments(org, repo string, number int) ([]ReviewComment, error) {
+func (c *Client) ListPullRequestComments(org, repo string, number int) ([]scallywag.ReviewComment, error) {
 	c.log("ListPullRequestComments", org, repo, number)
 	if c.fake {
 		return nil, nil
 	}
 	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/comments", org, repo, number)
-	var comments []ReviewComment
+	var comments []scallywag.ReviewComment
 	err := c.readPaginatedResults(
 		path,
 		acceptNone,
 		func() interface{} {
-			return &[]ReviewComment{}
+			return &[]scallywag.ReviewComment{}
 		},
 		func(obj interface{}) {
-			comments = append(comments, *(obj.(*[]ReviewComment))...)
+			comments = append(comments, *(obj.(*[]scallywag.ReviewComment))...)
 		},
 	)
 	if err != nil {
@@ -1246,21 +1264,21 @@ func (c *Client) ListPullRequestComments(org, repo string, number int) ([]Review
 // Multiple-pages of results consumes multiple API tokens.
 //
 // See https://developer.github.com/v3/pulls/reviews/#list-reviews-on-a-pull-request
-func (c *Client) ListReviews(org, repo string, number int) ([]Review, error) {
+func (c *Client) ListReviews(org, repo string, number int) ([]scallywag.Review, error) {
 	c.log("ListReviews", org, repo, number)
 	if c.fake {
 		return nil, nil
 	}
 	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews", org, repo, number)
-	var reviews []Review
+	var reviews []scallywag.Review
 	err := c.readPaginatedResults(
 		path,
 		acceptNone,
 		func() interface{} {
-			return &[]Review{}
+			return &[]scallywag.Review{}
 		},
 		func(obj interface{}) {
-			reviews = append(reviews, *(obj.(*[]Review))...)
+			reviews = append(reviews, *(obj.(*[]scallywag.Review))...)
 		},
 	)
 	if err != nil {
@@ -1272,7 +1290,7 @@ func (c *Client) ListReviews(org, repo string, number int) ([]Review, error) {
 // CreateStatus creates or updates the status of a commit.
 //
 // See https://developer.github.com/v3/repos/statuses/#create-a-status
-func (c *Client) CreateStatus(org, repo, SHA string, s Status) error {
+func (c *Client) CreateStatus(org, repo, SHA string, s scallywag.Status) error {
 	c.log("CreateStatus", org, repo, SHA, s)
 	_, err := c.request(&request{
 		method:      http.MethodPost,
@@ -1286,7 +1304,7 @@ func (c *Client) CreateStatus(org, repo, SHA string, s Status) error {
 // ListStatuses gets commit statuses for a given ref.
 //
 // See https://developer.github.com/v3/repos/statuses/#list-statuses-for-a-specific-ref
-func (c *Client) ListStatuses(org, repo, ref string) ([]Status, error) {
+func (c *Client) ListStatuses(org, repo, ref string) ([]scallywag.Status, error) {
 	c.log("ListStatuses", org, repo, ref)
 	path := fmt.Sprintf("/repos/%s/%s/statuses/%s", org, repo, ref)
 	var statuses []Status
@@ -1306,10 +1324,10 @@ func (c *Client) ListStatuses(org, repo, ref string) ([]Status, error) {
 // GetRepo returns the repo for the provided owner/name combination.
 //
 // See https://developer.github.com/v3/repos/#get
-func (c *Client) GetRepo(owner, name string) (Repo, error) {
+func (c *Client) GetRepo(owner, name string) (scallywag.Repo, error) {
 	c.log("GetRepo", owner, name)
 
-	var repo Repo
+	var repo scallywag.Repo
 	_, err := c.request(&request{
 		method:    http.MethodGet,
 		path:      fmt.Sprintf("/repos/%s/%s", owner, name),
@@ -1323,10 +1341,10 @@ func (c *Client) GetRepo(owner, name string) (Repo, error) {
 // This call uses multiple API tokens when results are paginated.
 //
 // See https://developer.github.com/v3/repos/#list-organization-repositories
-func (c *Client) GetRepos(org string, isUser bool) ([]Repo, error) {
+func (c *Client) GetRepos(org string, isUser bool) ([]scallywag.Repo, error) {
 	c.log("GetRepos", org, isUser)
 	var (
-		repos   []Repo
+		repos   []scallywag.Repo
 		nextURL string
 	)
 	if c.fake {
@@ -1341,10 +1359,10 @@ func (c *Client) GetRepos(org string, isUser bool) ([]Repo, error) {
 		nextURL,    // path
 		acceptNone, // accept
 		func() interface{} { // newObj
-			return &[]Repo{}
+			return &[]scallywag.Repo{}
 		},
 		func(obj interface{}) { // accumulate
-			repos = append(repos, *(obj.(*[]Repo))...)
+			repos = append(repos, *(obj.(*[]scallywag.Repo))...)
 		},
 	)
 	if err != nil {
@@ -1356,9 +1374,9 @@ func (c *Client) GetRepos(org string, isUser bool) ([]Repo, error) {
 // GetSingleCommit returns a single commit.
 //
 // See https://developer.github.com/v3/repos/#get
-func (c *Client) GetSingleCommit(org, repo, SHA string) (SingleCommit, error) {
+func (c *Client) GetSingleCommit(org, repo, SHA string) (scallywag.SingleCommit, error) {
 	c.log("GetSingleCommit", org, repo, SHA)
-	var commit SingleCommit
+	var commit scallywag.SingleCommit
 	_, err := c.request(&request{
 		method:    http.MethodGet,
 		path:      fmt.Sprintf("/repos/%s/%s/commits/%s", org, repo, SHA),
@@ -1375,9 +1393,9 @@ func (c *Client) GetSingleCommit(org, repo, SHA string) (SingleCommit, error) {
 // This call uses multiple API tokens when results are paginated.
 //
 // See https://developer.github.com/v3/repos/branches/#list-branches
-func (c *Client) GetBranches(org, repo string, onlyProtected bool) ([]Branch, error) {
+func (c *Client) GetBranches(org, repo string, onlyProtected bool) ([]scallywag.Branch, error) {
 	c.log("GetBranches", org, repo)
-	var branches []Branch
+	var branches []scallywag.Branch
 	err := c.readPaginatedResultsWithValues(
 		fmt.Sprintf("/repos/%s/%s/branches", org, repo),
 		url.Values{
@@ -1386,10 +1404,10 @@ func (c *Client) GetBranches(org, repo string, onlyProtected bool) ([]Branch, er
 		},
 		acceptNone,
 		func() interface{} { // newObj
-			return &[]Branch{}
+			return &[]scallywag.Branch{}
 		},
 		func(obj interface{}) {
-			branches = append(branches, *(obj.(*[]Branch))...)
+			branches = append(branches, *(obj.(*[]scallywag.Branch))...)
 		},
 	)
 	if err != nil {
@@ -1414,7 +1432,7 @@ func (c *Client) RemoveBranchProtection(org, repo, branch string) error {
 // UpdateBranchProtection configures org/repo=branch.
 //
 // See https://developer.github.com/v3/repos/branches/#update-branch-protection
-func (c *Client) UpdateBranchProtection(org, repo, branch string, config BranchProtectionRequest) error {
+func (c *Client) UpdateBranchProtection(org, repo, branch string, config scallywag.BranchProtectionRequest) error {
 	c.log("UpdateBranchProtection", org, repo, branch, config)
 	_, err := c.request(&request{
 		accept:      "application/vnd.github.luke-cage-preview+json", // for required_approving_review_count
@@ -1435,7 +1453,7 @@ func (c *Client) AddRepoLabel(org, repo, label, description, color string) error
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/labels", org, repo),
 		accept:      "application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
-		requestBody: Label{Name: label, Description: description, Color: color},
+		requestBody: scallywag.Label{Name: label, Description: description, Color: color},
 		exitCodes:   []int{201},
 	}, nil)
 	return err
@@ -1450,7 +1468,7 @@ func (c *Client) UpdateRepoLabel(org, repo, label, newName, description, color s
 		method:      http.MethodPatch,
 		path:        fmt.Sprintf("/repos/%s/%s/labels/%s", org, repo, label),
 		accept:      "application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
-		requestBody: Label{Name: newName, Description: description, Color: color},
+		requestBody: scallywag.Label{Name: newName, Description: description, Color: color},
 		exitCodes:   []int{200},
 	}, nil)
 	return err
@@ -1465,7 +1483,7 @@ func (c *Client) DeleteRepoLabel(org, repo, label string) error {
 		method:      http.MethodDelete,
 		accept:      "application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
 		path:        fmt.Sprintf("/repos/%s/%s/labels/%s", org, repo, label),
-		requestBody: Label{Name: label},
+		requestBody: scallywag.Label{Name: label},
 		exitCodes:   []int{204},
 	}, nil)
 	return err
@@ -1474,17 +1492,17 @@ func (c *Client) DeleteRepoLabel(org, repo, label string) error {
 // GetCombinedStatus returns the latest statuses for a given ref.
 //
 // See https://developer.github.com/v3/repos/statuses/#get-the-combined-status-for-a-specific-ref
-func (c *Client) GetCombinedStatus(org, repo, ref string) (*CombinedStatus, error) {
+func (c *Client) GetCombinedStatus(org, repo, ref string) (*scallywag.CombinedStatus, error) {
 	c.log("GetCombinedStatus", org, repo, ref)
-	var combinedStatus CombinedStatus
+	var combinedStatus scallywag.CombinedStatus
 	err := c.readPaginatedResults(
 		fmt.Sprintf("/repos/%s/%s/commits/%s/status", org, repo, ref),
 		"",
 		func() interface{} {
-			return &CombinedStatus{}
+			return &scallywag.CombinedStatus{}
 		},
 		func(obj interface{}) {
-			cs := *(obj.(*CombinedStatus))
+			cs := *(obj.(*scallywag.CombinedStatus))
 			cs.Statuses = append(combinedStatus.Statuses, cs.Statuses...)
 			combinedStatus = cs
 		},
@@ -1493,8 +1511,8 @@ func (c *Client) GetCombinedStatus(org, repo, ref string) (*CombinedStatus, erro
 }
 
 // getLabels is a helper function that retrieves a paginated list of labels from a github URI path.
-func (c *Client) getLabels(path string) ([]Label, error) {
-	var labels []Label
+func (c *Client) getLabels(path string) ([]scallywag.Label, error) {
+	var labels []scallywag.Label
 	if c.fake {
 		return labels, nil
 	}
@@ -1502,10 +1520,10 @@ func (c *Client) getLabels(path string) ([]Label, error) {
 		path,
 		"application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
 		func() interface{} {
-			return &[]Label{}
+			return &[]scallywag.Label{}
 		},
 		func(obj interface{}) {
-			labels = append(labels, *(obj.(*[]Label))...)
+			labels = append(labels, *(obj.(*[]scallywag.Label))...)
 		},
 	)
 	if err != nil {
@@ -1517,7 +1535,7 @@ func (c *Client) getLabels(path string) ([]Label, error) {
 // GetRepoLabels returns the list of labels accessible to org/repo.
 //
 // See https://developer.github.com/v3/issues/labels/#list-all-labels-for-this-repository
-func (c *Client) GetRepoLabels(org, repo string) ([]Label, error) {
+func (c *Client) GetRepoLabels(org, repo string) ([]scallywag.Label, error) {
 	c.log("GetRepoLabels", org, repo)
 	return c.getLabels(fmt.Sprintf("/repos/%s/%s/labels", org, repo))
 }
@@ -1525,7 +1543,7 @@ func (c *Client) GetRepoLabels(org, repo string) ([]Label, error) {
 // GetIssueLabels returns the list of labels currently on issue org/repo#number.
 //
 // See https://developer.github.com/v3/issues/labels/#list-labels-on-an-issue
-func (c *Client) GetIssueLabels(org, repo string, number int) ([]Label, error) {
+func (c *Client) GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error) {
 	c.log("GetIssueLabels", org, repo, number)
 	return c.getLabels(fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number))
 }
@@ -1589,23 +1607,13 @@ func (c *Client) RemoveLabel(org, repo string, number int, label string) error {
 	return fmt.Errorf("deleting label 404: %s", ge.Message)
 }
 
-// MissingUsers is an error specifying the users that could not be unassigned.
-type MissingUsers struct {
-	Users  []string
-	action string
-}
-
-func (m MissingUsers) Error() string {
-	return fmt.Sprintf("could not %s the following user(s): %s.", m.action, strings.Join(m.Users, ", "))
-}
-
 // AssignIssue adds logins to org/repo#number, returning an error if any login is missing after making the call.
 //
 // See https://developer.github.com/v3/issues/assignees/#add-assignees-to-an-issue
 func (c *Client) AssignIssue(org, repo string, number int, logins []string) error {
 	c.log("AssignIssue", org, repo, number, logins)
 	assigned := make(map[string]bool)
-	var i Issue
+	var i scallywag.Issue
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/issues/%d/assignees", org, repo, number),
@@ -1616,11 +1624,11 @@ func (c *Client) AssignIssue(org, repo string, number int, logins []string) erro
 		return err
 	}
 	for _, assignee := range i.Assignees {
-		assigned[NormLogin(assignee.Login)] = true
+		assigned[scallywag.NormLogin(assignee.Login)] = true
 	}
-	missing := MissingUsers{action: "assign"}
+	missing := scallywag.MissingUsers{Action: "assign"}
 	for _, login := range logins {
-		if !assigned[NormLogin(login)] {
+		if !assigned[scallywag.NormLogin(login)] {
 			missing.Users = append(missing.Users, login)
 		}
 	}
@@ -1646,7 +1654,7 @@ func (e ExtraUsers) Error() string {
 func (c *Client) UnassignIssue(org, repo string, number int, logins []string) error {
 	c.log("UnassignIssue", org, repo, number, logins)
 	assigned := make(map[string]bool)
-	var i Issue
+	var i scallywag.Issue
 	_, err := c.request(&request{
 		method:      http.MethodDelete,
 		path:        fmt.Sprintf("/repos/%s/%s/issues/%d/assignees", org, repo, number),
@@ -1657,11 +1665,11 @@ func (c *Client) UnassignIssue(org, repo string, number int, logins []string) er
 		return err
 	}
 	for _, assignee := range i.Assignees {
-		assigned[NormLogin(assignee.Login)] = true
+		assigned[scallywag.NormLogin(assignee.Login)] = true
 	}
 	extra := ExtraUsers{action: "unassign"}
 	for _, login := range logins {
-		if assigned[NormLogin(login)] {
+		if assigned[scallywag.NormLogin(login)] {
 			extra.Users = append(extra.Users, login)
 		}
 	}
@@ -1674,7 +1682,7 @@ func (c *Client) UnassignIssue(org, repo string, number int, logins []string) er
 // CreateReview creates a review using the draft.
 //
 // https://developer.github.com/v3/pulls/reviews/#create-a-pull-request-review
-func (c *Client) CreateReview(org, repo string, number int, r DraftReview) error {
+func (c *Client) CreateReview(org, repo string, number int, r scallywag.DraftReview) error {
 	c.log("CreateReview", org, repo, number, r)
 	_, err := c.request(&request{
 		method:      http.MethodPost,
@@ -1723,7 +1731,7 @@ func prepareReviewersBody(logins []string, org string) (map[string][]string, err
 
 func (c *Client) tryRequestReview(org, repo string, number int, logins []string) (int, error) {
 	c.log("RequestReview", org, repo, number, logins)
-	var pr PullRequest
+	var pr scallywag.PullRequest
 	body, err := prepareReviewersBody(logins, org)
 	if err != nil {
 		// At least one team not in org,
@@ -1750,7 +1758,7 @@ func (c *Client) RequestReview(org, repo string, number int, logins []string) er
 	statusCode, err := c.tryRequestReview(org, repo, number, logins)
 	if err != nil && statusCode == http.StatusUnprocessableEntity /*422*/ {
 		// Failed to set all members of 'logins' as reviewers, try individually.
-		missing := MissingUsers{action: "request a PR review from"}
+		missing := scallywag.MissingUsers{Action: "request a PR review from"}
 		for _, user := range logins {
 			statusCode, err = c.tryRequestReview(org, repo, number, []string{user})
 			if err != nil && statusCode == http.StatusUnprocessableEntity /*422*/ {
@@ -1778,7 +1786,7 @@ func (c *Client) RequestReview(org, repo string, number int, logins []string) er
 // See https://developer.github.com/v3/pulls/review_requests/#delete-a-review-request
 func (c *Client) UnrequestReview(org, repo string, number int, logins []string) error {
 	c.log("UnrequestReview", org, repo, number, logins)
-	var pr PullRequest
+	var pr scallywag.PullRequest
 	body, err := prepareReviewersBody(logins, org)
 	if len(body) == 0 {
 		// No point in doing request for none,
@@ -1799,7 +1807,7 @@ func (c *Client) UnrequestReview(org, repo string, number int, logins []string) 
 	for _, user := range pr.RequestedReviewers {
 		found := false
 		for _, toDelete := range logins {
-			if NormLogin(user.Login) == NormLogin(toDelete) {
+			if scallywag.NormLogin(user.Login) == scallywag.NormLogin(toDelete) {
 				found = true
 				break
 			}
@@ -1846,7 +1854,7 @@ func stateCannotBeChangedOrOriginalError(err error) error {
 	requestErr, ok := err.(requestError)
 	if ok {
 		for _, errorMsg := range requestErr.ErrorMessages() {
-			if strings.Contains(errorMsg, stateCannotBeChangedMessagePrefix) {
+			if strings.Contains(errorMsg, scallywag.StateCannotBeChangedMessagePrefix) {
 				return StateCannotBeChanged{
 					Message: errorMsg,
 				}
@@ -1936,7 +1944,7 @@ func (c *Client) DeleteRef(org, repo, ref string) error {
 // Control whether oldest/newest is first with asc.
 //
 // See https://help.github.com/articles/searching-issues-and-pull-requests/ for details.
-func (c *Client) FindIssues(query, sort string, asc bool) ([]Issue, error) {
+func (c *Client) FindIssues(query, sort string, asc bool) ([]scallywag.Issue, error) {
 	c.log("FindIssues", query)
 	path := fmt.Sprintf("/search/issues?q=%s", url.QueryEscape(query))
 	if sort != "" {
@@ -1945,7 +1953,7 @@ func (c *Client) FindIssues(query, sort string, asc bool) ([]Issue, error) {
 			path += "&order=asc"
 		}
 	}
-	var issSearchResult IssuesSearchResult
+	var issSearchResult scallywag.IssuesSearchResult
 	_, err := c.request(&request{
 		method:    http.MethodGet,
 		path:      path,
@@ -1976,7 +1984,7 @@ func (c *Client) GetFile(org, repo, filepath, commit string) ([]byte, error) {
 		url = fmt.Sprintf("%s?ref=%s", url, commit)
 	}
 
-	var res Content
+	var res scallywag.Content
 	code, err := c.request(&request{
 		method:    http.MethodGet,
 		path:      url,
@@ -2014,7 +2022,7 @@ func (c *Client) Query(ctx context.Context, q interface{}, vars map[string]inter
 // CreateTeam adds a team with name to the org, returning a struct with the new ID.
 //
 // See https://developer.github.com/v3/teams/#create-team
-func (c *Client) CreateTeam(org string, team Team) (*Team, error) {
+func (c *Client) CreateTeam(org string, team scallywag.Team) (*scallywag.Team, error) {
 	c.log("CreateTeam", org, team)
 	if team.Name == "" {
 		return nil, errors.New("team.Name must be non-empty")
@@ -2025,7 +2033,7 @@ func (c *Client) CreateTeam(org string, team Team) (*Team, error) {
 		return &team, nil
 	}
 	path := fmt.Sprintf("/orgs/%s/teams", org)
-	var retTeam Team
+	var retTeam scallywag.Team
 	_, err := c.request(&request{
 		method: http.MethodPost,
 		path:   path,
@@ -2041,7 +2049,7 @@ func (c *Client) CreateTeam(org string, team Team) (*Team, error) {
 // EditTeam patches team.ID to contain the specified other values.
 //
 // See https://developer.github.com/v3/teams/#edit-team
-func (c *Client) EditTeam(t Team) (*Team, error) {
+func (c *Client) EditTeam(t scallywag.Team) (*scallywag.Team, error) {
 	c.log("EditTeam", t)
 	if t.ID == 0 {
 		return nil, errors.New("team.ID must be non-zero")
@@ -2053,13 +2061,13 @@ func (c *Client) EditTeam(t Team) (*Team, error) {
 	t.ID = 0
 	// Need to send parent_team_id: null
 	team := struct {
-		Team
+		scallywag.Team
 		ParentTeamID *int `json:"parent_team_id"`
 	}{
 		Team:         t,
 		ParentTeamID: t.ParentTeamID,
 	}
-	var retTeam Team
+	var retTeam scallywag.Team
 	path := fmt.Sprintf("/teams/%d", id)
 	_, err := c.request(&request{
 		method: http.MethodPatch,
@@ -2090,23 +2098,23 @@ func (c *Client) DeleteTeam(id int) error {
 // ListTeams gets a list of teams for the given org
 //
 // See https://developer.github.com/v3/teams/#list-teams
-func (c *Client) ListTeams(org string) ([]Team, error) {
+func (c *Client) ListTeams(org string) ([]scallywag.Team, error) {
 	c.log("ListTeams", org)
 	if c.fake {
 		return nil, nil
 	}
 	path := fmt.Sprintf("/orgs/%s/teams", org)
-	var teams []Team
+	var teams []scallywag.Team
 	err := c.readPaginatedResults(
 		path,
 		// This accept header enables the nested teams preview.
 		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
 		"application/vnd.github.hellcat-preview+json",
 		func() interface{} {
-			return &[]Team{}
+			return &[]scallywag.Team{}
 		},
 		func(obj interface{}) {
-			teams = append(teams, *(obj.(*[]Team))...)
+			teams = append(teams, *(obj.(*[]scallywag.Team))...)
 		},
 	)
 	if err != nil {
@@ -2120,16 +2128,16 @@ func (c *Client) ListTeams(org string) ([]Team, error) {
 // If the user is not a member of the org, GitHub will invite them to become an outside collaborator, setting their status to pending.
 //
 // https://developer.github.com/v3/teams/members/#add-or-update-team-membership
-func (c *Client) UpdateTeamMembership(id int, user string, maintainer bool) (*TeamMembership, error) {
+func (c *Client) UpdateTeamMembership(id int, user string, maintainer bool) (*scallywag.TeamMembership, error) {
 	c.log("UpdateTeamMembership", id, user, maintainer)
 	if c.fake {
 		return nil, nil
 	}
-	tm := TeamMembership{}
+	tm := scallywag.TeamMembership{}
 	if maintainer {
-		tm.Role = RoleMaintainer
+		tm.Role = scallywag.RoleMaintainer
 	} else {
-		tm.Role = RoleMember
+		tm.Role = scallywag.RoleMember
 	}
 
 	if c.dry {
@@ -2166,13 +2174,13 @@ func (c *Client) RemoveTeamMembership(id int, user string) error {
 // Role options are "all", "maintainer" and "member"
 //
 // https://developer.github.com/v3/teams/members/#list-team-members
-func (c *Client) ListTeamMembers(id int, role string) ([]TeamMember, error) {
+func (c *Client) ListTeamMembers(id int, role string) ([]scallywag.TeamMember, error) {
 	c.log("ListTeamMembers", id, role)
 	if c.fake {
 		return nil, nil
 	}
 	path := fmt.Sprintf("/teams/%d/members", id)
-	var teamMembers []TeamMember
+	var teamMembers []scallywag.TeamMember
 	err := c.readPaginatedResultsWithValues(
 		path,
 		url.Values{
@@ -2183,10 +2191,10 @@ func (c *Client) ListTeamMembers(id int, role string) ([]TeamMember, error) {
 		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
 		"application/vnd.github.hellcat-preview+json",
 		func() interface{} {
-			return &[]TeamMember{}
+			return &[]scallywag.TeamMember{}
 		},
 		func(obj interface{}) {
-			teamMembers = append(teamMembers, *(obj.(*[]TeamMember))...)
+			teamMembers = append(teamMembers, *(obj.(*[]scallywag.TeamMember))...)
 		},
 	)
 	if err != nil {
@@ -2271,21 +2279,21 @@ func (c *Client) RemoveTeamRepo(id int, org, repo string) error {
 // given team id
 //
 // https://developer.github.com/v3/teams/members/#list-pending-team-invitations
-func (c *Client) ListTeamInvitations(id int) ([]OrgInvitation, error) {
+func (c *Client) ListTeamInvitations(id int) ([]scallywag.OrgInvitation, error) {
 	c.log("ListTeamInvites", id)
 	if c.fake {
 		return nil, nil
 	}
 	path := fmt.Sprintf("/teams/%d/invitations", id)
-	var ret []OrgInvitation
+	var ret []scallywag.OrgInvitation
 	err := c.readPaginatedResults(
 		path,
 		acceptNone,
 		func() interface{} {
-			return &[]OrgInvitation{}
+			return &[]scallywag.OrgInvitation{}
 		},
 		func(obj interface{}) {
-			ret = append(ret, *(obj.(*[]OrgInvitation))...)
+			ret = append(ret, *(obj.(*[]scallywag.OrgInvitation))...)
 		},
 	)
 	if err != nil {
@@ -2294,49 +2302,10 @@ func (c *Client) ListTeamInvitations(id int) ([]OrgInvitation, error) {
 	return ret, nil
 }
 
-// MergeDetails contains desired properties of the merge.
-//
-// See https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button
-type MergeDetails struct {
-	// CommitTitle defaults to the automatic message.
-	CommitTitle string `json:"commit_title,omitempty"`
-	// CommitMessage defaults to the automatic message.
-	CommitMessage string `json:"commit_message,omitempty"`
-	// The PR HEAD must match this to prevent races.
-	SHA string `json:"sha,omitempty"`
-	// Can be "merge", "squash", or "rebase". Defaults to merge.
-	MergeMethod string `json:"merge_method,omitempty"`
-}
-
-// ModifiedHeadError happens when github refuses to merge a PR because the PR changed.
-type ModifiedHeadError string
-
-func (e ModifiedHeadError) Error() string { return string(e) }
-
-// UnmergablePRError happens when github refuses to merge a PR for other reasons (merge confclit).
-type UnmergablePRError string
-
-func (e UnmergablePRError) Error() string { return string(e) }
-
-// UnmergablePRBaseChangedError happens when github refuses merging a PR because the base changed.
-type UnmergablePRBaseChangedError string
-
-func (e UnmergablePRBaseChangedError) Error() string { return string(e) }
-
-// UnauthorizedToPushError happens when client is not allowed to push to github.
-type UnauthorizedToPushError string
-
-func (e UnauthorizedToPushError) Error() string { return string(e) }
-
-// MergeCommitsForbiddenError happens when the repo disallows the merge strategy configured for the repo in Tide.
-type MergeCommitsForbiddenError string
-
-func (e MergeCommitsForbiddenError) Error() string { return string(e) }
-
 // Merge merges a PR.
 //
 // See https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button
-func (c *Client) Merge(org, repo string, pr int, details MergeDetails) error {
+func (c *Client) Merge(org, repo string, pr int, details scallywag.MergeDetails) error {
 	c.log("Merge", org, repo, pr, details)
 	ge := githubError{}
 	ec, err := c.request(&request{
@@ -2350,17 +2319,17 @@ func (c *Client) Merge(org, repo string, pr int, details MergeDetails) error {
 	}
 	if ec == 405 {
 		if strings.Contains(ge.Message, "Base branch was modified") {
-			return UnmergablePRBaseChangedError(ge.Message)
+			return scallywag.UnmergablePRBaseChangedError(ge.Message)
 		}
 		if strings.Contains(ge.Message, "You're not authorized to push to this branch") {
-			return UnauthorizedToPushError(ge.Message)
+			return scallywag.UnauthorizedToPushError(ge.Message)
 		}
 		if strings.Contains(ge.Message, "Merge commits are not allowed on this repository") {
-			return MergeCommitsForbiddenError(ge.Message)
+			return scallywag.MergeCommitsForbiddenError(ge.Message)
 		}
-		return UnmergablePRError(ge.Message)
+		return scallywag.UnmergablePRError(ge.Message)
 	} else if ec == 409 {
-		return ModifiedHeadError(ge.Message)
+		return scallywag.ModifiedHeadError(ge.Message)
 	}
 
 	return nil
@@ -2405,23 +2374,23 @@ func (c *Client) IsCollaborator(org, repo, user string) (bool, error) {
 //
 // See 'IsCollaborator' for more details.
 // See https://developer.github.com/v3/repos/collaborators/
-func (c *Client) ListCollaborators(org, repo string) ([]User, error) {
+func (c *Client) ListCollaborators(org, repo string) ([]scallywag.User, error) {
 	c.log("ListCollaborators", org, repo)
 	if c.fake {
 		return nil, nil
 	}
 	path := fmt.Sprintf("/repos/%s/%s/collaborators", org, repo)
-	var users []User
+	var users []scallywag.User
 	err := c.readPaginatedResults(
 		path,
 		// This accept header enables the nested teams preview.
 		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
 		"application/vnd.github.hellcat-preview+json",
 		func() interface{} {
-			return &[]User{}
+			return &[]scallywag.User{}
 		},
 		func(obj interface{}) {
-			users = append(users, *(obj.(*[]User))...)
+			users = append(users, *(obj.(*[]scallywag.User))...)
 		},
 	)
 	if err != nil {
@@ -2451,21 +2420,21 @@ func (c *Client) CreateFork(owner, repo string) error {
 // are excluded.
 //
 // See https://developer.github.com/v3/issues/events/
-func (c *Client) ListIssueEvents(org, repo string, num int) ([]ListedIssueEvent, error) {
+func (c *Client) ListIssueEvents(org, repo string, num int) ([]scallywag.ListedIssueEvent, error) {
 	c.log("ListIssueEvents", org, repo, num)
 	if c.fake {
 		return nil, nil
 	}
 	path := fmt.Sprintf("/repos/%s/%s/issues/%d/events", org, repo, num)
-	var events []ListedIssueEvent
+	var events []scallywag.ListedIssueEvent
 	err := c.readPaginatedResults(
 		path,
 		acceptNone,
 		func() interface{} {
-			return &[]ListedIssueEvent{}
+			return &[]scallywag.ListedIssueEvent{}
 		},
 		func(obj interface{}) {
-			events = append(events, *(obj.(*[]ListedIssueEvent))...)
+			events = append(events, *(obj.(*[]scallywag.ListedIssueEvent))...)
 		},
 	)
 	if err != nil {
@@ -2544,21 +2513,21 @@ func (c *Client) SetMilestone(org, repo string, issueNum, milestoneNum int) erro
 // ListMilestones list all milestones in a repo
 //
 // See https://developer.github.com/v3/issues/milestones/#list-milestones-for-a-repository/
-func (c *Client) ListMilestones(org, repo string) ([]Milestone, error) {
+func (c *Client) ListMilestones(org, repo string) ([]scallywag.Milestone, error) {
 	c.log("ListMilestones", org)
 	if c.fake {
 		return nil, nil
 	}
 	path := fmt.Sprintf("/repos/%s/%s/milestones", org, repo)
-	var milestones []Milestone
+	var milestones []scallywag.Milestone
 	err := c.readPaginatedResults(
 		path,
 		acceptNone,
 		func() interface{} {
-			return &[]Milestone{}
+			return &[]scallywag.Milestone{}
 		},
 		func(obj interface{}) {
-			milestones = append(milestones, *(obj.(*[]Milestone))...)
+			milestones = append(milestones, *(obj.(*[]scallywag.Milestone))...)
 		},
 	)
 	if err != nil {
@@ -2570,20 +2539,20 @@ func (c *Client) ListMilestones(org, repo string) ([]Milestone, error) {
 // ListPRCommits lists the commits in a pull request.
 //
 // GitHub API docs: https://developer.github.com/v3/pulls/#list-commits-on-a-pull-request
-func (c *Client) ListPRCommits(org, repo string, number int) ([]RepositoryCommit, error) {
+func (c *Client) ListPRCommits(org, repo string, number int) ([]scallywag.RepositoryCommit, error) {
 	c.log("ListPRCommits", org, repo, number)
 	if c.fake {
 		return nil, nil
 	}
-	var commits []RepositoryCommit
+	var commits []scallywag.RepositoryCommit
 	err := c.readPaginatedResults(
 		fmt.Sprintf("/repos/%v/%v/pulls/%d/commits", org, repo, number),
 		acceptNone,
 		func() interface{} { // newObj returns a pointer to the type of object to create
-			return &[]RepositoryCommit{}
+			return &[]scallywag.RepositoryCommit{}
 		},
 		func(obj interface{}) { // accumulate is the accumulation function for paginated results
-			commits = append(commits, *(obj.(*[]RepositoryCommit))...)
+			commits = append(commits, *(obj.(*[]scallywag.RepositoryCommit))...)
 		},
 	)
 	if err != nil {
@@ -2609,18 +2578,18 @@ func (s *reloadingTokenSource) Token() (*oauth2.Token, error) {
 // GetRepoProjects returns the list of projects in this repo.
 //
 // See https://developer.github.com/v3/projects/#list-repository-projects
-func (c *Client) GetRepoProjects(owner, repo string) ([]Project, error) {
+func (c *Client) GetRepoProjects(owner, repo string) ([]scallywag.Project, error) {
 	c.log("GetOrgProjects", owner, repo)
 	path := (fmt.Sprintf("/repos/%s/%s/projects", owner, repo))
-	var projects []Project
+	var projects []scallywag.Project
 	err := c.readPaginatedResults(
 		path,
 		"application/vnd.github.inertia-preview+json",
 		func() interface{} {
-			return &[]Project{}
+			return &[]scallywag.Project{}
 		},
 		func(obj interface{}) {
-			projects = append(projects, *(obj.(*[]Project))...)
+			projects = append(projects, *(obj.(*[]scallywag.Project))...)
 		},
 	)
 	if err != nil {
@@ -2632,18 +2601,18 @@ func (c *Client) GetRepoProjects(owner, repo string) ([]Project, error) {
 // GetOrgProjects returns the list of projects in this org.
 //
 // See https://developer.github.com/v3/projects/#list-organization-projects
-func (c *Client) GetOrgProjects(org string) ([]Project, error) {
+func (c *Client) GetOrgProjects(org string) ([]scallywag.Project, error) {
 	c.log("GetOrgProjects", org)
 	path := (fmt.Sprintf("/orgs/%s/projects", org))
-	var projects []Project
+	var projects []scallywag.Project
 	err := c.readPaginatedResults(
 		path,
 		"application/vnd.github.inertia-preview+json",
 		func() interface{} {
-			return &[]Project{}
+			return &[]scallywag.Project{}
 		},
 		func(obj interface{}) {
-			projects = append(projects, *(obj.(*[]Project))...)
+			projects = append(projects, *(obj.(*[]scallywag.Project))...)
 		},
 	)
 	if err != nil {
@@ -2655,18 +2624,18 @@ func (c *Client) GetOrgProjects(org string) ([]Project, error) {
 // GetProjectColumns returns the list of columns in a project.
 //
 // See https://developer.github.com/v3/projects/columns/#list-project-columns
-func (c *Client) GetProjectColumns(projectID int) ([]ProjectColumn, error) {
+func (c *Client) GetProjectColumns(projectID int) ([]scallywag.ProjectColumn, error) {
 	c.log("GetProjectColumns", projectID)
 	path := (fmt.Sprintf("/projects/%d/columns", projectID))
-	var projectColumns []ProjectColumn
+	var projectColumns []scallywag.ProjectColumn
 	err := c.readPaginatedResults(
 		path,
 		"application/vnd.github.inertia-preview+json",
 		func() interface{} {
-			return &[]ProjectColumn{}
+			return &[]scallywag.ProjectColumn{}
 		},
 		func(obj interface{}) {
-			projectColumns = append(projectColumns, *(obj.(*[]ProjectColumn))...)
+			projectColumns = append(projectColumns, *(obj.(*[]scallywag.ProjectColumn))...)
 		},
 	)
 	if err != nil {
@@ -2678,7 +2647,7 @@ func (c *Client) GetProjectColumns(projectID int) ([]ProjectColumn, error) {
 // CreateProjectCard adds a project card to the specified project column.
 //
 // See https://developer.github.com/v3/projects/cards/#create-a-project-card
-func (c *Client) CreateProjectCard(columnID int, projectCard ProjectCard) (*ProjectCard, error) {
+func (c *Client) CreateProjectCard(columnID int, projectCard scallywag.ProjectCard) (*scallywag.ProjectCard, error) {
 	c.log("CreateProjectCard", columnID, projectCard)
 	if (projectCard.ContentType != "Issue") && (projectCard.ContentType != "PullRequest") {
 		return nil, errors.New("projectCard.ContentType must be either Issue or PullRequest")
@@ -2687,7 +2656,7 @@ func (c *Client) CreateProjectCard(columnID int, projectCard ProjectCard) (*Proj
 		return &projectCard, nil
 	}
 	path := fmt.Sprintf("/projects/columns/%d/cards", columnID)
-	var retProjectCard ProjectCard
+	var retProjectCard scallywag.ProjectCard
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        path,
@@ -2701,21 +2670,21 @@ func (c *Client) CreateProjectCard(columnID int, projectCard ProjectCard) (*Proj
 // GetColumnProjectCard of a specific issue or PR for a specific column in a board/project
 //
 // See https://developer.github.com/v3/projects/cards/#list-project-cards
-func (c *Client) GetColumnProjectCard(columnID int, cardNumber int) (*ProjectCard, error) {
+func (c *Client) GetColumnProjectCard(columnID int, cardNumber int) (*scallywag.ProjectCard, error) {
 	c.log("GetColumnProjectCard", columnID, cardNumber)
 	if c.fake {
 		return nil, nil
 	}
 	path := fmt.Sprintf("/projects/columns/%d/cards", columnID)
-	var cards []ProjectCard
+	var cards []scallywag.ProjectCard
 	err := c.readPaginatedResults(
 		path,
 		acceptNone,
 		func() interface{} {
-			return &[]ProjectCard{}
+			return &[]scallywag.ProjectCard{}
 		},
 		func(obj interface{}) {
-			cards = append(cards, *(obj.(*[]ProjectCard))...)
+			cards = append(cards, *(obj.(*[]scallywag.ProjectCard))...)
 		},
 	)
 	if err != nil {
@@ -2761,12 +2730,12 @@ func (c *Client) DeleteProjectCard(projectCardID int) error {
 // TeamHasMember checks if a user belongs to a team
 func (c *Client) TeamHasMember(teamID int, memberLogin string) (bool, error) {
 	c.log("TeamHasMember", teamID, memberLogin)
-	projectMaintainers, err := c.ListTeamMembers(teamID, RoleAll)
+	projectMaintainers, err := c.ListTeamMembers(teamID, scallywag.RoleAll)
 	if err != nil {
 		return false, err
 	}
 	for _, person := range projectMaintainers {
-		if NormLogin(person.Login) == NormLogin(memberLogin) {
+		if scallywag.NormLogin(person.Login) == scallywag.NormLogin(memberLogin) {
 			return true, nil
 		}
 	}

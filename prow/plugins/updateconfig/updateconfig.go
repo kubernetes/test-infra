@@ -30,9 +30,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -64,11 +64,11 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
 	GetFile(org, repo, filepath, commit string) ([]byte, error)
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre scallywag.PullRequestEvent) error {
 	return handle(pc.GitHubClient, pc.KubernetesClient.CoreV1(), pc.Config.ProwJobNamespace, pc.Logger, pre, pc.PluginConfig.ConfigUpdater)
 }
 
@@ -177,7 +177,7 @@ type ConfigMapUpdate struct {
 
 // FilterChanges determines which of the changes are relevant for config updating, returning mapping of
 // config map to key to filename to update that key from.
-func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange, log *logrus.Entry) map[ConfigMapID][]ConfigMapUpdate {
+func FilterChanges(cfg plugins.ConfigUpdater, changes []scallywag.PullRequestChange, log *logrus.Entry) map[ConfigMapID][]ConfigMapUpdate {
 	toUpdate := map[ConfigMapID][]ConfigMapUpdate{}
 	for _, change := range changes {
 		var cm plugins.ConfigMapSpec
@@ -209,14 +209,14 @@ func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange
 			if key == "" {
 				key = path.Base(change.Filename)
 				// if the key changed, we need to remove the old key
-				if change.Status == github.PullRequestFileRenamed {
+				if change.Status == scallywag.PullRequestFileRenamed {
 					oldKey := path.Base(change.PreviousFilename)
 					// not setting the filename field will cause the key to be
 					// deleted
 					toUpdate[id] = append(toUpdate[id], ConfigMapUpdate{Key: oldKey})
 				}
 			}
-			if change.Status == github.PullRequestFileRemoved {
+			if change.Status == scallywag.PullRequestFileRemoved {
 				toUpdate[id] = append(toUpdate[id], ConfigMapUpdate{Key: key})
 			} else {
 				gzip := cfg.GZIP
@@ -230,9 +230,9 @@ func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange
 	return toUpdate
 }
 
-func handle(gc githubClient, kc corev1.ConfigMapsGetter, defaultNamespace string, log *logrus.Entry, pre github.PullRequestEvent, config plugins.ConfigUpdater) error {
+func handle(gc githubClient, kc corev1.ConfigMapsGetter, defaultNamespace string, log *logrus.Entry, pre scallywag.PullRequestEvent, config plugins.ConfigUpdater) error {
 	// Only consider newly merged PRs
-	if pre.Action != github.PullRequestActionClosed {
+	if pre.Action != scallywag.PullRequestActionClosed {
 		return nil
 	}
 

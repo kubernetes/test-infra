@@ -34,6 +34,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const pluginName = "cherrypick"
@@ -46,12 +47,12 @@ type githubClient interface {
 	CreateComment(org, repo string, number int, comment string) error
 	CreateFork(org, repo string) error
 	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error)
-	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
+	GetPullRequest(org, repo string, number int) (*scallywag.PullRequest, error)
 	GetPullRequestPatch(org, repo string, number int) ([]byte, error)
-	GetRepo(owner, name string) (github.Repo, error)
+	GetRepo(owner, name string) (scallywag.Repo, error)
 	IsMember(org, user string) (bool, error)
-	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
-	ListOrgMembers(org, role string) ([]github.TeamMember, error)
+	ListIssueComments(org, repo string, number int) ([]scallywag.IssueComment, error)
+	ListOrgMembers(org, role string) ([]scallywag.TeamMember, error)
 }
 
 // HelpProvider construct the pluginhelp.PluginHelp for this plugin.
@@ -92,7 +93,7 @@ type Server struct {
 	patchURL string
 
 	repoLock sync.Mutex
-	repos    []github.Repo
+	repos    []scallywag.Repo
 }
 
 // ServeHTTP validates an incoming webhook and puts it into the event channel.
@@ -111,13 +112,13 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error {
 	l := logrus.WithFields(
 		logrus.Fields{
-			"event-type":     eventType,
-			github.EventGUID: eventGUID,
+			"event-type":        eventType,
+			scallywag.EventGUID: eventGUID,
 		},
 	)
 	switch eventType {
 	case "issue_comment":
-		var ic github.IssueCommentEvent
+		var ic scallywag.IssueCommentEvent
 		if err := json.Unmarshal(payload, &ic); err != nil {
 			return err
 		}
@@ -127,7 +128,7 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 			}
 		}()
 	case "pull_request":
-		var pr github.PullRequestEvent
+		var pr scallywag.PullRequestEvent
 		if err := json.Unmarshal(payload, &pr); err != nil {
 			return err
 		}
@@ -142,9 +143,9 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 	return nil
 }
 
-func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent) error {
+func (s *Server) handleIssueComment(l *logrus.Entry, ic scallywag.IssueCommentEvent) error {
 	// Only consider new comments in PRs.
-	if !ic.Issue.IsPullRequest() || ic.Action != github.IssueCommentActionCreated {
+	if !ic.Issue.IsPullRequest() || ic.Action != scallywag.IssueCommentActionCreated {
 		return nil
 	}
 
@@ -154,9 +155,9 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 	commentAuthor := ic.Comment.User.Login
 
 	l = l.WithFields(logrus.Fields{
-		github.OrgLogField:  org,
-		github.RepoLogField: repo,
-		github.PrLogField:   num,
+		scallywag.OrgLogField:  org,
+		scallywag.RepoLogField: repo,
+		scallywag.PrLogField:   num,
 	})
 
 	cherryPickMatches := cherryPickRe.FindAllStringSubmatch(ic.Comment.Body, -1)
@@ -225,9 +226,9 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 	return s.handle(l, ic.Comment.User.Login, ic.Comment, org, repo, targetBranch, title, body, num)
 }
 
-func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent) error {
+func (s *Server) handlePullRequest(l *logrus.Entry, pre scallywag.PullRequestEvent) error {
 	// Only consider newly merged PRs
-	if pre.Action != github.PullRequestActionClosed {
+	if pre.Action != scallywag.PullRequestActionClosed {
 		return nil
 	}
 
@@ -244,9 +245,9 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 	body := pr.Body
 
 	l = l.WithFields(logrus.Fields{
-		github.OrgLogField:  org,
-		github.RepoLogField: repo,
-		github.PrLogField:   num,
+		scallywag.OrgLogField:  org,
+		scallywag.RepoLogField: repo,
+		scallywag.PrLogField:   num,
 	})
 
 	comments, err := s.ghc.ListIssueComments(org, repo, num)
@@ -255,7 +256,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 	}
 
 	// requestor -> target branch -> issue comment
-	requestorToComments := make(map[string]map[string]*github.IssueComment)
+	requestorToComments := make(map[string]map[string]*scallywag.IssueComment)
 	for i := range comments {
 		c := comments[i]
 		cherryPickMatches := cherryPickRe.FindAllStringSubmatch(c.Body, -1)
@@ -265,7 +266,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 		// TODO: Support comments with multiple cherrypick invocations.
 		targetBranch := strings.TrimSpace(cherryPickMatches[0][1])
 		if requestorToComments[c.User.Login] == nil {
-			requestorToComments[c.User.Login] = make(map[string]*github.IssueComment)
+			requestorToComments[c.User.Login] = make(map[string]*scallywag.IssueComment)
 		}
 		requestorToComments[c.User.Login][targetBranch] = &c
 	}
@@ -324,7 +325,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 
 var cherryPickBranchFmt = "cherry-pick-%d-to-%s"
 
-func (s *Server) handle(l *logrus.Entry, requestor string, comment github.IssueComment, org, repo, targetBranch, title, body string, num int) error {
+func (s *Server) handle(l *logrus.Entry, requestor string, comment scallywag.IssueComment, org, repo, targetBranch, title, body string, num int) error {
 	if err := s.ensureForkExists(org, repo); err != nil {
 		return err
 	}
@@ -436,7 +437,7 @@ func (s *Server) ensureForkExists(org, repo string) error {
 		if err := waitForRepo(s.botName, repo, s.ghc); err != nil {
 			return fmt.Errorf("fork of %s/%s cannot show up on GitHub: %v", org, repo, err)
 		}
-		s.repos = append(s.repos, github.Repo{FullName: fork, Fork: true})
+		s.repos = append(s.repos, scallywag.Repo{FullName: fork, Fork: true})
 	}
 	return nil
 }
@@ -457,7 +458,7 @@ func waitForRepo(owner, name string, ghc githubClient) error {
 				continue
 			}
 			ghErr = ""
-			if repoExists(owner+"/"+name, []github.Repo{repo}) {
+			if repoExists(owner+"/"+name, []scallywag.Repo{repo}) {
 				return nil
 			}
 		case <-after:
@@ -466,7 +467,7 @@ func waitForRepo(owner, name string, ghc githubClient) error {
 	}
 }
 
-func repoExists(repo string, repos []github.Repo) bool {
+func repoExists(repo string, repos []scallywag.Repo) bool {
 	for _, r := range repos {
 		if !r.Fork {
 			continue

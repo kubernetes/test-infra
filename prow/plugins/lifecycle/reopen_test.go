@@ -21,7 +21,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type fakeClientReopen struct {
@@ -54,7 +54,7 @@ func (c *fakeClientReopen) IsCollaborator(owner, repo, login string) (bool, erro
 func TestReopenComment(t *testing.T) {
 	var testcases = []struct {
 		name          string
-		action        github.GenericCommentEventAction
+		action        scallywag.GenericCommentEventAction
 		state         string
 		body          string
 		commenter     string
@@ -63,7 +63,7 @@ func TestReopenComment(t *testing.T) {
 	}{
 		{
 			name:          "non-open comment",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			state:         "open",
 			body:          "does not matter",
 			commenter:     "random-person",
@@ -72,7 +72,7 @@ func TestReopenComment(t *testing.T) {
 		},
 		{
 			name:          "re-open by author",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			state:         "closed",
 			body:          "/reopen",
 			commenter:     "author",
@@ -81,7 +81,7 @@ func TestReopenComment(t *testing.T) {
 		},
 		{
 			name:          "re-open by collaborator",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			state:         "closed",
 			body:          "/reopen",
 			commenter:     "collaborator",
@@ -90,7 +90,7 @@ func TestReopenComment(t *testing.T) {
 		},
 		{
 			name:          "re-open by collaborator, trailing space.",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			state:         "closed",
 			body:          "/reopen \r",
 			commenter:     "collaborator",
@@ -99,7 +99,7 @@ func TestReopenComment(t *testing.T) {
 		},
 		{
 			name:          "re-open edited by author",
-			action:        github.GenericCommentActionEdited,
+			action:        scallywag.GenericCommentActionEdited,
 			state:         "closed",
 			body:          "/reopen",
 			commenter:     "author",
@@ -108,7 +108,7 @@ func TestReopenComment(t *testing.T) {
 		},
 		{
 			name:          "open by author on already open issue",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/reopen",
 			commenter:     "author",
@@ -117,7 +117,7 @@ func TestReopenComment(t *testing.T) {
 		},
 		{
 			name:          "re-open by non-collaborator, cannot reopen",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			state:         "closed",
 			body:          "/reopen",
 			commenter:     "non-collaborator",
@@ -127,13 +127,13 @@ func TestReopenComment(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		fc := &fakeClientReopen{}
-		e := &github.GenericCommentEvent{
+		e := &scallywag.GenericCommentEvent{
 			Action:      tc.action,
 			IssueState:  tc.state,
 			Body:        tc.body,
-			User:        github.User{Login: tc.commenter},
+			User:        scallywag.User{Login: tc.commenter},
 			Number:      5,
-			IssueAuthor: github.User{Login: "author"},
+			IssueAuthor: scallywag.User{Login: "author"},
 		}
 		if err := handleReopen(fc, logrus.WithField("plugin", "fake-reopen"), e); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)

@@ -42,6 +42,7 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // for gcp auth provider
 )
@@ -596,10 +597,10 @@ func hmacSecret() string {
 	return fmt.Sprintf("%x", buf)
 }
 
-func findHook(client *github.Client, org, repo string, loc url.URL) (*github.Hook, error) {
+func findHook(client *github.Client, org, repo string, loc url.URL) (*scallywag.Hook, error) {
 	loc.Scheme = ""
 	goal := loc.String()
-	var hooks []github.Hook
+	var hooks []scallywag.Hook
 	var err error
 	if repo == "" {
 		hooks, err = client.ListOrgHooks(org)
@@ -694,11 +695,11 @@ func enableHooks(client *github.Client, loc url.URL, secret string, repos ...str
 		}
 		yes := true
 		j := "json"
-		req := github.HookRequest{
+		req := scallywag.HookRequest{
 			Name:   "web",
 			Active: &yes,
-			Events: github.AllHookEvents,
-			Config: &github.HookConfig{
+			Events: scallywag.AllHookEvents,
+			Config: &scallywag.HookConfig{
 				URL:         locStr,
 				ContentType: &j,
 				Secret:      &secret,

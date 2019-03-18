@@ -34,7 +34,7 @@ import (
 
 	"k8s.io/test-infra/pkg/io"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -231,9 +231,9 @@ func expectedStatus(queryMap *config.QueryMap, pr *PullRequest, pool map[string]
 				minDiff = diff
 			}
 		}
-		return github.StatusPending, fmt.Sprintf(statusNotInPool, minDiff)
+		return scallywag.StatusPending, fmt.Sprintf(statusNotInPool, minDiff)
 	}
-	return github.StatusSuccess, statusInPool
+	return scallywag.StatusSuccess, statusInPool
 }
 
 // targetURL determines the URL used for more details in the status
@@ -295,7 +295,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 				string(pr.Repository.Owner.Login),
 				string(pr.Repository.Name),
 				string(pr.HeadRefOID),
-				github.Status{
+				scallywag.Status{
 					Context:     statusContext,
 					State:       wantState,
 					Description: wantDesc,

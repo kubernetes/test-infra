@@ -24,6 +24,7 @@ go_library(
         "//prow/errorutil:go_default_library",
         "//prow/github:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
+        "//prow/scallywag:go_default_library",
     ],
 )
 

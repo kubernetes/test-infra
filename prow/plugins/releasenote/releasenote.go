@@ -28,6 +28,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -97,19 +98,19 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
-	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
-	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
+	ListIssueComments(org, repo string, number int) ([]scallywag.IssueComment, error)
+	DeleteStaleComments(org, repo string, number int, comments []scallywag.IssueComment, isStale func(scallywag.IssueComment) bool) error
 	BotName() (string, error)
 }
 
-func handleIssueComment(pc plugins.Agent, ic github.IssueCommentEvent) error {
+func handleIssueComment(pc plugins.Agent, ic scallywag.IssueCommentEvent) error {
 	return handleComment(pc.GitHubClient, pc.Logger, ic)
 }
 
-func handleComment(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
+func handleComment(gc githubClient, log *logrus.Entry, ic scallywag.IssueCommentEvent) error {
 	// Only consider PRs and new comments.
-	if !ic.Issue.IsPullRequest() || ic.Action != github.IssueCommentActionCreated {
+	if !ic.Issue.IsPullRequest() || ic.Action != scallywag.IssueCommentActionCreated {
 		return nil
 	}
 
@@ -195,13 +196,13 @@ func removeOtherLabels(remover func(string) error, label string, labelSet []stri
 	return nil
 }
 
-func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pr scallywag.PullRequestEvent) error {
 	return handlePR(pc.GitHubClient, pc.Logger, &pr)
 }
 
-func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) error {
+func handlePR(gc githubClient, log *logrus.Entry, pr *scallywag.PullRequestEvent) error {
 	// Only consider events that edit the PR body.
-	if pr.Action != github.PullRequestActionOpened && pr.Action != github.PullRequestActionEdited {
+	if pr.Action != scallywag.PullRequestActionOpened && pr.Action != scallywag.PullRequestActionEdited {
 		return nil
 	}
 	org := pr.Repo.Owner.Login
@@ -216,7 +217,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 		prLabels.Insert(label.Name)
 	}
 
-	var comments []github.IssueComment
+	var comments []scallywag.IssueComment
 	labelToAdd := determineReleaseNoteLabel(pr.PullRequest.Body)
 	if labelToAdd == ReleaseNoteLabelNeeded {
 		if !prMustFollowRelNoteProcess(gc, log, pr, prLabels, true) {
@@ -261,7 +262,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 }
 
 // clearStaleComments deletes old comments that are no longer applicable.
-func clearStaleComments(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, prLabels sets.String, comments []github.IssueComment) error {
+func clearStaleComments(gc githubClient, log *logrus.Entry, pr *scallywag.PullRequestEvent, prLabels sets.String, comments []scallywag.IssueComment) error {
 	// If the PR must follow the process and hasn't yet completed the process, don't remove comments.
 	if prMustFollowRelNoteProcess(gc, log, pr, prLabels, false) && !releaseNoteAlreadyAdded(prLabels) {
 		return nil
@@ -275,7 +276,7 @@ func clearStaleComments(gc githubClient, log *logrus.Entry, pr *github.PullReque
 		pr.Repo.Name,
 		pr.Number,
 		comments,
-		func(c github.IssueComment) bool { // isStale function
+		func(c scallywag.IssueComment) bool { // isStale function
 			return c.User.Login == botName &&
 				(strings.Contains(c.Body, releaseNoteBody) ||
 					strings.Contains(c.Body, parentReleaseNoteBody))
@@ -283,7 +284,7 @@ func clearStaleComments(gc githubClient, log *logrus.Entry, pr *github.PullReque
 	)
 }
 
-func containsNoneCommand(comments []github.IssueComment) bool {
+func containsNoneCommand(comments []scallywag.IssueComment) bool {
 	for _, c := range comments {
 		if releaseNoteNoneRe.MatchString(c.Body) {
 			return true
@@ -292,7 +293,7 @@ func containsNoneCommand(comments []github.IssueComment) bool {
 	return false
 }
 
-func ensureNoRelNoteNeededLabel(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, prLabels sets.String) {
+func ensureNoRelNoteNeededLabel(gc githubClient, log *logrus.Entry, pr *scallywag.PullRequestEvent, prLabels sets.String) {
 	org := pr.Repo.Owner.Login
 	repo := pr.Repo.Name
 	format := "Failed to remove the label %q from %s/%s#%d."
@@ -334,7 +335,7 @@ func releaseNoteAlreadyAdded(prLabels sets.String) bool {
 	return prLabels.HasAny(releaseNote, releaseNoteActionRequired, releaseNoteNone)
 }
 
-func prMustFollowRelNoteProcess(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, prLabels sets.String, comment bool) bool {
+func prMustFollowRelNoteProcess(gc githubClient, log *logrus.Entry, pr *scallywag.PullRequestEvent, prLabels sets.String, comment bool) bool {
 	if pr.PullRequest.Base.Ref == "master" {
 		return true
 	}

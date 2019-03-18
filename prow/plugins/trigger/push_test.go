@@ -27,16 +27,16 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 
 	"k8s.io/test-infra/prow/github/fakegithub"
 )
 
 func TestCreateRefs(t *testing.T) {
-	pe := github.PushEvent{
+	pe := scallywag.PushEvent{
 		Ref: "refs/heads/master",
-		Repo: github.Repo{
-			Owner: github.User{
+		Repo: scallywag.Repo{
+			Owner: scallywag.User{
 				Name: "kubernetes",
 			},
 			Name:    "repo",
@@ -60,14 +60,14 @@ func TestCreateRefs(t *testing.T) {
 func TestHandlePE(t *testing.T) {
 	testCases := []struct {
 		name      string
-		pe        github.PushEvent
+		pe        scallywag.PushEvent
 		jobsToRun int
 	}{
 		{
 			name: "branch deleted",
-			pe: github.PushEvent{
+			pe: scallywag.PushEvent{
 				Ref: "refs/heads/master",
-				Repo: github.Repo{
+				Repo: scallywag.Repo{
 					FullName: "org/repo",
 				},
 				Deleted: true,
@@ -76,29 +76,29 @@ func TestHandlePE(t *testing.T) {
 		},
 		{
 			name: "no matching files",
-			pe: github.PushEvent{
+			pe: scallywag.PushEvent{
 				Ref: "refs/heads/master",
-				Commits: []github.Commit{
+				Commits: []scallywag.Commit{
 					{
 						Added: []string{"example.txt"},
 					},
 				},
-				Repo: github.Repo{
+				Repo: scallywag.Repo{
 					FullName: "org/repo",
 				},
 			},
 		},
 		{
 			name: "one matching file",
-			pe: github.PushEvent{
+			pe: scallywag.PushEvent{
 				Ref: "refs/heads/master",
-				Commits: []github.Commit{
+				Commits: []scallywag.Commit{
 					{
 						Added:    []string{"example.txt"},
 						Modified: []string{"hack.sh"},
 					},
 				},
-				Repo: github.Repo{
+				Repo: scallywag.Repo{
 					FullName: "org/repo",
 				},
 			},
@@ -106,14 +106,14 @@ func TestHandlePE(t *testing.T) {
 		},
 		{
 			name: "no change matcher",
-			pe: github.PushEvent{
+			pe: scallywag.PushEvent{
 				Ref: "refs/heads/master",
-				Commits: []github.Commit{
+				Commits: []scallywag.Commit{
 					{
 						Added: []string{"example.txt"},
 					},
 				},
-				Repo: github.Repo{
+				Repo: scallywag.Repo{
 					FullName: "org2/repo2",
 				},
 			},
@@ -121,14 +121,14 @@ func TestHandlePE(t *testing.T) {
 		},
 		{
 			name: "branch name with a slash",
-			pe: github.PushEvent{
+			pe: scallywag.PushEvent{
 				Ref: "refs/heads/release/v1.14",
-				Commits: []github.Commit{
+				Commits: []scallywag.Commit{
 					{
 						Added: []string{"hack.sh"},
 					},
 				},
-				Repo: github.Repo{
+				Repo: scallywag.Repo{
 					FullName: "org3/repo3",
 				},
 			},

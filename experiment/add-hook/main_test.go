@@ -135,18 +135,18 @@ func TestFindHook(t *testing.T) {
 	number := 7
 	cases := []struct {
 		name     string
-		hooks    []github.Hook
+		hooks    []scallywag.Hook
 		expected *int
 	}{
 		{
 			name:  "nil on no match",
-			hooks: []github.Hook{{}, {}},
+			hooks: []scallywag.Hook{{}, {}},
 		},
 		{
 			name: "return matched id",
-			hooks: []github.Hook{{
+			hooks: []scallywag.Hook{{
 				ID: number,
-				Config: github.HookConfig{
+				Config: scallywag.HookConfig{
 					URL: goal,
 				},
 			}},
@@ -170,7 +170,7 @@ func TestReconcileHook(t *testing.T) {
 	cases := []struct {
 		name         string
 		org          string
-		hooks        []github.Hook
+		hooks        []scallywag.Hook
 		expectCreate bool
 		expectEdit   bool
 		err          bool
@@ -188,9 +188,9 @@ func TestReconcileHook(t *testing.T) {
 		{
 			name: "fail on edit error",
 			org:  "edit-error",
-			hooks: []github.Hook{
+			hooks: []scallywag.Hook{
 				{
-					Config: github.HookConfig{
+					Config: scallywag.HookConfig{
 						URL: goal,
 					},
 				},
@@ -203,10 +203,10 @@ func TestReconcileHook(t *testing.T) {
 		},
 		{
 			name: "create when no match",
-			hooks: []github.Hook{
+			hooks: []scallywag.Hook{
 				{
 					ID: targetId + 6666,
-					Config: github.HookConfig{
+					Config: scallywag.HookConfig{
 						URL: "http://random-url",
 					},
 				},
@@ -215,10 +215,10 @@ func TestReconcileHook(t *testing.T) {
 		},
 		{
 			name: "edit exiting item",
-			hooks: []github.Hook{
+			hooks: []scallywag.Hook{
 				{
 					ID: targetId,
-					Config: github.HookConfig{
+					Config: scallywag.HookConfig{
 						URL: goal,
 					},
 				},
@@ -228,15 +228,15 @@ func TestReconcileHook(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		var created, edited *github.HookRequest
+		var created, edited *scallywag.HookRequest
 		ch := changer{
-			lister: func(org string) ([]github.Hook, error) {
+			lister: func(org string) ([]scallywag.Hook, error) {
 				if org == "list-error" {
 					return nil, errors.New("inject list error")
 				}
 				return tc.hooks, nil
 			},
-			editor: func(org string, id int, req github.HookRequest) error {
+			editor: func(org string, id int, req scallywag.HookRequest) error {
 				if org == "edit-error" {
 					return errors.New("inject edit error")
 				}
@@ -246,7 +246,7 @@ func TestReconcileHook(t *testing.T) {
 				edited = &req
 				return nil
 			},
-			creator: func(org string, req github.HookRequest) (int, error) {
+			creator: func(org string, req scallywag.HookRequest) (int, error) {
 				if org == "create-error" {
 					return 0, errors.New("inject create error")
 				}
@@ -257,10 +257,10 @@ func TestReconcileHook(t *testing.T) {
 				return targetId, nil
 			},
 		}
-		req := github.HookRequest{
+		req := scallywag.HookRequest{
 			Name:   "web",
 			Events: []string{"random"},
-			Config: &github.HookConfig{
+			Config: &scallywag.HookConfig{
 				URL:         goal,
 				ContentType: &j,
 				Secret:      &secret,

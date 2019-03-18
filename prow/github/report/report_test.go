@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func TestParseIssueComment(t *testing.T) {
@@ -30,7 +30,7 @@ func TestParseIssueComment(t *testing.T) {
 		name             string
 		context          string
 		state            string
-		ics              []github.IssueComment
+		ics              []scallywag.IssueComment
 		expectedDeletes  []int
 		expectedContexts []string
 		expectedUpdate   int
@@ -38,25 +38,25 @@ func TestParseIssueComment(t *testing.T) {
 		{
 			name:    "should delete old style comments",
 			context: "Jenkins foo test",
-			state:   github.StatusSuccess,
-			ics: []github.IssueComment{
+			state:   scallywag.StatusSuccess,
+			ics: []scallywag.IssueComment{
 				{
-					User: github.User{Login: "k8s-ci-robot"},
+					User: scallywag.User{Login: "k8s-ci-robot"},
 					Body: "Jenkins foo test **failed** for such-and-such.",
 					ID:   12345,
 				},
 				{
-					User: github.User{Login: "someone-else"},
+					User: scallywag.User{Login: "someone-else"},
 					Body: "Jenkins foo test **failed**!? Why?",
 					ID:   12356,
 				},
 				{
-					User: github.User{Login: "k8s-ci-robot"},
+					User: scallywag.User{Login: "k8s-ci-robot"},
 					Body: "Jenkins foo test **failed** for so-and-so.",
 					ID:   12367,
 				},
 				{
-					User: github.User{Login: "k8s-ci-robot"},
+					User: scallywag.User{Login: "k8s-ci-robot"},
 					Body: "Jenkins bar test **failed** for something-or-other.",
 					ID:   12378,
 				},
@@ -66,16 +66,16 @@ func TestParseIssueComment(t *testing.T) {
 		{
 			name:             "should create a new comment",
 			context:          "bla test",
-			state:            github.StatusFailure,
+			state:            scallywag.StatusFailure,
 			expectedContexts: []string{"bla test"},
 		},
 		{
 			name:    "should not delete an up-to-date comment",
 			context: "bla test",
-			state:   github.StatusSuccess,
-			ics: []github.IssueComment{
+			state:   scallywag.StatusSuccess,
+			ics: []scallywag.IssueComment{
 				{
-					User: github.User{Login: "k8s-ci-robot"},
+					User: scallywag.User{Login: "k8s-ci-robot"},
 					Body: "--- | --- | ---\nfoo test | something | or other\n\n",
 				},
 			},
@@ -83,10 +83,10 @@ func TestParseIssueComment(t *testing.T) {
 		{
 			name:    "should delete when all tests pass",
 			context: "bla test",
-			state:   github.StatusSuccess,
-			ics: []github.IssueComment{
+			state:   scallywag.StatusSuccess,
+			ics: []scallywag.IssueComment{
 				{
-					User: github.User{Login: "k8s-ci-robot"},
+					User: scallywag.User{Login: "k8s-ci-robot"},
 					Body: "--- | --- | ---\nbla test | something | or other\n\n" + commentTag,
 					ID:   123,
 				},
@@ -97,10 +97,10 @@ func TestParseIssueComment(t *testing.T) {
 		{
 			name:    "should delete a passing test with \\r",
 			context: "bla test",
-			state:   github.StatusSuccess,
-			ics: []github.IssueComment{
+			state:   scallywag.StatusSuccess,
+			ics: []scallywag.IssueComment{
 				{
-					User: github.User{Login: "k8s-ci-robot"},
+					User: scallywag.User{Login: "k8s-ci-robot"},
 					Body: "--- | --- | ---\r\nbla test | something | or other\r\n\r\n" + commentTag,
 					ID:   123,
 				},
@@ -112,10 +112,10 @@ func TestParseIssueComment(t *testing.T) {
 		{
 			name:    "should update a failed test",
 			context: "bla test",
-			state:   github.StatusFailure,
-			ics: []github.IssueComment{
+			state:   scallywag.StatusFailure,
+			ics: []scallywag.IssueComment{
 				{
-					User: github.User{Login: "k8s-ci-robot"},
+					User: scallywag.User{Login: "k8s-ci-robot"},
 					Body: "--- | --- | ---\nbla test | something | or other\n\n" + commentTag,
 					ID:   123,
 				},
@@ -126,10 +126,10 @@ func TestParseIssueComment(t *testing.T) {
 		{
 			name:    "should preserve old results when updating",
 			context: "bla test",
-			state:   github.StatusFailure,
-			ics: []github.IssueComment{
+			state:   scallywag.StatusFailure,
+			ics: []scallywag.IssueComment{
 				{
-					User: github.User{Login: "k8s-ci-robot"},
+					User: scallywag.User{Login: "k8s-ci-robot"},
 					Body: "--- | --- | ---\nbla test | something | or other\nfoo test | wow | aye\n\n" + commentTag,
 					ID:   123,
 				},
@@ -140,15 +140,15 @@ func TestParseIssueComment(t *testing.T) {
 		{
 			name:    "should merge duplicates",
 			context: "bla test",
-			state:   github.StatusFailure,
-			ics: []github.IssueComment{
+			state:   scallywag.StatusFailure,
+			ics: []scallywag.IssueComment{
 				{
-					User: github.User{Login: "k8s-ci-robot"},
+					User: scallywag.User{Login: "k8s-ci-robot"},
 					Body: "--- | --- | ---\nbla test | something | or other\nfoo test | wow such\n\n" + commentTag,
 					ID:   123,
 				},
 				{
-					User: github.User{Login: "k8s-ci-robot"},
+					User: scallywag.User{Login: "k8s-ci-robot"},
 					Body: "--- | --- | ---\nfoo test | beep | boop\n\n" + commentTag,
 					ID:   124,
 				},
@@ -159,10 +159,10 @@ func TestParseIssueComment(t *testing.T) {
 		{
 			name:    "should update an old comment when a test passes",
 			context: "bla test",
-			state:   github.StatusSuccess,
-			ics: []github.IssueComment{
+			state:   scallywag.StatusSuccess,
+			ics: []scallywag.IssueComment{
 				{
-					User: github.User{Login: "k8s-ci-robot"},
+					User: scallywag.User{Login: "k8s-ci-robot"},
 					Body: "--- | --- | ---\nbla test | something | or other\nfoo test | wow | aye\n\n" + commentTag,
 					ID:   123,
 				},
@@ -222,13 +222,13 @@ func TestParseIssueComment(t *testing.T) {
 }
 
 type fakeGhClient struct {
-	status []github.Status
+	status []scallywag.Status
 }
 
 func (gh fakeGhClient) BotName() (string, error) {
 	return "BotName", nil
 }
-func (gh *fakeGhClient) CreateStatus(org, repo, ref string, s github.Status) error {
+func (gh *fakeGhClient) CreateStatus(org, repo, ref string, s scallywag.Status) error {
 	if d := s.Description; len(d) > maxLen {
 		return fmt.Errorf("%s is len %d, more than max of %d chars", d, len(d), maxLen)
 	}
@@ -236,7 +236,7 @@ func (gh *fakeGhClient) CreateStatus(org, repo, ref string, s github.Status) err
 	return nil
 
 }
-func (gh fakeGhClient) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
+func (gh fakeGhClient) ListIssueComments(org, repo string, number int) ([]scallywag.IssueComment, error) {
 	return nil, nil
 }
 func (gh fakeGhClient) CreateComment(org, repo string, number int, comment string) error {

@@ -41,6 +41,8 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
+
 	"k8s.io/test-infra/prow/logrusutil"
 )
 
@@ -94,10 +96,10 @@ type RepoConfig struct {
 }
 
 // RepoList holds a slice of repos.
-type RepoList []github.Repo
+type RepoList []scallywag.Repo
 
-// RepoLabels holds a repo => []github.Label mapping.
-type RepoLabels map[string][]github.Label
+// RepoLabels holds a repo => []scallywag.Label mapping.
+type RepoLabels map[string][]scallywag.Label
 
 // Update a label in a repo
 type Update struct {
@@ -468,7 +470,7 @@ func syncLabels(config Configuration, org string, repos RepoLabels) (RepoUpdates
 			archaic = defaultArchaic   // Migrate
 			dead = defaultDead         // Delete
 		}
-		// Convert github.Label to Label
+		// Convert scallywag.Label to Label
 		var labels []Label
 		for _, l := range repoLabels {
 			labels = append(labels, Label{Name: l.Name, Description: l.Description, Color: l.Color})
@@ -638,9 +640,9 @@ type client interface {
 	DeleteRepoLabel(org, repo, label string) error
 	AddLabel(org, repo string, number int, label string) error
 	RemoveLabel(org, repo string, number int, label string) error
-	FindIssues(query, order string, ascending bool) ([]github.Issue, error)
-	GetRepos(org string, isUser bool) ([]github.Repo, error)
-	GetRepoLabels(string, string) ([]github.Label, error)
+	FindIssues(query, order string, ascending bool) ([]scallywag.Issue, error)
+	GetRepos(org string, isUser bool) ([]scallywag.Repo, error)
+	GetRepoLabels(string, string) ([]scallywag.Label, error)
 }
 
 func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, graphqlEndpoint string, hosts ...string) (client, error) {

@@ -25,20 +25,20 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 var (
 	// Sample changes:
-	docFile    = github.PullRequestChange{Filename: "docs/documentation.md", BlobURL: "<URL1>"}
-	docOwners  = github.PullRequestChange{Filename: "docs/OWNERS", BlobURL: "<URL2>"}
-	docOwners2 = github.PullRequestChange{Filename: "docs/2/OWNERS", BlobURL: "<URL3>"}
-	srcGo      = github.PullRequestChange{Filename: "src/code.go", BlobURL: "<URL4>"}
-	srcSh      = github.PullRequestChange{Filename: "src/shell.sh", BlobURL: "<URL5>"}
-	docSh      = github.PullRequestChange{Filename: "docs/shell.sh", BlobURL: "<URL6>"}
+	docFile    = scallywag.PullRequestChange{Filename: "docs/documentation.md", BlobURL: "<URL1>"}
+	docOwners  = scallywag.PullRequestChange{Filename: "docs/OWNERS", BlobURL: "<URL2>"}
+	docOwners2 = scallywag.PullRequestChange{Filename: "docs/2/OWNERS", BlobURL: "<URL3>"}
+	srcGo      = scallywag.PullRequestChange{Filename: "src/code.go", BlobURL: "<URL4>"}
+	srcSh      = scallywag.PullRequestChange{Filename: "src/shell.sh", BlobURL: "<URL5>"}
+	docSh      = scallywag.PullRequestChange{Filename: "docs/shell.sh", BlobURL: "<URL6>"}
 
 	// Sample blockades:
 	blockDocs = plugins.Blockade{
@@ -73,77 +73,77 @@ var (
 func TestCalculateBlocks(t *testing.T) {
 	tcs := []struct {
 		name            string
-		changes         []github.PullRequestChange
+		changes         []scallywag.PullRequestChange
 		config          []plugins.Blockade
 		expectedSummary summary
 	}{
 		{
 			name:    "blocked by 1/1 blockade (no exceptions), extra file",
 			config:  []plugins.Blockade{blockDocs},
-			changes: []github.PullRequestChange{docFile, docOwners, srcGo},
+			changes: []scallywag.PullRequestChange{docFile, docOwners, srcGo},
 			expectedSummary: summary{
-				"1": []github.PullRequestChange{docFile, docOwners},
+				"1": []scallywag.PullRequestChange{docFile, docOwners},
 			},
 		},
 		{
 			name:    "blocked by 1/1 blockade (1/2 files are exceptions), extra file",
 			config:  []plugins.Blockade{blockDocsExceptOwners},
-			changes: []github.PullRequestChange{docFile, docOwners, srcGo},
+			changes: []scallywag.PullRequestChange{docFile, docOwners, srcGo},
 			expectedSummary: summary{
-				"2": []github.PullRequestChange{docFile},
+				"2": []scallywag.PullRequestChange{docFile},
 			},
 		},
 		{
 			name:            "blocked by 0/1 blockades (2/2 exceptions), extra file",
 			config:          []plugins.Blockade{blockDocsExceptOwners},
-			changes:         []github.PullRequestChange{docOwners, docOwners2, srcGo},
+			changes:         []scallywag.PullRequestChange{docOwners, docOwners2, srcGo},
 			expectedSummary: summary{},
 		},
 		{
 			name:            "blocked by 0/1 blockades (no exceptions), extra file",
 			config:          []plugins.Blockade{blockDocsExceptOwners},
-			changes:         []github.PullRequestChange{srcGo, srcSh},
+			changes:         []scallywag.PullRequestChange{srcGo, srcSh},
 			expectedSummary: summary{},
 		},
 		{
 			name:    "blocked by 2/2 blockades (no exceptions), extra file",
 			config:  []plugins.Blockade{blockDocsExceptOwners, blockShell},
-			changes: []github.PullRequestChange{srcGo, srcSh, docFile},
+			changes: []scallywag.PullRequestChange{srcGo, srcSh, docFile},
 			expectedSummary: summary{
-				"2": []github.PullRequestChange{docFile},
-				"3": []github.PullRequestChange{srcSh},
+				"2": []scallywag.PullRequestChange{docFile},
+				"3": []scallywag.PullRequestChange{srcSh},
 			},
 		},
 		{
 			name:    "blocked by 2/2 blockades w/ single file",
 			config:  []plugins.Blockade{blockDocsExceptOwners, blockShell},
-			changes: []github.PullRequestChange{docSh},
+			changes: []scallywag.PullRequestChange{docSh},
 			expectedSummary: summary{
-				"2": []github.PullRequestChange{docSh},
-				"3": []github.PullRequestChange{docSh},
+				"2": []scallywag.PullRequestChange{docSh},
+				"3": []scallywag.PullRequestChange{docSh},
 			},
 		},
 		{
 			name:    "blocked by 2/2 blockades w/ single file (1/2 exceptions)",
 			config:  []plugins.Blockade{blockDocsExceptOwners, blockShell},
-			changes: []github.PullRequestChange{docSh, docOwners},
+			changes: []scallywag.PullRequestChange{docSh, docOwners},
 			expectedSummary: summary{
-				"2": []github.PullRequestChange{docSh},
-				"3": []github.PullRequestChange{docSh},
+				"2": []scallywag.PullRequestChange{docSh},
+				"3": []scallywag.PullRequestChange{docSh},
 			},
 		},
 		{
 			name:    "blocked by 1/2 blockades (1/2 exceptions), extra file",
 			config:  []plugins.Blockade{blockDocsExceptOwners, blockShell},
-			changes: []github.PullRequestChange{srcSh, docOwners, srcGo},
+			changes: []scallywag.PullRequestChange{srcSh, docOwners, srcGo},
 			expectedSummary: summary{
-				"3": []github.PullRequestChange{srcSh},
+				"3": []scallywag.PullRequestChange{srcSh},
 			},
 		},
 		{
 			name:            "blocked by 0/2 blockades (1/2 exceptions), extra file",
 			config:          []plugins.Blockade{blockDocsExceptOwners, blockShell},
-			changes:         []github.PullRequestChange{docOwners, srcGo},
+			changes:         []scallywag.PullRequestChange{docOwners, srcGo},
 			expectedSummary: summary{},
 		},
 	}
@@ -167,8 +167,8 @@ func TestSummaryString(t *testing.T) {
 		{
 			name: "Simple example",
 			sum: summary{
-				"reason A": []github.PullRequestChange{docFile},
-				"reason B": []github.PullRequestChange{srcGo, srcSh},
+				"reason A": []scallywag.PullRequestChange{docFile},
+				"reason B": []scallywag.PullRequestChange{srcGo, srcSh},
 			},
 			expectedContents: []string{
 				"#### Reasons for blocking this PR:\n",
@@ -194,7 +194,7 @@ func formatLabel(label string) string {
 
 type fakePruner struct{}
 
-func (f *fakePruner) PruneComments(_ func(ic github.IssueComment) bool) {}
+func (f *fakePruner) PruneComments(_ func(ic scallywag.IssueComment) bool) {}
 
 // TestHandle validates that:
 // - The correct labels are added/removed.
@@ -209,7 +209,7 @@ func TestHandle(t *testing.T) {
 
 	tcs := []struct {
 		name       string
-		action     github.PullRequestEventAction
+		action     scallywag.PullRequestEventAction
 		config     []plugins.Blockade
 		hasLabel   bool
 		filesBlock bool // This is ignored if there are no applicable blockades for the repo.
@@ -220,14 +220,14 @@ func TestHandle(t *testing.T) {
 	}{
 		{
 			name:       "Boring action",
-			action:     github.PullRequestActionEdited,
+			action:     scallywag.PullRequestActionEdited,
 			config:     []plugins.Blockade{blockDocsExceptOwners},
 			hasLabel:   false,
 			filesBlock: true,
 		},
 		{
 			name:       "Basic block",
-			action:     github.PullRequestActionOpened,
+			action:     scallywag.PullRequestActionOpened,
 			config:     []plugins.Blockade{blockDocsExceptOwners},
 			hasLabel:   false,
 			filesBlock: true,
@@ -237,21 +237,21 @@ func TestHandle(t *testing.T) {
 		},
 		{
 			name:       "Basic block, already labeled",
-			action:     github.PullRequestActionOpened,
+			action:     scallywag.PullRequestActionOpened,
 			config:     []plugins.Blockade{blockDocsExceptOwners},
 			hasLabel:   true,
 			filesBlock: true,
 		},
 		{
 			name:       "Not blocked, not labeled",
-			action:     github.PullRequestActionOpened,
+			action:     scallywag.PullRequestActionOpened,
 			config:     []plugins.Blockade{blockDocsExceptOwners},
 			hasLabel:   false,
 			filesBlock: false,
 		},
 		{
 			name:       "Not blocked, has label",
-			action:     github.PullRequestActionOpened,
+			action:     scallywag.PullRequestActionOpened,
 			config:     []plugins.Blockade{blockDocsExceptOwners},
 			hasLabel:   true,
 			filesBlock: false,
@@ -260,14 +260,14 @@ func TestHandle(t *testing.T) {
 		},
 		{
 			name:       "No blockade, not labeled",
-			action:     github.PullRequestActionOpened,
+			action:     scallywag.PullRequestActionOpened,
 			config:     []plugins.Blockade{},
 			hasLabel:   false,
 			filesBlock: true,
 		},
 		{
 			name:       "No blockade, has label",
-			action:     github.PullRequestActionOpened,
+			action:     scallywag.PullRequestActionOpened,
 			config:     []plugins.Blockade{},
 			hasLabel:   true,
 			filesBlock: true,
@@ -276,7 +276,7 @@ func TestHandle(t *testing.T) {
 		},
 		{
 			name:       "Basic block (org scoped blockade)",
-			action:     github.PullRequestActionOpened,
+			action:     scallywag.PullRequestActionOpened,
 			config:     []plugins.Blockade{blockAllOrg},
 			hasLabel:   false,
 			filesBlock: true,
@@ -286,7 +286,7 @@ func TestHandle(t *testing.T) {
 		},
 		{
 			name:       "Would be blocked, but blockade is not applicable; not labeled",
-			action:     github.PullRequestActionOpened,
+			action:     scallywag.PullRequestActionOpened,
 			config:     []plugins.Blockade{blockAllOther},
 			hasLabel:   false,
 			filesBlock: true,
@@ -297,8 +297,8 @@ func TestHandle(t *testing.T) {
 		expectAdded := []string{}
 		fakeClient := &fakegithub.FakeClient{
 			RepoLabelsExisting: []string{labels.BlockedPaths, otherLabel},
-			IssueComments:      make(map[int][]github.IssueComment),
-			PullRequestChanges: make(map[int][]github.PullRequestChange),
+			IssueComments:      make(map[int][]scallywag.IssueComment),
+			PullRequestChanges: make(map[int][]scallywag.PullRequestChange),
 			IssueLabelsAdded:   []string{},
 			IssueLabelsRemoved: []string{},
 		}
@@ -307,20 +307,20 @@ func TestHandle(t *testing.T) {
 			fakeClient.IssueLabelsAdded = append(fakeClient.IssueLabelsAdded, label)
 			expectAdded = append(expectAdded, label)
 		}
-		calcF := func(_ []github.PullRequestChange, blockades []blockade) summary {
+		calcF := func(_ []scallywag.PullRequestChange, blockades []blockade) summary {
 			if !tc.filesBlock {
 				return nil
 			}
 			sum := make(summary)
 			for _, b := range blockades {
 				// For this test assume 'docFile' is blocked by every blockade that is applicable to the repo.
-				sum[b.explanation] = []github.PullRequestChange{docFile}
+				sum[b.explanation] = []scallywag.PullRequestChange{docFile}
 			}
 			return sum
 		}
-		pre := &github.PullRequestEvent{
+		pre := &scallywag.PullRequestEvent{
 			Action: tc.action,
-			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+			Repo:   scallywag.Repo{Owner: scallywag.User{Login: "org"}, Name: "repo"},
 			Number: 1,
 		}
 		if err := handle(fakeClient, logrus.WithField("plugin", PluginName), tc.config, &fakePruner{}, calcF, pre); err != nil {

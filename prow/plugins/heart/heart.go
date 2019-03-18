@@ -25,7 +25,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
+
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -37,10 +38,10 @@ const (
 )
 
 var reactions = []string{
-	github.ReactionThumbsUp,
-	github.ReactionLaugh,
-	github.ReactionHeart,
-	github.ReactionHooray,
+	scallywag.ReactionThumbsUp,
+	scallywag.ReactionLaugh,
+	scallywag.ReactionHeart,
+	scallywag.ReactionHooray,
 }
 
 func init() {
@@ -66,7 +67,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 type githubClient interface {
 	CreateCommentReaction(org, repo string, ID int, reaction string) error
 	CreateIssueReaction(org, repo string, ID int, reaction string) error
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
 }
 
 type client struct {
@@ -81,20 +82,20 @@ func getClient(pc plugins.Agent) client {
 	}
 }
 
-func handleIssueComment(pc plugins.Agent, ic github.IssueCommentEvent) error {
+func handleIssueComment(pc plugins.Agent, ic scallywag.IssueCommentEvent) error {
 	if (pc.PluginConfig.Heart.Adorees == nil || len(pc.PluginConfig.Heart.Adorees) == 0) || len(pc.PluginConfig.Heart.CommentRegexp) == 0 {
 		return nil
 	}
 	return handleIC(getClient(pc), pc.PluginConfig.Heart.Adorees, pc.PluginConfig.Heart.CommentRe, ic)
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre scallywag.PullRequestEvent) error {
 	return handlePR(getClient(pc), pre)
 }
 
-func handleIC(c client, adorees []string, commentRe *regexp.Regexp, ic github.IssueCommentEvent) error {
+func handleIC(c client, adorees []string, commentRe *regexp.Regexp, ic scallywag.IssueCommentEvent) error {
 	// Only consider new comments on PRs.
-	if !ic.Issue.IsPullRequest() || ic.Action != github.IssueCommentActionCreated {
+	if !ic.Issue.IsPullRequest() || ic.Action != scallywag.IssueCommentActionCreated {
 		return nil
 	}
 	adoredLogin := false
@@ -120,9 +121,9 @@ func handleIC(c client, adorees []string, commentRe *regexp.Regexp, ic github.Is
 		reactions[rand.Intn(len(reactions))])
 }
 
-func handlePR(c client, pre github.PullRequestEvent) error {
+func handlePR(c client, pre scallywag.PullRequestEvent) error {
 	// Only consider newly opened PRs
-	if pre.Action != github.PullRequestActionOpened {
+	if pre.Action != scallywag.PullRequestActionOpened {
 		return nil
 	}
 

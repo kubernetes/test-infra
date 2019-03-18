@@ -35,6 +35,7 @@ import (
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/scallywag"
 
 	// TODO: Remove the need for this import; it's currently required to allow the plugin config loader to function correctly (it expects plugins to be initialised)
 	// See https://github.com/kubernetes/test-infra/pull/8933#issuecomment-411511180
@@ -152,13 +153,13 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error {
 	l := s.log.WithFields(
 		logrus.Fields{
-			"event-type":     eventType,
-			github.EventGUID: eventGUID,
+			"event-type":        eventType,
+			scallywag.EventGUID: eventGUID,
 		},
 	)
 	switch eventType {
 	case "pull_request":
-		var pre github.PullRequestEvent
+		var pre scallywag.PullRequestEvent
 		if err := json.Unmarshal(payload, &pre); err != nil {
 			return err
 		}

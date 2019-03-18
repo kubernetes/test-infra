@@ -27,18 +27,18 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type fakeGitHubClient map[string][]string
 
-func (fghc fakeGitHubClient) GetRepos(org string, _ bool) ([]github.Repo, error) {
-	var repos []github.Repo
+func (fghc fakeGitHubClient) GetRepos(org string, _ bool) ([]scallywag.Repo, error) {
+	var repos []scallywag.Repo
 	for _, repo := range fghc[org] {
-		repos = append(repos, github.Repo{FullName: fmt.Sprintf("%s/%s", org, repo)})
+		repos = append(repos, scallywag.Repo{FullName: fmt.Sprintf("%s/%s", org, repo)})
 	}
 	return repos, nil
 }

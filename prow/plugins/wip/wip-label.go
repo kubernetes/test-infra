@@ -27,10 +27,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -65,17 +65,17 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 
 // Strict subset of *github.Client methods.
 type githubClient interface {
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
 }
 
-func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pe scallywag.PullRequestEvent) error {
 	// These are the only actions indicating the PR title may have changed.
-	if pe.Action != github.PullRequestActionOpened &&
-		pe.Action != github.PullRequestActionReopened &&
-		pe.Action != github.PullRequestActionEdited &&
-		pe.Action != github.PullRequestActionReadyForReview {
+	if pe.Action != scallywag.PullRequestActionOpened &&
+		pe.Action != scallywag.PullRequestActionReopened &&
+		pe.Action != scallywag.PullRequestActionEdited &&
+		pe.Action != scallywag.PullRequestActionReadyForReview {
 		return nil
 	}
 

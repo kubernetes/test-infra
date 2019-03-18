@@ -30,6 +30,8 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
+
 	"k8s.io/test-infra/prow/github/report"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -75,14 +77,14 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (s *server) handleEvent(eventType, eventGUID string, payload []byte) error {
 	l := logrus.WithFields(
 		logrus.Fields{
-			"event-type":     eventType,
-			github.EventGUID: eventGUID,
+			"event-type":        eventType,
+			scallywag.EventGUID: eventGUID,
 		},
 	)
 
 	switch eventType {
 	case "issue_comment":
-		var ic github.IssueCommentEvent
+		var ic scallywag.IssueCommentEvent
 		if err := json.Unmarshal(payload, &ic); err != nil {
 			return err
 		}
@@ -97,8 +99,8 @@ func (s *server) handleEvent(eventType, eventGUID string, payload []byte) error 
 	return nil
 }
 
-func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent) error {
-	if !ic.Issue.IsPullRequest() || ic.Action != github.IssueCommentActionCreated || ic.Issue.State == "closed" {
+func (s *server) handleIssueComment(l *logrus.Entry, ic scallywag.IssueCommentEvent) error {
+	if !ic.Issue.IsPullRequest() || ic.Action != scallywag.IssueCommentActionCreated || ic.Issue.State == "closed" {
 		return nil
 	}
 
@@ -107,9 +109,9 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 	num := ic.Issue.Number
 
 	l = l.WithFields(logrus.Fields{
-		github.OrgLogField:  org,
-		github.RepoLogField: repo,
-		github.PrLogField:   num,
+		scallywag.OrgLogField:  org,
+		scallywag.RepoLogField: repo,
+		scallywag.PrLogField:   num,
 	})
 
 	if !refreshRe.MatchString(ic.Comment.Body) {

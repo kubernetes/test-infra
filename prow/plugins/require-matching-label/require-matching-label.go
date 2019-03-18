@@ -26,26 +26,26 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 
 	"github.com/sirupsen/logrus"
 )
 
 var (
-	handlePRActions = map[github.PullRequestEventAction]bool{
-		github.PullRequestActionOpened:    true,
-		github.PullRequestActionReopened:  true,
-		github.PullRequestActionLabeled:   true,
-		github.PullRequestActionUnlabeled: true,
+	handlePRActions = map[scallywag.PullRequestEventAction]bool{
+		scallywag.PullRequestActionOpened:    true,
+		scallywag.PullRequestActionReopened:  true,
+		scallywag.PullRequestActionLabeled:   true,
+		scallywag.PullRequestActionUnlabeled: true,
 	}
 
-	handleIssueActions = map[github.IssueEventAction]bool{
-		github.IssueActionOpened:    true,
-		github.IssueActionReopened:  true,
-		github.IssueActionLabeled:   true,
-		github.IssueActionUnlabeled: true,
+	handleIssueActions = map[scallywag.IssueEventAction]bool{
+		scallywag.IssueActionOpened:    true,
+		scallywag.IssueActionReopened:  true,
+		scallywag.IssueActionLabeled:   true,
+		scallywag.IssueActionUnlabeled: true,
 	}
 )
 
@@ -57,11 +57,11 @@ type githubClient interface {
 	AddLabel(org, repo string, number int, label string) error
 	RemoveLabel(org, repo string, number int, label string) error
 	CreateComment(org, repo string, number int, content string) error
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
 }
 
 type commentPruner interface {
-	PruneComments(shouldPrune func(github.IssueComment) bool)
+	PruneComments(shouldPrune func(scallywag.IssueComment) bool)
 }
 
 func init() {
@@ -95,10 +95,10 @@ type event struct {
 	// The label that was added or removed. If empty this is an open or reopen event.
 	label string
 	// The labels currently on the issue. For PRs this is not contained in the webhook payload and may be omitted.
-	currentLabels []github.Label
+	currentLabels []scallywag.Label
 }
 
-func handleIssue(pc plugins.Agent, ie github.IssueEvent) error {
+func handleIssue(pc plugins.Agent, ie scallywag.IssueEvent) error {
 	if !handleIssueActions[ie.Action] {
 		return nil
 	}
@@ -117,7 +117,7 @@ func handleIssue(pc plugins.Agent, ie github.IssueEvent) error {
 	return handle(pc.Logger, pc.GitHubClient, cp, pc.PluginConfig.RequireMatchingLabel, e)
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre scallywag.PullRequestEvent) error {
 	if !handlePRActions[pre.Action] {
 		return nil
 	}
@@ -205,7 +205,7 @@ func handle(log *logrus.Entry, ghc githubClient, cp commentPruner, configs []plu
 				log.WithError(err).Errorf("Failed to remove %q label.", cfg.MissingLabel)
 			}
 			if cfg.MissingComment != "" {
-				cp.PruneComments(func(comment github.IssueComment) bool {
+				cp.PruneComments(func(comment scallywag.IssueComment) bool {
 					return strings.Contains(comment.Body, cfg.MissingComment)
 				})
 			}

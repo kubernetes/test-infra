@@ -29,6 +29,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 // Only the properties we actually use.
@@ -115,13 +116,13 @@ func (h realHerd) readPony(tags string) (string, error) {
 	return formatURLs(a.Pony.Representations.Small, a.Pony.Representations.Full), nil
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, &e, ponyURL)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p herd) error {
+func handle(gc githubClient, log *logrus.Entry, e *scallywag.GenericCommentEvent, p herd) error {
 	// Only consider new comments.
-	if e.Action != github.GenericCommentActionCreated {
+	if e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 	// Make sure they are requesting a pony

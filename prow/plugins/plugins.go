@@ -32,6 +32,8 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
+
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
@@ -58,73 +60,73 @@ func HelpProviders() map[string]HelpProvider {
 	return pluginHelp
 }
 
-// IssueHandler defines the function contract for a github.IssueEvent handler.
-type IssueHandler func(Agent, github.IssueEvent) error
+// IssueHandler defines the function contract for a scallywag.IssueEvent handler.
+type IssueHandler func(Agent, scallywag.IssueEvent) error
 
-// RegisterIssueHandler registers a plugin's github.IssueEvent handler.
+// RegisterIssueHandler registers a plugin's scallywag.IssueEvent handler.
 func RegisterIssueHandler(name string, fn IssueHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	issueHandlers[name] = fn
 }
 
-// IssueCommentHandler defines the function contract for a github.IssueCommentEvent handler.
-type IssueCommentHandler func(Agent, github.IssueCommentEvent) error
+// IssueCommentHandler defines the function contract for a scallywag.IssueCommentEvent handler.
+type IssueCommentHandler func(Agent, scallywag.IssueCommentEvent) error
 
-// RegisterIssueCommentHandler registers a plugin's github.IssueCommentEvent handler.
+// RegisterIssueCommentHandler registers a plugin's scallywag.IssueCommentEvent handler.
 func RegisterIssueCommentHandler(name string, fn IssueCommentHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	issueCommentHandlers[name] = fn
 }
 
-// PullRequestHandler defines the function contract for a github.PullRequestEvent handler.
-type PullRequestHandler func(Agent, github.PullRequestEvent) error
+// PullRequestHandler defines the function contract for a scallywag.PullRequestEvent handler.
+type PullRequestHandler func(Agent, scallywag.PullRequestEvent) error
 
-// RegisterPullRequestHandler registers a plugin's github.PullRequestEvent handler.
+// RegisterPullRequestHandler registers a plugin's scallywag.PullRequestEvent handler.
 func RegisterPullRequestHandler(name string, fn PullRequestHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	pullRequestHandlers[name] = fn
 }
 
-// StatusEventHandler defines the function contract for a github.StatusEvent handler.
-type StatusEventHandler func(Agent, github.StatusEvent) error
+// StatusEventHandler defines the function contract for a scallywag.StatusEvent handler.
+type StatusEventHandler func(Agent, scallywag.StatusEvent) error
 
-// RegisterStatusEventHandler registers a plugin's github.StatusEvent handler.
+// RegisterStatusEventHandler registers a plugin's scallywag.StatusEvent handler.
 func RegisterStatusEventHandler(name string, fn StatusEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	statusEventHandlers[name] = fn
 }
 
-// PushEventHandler defines the function contract for a github.PushEvent handler.
-type PushEventHandler func(Agent, github.PushEvent) error
+// PushEventHandler defines the function contract for a scallywag.PushEvent handler.
+type PushEventHandler func(Agent, scallywag.PushEvent) error
 
-// RegisterPushEventHandler registers a plugin's github.PushEvent handler.
+// RegisterPushEventHandler registers a plugin's scallywag.PushEvent handler.
 func RegisterPushEventHandler(name string, fn PushEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	pushEventHandlers[name] = fn
 }
 
-// ReviewEventHandler defines the function contract for a github.ReviewEvent handler.
-type ReviewEventHandler func(Agent, github.ReviewEvent) error
+// ReviewEventHandler defines the function contract for a scallywag.ReviewEvent handler.
+type ReviewEventHandler func(Agent, scallywag.ReviewEvent) error
 
-// RegisterReviewEventHandler registers a plugin's github.ReviewEvent handler.
+// RegisterReviewEventHandler registers a plugin's scallywag.ReviewEvent handler.
 func RegisterReviewEventHandler(name string, fn ReviewEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	reviewEventHandlers[name] = fn
 }
 
-// ReviewCommentEventHandler defines the function contract for a github.ReviewCommentEvent handler.
-type ReviewCommentEventHandler func(Agent, github.ReviewCommentEvent) error
+// ReviewCommentEventHandler defines the function contract for a scallywag.ReviewCommentEvent handler.
+type ReviewCommentEventHandler func(Agent, scallywag.ReviewCommentEvent) error
 
-// RegisterReviewCommentEventHandler registers a plugin's github.ReviewCommentEvent handler.
+// RegisterReviewCommentEventHandler registers a plugin's scallywag.ReviewCommentEvent handler.
 func RegisterReviewCommentEventHandler(name string, fn ReviewCommentEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	reviewCommentEventHandlers[name] = fn
 }
 
-// GenericCommentHandler defines the function contract for a github.GenericCommentEvent handler.
-type GenericCommentHandler func(Agent, github.GenericCommentEvent) error
+// GenericCommentHandler defines the function contract for a scallywag.GenericCommentEvent handler.
+type GenericCommentHandler func(Agent, scallywag.GenericCommentEvent) error
 
-// RegisterGenericCommentHandler registers a plugin's github.GenericCommentEvent handler.
+// RegisterGenericCommentHandler registers a plugin's scallywag.GenericCommentEvent handler.
 func RegisterGenericCommentHandler(name string, fn GenericCommentHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	genericCommentHandlers[name] = fn

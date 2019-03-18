@@ -106,7 +106,7 @@ func TestUpdateEvents(t *testing.T) {
 
 	tests := []struct {
 		before     []sql.IssueEvent
-		new        map[int][]*github.IssueEvent
+		new        map[int][]*scallywag.IssueEvent
 		after      []sql.IssueEvent
 		repository string
 		issueID    int
@@ -117,7 +117,7 @@ func TestUpdateEvents(t *testing.T) {
 				*makeIssueEvent(1, 2, "", "Event", "", "", "full/repo",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
-			new: map[int][]*github.IssueEvent{},
+			new: map[int][]*scallywag.IssueEvent{},
 			after: []sql.IssueEvent{
 				*makeIssueEvent(1, 2, "", "Event", "", "", "full/repo",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
@@ -131,7 +131,7 @@ func TestUpdateEvents(t *testing.T) {
 				*makeIssueEvent(1, 2, "", "Event", "", "", "full/repo",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
-			new: map[int][]*github.IssueEvent{
+			new: map[int][]*scallywag.IssueEvent{
 				2: {
 					makeGitHubIssueEvent(2, "Label", "Event", "Assignee", "Actor",
 						time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
@@ -154,7 +154,7 @@ func TestUpdateEvents(t *testing.T) {
 				*makeIssueEvent(2, 2, "Label", "Event", "Assignee", "Actor", "full/repo",
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
-			new: map[int][]*github.IssueEvent{
+			new: map[int][]*scallywag.IssueEvent{
 				2: {
 					makeGitHubIssueEvent(1, "", "EventNameChanged", "", "",
 						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
@@ -179,7 +179,7 @@ func TestUpdateEvents(t *testing.T) {
 				*makeIssueEvent(2, 2, "", "Event", "", "", "full/one",
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),
 			},
-			new: map[int][]*github.IssueEvent{
+			new: map[int][]*scallywag.IssueEvent{
 				2: {
 					makeGitHubIssueEvent(1, "", "EventNameOther", "", "",
 						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC)),

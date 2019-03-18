@@ -30,6 +30,7 @@ import (
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -61,14 +62,14 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
 }
 
 type commentPruner interface {
-	PruneComments(shouldPrune func(github.IssueComment) bool)
+	PruneComments(shouldPrune func(scallywag.IssueComment) bool)
 }
 
-func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pr scallywag.PullRequestEvent) error {
 	cp, err := pc.CommentPruner()
 	if err != nil {
 		return err
@@ -79,12 +80,12 @@ func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
 	)
 }
 
-func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, cp commentPruner, branchRe *regexp.Regexp, commentBody string) error {
+func handlePR(gc githubClient, log *logrus.Entry, pr *scallywag.PullRequestEvent, cp commentPruner, branchRe *regexp.Regexp, commentBody string) error {
 	// Only consider the events that indicate opening of the PR and
 	// when the cpApproved and cpUnapproved labels are added or removed
-	cpLabelUpdated := (pr.Action == github.PullRequestActionLabeled || pr.Action == github.PullRequestActionUnlabeled) &&
+	cpLabelUpdated := (pr.Action == scallywag.PullRequestActionLabeled || pr.Action == scallywag.PullRequestActionUnlabeled) &&
 		(pr.Label.Name == labels.CpApproved || pr.Label.Name == labels.CpUnapproved)
-	if pr.Action != github.PullRequestActionOpened && pr.Action != github.PullRequestActionReopened && !cpLabelUpdated {
+	if pr.Action != scallywag.PullRequestActionOpened && pr.Action != scallywag.PullRequestActionReopened && !cpLabelUpdated {
 		return nil
 	}
 
@@ -116,7 +117,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, c
 				log.WithError(err).Errorf("GitHub failed to remove the following label: %s", labels.CpUnapproved)
 			}
 		}
-		cp.PruneComments(func(comment github.IssueComment) bool {
+		cp.PruneComments(func(comment scallywag.IssueComment) bool {
 			return strings.Contains(comment.Body, commentBody)
 		})
 		return nil

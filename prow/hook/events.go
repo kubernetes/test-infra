@@ -19,48 +19,48 @@ package hook
 import (
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const failedCommentCoerceFmt = "Could not coerce %s event to a GenericCommentEvent. Unknown 'action': %q."
 
 var (
-	nonCommentIssueActions = map[github.IssueEventAction]bool{
-		github.IssueActionAssigned:     true,
-		github.IssueActionUnassigned:   true,
-		github.IssueActionLabeled:      true,
-		github.IssueActionUnlabeled:    true,
-		github.IssueActionMilestoned:   true,
-		github.IssueActionDemilestoned: true,
-		github.IssueActionClosed:       true,
-		github.IssueActionReopened:     true,
-		github.IssueActionPinned:       true,
-		github.IssueActionUnpinned:     true,
+	nonCommentIssueActions = map[scallywag.IssueEventAction]bool{
+		scallywag.IssueActionAssigned:     true,
+		scallywag.IssueActionUnassigned:   true,
+		scallywag.IssueActionLabeled:      true,
+		scallywag.IssueActionUnlabeled:    true,
+		scallywag.IssueActionMilestoned:   true,
+		scallywag.IssueActionDemilestoned: true,
+		scallywag.IssueActionClosed:       true,
+		scallywag.IssueActionReopened:     true,
+		scallywag.IssueActionPinned:       true,
+		scallywag.IssueActionUnpinned:     true,
 	}
-	nonCommentPullRequestActions = map[github.PullRequestEventAction]bool{
-		github.PullRequestActionAssigned:             true,
-		github.PullRequestActionUnassigned:           true,
-		github.PullRequestActionReviewRequested:      true,
-		github.PullRequestActionReviewRequestRemoved: true,
-		github.PullRequestActionLabeled:              true,
-		github.PullRequestActionUnlabeled:            true,
-		github.PullRequestActionClosed:               true,
-		github.PullRequestActionReopened:             true,
-		github.PullRequestActionSynchronize:          true,
-		github.PullRequestActionReadyForReview:       true,
+	nonCommentPullRequestActions = map[scallywag.PullRequestEventAction]bool{
+		scallywag.PullRequestActionAssigned:             true,
+		scallywag.PullRequestActionUnassigned:           true,
+		scallywag.PullRequestActionReviewRequested:      true,
+		scallywag.PullRequestActionReviewRequestRemoved: true,
+		scallywag.PullRequestActionLabeled:              true,
+		scallywag.PullRequestActionUnlabeled:            true,
+		scallywag.PullRequestActionClosed:               true,
+		scallywag.PullRequestActionReopened:             true,
+		scallywag.PullRequestActionSynchronize:          true,
+		scallywag.PullRequestActionReadyForReview:       true,
 	}
 )
 
-func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
+func (s *Server) handleReviewEvent(l *logrus.Entry, re scallywag.ReviewEvent) {
 	defer s.wg.Done()
 	l = l.WithFields(logrus.Fields{
-		github.OrgLogField:  re.Repo.Owner.Login,
-		github.RepoLogField: re.Repo.Name,
-		github.PrLogField:   re.PullRequest.Number,
-		"review":            re.Review.ID,
-		"reviewer":          re.Review.User.Login,
-		"url":               re.Review.HTMLURL,
+		scallywag.OrgLogField:  re.Repo.Owner.Login,
+		scallywag.RepoLogField: re.Repo.Name,
+		scallywag.PrLogField:   re.PullRequest.Number,
+		"review":               re.Review.ID,
+		"reviewer":             re.Review.User.Login,
+		"url":                  re.Review.HTMLURL,
 	})
 	l.Infof("Review %s.", re.Action)
 	for p, h := range s.Plugins.ReviewEventHandlers(re.PullRequest.Base.Repo.Owner.Login, re.PullRequest.Base.Repo.Name) {
@@ -85,7 +85,7 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 	}
 	s.handleGenericComment(
 		l,
-		&github.GenericCommentEvent{
+		&scallywag.GenericCommentEvent{
 			GUID:         re.GUID,
 			IsPR:         true,
 			Action:       action,
@@ -103,15 +103,15 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 	)
 }
 
-func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewCommentEvent) {
+func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce scallywag.ReviewCommentEvent) {
 	defer s.wg.Done()
 	l = l.WithFields(logrus.Fields{
-		github.OrgLogField:  rce.Repo.Owner.Login,
-		github.RepoLogField: rce.Repo.Name,
-		github.PrLogField:   rce.PullRequest.Number,
-		"review":            rce.Comment.ReviewID,
-		"commenter":         rce.Comment.User.Login,
-		"url":               rce.Comment.HTMLURL,
+		scallywag.OrgLogField:  rce.Repo.Owner.Login,
+		scallywag.RepoLogField: rce.Repo.Name,
+		scallywag.PrLogField:   rce.PullRequest.Number,
+		"review":               rce.Comment.ReviewID,
+		"commenter":            rce.Comment.User.Login,
+		"url":                  rce.Comment.HTMLURL,
 	})
 	l.Infof("Review comment %s.", rce.Action)
 	for p, h := range s.Plugins.ReviewCommentEventHandlers(rce.PullRequest.Base.Repo.Owner.Login, rce.PullRequest.Base.Repo.Name) {
@@ -136,7 +136,7 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 	}
 	s.handleGenericComment(
 		l,
-		&github.GenericCommentEvent{
+		&scallywag.GenericCommentEvent{
 			GUID:         rce.GUID,
 			IsPR:         true,
 			Action:       action,
@@ -154,14 +154,14 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 	)
 }
 
-func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEvent) {
+func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr scallywag.PullRequestEvent) {
 	defer s.wg.Done()
 	l = l.WithFields(logrus.Fields{
-		github.OrgLogField:  pr.Repo.Owner.Login,
-		github.RepoLogField: pr.Repo.Name,
-		github.PrLogField:   pr.Number,
-		"author":            pr.PullRequest.User.Login,
-		"url":               pr.PullRequest.HTMLURL,
+		scallywag.OrgLogField:  pr.Repo.Owner.Login,
+		scallywag.RepoLogField: pr.Repo.Name,
+		scallywag.PrLogField:   pr.Number,
+		"author":               pr.PullRequest.User.Login,
+		"url":                  pr.PullRequest.HTMLURL,
 	})
 	l.Infof("Pull request %s.", pr.Action)
 	for p, h := range s.Plugins.PullRequestHandlers(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name) {
@@ -188,7 +188,7 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 	}
 	s.handleGenericComment(
 		l,
-		&github.GenericCommentEvent{
+		&scallywag.GenericCommentEvent{
 			GUID:         pr.GUID,
 			IsPR:         true,
 			Action:       action,
@@ -206,13 +206,13 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 	)
 }
 
-func (s *Server) handlePushEvent(l *logrus.Entry, pe github.PushEvent) {
+func (s *Server) handlePushEvent(l *logrus.Entry, pe scallywag.PushEvent) {
 	defer s.wg.Done()
 	l = l.WithFields(logrus.Fields{
-		github.OrgLogField:  pe.Repo.Owner.Name,
-		github.RepoLogField: pe.Repo.Name,
-		"ref":               pe.Ref,
-		"head":              pe.After,
+		scallywag.OrgLogField:  pe.Repo.Owner.Name,
+		scallywag.RepoLogField: pe.Repo.Name,
+		"ref":                  pe.Ref,
+		"head":                 pe.After,
 	})
 	l.Info("Push event.")
 	for p, h := range s.Plugins.PushEventHandlers(pe.Repo.Owner.Name, pe.Repo.Name) {
@@ -227,14 +227,14 @@ func (s *Server) handlePushEvent(l *logrus.Entry, pe github.PushEvent) {
 	}
 }
 
-func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
+func (s *Server) handleIssueEvent(l *logrus.Entry, i scallywag.IssueEvent) {
 	defer s.wg.Done()
 	l = l.WithFields(logrus.Fields{
-		github.OrgLogField:  i.Repo.Owner.Login,
-		github.RepoLogField: i.Repo.Name,
-		github.PrLogField:   i.Issue.Number,
-		"author":            i.Issue.User.Login,
-		"url":               i.Issue.HTMLURL,
+		scallywag.OrgLogField:  i.Repo.Owner.Login,
+		scallywag.RepoLogField: i.Repo.Name,
+		scallywag.PrLogField:   i.Issue.Number,
+		"author":               i.Issue.User.Login,
+		"url":                  i.Issue.HTMLURL,
 	})
 	l.Infof("Issue %s.", i.Action)
 	for p, h := range s.Plugins.IssueHandlers(i.Repo.Owner.Login, i.Repo.Name) {
@@ -261,7 +261,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 	}
 	s.handleGenericComment(
 		l,
-		&github.GenericCommentEvent{
+		&scallywag.GenericCommentEvent{
 			GUID:         i.GUID,
 			IsPR:         i.Issue.IsPullRequest(),
 			Action:       action,
@@ -279,14 +279,14 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 	)
 }
 
-func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueCommentEvent) {
+func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic scallywag.IssueCommentEvent) {
 	defer s.wg.Done()
 	l = l.WithFields(logrus.Fields{
-		github.OrgLogField:  ic.Repo.Owner.Login,
-		github.RepoLogField: ic.Repo.Name,
-		github.PrLogField:   ic.Issue.Number,
-		"author":            ic.Comment.User.Login,
-		"url":               ic.Comment.HTMLURL,
+		scallywag.OrgLogField:  ic.Repo.Owner.Login,
+		scallywag.RepoLogField: ic.Repo.Name,
+		scallywag.PrLogField:   ic.Issue.Number,
+		"author":               ic.Comment.User.Login,
+		"url":                  ic.Comment.HTMLURL,
 	})
 	l.Infof("Issue comment %s.", ic.Action)
 	for p, h := range s.Plugins.IssueCommentHandlers(ic.Repo.Owner.Login, ic.Repo.Name) {
@@ -311,7 +311,7 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 	}
 	s.handleGenericComment(
 		l,
-		&github.GenericCommentEvent{
+		&scallywag.GenericCommentEvent{
 			GUID:         ic.GUID,
 			IsPR:         ic.Issue.IsPullRequest(),
 			Action:       action,
@@ -329,15 +329,15 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 	)
 }
 
-func (s *Server) handleStatusEvent(l *logrus.Entry, se github.StatusEvent) {
+func (s *Server) handleStatusEvent(l *logrus.Entry, se scallywag.StatusEvent) {
 	defer s.wg.Done()
 	l = l.WithFields(logrus.Fields{
-		github.OrgLogField:  se.Repo.Owner.Login,
-		github.RepoLogField: se.Repo.Name,
-		"context":           se.Context,
-		"sha":               se.SHA,
-		"state":             se.State,
-		"id":                se.ID,
+		scallywag.OrgLogField:  se.Repo.Owner.Login,
+		scallywag.RepoLogField: se.Repo.Name,
+		"context":              se.Context,
+		"sha":                  se.SHA,
+		"state":                se.State,
+		"id":                   se.ID,
 	})
 	l.Infof("Status description %s.", se.Description)
 	for p, h := range s.Plugins.StatusEventHandlers(se.Repo.Owner.Login, se.Repo.Name) {
@@ -354,20 +354,20 @@ func (s *Server) handleStatusEvent(l *logrus.Entry, se github.StatusEvent) {
 
 // genericCommentAction normalizes the action string to a GenericCommentEventAction or returns ""
 // if the action is unrelated to the comment text. (For example a PR 'label' action.)
-func genericCommentAction(action string) github.GenericCommentEventAction {
+func genericCommentAction(action string) scallywag.GenericCommentEventAction {
 	switch action {
 	case "created", "opened", "submitted":
-		return github.GenericCommentActionCreated
+		return scallywag.GenericCommentActionCreated
 	case "edited":
-		return github.GenericCommentActionEdited
+		return scallywag.GenericCommentActionEdited
 	case "deleted", "dismissed":
-		return github.GenericCommentActionDeleted
+		return scallywag.GenericCommentActionDeleted
 	}
 	// The action is not related to the text body.
 	return ""
 }
 
-func (s *Server) handleGenericComment(l *logrus.Entry, ce *github.GenericCommentEvent) {
+func (s *Server) handleGenericComment(l *logrus.Entry, ce *scallywag.GenericCommentEvent) {
 	for p, h := range s.Plugins.GenericCommentHandlers(ce.Repo.Owner.Login, ce.Repo.Name) {
 		s.wg.Add(1)
 		go func(p string, h plugins.GenericCommentHandler) {

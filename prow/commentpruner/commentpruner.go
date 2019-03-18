@@ -22,12 +22,12 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type githubClient interface {
 	BotName() (string, error)
-	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
+	ListIssueComments(org, repo string, number int) ([]scallywag.IssueComment, error)
 	DeleteComment(org, repo string, id int) error
 }
 
@@ -47,7 +47,7 @@ type EventClient struct {
 
 	once     sync.Once
 	lock     sync.Mutex
-	comments []github.IssueComment
+	comments []scallywag.IssueComment
 }
 
 // NewEventClient creates an EventClient struct. This should be used once per webhook event.
@@ -64,7 +64,7 @@ func NewEventClient(ghc githubClient, log *logrus.Entry, org, repo string, numbe
 
 // PruneComments fetches issue comments if they have not yet been fetched for this webhook event
 // and then deletes any bot comments indicated by the func 'shouldPrune'.
-func (c *EventClient) PruneComments(shouldPrune func(github.IssueComment) bool) {
+func (c *EventClient) PruneComments(shouldPrune func(scallywag.IssueComment) bool) {
 	c.once.Do(func() {
 		botName, err := c.ghc.BotName()
 		if err != nil {
@@ -86,7 +86,7 @@ func (c *EventClient) PruneComments(shouldPrune func(github.IssueComment) bool) 
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
-	var remaining []github.IssueComment
+	var remaining []scallywag.IssueComment
 	for _, comment := range c.comments {
 		removed := false
 		if shouldPrune(comment) {

@@ -26,6 +26,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 var (
@@ -58,16 +59,16 @@ func help(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.Plu
 type stageClient interface {
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
 }
 
-func stageHandleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func stageHandleGenericComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, &e)
 }
 
-func handle(gc stageClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(gc stageClient, log *logrus.Entry, e *scallywag.GenericCommentEvent) error {
 	// Only consider new comments.
-	if e.Action != github.GenericCommentActionCreated {
+	if e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 
@@ -79,7 +80,7 @@ func handle(gc stageClient, log *logrus.Entry, e *github.GenericCommentEvent) er
 	return nil
 }
 
-func handleOne(gc stageClient, log *logrus.Entry, e *github.GenericCommentEvent, mat []string) error {
+func handleOne(gc stageClient, log *logrus.Entry, e *scallywag.GenericCommentEvent, mat []string) error {
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 	number := e.Number

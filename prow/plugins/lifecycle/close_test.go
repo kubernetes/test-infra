@@ -22,7 +22,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type fakeClientClose struct {
@@ -54,13 +54,13 @@ func (c *fakeClientClose) IsCollaborator(owner, repo, login string) (bool, error
 	return false, nil
 }
 
-func (c *fakeClientClose) GetIssueLabels(owner, repo string, number int) ([]github.Label, error) {
-	var labels []github.Label
+func (c *fakeClientClose) GetIssueLabels(owner, repo string, number int) ([]scallywag.Label, error) {
+	var labels []scallywag.Label
 	for _, l := range c.labels {
 		if l == "error" {
 			return nil, errors.New("issue label 500")
 		}
-		labels = append(labels, github.Label{Name: l})
+		labels = append(labels, scallywag.Label{Name: l})
 	}
 	return labels, nil
 }
@@ -68,7 +68,7 @@ func (c *fakeClientClose) GetIssueLabels(owner, repo string, number int) ([]gith
 func TestCloseComment(t *testing.T) {
 	var testcases = []struct {
 		name          string
-		action        github.GenericCommentEventAction
+		action        scallywag.GenericCommentEventAction
 		state         string
 		body          string
 		commenter     string
@@ -78,7 +78,7 @@ func TestCloseComment(t *testing.T) {
 	}{
 		{
 			name:          "non-close comment",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			state:         "open",
 			body:          "uh oh",
 			commenter:     "random-person",
@@ -87,7 +87,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by author",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close",
 			commenter:     "author",
@@ -96,7 +96,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by author, trailing space.",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close \r",
 			commenter:     "author",
@@ -105,7 +105,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by collaborator",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close",
 			commenter:     "collaborator",
@@ -114,7 +114,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close edited by author",
-			action:        github.GenericCommentActionEdited,
+			action:        scallywag.GenericCommentActionEdited,
 			state:         "open",
 			body:          "/close",
 			commenter:     "author",
@@ -123,7 +123,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by author on closed issue",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			state:         "closed",
 			body:          "/close",
 			commenter:     "author",
@@ -132,7 +132,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by non-collaborator on active issue, cannot close",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close",
 			commenter:     "non-collaborator",
@@ -141,7 +141,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by non-collaborator on stale issue",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close",
 			commenter:     "non-collaborator",
@@ -151,7 +151,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by non-collaborator on rotten issue",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close",
 			commenter:     "non-collaborator",
@@ -161,7 +161,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "cannot close stale issue by non-collaborator when list issue fails",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close",
 			commenter:     "non-collaborator",
@@ -172,13 +172,13 @@ func TestCloseComment(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		fc := &fakeClientClose{labels: tc.labels}
-		e := &github.GenericCommentEvent{
+		e := &scallywag.GenericCommentEvent{
 			Action:      tc.action,
 			IssueState:  tc.state,
 			Body:        tc.body,
-			User:        github.User{Login: tc.commenter},
+			User:        scallywag.User{Login: tc.commenter},
 			Number:      5,
-			IssueAuthor: github.User{Login: "author"},
+			IssueAuthor: scallywag.User{Login: "author"},
 		}
 		if err := handleClose(fc, logrus.WithField("plugin", "fake-close"), e); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)

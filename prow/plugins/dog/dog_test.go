@@ -29,8 +29,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type fakePack string
@@ -219,12 +219,12 @@ func TestHttpResponse(t *testing.T) {
 
 		// github fake client
 		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
+			IssueComments: make(map[int][]scallywag.IssueComment),
 		}
 
 		// fully test handling a comment
-		e := &github.GenericCommentEvent{
-			Action:     github.GenericCommentActionCreated,
+		e := &scallywag.GenericCommentEvent{
+			Action:     scallywag.GenericCommentActionCreated,
 			Body:       testcase.comment,
 			Number:     5,
 			IssueState: "open",
@@ -247,7 +247,7 @@ func TestHttpResponse(t *testing.T) {
 func TestDogs(t *testing.T) {
 	var testcases = []struct {
 		name          string
-		action        github.GenericCommentEventAction
+		action        scallywag.GenericCommentEventAction
 		body          string
 		state         string
 		pr            bool
@@ -256,14 +256,14 @@ func TestDogs(t *testing.T) {
 		{
 			name:          "ignore edited comment",
 			state:         "open",
-			action:        github.GenericCommentActionEdited,
+			action:        scallywag.GenericCommentActionEdited,
 			body:          "/woof",
 			shouldComment: false,
 		},
 		{
 			name:          "leave dog on pr",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/woof",
 			pr:            true,
 			shouldComment: true,
@@ -271,35 +271,35 @@ func TestDogs(t *testing.T) {
 		{
 			name:          "leave dog on issue",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/woof",
 			shouldComment: true,
 		},
 		{
 			name:          "leave dog on issue, trailing space",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/woof \r",
 			shouldComment: true,
 		},
 		{
 			name:          "leave dog on issue, trailing /bark",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/bark",
 			shouldComment: true,
 		},
 		{
 			name:          "leave dog on issue, trailing /bark, trailing space",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/bark \r",
 			shouldComment: true,
 		},
 		{
 			name:          "leave this-is-fine on pr",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/this-is-fine",
 			pr:            true,
 			shouldComment: true,
@@ -307,7 +307,7 @@ func TestDogs(t *testing.T) {
 		{
 			name:          "leave this-is-not-fine on pr",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/this-is-not-fine",
 			pr:            true,
 			shouldComment: true,
@@ -315,7 +315,7 @@ func TestDogs(t *testing.T) {
 		{
 			name:          "leave this-is-unbearable on pr",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/this-is-unbearable",
 			pr:            true,
 			shouldComment: true,
@@ -323,9 +323,9 @@ func TestDogs(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
+			IssueComments: make(map[int][]scallywag.IssueComment),
 		}
-		e := &github.GenericCommentEvent{
+		e := &scallywag.GenericCommentEvent{
 			Action:     tc.action,
 			Body:       tc.body,
 			Number:     5,

@@ -26,8 +26,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type fakeJoke string
@@ -57,13 +57,13 @@ func TestJokesMedium(t *testing.T) {
 	}))
 	defer ts.Close()
 	fc := &fakegithub.FakeClient{
-		IssueComments: make(map[int][]github.IssueComment),
+		IssueComments: make(map[int][]scallywag.IssueComment),
 	}
 
 	comment := "/joke"
 
-	e := &github.GenericCommentEvent{
-		Action:     github.GenericCommentActionCreated,
+	e := &scallywag.GenericCommentEvent{
+		Action:     scallywag.GenericCommentActionCreated,
 		Body:       comment,
 		Number:     5,
 		IssueState: "open",
@@ -85,7 +85,7 @@ func TestJokesMedium(t *testing.T) {
 func TestJokes(t *testing.T) {
 	var testcases = []struct {
 		name          string
-		action        github.GenericCommentEventAction
+		action        scallywag.GenericCommentEventAction
 		body          string
 		state         string
 		joke          fakeJoke
@@ -96,7 +96,7 @@ func TestJokes(t *testing.T) {
 		{
 			name:          "ignore edited comment",
 			state:         "open",
-			action:        github.GenericCommentActionEdited,
+			action:        scallywag.GenericCommentActionEdited,
 			body:          "/joke",
 			joke:          "this? that.",
 			shouldComment: false,
@@ -105,7 +105,7 @@ func TestJokes(t *testing.T) {
 		{
 			name:          "leave joke on pr",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/joke",
 			joke:          "this? that.",
 			pr:            true,
@@ -115,7 +115,7 @@ func TestJokes(t *testing.T) {
 		{
 			name:          "leave joke on issue",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/joke",
 			joke:          "this? that.",
 			shouldComment: true,
@@ -124,7 +124,7 @@ func TestJokes(t *testing.T) {
 		{
 			name:          "leave joke on issue, trailing space",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/joke \r",
 			joke:          "this? that.",
 			shouldComment: true,
@@ -133,7 +133,7 @@ func TestJokes(t *testing.T) {
 		{
 			name:          "reject bad joke chars",
 			state:         "open",
-			action:        github.GenericCommentActionCreated,
+			action:        scallywag.GenericCommentActionCreated,
 			body:          "/joke",
 			joke:          "[hello](url)",
 			shouldComment: false,
@@ -142,9 +142,9 @@ func TestJokes(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
+			IssueComments: make(map[int][]scallywag.IssueComment),
 		}
-		e := &github.GenericCommentEvent{
+		e := &scallywag.GenericCommentEvent{
 			Action:     tc.action,
 			Body:       tc.body,
 			Number:     5,

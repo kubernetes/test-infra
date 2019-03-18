@@ -24,7 +24,8 @@ import (
 
 	"regexp"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
+
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -85,13 +86,13 @@ type gitHubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
-	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
-	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
-	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
+	GetPullRequest(owner, repo string, number int) (*scallywag.PullRequest, error)
+	FindIssues(query, sort string, asc bool) ([]scallywag.Issue, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
+	ListStatuses(org, repo, ref string) ([]scallywag.CombinedStatus, error)
 }
 
-func handleStatusEvent(pc plugins.Agent, se github.StatusEvent) error {
+func handleStatusEvent(pc plugins.Agent, se scallywag.StatusEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, se)
 }
 
@@ -100,7 +101,7 @@ func handleStatusEvent(pc plugins.Agent, se github.StatusEvent) error {
 // 3. For each issue that matches, check that the PR's HEAD commit hash against the commit hash for which the status
 //    was received. This is because we only care about the status associated with the last (latest) commit in a PR.
 // 4. Set the corresponding CLA label if needed.
-func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
+func handle(gc gitHubClient, log *logrus.Entry, se scallywag.StatusEvent) error {
 	if se.State == "" || se.Context == "" {
 		return fmt.Errorf("invalid status event delivered with empty state/context")
 	}
@@ -110,7 +111,7 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 		return nil
 	}
 
-	if se.State == github.StatusPending {
+	if se.State == scallywag.StatusPending {
 		// do nothing and wait for state to be updated.
 		return nil
 	}
@@ -119,7 +120,7 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 	repo := se.Repo.Name
 	log.Info("Searching for PRs matching the commit.")
 
-	var issues []github.Issue
+	var issues []scallywag.Issue
 	var err error
 	for i := 0; i < maxRetries; i++ {
 		issues, err = gc.FindIssues(fmt.Sprintf("%s repo:%s/%s type:pr state:open", se.SHA, org, repo), "", false)
@@ -137,13 +138,13 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 		l := log.WithField("pr", issue.Number)
 		hasCncfYes := issue.HasLabel(labels.ClaYes)
 		hasCncfNo := issue.HasLabel(labels.ClaNo)
-		if hasCncfYes && se.State == github.StatusSuccess {
+		if hasCncfYes && se.State == scallywag.StatusSuccess {
 			// Nothing to update.
 			l.Infof("PR has up-to-date %s label.", labels.ClaYes)
 			continue
 		}
 
-		if hasCncfNo && (se.State == github.StatusFailure || se.State == github.StatusError) {
+		if hasCncfNo && (se.State == scallywag.StatusFailure || se.State == scallywag.StatusError) {
 			// Nothing to update.
 			l.Infof("PR has up-to-date %s label.", labels.ClaNo)
 			continue
@@ -163,7 +164,7 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 		}
 
 		number := pr.Number
-		if se.State == github.StatusSuccess {
+		if se.State == scallywag.StatusSuccess {
 			if hasCncfNo {
 				if err := gc.RemoveLabel(org, repo, number, labels.ClaNo); err != nil {
 					l.WithError(err).Warningf("Could not remove %s label.", labels.ClaNo)
@@ -191,13 +192,13 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 	return nil
 }
 
-func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
+func handleCommentEvent(pc plugins.Agent, ce scallywag.GenericCommentEvent) error {
 	return handleComment(pc.GitHubClient, pc.Logger, &ce)
 }
 
-func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handleComment(gc gitHubClient, log *logrus.Entry, e *scallywag.GenericCommentEvent) error {
 	// Only consider open PRs and new comments.
-	if e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
+	if e.IssueState != "open" || e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 	// Only consider "/check-cla" comments.
@@ -244,7 +245,7 @@ func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentE
 		if status.Context == claContextName {
 
 			// Success state implies that the cla exists, so label should be cncf-cla:yes.
-			if status.State == github.StatusSuccess {
+			if status.State == scallywag.StatusSuccess {
 
 				// Remove cncf-cla:no (if label exists).
 				if hasCLANo {
@@ -261,7 +262,7 @@ func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentE
 				}
 
 				// Failure state implies that the cla does not exist, so label should be cncf-cla:no.
-			} else if status.State == github.StatusFailure {
+			} else if status.State == scallywag.StatusFailure {
 
 				// Remove cncf-cla:yes (if label exists).
 				if hasCLAYes {

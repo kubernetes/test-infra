@@ -39,7 +39,7 @@ import (
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/localgit"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 	"k8s.io/test-infra/prow/tide/history"
 )
 
@@ -504,7 +504,7 @@ func (f *fgc) Query(ctx context.Context, q interface{}, vars map[string]interfac
 	return nil
 }
 
-func (f *fgc) Merge(org, repo string, number int, details github.MergeDetails) error {
+func (f *fgc) Merge(org, repo string, number int, details scallywag.MergeDetails) error {
 	if err, ok := f.mergeErrs[number]; ok {
 		return err
 	}
@@ -512,34 +512,34 @@ func (f *fgc) Merge(org, repo string, number int, details github.MergeDetails) e
 	return nil
 }
 
-func (f *fgc) CreateStatus(org, repo, ref string, s github.Status) error {
+func (f *fgc) CreateStatus(org, repo, ref string, s scallywag.Status) error {
 	switch s.State {
-	case github.StatusSuccess, github.StatusError, github.StatusPending, github.StatusFailure:
+	case scallywag.StatusSuccess, scallywag.StatusError, scallywag.StatusPending, scallywag.StatusFailure:
 		f.setStatus = true
 		return nil
 	}
 	return fmt.Errorf("invalid 'state' value: %q", s.State)
 }
 
-func (f *fgc) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error) {
+func (f *fgc) GetCombinedStatus(org, repo, ref string) (*scallywag.CombinedStatus, error) {
 	if f.expectedSHA != ref {
 		return nil, errors.New("bad combined status request: incorrect sha")
 	}
-	var statuses []github.Status
+	var statuses []scallywag.Status
 	for c, s := range f.combinedStatus {
-		statuses = append(statuses, github.Status{Context: c, State: s})
+		statuses = append(statuses, scallywag.Status{Context: c, State: s})
 	}
-	return &github.CombinedStatus{
+	return &scallywag.CombinedStatus{
 			Statuses: statuses,
 		},
 		nil
 }
 
-func (f *fgc) GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error) {
+func (f *fgc) GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error) {
 	if number != 100 {
 		return nil, nil
 	}
-	return []github.PullRequestChange{
+	return []scallywag.PullRequestChange{
 			{
 				Filename: "CHANGED",
 			},
@@ -1146,7 +1146,7 @@ func TestTakeAction(t *testing.T) {
 			name: "batch merge errors but continues if a PR is unmergeable",
 
 			batchMerges: []int{1, 2, 3},
-			mergeErrs:   map[int]error{2: github.UnmergablePRError("test error")},
+			mergeErrs:   map[int]error{2: scallywag.UnmergablePRError("test error")},
 			merged:      2,
 			triggered:   0,
 			action:      MergeBatch,
@@ -1156,7 +1156,7 @@ func TestTakeAction(t *testing.T) {
 			name: "batch merge errors but continues if a PR has changed",
 
 			batchMerges: []int{1, 2, 3},
-			mergeErrs:   map[int]error{2: github.ModifiedHeadError("test error")},
+			mergeErrs:   map[int]error{2: scallywag.ModifiedHeadError("test error")},
 			merged:      2,
 			triggered:   0,
 			action:      MergeBatch,
@@ -1176,7 +1176,7 @@ func TestTakeAction(t *testing.T) {
 			name: "batch merge stops on auth error",
 
 			batchMerges: []int{1, 2, 3},
-			mergeErrs:   map[int]error{2: github.UnauthorizedToPushError("test error")},
+			mergeErrs:   map[int]error{2: scallywag.UnauthorizedToPushError("test error")},
 			merged:      1,
 			triggered:   0,
 			action:      MergeBatch,
@@ -1186,7 +1186,7 @@ func TestTakeAction(t *testing.T) {
 			name: "batch merge stops on invalid merge method error",
 
 			batchMerges: []int{1, 2, 3},
-			mergeErrs:   map[int]error{2: github.MergeCommitsForbiddenError("test error")},
+			mergeErrs:   map[int]error{2: scallywag.MergeCommitsForbiddenError("test error")},
 			merged:      1,
 			triggered:   0,
 			action:      MergeBatch,

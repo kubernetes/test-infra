@@ -23,7 +23,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/git/localgit"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 var initialFiles = map[string][]byte{
@@ -49,22 +49,22 @@ foo_repositories()
 
 type ghc struct {
 	genfile     []byte
-	pr          github.PullRequest
-	changes     []github.PullRequestChange
-	oldComments []github.ReviewComment
-	comment     github.DraftReview
+	pr          scallywag.PullRequest
+	changes     []scallywag.PullRequestChange
+	oldComments []scallywag.ReviewComment
+	comment     scallywag.DraftReview
 }
 
-func (g *ghc) GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error) {
+func (g *ghc) GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error) {
 	return g.changes, nil
 }
 
-func (g *ghc) CreateReview(org, repo string, number int, r github.DraftReview) error {
+func (g *ghc) CreateReview(org, repo string, number int, r scallywag.DraftReview) error {
 	g.comment = r
 	return nil
 }
 
-func (g *ghc) ListPullRequestComments(org, repo string, number int) ([]github.ReviewComment, error) {
+func (g *ghc) ListPullRequestComments(org, repo string, number int) ([]scallywag.ReviewComment, error) {
 	return g.oldComments, nil
 }
 
@@ -72,19 +72,19 @@ func (g *ghc) GetFile(org, repo, filepath, commit string) ([]byte, error) {
 	return g.genfile, nil
 }
 
-func (g *ghc) GetPullRequest(org, repo string, number int) (*github.PullRequest, error) {
+func (g *ghc) GetPullRequest(org, repo string, number int) (*scallywag.PullRequest, error) {
 	return &g.pr, nil
 }
 
-var e = &github.GenericCommentEvent{
-	Action:     github.GenericCommentActionCreated,
+var e = &scallywag.GenericCommentEvent{
+	Action:     scallywag.GenericCommentActionCreated,
 	IssueState: "open",
 	Body:       "/buildify",
-	User:       github.User{Login: "mattmoor"},
+	User:       scallywag.User{Login: "mattmoor"},
 	Number:     42,
 	IsPR:       true,
-	Repo: github.Repo{
-		Owner:    github.User{Login: "foo"},
+	Repo: scallywag.Repo{
+		Owner:    scallywag.User{Login: "foo"},
 		Name:     "bar",
 		FullName: "foo/bar",
 	},
@@ -117,7 +117,7 @@ func TestBuildify(t *testing.T) {
 	}
 
 	gh := &ghc{
-		changes: []github.PullRequestChange{
+		changes: []scallywag.PullRequestChange{
 			{
 				Filename: "BUILD",
 			},
@@ -137,7 +137,7 @@ func TestBuildify(t *testing.T) {
 	}
 	for _, c := range gh.comment.Comments {
 		pos := c.Position
-		gh.oldComments = append(gh.oldComments, github.ReviewComment{
+		gh.oldComments = append(gh.oldComments, scallywag.ReviewComment{
 			Path:     c.Path,
 			Position: &pos,
 			Body:     c.Body,
@@ -179,7 +179,7 @@ func TestModifiedBazelFiles(t *testing.T) {
 		{
 			name: "modified files include BUILD",
 			gh: &ghc{
-				changes: []github.PullRequestChange{
+				changes: []scallywag.PullRequestChange{
 					{
 						Filename: "BUILD",
 					},
@@ -195,7 +195,7 @@ func TestModifiedBazelFiles(t *testing.T) {
 		{
 			name: "modified files include BUILD.bazel",
 			gh: &ghc{
-				changes: []github.PullRequestChange{
+				changes: []scallywag.PullRequestChange{
 					{
 						Filename: "BUILD.bazel",
 					},
@@ -211,7 +211,7 @@ func TestModifiedBazelFiles(t *testing.T) {
 		{
 			name: "modified files include WORKSPACE",
 			gh: &ghc{
-				changes: []github.PullRequestChange{
+				changes: []scallywag.PullRequestChange{
 					{
 						Filename: "WORKSPACE",
 					},
@@ -227,7 +227,7 @@ func TestModifiedBazelFiles(t *testing.T) {
 		{
 			name: "modified files include .bzl file",
 			gh: &ghc{
-				changes: []github.PullRequestChange{
+				changes: []scallywag.PullRequestChange{
 					{
 						Filename: "qux.bzl",
 					},
@@ -243,13 +243,13 @@ func TestModifiedBazelFiles(t *testing.T) {
 		{
 			name: "modified files include removed BUILD file",
 			gh: &ghc{
-				changes: []github.PullRequestChange{
+				changes: []scallywag.PullRequestChange{
 					{
 						Filename: "qux.go",
 					},
 					{
 						Filename: "BUILD",
-						Status:   github.PullRequestFileRemoved,
+						Status:   scallywag.PullRequestFileRemoved,
 					},
 				},
 			},
@@ -258,13 +258,13 @@ func TestModifiedBazelFiles(t *testing.T) {
 		{
 			name: "modified files include renamed file",
 			gh: &ghc{
-				changes: []github.PullRequestChange{
+				changes: []scallywag.PullRequestChange{
 					{
 						Filename: "qux.go",
 					},
 					{
 						Filename: "BUILD",
-						Status:   github.PullRequestFileRenamed,
+						Status:   scallywag.PullRequestFileRenamed,
 					},
 				},
 			},
@@ -273,10 +273,10 @@ func TestModifiedBazelFiles(t *testing.T) {
 		{
 			name: "added and modified files",
 			gh: &ghc{
-				changes: []github.PullRequestChange{
+				changes: []scallywag.PullRequestChange{
 					{
 						Filename: "foo/BUILD.bazel",
-						Status:   github.PullRequestFileAdded,
+						Status:   scallywag.PullRequestFileAdded,
 					},
 					{
 						Filename: "bar/blah.bzl",

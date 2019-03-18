@@ -24,7 +24,8 @@ import (
 	"path"
 	"regexp"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
+
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -57,7 +58,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		nil
 }
 
-func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pe scallywag.PullRequestEvent) error {
 	return handlePR(pc.GitHubClient, pe)
 }
 
@@ -65,20 +66,20 @@ func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
 type githubClient interface {
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
 }
 
-func handlePR(gc githubClient, pe github.PullRequestEvent) error {
+func handlePR(gc githubClient, pe scallywag.PullRequestEvent) error {
 	var (
 		owner = pe.PullRequest.Base.Repo.Owner.Login
 		repo  = pe.PullRequest.Base.Repo.Name
 		num   = pe.PullRequest.Number
 	)
 
-	if pe.Action != github.PullRequestActionOpened &&
-		pe.Action != github.PullRequestActionReopened &&
-		pe.Action != github.PullRequestActionSynchronize {
+	if pe.Action != scallywag.PullRequestActionOpened &&
+		pe.Action != scallywag.PullRequestActionReopened &&
+		pe.Action != scallywag.PullRequestActionSynchronize {
 		return nil
 	}
 

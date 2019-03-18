@@ -20,13 +20,13 @@ import (
 	"strings"
 	"testing"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func TestFormatICResponse(t *testing.T) {
-	ic := github.IssueComment{
+	ic := scallywag.IssueComment{
 		Body:    "Looks neat.\r\nI like it.\r\n",
-		User:    github.User{Login: "ca"},
+		User:    scallywag.User{Login: "ca"},
 		HTMLURL: "happygoodsite.com",
 	}
 	s := "you are a nice person."

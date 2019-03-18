@@ -21,16 +21,16 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func TestHandlePR(t *testing.T) {
-	basicPR := github.PullRequest{
+	basicPR := scallywag.PullRequest{
 		Number: 1,
-		Base: github.PullRequestBranch{
-			Repo: github.Repo{
-				Owner: github.User{
+		Base: scallywag.PullRequestBranch{
+			Repo: scallywag.Repo{
+				Owner: scallywag.User{
 					Login: "kubernetes",
 				},
 				Name: "kubernetes",
@@ -39,15 +39,15 @@ func TestHandlePR(t *testing.T) {
 	}
 
 	testcases := []struct {
-		prAction              github.PullRequestEventAction
-		changes               []github.PullRequestChange
+		prAction              scallywag.PullRequestEventAction
+		changes               []scallywag.PullRequestChange
 		expectedReactionAdded bool
 	}{
 		// PR opened against kubernetes/kubernetes that adds 1 line to
 		// an OWNERS file
 		{
-			prAction: github.PullRequestActionOpened,
-			changes: []github.PullRequestChange{
+			prAction: scallywag.PullRequestActionOpened,
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "foo/bar/OWNERS",
 					Additions: 1,
@@ -58,8 +58,8 @@ func TestHandlePR(t *testing.T) {
 		// PR opened against kubernetes/kubernetes that deletes 1 line
 		// from an OWNERS file
 		{
-			prAction: github.PullRequestActionOpened,
-			changes: []github.PullRequestChange{
+			prAction: scallywag.PullRequestActionOpened,
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "foo/bar/OWNERS",
 					Deletions: 1,
@@ -70,8 +70,8 @@ func TestHandlePR(t *testing.T) {
 		// PR opened against kubernetes/kubernetes with no changes to
 		// OWNERS
 		{
-			prAction: github.PullRequestActionOpened,
-			changes: []github.PullRequestChange{
+			prAction: scallywag.PullRequestActionOpened,
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "foo/bar/foo.go",
 					Additions: 1,
@@ -81,8 +81,8 @@ func TestHandlePR(t *testing.T) {
 		},
 		// PR reopened against kubernetes/kubernetes
 		{
-			prAction: github.PullRequestActionReopened,
-			changes: []github.PullRequestChange{
+			prAction: scallywag.PullRequestActionReopened,
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "foo/bar/OWNERS",
 					Additions: 1,
@@ -93,8 +93,8 @@ func TestHandlePR(t *testing.T) {
 		// PR opened against kubernetes/kubernetes that adds 1 line to
 		// an OWNERS_ALIASES file
 		{
-			prAction: github.PullRequestActionOpened,
-			changes: []github.PullRequestChange{
+			prAction: scallywag.PullRequestActionOpened,
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "foo/bar/OWNERS_ALIASES",
 					Additions: 1,
@@ -105,16 +105,16 @@ func TestHandlePR(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		event := github.PullRequestEvent{
+		event := scallywag.PullRequestEvent{
 			Action:      tc.prAction,
 			Number:      basicPR.Number,
 			PullRequest: basicPR,
 		}
 		fakeGitHubClient := &fakegithub.FakeClient{
-			PullRequests: map[int]*github.PullRequest{
+			PullRequests: map[int]*scallywag.PullRequest{
 				basicPR.Number: &basicPR,
 			},
-			PullRequestChanges: map[int][]github.PullRequestChange{
+			PullRequestChanges: map[int][]scallywag.PullRequestChange{
 				basicPR.Number: tc.changes,
 			},
 		}

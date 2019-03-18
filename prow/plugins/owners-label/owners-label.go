@@ -22,7 +22,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
+
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -49,13 +50,13 @@ type ownersClient interface {
 
 type githubClient interface {
 	AddLabel(org, repo string, number int, label string) error
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
-	GetRepoLabels(owner, repo string) ([]github.Label, error)
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
+	GetRepoLabels(owner, repo string) ([]scallywag.Label, error)
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
-	if pre.Action != github.PullRequestActionOpened && pre.Action != github.PullRequestActionReopened && pre.Action != github.PullRequestActionSynchronize {
+func handlePullRequest(pc plugins.Agent, pre scallywag.PullRequestEvent) error {
+	if pre.Action != scallywag.PullRequestActionOpened && pre.Action != scallywag.PullRequestActionReopened && pre.Action != scallywag.PullRequestActionSynchronize {
 		return nil
 	}
 
@@ -67,7 +68,7 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	return handle(pc.GitHubClient, oc, pc.Logger, &pre)
 }
 
-func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, pre *github.PullRequestEvent) error {
+func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, pre *scallywag.PullRequestEvent) error {
 	org := pre.Repo.Owner.Login
 	repo := pre.Repo.Name
 	number := pre.Number

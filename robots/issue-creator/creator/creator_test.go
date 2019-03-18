@@ -35,28 +35,28 @@ import (
 type fakeClient struct {
 	userName   string
 	repoLabels []string
-	issues     []*github.Issue
+	issues     []*scallywag.Issue
 	org        string
 	project    string
 	t          *testing.T
 }
 
-func (c *fakeClient) GetUser(login string) (*github.User, error) {
+func (c *fakeClient) GetUser(login string) (*scallywag.User, error) {
 	if login == "" {
-		return &github.User{Login: &c.userName}, nil
+		return &scallywag.User{Login: &c.userName}, nil
 	}
 	return nil, fmt.Errorf("fake Client is only able to retrieve the current authenticated user in its current state")
 }
 
-func (c *fakeClient) GetRepoLabels(org, repo string) ([]*github.Label, error) {
+func (c *fakeClient) GetRepoLabels(org, repo string) ([]*scallywag.Label, error) {
 	return makeLabelSlice(c.repoLabels), nil
 }
 
-func (c *fakeClient) GetIssues(org, repo string, options *github.IssueListByRepoOptions) ([]*github.Issue, error) {
+func (c *fakeClient) GetIssues(org, repo string, options *scallywag.IssueListByRepoOptions) ([]*scallywag.Issue, error) {
 	return c.issues, nil
 }
 
-func (c *fakeClient) CreateIssue(org, repo string, title, body string, labels, owners []string) (*github.Issue, error) {
+func (c *fakeClient) CreateIssue(org, repo string, title, body string, labels, owners []string) (*scallywag.Issue, error) {
 	// Check if labels are valid.
 	for _, label := range labels {
 		found := false
@@ -77,7 +77,7 @@ func (c *fakeClient) CreateIssue(org, repo string, title, body string, labels, o
 	return issue, nil
 }
 
-func (c *fakeClient) GetCollaborators(org, repo string) ([]*github.User, error) {
+func (c *fakeClient) GetCollaborators(org, repo string) ([]*scallywag.User, error) {
 	return nil, errors.New("some error (allow all assignees)")
 }
 
@@ -120,7 +120,7 @@ func (i *fakeIssue) Title() string {
 	return i.title
 }
 
-func (i *fakeIssue) Body(closed []*github.Issue) string {
+func (i *fakeIssue) Body(closed []*scallywag.Issue) string {
 	// the functionality to check that there are no recently closed issues on github for a cluster is
 	// part of the TriageFiler code and is tested in triage-filer_test.go
 	// we ignore the param here
@@ -163,7 +163,7 @@ func TestIssueCreator(t *testing.T) {
 		org:        "MY_ORG",
 		project:    "MY_PROJ",
 		repoLabels: []string{"kind/flake", "kind/flakeypastry", "priority/P0"},
-		issues: []*github.Issue{
+		issues: []*scallywag.Issue{
 			makeTestIssue(i1.title, i1.body, "open", i1.labels, i1.owners, 0),
 		},
 	}
@@ -260,8 +260,8 @@ func TestIssueCreator(t *testing.T) {
 	}
 }
 
-func makeTestIssue(title, body, state string, labels, owners []string, number int) *github.Issue {
-	return &github.Issue{
+func makeTestIssue(title, body, state string, labels, owners []string, number int) *scallywag.Issue {
+	return &scallywag.Issue{
 		Title:     &title,
 		Body:      &body,
 		State:     &state,
@@ -271,26 +271,26 @@ func makeTestIssue(title, body, state string, labels, owners []string, number in
 	}
 }
 
-func makeLabelSlice(strs []string) []*github.Label {
-	result := make([]*github.Label, len(strs))
+func makeLabelSlice(strs []string) []*scallywag.Label {
+	result := make([]*scallywag.Label, len(strs))
 	for i := 0; i < len(strs); i++ {
-		result[i] = &github.Label{Name: &strs[i]}
+		result[i] = &scallywag.Label{Name: &strs[i]}
 	}
 	return result
 }
 
-func makeLabelSliceNoPtr(strs []string) []github.Label {
-	result := make([]github.Label, len(strs))
+func makeLabelSliceNoPtr(strs []string) []scallywag.Label {
+	result := make([]scallywag.Label, len(strs))
 	for i := 0; i < len(strs); i++ {
-		result[i] = github.Label{Name: &strs[i]}
+		result[i] = scallywag.Label{Name: &strs[i]}
 	}
 	return result
 }
 
-func makeUserSlice(strs []string) []*github.User {
-	result := make([]*github.User, len(strs))
+func makeUserSlice(strs []string) []*scallywag.User {
+	result := make([]*scallywag.User, len(strs))
 	for i := 0; i < len(strs); i++ {
-		result[i] = &github.User{Login: &strs[i]}
+		result[i] = &scallywag.User{Login: &strs[i]}
 	}
 	return result
 }

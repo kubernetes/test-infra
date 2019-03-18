@@ -27,7 +27,7 @@ import (
 )
 
 // NewIssue creates a new (orm) Issue from a github Issue
-func NewIssue(gIssue *github.Issue, repository string) (*sql.Issue, error) {
+func NewIssue(gIssue *scallywag.Issue, repository string) (*sql.Issue, error) {
 	if gIssue.Number == nil ||
 		gIssue.Title == nil ||
 		gIssue.User == nil ||
@@ -78,7 +78,7 @@ func NewIssue(gIssue *github.Issue, repository string) (*sql.Issue, error) {
 }
 
 // NewIssueEvent creates a new (orm) Issue from a github Issue
-func NewIssueEvent(gIssueEvent *github.IssueEvent, issueID int, repository string) (*sql.IssueEvent, error) {
+func NewIssueEvent(gIssueEvent *scallywag.IssueEvent, issueID int, repository string) (*sql.IssueEvent, error) {
 	if gIssueEvent.ID == nil ||
 		gIssueEvent.Event == nil ||
 		gIssueEvent.CreatedAt == nil {
@@ -111,7 +111,7 @@ func NewIssueEvent(gIssueEvent *github.IssueEvent, issueID int, repository strin
 }
 
 // newLabels creates a new Label for each label in the issue
-func newLabels(issueID int, gLabels []github.Label, repository string) ([]sql.Label, error) {
+func newLabels(issueID int, gLabels []scallywag.Label, repository string) ([]sql.Label, error) {
 	labels := []sql.Label{}
 	repository = strings.ToLower(repository)
 
@@ -130,7 +130,7 @@ func newLabels(issueID int, gLabels []github.Label, repository string) ([]sql.La
 }
 
 // newAssignees creates a new Label for each label in the issue
-func newAssignees(issueID int, gAssignees []*github.User, repository string) ([]sql.Assignee, error) {
+func newAssignees(issueID int, gAssignees []*scallywag.User, repository string) ([]sql.Assignee, error) {
 	assignees := []sql.Assignee{}
 	repository = strings.ToLower(repository)
 
@@ -152,8 +152,8 @@ func itoa(n int64) string {
 	return strconv.FormatInt(n, 10)
 }
 
-// NewIssueComment creates a Comment from a github.IssueComment
-func NewIssueComment(issueID int, gComment *github.IssueComment, repository string) (*sql.Comment, error) {
+// NewIssueComment creates a Comment from a scallywag.IssueComment
+func NewIssueComment(issueID int, gComment *scallywag.IssueComment, repository string) (*sql.Comment, error) {
 	if gComment.ID == nil ||
 		gComment.Body == nil ||
 		gComment.CreatedAt == nil ||

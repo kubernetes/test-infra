@@ -28,8 +28,8 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -88,7 +88,7 @@ func (fc *fakeClient) ClearPRs() {
 
 // FindIssues fails if the query does not match the expected query regex and
 // looks up issues based on parsing the expected query format
-func (fc *fakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, error) {
+func (fc *fakeClient) FindIssues(query, sort string, asc bool) ([]scallywag.Issue, error) {
 	fields := expectedQueryRegex.FindStringSubmatch(query)
 	if fields == nil || len(fields) != 4 {
 		return nil, fmt.Errorf("invalid query: `%s` does not match expected regex `%s`", query, expectedQueryRegex.String())
@@ -97,29 +97,29 @@ func (fc *fakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, 
 	owner, repo, author := fields[1], fields[2], fields[3]
 	key := fmt.Sprintf("%s,%s,%s", owner, repo, author)
 
-	issues := []github.Issue{}
+	issues := []scallywag.Issue{}
 	for _, number := range fc.prs[key].List() {
-		issues = append(issues, github.Issue{
+		issues = append(issues, scallywag.Issue{
 			Number: number,
 		})
 	}
 	return issues, nil
 }
 
-func makeFakePullRequestEvent(owner, repo, author string, number int, action github.PullRequestEventAction) github.PullRequestEvent {
-	return github.PullRequestEvent{
+func makeFakePullRequestEvent(owner, repo, author string, number int, action scallywag.PullRequestEventAction) scallywag.PullRequestEvent {
+	return scallywag.PullRequestEvent{
 		Action: action,
 		Number: number,
-		PullRequest: github.PullRequest{
-			Base: github.PullRequestBranch{
-				Repo: github.Repo{
-					Owner: github.User{
+		PullRequest: scallywag.PullRequest{
+			Base: scallywag.PullRequestBranch{
+				Repo: scallywag.Repo{
+					Owner: scallywag.User{
 						Login: owner,
 					},
 					Name: repo,
 				},
 			},
-			User: github.User{
+			User: scallywag.User{
 				Login: author,
 				Name:  author + "fullname",
 			},
@@ -140,7 +140,7 @@ func TestHandlePR(t *testing.T) {
 		repoName      string
 		author        string
 		prNumber      int
-		prAction      github.PullRequestEventAction
+		prAction      scallywag.PullRequestEventAction
 		addPR         bool
 		expectComment bool
 	}{
@@ -150,7 +150,7 @@ func TestHandlePR(t *testing.T) {
 			repoName:      "test-infra",
 			author:        "contributorA",
 			prNumber:      20,
-			prAction:      github.PullRequestActionOpened,
+			prAction:      scallywag.PullRequestActionOpened,
 			expectComment: false,
 		},
 		{
@@ -159,7 +159,7 @@ func TestHandlePR(t *testing.T) {
 			repoName:      "test-infra",
 			author:        "contributorB",
 			prNumber:      40,
-			prAction:      github.PullRequestActionOpened,
+			prAction:      scallywag.PullRequestActionOpened,
 			expectComment: false,
 		},
 		{
@@ -167,7 +167,7 @@ func TestHandlePR(t *testing.T) {
 			repoOwner:     "kubernetes",
 			repoName:      "test-infra",
 			author:        "newContributor",
-			prAction:      github.PullRequestActionOpened,
+			prAction:      scallywag.PullRequestActionOpened,
 			prNumber:      50,
 			expectComment: true,
 		},
@@ -176,7 +176,7 @@ func TestHandlePR(t *testing.T) {
 			repoOwner:     "kubernetes",
 			repoName:      "test-infra",
 			author:        "newContributor",
-			prAction:      github.PullRequestActionOpened,
+			prAction:      scallywag.PullRequestActionOpened,
 			prNumber:      50,
 			expectComment: true,
 			addPR:         true,
@@ -186,7 +186,7 @@ func TestHandlePR(t *testing.T) {
 			repoOwner:     "kubernetes",
 			repoName:      "test-infra",
 			author:        "newContributor",
-			prAction:      github.PullRequestActionEdited,
+			prAction:      scallywag.PullRequestActionEdited,
 			prNumber:      50,
 			expectComment: false,
 		},

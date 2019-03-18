@@ -28,12 +28,12 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/git"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/golint"
 	"k8s.io/test-infra/prow/repoowners"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -67,13 +67,13 @@ type ownersClient interface {
 type githubClient interface {
 	AddLabel(org, repo string, number int, label string) error
 	CreateComment(owner, repo string, number int, comment string) error
-	CreateReview(org, repo string, number int, r github.DraftReview) error
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	CreateReview(org, repo string, number int, r scallywag.DraftReview) error
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
 	RemoveLabel(owner, repo string, number int, label string) error
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
-	if pre.Action != github.PullRequestActionOpened && pre.Action != github.PullRequestActionReopened && pre.Action != github.PullRequestActionSynchronize {
+func handlePullRequest(pc plugins.Agent, pre scallywag.PullRequestEvent) error {
+	if pre.Action != scallywag.PullRequestActionOpened && pre.Action != scallywag.PullRequestActionReopened && pre.Action != scallywag.PullRequestActionSynchronize {
 		return nil
 	}
 	return handle(pc.GitHubClient, pc.GitClient, pc.Logger, &pre, pc.PluginConfig.Owners.LabelsBlackList)
@@ -84,7 +84,7 @@ type messageWithLine struct {
 	message string
 }
 
-func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.PullRequestEvent, labelsBlackList []string) error {
+func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *scallywag.PullRequestEvent, labelsBlackList []string) error {
 	org := pre.Repo.Owner.Login
 	repo := pre.Repo.Name
 	wrongOwnersFiles := map[string]messageWithLine{}
@@ -96,7 +96,7 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 	}
 
 	// List modified OWNERS files.
-	var modifiedOwnersFiles []github.PullRequestChange
+	var modifiedOwnersFiles []scallywag.PullRequestChange
 	for _, change := range changes {
 		if filepath.Base(change.Filename) == ownersFileName {
 			modifiedOwnersFiles = append(modifiedOwnersFiles, change)
@@ -149,9 +149,9 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 			return err
 		}
 		log.Debugf("Creating a review for %d %s file%s.", len(wrongOwnersFiles), ownersFileName, s)
-		var comments []github.DraftReviewComment
+		var comments []scallywag.DraftReviewComment
 		for errFile, err := range wrongOwnersFiles {
-			comments = append(comments, github.DraftReviewComment{
+			comments = append(comments, scallywag.DraftReviewComment{
 				Path:     errFile,
 				Body:     err.message,
 				Position: err.line,
@@ -159,9 +159,9 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 		}
 		// Make the review body.
 		response := fmt.Sprintf("%d invalid %s file%s", len(wrongOwnersFiles), ownersFileName, s)
-		draftReview := github.DraftReview{
+		draftReview := scallywag.DraftReview{
 			Body:     plugins.FormatResponseRaw(pre.PullRequest.Body, pre.PullRequest.HTMLURL, pre.PullRequest.User.Login, response),
-			Action:   github.Comment,
+			Action:   scallywag.Comment,
 			Comments: comments,
 		}
 		if pre.PullRequest.Head.SHA != "" {
@@ -181,7 +181,7 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 	return nil
 }
 
-func parseOwnersFile(b []byte, c github.PullRequestChange, log *logrus.Entry, labelsBlackList []string) *messageWithLine {
+func parseOwnersFile(b []byte, c scallywag.PullRequestChange, log *logrus.Entry, labelsBlackList []string) *messageWithLine {
 	var approvers []string
 	var labels []string
 	// by default we bind errors to line 1

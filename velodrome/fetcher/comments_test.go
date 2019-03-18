@@ -112,7 +112,7 @@ func TestUpdateComments(t *testing.T) {
 
 	tests := []struct {
 		before           []sql.Comment
-		newIssueComments map[int][]*github.IssueComment
+		newIssueComments map[int][]*scallywag.IssueComment
 		newPullComments  map[int][]*github.PullRequestComment
 		after            []sql.Comment
 		updateID         int
@@ -125,7 +125,7 @@ func TestUpdateComments(t *testing.T) {
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
 			},
-			newIssueComments: map[int][]*github.IssueComment{},
+			newIssueComments: map[int][]*scallywag.IssueComment{},
 			newPullComments:  map[int][]*github.PullRequestComment{},
 			after: []sql.Comment{
 				*makeComment(12, 1, "Body", "Login", "full/repo",
@@ -142,7 +142,7 @@ func TestUpdateComments(t *testing.T) {
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
 			},
-			newIssueComments: map[int][]*github.IssueComment{
+			newIssueComments: map[int][]*scallywag.IssueComment{
 				3: {
 					makeGitHubIssueComment(2, "IssueBody", "SomeLogin",
 						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
@@ -188,7 +188,7 @@ func TestUpdateComments(t *testing.T) {
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
 			},
-			newIssueComments: map[int][]*github.IssueComment{
+			newIssueComments: map[int][]*scallywag.IssueComment{
 				3: {
 					makeGitHubIssueComment(2, "IssueBody", "SomeLogin",
 						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
@@ -225,7 +225,7 @@ func TestUpdateComments(t *testing.T) {
 					time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 					time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC), true),
 			},
-			newIssueComments: map[int][]*github.IssueComment{},
+			newIssueComments: map[int][]*scallywag.IssueComment{},
 			newPullComments: map[int][]*github.PullRequestComment{
 				12: {
 					makeGitHubPullComment(1, "IssueBody", "SomeLogin",

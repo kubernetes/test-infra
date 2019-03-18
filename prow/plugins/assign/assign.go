@@ -23,7 +23,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
+
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -72,8 +73,8 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
-	if e.Action != github.GenericCommentActionCreated {
+func handleGenericComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
+	if e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 	err := handle(newAssignHandler(e, pc.GitHubClient, pc.Logger))
@@ -146,7 +147,7 @@ func handle(h *handler) error {
 	if len(toAdd) > 0 {
 		h.log.Printf("Adding %s to %s/%s#%d: %v", h.userType, org, repo, e.Number, toAdd)
 		if err := h.add(org, repo, e.Number, toAdd); err != nil {
-			if mu, ok := err.(github.MissingUsers); ok {
+			if mu, ok := err.(scallywag.MissingUsers); ok {
 				msg := h.addFailureResponse(mu)
 				if len(msg) == 0 {
 					return nil
@@ -165,14 +166,14 @@ func handle(h *handler) error {
 // handler is a struct that contains data about a github event and provides functions to help handle it.
 type handler struct {
 	// addFailureResponse generates the body of a response comment in the event that the add function fails.
-	addFailureResponse func(mu github.MissingUsers) string
+	addFailureResponse func(mu scallywag.MissingUsers) string
 	// remove is the function that is called on the affected logins for a command prefixed with 'un'.
 	remove func(org, repo string, number int, users []string) error
 	// add is the function that is called on the affected logins for a command with no 'un' prefix.
 	add func(org, repo string, number int, users []string) error
 
-	// event is a pointer to the github.GenericCommentEvent struct that triggered the handler.
-	event *github.GenericCommentEvent
+	// event is a pointer to the scallywag.GenericCommentEvent struct that triggered the handler.
+	event *scallywag.GenericCommentEvent
 	// regexp is the regular expression describing the command. It must have an optional 'un' prefix
 	// as the first subgroup and the arguments to the command as the second subgroup.
 	regexp *regexp.Regexp
@@ -185,9 +186,9 @@ type handler struct {
 	userType string
 }
 
-func newAssignHandler(e github.GenericCommentEvent, gc githubClient, log *logrus.Entry) *handler {
+func newAssignHandler(e scallywag.GenericCommentEvent, gc githubClient, log *logrus.Entry) *handler {
 	org := e.Repo.Owner.Login
-	addFailureResponse := func(mu github.MissingUsers) string {
+	addFailureResponse := func(mu scallywag.MissingUsers) string {
 		return fmt.Sprintf("GitHub didn't allow me to assign the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) and repo collaborators can be assigned and that issues/PRs can only have 10 assignees at the same time.\nFor more information please see [the contributor guide](https://git.k8s.io/community/contributors/guide/#issue-assignment-in-github)", strings.Join(mu.Users, ", "), org, org)
 	}
 
@@ -203,9 +204,9 @@ func newAssignHandler(e github.GenericCommentEvent, gc githubClient, log *logrus
 	}
 }
 
-func newReviewHandler(e github.GenericCommentEvent, gc githubClient, log *logrus.Entry) *handler {
+func newReviewHandler(e scallywag.GenericCommentEvent, gc githubClient, log *logrus.Entry) *handler {
 	org := e.Repo.Owner.Login
-	addFailureResponse := func(mu github.MissingUsers) string {
+	addFailureResponse := func(mu scallywag.MissingUsers) string {
 		return fmt.Sprintf("GitHub didn't allow me to request PR reviews from the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) and repo collaborators can review this PR, and authors cannot review their own PRs.", strings.Join(mu.Users, ", "), org, org)
 	}
 

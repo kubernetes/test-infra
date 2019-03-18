@@ -23,7 +23,7 @@ Some API methods have optional parameters that can be passed. For example:
 	client := github.NewClient(nil)
 
 	// list public repositories for org "github"
-	opt := &github.RepositoryListByOrgOptions{Type: "public"}
+	opt := &scallywag.RepositoryListByOrgOptions{Type: "public"}
 	repos, _, err := client.Repositories.ListByOrg(ctx, "github", opt)
 
 The services of a client divide the API into logical chunks and correspond to
@@ -147,7 +147,7 @@ Helper functions have been provided to easily create these pointers for string,
 bool, and int values. For example:
 
 	// create a new private repository named "foo"
-	repo := &github.Repository{
+	repo := &scallywag.Repository{
 		Name:    github.String("foo"),
 		Private: github.Bool(true),
 	}
@@ -161,16 +161,16 @@ All requests for resource collections (repos, pull requests, issues, etc.)
 support pagination. Pagination options are described in the
 github.ListOptions struct and passed to the list methods directly or as an
 embedded type of a more specific list options struct (for example
-github.PullRequestListOptions). Pages information is available via the
+scallywag.PullRequestListOptions). Pages information is available via the
 github.Response struct.
 
 	client := github.NewClient(nil)
 
-	opt := &github.RepositoryListByOrgOptions{
+	opt := &scallywag.RepositoryListByOrgOptions{
 		ListOptions: github.ListOptions{PerPage: 10},
 	}
 	// get all pages of results
-	var allRepos []*github.Repository
+	var allRepos []*scallywag.Repository
 	for {
 		repos, resp, err := client.Repositories.ListByOrg(ctx, "github", opt)
 		if err != nil {

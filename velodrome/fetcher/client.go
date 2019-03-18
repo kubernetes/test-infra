@@ -120,9 +120,9 @@ func (client *Client) limitsCheckAndWait() {
 // ClientInterface describes what a client should be able to do
 type ClientInterface interface {
 	RepositoryName() string
-	FetchIssues(last time.Time, c chan *github.Issue)
-	FetchIssueEvents(issueID int, last *int, c chan *github.IssueEvent)
-	FetchIssueComments(issueID int, last time.Time, c chan *github.IssueComment)
+	FetchIssues(last time.Time, c chan *scallywag.Issue)
+	FetchIssueEvents(issueID int, last *int, c chan *scallywag.IssueEvent)
+	FetchIssueComments(issueID int, last time.Time, c chan *scallywag.IssueComment)
 	FetchPullComments(issueID int, last time.Time, c chan *github.PullRequestComment)
 }
 
@@ -132,8 +132,8 @@ func (client *Client) RepositoryName() string {
 }
 
 // FetchIssues from GitHub, until 'latest' time
-func (client *Client) FetchIssues(latest time.Time, c chan *github.Issue) {
-	opt := &github.IssueListByRepoOptions{Since: latest, Sort: "updated", State: "all", Direction: "asc"}
+func (client *Client) FetchIssues(latest time.Time, c chan *scallywag.Issue) {
+	opt := &scallywag.IssueListByRepoOptions{Since: latest, Sort: "updated", State: "all", Direction: "asc"}
 
 	githubClient, err := client.getGitHubClient()
 	if err != nil {
@@ -173,8 +173,8 @@ func (client *Client) FetchIssues(latest time.Time, c chan *github.Issue) {
 	close(c)
 }
 
-// hasID look for a specific id in a list of events
-func hasID(events []*github.IssueEvent, id int) bool {
+// hasID look for a specific Id in a list of events
+func hasID(events []*scallywag.IssueEvent, id int) bool {
 	for _, event := range events {
 		if *event.ID == int64(id) {
 			return true
@@ -185,7 +185,7 @@ func hasID(events []*github.IssueEvent, id int) bool {
 
 // FetchIssueEvents from github and return the full list, until it matches 'latest'
 // The entire last page will be included so you can have redundancy.
-func (client *Client) FetchIssueEvents(issueID int, latest *int, c chan *github.IssueEvent) {
+func (client *Client) FetchIssueEvents(issueID int, latest *int, c chan *scallywag.IssueEvent) {
 	opt := &github.ListOptions{PerPage: 100}
 
 	githubClient, err := client.getGitHubClient()
@@ -227,8 +227,8 @@ func (client *Client) FetchIssueEvents(issueID int, latest *int, c chan *github.
 }
 
 // FetchIssueComments fetches comments associated to given Issue (since latest)
-func (client *Client) FetchIssueComments(issueID int, latest time.Time, c chan *github.IssueComment) {
-	opt := &github.IssueListCommentsOptions{Since: latest, Sort: "updated", Direction: "asc"}
+func (client *Client) FetchIssueComments(issueID int, latest time.Time, c chan *scallywag.IssueComment) {
+	opt := &scallywag.IssueListCommentsOptions{Since: latest, Sort: "updated", Direction: "asc"}
 
 	githubClient, err := client.getGitHubClient()
 	if err != nil {

@@ -26,6 +26,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
+
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -49,9 +51,9 @@ type githubClient interface {
 	IsMember(org, user string) (bool, error)
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
-	GetRepoLabels(owner, repo string) ([]github.Label, error)
+	GetRepoLabels(owner, repo string) ([]scallywag.Label, error)
 	BotName() (string, error)
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
 }
 
 func init() {
@@ -70,11 +72,11 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		nil
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.SigMention.Re)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, re *regexp.Regexp) error {
+func handle(gc githubClient, log *logrus.Entry, e *scallywag.GenericCommentEvent, re *regexp.Regexp) error {
 	// Ignore bot comments and comments that aren't new.
 	botName, err := gc.BotName()
 	if err != nil {
@@ -83,7 +85,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 	if e.User.Login == botName {
 		return nil
 	}
-	if e.Action != github.GenericCommentActionCreated {
+	if e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 

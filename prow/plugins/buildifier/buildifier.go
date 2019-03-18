@@ -33,9 +33,9 @@ import (
 
 	"k8s.io/test-infra/prow/genfiles"
 	"k8s.io/test-infra/prow/git"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -66,13 +66,13 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 
 type githubClient interface {
 	GetFile(org, repo, filepath, commit string) ([]byte, error)
-	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
-	CreateReview(org, repo string, number int, r github.DraftReview) error
-	ListPullRequestComments(org, repo string, number int) ([]github.ReviewComment, error)
+	GetPullRequest(org, repo string, number int) (*scallywag.PullRequest, error)
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
+	CreateReview(org, repo string, number int, r scallywag.DraftReview) error
+	ListPullRequestComments(org, repo string, number int) ([]scallywag.ReviewComment, error)
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.GitClient, pc.Logger, &e)
 }
 
@@ -94,7 +94,7 @@ func modifiedBazelFiles(ghc githubClient, org, repo string, number int, sha stri
 		switch {
 		case gfg.Match(change.Filename):
 			continue
-		case change.Status == github.PullRequestFileRemoved || change.Status == github.PullRequestFileRenamed:
+		case change.Status == scallywag.PullRequestFileRemoved || change.Status == scallywag.PullRequestFileRenamed:
 			continue
 		// This also happens to match BUILD.bazel.
 		case strings.Contains(change.Filename, "BUILD"):
@@ -149,9 +149,9 @@ func problemsInFiles(r *git.Repo, files map[string]string) (map[string][]string,
 	return problems, nil
 }
 
-func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, e *scallywag.GenericCommentEvent) error {
 	// Only handle open PRs and new requests.
-	if e.IssueState != "open" || !e.IsPR || e.Action != github.GenericCommentActionCreated {
+	if e.IssueState != "open" || !e.IsPR || e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 	if !buildifyRe.MatchString(e.Body) {
@@ -201,9 +201,9 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, e *github.Gener
 	log.WithField("duration", time.Since(finishClone)).Info("Buildified.")
 
 	// Make the list of comments.
-	var comments []github.DraftReviewComment
+	var comments []scallywag.DraftReviewComment
 	for f := range problems {
-		comments = append(comments, github.DraftReviewComment{
+		comments = append(comments, scallywag.DraftReviewComment{
 			Path: f,
 			// TODO(mattmoor): Include the messages if they are ever non-empty.
 			Body: strings.Join([]string{
@@ -225,9 +225,9 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, e *github.Gener
 	}
 	response := fmt.Sprintf("%d warning%s.", totalProblems, s)
 
-	return ghc.CreateReview(org, repo, e.Number, github.DraftReview{
+	return ghc.CreateReview(org, repo, e.Number, scallywag.DraftReview{
 		Body:     plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, response),
-		Action:   github.Comment,
+		Action:   scallywag.Comment,
 		Comments: comments,
 	})
 }

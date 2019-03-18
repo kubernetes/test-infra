@@ -25,6 +25,7 @@ import (
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 var (
@@ -67,10 +68,10 @@ func help(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.Plu
 type lifecycleClient interface {
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
 }
 
-func lifecycleHandleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func lifecycleHandleGenericComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
 	gc := pc.GitHubClient
 	log := pc.Logger
 	if err := handleReopen(gc, log, &e); err != nil {
@@ -82,9 +83,9 @@ func lifecycleHandleGenericComment(pc plugins.Agent, e github.GenericCommentEven
 	return handle(gc, log, &e)
 }
 
-func handle(gc lifecycleClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(gc lifecycleClient, log *logrus.Entry, e *scallywag.GenericCommentEvent) error {
 	// Only consider new comments.
-	if e.Action != github.GenericCommentActionCreated {
+	if e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 
@@ -96,7 +97,7 @@ func handle(gc lifecycleClient, log *logrus.Entry, e *github.GenericCommentEvent
 	return nil
 }
 
-func handleOne(gc lifecycleClient, log *logrus.Entry, e *github.GenericCommentEvent, mat []string) error {
+func handleOne(gc lifecycleClient, log *logrus.Entry, e *scallywag.GenericCommentEvent, mat []string) error {
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 	number := e.Number

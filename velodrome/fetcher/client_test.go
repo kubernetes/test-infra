@@ -25,9 +25,9 @@ import (
 
 type FakeClient struct {
 	Repository    string
-	Issues        []*github.Issue
-	IssueEvents   map[int][]*github.IssueEvent
-	IssueComments map[int][]*github.IssueComment
+	Issues        []*scallywag.Issue
+	IssueEvents   map[int][]*scallywag.IssueEvent
+	IssueComments map[int][]*scallywag.IssueComment
 	PullComments  map[int][]*github.PullRequestComment
 }
 
@@ -35,21 +35,21 @@ func (client FakeClient) RepositoryName() string {
 	return client.Repository
 }
 
-func (client FakeClient) FetchIssues(latest time.Time, c chan *github.Issue) {
+func (client FakeClient) FetchIssues(latest time.Time, c chan *scallywag.Issue) {
 	for _, issue := range client.Issues {
 		c <- issue
 	}
 	close(c)
 }
 
-func (client FakeClient) FetchIssueEvents(issueID int, latest *int, c chan *github.IssueEvent) {
+func (client FakeClient) FetchIssueEvents(issueID int, latest *int, c chan *scallywag.IssueEvent) {
 	for _, event := range client.IssueEvents[issueID] {
 		c <- event
 	}
 	close(c)
 }
 
-func (client FakeClient) FetchIssueComments(issueID int, latest time.Time, c chan *github.IssueComment) {
+func (client FakeClient) FetchIssueComments(issueID int, latest time.Time, c chan *scallywag.IssueComment) {
 	for _, comment := range client.IssueComments[issueID] {
 		c <- comment
 	}
@@ -63,30 +63,30 @@ func (client FakeClient) FetchPullComments(issueID int, latest time.Time, c chan
 	close(c)
 }
 
-func createIssueEvent(ID int64) *github.IssueEvent {
-	return &github.IssueEvent{ID: &ID}
+func createIssueEvent(ID int64) *scallywag.IssueEvent {
+	return &scallywag.IssueEvent{ID: &ID}
 }
 
 func TestHasID(t *testing.T) {
 	tests := []struct {
-		events []*github.IssueEvent
+		events []*scallywag.IssueEvent
 		ID     int
 		isIn   bool
 	}{
 		{
-			[]*github.IssueEvent{},
+			[]*scallywag.IssueEvent{},
 			1,
 			false,
 		},
 		{
-			[]*github.IssueEvent{
+			[]*scallywag.IssueEvent{
 				createIssueEvent(1),
 			},
 			1,
 			true,
 		},
 		{
-			[]*github.IssueEvent{
+			[]*scallywag.IssueEvent{
 				createIssueEvent(0),
 				createIssueEvent(2),
 			},
@@ -94,7 +94,7 @@ func TestHasID(t *testing.T) {
 			false,
 		},
 		{
-			[]*github.IssueEvent{
+			[]*scallywag.IssueEvent{
 				createIssueEvent(2),
 				createIssueEvent(3),
 				createIssueEvent(1),

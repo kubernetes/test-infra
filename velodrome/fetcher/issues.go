@@ -49,7 +49,7 @@ func UpdateIssues(db *gorm.DB, client ClientInterface) {
 		glog.Error("Failed to find last issue update: ", err)
 		return
 	}
-	c := make(chan *github.Issue, 200)
+	c := make(chan *scallywag.Issue, 200)
 
 	go client.FetchIssues(latest, c)
 	for issue := range c {

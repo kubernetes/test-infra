@@ -28,12 +28,12 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
 	reportlib "k8s.io/test-infra/prow/github/report"
 	"k8s.io/test-infra/prow/github/reporter"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type kubeClient interface {
@@ -51,12 +51,12 @@ type kubeClient interface {
 // Plank's unit tests implement a fake of this.
 type GitHubClient interface {
 	BotName() (string, error)
-	CreateStatus(org, repo, ref string, s github.Status) error
-	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
+	CreateStatus(org, repo, ref string, s scallywag.Status) error
+	ListIssueComments(org, repo string, number int) ([]scallywag.IssueComment, error)
 	CreateComment(org, repo string, number int, comment string) error
 	DeleteComment(org, repo string, ID int) error
 	EditComment(org, repo string, ID int, comment string) error
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
 }
 
 // TODO: Dry this out

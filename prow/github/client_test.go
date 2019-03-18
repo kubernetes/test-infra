@@ -34,6 +34,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/ghproxy/ghcache"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type testTime struct {
@@ -215,7 +216,7 @@ func TestCreateComment(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
-		var ic IssueComment
+		var ic scallywag.IssueComment
 		if err := json.Unmarshal(b, &ic); err != nil {
 			t.Errorf("Could not unmarshal request: %v", err)
 		} else if ic.Body != "hello" {
@@ -275,8 +276,8 @@ func TestGetPullRequest(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/pulls/12" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		pr := PullRequest{
-			User: User{Login: "bla"},
+		pr := scallywag.PullRequest{
+			User: scallywag.User{Login: "bla"},
 		}
 		b, err := json.Marshal(&pr)
 		if err != nil {
@@ -302,7 +303,7 @@ func TestGetPullRequestChanges(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/pulls/12/files" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		changes := []PullRequestChange{
+		changes := []scallywag.PullRequestChange{
 			{Filename: "foo.txt"},
 		}
 		b, err := json.Marshal(&changes)
@@ -397,7 +398,7 @@ func TestCreateStatus(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
-		var s Status
+		var s scallywag.Status
 		if err := json.Unmarshal(b, &s); err != nil {
 			t.Errorf("Could not unmarshal request: %v", err)
 		} else if s.Context != "c" {
@@ -407,7 +408,7 @@ func TestCreateStatus(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	if err := c.CreateStatus("k8s", "kuber", "abcdef", Status{
+	if err := c.CreateStatus("k8s", "kuber", "abcdef", scallywag.Status{
 		Context: "c",
 	}); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
@@ -420,7 +421,7 @@ func TestListIssueComments(t *testing.T) {
 			t.Errorf("Bad method: %s", r.Method)
 		}
 		if r.URL.Path == "/repos/k8s/kuber/issues/15/comments" {
-			ics := []IssueComment{{ID: 1}}
+			ics := []scallywag.IssueComment{{ID: 1}}
 			b, err := json.Marshal(ics)
 			if err != nil {
 				t.Fatalf("Didn't expect error: %v", err)
@@ -428,7 +429,7 @@ func TestListIssueComments(t *testing.T) {
 			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/someotherpath>; rel="next"`, r.Host))
 			fmt.Fprint(w, string(b))
 		} else if r.URL.Path == "/someotherpath" {
-			ics := []IssueComment{{ID: 2}}
+			ics := []scallywag.IssueComment{{ID: 2}}
 			b, err := json.Marshal(ics)
 			if err != nil {
 				t.Fatalf("Didn't expect error: %v", err)
@@ -556,8 +557,8 @@ func TestAssignIssue(t *testing.T) {
 			t.Errorf("Wrong assignees length: %v", ps)
 		}
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(Issue{
-			Assignees: []User{{Login: "george"}, {Login: "jungle"}, {Login: "ignore-other"}},
+		json.NewEncoder(w).Encode(scallywag.Issue{
+			Assignees: []scallywag.User{{Login: "george"}, {Login: "jungle"}, {Login: "ignore-other"}},
 		})
 	}))
 	defer ts.Close()
@@ -567,7 +568,7 @@ func TestAssignIssue(t *testing.T) {
 	}
 	if err := c.AssignIssue("k8s", "kuber", 5, []string{"george", "jungle", "not-in-the-org"}); err == nil {
 		t.Errorf("Expected an error")
-	} else if merr, ok := err.(MissingUsers); ok {
+	} else if merr, ok := err.(scallywag.MissingUsers); ok {
 		if len(merr.Users) != 1 || merr.Users[0] != "not-in-the-org" {
 			t.Errorf("Expected [not-in-the-org], not %v", merr.Users)
 		}
@@ -605,8 +606,8 @@ func TestUnassignIssue(t *testing.T) {
 		} else {
 			t.Errorf("Wrong assignees length: %v", ps)
 		}
-		json.NewEncoder(w).Encode(Issue{
-			Assignees: []User{{Login: "perma-assignee"}, {Login: "ignore-other"}},
+		json.NewEncoder(w).Encode(scallywag.Issue{
+			Assignees: []scallywag.User{{Login: "perma-assignee"}, {Login: "ignore-other"}},
 		})
 	}))
 	defer ts.Close()
@@ -631,7 +632,7 @@ func TestReadPaginatedResults(t *testing.T) {
 			t.Errorf("Bad method: %s", r.Method)
 		}
 		if r.URL.Path == "/label/foo" {
-			objects := []Label{{Name: "foo"}}
+			objects := []scallywag.Label{{Name: "foo"}}
 			b, err := json.Marshal(objects)
 			if err != nil {
 				t.Fatalf("Didn't expect error: %v", err)
@@ -639,7 +640,7 @@ func TestReadPaginatedResults(t *testing.T) {
 			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/label/bar>; rel="next"`, r.Host))
 			fmt.Fprint(w, string(b))
 		} else if r.URL.Path == "/label/bar" {
-			objects := []Label{{Name: "bar"}}
+			objects := []scallywag.Label{{Name: "bar"}}
 			b, err := json.Marshal(objects)
 			if err != nil {
 				t.Fatalf("Didn't expect error: %v", err)
@@ -652,15 +653,15 @@ func TestReadPaginatedResults(t *testing.T) {
 	defer ts.Close()
 	c := getClient(ts.URL)
 	path := "/label/foo"
-	var labels []Label
+	var labels []scallywag.Label
 	err := c.readPaginatedResults(
 		path,
 		"",
 		func() interface{} {
-			return &[]Label{}
+			return &[]scallywag.Label{}
 		},
 		func(obj interface{}) {
-			labels = append(labels, *(obj.(*[]Label))...)
+			labels = append(labels, *(obj.(*[]scallywag.Label))...)
 		},
 	)
 	if err != nil {
@@ -678,7 +679,7 @@ func TestListPullRequestComments(t *testing.T) {
 			t.Errorf("Bad method: %s", r.Method)
 		}
 		if r.URL.Path == "/repos/k8s/kuber/pulls/15/comments" {
-			prcs := []ReviewComment{{ID: 1}}
+			prcs := []scallywag.ReviewComment{{ID: 1}}
 			b, err := json.Marshal(prcs)
 			if err != nil {
 				t.Fatalf("Didn't expect error: %v", err)
@@ -686,7 +687,7 @@ func TestListPullRequestComments(t *testing.T) {
 			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/someotherpath>; rel="next"`, r.Host))
 			fmt.Fprint(w, string(b))
 		} else if r.URL.Path == "/someotherpath" {
-			prcs := []ReviewComment{{ID: 2}}
+			prcs := []scallywag.ReviewComment{{ID: 2}}
 			b, err := json.Marshal(prcs)
 			if err != nil {
 				t.Fatalf("Didn't expect error: %v", err)
@@ -714,7 +715,7 @@ func TestListReviews(t *testing.T) {
 			t.Errorf("Bad method: %s", r.Method)
 		}
 		if r.URL.Path == "/repos/k8s/kuber/pulls/15/reviews" {
-			reviews := []Review{{ID: 1}}
+			reviews := []scallywag.Review{{ID: 1}}
 			b, err := json.Marshal(reviews)
 			if err != nil {
 				t.Fatalf("Didn't expect error: %v", err)
@@ -722,7 +723,7 @@ func TestListReviews(t *testing.T) {
 			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/someotherpath>; rel="next"`, r.Host))
 			fmt.Fprint(w, string(b))
 		} else if r.URL.Path == "/someotherpath" {
-			reviews := []Review{{ID: 2}}
+			reviews := []scallywag.Review{{ID: 2}}
 			b, err := json.Marshal(reviews)
 			if err != nil {
 				t.Fatalf("Didn't expect error: %v", err)
@@ -817,14 +818,14 @@ func TestRequestReview(t *testing.T) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			return
 		}
-		requestedReviewers := []User{}
+		requestedReviewers := []scallywag.User{}
 		for _, reviewers := range ps {
 			for _, reviewer := range reviewers {
-				requestedReviewers = append(requestedReviewers, User{Login: reviewer})
+				requestedReviewers = append(requestedReviewers, scallywag.User{Login: reviewer})
 			}
 		}
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(PullRequest{
+		json.NewEncoder(w).Encode(scallywag.PullRequest{
 			RequestedReviewers: requestedReviewers,
 		})
 	}))
@@ -838,7 +839,7 @@ func TestRequestReview(t *testing.T) {
 	}
 	if err := c.RequestReview("k8s", "kuber", 5, []string{"george", "jungle", "not-a-collaborator"}); err == nil {
 		t.Errorf("Expected an error")
-	} else if merr, ok := err.(MissingUsers); ok {
+	} else if merr, ok := err.(scallywag.MissingUsers); ok {
 		if len(merr.Users) != 1 || merr.Users[0] != "not-a-collaborator" {
 			t.Errorf("Expected [not-a-collaborator], not %v", merr.Users)
 		}
@@ -847,7 +848,7 @@ func TestRequestReview(t *testing.T) {
 	}
 	if err := c.RequestReview("k8s", "kuber", 5, []string{"george", "jungle", "notk8s/team1"}); err == nil {
 		t.Errorf("Expected an error")
-	} else if merr, ok := err.(MissingUsers); ok {
+	} else if merr, ok := err.(scallywag.MissingUsers); ok {
 		if len(merr.Users) != 1 || merr.Users[0] != "notk8s/team1" {
 			t.Errorf("Expected [notk8s/team1], not %v", merr.Users)
 		}
@@ -884,8 +885,8 @@ func TestUnrequestReview(t *testing.T) {
 		} else {
 			t.Errorf("Wrong reviewers length: %v", ps)
 		}
-		json.NewEncoder(w).Encode(PullRequest{
-			RequestedReviewers: []User{{Login: "perma-reviewer"}, {Login: "ignore-other"}},
+		json.NewEncoder(w).Encode(scallywag.PullRequest{
+			RequestedReviewers: []scallywag.User{{Login: "perma-reviewer"}, {Login: "ignore-other"}},
 		})
 	}))
 	defer ts.Close()
@@ -1044,9 +1045,9 @@ func TestFindIssues(t *testing.T) {
 		if r.URL.Path != "/search/issues" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		issueList := IssuesSearchResult{
+		issueList := scallywag.IssuesSearchResult{
 			Total: 1,
-			Issues: []Issue{
+			Issues: []scallywag.Issue{
 				{
 					Number: issueNum,
 					Title:  r.URL.RawQuery,
@@ -1063,7 +1064,7 @@ func TestFindIssues(t *testing.T) {
 	c := getClient(ts.URL)
 
 	for _, tc := range cases {
-		var result []Issue
+		var result []scallywag.Issue
 		var err error
 		sort := ""
 		if tc.sort {
@@ -1098,7 +1099,7 @@ func TestGetFile(t *testing.T) {
 		if r.URL.RawQuery != "" {
 			t.Errorf("Bad request query: %s", r.URL.RawQuery)
 		}
-		c := &Content{
+		c := &scallywag.Content{
 			Content: base64.StdEncoding.EncodeToString([]byte("abcde")),
 		}
 		b, err := json.Marshal(&c)
@@ -1127,7 +1128,7 @@ func TestGetFileRef(t *testing.T) {
 		if r.URL.RawQuery != "ref=12345" {
 			t.Errorf("Bad request query: %s", r.URL.RawQuery)
 		}
-		c := &Content{
+		c := &scallywag.Content{
 			Content: base64.StdEncoding.EncodeToString([]byte("abcde")),
 		}
 		b, err := json.Marshal(&c)
@@ -1151,16 +1152,16 @@ func TestGetLabels(t *testing.T) {
 		if r.Method != http.MethodGet {
 			t.Errorf("Bad method: %s", r.Method)
 		}
-		var labels []Label
+		var labels []scallywag.Label
 		switch r.URL.Path {
 		case "/repos/k8s/kuber/issues/5/labels":
-			labels = []Label{{Name: "issue-label"}}
+			labels = []scallywag.Label{{Name: "issue-label"}}
 			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/someotherpath>; rel="next"`, r.Host))
 		case "/repos/k8s/kuber/labels":
-			labels = []Label{{Name: "repo-label"}}
+			labels = []scallywag.Label{{Name: "repo-label"}}
 			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/someotherpath>; rel="next"`, r.Host))
 		case "/someotherpath":
-			labels = []Label{{Name: "label2"}}
+			labels = []scallywag.Label{{Name: "label2"}}
 		default:
 			t.Errorf("Bad request path: %s", r.URL.Path)
 			return
@@ -1207,7 +1208,7 @@ func simpleTestServer(t *testing.T, path string, v interface{}) *httptest.Server
 }
 
 func TestListTeams(t *testing.T) {
-	ts := simpleTestServer(t, "/orgs/foo/teams", []Team{{ID: 1}})
+	ts := simpleTestServer(t, "/orgs/foo/teams", []scallywag.Team{{ID: 1}})
 	defer ts.Close()
 	c := getClient(ts.URL)
 	teams, err := c.ListTeams("foo")
@@ -1232,7 +1233,7 @@ func TestCreateTeam(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
-		var team Team
+		var team scallywag.Team
 		switch err := json.Unmarshal(b, &team); {
 		case err != nil:
 			t.Errorf("Could not unmarshal request: %v", err)
@@ -1253,10 +1254,10 @@ func TestCreateTeam(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	if _, err := c.CreateTeam("foo", Team{Name: ""}); err == nil {
+	if _, err := c.CreateTeam("foo", scallywag.Team{Name: ""}); err == nil {
 		t.Errorf("client should reject empty name")
 	}
-	switch team, err := c.CreateTeam("foo", Team{Name: "frobber"}); {
+	switch team, err := c.CreateTeam("foo", scallywag.Team{Name: "frobber"}); {
 	case err != nil:
 		t.Errorf("unexpected error: %v", err)
 	case team.Name != "hello":
@@ -1280,7 +1281,7 @@ func TestEditTeam(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
-		var team Team
+		var team scallywag.Team
 		switch err := json.Unmarshal(b, &team); {
 		case err != nil:
 			t.Errorf("Could not unmarshal request: %v", err)
@@ -1299,10 +1300,10 @@ func TestEditTeam(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	if _, err := c.EditTeam(Team{ID: 0, Name: "frobber"}); err == nil {
+	if _, err := c.EditTeam(scallywag.Team{ID: 0, Name: "frobber"}); err == nil {
 		t.Errorf("client should reject id 0")
 	}
-	switch team, err := c.EditTeam(Team{ID: 63, Name: "frobber"}); {
+	switch team, err := c.EditTeam(scallywag.Team{ID: 63, Name: "frobber"}); {
 	case err != nil:
 		t.Errorf("unexpected error: %v", err)
 	case team.Name != "hello":
@@ -1315,10 +1316,10 @@ func TestEditTeam(t *testing.T) {
 }
 
 func TestListTeamMembers(t *testing.T) {
-	ts := simpleTestServer(t, "/teams/1/members", []TeamMember{{Login: "foo"}})
+	ts := simpleTestServer(t, "/teams/1/members", []scallywag.TeamMember{{Login: "foo"}})
 	defer ts.Close()
 	c := getClient(ts.URL)
-	teamMembers, err := c.ListTeamMembers(1, RoleAll)
+	teamMembers, err := c.ListTeamMembers(1, scallywag.RoleAll)
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	} else if len(teamMembers) != 1 {
@@ -1349,7 +1350,7 @@ func TestIsCollaborator(t *testing.T) {
 }
 
 func TestListCollaborators(t *testing.T) {
-	ts := simpleTestServer(t, "/repos/org/repo/collaborators", []User{{Login: "foo"}, {Login: "bar"}})
+	ts := simpleTestServer(t, "/repos/org/repo/collaborators", []scallywag.User{{Login: "foo"}, {Login: "bar"}})
 	defer ts.Close()
 	c := getClient(ts.URL)
 	users, err := c.ListCollaborators("org", "repo")
@@ -1371,9 +1372,9 @@ func TestListIssueEvents(t *testing.T) {
 	ts := simpleTestServer(
 		t,
 		"/repos/org/repo/issues/1/events",
-		[]ListedIssueEvent{
-			{Event: IssueActionLabeled},
-			{Event: IssueActionClosed},
+		[]scallywag.ListedIssueEvent{
+			{Event: scallywag.IssueActionLabeled},
+			{Event: scallywag.IssueActionClosed},
 		},
 	)
 	defer ts.Close()
@@ -1385,10 +1386,10 @@ func TestListIssueEvents(t *testing.T) {
 		t.Errorf("Expected two events, found %d: %v", len(events), events)
 		return
 	}
-	if events[0].Event != IssueActionLabeled {
+	if events[0].Event != scallywag.IssueActionLabeled {
 		t.Errorf("Wrong event for index 0: %v", events[0])
 	}
-	if events[1].Event != IssueActionClosed {
+	if events[1].Event != scallywag.IssueActionClosed {
 		t.Errorf("Wrong event for index 1: %v", events[1])
 	}
 }
@@ -1396,14 +1397,14 @@ func TestListIssueEvents(t *testing.T) {
 func TestThrottle(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/repos/org/repo/issues/1/events" {
-			b, err := json.Marshal([]ListedIssueEvent{{Event: IssueActionClosed}})
+			b, err := json.Marshal([]scallywag.ListedIssueEvent{{Event: scallywag.IssueActionClosed}})
 			if err != nil {
 				t.Fatalf("Didn't expect error: %v", err)
 			}
 			fmt.Fprint(w, string(b))
 		} else if r.URL.Path == "/repos/org/repo/issues/2/events" {
 			w.Header().Set(ghcache.CacheModeHeader, string(ghcache.ModeRevalidated))
-			b, err := json.Marshal([]ListedIssueEvent{{Event: IssueActionOpened}})
+			b, err := json.Marshal([]scallywag.ListedIssueEvent{{Event: scallywag.IssueActionOpened}})
 			if err != nil {
 				t.Fatalf("Didn't expect error: %v", err)
 			}
@@ -1423,7 +1424,7 @@ func TestThrottle(t *testing.T) {
 	if cap(c.throttle.throttle) != 2 {
 		t.Fatalf("Expected throttle channel capacity of two, found %d", cap(c.throttle.throttle))
 	}
-	check := func(events []ListedIssueEvent, err error, expectedAction IssueEventAction) {
+	check := func(events []scallywag.ListedIssueEvent, err error, expectedAction scallywag.IssueEventAction) {
 		if err != nil {
 			t.Errorf("Unexpected error: %v", err)
 		}
@@ -1435,12 +1436,12 @@ func TestThrottle(t *testing.T) {
 		}
 	}
 	events, err := c.ListIssueEvents("org", "repo", 1)
-	check(events, err, IssueActionClosed)
+	check(events, err, scallywag.IssueActionClosed)
 	// The following 2 calls should be refunded.
 	events, err = c.ListIssueEvents("org", "repo", 2)
-	check(events, err, IssueActionOpened)
+	check(events, err, scallywag.IssueActionOpened)
 	events, err = c.ListIssueEvents("org", "repo", 2)
-	check(events, err, IssueActionOpened)
+	check(events, err, scallywag.IssueActionOpened)
 
 	// Check that calls are delayed while throttled.
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -1475,7 +1476,7 @@ func TestThrottle(t *testing.T) {
 }
 
 func TestGetBranches(t *testing.T) {
-	ts := simpleTestServer(t, "/repos/org/repo/branches", []Branch{
+	ts := simpleTestServer(t, "/repos/org/repo/branches", []scallywag.Branch{
 		{Name: "master", Protected: false},
 		{Name: "release-3.7", Protected: true},
 	})
@@ -1543,7 +1544,7 @@ func TestUpdateBranchProtection(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Could not read request body: %v", err)
 			}
-			var bpr BranchProtectionRequest
+			var bpr scallywag.BranchProtectionRequest
 			if err := json.Unmarshal(b, &bpr); err != nil {
 				t.Errorf("Could not unmarshal request: %v", err)
 			}
@@ -1587,11 +1588,11 @@ func TestUpdateBranchProtection(t *testing.T) {
 		defer ts.Close()
 		c := getClient(ts.URL)
 
-		err := c.UpdateBranchProtection("org", "repo", "master", BranchProtectionRequest{
-			RequiredStatusChecks: &RequiredStatusChecks{
+		err := c.UpdateBranchProtection("org", "repo", "master", scallywag.BranchProtectionRequest{
+			RequiredStatusChecks: &scallywag.RequiredStatusChecks{
 				Contexts: tc.contexts,
 			},
-			Restrictions: &Restrictions{
+			Restrictions: &scallywag.Restrictions{
 				Teams: &tc.pushers,
 			},
 		})
@@ -1616,7 +1617,7 @@ func TestClearMilestone(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
-		var issue Issue
+		var issue scallywag.Issue
 		if err := json.Unmarshal(b, &issue); err != nil {
 			t.Errorf("Could not unmarshal request: %v", err)
 		} else if issue.Milestone.Title != "" {
@@ -1681,7 +1682,7 @@ func TestListMilestones(t *testing.T) {
 
 func TestListPRCommits(t *testing.T) {
 	ts := simpleTestServer(t, "/repos/theorg/therepo/pulls/3/commits",
-		[]RepositoryCommit{
+		[]scallywag.RepositoryCommit{
 			{SHA: "sha"},
 			{SHA: "sha2"},
 		})
@@ -1702,9 +1703,9 @@ func TestCombinedStatus(t *testing.T) {
 			t.Errorf("Bad method: %s", r.Method)
 		}
 		if r.URL.Path == "/repos/k8s/kuber/commits/SHA/status" {
-			statuses := CombinedStatus{
+			statuses := scallywag.CombinedStatus{
 				SHA:      "SHA",
-				Statuses: []Status{{Context: "foo"}},
+				Statuses: []scallywag.Status{{Context: "foo"}},
 			}
 			b, err := json.Marshal(statuses)
 			if err != nil {
@@ -1713,9 +1714,9 @@ func TestCombinedStatus(t *testing.T) {
 			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/someotherpath>; rel="next"`, r.Host))
 			fmt.Fprint(w, string(b))
 		} else if r.URL.Path == "/someotherpath" {
-			statuses := CombinedStatus{
+			statuses := scallywag.CombinedStatus{
 				SHA:      "SHA",
-				Statuses: []Status{{Context: "bar"}},
+				Statuses: []scallywag.Status{{Context: "bar"}},
 			}
 			b, err := json.Marshal(statuses)
 			if err != nil {
@@ -1737,5 +1738,60 @@ func TestCombinedStatus(t *testing.T) {
 		t.Errorf("Expected two statuses, found %d: %v", len(combined.Statuses), combined.Statuses)
 	} else if combined.Statuses[0].Context != "foo" || combined.Statuses[1].Context != "bar" {
 		t.Errorf("Wrong review IDs: %v", combined.Statuses)
+	}
+}
+
+func TestUnmarshalClientError(t *testing.T) {
+	var testcases = []struct {
+		name string
+		body string
+	}{
+		{
+			name: "invalid JSON",
+			body: `{"message":"Problems parsing JSON"}`,
+		},
+		{
+			name: "wrong type of JSON values",
+			body: `{"message":"Body should be a JSON object"}`,
+		},
+		{
+			name: "invalid fields",
+			body: `{
+				"message": "Validation Failed",
+				"errors": [
+				  {
+					"resource": "Issue",
+					"field": "title",
+					"code": "missing_field"
+				  }
+				]
+			  }`,
+		},
+		{
+			name: "requires authentication",
+			body: `{
+				"message": "Requires authentication",
+				"documentation_url": "https://developer.github.com/v3"
+			  }`,
+		},
+		{
+			name: "validation failed, position is invalid",
+			body: `{
+				"message": "Validation Failed",
+				"errors": [
+				  "Position is invalid"
+				],
+				"documentation_url": "https://developer.github.com/v3/pulls/reviews/#create-a-pull-request-review"
+			  }`,
+		},
+	}
+	for _, tc := range testcases {
+		b := []byte(tc.body)
+		err := unmarshalClientError(b)
+		_, isClientError := err.(scallywag.ClientError)
+		_, isAlternativeClientError := err.(scallywag.AlternativeClientError)
+		if !(isClientError || isAlternativeClientError) {
+			t.Errorf("For case %s, json.Unmarshal error: %v", tc.name, err)
+		}
 	}
 }

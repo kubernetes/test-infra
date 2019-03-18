@@ -23,14 +23,14 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type fakePruner struct{}
 
-func (fp *fakePruner) PruneComments(shouldPrune func(github.IssueComment) bool) {}
+func (fp *fakePruner) PruneComments(shouldPrune func(scallywag.IssueComment) bool) {}
 
 func formatLabels(labels ...string) []string {
 	r := []string{}
@@ -48,7 +48,7 @@ func TestLabel(t *testing.T) {
 		name                  string
 		isPR                  bool
 		issueState            string
-		action                github.GenericCommentEventAction
+		action                scallywag.GenericCommentEventAction
 		body                  string
 		expectedNewLabels     []string
 		expectedRemovedLabels []string
@@ -80,7 +80,7 @@ func TestLabel(t *testing.T) {
 		},
 		{
 			name:                  "Ignore a non-created comment",
-			action:                github.GenericCommentActionEdited,
+			action:                scallywag.GenericCommentActionEdited,
 			body:                  "/help",
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
@@ -175,8 +175,8 @@ func TestLabel(t *testing.T) {
 	for _, tc := range testcases {
 		sort.Strings(tc.expectedNewLabels)
 		fakeClient := &fakegithub.FakeClient{
-			Issues:             make([]github.Issue, 1),
-			IssueComments:      make(map[int][]github.IssueComment),
+			Issues:             make([]scallywag.Issue, 1),
+			IssueComments:      make(map[int][]scallywag.IssueComment),
 			RepoLabelsExisting: []string{labels.Help, labels.GoodFirstIssue},
 			IssueLabelsAdded:   []string{},
 			IssueLabelsRemoved: []string{},
@@ -190,17 +190,17 @@ func TestLabel(t *testing.T) {
 			tc.issueState = "open"
 		}
 		if len(tc.action) == 0 {
-			tc.action = github.GenericCommentActionCreated
+			tc.action = scallywag.GenericCommentActionCreated
 		}
 
-		e := &github.GenericCommentEvent{
+		e := &scallywag.GenericCommentEvent{
 			IsPR:       tc.isPR,
 			IssueState: tc.issueState,
 			Action:     tc.action,
 			Body:       tc.body,
 			Number:     1,
-			Repo:       github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
-			User:       github.User{Login: "Alice"},
+			Repo:       scallywag.Repo{Owner: scallywag.User{Login: "org"}, Name: "repo"},
+			User:       scallywag.User{Login: "Alice"},
 		}
 		err := handle(fakeClient, logrus.WithField("plugin", pluginName), &fakePruner{}, e)
 		if err != nil {

@@ -30,6 +30,7 @@ import (
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -42,7 +43,7 @@ var (
 	labelCancelRe = regexp.MustCompile(`(?mi)^/hold cancel\s*$`)
 )
 
-type hasLabelFunc func(label string, issueLabels []github.Label) bool
+type hasLabelFunc func(label string, issueLabels []scallywag.Label) bool
 
 func init() {
 	plugins.RegisterGenericCommentHandler(PluginName, handleGenericComment, helpProvider)
@@ -66,11 +67,11 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 type githubClient interface {
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
-	hasLabel := func(label string, labels []github.Label) bool {
+func handleGenericComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
+	hasLabel := func(label string, labels []scallywag.Label) bool {
 		return github.HasLabel(label, labels)
 	}
 	return handle(pc.GitHubClient, pc.Logger, &e, hasLabel)
@@ -79,8 +80,8 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 // handle drives the pull request to the desired state. If any user adds
 // a /hold directive, we want to add a label if one does not already exist.
 // If they add /hold cancel, we want to remove the label if it exists.
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, f hasLabelFunc) error {
-	if e.Action != github.GenericCommentActionCreated {
+func handle(gc githubClient, log *logrus.Entry, e *scallywag.GenericCommentEvent, f hasLabelFunc) error {
+	if e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 	needsLabel := false

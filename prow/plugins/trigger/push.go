@@ -19,11 +19,11 @@ package trigger
 import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
-func listPushEventChanges(pe github.PushEvent) config.ChangedFilesProvider {
+func listPushEventChanges(pe scallywag.PushEvent) config.ChangedFilesProvider {
 	return func() ([]string, error) {
 		changed := make(map[string]bool)
 		for _, commit := range pe.Commits {
@@ -45,7 +45,7 @@ func listPushEventChanges(pe github.PushEvent) config.ChangedFilesProvider {
 	}
 }
 
-func createRefs(pe github.PushEvent) prowapi.Refs {
+func createRefs(pe scallywag.PushEvent) prowapi.Refs {
 	return prowapi.Refs{
 		Org:      pe.Repo.Owner.Name,
 		Repo:     pe.Repo.Name,
@@ -55,7 +55,7 @@ func createRefs(pe github.PushEvent) prowapi.Refs {
 	}
 }
 
-func handlePE(c Client, pe github.PushEvent) error {
+func handlePE(c Client, pe scallywag.PushEvent) error {
 	if pe.Deleted {
 		// we should not trigger jobs for a branch deletion
 		return nil
@@ -71,7 +71,7 @@ func handlePE(c Client, pe github.PushEvent) error {
 		for k, v := range j.Labels {
 			labels[k] = v
 		}
-		labels[github.EventGUID] = pe.GUID
+		labels[scallywag.EventGUID] = pe.GUID
 		pj := pjutil.NewProwJob(pjutil.PostsubmitSpec(j, refs), labels)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
 		if _, err := c.ProwJobClient.Create(&pj); err != nil {

@@ -98,7 +98,7 @@ func TestUpdateIssues(t *testing.T) {
 
 	tests := []struct {
 		before     []sql.Issue
-		new        []*github.Issue
+		new        []*scallywag.Issue
 		after      []sql.Issue
 		repository string
 	}{
@@ -111,7 +111,7 @@ func TestUpdateIssues(t *testing.T) {
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
-			new: []*github.Issue{},
+			new: []*scallywag.Issue{},
 			after: []sql.Issue{
 				*makeIssue(1, "Title", "", "State", "User", "", "full/repo",
 					0, false,
@@ -130,7 +130,7 @@ func TestUpdateIssues(t *testing.T) {
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
-			new: []*github.Issue{
+			new: []*scallywag.Issue{
 				makeGitHubIssue(2, "Super Title", "Body", "NoState", "Login", "", 0, false,
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -164,7 +164,7 @@ func TestUpdateIssues(t *testing.T) {
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
-			new: []*github.Issue{
+			new: []*scallywag.Issue{
 				makeGitHubIssue(2, "Super Title", "Body", "NoState", "Login", "",
 					0, false,
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -203,7 +203,7 @@ func TestUpdateIssues(t *testing.T) {
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
 			},
-			new: []*github.Issue{
+			new: []*scallywag.Issue{
 				makeGitHubIssue(1, "Super Title", "Body", "NoState", "Login", "",
 					0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),

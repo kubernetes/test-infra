@@ -23,11 +23,11 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type fakeGHClient struct {
-	comments        []github.IssueComment
+	comments        []scallywag.IssueComment
 	deletedComments []int
 	listCallCount   int
 }
@@ -36,7 +36,7 @@ func (f *fakeGHClient) BotName() (string, error) {
 	return "k8s-ci-robot", nil
 }
 
-func (f *fakeGHClient) ListIssueComments(_, _ string, _ int) ([]github.IssueComment, error) {
+func (f *fakeGHClient) ListIssueComments(_, _ string, _ int) ([]scallywag.IssueComment, error) {
 	f.listCallCount++
 	return f.comments, nil
 }
@@ -47,9 +47,9 @@ func (f *fakeGHClient) DeleteComment(_, _ string, ID int) error {
 }
 
 func newFakeGHClient(commentsToLogins map[int]string) *fakeGHClient {
-	comments := make([]github.IssueComment, 0, len(commentsToLogins))
+	comments := make([]scallywag.IssueComment, 0, len(commentsToLogins))
 	for num, login := range commentsToLogins {
-		comments = append(comments, github.IssueComment{ID: num, User: github.User{Login: login}})
+		comments = append(comments, scallywag.IssueComment{ID: num, User: scallywag.User{Login: login}})
 	}
 	return &fakeGHClient{
 		comments:        comments,
@@ -57,8 +57,8 @@ func newFakeGHClient(commentsToLogins map[int]string) *fakeGHClient {
 	}
 }
 
-func testPruneFunc(errorComments *[]int, toPrunes, toErrs []int) func(github.IssueComment) bool {
-	return func(ic github.IssueComment) bool {
+func testPruneFunc(errorComments *[]int, toPrunes, toErrs []int) func(scallywag.IssueComment) bool {
+	return func(ic scallywag.IssueComment) bool {
 		for _, toErr := range toErrs {
 			if ic.ID == toErr {
 				*errorComments = append(*errorComments, ic.ID)
@@ -82,25 +82,25 @@ func TestPruneComments(t *testing.T) {
 	tcs := []struct {
 		name            string
 		comments        map[int]string
-		callers         []func(github.IssueComment) bool
+		callers         []func(scallywag.IssueComment) bool
 		expectedDeleted []int
 	}{
 		{
 			name:            "One caller, multiple deletions.",
 			comments:        map[int]string{1: botLogin, 2: botLogin, 3: botLogin},
-			callers:         []func(github.IssueComment) bool{testPruneFunc(errs, []int{1, 2}, nil)},
+			callers:         []func(scallywag.IssueComment) bool{testPruneFunc(errs, []int{1, 2}, nil)},
 			expectedDeleted: []int{1, 2},
 		},
 		{
 			name:            "One caller, no deletions.",
 			comments:        map[int]string{3: botLogin},
-			callers:         []func(github.IssueComment) bool{testPruneFunc(errs, []int{1, 2}, nil)},
+			callers:         []func(scallywag.IssueComment) bool{testPruneFunc(errs, []int{1, 2}, nil)},
 			expectedDeleted: []int{},
 		},
 		{
 			name:     "Two callers.",
 			comments: map[int]string{1: botLogin, 2: botLogin, 3: botLogin, 4: botLogin, 5: botLogin},
-			callers: []func(github.IssueComment) bool{
+			callers: []func(scallywag.IssueComment) bool{
 				testPruneFunc(errs, []int{1, 2}, nil),
 				testPruneFunc(errs, []int{4}, []int{1, 2}),
 			},
@@ -109,7 +109,7 @@ func TestPruneComments(t *testing.T) {
 		{
 			name:     "Three callers. Some Human messages",
 			comments: map[int]string{1: humanLogin, 2: botLogin, 3: botLogin, 4: botLogin, 5: botLogin, 6: humanLogin, 7: botLogin},
-			callers: []func(github.IssueComment) bool{
+			callers: []func(scallywag.IssueComment) bool{
 				testPruneFunc(errs, []int{2, 3}, []int{1, 6}),
 				testPruneFunc(errs, []int{5}, []int{1, 2, 3, 6}),
 				testPruneFunc(errs, []int{4}, []int{1, 2, 3, 5, 6}),

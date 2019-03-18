@@ -21,7 +21,8 @@ import (
 	"regexp"
 	"strings"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
+
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -86,7 +87,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		nil
 }
 
-func handleComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
 	c := client{
 		GitHubClient: pc.GitHubClient,
 		SlackConfig:  pc.PluginConfig.Slack,
@@ -95,7 +96,7 @@ func handleComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	return echoToSlack(c, e)
 }
 
-func handlePush(pc plugins.Agent, pe github.PushEvent) error {
+func handlePush(pc plugins.Agent, pe scallywag.PushEvent) error {
 	c := client{
 		GitHubClient: pc.GitHubClient,
 		SlackConfig:  pc.PluginConfig.Slack,
@@ -104,7 +105,7 @@ func handlePush(pc plugins.Agent, pe github.PushEvent) error {
 	return notifyOnSlackIfManualMerge(c, pe)
 }
 
-func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
+func notifyOnSlackIfManualMerge(pc client, pe scallywag.PushEvent) error {
 	//Fetch MergeWarning for the repo we received the merge event.
 	if mw := getMergeWarning(pc.SlackConfig.MergeWarnings, pe.Repo.Owner.Login, pe.Repo.Name); mw != nil {
 		//If the MergeWarning whitelist has the merge user then no need to send a message.
@@ -130,7 +131,7 @@ func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 	return nil
 }
 
-func isWhiteListed(mw *plugins.MergeWarning, pe github.PushEvent) bool {
+func isWhiteListed(mw *plugins.MergeWarning, pe scallywag.PushEvent) bool {
 	bwl := mw.BranchWhiteList[pe.Branch()]
 	inWhiteList := stringInArray(pe.Pusher.Name, mw.WhiteList) || stringInArray(pe.Sender.Login, mw.WhiteList)
 	inBranchWhiteList := stringInArray(pe.Pusher.Name, bwl) || stringInArray(pe.Sender.Login, bwl)
@@ -155,7 +156,7 @@ func stringInArray(str string, list []string) bool {
 	return false
 }
 
-func echoToSlack(pc client, e github.GenericCommentEvent) error {
+func echoToSlack(pc client, e scallywag.GenericCommentEvent) error {
 	// Ignore bot comments and comments that aren't new.
 	botName, err := pc.GitHubClient.BotName()
 	if err != nil {
@@ -164,7 +165,7 @@ func echoToSlack(pc client, e github.GenericCommentEvent) error {
 	if e.User.Login == botName {
 		return nil
 	}
-	if e.Action != github.GenericCommentActionCreated {
+	if e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 

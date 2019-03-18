@@ -25,9 +25,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const pluginName = "milestonestatus"
@@ -46,7 +46,7 @@ var (
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
-	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
+	ListTeamMembers(id int, role string) ([]scallywag.TeamMember, error)
 }
 
 func init() {
@@ -82,12 +82,12 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	return pluginHelp, nil
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.RepoMilestone)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, repoMilestone map[string]plugins.Milestone) error {
-	if e.Action != github.GenericCommentActionCreated {
+func handle(gc githubClient, log *logrus.Entry, e *scallywag.GenericCommentEvent, repoMilestone map[string]plugins.Milestone) error {
+	if e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 
@@ -105,7 +105,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 		milestone = repoMilestone[""]
 	}
 
-	milestoneMaintainers, err := gc.ListTeamMembers(milestone.MaintainersID, github.RoleAll)
+	milestoneMaintainers, err := gc.ListTeamMembers(milestone.MaintainersID, scallywag.RoleAll)
 	if err != nil {
 		return err
 	}

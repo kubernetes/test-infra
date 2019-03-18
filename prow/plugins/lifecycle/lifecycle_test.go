@@ -22,8 +22,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type fakeClient struct {
@@ -55,10 +55,10 @@ func (c *fakeClient) RemoveLabel(owner, repo string, number int, label string) e
 	return nil
 }
 
-func (c *fakeClient) GetIssueLabels(owner, repo string, number int) ([]github.Label, error) {
-	la := []github.Label{}
+func (c *fakeClient) GetIssueLabels(owner, repo string, number int) ([]scallywag.Label, error) {
+	la := []scallywag.Label{}
 	for _, l := range c.labels {
-		la = append(la, github.Label{Name: l})
+		la = append(la, scallywag.Label{Name: l})
 	}
 	return la, nil
 }
@@ -211,9 +211,9 @@ func TestAddLifecycleLabels(t *testing.T) {
 			added:   []string{},
 			removed: []string{},
 		}
-		e := &github.GenericCommentEvent{
+		e := &scallywag.GenericCommentEvent{
 			Body:   tc.body,
-			Action: github.GenericCommentActionCreated,
+			Action: scallywag.GenericCommentActionCreated,
 		}
 		err := handle(fc, logrus.WithField("plugin", "fake-lifecyle"), e)
 		switch {

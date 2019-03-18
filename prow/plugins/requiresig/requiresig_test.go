@@ -21,9 +21,9 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -37,12 +37,12 @@ const (
 
 type fakePruner struct{}
 
-func (fp *fakePruner) PruneComments(shouldPrune func(github.IssueComment) bool) {}
+func (fp *fakePruner) PruneComments(shouldPrune func(scallywag.IssueComment) bool) {}
 
 func TestHandle(t *testing.T) {
 	tests := []struct {
 		name           string
-		action         github.IssueEventAction
+		action         scallywag.IssueEventAction
 		isPR           bool
 		body           string
 		initialLabels  []string
@@ -53,69 +53,69 @@ func TestHandle(t *testing.T) {
 	}{
 		{
 			name:          "ignore PRs",
-			action:        github.IssueActionLabeled,
+			action:        scallywag.IssueActionLabeled,
 			isPR:          true,
 			initialLabels: []string{helpWanted},
 		},
 		{
 			name:          "issue closed action",
-			action:        github.IssueActionClosed,
+			action:        scallywag.IssueActionClosed,
 			initialLabels: []string{helpWanted},
 		},
 		{
 			name:          "issue has sig/foo label, no needs-sig label",
-			action:        github.IssueActionLabeled,
+			action:        scallywag.IssueActionLabeled,
 			initialLabels: []string{helpWanted, sigApps},
 		},
 		{
 			name:          "issue has no sig/foo label, no needs-sig label",
-			action:        github.IssueActionUnlabeled,
+			action:        scallywag.IssueActionUnlabeled,
 			initialLabels: []string{helpWanted},
 			expectComment: true,
 			expectedAdd:   labels.NeedsSig,
 		},
 		{
 			name:          "issue has needs-sig label, no sig/foo label",
-			action:        github.IssueActionLabeled,
+			action:        scallywag.IssueActionLabeled,
 			initialLabels: []string{helpWanted, labels.NeedsSig},
 		},
 		{
 			name:           "issue has both needs-sig label and sig/foo label",
-			action:         github.IssueActionLabeled,
+			action:         scallywag.IssueActionLabeled,
 			initialLabels:  []string{helpWanted, labels.NeedsSig, sigApps},
 			expectedRemove: labels.NeedsSig,
 		},
 		{
 			name:          "issue has committee/foo label, no needs-sig label",
-			action:        github.IssueActionLabeled,
+			action:        scallywag.IssueActionLabeled,
 			initialLabels: []string{helpWanted, committeeSteering},
 		},
 		{
 			name:           "issue has both needs-sig label and committee/foo label",
-			action:         github.IssueActionLabeled,
+			action:         scallywag.IssueActionLabeled,
 			initialLabels:  []string{helpWanted, labels.NeedsSig, committeeSteering},
 			expectedRemove: labels.NeedsSig,
 		},
 		{
 			name:          "issue has wg/foo label, no needs-sig label",
-			action:        github.IssueActionLabeled,
+			action:        scallywag.IssueActionLabeled,
 			initialLabels: []string{helpWanted, wgContainerIdentity},
 		},
 		{
 			name:           "issue has both needs-sig label and wg/foo label",
-			action:         github.IssueActionLabeled,
+			action:         scallywag.IssueActionLabeled,
 			initialLabels:  []string{helpWanted, labels.NeedsSig, wgContainerIdentity},
 			expectedRemove: labels.NeedsSig,
 		},
 		{
 			name:          "issue has no sig/foo label, no needs-sig label, body mentions sig",
-			action:        github.IssueActionOpened,
+			action:        scallywag.IssueActionOpened,
 			body:          "I am mentioning a sig @kubernetes/sig-testing-misc more stuff.",
 			initialLabels: []string{helpWanted},
 		},
 		{
 			name:          "issue has no sig/foo label, no needs-sig label, body uses /sig command",
-			action:        github.IssueActionOpened,
+			action:        scallywag.IssueActionOpened,
 			body:          "I am using a sig command.\n/sig testing",
 			initialLabels: []string{helpWanted},
 		},
@@ -127,14 +127,14 @@ func TestHandle(t *testing.T) {
 		// label is added.
 		{
 			name:           "ignore non-sig label added events",
-			action:         github.IssueActionLabeled,
+			action:         scallywag.IssueActionLabeled,
 			body:           "I am using a sig command.\n/kind bug\n/sig testing",
 			initialLabels:  []string{helpWanted},
 			unrelatedLabel: true,
 		},
 		{
 			name:           "ignore non-sig label removed events",
-			action:         github.IssueActionUnlabeled,
+			action:         scallywag.IssueActionUnlabeled,
 			body:           "I am using a sig command.\n/kind bug\n/sig testing",
 			initialLabels:  []string{helpWanted},
 			unrelatedLabel: true,
@@ -144,27 +144,27 @@ func TestHandle(t *testing.T) {
 	mentionRe := regexp.MustCompile(`(?m)@kubernetes/sig-testing-misc`)
 	for _, test := range tests {
 		fghc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
+			IssueComments: make(map[int][]scallywag.IssueComment),
 		}
 
-		var initLabels []github.Label
+		var initLabels []scallywag.Label
 		for _, label := range test.initialLabels {
-			initLabels = append(initLabels, github.Label{Name: label})
+			initLabels = append(initLabels, scallywag.Label{Name: label})
 		}
 		var pr *struct{}
 		if test.isPR {
 			pr = &struct{}{}
 		}
-		ie := &github.IssueEvent{
+		ie := &scallywag.IssueEvent{
 			Action: test.action,
-			Issue: github.Issue{
+			Issue: scallywag.Issue{
 				Labels:      initLabels,
 				Number:      5,
 				PullRequest: pr,
 				Body:        test.body,
 			},
 		}
-		if test.action == github.IssueActionUnlabeled || test.action == github.IssueActionLabeled {
+		if test.action == scallywag.IssueActionUnlabeled || test.action == scallywag.IssueActionLabeled {
 			if test.unrelatedLabel {
 				ie.Label.Name = labels.Bug
 			} else {

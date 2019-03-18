@@ -62,6 +62,7 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/validation:go_default_library",
         "//vendor/sigs.k8s.io/yaml:go_default_library",
+        "//prow/scallywag:go_default_library",
     ],
 )
 

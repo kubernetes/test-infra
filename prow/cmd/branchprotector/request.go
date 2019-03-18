@@ -18,15 +18,15 @@ package main
 
 import (
 	branchprotection "k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // makeRequest renders a branch protection policy into the corresponding GitHub api request.
-func makeRequest(policy branchprotection.Policy) github.BranchProtectionRequest {
-	return github.BranchProtectionRequest{
+func makeRequest(policy branchprotection.Policy) scallywag.BranchProtectionRequest {
+	return scallywag.BranchProtectionRequest{
 		EnforceAdmins:              makeAdmins(policy.Admins),
 		RequiredPullRequestReviews: makeReviews(policy.RequiredPullRequestReviews),
 		RequiredStatusChecks:       makeChecks(policy.RequiredStatusChecks),
@@ -52,11 +52,11 @@ func makeBool(val *bool) bool {
 //
 // Returns nil when input policy is nil.
 // Otherwise returns non-nil Contexts (empty if unset) and Strict iff Strict is true
-func makeChecks(cp *branchprotection.ContextPolicy) *github.RequiredStatusChecks {
+func makeChecks(cp *branchprotection.ContextPolicy) *scallywag.RequiredStatusChecks {
 	if cp == nil {
 		return nil
 	}
-	return &github.RequiredStatusChecks{
+	return &scallywag.RequiredStatusChecks{
 		Contexts: append([]string{}, sets.NewString(cp.Contexts...).List()...),
 		Strict:   makeBool(cp.Strict),
 	}
@@ -66,13 +66,13 @@ func makeChecks(cp *branchprotection.ContextPolicy) *github.RequiredStatusChecks
 //
 // Returns nil when input restrictions is nil.
 // Otherwise Teams and Users are both non-nil (empty list if unset)
-func makeRestrictions(rp *branchprotection.Restrictions) *github.Restrictions {
+func makeRestrictions(rp *branchprotection.Restrictions) *scallywag.Restrictions {
 	if rp == nil {
 		return nil
 	}
 	teams := append([]string{}, sets.NewString(rp.Teams...).List()...)
 	users := append([]string{}, sets.NewString(rp.Users...).List()...)
-	return &github.Restrictions{
+	return &scallywag.Restrictions{
 		Teams: &teams,
 		Users: &users,
 	}
@@ -81,7 +81,7 @@ func makeRestrictions(rp *branchprotection.Restrictions) *github.Restrictions {
 // makeReviews renders review policy into the corresponding GitHub api object.
 //
 // Returns nil if the policy is nil, or approvals is nil or 0.
-func makeReviews(rp *branchprotection.ReviewPolicy) *github.RequiredPullRequestReviews {
+func makeReviews(rp *branchprotection.ReviewPolicy) *scallywag.RequiredPullRequestReviews {
 	switch {
 	case rp == nil:
 		return nil
@@ -91,7 +91,7 @@ func makeReviews(rp *branchprotection.ReviewPolicy) *github.RequiredPullRequestR
 	case *rp.Approvals == 0:
 		return nil
 	}
-	rprr := github.RequiredPullRequestReviews{
+	rprr := scallywag.RequiredPullRequestReviews{
 		DismissStaleReviews:          makeBool(rp.DismissStale),
 		RequireCodeOwnerReviews:      makeBool(rp.RequireOwners),
 		RequiredApprovingReviewCount: *rp.Approvals,

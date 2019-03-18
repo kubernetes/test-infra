@@ -27,7 +27,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
+	"k8s.io/test-infra/prow/scallywag/github"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
@@ -207,19 +208,19 @@ func (c *fakeClient) BotName() (string, error) {
 	return "me", nil
 }
 
-func (c fakeClient) makeMembers(people sets.String) []github.TeamMember {
-	var ret []github.TeamMember
+func (c fakeClient) makeMembers(people sets.String) []scallywag.TeamMember {
+	var ret []scallywag.TeamMember
 	for p := range people {
-		ret = append(ret, github.TeamMember{Login: p})
+		ret = append(ret, scallywag.TeamMember{Login: p})
 	}
 	return ret
 }
 
-func (c *fakeClient) ListOrgMembers(org, role string) ([]github.TeamMember, error) {
+func (c *fakeClient) ListOrgMembers(org, role string) ([]scallywag.TeamMember, error) {
 	switch role {
-	case github.RoleMember:
+	case scallywag.RoleMember:
 		return c.makeMembers(c.members), nil
-	case github.RoleAdmin:
+	case scallywag.RoleAdmin:
 		return c.makeMembers(c.admins), nil
 	default:
 		// RoleAll: implement when/if necessary
@@ -227,14 +228,14 @@ func (c *fakeClient) ListOrgMembers(org, role string) ([]github.TeamMember, erro
 	}
 }
 
-func (c *fakeClient) ListOrgInvitations(org string) ([]github.OrgInvitation, error) {
-	var ret []github.OrgInvitation
+func (c *fakeClient) ListOrgInvitations(org string) ([]scallywag.OrgInvitation, error) {
+	var ret []scallywag.OrgInvitation
 	for p := range c.invitees {
 		if p == "fail" {
 			return nil, errors.New("injected list org invitations failure")
 		}
-		ret = append(ret, github.OrgInvitation{
-			TeamMember: github.TeamMember{
+		ret = append(ret, scallywag.OrgInvitation{
+			TeamMember: scallywag.TeamMember{
 				Login: p,
 			},
 		})
@@ -252,59 +253,59 @@ func (c *fakeClient) RemoveOrgMembership(org, user string) error {
 	return nil
 }
 
-func (c *fakeClient) UpdateOrgMembership(org, user string, admin bool) (*github.OrgMembership, error) {
+func (c *fakeClient) UpdateOrgMembership(org, user string, admin bool) (*scallywag.OrgMembership, error) {
 	if user == "fail" {
 		return nil, errors.New("injected update org failure")
 	}
 	var state string
 	if c.members.Has(user) || c.admins.Has(user) {
-		state = github.StateActive
+		state = scallywag.StateActive
 	} else {
-		state = github.StatePending
+		state = scallywag.StatePending
 	}
 	var role string
 	if admin {
 		c.newAdmins.Insert(user)
 		c.admins.Insert(user)
-		role = github.RoleAdmin
+		role = scallywag.RoleAdmin
 	} else {
 		c.newMembers.Insert(user)
 		c.members.Insert(user)
-		role = github.RoleMember
+		role = scallywag.RoleMember
 	}
-	return &github.OrgMembership{
-		Membership: github.Membership{
+	return &scallywag.OrgMembership{
+		Membership: scallywag.Membership{
 			Role:  role,
 			State: state,
 		},
 	}, nil
 }
 
-func (c *fakeClient) ListTeamMembers(id int, role string) ([]github.TeamMember, error) {
+func (c *fakeClient) ListTeamMembers(id int, role string) ([]scallywag.TeamMember, error) {
 	if id != teamID {
 		return nil, fmt.Errorf("only team 66 supported, not %d", id)
 	}
 	switch role {
-	case github.RoleMember:
+	case scallywag.RoleMember:
 		return c.makeMembers(c.members), nil
-	case github.RoleMaintainer:
+	case scallywag.RoleMaintainer:
 		return c.makeMembers(c.admins), nil
 	default:
 		return nil, fmt.Errorf("fake does not support: %v", role)
 	}
 }
 
-func (c *fakeClient) ListTeamInvitations(id int) ([]github.OrgInvitation, error) {
+func (c *fakeClient) ListTeamInvitations(id int) ([]scallywag.OrgInvitation, error) {
 	if id != teamID {
 		return nil, fmt.Errorf("only team 66 supported, not %d", id)
 	}
-	var ret []github.OrgInvitation
+	var ret []scallywag.OrgInvitation
 	for p := range c.invitees {
 		if p == "fail" {
 			return nil, errors.New("injected list org invitations failure")
 		}
-		ret = append(ret, github.OrgInvitation{
-			TeamMember: github.TeamMember{
+		ret = append(ret, scallywag.OrgInvitation{
+			TeamMember: scallywag.TeamMember{
 				Login: p,
 			},
 		})
@@ -314,7 +315,7 @@ func (c *fakeClient) ListTeamInvitations(id int) ([]github.OrgInvitation, error)
 
 const teamID = 66
 
-func (c *fakeClient) UpdateTeamMembership(id int, user string, maintainer bool) (*github.TeamMembership, error) {
+func (c *fakeClient) UpdateTeamMembership(id int, user string, maintainer bool) (*scallywag.TeamMembership, error) {
 	if id != teamID {
 		return nil, fmt.Errorf("only team %d supported, not %d", teamID, id)
 	}
@@ -323,22 +324,22 @@ func (c *fakeClient) UpdateTeamMembership(id int, user string, maintainer bool) 
 	}
 	var state string
 	if c.orgMembers.Has(user) || len(c.orgMembers) == 0 {
-		state = github.StateActive
+		state = scallywag.StateActive
 	} else {
-		state = github.StatePending
+		state = scallywag.StatePending
 	}
 	var role string
 	if maintainer {
 		c.newAdmins.Insert(user)
 		c.admins.Insert(user)
-		role = github.RoleMaintainer
+		role = scallywag.RoleMaintainer
 	} else {
 		c.newMembers.Insert(user)
 		c.members.Insert(user)
-		role = github.RoleMember
+		role = scallywag.RoleMember
 	}
-	return &github.TeamMembership{
-		Membership: github.Membership{
+	return &scallywag.TeamMembership{
+		Membership: scallywag.Membership{
 			Role:  role,
 			State: state,
 		},
@@ -712,13 +713,13 @@ func TestConfigureOrgMembers(t *testing.T) {
 }
 
 type fakeTeamClient struct {
-	teams map[int]github.Team
+	teams map[int]scallywag.Team
 	max   int
 }
 
-func makeFakeTeamClient(teams ...github.Team) *fakeTeamClient {
+func makeFakeTeamClient(teams ...scallywag.Team) *fakeTeamClient {
 	fc := fakeTeamClient{
-		teams: map[int]github.Team{},
+		teams: map[int]scallywag.Team{},
 	}
 	for _, t := range teams {
 		fc.teams[t.ID] = t
@@ -731,7 +732,7 @@ func makeFakeTeamClient(teams ...github.Team) *fakeTeamClient {
 
 const fakeOrg = "random-org"
 
-func (c *fakeTeamClient) CreateTeam(org string, team github.Team) (*github.Team, error) {
+func (c *fakeTeamClient) CreateTeam(org string, team scallywag.Team) (*scallywag.Team, error) {
 	if org != fakeOrg {
 		return nil, fmt.Errorf("org must be %s, not %s", fakeOrg, org)
 	}
@@ -745,11 +746,11 @@ func (c *fakeTeamClient) CreateTeam(org string, team github.Team) (*github.Team,
 
 }
 
-func (c *fakeTeamClient) ListTeams(name string) ([]github.Team, error) {
+func (c *fakeTeamClient) ListTeams(name string) ([]scallywag.Team, error) {
 	if name == "fail" {
 		return nil, errors.New("injected ListTeams error")
 	}
-	var teams []github.Team
+	var teams []scallywag.Team
 	for _, t := range c.teams {
 		teams = append(teams, t)
 	}
@@ -767,7 +768,7 @@ func (c *fakeTeamClient) DeleteTeam(id int) error {
 	return nil
 }
 
-func (c *fakeTeamClient) EditTeam(team github.Team) (*github.Team, error) {
+func (c *fakeTeamClient) EditTeam(team scallywag.Team) (*scallywag.Team, error) {
 	id := team.ID
 	t, ok := c.teams[id]
 	if !ok {
@@ -791,7 +792,7 @@ func (c *fakeTeamClient) EditTeam(team github.Team) (*github.Team, error) {
 		t.Privacy = team.Privacy
 	}
 	if team.ParentTeamID != nil {
-		t.Parent = &github.Team{
+		t.Parent = &scallywag.Team{
 			ID: *team.ParentTeamID,
 		}
 	} else {
@@ -804,14 +805,14 @@ func (c *fakeTeamClient) EditTeam(team github.Team) (*github.Team, error) {
 func TestFindTeam(t *testing.T) {
 	cases := []struct {
 		name     string
-		teams    map[string]github.Team
+		teams    map[string]scallywag.Team
 		current  string
 		previous []string
 		expected int
 	}{
 		{
 			name: "will find current team",
-			teams: map[string]github.Team{
+			teams: map[string]scallywag.Team{
 				"hello": {ID: 17},
 			},
 			current:  "hello",
@@ -819,14 +820,14 @@ func TestFindTeam(t *testing.T) {
 		},
 		{
 			name: "team does not exist returns nil",
-			teams: map[string]github.Team{
+			teams: map[string]scallywag.Team{
 				"unrelated": {ID: 5},
 			},
 			current: "hypothetical",
 		},
 		{
 			name: "will find previous name",
-			teams: map[string]github.Team{
+			teams: map[string]scallywag.Team{
 				"deprecated name": {ID: 1},
 			},
 			current:  "current name",
@@ -835,7 +836,7 @@ func TestFindTeam(t *testing.T) {
 		},
 		{
 			name: "prioritize current when previous also exists",
-			teams: map[string]github.Team{
+			teams: map[string]scallywag.Team{
 				"deprecated": {ID: 1},
 				"current":    {ID: 2},
 			},
@@ -871,8 +872,8 @@ func TestConfigureTeams(t *testing.T) {
 		orgNameOverride   string
 		ignoreSecretTeams bool
 		config            org.Config
-		teams             []github.Team
-		expected          map[string]github.Team
+		teams             []scallywag.Team
+		expected          map[string]scallywag.Team
 		deleted           []int
 		delta             float64
 	}{
@@ -914,14 +915,14 @@ func TestConfigureTeams(t *testing.T) {
 		},
 		{
 			name: "fail to delete team",
-			teams: []github.Team{
+			teams: []scallywag.Team{
 				{Name: "fail", ID: -55},
 			},
 			err: true,
 		},
 		{
 			name: "create missing team",
-			teams: []github.Team{
+			teams: []scallywag.Team{
 				{Name: "old", ID: 1},
 			},
 			config: org.Config{
@@ -930,14 +931,14 @@ func TestConfigureTeams(t *testing.T) {
 					"old": {},
 				},
 			},
-			expected: map[string]github.Team{
+			expected: map[string]scallywag.Team{
 				"old": {Name: "old", ID: 1},
 				"new": {Name: "new", ID: 3},
 			},
 		},
 		{
 			name: "reuse existing teams",
-			teams: []github.Team{
+			teams: []scallywag.Team{
 				{Name: "current", ID: 1},
 				{Name: "deprecated", ID: 5},
 			},
@@ -947,14 +948,14 @@ func TestConfigureTeams(t *testing.T) {
 					"updated": {Previously: []string{"deprecated"}},
 				},
 			},
-			expected: map[string]github.Team{
+			expected: map[string]scallywag.Team{
 				"current": {Name: "current", ID: 1},
 				"updated": {Name: "deprecated", ID: 5},
 			},
 		},
 		{
 			name: "delete unused teams",
-			teams: []github.Team{
+			teams: []scallywag.Team{
 				{
 					Name: "unused",
 					ID:   1,
@@ -969,7 +970,7 @@ func TestConfigureTeams(t *testing.T) {
 					"used": {},
 				},
 			},
-			expected: map[string]github.Team{
+			expected: map[string]scallywag.Team{
 				"used": {ID: 2, Name: "used"},
 			},
 			deleted: []int{1},
@@ -986,13 +987,13 @@ func TestConfigureTeams(t *testing.T) {
 					},
 				},
 			},
-			expected: map[string]github.Team{
+			expected: map[string]scallywag.Team{
 				"new": {ID: 1, Name: "new", Description: desc, Privacy: string(priv)},
 			},
 		},
 		{
 			name: "allow deleting many teams",
-			teams: []github.Team{
+			teams: []scallywag.Team{
 				{
 					Name: "unused",
 					ID:   1,
@@ -1007,7 +1008,7 @@ func TestConfigureTeams(t *testing.T) {
 					"used": {},
 				},
 			},
-			expected: map[string]github.Team{
+			expected: map[string]scallywag.Team{
 				"used": {ID: 2, Name: "used"},
 			},
 			deleted: []int{1},
@@ -1015,7 +1016,7 @@ func TestConfigureTeams(t *testing.T) {
 		},
 		{
 			name: "refuse to delete too many teams",
-			teams: []github.Team{
+			teams: []scallywag.Team{
 				{
 					Name: "unused",
 					ID:   1,
@@ -1064,7 +1065,7 @@ func TestConfigureTeams(t *testing.T) {
 				orgName = fakeOrg
 			}
 			if tc.expected == nil {
-				tc.expected = map[string]github.Team{}
+				tc.expected = map[string]scallywag.Team{}
 			}
 			if tc.delta == 0 {
 				tc.delta = 1
@@ -1113,8 +1114,8 @@ func TestConfigureTeam(t *testing.T) {
 		teamName string
 		parent   *int
 		config   org.Team
-		github   github.Team
-		expected github.Team
+		github   scallywag.Team
+		expected scallywag.Team
 	}{
 		{
 			name:     "patch team when name changes",
@@ -1122,11 +1123,11 @@ func TestConfigureTeam(t *testing.T) {
 			config: org.Team{
 				Previously: []string{old},
 			},
-			github: github.Team{
+			github: scallywag.Team{
 				ID:   1,
 				Name: old,
 			},
-			expected: github.Team{
+			expected: scallywag.Team{
 				ID:   1,
 				Name: cur,
 			},
@@ -1140,12 +1141,12 @@ func TestConfigureTeam(t *testing.T) {
 					Description: &cur,
 				},
 			},
-			github: github.Team{
+			github: scallywag.Team{
 				ID:          2,
 				Name:        whatev,
 				Description: old,
 			},
-			expected: github.Team{
+			expected: scallywag.Team{
 				ID:          2,
 				Name:        whatev,
 				Description: cur,
@@ -1160,12 +1161,12 @@ func TestConfigureTeam(t *testing.T) {
 					Privacy: &secret,
 				},
 			},
-			github: github.Team{
+			github: scallywag.Team{
 				ID:      3,
 				Name:    whatev,
 				Privacy: string(org.Closed),
 			},
-			expected: github.Team{
+			expected: scallywag.Team{
 				ID:      3,
 				Name:    whatev,
 				Privacy: string(secret),
@@ -1176,17 +1177,17 @@ func TestConfigureTeam(t *testing.T) {
 			teamName: whatev,
 			parent:   &parent,
 			config:   org.Team{},
-			github: github.Team{
+			github: scallywag.Team{
 				ID:   3,
 				Name: whatev,
-				Parent: &github.Team{
+				Parent: &scallywag.Team{
 					ID: 4,
 				},
 			},
-			expected: github.Team{
+			expected: scallywag.Team{
 				ID:   3,
 				Name: whatev,
-				Parent: &github.Team{
+				Parent: &scallywag.Team{
 					ID: 2,
 				},
 				Privacy: string(org.Closed),
@@ -1197,14 +1198,14 @@ func TestConfigureTeam(t *testing.T) {
 			teamName: whatev,
 			parent:   nil,
 			config:   org.Team{},
-			github: github.Team{
+			github: scallywag.Team{
 				ID:   3,
 				Name: whatev,
-				Parent: &github.Team{
+				Parent: &scallywag.Team{
 					ID: 2,
 				},
 			},
-			expected: github.Team{
+			expected: scallywag.Team{
 				ID:     3,
 				Name:   whatev,
 				Parent: nil,
@@ -1220,21 +1221,21 @@ func TestConfigureTeam(t *testing.T) {
 					Privacy:     &pfail,
 				},
 			},
-			github: github.Team{
+			github: scallywag.Team{
 				ID:          4,
 				Name:        fail,
 				Description: fail,
 				Privacy:     fail,
-				Parent: &github.Team{
+				Parent: &scallywag.Team{
 					ID: 2,
 				},
 			},
-			expected: github.Team{
+			expected: scallywag.Team{
 				ID:          4,
 				Name:        fail,
 				Description: fail,
 				Privacy:     fail,
-				Parent: &github.Team{
+				Parent: &scallywag.Team{
 					ID: 2,
 				},
 			},
@@ -1248,7 +1249,7 @@ func TestConfigureTeam(t *testing.T) {
 					Description: &fail,
 				},
 			},
-			github: github.Team{
+			github: scallywag.Team{
 				ID:          1,
 				Name:        "team",
 				Description: whatev,
@@ -1339,7 +1340,7 @@ func TestConfigureTeamMembers(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		gt := github.Team{
+		gt := scallywag.Team{
 			ID:   teamID,
 			Name: "whatev",
 		}
@@ -1393,18 +1394,18 @@ func cmpLists(a, b []string) error {
 }
 
 type fakeOrgClient struct {
-	current github.Organization
+	current scallywag.Organization
 	changed bool
 }
 
-func (o *fakeOrgClient) GetOrg(name string) (*github.Organization, error) {
+func (o *fakeOrgClient) GetOrg(name string) (*scallywag.Organization, error) {
 	if name == "fail" {
 		return nil, errors.New("injected GetOrg error")
 	}
 	return &o.current, nil
 }
 
-func (o *fakeOrgClient) EditOrg(name string, org github.Organization) (*github.Organization, error) {
+func (o *fakeOrgClient) EditOrg(name string, org scallywag.Organization) (*scallywag.Organization, error) {
 	if org.Description == "fail" {
 		return nil, errors.New("injected EditOrg error")
 	}
@@ -1547,7 +1548,7 @@ func TestUpdateString(t *testing.T) {
 }
 
 func TestConfigureOrgMeta(t *testing.T) {
-	filled := github.Organization{
+	filled := scallywag.Organization{
 		BillingEmail:                 "be",
 		Company:                      "co",
 		Email:                        "em",
@@ -1569,8 +1570,8 @@ func TestConfigureOrgMeta(t *testing.T) {
 		name     string
 		orgName  string
 		want     org.Metadata
-		have     github.Organization
-		expected github.Organization
+		have     scallywag.Organization
+		expected scallywag.Organization
 		err      bool
 		change   bool
 	}{
@@ -1593,7 +1594,7 @@ func TestConfigureOrgMeta(t *testing.T) {
 		{
 			name: "billing diff causes change",
 			want: org.Metadata{BillingEmail: &str},
-			expected: github.Organization{
+			expected: scallywag.Organization{
 				BillingEmail: str,
 			},
 			change: true,
@@ -1601,7 +1602,7 @@ func TestConfigureOrgMeta(t *testing.T) {
 		{
 			name: "company diff causes change",
 			want: org.Metadata{Company: &str},
-			expected: github.Organization{
+			expected: scallywag.Organization{
 				Company: str,
 			},
 			change: true,
@@ -1609,7 +1610,7 @@ func TestConfigureOrgMeta(t *testing.T) {
 		{
 			name: "email diff causes change",
 			want: org.Metadata{Email: &str},
-			expected: github.Organization{
+			expected: scallywag.Organization{
 				Email: str,
 			},
 			change: true,
@@ -1617,7 +1618,7 @@ func TestConfigureOrgMeta(t *testing.T) {
 		{
 			name: "location diff causes change",
 			want: org.Metadata{Location: &str},
-			expected: github.Organization{
+			expected: scallywag.Organization{
 				Location: str,
 			},
 			change: true,
@@ -1625,7 +1626,7 @@ func TestConfigureOrgMeta(t *testing.T) {
 		{
 			name: "name diff causes change",
 			want: org.Metadata{Name: &str},
-			expected: github.Organization{
+			expected: scallywag.Organization{
 				Name: str,
 			},
 			change: true,
@@ -1633,7 +1634,7 @@ func TestConfigureOrgMeta(t *testing.T) {
 		{
 			name: "org projects diff causes change",
 			want: org.Metadata{HasOrganizationProjects: &yes},
-			expected: github.Organization{
+			expected: scallywag.Organization{
 				HasOrganizationProjects: yes,
 			},
 			change: true,
@@ -1641,7 +1642,7 @@ func TestConfigureOrgMeta(t *testing.T) {
 		{
 			name: "repo projects diff causes change",
 			want: org.Metadata{HasRepositoryProjects: &yes},
-			expected: github.Organization{
+			expected: scallywag.Organization{
 				HasRepositoryProjects: yes,
 			},
 			change: true,
@@ -1649,7 +1650,7 @@ func TestConfigureOrgMeta(t *testing.T) {
 		{
 			name: "default permission diff causes change",
 			want: org.Metadata{DefaultRepositoryPermission: &read},
-			expected: github.Organization{
+			expected: scallywag.Organization{
 				DefaultRepositoryPermission: string(read),
 			},
 			change: true,
@@ -1657,7 +1658,7 @@ func TestConfigureOrgMeta(t *testing.T) {
 		{
 			name: "members can create diff causes change",
 			want: org.Metadata{MembersCanCreateRepositories: &yes},
-			expected: github.Organization{
+			expected: scallywag.Organization{
 				MembersCanCreateRepositories: yes,
 			},
 			change: true,
@@ -1677,7 +1678,7 @@ func TestConfigureOrgMeta(t *testing.T) {
 				MembersCanCreateRepositories: &no,
 				DefaultRepositoryPermission:  &read,
 			},
-			expected: github.Organization{
+			expected: scallywag.Organization{
 				BillingEmail:                 str,
 				Company:                      str,
 				Email:                        str,
@@ -1732,13 +1733,13 @@ func TestDumpOrgConfig(t *testing.T) {
 		name              string
 		orgOverride       string
 		ignoreSecretTeams bool
-		meta              github.Organization
+		meta              scallywag.Organization
 		members           []string
 		admins            []string
-		teams             []github.Team
+		teams             []scallywag.Team
 		teamMembers       map[int][]string
 		maintainers       map[int][]string
-		repoPermissions   map[int][]github.Repo
+		repoPermissions   map[int][]scallywag.Repo
 		expected          org.Config
 		err               bool
 	}{
@@ -1755,7 +1756,7 @@ func TestDumpOrgConfig(t *testing.T) {
 		{
 			name: "fails if ListTeams fails",
 			err:  true,
-			teams: []github.Team{
+			teams: []scallywag.Team{
 				{
 					Name: "fail",
 					ID:   3,
@@ -1765,7 +1766,7 @@ func TestDumpOrgConfig(t *testing.T) {
 		{
 			name: "fails if ListTeamMembersFails",
 			err:  true,
-			teams: []github.Team{
+			teams: []scallywag.Team{
 				{
 					Name: "fred",
 					ID:   -1,
@@ -1774,14 +1775,14 @@ func TestDumpOrgConfig(t *testing.T) {
 		},
 		{
 			name: "basically works",
-			meta: github.Organization{
+			meta: scallywag.Organization{
 				Name:                         hello,
 				MembersCanCreateRepositories: yes,
 				DefaultRepositoryPermission:  string(perm),
 			},
 			members: []string{"george", "jungle", "banana"},
 			admins:  []string{"james", "giant", "peach"},
-			teams: []github.Team{
+			teams: []scallywag.Team{
 				{
 					ID:          5,
 					Name:        "friends",
@@ -1794,7 +1795,7 @@ func TestDumpOrgConfig(t *testing.T) {
 				{
 					ID:   7,
 					Name: "archenemies",
-					Parent: &github.Team{
+					Parent: &scallywag.Team{
 						ID:   6,
 						Name: "enemies",
 					},
@@ -2016,14 +2017,14 @@ type fakeDumpClient struct {
 	name            string
 	members         []string
 	admins          []string
-	meta            github.Organization
-	teams           []github.Team
+	meta            scallywag.Organization
+	teams           []scallywag.Team
 	teamMembers     map[int][]string
 	maintainers     map[int][]string
-	repoPermissions map[int][]github.Repo
+	repoPermissions map[int][]scallywag.Repo
 }
 
-func (c fakeDumpClient) GetOrg(name string) (*github.Organization, error) {
+func (c fakeDumpClient) GetOrg(name string) (*scallywag.Organization, error) {
 	if name != c.name {
 		return nil, errors.New("bad name")
 	}
@@ -2033,30 +2034,30 @@ func (c fakeDumpClient) GetOrg(name string) (*github.Organization, error) {
 	return &c.meta, nil
 }
 
-func (c fakeDumpClient) makeMembers(people []string) ([]github.TeamMember, error) {
-	var ret []github.TeamMember
+func (c fakeDumpClient) makeMembers(people []string) ([]scallywag.TeamMember, error) {
+	var ret []scallywag.TeamMember
 	for _, p := range people {
 		if p == "fail" {
 			return nil, errors.New("injected makeMembers error")
 		}
-		ret = append(ret, github.TeamMember{Login: p})
+		ret = append(ret, scallywag.TeamMember{Login: p})
 	}
 	return ret, nil
 }
 
-func (c fakeDumpClient) ListOrgMembers(name, role string) ([]github.TeamMember, error) {
+func (c fakeDumpClient) ListOrgMembers(name, role string) ([]scallywag.TeamMember, error) {
 	switch {
 	case name != c.name:
 		return nil, fmt.Errorf("bad org: %s", name)
-	case role == github.RoleAdmin:
+	case role == scallywag.RoleAdmin:
 		return c.makeMembers(c.admins)
-	case role == github.RoleMember:
+	case role == scallywag.RoleMember:
 		return c.makeMembers(c.members)
 	}
 	return nil, fmt.Errorf("bad role: %s", role)
 }
 
-func (c fakeDumpClient) ListTeams(name string) ([]github.Team, error) {
+func (c fakeDumpClient) ListTeams(name string) ([]scallywag.Team, error) {
 	if name != c.name {
 		return nil, fmt.Errorf("bad org: %s", name)
 	}
@@ -2069,14 +2070,14 @@ func (c fakeDumpClient) ListTeams(name string) ([]github.Team, error) {
 	return c.teams, nil
 }
 
-func (c fakeDumpClient) ListTeamMembers(id int, role string) ([]github.TeamMember, error) {
+func (c fakeDumpClient) ListTeamMembers(id int, role string) ([]scallywag.TeamMember, error) {
 	var mapping map[int][]string
 	switch {
 	case id < 0:
 		return nil, errors.New("injected ListTeamMembers error")
-	case role == github.RoleMaintainer:
+	case role == scallywag.RoleMaintainer:
 		mapping = c.maintainers
-	case role == github.RoleMember:
+	case role == scallywag.RoleMember:
 		mapping = c.teamMembers
 	default:
 		return nil, fmt.Errorf("bad role: %s", role)

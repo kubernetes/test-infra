@@ -28,11 +28,12 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/assign"
 	"k8s.io/test-infra/prow/repoowners"
+	"k8s.io/test-infra/prow/scallywag"
+	"k8s.io/test-infra/prow/scallywag/github"
 )
 
 const (
@@ -113,8 +114,8 @@ func (foc fallbackReviewersClient) LeafReviewers(path string) sets.String {
 
 type githubClient interface {
 	RequestReview(org, repo string, number int, logins []string) error
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
-	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
+	GetPullRequest(org, repo string, number int) (*scallywag.PullRequest, error)
 	Query(context.Context, interface{}, map[string]interface{}) error
 }
 
@@ -122,7 +123,7 @@ type repoownersClient interface {
 	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error)
 }
 
-func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequestEvent(pc plugins.Agent, pre scallywag.PullRequestEvent) error {
 	return handlePullRequest(
 		pc.GitHubClient,
 		pc.OwnersClient,
@@ -134,8 +135,8 @@ func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error
 	)
 }
 
-func handlePullRequest(ghc githubClient, roc repoownersClient, log *logrus.Entry, config plugins.Blunderbuss, action github.PullRequestEventAction, pr *github.PullRequest, repo *github.Repo) error {
-	if action != github.PullRequestActionOpened || assign.CCRegexp.MatchString(pr.Body) {
+func handlePullRequest(ghc githubClient, roc repoownersClient, log *logrus.Entry, config plugins.Blunderbuss, action scallywag.PullRequestEventAction, pr *scallywag.PullRequest, repo *scallywag.Repo) error {
+	if action != scallywag.PullRequestActionOpened || assign.CCRegexp.MatchString(pr.Body) {
 		return nil
 	}
 
@@ -153,7 +154,7 @@ func handlePullRequest(ghc githubClient, roc repoownersClient, log *logrus.Entry
 	)
 }
 
-func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
+func handleGenericCommentEvent(pc plugins.Agent, ce scallywag.GenericCommentEvent) error {
 	return handleGenericComment(
 		pc.GitHubClient,
 		pc.OwnersClient,
@@ -168,8 +169,8 @@ func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) 
 	)
 }
 
-func handleGenericComment(ghc githubClient, roc repoownersClient, log *logrus.Entry, config plugins.Blunderbuss, action github.GenericCommentEventAction, isPR bool, prNumber int, issueState string, repo *github.Repo, body string) error {
-	if action != github.GenericCommentActionCreated || !isPR || issueState == "closed" {
+func handleGenericComment(ghc githubClient, roc repoownersClient, log *logrus.Entry, config plugins.Blunderbuss, action scallywag.GenericCommentEventAction, isPR bool, prNumber int, issueState string, repo *scallywag.Repo, body string) error {
+	if action != scallywag.GenericCommentActionCreated || !isPR || issueState == "closed" {
 		return nil
 	}
 
@@ -196,7 +197,7 @@ func handleGenericComment(ghc githubClient, roc repoownersClient, log *logrus.En
 	)
 }
 
-func handle(ghc githubClient, roc repoownersClient, log *logrus.Entry, reviewerCount, oldReviewCount *int, maxReviewers int, excludeApprovers bool, useStatusAvailability bool, repo *github.Repo, pr *github.PullRequest) error {
+func handle(ghc githubClient, roc repoownersClient, log *logrus.Entry, reviewerCount, oldReviewCount *int, maxReviewers int, excludeApprovers bool, useStatusAvailability bool, repo *scallywag.Repo, pr *scallywag.PullRequest) error {
 	oc, err := roc.LoadRepoOwners(repo.Owner.Login, repo.Name, pr.Base.Ref)
 	if err != nil {
 		return fmt.Errorf("error loading RepoOwners: %v", err)
@@ -254,7 +255,7 @@ func handle(ghc githubClient, roc repoownersClient, log *logrus.Entry, reviewerC
 	return nil
 }
 
-func getReviewers(rc reviewersClient, ghc githubClient, log *logrus.Entry, author string, files []github.PullRequestChange, minReviewers int, useStatusAvailability bool) ([]string, []string, error) {
+func getReviewers(rc reviewersClient, ghc githubClient, log *logrus.Entry, author string, files []scallywag.PullRequestChange, minReviewers int, useStatusAvailability bool) ([]string, []string, error) {
 	authorSet := sets.NewString(github.NormLogin(author))
 	reviewers := sets.NewString()
 	requiredReviewers := sets.NewString()
@@ -362,7 +363,7 @@ func isUserBusy(ghc githubClient, user string) (bool, error) {
 	return bool(query.User.Status.IndicatesLimitedAvailability), err
 }
 
-func getReviewersOld(log *logrus.Entry, oc ownersClient, author string, changes []github.PullRequestChange, reviewerCount int) []string {
+func getReviewersOld(log *logrus.Entry, oc ownersClient, author string, changes []scallywag.PullRequestChange, reviewerCount int) []string {
 	potentialReviewers, weightSum := getPotentialReviewers(oc, author, changes, true)
 	reviewers := selectMultipleReviewers(log, potentialReviewers, weightSum, reviewerCount)
 	if len(reviewers) < reviewerCount {
@@ -382,7 +383,7 @@ func getReviewersOld(log *logrus.Entry, oc ownersClient, author string, changes 
 // weightMap is a map of user to a weight for that user.
 type weightMap map[string]int64
 
-func getPotentialReviewers(owners ownersClient, author string, files []github.PullRequestChange, leafOnly bool) (weightMap, int64) {
+func getPotentialReviewers(owners ownersClient, author string, files []scallywag.PullRequestChange, leafOnly bool) (weightMap, int64) {
 	potentialReviewers := weightMap{}
 	weightSum := int64(0)
 	var fileOwners sets.String
@@ -402,7 +403,7 @@ func getPotentialReviewers(owners ownersClient, author string, files []github.Pu
 		}
 
 		for _, owner := range fileOwners.List() {
-			if owner == github.NormLogin(author) {
+			if owner == scallywag.NormLogin(author) {
 				continue
 			}
 			potentialReviewers[owner] = potentialReviewers[owner] + fileWeight

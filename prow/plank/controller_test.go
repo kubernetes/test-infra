@@ -33,10 +33,10 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/reporter"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 type fca struct {
@@ -177,19 +177,19 @@ func (f *fkc) DeletePod(name string) error {
 
 type fghc struct {
 	sync.Mutex
-	changes []github.PullRequestChange
+	changes []scallywag.PullRequestChange
 	err     error
 }
 
-func (f *fghc) GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error) {
+func (f *fghc) GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error) {
 	f.Lock()
 	defer f.Unlock()
 	return f.changes, f.err
 }
 
-func (f *fghc) BotName() (string, error)                                  { return "bot", nil }
-func (f *fghc) CreateStatus(org, repo, ref string, s github.Status) error { return nil }
-func (f *fghc) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
+func (f *fghc) BotName() (string, error)                                     { return "bot", nil }
+func (f *fghc) CreateStatus(org, repo, ref string, s scallywag.Status) error { return nil }
+func (f *fghc) ListIssueComments(org, repo string, number int) ([]scallywag.IssueComment, error) {
 	return nil, nil
 }
 func (f *fghc) CreateComment(org, repo string, number int, comment string) error { return nil }

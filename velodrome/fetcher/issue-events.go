@@ -57,7 +57,7 @@ func UpdateIssueEvents(issueID int, db *gorm.DB, client ClientInterface) {
 		glog.Error("Failed to find last event: ", err)
 		return
 	}
-	c := make(chan *github.IssueEvent, 500)
+	c := make(chan *scallywag.IssueEvent, 500)
 
 	go client.FetchIssueEvents(issueID, latest, c)
 	for event := range c {

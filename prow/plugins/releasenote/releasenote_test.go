@@ -24,15 +24,15 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func TestReleaseNoteComment(t *testing.T) {
 	var testcases = []struct {
 		name          string
-		action        github.IssueCommentEventAction
+		action        scallywag.IssueCommentEventAction
 		commentBody   string
 		issueBody     string
 		isMember      bool
@@ -45,13 +45,13 @@ func TestReleaseNoteComment(t *testing.T) {
 	}{
 		{
 			name:          "unrelated comment",
-			action:        github.IssueCommentActionCreated,
+			action:        scallywag.IssueCommentActionCreated,
 			commentBody:   "oh dear",
 			currentLabels: []string{ReleaseNoteLabelNeeded, "other"},
 		},
 		{
 			name:          "author release-note-none with missing block",
-			action:        github.IssueCommentActionCreated,
+			action:        scallywag.IssueCommentActionCreated,
 			isAuthor:      true,
 			commentBody:   "/release-note-none",
 			currentLabels: []string{ReleaseNoteLabelNeeded, "other"},
@@ -61,7 +61,7 @@ func TestReleaseNoteComment(t *testing.T) {
 		},
 		{
 			name:          "author release-note-none with empty block",
-			action:        github.IssueCommentActionCreated,
+			action:        scallywag.IssueCommentActionCreated,
 			isAuthor:      true,
 			commentBody:   "/release-note-none",
 			issueBody:     "bologna ```release-note \n ```",
@@ -72,7 +72,7 @@ func TestReleaseNoteComment(t *testing.T) {
 		},
 		{
 			name:          "author release-note-none with \"none\" block",
-			action:        github.IssueCommentActionCreated,
+			action:        scallywag.IssueCommentActionCreated,
 			isAuthor:      true,
 			commentBody:   "/release-note-none",
 			issueBody:     "bologna ```release-note \nnone \n ```",
@@ -83,7 +83,7 @@ func TestReleaseNoteComment(t *testing.T) {
 		},
 		{
 			name:          "author release-note-none, trailing space.",
-			action:        github.IssueCommentActionCreated,
+			action:        scallywag.IssueCommentActionCreated,
 			isAuthor:      true,
 			commentBody:   "/release-note-none ",
 			currentLabels: []string{ReleaseNoteLabelNeeded, "other"},
@@ -93,14 +93,14 @@ func TestReleaseNoteComment(t *testing.T) {
 		},
 		{
 			name:          "author release-note-none, no op.",
-			action:        github.IssueCommentActionCreated,
+			action:        scallywag.IssueCommentActionCreated,
 			isAuthor:      true,
 			commentBody:   "/release-note-none",
 			currentLabels: []string{releaseNoteNone, "other"},
 		},
 		{
 			name:          "member release-note",
-			action:        github.IssueCommentActionCreated,
+			action:        scallywag.IssueCommentActionCreated,
 			isMember:      true,
 			commentBody:   "/release-note",
 			currentLabels: []string{ReleaseNoteLabelNeeded, "other"},
@@ -109,21 +109,21 @@ func TestReleaseNoteComment(t *testing.T) {
 		},
 		{
 			name:          "someone else release-note, trailing space.",
-			action:        github.IssueCommentActionCreated,
+			action:        scallywag.IssueCommentActionCreated,
 			commentBody:   "/release-note \r",
 			currentLabels: []string{ReleaseNoteLabelNeeded, "other"},
 			shouldComment: true,
 		},
 		{
 			name:          "someone else release-note-none",
-			action:        github.IssueCommentActionCreated,
+			action:        scallywag.IssueCommentActionCreated,
 			commentBody:   "/release-note-none",
 			currentLabels: []string{ReleaseNoteLabelNeeded, "other"},
 			shouldComment: true,
 		},
 		{
 			name:          "author release-note-action-required",
-			action:        github.IssueCommentActionCreated,
+			action:        scallywag.IssueCommentActionCreated,
 			isAuthor:      true,
 			commentBody:   "/release-note-action-required",
 			currentLabels: []string{ReleaseNoteLabelNeeded, "other"},
@@ -131,7 +131,7 @@ func TestReleaseNoteComment(t *testing.T) {
 		},
 		{
 			name:          "release-note-none, delete multiple labels",
-			action:        github.IssueCommentActionCreated,
+			action:        scallywag.IssueCommentActionCreated,
 			isMember:      true,
 			commentBody:   "/release-note-none",
 			currentLabels: []string{releaseNote, ReleaseNoteLabelNeeded, releaseNoteActionRequired, releaseNoteNone, "other"},
@@ -140,7 +140,7 @@ func TestReleaseNoteComment(t *testing.T) {
 		},
 		{
 			name:        "no label present",
-			action:      github.IssueCommentActionCreated,
+			action:      scallywag.IssueCommentActionCreated,
 			isMember:    true,
 			commentBody: "/release-note-none",
 
@@ -149,21 +149,21 @@ func TestReleaseNoteComment(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
+			IssueComments: make(map[int][]scallywag.IssueComment),
 			OrgMembers:    map[string][]string{"": {"m"}},
 		}
-		ice := github.IssueCommentEvent{
+		ice := scallywag.IssueCommentEvent{
 			Action: tc.action,
-			Comment: github.IssueComment{
+			Comment: scallywag.IssueComment{
 				Body: tc.commentBody,
 			},
-			Issue: github.Issue{
+			Issue: scallywag.Issue{
 				Body:        tc.issueBody,
-				User:        github.User{Login: "a"},
+				User:        scallywag.User{Login: "a"},
 				Number:      5,
 				State:       "open",
 				PullRequest: &struct{}{},
-				Assignees:   []github.User{{Login: "r"}},
+				Assignees:   []scallywag.User{{Login: "r"}},
 			},
 		}
 		if tc.isAuthor {
@@ -172,7 +172,7 @@ func TestReleaseNoteComment(t *testing.T) {
 			ice.Comment.User.Login = "m"
 		}
 		for _, l := range tc.currentLabels {
-			ice.Issue.Labels = append(ice.Issue.Labels, github.Label{Name: l})
+			ice.Issue.Labels = append(ice.Issue.Labels, scallywag.Label{Name: l})
 		}
 		if err := handleComment(fc, logrus.WithField("plugin", PluginName), ice); err != nil {
 			t.Errorf("For case %s, did not expect error: %v", tc.name, err)
@@ -215,17 +215,17 @@ func formatLabels(num int, labels ...string) []string {
 	return out
 }
 
-func newFakeClient(body, branch string, initialLabels, comments []string, parentPRs map[int]string) (*fakegithub.FakeClient, *github.PullRequestEvent) {
+func newFakeClient(body, branch string, initialLabels, comments []string, parentPRs map[int]string) (*fakegithub.FakeClient, *scallywag.PullRequestEvent) {
 	labels := formatLabels(1, initialLabels...)
 	for parent, l := range parentPRs {
 		labels = append(labels, formatLabels(parent, l)...)
 	}
-	var issueComments []github.IssueComment
+	var issueComments []scallywag.IssueComment
 	for _, comment := range comments {
-		issueComments = append(issueComments, github.IssueComment{Body: comment})
+		issueComments = append(issueComments, scallywag.IssueComment{Body: comment})
 	}
 	return &fakegithub.FakeClient{
-			IssueComments: map[int][]github.IssueComment{1: issueComments},
+			IssueComments: map[int][]scallywag.IssueComment{1: issueComments},
 			RepoLabelsExisting: []string{
 				lgtmLabel,
 				releaseNote,
@@ -236,17 +236,17 @@ func newFakeClient(body, branch string, initialLabels, comments []string, parent
 			IssueLabelsAdded:   labels,
 			IssueLabelsRemoved: []string{},
 		},
-		&github.PullRequestEvent{
-			Action: github.PullRequestActionEdited,
+		&scallywag.PullRequestEvent{
+			Action: scallywag.PullRequestActionEdited,
 			Number: 1,
-			PullRequest: github.PullRequest{
-				Base:   github.PullRequestBranch{Ref: branch},
+			PullRequest: scallywag.PullRequest{
+				Base:   scallywag.PullRequestBranch{Ref: branch},
 				Number: 1,
 				Body:   body,
-				User:   github.User{Login: "cjwagner"},
+				User:   scallywag.User{Login: "cjwagner"},
 			},
-			Repo: github.Repo{
-				Owner: github.User{Login: "org"},
+			Repo: scallywag.Repo{
+				Owner: scallywag.User{Login: "org"},
 				Name:  "repo",
 			},
 		}

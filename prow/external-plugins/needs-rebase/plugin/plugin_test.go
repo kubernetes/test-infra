@@ -28,9 +28,9 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func testKey(org, repo string, num int) string {
@@ -42,7 +42,7 @@ type fghc struct {
 		PullRequest pullRequest `graphql:"... on PullRequest"`
 	}
 
-	initialLabels []github.Label
+	initialLabels []scallywag.Label
 	mergeable     bool
 
 	// The following are maps are keyed using 'testKey'
@@ -65,12 +65,12 @@ func newFakeClient(prs []pullRequest, initialLabels []string, mergeable bool) *f
 		f.allPRs = append(f.allPRs, s)
 	}
 	for _, label := range initialLabels {
-		f.initialLabels = append(f.initialLabels, github.Label{Name: label})
+		f.initialLabels = append(f.initialLabels, scallywag.Label{Name: label})
 	}
 	return f
 }
 
-func (f *fghc) GetIssueLabels(org, repo string, number int) ([]github.Label, error) {
+func (f *fghc) GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error) {
 	return f.initialLabels, nil
 }
 
@@ -99,7 +99,7 @@ func (f *fghc) IsMergeable(org, repo string, number int, sha string) (bool, erro
 	return f.mergeable, nil
 }
 
-func (f *fghc) DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error {
+func (f *fghc) DeleteStaleComments(org, repo string, number int, comments []scallywag.IssueComment, isStale func(scallywag.IssueComment) bool) error {
 	f.commentDeleted[testKey(org, repo, number)] = true
 	return nil
 }
@@ -183,11 +183,11 @@ func TestHandleEvent(t *testing.T) {
 
 	for _, tc := range testCases {
 		fake := newFakeClient(nil, tc.labels, tc.mergeable)
-		pre := &github.PullRequestEvent{
-			Action: github.PullRequestActionSynchronize,
-			Repo: github.Repo{
+		pre := &scallywag.PullRequestEvent{
+			Action: scallywag.PullRequestActionSynchronize,
+			Repo: scallywag.Repo{
 				Name:  "repo",
-				Owner: github.User{Login: "org"},
+				Owner: scallywag.User{Login: "org"},
 			},
 			Number: 5,
 		}

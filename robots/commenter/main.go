@@ -81,7 +81,7 @@ type meta struct {
 	Number int
 	Org    string
 	Repo   string
-	Issue  github.Issue
+	Issue  scallywag.Issue
 }
 
 type options struct {
@@ -142,7 +142,7 @@ func makeQuery(query string, includeArchived, includeClosed bool, minUpdated tim
 
 type client interface {
 	CreateComment(owner, repo string, number int, comment string) error
-	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
+	FindIssues(query, sort string, asc bool) ([]scallywag.Issue, error)
 }
 
 func main() {

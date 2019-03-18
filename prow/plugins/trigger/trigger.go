@@ -25,10 +25,10 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -96,16 +96,16 @@ type githubClient interface {
 	BotName() (string, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
-	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
+	GetPullRequest(org, repo string, number int) (*scallywag.PullRequest, error)
 	GetRef(org, repo, ref string) (string, error)
 	CreateComment(owner, repo string, number int, comment string) error
-	ListIssueComments(owner, repo string, issue int) ([]github.IssueComment, error)
-	CreateStatus(owner, repo, ref string, status github.Status) error
-	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	ListIssueComments(owner, repo string, issue int) ([]scallywag.IssueComment, error)
+	CreateStatus(owner, repo, ref string, status scallywag.Status) error
+	GetCombinedStatus(org, repo, ref string) (*scallywag.CombinedStatus, error)
+	GetPullRequestChanges(org, repo string, number int) ([]scallywag.PullRequestChange, error)
 	RemoveLabel(org, repo string, number int, label string) error
-	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	DeleteStaleComments(org, repo string, number int, comments []scallywag.IssueComment, isStale func(scallywag.IssueComment) bool) error
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
 }
 
 type prowJobClient interface {
@@ -136,16 +136,16 @@ func getClient(pc plugins.Agent) Client {
 	}
 }
 
-func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pr scallywag.PullRequestEvent) error {
 	org, repo, _ := orgRepoAuthor(pr.PullRequest)
 	return handlePR(getClient(pc), pc.PluginConfig.TriggerFor(org, repo), pr)
 }
 
-func handleGenericCommentEvent(pc plugins.Agent, gc github.GenericCommentEvent) error {
+func handleGenericCommentEvent(pc plugins.Agent, gc scallywag.GenericCommentEvent) error {
 	return handleGenericComment(getClient(pc), pc.PluginConfig.TriggerFor(gc.Repo.Owner.Login, gc.Repo.Name), gc)
 }
 
-func handlePush(pc plugins.Agent, pe github.PushEvent) error {
+func handlePush(pc plugins.Agent, pe scallywag.PushEvent) error {
 	return handlePE(getClient(pc), pe)
 }
 
@@ -185,9 +185,9 @@ func TrustedUser(ghc trustedUserClient, trigger plugins.Trigger, user, org, repo
 	return member, nil
 }
 
-func skippedStatusFor(context string) github.Status {
-	return github.Status{
-		State:       github.StatusSuccess,
+func skippedStatusFor(context string) scallywag.Status {
+	return scallywag.Status{
+		State:       scallywag.StatusSuccess,
 		Context:     context,
 		Description: "Skipped.",
 	}
@@ -195,7 +195,7 @@ func skippedStatusFor(context string) github.Status {
 
 // runAndSkipJobs executes the config.Presubmits that are requested and posts skipped statuses
 // for the reporting jobs that are skipped
-func runAndSkipJobs(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, skippedJobs []config.Presubmit, eventGUID string, elideSkippedContexts bool) error {
+func runAndSkipJobs(c Client, pr *scallywag.PullRequest, requestedJobs []config.Presubmit, skippedJobs []config.Presubmit, eventGUID string, elideSkippedContexts bool) error {
 	if err := validateContextOverlap(requestedJobs, skippedJobs); err != nil {
 		c.Logger.WithError(err).Warn("Could not run or skip requested jobs, overlapping contexts.")
 		return err
@@ -227,7 +227,7 @@ func validateContextOverlap(toRun, toSkip []config.Presubmit) error {
 }
 
 // RunRequested executes the config.Presubmits that are requested
-func RunRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, eventGUID string) error {
+func RunRequested(c Client, pr *scallywag.PullRequest, requestedJobs []config.Presubmit, eventGUID string) error {
 	baseSHA, err := c.GitHubClient.GetRef(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, "heads/"+pr.Base.Ref)
 	if err != nil {
 		return err
@@ -247,7 +247,7 @@ func RunRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presu
 }
 
 // skipRequested posts skipped statuses for the config.Presubmits that are requested
-func skipRequested(c Client, pr *github.PullRequest, skippedJobs []config.Presubmit) error {
+func skipRequested(c Client, pr *scallywag.PullRequest, skippedJobs []config.Presubmit) error {
 	var errors []error
 	for _, job := range skippedJobs {
 		if job.SkipReport {

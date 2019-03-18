@@ -22,8 +22,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func TestBranchCleaner(t *testing.T) {
@@ -33,33 +33,33 @@ func TestBranchCleaner(t *testing.T) {
 
 	testcases := []struct {
 		name                 string
-		prAction             github.PullRequestEventAction
+		prAction             scallywag.PullRequestEventAction
 		merged               bool
 		headRepoFullName     string
 		branchDeleteExpected bool
 	}{
 		{
 			name:                 "Opened PR nothing to do",
-			prAction:             github.PullRequestActionOpened,
+			prAction:             scallywag.PullRequestActionOpened,
 			merged:               false,
 			branchDeleteExpected: false,
 		},
 		{
 			name:                 "Closed PR unmerged nothing to do",
-			prAction:             github.PullRequestActionClosed,
+			prAction:             scallywag.PullRequestActionClosed,
 			merged:               false,
 			branchDeleteExpected: false,
 		},
 		{
 			name:                 "PR from different repo nothing to do",
-			prAction:             github.PullRequestActionClosed,
+			prAction:             scallywag.PullRequestActionClosed,
 			merged:               true,
 			headRepoFullName:     "different-org/repo",
 			branchDeleteExpected: false,
 		},
 		{
 			name:                 "PR from same repo delete head ref",
-			prAction:             github.PullRequestActionClosed,
+			prAction:             scallywag.PullRequestActionClosed,
 			merged:               true,
 			headRepoFullName:     "my-org/repo",
 			branchDeleteExpected: true,
@@ -73,22 +73,22 @@ func TestBranchCleaner(t *testing.T) {
 
 		t.Run(tc.name, func(t *testing.T) {
 			log := logrus.WithField("plugin", pluginName)
-			event := github.PullRequestEvent{
+			event := scallywag.PullRequestEvent{
 				Action: tc.prAction,
 				Number: prNumber,
-				PullRequest: github.PullRequest{
-					Base: github.PullRequestBranch{
+				PullRequest: scallywag.PullRequest{
+					Base: scallywag.PullRequestBranch{
 						Ref: "master",
-						Repo: github.Repo{
+						Repo: scallywag.Repo{
 							DefaultBranch: "master",
 							FullName:      baseRepoFullName,
 							Name:          baseRepoRepo,
-							Owner:         github.User{Login: baseRepoOrg},
+							Owner:         scallywag.User{Login: baseRepoOrg},
 						},
 					},
-					Head: github.PullRequestBranch{
+					Head: scallywag.PullRequestBranch{
 						Ref: "my-feature",
-						Repo: github.Repo{
+						Repo: scallywag.Repo{
 							FullName: tc.headRepoFullName,
 						},
 					},
@@ -99,7 +99,7 @@ func TestBranchCleaner(t *testing.T) {
 			}
 
 			fgc := &fakegithub.FakeClient{
-				PullRequests: map[int]*github.PullRequest{
+				PullRequests: map[int]*scallywag.PullRequest{
 					prNumber: {
 						Number: prNumber,
 					},

@@ -659,7 +659,7 @@ These are the possible validation error codes:
     already_exists:
         another resource has the same valid as this field
     custom:
-        some resources return this (e.g. github.User.CreateKey()), additional
+        some resources return this (e.g. scallywag.User.CreateKey()), additional
         information is set in the Message field of the Error
 
 GitHub API docs: https://developer.github.com/v3/#client-errors

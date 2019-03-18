@@ -32,6 +32,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/trigger"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 // NewController constructs a new controller to reconcile stauses on config change
@@ -81,7 +82,7 @@ func (m *gitHubMigrator) migrate(org, repo, from, to string, targetBranchFilter 
 }
 
 type prowJobTriggerer interface {
-	run(pr *github.PullRequest, requestedJobs []config.Presubmit) error
+	run(pr *scallywag.PullRequest, requestedJobs []config.Presubmit) error
 }
 
 type kubeProwJobTriggerer struct {
@@ -90,7 +91,7 @@ type kubeProwJobTriggerer struct {
 	configAgent   *config.Agent
 }
 
-func (t *kubeProwJobTriggerer) run(pr *github.PullRequest, requestedJobs []config.Presubmit) error {
+func (t *kubeProwJobTriggerer) run(pr *scallywag.PullRequest, requestedJobs []config.Presubmit) error {
 	return trigger.RunRequested(
 		trigger.Client{
 			GitHubClient:  t.githubClient,
@@ -103,7 +104,7 @@ func (t *kubeProwJobTriggerer) run(pr *github.PullRequest, requestedJobs []confi
 }
 
 type githubClient interface {
-	GetPullRequests(org, repo string) ([]github.PullRequest, error)
+	GetPullRequests(org, repo string) ([]scallywag.PullRequest, error)
 }
 
 type trustedChecker interface {
@@ -217,7 +218,7 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 	return errorutil.NewAggregate(triggerErrors...)
 }
 
-func (c *Controller) triggerIfTrusted(org, repo string, pr github.PullRequest, presubmits []config.Presubmit) error {
+func (c *Controller) triggerIfTrusted(org, repo string, pr scallywag.PullRequest, presubmits []config.Presubmit) error {
 	trusted, err := c.trustedChecker.trustedPullRequest(pr.User.Login, org, repo, pr.Number)
 	if err != nil {
 		return fmt.Errorf("failed to determine if %s/%s#%d is trusted: %v", org, repo, pr.Number, err)

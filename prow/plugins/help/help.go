@@ -25,6 +25,7 @@ import (
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const pluginName = "help"
@@ -79,14 +80,14 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
 }
 
 type commentPruner interface {
-	PruneComments(shouldPrune func(github.IssueComment) bool)
+	PruneComments(shouldPrune func(scallywag.IssueComment) bool)
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e scallywag.GenericCommentEvent) error {
 	cp, err := pc.CommentPruner()
 	if err != nil {
 		return err
@@ -94,9 +95,9 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 	return handle(pc.GitHubClient, pc.Logger, cp, &e)
 }
 
-func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.GenericCommentEvent) error {
+func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *scallywag.GenericCommentEvent) error {
 	// Only consider open issues and new comments.
-	if e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
+	if e.IsPR || e.IssueState != "open" || e.Action != scallywag.GenericCommentActionCreated {
 		return nil
 	}
 
@@ -188,8 +189,8 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 }
 
 // shouldPrune finds comments left by this plugin.
-func shouldPrune(log *logrus.Entry, botName, msgPruneMatch string) func(github.IssueComment) bool {
-	return func(comment github.IssueComment) bool {
+func shouldPrune(log *logrus.Entry, botName, msgPruneMatch string) func(scallywag.IssueComment) bool {
+	return func(comment scallywag.IssueComment) bool {
 		if comment.User.Login != botName {
 			return false
 		}

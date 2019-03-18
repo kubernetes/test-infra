@@ -23,8 +23,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 var testQuery = TideQuery{
@@ -101,44 +101,44 @@ func TestOrgExceptionsAndRepos(t *testing.T) {
 
 func TestMergeMethod(t *testing.T) {
 	ti := &Tide{
-		MergeType: map[string]github.PullRequestMergeType{
-			"kubernetes/kops":             github.MergeRebase,
-			"kubernetes/charts":           github.MergeSquash,
-			"helm/charts":                 github.MergeSquash,
-			"kubernetes-helm":             github.MergeSquash,
-			"kubernetes-helm/chartmuseum": github.MergeMerge,
+		MergeType: map[string]scallywag.PullRequestMergeType{
+			"kubernetes/kops":             scallywag.MergeRebase,
+			"kubernetes/charts":           scallywag.MergeSquash,
+			"helm/charts":                 scallywag.MergeSquash,
+			"kubernetes-helm":             scallywag.MergeSquash,
+			"kubernetes-helm/chartmuseum": scallywag.MergeMerge,
 		},
 	}
 
 	var testcases = []struct {
 		org      string
 		repo     string
-		expected github.PullRequestMergeType
+		expected scallywag.PullRequestMergeType
 	}{
 		{
 			"kubernetes",
 			"kubernetes",
-			github.MergeMerge,
+			scallywag.MergeMerge,
 		},
 		{
 			"kubernetes",
 			"kops",
-			github.MergeRebase,
+			scallywag.MergeRebase,
 		},
 		{
 			"kubernetes",
 			"charts",
-			github.MergeSquash,
+			scallywag.MergeSquash,
 		},
 		{
 			"kubernetes-helm",
 			"monocular",
-			github.MergeSquash,
+			scallywag.MergeSquash,
 		},
 		{
 			"kubernetes-helm",
 			"chartmuseum",
-			github.MergeMerge,
+			scallywag.MergeMerge,
 		},
 	}
 

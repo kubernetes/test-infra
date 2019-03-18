@@ -21,9 +21,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 const (
@@ -39,7 +39,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		Description: "The branchcleaner plugin automatically deletes source branches for merged PRs between two branches on the same repository. This is helpful to keep repos that don't allow forking clean."}, nil
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre scallywag.PullRequestEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, pre)
 }
 
@@ -47,9 +47,9 @@ type githubClient interface {
 	DeleteRef(owner, repo, ref string) error
 }
 
-func handle(gc githubClient, log *logrus.Entry, pre github.PullRequestEvent) error {
+func handle(gc githubClient, log *logrus.Entry, pre scallywag.PullRequestEvent) error {
 	// Only consider closed PRs that got merged
-	if pre.Action != github.PullRequestActionClosed || !pre.PullRequest.Merged {
+	if pre.Action != scallywag.PullRequestActionClosed || !pre.PullRequest.Merged {
 		return nil
 	}
 

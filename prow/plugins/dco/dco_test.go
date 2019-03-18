@@ -23,13 +23,14 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/scallywag"
+	"k8s.io/test-infra/prow/scallywag/github"
 )
 
 type fakePruner struct{}
 
-func (fp *fakePruner) PruneComments(shouldPrune func(github.IssueComment) bool) {}
+func (fp *fakePruner) PruneComments(shouldPrune func(scallywag.IssueComment) bool) {}
 
 func strP(str string) *string {
 	return &str
@@ -41,8 +42,8 @@ func TestHandlePullRequest(t *testing.T) {
 		name string
 
 		// PR settings
-		pullRequestEvent github.PullRequestEvent
-		commits          []github.RepositoryCommit
+		pullRequestEvent scallywag.PullRequestEvent
+		commits          []scallywag.RepositoryCommit
 		issueState       string
 		hasDCOYes        bool
 		hasDCONo         bool
@@ -60,26 +61,26 @@ func TestHandlePullRequest(t *testing.T) {
 	}{
 		{
 			name: "should not do anything on pull request edited",
-			pullRequestEvent: github.PullRequestEvent{
-				Action:      github.PullRequestActionEdited,
-				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequestEvent: scallywag.PullRequestEvent{
+				Action:      scallywag.PullRequestActionEdited,
+				PullRequest: scallywag.PullRequest{Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
 		},
 		{
 			name: "should add 'no' label & status context and add a comment if no commits have sign off",
-			pullRequestEvent: github.PullRequestEvent{
-				Action:      github.PullRequestActionOpened,
-				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequestEvent: scallywag.PullRequestEvent{
+				Action:      scallywag.PullRequestActionOpened,
+				PullRequest: scallywag.PullRequest{Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
-			commits: []github.RepositoryCommit{
-				{SHA: "sha", Commit: github.GitCommit{Message: "not a sign off"}},
+			commits: []scallywag.RepositoryCommit{
+				{SHA: "sha", Commit: scallywag.GitCommit{Message: "not a sign off"}},
 			},
 			issueState: "open",
 			hasDCONo:   false,
 			hasDCOYes:  false,
 
 			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
-			expectedStatus: github.StatusFailure,
+			expectedStatus: scallywag.StatusFailure,
 			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
 :memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
@@ -98,12 +99,12 @@ Instructions for interacting with me using PR comments are available [here](http
 		},
 		{
 			name: "should add 'no' label & status context, remove old labels and add a comment if no commits have sign off",
-			pullRequestEvent: github.PullRequestEvent{
-				Action:      github.PullRequestActionOpened,
-				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequestEvent: scallywag.PullRequestEvent{
+				Action:      scallywag.PullRequestActionOpened,
+				PullRequest: scallywag.PullRequest{Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
-			commits: []github.RepositoryCommit{
-				{SHA: "sha", Commit: github.GitCommit{Message: "not a sign off"}},
+			commits: []scallywag.RepositoryCommit{
+				{SHA: "sha", Commit: scallywag.GitCommit{Message: "not a sign off"}},
 			},
 			issueState: "open",
 			hasDCONo:   false,
@@ -111,7 +112,7 @@ Instructions for interacting with me using PR comments are available [here](http
 
 			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
 			removedLabel:   fmt.Sprintf("/#3:%s", dcoYesLabel),
-			expectedStatus: github.StatusFailure,
+			expectedStatus: scallywag.StatusFailure,
 			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
 :memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
@@ -130,19 +131,19 @@ Instructions for interacting with me using PR comments are available [here](http
 		},
 		{
 			name: "should update comment if labels and status are up to date and sign off is failing",
-			pullRequestEvent: github.PullRequestEvent{
-				Action:      github.PullRequestActionOpened,
-				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequestEvent: scallywag.PullRequestEvent{
+				Action:      scallywag.PullRequestActionOpened,
+				PullRequest: scallywag.PullRequest{Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
-			commits: []github.RepositoryCommit{
-				{SHA: "sha", Commit: github.GitCommit{Message: "not a sign off"}},
+			commits: []scallywag.RepositoryCommit{
+				{SHA: "sha", Commit: scallywag.GitCommit{Message: "not a sign off"}},
 			},
 			issueState: "open",
 			hasDCONo:   true,
 			hasDCOYes:  false,
-			status:     github.StatusFailure,
+			status:     scallywag.StatusFailure,
 
-			expectedStatus: github.StatusFailure,
+			expectedStatus: scallywag.StatusFailure,
 			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
 :memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
@@ -161,13 +162,13 @@ Instructions for interacting with me using PR comments are available [here](http
 		},
 		{
 			name: "should mark the PR as failed if just one commit is missing sign-off",
-			pullRequestEvent: github.PullRequestEvent{
-				Action:      github.PullRequestActionOpened,
-				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequestEvent: scallywag.PullRequestEvent{
+				Action:      scallywag.PullRequestActionOpened,
+				PullRequest: scallywag.PullRequest{Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
-			commits: []github.RepositoryCommit{
-				{SHA: "sha1", Commit: github.GitCommit{Message: "Signed-off-by: someone"}},
-				{SHA: "sha", Commit: github.GitCommit{Message: "not signed off"}},
+			commits: []scallywag.RepositoryCommit{
+				{SHA: "sha1", Commit: scallywag.GitCommit{Message: "Signed-off-by: someone"}},
+				{SHA: "sha", Commit: scallywag.GitCommit{Message: "not signed off"}},
 			},
 			issueState: "open",
 			hasDCONo:   false,
@@ -175,7 +176,7 @@ Instructions for interacting with me using PR comments are available [here](http
 
 			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
 			removedLabel:   fmt.Sprintf("/#3:%s", dcoYesLabel),
-			expectedStatus: github.StatusFailure,
+			expectedStatus: scallywag.StatusFailure,
 			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
 :memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
@@ -194,28 +195,28 @@ Instructions for interacting with me using PR comments are available [here](http
 		},
 		{
 			name: "should add label and update status context if all commits are signed-off",
-			pullRequestEvent: github.PullRequestEvent{
-				Action:      github.PullRequestActionOpened,
-				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequestEvent: scallywag.PullRequestEvent{
+				Action:      scallywag.PullRequestActionOpened,
+				PullRequest: scallywag.PullRequest{Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
-			commits: []github.RepositoryCommit{
-				{SHA: "sha", Commit: github.GitCommit{Message: "Signed-off-by: someone"}},
+			commits: []scallywag.RepositoryCommit{
+				{SHA: "sha", Commit: scallywag.GitCommit{Message: "Signed-off-by: someone"}},
 			},
 			issueState: "open",
 			hasDCONo:   false,
 			hasDCOYes:  false,
 
 			addedLabel:     fmt.Sprintf("/#3:%s", dcoYesLabel),
-			expectedStatus: github.StatusSuccess,
+			expectedStatus: scallywag.StatusSuccess,
 		},
 		{
 			name: "should add label and update status context and remove old labels if all commits are signed-off",
-			pullRequestEvent: github.PullRequestEvent{
-				Action:      github.PullRequestActionOpened,
-				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequestEvent: scallywag.PullRequestEvent{
+				Action:      scallywag.PullRequestActionOpened,
+				PullRequest: scallywag.PullRequest{Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
-			commits: []github.RepositoryCommit{
-				{SHA: "sha", Commit: github.GitCommit{Message: "Signed-off-by: someone"}},
+			commits: []scallywag.RepositoryCommit{
+				{SHA: "sha", Commit: scallywag.GitCommit{Message: "Signed-off-by: someone"}},
 			},
 			issueState: "open",
 			hasDCONo:   true,
@@ -223,17 +224,17 @@ Instructions for interacting with me using PR comments are available [here](http
 
 			addedLabel:     fmt.Sprintf("/#3:%s", dcoYesLabel),
 			removedLabel:   fmt.Sprintf("/#3:%s", dcoNoLabel),
-			expectedStatus: github.StatusSuccess,
+			expectedStatus: scallywag.StatusSuccess,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			fc := &fakegithub.FakeClient{
-				CombinedStatuses: make(map[string]*github.CombinedStatus),
-				CreatedStatuses:  make(map[string][]github.Status),
-				PullRequests:     map[int]*github.PullRequest{tc.pullRequestEvent.PullRequest.Number: &tc.pullRequestEvent.PullRequest},
-				IssueComments:    make(map[int][]github.IssueComment),
-				CommitMap: map[string][]github.RepositoryCommit{
+				CombinedStatuses: make(map[string]*scallywag.CombinedStatus),
+				CreatedStatuses:  make(map[string][]scallywag.Status),
+				PullRequests:     map[int]*scallywag.PullRequest{tc.pullRequestEvent.PullRequest.Number: &tc.pullRequestEvent.PullRequest},
+				IssueComments:    make(map[int][]scallywag.IssueComment),
+				CommitMap: map[string][]scallywag.RepositoryCommit{
 					"/#3": tc.commits,
 				},
 			}
@@ -247,7 +248,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				Statuses: []github.Status{},
 			}
 			if tc.status != "" {
-				fc.CreatedStatuses["sha"] = []github.Status{
+				fc.CreatedStatuses["sha"] = []scallywag.Status{
 					{Context: dcoContextName, State: tc.status},
 				}
 				combinedStatus = &github.CombinedStatus{
@@ -325,9 +326,9 @@ func TestHandleComment(t *testing.T) {
 		name string
 
 		// PR settings
-		commentEvent github.GenericCommentEvent
-		pullRequests map[int]*github.PullRequest
-		commits      []github.RepositoryCommit
+		commentEvent scallywag.GenericCommentEvent
+		pullRequests map[int]*scallywag.PullRequest
+		commits      []scallywag.RepositoryCommit
 		issueState   string
 		hasDCOYes    bool
 		hasDCONo     bool
@@ -345,38 +346,38 @@ func TestHandleComment(t *testing.T) {
 	}{
 		{
 			name: "should not do anything if comment does not match /check-dco",
-			commentEvent: github.GenericCommentEvent{
+			commentEvent: scallywag.GenericCommentEvent{
 				IssueState: "open",
-				Action:     github.GenericCommentActionCreated,
+				Action:     scallywag.GenericCommentActionCreated,
 				Body:       "not-the-trigger",
 				IsPR:       true,
 				Number:     3,
 			},
-			pullRequests: map[int]*github.PullRequest{
-				3: {Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequests: map[int]*scallywag.PullRequest{
+				3: {Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
 		},
 		{
 			name: "should add 'no' label & status context and add a comment if no commits have sign off",
-			commentEvent: github.GenericCommentEvent{
+			commentEvent: scallywag.GenericCommentEvent{
 				IssueState: "open",
-				Action:     github.GenericCommentActionCreated,
+				Action:     scallywag.GenericCommentActionCreated,
 				Body:       "/check-dco",
 				IsPR:       true,
 				Number:     3,
 			},
-			pullRequests: map[int]*github.PullRequest{
-				3: {Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			pullRequests: map[int]*scallywag.PullRequest{
+				3: {Number: 3, Head: scallywag.PullRequestBranch{SHA: "sha"}},
 			},
-			commits: []github.RepositoryCommit{
-				{SHA: "sha", Commit: github.GitCommit{Message: "not a sign off"}},
+			commits: []scallywag.RepositoryCommit{
+				{SHA: "sha", Commit: scallywag.GitCommit{Message: "not a sign off"}},
 			},
 			issueState: "open",
 			hasDCONo:   false,
 			hasDCOYes:  false,
 
 			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
-			expectedStatus: github.StatusFailure,
+			expectedStatus: scallywag.StatusFailure,
 			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
 :memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
@@ -397,11 +398,11 @@ Instructions for interacting with me using PR comments are available [here](http
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			fc := &fakegithub.FakeClient{
-				CreatedStatuses:  make(map[string][]github.Status),
-				CombinedStatuses: make(map[string]*github.CombinedStatus),
+				CreatedStatuses:  make(map[string][]scallywag.Status),
+				CombinedStatuses: make(map[string]*scallywag.CombinedStatus),
 				PullRequests:     tc.pullRequests,
-				IssueComments:    make(map[int][]github.IssueComment),
-				CommitMap: map[string][]github.RepositoryCommit{
+				IssueComments:    make(map[int][]scallywag.IssueComment),
+				CommitMap: map[string][]scallywag.RepositoryCommit{
 					"/#3": tc.commits,
 				},
 			}
@@ -415,7 +416,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				Statuses: []github.Status{},
 			}
 			if tc.status != "" {
-				fc.CreatedStatuses["sha"] = []github.Status{
+				fc.CreatedStatuses["sha"] = []scallywag.Status{
 					{Context: dcoContextName, State: tc.status},
 				}
 				combinedStatus = &github.CombinedStatus{
