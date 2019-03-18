@@ -26,7 +26,7 @@ import (
 var TestAllRe = regexp.MustCompile(`(?m)^/test all,?($|\s.*)`)
 
 // Filter digests a presubmit config to determine if:
-//  - we can be certain that the presubmit should run
+//  - we the presubmit matched the filter
 //  - we know that the presubmit is forced to run
 //  - what the default behavior should be if the presubmit
 //    runs conditionally and does not match trigger conditions

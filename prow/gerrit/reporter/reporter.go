@@ -112,7 +112,6 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 
 // Report will send the current prowjob status as a gerrit review
 func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
-	// If you are hitting here, which means the entire patchset has been finished :-)
 
 	logger := logrus.WithField("prowjob", pj)
 
@@ -142,7 +141,6 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	}
 
 	// generate an aggregated report:
-	total := 0
 	success := 0
 	message := ""
 	var toReportJobs []*v1.ProwJob
@@ -158,14 +156,14 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 			continue
 		}
 		toReportJobs = append(toReportJobs, pjOnRevisionWithSameLabel)
-		total++
+
 		if pjOnRevisionWithSameLabel.Status.State == v1.SuccessState {
 			success++
 		}
 
 		message = fmt.Sprintf("%s\nJob %s finished with %s -- URL: %s", message, pjOnRevisionWithSameLabel.Spec.Job, pjOnRevisionWithSameLabel.Status.State, pjOnRevisionWithSameLabel.Status.URL)
 	}
-
+	total := len(toReportJobs)
 	if total <= 0 {
 		// Shouldn't happen but return if does
 		logger.Warn("Tried to report empty or aborted jobs.")

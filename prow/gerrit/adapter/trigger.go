@@ -40,22 +40,15 @@ func messageFilter(lastUpdate time.Time, change client.ChangeInfo, presubmits []
 		}
 		if message.RevisionNumber != currentRevision || messageTime.Before(lastUpdate) {
 			continue
-
 		}
-		// Skip comments not germane to this plugin
+
 		if !pjutil.TestAllRe.MatchString(message.Message) {
-			matched := false
 			for _, presubmit := range presubmits {
-				matched = matched || presubmit.TriggerMatches(message.Message)
-				if matched {
+				if presubmit.TriggerMatches(message.Message) {
+					logrus.Infof("Comment %s matches triggering regex, for %s.", message.Message, presubmit.Name)
 					filters = append(filters, pjutil.CommandFilter(message.Message))
 				}
 			}
-			if !matched {
-				logrus.Infof("Comment %s doesn't match any triggering regex, skipping.", message.Message)
-				continue
-			}
-
 		} else {
 			filters = append(filters, pjutil.TestAllFilter())
 		}
