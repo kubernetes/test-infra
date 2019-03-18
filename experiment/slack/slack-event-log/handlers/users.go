@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"k8s.io/test-infra/experiment/slack-event-log/slack"
+	"k8s.io/test-infra/experiment/slack/slack"
 )
 
 func (h *Handler) handleTeamJoin(body []byte) ([]byte, error) {

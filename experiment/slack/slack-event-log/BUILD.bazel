@@ -3,11 +3,11 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "k8s.io/test-infra/experiment/slack-event-log",
+    importpath = "k8s.io/test-infra/experiment/slack/slack-event-log",
     visibility = ["//visibility:private"],
     deps = [
-        "//experiment/slack-event-log/handlers:go_default_library",
-        "//experiment/slack-event-log/slack:go_default_library",
+        "//experiment/slack/slack:go_default_library",
+        "//experiment/slack/slack-event-log/handlers:go_default_library",
     ],
 )
 
@@ -28,8 +28,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//experiment/slack-event-log/handlers:all-srcs",
-        "//experiment/slack-event-log/slack:all-srcs",
+        "//experiment/slack/slack-event-log/handlers:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

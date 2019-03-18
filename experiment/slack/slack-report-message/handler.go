@@ -25,11 +25,11 @@ import (
 	"net/url"
 	"strconv"
 
-	"k8s.io/test-infra/experiment/slack-event-log/slack"
+	"k8s.io/test-infra/experiment/slack/slack"
 )
 
 type handler struct {
-	slack *slack.Slack
+	client *slack.Client
 }
 
 func logError(rw http.ResponseWriter, format string, args ...interface{}) {
@@ -45,7 +45,7 @@ func (h *handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		logError(rw, "Failed to read incoming request body: %v", err)
 		return
 	}
-	if err := h.slack.VerifySignature(body, r.Header); err != nil {
+	if err := h.client.VerifySignature(body, r.Header); err != nil {
 		logError(rw, "Failed validation: %v", err)
 		return
 	}
@@ -117,7 +117,7 @@ func (h *handler) handleReportMessage(interaction slackInteraction, rw http.Resp
 			State:          string(state),
 		},
 	}
-	if err := h.slack.CallMethod("dialog.open", dialog); err != nil {
+	if err := h.client.CallMethod("dialog.open", dialog); err != nil {
 		logError(rw, "Failed to call dialog.open: %v", err)
 		return
 	}
@@ -193,7 +193,7 @@ func (h *handler) handleReportSubmission(interaction slackInteraction, rw http.R
 			},
 		},
 	}
-	if err := h.slack.CallMethod(h.slack.Config.WebhookURL, report); err != nil {
+	if err := h.client.CallMethod(h.client.Config.WebhookURL, report); err != nil {
 		logError(rw, "Failed to send report: %v.", err)
 		return
 	}
@@ -204,7 +204,7 @@ func (h *handler) handleReportSubmission(interaction slackInteraction, rw http.R
 		"replace_original": false,
 	}
 
-	if h.slack.CallMethod(interaction.ResponseURL, response) != nil {
+	if h.client.CallMethod(interaction.ResponseURL, response) != nil {
 		logError(rw, "Failed to send response: %v.", err)
 		return
 	}
@@ -213,7 +213,7 @@ func (h *handler) handleReportSubmission(interaction slackInteraction, rw http.R
 // getPermalink is a weirdly special slack API, so we implement it separately.
 func (h *handler) getPermalink(channel string, ts string) (string, error) {
 	q := url.Values{
-		"token":      []string{h.slack.Config.AccessToken},
+		"token":      []string{h.client.Config.AccessToken},
 		"channel":    []string{channel},
 		"message_ts": []string{ts},
 	}
@@ -239,7 +239,7 @@ func (h *handler) getPermalink(channel string, ts string) (string, error) {
 // users.info is also weirdly special. Thanks, Slack.
 func (h *handler) getDisplayName(id string) (string, error) {
 	q := url.Values{
-		"token": []string{h.slack.Config.AccessToken},
+		"token": []string{h.client.Config.AccessToken},
 		"user":  []string{id},
 	}
 	resp, err := http.Get("https://slack.com/api/users.info?" + q.Encode())

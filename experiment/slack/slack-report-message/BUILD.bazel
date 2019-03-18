@@ -6,9 +6,9 @@ go_library(
         "handler.go",
         "main.go",
     ],
-    importpath = "k8s.io/test-infra/experiment/slack-report-message",
+    importpath = "k8s.io/test-infra/experiment/slack/slack-report-message",
     visibility = ["//visibility:private"],
-    deps = ["//experiment/slack-event-log/slack:go_default_library"],
+    deps = ["//experiment/slack/slack:go_default_library"],
 )
 
 go_binary(
