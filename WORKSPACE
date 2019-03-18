@@ -763,7 +763,7 @@ go_repository(
 go_repository(
     name = "com_github_gogo_protobuf",
     importpath = "github.com/gogo/protobuf",
-    tag = "v1.1.1",
+    tag = "v1.2.1",
 )
 
 go_repository(
@@ -1447,7 +1447,7 @@ go_repository(
 go_repository(
     name = "org_golang_google_grpc",
     importpath = "google.golang.org/grpc",
-    tag = "v1.16.0",
+    tag = "v1.17.0",
 )
 
 go_repository(
@@ -1458,7 +1458,7 @@ go_repository(
 
 go_repository(
     name = "org_golang_x_lint",
-    commit = "06c8688daad7",
+    commit = "c67002cb31c3",
     importpath = "golang.org/x/lint",
 )
 
@@ -1544,4 +1544,10 @@ go_repository(
     name = "io_k8s_gengo",
     commit = "7a1b7fb0289f",
     importpath = "k8s.io/gengo",
+)
+
+go_repository(
+    name = "com_github_kisielk_errcheck",
+    importpath = "github.com/kisielk/errcheck",
+    tag = "v1.1.0",
 )

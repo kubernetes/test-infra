@@ -32,6 +32,7 @@ require (
 	github.com/go-openapi/spec v0.0.0-20171219195406-fa03337d7da5
 	github.com/go-openapi/swag v0.0.0-20171111214437-cf0bdb963811 // indirect
 	github.com/go-sql-driver/mysql v0.0.0-20160411075031-7ebe0a500653 // indirect
+	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/groupcache v0.0.0-20180513044358-24b0969c4cb7 // indirect
 	github.com/golang/mock v1.1.1
@@ -78,7 +79,7 @@ require (
 	github.com/spf13/pflag v1.0.3
 	github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1 // indirect
 	golang.org/x/crypto v0.0.0-20181015023909-0c41d7ab0a0e
-	golang.org/x/lint v0.0.0-20180702182130-06c8688daad7
+	golang.org/x/lint v0.0.0-20181026193005-c67002cb31c3
 	golang.org/x/net v0.0.0-20181201002055-351d144fa1fc
 	golang.org/x/oauth2 v0.0.0-20181120190819-8f65e3013eba
 	golang.org/x/sync v0.0.0-20181108010431-42b317875d0f
@@ -88,7 +89,7 @@ require (
 	google.golang.org/api v0.0.0-20181021000519-a2651947f503
 	google.golang.org/appengine v1.3.0 // indirect
 	google.golang.org/genproto v0.0.0-20181109154231-b5d43981345b
-	google.golang.org/grpc v1.16.0
+	google.golang.org/grpc v1.17.0
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v2 v2.2.2
 	k8s.io/api v0.0.0-20181128191700-6db15a15d2d3
