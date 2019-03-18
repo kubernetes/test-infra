@@ -121,7 +121,7 @@ func (m *pubSubMessage) nack() {
 func extractFromAttribute(attrs map[string]string, key string) (string, error) {
 	value, ok := attrs[key]
 	if !ok {
-		return "", fmt.Errorf("unable to find %s from the attributes", key)
+		return "", fmt.Errorf("unable to find %q from the attributes", key)
 	}
 	return value, nil
 }
@@ -162,7 +162,9 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 		pj.Status.State = prowapi.ErrorState
 		pj.Status.Description = err.Error()
 		if s.Reporter.ShouldReport(&prowJob) {
-			s.Reporter.Report(&prowJob)
+			if err := s.Reporter.Report(&prowJob); err != nil {
+				l.Warningf("failed to report status. %v", err)
+			}
 		}
 	}
 
@@ -170,7 +172,6 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 		return err
 	}
 	var periodicJob *config.Periodic
-	l.Infof("looking for periodic job %s", pe.Name)
 	for _, job := range s.ConfigAgent.Config().AllPeriodics() {
 		if job.Name == pe.Name {
 			periodicJob = &job
@@ -178,8 +179,8 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 		}
 	}
 	if periodicJob == nil {
-		err := fmt.Errorf("failed to find associated periodic job %s", pe.Name)
-		l.WithError(err).Errorf("failed to create job %s", pe.Name)
+		err := fmt.Errorf("failed to find associated periodic job %q", pe.Name)
+		l.WithError(err).Errorf("failed to create job %q", pe.Name)
 		prowJob = pjutil.NewProwJobWithAnnotation(prowapi.ProwJobSpec{}, nil, pe.Annotations)
 		reportProwJobFailure(&prowJob, err)
 		return err
@@ -202,10 +203,10 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 	}
 
 	if _, err := s.ProwJobClient.Create(&prowJob); err != nil {
-		l.WithError(err).Errorf("failed to create job %s as %s", pe.Name, prowJob.Name)
+		l.WithError(err).Errorf("failed to create job %q as %q", pe.Name, prowJob.Name)
 		reportProwJobFailure(&prowJob, err)
 		return err
 	}
-	l.Infof("periodic job %s created as %s", pe.Name, prowJob.Name)
+	l.Infof("periodic job %q created as %q", pe.Name, prowJob.Name)
 	return nil
 }

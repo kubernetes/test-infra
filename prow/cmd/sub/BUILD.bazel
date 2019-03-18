@@ -14,6 +14,7 @@ go_library(
         "//prow/flagutil:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//prow/metrics:go_default_library",
+        "//prow/pubsub/reporter:go_default_library",
         "//prow/pubsub/subscriber:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus/promhttp:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
