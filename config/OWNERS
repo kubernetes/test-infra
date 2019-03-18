@@ -2,6 +2,7 @@
 
 approvers:
 - krzyzacy
+- spiffxp
 - wojtek-t
 labels:
 - area/config
