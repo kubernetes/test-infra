@@ -182,7 +182,13 @@ func main() {
 			logrus.WithError(err).Fatal("Failed to start secret agent")
 		}
 	}
-	o.githubClient, err = o.github.GitHubClient(secretAgent, false)
+
+	configAgent := &config.Agent{}
+	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+		logrus.WithError(err).Fatal("Error starting config agent.")
+	}
+
+	o.githubClient, err = o.github.GitHubClient(secretAgent, configAgent, false)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to get GitHub client")
 	}

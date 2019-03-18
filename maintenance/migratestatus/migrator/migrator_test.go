@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/pkg/errors"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/scallywag"
 )
 

@@ -4,8 +4,8 @@ import (
 	"context"
 )
 
-// GitClient is an interface defining interactions with git providers.
-type GitClient interface {
+// Client is an interface defining interactions with git providers.
+type Client interface {
 	BotName() (string, error)
 	Email() (string, error)
 	IsMember(org, user string) (bool, error)
@@ -94,4 +94,5 @@ type GitClient interface {
 	MoveProjectCard(projectCardID int, newColumnID int) error
 	DeleteProjectCard(projectCardID int) error
 	TeamHasMember(teamID int, memberLogin string) (bool, error)
+	Throttle(hourlyTokens, burst int)
 }

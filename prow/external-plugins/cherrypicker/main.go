@@ -27,6 +27,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/pkg/flagutil"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
@@ -41,6 +42,8 @@ type options struct {
 	webhookSecretFile string
 	prowAssignments   bool
 	allowAll          bool
+	config            string
+	jobConfig         string
 }
 
 func (o *options) Validate() error {
@@ -59,6 +62,9 @@ func gatherOptions() options {
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
+	fs.StringVar(&o.config, "config-path", "", "Path to prow config file.")
+	fs.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow jobs config.")
+
 	fs.BoolVar(&o.prowAssignments, "use-prow-assignments", true, "Use prow commands to assign cherrypicked PRs.")
 	fs.BoolVar(&o.allowAll, "allow-all", false, "Allow anybody to use automated cherrypicks by skipping GitHub organization membership checks.")
 	for _, group := range []flagutil.OptionGroup{&o.github} {
@@ -89,11 +95,16 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	configAgent := &config.Agent{}
+	if err := configAgent.Start(o.config, o.jobConfig); err != nil {
+		logrus.WithError(err).Fatal("Error starting config agent.")
+	}
+
+	githubClient, err := o.github.GitHubClient(secretAgent, configAgent, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-	gitClient, err := o.github.GitClient(secretAgent, o.dryRun)
+	gitClient, err := o.github.GitClient(secretAgent, configAgent, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}

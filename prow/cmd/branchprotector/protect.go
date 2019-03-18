@@ -99,12 +99,17 @@ func main() {
 		logrus.WithError(err).Fatalf("Failed to load --config-path=%s", o.config)
 	}
 
+	configAgent := &config.Agent{}
+	if err := configAgent.Start(o.config, o.jobConfig); err != nil {
+		logrus.WithError(err).Fatal("Error starting config agent.")
+	}
+
 	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	githubClient, err := o.github.GitHubClient(secretAgent, !o.confirm)
+	githubClient, err := o.github.GitHubClient(secretAgent, configAgent, !o.confirm)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}

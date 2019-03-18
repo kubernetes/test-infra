@@ -33,7 +33,6 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/scallywag"
 )
 
@@ -50,7 +49,7 @@ func (mh *MockQueryHandler) GetHeadContexts(ghc githubClient, pr PullRequest) ([
 	return mh.contextMap[int(pr.Number)], nil
 }
 
-func (mh *MockQueryHandler) BotName(*github.Client) (*scallywag.User, error) {
+func (mh *MockQueryHandler) BotName(scallywag.Client) (*scallywag.User, error) {
 	login := "random_user"
 	return &scallywag.User{
 		Login: login,

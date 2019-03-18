@@ -30,7 +30,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/git"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/scallywag"
 
 	prowConf "k8s.io/test-infra/prow/config"
@@ -119,7 +118,7 @@ type Client struct {
 // NewClient is the constructor for Client
 func NewClient(
 	gc *git.Client,
-	ghc *github.Client,
+	ghc scallywag.Client,
 	mdYAMLEnabled func(org, repo string) bool,
 	skipCollaborators func(org, repo string) bool,
 	ownersDirBlacklist func() prowConf.OwnersDirBlacklist,

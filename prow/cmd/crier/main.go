@@ -234,7 +234,7 @@ func main() {
 			}
 		}
 
-		githubClient, err := o.github.GitHubClient(secretAgent, o.dryrun)
+		githubClient, err := o.github.GitHubClient(secretAgent, configAgent, o.dryrun)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting GitHub client.")
 		}

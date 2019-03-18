@@ -81,6 +81,7 @@ type ProwConfig struct {
 	Gerrit           Gerrit           `json:"gerrit,omitempty"`
 	GitHubReporter   GitHubReporter   `json:"github_reporter,omitempty"`
 	SlackReporter    *SlackReporter   `json:"slack_reporter,omitempty"`
+	Scallywag        Scallywag        `json:"scallywag,omitempty"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
@@ -305,6 +306,11 @@ type Spyglass struct {
 	// TestGridRoot is the root URL to the TestGrid frontend, e.g. "https://testgrid.k8s.io/".
 	// If left blank, TestGrid links will not appear.
 	TestGridRoot string `json:"testgrid_root,omitempty"`
+}
+
+// Scallywag holds config for scallywag
+type Scallywag struct {
+	IsNotGitHub bool `json:"is_not_github"`
 }
 
 // Deck holds config for deck.

@@ -31,7 +31,6 @@ import (
 	"k8s.io/test-infra/prow/commentpruner"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/scallywag"
 
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -134,7 +133,7 @@ func RegisterGenericCommentHandler(name string, fn GenericCommentHandler, help H
 
 // Agent may be used concurrently, so each entry must be thread-safe.
 type Agent struct {
-	GitHubClient     *github.Client
+	GitHubClient     scallywag.Client
 	ProwJobClient    prowv1.ProwJobInterface
 	KubernetesClient kubernetes.Interface
 	GitClient        *git.Client
@@ -191,7 +190,7 @@ func (a *Agent) CommentPruner() (*commentpruner.EventClient, error) {
 
 // ClientAgent contains the various clients that are attached to the Agent.
 type ClientAgent struct {
-	GitHubClient     *github.Client
+	GitHubClient     scallywag.Client
 	ProwJobClient    prowv1.ProwJobInterface
 	KubernetesClient kubernetes.Interface
 	GitClient        *git.Client

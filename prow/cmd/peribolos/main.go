@@ -32,7 +32,6 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/scallywag"
 )
@@ -158,7 +157,12 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	githubClient, err := o.github.GitHubClient(secretAgent, !o.confirm)
+	configAgent := &config.Agent{}
+	if err := configAgent.Start(o.config, o.jobConfig); err != nil {
+		logrus.WithError(err).Fatal("Error staring config agent.")
+	}
+
+	githubClient, err := o.github.GitHubClient(secretAgent, configAgent, !o.confirm)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
@@ -766,7 +770,7 @@ func orgInvitations(opt options, client inviteClient, orgName string) (sets.Stri
 	return invitees, nil
 }
 
-func configureOrg(opt options, client *github.Client, orgName string, orgConfig org.Config) error {
+func configureOrg(opt options, client scallywag.Client, orgName string, orgConfig org.Config) error {
 	// Ensure that metadata is configured correctly.
 	if !opt.fixOrg {
 		logrus.Infof("Skipping org metadata configuration")
@@ -814,7 +818,7 @@ func configureOrg(opt options, client *github.Client, orgName string, orgConfig 
 	return nil
 }
 
-func configureTeamAndMembers(opt options, client *github.Client, githubTeams map[string]scallywag.Team, name, orgName string, team org.Team, parent *int) error {
+func configureTeamAndMembers(opt options, client scallywag.Client, githubTeams map[string]scallywag.Team, name, orgName string, team org.Team, parent *int) error {
 	gt, ok := githubTeams[name]
 	if !ok { // configureTeams is buggy if this is the case
 		return fmt.Errorf("%s not found in id list", name)

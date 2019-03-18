@@ -29,14 +29,13 @@ import (
 	"k8s.io/test-infra/maintenance/migratestatus/migrator"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/trigger"
 	"k8s.io/test-infra/prow/scallywag"
 )
 
 // NewController constructs a new controller to reconcile stauses on config change
-func NewController(continueOnError bool, addedPresubmitBlacklist sets.String, prowJobClient prowv1.ProwJobInterface, githubClient *github.Client, configAgent *config.Agent, pluginAgent *plugins.ConfigAgent) *Controller {
+func NewController(continueOnError bool, addedPresubmitBlacklist sets.String, prowJobClient prowv1.ProwJobInterface, githubClient scallywag.Client, configAgent *config.Agent, pluginAgent *plugins.ConfigAgent) *Controller {
 	return &Controller{
 		continueOnError:         continueOnError,
 		addedPresubmitBlacklist: addedPresubmitBlacklist,
@@ -63,7 +62,7 @@ type statusMigrator interface {
 }
 
 type gitHubMigrator struct {
-	githubClient    *github.Client
+	githubClient    scallywag.Client
 	continueOnError bool
 }
 
@@ -87,7 +86,7 @@ type prowJobTriggerer interface {
 
 type kubeProwJobTriggerer struct {
 	prowJobClient prowv1.ProwJobInterface
-	githubClient  *github.Client
+	githubClient  scallywag.Client
 	configAgent   *config.Agent
 }
 
@@ -112,7 +111,7 @@ type trustedChecker interface {
 }
 
 type githubTrustedChecker struct {
-	githubClient *github.Client
+	githubClient scallywag.Client
 	pluginAgent  *plugins.ConfigAgent
 }
 

@@ -29,7 +29,6 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
 	reportlib "k8s.io/test-infra/prow/github/report"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
@@ -83,7 +82,7 @@ type Controller struct {
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, ghc *github.Client, logger *logrus.Entry, cfg config.Getter, totURL, selector string) (*Controller, error) {
+func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, sc scallywag.Client, logger *logrus.Entry, cfg config.Getter, totURL, selector string) (*Controller, error) {
 	n, err := snowflake.NewNode(1)
 	if err != nil {
 		return nil, err
@@ -94,7 +93,7 @@ func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, ghc *githu
 	return &Controller{
 		prowJobClient: prowJobClient,
 		jc:            jc,
-		ghc:           ghc,
+		ghc:           sc,
 		log:           logger,
 		cfg:           cfg,
 		selector:      selector,

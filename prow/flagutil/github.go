@@ -23,9 +23,11 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 // GitHubOptions holds options for interacting with GitHub.
@@ -89,7 +91,7 @@ func (o *GitHubOptions) Validate(dryRun bool) error {
 }
 
 // GitHubClientWithLogFields returns a GitHub client with extra logging fields
-func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, dryRun bool, fields logrus.Fields) (client *github.Client, err error) {
+func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, configAgent *config.Agent, dryRun bool, fields logrus.Fields) (client scallywag.Client, err error) {
 	var generator *func() []byte
 	if o.TokenPath == "" {
 		generatorFunc := func() []byte {
@@ -107,16 +109,16 @@ func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, dry
 	if dryRun {
 		return github.NewDryRunClientWithFields(fields, *generator, o.graphqlEndpoint, o.endpoint.Strings()...), nil
 	}
-	return github.NewClientWithFields(fields, *generator, o.graphqlEndpoint, o.endpoint.Strings()...), nil
+	return github.NewClientWithFields(fields, *generator, o.graphqlEndpoint, configAgent, o.endpoint.Strings()...), nil
 }
 
 // GitHubClient returns a GitHub client.
-func (o *GitHubOptions) GitHubClient(secretAgent *secret.Agent, dryRun bool) (client *github.Client, err error) {
-	return o.GitHubClientWithLogFields(secretAgent, dryRun, logrus.Fields{})
+func (o *GitHubOptions) GitHubClient(secretAgent *secret.Agent, configAgent *config.Agent, dryRun bool) (client scallywag.Client, err error) {
+	return o.GitHubClientWithLogFields(secretAgent, configAgent, dryRun, logrus.Fields{})
 }
 
 // GitClient returns a Git client.
-func (o *GitHubOptions) GitClient(secretAgent *secret.Agent, dryRun bool) (client *git.Client, err error) {
+func (o *GitHubOptions) GitClient(secretAgent *secret.Agent, configAgent *config.Agent, dryRun bool) (client *git.Client, err error) {
 	client, err = git.NewClient()
 	if err != nil {
 		return nil, err
@@ -132,7 +134,7 @@ func (o *GitHubOptions) GitClient(secretAgent *secret.Agent, dryRun bool) (clien
 	}(client)
 
 	// Get the bot's name in order to set credentials for the Git client.
-	githubClient, err := o.GitHubClient(secretAgent, dryRun)
+	githubClient, err := o.GitHubClient(secretAgent, configAgent, dryRun)
 	if err != nil {
 		return nil, fmt.Errorf("error getting GitHub client: %v", err)
 	}

@@ -30,6 +30,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/pkg/flagutil"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
@@ -108,7 +109,14 @@ func main() {
 		log.WithError(err).Fatalf("Error loading plugin config from %q.", o.pluginConfig)
 	}
 
-	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	currentConfig := pa.Config()
+	configPath := currentConfig.ConfigUpdater.ConfigFile
+	configAgent := &config.Agent{}
+	if err := configAgent.Start(configPath, ""); err != nil {
+		logrus.WithError(err).Fatal("Error starting secrets agent.")
+	}
+
+	githubClient, err := o.github.GitHubClient(secretAgent, configAgent, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
@@ -131,7 +139,7 @@ func main() {
 // then dispatches them to the appropriate plugins.
 type Server struct {
 	tokenGenerator func() []byte
-	ghc            *github.Client
+	ghc            scallywag.Client
 	log            *logrus.Entry
 }
 
@@ -174,7 +182,7 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 	return nil
 }
 
-func periodicUpdate(log *logrus.Entry, pa *plugins.ConfigAgent, ghc *github.Client, period time.Duration) {
+func periodicUpdate(log *logrus.Entry, pa *plugins.ConfigAgent, ghc scallywag.Client, period time.Duration) {
 	update := func() {
 		start := time.Now()
 		if err := plugin.HandleAll(log, ghc, pa.Config()); err != nil {

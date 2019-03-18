@@ -63,7 +63,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		nil
 }
 
-// Strict subset of *github.Client methods.
+// Strict subset of scallywag.Client methods.
 type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]scallywag.Label, error)
 	AddLabel(owner, repo string, number int, label string) error
