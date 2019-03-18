@@ -41,7 +41,7 @@ type ConfigOptions struct {
 func (o *ConfigOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.ConfigPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	fs.StringVar(&o.JobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	fs.StringVar(&o.PluginConfigPath, "plugin-config-path", "/etc/plugins/plugins.yaml", "Path to prow job configs.")
+	fs.StringVar(&o.PluginConfigPath, "plugin-config-path", "/etc/plugins/plugins.yaml", "Path to prow plugin configs.")
 }
 
 // Validate validates config options.
