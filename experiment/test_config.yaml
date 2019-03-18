@@ -1267,7 +1267,7 @@ testSuites:
     args:
     - --gcp-project-type=ingress-project
     - --timeout=150m
-    - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
+    - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
   reboot:
     args:
     - --timeout=180m
