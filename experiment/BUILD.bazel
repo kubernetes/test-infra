@@ -60,6 +60,7 @@ filegroup(
         "//experiment/slack/slack:all-srcs",
         "//experiment/slack/slack-event-log:all-srcs",
         "//experiment/slack/slack-report-message:all-srcs",
+        "//experiment/slack/slack-welcomer:all-srcs",
         "//experiment/tracer:all-srcs",
     ],
     tags = ["automanaged"],

@@ -24,6 +24,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math"
 	"net/http"
 	"strconv"
@@ -43,7 +44,7 @@ func New(config Config) *Client {
 
 // Calls most Slack API methods by name. If the API is normal but the URL is weird,
 // providing a complete https:// URL as the API name also works.
-func (c *Client) CallMethod(api string, args interface{}) error {
+func (c *Client) CallMethod(api string, args interface{}, ret interface{}) error {
 	marshalled, err := json.Marshal(args)
 	if err != nil {
 		return fmt.Errorf("failed to marshal slack message: %v", err)
@@ -78,12 +79,23 @@ func (c *Client) CallMethod(api string, args interface{}) error {
 				Messages []string `json:"messages"`
 			} `json:"response_metadata"`
 		}{}
-		if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
+		body, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return fmt.Errorf("failed to read body: %v", err)
+		}
+		if err := json.Unmarshal(body, &result); err != nil {
 			return fmt.Errorf("failed to decode JSON response: %v", err)
 		}
 		if !result.OK {
 			return fmt.Errorf("slack call failed: %s (%v)", result.Error, result.Metadata.Messages)
 		}
+		if ret != nil {
+			if err := json.Unmarshal(body, ret); err != nil {
+				return fmt.Errorf("slack call succeeded, but failed to unmarshal result: %v", err)
+			}
+		}
+	} else if ret != nil {
+		return fmt.Errorf("slack call probably succeeded, but did not get JSON response implied by non-nil ret")
 	}
 	return nil
 }
@@ -93,7 +105,7 @@ func (c *Client) SendMessage(message string) error {
 	toSend := struct {
 		Text string `json:"text"`
 	}{message}
-	return c.CallMethod(c.Config.WebhookURL, toSend)
+	return c.CallMethod(c.Config.WebhookURL, toSend, nil)
 }
 
 // VerifySignature verifies the signature on a message from Slack to ensure it is real.
