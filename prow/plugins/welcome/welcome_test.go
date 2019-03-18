@@ -32,9 +32,6 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-// TODO: these tests are a bit lame.
-// There has to be a better way to write tests like this.
-
 const (
 	testWelcomeTemplate = "Welcome human! 🤖 {{.AuthorName}} {{.AuthorLogin}} {{.Repo}} {{.Org}}}"
 )
