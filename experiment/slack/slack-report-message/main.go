@@ -23,7 +23,7 @@ import (
 	"net/http"
 	"os"
 
-	"k8s.io/test-infra/experiment/slack-event-log/slack"
+	"k8s.io/test-infra/experiment/slack/slack"
 )
 
 type options struct {
@@ -37,8 +37,8 @@ func parseFlags() options {
 	return o
 }
 
-func runServer(sl *slack.Slack) {
-	h := &handler{slack: sl}
+func runServer(sl *slack.Client) {
+	h := &handler{client: sl}
 
 	http.Handle("/webhook", h)
 

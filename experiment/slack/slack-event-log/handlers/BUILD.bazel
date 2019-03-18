@@ -3,12 +3,17 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "config.go",
-        "slack.go",
-        "types.go",
+        "channels.go",
+        "emoji.go",
+        "handlers.go",
+        "meta.go",
+        "subteams.go",
+        "team.go",
+        "users.go",
     ],
-    importpath = "k8s.io/test-infra/experiment/slack-event-log/slack",
+    importpath = "k8s.io/test-infra/experiment/slack/slack-event-log/handlers",
     visibility = ["//visibility:public"],
+    deps = ["//experiment/slack/slack:go_default_library"],
 )
 
 filegroup(

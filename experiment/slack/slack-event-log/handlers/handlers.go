@@ -24,19 +24,19 @@ import (
 	"log"
 	"net/http"
 
-	"k8s.io/test-infra/experiment/slack-event-log/slack"
+	"k8s.io/test-infra/experiment/slack/slack"
 )
 
 type handlerFunc func(body []byte) ([]byte, error)
 
 // Handler handles Slack events.
 type Handler struct {
-	slack *slack.Slack
+	client *slack.Client
 }
 
 // New returns a new Handler.
-func New(slack *slack.Slack) *Handler {
-	return &Handler{slack: slack}
+func New(client *slack.Client) *Handler {
+	return &Handler{client: client}
 }
 
 // HandleWebhook can be passed to http.HandlerFunc and will perform all processing associated with
@@ -50,7 +50,7 @@ func (h *Handler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("%#v", r.Header)
 	log.Printf(string(body))
-	if err := h.slack.VerifySignature(body, r.Header); err != nil {
+	if err := h.client.VerifySignature(body, r.Header); err != nil {
 		log.Printf(fmt.Sprintf("signature verification failed: %v", err))
 		http.Error(w, fmt.Sprintf("signature verification failed: %v", err), 403)
 		return
@@ -96,7 +96,7 @@ func (h *Handler) HandleMessage(body []byte) ([]byte, error) {
 func (h *Handler) sendMessage(message string, args ...interface{}) {
 	s := fmt.Sprintf(message, args...)
 	log.Printf("Sending message: %q", s)
-	if err := h.slack.SendMessage(s); err != nil {
+	if err := h.client.SendMessage(s); err != nil {
 		log.Printf("Sending message failed: %v", err)
 	}
 }

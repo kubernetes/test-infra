@@ -31,19 +31,19 @@ import (
 	"time"
 )
 
-// Slack has methods for interacting with Slack.
-type Slack struct {
+// Client has methods for interacting with Slack.
+type Client struct {
 	Config Config
 }
 
-// New returns a new Slack.
-func New(config Config) *Slack {
-	return &Slack{Config: config}
+// New returns a new Client.
+func New(config Config) *Client {
+	return &Client{Config: config}
 }
 
 // Calls most Slack API methods by name. If the API is normal but the URL is weird,
 // providing a complete https:// URL as the API name also works.
-func (slack *Slack) CallMethod(api string, args interface{}) error {
+func (c *Client) CallMethod(api string, args interface{}) error {
 	marshalled, err := json.Marshal(args)
 	if err != nil {
 		return fmt.Errorf("failed to marshal slack message: %v", err)
@@ -58,7 +58,7 @@ func (slack *Slack) CallMethod(api string, args interface{}) error {
 		return fmt.Errorf("failed to create HTTP request: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-	req.Header.Set("Authorization", "Bearer "+slack.Config.AccessToken)
+	req.Header.Set("Authorization", "Bearer "+c.Config.AccessToken)
 	client := http.Client{}
 	response, err := client.Do(req)
 	if err != nil {
@@ -89,15 +89,15 @@ func (slack *Slack) CallMethod(api string, args interface{}) error {
 }
 
 // SendMessage sends a simple message to Slack.
-func (slack *Slack) SendMessage(message string) error {
+func (c *Client) SendMessage(message string) error {
 	toSend := struct {
 		Text string `json:"text"`
 	}{message}
-	return slack.CallMethod(slack.Config.WebhookURL, toSend)
+	return c.CallMethod(c.Config.WebhookURL, toSend)
 }
 
 // VerifySignature verifies the signature on a message from Slack to ensure it is real.
-func (slack *Slack) VerifySignature(body []byte, headers http.Header) error {
+func (c *Client) VerifySignature(body []byte, headers http.Header) error {
 	// Algorithm from https://api.slack.com/docs/verifying-requests-from-slack
 
 	expectedSignature := headers.Get("X-Slack-Signature")
@@ -127,7 +127,7 @@ func (slack *Slack) VerifySignature(body []byte, headers http.Header) error {
 
 	// Step 3
 	sigBase := append([]byte("v0:"+tsHeader+":"), body...)
-	h := hmac.New(sha256.New, []byte(slack.Config.SigningSecret))
+	h := hmac.New(sha256.New, []byte(c.Config.SigningSecret))
 	_, _ = h.Write(sigBase)
 	ourSignature := h.Sum(nil)
 	if !hmac.Equal(ourSignature, expectedSignatureBytes) {
