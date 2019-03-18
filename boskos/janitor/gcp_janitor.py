@@ -303,10 +303,6 @@ def clean_gke_cluster(project, age, filt):
 
 
 def activate_service_account(service_account):
-    if service_account == "":
-        log('service_account was not provided, trying default')
-        service_account = os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
-
     print '[=== Activating service_account %s ===]' % service_account
     cmd = [
         'gcloud', 'auth', 'activate-service-account',
@@ -339,7 +335,7 @@ def main(project, days, hours, filt, rate_limit, service_account):
     age = datetime.datetime.utcnow() - datetime.timedelta(days=days, hours=hours)
     clear_all = (days is 0 and hours is 0)
 
-    if service_account != "" or os.environ["GOOGLE_APPLICATION_CREDENTIALS"] != "":
+    if service_account:
         err |= activate_service_account(service_account)
 
     if not err:
@@ -392,7 +388,8 @@ if __name__ == '__main__':
         help='Get full janitor output log')
     PARSER.add_argument(
         '--service_account',
-        help='GCP service account')
+        help='GCP service account',
+        default=os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", default=None))
     ARGS = PARSER.parse_args()
 
     # We want to allow --days=0 and --hours=0, so check against None instead.
