@@ -1840,6 +1840,20 @@ func (c *Client) CreateIssue(org, repo string, issue IssueRequest) (int, error) 
 	return resp.Num, nil
 }
 
+// EditIssue edits an existing issue.
+//
+// https://developer.github.com/v3/issues/#edit-an-issue
+func (c *Client) EditIssue(org, repo string, number int, issue IssueEditRequest) error {
+	c.log("EditIssue", org, repo, number, issue)
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        fmt.Sprintf("/repos/%s/%s/issues/%d", org, repo, number),
+		requestBody: issue,
+		exitCodes:   []int{200},
+	}, nil)
+	return stateCannotBeChangedOrOriginalError(err)
+}
+
 // StateCannotBeChanged represents the "custom" GitHub API
 // error that occurs when a resource cannot be changed
 type StateCannotBeChanged struct {

@@ -499,11 +499,21 @@ type IssueComment struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
-// IssueRequest is what we give GitHub when we want to create or edit an issue.
+// IssueRequest is what we give GitHub when we want to create an issue.
 // This is different than what we receive when we ask for an Issue.
 type IssueRequest struct {
 	Title     string   `json:"title"`
 	Body      string   `json:"body,omitempty"`
+	Labels    []string `json:"labels,omitempty"`
+	Assignees []string `json:"assignees,omitempty"`
+	Milestone *int     `json:"milestone,omitempty"`
+}
+
+// IssueEditRequest is what we give GitHub when we want to edit an issue.
+type IssueEditRequest struct {
+	Title     string   `json:"title,omitempty"`
+	Body      string   `json:"body,omitempty"`
+	State     string   `json:"state,omitempty"`
 	Labels    []string `json:"labels,omitempty"`
 	Assignees []string `json:"assignees,omitempty"`
 	Milestone *int     `json:"milestone,omitempty"`
