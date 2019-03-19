@@ -1,30 +1,28 @@
 presets:
 - labels:
-    preset-cloud-provider-azure-account: "true"
+    preset-azure-cred: "true"
   env:
-  - name: IMAGE_REGISTRY
-    value: kaicr1.azurecr.io
-  - name: K8S_AZURE_ACCOUNT_CONFIG
-    value: /etc/cloud-provider-azure-account/account.env
+  - name: AZURE_CREDENTIALS
+    value: /etc/azure-cred/credentials
+  - name: AZURE_SSH_PUBLIC_KEY_FILE
+    value: /etc/azure-ssh/azure-ssh-pub
+  - name: REGISTRY
+    value: k8sprow.azurecr.io
+  - name: KUBE_VERBOSE
+    value: 0
   volumes:
-  - name: cloud-provider-azure-account-cloud
+  - name: azure-cred
     secret:
-      secretName: cloud-provider-azure-account
-      items:
-      - key: account.env
-        path: account.env
-  - name: cloud-provider-azure-account-registry
+      secretName: azure-cred
+  - name: azure-ssh
     secret:
-      secretName: cloud-provider-azure-account
-      items:
-      - key: registry.json
-        path: config.json
+      secretName: azure-ssh
   volumeMounts:
-  - name: cloud-provider-azure-account-cloud
-    mountPath: /etc/cloud-provider-azure-account
+  - name: azure-cred
+    mountPath: /etc/azure-cred
     readOnly: true
-  - name: cloud-provider-azure-account-registry
-    mountPath: /root/.docker
+  - name: azure-ssh
+    mountPath: /etc/azure-ssh
     readOnly: true
 
 presubmits:
@@ -53,22 +51,42 @@ presubmits:
     - master
     labels:
       preset-service-account: "true"
-      preset-cloud-provider-azure-account: "true"
+      preset-azure-cred: "true" 
       preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
         args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/kubernetes=v1.14.0-alpha.1"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
-        - "--timeout=100"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--timeout=200"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
+        - "--scenario=kubernetes_e2e"
         - --
-        - make
-        - test-e2e
-        - SUITE=default
-        - "SUBJECT=${PULL_NUMBER}"
+        - "--gce-ssh=" 
+        - "--test=true"
+        - "--up=true"
+        - "--down=true"
+        - "--deployment=acsengine" 
+        - "--build=bazel"
+        - "--provider=skeleton"
+        - "--ginkgo-parallel=30"
+        - "--acsengine-agentpoolcount=3"
+        - "--acsengine-admin-username=azureuser"
+        - "--acsengine-creds=$AZURE_CREDENTIALS" 
+        - "--acsengine-orchestratorRelease=1.14"
+        - "--acsengine-mastervmsize=Standard_DS2_v2"
+        - "--acsengine-agentvmsize=Standard_D4s_v3"
+        - "--acsengine-ccm=True"
+        - "--acsengine-location=eastus2"
+        - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+        - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json"
+        - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz"   
+        - "--test_args= --ginkgo.skip=\\[sig-node\\]\\sMount\\spropagation|\\[sig-network\\]\\sNetwork\\sshould\\sset\\sTCP\\sCLOSE_WAIT\\stimeout|\\[sig-storage\\]\\sPersistentVolumes-local\\sStress\\swith\\slocal\\svolume\\sprovisioner\\s\\[Serial\\]\\sshould\\suse\\sbe\\sable\\sto\\sprocess\\smany\\spods\\sand\\sreuse\\slocal\\svolumes|should\\sunmount\\sif\\spod\\sis\\sgracefully\\sdeleted\\swhile\\skubelet\\sis\\sdown\\s\\[Disruptive\\]\\[Slow\\]|should\\sunmount\\sif\\spod\\sis\\sforce\\sdeleted\\swhile\\skubelet\\sis\\sdown\\s\\[Disruptive\\]\\[Slow\\]|\\[sig-network\\]\\sServices\\sshould\\sbe\\sable\\sto\\screate\\sa\\sfunctioning\\sNodePort\\sservice|\\[sig-scheduling\\]\\sSchedulerPredicates\\s\\[Serial\\]\\svalidates\\sMaxPods\\slimit\\snumber\\sof\\spods\\sthat\\sare\\sallowed\\sto\\srun\\s\\[Slow\\]|\\[sig-storage\\]\\sDynamic\\sProvisioning\\sDynamicProvisioner\\sDefault\\sshould\\screate\\sand\\sdelete\\sdefault\\spersistent\\svolumes\\s\\[Slow\\]|\\[sig-storage\\]\\sDynamic\\sProvisioning\\sDynamicProvisioner\\sshould\\sprovision\\sstorage\\swith\\sdifferent\\sparameters|\\[sig-storage\\]\\sDynamic\\sProvisioning\\sDynamicProvisioner\\sshould\\stest\\sthat\\sdeleting\\sa\\sclaim\\sbefore\\sthe\\svolume\\sis\\sprovisioned\\sdeletes\\sthe\\svolume.|\\[sig-apps\\]\\sStatefulSet\\s\\[k8s.io\\]\\sBasic\\sStatefulSet\\sfunctionality\\s\\[StatefulSetBasic\\]\\sshould\\sadopt\\smatching\\sorphans\\sand\\srelease\\snon-matching\\spods|\\[sig-apps\\]\\sStatefulSet\\s\\[k8s.io\\]\\sBasic\\sStatefulSet\\sfunctionality\\s\\[StatefulSetBasic\\]\\sshould\\snot\\sdeadlock\\swhen\\sa\\spod.s\\spredecessor\\sfails|\\[sig-apps\\]\\sStatefulSet\\s\\[k8s.io\\]\\sBasic\\sStatefulSet\\sfunctionality\\s\\[StatefulSetBasic\\]\\sshould\\sperform\\srolling\\supdates\\sand\\sroll\\sbacks\\sof\\stemplate\\smodifications\\swith\\sPVCs|\\[sig-apps\\]\\sStatefulSet\\s\\[k8s.io\\]\\sBasic\\sStatefulSet\\sfunctionality\\s\\[StatefulSetBasic\\]\\sshould\\sprovide\\sbasic\\sidentity|\\[sig-storage\\]\\sPersistentVolumes\\sDefault\\sStorageClass\\spods\\sthat\\suse\\smultiple\\svolumes\\sshould\\sbe\\sreschedulable|\\[sig-storage\\]\\sPVC\\sProtection|\\[sig-storage\\]\\sDynamic\\sProvisioning\\s\\[k8s.io\\]\\sGlusterDynamicProvisioner|\\[sig-storage\\]\\sVolumes\\sAzure\\sDisk\\sshould\\sbe\\smountable\\s\\[Slow\\]|\\[sig-apps\\]\\sNetwork\\sPartition\\s\\[Disruptive\\]\\s\\[Slow\\]|\\[sig-network\\]\\sDNS\\sconfigMap|\\[k8s.io\\]\\s\\[sig-node\\]\\sKubelet\\s\\[Serial\\]\\s\\[Slow\\]\\s\\[k8s.io\\]\\s\\[sig-node\\]\\sregular\\sresource\\susage\\stracking\\sresource\\stracking\\sfor\\s0\\spods\\sper\\snode|\\[k8s.io\\]\\s\\[sig-node\\]\\sKubelet\\s\\[Serial\\]\\s\\[Slow\\]\\s\\[k8s.io\\]\\s\\[sig-node\\]\\sregular\\sresource\\susage\\stracking\\sresource\\stracking\\sfor\\s100\\spods\\sper\\snode|Horizontal\\spod\\sautoscaling\\s\\(scale\\sresource:\\sCPU\\)|\\[sig-storage\\]\\sDynamic\\sProvisioning\\sDynamicProvisioner\\sExternal\\sshould\\slet\\san\\sexternal\\sdynamic\\sprovisioner\\screate\\sand\\sdelete\\spersistent\\svolumes\\s\\[Slow\\]|ESIPP|\\[sig-network\\]\\sServices\\sshould\\spreserve\\ssource\\spod\\sIP\\sfor\\straffic\\sthru\\sservice\\scluster\\sIP|In-tree\\sVolumes|PersistentVolumes-local|CSI\\sVolumes|should\\swrite\\sentries\\sto\\s/etc/hosts|\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[NodeFeature:.+\\]"
+        - "--timeout=420m"
         securityContext:
           privileged: true
 
@@ -89,36 +107,3 @@ presubmits:
         - --
         - make
         - test-unit
-
-periodics:
-- interval: 12h
-  name: ci-cloud-provider-azure-master
-  labels:
-    preset-service-account: "true"
-    preset-cloud-provider-azure-account: "true"
-    preset-dind-enabled: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: cloud-provider-azure
-    base_ref: master
-  path_alias: k8s.io/cloud-provider-azure
-  skip_submodules: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
-      command:
-      - runner.sh
-      args:
-      - make
-      - test-e2e
-      - SUITE=default
-      - "SUBJECT=${PULL_NUMBER}"
-      env:
-      - name: K8S_BRANCH
-        value: master
-      - name: TEST_MANIFEST
-        value: linux-kcm
-      securityContext:
-        privileged: true
