@@ -23,30 +23,31 @@ import (
 	"k8s.io/test-infra/prow/config"
 )
 
-// CoreConfigOptions holds options for interacting with Configs.
-type CoreConfigOptions struct {
-	ConfigPath string
+// JobConfigOptions holds options for interacting with job configs.
+type JobConfigOptions struct {
+	JobConfigPath string
 }
 
-// AddFlags injects config options into the given FlagSet.
-func (o *CoreConfigOptions) AddFlags(fs *flag.FlagSet) {
-	fs.StringVar(&o.ConfigPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+// AddFlags injects job config options into the given FlagSet.
+func (o *JobConfigOptions) AddFlags(fs *flag.FlagSet) {
+	fs.StringVar(&o.JobConfigPath, "job-config-path", "", "Path to prow job configs.")
 }
 
-// Validate validates config options.
-func (o *CoreConfigOptions) Validate() error {
+// Validate validates job config options.
+func (o *JobConfigOptions) Validate() error {
 	return nil
 }
 
-// Agent returns a started config agent.
-func (o *CoreConfigOptions) Agent() (agent *config.Agent, err error) {
+// Agent takes a configPath and returns a started job config agent. The configPath
+// must be a valid config path.
+func (o *JobConfigOptions) Agent(configPath string) (agent *config.Agent, err error) {
 	agent = &config.Agent{}
-	config, err := config.Load(o.ConfigPath, "")
+	config, err := config.Load(configPath, o.JobConfigPath)
 	if err != nil {
 		return nil, err
 	}
 
-	err = agent.Start(o.ConfigPath, "")
+	err = agent.Start(configPath, o.JobConfigPath)
 	if err != nil {
 		return nil, err
 	}
