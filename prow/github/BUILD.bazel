@@ -15,7 +15,10 @@ go_test(
         "types_test.go",
     ],
     embed = [":go_default_library"],
-    deps = ["//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library"],
+    deps = [
+        "//ghproxy/ghcache:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+    ],
 )
 
 go_library(
