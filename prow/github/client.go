@@ -159,7 +159,7 @@ func (t *throttler) Refund() {
 func (t *throttler) Do(req *http.Request) (*http.Response, error) {
 	t.Wait()
 	resp, err := t.http.Do(req)
-	if err != nil {
+	if err == nil {
 		cacheMode := ghcache.CacheResponseMode(resp.Header.Get(ghcache.CacheModeHeader))
 		if ghcache.CacheModeIsFree(cacheMode) {
 			// This request was fulfilled by ghcache without using an API token.
