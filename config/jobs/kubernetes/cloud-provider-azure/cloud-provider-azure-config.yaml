@@ -1,6 +1,6 @@
 presets:
 - labels:
-    preset-azure-cred: "true"
+    preset-cloudprovider-azure-cred: "true"
   env:
   - name: AZURE_CREDENTIALS
     value: /etc/azure-cred/credentials
@@ -51,7 +51,7 @@ presubmits:
     - master
     labels:
       preset-service-account: "true"
-      preset-azure-cred: "true" 
+      preset-cloudprovider-azure-cred: "true" 
       preset-dind-enabled: "true"
     spec:
       containers:
