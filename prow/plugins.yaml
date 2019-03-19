@@ -215,22 +215,26 @@ repo_milestone:
   # Default maintainer
   '':
     # You can curl the following endpoint in order to determine the github ID of your team
-    # responsible for maintaining the milestones:
-    # curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
+    # responsible for maintaining the milestones. You may need to specify the page number.
+    # curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams?page=N"
     maintainers_id: 2460384
     maintainers_team: kubernetes-milestone-maintainers
-  'kubernetes-sigs/cluster-api':
+  kubernetes-sigs/cluster-api:
     maintainers_id: 3058957
     maintainers_team: cluster-api-maintainers
     maintainers_friendly_name: Cluster API Maintainers
-  'kubernetes-sigs/cluster-api-provider-aws':
+  kubernetes-sigs/cluster-api-provider-aws:
     maintainers_id: 2830895
     maintainers_team: cluster-api-provider-aws-maintainers
     maintainers_friendly_name: Cluster API Provider AWS Maintainers
-  'kubernetes-sigs/cluster-api-provider-azure':
+  kubernetes-sigs/cluster-api-provider-azure:
     maintainers_id: 3063852
     maintainers_team: cluster-api-provider-azure-maintainers
     maintainers_friendly_name: Cluster API Provider Azure Maintainers
+  kubernetes/community:
+    maintainers_id: 3169231
+    maintainers_team: community-milestone-maintainers
+    maintainers_friendly_name: Community Milestone Maintainers
 
 project_config:
   project_org_configs:
