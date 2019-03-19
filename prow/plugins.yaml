@@ -423,6 +423,7 @@ plugins:
 
   kubernetes/community:
   - blockade
+  - milestone
   - require-sig
   - trigger
 
