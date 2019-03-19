@@ -3373,8 +3373,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-structured-merge-diff-test
 
 # GCP Compute Persistent Disk CSI Driver Test Groups
-- name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable
-  gcs_prefix: kubernetes-jenkins/logs/ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable
+- name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable-master
+- name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable-1-13-4
+  gcs_prefix: kubernetes-jenkins/logs/ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable-1-13-4
 
 # AWS Test Groups
 - name: pull-aws-alb-ingress-controller-lint
@@ -6077,8 +6079,11 @@ dashboards:
 - name: sig-gcp-compute-persistent-disk-csi-driver
   dashboard_tab:
   - name: Kubernetes Master Driver Stable
-    test_group_name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable
+    test_group_name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable-master
     description: Kubernetes Integration tests for Kubernetes Master branch and Driver Stable
+  - name: Kubernetes v1.13.4 Driver Stable
+    test_group_name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable-1-13-4
+    description: Kubernetes Integration tests for Kubernetes 1.13.4 and Driver Stable
 
 - name: sig-cluster-lifecycle-cluster-api-provider-vsphere
   dashboard_tab:
