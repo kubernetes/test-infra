@@ -484,7 +484,7 @@ func TestConfigSecurityClusterRestricted(t *testing.T) {
 			}
 		}
 	}
-	// TODO(bentheelder): this will need to be more complex if we ever add k-s periodic
+	// TODO: this will need to be more complex if we ever add k-s periodic
 	for _, job := range c.AllPeriodics() {
 		if job.Cluster == "security" {
 			t.Fatalf("Jobs not in kubernetes-security/* should not use the security cluster! %s", job.Name)

@@ -4,7 +4,7 @@ presubmits:
   - name: pull-kubernetes-e2e-gke
     always_run: false
     optional: true
-    # TODO(bentheelder): enforce this pattern (skip all releases) or implement
+    # TODO: enforce this pattern (skip all releases) or implement
     # something better like https://github.com/kubernetes/test-infra/pull/4918
     skip_branches:
     - release-1.14 # per-release image

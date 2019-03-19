@@ -967,7 +967,7 @@ def setup_root(call, root, repos, ssh, git_cache, clean):
     for repo, (branch, pull) in repos.items():
         os.chdir(root_dir)
         # for k-s/k these are different, for the rest they are the same
-        # TODO(bentheelder,cjwagner,stevekuznetsov): in the integrated
+        # TODO(cjwagner,stevekuznetsov): in the integrated
         # prow checkout support remapping checkouts and kill this monstrosity
         repo_path = repo
         if repo == "github.com/kubernetes-security/kubernetes":
@@ -1068,7 +1068,7 @@ def bootstrap(args):
     build = build_name(started)
 
     if upload:
-        # TODO(bentheelder, cjwager, stevekuznetsov): support the workspace
+        # TODO(cjwager, stevekuznetsov): support the workspace
         # repo not matching the upload repo in the shiny new init container
         pull_ref_repos = [repo for repo in repos if repos[repo][1]]
         if pull_ref_repos:

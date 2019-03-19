@@ -120,7 +120,7 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 		value := string(content)
 		if gzipContent {
 			buff := bytes.NewBuffer([]byte{})
-			// TODO(bentheelder): this error is wildly unlikely for anything that
+			// TODO: this error is wildly unlikely for anything that
 			// would actually fit in a configmap, we could just as well return
 			// the error instead of falling back to the raw content
 			if _, err := gzip.NewWriter(buff).Write(content); err != nil {

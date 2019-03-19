@@ -114,7 +114,7 @@ def main(branch, script, force, on_prow, exclude_typecheck, exclude_godep):
         os.makedirs(artifacts)
 
     if on_prow:
-        # TODO(bentheelder): on prow REPO_DIR should be /go/src/k8s.io/kubernetes
+        # TODO: on prow REPO_DIR should be /go/src/k8s.io/kubernetes
         # however these paths are brittle enough as is...
         git_cache = get_git_cache(k8s)
         cmd = [

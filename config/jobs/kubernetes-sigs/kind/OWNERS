@@ -1,8 +1,6 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 approvers:
-- krzyzacy
-- spiffxp
-- wojtek-t
-labels:
-- area/config
+- bentheelder
+- munnerz
+- neolit123

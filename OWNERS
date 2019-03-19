@@ -2,7 +2,7 @@
 
 approvers:
 - amwat # oncall
-- BenTheElder # oncall
+# - BenTheElder # emeritus
 - cjwagner # oncall
 - fejta # lead
 - ixdy # oncall
