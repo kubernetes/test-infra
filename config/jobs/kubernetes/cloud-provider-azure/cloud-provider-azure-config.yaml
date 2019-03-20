@@ -62,7 +62,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--timeout=200"
+        - "--timeout=450"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=kubernetes_e2e"
         - --
@@ -131,7 +131,7 @@ periodics:
       - --repo=k8s.io/$(REPO_NAME)=master
       - --root=/go/src
       - --service-account=/etc/service-account/service-account.json
-      - --timeout=200
+      - --timeout=450
       - --upload=gs://kubernetes-jenkins/logs/
       - --scenario=kubernetes_e2e
       - --
