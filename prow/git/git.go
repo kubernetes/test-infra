@@ -251,7 +251,7 @@ func (r *Repo) Merge(commitlike string) (bool, error) {
 	if err == nil {
 		return true, nil
 	}
-	r.logger.WithError(err).Warningf("Merge failed with output: %s", string(b))
+	r.logger.WithError(err).Infof("Merge failed with output: %s", string(b))
 
 	if b, err := r.gitCommand("merge", "--abort").CombinedOutput(); err != nil {
 		return false, fmt.Errorf("error aborting merge for commitlike %s: %v. output: %s", commitlike, err, string(b))
@@ -271,7 +271,7 @@ func (r *Repo) Am(path string) error {
 		return nil
 	}
 	output := string(b)
-	r.logger.WithError(err).Warningf("Patch apply failed with output: %s", output)
+	r.logger.WithError(err).Infof("Patch apply failed with output: %s", output)
 	if b, abortErr := r.gitCommand("am", "--abort").CombinedOutput(); err != nil {
 		r.logger.WithError(abortErr).Warningf("Aborting patch apply failed with output: %s", string(b))
 	}
