@@ -481,6 +481,9 @@ func (g *gkeDeployer) setupEnv() error {
 }
 
 func (g *gkeDeployer) ensureFirewall() error {
+	if g.network == "default" {
+		return nil
+	}
 	firewall, err := g.getClusterFirewall()
 	if err != nil {
 		return fmt.Errorf("error getting unique firewall: %v", err)
@@ -591,6 +594,15 @@ func (g *gkeDeployer) Down() error {
 		"gcloud", g.containerArgs("clusters", "delete", "-q", g.cluster,
 			"--project="+g.project,
 			g.location)...))
+
+	// don't delete default network
+	if g.network == "default" {
+		if errCluster != nil {
+			log.Printf("Error deleting cluster using default network, allow the error for now %s", errCluster)
+		}
+		return nil
+	}
+
 	var errFirewall error
 	if control.NoOutput(exec.Command("gcloud", "compute", "firewall-rules", "describe", firewall,
 		"--project="+g.project,
