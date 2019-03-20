@@ -2731,9 +2731,64 @@ test_groups:
 - name: pull-test-infra-verify-github-spelling
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-github-spelling
   num_columns_recent: 20
+- name: pull-cloud-provider-vsphere-check
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-check
+  num_columns_recent: 20
+- name: pull-cloud-provider-vsphere-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-build
+  num_columns_recent: 20
 - name: pull-cloud-provider-vsphere-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-test
   num_columns_recent: 20
+- name: pull-cloud-provider-vsphere-unit-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-unit-test
+  num_columns_recent: 20
+- name: pull-cloud-provider-vsphere-integration-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-integration-test
+  num_columns_recent: 20
+- name: post-cloud-provider-vsphere-deploy
+  gcs_prefix: kubernetes-jenkins/logs/directory/post-cloud-provider-vsphere-deploy
+  num_columns_recent: 20
+- name: ci-cloud-provider-vsphere-conformance-latest
+  gcs_prefix: kubernetes-jenkins/logs/directory/ci-cloud-provider-vsphere-conformance-latest
+  num_columns_recent: 20
+  alert_stale_results_hours: 16
+  num_failures_to_alert: 4
+- name: ci-cloud-provider-vsphere-conformance-stable-1-11
+  gcs_prefix: kubernetes-jenkins/logs/directory/ci-cloud-provider-vsphere-conformance-stable-1-11
+  num_columns_recent: 20
+  alert_stale_results_hours: 16
+  num_failures_to_alert: 1
+- name: ci-cloud-provider-vsphere-conformance-stable-1-12
+  gcs_prefix: kubernetes-jenkins/logs/directory/ci-cloud-provider-vsphere-conformance-stable-1-12
+  num_columns_recent: 20
+  alert_stale_results_hours: 16
+  num_failures_to_alert: 1
+- name: ci-cloud-provider-vsphere-conformance-stable-1-13
+  gcs_prefix: kubernetes-jenkins/logs/directory/ci-cloud-provider-vsphere-conformance-stable-1-13
+  num_columns_recent: 20
+  alert_stale_results_hours: 16
+  num_failures_to_alert: 1
+- name: ci-vsphere-conformance-latest
+  gcs_prefix: kubernetes-jenkins/logs/directory/ci-vsphere-conformance-latest
+  num_columns_recent: 20
+  alert_stale_results_hours: 16
+  num_failures_to_alert: 4
+- name: ci-vsphere-conformance-stable-1-11
+  gcs_prefix: kubernetes-jenkins/logs/directory/ci-vsphere-conformance-stable-1-11
+  num_columns_recent: 20
+  alert_stale_results_hours: 16
+  num_failures_to_alert: 1
+- name: ci-vsphere-conformance-stable-1-12
+  gcs_prefix: kubernetes-jenkins/logs/directory/ci-vsphere-conformance-stable-1-12
+  num_columns_recent: 20
+  alert_stale_results_hours: 16
+  num_failures_to_alert: 1
+- name: ci-vsphere-conformance-stable-1-13
+  gcs_prefix: kubernetes-jenkins/logs/directory/ci-vsphere-conformance-stable-1-13
+  num_columns_recent: 20
+  alert_stale_results_hours: 16
+  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-default
 - name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
@@ -3220,48 +3275,6 @@ test_groups:
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
 
-# cloud-provider-vsphere e2e conformance tests
-- name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance
-  gcs_prefix: k8s-conformance-cloud-provider-vsphere/head/ci/latest
-  alert_stale_results_hours: 32
-  num_failures_to_alert: 1
-
-- name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.13
-  gcs_prefix: k8s-conformance-cloud-provider-vsphere/head/release/v1.13
-  alert_stale_results_hours: 32
-  num_failures_to_alert: 1
-
-- name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
-  gcs_prefix: k8s-conformance-cloud-provider-vsphere/head/release/v1.12
-  alert_stale_results_hours: 32
-  num_failures_to_alert: 1
-
-- name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.11
-  gcs_prefix: k8s-conformance-cloud-provider-vsphere/head/release/v1.11
-  alert_stale_results_hours: 32
-  num_failures_to_alert: 1
-
-# vsphere e2e conformance tests
-- name: ci-periodic-vsphere-test-e2e-conformance
-  gcs_prefix: k8s-conformance-vsphere/head/ci/latest
-  alert_stale_results_hours: 32
-  num_failures_to_alert: 1
-
-- name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.13
-  gcs_prefix: k8s-conformance-vsphere/head/release/v1.13
-  alert_stale_results_hours: 32
-  num_failures_to_alert: 1
-
-- name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.12
-  gcs_prefix: k8s-conformance-vsphere/head/release/v1.12
-  alert_stale_results_hours: 32
-  num_failures_to_alert: 1
-
-- name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.11
-  gcs_prefix: k8s-conformance-vsphere/head/release/v1.11
-  alert_stale_results_hours: 32
-  num_failures_to_alert: 1
-
 # Gardener Test Groups
 - name: ci-gardener-e2e-conformance-aws-v1.13
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-aws-v1.13
@@ -3571,45 +3584,29 @@ dashboards:
 
   - name: vSphere-cloud-provider, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-vsphere
-    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+    test_group_name: ci-cloud-provider-vsphere-conformance-latest
   - name: vSphere-cloud-provider, v1.11 (dev)
     description: Runs conformance tests using kubetest against kubernetes from the release-1.11 branch with cloud-provider-vsphere
-    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.11
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+    test_group_name: ci-cloud-provider-vsphere-conformance-stable-1-11
   - name: vSphere-cloud-provider, v1.12 (dev)
     description: Runs conformance tests using kubetest against kubernetes from the release-1.12 branch with cloud-provider-vsphere
-    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+    test_group_name: ci-cloud-provider-vsphere-conformance-stable-1-12
   - name: vSphere-cloud-provider, v1.13 (dev)
     description: Runs conformance tests using kubetest against kubernetes from the release-1.13 branch with cloud-provider-vsphere
-    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.13
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+    test_group_name: ci-cloud-provider-vsphere-conformance-stable-1-13
 
   - name: vSphere, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with the in-tree vSphere cloud provider
-    test_group_name: ci-periodic-vsphere-test-e2e-conformance
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+    test_group_name: ci-vsphere-conformance-latest
   - name: vSphere, v1.11 (dev)
     description: Runs conformance tests using kubetest against kubernetes from the release-1.11 branch with the in-tree vSphere cloud provider
-    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.11
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+    test_group_name: ci-vsphere-conformance-stable-1-11
   - name: vSphere, v1.12 (dev)
     description: Runs conformance tests using kubetest against kubernetes from the release-1.12 branch with the in-tree vSphere cloud provider
-    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.12
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+    test_group_name: ci-vsphere-conformance-stable-1-12
   - name: vSphere, v1.13 (dev)
     description: Runs conformance tests using kubetest against kubernetes from the release-1.13 branch with the in-tree vSphere cloud provider
-    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.13
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+    test_group_name: ci-vsphere-conformance-stable-1-13
 
   - name: Gardener, v1.13 AWS
     description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)"
@@ -3727,39 +3724,41 @@ dashboards:
 
 - name: conformance-vsphere
   dashboard_tab:
+  - name: periodic-latest
+    description: Runs conformance tests using kubetest against kubernetes ci/latest with in-tree vSphere components
+    test_group_name: ci-vsphere-conformance-latest
   - name: periodic-v1.11
     description: Runs conformance tests using kubetest against kubernetes v1.11 with in-tree vSphere components
-    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.11
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+    test_group_name: ci-vsphere-conformance-stable-1-11
   - name: periodic-v1.12
     description: Runs conformance tests using kubetest against kubernetes v1.12 with in-tree vSphere components
-    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.12
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+    test_group_name: ci-vsphere-conformance-stable-1-12
   - name: periodic-v1.13
     description: Runs conformance tests using kubetest against kubernetes v1.13 with in-tree vSphere components
-    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.13
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+    test_group_name: ci-vsphere-conformance-stable-1-13
 
 - name: vmware-conformance
   dashboard_tab:
+  - name: periodic-latest
+    description: Runs conformance tests using kubetest against kubernetes ci/latest with in-tree vSphere components
+    test_group_name: ci-vsphere-conformance-latest
+    alert_options:
+      alert_mail_to_addresses: akutz+alerts@vmware.com
   - name: periodic-v1.11
     description: Runs conformance tests using kubetest against kubernetes v1.11 with in-tree vSphere components
-    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.11
+    test_group_name: ci-vsphere-conformance-stable-1-11
     alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+      alert_mail_to_addresses: akutz+alerts@vmware.com
   - name: periodic-v1.12
     description: Runs conformance tests using kubetest against kubernetes v1.12 with in-tree vSphere components
-    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.12
+    test_group_name: ci-vsphere-conformance-stable-1-12
     alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+      alert_mail_to_addresses: akutz+alerts@vmware.com
   - name: periodic-v1.13
     description: Runs conformance tests using kubetest against kubernetes v1.13 with in-tree vSphere components
-    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.13
+    test_group_name: ci-vsphere-conformance-stable-1-13
     alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+      alert_mail_to_addresses: akutz+alerts@vmware.com
 
 - name: conformance-cloud-provider-openstack
   dashboard_tab:
@@ -3796,39 +3795,41 @@ dashboards:
 
 - name: conformance-cloud-provider-vsphere
   dashboard_tab:
+  - name: periodic-latest
+    description: Runs conformance tests using kubetest against kubernetes ci/latest with cloud-provider-vsphere
+    test_group_name: ci-cloud-provider-vsphere-conformance-latest
   - name: periodic-v1.11
     description: Runs conformance tests using kubetest against kubernetes v1.11 with cloud-provider-vsphere
-    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.11
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+    test_group_name: ci-cloud-provider-vsphere-conformance-stable-1-11
   - name: periodic-v1.12
     description: Runs conformance tests using kubetest against kubernetes v1.12 with cloud-provider-vsphere
-    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+    test_group_name: ci-cloud-provider-vsphere-conformance-stable-1-12
   - name: periodic-v1.13
     description: Runs conformance tests using kubetest against kubernetes v1.13 with cloud-provider-vsphere
-    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.13
-    alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+    test_group_name: ci-cloud-provider-vsphere-conformance-stable-1-13
 
 - name: vmware-conformance-cloud-provider
   dashboard_tab:
+  - name: periodic-latest
+    description: Runs conformance tests using kubetest against kubernetes ci/latest with cloud-provider-vsphere
+    test_group_name: ci-cloud-provider-vsphere-conformance-latest
+    alert_options:
+      alert_mail_to_addresses: akutz+alerts@vmware.com
   - name: periodic-v1.11
     description: Runs conformance tests using kubetest against kubernetes v1.11 with cloud-provider-vsphere
-    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.11
+    test_group_name: ci-cloud-provider-vsphere-conformance-stable-1-11
     alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+      alert_mail_to_addresses: akutz+alerts@vmware.com
   - name: periodic-v1.12
     description: Runs conformance tests using kubetest against kubernetes v1.12 with cloud-provider-vsphere
-    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
+    test_group_name: ci-cloud-provider-vsphere-conformance-stable-1-12
     alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+      alert_mail_to_addresses: akutz+alerts@vmware.com
   - name: periodic-v1.13
     description: Runs conformance tests using kubetest against kubernetes v1.13 with cloud-provider-vsphere
-    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.13
+    test_group_name: ci-cloud-provider-vsphere-conformance-stable-1-13
     alert_options:
-      alert_mail_to_addresses: cnx+e2e@vmware.com
+      alert_mail_to_addresses: akutz+alerts@vmware.com
 
 - name: vmware-cluster-api-provider-vsphere
   dashboard_tab:
@@ -4813,10 +4814,10 @@ dashboards:
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
   - name: Conformance - vSphere-cloud-provider
     description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-vsphere
-    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance
+    test_group_name: ci-cloud-provider-vsphere-conformance-latest
   - name: Conformance - vSphere
     description: Runs conformance tests using e2e.test against latest kubernetes master with in-tree vSphere
-    test_group_name: ci-periodic-vsphere-test-e2e-conformance
+    test_group_name: ci-vsphere-conformance-latest
   - name: gce-master-scale-correctness
     description: Runs 1000-node performance test once a week and checks that operational results are still all correct at that scale
     test_group_name: ci-kubernetes-e2e-gce-scale-correctness
@@ -7317,15 +7318,47 @@ dashboards:
 
 - name: presubmits-cloud-provider-vsphere-blocking
   dashboard_tab:
+  - name: pull-cloud-provider-vsphere-check
+    test_group_name: pull-cloud-provider-vsphere-check
+    base_options: width=10
+  - name: pull-cloud-provider-vsphere-build
+    test_group_name: pull-cloud-provider-vsphere-build
+    base_options: width=10
   - name: pull-cloud-provider-vsphere-test
     test_group_name: pull-cloud-provider-vsphere-test
+    base_options: width=10
+  - name: pull-cloud-provider-vsphere-unit-test
+    test_group_name: pull-cloud-provider-vsphere-unit-test
+    base_options: width=10
+  - name: pull-cloud-provider-vsphere-integration-test
+    test_group_name: pull-cloud-provider-vsphere-integration-test
     base_options: width=10
 
 - name: vmware-presubmits-cloud-provider-vsphere
   dashboard_tab:
+  - name: pull-cloud-provider-vsphere-check
+    test_group_name: pull-cloud-provider-vsphere-check
+    base_options: width=10
+  - name: pull-cloud-provider-vsphere-build
+    test_group_name: pull-cloud-provider-vsphere-build
+    base_options: width=10
   - name: pull-cloud-provider-vsphere-test
     test_group_name: pull-cloud-provider-vsphere-test
     base_options: width=10
+  - name: pull-cloud-provider-vsphere-unit-test
+    test_group_name: pull-cloud-provider-vsphere-unit-test
+    base_options: width=10
+  - name: pull-cloud-provider-vsphere-integration-test
+    test_group_name: pull-cloud-provider-vsphere-integration-test
+    base_options: width=10
+
+- name: vmware-postsubmits-cloud-provider-vsphere
+  dashboard_tab:
+  - name: post-cloud-provider-vsphere-deploy
+    test_group_name: post-cloud-provider-vsphere-deploy
+    base_options: width=10
+    alert_options:
+      alert_mail_to_addresses: akutz+alerts@vmware.com
 
 - name: presubmits-kubernetes-scalability
   dashboard_tab:
@@ -8024,6 +8057,7 @@ dashboard_groups:
 - name: vmware
   dashboard_names:
   - vmware-presubmits-cloud-provider-vsphere
+  - vmware-postsubmits-cloud-provider-vsphere
   - vmware-conformance
   - vmware-conformance-cloud-provider
   - vmware-cluster-api-provider-vsphere
