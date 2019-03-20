@@ -4824,6 +4824,7 @@ dashboards:
   - name: kubeadm-kind-master
     test_group_name: ci-kubernetes-e2e-kubeadm-kind-master
 
+#TODO remove
 - name: sig-release-1.14-all
   dashboard_tab:
   - name: build-1.14
@@ -4976,6 +4977,18 @@ dashboards:
     test_group_name: periodic-kubernetes-bazel-build-1-14
   - name: periodic-bazel-test-1.14
     test_group_name: periodic-kubernetes-bazel-test-1-14
+
+- name: sig-release-1.14-informing
+  dashboard_tab:
+  - name: TODO
+    test_group_name: TODO
+
+- name: sig-release-1.14-upgrade
+  dashboard_tab:
+  - name: TODO
+    test_group_name: TODO
+
+
 
 - name: sig-release-1.13-all
   dashboard_tab:
@@ -7956,8 +7969,9 @@ dashboard_groups:
   - sig-release-master-blocking
   - sig-release-master-informing
   - sig-release-master-upgrade
-  - sig-release-1.14-all
   - sig-release-1.14-blocking
+  - sig-release-1.14-informing
+  - sig-release-1.14-upgrade
   - sig-release-1.13-all
   - sig-release-1.13-blocking
   - sig-release-1.12-all
