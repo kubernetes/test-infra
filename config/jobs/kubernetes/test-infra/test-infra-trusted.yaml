@@ -252,3 +252,61 @@ periodics:
     - name: creds
       secret:
         secretName: resultstore-service-account
+- cron: "54 * * * *"  # Every hour at 54 minutes past the hour
+  name: ci-test-infra-branchprotector
+  cluster: test-infra-trusted
+  labels:
+    app: branchprotector
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    containers:
+    - name: branchprotector
+      image: gcr.io/k8s-prow/branchprotector:v20190314-e8134a3
+      args:
+      - --config-path=prow/config.yaml
+      - --job-config-path=config
+      - --github-token-path=/etc/github/oauth
+      - --confirm
+      - --github-endpoint=http://ghproxy.default.svc.cluster.local
+      - --github-endpoint=https://api.github.com
+      volumeMounts:
+      - name: oauth
+        mountPath: /etc/github
+        readOnly: true
+    volumes:
+    - name: oauth
+      secret:
+        secretName: oauth-token
+- cron: "17 * * * *"  # Every hour at 17 minutes past the hour
+  name: ci-test-infra-label-sync
+  cluster: test-infra-trusted
+  labels:
+    app: label-sync
+  decorate: true
+  spec:
+    containers:
+    - name: label-sync
+      image: gcr.io/k8s-testimages/label_sync:v20190126-6c4304780
+      args:
+      - --config=/etc/config/labels.yaml
+      - --confirm=true
+      - --orgs=kubernetes,kubernetes-client,kubernetes-csi,kubernetes-incubator,kubernetes-sigs
+      - --token=/etc/github/oauth
+      volumeMounts:
+      - name: oauth
+        mountPath: /etc/github
+        readOnly: true
+      - name: config
+        mountPath: /etc/config
+        readOnly: true
+    volumes:
+    - name: oauth
+      secret:
+        secretName: oauth-token
+    - name: config
+      configMap:
+        name: label-config

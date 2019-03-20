@@ -263,6 +263,7 @@ config_updater:
   maps:
     label_sync/labels.yaml:
       name: label-config
+      namespace: test-pods
     prow/config.yaml:
       name: config
     prow/plugins.yaml:

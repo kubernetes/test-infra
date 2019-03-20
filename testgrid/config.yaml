@@ -2176,6 +2176,14 @@ test_groups:
 - name: ci-kubernetes-charts-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-charts-gce
 # prow jobs
+- name: ci-test-infra-branchprotector
+  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-branchprotector
+  alert_stale_results_hours: 12
+  num_failures_to_alert: 6 # Runs every 1h. Alert when it's been failing for 6 hours
+- name: ci-test-infra-label-sync
+  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-label-sync
+  alert_stale_results_hours: 12
+  num_failures_to_alert: 6 # Runs every 1h. Alert when it's been failing for 6 hours
 - name: ci-test-infra-triage
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-triage
   alert_stale_results_hours: 12
@@ -6998,6 +7006,20 @@ dashboards:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
     alert_options:
       alert_mail_to_addresses: ktbry@google.com
+  - name: branchprotector
+    description: Runs Prow's branchprotector to apply configured GitHub status context requirements and merge policies.
+    test_group_name: ci-test-infra-branchprotector
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    alert_options:
+      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
+  - name: label_sync
+    description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml. 
+    test_group_name: ci-test-infra-label-sync
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    alert_options:
+      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
 
 - name: sig-testing-canaries
   dashboard_tab:
