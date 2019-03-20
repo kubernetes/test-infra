@@ -545,8 +545,9 @@ type PushEvent struct {
 
 // Branch returns the name of the branch to which the user pushed.
 func (pe PushEvent) Branch() string {
-	refs := strings.Split(pe.Ref, "/")
-	return refs[len(refs)-1]
+	ref := strings.TrimPrefix(pe.Ref, "refs/heads/") // if Ref is a branch
+	ref = strings.TrimPrefix(ref, "refs/tags/")      // if Ref is a tag
+	return ref
 }
 
 // Commit represents general info about a commit.
