@@ -157,4 +157,4 @@ periodics:
       - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz
       - --timeout=420m
       securityContext:
-          privileged: true
+        privileged: true
