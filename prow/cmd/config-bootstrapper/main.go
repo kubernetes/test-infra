@@ -41,8 +41,6 @@ type options struct {
 	jobConfigPath string
 	pluginConfig  string
 
-	gzip bool
-
 	dryRun     bool
 	kubernetes prowflagutil.ExperimentalKubernetesOptions
 }
@@ -56,8 +54,6 @@ func gatherOptions() options {
 	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
-
-	fs.BoolVar(&o.gzip, "gzip", false, "Whether or not to GZIP the configmap keys")
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 	o.kubernetes.AddFlags(fs)
