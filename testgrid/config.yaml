@@ -3743,22 +3743,22 @@ dashboards:
     description: Runs conformance tests using kubetest against kubernetes ci/latest with in-tree vSphere components
     test_group_name: ci-vsphere-conformance-latest
     alert_options:
-      alert_mail_to_addresses: akutz+alerts@vmware.com
+      alert_mail_to_addresses: k8s-testing-vsphere+alerts@groups.vmware.com
   - name: periodic-v1.11
     description: Runs conformance tests using kubetest against kubernetes v1.11 with in-tree vSphere components
     test_group_name: ci-vsphere-conformance-stable-1-11
     alert_options:
-      alert_mail_to_addresses: akutz+alerts@vmware.com
+      alert_mail_to_addresses: k8s-testing-vsphere+alerts@groups.vmware.com
   - name: periodic-v1.12
     description: Runs conformance tests using kubetest against kubernetes v1.12 with in-tree vSphere components
     test_group_name: ci-vsphere-conformance-stable-1-12
     alert_options:
-      alert_mail_to_addresses: akutz+alerts@vmware.com
+      alert_mail_to_addresses: k8s-testing-vsphere+alerts@groups.vmware.com
   - name: periodic-v1.13
     description: Runs conformance tests using kubetest against kubernetes v1.13 with in-tree vSphere components
     test_group_name: ci-vsphere-conformance-stable-1-13
     alert_options:
-      alert_mail_to_addresses: akutz+alerts@vmware.com
+      alert_mail_to_addresses: k8s-testing-vsphere+alerts@groups.vmware.com
 
 - name: conformance-cloud-provider-openstack
   dashboard_tab:
@@ -3814,22 +3814,22 @@ dashboards:
     description: Runs conformance tests using kubetest against kubernetes ci/latest with cloud-provider-vsphere
     test_group_name: ci-cloud-provider-vsphere-conformance-latest
     alert_options:
-      alert_mail_to_addresses: akutz+alerts@vmware.com
+      alert_mail_to_addresses: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
   - name: periodic-v1.11
     description: Runs conformance tests using kubetest against kubernetes v1.11 with cloud-provider-vsphere
     test_group_name: ci-cloud-provider-vsphere-conformance-stable-1-11
     alert_options:
-      alert_mail_to_addresses: akutz+alerts@vmware.com
+      alert_mail_to_addresses: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
   - name: periodic-v1.12
     description: Runs conformance tests using kubetest against kubernetes v1.12 with cloud-provider-vsphere
     test_group_name: ci-cloud-provider-vsphere-conformance-stable-1-12
     alert_options:
-      alert_mail_to_addresses: akutz+alerts@vmware.com
+      alert_mail_to_addresses: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
   - name: periodic-v1.13
     description: Runs conformance tests using kubetest against kubernetes v1.13 with cloud-provider-vsphere
     test_group_name: ci-cloud-provider-vsphere-conformance-stable-1-13
     alert_options:
-      alert_mail_to_addresses: akutz+alerts@vmware.com
+      alert_mail_to_addresses: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
 
 - name: vmware-cluster-api-provider-vsphere
   dashboard_tab:
@@ -3837,17 +3837,17 @@ dashboards:
     description: Runs unit tests
     test_group_name: pull-cluster-api-provider-vsphere-test
     alert_options:
-      alert_mail_to_addresses: cnx+clusterapi@vmware.com
+      alert_mail_to_addresses: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
   - name: pr-e2e
     description: Runs e2e tests
     test_group_name: pull-cluster-api-provider-vsphere-e2e
     alert_options:
-      alert_mail_to_addresses: cnx+clusterapi@vmware.com
+      alert_mail_to_addresses: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
   - name: periodic-e2e
     description: Runs periodic e2e tests
     test_group_name: ci-cluster-api-provider-vsphere-ova-e2e
     alert_options:
-      alert_mail_to_addresses: cnx+clusterapi@vmware.co
+      alert_mail_to_addresses: k8s-testing-clusterapi-vsphere+alerts@vmware.co
 
 # Alibaba Cloud Provider Dashboard
 - name: conformance-alibaba-cloud-provider
@@ -7358,7 +7358,7 @@ dashboards:
     test_group_name: post-cloud-provider-vsphere-deploy
     base_options: width=10
     alert_options:
-      alert_mail_to_addresses: akutz+alerts@vmware.com
+      alert_mail_to_addresses: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
 
 - name: presubmits-kubernetes-scalability
   dashboard_tab:
