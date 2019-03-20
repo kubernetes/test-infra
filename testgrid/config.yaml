@@ -3315,15 +3315,24 @@ test_groups:
 - name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aks-engine-azure-1-14-windows
 # Cloud-provider-azure e2e tests
+- name: pull-cloud-provider-azure-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-azure-e2e
+  num_columns_recent: 30
+- name: pull-cloud-provider-azure-unit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-azure-unit
+  num_columns_recent: 30
+- name: pull-cloud-provider-azure-check
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-azure-check
+  num_columns_recent: 30
 - name: ci-cloud-provider-azure-master
   gcs_prefix: kubernetes-jenkins/logs/ci-cloud-provider-azure-master
-  
+
 # Flannel CNI on Windows test groups
 - name: ci-kubernetes-e2e-flannel-l2bridge-master-windows
   gcs_prefix: k8s-ovn/ci-kubernetes-e2e-flannel-l2bridge-master-windows
 - name: ci-kubernetes-e2e-flannel-overlay-master-windows
   gcs_prefix: k8s-ovn/ci-kubernetes-e2e-flannel-overlay-master-windows
-  
+
 # OVN-OVS CNI on Windows test groups
 - name: ci-kubernetes-e2e-ovn-ovs-master-windows
   gcs_prefix: k8s-ovn/ci-kubernetes-e2e-ovn-ovs-master-windows
@@ -7804,6 +7813,15 @@ dashboards:
   - name: pr-k8s-e2e
     description: Run e2e tests
     test_group_name: pull-kubernetes-e2e-aks-engine-azure
+  - name: pr-cloud-provider-e2e
+    description: Run Kubernetes e2e tests for cloud-provider-azure
+    test_group_name: pull-cloud-provider-azure-e2e
+  - name: pr-cloud-provider-unit
+    description: Run unit tests for cloud-provider-azure
+    test_group_name: pull-cloud-provider-azure-unit
+  - name: pull-cloud-provider-check
+    description: Run lint check tests for cloud-provider-azure
+    test_group_name: pull-cloud-provider-azure-check
 
 # openshift dashboard
 - name: redhat-openshift-release-blocking
