@@ -117,14 +117,22 @@ func (a *GCSArtifact) ReadAt(p []byte, off int64) (n int, err error) {
 	if err != nil {
 		return 0, fmt.Errorf("error getting artifact reader: %v", err)
 	}
-	n, err = reader.Read(p)
-	if err != nil {
-		return 0, fmt.Errorf("error reading from artifact: %v", err)
+	// We need to keep reading until we fill the buffer or hit EOF.
+	offset := 0
+	for offset < len(p) {
+		n, err = reader.Read(p[offset:])
+		offset += n
+		if err != nil {
+			if err == io.EOF && gotEOF {
+				break
+			}
+			return 0, fmt.Errorf("error reading from artifact: %v", err)
+		}
 	}
 	if gotEOF {
-		return n, io.EOF
+		return offset, io.EOF
 	}
-	return n, nil
+	return offset, nil
 }
 
 // ReadAtMost reads at most n bytes from a file in GCS. If the file is compressed (gzip) in GCS, n bytes
