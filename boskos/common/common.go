@@ -160,6 +160,10 @@ func (r *CommaSeparatedStrings) Set(value string) error {
 	return nil
 }
 
+func (r *CommaSeparatedStrings) Type() string {
+	return "commaSeparatedStrings"
+}
+
 // GetName implements the Item interface used for storage
 func (res Resource) GetName() string { return res.Name }
 
