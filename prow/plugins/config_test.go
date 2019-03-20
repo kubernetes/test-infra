@@ -20,6 +20,8 @@ import (
 	"errors"
 	"reflect"
 	"testing"
+
+	"k8s.io/apimachinery/pkg/util/diff"
 )
 
 func TestValidateExternalPlugins(t *testing.T) {
@@ -177,7 +179,7 @@ func TestSetDefault_Maps(t *testing.T) {
 		}
 		for k, n := range tc.expected {
 			if an := actual[k]; !reflect.DeepEqual(an, n) {
-				t.Errorf("%s - %s: expected %v != actual %v", tc.name, k, n, an)
+				t.Errorf("%s - %s: unexpected value. Diff: %v", tc.name, k, diff.ObjectReflectDiff(an, n))
 			}
 		}
 	}

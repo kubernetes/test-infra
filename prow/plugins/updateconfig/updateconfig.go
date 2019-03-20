@@ -68,7 +68,7 @@ type githubClient interface {
 }
 
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
-	return handle(pc.GitHubClient, pc.KubernetesClient.CoreV1(), pc.Config.ProwJobNamespace, pc.Logger, pre, &pc.PluginConfig.ConfigUpdater)
+	return handle(pc.GitHubClient, pc.KubernetesClient.CoreV1(), pc.Config.ProwJobNamespace, pc.Logger, pre, pc.PluginConfig.ConfigUpdater)
 }
 
 // FileGetter knows how to get the contents of a file by name
@@ -214,7 +214,7 @@ func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange
 	return toUpdate
 }
 
-func handle(gc githubClient, kc corev1.ConfigMapsGetter, defaultNamespace string, log *logrus.Entry, pre github.PullRequestEvent, config *plugins.ConfigUpdater) error {
+func handle(gc githubClient, kc corev1.ConfigMapsGetter, defaultNamespace string, log *logrus.Entry, pre github.PullRequestEvent, config plugins.ConfigUpdater) error {
 	// Only consider newly merged PRs
 	if pre.Action != github.PullRequestActionClosed {
 		return nil
@@ -252,7 +252,7 @@ func handle(gc githubClient, kc corev1.ConfigMapsGetter, defaultNamespace string
 	}
 
 	// Are any of the changes files ones that define a configmap we want to update?
-	toUpdate := FilterChanges(*config, changes, log)
+	toUpdate := FilterChanges(config, changes, log)
 
 	var updated []string
 	indent := " " // one space
