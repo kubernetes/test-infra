@@ -15,6 +15,6 @@
 FROM gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
 
 ADD ["janitor", \
-     "janitor.py", \
+     "gcp_janitor.py", \
      "/bin/"]
 ENTRYPOINT ["/bin/sh", "-c", "/bin/echo started && /bin/janitor \"$@\"", "--"]
