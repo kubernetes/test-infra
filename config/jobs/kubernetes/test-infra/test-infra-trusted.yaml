@@ -266,6 +266,8 @@ periodics:
     containers:
     - name: branchprotector
       image: gcr.io/k8s-prow/branchprotector:v20190314-e8134a3
+      command:
+      - /app/prow/cmd/branchprotector/app.binary
       args:
       - --config-path=prow/config.yaml
       - --job-config-path=config
@@ -291,6 +293,8 @@ periodics:
     containers:
     - name: label-sync
       image: gcr.io/k8s-testimages/label_sync:v20190126-6c4304780
+      command:
+      - /app/label_sync/app.binary
       args:
       - --config=/etc/config/labels.yaml
       - --confirm=true
