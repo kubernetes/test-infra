@@ -270,6 +270,7 @@ config_updater:
       name: plugins
     config/jobs/**/*.yaml:
       name: job-config
+      gzip: true
 
 welcome:
 - repos:
