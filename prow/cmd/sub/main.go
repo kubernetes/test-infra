@@ -30,14 +30,15 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
-	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/pubsub/reporter"
 	"k8s.io/test-infra/prow/pubsub/subscriber"
 )
 
@@ -130,6 +131,7 @@ func main() {
 		ConfigAgent:   configAgent,
 		Metrics:       promMetrics,
 		ProwJobClient: kubeClient,
+		Reporter:      reporter.NewReporter(configAgent.Config),
 	}
 
 	// Return 200 on / for health checks.
