@@ -4827,27 +4827,6 @@ dashboards:
 #TODO remove
 - name: sig-release-1.14-all
   dashboard_tab:
-  - name: build-1.14
-    test_group_name: ci-kubernetes-build-beta
-  - name: verify-1.14
-    test_group_name: ci-kubernetes-verify-beta
-  - name: integration-1.14
-    test_group_name: ci-kubernetes-integration-beta
-  - name: gce-conformance-latest-1.14
-    description: Runs conformance tests using kubetest against kubernetes release 1.14 branch on GCE
-    test_group_name: ci-kubernetes-gce-conformance-latest-1-14
-  - name: gce-cos-1.14-default
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
-  - name: gce-cos-1.14-reboot
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-reboot
-  - name: gce-cos-1.14-serial
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-serial
-  - name: gce-cos-1.14-slow
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-slow
-  - name: gce-cos-1.14-ingress
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
-  - name: gce-cos-1.14-alphafeatures
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
   - name: gke-cos-1.14-default
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
   - name: gke-cos-1.14-reboot
@@ -4876,28 +4855,14 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
   - name: gke-1.13-1.14-gci-kubectl-skew-serial
     test_group_name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
-  - name: gce-device-plugin-gpu-1.14
-    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
   - name: gke-device-plugin-gpu-1.14
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
   - name: gke-device-plugin-gpu-p100-1.14
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
   - name: kops-aws-1.14
     test_group_name: ci-kubernetes-e2e-kops-aws-beta
-  - name: node-kubelet-1.14
-    test_group_name: ci-kubernetes-node-kubelet-beta
   - name: node-kubelet-1.14-features
     test_group_name: ci-kubernetes-node-kubelet-beta-features
-  - name: gci-gce-scalability-1.14
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
-  - name: bazel-build-1.14
-    test_group_name: ci-kubernetes-bazel-build-1-14
-  - name: bazel-test-1.14
-    test_group_name: ci-kubernetes-bazel-test-1-14
-  - name: periodic-bazel-build-1.14
-    test_group_name: periodic-kubernetes-bazel-build-1-14
-  - name: periodic-bazel-test-1.14
-    test_group_name: periodic-kubernetes-bazel-test-1-14
   - name: kubeadm-gce-1.13-on-1.14
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-13-on-1-14
   - name: kubeadm-gce-1.14
