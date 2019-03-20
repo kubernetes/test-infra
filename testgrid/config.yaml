@@ -4827,18 +4827,8 @@ dashboards:
 #TODO remove
 - name: sig-release-1.14-all
   dashboard_tab:
-  - name: gke-cos-1.14-default
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
-  - name: gke-cos-1.14-reboot
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
   - name: soak-gci-gce-1.14
     test_group_name: ci-kubernetes-soak-gci-gce-beta
-  - name: gke-cos-1.14-serial
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-serial
-  - name: gke-cos-1.14-slow
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
-  - name: gke-cos-1.14-ingress
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
   - name: gce-1.14-1.13-gci-kubectl-skew
     test_group_name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
   - name: gce-1.14-1.13-gci-kubectl-skew-serial
@@ -4849,18 +4839,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
   - name: gke-1.14-1.13-gci-kubectl-skew
     test_group_name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew
-  - name: gke-1.14-1.13-gci-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew-serial
-  - name: gke-1.13-1.14-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
-  - name: gke-1.13-1.14-gci-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
-  - name: gke-device-plugin-gpu-1.14
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
-  - name: gke-device-plugin-gpu-p100-1.14
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
-  - name: kops-aws-1.14
-    test_group_name: ci-kubernetes-e2e-kops-aws-beta
   - name: node-kubelet-1.14-features
     test_group_name: ci-kubernetes-node-kubelet-beta-features
   - name: kubeadm-gce-1.13-on-1.14
@@ -4919,8 +4897,28 @@ dashboards:
 
 - name: sig-release-1.14-informing
   dashboard_tab:
-  - name: TODO
-    test_group_name: TODO
+  - name: gke-cos-1.14-default
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
+  - name: gke-cos-1.14-reboot
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
+  - name: gke-cos-1.14-serial
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-serial
+  - name: gke-cos-1.14-slow
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
+  - name: gke-cos-1.14-ingress
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
+  - name: gke-1.14-1.13-gci-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew-serial
+  - name: gke-1.13-1.14-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
+  - name: gke-1.13-1.14-gci-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
+  - name: gke-device-plugin-gpu-1.14
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
+  - name: gke-device-plugin-gpu-p100-1.14
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
+  - name: kops-aws-1.14
+    test_group_name: ci-kubernetes-e2e-kops-aws-beta
 
 - name: sig-release-1.14-upgrade
   dashboard_tab:
