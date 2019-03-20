@@ -398,7 +398,10 @@ type ConfigMapSpec struct {
 	// Namespaces in which the configMap needs to be deployed, in addition to the above
 	// namespace provided, or the default if it is not set.
 	AdditionalNamespaces []string `json:"additional_namespaces,omitempty"`
-
+	// GZIP toggles whether the key's data should be GZIP'd before being stored
+	// If set to false and the global GZIP option is enabled, this file will
+	// will not be GZIP'd.
+	GZIP *bool `json:"gzip,omitempty"`
 	// Namespaces is the fully resolved list of Namespaces to deploy the ConfigMap in
 	Namespaces []string `json:"-"`
 }

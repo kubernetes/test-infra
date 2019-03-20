@@ -123,12 +123,12 @@ func main() {
 		return nil
 	})
 
-	for cm, data := range updateconfig.FilterChanges(pluginAgent.Config().ConfigUpdater.Maps, changes, logrus.NewEntry(logrus.StandardLogger())) {
+	for cm, data := range updateconfig.FilterChanges(pluginAgent.Config().ConfigUpdater, changes, logrus.NewEntry(logrus.StandardLogger())) {
 		if cm.Namespace == "" {
 			cm.Namespace = configAgent.Config().ProwJobNamespace
 		}
 		logger := logrus.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace}})
-		if err := updateconfig.Update(&osFileGetter{root: o.sourcePath}, client.CoreV1().ConfigMaps(cm.Namespace), cm.Name, cm.Namespace, data, o.gzip, logger); err != nil {
+		if err := updateconfig.Update(&osFileGetter{root: o.sourcePath}, client.CoreV1().ConfigMaps(cm.Namespace), cm.Name, cm.Namespace, data, logger); err != nil {
 			logger.WithError(err).Error("failed to update config on cluster")
 		}
 	}
