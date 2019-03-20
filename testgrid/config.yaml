@@ -3334,6 +3334,13 @@ test_groups:
   num_columns_recent: 30
 - name: ci-cloud-provider-azure-master
   gcs_prefix: kubernetes-jenkins/logs/ci-cloud-provider-azure-master
+- name: ci-cloud-provider-azure-conformance
+  gcs_prefix: kubernetes-jenkins/logs/ci-cloud-provider-azure-conformance
+- name: ci-cloud-provider-azure-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-cloud-provider-azure-autoscaling
+- name: pull-cloud-provider-azure-e2e-ccm
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-azure-e2e-ccm
+  num_columns_recent: 30
 
 # Flannel CNI on Windows test groups
 - name: ci-kubernetes-e2e-flannel-l2bridge-master-windows
@@ -7023,7 +7030,7 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: label_sync
-    description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml. 
+    description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml.
     test_group_name: ci-test-infra-label-sync
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
@@ -7837,9 +7844,18 @@ dashboards:
 # sig-azure dashboard
 - name: sig-azure-master
   dashboard_tab:
-  - name: azure-master-conformance
-    description: Runs conformance tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
+  - name: cloud-provider-azure-master
+    description: Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
     test_group_name: ci-cloud-provider-azure-master
+  - name: cloud-provider-azure-autoscaling
+    description: Runs node autoscaling tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
+    test_group_name: ci-cloud-provider-azure-autoscaling
+  - name: cloud-provider-azure-conformance
+    description: Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
+    test_group_name: ci-cloud-provider-azure-conformance
+  - name: pr-cloud-provider-e2e-ccm
+    description: Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
+    test_group_name: pull-cloud-provider-azure-e2e-ccm
   - name: pr-k8s-e2e
     description: Run e2e tests
     test_group_name: pull-kubernetes-e2e-aks-engine-azure
