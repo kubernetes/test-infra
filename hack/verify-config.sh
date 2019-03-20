@@ -16,7 +16,6 @@
 set -o errexit
 set -o nounset
 set -o pipefail
-set -o xtrace
 
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 
@@ -33,8 +32,10 @@ bazel run //config/jobs/kubernetes-security:genjobs -- \
 "--jobs=${JOBS_DIR}" \
 "--output=${TMP_GENERATED_JOBS}"
 
-DIFF=$(diff "${TMP_GENERATED_JOBS}" "${JOBS_DIR}/kubernetes-security/generated-security-jobs.yaml")
+DIFF=$(diff "${TMP_GENERATED_JOBS}" "${JOBS_DIR}/kubernetes-security/generated-security-jobs.yaml" || true)
 if [ ! -z "$DIFF" ]; then
-    echo "config is not correct, please run \\\`hack/update-config.sh\\\`"
+    echo "${DIFF}"
+    echo ""
+    echo "FAILED: config is not correct, please run 'hack/update-config.sh'"
     exit 1
 fi
