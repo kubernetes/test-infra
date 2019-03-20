@@ -285,7 +285,14 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		} else {
 			filters = append(filters, filter)
 		}
-		filters = append(filters, oldRevisionFilter(c.lastUpdate, change.Revisions[change.CurrentRevision]))
+		latestRev := change.Revisions[change.CurrentRevision]
+		created, err := time.Parse(layout, latestRev.Created)
+		if err != nil {
+			logrus.WithError(err).Errorf("Parse time %v failed", latestRev.Created)
+		}
+		if created.After(c.lastUpdate) {
+			filters = append(filters, pjutil.TestAllFilter())
+		}
 		toTrigger, _, err := pjutil.FilterPresubmits(pjutil.AggregateFilter(filters), listChangedFiles(change), change.Branch, presubmits, logger)
 		if err != nil {
 			return fmt.Errorf("failed to filter presubmits: %v", err)

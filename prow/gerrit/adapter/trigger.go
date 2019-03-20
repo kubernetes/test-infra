@@ -56,18 +56,3 @@ func messageFilter(lastUpdate time.Time, change client.ChangeInfo, presubmits []
 	}
 	return pjutil.AggregateFilter(filters), nil
 }
-
-// oldRevisionFilter builds a filter for jobs that have already been processed for a revision.
-func oldRevisionFilter(lastUpdate time.Time, rev client.RevisionInfo) pjutil.Filter {
-	created, err := time.Parse(layout, rev.Created)
-	if err != nil {
-		logrus.WithError(err).Errorf("Parse time %v failed", rev.Created)
-		return func(p config.Presubmit) (bool, bool, bool) {
-			return false, false, false
-		}
-	}
-
-	return func(p config.Presubmit) (bool, bool, bool) {
-		return created.After(lastUpdate), false, false
-	}
-}
