@@ -7,7 +7,6 @@ load("//prow:def.bzl", "release", "component", "MULTI_KIND", "BUILD_CLUSTER")
 
 release(
     "production",
-    component("branchprotector", "cronjob"),
     component("build", "deployment"),
     component("build_rbac", MULTI_KIND),
     component("crier", "deployment"),
