@@ -856,6 +856,11 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
+        description: Issues or PRs related to prow's config-bootstrapper utility
+        name: area/prow/config-bootstrapper
+        target: both
+        addedBy: label
+      - color: 0052cc
         description: Issues or PRs related to prow's deck component
         name: area/prow/deck
         target: both

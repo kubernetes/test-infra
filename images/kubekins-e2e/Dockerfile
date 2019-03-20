@@ -41,7 +41,7 @@ RUN apt-get update && \
     rpm && \
     rm -rf /var/lib/apt/lists/*
 # preinstall this for kops tests xref kubetest prepareAws(...)
-# TODO(bentheelder,krzyzacy,justisb,chrislovecnm): remove this
+# TODO(krzyzacy,justisb,chrislovecnm): remove this
 RUN pip install awscli
 
 # install cfssl to prevent https://github.com/kubernetes/kubernetes/issues/55589
@@ -76,7 +76,7 @@ RUN bash /install-bazel.sh
 
 # if UPGRADE_DOCKER_ARG, then install the latest docker over whatever we have
 # in the base image.
-# TODO(bentheelder): after code freeze, roll out newer docker in the
+# TODO: after code freeze, roll out newer docker in the
 # base image and possibly remove this ...
 ARG UPGRADE_DOCKER_ARG=false
 RUN [ "${UPGRADE_DOCKER_ARG}" = "true" ] && \

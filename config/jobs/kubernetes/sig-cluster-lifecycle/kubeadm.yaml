@@ -122,7 +122,7 @@ periodics:
       - --upload=gs://kubernetes-jenkins/logs
       - --scenario=kubernetes_e2e
       - --
-      # TODO(bentheelder): --kubernetes-anywhere-kubernetes-version should really be ci/latest-bazel but we need changes to kubeadm and possibly kubernetes-anywhere first
+      # TODO: --kubernetes-anywhere-kubernetes-version should really be ci/latest-bazel but we need changes to kubeadm and possibly kubernetes-anywhere first
       - --cluster=
       - --deployment=kubernetes-anywhere
       - --extract=ci/latest-bazel

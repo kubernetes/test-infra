@@ -8,14 +8,18 @@ go_binary(
     embed = [":go_default_library"],
 )
 
-prow_image(name = "commenter-image")
+prow_image(
+    name = "image",
+    base = "@alpine-base//image",
+    visibility = ["//visibility:public"],
+)
 
 prow_push(
     name = "push",
     images = {
-        "{STABLE_DOCKER_REPO}/commenter:{DOCKER_TAG}": ":commenter-image",
-        "{STABLE_DOCKER_REPO}/commenter:latest": ":commenter-image",
-        "{STABLE_DOCKER_REPO}/commenter:latest-{BUILD_USER}": ":commenter-image",
+        "{STABLE_DOCKER_REPO}/commenter:{DOCKER_TAG}": ":image",
+        "{STABLE_DOCKER_REPO}/commenter:latest": ":image",
+        "{STABLE_DOCKER_REPO}/commenter:latest-{BUILD_USER}": ":image",
     },
 )
 

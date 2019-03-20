@@ -225,7 +225,7 @@ func run(deploy deployer, o options) error {
 		}
 	}
 
-	// TODO(bentheelder): consider remapping charts, etc to testCmd
+	// TODO: consider remapping charts, etc to testCmd
 
 	var kubemarkWg sync.WaitGroup
 	var kubemarkDownErr error

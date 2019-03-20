@@ -28,12 +28,13 @@ import (
 // This stuff is used in the templates.
 type baseTemplateSettings struct {
 	MobileFriendly bool
+	DarkMode       bool
 	PageName       string
 	Arguments      interface{}
 }
 
-func makeBaseTemplateSettings(mobileFriendly bool, pageName string, arguments interface{}) baseTemplateSettings {
-	return baseTemplateSettings{mobileFriendly, pageName, arguments}
+func makeBaseTemplateSettings(mobileFriendly bool, darkMode bool, pageName string, arguments interface{}) baseTemplateSettings {
+	return baseTemplateSettings{mobileFriendly, darkMode, pageName, arguments}
 }
 
 func getConcreteBrandingFunction(cfg config.Getter) func() config.Branding {
@@ -66,6 +67,8 @@ func prepareBaseTemplate(o options, cfg config.Getter, t *template.Template) (*t
 		"sections":         getConcreteSectionFunction(o),
 		"mobileFriendly":   func() bool { return true },
 		"mobileUnfriendly": func() bool { return false },
+		"darkMode":         func() bool { return true },
+		"lightMode":        func() bool { return false },
 		"deckVersion":      func() string { return version.Version },
 	}).ParseFiles(path.Join(o.templateFilesLocation, "base.html"))
 }

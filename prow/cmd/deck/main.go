@@ -462,7 +462,7 @@ func handleCached(next http.Handler) http.Handler {
 		// revalidation. We also need to set must-revalidate because no-cache
 		// doesn't imply must-revalidate when using the back button
 		// https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.1
-		// TODO(bentheelder): consider setting a longer max-age
+		// TODO: consider setting a longer max-age
 		// setting it this way means the content is always revalidated
 		w.Header().Set("Cache-Control", "public, max-age=0, no-cache, must-revalidate")
 		next.ServeHTTP(w, r)
@@ -1031,7 +1031,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface) http.HandlerFunc {
 
 func handleConfig(cfg config.Getter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO(bentheelder): add the ability to query for portions of the config?
+		// TODO: add the ability to query for portions of the config?
 		setHeadersNoCaching(w)
 		config := cfg()
 		b, err := yaml.Marshal(config)

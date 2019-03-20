@@ -15,6 +15,7 @@ py_binary(
         "//scenarios:kubernetes_verify.py",
         "//testgrid:config-yaml",
     ],
+    deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
 )
 
 py_binary(
@@ -51,14 +52,15 @@ filegroup(
         ":package-srcs",
         "//experiment/add-hook:all-srcs",
         "//experiment/aws-stockout:all-srcs",
-        "//experiment/bootstrap:all-srcs",
         "//experiment/ci-janitor:all-srcs",
         "//experiment/coverage:all-srcs",
         "//experiment/manual-trigger:all-srcs",
         "//experiment/resultstore:all-srcs",
-        "//experiment/slack-event-log:all-srcs",
         "//experiment/slack-oncall-updater:all-srcs",
-        "//experiment/slack-report-message:all-srcs",
+        "//experiment/slack/slack:all-srcs",
+        "//experiment/slack/slack-event-log:all-srcs",
+        "//experiment/slack/slack-report-message:all-srcs",
+        "//experiment/slack/slack-welcomer:all-srcs",
         "//experiment/tracer:all-srcs",
     ],
     tags = ["automanaged"],

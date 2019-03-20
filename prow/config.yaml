@@ -7,10 +7,10 @@ plank:
     timeout: 7200000000000 # 2h
     grace_period: 15000000000 # 15s
     utility_images:
-      clonerefs: "gcr.io/k8s-prow/clonerefs:v20190314-e8134a3"
-      initupload: "gcr.io/k8s-prow/initupload:v20190314-e8134a3"
-      entrypoint: "gcr.io/k8s-prow/entrypoint:v20190314-e8134a3"
-      sidecar: "gcr.io/k8s-prow/sidecar:v20190314-e8134a3"
+      clonerefs: "gcr.io/k8s-prow/clonerefs:v20190320-fbc764e23"
+      initupload: "gcr.io/k8s-prow/initupload:v20190320-fbc764e23"
+      entrypoint: "gcr.io/k8s-prow/entrypoint:v20190320-fbc764e23"
+      sidecar: "gcr.io/k8s-prow/sidecar:v20190320-fbc764e23"
     gcs_configuration:
       bucket: "kubernetes-jenkins"
       path_strategy: "legacy"
@@ -396,30 +396,6 @@ tide:
     - needs-rebase
   - repos:
     - kubernetes/kubernetes
-    excludedBranches:
-    - master
-    - release-1.14
-    labels:
-    - lgtm
-    - approved
-    - "cncf-cla: yes"
-    missingLabels:
-    - do-not-merge
-    - do-not-merge/blocked-paths
-    - do-not-merge/cherry-pick-not-approved
-    - do-not-merge/hold
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/release-note-label-needed
-    - do-not-merge/work-in-progress
-    - needs-kind
-    - needs-rebase
-    - needs-sig
-  - repos:
-    - kubernetes/kubernetes
-    milestone: v1.14
-    includedBranches:
-    - master
-    - release-1.14
     labels:
     - lgtm
     - approved

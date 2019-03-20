@@ -33,6 +33,7 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/ghproxy/ghcache"
 )
 
 type testTime struct {
@@ -1393,14 +1394,24 @@ func TestListIssueEvents(t *testing.T) {
 }
 
 func TestThrottle(t *testing.T) {
-	ts := simpleTestServer(
-		t,
-		"/repos/org/repo/issues/1/events",
-		[]ListedIssueEvent{
-			{Event: IssueActionOpened},
-			{Event: IssueActionClosed},
-		},
-	)
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/repos/org/repo/issues/1/events" {
+			b, err := json.Marshal([]ListedIssueEvent{{Event: IssueActionClosed}})
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			fmt.Fprint(w, string(b))
+		} else if r.URL.Path == "/repos/org/repo/issues/2/events" {
+			w.Header().Set(ghcache.CacheModeHeader, string(ghcache.ModeRevalidated))
+			b, err := json.Marshal([]ListedIssueEvent{{Event: IssueActionOpened}})
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			fmt.Fprint(w, string(b))
+		} else {
+			t.Fatalf("Bad request path: %s", r.URL.Path)
+		}
+	}))
 	c := getClient(ts.URL)
 	c.Throttle(1, 2)
 	if c.client != &c.throttle {
@@ -1412,16 +1423,26 @@ func TestThrottle(t *testing.T) {
 	if cap(c.throttle.throttle) != 2 {
 		t.Fatalf("Expected throttle channel capacity of two, found %d", cap(c.throttle.throttle))
 	}
+	check := func(events []ListedIssueEvent, err error, expectedAction IssueEventAction) {
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+		if len(events) != 1 || events[0].Event != expectedAction {
+			t.Errorf("Expected one %q event, found: %v", string(expectedAction), events)
+		}
+		if len(c.throttle.throttle) != 1 {
+			t.Errorf("Expected one item in throttle channel, found %d", len(c.throttle.throttle))
+		}
+	}
 	events, err := c.ListIssueEvents("org", "repo", 1)
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-	if len(events) != 2 {
-		t.Errorf("Expected two events, found %d: %v", len(events), events)
-	}
-	if len(c.throttle.throttle) != 1 {
-		t.Errorf("Expected one item in throttle channel, found %d", len(c.throttle.throttle))
-	}
+	check(events, err, IssueActionClosed)
+	// The following 2 calls should be refunded.
+	events, err = c.ListIssueEvents("org", "repo", 2)
+	check(events, err, IssueActionOpened)
+	events, err = c.ListIssueEvents("org", "repo", 2)
+	check(events, err, IssueActionOpened)
+
+	// Check that calls are delayed while throttled.
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	go func() {
 		if _, err := c.ListIssueEvents("org", "repo", 1); err != nil {

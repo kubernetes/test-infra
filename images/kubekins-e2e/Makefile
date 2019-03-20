@@ -21,7 +21,7 @@ K8S_RELEASE=stable
 GO ?= 1.12.1
 BAZEL ?= 0.21.0
 UPGRADE_DOCKER ?=false
-# TODO(bentheelder,cblecker): this is aging and bad
+# TODO(cblecker): this is aging and bad
 CFSSL ?= R1.2
 
 # config for testing prior to rolling out to master / ongoing release

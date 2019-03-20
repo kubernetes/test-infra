@@ -2176,6 +2176,14 @@ test_groups:
 - name: ci-kubernetes-charts-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-charts-gce
 # prow jobs
+- name: ci-test-infra-branchprotector
+  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-branchprotector
+  alert_stale_results_hours: 12
+  num_failures_to_alert: 6 # Runs every 1h. Alert when it's been failing for 6 hours
+- name: ci-test-infra-label-sync
+  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-label-sync
+  alert_stale_results_hours: 12
+  num_failures_to_alert: 6 # Runs every 1h. Alert when it's been failing for 6 hours
 - name: ci-test-infra-triage
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-triage
   alert_stale_results_hours: 12
@@ -3321,6 +3329,12 @@ test_groups:
 # Flannel CNI on Windows test groups
 - name: ci-kubernetes-e2e-flannel-l2bridge-master-windows
   gcs_prefix: k8s-ovn/ci-kubernetes-e2e-flannel-l2bridge-master-windows
+- name: ci-kubernetes-e2e-flannel-overlay-master-windows
+  gcs_prefix: k8s-ovn/ci-kubernetes-e2e-flannel-overlay-master-windows
+  
+# OVN-OVS CNI on Windows test groups
+- name: ci-kubernetes-e2e-ovn-ovs-master-windows
+  gcs_prefix: k8s-ovn/ci-kubernetes-e2e-ovn-ovs-master-windows
 
 # Add New Testgroups Here
 
@@ -3373,8 +3387,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-structured-merge-diff-test
 
 # GCP Compute Persistent Disk CSI Driver Test Groups
-- name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable
-  gcs_prefix: kubernetes-jenkins/logs/ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable
+- name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable-master
+- name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable-1-13-4
+  gcs_prefix: kubernetes-jenkins/logs/ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable-1-13-4
 
 # AWS Test Groups
 - name: pull-aws-alb-ingress-controller-lint
@@ -3414,6 +3430,14 @@ test_groups:
 # OpenShift
 - name: release-openshift-origin-installer-e2e-aws-4.0
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-4.0
+- name: release-openshift-origin-installer-e2e-aws-serial-4.0
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-serial-4.0
+- name: release-openshift-origin-installer-e2e-aws-upgrade-4.0
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.0
+- name: release-openshift-ocp-installer-e2e-aws-4.0
+  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-4.0
+- name: release-openshift-ocp-installer-e2e-aws-serial-4.0
+  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-serial-4.0
 
 # sig-storage-local-static-provisioner
 - name: ci-sig-storage-local-static-provisioner-master-gce-latest
@@ -3641,37 +3665,37 @@ dashboards:
   - name: GCE, v1.13 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.13 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-13
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.13 (dev)
     description: Runs conformance tests using kubetest against kubernetes release 1.13 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-13
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.12 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.12 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-12
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.12 (dev)
     description: Runs conformance tests using kubetest against kubernetes release 1.12 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-12
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.11 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.11 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-11
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.11 (dev)
     description: Runs conformance tests using kubetest against kubernetes release 1.11 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-11
-    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
 
@@ -6077,8 +6101,11 @@ dashboards:
 - name: sig-gcp-compute-persistent-disk-csi-driver
   dashboard_tab:
   - name: Kubernetes Master Driver Stable
-    test_group_name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable
+    test_group_name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable-master
     description: Kubernetes Integration tests for Kubernetes Master branch and Driver Stable
+  - name: Kubernetes v1.13.4 Driver Stable
+    test_group_name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable-1-13-4
+    description: Kubernetes Integration tests for Kubernetes 1.13.4 and Driver Stable
 
 - name: sig-cluster-lifecycle-cluster-api-provider-vsphere
   dashboard_tab:
@@ -6979,6 +7006,20 @@ dashboards:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
     alert_options:
       alert_mail_to_addresses: ktbry@google.com
+  - name: branchprotector
+    description: Runs Prow's branchprotector to apply configured GitHub status context requirements and merge policies.
+    test_group_name: ci-test-infra-branchprotector
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    alert_options:
+      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
+  - name: label_sync
+    description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml. 
+    test_group_name: ci-test-infra-label-sync
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    alert_options:
+      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
 
 - name: sig-testing-canaries
   dashboard_tab:
@@ -7246,18 +7287,12 @@ dashboards:
   - name: pull-kubernetes-bazel-build
     test_group_name: pull-kubernetes-bazel-build
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: pull-kubernetes-bazel-test
     test_group_name: pull-kubernetes-bazel-test
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: pull-kubernetes-e2e-gce
     test_group_name: pull-kubernetes-e2e-gce
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: pull-kubernetes-e2e-gce-100-performance
     test_group_name: pull-kubernetes-e2e-gce-100-performance
     base_options: width=10
@@ -7350,13 +7385,9 @@ dashboards:
   - name: bazel
     test_group_name: pull-test-infra-bazel
     base_options: width=10
-    alerts_options:
-      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: lint
     test_group_name: pull-test-infra-lint
     base_options: width=10
-    alerts_options:
-      alert_mail_to_addresses: bentheelder+alerts@google.com
   - name: bazel-canary
     test_group_name: pull-test-infra-bazel-canary
     base_options: width=10
@@ -7787,6 +7818,12 @@ dashboards:
   - name: flannel-l2bridge-windows-master
     description: Runs Windows e2e tests on K8s clusters on Openstack vms with Flannel CNI in l2bridge network mode.
     test_group_name: ci-kubernetes-e2e-flannel-l2bridge-master-windows
+  - name: flannel-overlay-windows-master
+    description: Runs Windows e2e tests on K8s clusters on Openstack vms with Flannel CNI in overlay network mode.
+    test_group_name: ci-kubernetes-e2e-flannel-overlay-master-windows
+  - name: ovn-ovs-windows-master
+    description: Runs Windows e2e tests on K8s clusters on Openstack vms with OVN-OVS CNI.
+    test_group_name: ci-kubernetes-e2e-ovn-ovs-master-windows
 
 # sig-azure dashboard
 - name: sig-azure-master
@@ -7804,6 +7841,22 @@ dashboards:
   - name: redhat-release-openshift-origin-installer-e2e-aws-4.0
     description: Runs Kubernetes e2e tests against an OpenShift 4.0 cluster.
     test_group_name: release-openshift-origin-installer-e2e-aws-4.0
+    base_options: width=10
+  - name: redhat-release-openshift-origin-installer-e2e-aws-serial-4.0
+    description: Runs Kubernetes serial e2e tests against an OpenShift 4.0 cluster.
+    test_group_name: release-openshift-origin-installer-e2e-aws-serial-4.0
+    base_options: width=10
+  - name: redhat-release-openshift-origin-installer-e2e-aws-upgrade-4.0
+    description: Runs Kubernetes upgrade e2e tests against an OpenShift 4.0 cluster.
+    test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.0
+    base_options: width=10
+  - name: redhat-release-openshift-ocp-installer-e2e-aws-4.0
+    description: Runs Kubernetes e2e tests against an OpenShift 4.0 OCP cluster.
+    test_group_name: release-openshift-ocp-installer-e2e-aws-4.0
+    base_options: width=10
+  - name: redhat-release-openshift-ocp-installer-e2e-aws-serial-4.0
+    description: Runs Kubernetes serial e2e tests against an OpenShift 4.0 OCP cluster.
+    test_group_name: release-openshift-ocp-installer-e2e-aws-serial-4.0
     base_options: width=10
 
 #Docker node conformance dashboard
