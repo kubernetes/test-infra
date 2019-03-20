@@ -15,12 +15,13 @@ spec:
       terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-janitor
-        image: gcr.io/k8s-testimages/janitor:v20180725-c421ed4f9
+        image: gcr.io/k8s-testimages/janitor:v20190319-1a5a7d7fb
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
-        - --service-account=/etc/service-account/service-account.json
         - --resource-type=gke-project
         - --pool-size=20
+        - --
+        - --service_account=/etc/service-account/service-account.json
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
@@ -47,12 +48,13 @@ spec:
       terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-janitor-nongke
-        image: gcr.io/k8s-testimages/janitor:v20180725-c421ed4f9
+        image: gcr.io/k8s-testimages/janitor:v20190319-1a5a7d7fb
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
-        - --service-account=/etc/service-account/service-account.json
         - --resource-type=gce-project,gpu-project,ingress-project,istio-project,scalability-project
         - --pool-size=20
+        - --
+        - --service_account=/etc/service-account/service-account.json
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
