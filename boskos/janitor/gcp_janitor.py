@@ -389,7 +389,7 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--service_account',
         help='GCP service account',
-        default=os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", default=None))
+        default=os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", None))
     ARGS = PARSER.parse_args()
 
     # We want to allow --days=0 and --hours=0, so check against None instead.
