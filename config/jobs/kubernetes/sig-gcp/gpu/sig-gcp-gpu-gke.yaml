@@ -156,7 +156,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2
-  cron: "0 1-23/12 * * *" #expensive test
+  cron: "0 6-23/12 * * *" #expensive test
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"

@@ -53,7 +53,7 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUMasterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
 
-- cron: "0 6-23/12 * * *"
+- cron: "0 1-23/12 * * *"
   name: ci-kubernetes-e2e-gce-gpu-stable1-beta-cluster-upgrade
   labels:
     preset-service-account: "true"
@@ -107,7 +107,7 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUMasterUpgrade\] --upgrade-target=ci/k8s-beta --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
 
-- cron: "0 8-23/12 * * *"
+- cron: "0 3-23/12 * * *"
   name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
   labels:
     preset-service-account: "true"

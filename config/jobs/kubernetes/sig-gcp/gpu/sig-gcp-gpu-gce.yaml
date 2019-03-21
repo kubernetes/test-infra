@@ -81,7 +81,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
-  cron: "0 3-23/12 * * *"
+  cron: "0 8-23/12 * * *"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"

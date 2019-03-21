@@ -242,7 +242,7 @@ jobs:
     interval: 2h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos1-k8sbeta-gpu:
-    interval: 2h
+    cron: "0 0-23/2 * * *"
     sigOwners: ['sig-gcp']
     args:
     - --gcp-zone=us-west1-b
@@ -275,7 +275,7 @@ jobs:
     interval: 4h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos1-k8sstable1-gpu:
-    interval: 4h
+    cron: "0 0-23/4 * * *"
     sigOwners: ['sig-gcp']
     args:
     - --gcp-zone=us-west1-b
@@ -308,7 +308,7 @@ jobs:
     interval: 4h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos1-k8sstable2-gpu:
-    interval: 4h
+    cron: "30 0-23/4 * * *"
     sigOwners: ['sig-gcp']
     args:
     - --gcp-zone=us-west1-b
@@ -341,7 +341,7 @@ jobs:
     interval: 6h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos1-k8sstable3-gpu:
-    interval: 6h
+    cron: "0 3-23/6 * * *"
     sigOwners: ['sig-gcp']
     args:
     - --gcp-zone=us-west1-b
@@ -372,7 +372,7 @@ jobs:
     interval: 2h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos2-k8sbeta-gpu:
-    interval: 2h
+    cron: "30 0-23/2 * * *"
     sigOwners: ['sig-gcp']
     args:
     - --gcp-zone=us-west1-b
@@ -405,7 +405,7 @@ jobs:
     interval: 4h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos2-k8sstable1-gpu:
-    interval: 4h
+    cron: "30 3-23/4 * * *"
     sigOwners: ['sig-gcp']
     args:
     - --gcp-zone=us-west1-b
@@ -438,7 +438,7 @@ jobs:
     interval: 4h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos2-k8sstable2-gpu:
-    interval: 4h
+    cron: "30 1-23/4 * * *"
     sigOwners: ['sig-gcp']
     args:
     - --gcp-zone=us-west1-b
@@ -471,7 +471,7 @@ jobs:
     interval: 6h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos2-k8sstable3-gpu:
-    interval: 6h
+    cron: "0 5-23/6 * * *"
     sigOwners: ['sig-gcp']
     args:
     - --gcp-zone=us-west1-b
@@ -782,7 +782,7 @@ jobs:
     interval: 2h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-gpu:
-    interval: 2h
+    cron: "0 1-23/2 * * *"
     sigOwners: ['sig-gcp']
     args:
     - --gcp-zone=us-west1-b
@@ -815,7 +815,7 @@ jobs:
     interval: 4h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-gpu:
-    interval: 4h
+    cron: "0 2-23/4 * * *"
     sigOwners: ['sig-gcp']
     args:
     - --gcp-zone=us-west1-b
@@ -848,7 +848,7 @@ jobs:
     interval: 6h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-gpu:
-    interval: 6h
+    cron: "30 5-23/6 * * *"
     sigOwners: ['sig-gcp']
     args:
     - --gcp-zone=us-west1-b
@@ -881,7 +881,7 @@ jobs:
     interval: 6h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-gpu:
-    interval: 6h
+    cron: "30 0-23/6 * * *"
     sigOwners: ['sig-gcp']
     args:
     - --gcp-zone=us-west1-b
@@ -912,7 +912,7 @@ jobs:
     interval: 2h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-gpu:
-    interval: 2h
+    cron: "30 1-23/2 * * *"
     sigOwners: ['sig-gcp']
     args:
     - --gcp-zone=us-west1-b
@@ -945,7 +945,7 @@ jobs:
     interval: 4h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-gpu:
-    interval: 4h
+    cron: "30 2-23/4 * * *"
     sigOwners: ['sig-gcp']
     args:
     - --gcp-zone=us-west1-b
@@ -978,7 +978,7 @@ jobs:
     interval: 6h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-gpu:
-    interval: 6h
+    cron: "30 2-23/6 * * *"
     sigOwners: ['sig-gcp']
     args:
     - --gcp-zone=us-west1-b
@@ -1011,7 +1011,7 @@ jobs:
     interval: 6h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-gpu:
-    interval: 6h
+    cron: "0 1-23/6 * * *"
     sigOwners: ['sig-gcp']
     args:
     - --gcp-zone=us-west1-b
