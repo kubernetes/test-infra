@@ -7819,7 +7819,7 @@ dashboards:
   - name: pr-cloud-provider-unit
     description: Run unit tests for cloud-provider-azure
     test_group_name: pull-cloud-provider-azure-unit
-  - name: pull-cloud-provider-check
+  - name: pr-cloud-provider-check
     description: Run lint check tests for cloud-provider-azure
     test_group_name: pull-cloud-provider-azure-check
 
