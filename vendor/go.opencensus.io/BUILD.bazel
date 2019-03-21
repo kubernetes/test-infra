@@ -19,9 +19,12 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//vendor/go.opencensus.io/exemplar:all-srcs",
         "//vendor/go.opencensus.io/internal:all-srcs",
+        "//vendor/go.opencensus.io/metric/metricdata:all-srcs",
         "//vendor/go.opencensus.io/plugin/ocgrpc:all-srcs",
         "//vendor/go.opencensus.io/plugin/ochttp:all-srcs",
+        "//vendor/go.opencensus.io/resource:all-srcs",
         "//vendor/go.opencensus.io/stats:all-srcs",
         "//vendor/go.opencensus.io/tag:all-srcs",
         "//vendor/go.opencensus.io/trace:all-srcs",

@@ -37,6 +37,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//vendor/go.opencensus.io/plugin/ochttp/propagation/b3:all-srcs",
+        "//vendor/go.opencensus.io/plugin/ochttp/propagation/tracecontext:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

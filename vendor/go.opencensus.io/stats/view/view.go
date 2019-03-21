@@ -17,11 +17,14 @@ package view
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"reflect"
 	"sort"
 	"sync/atomic"
 	"time"
+
+	"go.opencensus.io/exemplar"
 
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/internal"
@@ -67,6 +70,8 @@ func (v *View) same(other *View) bool {
 		v.Measure.Name() == other.Measure.Name()
 }
 
+var ErrNegativeBucketBounds = errors.New("negative bucket bounds not supported")
+
 // canonicalize canonicalizes v by setting explicit
 // defaults for Name and Description and sorting the TagKeys
 func (v *View) canonicalize() error {
@@ -88,7 +93,25 @@ func (v *View) canonicalize() error {
 	sort.Slice(v.TagKeys, func(i, j int) bool {
 		return v.TagKeys[i].Name() < v.TagKeys[j].Name()
 	})
+	sort.Float64s(v.Aggregation.Buckets)
+	for _, b := range v.Aggregation.Buckets {
+		if b < 0 {
+			return ErrNegativeBucketBounds
+		}
+	}
+	// drop 0 bucket silently.
+	v.Aggregation.Buckets = dropZeroBounds(v.Aggregation.Buckets...)
+
 	return nil
+}
+
+func dropZeroBounds(bounds ...float64) []float64 {
+	for i, bound := range bounds {
+		if bound > 0 {
+			return bounds[i:]
+		}
+	}
+	return []float64{}
 }
 
 // viewInternal is the internal representation of a View.
@@ -127,12 +150,12 @@ func (v *viewInternal) collectedRows() []*Row {
 	return v.collector.collectedRows(v.view.TagKeys)
 }
 
-func (v *viewInternal) addSample(m *tag.Map, val float64) {
+func (v *viewInternal) addSample(m *tag.Map, e *exemplar.Exemplar) {
 	if !v.isSubscribed() {
 		return
 	}
 	sig := string(encodeWithKeys(m, v.view.TagKeys))
-	v.collector.addSample(sig, val)
+	v.collector.addSample(sig, e)
 }
 
 // A Data is a set of rows about usage of the single measure associated

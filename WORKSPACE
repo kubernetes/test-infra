@@ -522,7 +522,7 @@ go_repository(
 
 go_repository(
     name = "co_honnef_go_tools",
-    commit = "88497007e858",
+    commit = "e3ad64cb4ed3",
     importpath = "honnef.co/go/tools",
 )
 
@@ -565,7 +565,7 @@ go_repository(
 go_repository(
     name = "com_github_azure_go_autorest",
     importpath = "github.com/Azure/go-autorest",
-    tag = "v10.15.5",
+    tag = "v11.3.2",
 )
 
 go_repository(
@@ -787,13 +787,13 @@ go_repository(
 go_repository(
     name = "com_github_golang_mock",
     importpath = "github.com/golang/mock",
-    tag = "v1.1.1",
+    tag = "v1.2.0",
 )
 
 go_repository(
     name = "com_github_golang_protobuf",
     importpath = "github.com/golang/protobuf",
-    tag = "v1.2.0",
+    tag = "v1.3.0",
 )
 
 go_repository(
@@ -907,7 +907,7 @@ go_repository(
 go_repository(
     name = "com_github_grpc_ecosystem_grpc_gateway",
     importpath = "github.com/grpc-ecosystem/grpc-gateway",
-    tag = "v1.4.1",
+    tag = "v1.6.2",
 )
 
 go_repository(
@@ -924,8 +924,8 @@ go_repository(
 
 go_repository(
     name = "com_github_hashicorp_golang_lru",
-    commit = "0fb14efe8c47",
     importpath = "github.com/hashicorp/golang-lru",
+    tag = "v0.5.0",
 )
 
 go_repository(
@@ -1014,14 +1014,14 @@ go_repository(
 
 go_repository(
     name = "com_github_konsorten_go_windows_terminal_sequences",
-    commit = "b729f2633dfe",
     importpath = "github.com/konsorten/go-windows-terminal-sequences",
+    tag = "v1.0.1",
 )
 
 go_repository(
     name = "com_github_kr_pty",
     importpath = "github.com/kr/pty",
-    tag = "v1.0.0",
+    tag = "v1.1.1",
 )
 
 go_repository(
@@ -1141,7 +1141,7 @@ go_repository(
 go_repository(
     name = "com_github_openzipkin_zipkin_go",
     importpath = "github.com/openzipkin/zipkin-go",
-    tag = "v0.1.1",
+    tag = "v0.1.3",
 )
 
 go_repository(
@@ -1171,24 +1171,24 @@ go_repository(
 go_repository(
     name = "com_github_prometheus_client_golang",
     importpath = "github.com/prometheus/client_golang",
-    tag = "v0.9.2",
+    tag = "v0.9.3-0.20190127221311-3c4408c8b829",
 )
 
 go_repository(
     name = "com_github_prometheus_client_model",
-    commit = "5c3871d89910",
+    commit = "56726106282f",
     importpath = "github.com/prometheus/client_model",
 )
 
 go_repository(
     name = "com_github_prometheus_common",
-    commit = "4724e9255275",
     importpath = "github.com/prometheus/common",
+    tag = "v0.2.0",
 )
 
 go_repository(
     name = "com_github_prometheus_procfs",
-    commit = "1dc9a6cbc91a",
+    commit = "bf6a532e95b1",
     importpath = "github.com/prometheus/procfs",
 )
 
@@ -1237,7 +1237,7 @@ go_repository(
 go_repository(
     name = "com_github_sirupsen_logrus",
     importpath = "github.com/sirupsen/logrus",
-    tag = "v1.1.1",
+    tag = "v1.2.0",
 )
 
 go_repository(
@@ -1297,7 +1297,7 @@ go_repository(
 go_repository(
     name = "com_google_cloud_go",
     importpath = "cloud.google.com/go",
-    tag = "v0.33.1",
+    tag = "v0.34.0",
 )
 
 go_repository(
@@ -1308,7 +1308,7 @@ go_repository(
 
 go_repository(
     name = "in_gopkg_check_v1",
-    commit = "20d25e280405",
+    commit = "788fd7840127",
     importpath = "gopkg.in/check.v1",
 )
 
@@ -1411,7 +1411,7 @@ go_repository(
 go_repository(
     name = "io_opencensus_go",
     importpath = "go.opencensus.io",
-    tag = "v0.17.0",
+    tag = "v0.19.1",
 )
 
 go_repository(
@@ -1422,13 +1422,13 @@ go_repository(
 
 go_repository(
     name = "org_apache_git_thrift_git",
-    commit = "2566ecd5d999",
     importpath = "git.apache.org/thrift.git",
+    tag = "v0.12.0",
 )
 
 go_repository(
     name = "org_golang_google_api",
-    commit = "a2651947f503",
+    commit = "583d854617af",
     importpath = "google.golang.org/api",
 )
 
@@ -1440,14 +1440,14 @@ go_repository(
 
 go_repository(
     name = "org_golang_google_genproto",
-    commit = "b5d43981345b",
+    commit = "5a97ab628bfb",
     importpath = "google.golang.org/genproto",
 )
 
 go_repository(
     name = "org_golang_google_grpc",
     importpath = "google.golang.org/grpc",
-    tag = "v1.16.0",
+    tag = "v1.17.0",
 )
 
 go_repository(
@@ -1458,25 +1458,25 @@ go_repository(
 
 go_repository(
     name = "org_golang_x_lint",
-    commit = "06c8688daad7",
+    commit = "8f45f776aaf1",
     importpath = "golang.org/x/lint",
 )
 
 go_repository(
     name = "org_golang_x_net",
-    commit = "351d144fa1fc",
+    commit = "d26f9f9a57f3",
     importpath = "golang.org/x/net",
 )
 
 go_repository(
     name = "org_golang_x_oauth2",
-    commit = "8f65e3013eba",
+    commit = "d668ce993890",
     importpath = "golang.org/x/oauth2",
 )
 
 go_repository(
     name = "org_golang_x_sync",
-    commit = "42b317875d0f",
+    commit = "37e7f081c4d4",
     importpath = "golang.org/x/sync",
 )
 
@@ -1500,7 +1500,7 @@ go_repository(
 
 go_repository(
     name = "org_golang_x_tools",
-    commit = "04b5d21e00f1",
+    commit = "6e267b5cc78e",
     importpath = "golang.org/x/tools",
 )
 
@@ -1544,4 +1544,88 @@ go_repository(
     name = "io_k8s_gengo",
     commit = "7a1b7fb0289f",
     importpath = "k8s.io/gengo",
+)
+
+go_repository(
+    name = "com_github_alecthomas_template",
+    commit = "a0175ee3bccc",
+    importpath = "github.com/alecthomas/template",
+)
+
+go_repository(
+    name = "com_github_alecthomas_units",
+    commit = "2efee857e7cf",
+    importpath = "github.com/alecthomas/units",
+)
+
+go_repository(
+    name = "com_github_census_instrumentation_opencensus_proto",
+    importpath = "github.com/census-instrumentation/opencensus-proto",
+    tag = "v0.2.0",
+)
+
+go_repository(
+    name = "com_github_go_kit_kit",
+    importpath = "github.com/go-kit/kit",
+    tag = "v0.8.0",
+)
+
+go_repository(
+    name = "com_github_go_logfmt_logfmt",
+    importpath = "github.com/go-logfmt/logfmt",
+    tag = "v0.3.0",
+)
+
+go_repository(
+    name = "com_github_go_stack_stack",
+    importpath = "github.com/go-stack/stack",
+    tag = "v1.8.0",
+)
+
+go_repository(
+    name = "com_github_julienschmidt_httprouter",
+    importpath = "github.com/julienschmidt/httprouter",
+    tag = "v1.2.0",
+)
+
+go_repository(
+    name = "com_github_kr_logfmt",
+    commit = "b84e30acd515",
+    importpath = "github.com/kr/logfmt",
+)
+
+go_repository(
+    name = "com_github_kr_pretty",
+    importpath = "github.com/kr/pretty",
+    tag = "v0.1.0",
+)
+
+go_repository(
+    name = "com_github_kr_text",
+    importpath = "github.com/kr/text",
+    tag = "v0.1.0",
+)
+
+go_repository(
+    name = "com_github_mwitkow_go_conntrack",
+    commit = "cc309e4a2223",
+    importpath = "github.com/mwitkow/go-conntrack",
+)
+
+go_repository(
+    name = "com_github_stretchr_objx",
+    importpath = "github.com/stretchr/objx",
+    tag = "v0.1.1",
+)
+
+go_repository(
+    name = "in_gopkg_alecthomas_kingpin_v2",
+    importpath = "gopkg.in/alecthomas/kingpin.v2",
+    tag = "v2.2.6",
+)
+
+go_repository(
+    name = "io_opencensus_go_contrib_exporter_ocagent",
+    importpath = "contrib.go.opencensus.io/exporter/ocagent",
+    tag = "v0.4.8",
 )

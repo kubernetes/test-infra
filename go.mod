@@ -1,11 +1,12 @@
 module k8s.io/test-infra
 
 require (
-	cloud.google.com/go v0.33.1
+	cloud.google.com/go v0.34.0
+	contrib.go.opencensus.io/exporter/ocagent v0.4.8 // indirect
 	github.com/Azure/azure-pipeline-go v0.0.0-20180507050906-098e490af5dc // indirect
 	github.com/Azure/azure-sdk-for-go v21.1.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.0.0-20180507052152-66ba96e49ebb
-	github.com/Azure/go-autorest v10.15.5+incompatible
+	github.com/Azure/go-autorest v11.3.2+incompatible
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/Microsoft/go-winio v0.4.12 // indirect
 	github.com/NYTimes/gziphandler v0.0.0-20160419202541-63027b26b87e
@@ -34,8 +35,8 @@ require (
 	github.com/go-sql-driver/mysql v0.0.0-20160411075031-7ebe0a500653 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/groupcache v0.0.0-20180513044358-24b0969c4cb7 // indirect
-	github.com/golang/mock v1.1.1
-	github.com/golang/protobuf v1.2.0
+	github.com/golang/mock v1.2.0
+	github.com/golang/protobuf v1.3.0
 	github.com/google/go-github v0.0.0-20170604030111-7a51fb928f52
 	github.com/google/go-querystring v0.0.0-20150414214848-547ef5ac9797 // indirect
 	github.com/google/uuid v1.0.0
@@ -48,7 +49,6 @@ require (
 	github.com/gregjones/httpcache v0.0.0-20160524185540-16db777d8ebe
 	github.com/hashicorp/errwrap v0.0.0-20141028054710-7554cd9344ce // indirect
 	github.com/hashicorp/go-multierror v0.0.0-20171204182908-b7773ae21874
-	github.com/hashicorp/golang-lru v0.0.0-20180201235237-0fb14efe8c47 // indirect
 	github.com/imdario/mergo v0.0.0-20180119215619-163f41321a19 // indirect
 	github.com/influxdata/influxdb v0.0.0-20161215172503-049f9b42e9a5
 	github.com/jinzhu/gorm v0.0.0-20170316141641-572d0a0ab1eb
@@ -57,6 +57,7 @@ require (
 	github.com/json-iterator/go v1.1.6 // indirect
 	github.com/knative/build v0.2.0
 	github.com/knative/pkg v0.0.0-20181205230426-0e41760cea1d
+	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v1.0.0 // indirect
 	github.com/mailru/easyjson v0.0.0-20171120080333-32fa128f234d // indirect
 	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a // indirect
@@ -69,26 +70,26 @@ require (
 	github.com/pelletier/go-toml v1.2.0
 	github.com/peterbourgon/diskv v0.0.0-20171120014656-2973218375c3
 	github.com/pkg/errors v0.8.1
-	github.com/prometheus/client_golang v0.9.2
+	github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829
 	github.com/qor/inflection v0.0.0-20180308033659-04140366298a // indirect
 	github.com/satori/go.uuid v0.0.0-20160713180306-0aa62d5ddceb
 	github.com/shurcooL/githubv4 v0.0.0-20180925043049-51d7b505e2e9
-	github.com/sirupsen/logrus v1.1.1
+	github.com/sirupsen/logrus v1.2.0
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3
 	github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1 // indirect
+	go.opencensus.io v0.19.1 // indirect
 	golang.org/x/crypto v0.0.0-20181015023909-0c41d7ab0a0e
-	golang.org/x/lint v0.0.0-20180702182130-06c8688daad7
-	golang.org/x/net v0.0.0-20181201002055-351d144fa1fc
-	golang.org/x/oauth2 v0.0.0-20181120190819-8f65e3013eba
-	golang.org/x/sync v0.0.0-20181108010431-42b317875d0f
+	golang.org/x/lint v0.0.0-20181217174547-8f45f776aaf1
+	golang.org/x/net v0.0.0-20190125091013-d26f9f9a57f3
+	golang.org/x/oauth2 v0.0.0-20181203162652-d668ce993890
+	golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4
 	golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223 // indirect
 	golang.org/x/time v0.0.0-20180412165947-fbb02b2291d2
-	golang.org/x/tools v0.0.0-20181122213734-04b5d21e00f1
-	google.golang.org/api v0.0.0-20181021000519-a2651947f503
-	google.golang.org/appengine v1.3.0 // indirect
-	google.golang.org/genproto v0.0.0-20181109154231-b5d43981345b
-	google.golang.org/grpc v1.16.0
+	golang.org/x/tools v0.0.0-20181219222714-6e267b5cc78e
+	google.golang.org/api v0.0.0-20181220000619-583d854617af
+	google.golang.org/genproto v0.0.0-20181219182458-5a97ab628bfb
+	google.golang.org/grpc v1.17.0
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v2 v2.2.2
 	k8s.io/api v0.0.0-20181128191700-6db15a15d2d3
