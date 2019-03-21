@@ -31,8 +31,7 @@ i) `ci-kubernetes-e2e-gci-gke-autoscaling-gpu-p100` (1h33m) (02:00)
 ### 6 hours
 j) `ci-kubernetes-e2e-gke-device-plugin-gpu-stable1` (21m) (01:00)  
 k) `ci-kubernetes-e2e-gce-device-plugin-gpu-stable1` (23m) (03:00)  
-l) `ci-kubernetes-e2e-gce-gpu-stable2` (20m, always fails) (05:00)  
-m) `ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-gpu` (generated) (18m) (05:30)
+l) `ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-gpu` (generated) (18m) (05:30)
 
 ### 12 hours
 n) `ci-kubernetes-e2e-gke-device-plugin-gpu-p100` (18m) (02:30)  

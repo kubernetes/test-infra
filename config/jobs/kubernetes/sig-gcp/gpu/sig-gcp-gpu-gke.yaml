@@ -70,7 +70,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
       - --gcp-zone=us-west1-b
-      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=1
+      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverAcceleratorMonitoring\] --minStartupPods=8
