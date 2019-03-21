@@ -258,6 +258,8 @@ periodics:
   labels:
     app: branchprotector
   decorate: true
+  decoration_config:
+    timeout: 18000000000000 # 5 hours
   extra_refs:
   - org: kubernetes
     repo: test-infra
