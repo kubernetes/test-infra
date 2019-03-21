@@ -89,6 +89,10 @@ func NewClient() (*Client, error) {
 	}, nil
 }
 
+func (c *Client) SetLogger(logger *logrus.Entry) {
+	c.logger = logger.WithField("client", "git")
+}
+
 // SetRemote sets the remote for the client. This is not thread-safe, and is
 // useful for testing. The client will clone from remote/org/repo, and Repo
 // objects spun out of the client will also hit that path.

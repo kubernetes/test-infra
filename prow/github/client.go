@@ -296,6 +296,10 @@ func NewFakeClient() *Client {
 	}
 }
 
+func (c *Client) SetLogger(logger *logrus.Entry) {
+	c.logger = logger.WithField("client", "github")
+}
+
 func (c *Client) log(methodName string, args ...interface{}) {
 	if c.logger == nil {
 		return
