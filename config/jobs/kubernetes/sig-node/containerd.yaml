@@ -446,7 +446,7 @@ periodics:
       - ./test/build.sh
 
 - name: ci-cri-containerd-e2e-gce-device-plugin-gpu
-  interval: 3h
+  cron: "30 1-23/3 * * *"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
