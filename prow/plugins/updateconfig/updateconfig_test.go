@@ -604,7 +604,7 @@ func TestUpdateConfig(t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					BinaryData: map[string][]byte{
-						"config.yaml": {0x1f, 0x8b, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xff},
+						"config.yaml": {31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 202, 75, 45, 215, 77, 206, 207, 75, 203, 76, 7, 4, 0, 0, 255, 255, 84, 214, 231, 87, 10, 0, 0, 0},
 					},
 				},
 			},
@@ -646,7 +646,7 @@ func TestUpdateConfig(t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					BinaryData: map[string][]byte{
-						"config.yaml": {0x1f, 0x8b, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xff},
+						"config.yaml": {31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 202, 75, 45, 215, 77, 206, 207, 75, 203, 76, 7, 4, 0, 0, 255, 255, 84, 214, 231, 87, 10, 0, 0, 0},
 					},
 				},
 				{
@@ -697,7 +697,7 @@ func TestUpdateConfig(t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					BinaryData: map[string][]byte{
-						"config.yaml": {0x1f, 0x8b, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xff},
+						"config.yaml": {31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 202, 75, 45, 215, 77, 206, 207, 75, 203, 76, 7, 4, 0, 0, 255, 255, 84, 214, 231, 87, 10, 0, 0, 0},
 					},
 				},
 				{
@@ -931,7 +931,7 @@ func TestUpdateConfig(t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					BinaryData: map[string][]byte{
-						"config.yaml": {0x1f, 0x8b, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xff},
+						"config.yaml": {31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 202, 75, 45, 215, 77, 206, 207, 75, 203, 76, 7, 4, 0, 0, 255, 255, 84, 214, 231, 87, 10, 0, 0, 0},
 					},
 				},
 			},
@@ -963,7 +963,7 @@ func TestUpdateConfig(t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					BinaryData: map[string][]byte{
-						"config.yaml": {0x1f, 0x8b, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xff},
+						"config.yaml": {31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 202, 75, 45, 215, 77, 206, 207, 75, 203, 76, 7, 4, 0, 0, 255, 255, 84, 214, 231, 87, 10, 0, 0, 0},
 					},
 				},
 			},
