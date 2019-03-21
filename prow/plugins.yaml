@@ -427,6 +427,7 @@ plugins:
   - milestone
   - require-sig
   - trigger
+  - welcome
 
   kubernetes/dns:
   - trigger
