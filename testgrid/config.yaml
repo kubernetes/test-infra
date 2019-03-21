@@ -312,10 +312,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu-beta
   alert_stale_results_hours: 24
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
-- name: ci-kubernetes-e2e-gce-gpu-stable2
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable2
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 4 # Runs every 6h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gci-gce-alpha-enabled-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-enabled-default
 - name: ci-kubernetes-e2e-gci-gce-alpha-features
@@ -5270,8 +5266,6 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gci-gce-stable2
   - name: gci-gce-scalability-1.12
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable2
-  - name: gce-gpu-1.12
-    test_group_name: ci-kubernetes-e2e-gce-gpu-stable2
   - name: gce-device-plugin-gpu-1.12
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
   - name: gke-device-plugin-gpu-1.12

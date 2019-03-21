@@ -2,10 +2,8 @@ presets:
 - labels:
     preset-ci-gce-device-plugin-gpu: "true"
   env:
-  - name: KUBE_FEATURE_GATES
-    value: DevicePlugins=true
   - name: KUBE_GCE_NODE_IMAGE
-    value: gke-1-8-4-gke-1-cos-stable-63-10032-71-0-p-v171208-pre-nvda-gpu
+    value: gke-1134-gke-rc5-cos-69-10895-138-0-v190320-pre-nvda-gpu
   - name: KUBE_GCE_NODE_PROJECT
     value: gke-node-images
   - name: NODE_ACCELERATORS
@@ -99,29 +97,5 @@ periodics:
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
-      - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
-
-- name: ci-kubernetes-e2e-gce-gpu-stable2
-  cron: "0 5-23/6 * * *"
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=300
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --env=KUBE_FEATURE_GATES=Accelerators=true
-      - --env=NODE_ACCELERATORS=type=nvidia-tesla-k80,count=2
-      - --extract=ci/k8s-stable2
-      - --gcp-node-image=gci
-      - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:GPU\] --minStartupPods=8
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master

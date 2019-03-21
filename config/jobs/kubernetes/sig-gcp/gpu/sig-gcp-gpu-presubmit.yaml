@@ -2,8 +2,6 @@ presets:
 - labels:
     preset-pull-gce-device-plugin-gpu: "true"
   env:
-  - name: KUBE_FEATURE_GATES
-    value: DevicePlugins=true
   - name: NODE_ACCELERATORS
     value: type=nvidia-tesla-k80,count=2
   - name: CREATE_CUSTOM_NETWORK
