@@ -603,8 +603,8 @@ func TestUpdateConfig(t *testing.T) {
 						Name:      "config",
 						Namespace: defaultNamespace,
 					},
-					Data: map[string]string{
-						"config.yaml": "\x1f\x8b\b\x00\x00\x00\x00\x00\x00\xff",
+					BinaryData: map[string][]byte{
+						"config.yaml": {0x1f, 0x8b, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xff},
 					},
 				},
 			},
@@ -645,8 +645,8 @@ func TestUpdateConfig(t *testing.T) {
 						Name:      "config",
 						Namespace: defaultNamespace,
 					},
-					Data: map[string]string{
-						"config.yaml": "\x1f\x8b\b\x00\x00\x00\x00\x00\x00\xff",
+					BinaryData: map[string][]byte{
+						"config.yaml": {0x1f, 0x8b, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xff},
 					},
 				},
 				{
@@ -696,8 +696,8 @@ func TestUpdateConfig(t *testing.T) {
 						Name:      "config",
 						Namespace: defaultNamespace,
 					},
-					Data: map[string]string{
-						"config.yaml": "\x1f\x8b\b\x00\x00\x00\x00\x00\x00\xff",
+					BinaryData: map[string][]byte{
+						"config.yaml": {0x1f, 0x8b, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xff},
 					},
 				},
 				{
