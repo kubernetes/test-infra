@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -724,7 +725,10 @@ func prepareGcp(o *options) error {
 
 		log.Printf("provider %v, will acquire project type %v from boskos", o.provider, resType)
 
-		p, err := boskos.Acquire(resType, "free", "busy")
+		// let's retry 5min to get next avaibale resource
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
+		defer cancel()
+		p, err := boskos.AcquireWait(ctx, resType, "free", "busy")
 		if err != nil {
 			return fmt.Errorf("--provider=%s boskos failed to acquire project: %v", o.provider, err)
 		}
