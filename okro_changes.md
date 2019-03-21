@@ -5,7 +5,10 @@ This is a list of all the changes made to this repository to support Okro use ca
 - Prow plugins (traiana/prow/plugins):
   - okro/undoer ([commit](https://github.com/traiana/test-infra/commit/42d85973f83e4f39cd592543be144cef7a4f6d09))
 
+- Allow setting the logger for github and git clients ([commit](https://github.com/traiana/test-infra/commit/1666ebeb81d6b7ee303c642f0b9f38e98bca5d51))
+
 - Add EditIssue method to github client ([commit](https://github.com/traiana/test-infra/commit/1e4254e8faa45936bfb4090430f10ac3de21d437 ))
+
 - Fix missing prowjob URL bug, due to race between crier and build controller ([commit](https://github.com/traiana/test-infra/commit/d6129dd927ce985baa0f0bbd8ece3fbf1cd5a505))
 
 - Temp patch for context bug in build controller. Two informers (one for context "" and one for context "default") are competing
