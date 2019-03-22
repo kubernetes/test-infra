@@ -134,22 +134,32 @@ else
   usage
 fi
 
-# Determine what deployment images we need to update
-echo -n "images: " >&2
+# Determine what deployment images we need to update.
+imagedirs="//prow/... + //label_sync/... + //ghproxy/... + //robots/commenter/..."
 images=("$@")
 if [[ "${#images[@]}" == 0 ]]; then
-  echo -e "querying bazel for $(color-target :image) targets under $(color-target //prow/...) ..." >&2
-  images=($(bazel query 'filter(".*:image", //prow/...)' | cut -d : -f 1 | xargs -n 1 basename))
+  echo -e "querying bazel for $(color-target :image) targets under $(color-target ${imagedirs}) ..." >&2
+  images=($(bazel query "filter(\".*:image\", ${imagedirs})" | cut -d : -f 1 | xargs -n 1 basename))
   echo -n "images: " >&2
 fi
 echo -e "$(color-image ${images[@]})" >&2
 
 echo -e "Bumping: $(color-image ${images[@]}) to $(color-version ${new_version}) ..." >&2
 
+# Determine which files we need to update.
+configfiles=($(grep -rl -e "gcr.io/k8s-prow/" ../config/jobs))
+configfiles+=(cluster/*.yaml)
+configfiles+=(../label_sync/cluster/*.yaml)
+configfiles+=(cmd/branchprotector/*.yaml)
+configfiles+=("config.yaml")
+
+# Update image tags for the identified images in the identified files.
 for i in "${images[@]}"; do
   echo -e "  $(color-image ${i}): $(color-version ${new_version})" >&2
-  ${SED} -i "s/\(${i}:\)v[a-f0-9-]\+/\1${new_version}/I" cluster/*.yaml
-  ${SED} -i "s/\(${i}:\)v[a-f0-9-]\+/\1${new_version}/I" config.yaml
+  filter="s/gcr.io\/k8s-prow\/\(${i}:\)v[a-f0-9-]\+/gcr.io\/k8s-prow\/\1${new_version}/I"
+  for cfg in "${configfiles[@]}"; do
+    ${SED} -i "${filter}" ${cfg}
+  done
 done
 
 echo "Deploy with:" >&2

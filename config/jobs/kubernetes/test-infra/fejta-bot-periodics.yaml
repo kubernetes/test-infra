@@ -5,9 +5,9 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+    - image: gcr.io/k8s-prow/commenter:v20190322-1ad130161
       command:
-      - /commenter
+      - /app/robots/commenter/app.binary
       args:
       # pull requests against master branches in the kubernetes org labeled kind/api-change
       # exclude PRs that are in progress, held, or need rebase (typically aren't ready for API review).
@@ -47,9 +47,9 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+    - image: gcr.io/k8s-prow/commenter:v20190322-1ad130161
       command:
-      - /commenter
+      - /app/robots/commenter/app.binary
       args:
       - |-
         --query=org:kubernetes
@@ -80,9 +80,9 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+    - image: gcr.io/k8s-prow/commenter:v20190322-1ad130161
       command:
-      - /commenter
+      - /app/robots/commenter/app.binary
       args:
       - |-
         --query=is:pr
@@ -125,9 +125,9 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+    - image: gcr.io/k8s-prow/commenter:v20190322-1ad130161
       command:
-      - /commenter
+      - /app/robots/commenter/app.binary
       args:
       - |-
         --query=org:kubernetes
@@ -161,9 +161,9 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+    - image: gcr.io/k8s-prow/commenter:v20190322-1ad130161
       command:
-      - /commenter
+      - /app/robots/commenter/app.binary
       args:
       - |-
         --query=org:kubernetes
@@ -225,9 +225,9 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+    - image: gcr.io/k8s-prow/commenter:v20190322-1ad130161
       command:
-      - /commenter
+      - /app/robots/commenter/app.binary
       args:
       - |-
         --query=repo:kubernetes/enhancements
