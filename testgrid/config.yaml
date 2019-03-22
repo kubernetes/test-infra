@@ -4889,6 +4889,14 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
   - name: gke-cos-1.14-ingress
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
+  - name: gke-1.14-1.13-downgrade-cluster-parallel
+    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster-parallel
+  - name: gke-1.13-1.14-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster
+  - name: gke-1.13-1.14-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster-new
+  - name: gke-1.13-1.14-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-master
   - name: gke-1.14-1.13-gci-kubectl-skew-serial
     test_group_name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew-serial
   - name: gke-1.13-1.14-gci-kubectl-skew
@@ -4936,14 +4944,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster-parallel
   - name: gke-1.14-1.13-downgrade-cluster
     test_group_name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
-  - name: gke-1.14-1.13-downgrade-cluster-parallel
-    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster-parallel
-  - name: gke-1.13-1.14-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster
-  - name: gke-1.13-1.14-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster-new
-  - name: gke-1.13-1.14-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-master
 
 - name: sig-release-1.13-all
   dashboard_tab:
