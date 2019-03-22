@@ -20,10 +20,11 @@ import (
 	"flag"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
@@ -31,19 +32,34 @@ import (
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	_ "k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/statusreconciler"
 )
+
+type blacklistFlags struct {
+	members sets.String
+}
+
+func (f *blacklistFlags) String() string {
+	return strings.Join(f.members.List(), ", ")
+}
+
+func (f *blacklistFlags) Set(value string) error {
+	f.members.Insert(value)
+	return nil
+}
 
 type options struct {
 	configPath    string
 	jobConfigPath string
 	pluginConfig  string
 
-	continueOnError bool
-	dryRun          bool
-	kubernetes      prowflagutil.ExperimentalKubernetesOptions
-	github          prowflagutil.GitHubOptions
+	continueOnError         bool
+	addedPresubmitBlacklist blacklistFlags
+	dryRun                  bool
+	kubernetes              prowflagutil.ExperimentalKubernetesOptions
+	github                  prowflagutil.GitHubOptions
 }
 
 func gatherOptions() options {
@@ -55,6 +71,7 @@ func gatherOptions() options {
 	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
 
 	fs.BoolVar(&o.continueOnError, "continue-on-error", false, "Indicates that the migration should continue if context migration fails for an individual PR.")
+	fs.Var(&o.addedPresubmitBlacklist, "blacklist", "Org or org/repo to ignore new added presubmits for, set more than once to add more.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
 		group.AddFlags(fs)
@@ -118,6 +135,6 @@ func main() {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 
-	c := statusreconciler.NewController(o.continueOnError, prowJobClient, githubClient, configAgent, pluginAgent)
+	c := statusreconciler.NewController(o.continueOnError, o.addedPresubmitBlacklist.members, prowJobClient, githubClient, configAgent, pluginAgent)
 	c.Run(sig, changes)
 }
