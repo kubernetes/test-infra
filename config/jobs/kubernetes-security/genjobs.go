@@ -144,8 +144,12 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, defaul
 	if j.Namespace != nil && *j.Namespace == podNamespace {
 		j.Namespace = nil
 	}
-	if j.DecorationConfig != nil && reflect.DeepEqual(j.DecorationConfig, defaultDecoration) {
-		j.DecorationConfig = nil
+	if j.DecorationConfig != nil {
+		if reflect.DeepEqual(j.DecorationConfig, defaultDecoration) {
+			j.DecorationConfig = nil
+		} else if reflect.DeepEqual(j.DecorationConfig.UtilityImages, defaultDecoration.UtilityImages) {
+			j.DecorationConfig.UtilityImages = nil
+		}
 	}
 
 	// handle k8s job args, volumes etc
