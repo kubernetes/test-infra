@@ -272,6 +272,7 @@ config_updater:
       name: job-config
     experiment/test-configmap.txt:
       name: test-configmap
+      gzip: true
 
 welcome:
 - repos:
