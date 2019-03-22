@@ -4827,16 +4827,6 @@ dashboards:
 #TODO remove
 - name: sig-release-1.14-all
   dashboard_tab:
-  - name: gce-1.14-1.13-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
-  - name: gce-1.14-1.13-gci-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew-serial
-  - name: gce-1.13-1.14-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew
-  - name: gce-1.13-1.14-gci-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
-  - name: gke-1.14-1.13-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew
   - name: node-kubelet-1.14-features
     test_group_name: ci-kubernetes-node-kubelet-beta-features
   - name: kubeadm-gce-1.13-on-1.14
@@ -4897,6 +4887,16 @@ dashboards:
   dashboard_tab:
   - name: soak-gci-gce-1.14
     test_group_name: ci-kubernetes-soak-gci-gce-beta
+  - name: gce-1.14-1.13-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
+  - name: gce-1.14-1.13-gci-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew-serial
+  - name: gce-1.13-1.14-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew
+  - name: gce-1.13-1.14-gci-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
+  - name: gke-1.14-1.13-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew
   - name: gke-cos-1.14-default
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
   - name: gke-cos-1.14-reboot
