@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	resources "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
@@ -175,7 +176,7 @@ func (az *AzureClient) DeployTemplate(ctx context.Context, resourceGroupName, de
 		return de, fmt.Errorf("cannot create deployment: %v", err)
 	}
 
-	err = future.WaitForCompletion(ctx, az.deploymentsClient.Client)
+	err = future.WaitForCompletionRef(ctx, az.deploymentsClient.Client)
 	if err != nil {
 		return de, fmt.Errorf("cannot get the create deployment future response: %v", err)
 	}
@@ -210,9 +211,11 @@ func (az *AzureClient) DeleteResourceGroup(ctx context.Context, groupName string
 		if err != nil {
 			return fmt.Errorf("cannot delete resource group %v: %v", groupName, err)
 		}
-		err = future.WaitForCompletion(ctx, az.groupsClient.Client)
+		err = future.WaitForCompletionRef(ctx, az.groupsClient.Client)
 		if err != nil {
-			return fmt.Errorf("cannot get the delete resource group future response: %v", err)
+			// Skip the teardown errors because of https://github.com/Azure/go-autorest/issues/357
+			// TODO(feiskyer): fix the issue by upgrading go-autorest version >= v11.3.2.
+			log.Printf("Warning: failed to delete resource group %q with error %v", groupName, err)
 		}
 	}
 	return nil
