@@ -101,6 +101,9 @@ presubmits:
   # Executes the integration tests.
   - name: pull-cloud-provider-vsphere-integration-test
     decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     branches:
     - ^master$
     path_alias: k8s.io/cloud-provider-vsphere
@@ -123,6 +126,9 @@ postsubmits:
   # Deploys the CCM and CSI images if both the unit and integration tests succeed.
   - name: post-cloud-provider-vsphere-deploy
     decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     max_concurrency: 1
     branches:
     - ^master$
@@ -147,6 +153,7 @@ periodics:
   interval: 12h
   decorate: true
   labels:
+    preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
   extra_refs:
   - org: kubernetes
@@ -170,6 +177,7 @@ periodics:
   interval: 12h
   decorate: true
   labels:
+    preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
   extra_refs:
   - org: kubernetes
@@ -193,6 +201,7 @@ periodics:
   interval: 12h
   decorate: true
   labels:
+    preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
   extra_refs:
   - org: kubernetes
@@ -216,6 +225,7 @@ periodics:
   interval: 12h
   decorate: true
   labels:
+    preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
   extra_refs:
   - org: kubernetes
@@ -243,6 +253,7 @@ periodics:
   interval: 12h
   decorate: true
   labels:
+    preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
   extra_refs:
   - org: kubernetes
@@ -268,6 +279,7 @@ periodics:
   interval: 12h
   decorate: true
   labels:
+    preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
   extra_refs:
   - org: kubernetes
@@ -293,6 +305,7 @@ periodics:
   interval: 12h
   decorate: true
   labels:
+    preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
   extra_refs:
   - org: kubernetes
@@ -318,6 +331,7 @@ periodics:
   interval: 12h
   decorate: true
   labels:
+    preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
   extra_refs:
   - org: kubernetes
