@@ -1,7 +1,7 @@
 module k8s.io/test-infra
 
 require (
-	cloud.google.com/go v0.33.1
+	cloud.google.com/go v0.37.1
 	github.com/Azure/azure-pipeline-go v0.0.0-20180507050906-098e490af5dc // indirect
 	github.com/Azure/azure-sdk-for-go v21.1.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.0.0-20180507052152-66ba96e49ebb
