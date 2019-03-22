@@ -25,6 +25,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
 
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
@@ -820,6 +821,9 @@ func TestPickBatch(t *testing.T) {
 }
 
 func TestTakeAction(t *testing.T) {
+	sleep = func(time.Duration) {}
+	defer func() { sleep = time.Sleep }()
+
 	// PRs 0-9 exist. All are mergable, and all are passing tests.
 	testcases := []struct {
 		name string
@@ -1382,6 +1386,9 @@ func testPR(org, repo, branch string, number int, mergeable githubql.MergeableSt
 }
 
 func TestSync(t *testing.T) {
+	sleep = func(time.Duration) {}
+	defer func() { sleep = time.Sleep }()
+
 	mergeableA := testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)
 	unmergeableA := testPR("org", "repo", "A", 6, githubql.MergeableStateConflicting)
 	unmergeableB := testPR("org", "repo", "B", 7, githubql.MergeableStateConflicting)
