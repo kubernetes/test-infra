@@ -4829,14 +4829,6 @@ dashboards:
   dashboard_tab:
   - name: node-kubelet-1.14-features
     test_group_name: ci-kubernetes-node-kubelet-beta-features
-  - name: kubeadm-gce-1.13-on-1.14
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-13-on-1-14
-  - name: kubeadm-gce-1.14
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-14
-  - name: kubeadm-gce-upgrade-1.13-1.14
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-13-1-14
-  - name: kubeadm-kind-1.14
-    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-14
 
 - name: sig-release-1.14-blocking
   dashboard_tab:
@@ -4915,6 +4907,14 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
   - name: kops-aws-1.14
     test_group_name: ci-kubernetes-e2e-kops-aws-beta
+  - name: kubeadm-gce-1.13-on-1.14
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-13-on-1-14
+  - name: kubeadm-gce-1.14
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-14
+  - name: kubeadm-gce-upgrade-1.13-1.14
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-13-1-14
+  - name: kubeadm-kind-1.14
+    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-14
   - name: aks-engine-azure-1-14-windows-release
     test_group_name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
   - name: gce-windows-1.14
