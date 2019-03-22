@@ -272,6 +272,7 @@ larger set of contributors to apply/remove them.
 
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
+| <a id="language/de" href="#language/de">`language/de`</a> | Issues or PRs related to German language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="language/en" href="#language/en">`language/en`</a> | Issues or PRs related to English language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="language/fr" href="#language/fr">`language/fr`</a> | Issues or PRs related to French language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="language/it" href="#language/it">`language/it`</a> | Issues or PRs related to Italian language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |

@@ -1000,6 +1000,12 @@ repos:
   kubernetes/website:
     labels:
       - color: e9b3f9
+        description: Issues or PRs related to German language
+        name: language/de
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
         description: Issues or PRs related to English language
         name: language/en
         target: both
