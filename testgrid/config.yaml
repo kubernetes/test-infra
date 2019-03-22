@@ -4826,9 +4826,7 @@ dashboards:
 
 #TODO remove
 - name: sig-release-1.14-all
-  dashboard_tab:
-  - name: node-kubelet-1.14-features
-    test_group_name: ci-kubernetes-node-kubelet-beta-features
+  dashboard_tab: []
 
 - name: sig-release-1.14-blocking
   dashboard_tab:
@@ -4907,6 +4905,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
   - name: kops-aws-1.14
     test_group_name: ci-kubernetes-e2e-kops-aws-beta
+  - name: node-kubelet-1.14-features
+    test_group_name: ci-kubernetes-node-kubelet-beta-features
   - name: kubeadm-gce-1.13-on-1.14
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-13-on-1-14
   - name: kubeadm-gce-1.14
