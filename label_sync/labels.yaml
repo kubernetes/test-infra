@@ -649,8 +649,23 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
-        description: Issues or PRs related to contributor summit events
+        description: Issues or PRs related to all contributor summit events
         name: area/contributor-summit
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to the contributor summit in North America
+        name: area/na-summit
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to the Contributor Summit in China
+        name: area/cn-summit
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to the Contributor Summit in Europe
+        name: area/eu-summit
         target: both
         addedBy: label
       - color: 0052cc
