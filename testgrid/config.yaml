@@ -4827,8 +4827,6 @@ dashboards:
 #TODO remove
 - name: sig-release-1.14-all
   dashboard_tab:
-  - name: soak-gci-gce-1.14
-    test_group_name: ci-kubernetes-soak-gci-gce-beta
   - name: gce-1.14-1.13-gci-kubectl-skew
     test_group_name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
   - name: gce-1.14-1.13-gci-kubectl-skew-serial
@@ -4897,6 +4895,8 @@ dashboards:
 
 - name: sig-release-1.14-informing
   dashboard_tab:
+  - name: soak-gci-gce-1.14
+    test_group_name: ci-kubernetes-soak-gci-gce-beta
   - name: gke-cos-1.14-default
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
   - name: gke-cos-1.14-reboot
