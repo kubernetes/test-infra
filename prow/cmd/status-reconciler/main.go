@@ -20,7 +20,6 @@ import (
 	"flag"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	"github.com/sirupsen/logrus"
@@ -37,19 +36,6 @@ import (
 	"k8s.io/test-infra/prow/statusreconciler"
 )
 
-type blacklistFlags struct {
-	members sets.String
-}
-
-func (f *blacklistFlags) String() string {
-	return strings.Join(f.members.List(), ", ")
-}
-
-func (f *blacklistFlags) Set(value string) error {
-	f.members.Insert(value)
-	return nil
-}
-
 const (
 	defaultTokens = 300
 	defaultBurst  = 100
@@ -61,7 +47,7 @@ type options struct {
 	pluginConfig  string
 
 	continueOnError         bool
-	addedPresubmitBlacklist blacklistFlags
+	addedPresubmitBlacklist prowflagutil.Strings
 	dryRun                  bool
 	kubernetes              prowflagutil.ExperimentalKubernetesOptions
 	github                  prowflagutil.GitHubOptions
@@ -148,6 +134,6 @@ func main() {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 
-	c := statusreconciler.NewController(o.continueOnError, o.addedPresubmitBlacklist.members, prowJobClient, githubClient, configAgent, pluginAgent)
+	c := statusreconciler.NewController(o.continueOnError, sets.NewString(o.addedPresubmitBlacklist.Strings()...), prowJobClient, githubClient, configAgent, pluginAgent)
 	c.Run(sig, changes)
 }
