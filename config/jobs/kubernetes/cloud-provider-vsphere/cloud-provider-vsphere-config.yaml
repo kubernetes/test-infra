@@ -52,6 +52,8 @@ presubmits:
     decorate: true
     branches:
     - ^master$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
     always_run: false
     skip_report: true
     spec:
@@ -67,6 +69,8 @@ presubmits:
     decorate: true
     branches:
     - ^master$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
     always_run: false
     skip_report: true
     spec:
@@ -82,6 +86,8 @@ presubmits:
     decorate: true
     branches:
     - ^master$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
     always_run: false
     skip_report: true
     spec:
@@ -97,6 +103,8 @@ presubmits:
     decorate: true
     branches:
     - ^master$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
     always_run: false
     skip_report: true
     spec:
@@ -118,6 +126,8 @@ postsubmits:
     max_concurrency: 1
     branches:
     - ^master$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
     spec:
       containers:
       - image: gcr.io/cloud-provider-vsphere/ci:523c54f4
