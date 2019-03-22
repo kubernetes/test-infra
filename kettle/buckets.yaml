@@ -10,6 +10,7 @@
 gs://kubernetes-jenkins/logs/:
   contact: "fejta"
   prefix: ""
+  sequential: false
 gs://canonical-kubernetes-tests/logs/:
   contact: "chuckbutler"
   prefix: "juju:"
