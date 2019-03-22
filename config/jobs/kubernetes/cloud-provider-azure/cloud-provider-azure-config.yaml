@@ -169,8 +169,7 @@ periodics:
   - org: kubernetes
     repo: cloud-provider-azure
     base_ref: master
-  path_alias: k8s.io/cloud-provider-azure
-  skip_submodules: true
+    path_alias: k8s.io/cloud-provider-azure
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
@@ -220,8 +219,7 @@ periodics:
   - org: kubernetes
     repo: cloud-provider-azure
     base_ref: master
-  path_alias: k8s.io/cloud-provider-azure
-  skip_submodules: true
+    path_alias: k8s.io/cloud-provider-azure
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
@@ -274,8 +272,7 @@ periodics:
   - org: kubernetes
     repo: cloud-provider-azure
     base_ref: master
-  path_alias: k8s.io/cloud-provider-azure
-  skip_submodules: true
+    path_alias: k8s.io/cloud-provider-azure
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
