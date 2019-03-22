@@ -48,6 +48,9 @@ import (
 	"k8s.io/test-infra/prow/tide/history"
 )
 
+// For mocking out sleep during unit tests.
+var sleep = time.Sleep
+
 type prowJobClient interface {
 	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
 	List(opts metav1.ListOptions) (*prowapi.ProwJobList, error)
@@ -848,7 +851,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 		// If we successfully merged this PR and have more to merge, sleep to give
 		// GitHub time to recalculate mergeability.
 		if err == nil && i+1 < len(prs) {
-			time.Sleep(time.Second * 5)
+			sleep(time.Second * 5)
 		}
 	}
 
@@ -903,7 +906,7 @@ func tryMerge(mergeFunc func() error) (bool, error) {
 			// merge again.
 			err = fmt.Errorf("base branch was modified: %v", err)
 			if retry+1 < maxRetries {
-				time.Sleep(backoff)
+				sleep(backoff)
 				backoff *= 2
 			}
 		} else if _, ok = err.(github.UnauthorizedToPushError); ok {
