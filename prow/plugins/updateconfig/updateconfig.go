@@ -21,6 +21,7 @@ import (
 	"compress/gzip"
 	"fmt"
 	"path"
+	"unicode/utf8"
 
 	zglob "github.com/mattn/go-zglob"
 	"github.com/sirupsen/logrus"
@@ -104,11 +105,15 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 	if cm.Data == nil {
 		cm.Data = map[string]string{}
 	}
+	if cm.BinaryData == nil {
+		cm.BinaryData = map[string][]byte{}
+	}
 
 	for _, upd := range updates {
 		if upd.Filename == "" {
 			logger.WithField("key", upd.Key).Debug("Deleting key.")
 			delete(cm.Data, upd.Key)
+			delete(cm.BinaryData, upd.Key)
 			continue
 		}
 
@@ -117,19 +122,30 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 			return fmt.Errorf("get file err: %v", err)
 		}
 		logger.WithFields(logrus.Fields{"key": upd.Key, "filename": upd.Filename}).Debug("Populating key.")
-		value := string(content)
+		value := content
 		if upd.GZIP {
 			buff := bytes.NewBuffer([]byte{})
 			// TODO: this error is wildly unlikely for anything that
 			// would actually fit in a configmap, we could just as well return
 			// the error instead of falling back to the raw content
-			if _, err := gzip.NewWriter(buff).Write(content); err != nil {
+			z := gzip.NewWriter(buff)
+			if _, err := z.Write(content); err != nil {
 				logger.WithError(err).Error("failed to gzip content, falling back to raw")
 			} else {
-				value = buff.String()
+				if err := z.Close(); err != nil {
+					logger.WithError(err).Error("failed to flush gzipped content (!?), falling back to raw")
+				} else {
+					value = buff.Bytes()
+				}
 			}
 		}
-		cm.Data[upd.Key] = value
+		if utf8.ValidString(string(value)) {
+			delete(cm.BinaryData, upd.Key)
+			cm.Data[upd.Key] = string(value)
+		} else {
+			delete(cm.Data, upd.Key)
+			cm.BinaryData[upd.Key] = value
+		}
 	}
 
 	var updateErr error
