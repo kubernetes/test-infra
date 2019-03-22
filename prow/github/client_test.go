@@ -54,7 +54,7 @@ func getClient(url string) *Client {
 	}
 
 	return &Client{
-		time:     &standardTime{},
+		time:     &testTime{},
 		getToken: getToken,
 		client: &http.Client{
 			Transport: &http.Transport{
