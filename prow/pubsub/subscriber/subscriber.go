@@ -91,7 +91,7 @@ type messageInterface interface {
 }
 
 type reportClient interface {
-	Report(pj *prowapi.ProwJob) error
+	Report(pj *prowapi.ProwJob) ([]*prowapi.ProwJob, error)
 	ShouldReport(pj *prowapi.ProwJob) bool
 }
 
@@ -162,7 +162,7 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 		pj.Status.State = prowapi.ErrorState
 		pj.Status.Description = err.Error()
 		if s.Reporter.ShouldReport(&prowJob) {
-			if err := s.Reporter.Report(&prowJob); err != nil {
+			if _, err := s.Reporter.Report(&prowJob); err != nil {
 				l.Warningf("failed to report status. %v", err)
 			}
 		}

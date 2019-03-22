@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	gerrit "github.com/andygrunwald/go-gerrit"
+	"github.com/andygrunwald/go-gerrit"
 
 	"k8s.io/test-infra/prow/gerrit/client"
 
@@ -30,6 +30,8 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 )
+
+var timeNow = time.Date(1234, time.May, 15, 1, 2, 3, 4, time.UTC)
 
 type fca struct {
 	sync.Mutex
@@ -195,7 +197,9 @@ func TestProcessChange(t *testing.T) {
 				Project:         "woof",
 				Status:          "NEW",
 				Revisions: map[string]client.RevisionInfo{
-					"1": {},
+					"1": {
+						Created: timeNow.Format(layout),
+					},
 				},
 			},
 		},
@@ -207,7 +211,8 @@ func TestProcessChange(t *testing.T) {
 				Status:          "NEW",
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
-						Ref: "refs/changes/00/1/1",
+						Ref:     "refs/changes/00/1/1",
+						Created: timeNow.Format(layout),
 					},
 				},
 			},
@@ -222,10 +227,12 @@ func TestProcessChange(t *testing.T) {
 				Status:          "NEW",
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
-						Ref: "refs/changes/00/2/1",
+						Ref:     "refs/changes/00/2/1",
+						Created: timeNow.Format(layout),
 					},
 					"2": {
-						Ref: "refs/changes/00/2/2",
+						Ref:     "refs/changes/00/2/2",
+						Created: timeNow.Format(layout),
 					},
 				},
 			},
@@ -240,7 +247,8 @@ func TestProcessChange(t *testing.T) {
 				Status:          "NEW",
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
-						Ref: "refs/changes/00/1/1",
+						Ref:     "refs/changes/00/1/1",
+						Created: timeNow.Format(layout),
 					},
 				},
 			},
@@ -255,7 +263,8 @@ func TestProcessChange(t *testing.T) {
 				Status:          "MERGED",
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
-						Ref: "refs/changes/00/1/1",
+						Ref:     "refs/changes/00/1/1",
+						Created: timeNow.Format(layout),
 					},
 				},
 			},
@@ -270,7 +279,8 @@ func TestProcessChange(t *testing.T) {
 				Status:          "MERGED",
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
-						Ref: "refs/changes/00/1/1",
+						Ref:     "refs/changes/00/1/1",
+						Created: timeNow.Format(layout),
 					},
 				},
 			},
@@ -288,6 +298,7 @@ func TestProcessChange(t *testing.T) {
 							"africa-lyrics.txt":    {},
 							"important-code.go":    {},
 						},
+						Created: timeNow.Format(layout),
 					},
 				},
 			},
@@ -306,6 +317,7 @@ func TestProcessChange(t *testing.T) {
 							"README.md":     {},
 							"let-it-go.txt": {},
 						},
+						Created: timeNow.Format(layout),
 					},
 				},
 			},
@@ -319,7 +331,9 @@ func TestProcessChange(t *testing.T) {
 				Branch:          "pony",
 				Status:          "NEW",
 				Revisions: map[string]client.RevisionInfo{
-					"1": {},
+					"1": {
+						Created: timeNow.Format(layout),
+					},
 				},
 			},
 			numPJ: 3,
@@ -332,7 +346,78 @@ func TestProcessChange(t *testing.T) {
 				Branch:          "baz",
 				Status:          "NEW",
 				Revisions: map[string]client.RevisionInfo{
-					"1": {},
+					"1": {
+						Created: timeNow.Format(layout),
+					},
+				},
+			},
+			numPJ: 1,
+		},
+		{
+			name: "old presubmits don't run on old revision but trigger job does because new message",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "baz",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number:  1,
+						Created: timeNow.Add(-time.Hour).Format(layout),
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/test troll",
+						RevisionNumber: 1,
+						Date:           timeNow.Add(time.Hour).Format(layout),
+					},
+				},
+			},
+			numPJ: 1,
+		},
+		{
+			name: "unrelated comment shouldn't trigger anything",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "baz",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number:  1,
+						Created: timeNow.Add(-time.Hour).Format(layout),
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/test diasghdgasudhkashdk",
+						RevisionNumber: 1,
+						Date:           timeNow.Add(time.Hour).Format(layout),
+					},
+				},
+			},
+			numPJ: 0,
+		},
+		{
+			name: "trigger always run job on test all even if revision is old",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "baz",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number:  1,
+						Created: timeNow.Add(-time.Hour).Format(layout),
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/test all",
+						RevisionNumber: 1,
+						Date:           timeNow.Add(time.Hour).Format(layout),
+					},
 				},
 			},
 			numPJ: 1,
@@ -373,6 +458,13 @@ func TestProcessChange(t *testing.T) {
 				},
 				AlwaysRun: true,
 			},
+			{
+				JobBase: config.JobBase{
+					Name: "trigger-regex-all-branches",
+				},
+				Trigger:      `.*/test\s*troll.*`,
+				RerunCommand: "/test troll",
+			},
 		}
 		if err := config.SetPresubmitRegexes(testInfraPresubmits); err != nil {
 			t.Fatalf("could not set regexes: %v", err)
@@ -408,9 +500,10 @@ func TestProcessChange(t *testing.T) {
 		fkc := &fkc{}
 
 		c := &Controller{
-			config: fca.Config,
-			kc:     fkc,
-			gc:     &fgc{},
+			config:     fca.Config,
+			kc:         fkc,
+			gc:         &fgc{},
+			lastUpdate: timeNow.Add(-time.Minute),
 		}
 
 		err := c.ProcessChange("https://gerrit", tc.change)

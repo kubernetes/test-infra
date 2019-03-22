@@ -278,15 +278,30 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 	case client.New:
 		presubmits := c.config().Presubmits[cloneURI.String()]
 		presubmits = append(presubmits, c.config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
-		for _, presubmit := range presubmits {
-			if shouldRun, err := presubmit.ShouldRun(change.Branch, changedFiles, false, false); err != nil {
-				return fmt.Errorf("failed to determine if presubmit %q should run: %v", presubmit.Name, err)
-			} else if shouldRun {
-				jobSpecs = append(jobSpecs, jobSpec{
-					spec:   pjutil.PresubmitSpec(presubmit, refs),
-					labels: presubmit.Labels,
-				})
-			}
+		var filters []pjutil.Filter
+		filter, err := messageFilter(c.lastUpdate, change, presubmits)
+		if err != nil {
+			logger.WithError(err).Warn("failed to create filter on messages for presubmits")
+		} else {
+			filters = append(filters, filter)
+		}
+		latestRev := change.Revisions[change.CurrentRevision]
+		created, err := time.Parse(layout, latestRev.Created)
+		if err != nil {
+			logrus.WithError(err).Errorf("Parse time %v failed", latestRev.Created)
+		}
+		if created.After(c.lastUpdate) {
+			filters = append(filters, pjutil.TestAllFilter())
+		}
+		toTrigger, _, err := pjutil.FilterPresubmits(pjutil.AggregateFilter(filters), listChangedFiles(change), change.Branch, presubmits, logger)
+		if err != nil {
+			return fmt.Errorf("failed to filter presubmits: %v", err)
+		}
+		for _, presubmit := range toTrigger {
+			jobSpecs = append(jobSpecs, jobSpec{
+				spec:   pjutil.PresubmitSpec(presubmit, refs),
+				labels: presubmit.Labels,
+			})
 		}
 	}
 
@@ -301,6 +316,10 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 			labels[k] = v
 		}
 		labels[client.GerritRevision] = change.CurrentRevision
+
+		if gerritLabel, ok := labels[client.GerritReportLabel]; !ok || gerritLabel == "" {
+			labels[client.GerritReportLabel] = client.CodeReview
+		}
 
 		pj := pjutil.NewProwJobWithAnnotation(jSpec.spec, labels, annotations)
 		if _, err := c.kc.CreateProwJob(pj); err != nil {

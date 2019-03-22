@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -29,6 +30,8 @@ import (
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
 )
+
+var timeNow = time.Date(1234, time.May, 15, 1, 2, 3, 4, time.UTC)
 
 type fgc struct {
 	reportMessage string
@@ -65,15 +68,15 @@ func (fl fakeLister) ProwJobs(namespace string) pjlister.ProwJobNamespaceLister 
 }
 
 func TestReport(t *testing.T) {
-
 	var testcases = []struct {
-		name          string
-		pj            *v1.ProwJob
-		existingPJs   []*v1.ProwJob
-		expectReport  bool
-		reportInclude []string
-		reportExclude []string
-		expectLabel   map[string]string
+		name              string
+		pj                *v1.ProwJob
+		existingPJs       []*v1.ProwJob
+		expectReport      bool
+		reportInclude     []string
+		reportExclude     []string
+		expectLabel       map[string]string
+		numExpectedReport int
 	}{
 		{
 			name: "1 job, unfinished, should not report",
@@ -96,8 +99,9 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision: "abc",
-						kube.ProwJobTypeLabel: "presubmit",
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    "presubmit",
+						client.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
 						client.GerritInstance: "gerrit",
@@ -113,8 +117,9 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						client.GerritID:          "123-abc",
+						client.GerritInstance:    "gerrit",
+						client.GerritReportLabel: "Code-Review",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -127,8 +132,9 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision: "abc",
-						kube.ProwJobTypeLabel: "presubmit",
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    "presubmit",
+						client.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
 						client.GerritID: "123-abc",
@@ -144,8 +150,9 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision: "abc",
-						kube.ProwJobTypeLabel: "presubmit",
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    "presubmit",
+						client.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
 						client.GerritID:       "123-abc",
@@ -163,17 +170,19 @@ func TestReport(t *testing.T) {
 					Job: "ci-foo",
 				},
 			},
-			expectReport:  true,
-			reportInclude: []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
-			expectLabel:   map[string]string{client.CodeReview: client.LGTM},
+			expectReport:      true,
+			reportInclude:     []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
+			expectLabel:       map[string]string{client.CodeReview: client.LGTM},
+			numExpectedReport: 1,
 		},
 		{
 			name: "1 job, aborted, should not report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision: "abc",
-						kube.ProwJobTypeLabel: "presubmit",
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    "presubmit",
+						client.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
 						client.GerritID:       "123-abc",
@@ -218,17 +227,19 @@ func TestReport(t *testing.T) {
 					Job: "ci-foo",
 				},
 			},
-			expectReport:  true,
-			reportInclude: []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
-			expectLabel:   map[string]string{"foobar-label": client.LGTM},
+			expectReport:      true,
+			reportInclude:     []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
+			expectLabel:       map[string]string{"foobar-label": client.LGTM},
+			numExpectedReport: 1,
 		},
 		{
 			name: "1 job, failed, should report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision: "abc",
-						kube.ProwJobTypeLabel: "presubmit",
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    "presubmit",
+						client.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
 						client.GerritID:       "123-abc",
@@ -246,17 +257,19 @@ func TestReport(t *testing.T) {
 					Job: "ci-foo",
 				},
 			},
-			expectReport:  true,
-			reportInclude: []string{"0 out of 1", "ci-foo", "failure", "guber/foo"},
-			expectLabel:   map[string]string{client.CodeReview: client.LBTM},
+			expectReport:      true,
+			reportInclude:     []string{"0 out of 1", "ci-foo", "failure", "guber/foo"},
+			expectLabel:       map[string]string{client.CodeReview: client.LBTM},
+			numExpectedReport: 1,
 		},
 		{
 			name: "1 job, passed, has slash in repo name, should report and handle slash properly",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision: "abc",
-						kube.ProwJobTypeLabel: "presubmit",
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    "presubmit",
+						client.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
 						client.GerritID:       "123-abc",
@@ -274,18 +287,20 @@ func TestReport(t *testing.T) {
 					Job: "ci-foo-bar",
 				},
 			},
-			expectReport:  true,
-			reportInclude: []string{"1 out of 1", "ci-foo-bar", "success", "guber/foo/bar"},
-			reportExclude: []string{"foo_bar"},
-			expectLabel:   map[string]string{client.CodeReview: client.LGTM},
+			expectReport:      true,
+			reportInclude:     []string{"1 out of 1", "ci-foo-bar", "success", "guber/foo/bar"},
+			reportExclude:     []string{"foo_bar"},
+			expectLabel:       map[string]string{client.CodeReview: client.LGTM},
+			numExpectedReport: 1,
 		},
 		{
 			name: "2 jobs, one passed, other job finished but on different revision, should report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision: "abc",
-						kube.ProwJobTypeLabel: "presubmit",
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    "presubmit",
+						client.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
 						client.GerritID:       "123-abc",
@@ -307,8 +322,9 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision: "def",
-							kube.ProwJobTypeLabel: "presubmit",
+							client.GerritRevision:    "def",
+							kube.ProwJobTypeLabel:    "presubmit",
+							client.GerritReportLabel: "Code-Review",
 						},
 						Annotations: map[string]string{
 							client.GerritID:       "123-def",
@@ -327,18 +343,20 @@ func TestReport(t *testing.T) {
 					},
 				},
 			},
-			expectReport:  true,
-			reportInclude: []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
-			reportExclude: []string{"2", "bar"},
-			expectLabel:   map[string]string{client.CodeReview: client.LGTM},
+			expectReport:      true,
+			reportInclude:     []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
+			reportExclude:     []string{"2", "bar"},
+			expectLabel:       map[string]string{client.CodeReview: client.LGTM},
+			numExpectedReport: 1,
 		},
 		{
-			name: "2 jobs, one passed, other job unfinished, should not report",
+			name: "2 jobs, one passed, other job unfinished with same label, should not report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision: "abc",
-						kube.ProwJobTypeLabel: "presubmit",
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    "presubmit",
+						client.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
 						client.GerritID:       "123-abc",
@@ -360,8 +378,9 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision: "abc",
-							kube.ProwJobTypeLabel: "presubmit",
+							client.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:    "presubmit",
+							client.GerritReportLabel: "Code-Review",
 						},
 						Annotations: map[string]string{
 							client.GerritID:       "123-abc",
@@ -386,8 +405,9 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision: "abc",
-						kube.ProwJobTypeLabel: "presubmit",
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    "presubmit",
+						client.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
 						client.GerritID:       "123-abc",
@@ -409,8 +429,9 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision: "abc",
-							kube.ProwJobTypeLabel: "presubmit",
+							client.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:    "presubmit",
+							client.GerritReportLabel: "Code-Review",
 						},
 						Annotations: map[string]string{
 							client.GerritID:       "123-abc",
@@ -429,18 +450,20 @@ func TestReport(t *testing.T) {
 					},
 				},
 			},
-			expectReport:  true,
-			reportInclude: []string{"1 out of 2", "ci-foo", "success", "ci-bar", "failure", "guber/foo", "guber/bar"},
-			reportExclude: []string{"0", "2 out of 2"},
-			expectLabel:   map[string]string{client.CodeReview: client.LBTM},
+			expectReport:      true,
+			reportInclude:     []string{"1 out of 2", "ci-foo", "success", "ci-bar", "failure", "guber/foo", "guber/bar"},
+			reportExclude:     []string{"0", "2 out of 2"},
+			expectLabel:       map[string]string{client.CodeReview: client.LBTM},
+			numExpectedReport: 2,
 		},
 		{
 			name: "2 jobs, both passed, should report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision: "abc",
-						kube.ProwJobTypeLabel: "presubmit",
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    "presubmit",
+						client.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
 						client.GerritID:       "123-abc",
@@ -462,8 +485,9 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision: "abc",
-							kube.ProwJobTypeLabel: "presubmit",
+							client.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:    "presubmit",
+							client.GerritReportLabel: "Code-Review",
 						},
 						Annotations: map[string]string{
 							client.GerritID:       "123-abc",
@@ -482,18 +506,20 @@ func TestReport(t *testing.T) {
 					},
 				},
 			},
-			expectReport:  true,
-			reportInclude: []string{"2 out of 2", "ci-foo", "success", "ci-bar", "guber/foo", "guber/bar"},
-			reportExclude: []string{"1", "0", "failure"},
-			expectLabel:   map[string]string{client.CodeReview: client.LGTM},
+			expectReport:      true,
+			reportInclude:     []string{"2 out of 2", "ci-foo", "success", "ci-bar", "guber/foo", "guber/bar"},
+			reportExclude:     []string{"1", "0", "failure"},
+			expectLabel:       map[string]string{client.CodeReview: client.LGTM},
+			numExpectedReport: 2,
 		},
 		{
 			name: "2 jobs, one passed, one aborted, should report but skip aborted job",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision: "abc",
-						kube.ProwJobTypeLabel: "presubmit",
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    "presubmit",
+						client.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
 						client.GerritID:       "123-abc",
@@ -515,8 +541,9 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision: "abc",
-							kube.ProwJobTypeLabel: "presubmit",
+							client.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:    "presubmit",
+							client.GerritReportLabel: "Code-Review",
 						},
 						Annotations: map[string]string{
 							client.GerritID:       "123-abc",
@@ -535,10 +562,11 @@ func TestReport(t *testing.T) {
 					},
 				},
 			},
-			expectReport:  true,
-			reportInclude: []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
-			reportExclude: []string{"2", "0", "failure", "aborted", "ci-bar", "guber/bar"},
-			expectLabel:   map[string]string{client.CodeReview: client.LGTM},
+			expectReport:      true,
+			reportInclude:     []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
+			reportExclude:     []string{"2", "0", "failure", "aborted", "ci-bar", "guber/bar"},
+			expectLabel:       map[string]string{client.CodeReview: client.LGTM},
+			numExpectedReport: 1,
 		},
 		{
 			name: "postsubmit after presubmit on same revision, should report separately",
@@ -569,8 +597,9 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision: "abc",
-							kube.ProwJobTypeLabel: "presubmit",
+							client.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:    "presubmit",
+							client.GerritReportLabel: "Code-Review",
 						},
 						Annotations: map[string]string{
 							client.GerritID:       "123-abc",
@@ -589,9 +618,277 @@ func TestReport(t *testing.T) {
 					},
 				},
 			},
-			expectReport:  true,
-			reportInclude: []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
-			expectLabel:   map[string]string{"postsubmit-label": client.LGTM},
+			expectReport:      true,
+			reportInclude:     []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
+			expectLabel:       map[string]string{"postsubmit-label": client.LGTM},
+			numExpectedReport: 1,
+		},
+		{
+			name: "2 jobs, both passed, different label, should report by itself",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    "presubmit",
+						client.GerritReportLabel: "label-foo",
+					},
+					Annotations: map[string]string{
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job: "ci-foo",
+				},
+			},
+			existingPJs: []*v1.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							client.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:    "presubmit",
+							client.GerritReportLabel: "label-bar",
+						},
+						Annotations: map[string]string{
+							client.GerritID:       "123-abc",
+							client.GerritInstance: "gerrit",
+						},
+					},
+					Status: v1.ProwJobStatus{
+						State: v1.SuccessState,
+						URL:   "guber/bar",
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "bar",
+						},
+						Job: "ci-bar",
+					},
+				},
+			},
+			expectReport:      true,
+			reportInclude:     []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
+			expectLabel:       map[string]string{"label-foo": client.LGTM},
+			numExpectedReport: 1,
+		},
+		{
+			name: "one job, reported, retriggered, should report by itself",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    "presubmit",
+						client.GerritReportLabel: "label-foo",
+					},
+					Annotations: map[string]string{
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
+					},
+					CreationTimestamp: metav1.Time{
+						Time: timeNow,
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job: "ci-foo",
+				},
+			},
+			existingPJs: []*v1.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							client.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:    "presubmit",
+							client.GerritReportLabel: "label-foo",
+						},
+						Annotations: map[string]string{
+							client.GerritID:       "123-abc",
+							client.GerritInstance: "gerrit",
+						},
+						CreationTimestamp: metav1.Time{
+							Time: timeNow.Add(-time.Minute),
+						},
+					},
+					Status: v1.ProwJobStatus{
+						PrevReportStates: map[string]v1.ProwJobState{
+							"gerrit-reporter": v1.FailureState,
+						},
+						State: v1.FailureState,
+						URL:   "guber/foo",
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "foo",
+						},
+						Job: "ci-foo",
+					},
+				},
+			},
+			expectReport:      true,
+			reportInclude:     []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
+			expectLabel:       map[string]string{"label-foo": client.LGTM},
+			numExpectedReport: 1,
+		},
+		{
+			name: "2 jobs, one success one pending, different label, should report by itself",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    "presubmit",
+						client.GerritReportLabel: "label-foo",
+					},
+					Annotations: map[string]string{
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job: "ci-foo",
+				},
+			},
+			existingPJs: []*v1.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							client.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:    "presubmit",
+							client.GerritReportLabel: "label-bar",
+						},
+						Annotations: map[string]string{
+							client.GerritID:       "123-abc",
+							client.GerritInstance: "gerrit",
+						},
+					},
+					Status: v1.ProwJobStatus{
+						State: v1.PendingState,
+						URL:   "guber/bar",
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "bar",
+						},
+						Job: "ci-bar",
+					},
+				},
+			},
+			expectReport:      true,
+			reportInclude:     []string{"1 out of 1", "ci-foo", "success", "guber/foo"},
+			expectLabel:       map[string]string{"label-foo": client.LGTM},
+			numExpectedReport: 1,
+		},
+		{
+			name: "2 jobs, both failed, already reported, same label, retrigger one and passed, should report both and not lgtm",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    "presubmit",
+						client.GerritReportLabel: "same-label",
+					},
+					Annotations: map[string]string{
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
+					},
+					CreationTimestamp: metav1.Time{
+						Time: timeNow,
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job: "ci-foo",
+				},
+			},
+			existingPJs: []*v1.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							client.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:    "presubmit",
+							client.GerritReportLabel: "same-label",
+						},
+						Annotations: map[string]string{
+							client.GerritID:       "123-abc",
+							client.GerritInstance: "gerrit",
+						},
+						CreationTimestamp: metav1.Time{
+							Time: timeNow.Add(-time.Hour),
+						},
+					},
+					Status: v1.ProwJobStatus{
+						State: v1.FailureState,
+						URL:   "guber/bar",
+						PrevReportStates: map[string]v1.ProwJobState{
+							"gerrit-reporter": v1.FailureState,
+						},
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "bar",
+						},
+						Job: "ci-bar",
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							client.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:    "presubmit",
+							client.GerritReportLabel: "same-label",
+						},
+						Annotations: map[string]string{
+							client.GerritID:       "123-abc",
+							client.GerritInstance: "gerrit",
+						},
+						CreationTimestamp: metav1.Time{
+							Time: timeNow.Add(-time.Hour),
+						},
+					},
+					Status: v1.ProwJobStatus{
+						State: v1.FailureState,
+						URL:   "guber/foo",
+						PrevReportStates: map[string]v1.ProwJobState{
+							"gerrit-reporter": v1.FailureState,
+						},
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "foo",
+						},
+						Job: "ci-foo",
+					},
+				},
+			},
+			expectReport:      true,
+			reportInclude:     []string{"1 out of 2", "ci-foo", "success", "ci-bar", "failure", "guber/foo", "guber/bar"},
+			expectLabel:       map[string]string{"same-label": client.LBTM},
+			numExpectedReport: 2,
 		},
 	}
 
@@ -614,7 +911,7 @@ func TestReport(t *testing.T) {
 			continue
 		}
 
-		err := reporter.Report(tc.pj)
+		reportedJobs, err := reporter.Report(tc.pj)
 		if err != nil {
 			t.Errorf("test: %s: expect no error but got error %v", tc.name, err)
 		}
@@ -633,6 +930,9 @@ func TestReport(t *testing.T) {
 
 			if !reflect.DeepEqual(tc.expectLabel, fgc.reportLabel) {
 				t.Errorf("test: %s: reported with %s label, should have %s label", tc.name, fgc.reportLabel, tc.expectLabel)
+			}
+			if len(reportedJobs) != tc.numExpectedReport {
+				t.Errorf("test: %s: reported with %d jobs, should have %d jobs instead", tc.name, len(reportedJobs), tc.numExpectedReport)
 			}
 		}
 	}

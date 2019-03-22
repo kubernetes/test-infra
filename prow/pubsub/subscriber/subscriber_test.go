@@ -99,9 +99,9 @@ type fakeReporter struct {
 	reported bool
 }
 
-func (r *fakeReporter) Report(pj *prowapi.ProwJob) error {
+func (r *fakeReporter) Report(pj *prowapi.ProwJob) ([]*prowapi.ProwJob, error) {
 	r.reported = true
-	return nil
+	return nil, nil
 }
 
 func (r *fakeReporter) ShouldReport(pj *prowapi.ProwJob) bool {

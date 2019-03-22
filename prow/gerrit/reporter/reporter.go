@@ -85,16 +85,24 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 		client.GerritRevision: pj.ObjectMeta.Labels[client.GerritRevision],
 		kube.ProwJobTypeLabel: pj.ObjectMeta.Labels[kube.ProwJobTypeLabel],
 	}
+
+	if pj.ObjectMeta.Labels[client.GerritReportLabel] == "" {
+		// Shouldn't happen, adapter should already have defaulted to Code-Review
+		logrus.Errorf("Gerrit report label not set for job %s", pj.Spec.Job)
+	} else {
+		selector[client.GerritReportLabel] = pj.ObjectMeta.Labels[client.GerritReportLabel]
+	}
+
 	pjs, err := c.lister.List(selector.AsSelector())
 	if err != nil {
 		logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
 		return false
 	}
 
-	for _, pj := range pjs {
-		if pj.Status.State == v1.TriggeredState || pj.Status.State == v1.PendingState {
-			// other jobs are still running on this revision, skip report
-			logrus.WithField("prowjob", pj.ObjectMeta.Name).Info("Other jobs are still running on this revision")
+	for _, pjob := range pjs {
+		if pjob.Status.State == v1.TriggeredState || pjob.Status.State == v1.PendingState {
+			// other jobs with same label are still running on this revision, skip report
+			logrus.WithField("prowjob", pjob.ObjectMeta.Name).Info("Other jobs with same label are still running on this revision")
 			return false
 		}
 	}
@@ -103,46 +111,63 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 }
 
 // Report will send the current prowjob status as a gerrit review
-func (c *Client) Report(pj *v1.ProwJob) error {
-	// If you are hitting here, which means the entire patchset has been finished :-)
+func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
+
+	logger := logrus.WithField("prowjob", pj)
 
 	clientGerritRevision := client.GerritRevision
 	clientGerritID := client.GerritID
 	clientGerritInstance := client.GerritInstance
 	pjTypeLabel := kube.ProwJobTypeLabel
+	gerritReportLabel := client.GerritReportLabel
 
-	// list all prowjobs in the patchset matching pj's type (pre- or post-submit)
 	selector := labels.Set{
 		clientGerritRevision: pj.ObjectMeta.Labels[clientGerritRevision],
 		pjTypeLabel:          pj.ObjectMeta.Labels[pjTypeLabel],
 	}
-	pjsOnRevision, err := c.lister.List(selector.AsSelector())
+	if pj.ObjectMeta.Labels[gerritReportLabel] == "" {
+		// Shouldn't happen, adapter should already have defaulted to Code-Review
+		logger.Errorf("Gerrit report label not set for job %s", pj.Spec.Job)
+	} else {
+		selector[gerritReportLabel] = pj.ObjectMeta.Labels[gerritReportLabel]
+	}
+
+	// list all prowjobs in the patchset matching pj's type (pre- or post-submit)
+
+	pjsOnRevisionWithSameLabel, err := c.lister.List(selector.AsSelector())
 	if err != nil {
-		logrus.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
-		return err
+		logger.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
+		return nil, err
 	}
 
 	// generate an aggregated report:
-	total := 0
 	success := 0
 	message := ""
-
-	for _, pjOnRevision := range pjsOnRevision {
-		if pjOnRevision.Status.PrevReportStates[c.GetName()] == pjOnRevision.Status.State {
-			logrus.Infof("Revision %s has been reported already", pj.ObjectMeta.Labels[clientGerritRevision])
-			return nil
+	var toReportJobs []*v1.ProwJob
+	mostRecentJob := map[string]*v1.ProwJob{}
+	for _, pjOnRevisionWithSameLabel := range pjsOnRevisionWithSameLabel {
+		job, ok := mostRecentJob[pjOnRevisionWithSameLabel.Spec.Job]
+		if !ok || job.CreationTimestamp.Time.Before(pjOnRevisionWithSameLabel.CreationTimestamp.Time) {
+			mostRecentJob[pjOnRevisionWithSameLabel.Spec.Job] = pjOnRevisionWithSameLabel
 		}
-
-		if pjOnRevision.Status.State == v1.AbortedState {
+	}
+	for _, pjOnRevisionWithSameLabel := range mostRecentJob {
+		if pjOnRevisionWithSameLabel.Status.State == v1.AbortedState {
 			continue
 		}
+		toReportJobs = append(toReportJobs, pjOnRevisionWithSameLabel)
 
-		total++
-		if pjOnRevision.Status.State == v1.SuccessState {
+		if pjOnRevisionWithSameLabel.Status.State == v1.SuccessState {
 			success++
 		}
 
-		message = fmt.Sprintf("%s\nJob %s finished with %s -- URL: %s", message, pjOnRevision.Spec.Job, pjOnRevision.Status.State, pjOnRevision.Status.URL)
+		message = fmt.Sprintf("%s\nJob %s finished with %s -- URL: %s", message, pjOnRevisionWithSameLabel.Spec.Job, pjOnRevisionWithSameLabel.Status.State, pjOnRevisionWithSameLabel.Status.URL)
+	}
+	total := len(toReportJobs)
+	if total <= 0 {
+		// Shouldn't happen but return if does
+		logger.Warn("Tried to report empty or aborted jobs.")
+		return nil, nil
 	}
 
 	message = fmt.Sprintf("%d out of %d jobs passed!\n%s", success, total, message)
@@ -160,20 +185,20 @@ func (c *Client) Report(pj *v1.ProwJob) error {
 	if success == total {
 		vote = client.LGTM
 	}
-	labels := map[string]string{reportLabel: vote}
+	reviewLabels := map[string]string{reportLabel: vote}
 
-	logrus.Infof("Reporting to instance %s on id %s with message %s", gerritInstance, gerritID, message)
-	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, labels); err != nil {
-		logrus.WithError(err).Errorf("fail to set review with %s label on change ID %s", reportLabel, gerritID)
+	logger.Infof("Reporting to instance %s on id %s with message %s", gerritInstance, gerritID, message)
+	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, reviewLabels); err != nil {
+		logger.WithError(err).Errorf("fail to set review with %s label on change ID %s", reportLabel, gerritID)
 
 		// possibly don't have label permissions, try without labels
 		message = fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", reportLabel, message)
 		if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, nil); err != nil {
-			logrus.WithError(err).Errorf("fail to set plain review on change ID %s", gerritID)
-			return err
+			logger.WithError(err).Errorf("fail to set plain review on change ID %s", gerritID)
+			return nil, err
 		}
 	}
-	logrus.Infof("Review Complete")
+	logger.Infof("Review Complete, reported jobs: %v", toReportJobs)
 
-	return nil
+	return toReportJobs, nil
 }

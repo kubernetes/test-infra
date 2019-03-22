@@ -80,7 +80,7 @@ func TestQueryChange(t *testing.T) {
 		},
 		{
 			name:       "one outdated change",
-			lastUpdate: now,
+			lastUpdate: now.Add(-time.Minute),
 			changes: map[string][]gerrit.ChangeInfo{
 				"foo": {
 					{
@@ -98,6 +98,35 @@ func TestQueryChange(t *testing.T) {
 				},
 			},
 			revisions: map[string][]string{},
+		},
+		{
+			name:       "one outdated change, but there's a new message",
+			lastUpdate: now.Add(-time.Minute),
+			changes: map[string][]gerrit.ChangeInfo{
+				"foo": {
+					{
+						Project:         "bar",
+						ID:              "100",
+						CurrentRevision: "1-1",
+						Updated:         now.Format(layout),
+						Revisions: map[string]gerrit.RevisionInfo{
+							"1-1": {
+								Created: now.Add(-time.Hour).Format(layout),
+								Number:  1,
+							},
+						},
+						Status: "NEW",
+						Messages: []gerrit.ChangeMessageInfo{
+							{
+								Date:           now.Format(layout),
+								Message:        "some message",
+								RevisionNumber: 1,
+							},
+						},
+					},
+				},
+			},
+			revisions: map[string][]string{"foo": {"1-1"}},
 		},
 		{
 			name:       "one up-to-date change",
@@ -421,6 +450,30 @@ func TestQueryChange(t *testing.T) {
 			revisions: map[string][]string{
 				"foo": {"2-1"},
 			},
+		},
+		{
+			name:       "merged change with new message, should ignore",
+			lastUpdate: now.Add(-time.Minute),
+			changes: map[string][]gerrit.ChangeInfo{
+				"foo": {
+					{
+						Project:         "bar",
+						ID:              "2",
+						CurrentRevision: "2-1",
+						Updated:         now.Format(layout),
+						Submitted:       now.Add(-time.Hour).Format(layout),
+						Status:          "MERGED",
+						Messages: []gerrit.ChangeMessageInfo{
+							{
+								Date:           now.Format(layout),
+								Message:        "some message",
+								RevisionNumber: 1,
+							},
+						},
+					},
+				},
+			},
+			revisions: map[string][]string{},
 		},
 	}
 
