@@ -6,7 +6,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/plugins/blunderbuss",
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/github:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/plugins/assign:go_default_library",
@@ -37,7 +37,7 @@ go_test(
     srcs = ["blunderbuss_test.go"],
     embed = [":go_default_library"],
     deps = [
-        "//prow/github:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/repoowners:go_default_library",
         "//vendor/github.com/shurcooL/githubv4:go_default_library",

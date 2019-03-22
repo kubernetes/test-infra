@@ -5,7 +5,7 @@ go_library(
     srcs = ["genfiles.go"],
     importpath = "k8s.io/test-infra/prow/genfiles",
     visibility = ["//visibility:public"],
-    deps = ["//prow/github:go_default_library"],
+    deps = ["//prow/scallywag/github:go_default_library"],
 )
 
 go_test(

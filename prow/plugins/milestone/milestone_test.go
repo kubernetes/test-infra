@@ -22,7 +22,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/scallywag/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/scallywag"
 )

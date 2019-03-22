@@ -21,7 +21,7 @@ import (
 	"strings"
 	"testing"
 
-	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/scallywag/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/scallywag"
 	"k8s.io/test-infra/prow/slack"

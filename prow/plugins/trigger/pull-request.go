@@ -25,7 +25,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"

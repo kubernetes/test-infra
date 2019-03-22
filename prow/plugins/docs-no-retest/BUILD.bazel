@@ -6,7 +6,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/plugins/docs-no-retest",
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/github:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/scallywag:go_default_library",
@@ -18,7 +18,7 @@ go_test(
     srcs = ["docs-no-retest_test.go"],
     embed = [":go_default_library"],
     deps = [
-        "//prow/github:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )

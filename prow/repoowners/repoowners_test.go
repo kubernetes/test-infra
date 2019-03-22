@@ -27,7 +27,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowConf "k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git/localgit"
+	"k8s.io/test-infra/prow/scallywag/git/localgit"
 	"k8s.io/test-infra/prow/scallywag"
 )
 

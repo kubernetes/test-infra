@@ -41,7 +41,7 @@ import (
 
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag/github"
 	"k8s.io/test-infra/prow/scallywag"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // for gcp auth provider

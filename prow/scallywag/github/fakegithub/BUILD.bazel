@@ -8,9 +8,9 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["fakegithub.go"],
-    importpath = "k8s.io/test-infra/prow/github/fakegithub",
+    importpath = "k8s.io/test-infra/prow/scallywag/github/fakegithub",
     deps = [
-        "//prow/github:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//prow/scallywag:go_default_library",
     ],

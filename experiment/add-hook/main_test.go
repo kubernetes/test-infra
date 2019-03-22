@@ -24,7 +24,7 @@ import (
 	"testing"
 
 	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag/github"
 )
 
 func TestGetOptions(t *testing.T) {

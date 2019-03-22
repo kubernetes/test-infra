@@ -30,8 +30,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/git"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag/git"
+	"k8s.io/test-infra/prow/scallywag/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/scallywag"

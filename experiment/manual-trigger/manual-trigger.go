@@ -28,7 +28,7 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/secret"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag/github"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )

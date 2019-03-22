@@ -17,7 +17,7 @@ go_library(
         "//prow/config/secret:go_default_library",
         "//prow/external-plugins/needs-rebase/plugin:go_default_library",
         "//prow/flagutil:go_default_library",
-        "//prow/github:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//prow/hook:go_default_library",
         "//prow/labels:go_default_library",
         "//prow/pluginhelp/externalplugins:go_default_library",

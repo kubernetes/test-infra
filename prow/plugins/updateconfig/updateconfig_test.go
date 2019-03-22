@@ -32,7 +32,7 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	clienttesting "k8s.io/client-go/testing"
 
-	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/scallywag/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/scallywag"
 )
@@ -586,10 +586,10 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:        "gzips all content if the top level gzip flag is set",
-			prAction:    github.PullRequestActionClosed,
+			prAction:    scallywag.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "12345",
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "prow/config.yaml",
 					Status:    "modified",
@@ -623,10 +623,10 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:        "gzips all content except one marked false if the top level gzip flag is set",
-			prAction:    github.PullRequestActionClosed,
+			prAction:    scallywag.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "12345",
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "prow/config.yaml",
 					Status:    "modified",
@@ -674,10 +674,10 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:        "gzips only one marked file if the top level gzip flag is set to false",
-			prAction:    github.PullRequestActionClosed,
+			prAction:    scallywag.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "12345",
-			changes: []github.PullRequestChange{
+			changes: []scallywag.PullRequestChange{
 				{
 					Filename:  "prow/config.yaml",
 					Status:    "modified",

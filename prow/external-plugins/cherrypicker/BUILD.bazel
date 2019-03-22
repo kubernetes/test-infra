@@ -13,8 +13,8 @@ go_library(
         "//pkg/flagutil:go_default_library",
         "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
-        "//prow/git:go_default_library",
-        "//prow/github:go_default_library",
+        "//prow/scallywag/git:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/pluginhelp/externalplugins:go_default_library",
         "//prow/plugins:go_default_library",
@@ -55,8 +55,8 @@ go_test(
     srcs = ["server_test.go"],
     embed = [":go_default_library"],
     deps = [
-        "//prow/git/localgit:go_default_library",
-        "//prow/github:go_default_library",
+        "//prow/scallywag/git/localgit:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )

@@ -9,6 +9,7 @@ go_library(
         "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
         "//robots/pr-creator/updater:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )

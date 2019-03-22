@@ -28,8 +28,8 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	reportlib "k8s.io/test-infra/prow/github/report"
-	"k8s.io/test-infra/prow/github/reporter"
+	reportlib "k8s.io/test-infra/prow/scallywag/github/report"
+	"k8s.io/test-infra/prow/scallywag/github/reporter"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
@@ -47,7 +47,7 @@ type kubeClient interface {
 	DeletePod(string) error
 }
 
-// GitHubClient contains the methods used by plank on k8s.io/test-infra/prow/github.Client
+// GitHubClient contains the methods used by plank on k8s.io/test-infra/prow/scallywag/github.Client
 // Plank's unit tests implement a fake of this.
 type GitHubClient interface {
 	BotName() (string, error)

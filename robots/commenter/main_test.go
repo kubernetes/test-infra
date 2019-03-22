@@ -24,7 +24,7 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag"
 )
 
 func TestParseHTMLURL(t *testing.T) {

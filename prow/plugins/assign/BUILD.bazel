@@ -11,7 +11,7 @@ go_test(
     srcs = ["assign_test.go"],
     embed = [":go_default_library"],
     deps = [
-        "//prow/github:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
@@ -21,7 +21,7 @@ go_library(
     srcs = ["assign.go"],
     importpath = "k8s.io/test-infra/prow/plugins/assign",
     deps = [
-        "//prow/github:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

@@ -21,7 +21,7 @@ go_library(
     deps = [
         "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
-        "//prow/github:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )

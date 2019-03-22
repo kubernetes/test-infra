@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package gitattributes
+package attributes
 
 import (
 	"bufio"
@@ -25,7 +25,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag/github"
 )
 
 // Pattern defines a single gitattributes pattern.

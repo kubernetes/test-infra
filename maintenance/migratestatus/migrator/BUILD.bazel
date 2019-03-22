@@ -11,7 +11,7 @@ go_test(
     srcs = ["migrator_test.go"],
     embed = [":go_default_library"],
     deps = [
-        "//prow/github:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//vendor/github.com/pkg/errors:go_default_library",
     ],
 )
@@ -22,7 +22,7 @@ go_library(
     importpath = "k8s.io/test-infra/maintenance/migratestatus/migrator",
     deps = [
         "//prow/errorutil:go_default_library",
-        "//prow/github:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//prow/scallywag:go_default_library",
     ],

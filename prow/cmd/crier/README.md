@@ -34,7 +34,7 @@ Pubsub reporter will report whenever prowjob has a state transition.
 
 You can check the reported result by [list the pubsub topic](https://cloud.google.com/sdk/gcloud/reference/pubsub/topics/list).
 
-### [GitHub reporter](/prow/github/reporter)
+### [GitHub reporter](/prow/scallywag/github/reporter)
 
 You can enable github reporter in crier by specifying `--github-workers=n` flag.
 
@@ -42,7 +42,7 @@ You also need to mount a github oauth token by specifying `--github-token-path` 
 
 If you have a [ghproxy](/ghproxy) deployed, also remember to point `--github-endpoint` to your ghproxy to avoid token throttle.
 
-The actual report logic is in the [github report library](/prow/github/report) for your reference.
+The actual report logic is in the [github report library](/prow/scallywag/github/report) for your reference.
 
 ### [Slack reporter](/prow/slack/reporter)
 
@@ -106,7 +106,7 @@ You can add a reporter that implements the above interface, and add a flag to tu
 
 ## Migration from plank for github report
 
-Both plank and crier will call into the [github report lib](prow/github/report) when a prowjob needs to be reported,
+Both plank and crier will call into the [github report lib](prow/scallywag/github/report) when a prowjob needs to be reported,
 so as a user you only want to make one of them to report :-)
 
 Before migrating, be sure plank is setting the [PrevReportStatus field](https://github.com/kubernetes/test-infra/blob/master/prow/apis/prowjobs/v1/types.go#L403)

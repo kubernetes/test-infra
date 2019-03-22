@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/scallywag/github/fakegithub"
 	"k8s.io/test-infra/prow/scallywag"
 )
 

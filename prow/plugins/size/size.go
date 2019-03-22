@@ -26,10 +26,10 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/genfiles"
-	"k8s.io/test-infra/prow/gitattributes"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/scallywag"
+	gitattributes "k8s.io/test-infra/prow/scallywag/git/attributes"
 )
 
 // The sizes are configurable in the `plugins.yaml` config file; the line constants

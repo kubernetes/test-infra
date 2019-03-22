@@ -15,7 +15,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//prow/config:go_default_library",
-        "//prow/github:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//prow/phony:go_default_library",
         "//prow/plugins:go_default_library",
     ],
@@ -32,7 +32,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/hook",
     deps = [
         "//prow/config:go_default_library",
-        "//prow/github:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/plugins/approve:go_default_library",
         "//prow/plugins/assign:go_default_library",

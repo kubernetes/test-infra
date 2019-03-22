@@ -42,7 +42,7 @@ import (
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/scallywag/git"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/scallywag"
 	"k8s.io/test-infra/prow/tide/blockers"

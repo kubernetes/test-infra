@@ -30,7 +30,7 @@ import (
 
 	"k8s.io/test-infra/prow/commentpruner"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/scallywag/git"
 	"k8s.io/test-infra/prow/scallywag"
 
 	"k8s.io/test-infra/prow/pluginhelp"

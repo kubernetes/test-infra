@@ -38,7 +38,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git/localgit"
+	"k8s.io/test-infra/prow/scallywag/git/localgit"
 	"k8s.io/test-infra/prow/scallywag"
 	"k8s.io/test-infra/prow/tide/history"
 )

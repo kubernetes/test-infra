@@ -6,10 +6,10 @@ go_library(
         "gitattributes.go",
         "pattern.go",
     ],
-    importpath = "k8s.io/test-infra/prow/gitattributes",
+    importpath = "k8s.io/test-infra/prow/scallywag/git/attributes",
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/github:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )

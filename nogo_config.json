@@ -1,7 +1,7 @@
 {
   "structtag": {
     "exclude_files": {
-      "prow/github/client.go": "intentional violation",
+      "prow/scallywag/github/client.go": "intentional violation",
       "external/": "external tools don't pass vet",
       "vendor/": "vendor doesn't pass vet"
     }

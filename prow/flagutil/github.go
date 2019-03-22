@@ -25,8 +25,8 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
-	"k8s.io/test-infra/prow/git"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag/git"
+	"k8s.io/test-infra/prow/scallywag/github"
 	"k8s.io/test-infra/prow/scallywag"
 )
 

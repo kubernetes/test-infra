@@ -39,7 +39,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/github"
+	githuboauth "golang.org/x/oauth2/github"
 	"google.golang.org/api/option"
 	coreapi "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -52,12 +52,12 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/prstatus"
+	"k8s.io/test-infra/prow/scallywag/github"
 	"k8s.io/test-infra/prow/spyglass"
 
 	// Import standard spyglass viewers
@@ -362,13 +362,13 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 		cookie := sessions.NewCookieStore(decodedSecret)
 		githubOAuthConfig.InitGitHubOAuthConfig(cookie)
 
-		goa := githuboauth.NewAgent(&githubOAuthConfig, logrus.WithField("client", "githuboauth"))
+		goa := github.NewAgent(&githubOAuthConfig, logrus.WithField("client", "githuboauth"))
 		oauthClient := &oauth2.Config{
 			ClientID:     githubOAuthConfig.ClientID,
 			ClientSecret: githubOAuthConfig.ClientSecret,
 			RedirectURL:  githubOAuthConfig.RedirectURL,
 			Scopes:       githubOAuthConfig.Scopes,
-			Endpoint:     github.Endpoint,
+			Endpoint:     githuboauth.Endpoint,
 		}
 
 		repoSet := make(map[string]bool)
@@ -397,7 +397,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 		// Handles login request.
 		mux.Handle("/github-login", goa.HandleLogin(oauthClient))
 		// Handles redirect from GitHub OAuth server.
-		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient, githuboauth.NewGitHubClientGetter()))
+		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient, github.NewGitHubClientGetter()))
 	}
 
 	// optionally inject http->https redirect handler when behind loadbalancer

@@ -25,7 +25,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag/github"
 	"k8s.io/test-infra/prow/scallywag"
 
 	"k8s.io/test-infra/prow/labels"

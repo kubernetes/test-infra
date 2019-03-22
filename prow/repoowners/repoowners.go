@@ -29,7 +29,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/scallywag/git"
 	"k8s.io/test-infra/prow/scallywag"
 
 	prowConf "k8s.io/test-infra/prow/config"

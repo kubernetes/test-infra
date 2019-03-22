@@ -31,7 +31,7 @@ import (
 	"golang.org/x/oauth2"
 
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/scallywag/github"
 	"k8s.io/test-infra/prow/scallywag"
 )
 

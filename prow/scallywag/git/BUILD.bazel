@@ -9,7 +9,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["git.go"],
-    importpath = "k8s.io/test-infra/prow/git",
+    importpath = "k8s.io/test-infra/prow/scallywag/git",
     deps = ["//vendor/github.com/sirupsen/logrus:go_default_library"],
 )
 
@@ -24,7 +24,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//prow/git/localgit:all-srcs",
+        "//prow/scallywag/git/localgit:all-srcs",
     ],
     tags = ["automanaged"],
 )
@@ -33,5 +33,5 @@ go_test(
     name = "go_default_test",
     srcs = ["git_test.go"],
     embed = [":go_default_library"],
-    deps = ["//prow/git/localgit:go_default_library"],
+    deps = ["//prow/scallywag/git/localgit:go_default_library"],
 )

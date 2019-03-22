@@ -6,7 +6,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/plugins/stage",
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/github:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
@@ -19,7 +19,7 @@ go_test(
     srcs = ["stage_test.go"],
     embed = [":go_default_library"],
     deps = [
-        "//prow/github:go_default_library",
+        "//prow/scallywag/github:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )

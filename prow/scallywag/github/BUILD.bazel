@@ -13,6 +13,7 @@ go_test(
         "helpers_test.go",
         "hmac_test.go",
         "links_test.go",
+        "oauth_test.go",
     ],
     embed = [":go_default_library"],
     deps = [
@@ -29,8 +30,9 @@ go_library(
         "hmac.go",
         "links.go",
         "webhooks.go",
+        "oauth.go",
     ],
-    importpath = "k8s.io/test-infra/prow/github",
+    importpath = "k8s.io/test-infra/prow/scallywag/github",
     deps = [
         "//ghproxy/ghcache:go_default_library",
         "//prow/errorutil:go_default_library",
@@ -38,7 +40,13 @@ go_library(
         "//vendor/github.com/shurcooL/githubv4:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/golang.org/x/oauth2:go_default_library",
+        "//pkg/ghclient:go_default_library",
         "//prow/config:go_default_library",
+        "//vendor/github.com/google/go-github/github:go_default_library",
+        "//vendor/golang.org/x/net/context:go_default_library",
+        "//vendor/golang.org/x/net/xsrftoken:go_default_library",
+        "//vendor/github.com/gorilla/securecookie:go_default_library",
+        "//vendor/github.com/gorilla/sessions:go_default_library",
     ],
 )
 
@@ -53,9 +61,9 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//prow/github/fakegithub:all-srcs",
-        "//prow/github/report:all-srcs",
-        "//prow/github/reporter:all-srcs",
+        "//prow/scallywag/github/fakegithub:all-srcs",
+        "//prow/scallywag/github/report:all-srcs",
+        "//prow/scallywag/github/reporter:all-srcs",
     ],
     tags = ["automanaged"],
 )

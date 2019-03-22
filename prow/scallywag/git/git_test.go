@@ -24,7 +24,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"k8s.io/test-infra/prow/git/localgit"
+	"k8s.io/test-infra/prow/scallywag/git/localgit"
 )
 
 func TestClone(t *testing.T) {
