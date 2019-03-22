@@ -26,3 +26,13 @@ presubmits:
         resources:
           requests:
             memory: "2Gi"
+
+# Testing to make sure things still update.
+periodics:
+  - interval: 10m
+    name: ci-test-infra-canary-echo-test
+    decorate: true
+    spec:
+      containers:
+        - image: alpine
+          command: ["/bin/date"]
