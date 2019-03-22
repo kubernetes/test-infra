@@ -659,6 +659,11 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
+        description: Issues or PRs related to refactoring the kubernetes e2e test framework
+        name: area/e2e-test-framework
+        target: both
+        addedBy: label
+      - color: 0052cc
         description: Issues or PRs related to the developer guide
         name: area/developer-guide
         target: both
@@ -708,6 +713,11 @@ repos:
       - color: 0052cc
         description: Issues or PRs related to deflaking kubernetes tests
         name: area/deflake
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to refactoring the kubernetes e2e test framework
+        name: area/e2e-test-framework
         target: both
         addedBy: label
       - color: 0052cc
@@ -788,6 +798,11 @@ repos:
       - color: 0052cc
         description: Issues or PRs related to deflaking kubernetes tests
         name: area/deflake
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to refactoring the kubernetes e2e test framework
+        name: area/e2e-test-framework
         target: both
         addedBy: label
       - color: 0052cc
