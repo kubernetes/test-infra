@@ -784,6 +784,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-build-smoke
 - name: ci-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-bazel
+- name: ci-test-infra-canary-echo-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-canary-echo-test
 - name: ci-test-infra-resultstore-upload
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-resultstore-upload
 # Ubuntu node e2e tests (contact: @kubernetes/ubuntu-image on github)
@@ -7092,6 +7094,9 @@ dashboards:
   - name: ci-kubernetes-coverage-e2e-gci-gce
     test_group_name: ci-kubernetes-coverage-e2e-gci-gce
     description: build instrumented kubernetes, run (non-slow/serial/disruptive/flaky/feature) e2e tests, generate line coverage using gopherage
+  - name: echo-test
+    test_group_name: ci-test-infra-canary-echo-test
+    description: temporarily echoing things.
 
 - name: sig-testing-org
   dashboard_tab:
