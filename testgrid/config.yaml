@@ -149,6 +149,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-gci-gce-1-1
 - name: ci-containerd-e2e-gci-gce-1-2
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-gci-gce-1-2
+- name: ci-containerd-e2e-shielded-gci-gce-1-2
+  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-shielded-gci-gce-1-2
+- name: ci-containerd-e2e-shielded-gci-gce-slow-1-2
+  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-shielded-gci-gce-slow-1-2
+- name: ci-containerd-e2e-shielded-gci-gce-serial-1-2
+  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-shielded-gci-gce-serial-1-2
 - name: ci-containerd-e2e-ubuntu-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-ubuntu-gce
 - name: ci-cri-containerd-node-e2e
@@ -6494,6 +6500,12 @@ dashboards:
     test_group_name: ci-containerd-e2e-gci-gce-1-1
   - name: containerd-e2e-gci-1.2
     test_group_name: ci-containerd-e2e-gci-gce-1-2
+  - name: containerd-e2e-shielded-gci-1.2
+    test_group_name: ci-containerd-e2e-shielded-gci-gce-1-2
+  - name: containerd-e2e-shielded-gci-slow-1.2
+    test_group_name: ci-containerd-e2e-shielded-gci-gce-slow-1-2
+  - name: containerd-e2e-shielded-gci-serial-1.2
+    test_group_name: ci-containerd-e2e-shielded-gci-gce-serial-1-2
   - name: containerd-e2e-ubuntu
     test_group_name: ci-containerd-e2e-ubuntu-gce
   - name: e2e-gci-reboot
