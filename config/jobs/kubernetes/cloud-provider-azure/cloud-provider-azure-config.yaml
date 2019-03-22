@@ -164,7 +164,6 @@ periodics:
     preset-service-account: "true"
     preset-cloudprovider-azure-cred: "true"
     preset-dind-enabled: "true"
-  decorate: true
   extra_refs:
   - org: kubernetes
     repo: cloud-provider-azure
@@ -214,7 +213,6 @@ periodics:
     preset-service-account: "true"
     preset-cloudprovider-azure-cred: "true"
     preset-dind-enabled: "true"
-  decorate: true
   extra_refs:
   - org: kubernetes
     repo: cloud-provider-azure
@@ -267,7 +265,6 @@ periodics:
     preset-service-account: "true"
     preset-cloudprovider-azure-cred: "true"
     preset-dind-enabled: "true"
-  decorate: true
   extra_refs:
   - org: kubernetes
     repo: cloud-provider-azure
