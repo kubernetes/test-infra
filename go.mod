@@ -6,7 +6,6 @@ require (
 	github.com/Azure/azure-sdk-for-go v21.1.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.0.0-20180507052152-66ba96e49ebb
 	github.com/Azure/go-autorest v10.15.5+incompatible
-	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/Microsoft/go-winio v0.4.12 // indirect
 	github.com/NYTimes/gziphandler v0.0.0-20160419202541-63027b26b87e
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
@@ -35,21 +34,18 @@ require (
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/groupcache v0.0.0-20180513044358-24b0969c4cb7 // indirect
-	github.com/golang/mock v1.1.1
+	github.com/golang/mock v1.2.0
 	github.com/golang/protobuf v1.2.0
-	github.com/google/go-github v0.0.0-20170604030111-7a51fb928f52
-	github.com/google/go-querystring v0.0.0-20150414214848-547ef5ac9797 // indirect
+	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/uuid v1.0.0
-	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
 	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/gophercloud/gophercloud v0.0.0-20181215224939-bdd8b1ecd793 // indirect
 	github.com/gorilla/mux v1.6.2 // indirect
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.1.3
-	github.com/gregjones/httpcache v0.0.0-20160524185540-16db777d8ebe
+	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7
 	github.com/hashicorp/errwrap v0.0.0-20141028054710-7554cd9344ce // indirect
 	github.com/hashicorp/go-multierror v0.0.0-20171204182908-b7773ae21874
-	github.com/hashicorp/golang-lru v0.0.0-20180201235237-0fb14efe8c47 // indirect
 	github.com/imdario/mergo v0.0.0-20180119215619-163f41321a19 // indirect
 	github.com/influxdata/influxdb v0.0.0-20161215172503-049f9b42e9a5
 	github.com/jinzhu/gorm v0.0.0-20170316141641-572d0a0ab1eb
@@ -58,6 +54,7 @@ require (
 	github.com/json-iterator/go v1.1.6 // indirect
 	github.com/knative/build v0.2.0
 	github.com/knative/pkg v0.0.0-20181205230426-0e41760cea1d
+	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v1.0.0 // indirect
 	github.com/mailru/easyjson v0.0.0-20171120080333-32fa128f234d // indirect
 	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a // indirect
@@ -70,26 +67,25 @@ require (
 	github.com/pelletier/go-toml v1.2.0
 	github.com/peterbourgon/diskv v0.0.0-20171120014656-2973218375c3
 	github.com/pkg/errors v0.8.1
-	github.com/prometheus/client_golang v0.9.2
+	github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829
 	github.com/qor/inflection v0.0.0-20180308033659-04140366298a // indirect
 	github.com/satori/go.uuid v0.0.0-20160713180306-0aa62d5ddceb
 	github.com/shurcooL/githubv4 v0.0.0-20180925043049-51d7b505e2e9
-	github.com/sirupsen/logrus v1.1.1
+	github.com/sirupsen/logrus v1.2.0
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3
 	github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1 // indirect
-	golang.org/x/crypto v0.0.0-20181015023909-0c41d7ab0a0e
-	golang.org/x/lint v0.0.0-20181026193005-c67002cb31c3
-	golang.org/x/net v0.0.0-20181201002055-351d144fa1fc
-	golang.org/x/oauth2 v0.0.0-20181120190819-8f65e3013eba
-	golang.org/x/sync v0.0.0-20181108010431-42b317875d0f
+	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
+	golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
+	golang.org/x/net v0.0.0-20190311183353-d8887717615a
+	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421
+	golang.org/x/sync v0.0.0-20190227155943-e225da77a7e6
 	golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223 // indirect
-	golang.org/x/time v0.0.0-20180412165947-fbb02b2291d2
-	golang.org/x/tools v0.0.0-20181122213734-04b5d21e00f1
-	google.golang.org/api v0.0.0-20181021000519-a2651947f503
-	google.golang.org/appengine v1.3.0 // indirect
-	google.golang.org/genproto v0.0.0-20181109154231-b5d43981345b
-	google.golang.org/grpc v1.17.0
+	golang.org/x/time v0.0.0-20181108054448-85acf8d2951c
+	golang.org/x/tools v0.0.0-20190312170243-e65039ee4138
+	google.golang.org/api v0.2.0
+	google.golang.org/genproto v0.0.0-20190307195333-5fe7a883aa19
+	google.golang.org/grpc v1.19.0
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v2 v2.2.2
 	k8s.io/api v0.0.0-20181128191700-6db15a15d2d3
