@@ -4824,10 +4824,6 @@ dashboards:
   - name: kubeadm-kind-master
     test_group_name: ci-kubernetes-e2e-kubeadm-kind-master
 
-#TODO remove
-- name: sig-release-1.14-all
-  dashboard_tab: []
-
 - name: sig-release-1.14-blocking
   dashboard_tab:
   - name: build-1.14
