@@ -270,6 +270,7 @@ config_updater:
       name: plugins
     config/jobs/**/*.yaml:
       name: job-config
+      gzip: true
     experiment/test-configmap.txt:
       name: test-configmap
       gzip: true
