@@ -51,7 +51,7 @@ periodics:
         value: "2"
       - name: KUBERNETES_NODE_PLATFORM
         value: "windows"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
       resources:
         requests:
           memory: "8Gi"
@@ -94,7 +94,7 @@ periodics:
         value: "2"
       - name: KUBERNETES_NODE_PLATFORM
         value: "windows"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
 
 - name: ci-kubernetes-e2e-windows-gce-k8sbeta
   decorate: true
@@ -134,7 +134,7 @@ periodics:
         value: "2"
       - name: KUBERNETES_NODE_PLATFORM
         value: "windows"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
 
 - name: ci-kubernetes-e2e-windows-gce-alpha-features
   decorate: true
@@ -176,7 +176,7 @@ periodics:
         value: "2"
       - name: KUBERNETES_NODE_PLATFORM
         value: "windows"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
 
 - name: ci-kubernetes-e2e-windows-gce-serial
   decorate: true
@@ -216,4 +216,4 @@ periodics:
         value: "2"
       - name: KUBERNETES_NODE_PLATFORM
         value: "windows"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master

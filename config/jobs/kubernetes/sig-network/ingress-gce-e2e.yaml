@@ -145,7 +145,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
         args:
         - --repo=k8s.io/ingress-gce=$(PULL_REFS)
         - --root=/go/src/
@@ -167,7 +167,7 @@ postsubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
         args:
         - --repo=k8s.io/ingress-gce=$(PULL_REFS)
         - --root=/go/src/
@@ -191,7 +191,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
       args:
       - --timeout=340
       - --bare
@@ -218,7 +218,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
       args:
       - --timeout=340
       - --bare
@@ -246,7 +246,7 @@ periodics:
     preset-ingress-v1.3-and-above-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
       args:
       - --timeout=340
       - --bare
@@ -270,7 +270,7 @@ periodics:
     preset-ingress-v1.3-and-above-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
       args:
       - --timeout=340
       - --bare
@@ -294,7 +294,7 @@ periodics:
     preset-ingress-v1.3-and-above-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
       args:
       - --timeout=340
       - --bare
@@ -318,7 +318,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
       args:
       - --timeout=340
       - --bare

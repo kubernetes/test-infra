@@ -7,7 +7,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
         command:
         - "./hack/ci/build-all.sh"
   - name: pull-kind-verify
@@ -16,7 +16,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-experimental
         command:
         - "./hack/verify-all.sh"
         env:
@@ -29,7 +29,7 @@ presubmits:
     run_if_changed: ^(go\.mod)|(go\.sum)|(vendor/.*)$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-experimental
         command:
         - "./hack/verify-deps.sh"
   # conformance test against kubernetes master branch with `kind`, skipping
@@ -43,7 +43,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -99,7 +99,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-1.13
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-1.13
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -155,7 +155,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-1.12
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -211,7 +211,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-1.11
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-1.11
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
