@@ -54,8 +54,8 @@ presubmits:
     - ^master$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
-    always_run: false
-    skip_report: true
+    always_run: true
+    skip_report: false
     spec:
       containers:
       - image: gcr.io/cloud-provider-vsphere/ci:523c54f4
@@ -71,8 +71,8 @@ presubmits:
     - ^master$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
-    always_run: false
-    skip_report: true
+    always_run: true
+    skip_report: false
     spec:
       containers:
       - image: gcr.io/cloud-provider-vsphere/ci:523c54f4
@@ -88,8 +88,8 @@ presubmits:
     - ^master$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
-    always_run: false
-    skip_report: true
+    always_run: true
+    skip_report: false
     spec:
       containers:
       - image: gcr.io/cloud-provider-vsphere/ci:523c54f4
@@ -108,8 +108,8 @@ presubmits:
     - ^master$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
-    always_run: false
-    skip_report: true
+    always_run: true
+    skip_report: false
     spec:
       containers:
       - image: gcr.io/cloud-provider-vsphere/ci:523c54f4
