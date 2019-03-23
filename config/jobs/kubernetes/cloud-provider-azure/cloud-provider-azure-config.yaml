@@ -47,7 +47,9 @@ presubmits:
 
   # pull-cloud-provider-azure-e2e runs kubernetes conformance tests.
   - name: pull-cloud-provider-azure-e2e
-    always_run: true
+    # Disable always_run because of https://github.com/kubernetes/test-infra/pull/11887
+    # TODO(feiskyer): enable the tests after it's fixed and published in the image
+    always_run: false
     branches:
     - master
     labels:
