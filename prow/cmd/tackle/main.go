@@ -366,7 +366,7 @@ func selectContext(co contextOptions) (string, error) {
 //
 // If we use the create verb it will fail if the secret already exists.
 // And kubectl will reject the apply verb with a secret.
-func applyCreate(ctx string, ns string, args ...string) error {
+func applyCreate(ctx string, args ...string) error {
 	create := exec.Command("kubectl", append([]string{"--dry-run=true", "--output=yaml", "create"}, args...)...)
 	create.Stderr = os.Stderr
 	obj, err := create.StdoutPipe()
@@ -377,7 +377,7 @@ func applyCreate(ctx string, ns string, args ...string) error {
 	if err := create.Start(); err != nil {
 		return fmt.Errorf("start create: %v", err)
 	}
-	if err := apply(ctx, ns, obj); err != nil {
+	if err := apply(ctx, obj); err != nil {
 		return fmt.Errorf("apply: %v", err)
 	}
 	if err := create.Wait(); err != nil {
@@ -386,8 +386,8 @@ func applyCreate(ctx string, ns string, args ...string) error {
 	return nil
 }
 
-func apply(ctx string, ns string, in io.Reader) error {
-	apply := exec.Command("kubectl", "--context="+ctx, "--namespace="+ns, "apply", "-f", "-")
+func apply(ctx string, in io.Reader) error {
+	apply := exec.Command("kubectl", "--context="+ctx, "apply", "-f", "-")
 	apply.Stderr = os.Stderr
 	apply.Stdout = os.Stdout
 	apply.Stdin = in
@@ -397,12 +397,12 @@ func apply(ctx string, ns string, in io.Reader) error {
 	return apply.Wait()
 }
 
-func applyRoleBinding(context string, namespace string) error {
+func applyRoleBinding(context string) error {
 	who, err := currentAccount()
 	if err != nil {
 		return fmt.Errorf("current account: %v", err)
 	}
-	return applyCreate(context, namespace, "clusterrolebinding", "prow-admin", "--clusterrole=cluster-admin", "--user="+who)
+	return applyCreate(context, "clusterrolebinding", "prow-admin", "--clusterrole=cluster-admin", "--user="+who)
 }
 
 type options struct {
@@ -460,7 +460,7 @@ func githubClient(tokenPath string, dry bool) (*github.Client, error) {
 }
 
 func applySecret(ctx, ns, name, key, path string) error {
-	return applyCreate(ctx, ns, "secret", "generic", name, "--from-file="+key+"="+path)
+	return applyCreate(ctx, "secret", "generic", name, "--from-file="+key+"="+path, "--namespace="+ns)
 }
 
 func applyStarter(kc *kubernetes.Clientset, ns, choice, ctx string, overwrite bool) error {
@@ -494,7 +494,7 @@ func applyStarter(kc *kubernetes.Clientset, ns, choice, ctx string, overwrite bo
 			return errors.New("prow already deployed")
 		}
 	}
-	apply := exec.Command("kubectl", "--context="+ctx, "--namespace="+ns, "apply", "-f", choice)
+	apply := exec.Command("kubectl", "--context="+ctx, "apply", "-f", choice)
 	apply.Stderr = os.Stderr
 	apply.Stdout = os.Stdout
 	return apply.Run()
@@ -774,7 +774,7 @@ func main() {
 	}
 
 	fmt.Println("Applying admin role bindings (to create RBAC rules)...")
-	if err := applyRoleBinding(ctx, "default"); err != nil {
+	if err := applyRoleBinding(ctx); err != nil {
 		logrus.WithError(err).Fatalf("Failed to apply cluster role binding to %s", ctx)
 	}
 
