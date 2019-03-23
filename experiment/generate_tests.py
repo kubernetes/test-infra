@@ -27,8 +27,8 @@ Usage example:
 import argparse
 import hashlib
 import os
-import json
 import ruamel.yaml as yaml
+
 
 # TODO(yguo0905): Generate Prow and testgrid configurations.
 
@@ -73,7 +73,8 @@ def get_args(job_name, field):
 def write_prow_configs_file(output_file, job_defs):
     """Writes the Prow configurations into output_file."""
     with open(output_file, 'w') as fp:
-        json.dump(job_defs, fp)
+        yaml.dump(
+            job_defs, fp, Dumper=yaml.RoundTripDumper, width=float("inf"))
         fp.write('\n')
 
 
