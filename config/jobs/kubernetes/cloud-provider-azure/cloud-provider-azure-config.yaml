@@ -205,6 +205,11 @@ periodics:
       - --timeout=420m
       securityContext:
         privileged: true
+      env:
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: cloud-provider-azure
 
 - interval: 8h
   # ci-cloud-provider-azure-autoscaling runs node autoscaling tests periodically.
@@ -257,6 +262,10 @@ periodics:
       env:
       - name: CCM_E2E_ARGS
         value: "-ginkgo.focus=autoscaler"
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: cloud-provider-azure
 
 - interval: 8h
   # ci-cloud-provider-azure-conformance runs Kubernetes conformance tests periodically.
@@ -306,3 +315,8 @@ periodics:
       - --timeout=420m
       securityContext:
         privileged: true
+      env:
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: cloud-provider-azure
