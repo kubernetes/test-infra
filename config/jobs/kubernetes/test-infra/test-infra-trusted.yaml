@@ -58,7 +58,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master # whatever image you use here must have bash 4.4+
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master # whatever image you use here must have bash 4.4+
         command:
         - prow/push.sh
         env:

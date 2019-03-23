@@ -34,7 +34,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
