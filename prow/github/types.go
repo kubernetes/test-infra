@@ -340,6 +340,7 @@ type HookConfig struct {
 	URL         string  `json:"url"`
 	ContentType *string `json:"content_type,omitempty"`
 	Secret      *string `json:"secret,omitempty"`
+	InsecureSSL *string `json:"insecure_ssl,omitempty"`
 }
 
 // Hook holds info about the webhook configuration.
