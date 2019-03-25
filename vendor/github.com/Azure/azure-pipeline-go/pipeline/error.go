@@ -21,13 +21,13 @@ type ErrorNode struct {
 // Error returns a string with the PC's symbols or "" if the PC is invalid.
 // When defining a new error type, have its Error method call this one passing
 // it the string representation of the error.
-func (e *ErrorNode) Error(format string, v ...interface{}) string {
+func (e *ErrorNode) Error(msg string) string {
 	s := ""
 	if fn := runtime.FuncForPC(e.pc); fn != nil {
 		file, line := fn.FileLine(e.pc)
 		s = fmt.Sprintf("-> %v, %v:%v\n", fn.Name(), file, line)
 	}
-	s += fmt.Sprintf(format, v...) + "\n\n"
+	s += msg + "\n\n"
 	if e.cause != nil {
 		s += e.cause.Error() + "\n"
 	}
@@ -103,10 +103,10 @@ func Cause(err error) error {
 
 // NewError creates a simple string error (like Error.New). But, this
 // error also captures the caller's Program Counter and the preceding error.
-func NewError(cause error, format string, v ...interface{}) error {
+func NewError(cause error, msg string) error {
 	return &pcError{
 		ErrorNode: ErrorNode{}.Initialize(cause, 3),
-		msg:       fmt.Sprintf(format, v...),
+		msg:       msg,
 	}
 }
 

@@ -546,8 +546,8 @@ go_repository(
 
 go_repository(
     name = "com_github_azure_azure_pipeline_go",
-    commit = "098e490af5dc",
     importpath = "github.com/Azure/azure-pipeline-go",
+    tag = "v0.1.8",
 )
 
 go_repository(
@@ -558,7 +558,7 @@ go_repository(
 
 go_repository(
     name = "com_github_azure_azure_storage_blob_go",
-    commit = "66ba96e49ebb",
+    commit = "457680cc0804",
     importpath = "github.com/Azure/azure-storage-blob-go",
 )
 

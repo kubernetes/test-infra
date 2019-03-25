@@ -4,9 +4,8 @@ replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190301231843-5614ed
 
 require (
 	cloud.google.com/go v0.37.1
-	github.com/Azure/azure-pipeline-go v0.0.0-20180507050906-098e490af5dc // indirect
 	github.com/Azure/azure-sdk-for-go v21.1.0+incompatible
-	github.com/Azure/azure-storage-blob-go v0.0.0-20180507052152-66ba96e49ebb
+	github.com/Azure/azure-storage-blob-go v0.0.0-20190123011202-457680cc0804
 	github.com/Azure/go-autorest v10.15.5+incompatible
 	github.com/Microsoft/go-winio v0.4.12 // indirect
 	github.com/NYTimes/gziphandler v0.0.0-20160419202541-63027b26b87e
