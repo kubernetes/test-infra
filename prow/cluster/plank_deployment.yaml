@@ -33,7 +33,6 @@ spec:
       - name: plank
         image: gcr.io/k8s-prow/plank:v20190323-fbd93251f
         args:
-        - --tot-url=http://tot
         - --build-cluster=/etc/cluster/cluster
         - --dry-run=false
         - --github-endpoint=http://ghproxy
