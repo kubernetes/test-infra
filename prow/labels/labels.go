@@ -34,6 +34,7 @@ const (
 	LifecycleFrozen = "lifecycle/frozen"
 	LifecycleRotten = "lifecycle/rotten"
 	LifecycleStale  = "lifecycle/stale"
+	MergeCommits    = "do-not-merge/contains-merge-commits"
 	NeedsOkToTest   = "needs-ok-to-test"
 	NeedsRebase     = "needs-rebase"
 	NeedsSig        = "needs-sig"
