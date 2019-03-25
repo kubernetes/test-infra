@@ -459,8 +459,8 @@ func githubClient(tokenPath string, dry bool) (*github.Client, error) {
 	return github.NewClient(gen, "https://api.github.com"), nil
 }
 
-func applySecret(ctx, name, key, path string) error {
-	return applyCreate(ctx, "secret", "generic", name, "--from-file="+key+"="+path)
+func applySecret(ctx, ns, name, key, path string) error {
+	return applyCreate(ctx, "secret", "generic", name, "--from-file="+key+"="+path, "--namespace="+ns)
 }
 
 func applyStarter(kc *kubernetes.Clientset, ns, choice, ctx string, overwrite bool) error {
@@ -498,6 +498,15 @@ func applyStarter(kc *kubernetes.Clientset, ns, choice, ctx string, overwrite bo
 	apply.Stderr = os.Stderr
 	apply.Stdout = os.Stdout
 	return apply.Run()
+}
+
+func clientConfigNamespace(context string) (string, bool, error) {
+	loader, cfg, err := contextConfig()
+	if err != nil {
+		return "", false, fmt.Errorf("load contexts: %v", err)
+	}
+
+	return clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, loader).Namespace()
 }
 
 func clientConfig(context string) (*rest.Config, error) {
@@ -758,9 +767,20 @@ func main() {
 	opt := addFlags(fs)
 	fs.Parse(os.Args[1:])
 
+	const ns = "default"
+
 	ctx, err := selectContext(opt.contextOptions)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to select context")
+	}
+
+	ctxNamespace, _, err := clientConfigNamespace(ctx)
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to reload ~/.kube/config from any obvious location")
+	}
+
+	if ctxNamespace != ns {
+		logrus.Warnf("Context %s specifies namespace %s, but Prow resources will be installed in namespace %s.", ctx, ctxNamespace, ns)
 	}
 
 	// get kubernetes client
@@ -768,6 +788,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to reload ~/.kube/config from any obvious location")
 	}
+
 	kc, err := kubernetes.NewForConfig(clientCfg)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to create kubernetes client")
@@ -778,7 +799,6 @@ func main() {
 		logrus.WithError(err).Fatalf("Failed to apply cluster role binding to %s", ctx)
 	}
 
-	const ns = "default"
 	// configure plugins.yaml and config.yaml
 	// TODO(fejta): throw up an editor
 	if err = ensureConfigMap(kc, ns, "config", "config.yaml"); err != nil {
@@ -812,7 +832,7 @@ func main() {
 
 		// create github secrets
 		fmt.Print("Applying github token into oauth-token secret...")
-		if err := applySecret(ctx, "oauth-token", "oauth", token); err != nil {
+		if err := applySecret(ctx, ns, "oauth-token", "oauth", token); err != nil {
 			logrus.WithError(err).Fatal("Could not apply github oauth token secret")
 		}
 
