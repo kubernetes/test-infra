@@ -123,8 +123,6 @@ branch-protection:
             required_approving_review_count: 1
         git-sync:
           enforce_admins: true
-          required_status_checks:
-            strict: true
           restrictions: # only allow admins
             users: []
             teams: []
