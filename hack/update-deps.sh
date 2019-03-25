@@ -24,7 +24,6 @@
 set -o nounset
 set -o errexit
 set -o pipefail
-set -o xtrace
 
 cd "$(git rev-parse --show-toplevel)"
 trap 'echo "FAILED" >&2' ERR
@@ -44,15 +43,23 @@ prune-vendor() {
     -delete
 }
 
-case "${1:-}" in
+mode="${1:-}"
+shift || true
+case "$mode" in
 --minor)
-    bazel run //:update-minor
+    bazel run //:update-minor -- "$@"
     ;;
 --patch)
-    bazel run //:update-patch
+    bazel run //:update-patch -- "$@"
+    ;;
+"")
+    # Just validate, or maybe manual go.mod edit
+    ;;
+*)
+    echo "Usage: $(basename "$0") [--patch|--minor] [packages]" >&2
+    exit 1
     ;;
 esac
-
 
 rm -rf vendor
 export GO111MODULE=on
