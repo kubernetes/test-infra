@@ -27,6 +27,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -68,6 +69,7 @@ func flagOptions() options {
 	flag.IntVar(&o.ceiling, "ceiling", 3, "Maximum number of issues to modify, 0 for infinite")
 	flag.Var(&o.endpoint, "endpoint", "GitHub's API endpoint")
 	flag.StringVar(&o.token, "token", "", "Path to github token")
+	flag.BoolVar(&o.random, "random", false, "Choose random issues to comment on from the query")
 	flag.Parse()
 	return o
 }
@@ -91,6 +93,7 @@ type options struct {
 	token         string
 	updated       time.Duration
 	confirm       bool
+	random        bool
 }
 
 func parseHTMLURL(url string) (string, string, int, error) {
@@ -174,7 +177,7 @@ func main() {
 		asc = true
 	}
 	commenter := makeCommenter(o.comment, o.useTemplate)
-	if err := run(c, query, sort, asc, commenter, o.ceiling); err != nil {
+	if err := run(c, query, sort, asc, o.random, commenter, o.ceiling); err != nil {
 		log.Fatalf("Failed run: %v", err)
 	}
 }
@@ -193,7 +196,7 @@ func makeCommenter(comment string, useTemplate bool) func(meta) (string, error) 
 	}
 }
 
-func run(c client, query, sort string, asc bool, commenter func(meta) (string, error), ceiling int) error {
+func run(c client, query, sort string, asc, random bool, commenter func(meta) (string, error), ceiling int) error {
 	log.Printf("Searching: %s", query)
 	issues, err := c.FindIssues(query, sort, asc)
 	if err != nil {
@@ -201,6 +204,14 @@ func run(c client, query, sort string, asc bool, commenter func(meta) (string, e
 	}
 	problems := []string{}
 	log.Printf("Found %d matches", len(issues))
+	if random {
+		dest := make([]github.Issue, len(issues))
+		perm := rand.Perm(len(issues))
+		for i, v := range perm {
+			dest[v] = issues[i]
+		}
+		issues = dest
+	}
 	for n, i := range issues {
 		if ceiling > 0 && n == ceiling {
 			log.Printf("Stopping at --ceiling=%d of %d results", n, len(issues))
