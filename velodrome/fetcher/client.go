@@ -173,10 +173,10 @@ func (client *Client) FetchIssues(latest time.Time, c chan *github.Issue) {
 	close(c)
 }
 
-// hasID look for a specific Id in a list of events
-func hasID(events []*github.IssueEvent, ID int) bool {
+// hasID look for a specific id in a list of events
+func hasID(events []*github.IssueEvent, id int) bool {
 	for _, event := range events {
-		if *event.ID == ID {
+		if *event.ID == int64(id) {
 			return true
 		}
 	}

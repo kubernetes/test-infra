@@ -15,6 +15,7 @@ go_library(
     importmap = "k8s.io/test-infra/vendor/go.opencensus.io/tag",
     importpath = "go.opencensus.io/tag",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/go.opencensus.io/exemplar:go_default_library"],
 )
 
 filegroup(

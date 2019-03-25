@@ -63,7 +63,7 @@ func (client FakeClient) FetchPullComments(issueID int, latest time.Time, c chan
 	close(c)
 }
 
-func createIssueEvent(ID int) *github.IssueEvent {
+func createIssueEvent(ID int64) *github.IssueEvent {
 	return &github.IssueEvent{ID: &ID}
 }
 
