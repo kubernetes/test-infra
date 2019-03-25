@@ -302,6 +302,8 @@ periodics:
       - --confirm=true
       - --orgs=kubernetes,kubernetes-client,kubernetes-csi,kubernetes-incubator,kubernetes-sigs
       - --token=/etc/github/oauth
+      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - --endpoint=https://api.github.com
       - --debug
       volumeMounts:
       - name: oauth
