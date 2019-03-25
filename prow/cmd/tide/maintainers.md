@@ -6,6 +6,7 @@
 1. Try to limit the total number of queries that you configure. Individual queries can cover many repos and include many criteria without using additional API tokens, but separate queries each require additional API tokens.
 1. Ensure that merge requirements configured in GitHub match the merge requirements configured for Tide. If the requirements differ, Tide may try to merge a PR that GitHub considers unmergeable.
 1. If you are using the `lgtm` plugin and requiring the `lgtm` label for merge, don't make queries exclude the `needs-ok-to-test` label. The `lgtm` plugin triggers one round of testing when applied to an untrusted PR and removes the `lgtm` label if the PR changes so it indicates to Tide that the current version of the PR is considered trusted and can be retested safely.
+1. Do not enable the "Require branches to be up to date before merging" GitHub setting for repos managed by Tide. This requires all PRs to be rebased before merge so that PRs are always simple fast-forwards. This is a simplistic way to ensure that PRs are tested against the most recent base branch commit, but Tide already provides this guarantee through a more sophisticated mechanism that does not force PR authors to rebase their PR whenever another PR merges first. Enabling this GH setting may cause unexpected Tide behavior, provides absolutely no benefit over Tide's natural behavior, and forces PR author's to needlessly rebase their PRs. Don't use it on Tide managed repos.
 
 ## Expected behavior that might seem strange
 
