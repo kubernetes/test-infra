@@ -84,6 +84,7 @@ func (o *options) warningEnabled(warning string) bool {
 
 const (
 	mismatchedTideWarning   = "mismatched-tide"
+	tideStrictBranchWarning = "tide-strict-branch"
 	nonDecoratedJobsWarning = "non-decorated-jobs"
 	jobNameLengthWarning    = "long-job-names"
 	needsOkToTestWarning    = "needs-ok-to-test"
@@ -222,9 +223,101 @@ func main() {
 			errs = append(errs, err)
 		}
 	}
+	if o.warningEnabled(tideStrictBranchWarning) {
+		if err := validateStrictBranches(cfg.ProwConfig); err != nil {
+			errs = append(errs, err)
+		}
+	}
 	if len(errs) > 0 {
 		reportWarning(o.strict, errorutil.NewAggregate(errs...))
 	}
+}
+func policyIsStrict(p config.Policy) bool {
+	if p.Protect == nil || !*p.Protect {
+		return false
+	}
+	if p.RequiredStatusChecks == nil || p.RequiredStatusChecks.Strict == nil {
+		return false
+	}
+	return *p.RequiredStatusChecks.Strict
+}
+
+func strictBranchesConfig(c config.ProwConfig) (*orgRepoConfig, error) {
+	strictOrgExceptions := make(map[string]sets.String)
+	strictRepos := sets.NewString()
+	for orgName := range c.BranchProtection.Orgs {
+		org := c.BranchProtection.GetOrg(orgName)
+		// First find explicitly configured repos and partition based on strictness.
+		// If any branch in a repo is strict we assume that the whole repo is to
+		// simplify this validation.
+		strictExplicitRepos, nonStrictExplicitRepos := sets.NewString(), sets.NewString()
+		for repoName := range org.Repos {
+			repo := org.GetRepo(repoName)
+			strict := policyIsStrict(repo.Policy)
+			if !strict {
+				for branchName := range repo.Branches {
+					branch, err := repo.GetBranch(branchName)
+					if err != nil {
+						return nil, err
+					}
+					if policyIsStrict(branch.Policy) {
+						strict = true
+						break
+					}
+				}
+			}
+			fullRepoName := fmt.Sprintf("%s/%s", orgName, repoName)
+			if strict {
+				strictExplicitRepos.Insert(fullRepoName)
+			} else {
+				nonStrictExplicitRepos.Insert(fullRepoName)
+			}
+		}
+		// Done partitioning the repos.
+
+		if policyIsStrict(org.Policy) {
+			// This org is strict, record with repo exceptions (blacklist).
+			strictOrgExceptions[orgName] = nonStrictExplicitRepos
+		} else {
+			// The org is not strict, record member repos that are (whitelist).
+			strictRepos.Insert(strictExplicitRepos.UnsortedList()...)
+		}
+	}
+	return newOrgRepoConfig(strictOrgExceptions, strictRepos), nil
+}
+
+func validateStrictBranches(c config.ProwConfig) error {
+	const explanation = "See #5: https://github.com/kubernetes/test-infra/blob/master/prow/cmd/tide/maintainers.md#best-practices Also note that this validation is imperfect, see the check-config code for details"
+	if len(c.Tide.Queries) == 0 {
+		// Short circuit here so that we can allow global level branchprotector
+		// 'strict: true' if Tide is not enabled.
+		// Ignoring the case where Tide is enabled only on orgs/repos specifically
+		// exempted from the global setting simplifies validation immensely.
+		return nil
+	}
+	if policyIsStrict(c.BranchProtection.Policy) {
+		return fmt.Errorf("strict branchprotection context requirements cannot be globally enabled when Tide is configured for use. %s", explanation)
+	}
+	// The two assumptions below are not necessarily true, but they hold for all
+	// known instances and make this validation much simpler.
+
+	// Assumes if any branch is managed by Tide, the whole repo is.
+	overallTideConfig := newOrgRepoConfig(c.Tide.Queries.OrgExceptionsAndRepos())
+	// Assumes if any branch is strict the repo is strict.
+	strictBranchConfig, err := strictBranchesConfig(c)
+	if err != nil {
+		return err
+	}
+
+	conflicts := overallTideConfig.intersection(strictBranchConfig).items()
+	if len(conflicts) == 0 {
+		return nil
+	}
+	return fmt.Errorf(
+		"the following enable strict branchprotection context requirements even though Tide handles merges: [%s]. %s",
+		strings.Join(conflicts, "; "),
+		explanation,
+	)
 }
 
 func validateURLs(c config.ProwConfig) error {

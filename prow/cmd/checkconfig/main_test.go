@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/diff"
@@ -506,6 +507,356 @@ size:
 			if !reflect.DeepEqual(got, tc.expectedErr) {
 				t.Errorf("%s: did not get expected validation error:\n%v", tc.name,
 					diff.ObjectGoPrintDiff(tc.expectedErr, got))
+			}
+		})
+	}
+}
+
+func TestValidateStrictBranches(t *testing.T) {
+	trueVal := true
+	falseVal := false
+	testcases := []struct {
+		name   string
+		config config.ProwConfig
+
+		errItems []string
+		okItems  []string
+	}{
+		{
+			name: "no conflict: no strict config",
+			config: config.ProwConfig{
+				Tide: config.Tide{
+					Queries: []config.TideQuery{
+						{
+							Orgs: []string{"kubernetes"},
+						},
+					},
+				},
+			},
+			errItems: []string{},
+			okItems:  []string{"kubernetes"},
+		},
+		{
+			name: "no conflict: no tide config",
+			config: config.ProwConfig{
+				BranchProtection: config.BranchProtection{
+					Orgs: map[string]config.Org{
+						"kubernetes": {
+							Policy: config.Policy{
+								Protect: &trueVal,
+								RequiredStatusChecks: &config.ContextPolicy{
+									Strict: &trueVal,
+								},
+							},
+						},
+					},
+				},
+			},
+			errItems: []string{},
+			okItems:  []string{"kubernetes"},
+		},
+		{
+			name: "no conflict: tide repo exclusion",
+			config: config.ProwConfig{
+				Tide: config.Tide{
+					Queries: []config.TideQuery{
+						{
+							Orgs:          []string{"kubernetes"},
+							ExcludedRepos: []string{"kubernetes/test-infra"},
+						},
+					},
+				},
+				BranchProtection: config.BranchProtection{
+					Orgs: map[string]config.Org{
+						"kubernetes": {
+							Policy: config.Policy{
+								Protect: &falseVal,
+							},
+							Repos: map[string]config.Repo{
+								"test-infra": {
+									Policy: config.Policy{
+										Protect: &trueVal,
+										RequiredStatusChecks: &config.ContextPolicy{
+											Strict: &trueVal,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			errItems: []string{},
+			okItems:  []string{"kubernetes", "kubernetes/test-infra"},
+		},
+		{
+			name: "no conflict: protection repo exclusion",
+			config: config.ProwConfig{
+				Tide: config.Tide{
+					Queries: []config.TideQuery{
+						{
+							Repos: []string{"kubernetes/test-infra"},
+						},
+					},
+				},
+				BranchProtection: config.BranchProtection{
+					Orgs: map[string]config.Org{
+						"kubernetes": {
+							Policy: config.Policy{
+								Protect: &trueVal,
+								RequiredStatusChecks: &config.ContextPolicy{
+									Strict: &trueVal,
+								},
+							},
+							Repos: map[string]config.Repo{
+								"test-infra": {
+									Policy: config.Policy{
+										Protect: &falseVal,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			errItems: []string{},
+			okItems:  []string{"kubernetes", "kubernetes/test-infra"},
+		},
+		{
+			name: "conflict: tide more general",
+			config: config.ProwConfig{
+				Tide: config.Tide{
+					Queries: []config.TideQuery{
+						{
+							Orgs: []string{"kubernetes"},
+						},
+					},
+				},
+				BranchProtection: config.BranchProtection{
+					Policy: config.Policy{
+						Protect: &trueVal,
+					},
+					Orgs: map[string]config.Org{
+						"kubernetes": {
+							Repos: map[string]config.Repo{
+								"test-infra": {
+									Policy: config.Policy{
+										Protect: &trueVal,
+										RequiredStatusChecks: &config.ContextPolicy{
+											Strict: &trueVal,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			errItems: []string{"kubernetes/test-infra"},
+			okItems:  []string{"kubernetes"},
+		},
+		{
+			name: "conflict: tide more specific",
+			config: config.ProwConfig{
+				Tide: config.Tide{
+					Queries: []config.TideQuery{
+						{
+							Repos: []string{"kubernetes/test-infra"},
+						},
+					},
+				},
+				BranchProtection: config.BranchProtection{
+					Policy: config.Policy{
+						Protect: &trueVal,
+					},
+					Orgs: map[string]config.Org{
+						"kubernetes": {
+							Policy: config.Policy{
+								RequiredStatusChecks: &config.ContextPolicy{
+									Strict: &trueVal,
+								},
+							},
+						},
+					},
+				},
+			},
+			errItems: []string{"kubernetes/test-infra"},
+			okItems:  []string{"kubernetes"},
+		},
+		{
+			name: "conflict: org level",
+			config: config.ProwConfig{
+				Tide: config.Tide{
+					Queries: []config.TideQuery{
+						{
+							Orgs: []string{"kubernetes", "k8s"},
+						},
+					},
+				},
+				BranchProtection: config.BranchProtection{
+					Policy: config.Policy{
+						Protect: &trueVal,
+					},
+					Orgs: map[string]config.Org{
+						"kubernetes": {
+							Policy: config.Policy{
+								RequiredStatusChecks: &config.ContextPolicy{
+									Strict: &trueVal,
+								},
+							},
+						},
+					},
+				},
+			},
+			errItems: []string{"kubernetes"},
+			okItems:  []string{"k8s"},
+		},
+		{
+			name: "conflict: repo level",
+			config: config.ProwConfig{
+				Tide: config.Tide{
+					Queries: []config.TideQuery{
+						{
+							Repos: []string{"kubernetes/kubernetes"},
+						},
+						{
+							Repos: []string{"kubernetes/test-infra"},
+						},
+					},
+				},
+				BranchProtection: config.BranchProtection{
+					Policy: config.Policy{
+						Protect: &trueVal,
+					},
+					Orgs: map[string]config.Org{
+						"kubernetes": {
+							Repos: map[string]config.Repo{
+								"kubernetes": {
+									Policy: config.Policy{
+										RequiredStatusChecks: &config.ContextPolicy{
+											Strict: &trueVal,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			errItems: []string{"kubernetes/kubernetes"},
+			okItems:  []string{"kubernetes", "kubernetes/test-infra"},
+		},
+		{
+			name: "conflict: branch level",
+			config: config.ProwConfig{
+				Tide: config.Tide{
+					Queries: []config.TideQuery{
+						{
+							Repos:            []string{"kubernetes/test-infra"},
+							IncludedBranches: []string{"master"},
+						},
+						{
+							Repos: []string{"kubernetes/kubernetes"},
+						},
+					},
+				},
+				BranchProtection: config.BranchProtection{
+					Policy: config.Policy{
+						Protect: &trueVal,
+					},
+					Orgs: map[string]config.Org{
+						"kubernetes": {
+							Repos: map[string]config.Repo{
+								"test-infra": {
+									Branches: map[string]config.Branch{
+										"master": {
+											Policy: config.Policy{
+												RequiredStatusChecks: &config.ContextPolicy{
+													Strict: &trueVal,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			errItems: []string{"kubernetes/test-infra"},
+			okItems:  []string{"kubernetes", "kubernetes/kubernetes"},
+		},
+		{
+			name: "conflict: global strict",
+			config: config.ProwConfig{
+				Tide: config.Tide{
+					Queries: []config.TideQuery{
+						{
+							Repos: []string{"kubernetes/test-infra"},
+						},
+					},
+				},
+				BranchProtection: config.BranchProtection{
+					Policy: config.Policy{
+						Protect: &trueVal,
+						RequiredStatusChecks: &config.ContextPolicy{
+							Strict: &trueVal,
+						},
+					},
+				},
+			},
+			errItems: []string{"global"},
+			okItems:  []string{},
+		},
+		{
+			name: "no conflict: global strict, Tide disabled",
+			config: config.ProwConfig{
+				BranchProtection: config.BranchProtection{
+					Policy: config.Policy{
+						Protect: &trueVal,
+						RequiredStatusChecks: &config.ContextPolicy{
+							Strict: &trueVal,
+						},
+					},
+				},
+			},
+			errItems: []string{},
+			okItems:  []string{"global"},
+		},
+	}
+	for i := range testcases {
+		t.Run(testcases[i].name, func(t *testing.T) {
+			tc := testcases[i]
+			t.Parallel()
+			err := validateStrictBranches(tc.config)
+			if err == nil && len(tc.errItems) > 0 {
+				t.Errorf("Expected errors for the following items, but didn't see an error: %v.", tc.errItems)
+			} else if err != nil && len(tc.errItems) == 0 {
+				t.Errorf("Unexpected error: %v.", err)
+			}
+			if err == nil {
+				return
+			}
+			errText := err.Error()
+			for _, errItem := range tc.errItems {
+				// Search for the token while explicitly forbidding neighboring slashes
+				// so that orgs don't match member repos.
+				re, err := regexp.Compile(fmt.Sprintf("[^/]%s[^/]", errItem))
+				if err != nil {
+					t.Fatalf("Unexpected error compiling regexp: %v.", err)
+				}
+				if !re.MatchString(errText) {
+					t.Errorf("Error did not reference expected error item %q: %q.", errItem, errText)
+				}
+			}
+			for _, okItem := range tc.okItems {
+				re, err := regexp.Compile(fmt.Sprintf("[^/]%s[^/]", okItem))
+				if err != nil {
+					t.Fatalf("Unexpected error compiling regexp: %v.", err)
+				}
+				if re.MatchString(errText) {
+					t.Errorf("Error unexpectedly included ok item %q: %q.", okItem, errText)
+				}
 			}
 		})
 	}
