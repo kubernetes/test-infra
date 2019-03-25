@@ -302,6 +302,7 @@ periodics:
       - --confirm=true
       - --orgs=kubernetes,kubernetes-client,kubernetes-csi,kubernetes-incubator,kubernetes-sigs
       - --token=/etc/github/oauth
+      - --debug
       volumeMounts:
       - name: oauth
         mountPath: /etc/github
