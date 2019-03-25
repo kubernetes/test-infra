@@ -352,3 +352,14 @@ func (r *Repo) Diff(head, sha string) (changes []string, err error) {
 	}
 	return
 }
+
+// MergeCommitsExistBetween runs 'git log <target>..<head> --merged' to verify
+// if merge commits exist between "target" and "head".
+func (r *Repo) MergeCommitsExistBetween(target, head string) (bool, error) {
+	r.logger.Infof("Verifying if merge commits exist between %s and %s.", target, head)
+	b, err := r.gitCommand("log", fmt.Sprintf("%s..%s", target, head), "--oneline", "--merges").CombinedOutput()
+	if err != nil {
+		return false, fmt.Errorf("error verifying if merge commits exist between %s and %s: %v. output: %s", target, head, err, string(b))
+	}
+	return len(b) != 0, nil
+}
