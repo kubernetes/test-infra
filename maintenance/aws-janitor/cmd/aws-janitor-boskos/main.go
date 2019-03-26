@@ -33,7 +33,10 @@ import (
 )
 
 var (
-	boskosURL = flag.String("boskos-url", "http://boskos", "Boskos URL")
+	boskosURL          = flag.String("boskos-url", "http://boskos", "Boskos URL")
+	sweepCount         = flag.Int("sweep-count", 3, "Number of times to sweep the resources")
+	sweepSleep         = flag.String("sweep-sleep", "30s", "The duration to pause between sweeps")
+	sweepSleepDuration time.Duration
 )
 
 const (
@@ -42,11 +45,18 @@ const (
 
 func main() {
 	flag.Parse()
+	if d, err := time.ParseDuration(*sweepSleep); err != nil {
+		sweepSleepDuration = time.Second * 30
+	} else {
+		sweepSleepDuration = d
+	}
+
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 
 	boskos := client.NewClient("AWSJanitor", *boskosURL)
-	err := run(boskos)
-	logrus.WithError(err).Error("Janitor failure")
+	if err := run(boskos); err != nil {
+		logrus.WithError(err).Error("Janitor failure")
+	}
 }
 
 func run(boskos *client.Client) error {
@@ -83,8 +93,15 @@ func cleanResource(res *common.Resource) error {
 	logrus.WithField("name", res.Name).Info("beginning cleaning")
 	start := time.Now()
 
-	if err := resources.CleanAll(s, regions.Default); err != nil {
-		return errors.Wrapf(err, "Failed to clean resource %q", res.Name)
+	for i := 0; i < *sweepCount; i++ {
+		if err := resources.CleanAll(s, regions.Default); err != nil {
+			if i == *sweepCount-1 {
+				logrus.WithError(err).Warningf("Failed to clean resource %q", res.Name)
+			}
+		}
+		if i < *sweepCount-1 {
+			time.Sleep(sweepSleepDuration)
+		}
 	}
 
 	duration := time.Since(start)
