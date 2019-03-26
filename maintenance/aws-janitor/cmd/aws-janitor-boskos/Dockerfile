@@ -21,5 +21,4 @@ RUN apt-get -y update && \
 
 COPY aws-janitor-boskos /usr/local/bin/
 
-CMD ["aws-janitor-boskos"]
-ENTRYPOINT ["/bin/bash", "-c"]
+ENTRYPOINT ["/bin/sh", "-c", "/bin/echo started && /usr/local/bin/aws-janitor-boskos \"$@\"", "--"]
