@@ -92,7 +92,6 @@ spec:
       terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-janitor-aws
-        # TODO: Update this with a proper tag once the image has been built
-        image: gcr.io/k8s-testimages/janitor-aws:latest
+        image: gcr.io/k8s-testimages/janitor-aws:v20190326-69c06be4f
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
