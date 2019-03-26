@@ -5640,6 +5640,9 @@ dashboards:
 
 - name: sig-big-data
   dashboard_tab:
+  - name: kubeflow-periodic-0-5-branch
+    description: Periodic testing of Kubeflow on the 0-5 release branch.
+    test_group_name: kubeflow-periodic-0-5-branch
   - name: kubeflow-periodic-0-4-branch
     description: Periodic testing of Kubeflow on the 0-4 release branch.
     test_group_name: kubeflow-periodic-0-4-branch
