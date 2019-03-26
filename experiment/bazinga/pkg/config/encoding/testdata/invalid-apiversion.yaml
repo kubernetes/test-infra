@@ -1,0 +1,3 @@
+# This file contains an invalid config API version for testing
+kind: Bazonga
+apiVersion: not-valid

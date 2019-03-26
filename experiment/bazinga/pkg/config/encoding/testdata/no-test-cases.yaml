@@ -1,0 +1,5 @@
+# This file contains a valid config API version for testing
+kind: App
+apiVersion: bazinga.test-infra.k8s.io/v1alpha0
+testSuites:
+- name: bazinga

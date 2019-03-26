@@ -14,15 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package hack
-
-// +build tools
-
-// Add tools that hack scripts depend on here, to ensure they are vendored.
-import (
-	_ "k8s.io/code-generator/cmd/client-gen"
-	_ "k8s.io/code-generator/cmd/deepcopy-gen"
-	_ "k8s.io/code-generator/cmd/defaulter-gen"
-	_ "k8s.io/code-generator/cmd/informer-gen"
-	_ "k8s.io/code-generator/cmd/lister-gen"
-)
+// Package config implements the current apiVersion of the `bazinga`
+// Config along with some common abstractions
+//
+// +k8s:deepcopy-gen=package
+// +k8s:defaulter-gen=TypeMeta
+package config

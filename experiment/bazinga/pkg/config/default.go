@@ -14,15 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package hack
+package config
 
-// +build tools
-
-// Add tools that hack scripts depend on here, to ensure they are vendored.
 import (
-	_ "k8s.io/code-generator/cmd/client-gen"
-	_ "k8s.io/code-generator/cmd/deepcopy-gen"
-	_ "k8s.io/code-generator/cmd/defaulter-gen"
-	_ "k8s.io/code-generator/cmd/informer-gen"
-	_ "k8s.io/code-generator/cmd/lister-gen"
+	"fmt"
+	"path/filepath"
+
+	"k8s.io/apimachinery/pkg/runtime"
 )
+
+func addDefaultingFuncs(scheme *runtime.Scheme) error {
+	return RegisterDefaults(scheme)
+}
+
+// SetDefaults_App sets uninitialized fields to their default value.
+func SetDefaults_App(obj *App) {
+	if obj.Output == "" {
+		matches, _ := filepath.Glob("junit_*.xml")
+		obj.Output = fmt.Sprintf("junit_%d.xml", len(matches)+1)
+	}
+}

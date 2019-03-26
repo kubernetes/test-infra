@@ -1,0 +1,7 @@
+# This file contains a valid config API version for testing
+kind: App
+apiVersion: bazinga.test-infra.k8s.io/v1alpha0
+failureConditions:
+- category: FAILURE
+  pattern: ^.*\[FAIL(ED|URE)?\]).*$
+  flags: 1 # FoldCase

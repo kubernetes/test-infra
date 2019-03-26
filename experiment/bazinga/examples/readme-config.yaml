@@ -1,0 +1,28 @@
+kind: App
+apiVersion: bazinga.test-infra.k8s.io/v1alpha0
+output: junit_1.xml
+testSuites:
+- name: two-test-cases
+  testCases:
+  - name: list-files
+    class: shell
+    command: /bin/ls
+    args:
+    - -a
+    - -l
+  - name: test-failure-conditions
+    class: shell
+    command: /usr/bin/printf
+    args:
+    - '%s\n%s\n%s\n%s\n'
+    - why
+    - has this test [FAILED]?
+    - with not just one [error], but
+    - two!
+    failureConditions:
+    - category: FAILURE
+      pattern: ^.*\[FAIL(ED|URE)?\].*$
+      flags: 1 # FoldCase
+    - category: ERROR
+      pattern: ^.*\[ERROR].*$
+      flags: 1 # FoldCase

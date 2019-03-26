@@ -52,6 +52,7 @@ filegroup(
         ":package-srcs",
         "//experiment/add-hook:all-srcs",
         "//experiment/aws-stockout:all-srcs",
+        "//experiment/bazinga:all-srcs",
         "//experiment/ci-janitor:all-srcs",
         "//experiment/coverage:all-srcs",
         "//experiment/manual-trigger:all-srcs",
