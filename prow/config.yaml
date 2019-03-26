@@ -448,6 +448,7 @@ tide:
   blocker_label: merge-blocker
   squash_label: tide/squash
   context_options:
+    from-branch-protection: true
     optional-contexts:
     - "Submit Queue"
     orgs:
