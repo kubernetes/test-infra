@@ -284,11 +284,10 @@ func getSubCfg(key string, cfg reflect.Value) reflect.Value {
 	}
 	switch cfgElem.Kind() {
 	case reflect.Map:
-		iter := cfgElem.MapRange()
-		for iter.Next() {
-			k := fmt.Sprintf("%v", iter.Key().Interface())
-			if k == key {
-				return iter.Value()
+		for _, k := range cfgElem.MapKeys() {
+			strK := fmt.Sprintf("%v", k.Interface())
+			if strK == key {
+				return cfgElem.MapIndex(k)
 			}
 		}
 	case reflect.Struct:
