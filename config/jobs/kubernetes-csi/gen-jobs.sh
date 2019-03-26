@@ -25,6 +25,7 @@ repos="
 cluster-driver-registrar
 csi-driver-host-path
 csi-release-tools
+csi-test
 "
 
 # Currently disabled because of https://github.com/kubernetes/test-infra/issues/11703,
