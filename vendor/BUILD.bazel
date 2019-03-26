@@ -17,7 +17,7 @@ filegroup(
         "//vendor/github.com/Azure/azure-pipeline-go/pipeline:all-srcs",
         "//vendor/github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources:all-srcs",
         "//vendor/github.com/Azure/azure-sdk-for-go/version:all-srcs",
-        "//vendor/github.com/Azure/azure-storage-blob-go/2016-05-31/azblob:all-srcs",
+        "//vendor/github.com/Azure/azure-storage-blob-go/azblob:all-srcs",
         "//vendor/github.com/Azure/go-autorest/autorest:all-srcs",
         "//vendor/github.com/Azure/go-autorest/logger:all-srcs",
         "//vendor/github.com/Azure/go-autorest/version:all-srcs",
