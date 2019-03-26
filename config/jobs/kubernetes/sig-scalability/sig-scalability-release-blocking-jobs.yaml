@@ -68,6 +68,8 @@ periodics:
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testoverrides=./testing/density/5000_nodes/override.yaml
+      # TODO(https://github.com/kubernetes/kubernetes/issues/75294): Enable when fixed
+      - --test-cmd-args=--enable-prometheus-server=false
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1050m
       - --use-logexporter
