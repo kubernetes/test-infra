@@ -21,7 +21,6 @@ spec:
         image: gcr.io/k8s-prow/build:v20190323-fbd93251f
         args:
         - --all-contexts
-        - --tot-url=http://tot
         - --config=/etc/prow-config/config.yaml
         - --build-cluster=/etc/build-cluster/cluster
         volumeMounts:
