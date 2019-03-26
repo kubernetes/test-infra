@@ -3199,13 +3199,18 @@ test_groups:
   num_columns_recent: 3
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
-- name: ci-kubernetes-gce-conformance-stable-1-13
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-stable-1-13
+- name: ci-kubernetes-gce-conformance-stable-1-14
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-stable-1-14
   num_columns_recent: 3
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
 - name: ci-kubernetes-gce-conformance-latest-1-14
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-latest-1-14
+  num_columns_recent: 3
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+- name: ci-kubernetes-gce-conformance-stable-1-13
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-stable-1-13
   num_columns_recent: 3
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
@@ -3565,6 +3570,9 @@ dashboards:
   - name: GCE, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
     test_group_name: ci-kubernetes-gce-conformance
+  - name: GCE, v1.14 (release)
+    description: Runs conformance tests using kubetest against kubernetes release 1.14 stable tag on GCE
+    test_group_name: ci-kubernetes-gce-conformance-stable-1-14
   - name: GCE, v1.14 (dev)
     description: Runs conformance tests using kubetest against kubernetes release 1.14 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-14
