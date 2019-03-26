@@ -2759,45 +2759,45 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-integration-test
   num_columns_recent: 20
 - name: post-cloud-provider-vsphere-deploy
-  gcs_prefix: kubernetes-jenkins/logs/directory/post-cloud-provider-vsphere-deploy
+  gcs_prefix: kubernetes-jenkins/logs/post-cloud-provider-vsphere-deploy
   num_columns_recent: 20
 - name: ci-cloud-provider-vsphere-conformance-latest
-  gcs_prefix: kubernetes-jenkins/logs/directory/ci-cloud-provider-vsphere-conformance-latest
+  gcs_prefix: kubernetes-jenkins/logs/ci-cloud-provider-vsphere-conformance-latest
   num_columns_recent: 20
   alert_stale_results_hours: 16
   num_failures_to_alert: 4
 - name: ci-cloud-provider-vsphere-conformance-stable-1-11
-  gcs_prefix: kubernetes-jenkins/logs/directory/ci-cloud-provider-vsphere-conformance-stable-1-11
+  gcs_prefix: kubernetes-jenkins/logs/ci-cloud-provider-vsphere-conformance-stable-1-11
   num_columns_recent: 20
   alert_stale_results_hours: 16
   num_failures_to_alert: 1
 - name: ci-cloud-provider-vsphere-conformance-stable-1-12
-  gcs_prefix: kubernetes-jenkins/logs/directory/ci-cloud-provider-vsphere-conformance-stable-1-12
+  gcs_prefix: kubernetes-jenkins/logs/ci-cloud-provider-vsphere-conformance-stable-1-12
   num_columns_recent: 20
   alert_stale_results_hours: 16
   num_failures_to_alert: 1
 - name: ci-cloud-provider-vsphere-conformance-stable-1-13
-  gcs_prefix: kubernetes-jenkins/logs/directory/ci-cloud-provider-vsphere-conformance-stable-1-13
+  gcs_prefix: kubernetes-jenkins/logs/ci-cloud-provider-vsphere-conformance-stable-1-13
   num_columns_recent: 20
   alert_stale_results_hours: 16
   num_failures_to_alert: 1
 - name: ci-vsphere-conformance-latest
-  gcs_prefix: kubernetes-jenkins/logs/directory/ci-vsphere-conformance-latest
+  gcs_prefix: kubernetes-jenkins/logs/ci-vsphere-conformance-latest
   num_columns_recent: 20
   alert_stale_results_hours: 16
   num_failures_to_alert: 4
 - name: ci-vsphere-conformance-stable-1-11
-  gcs_prefix: kubernetes-jenkins/logs/directory/ci-vsphere-conformance-stable-1-11
+  gcs_prefix: kubernetes-jenkins/logs/ci-vsphere-conformance-stable-1-11
   num_columns_recent: 20
   alert_stale_results_hours: 16
   num_failures_to_alert: 1
 - name: ci-vsphere-conformance-stable-1-12
-  gcs_prefix: kubernetes-jenkins/logs/directory/ci-vsphere-conformance-stable-1-12
+  gcs_prefix: kubernetes-jenkins/logs/ci-vsphere-conformance-stable-1-12
   num_columns_recent: 20
   alert_stale_results_hours: 16
   num_failures_to_alert: 1
 - name: ci-vsphere-conformance-stable-1-13
-  gcs_prefix: kubernetes-jenkins/logs/directory/ci-vsphere-conformance-stable-1-13
+  gcs_prefix: kubernetes-jenkins/logs/ci-vsphere-conformance-stable-1-13
   num_columns_recent: 20
   alert_stale_results_hours: 16
   num_failures_to_alert: 1
