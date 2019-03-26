@@ -2336,6 +2336,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new-parallel
 - name: ci-kubernetes-multicluster-ingress-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-multicluster-ingress-test
+- name: kubeflow-periodic-0-5-branch
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow-periodic-0-5-branch
 - name: kubeflow-periodic-0-4-branch
   gcs_prefix: kubernetes-jenkins/logs/kubeflow-periodic-0-4-branch
 - name: kubeflow-periodic-0-3-branch
