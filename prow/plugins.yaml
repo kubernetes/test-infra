@@ -235,6 +235,10 @@ repo_milestone:
     maintainers_id: 3169231
     maintainers_team: community-milestone-maintainers
     maintainers_friendly_name: Community Milestone Maintainers
+  kubernetes/website:
+    maintainers_id: 3175912
+    maintainers_team: website-milestone-maintainers 
+    maintainers_friendly_name: Website milestone maintainers
 
 project_config:
   project_org_configs:
@@ -495,6 +499,9 @@ plugins:
 
   kubernetes/utils:
   - override
+  
+  kubernetes/website:
+  - milestone
 
   kubernetes-client:
   - approve
