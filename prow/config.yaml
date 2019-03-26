@@ -104,6 +104,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        cri-api:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         csi-translation-lib:
           restrictions:
             users: []
@@ -366,6 +371,7 @@ tide:
     - kubernetes/cluster-bootstrap
     - kubernetes/code-generator
     - kubernetes/component-base
+    - kubernetes/cri-api
     - kubernetes/csi-api
     - kubernetes/csi-translation-lib
     - kubernetes/kube-aggregator
