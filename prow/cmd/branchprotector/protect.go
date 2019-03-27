@@ -169,9 +169,8 @@ func (p *protector) protect() {
 
 	// Scan the branch-protection configuration
 	for orgName := range bp.Orgs {
-		if org, err := bp.GetOrg(orgName); err != nil {
-			p.errors.add(fmt.Errorf("get %s: %v", orgName, err))
-		} else if err = p.UpdateOrg(orgName, *org); err != nil {
+		org := bp.GetOrg(orgName)
+		if err := p.UpdateOrg(orgName, *org); err != nil {
 			p.errors.add(fmt.Errorf("update %s: %v", orgName, err))
 		}
 	}
@@ -193,11 +192,8 @@ func (p *protector) protect() {
 		}
 		orgName := parts[0]
 		repoName := parts[1]
-		if org, err := bp.GetOrg(orgName); err != nil {
-			p.errors.add(fmt.Errorf("get %s: %v", orgName, err))
-		} else if repo, err := org.GetRepo(repoName); err != nil {
-			p.errors.add(fmt.Errorf("get %s/%s: %v", orgName, repoName, err))
-		} else if err = p.UpdateRepo(orgName, repoName, *repo); err != nil {
+		repo := bp.GetOrg(orgName).GetRepo(repoName)
+		if err := p.UpdateRepo(orgName, repoName, *repo); err != nil {
 			p.errors.add(fmt.Errorf("update %s/%s: %v", orgName, repoName, err))
 		}
 	}
@@ -225,9 +221,8 @@ func (p *protector) UpdateOrg(orgName string, org config.Org) error {
 	}
 
 	for _, repoName := range repos {
-		if repo, err := org.GetRepo(repoName); err != nil {
-			return fmt.Errorf("get %s: %v", repoName, err)
-		} else if err = p.UpdateRepo(orgName, repoName, *repo); err != nil {
+		repo := org.GetRepo(repoName)
+		if err := p.UpdateRepo(orgName, repoName, *repo); err != nil {
 			return fmt.Errorf("update %s: %v", repoName, err)
 		}
 	}
