@@ -278,10 +278,7 @@ func TestApply(test *testing.T) {
 					test.Errorf("unexpected panic: %s", r)
 				}
 			}()
-			actual, err := tc.parent.Apply(tc.child)
-			if err != nil {
-				test.Fatalf("unexpected error: %v", err)
-			}
+			actual := tc.parent.Apply(tc.child)
 			normalize(&actual)
 			normalize(&tc.expected)
 			if !reflect.DeepEqual(actual, tc.expected) {
