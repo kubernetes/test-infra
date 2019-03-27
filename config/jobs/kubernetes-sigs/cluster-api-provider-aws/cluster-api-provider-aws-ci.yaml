@@ -1,6 +1,7 @@
 periodics:  
 - name: periodic-cluster-api-provider-aws-test-creds
   decorate: true
+  interval: 4h
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
