@@ -3689,42 +3689,30 @@ dashboards:
   - name: GCE, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
     test_group_name: ci-kubernetes-gce-conformance
+  - name: GCE, v1.14 (release)
+    description: Runs conformance tests using kubetest against kubernetes release 1.14 stable tag on GCE
+    test_group_name: ci-kubernetes-gce-conformance-stable-1-14
+  - name: GCE, v1.14 (dev)
+    description: Runs conformance tests using kubetest against kubernetes release 1.14 branch on GCE
+    test_group_name: ci-kubernetes-gce-conformance-latest-1-14
   - name: GCE, v1.13 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.13 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-13
-    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.13 (dev)
     description: Runs conformance tests using kubetest against kubernetes release 1.13 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-13
-    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.12 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.12 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-12
-    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.12 (dev)
     description: Runs conformance tests using kubetest against kubernetes release 1.12 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-12
-    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.11 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.11 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-11
-    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.11 (dev)
     description: Runs conformance tests using kubetest against kubernetes release 1.11 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-11
-    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
-    alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
 
 - name: conformance-kind
   dashboard_tab:
