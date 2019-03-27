@@ -175,6 +175,32 @@ periodics:
     env:
     - name: K8S_VERSION
       value: ci/latest.txt
+- name: ci-cloud-provider-vsphere-conformance-stable-1-14
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 10800000000000 # 3h in nanoseconds
+  labels:
+    preset-dind-enabled: "true"
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-vsphere
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-vsphere
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/cloud-provider-vsphere/ci:f2a0d372
+      command:
+      - "make"
+      args:
+      - "conformance-test"
+      securityContext:
+        privileged: true
+    env:
+    - name: K8S_VERSION
+      value: release/stable-1.14.txt
 - name: ci-cloud-provider-vsphere-conformance-stable-1-13
   interval: 12h
   decorate: true
@@ -227,32 +253,6 @@ periodics:
     env:
     - name: K8S_VERSION
       value: release/stable-1.12.txt
-- name: ci-cloud-provider-vsphere-conformance-stable-1-11
-  interval: 12h
-  decorate: true
-  decoration_config:
-    timeout: 10800000000000 # 3h in nanoseconds
-  labels:
-    preset-dind-enabled: "true"
-    preset-cloud-provider-vsphere-e2e-config: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: cloud-provider-vsphere
-    base_ref: master
-  path_alias: k8s.io/cloud-provider-vsphere
-  skip_submodules: true
-  spec:
-    containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:f2a0d372
-      command:
-      - "make"
-      args:
-      - "conformance-test"
-      securityContext:
-        privileged: true
-    env:
-    - name: K8S_VERSION
-      value: release/stable-1.11.txt
 
 # Runs the e2e conformance suite against a cluster turned up with the
 # in-tree vSphere cloud provider. This job is duplicated for multiple versions
@@ -285,6 +285,34 @@ periodics:
       value: vsphere
     - name: K8S_VERSION
       value: ci/latest.txt
+- name: ci-vsphere-conformance-stable-1-14
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 10800000000000 # 3h in nanoseconds
+  labels:
+    preset-dind-enabled: "true"
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-vsphere
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-vsphere
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/cloud-provider-vsphere/ci:f2a0d372
+      command:
+      - "make"
+      args:
+      - "conformance-test"
+      securityContext:
+        privileged: true
+    env:
+    - name: CLOUD_PROVIDER
+      value: vsphere
+    - name: K8S_VERSION
+      value: release/stable-1.14.txt
 - name: ci-vsphere-conformance-stable-1-13
   interval: 12h
   decorate: true
@@ -341,31 +369,3 @@ periodics:
       value: vsphere
     - name: K8S_VERSION
       value: release/stable-1.12.txt
-- name: ci-vsphere-conformance-stable-1-11
-  interval: 12h
-  decorate: true
-  decoration_config:
-    timeout: 10800000000000 # 3h in nanoseconds
-  labels:
-    preset-dind-enabled: "true"
-    preset-cloud-provider-vsphere-e2e-config: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: cloud-provider-vsphere
-    base_ref: master
-  path_alias: k8s.io/cloud-provider-vsphere
-  skip_submodules: true
-  spec:
-    containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:f2a0d372
-      command:
-      - "make"
-      args:
-      - "conformance-test"
-      securityContext:
-        privileged: true
-    env:
-    - name: CLOUD_PROVIDER
-      value: vsphere
-    - name: K8S_VERSION
-      value: release/stable-1.11.txt
