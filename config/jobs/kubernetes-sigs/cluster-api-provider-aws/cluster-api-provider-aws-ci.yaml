@@ -1,6 +1,5 @@
 periodics:  
-- interval: 4h
-  name: periodic-cluster-api-provider-aws-test-creds
+- name: periodic-cluster-api-provider-aws-test-creds
   decorate: true
   labels:
     preset-service-account: "true"
@@ -16,3 +15,54 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-1.12
       command:
       - "./scripts/ci-aws-cred-test.sh"
+- name: periodic-cluster-api-provider-aws-bazel-e2e
+  decorate: true
+  interval: 1h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  extxa_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-aws
+    base_ref: master
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-1.12
+      command:
+      - make
+      args:
+      - e2e
+      env:
+      - name: BOSKOS_HOST
+        value: "http://boskos.test-pods.svc.cluster.local."
+      securityContext:
+        privileged: true
+postsubmits:
+  kubernetes-sigs/cluster-api-provider-aws:
+  - name: pull-cluster-api-provider-aws-bazel-e2e
+    decorate: true
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-1.12
+        command:
+        - make
+        args:
+        - e2e
+        env:
+        - name: BOSKOS_HOST
+          value: "http://boskos.test-pods.svc.cluster.local."
+        securityContext:
+          privileged: true
