@@ -152,6 +152,8 @@ periodics:
 - name: ci-cloud-provider-vsphere-conformance-latest
   interval: 12h
   decorate: true
+  decoration_config:
+    timeout: 10800000000000 # 3h in nanoseconds
   labels:
     preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
@@ -176,6 +178,8 @@ periodics:
 - name: ci-cloud-provider-vsphere-conformance-stable-1-13
   interval: 12h
   decorate: true
+  decoration_config:
+    timeout: 10800000000000 # 3h in nanoseconds
   labels:
     preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
@@ -200,6 +204,8 @@ periodics:
 - name: ci-cloud-provider-vsphere-conformance-stable-1-12
   interval: 12h
   decorate: true
+  decoration_config:
+    timeout: 10800000000000 # 3h in nanoseconds
   labels:
     preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
@@ -224,6 +230,8 @@ periodics:
 - name: ci-cloud-provider-vsphere-conformance-stable-1-11
   interval: 12h
   decorate: true
+  decoration_config:
+    timeout: 10800000000000 # 3h in nanoseconds
   labels:
     preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
@@ -252,6 +260,8 @@ periodics:
 - name: ci-vsphere-conformance-latest
   interval: 12h
   decorate: true
+  decoration_config:
+    timeout: 10800000000000 # 3h in nanoseconds
   labels:
     preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
@@ -278,6 +288,8 @@ periodics:
 - name: ci-vsphere-conformance-stable-1-13
   interval: 12h
   decorate: true
+  decoration_config:
+    timeout: 10800000000000 # 3h in nanoseconds
   labels:
     preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
@@ -304,6 +316,8 @@ periodics:
 - name: ci-vsphere-conformance-stable-1-12
   interval: 12h
   decorate: true
+  decoration_config:
+    timeout: 10800000000000 # 3h in nanoseconds
   labels:
     preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
@@ -330,6 +344,8 @@ periodics:
 - name: ci-vsphere-conformance-stable-1-11
   interval: 12h
   decorate: true
+  decoration_config:
+    timeout: 10800000000000 # 3h in nanoseconds
   labels:
     preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
