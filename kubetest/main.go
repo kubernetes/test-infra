@@ -725,7 +725,7 @@ func prepareGcp(o *options) error {
 
 		log.Printf("provider %v, will acquire project type %v from boskos", o.provider, resType)
 
-		// let's retry 5min to get next avaibale resource
+		// let's retry 5min to get next available resource
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 		defer cancel()
 		p, err := boskos.AcquireWait(ctx, resType, "free", "busy")
