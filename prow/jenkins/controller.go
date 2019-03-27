@@ -244,7 +244,7 @@ func getJenkinsJobs(pjs []prowapi.ProwJob) []string {
 		if pj.Complete() {
 			continue
 		}
-		jenkinsJobs[pj.Spec.Job] = struct{}{}
+		jenkinsJobs[getJobName(&pj.Spec)] = struct{}{}
 	}
 	var jobs []string
 	for job := range jenkinsJobs {
@@ -284,7 +284,7 @@ func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, jbs map[string]Build)
 			}
 			// Otherwise, abort it.
 			if buildExists {
-				if err := c.jc.Abort(toCancel.Spec.Job, &build); err != nil {
+				if err := c.jc.Abort(getJobName(&toCancel.Spec), &build); err != nil {
 					c.log.WithError(err).WithFields(pjutil.ProwJobFields(&toCancel)).Warn("Cannot cancel Jenkins build")
 				}
 			}

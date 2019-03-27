@@ -899,6 +899,41 @@ func TestGetJenkinsJobs(t *testing.T) {
 			},
 			expected: []string{"maradona", "coolio"},
 		},
+		{
+			name: "running jenkins jobs",
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job:   "coolio",
+						Agent: "jenkins",
+						JenkinsSpec: &prowapi.JenkinsSpec{
+							GitHubBranchSourceJob: true,
+						},
+						Refs: &prowapi.Refs{
+							BaseRef: "master",
+							Pulls: []prowapi.Pull{{
+								Number: 12,
+							}},
+						},
+					},
+					Status: prowapi.ProwJobStatus{},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job:   "maradona",
+						Agent: "jenkins",
+						JenkinsSpec: &prowapi.JenkinsSpec{
+							GitHubBranchSourceJob: true,
+						},
+						Refs: &prowapi.Refs{
+							BaseRef: "master",
+						},
+					},
+					Status: prowapi.ProwJobStatus{},
+				},
+			},
+			expected: []string{"maradona/job/master", "coolio/view/change-requests/job/PR-12"},
+		},
 	}
 
 	for _, test := range tests {
