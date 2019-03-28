@@ -19,6 +19,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -71,7 +72,9 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	flags.StringVar(&o.buildCluster, "build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 	flags.StringVar(&o.cert, "tls-cert-file", "", "Path to x509 certificate for HTTPS")
 	flags.StringVar(&o.privateKey, "tls-private-key-file", "", "Path to matching x509 private key.")
-	flags.Parse(args)
+	if err := flags.Parse(args); err != nil {
+		return fmt.Errorf("parse flags: %v", err)
+	}
 	if (len(o.cert) == 0) != (len(o.privateKey) == 0) {
 		return errors.New("Both --tls-cert-file and --tls-private-key-file are required for HTTPS")
 	}
@@ -190,7 +193,19 @@ func main() {
 		go runServer(o.cert, o.privateKey)
 	}
 
-	controller := newController(kc, pjc, pjif.Prow().V1().ProwJobs(), buildConfigs, o.totURL, configAgent.Config, kube.RateLimiter(controllerName))
+	opts := controllerOptions{
+		kc:           kc,
+		pjc:          pjc,
+		pji:          pjif.Prow().V1().ProwJobs(),
+		buildConfigs: buildConfigs,
+		totURL:       o.totURL,
+		prowConfig:   configAgent.Config,
+		rl:           kube.RateLimiter(controllerName),
+	}
+	controller, err := newController(opts)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error creating controller")
+	}
 	if err := controller.Run(2, stop); err != nil {
 		logrus.WithError(err).Fatal("Error running controller")
 	}

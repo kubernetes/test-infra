@@ -41,7 +41,6 @@ import (
 	duckv1alpha1 "github.com/knative/pkg/apis/duck/v1alpha1"
 	"github.com/sirupsen/logrus"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -73,6 +72,16 @@ type controller struct {
 	prowJobsDone bool
 	buildsDone   map[string]bool
 	wait         string
+}
+
+type controllerOptions struct {
+	kc           kubernetes.Interface
+	pjc          prowjobset.Interface
+	pji          prowjobinfov1.ProwJobInformer
+	buildConfigs map[string]buildConfig
+	totURL       string
+	prowConfig   config.Getter
+	rl           workqueue.RateLimitingInterface
 }
 
 func (c controller) pjNamespace() string {
@@ -114,30 +123,32 @@ func (c *controller) hasSynced() bool {
 	return true // Everyone is synced
 }
 
-func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjobinfov1.ProwJobInformer, buildConfigs map[string]buildConfig, totURL string, prowConfig config.Getter, rl workqueue.RateLimitingInterface) *controller {
+func newController(opts controllerOptions) (*controller, error) {
+	if err := prowjobscheme.AddToScheme(scheme.Scheme); err != nil {
+		return nil, fmt.Errorf("add prow job scheme: %v", err)
+	}
 	// Log to events
-	prowjobscheme.AddToScheme(scheme.Scheme)
 	eventBroadcaster := record.NewBroadcaster()
 	eventBroadcaster.StartLogging(logrus.Infof)
-	eventBroadcaster.StartRecordingToSink(&corev1.EventSinkImpl{Interface: kc.CoreV1().Events("")})
+	eventBroadcaster.StartRecordingToSink(&corev1.EventSinkImpl{Interface: opts.kc.CoreV1().Events("")})
 	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, coreapi.EventSource{Component: controllerName})
 
 	// Create struct
 	c := &controller{
-		builds:     buildConfigs,
-		config:     prowConfig,
-		pjc:        pjc,
-		pjInformer: pji.Informer(),
-		pjLister:   pji.Lister(),
+		builds:     opts.buildConfigs,
+		config:     opts.prowConfig,
+		pjc:        opts.pjc,
+		pjInformer: opts.pji.Informer(),
+		pjLister:   opts.pji.Lister(),
 		recorder:   recorder,
-		totURL:     totURL,
-		workqueue:  rl,
+		totURL:     opts.totURL,
+		workqueue:  opts.rl,
 	}
 
 	logrus.Info("Setting up event handlers")
 
 	// Reconcile whenever a prowjob changes
-	pji.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+	opts.pji.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			pj, ok := obj.(*prowjobv1.ProwJob)
 			if !ok {
@@ -164,7 +175,7 @@ func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjo
 		},
 	})
 
-	for ctx, cfg := range buildConfigs {
+	for ctx, cfg := range opts.buildConfigs {
 		// Reconcile whenever a build changes.
 		ctx := ctx // otherwise it will change
 		cfg.informer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -180,7 +191,7 @@ func newController(kc kubernetes.Interface, pjc prowjobset.Interface, pji prowjo
 		})
 	}
 
-	return c
+	return c, nil
 }
 
 // Run starts threads workers, returning after receiving a stop signal.
@@ -259,6 +270,7 @@ type reconciler interface {
 	updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error)
 	now() metav1.Time
 	buildID(prowjobv1.ProwJob) (string, string, error)
+	defaultBuildTimeout() time.Duration
 }
 
 func (c *controller) getProwJob(name string) (*prowjobv1.ProwJob, error) {
@@ -307,13 +319,9 @@ func (c *controller) buildID(pj prowjobv1.ProwJob) (string, string, error) {
 	return id, url, nil
 }
 
-var (
-	groupVersionKind = schema.GroupVersionKind{
-		Group:   prowjobv1.SchemeGroupVersion.Group,
-		Version: prowjobv1.SchemeGroupVersion.Version,
-		Kind:    "ProwJob",
-	}
-)
+func (c *controller) defaultBuildTimeout() time.Duration {
+	return c.config().DefaultJobTimeout
+}
 
 // reconcile ensures a knative-build prowjob has a corresponding build, updating the prowjob's status as the build progresses.
 func reconcile(c reconciler, key string) error {
@@ -384,7 +392,7 @@ func reconcile(c reconciler, key string) error {
 		pj.Status.BuildID = id
 		pj.Status.URL = url
 		newBuildID = true
-		if b, err = makeBuild(*pj); err != nil {
+		if b, err = makeBuild(*pj, c.defaultBuildTimeout()); err != nil {
 			return fmt.Errorf("make build: %v", err)
 		}
 		logrus.Infof("Create builds/%s", key)
@@ -649,12 +657,24 @@ func injectedSteps(encodedJobSpec string, dc prowjobv1.DecorationConfig, injecte
 	return []coreapi.Container{placer, *initUpload}, sidecar, &gcsVol, nil
 }
 
+// determineTimeout decides the timeout value used for build
+func determineTimeout(spec *buildv1alpha1.BuildSpec, dc *prowjobv1.DecorationConfig, defaultTimeout time.Duration) time.Duration {
+	switch {
+	case spec.Timeout != nil:
+		return spec.Timeout.Duration
+	case dc != nil && dc.Timeout > 0:
+		return dc.Timeout
+	default:
+		return defaultTimeout
+	}
+}
+
+func injectTimeout(spec *buildv1alpha1.BuildSpec, dc *prowjobv1.DecorationConfig, defaultTimeout time.Duration) {
+	spec.Timeout = &metav1.Duration{Duration: determineTimeout(spec, dc, defaultTimeout)}
+}
+
 func decorateBuild(spec *buildv1alpha1.BuildSpec, encodedJobSpec string, dc prowjobv1.DecorationConfig, injectedSource bool) error {
 	toolsVolume, toolsMount := tools()
-
-	if spec.Timeout == nil && dc.Timeout > 0 {
-		spec.Timeout = &metav1.Duration{Duration: dc.Timeout}
-	}
 
 	entries, err := decorateSteps(spec.Steps, dc, toolsMount)
 	if err != nil {
@@ -673,7 +693,7 @@ func decorateBuild(spec *buildv1alpha1.BuildSpec, encodedJobSpec string, dc prow
 }
 
 // makeBuild creates a build from the prowjob, using the prowjob's buildspec.
-func makeBuild(pj prowjobv1.ProwJob) (*buildv1alpha1.Build, error) {
+func makeBuild(pj prowjobv1.ProwJob, defaultTimeout time.Duration) (*buildv1alpha1.Build, error) {
 	if pj.Spec.BuildSpec == nil {
 		return nil, errors.New("nil BuildSpec in spec")
 	}
@@ -691,6 +711,10 @@ func makeBuild(pj prowjobv1.ProwJob) (*buildv1alpha1.Build, error) {
 	}
 	injectEnvironment(&b, rawEnv)
 	injectedSource, err := injectSource(&b, pj)
+	if err != nil {
+		return nil, fmt.Errorf("inject source: %v", err)
+	}
+	injectTimeout(&b.Spec, pj.Spec.DecorationConfig, defaultTimeout)
 	if pj.Spec.DecorationConfig != nil {
 		encodedJobSpec := rawEnv[downwardapi.JobSpecEnv]
 		err = decorateBuild(&b.Spec, encodedJobSpec, *pj.Spec.DecorationConfig, injectedSource)

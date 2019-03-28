@@ -48,6 +48,11 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
+const (
+	// DefaultJobTimeout represents the default deadline for a prow job.
+	DefaultJobTimeout = 24 * time.Hour
+)
+
 // Config is a read-only snapshot of the config.
 type Config struct {
 	JobConfig
@@ -118,6 +123,10 @@ type ProwConfig struct {
 	// found, or have another generic issue. The default that will be used if this is not set
 	// is: https://github.com/kubernetes/test-infra/issues
 	StatusErrorLink string `json:"status_error_link,omitempty"`
+
+	// DefaultJobTimeout this is default deadline for prow jobs. This value is used when
+	// no timeout is configured at the job level. This value is set to 24 hours.
+	DefaultJobTimeout time.Duration `json:"default_job_timeout,omitempty"`
 }
 
 // OwnersDirBlacklist is used to configure which directories to ignore when
@@ -1042,6 +1051,11 @@ func parseProwConfig(c *Config) error {
 		return err
 	}
 	logrus.SetLevel(lvl)
+
+	// Avoid using a job timeout of infinity by setting the default value to 24 hours
+	if c.DefaultJobTimeout == 0 {
+		c.DefaultJobTimeout = DefaultJobTimeout
+	}
 
 	return nil
 }
