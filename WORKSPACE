@@ -11,7 +11,7 @@ git_repository(
 
 load("@bazel_skylib//lib:versions.bzl", "versions")
 
-versions.check(minimum_bazel_version = "0.18.0")
+versions.check(minimum_bazel_version = "0.23.0")
 
 http_archive(
     name = "io_bazel_rules_go",
@@ -470,9 +470,9 @@ py_library(
 # TODO(fejta): get this to work
 git_repository(
     name = "io_bazel_rules_appengine",
-    commit = "14d860985c2a764fdb6a6072d5450d8360c4ce5b",
+    commit = "fdbce051adecbb369b15260046f4f23684369efc",
     remote = "https://github.com/bazelbuild/rules_appengine.git",
-    #tag = "0.0.5", # Latest at https://github.com/bazelbuild/rules_appengine/releases.
+    #tag = "0.0.8+but-this-isn't-new-enough", # Latest at https://github.com/bazelbuild/rules_appengine/releases.
 )
 
 load("@io_bazel_rules_appengine//appengine:py_appengine.bzl", "py_appengine_repositories")
