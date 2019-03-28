@@ -32,6 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/diff"
 
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
@@ -132,6 +133,10 @@ func (r *fakeReconciler) buildID(pj prowjobv1.ProwJob) (string, string, error) {
 	return randomBuildID, randomBuildURL, nil
 }
 
+func (r *fakeReconciler) defaultBuildTimeout() time.Duration {
+	return time.Hour
+}
+
 type fakeLimiter struct {
 	added string
 }
@@ -223,6 +228,7 @@ func TestReconcile(t *testing.T) {
 	noBuildChange := func(_ prowjobv1.ProwJob, b buildv1alpha1.Build) buildv1alpha1.Build {
 		return b
 	}
+	defaultTimeout := 1 * time.Hour
 	cases := []struct {
 		name          string
 		namespace     string
@@ -254,7 +260,7 @@ func TestReconcile(t *testing.T) {
 			expectedBuild: func(pj prowjobv1.ProwJob, _ buildv1alpha1.Build) buildv1alpha1.Build {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -307,7 +313,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -321,7 +327,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				b.DeletionTimestamp = &now
 				if err != nil {
 					panic(err)
@@ -337,7 +343,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -369,7 +375,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -400,7 +406,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -431,7 +437,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -462,7 +468,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -501,7 +507,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -543,7 +549,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -592,7 +598,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -615,7 +621,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -674,7 +680,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -1006,6 +1012,7 @@ func TestMakeBuild(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			defaultTimeout := 1 * time.Hour
 			pj := prowjobv1.ProwJob{}
 			pj.Name = "world"
 			pj.Namespace = "hello"
@@ -1018,7 +1025,7 @@ func TestMakeBuild(t *testing.T) {
 				pj = tc.job(pj)
 			}
 			originalSpec := pj.Spec.DeepCopy()
-			actual, err := makeBuild(pj)
+			actual, err := makeBuild(pj, defaultTimeout)
 			if err != nil {
 				if !tc.err {
 					t.Errorf("unexpected error: %v", err)
@@ -1044,6 +1051,7 @@ func TestMakeBuild(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to inject expected source: %v", err)
 			}
+			injectTimeout(&expected.Spec, pj.Spec.DecorationConfig, defaultTimeout)
 			if pj.Spec.DecorationConfig != nil {
 				if err = decorateBuild(&expected.Spec, env[downwardapi.JobSpecEnv], *pj.Spec.DecorationConfig, injected); err != nil {
 					t.Fatalf("failed to decorate: %v", err)
@@ -1073,6 +1081,9 @@ func TestDecorateSteps(t *testing.T) {
 		},
 	}
 	entries, err := decorateSteps(actual, dc, tm)
+	if err != nil {
+		t.Errorf("decorate steps: %v", err)
+	}
 	expected := []corev1.Container{
 		{
 			Name: "leave-name-alone",
@@ -1201,7 +1212,9 @@ func TestInjectedSteps(t *testing.T) {
 	}
 }
 
-func TestDecorateBuild_Timeout(t *testing.T) {
+func TestInjectTimeout(t *testing.T) {
+	defaultTimeout := config.DefaultJobTimeout
+	var infiniteTimeout time.Duration
 	a := 5 * time.Minute
 	b := 10 * time.Hour
 
@@ -1212,7 +1225,8 @@ func TestDecorateBuild_Timeout(t *testing.T) {
 		expected         *time.Duration
 	}{
 		{
-			name: "do not change timeout when decorated unset",
+			name:     "set the default timeout when decoration is unset",
+			expected: &defaultTimeout,
 		},
 		{
 			name:         "do not change set timeout (decoration unset)",
@@ -1229,6 +1243,11 @@ func TestDecorateBuild_Timeout(t *testing.T) {
 			name:             "change timeout when unset and decorated set",
 			decoratedTimeout: &b,
 			expected:         &b,
+		},
+		{
+			name:             "set the default timeout when unset and decorated timeout is zero",
+			decoratedTimeout: &infiniteTimeout,
+			expected:         &defaultTimeout,
 		},
 	}
 
@@ -1249,10 +1268,7 @@ func TestDecorateBuild_Timeout(t *testing.T) {
 				dc.Timeout = *tc.decoratedTimeout
 			}
 			actual := buildv1alpha1.BuildSpec{Timeout: dur}
-			err := decorateBuild(&actual, "whatever", dc, true)
-			if err != nil {
-				t.Fatal(err)
-			}
+			injectTimeout(&actual, &dc, defaultTimeout)
 			if (actual.Timeout == nil) != (tc.expected == nil) {
 				t.Errorf("%v != expected %v", actual.Timeout, tc.expected)
 			} else if actual.Timeout != nil && actual.Timeout.Duration != *tc.expected {
