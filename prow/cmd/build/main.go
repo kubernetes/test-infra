@@ -115,7 +115,7 @@ func newBuildConfig(cfg rest.Config, stop chan struct{}) (*buildConfig, error) {
 
 	// Ensure the knative-build CRD is deployed
 	// TODO(fejta): probably a better way to do this
-	_, err = bc.Build().Builds("").List(metav1.ListOptions{Limit: 1})
+	_, err = bc.BuildV1alpha1().Builds("").List(metav1.ListOptions{Limit: 1})
 	if err != nil {
 		return nil, err
 	}
