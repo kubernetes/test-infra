@@ -25,7 +25,7 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-  extxa_refs:
+  extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-aws
     base_ref: master
@@ -44,7 +44,7 @@ periodics:
         privileged: true
 postsubmits:
   kubernetes-sigs/cluster-api-provider-aws:
-  - name: pull-cluster-api-provider-aws-bazel-e2e
+  - name: ci-cluster-api-provider-aws-bazel-e2e
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     decorate: true
     max_concurrency: 5
