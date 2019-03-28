@@ -27,6 +27,7 @@ prow_push(
         "horologium",
         "initupload",
         "jenkins-operator",
+        "peribolos",
         "plank",
         "sidecar",
         "sinker",
