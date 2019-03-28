@@ -126,6 +126,7 @@ lgtm:
   review_acts_as_lgtm: true
 - repos:
   - kubernetes/test-infra
+  review_acts_as_lgtm: true
   store_tree_hash: true
 
 blockades:
