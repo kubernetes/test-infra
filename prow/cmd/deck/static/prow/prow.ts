@@ -463,6 +463,8 @@ function redraw(fz: FuzzySearch): void {
 
     let lastKey = '';
     const jobCountMap = new Map() as Map<JobState, number>;
+    const jobInterval: Array<[number, number]> = [[3600 * 3, 0], [3600 * 12, 0], [3600 * 48, 0]];
+    let currentInterval = 0;
     const jobHistogram = new JobHistogram();
     const now = moment().unix();
     let totalJob = 0;
@@ -504,11 +506,26 @@ function redraw(fz: FuzzySearch): void {
         }
         totalJob++;
         jobCountMap.set(build.state, jobCountMap.get(build.state)! + 1);
+
+        // accumulate a count of the percentage of successful jobs over each interval
+        const started = Number(build.started);
+        if (currentInterval >= 0 && (now - started) > jobInterval[currentInterval][0]) {
+            let successCount = jobCountMap.get("success");
+            if (!successCount) {
+                successCount = 0;
+            }
+            jobInterval[currentInterval][1] = successCount / totalJob;
+            currentInterval++;
+            if (currentInterval > jobInterval.length) {
+                currentInterval = -1;
+            }
+        }
+
         if (displayedJob >= 500) {
-            jobHistogram.add(new JobSample(Number(build.started), parseDuration(build.duration), build.state, -1));
+            jobHistogram.add(new JobSample(started, parseDuration(build.duration), build.state, -1));
             continue;
         } else {
-            jobHistogram.add(new JobSample(Number(build.started), parseDuration(build.duration), build.state, builds.childElementCount));
+            jobHistogram.add(new JobSample(started, parseDuration(build.duration), build.state, builds.childElementCount));
         }
         displayedJob++;
         const r = document.createElement("tr");
@@ -581,6 +598,26 @@ function redraw(fz: FuzzySearch): void {
         r.appendChild(cell.text(build.duration));
         builds.appendChild(r);
     }
+
+    // fill out the remaining intervals if necessary
+    if (currentInterval !== -1) {
+        let successCount = jobCountMap.get("success");
+        if (!successCount) {
+            successCount = 0;
+        }
+        for (let i = currentInterval; i < jobInterval.length; i++) {
+            jobInterval[i][1] = successCount / totalJob;
+        }
+    }
+
+    const jobSummary = document.getElementById("job-histogram-summary")!;
+    const success = jobInterval.map((interval) => {
+        if (interval[1] < 0.5) {
+            return `${formatDuration(interval[0])}: <span class="state failure">${Math.ceil(interval[1] * 100)}%</span>`;
+        }
+        return `${formatDuration(interval[0])}: <span class="state success">${Math.ceil(interval[1] * 100)}%</span>`;
+    }).join(", ");
+    jobSummary.innerHTML = `Success rate over time: ${success}`;
     const jobCount = document.getElementById("job-count")!;
     jobCount.textContent = `Showing ${displayedJob}/${totalJob} jobs`;
     drawJobBar(totalJob, jobCountMap);
