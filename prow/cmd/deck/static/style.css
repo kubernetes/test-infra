@@ -215,6 +215,26 @@ i.state {
     float: right;
 }
 
+#job-histogram-container {
+    position: relative;
+}
+
+#job-histogram-labels-y-max {
+    position: absolute;
+    top: 0;
+    left: 6px;
+    font-size: 0.75rem;
+    color: #888;
+}
+
+#job-histogram-labels-y-mid {
+    position: absolute;
+    top: 42%;
+    left: 6px;
+    font-size: 0.75rem;
+    color: #666;
+}
+
 #job-count {
     float: right;
     font-size: 12px;

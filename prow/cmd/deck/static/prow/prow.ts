@@ -584,7 +584,14 @@ function redraw(fz: FuzzySearch): void {
     const jobCount = document.getElementById("job-count")!;
     jobCount.textContent = `Showing ${displayedJob}/${totalJob} jobs`;
     drawJobBar(totalJob, jobCountMap);
-    drawJobHistogram(totalJob, jobHistogram, now - (12 * 3600), now);
+
+    // if we aren't filtering the output, cap the histogram y axis to 2 hours because it
+    // contains the bulk of our jobs
+    let max = Number.MAX_SAFE_INTEGER;
+    if (totalJob === allBuilds.length) {
+        max = 2 * 3600;
+    }
+    drawJobHistogram(totalJob, jobHistogram, now - (12 * 3600), now, max);
 }
 
 function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob: string): HTMLTableDataCellElement {
@@ -729,13 +736,13 @@ function parseDuration(duration: string): number {
 
 function formatDuration(seconds: number): string {
     const parts: string[] = [];
-    if (seconds > 3600) {
+    if (seconds >= 3600) {
         const hours = Math.floor(seconds / 3600);
         parts.push(String(hours));
         parts.push('h');
         seconds = seconds % 3600;
     }
-    if (seconds > 60) {
+    if (seconds >= 60) {
         const minutes = Math.floor(seconds / 60);
         if (minutes > 0) {
             parts.push(String(minutes));
@@ -750,7 +757,7 @@ function formatDuration(seconds: number): string {
     return parts.join('');
 }
 
-function drawJobHistogram(total: number, jobHistogram: JobHistogram, start: number, end: number): void {
+function drawJobHistogram(total: number, jobHistogram: JobHistogram, start: number, end: number, maximum: number): void {
     const startEl = document.getElementById("job-histogram-start") as HTMLSpanElement;
     if (startEl != null) {
         startEl.textContent = `${formatDuration(end - start)} ago`;
@@ -786,8 +793,18 @@ function drawJobHistogram(total: number, jobHistogram: JobHistogram, start: numb
         }
     }
 
-    // populate the buckets
     const buckets = jobHistogram.buckets(start, end, cols);
+    buckets.limitMaximum(maximum);
+
+    // show the max and mid y-axis labels rounded up to the nearest 10 minute mark
+    let maxY = buckets.max;
+    maxY = Math.ceil(maxY / 600);
+    const yMax = document.getElementById("job-histogram-labels-y-max") as HTMLSpanElement;
+    yMax.innerText = `${formatDuration(maxY * 600)}+`;
+    const yMid = document.getElementById("job-histogram-labels-y-mid") as HTMLSpanElement;
+    yMid.innerText = `${formatDuration(maxY / 2 * 600)}`;
+
+    // populate the buckets
     buckets.data.forEach((bucket, colIndex) => {
         let lastRowIndex = 0;
         buckets.linearChunks(bucket, rows).forEach((samples, rowIndex) =>  {
