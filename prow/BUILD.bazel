@@ -3,10 +3,6 @@ package(default_visibility = ["//visibility:public"])
 load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 load("//prow:def.bzl", "prefix", "tags", "prow_push")
-load(
-    "//def:image.bzl",
-    image_tags = "tags",
-)
 
 prow_push(
     name = "release-push",
@@ -35,19 +31,15 @@ prow_push(
         "sub",
         "tide",
         "tot",
-    ) + image_tags(**{
-        prefix("needs-rebase"): "//prow/external-plugins/needs-rebase:image",
-    }) + image_tags(**{
-        prefix("cherrypicker"): "//prow/external-plugins/cherrypicker:image",
-    }) + image_tags(**{
-        prefix("refresh"): "//prow/external-plugins/refresh:image",
-    }) + image_tags(**{
-        prefix("ghproxy"): "//ghproxy:image",
-    }) + image_tags(**{
-        prefix("label_sync"): "//label_sync:image",
-    }) + image_tags(**{
-        prefix("commenter"): "//robots/commenter:image",
-    }),
+        **{
+            "needs-rebase": "//prow/external-plugins/needs-rebase:image",
+            "cherrypicker": "//prow/external-plugins/cherrypicker:image",
+            "refresh": "//prow/external-plugins/refresh:image",
+            "ghproxy": "//ghproxy:image",
+            "label_sync": "//label_sync:image",
+            "commenter": "//robots/commenter:image",
+        }
+    ),
 )
 
 filegroup(
