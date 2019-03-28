@@ -3367,6 +3367,8 @@ test_groups:
 - name: pull-cloud-provider-azure-e2e-ccm
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-azure-e2e-ccm
   num_columns_recent: 30
+- name: ci-cloud-provider-azure-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-cloud-provider-azure-slow
 
 # Flannel CNI on Windows test groups
 - name: ci-kubernetes-e2e-flannel-l2bridge-master-windows
@@ -7909,6 +7911,9 @@ dashboards:
   - name: cloud-provider-azure-conformance
     description: Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
     test_group_name: ci-cloud-provider-azure-conformance
+  - name: cloud-provider-azure-slow
+    description: Runs Kubernetes slow tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
+    test_group_name: ci-cloud-provider-azure-slow
   - name: pr-cloud-provider-e2e-ccm
     description: Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
     test_group_name: pull-cloud-provider-azure-e2e-ccm
