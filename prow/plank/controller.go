@@ -23,8 +23,8 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
 	coreapi "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -262,48 +262,21 @@ func (c *Controller) SyncMetrics() {
 // in-place when it aborts.
 // TODO: Dry this out - need to ensure we can abstract children cancellation first.
 func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, pm map[string]coreapi.Pod) error {
-	// "job org/repo#number" -> newest job
-	dupes := make(map[string]int)
-	for i, pj := range pjs {
-		if pj.Complete() || pj.Spec.Type != prowapi.PresubmitJob {
-			continue
-		}
-		n := fmt.Sprintf("%s %s/%s#%d", pj.Spec.Job, pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.Pulls[0].Number)
-		prev, ok := dupes[n]
-		if !ok {
-			dupes[n] = i
-			continue
-		}
-		cancelIndex := i
-		if (&pjs[prev].Status.StartTime).Before(&pj.Status.StartTime) {
-			cancelIndex = prev
-			dupes[n] = i
-		}
-		toCancel := pjs[cancelIndex]
+	log := c.log.WithField("aborter", "pod")
+	return pjutil.TerminateOlderPresubmitJobs(c.kc, log, pjs, func(toCancel prowapi.ProwJob) error {
 		// Allow aborting presubmit jobs for commits that have been superseded by
 		// newer commits in GitHub pull requests.
 		if c.config().Plank.AllowCancellations {
 			if pod, exists := pm[toCancel.ObjectMeta.Name]; exists {
 				if client, ok := c.pkcs[toCancel.ClusterAlias()]; !ok {
-					c.log.WithFields(pjutil.ProwJobFields(&toCancel)).Errorf("Unknown cluster alias %q.", toCancel.ClusterAlias())
+					return fmt.Errorf("unknown cluster alias %q", toCancel.ClusterAlias())
 				} else if err := client.DeletePod(pod.ObjectMeta.Name); err != nil {
-					c.log.WithError(err).WithFields(pjutil.ProwJobFields(&toCancel)).Warn("Cannot delete pod")
+					return fmt.Errorf("deleting pod: %v", err)
 				}
 			}
 		}
-		toCancel.SetComplete()
-		prevState := toCancel.Status.State
-		toCancel.Status.State = prowapi.AbortedState
-		c.log.WithFields(pjutil.ProwJobFields(&toCancel)).
-			WithField("from", prevState).
-			WithField("to", toCancel.Status.State).Info("Transitioning states.")
-		npj, err := c.kc.ReplaceProwJob(toCancel.ObjectMeta.Name, toCancel)
-		if err != nil {
-			return err
-		}
-		pjs[cancelIndex] = npj
-	}
-	return nil
+		return nil
+	})
 }
 
 // TODO: Dry this out

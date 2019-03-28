@@ -370,10 +370,11 @@ func TestTerminateDupes(t *testing.T) {
 				},
 			},
 		}
+		log := logrus.NewEntry(logrus.StandardLogger())
 		c := Controller{
 			kc:     fkc,
 			pkcs:   map[string]kubeClient{kube.DefaultClusterAlias: fkc},
-			log:    logrus.NewEntry(logrus.StandardLogger()),
+			log:    log,
 			config: fca.Config,
 		}
 
@@ -1178,11 +1179,12 @@ func TestPeriodic(t *testing.T) {
 	fc := &fkc{
 		prowjobs: []prowapi.ProwJob{pjutil.NewProwJob(pjutil.PeriodicSpec(per), nil)},
 	}
+	log := logrus.NewEntry(logrus.StandardLogger())
 	c := Controller{
 		kc:          fc,
 		ghc:         &fghc{},
 		pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: &fkc{}, "trusted": fc},
-		log:         logrus.NewEntry(logrus.StandardLogger()),
+		log:         log,
 		config:      newFakeConfigAgent(t, 0).Config,
 		totURL:      totServ.URL,
 		pendingJobs: make(map[string]int),
