@@ -40,7 +40,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190328-ccf146b96-experimental
         command:
         - runner.sh
         - ./scenarios/kubernetes_execute_bazel.py
@@ -78,7 +78,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190328-ccf146b96-experimental
         command:
         - runner.sh
         - ./scenarios/kubernetes_bazel.py
@@ -103,7 +103,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-experimental
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190328-ccf146b96-experimental
           command:
             - ./hack/verify-tslint.sh
 
@@ -116,7 +116,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190328-ccf146b96-experimental
         command:
         - ./hack/verify-bazel.sh
 
@@ -130,7 +130,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190328-ccf146b96-experimental
         command:
         - runner.sh
         args:
@@ -152,7 +152,7 @@ presubmits:
       - name: test
         command:
         - ./hack/verify-config.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-experimental
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190328-ccf146b96-experimental
         env:
         - name: TEST_TMPDIR
           value: /bazel-scratch/.cache/bazel
@@ -178,7 +178,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190328-ccf146b96-experimental
         command:
         - runner.sh
         args:
@@ -198,7 +198,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190328-ccf146b96-experimental
         command:
         - ./hack/verify-codegen.sh
         resources:
@@ -214,7 +214,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190328-ccf146b96-experimental
         command:
         - ./hack/verify-gofmt.sh
 
@@ -229,7 +229,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190328-ccf146b96-experimental
         command:
         - runner.sh
         args:
@@ -245,7 +245,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190328-ccf146b96-experimental
         command:
         - runner.sh
         args:
@@ -266,7 +266,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190328-ccf146b96-experimental
         command:
         - ./hack/verify-file-perms.sh
 
@@ -279,6 +279,6 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190328-ccf146b96-experimental
         command:
         - ./hack/verify-github-spelling.sh
