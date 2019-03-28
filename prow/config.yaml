@@ -447,6 +447,8 @@ tide:
   pr_status_base_url: https://prow.k8s.io/pr
   blocker_label: merge-blocker
   squash_label: tide/squash
+  rebase_label: tide/rebase
+  merge_label: tide/merge
   context_options:
     optional-contexts:
     - "Submit Queue"

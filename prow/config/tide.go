@@ -101,6 +101,16 @@ type Tide struct {
 	// Leave this blank to disable this feature.
 	SquashLabel string `json:"squash_label,omitempty"`
 
+	// RebaseLabel is an optional label that is used to identify PRs that should
+	// always be rebased and merged.
+	// Leave this blank to disable this feature.
+	RebaseLabel string `json:"rebase_label,omitempty"`
+
+	// MergeLabel is an optional label that is used to identify PRs that should
+	// always be merged with all individual commits from the PR.
+	// Leave this blank to disable this feature.
+	MergeLabel string `json:"merge_label,omitempty"`
+
 	// MaxGoroutines is the maximum number of goroutines spawned inside the
 	// controller to handle org/repo:branch pools. Defaults to 20. Needs to be a
 	// positive number.

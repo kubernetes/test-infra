@@ -822,11 +822,19 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	for i, pr := range prs {
 		log := log.WithFields(pr.logFields())
 		mergeMethod := c.config().Tide.MergeMethod(sp.org, sp.repo)
-		if squashLabel := c.config().Tide.SquashLabel; squashLabel != "" {
+		squashLabel := c.config().Tide.SquashLabel
+		rebaseLabel := c.config().Tide.RebaseLabel
+		mergeLabel := c.config().Tide.MergeLabel
+		if squashLabel != "" || rebaseLabel != "" || mergeLabel != "" {
 			for _, prlabel := range pr.Labels.Nodes {
 				if string(prlabel.Name) == squashLabel {
 					mergeMethod = github.MergeSquash
 					break
+				} else if string(prlabel.Name) == rebaseLabel {
+					mergeMethod = github.MergeRebase
+					break
+				} else if string(prlable.Name) == mergeLabel {
+					mergeMethod = github.MergeMerge
 				}
 			}
 		}
