@@ -43,9 +43,15 @@ var (
 )
 
 func init() {
-	prowjobscheme.AddToScheme(vscheme)
-	admissionapi.AddToScheme(vscheme)
-	admissionregistrationv1beta1.AddToScheme(vscheme)
+	if err := prowjobscheme.AddToScheme(vscheme); err != nil {
+		logrus.Errorf("Add prow job scheme: %v", err)
+	}
+	if err := admissionapi.AddToScheme(vscheme); err != nil {
+		logrus.Errorf("Add admission API scheme: %v", err)
+	}
+	if err := admissionregistrationv1beta1.AddToScheme(vscheme); err != nil {
+		logrus.Errorf("Add admission registration scheme: %v", err)
+	}
 }
 
 // runServer starts an http server on :8443, responding to /validate requests
