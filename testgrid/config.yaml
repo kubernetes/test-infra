@@ -6098,9 +6098,9 @@ dashboards:
     test_group_name: pull-cluster-api-provider-aws-bazel-integration
   - name: test-creds
     test_group_name: periodic-cluster-api-provider-aws-test-creds
-  - name: periodic-bazel-e2e
+  - name: bazel-periodic-e2e
     test_group_name: periodic-cluster-api-provider-aws-bazel-e2e
-  - name: pr-bazel-e2e
+  - name: bazel-pr-e2e
     test_group_name: pull-cluster-api-provider-aws-bazel-e2e
 
 - name: sig-cluster-lifecycle-cluster-api-provider-azure
