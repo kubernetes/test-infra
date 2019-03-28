@@ -330,6 +330,8 @@ type Deck struct {
 	ExternalAgentLogs []ExternalAgentLog `json:"external_agent_logs,omitempty"`
 	// Branding of the frontend
 	Branding *Branding `json:"branding,omitempty"`
+	// GoogleAnalytics, if specified, include a Google Analytics tracking code on each page.
+	GoogleAnalytics string `json:"google_analytics,omitempty"`
 }
 
 // ExternalAgentLog ensures an external agent like Jenkins can expose
