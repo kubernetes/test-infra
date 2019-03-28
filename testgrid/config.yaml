@@ -3492,10 +3492,24 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/post-sig-storage-local-static-provisioner-build-release
 
 # Kubernetes-CSI test groups
-- name: ci-kubernetes-csi-stable-on-kubernetes-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-stable-on-kubernetes-master
-- name: ci-kubernetes-csi-stable-on-kubernetes-1-13
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-stable-on-kubernetes-1-13
+- name: ci-kubernetes-csi-1-13-on-kubernetes-1-13
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-1-13-on-kubernetes-1-13
+- name: ci-kubernetes-csi-1-13-on-kubernetes-1-14
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-1-13-on-kubernetes-1-14
+- name: ci-kubernetes-csi-1-13-on-kubernetes-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-1-13-on-kubernetes-master
+- name: ci-kubernetes-csi-1-14-on-kubernetes-1-13
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-1-14-on-kubernetes-1-13
+- name: ci-kubernetes-csi-1-14-on-kubernetes-1-14
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-1-14-on-kubernetes-1-14
+- name: ci-kubernetes-csi-1-14-on-kubernetes-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-1-14-on-kubernetes-master
+- name: ci-kubernetes-csi-canary-on-kubernetes-1-13
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-canary-on-kubernetes-1-13
+- name: ci-kubernetes-csi-canary-on-kubernetes-1-14
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-canary-on-kubernetes-1-14
+- name: ci-kubernetes-csi-canary-on-kubernetes-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-canary-on-kubernetes-master
 
 # Docker node conformance test group
 - name: ce18.09-ubuntu16.04-k8s1.13.x-conformance
@@ -6867,14 +6881,33 @@ dashboards:
 
 - name: sig-storage-csi
   dashboard_tab:
-  - name: stable-on-master
-    test_group_name: ci-kubernetes-csi-stable-on-kubernetes-master
-    base_options: include-filter-by-regex=^External%7CStorage|^test-
-    description: Kubernetes-CSI tests with lastest Kubernetes and stable sidecars
-  - name: stable-on-1-13
-    test_group_name: ci-kubernetes-csi-stable-on-kubernetes-1-13
-    base_options: include-filter-by-regex=^External%7CStorage|^test-
-    description: Kubernetes-CSI tests with lastest Kubernetes 1.13.x and stable sidecars
+  - name: 1-13-on-1-13
+    test_group_name: ci-kubernetes-csi-1-13-on-kubernetes-1-13
+    description: Kubernetes-CSI tests with Kubernetes 1.13.x and 1.13 sidecars
+  - name: 1-13-on-1-14
+    test_group_name: ci-kubernetes-csi-1-13-on-kubernetes-1-14
+    description: Kubernetes-CSI tests with Kubernetes 1.14.x and 1.13 sidecars
+  - name: 1-13-on-master
+    test_group_name: ci-kubernetes-csi-1-13-on-kubernetes-master
+    description: Kubernetes-CSI tests with Kubernetes master and 1.13 sidecars
+  - name: 1-14-on-1-13
+    test_group_name: ci-kubernetes-csi-1-14-on-kubernetes-1-13
+    description: Kubernetes-CSI tests with Kubernetes 1.13.x and 1.14 sidecars
+  - name: 1-14-on-1-14
+    test_group_name: ci-kubernetes-csi-1-14-on-kubernetes-1-14
+    description: Kubernetes-CSI tests with Kubernetes 1.14.x and 1.14 sidecars
+  - name: 1-14-on-master
+    test_group_name: ci-kubernetes-csi-1-14-on-kubernetes-master
+    description: Kubernetes-CSI tests with Kubernetes master and 1.14 sidecars
+  - name: canary-on-1-13
+    test_group_name: ci-kubernetes-csi-canary-on-kubernetes-1-13
+    description: Kubernetes-CSI tests with Kubernetes 1.13.x and 1.14 sidecars
+  - name: canary-on-1-14
+    test_group_name: ci-kubernetes-csi-canary-on-kubernetes-1-14
+    description: Kubernetes-CSI tests with Kubernetes 1.14.x and 1.14 sidecars
+  - name: canary-on-master
+    test_group_name: ci-kubernetes-csi-canary-on-kubernetes-master
+    description: Kubernetes-CSI tests with Kubernetes master and 1.14 sidecars
 
 - name: sig-testing-maintenance
   dashboard_tab:
