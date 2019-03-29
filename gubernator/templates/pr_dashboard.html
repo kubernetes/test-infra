@@ -54,7 +54,10 @@ Filter Milestone: {% if milestone %}<a href="?">Any</a>{% else %}<b>Any</b>{% en
 	</thead>
 		% for pr in sub_prs
 			% set pl = pr.payload
-			<tr id="{{title|slugify}} {{pr.repo}} {{pr.number}}" onclick="window.open('https://github.com/{{pr.repo}}/pull/{{pr.number}}', '_blank')">
+      <tr id="{{title|slugify}} {{pr.repo}} {{pr.number}}"
+        onclick="window.open('https://github.com/{{pr.repo}}/pull/{{pr.number}}', '_blank')"
+        onauxclick="window.open('https://github.com/{{pr.repo}}/pull/{{pr.number}}', '_blank')"
+        title="https://github.com/{{pr.repo}}/pull/{{pr.number}}">
 			<td>{{pr.repo|ltrim('kubernetes/')}}
 			<td>{{pr.number}}
 			<td>{{pl['author']}}
