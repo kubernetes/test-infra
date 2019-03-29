@@ -76,10 +76,9 @@ type PullRequestMergeType string
 
 // Possible types of merges for the GitHub merge API
 const (
-	MergeMerge   PullRequestMergeType = "merge"
-	MergeRebase  PullRequestMergeType = "rebase"
-	MergeSquash  PullRequestMergeType = "squash"
-	MergeInvalid PullRequestMergeType = "invalid"
+	MergeMerge  PullRequestMergeType = "merge"
+	MergeRebase PullRequestMergeType = "rebase"
+	MergeSquash PullRequestMergeType = "squash"
 )
 
 func unmarshalClientError(b []byte) error {

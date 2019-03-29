@@ -820,13 +820,13 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	var errs []error
 	log := sp.log.WithField("merge-targets", prNumbers(prs))
 	for i, pr := range prs {
+		labelCount := 0
 		log := log.WithFields(pr.logFields())
 		mergeMethod := c.config().Tide.MergeMethod(sp.org, sp.repo)
 		squashLabel := c.config().Tide.SquashLabel
 		rebaseLabel := c.config().Tide.RebaseLabel
 		mergeLabel := c.config().Tide.MergeLabel
 		if squashLabel != "" || rebaseLabel != "" || mergeLabel != "" {
-			labelCount := 0
 			for _, prlabel := range pr.Labels.Nodes {
 				switch string(prlabel.Name) {
 				case squashLabel:
@@ -840,9 +840,14 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 					labelCount++
 				}
 			}
-			if labelCount > 1 {
-				mergeMethod = github.MergeInvalid
-			}
+		}
+
+		// We have conflicting merge method override labels and should not merge.
+		if labelCount > 1 {
+			err := fmt.Errorf("conflicting merge method override labels")
+			errs = append(errs, err)
+			failed = append(failed, int(pr.Number))
+			continue
 		}
 
 		keepTrying, err := tryMerge(func() error {
