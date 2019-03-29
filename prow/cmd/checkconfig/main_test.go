@@ -17,11 +17,15 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/plugins"
+	"sigs.k8s.io/yaml"
 )
 
 func TestEnsureValidConfiguration(t *testing.T) {
@@ -353,6 +357,155 @@ func TestOrgRepoUnion(t *testing.T) {
 			got := tc.a.union(tc.b)
 			if !reflect.DeepEqual(got, tc.expected) {
 				t.Errorf("%s: did not get expected config:\n%v", tc.name, diff.ObjectGoPrintDiff(tc.expected, got))
+			}
+		})
+	}
+}
+
+func TestValidateUnknownFields(t *testing.T) {
+	testCases := []struct {
+		name, filename string
+		cfg            interface{}
+		configBytes    []byte
+		config         interface{}
+		expectedErr    error
+	}{
+		{
+			name:     "valid config",
+			filename: "valid-conf.yaml",
+			cfg:      &plugins.Configuration{},
+			configBytes: []byte(`plugins:
+  kube/kube:
+  - size
+  - config-updater
+config_updater:
+  maps:
+    # Update the plugins configmap whenever plugins.yaml changes
+    kube/plugins.yaml:
+      name: plugins
+size:
+  s: 1`),
+			expectedErr: nil,
+		},
+		{
+			name:     "invalid top-level property",
+			filename: "toplvl.yaml",
+			cfg:      &plugins.Configuration{},
+			configBytes: []byte(`plugins:
+  kube/kube:
+  - size
+  - config-updater
+notconfig_updater:
+  maps:
+    # Update the plugins configmap whenever plugins.yaml changes
+    kube/plugins.yaml:
+      name: plugins
+size:
+  s: 1`),
+			expectedErr: fmt.Errorf("unknown fields present in toplvl.yaml: notconfig_updater"),
+		},
+		{
+			name:     "invalid second-level property",
+			filename: "seclvl.yaml",
+			cfg:      &plugins.Configuration{},
+			configBytes: []byte(`plugins:
+  kube/kube:
+  - size
+  - config-updater
+size:
+  xs: 1
+  s: 5`),
+			expectedErr: fmt.Errorf("unknown fields present in seclvl.yaml: size.xs"),
+		},
+		{
+			name:     "invalid array element",
+			filename: "home/array.yaml",
+			cfg:      &plugins.Configuration{},
+			configBytes: []byte(`plugins:
+  kube/kube:
+  - size
+  - trigger
+triggers:
+- repos:
+  - kube/kube
+- repoz:
+  - kube/kubez`),
+			expectedErr: fmt.Errorf("unknown fields present in home/array.yaml: triggers[1].repoz"),
+		},
+		{
+			name:     "invalid map entry",
+			filename: "map.yaml",
+			cfg:      &plugins.Configuration{},
+			configBytes: []byte(`plugins:
+  kube/kube:
+  - size
+  - config-updater
+config_updater:
+  maps:
+    # Update the plugins configmap whenever plugins.yaml changes
+    kube/plugins.yaml:
+      name: plugins
+    kube/config.yaml:
+      validation: config
+size:
+  s: 1`),
+			expectedErr: fmt.Errorf("unknown fields present in map.yaml: " +
+				"config_updater.maps.kube/config.yaml.validation"),
+		},
+		{
+			name:     "multiple invalid elements",
+			filename: "multiple.yaml",
+			cfg:      &plugins.Configuration{},
+			configBytes: []byte(`plugins:
+  kube/kube:
+  - size
+  - trigger
+triggers:
+- repoz:
+  - kube/kubez
+- repos:
+  - kube/kube
+size:
+  s: 1
+  xs: 1`),
+			expectedErr: fmt.Errorf("unknown fields present in multiple.yaml: " +
+				"size.xs, triggers[0].repoz"),
+		},
+		{
+			name:     "embedded structs",
+			filename: "embedded.yaml",
+			cfg:      &config.Config{},
+			configBytes: []byte(`presubmits:
+  kube/kube:
+  - name: test-presubmit
+    decorate: true
+    always_run: true
+    never_run: false
+    skip_report: true
+    spec:
+      containers:
+      - image: alpine
+        command: ["/bin/printenv"]
+tide:
+  squash_label: sq
+  not-a-property: true
+size:
+  s: 1
+  xs: 1`),
+			expectedErr: fmt.Errorf("unknown fields present in embedded.yaml: " +
+				"presubmits.kube/kube[0].never_run, size, tide.not-a-property"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := yaml.Unmarshal(tc.configBytes, tc.cfg); err != nil {
+				t.Fatalf("Unable to unmarhsal yaml: %v", err)
+			}
+			got := validateUnknownFields(tc.cfg, tc.configBytes, tc.filename)
+			if !reflect.DeepEqual(got, tc.expectedErr) {
+				t.Errorf("%s: did not get expected validation error:\n%v", tc.name,
+					diff.ObjectGoPrintDiff(tc.expectedErr, got))
 			}
 		})
 	}
