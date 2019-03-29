@@ -1256,7 +1256,7 @@ testSuites:
     - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:ClusterSizeAutoscalingScaleWithNAP\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
   default:
     args:
-    - --timeout=50m
+    - --timeout=120m
     - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
     - --ginkgo-parallel=30
   flaky:
@@ -1367,12 +1367,12 @@ nodeK8sVersions:
 nodeTestSuites:
   default:
     args:
-    - --timeout=70m
+    - --timeout=120m
     - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
   gkespec:
     args:
     - --node-args=--system-spec-name=gke
-    - --timeout=60m
+    - --timeout=120m
     - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
   serial:
     args:
