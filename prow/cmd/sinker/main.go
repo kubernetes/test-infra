@@ -19,11 +19,15 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -80,6 +84,12 @@ func (o *options) Validate() error {
 }
 
 func main() {
+	metricsMux := http.NewServeMux()
+	metricsMux.Handle("/metrics", promhttp.Handler())
+	go func() {
+		logrus.WithError(http.ListenAndServe(":9090", metricsMux)).Fatal("ListenAndServe returned while serving metrics.")
+	}()
+
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
@@ -151,6 +161,44 @@ type sinkerReconciliationMetrics struct {
 	podRemovalErrors map[string]int
 }
 
+// Prometheus Metrics
+var (
+	sinkerMetrics = struct {
+		podsCreated      prometheus.Gauge
+		timeUsed         prometheus.Gauge
+		podsRemoved      *prometheus.GaugeVec
+		podRemovalErrors *prometheus.GaugeVec
+	}{
+		podsCreated: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "sinker_pods_existing",
+			Help: "Number of the existing pods in each sinker cleaning.",
+		}),
+		timeUsed: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "sinker_loop_duration_seconds",
+			Help: "Time used in each sinker cleaning.",
+		}),
+		podsRemoved: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "sinker_pods_removed",
+			Help: "Number of pods removed in each sinker cleaning.",
+		}, []string{
+			"reason",
+		}),
+		podRemovalErrors: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "sinker_pod_removal_errors",
+			Help: "Number of errors which occurred in each sinker cleaning.",
+		}, []string{
+			"reason",
+		}),
+	}
+)
+
+func init() {
+	prometheus.MustRegister(sinkerMetrics.podsCreated)
+	prometheus.MustRegister(sinkerMetrics.timeUsed)
+	prometheus.MustRegister(sinkerMetrics.podsRemoved)
+	prometheus.MustRegister(sinkerMetrics.podRemovalErrors)
+}
+
 func (m *sinkerReconciliationMetrics) getPodsTotalRemoved() int {
 	result := 0
 	for _, v := range m.podsRemoved {
@@ -159,14 +207,8 @@ func (m *sinkerReconciliationMetrics) getPodsTotalRemoved() int {
 	return result
 }
 
-func (m *sinkerReconciliationMetrics) logFields() logrus.Fields {
-	return logrus.Fields{
-		"podsCreated":      m.podsCreated,
-		"timeUsed":         m.finishedAt.Sub(m.startAt),
-		"podsTotalRemoved": m.getPodsTotalRemoved(),
-		"podsRemoved":      m.podsRemoved,
-		"podRemovalErrors": m.podRemovalErrors,
-	}
+func (m *sinkerReconciliationMetrics) getTimeUsed() time.Duration {
+	return m.finishedAt.Sub(m.startAt)
 }
 
 func (c *controller) clean() {
@@ -274,11 +316,19 @@ func (c *controller) clean() {
 				metrics.podsRemoved[reason]++
 			} else {
 				c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
-				metrics.podRemovalErrors[err.Error()]++
+				metrics.podRemovalErrors[string(k8serrors.ReasonForError(err))]++
 			}
 		}
 	}
 
 	metrics.finishedAt = time.Now()
-	c.logger.WithFields(metrics.logFields()).Info("Sinker reconciliation complete.")
+	sinkerMetrics.podsCreated.Set(float64(metrics.podsCreated))
+	sinkerMetrics.timeUsed.Set(float64(metrics.getTimeUsed().Seconds()))
+	for k, v := range metrics.podsRemoved {
+		sinkerMetrics.podsRemoved.WithLabelValues(k).Set(float64(v))
+	}
+	for k, v := range metrics.podRemovalErrors {
+		sinkerMetrics.podRemovalErrors.WithLabelValues(k).Set(float64(v))
+	}
+	c.logger.Info("Sinker reconciliation complete.")
 }
