@@ -2751,9 +2751,6 @@ test_groups:
 - name: pull-cloud-provider-vsphere-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-build
   num_columns_recent: 20
-- name: pull-cloud-provider-vsphere-test
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-test
-  num_columns_recent: 20
 - name: pull-cloud-provider-vsphere-unit-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-unit-test
   num_columns_recent: 20
@@ -7398,9 +7395,6 @@ dashboards:
   - name: pull-cloud-provider-vsphere-build
     test_group_name: pull-cloud-provider-vsphere-build
     base_options: width=10
-  - name: pull-cloud-provider-vsphere-test
-    test_group_name: pull-cloud-provider-vsphere-test
-    base_options: width=10
   - name: pull-cloud-provider-vsphere-unit-test
     test_group_name: pull-cloud-provider-vsphere-unit-test
     base_options: width=10
@@ -7415,9 +7409,6 @@ dashboards:
     base_options: width=10
   - name: pull-cloud-provider-vsphere-build
     test_group_name: pull-cloud-provider-vsphere-build
-    base_options: width=10
-  - name: pull-cloud-provider-vsphere-test
-    test_group_name: pull-cloud-provider-vsphere-test
     base_options: width=10
   - name: pull-cloud-provider-vsphere-unit-test
     test_group_name: pull-cloud-provider-vsphere-unit-test
