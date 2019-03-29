@@ -626,7 +626,17 @@ default:
       addedBy: prow
     - color: ffaa00
       description: Denotes a PR that should be squashed by tide when it merges.
-      name: tide/squash
+      name: tide/merge-method-squash
+      target: prs
+      addedBy: humans
+    - color: ffaa00
+      description: Denotes a PR that should be rebased by tide when it merges.
+      name: tide/merge-method-rebase
+      target: prs
+      addedBy: humans
+    - color: ffaa00
+      description: Denotes a PR that should use a standard merge by tide when it merges.
+      name: tide/merge-method-merge
       target: prs
       addedBy: humans
     - color: f9d0c4

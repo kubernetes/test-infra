@@ -835,6 +835,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 					break
 				} else if string(prlabel.Name) == mergeLabel {
 					mergeMethod = github.MergeMerge
+					break
 				}
 			}
 		}
