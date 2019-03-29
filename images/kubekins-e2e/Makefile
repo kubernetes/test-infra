@@ -19,7 +19,7 @@ TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 K8S ?= master
 K8S_RELEASE=stable
 GO ?= 1.12.1
-BAZEL ?= 0.21.0
+BAZEL ?= 0.23.2
 UPGRADE_DOCKER ?=false
 # TODO(cblecker): this is aging and bad
 CFSSL ?= R1.2
@@ -28,7 +28,7 @@ CFSSL ?= R1.2
 ifeq ($(K8S), experimental)
 	K8S_RELEASE=stable
 	GO = 1.12.1
-	BAZEL = 0.21.0
+	BAZEL = 0.23.2
 	CFSSL = R1.2
 	UPGRADE_DOCKER = true
 endif
