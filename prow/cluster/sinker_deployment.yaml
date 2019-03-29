@@ -19,7 +19,7 @@ spec:
         - --build-cluster=/etc/cluster/cluster
         - --job-config-path=/etc/job-config
         - --dry-run=false
-        image: gcr.io/k8s-prow/sinker:v20190328-3e2c5a68b
+        image: gcr.io/k8s-prow/sinker:v20190328-1453b6650
         volumeMounts:
         - mountPath: /etc/cluster
           name: cluster
