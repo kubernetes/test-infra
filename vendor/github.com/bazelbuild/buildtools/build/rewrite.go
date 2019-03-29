@@ -19,6 +19,7 @@ package build
 
 import (
 	"path"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -62,19 +63,24 @@ func Rewrite(f *File, info *RewriteInfo) {
 
 	for _, r := range rewrites {
 		if !disabled(r.name) {
-			r.fn(f, info)
+			if f.Type&r.scope != 0 {
+				r.fn(f, info)
+			}
 		}
 	}
 }
 
 // RewriteInfo collects information about what Rewrite did.
 type RewriteInfo struct {
-	EditLabel      int      // number of label strings edited
-	NameCall       int      // number of calls with argument names added
-	SortCall       int      // number of call argument lists sorted
-	SortStringList int      // number of string lists sorted
-	UnsafeSort     int      // number of unsafe string lists sorted
-	Log            []string // log entries - may change
+	EditLabel        int      // number of label strings edited
+	NameCall         int      // number of calls with argument names added
+	SortCall         int      // number of call argument lists sorted
+	SortStringList   int      // number of string lists sorted
+	UnsafeSort       int      // number of unsafe string lists sorted
+	SortLoad         int      // number of load argument lists sorted
+	FormatDocstrings int      // number of reindented docstrings
+	ReorderArguments int      // number of reordered function call arguments
+	Log              []string // log entries - may change
 }
 
 func (info *RewriteInfo) String() string {
@@ -94,23 +100,56 @@ func (info *RewriteInfo) String() string {
 	if info.UnsafeSort > 0 {
 		s += " unsafesort"
 	}
+	if info.SortLoad > 0 {
+		s += " sortload"
+	}
+	if info.FormatDocstrings > 0 {
+		s += " formatdocstrings"
+	}
+	if info.ReorderArguments > 0 {
+		s += " reorderarguments"
+	}
 	if s != "" {
 		s = s[1:]
 	}
 	return s
 }
 
+// Each rewrite function can be either applied for BUILD files, other files (such as .bzl),
+// or all files.
+const (
+	scopeDefault = TypeDefault
+	scopeBuild   = TypeBuild | TypeWorkspace // BUILD and WORKSPACE files
+	scopeBoth    = scopeDefault | scopeBuild
+)
+
 // rewrites is the list of all Buildifier rewrites, in the order in which they are applied.
 // The order here matters: for example, label canonicalization must happen
 // before sorting lists of strings.
 var rewrites = []struct {
-	name string
-	fn   func(*File, *RewriteInfo)
+	name  string
+	fn    func(*File, *RewriteInfo)
+	scope FileType
 }{
-	{"callsort", sortCallArgs},
-	{"label", fixLabels},
-	{"listsort", sortStringLists},
-	{"multiplus", fixMultilinePlus},
+	{"callsort", sortCallArgs, scopeBuild},
+	{"label", fixLabels, scopeBuild},
+	{"listsort", sortStringLists, scopeBoth},
+	{"multiplus", fixMultilinePlus, scopeBuild},
+	{"loadsort", sortLoadArgs, scopeBoth},
+	{"formatdocstrings", formatDocstrings, scopeBoth},
+	{"reorderarguments", reorderArguments, scopeBoth},
+}
+
+// DisableLoadSortForBuildFiles disables the loadsort transformation for BUILD files.
+// This is a temporary function for backward compatibility, can be called if there's plenty of
+// already formatted BUILD files that shouldn't be changed by the transformation.
+func DisableLoadSortForBuildFiles() {
+	for i := range rewrites {
+		if rewrites[i].name == "loadsort" {
+			rewrites[i].scope = scopeDefault
+			break
+		}
+	}
 }
 
 // leaveAlone reports whether any of the nodes on the stack are marked
@@ -212,14 +251,19 @@ func fixLabels(f *File, info *RewriteInfo) {
 		editPerformed := false
 
 		if tables.StripLabelLeadingSlashes && strings.HasPrefix(str.Value, "//") {
-			if path.Dir(f.Path) == "." || !strings.HasPrefix(str.Value, "//:") {
+			if filepath.Dir(f.Path) == "." || !strings.HasPrefix(str.Value, "//:") {
 				editPerformed = true
 				str.Value = str.Value[2:]
 			}
 		}
 
 		if tables.ShortenAbsoluteLabelsToRelative {
-			thisPackage := labelPrefix + path.Dir(f.Path)
+			thisPackage := labelPrefix + filepath.Dir(f.Path)
+			// filepath.Dir on Windows uses backslashes as separators, while labels always have slashes.
+			if filepath.Separator != '/' {
+				thisPackage = strings.Replace(thisPackage, string(filepath.Separator), "/", -1)
+			}
+
 			if str.Value == thisPackage {
 				editPerformed = true
 				str.Value = ":" + path.Base(str.Value)
@@ -259,8 +303,8 @@ func fixLabels(f *File, info *RewriteInfo) {
 				if !ok || as.Op != "=" {
 					continue
 				}
-				key, ok := as.X.(*LiteralExpr)
-				if !ok || !tables.IsLabelArg[key.Token] || tables.LabelBlacklist[callName(v)+"."+key.Token] {
+				key, ok := as.X.(*Ident)
+				if !ok || !tables.IsLabelArg[key.Name] || tables.LabelBlacklist[callName(v)+"."+key.Name] {
 					continue
 				}
 				if leaveAlone1(as.Y) {
@@ -295,11 +339,11 @@ func fixLabels(f *File, info *RewriteInfo) {
 // callName returns the name of the rule being called by call.
 // If the call is not to a literal rule name, callName returns "".
 func callName(call *CallExpr) string {
-	rule, ok := call.X.(*LiteralExpr)
+	rule, ok := call.X.(*Ident)
 	if !ok {
 		return ""
 	}
-	return rule.Token
+	return rule.Name
 }
 
 // sortCallArgs sorts lists of named arguments to a call.
@@ -369,8 +413,8 @@ func ruleNamePriority(rule, arg string) int {
 // Otherwise argName returns "".
 func argName(x Expr) string {
 	if as, ok := x.(*BinaryExpr); ok && as.Op == "=" {
-		if id, ok := as.X.(*LiteralExpr); ok {
-			return id.Token
+		if id, ok := as.X.(*Ident); ok {
+			return id.Name
 		}
 	}
 	return ""
@@ -420,12 +464,12 @@ func sortStringLists(f *File, info *RewriteInfo) {
 				if !ok || as.Op != "=" || leaveAlone1(as) || doNotSort(as) {
 					continue
 				}
-				key, ok := as.X.(*LiteralExpr)
+				key, ok := as.X.(*Ident)
 				if !ok {
 					continue
 				}
-				context := rule + "." + key.Token
-				if !tables.IsSortableListArg[key.Token] || tables.SortableBlacklist[context] {
+				context := rule + "." + key.Name
+				if !tables.IsSortableListArg[key.Name] || tables.SortableBlacklist[context] || f.Type == TypeDefault {
 					continue
 				}
 				if disabled("unsafesort") && !tables.SortableWhitelist[context] && !allowedSort(context) {
@@ -455,7 +499,7 @@ func sortStringLists(f *File, info *RewriteInfo) {
 				return
 			}
 			// "keep sorted" comment above first list element also forces sorting of list.
-			if len(v.List) > 0 && keepSorted(v.List[0]) {
+			if len(v.List) > 0 && (keepSorted(v) || keepSorted(v.List[0])) {
 				sortStringList(v, info, "?")
 			}
 		}
@@ -476,7 +520,7 @@ func sortStringList(x Expr, info *RewriteInfo, context string) {
 		return
 	}
 
-	forceSort := keepSorted(list.List[0])
+	forceSort := keepSorted(list) || keepSorted(list.List[0])
 
 	// TODO(bazel-team): Decide how to recognize lists that cannot
 	// be sorted. Avoiding all lists with comments avoids sorting
@@ -569,11 +613,11 @@ func callArgName(stk []Expr) string {
 	if !ok {
 		return ""
 	}
-	rule, ok := call.X.(*LiteralExpr)
+	rule, ok := call.X.(*Ident)
 	if !ok {
 		return ""
 	}
-	return rule.Token + "." + arg
+	return rule.Name + "." + arg
 }
 
 // A stringSortKey records information about a single string literal to be
@@ -794,6 +838,20 @@ func fixMultilinePlus(f *File, info *RewriteInfo) {
 	})
 }
 
+func sortLoadArgs(f *File, info *RewriteInfo) {
+	Walk(f, func(v Expr, stk []Expr) {
+		load, ok := v.(*LoadStmt)
+		if !ok {
+			return
+		}
+		args := loadArgs{From: load.From, To: load.To}
+		sort.Sort(args)
+		if args.modified {
+			info.SortLoad++
+		}
+	})
+}
+
 // hasComments reports whether any comments are associated with
 // the list or its elements.
 func hasComments(list *ListExpr) (line, suffix bool) {
@@ -814,4 +872,130 @@ func hasComments(list *ListExpr) (line, suffix bool) {
 		}
 	}
 	return
+}
+
+// A wrapper for a LoadStmt's From and To slices for consistent sorting of their contents.
+// It's assumed that the following slices have the same length. The contents are sorted by
+// the `To` attribute, but all items with equal "From" and "To" parts are placed before the items
+// with different parts.
+type loadArgs struct {
+	From     []*Ident
+	To       []*Ident
+	modified bool
+}
+
+func (args loadArgs) Len() int {
+	return len(args.From)
+}
+
+func (args loadArgs) Swap(i, j int) {
+	args.From[i], args.From[j] = args.From[j], args.From[i]
+	args.To[i], args.To[j] = args.To[j], args.To[i]
+	args.modified = true
+}
+
+func (args loadArgs) Less(i, j int) bool {
+	// Arguments with equal "from" and "to" parts are prioritized
+	equalI := args.From[i].Name == args.To[i].Name
+	equalJ := args.From[j].Name == args.To[j].Name
+	if equalI != equalJ {
+		// If equalI and !equalJ, return true, otherwise false.
+		// Equivalently, return equalI.
+		return equalI
+	}
+	return args.To[i].Name < args.To[j].Name
+}
+
+// formatDocstrings fixes the indentation and trailing whitespace of docstrings
+func formatDocstrings(f *File, info *RewriteInfo) {
+	Walk(f, func(v Expr, stk []Expr) {
+		def, ok := v.(*DefStmt)
+		if !ok || len(def.Body) == 0 {
+			return
+		}
+		docstring, ok := def.Body[0].(*StringExpr)
+		if !ok || !docstring.TripleQuote {
+			return
+		}
+
+		oldIndentation := docstring.Start.LineRune - 1 // LineRune starts with 1
+		newIndentation := nestedIndentation * len(stk)
+
+		// Operate on Token, not Value, because their line breaks can be different if a line ends with
+		// a backslash.
+		updatedToken := formatString(docstring.Token, oldIndentation, newIndentation)
+		if updatedToken != docstring.Token {
+			docstring.Token = updatedToken
+			// Update the value to keep it consistent with Token
+			docstring.Value, _, _ = unquote(updatedToken)
+			info.FormatDocstrings++
+		}
+	})
+}
+
+// formatString modifies a string value of a docstring to match the new indentation level and
+// to remove trailing whitespace from its lines.
+func formatString(value string, oldIndentation, newIndentation int) string {
+	difference := newIndentation - oldIndentation
+	lines := strings.Split(value, "\n")
+	for i, line := range lines {
+		if i == 0 {
+			// The first line shouldn't be touched because it starts right after ''' or """
+			continue
+		}
+		if difference > 0 {
+			line = strings.Repeat(" ", difference) + line
+		} else {
+			for i, rune := range line {
+				if i == -difference || rune != ' ' {
+					line = line[i:]
+					break
+				}
+			}
+		}
+		if i != len(lines)-1 {
+			// Remove trailing space from the line unless it's the last line that's responsible
+			// for the indentation of the closing `"""`
+			line = strings.TrimRight(line, " ")
+		}
+		lines[i] = line
+	}
+	return strings.Join(lines, "\n")
+}
+
+// argumentType returns an integer by which funcall arguments can be sorted:
+// 1 for positional, 2 for named, 3 for *args, 4 for **kwargs
+func argumentType(expr Expr) int {
+	switch expr := expr.(type) {
+	case *UnaryExpr:
+		switch expr.Op {
+		case "**":
+			return 4
+		case "*":
+			return 3
+		}
+	case *BinaryExpr:
+		if expr.Op == "=" {
+			return 2
+		}
+	}
+	return 1
+}
+
+// reorderArguments fixes the order of arguments of a function call
+// (positional, named, *args, **kwargs)
+func reorderArguments(f *File, info *RewriteInfo) {
+	Walk(f, func(expr Expr, stack []Expr) {
+		call, ok := expr.(*CallExpr)
+		if !ok {
+			return
+		}
+		compare := func(i, j int) bool {
+			return argumentType(call.List[i]) < argumentType(call.List[j])
+		}
+		if !sort.SliceIsSorted(call.List, compare) {
+			sort.SliceStable(call.List, compare)
+			info.ReorderArguments++
+		}
+	})
 }
