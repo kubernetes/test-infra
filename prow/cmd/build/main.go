@@ -54,6 +54,11 @@ type options struct {
 	//   https://github.com/kelseyhightower/grafeas-tutorial/blob/master/pki/gen-certs.sh
 	cert       string
 	privateKey string
+
+	// This is a termporary flag which gates the usage of plank.allow_cancellations config value
+	// for build aborter.
+	// TODO remove this flag and use directly the config flag.
+	useAllowCancellations bool
 }
 
 func parseOptions() options {
@@ -72,6 +77,7 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	flags.StringVar(&o.buildCluster, "build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 	flags.StringVar(&o.cert, "tls-cert-file", "", "Path to x509 certificate for HTTPS")
 	flags.StringVar(&o.privateKey, "tls-private-key-file", "", "Path to matching x509 private key.")
+	flags.BoolVar(&o.useAllowCancellations, "use-allow-cancellations", false, "Gates the usage of plank.allow_cancellations config flag for build aborter")
 	if err := flags.Parse(args); err != nil {
 		return fmt.Errorf("parse flags: %v", err)
 	}
@@ -194,13 +200,14 @@ func main() {
 	}
 
 	opts := controllerOptions{
-		kc:           kc,
-		pjc:          pjc,
-		pji:          pjif.Prow().V1().ProwJobs(),
-		buildConfigs: buildConfigs,
-		totURL:       o.totURL,
-		prowConfig:   configAgent.Config,
-		rl:           kube.RateLimiter(controllerName),
+		kc:                    kc,
+		pjc:                   pjc,
+		pji:                   pjif.Prow().V1().ProwJobs(),
+		buildConfigs:          buildConfigs,
+		totURL:                o.totURL,
+		prowConfig:            configAgent.Config,
+		rl:                    kube.RateLimiter(controllerName),
+		useAllowCancellations: o.useAllowCancellations,
 	}
 	controller, err := newController(opts)
 	if err != nil {

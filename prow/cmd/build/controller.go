@@ -24,9 +24,11 @@ import (
 
 	coreapi "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobset "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowjobscheme "k8s.io/test-infra/prow/client/clientset/versioned/scheme"
+	prowjobsetv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	prowjobinfov1 "k8s.io/test-infra/prow/client/informers/externalversions/prowjobs/v1"
 	prowjoblisters "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -56,6 +58,18 @@ const (
 	controllerName = "prow-build-crd"
 )
 
+type pjClient struct {
+	pjc prowjobsetv1.ProwJobInterface
+}
+
+func (c *pjClient) ReplaceProwJob(name string, pj prowjobv1.ProwJob) (prowjobv1.ProwJob, error) {
+	npj, err := c.pjc.Update(&pj)
+	if npj != nil {
+		return *npj, err
+	}
+	return prowjobv1.ProwJob{}, err
+}
+
 type controller struct {
 	config config.Getter
 	pjc    prowjobset.Interface
@@ -72,16 +86,19 @@ type controller struct {
 	prowJobsDone bool
 	buildsDone   map[string]bool
 	wait         string
+
+	useAllowCancellations bool
 }
 
 type controllerOptions struct {
-	kc           kubernetes.Interface
-	pjc          prowjobset.Interface
-	pji          prowjobinfov1.ProwJobInformer
-	buildConfigs map[string]buildConfig
-	totURL       string
-	prowConfig   config.Getter
-	rl           workqueue.RateLimitingInterface
+	kc                    kubernetes.Interface
+	pjc                   prowjobset.Interface
+	pji                   prowjobinfov1.ProwJobInformer
+	buildConfigs          map[string]buildConfig
+	totURL                string
+	prowConfig            config.Getter
+	rl                    workqueue.RateLimitingInterface
+	useAllowCancellations bool
 }
 
 func (c controller) pjNamespace() string {
@@ -135,14 +152,15 @@ func newController(opts controllerOptions) (*controller, error) {
 
 	// Create struct
 	c := &controller{
-		builds:     opts.buildConfigs,
-		config:     opts.prowConfig,
-		pjc:        opts.pjc,
-		pjInformer: opts.pji.Informer(),
-		pjLister:   opts.pji.Lister(),
-		recorder:   recorder,
-		totURL:     opts.totURL,
-		workqueue:  opts.rl,
+		builds:                opts.buildConfigs,
+		config:                opts.prowConfig,
+		pjc:                   opts.pjc,
+		pjInformer:            opts.pji.Informer(),
+		pjLister:              opts.pji.Lister(),
+		recorder:              recorder,
+		totURL:                opts.totURL,
+		workqueue:             opts.rl,
+		useAllowCancellations: opts.useAllowCancellations,
 	}
 
 	logrus.Info("Setting up event handlers")
@@ -271,10 +289,25 @@ type reconciler interface {
 	now() metav1.Time
 	buildID(prowjobv1.ProwJob) (string, string, error)
 	defaultBuildTimeout() time.Duration
+	terminateDupProwJobs(ctx string, namespace string) error
 }
 
 func (c *controller) getProwJob(name string) (*prowjobv1.ProwJob, error) {
 	return c.pjLister.ProwJobs(c.pjNamespace()).Get(name)
+}
+
+func (c *controller) getProwJobs(namespace string) ([]prowjobv1.ProwJob, error) {
+	result := []prowjobv1.ProwJob{}
+	jobs, err := c.pjLister.ProwJobs(namespace).List(labels.Everything())
+	if err != nil {
+		return result, err
+	}
+	for _, job := range jobs {
+		if job.Spec.Agent == prowjobv1.KnativeBuildAgent {
+			result = append(result, *job)
+		}
+	}
+	return result, nil
 }
 
 func (c *controller) updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
@@ -323,12 +356,40 @@ func (c *controller) defaultBuildTimeout() time.Duration {
 	return c.config().DefaultJobTimeout
 }
 
+func (c *controller) allowCancellations() bool {
+	return c.useAllowCancellations && c.config().Plank.AllowCancellations
+}
+
+func (c *controller) terminateDupProwJobs(ctx string, namespace string) error {
+	pjClient := &pjClient{
+		pjc: c.pjc.ProwV1().ProwJobs(c.config().ProwJobNamespace),
+	}
+	log := logrus.NewEntry(logrus.StandardLogger()).WithField("aborter", "build")
+
+	jobs, err := c.getProwJobs(namespace)
+	if err != nil {
+		return err
+	}
+	return pjutil.TerminateOlderPresubmitJobs(pjClient, log, jobs, func(toCancel prowjobv1.ProwJob) error {
+		if c.allowCancellations() {
+			if err := c.deleteBuild(ctx, namespace, toCancel.GetName()); err != nil && !apierrors.IsNotFound(err) {
+				return fmt.Errorf("deleting build: %v", err)
+			}
+		}
+		return nil
+	})
+}
+
 // reconcile ensures a knative-build prowjob has a corresponding build, updating the prowjob's status as the build progresses.
 func reconcile(c reconciler, key string) error {
 	ctx, namespace, name, err := fromKey(key)
 	if err != nil {
 		runtime.HandleError(err)
 		return nil
+	}
+
+	if err := c.terminateDupProwJobs(ctx, namespace); err != nil {
+		logrus.WithError(err).Warn("Cannot terminate duplicated prow jobs")
 	}
 
 	var wantBuild bool
