@@ -19,6 +19,10 @@ set -o pipefail
 
 cd "$(git rev-parse --show-toplevel)"
 mkdir -p ./vendor
-touch ./vendor/BUILD.bazel
+if [[ ! -e ./vendor/BUILD.bazel ]]; then
+  echo "Bootstrapping vendor..." >&2
+  touch ./vendor/BUILD.bazel
+  bazel run //:gazelle-bootstrap
+fi
 bazel run //:gazelle
 bazel run //:kazel

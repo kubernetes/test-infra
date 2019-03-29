@@ -1,6 +1,6 @@
 package(default_visibility = ["//prow:__subpackages__"])
 
-load("//prow:def.bzl", "release", "component", "MULTI_KIND", "BUILD_CLUSTER")
+load("//prow:def.bzl", "BUILD_CLUSTER", "MULTI_KIND", "component", "release")
 
 # Usage:
 #   bazel run //prow/cluster:foo.apply

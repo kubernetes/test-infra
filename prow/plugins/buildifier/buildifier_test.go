@@ -34,7 +34,6 @@ var initialFiles = map[string][]byte{
 var pullFiles = map[string][]byte{
 	"BUILD": []byte(`package(default_visibility = ["//visibility:public"])
 
-
 docker_build(
     name = "blah",
 )
@@ -44,7 +43,7 @@ docker_build(
 foo_repositories()
 `),
 	"blah.bzl": []byte(`def foo():
-  print("bar")
+  print("bar")  # should have four spaces
 `),
 }
 

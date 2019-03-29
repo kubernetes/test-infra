@@ -20,47 +20,46 @@ load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
 load("@io_bazel_rules_k8s//k8s:objects.bzl", "k8s_objects")
 load(
     "//def:image.bzl",
-    _docker_tags = "tags",
+    _image_tags = "tags",
 )
 
 ## prow_image is a macro for creating :app and :image targets
 def prow_image(
-    name, # use "image"
-    base = None,
-    stamp = True,  # stamp by default, but allow overrides
-    app_name = "app",
-    **kwargs):
-  go_image(
-      name = app_name,
-      base = base,
-      embed = [":go_default_library"],
-      goarch = "amd64",
-      goos = "linux",
-      pure = "on",
-  )
+        name,  # use "image"
+        base = None,
+        stamp = True,  # stamp by default, but allow overrides
+        app_name = "app",
+        **kwargs):
+    go_image(
+        name = app_name,
+        base = base,
+        embed = [":go_default_library"],
+        goarch = "amd64",
+        goos = "linux",
+        pure = "on",
+    )
 
-  container_image(
-      name = name,
-      base = ":"+app_name,
-      stamp = stamp,
-      **kwargs)
+    container_image(
+        name = name,
+        base = ":" + app_name,
+        stamp = stamp,
+        **kwargs
+    )
 
 # prow_push creates a bundle of container images, and a target to push them.
 def prow_push(
-    name,
-    bundle_name="bundle",
-    images=None,
-    ):
-  container_bundle(
-      name = bundle_name,
-      images=images,
-  )
-  container_push(
-      name = name,
-      bundle=":"+bundle_name,
-      format="Docker", # TODO(fejta): consider OCI?
-  )
-
+        name,
+        bundle_name = "bundle",
+        images = None):
+    container_bundle(
+        name = bundle_name,
+        images = images,
+    )
+    container_push(
+        name = name,
+        bundle = ":" + bundle_name,
+        format = "Docker",  # TODO(fejta): consider OCI?
+    )
 
 MULTI_KIND = None
 CORE_CLUSTER = "{STABLE_PROW_CLUSTER}"  # For components like hook
@@ -72,20 +71,20 @@ BUILD_CLUSTER = "{STABLE_BUILD_CLUSTER}"  # For untrusted test code
 # which usually becomes gcr.io/k8s-prow/foo
 # (See hack/print-workspace-status.sh)
 def prefix(cmd):
-  return "{STABLE_PROW_REPO}/%s" % cmd
+    return "{STABLE_PROW_REPO}/%s" % cmd
 
 # target returns the image target for the command.
 #
 # Concretely, target("foo") returns "//prow/cmd/foo:image"
 def target(cmd):
-  return "//prow/cmd/%s:image" % cmd
+    return "//prow/cmd/%s:image" % cmd
 
-# tags returns a {image: target} map for each cmd.
+# tags returns a {image: target} map for each cmd or {name: target} kwarg.
 #
 # In particular it will prefix the cmd image name with {STABLE_PROW_REPO}
 # Each image gets three tags: {DOCKER_TAG}, latest, latest-{BUILD_USER}
 #
-# Concretely, tags("hook", "plank") will output the following:
+# Concretely, tags("hook", "plank", **{"ghproxy": "//ghproxy:image"}) will output the following:
 #   {
 #     "gcr.io/k8s-prow/hook:20180203-deadbeef": "//prow/cmd/hook:image",
 #     "gcr.io/k8s-prow/hook:latest": "//prow/cmd/hook:image",
@@ -93,17 +92,22 @@ def target(cmd):
 #     "gcr.io/k8s-prow/plank:20180203-deadbeef": "//prow/cmd/plank:image",
 #     "gcr.io/k8s-prow/plank:latest": "//prow/cmd/plank:image",
 #     "gcr.io/k8s-prow/plank:latest-fejta": "//prow/cmd/plank:image",
+#     "gcr.io/k8s-prow/ghproxy:20180203-deadbeef": "//ghproxy:image",
+#     "gcr.io/k8s-prow/ghproxy:latest": "//ghproxy:image",
+#     "gcr.io/k8s-prow/ghproxy:latest-fejta": "//ghproxy:image",
 #   }
-def tags(*cmds):
-  # Create :YYYYmmdd-commitish :latest :latest-USER tags
-  return _docker_tags(**{prefix(cmd): target(cmd) for cmd in cmds})
+def tags(*cmds, **targets):
+    # Create :YYYYmmdd-commitish :latest :latest-USER tags
+    cmd_targets = {prefix(cmd): target(cmd) for cmd in cmds}
+    cmd_targets.update({prefix(p): t for (p, t) in targets.items()})
+    return _image_tags(**cmd_targets)
 
-def object(name, cluster=CORE_CLUSTER, **kwargs):
-  k8s_object(
-      name = name,
-      cluster = cluster,
-      **kwargs
-  )
+def object(name, cluster = CORE_CLUSTER, **kwargs):
+    k8s_object(
+        name = name,
+        cluster = cluster,
+        **kwargs
+    )
 
 # component generates k8s_object rules and returns a {kind: [targets]} map.
 #
@@ -121,22 +125,22 @@ def object(name, cluster=CORE_CLUSTER, **kwargs):
 #     "deployment": [":hook_deployment"],
 #   }
 def component(cmd, *kinds, **kwargs):
-  targets = {}
-  for k in kinds:
-      if k == MULTI_KIND:
-        n = cmd
-      else:
-        n = "%s_%s" % (cmd, k)
-      kwargs["name"] = n
-      kwargs["kind"] = k
-      kwargs["template"] = ":%s.yaml" % n
-      object(**kwargs)
-      tgt = ":%s" % n
-      targets.setdefault("all",[]).append(tgt)
-      if k != MULTI_KIND:
-        targets.setdefault(cmd,[]).append(tgt)
-        targets.setdefault(k,[]).append(tgt)
-  return targets
+    targets = {}
+    for k in kinds:
+        if k == MULTI_KIND:
+            n = cmd
+        else:
+            n = "%s_%s" % (cmd, k)
+        kwargs["name"] = n
+        kwargs["kind"] = k
+        kwargs["template"] = ":%s.yaml" % n
+        object(**kwargs)
+        tgt = ":%s" % n
+        targets.setdefault("all", []).append(tgt)
+        if k != MULTI_KIND:
+            targets.setdefault(cmd, []).append(tgt)
+            targets.setdefault(k, []).append(tgt)
+    return targets
 
 # release packages multiple components into a release.
 #
@@ -160,20 +164,20 @@ def component(cmd, *kinds, **kwargs):
 #   k8s_objects(name = "service", objects=[":hook_service"])
 #   k8s_objects(name = "staging", objects=[":hook_deployment", ":hook_service", ":plank_deployment"])
 def release(name, *components):
-  targets = {}
-  objs = []
-  for cs in components:
-    for (n, ts) in cs.items():
-      if n == "all":
-        objs.extend(ts)
-      else:
-        targets.setdefault(n, []).extend(ts)
-  for (piece, ts) in targets.items():
+    targets = {}
+    objs = []
+    for cs in components:
+        for (n, ts) in cs.items():
+            if n == "all":
+                objs.extend(ts)
+            else:
+                targets.setdefault(n, []).extend(ts)
+    for (piece, ts) in targets.items():
+        k8s_objects(
+            name = piece,
+            objects = ts,
+        )
     k8s_objects(
-        name = piece,
-        objects = ts,
+        name = name,
+        objects = objs,
     )
-  k8s_objects(
-      name = name,
-      objects=objs,
-  )

@@ -14,7 +14,8 @@ require (
 	github.com/andygrunwald/go-gerrit v0.0.0-20171029143327-95b11af228a1
 	github.com/aws/aws-k8s-tester v0.0.0-20190114231546-b411acf57dfe
 	github.com/aws/aws-sdk-go v1.16.36
-	github.com/bazelbuild/buildtools v0.0.0-20180226164855-80c7f0d45d7e
+	github.com/bazelbuild/bazel-gazelle v0.0.0-20190227183720-e443c54b396a
+	github.com/bazelbuild/buildtools v0.0.0-20190202002759-027686e28d67
 	github.com/bwmarrin/snowflake v0.0.0-20170221160716-02cc386c183a
 	github.com/deckarep/golang-set v0.0.0-20171013212420-1d4478f51bed
 	github.com/denisenkom/go-mssqldb v0.0.0-20190111225525-2fea367d496d // indirect
@@ -36,7 +37,7 @@ require (
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/groupcache v0.0.0-20180513044358-24b0969c4cb7 // indirect
 	github.com/golang/mock v1.2.0
-	github.com/golang/protobuf v1.2.0
+	github.com/golang/protobuf v1.3.1
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/uuid v1.0.0
 	github.com/googleapis/gnostic v0.1.0 // indirect
@@ -55,7 +56,6 @@ require (
 	github.com/json-iterator/go v1.1.6 // indirect
 	github.com/knative/build v0.2.0
 	github.com/knative/pkg v0.0.0-20181205230426-0e41760cea1d
-	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v1.0.0 // indirect
 	github.com/mailru/easyjson v0.0.0-20171120080333-32fa128f234d // indirect
 	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a // indirect
@@ -97,6 +97,7 @@ require (
 	k8s.io/gengo v0.0.0-20190306031000-7a1b7fb0289f // indirect
 	k8s.io/klog v0.1.0
 	k8s.io/kube-openapi v0.0.0-20180711000925-0cf8f7e6ed1d // indirect
+	k8s.io/repo-infra v0.0.0-20190329054012-df02ded38f95
 	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/yaml v1.1.0
 	vbom.ml/util v0.0.0-20170409195630-256737ac55c4

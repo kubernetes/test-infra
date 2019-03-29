@@ -11,7 +11,7 @@ git_repository(
 
 load("@bazel_skylib//lib:versions.bzl", "versions")
 
-versions.check(minimum_bazel_version = "0.18.0")
+versions.check(minimum_bazel_version = "0.23.0")
 
 http_archive(
     name = "io_bazel_rules_go",
@@ -21,8 +21,8 @@ http_archive(
 
 http_archive(
     name = "bazel_gazelle",
-    sha256 = "7949fc6cc17b5b191103e97481cf8889217263acf52e00b560683413af204fcb",
-    urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/0.16.0/bazel-gazelle-0.16.0.tar.gz"],
+    sha256 = "3c681998538231a2d24d0c07ed5a7658cb72bfb5fd4bf9911157c0e9ac6a2687",
+    urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/0.17.0/bazel-gazelle-0.17.0.tar.gz"],
 )
 
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
@@ -109,9 +109,10 @@ load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_repositories")
 k8s_repositories()
 
 git_repository(
-    name = "io_kubernetes_build",
+    name = "io_k8s_repo_infra",
     commit = "4ce715fbe67d8fbed05ec2bb47a148e754100a4b",
     remote = "https://github.com/kubernetes/repo-infra.git",
+    shallow_since = "1517262872 -0800",
 )
 
 git_repository(
@@ -470,9 +471,9 @@ py_library(
 # TODO(fejta): get this to work
 git_repository(
     name = "io_bazel_rules_appengine",
-    commit = "14d860985c2a764fdb6a6072d5450d8360c4ce5b",
+    commit = "fdbce051adecbb369b15260046f4f23684369efc",
     remote = "https://github.com/bazelbuild/rules_appengine.git",
-    #tag = "0.0.5", # Latest at https://github.com/bazelbuild/rules_appengine/releases.
+    #tag = "0.0.8+but-this-isn't-new-enough", # Latest at https://github.com/bazelbuild/rules_appengine/releases.
 )
 
 load("@io_bazel_rules_appengine//appengine:py_appengine.bzl", "py_appengine_repositories")
@@ -570,7 +571,7 @@ go_repository(
 
 go_repository(
     name = "com_github_bazelbuild_buildtools",
-    commit = "80c7f0d45d7e",
+    commit = "027686e28d67",
     importpath = "github.com/bazelbuild/buildtools",
 )
 
@@ -793,7 +794,7 @@ go_repository(
 go_repository(
     name = "com_github_golang_protobuf",
     importpath = "github.com/golang/protobuf",
-    tag = "v1.2.0",
+    tag = "v1.3.1",
 )
 
 go_repository(
@@ -1170,8 +1171,8 @@ go_repository(
 
 go_repository(
     name = "com_github_prometheus_client_golang",
+    commit = "3c4408c8b829",
     importpath = "github.com/prometheus/client_golang",
-    tag = "v0.9.3-0.20190127221311-3c4408c8b829",
 )
 
 go_repository(
@@ -1488,8 +1489,8 @@ go_repository(
 
 go_repository(
     name = "org_golang_x_text",
+    commit = "17ff2d5776d2",
     importpath = "golang.org/x/text",
-    tag = "v0.3.1-0.20180807135948-17ff2d5776d2",
 )
 
 go_repository(
@@ -1706,4 +1707,10 @@ go_repository(
     name = "org_golang_x_perf",
     commit = "6e6d33e29852",
     importpath = "golang.org/x/perf",
+)
+
+go_repository(
+    name = "com_github_bazelbuild_bazel_gazelle",
+    commit = "e443c54b396a",
+    importpath = "github.com/bazelbuild/bazel-gazelle",
 )

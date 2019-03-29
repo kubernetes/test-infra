@@ -68,4 +68,5 @@ bazel run //:go -- mod vendor
 prune-vendor
 hack/update-bazel.sh
 bazel run //:gazelle -- update-repos --from_file=go.mod
+hack/update-bazel.sh # TODO(fejta): seems to cause weird changes otherwise
 echo SUCCESS

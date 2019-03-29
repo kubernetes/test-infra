@@ -1,5 +1,3 @@
-# gazelle:proto package
-
 filegroup(
     name = "config-yaml",
     srcs = ["config.yaml"],
