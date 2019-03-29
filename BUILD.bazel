@@ -3,7 +3,7 @@
 # gazelle:exclude vendor/k8s.io/code-generator/_examples/
 # gazelle:exclude hack
 
-load("@io_kubernetes_build//defs:run_in_workspace.bzl", "workspace_binary")
+load("@io_k8s_repo_infra//defs:run_in_workspace.bzl", "workspace_binary")
 load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
 load("@io_bazel_rules_go//go:def.bzl", "nogo")
 
@@ -77,16 +77,29 @@ workspace_binary(
 
 load("@bazel_gazelle//:def.bzl", "gazelle")
 
+GAZELLE_CMD = "//vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle"
+
+KAZEL_CMD = "//vendor/k8s.io/repo-infra/kazel"
+
+gazelle(
+    name = "gazelle-bootstrap",
+    command = "fix",
+    external = "vendored",
+    # Use the built-in version
+)
+
 gazelle(
     name = "gazelle",
     command = "fix",
     external = "vendored",
+    gazelle = GAZELLE_CMD,
 )
 
 gazelle(
     name = "gazelle-diff",
     command = "fix",
     external = "vendored",
+    gazelle = GAZELLE_CMD,
     mode = "diff",
 )
 
@@ -95,7 +108,7 @@ workspace_binary(
     args = [
         "--cfg-path=./hack/.kazelcfg.json",
     ],
-    cmd = "@io_kubernetes_build//kazel",
+    cmd = KAZEL_CMD,
 )
 
 workspace_binary(
@@ -105,7 +118,7 @@ workspace_binary(
         "--print-diff",
         "--cfg-path=./hack/.kazelcfg.json",
     ],
-    cmd = "@io_kubernetes_build//kazel",
+    cmd = KAZEL_CMD,
 )
 
 nodejs_binary(

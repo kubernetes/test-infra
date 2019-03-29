@@ -20,8 +20,10 @@ package hack
 
 // Add tools that hack scripts depend on here, to ensure they are vendored.
 import (
+	_ "github.com/bazelbuild/bazel-gazelle/cmd/gazelle"
 	_ "k8s.io/code-generator/cmd/client-gen"
 	_ "k8s.io/code-generator/cmd/deepcopy-gen"
 	_ "k8s.io/code-generator/cmd/informer-gen"
 	_ "k8s.io/code-generator/cmd/lister-gen"
+	_ "k8s.io/repo-infra/kazel"
 )
