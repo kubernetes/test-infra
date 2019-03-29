@@ -23,7 +23,7 @@ periodics:
     timeout: 10800000000000 # 3 hours
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
       command:
       - runner.sh
       - bash
@@ -82,7 +82,7 @@ periodics:
     timeout: 10800000000000 # 3 hours
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
       command:
       - runner.sh
       - bash

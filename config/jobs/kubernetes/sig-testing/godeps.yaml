@@ -14,7 +14,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
         args:
         - make
         - verify

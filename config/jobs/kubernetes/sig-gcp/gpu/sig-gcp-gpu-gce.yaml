@@ -31,7 +31,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
   cron: "0 0-23/2 * * *"
@@ -54,7 +54,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
   cron: "0 3-23/6 * * *"
@@ -76,7 +76,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
   cron: "0 8-23/12 * * *"
@@ -98,4 +98,4 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master

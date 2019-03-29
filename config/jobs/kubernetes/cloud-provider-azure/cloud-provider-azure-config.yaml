@@ -35,7 +35,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -58,7 +58,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/kubernetes=v1.14.0"
@@ -105,7 +105,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/kubernetes=v1.14.0"
@@ -148,7 +148,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -173,7 +173,7 @@ periodics:
     path_alias: k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=v1.14.0
@@ -227,7 +227,7 @@ periodics:
     path_alias: k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=v1.14.0
@@ -283,7 +283,7 @@ periodics:
     path_alias: k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=v1.14.0

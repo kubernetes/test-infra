@@ -5,7 +5,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
         command:
         - make
         - test
@@ -19,7 +19,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -48,7 +48,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
