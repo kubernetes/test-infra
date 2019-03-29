@@ -630,7 +630,7 @@ default:
       target: prs
       addedBy: humans
       previously:
-        name: tide/squash
+        - name: tide/squash
     - color: ffaa00
       description: Denotes a PR that should be rebased by tide when it merges.
       name: tide/merge-method-rebase
