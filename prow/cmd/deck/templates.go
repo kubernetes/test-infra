@@ -70,6 +70,7 @@ func prepareBaseTemplate(o options, cfg config.Getter, t *template.Template) (*t
 		"darkMode":         func() bool { return true },
 		"lightMode":        func() bool { return false },
 		"deckVersion":      func() string { return version.Version },
+		"googleAnalytics":  func() string { return cfg().Deck.GoogleAnalytics },
 	}).ParseFiles(path.Join(o.templateFilesLocation, "base.html"))
 }
 
