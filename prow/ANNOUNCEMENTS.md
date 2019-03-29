@@ -55,6 +55,9 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *March 29, 2019* Custom logos should be provided as full paths in the configuration
+   under `deck.branding.logos` and will not implicitly be assumed to be under the static
+   assets directory.
  - *February 26, 2019* The `job_url_prefix` option from `plank` has been deprecated in
     favor of the new `job_url_prefix_config` option which allows configuration on a global,
     organization or repo level. `job_url_prefix` will be removed in September 2019.
