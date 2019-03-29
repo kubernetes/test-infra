@@ -172,9 +172,9 @@ periodics:
       - "conformance-test"
       securityContext:
         privileged: true
-    env:
-    - name: K8S_VERSION
-      value: ci/latest.txt
+      env:
+      - name: K8S_VERSION
+        value: ci/latest.txt
 - name: ci-cloud-provider-vsphere-conformance-stable-1-14
   interval: 12h
   decorate: true
@@ -198,9 +198,9 @@ periodics:
       - "conformance-test"
       securityContext:
         privileged: true
-    env:
-    - name: K8S_VERSION
-      value: release/stable-1.14.txt
+      env:
+      - name: K8S_VERSION
+        value: release/stable-1.14.txt
 - name: ci-cloud-provider-vsphere-conformance-stable-1-13
   interval: 12h
   decorate: true
@@ -224,9 +224,9 @@ periodics:
       - "conformance-test"
       securityContext:
         privileged: true
-    env:
-    - name: K8S_VERSION
-      value: release/stable-1.13.txt
+      env:
+      - name: K8S_VERSION
+        value: release/stable-1.13.txt
 - name: ci-cloud-provider-vsphere-conformance-stable-1-12
   interval: 12h
   decorate: true
@@ -250,9 +250,9 @@ periodics:
       - "conformance-test"
       securityContext:
         privileged: true
-    env:
-    - name: K8S_VERSION
-      value: release/stable-1.12.txt
+      env:
+      - name: K8S_VERSION
+        value: release/stable-1.12.txt
 
 # Runs the e2e conformance suite against a cluster turned up with the
 # in-tree vSphere cloud provider. This job is duplicated for multiple versions
@@ -280,11 +280,11 @@ periodics:
       - "conformance-test"
       securityContext:
         privileged: true
-    env:
-    - name: CLOUD_PROVIDER
-      value: vsphere
-    - name: K8S_VERSION
-      value: ci/latest.txt
+      env:
+      - name: CLOUD_PROVIDER
+        value: vsphere
+      - name: K8S_VERSION
+        value: ci/latest.txt
 - name: ci-vsphere-conformance-stable-1-14
   interval: 12h
   decorate: true
@@ -308,11 +308,11 @@ periodics:
       - "conformance-test"
       securityContext:
         privileged: true
-    env:
-    - name: CLOUD_PROVIDER
-      value: vsphere
-    - name: K8S_VERSION
-      value: release/stable-1.14.txt
+      env:
+      - name: CLOUD_PROVIDER
+        value: vsphere
+      - name: K8S_VERSION
+        value: release/stable-1.14.txt
 - name: ci-vsphere-conformance-stable-1-13
   interval: 12h
   decorate: true
@@ -336,11 +336,11 @@ periodics:
       - "conformance-test"
       securityContext:
         privileged: true
-    env:
-    - name: CLOUD_PROVIDER
-      value: vsphere
-    - name: K8S_VERSION
-      value: release/stable-1.13.txt
+      env:
+      - name: CLOUD_PROVIDER
+        value: vsphere
+      - name: K8S_VERSION
+        value: release/stable-1.13.txt
 - name: ci-vsphere-conformance-stable-1-12
   interval: 12h
   decorate: true
@@ -364,8 +364,8 @@ periodics:
       - "conformance-test"
       securityContext:
         privileged: true
-    env:
-    - name: CLOUD_PROVIDER
-      value: vsphere
-    - name: K8S_VERSION
-      value: release/stable-1.12.txt
+      env:
+      - name: CLOUD_PROVIDER
+        value: vsphere
+      - name: K8S_VERSION
+        value: release/stable-1.12.txt
