@@ -845,6 +845,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 		// We have conflicting merge method override labels and should not merge.
 		if labelCount > 1 {
 			err := fmt.Errorf("conflicting merge method override labels")
+			log.WithError(err).Error("Merge failed.")
 			errs = append(errs, err)
 			failed = append(failed, int(pr.Number))
 			continue
