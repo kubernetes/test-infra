@@ -826,17 +826,22 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 		rebaseLabel := c.config().Tide.RebaseLabel
 		mergeLabel := c.config().Tide.MergeLabel
 		if squashLabel != "" || rebaseLabel != "" || mergeLabel != "" {
+			labelCount := 0
 			for _, prlabel := range pr.Labels.Nodes {
-				if string(prlabel.Name) == squashLabel {
+				switch string(prlabel.Name) {
+				case squashLabel:
 					mergeMethod = github.MergeSquash
-					break
-				} else if string(prlabel.Name) == rebaseLabel {
+					labelCount++
+				case rebaseLabel:
 					mergeMethod = github.MergeRebase
-					break
-				} else if string(prlabel.Name) == mergeLabel {
+					labelCount++
+				case mergeLabel:
 					mergeMethod = github.MergeMerge
-					break
+					labelCount++
 				}
+			}
+			if labelCount > 1 {
+				mergeMethod = github.MergeInvalid
 			}
 		}
 
