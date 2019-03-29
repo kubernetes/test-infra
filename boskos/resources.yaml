@@ -435,7 +435,6 @@ resources:
   - k8s-jkns-gci-gke-reboot-1-4
   - k8s-jkns-gke-reboot-1-4
   - k8s-jkns-gke-slow-1-4
-  - k8s-jkns-pr-cnry-e2e-gce-fdrtn
   - k8s-jkns-pr-gci-bld-e2e-gce-fd
   - k8s-jkns-pr-kubeadm
   - k8s-jnks-gci-autoscaling
