@@ -808,6 +808,27 @@ func (c *Controller) pickBatch(sp subpool, cc contextChecker) ([]PullRequest, er
 	return res, nil
 }
 
+func checkMergeLabels(pr PullRequest, squash, rebase, merge string, method github.PullRequestMergeType) (github.PullRequestMergeType, error) {
+	labelCount := 0
+	for _, prlabel := range pr.Labels.Nodes {
+		switch string(prlabel.Name) {
+		case squash:
+			method = github.MergeSquash
+			labelCount++
+		case rebase:
+			method = github.MergeRebase
+			labelCount++
+		case merge:
+			method = github.MergeMerge
+			labelCount++
+		}
+		if labelCount > 1 {
+			return "", fmt.Errorf("conflicting merge method override labels")
+		}
+	}
+	return method, nil
+}
+
 func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	var merged, failed []int
 	defer func() {
@@ -820,35 +841,20 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	var errs []error
 	log := sp.log.WithField("merge-targets", prNumbers(prs))
 	for i, pr := range prs {
-		labelCount := 0
 		log := log.WithFields(pr.logFields())
 		mergeMethod := c.config().Tide.MergeMethod(sp.org, sp.repo)
 		squashLabel := c.config().Tide.SquashLabel
 		rebaseLabel := c.config().Tide.RebaseLabel
 		mergeLabel := c.config().Tide.MergeLabel
 		if squashLabel != "" || rebaseLabel != "" || mergeLabel != "" {
-			for _, prlabel := range pr.Labels.Nodes {
-				switch string(prlabel.Name) {
-				case squashLabel:
-					mergeMethod = github.MergeSquash
-					labelCount++
-				case rebaseLabel:
-					mergeMethod = github.MergeRebase
-					labelCount++
-				case mergeLabel:
-					mergeMethod = github.MergeMerge
-					labelCount++
-				}
+			var err error
+			mergeMethod, err = checkMergeLabels(pr, squashLabel, rebaseLabel, mergeLabel, mergeMethod)
+			if err != nil {
+				log.WithError(err).Error("Merge failed.")
+				errs = append(errs, err)
+				failed = append(failed, int(pr.Number))
+				continue
 			}
-		}
-
-		// We have conflicting merge method override labels and should not merge.
-		if labelCount > 1 {
-			err := fmt.Errorf("conflicting merge method override labels")
-			log.WithError(err).Error("Merge failed.")
-			errs = append(errs, err)
-			failed = append(failed, int(pr.Number))
-			continue
 		}
 
 		keepTrying, err := tryMerge(func() error {
