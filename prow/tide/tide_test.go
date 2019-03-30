@@ -844,18 +844,8 @@ func TestCheckMergeLabels(t *testing.T) {
 			name: "irrelevant PR labels ignored",
 			pr: PullRequest{
 				Labels: struct {
-					Nodes []struct {
-						Name githubql.String
-					}
-				}{
-					Nodes: []struct {
-						Name githubql.String
-					}{
-						{
-							Name: githubql.String("sig/testing"),
-						},
-					},
-				},
+					Nodes []struct{ Name githubql.String }
+				}{Nodes: []struct{ Name githubql.String }{{Name: githubql.String("sig/testing")}}},
 			},
 			method:    github.MergeMerge,
 			expected:  github.MergeMerge,
@@ -865,18 +855,8 @@ func TestCheckMergeLabels(t *testing.T) {
 			name: "default method overridden by a PR label",
 			pr: PullRequest{
 				Labels: struct {
-					Nodes []struct {
-						Name githubql.String
-					}
-				}{
-					Nodes: []struct {
-						Name githubql.String
-					}{
-						{
-							Name: githubql.String(squashLabel),
-						},
-					},
-				},
+					Nodes []struct{ Name githubql.String }
+				}{Nodes: []struct{ Name githubql.String }{{Name: githubql.String(squashLabel)}}},
 			},
 			method:    github.MergeMerge,
 			expected:  github.MergeSquash,
@@ -886,20 +866,10 @@ func TestCheckMergeLabels(t *testing.T) {
 			name: "multiple merge method PR labels should not merge",
 			pr: PullRequest{
 				Labels: struct {
-					Nodes []struct {
-						Name githubql.String
-					}
-				}{
-					Nodes: []struct {
-						Name githubql.String
-					}{
-						{
-							Name: githubql.String(squashLabel),
-						},
-						{
-							Name: githubql.String(rebaseLabel),
-						},
-					},
+					Nodes []struct{ Name githubql.String }
+				}{Nodes: []struct{ Name githubql.String }{
+					{Name: githubql.String(squashLabel)},
+					{Name: githubql.String(rebaseLabel)}},
 				},
 			},
 			method:    github.MergeMerge,
