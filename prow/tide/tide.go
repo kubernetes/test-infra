@@ -808,6 +808,27 @@ func (c *Controller) pickBatch(sp subpool, cc contextChecker) ([]PullRequest, er
 	return res, nil
 }
 
+func checkMergeLabels(pr PullRequest, squash, rebase, merge string, method github.PullRequestMergeType) (github.PullRequestMergeType, error) {
+	labelCount := 0
+	for _, prlabel := range pr.Labels.Nodes {
+		switch string(prlabel.Name) {
+		case squash:
+			method = github.MergeSquash
+			labelCount++
+		case rebase:
+			method = github.MergeRebase
+			labelCount++
+		case merge:
+			method = github.MergeMerge
+			labelCount++
+		}
+		if labelCount > 1 {
+			return "", fmt.Errorf("conflicting merge method override labels")
+		}
+	}
+	return method, nil
+}
+
 func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	var merged, failed []int
 	defer func() {
@@ -822,12 +843,17 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	for i, pr := range prs {
 		log := log.WithFields(pr.logFields())
 		mergeMethod := c.config().Tide.MergeMethod(sp.org, sp.repo)
-		if squashLabel := c.config().Tide.SquashLabel; squashLabel != "" {
-			for _, prlabel := range pr.Labels.Nodes {
-				if string(prlabel.Name) == squashLabel {
-					mergeMethod = github.MergeSquash
-					break
-				}
+		squashLabel := c.config().Tide.SquashLabel
+		rebaseLabel := c.config().Tide.RebaseLabel
+		mergeLabel := c.config().Tide.MergeLabel
+		if squashLabel != "" || rebaseLabel != "" || mergeLabel != "" {
+			var err error
+			mergeMethod, err = checkMergeLabels(pr, squashLabel, rebaseLabel, mergeLabel, mergeMethod)
+			if err != nil {
+				log.WithError(err).Error("Merge failed.")
+				errs = append(errs, err)
+				failed = append(failed, int(pr.Number))
+				continue
 			}
 		}
 

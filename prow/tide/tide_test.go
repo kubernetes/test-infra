@@ -820,6 +820,78 @@ func TestPickBatch(t *testing.T) {
 	}
 }
 
+func TestCheckMergeLabels(t *testing.T) {
+	squashLabel := "tide/squash"
+	mergeLabel := "tide/merge"
+	rebaseLabel := "tide/rebase"
+
+	testcases := []struct {
+		name string
+
+		pr        PullRequest
+		method    github.PullRequestMergeType
+		expected  github.PullRequestMergeType
+		expectErr bool
+	}{
+		{
+			name:      "default method without PR label override",
+			pr:        PullRequest{},
+			method:    github.MergeMerge,
+			expected:  github.MergeMerge,
+			expectErr: false,
+		},
+		{
+			name: "irrelevant PR labels ignored",
+			pr: PullRequest{
+				Labels: struct {
+					Nodes []struct{ Name githubql.String }
+				}{Nodes: []struct{ Name githubql.String }{{Name: githubql.String("sig/testing")}}},
+			},
+			method:    github.MergeMerge,
+			expected:  github.MergeMerge,
+			expectErr: false,
+		},
+		{
+			name: "default method overridden by a PR label",
+			pr: PullRequest{
+				Labels: struct {
+					Nodes []struct{ Name githubql.String }
+				}{Nodes: []struct{ Name githubql.String }{{Name: githubql.String(squashLabel)}}},
+			},
+			method:    github.MergeMerge,
+			expected:  github.MergeSquash,
+			expectErr: false,
+		},
+		{
+			name: "multiple merge method PR labels should not merge",
+			pr: PullRequest{
+				Labels: struct {
+					Nodes []struct{ Name githubql.String }
+				}{Nodes: []struct{ Name githubql.String }{
+					{Name: githubql.String(squashLabel)},
+					{Name: githubql.String(rebaseLabel)}},
+				},
+			},
+			method:    github.MergeMerge,
+			expected:  github.MergeSquash,
+			expectErr: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual, err := checkMergeLabels(tc.pr, squashLabel, rebaseLabel, mergeLabel, tc.method)
+			if err != nil && !tc.expectErr {
+				t.Errorf("unexpected error: %v", err)
+			} else if err == nil && tc.expectErr {
+				t.Errorf("missing expected error from checkMargeLabels")
+			} else if err == nil && tc.expected != actual {
+				t.Errorf("wanted: %q, got: %q", tc.expected, actual)
+			}
+		})
+	}
+}
+
 func TestTakeAction(t *testing.T) {
 	sleep = func(time.Duration) {}
 	defer func() { sleep = time.Sleep }()
