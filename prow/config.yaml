@@ -437,6 +437,8 @@ tide:
     kubernetes-sigs/cluster-api-provider-gcp: squash
     kubernetes-sigs/cluster-api-provider-openstack: squash
     kubernetes-sigs/cluster-api-provider-vsphere: squash
+    kubernetes-sigs/krew: squash
+    kubernetes-sigs/krew-index: squash
     kubernetes-sigs/kubespray: squash
     kubernetes/cloud-provider-openstack: squash
     kubernetes/dashboard: squash
