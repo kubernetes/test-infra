@@ -26,7 +26,6 @@ hostpath_example_repos="
 csi-driver-host-path
 external-attacher
 external-provisioner
-external-snapshotter
 livenessprobe
 node-driver-registrar
 "
@@ -37,6 +36,7 @@ single_config_repos="
 csi-test
 csi-release-tools
 csi-lib-utils
+external-snapshotter
 "
 
 # No Prow support in them yet.
@@ -90,6 +90,12 @@ EOF
     esac
 }
 
+# Combines deployment and Kubernetes version in a job suffix like "1-14-on-kubernetes-1-13".
+kubernetes_job_name () {
+    local deployment="$1"
+    local kubernetes="$2"
+    echo "$(echo "$deployment" | tr . -)-on-kubernetes-$(echo "$kubernetes" | tr . - | sed 's/\([0-9]*\)-\([0-9]*\)-\([0-9]*\)/\1-\2/')"
+}
 
 for repo in $hostpath_example_repos; do
     mkdir -p "$base/$repo"
@@ -102,8 +108,15 @@ EOF
 
     for deployment in 1.13 1.14; do # must have a deploy/kubernetes-<version> dir in csi-driver-host-path
         for kubernetes in 1.13.3 1.14.0; do # these versions must have pre-built kind images (see https://hub.docker.com/r/kindest/node/tags)
-            cat >>"$base/$repo/$repo-config.yaml" <<EOF
-  - name: pull-sig-storage-$repo-$(echo "$deployment" | tr . -)-on-kubernetes-$(echo "$kubernetes" | tr . - | sed 's/\([0-9]*\)-\([0-9]*\)-\([0-9]*\)/\1-\2/')
+            # We could generate these pre-submit jobs for all combinations, but to save resources in the Prow
+            # cluster we only do it for those cases where the deployment matches the Kubernetes version.
+            # Once we have more than two supported Kubernetes releases we should limit this to the most
+            # recent two.
+            #
+            # Periodic jobs need to test the full matrix.
+            if echo "$kubernetes" | grep -q "^$deployment"; then
+                cat >>"$base/$repo/$repo-config.yaml" <<EOF
+  - name: pull-sig-storage-$repo-$(kubernetes_job_name $deployment $kubernetes)
     # Experimental job, explicitly needs to be started with /test.
     # This can be enabled once the components have the necessary configuration
     # for this combination of deployment+Kubernetes.
@@ -138,6 +151,7 @@ EOF
           privileged: true
 $(resources_for_kubernetes "$kubernetes")
 EOF
+            fi
 
             if [ "$repo" = "csi-driver-host-path" ]; then
                 # The pre-merge job above replaces the
@@ -147,7 +161,7 @@ EOF
                 # To test the unmodified deployments we define additional jobs
                 # that don't rebuild the driver.
                 cat >>"$base/$repo/$repo-config.yaml" <<EOF
-  - name: pull-sig-storage-$repo-deployment-$(echo "$deployment" | tr . -)-on-kubernetes-$(echo "$kubernetes" | tr . - | sed 's/\([0-9]*\)-\([0-9]*\)-\([0-9]*\)/\1-\2/')
+  - name: pull-sig-storage-$repo-deployment-$(kubernetes_job_name $deployment $kubernetes)
     # Experimental job, explicitly needs to be started with /test.
     # This can be enabled once the components have the necessary configuration
     # for this combination of deployment+Kubernetes.
@@ -189,7 +203,7 @@ EOF
         done
 
         cat >>"$base/$repo/$repo-config.yaml" <<EOF
-  - name: pull-sig-storage-$repo-$(echo "$deployment" | tr . -)-on-kubernetes-master
+  - name: pull-sig-storage-$repo-$(kubernetes_job_name $deployment master)
     # Experimental job, explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
@@ -276,7 +290,7 @@ for deployment in 1.13 1.14; do
         actual="$(if [ "$kubernetes" = "master" ]; then echo latest; else echo "release-$kubernetes"; fi)"
         cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 - interval: 6h
-  name: ci-kubernetes-csi-$(echo "$deployment" | tr . -)-on-kubernetes-$(echo "$kubernetes" | tr . -)
+  name: ci-kubernetes-csi-$(kubernetes_job_name $deployment $kubernetes)
   decorate: true
   extra_refs:
   # TODO: replace with kubernetes-csi/csi-driver-host-path master once branch prow is merged
@@ -318,7 +332,7 @@ for kubernetes in 1.13 1.14 master; do
     actual="${kubernetes/master/latest}"
     cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 - interval: 6h
-  name: ci-kubernetes-csi-canary-on-kubernetes-$(echo "$kubernetes" | tr . -)
+  name: ci-kubernetes-csi-$(kubernetes_job_name canary $kubernetes)
   decorate: true
   extra_refs:
   # TODO: replace with kubernetes-csi/csi-driver-host-path master once branch prow is merged
