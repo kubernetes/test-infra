@@ -33,6 +33,55 @@ presets:
     mountPath: /etc/azure-ssh
     readOnly: true
 
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-aks-engine-azure-windows
+    always_run: false
+    optional: true
+    trigger: (?m)^/test( | .* )pull-kubernetes-e2e-aks-engine-azure-windows,?($|\s.*)
+    rerun_command: /test pull-kubernetes-e2e-aks-engine-azure-windows
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-acsengine: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
+        - "--upload=gs://kubernetes-jenkins/pr-logs/"
+        - "--timeout=480"
+        - "--scenario=kubernetes_e2e"
+        - --
+        - "--test=true"
+        - "--up=true"
+        - "--down=true"
+        - "--deployment=acsengine"
+        - "--provider=skeleton"
+        - "--build=bazel"
+        - "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-aks-engine-azure-windows"
+        - "--ginkgo-parallel=4"
+        - "--acsengine-admin-username=azureuser"
+        - "--acsengine-admin-password=AdminPassw0rd"
+        - "--acsengine-creds=$AZURE_CREDENTIALS"
+        - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz"
+        - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+        - "--acsengine-winZipBuildScript=$WIN_BUILD"
+        - "--acsengine-orchestratorRelease=1.14"
+        - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
+        - "--acsengine-win-binaries"
+        - "--acsengine-hyperkube"
+        - "--acsengine-agentpoolcount=2"
+        - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA|\\[Serial\\]"
+        - "--timeout=450m"
+        securityContext:
+          privileged: true
+
 
 periodics:
 - interval: 6h

@@ -3639,3 +3639,66 @@ presubmits:
           defaultMode: 256
           secretName: ssh-security
     trigger: (?m)^/test( | .* )pull-security-kubernetes-verify,?($|\s.*)
+  - agent: kubernetes
+    always_run: false
+    branches:
+    - master
+    cluster: security
+    context: pull-security-kubernetes-e2e-aks-engine-azure-windows
+    labels:
+      preset-azure-acsengine: "true"
+      preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-e2e-aks-engine-azure-windows
+    optional: true
+    rerun_command: /test pull-security-kubernetes-e2e-aks-engine-azure-windows
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --job=$(JOB_NAME)
+        - --root=/go/src
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=480
+        - --scenario=kubernetes_e2e
+        - --
+        - --test=true
+        - --up=true
+        - --down=true
+        - --deployment=acsengine
+        - --provider=skeleton
+        - --build=bazel
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-aks-engine-azure-windows
+        - --ginkgo-parallel=4
+        - --acsengine-admin-username=azureuser
+        - --acsengine-admin-password=AdminPassw0rd
+        - --acsengine-creds=$AZURE_CREDENTIALS
+        - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz
+        - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
+        - --acsengine-winZipBuildScript=$WIN_BUILD
+        - --acsengine-orchestratorRelease=1.14
+        - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json
+        - --acsengine-win-binaries
+        - --acsengine-hyperkube
+        - --acsengine-agentpoolcount=2
+        - --test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows
+          --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption
+          --ginkgo.skip=\[LinuxOnly\]|GMSA|\[Serial\]
+        - --timeout=450m
+        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-aks-engine-azure-windows
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        name: ""
+        resources: {}
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-aks-engine-azure-windows,?($|\s.*)
