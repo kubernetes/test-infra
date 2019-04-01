@@ -56,8 +56,8 @@ const (
 	reasonPodAged     = "aged"
 	reasonPodOrphaned = "orphaned"
 
-	reasonProwJobOldOnce     = "old-once"
-	reasonProwJobOldPeriodic = "old-periodic"
+	reasonProwJobAged         = "aged"
+	reasonProwJobAgedPeriodic = "aged-periodic"
 )
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
@@ -162,6 +162,7 @@ type sinkerReconciliationMetrics struct {
 	finishedAt             time.Time
 	podsRemoved            map[string]int
 	podRemovalErrors       map[string]int
+	prowJobsCreated        int
 	prowJobsCleaned        map[string]int
 	prowJobsCleaningErrors map[string]int
 }
@@ -173,6 +174,7 @@ var (
 		timeUsed               prometheus.Gauge
 		podsRemoved            *prometheus.GaugeVec
 		podRemovalErrors       *prometheus.GaugeVec
+		prowJobsCreated        prometheus.Gauge
 		prowJobsCleaned        *prometheus.GaugeVec
 		prowJobsCleaningErrors *prometheus.GaugeVec
 	}{
@@ -196,6 +198,10 @@ var (
 		}, []string{
 			"reason",
 		}),
+		prowJobsCreated: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "sinker_prow_jobs_existing",
+			Help: "Number of the existing prow jobs in each sinker cleaning.",
+		}),
 		prowJobsCleaned: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "sinker_prow_jobs_cleaned",
 			Help: "Number of prow jobs cleaned in each sinker cleaning.",
@@ -216,6 +222,7 @@ func init() {
 	prometheus.MustRegister(sinkerMetrics.timeUsed)
 	prometheus.MustRegister(sinkerMetrics.podsRemoved)
 	prometheus.MustRegister(sinkerMetrics.podRemovalErrors)
+	prometheus.MustRegister(sinkerMetrics.prowJobsCreated)
 	prometheus.MustRegister(sinkerMetrics.prowJobsCleaned)
 	prometheus.MustRegister(sinkerMetrics.prowJobsCleaningErrors)
 }
@@ -247,6 +254,7 @@ func (c *controller) clean() {
 		c.logger.WithError(err).Error("Error listing prow jobs.")
 		return
 	}
+	metrics.prowJobsCreated = len(prowJobs.Items)
 
 	// Only delete pod if its prowjob is marked as finished
 	isExist := sets.NewString()
@@ -268,7 +276,7 @@ func (c *controller) clean() {
 		}
 		if err := c.prowJobClient.Delete(prowJob.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
 			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
-			metrics.prowJobsCleaned[reasonProwJobOldOnce]++
+			metrics.prowJobsCleaned[reasonProwJobAged]++
 		} else {
 			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
 			metrics.prowJobsCleaningErrors[string(k8serrors.ReasonForError(err))]++
@@ -304,7 +312,7 @@ func (c *controller) clean() {
 		}
 		if err := c.prowJobClient.Delete(prowJob.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
 			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
-			metrics.prowJobsCleaned[reasonProwJobOldPeriodic]++
+			metrics.prowJobsCleaned[reasonProwJobAgedPeriodic]++
 		} else {
 			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
 			metrics.prowJobsCleaningErrors[string(k8serrors.ReasonForError(err))]++
@@ -319,7 +327,7 @@ func (c *controller) clean() {
 			c.logger.WithError(err).Error("Error listing pods.")
 			return
 		}
-		metrics.podsCreated = len(pods.Items)
+		metrics.podsCreated += len(pods.Items)
 		maxPodAge := c.config().Sinker.MaxPodAge
 		for _, pod := range pods.Items {
 			clean := !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
@@ -359,6 +367,7 @@ func (c *controller) clean() {
 	for k, v := range metrics.podRemovalErrors {
 		sinkerMetrics.podRemovalErrors.WithLabelValues(k).Set(float64(v))
 	}
+	sinkerMetrics.prowJobsCreated.Set(float64(metrics.prowJobsCreated))
 	for k, v := range metrics.prowJobsCleaned {
 		sinkerMetrics.prowJobsCleaned.WithLabelValues(k).Set(float64(v))
 	}
