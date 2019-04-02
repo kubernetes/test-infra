@@ -34,8 +34,8 @@ postsubmits:
     branches:
     - master
     spec:
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190131-v0.1-7-gd9aa1d2
+      containers: # https://github.com/bazelbuild/rules_k8s make -C images/gcloud-bazel push PROJECT=k8s-testimages
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190402-v0.1-35-g8b2d62a
         command:
         - prow/deploy.sh
         args:
