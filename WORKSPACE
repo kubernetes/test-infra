@@ -932,7 +932,7 @@ go_repository(
 go_repository(
     name = "com_github_hashicorp_golang_lru",
     importpath = "github.com/hashicorp/golang-lru",
-    tag = "v0.5.0",
+    tag = "v0.5.1",
 )
 
 go_repository(
@@ -1022,7 +1022,7 @@ go_repository(
 go_repository(
     name = "com_github_konsorten_go_windows_terminal_sequences",
     importpath = "github.com/konsorten/go-windows-terminal-sequences",
-    tag = "v1.0.1",
+    tag = "v1.0.2",
 )
 
 go_repository(
@@ -1148,7 +1148,7 @@ go_repository(
 go_repository(
     name = "com_github_openzipkin_zipkin_go",
     importpath = "github.com/openzipkin/zipkin-go",
-    tag = "v0.1.3",
+    tag = "v0.1.6",
 )
 
 go_repository(
@@ -1304,7 +1304,7 @@ go_repository(
 go_repository(
     name = "com_google_cloud_go",
     importpath = "cloud.google.com/go",
-    tag = "v0.37.1",
+    tag = "v0.37.2",
 )
 
 go_repository(
@@ -1418,7 +1418,7 @@ go_repository(
 go_repository(
     name = "io_opencensus_go",
     importpath = "go.opencensus.io",
-    tag = "v0.19.1",
+    tag = "v0.19.2",
 )
 
 go_repository(
@@ -1436,7 +1436,7 @@ go_repository(
 go_repository(
     name = "org_golang_google_api",
     importpath = "google.golang.org/api",
-    tag = "v0.2.0",
+    tag = "v0.3.0",
 )
 
 go_repository(
@@ -1454,7 +1454,7 @@ go_repository(
 go_repository(
     name = "org_golang_google_grpc",
     importpath = "google.golang.org/grpc",
-    tag = "v1.19.0",
+    tag = "v1.19.1",
 )
 
 go_repository(
@@ -1719,4 +1719,58 @@ go_repository(
     name = "com_github_bazelbuild_bazel_gazelle",
     commit = "e443c54b396a",
     importpath = "github.com/bazelbuild/bazel-gazelle",
+)
+
+go_repository(
+    name = "com_github_apache_thrift",
+    importpath = "github.com/apache/thrift",
+    tag = "v0.12.0",
+)
+
+go_repository(
+    name = "com_github_eapache_go_resiliency",
+    importpath = "github.com/eapache/go-resiliency",
+    tag = "v1.1.0",
+)
+
+go_repository(
+    name = "com_github_eapache_go_xerial_snappy",
+    commit = "776d5712da21",
+    importpath = "github.com/eapache/go-xerial-snappy",
+)
+
+go_repository(
+    name = "com_github_eapache_queue",
+    importpath = "github.com/eapache/queue",
+    tag = "v1.1.0",
+)
+
+go_repository(
+    name = "com_github_golang_snappy",
+    commit = "2e65f85255db",
+    importpath = "github.com/golang/snappy",
+)
+
+go_repository(
+    name = "com_github_pierrec_lz4",
+    importpath = "github.com/pierrec/lz4",
+    tag = "v2.0.5",
+)
+
+go_repository(
+    name = "com_github_rcrowley_go_metrics",
+    commit = "3113b8401b8a",
+    importpath = "github.com/rcrowley/go-metrics",
+)
+
+go_repository(
+    name = "com_github_shopify_sarama",
+    importpath = "github.com/Shopify/sarama",
+    tag = "v1.19.0",
+)
+
+go_repository(
+    name = "com_github_shopify_toxiproxy",
+    importpath = "github.com/Shopify/toxiproxy",
+    tag = "v2.1.4",
 )

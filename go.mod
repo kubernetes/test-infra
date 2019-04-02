@@ -3,7 +3,7 @@ module k8s.io/test-infra
 replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
 
 require (
-	cloud.google.com/go v0.37.1
+	cloud.google.com/go v0.37.2
 	github.com/Azure/azure-sdk-for-go v21.1.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.0.0-20190123011202-457680cc0804
 	github.com/Azure/go-autorest v10.15.5+incompatible
@@ -42,12 +42,13 @@ require (
 	github.com/google/uuid v1.0.0
 	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/gophercloud/gophercloud v0.0.0-20181215224939-bdd8b1ecd793 // indirect
-	github.com/gorilla/mux v1.6.2 // indirect
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.1.3
 	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7
+	github.com/grpc-ecosystem/grpc-gateway v1.6.2 // indirect
 	github.com/hashicorp/errwrap v0.0.0-20141028054710-7554cd9344ce // indirect
 	github.com/hashicorp/go-multierror v0.0.0-20171204182908-b7773ae21874
+	github.com/hashicorp/golang-lru v0.5.1 // indirect
 	github.com/imdario/mergo v0.0.0-20180119215619-163f41321a19 // indirect
 	github.com/influxdata/influxdb v0.0.0-20161215172503-049f9b42e9a5
 	github.com/jinzhu/gorm v0.0.0-20170316141641-572d0a0ab1eb
@@ -56,13 +57,12 @@ require (
 	github.com/json-iterator/go v1.1.6 // indirect
 	github.com/knative/build v0.2.0
 	github.com/knative/pkg v0.0.0-20181205230426-0e41760cea1d
+	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/lib/pq v1.0.0 // indirect
 	github.com/mailru/easyjson v0.0.0-20171120080333-32fa128f234d // indirect
 	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a // indirect
 	github.com/mattn/go-sqlite3 v0.0.0-20160514122348-38ee283dabf1 // indirect
 	github.com/mattn/go-zglob v0.0.1
-	github.com/onsi/ginkgo v1.7.0 // indirect
-	github.com/onsi/gomega v1.4.3 // indirect
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/pelletier/go-toml v1.2.0
@@ -84,9 +84,9 @@ require (
 	golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223 // indirect
 	golang.org/x/time v0.0.0-20181108054448-85acf8d2951c
 	golang.org/x/tools v0.0.0-20190312170243-e65039ee4138
-	google.golang.org/api v0.2.0
+	google.golang.org/api v0.3.0
 	google.golang.org/genproto v0.0.0-20190307195333-5fe7a883aa19
-	google.golang.org/grpc v1.19.0
+	google.golang.org/grpc v1.19.1
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v2 v2.2.2
 	k8s.io/api v0.0.0-20181128191700-6db15a15d2d3
