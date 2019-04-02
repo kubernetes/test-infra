@@ -198,10 +198,10 @@ github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7V
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/knative/build v0.1.2/go.mod h1:/sU74ZQkwlYA5FwYDJhYTy61i/Kn+5eWfln2jDbw3Qo=
-github.com/knative/build v0.2.0 h1:BkBXjJb3ugETV9Jfk97Aa7aIjnhRRuI6EnfQ7du0QCU=
-github.com/knative/build v0.2.0/go.mod h1:/sU74ZQkwlYA5FwYDJhYTy61i/Kn+5eWfln2jDbw3Qo=
-github.com/knative/pkg v0.0.0-20181205230426-0e41760cea1d h1:0aOr0GqVXyVwPYCA7KBspYPRiJHvssV0A0DIEdxfdrA=
-github.com/knative/pkg v0.0.0-20181205230426-0e41760cea1d/go.mod h1:7Ijfhw7rfB+H9VtosIsDYvZQ+qYTz7auK3fHW/5z4ww=
+github.com/knative/build v0.3.1-0.20190330033454-38ace00371c7 h1:3KvuoUpgXYkK3WKaSBVN/0FSwRaukf212t2bQkMSWjY=
+github.com/knative/build v0.3.1-0.20190330033454-38ace00371c7/go.mod h1:/sU74ZQkwlYA5FwYDJhYTy61i/Kn+5eWfln2jDbw3Qo=
+github.com/knative/pkg v0.0.0-20190330034653-916205998db9 h1:WE+sMoCzGTt6OhWGWkXwtuzmfqofaqfyx0i9qte+NLQ=
+github.com/knative/pkg v0.0.0-20190330034653-916205998db9/go.mod h1:7Ijfhw7rfB+H9VtosIsDYvZQ+qYTz7auK3fHW/5z4ww=
 github.com/konsorten/go-windows-terminal-sequences v0.0.0-20180402223658-b729f2633dfe/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1 h1:mweAR1A6xJ3oS2pRaGiHgQ4OO8tzTaLawm8vnODuwDk=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
