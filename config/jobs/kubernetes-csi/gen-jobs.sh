@@ -152,54 +152,6 @@ EOF
 $(resources_for_kubernetes "$kubernetes")
 EOF
             fi
-
-            if [ "$repo" = "csi-driver-host-path" ]; then
-                # The pre-merge job above replaces the
-                # csi-driver-host-path image with a locally built
-                # one. That can hide issues when the deployments get
-                # updated (for example, replacing image versions).
-                # To test the unmodified deployments we define additional jobs
-                # that don't rebuild the driver.
-                cat >>"$base/$repo/$repo-config.yaml" <<EOF
-  - name: pull-sig-storage-$repo-deployment-$(kubernetes_job_name $deployment $kubernetes)
-    # Experimental job, explicitly needs to be started with /test.
-    # This can be enabled once the components have the necessary configuration
-    # for this combination of deployment+Kubernetes.
-    always_run: false
-    decorate: true
-    skip_report: false
-    skip_branches: [$(skip_branches $repo)]
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-      # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
-        command:
-        - runner.sh
-        args:
-        - ./.prow.sh
-        env:
-        # We pick some version for which there are pre-built images for kind.
-        # Update only when the newer version is known to not cause issues,
-        # otherwise presubmit jobs may start to fail for reasons that are
-        # unrelated to the PR. Testing against the latest Kubernetes is covered
-        # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi#Summary).
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "$kubernetes"
-        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "$deployment"
-        # use unmodified deployment
-        - name: CSI_PROW_BUILD_JOB
-          value: "false"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-$(resources_for_kubernetes "$kubernetes")
-EOF
-            fi
         done
 
         cat >>"$base/$repo/$repo-config.yaml" <<EOF
