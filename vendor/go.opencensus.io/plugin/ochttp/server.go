@@ -118,7 +118,7 @@ func (h *Handler) startTrace(w http.ResponseWriter, r *http.Request) (*http.Requ
 			span.AddLink(trace.Link{
 				TraceID:    sc.TraceID,
 				SpanID:     sc.SpanID,
-				Type:       trace.LinkTypeChild,
+				Type:       trace.LinkTypeParent,
 				Attributes: nil,
 			})
 		}
