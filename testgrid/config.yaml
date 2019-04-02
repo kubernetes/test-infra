@@ -3067,6 +3067,8 @@ test_groups:
   gcs_prefix: istio-prow/pr-logs/directory/e2e-simpleTests
 - name: istio-e2e-bookInfoTests-envoyv2-v1alpha3-presubmit
   gcs_prefix: istio-prow/pr-logs/directory/e2e-bookInfoTests-envoyv2-v1alpha3
+- name: istio-e2e-bookInfoTests-trustdomain-presubmit
+  gcs_prefix: istio-prow/pr-logs/directory/e2e-bookInfoTests-trustdomain
 # Istio Prow Postsubmits
 - name: istio-postsubmit
   gcs_prefix: istio-prow/logs/istio-postsubmit
