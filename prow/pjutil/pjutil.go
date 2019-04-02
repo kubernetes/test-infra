@@ -111,6 +111,11 @@ func PresubmitSpec(p config.Presubmit, refs prowapi.Refs) prowapi.ProwJobSpec {
 	pjs.Context = p.Context
 	pjs.Report = !p.SkipReport
 	pjs.RerunCommand = p.RerunCommand
+	if p.JenkinsSpec != nil {
+		pjs.JenkinsSpec = &prowapi.JenkinsSpec{
+			GitHubBranchSourceJob: p.JenkinsSpec.GitHubBranchSourceJob,
+		}
+	}
 	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
 
 	return pjs
@@ -123,6 +128,11 @@ func PostsubmitSpec(p config.Postsubmit, refs prowapi.Refs) prowapi.ProwJobSpec 
 	pjs.Context = p.Context
 	pjs.Report = !p.SkipReport
 	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
+	if p.JenkinsSpec != nil {
+		pjs.JenkinsSpec = &prowapi.JenkinsSpec{
+			GitHubBranchSourceJob: p.JenkinsSpec.GitHubBranchSourceJob,
+		}
+	}
 
 	return pjs
 }
@@ -240,6 +250,10 @@ func ProwJobFields(pj *prowapi.ProwJob) logrus.Fields {
 		fields[github.RepoLogField] = pj.Spec.Refs.Repo
 		fields[github.OrgLogField] = pj.Spec.Refs.Org
 	}
+	if pj.Spec.JenkinsSpec != nil {
+		fields["github_based_job"] = pj.Spec.JenkinsSpec.GitHubBranchSourceJob
+	}
+
 	return fields
 }
 

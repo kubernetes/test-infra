@@ -135,6 +135,8 @@ type Presubmit struct {
 
 	Reporter
 
+	JenkinsSpec *JenkinsSpec `json:"jenkins_spec,omitempty"`
+
 	// We'll set these when we load it.
 	re *regexp.Regexp // from Trigger.
 }
@@ -149,6 +151,8 @@ type Postsubmit struct {
 
 	// TODO(krzyzacy): Move existing `Report` into `Skip_Report` once this is deployed
 	Reporter
+
+	JenkinsSpec *JenkinsSpec `json:"jenkins_spec,omitempty"`
 }
 
 // Periodic runs on a timer.
@@ -163,6 +167,13 @@ type Periodic struct {
 	Tags []string `json:"tags,omitempty"`
 
 	interval time.Duration
+}
+
+// JenkinsSpec holds optional Jenkins job config
+type JenkinsSpec struct {
+	// Job is managed by the GH branch source plugin
+	// and requires a specific path
+	GitHubBranchSourceJob bool `json:"github_branch_source_job,omitempty"`
 }
 
 // SetInterval updates interval, the frequency duration it runs.

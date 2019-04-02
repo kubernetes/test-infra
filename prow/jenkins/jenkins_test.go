@@ -26,6 +26,8 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
+
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 // getRequestedJob is attempting to determine if this is a job-specific
@@ -175,5 +177,167 @@ func TestListBuilds(t *testing.T) {
 				t.Errorf("expected build:\n%+v\ngot:\n%+v", expectedBuild, gotBuild)
 			}
 		}
+	}
+}
+
+func TestBuildCreate(t *testing.T) {
+	testCases := []struct {
+		name   string
+		input  *prowapi.ProwJobSpec
+		output string
+	}{
+		{
+			name: "GitHub Branch Source based PR job",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Job:   "my-jenkins-job-name",
+				JenkinsSpec: &prowapi.JenkinsSpec{
+					GitHubBranchSourceJob: true,
+				},
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 123,
+							SHA:    "abcd1234",
+						},
+					},
+				},
+			},
+			output: "/job/my-jenkins-job-name/view/change-requests/job/PR-123/buildWithParameters",
+		},
+		{
+			name: "GitHub Branch Source based branch job",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Type:  prowapi.PostsubmitJob,
+				Job:   "my-jenkins-job-name",
+				JenkinsSpec: &prowapi.JenkinsSpec{
+					GitHubBranchSourceJob: true,
+				},
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+				},
+			},
+			output: "/job/my-jenkins-job-name/job/master/buildWithParameters",
+		},
+		{
+			name: "Static Jenkins job",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Job:   "my-k8s-job-name",
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 123,
+							SHA:    "abcd1234",
+						},
+					},
+				},
+			},
+			output: "/job/my-k8s-job-name/buildWithParameters",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			var handler http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+				actualPath := r.URL.Path
+
+				if !reflect.DeepEqual(testCase.output, actualPath) {
+					t.Errorf("%s: expected path %s, got %s", testCase.name, testCase.output, actualPath)
+				}
+
+				w.WriteHeader(201)
+			}
+
+			ts := httptest.NewServer(handler)
+			defer ts.Close()
+
+			jc := Client{
+				logger:  logrus.WithField("client", "jenkins"),
+				client:  ts.Client(),
+				baseURL: ts.URL,
+			}
+
+			jc.BuildFromSpec(testCase.input, "buildID", "prowJobID")
+		})
+	}
+}
+
+func TestGetJobName(t *testing.T) {
+	testCases := []struct {
+		name   string
+		input  *prowapi.ProwJobSpec
+		output string
+	}{
+		{
+			name: "GitHub Branch Source based PR job",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Job:   "my-jenkins-job-name",
+				JenkinsSpec: &prowapi.JenkinsSpec{
+					GitHubBranchSourceJob: true,
+				},
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 123,
+							SHA:    "abcd1234",
+						},
+					},
+				},
+			},
+			output: "my-jenkins-job-name/view/change-requests/job/PR-123",
+		},
+		{
+			name: "GitHub Branch Source based branch job",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Type:  prowapi.PostsubmitJob,
+				Job:   "my-jenkins-job-name",
+				JenkinsSpec: &prowapi.JenkinsSpec{
+					GitHubBranchSourceJob: true,
+				},
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+				},
+			},
+			output: "my-jenkins-job-name/job/master",
+		},
+		{
+			name: "Static Jenkins job",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Job:   "my-k8s-job-name",
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 123,
+							SHA:    "abcd1234",
+						},
+					},
+				},
+			},
+			output: "my-k8s-job-name",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actualName := getJobName(testCase.input)
+			if !reflect.DeepEqual(testCase.output, actualName) {
+				t.Errorf("%s: expected path %s, got %s", testCase.name, testCase.output, actualName)
+			}
+		})
 	}
 }

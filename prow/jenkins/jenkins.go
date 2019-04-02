@@ -388,6 +388,27 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 	return c.client.Do(req)
 }
 
+// getJobName generates the correct job name for this job type
+func getJobName(spec *prowapi.ProwJobSpec) string {
+	if spec.JenkinsSpec != nil && spec.JenkinsSpec.GitHubBranchSourceJob && spec.Refs != nil {
+		if len(spec.Refs.Pulls) > 0 {
+			return fmt.Sprintf("%s/view/change-requests/job/PR-%d", spec.Job, spec.Refs.Pulls[0].Number)
+		}
+
+		return fmt.Sprintf("%s/job/%s", spec.Job, spec.Refs.BaseRef)
+	}
+
+	return spec.Job
+}
+
+// getRequestPath builds an approriate path to use for this Jenkins Job.
+func getRequestPath(spec *prowapi.ProwJobSpec) string {
+	jenkinsJobName := getJobName(spec)
+	jenkinsPath := fmt.Sprintf("/job/%s/buildWithParameters", jenkinsJobName)
+
+	return jenkinsPath
+}
+
 // Build triggers a Jenkins build for the provided ProwJob. The name of
 // the ProwJob is going to be used as the Prow Job ID parameter that will
 // help us track the build before it's scheduled by Jenkins.
@@ -410,7 +431,9 @@ func (c *Client) BuildFromSpec(spec *prowapi.ProwJobSpec, buildID, prowJobID str
 	for key, value := range env {
 		params.Set(key, value)
 	}
-	path := fmt.Sprintf("/job/%s/buildWithParameters", spec.Job)
+	path := getRequestPath(spec)
+	c.logger.Debugf("getRequestPath: %s", path)
+
 	resp, err := c.request(http.MethodPost, path, params, true)
 	if err != nil {
 		return err
