@@ -278,6 +278,7 @@ func main() {
 	)
 
 	pjutil.ServePProf()
+	health := pjutil.NewHealth(8081)
 
 	s, err := newStore(o.storagePath)
 	if err != nil {
@@ -301,6 +302,8 @@ func main() {
 	}
 
 	http.HandleFunc("/vend/", s.handle)
+
+	health.ServeReady()
 
 	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(o.port), nil))
 }
