@@ -1009,13 +1009,13 @@ go_repository(
 
 go_repository(
     name = "com_github_knative_build",
+    commit = "38ace00371c7",
     importpath = "github.com/knative/build",
-    tag = "v0.2.0",
 )
 
 go_repository(
     name = "com_github_knative_pkg",
-    commit = "0e41760cea1d",
+    commit = "916205998db9",
     importpath = "github.com/knative/pkg",
 )
 

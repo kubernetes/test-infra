@@ -47,8 +47,10 @@ type ConditionSeverity string
 
 const (
 	// ConditionSeverityError specifies that a failure of a condition type
-	// should be viewed as an error.
-	ConditionSeverityError ConditionSeverity = "Error"
+	// should be viewed as an error.  As "Error" is the default for conditions
+	// we use the empty string (coupled with omitempty) to avoid confusion in
+	// the case where the condition is in state "True" (aka nothing is wrong).
+	ConditionSeverityError ConditionSeverity = ""
 	// ConditionSeverityWarning specifies that a failure of a condition type
 	// should be viewed as a warning, but that things could still work.
 	ConditionSeverityWarning ConditionSeverity = "Warning"
@@ -127,25 +129,28 @@ type KResource struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Status KResourceStatus `json:"status"`
+	Status Status `json:"status"`
 }
 
-// KResourceStatus shows how we expect folks to embed Conditions in
+// Status shows how we expect folks to embed Conditions in
 // their Status field.
-type KResourceStatus struct {
-	Conditions Conditions `json:"conditions,omitempty"`
+// WARNING: Adding fields to this struct will add them to all Knative resources.
+type Status struct {
+	// ObservedGeneration is the 'Generation' of the Service that
+	// was last processed by the controller.
+	// +optional
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+
+	// Conditions the latest available observations of a resource's current state.
+	// +optional
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	Conditions Conditions `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
 }
 
-func (krs *KResourceStatus) GetConditions() Conditions {
-	return krs.Conditions
-}
-
-func (krs *KResourceStatus) SetConditions(conditions Conditions) {
-	krs.Conditions = conditions
-}
-
-// Ensure KResourceStatus satisfies ConditionsAccessor
-var _ ConditionsAccessor = (*KResourceStatus)(nil)
+// TODO: KResourceStatus is added for backwards compatibility for <= 0.4.0 releases. Remove later.
+// KResourceStatus [Deprecated] use Status directly. Will be deleted ~0.6.0 release.
+type KResourceStatus Status
 
 // In order for Conditions to be Implementable, KResource must be Populatable.
 var _ duck.Populatable = (*KResource)(nil)
@@ -158,8 +163,19 @@ func (_ *Conditions) GetFullType() duck.Populatable {
 	return &KResource{}
 }
 
+// GetCondition fetches the condition of the specified type.
+func (s *Status) GetCondition(t ConditionType) *Condition {
+	for _, cond := range s.Conditions {
+		if cond.Type == t {
+			return &cond
+		}
+	}
+	return nil
+}
+
 // Populate implements duck.Populatable
 func (t *KResource) Populate() {
+	t.Status.ObservedGeneration = 42
 	t.Status.Conditions = Conditions{{
 		// Populate ALL fields
 		Type:               "Birthday",
