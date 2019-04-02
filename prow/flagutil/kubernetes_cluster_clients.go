@@ -118,12 +118,12 @@ func (o *ExperimentalKubernetesOptions) resolve(dryRun bool) (err error) {
 
 // ProwJobClientset returns a ProwJob clientset for use in informer factories.
 func (o *ExperimentalKubernetesOptions) ProwJobClientset(namespace string, dryRun bool) (prowJobClientset prow.Interface, err error) {
-	if o.dryRun {
-		return nil, errors.New("no dry-run prowjob clientset is supported in dry-run mode")
-	}
-
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
+	}
+
+	if o.dryRun {
+		return nil, errors.New("no dry-run prowjob clientset is supported in dry-run mode")
 	}
 
 	return o.prowJobClientset, nil
@@ -144,12 +144,12 @@ func (o *ExperimentalKubernetesOptions) ProwJobClient(namespace string, dryRun b
 
 // InfrastructureClusterClient returns a Kubernetes client for the infrastructure cluster.
 func (o *ExperimentalKubernetesOptions) InfrastructureClusterClient(dryRun bool) (kubernetesClient kubernetes.Interface, err error) {
-	if o.dryRun {
-		return nil, errors.New("no dry-run kubernetes client is supported in dry-run mode")
-	}
-
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
+	}
+
+	if o.dryRun {
+		return nil, errors.New("no dry-run kubernetes client is supported in dry-run mode")
 	}
 
 	return o.kubernetesClientsByContext[kube.InClusterContext], nil
@@ -157,12 +157,12 @@ func (o *ExperimentalKubernetesOptions) InfrastructureClusterClient(dryRun bool)
 
 // BuildClusterClients returns Pod clients for build clusters.
 func (o *ExperimentalKubernetesOptions) BuildClusterClients(namespace string, dryRun bool) (buildClusterClients map[string]corev1.PodInterface, err error) {
-	if o.dryRun {
-		return nil, errors.New("no dry-run pod client is supported for build clusters in dry-run mode")
-	}
-
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
+	}
+
+	if o.dryRun {
+		return nil, errors.New("no dry-run pod client is supported for build clusters in dry-run mode")
 	}
 
 	buildClients := map[string]corev1.PodInterface{}
