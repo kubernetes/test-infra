@@ -957,7 +957,7 @@ func TestReconcile(t *testing.T) {
 					Type:    buildv1alpha1.BuildSucceeded,
 					Message: "hello",
 				})
-				b.Status.StartTime = now
+				b.Status.StartTime = now.DeepCopy()
 				return b
 			}(),
 			expectedJob: func(pj prowjobv1.ProwJob, _ buildv1alpha1.Build) prowjobv1.ProwJob {
@@ -997,8 +997,8 @@ func TestReconcile(t *testing.T) {
 					Status:  corev1.ConditionTrue,
 					Message: "hello",
 				})
-				b.Status.CompletionTime = now
-				b.Status.StartTime = now
+				b.Status.CompletionTime = now.DeepCopy()
+				b.Status.StartTime = now.DeepCopy()
 				return b
 			}(),
 			expectedJob: func(pj prowjobv1.ProwJob, _ buildv1alpha1.Build) prowjobv1.ProwJob {
@@ -1039,8 +1039,8 @@ func TestReconcile(t *testing.T) {
 					Status:  corev1.ConditionFalse,
 					Message: "hello",
 				})
-				b.Status.StartTime = now
-				b.Status.CompletionTime = now
+				b.Status.StartTime = now.DeepCopy()
+				b.Status.CompletionTime = now.DeepCopy()
 				return b
 			}(),
 			expectedJob: func(pj prowjobv1.ProwJob, _ buildv1alpha1.Build) prowjobv1.ProwJob {
@@ -1088,8 +1088,8 @@ func TestReconcile(t *testing.T) {
 					Status:  corev1.ConditionTrue,
 					Message: "hello",
 				})
-				b.Status.CompletionTime = now
-				b.Status.StartTime = now
+				b.Status.CompletionTime = now.DeepCopy()
+				b.Status.StartTime = now.DeepCopy()
 				return b
 			}(),
 		},
@@ -1170,8 +1170,8 @@ func TestReconcile(t *testing.T) {
 					Status:  corev1.ConditionTrue,
 					Message: "hello",
 				})
-				b.Status.CompletionTime = now
-				b.Status.StartTime = now
+				b.Status.CompletionTime = now.DeepCopy()
+				b.Status.StartTime = now.DeepCopy()
 				return b
 			}(),
 		},
@@ -1816,11 +1816,13 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "truly succeeded state returns success",
 			input: buildv1alpha1.BuildStatus{
-				Conditions: []duckv1alpha1.Condition{
-					{
-						Type:    buildv1alpha1.BuildSucceeded,
-						Status:  corev1.ConditionTrue,
-						Message: "fancy",
+				Status: duckv1alpha1.Status{
+					Conditions: []duckv1alpha1.Condition{
+						{
+							Type:    buildv1alpha1.BuildSucceeded,
+							Status:  corev1.ConditionTrue,
+							Message: "fancy",
+						},
 					},
 				},
 			},
@@ -1831,11 +1833,13 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "falsely succeeded state returns failure",
 			input: buildv1alpha1.BuildStatus{
-				Conditions: []duckv1alpha1.Condition{
-					{
-						Type:    buildv1alpha1.BuildSucceeded,
-						Status:  corev1.ConditionFalse,
-						Message: "weird",
+				Status: duckv1alpha1.Status{
+					Conditions: []duckv1alpha1.Condition{
+						{
+							Type:    buildv1alpha1.BuildSucceeded,
+							Status:  corev1.ConditionFalse,
+							Message: "weird",
+						},
 					},
 				},
 			},
@@ -1846,11 +1850,13 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "unstarted job returns triggered/initializing",
 			input: buildv1alpha1.BuildStatus{
-				Conditions: []duckv1alpha1.Condition{
-					{
-						Type:    buildv1alpha1.BuildSucceeded,
-						Status:  corev1.ConditionUnknown,
-						Message: "hola",
+				Status: duckv1alpha1.Status{
+					Conditions: []duckv1alpha1.Condition{
+						{
+							Type:    buildv1alpha1.BuildSucceeded,
+							Status:  corev1.ConditionUnknown,
+							Message: "hola",
+						},
 					},
 				},
 			},
@@ -1861,12 +1867,14 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "unfinished job returns running",
 			input: buildv1alpha1.BuildStatus{
-				StartTime: now,
-				Conditions: []duckv1alpha1.Condition{
-					{
-						Type:    buildv1alpha1.BuildSucceeded,
-						Status:  corev1.ConditionUnknown,
-						Message: "hola",
+				StartTime: now.DeepCopy(),
+				Status: duckv1alpha1.Status{
+					Conditions: []duckv1alpha1.Condition{
+						{
+							Type:    buildv1alpha1.BuildSucceeded,
+							Status:  corev1.ConditionUnknown,
+							Message: "hola",
+						},
 					},
 				},
 			},
@@ -1877,13 +1885,15 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "builds with unknown success status are still running",
 			input: buildv1alpha1.BuildStatus{
-				StartTime:      now,
-				CompletionTime: later,
-				Conditions: []duckv1alpha1.Condition{
-					{
-						Type:    buildv1alpha1.BuildSucceeded,
-						Status:  corev1.ConditionUnknown,
-						Message: "hola",
+				StartTime:      now.DeepCopy(),
+				CompletionTime: later.DeepCopy(),
+				Status: duckv1alpha1.Status{
+					Conditions: []duckv1alpha1.Condition{
+						{
+							Type:    buildv1alpha1.BuildSucceeded,
+							Status:  corev1.ConditionUnknown,
+							Message: "hola",
+						},
 					},
 				},
 			},
@@ -1894,8 +1904,8 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "completed builds without a succeeded condition end in error",
 			input: buildv1alpha1.BuildStatus{
-				StartTime:      now,
-				CompletionTime: later,
+				StartTime:      now.DeepCopy(),
+				CompletionTime: later.DeepCopy(),
 			},
 			state: prowjobv1.ErrorState,
 			desc:  descMissingCondition,
