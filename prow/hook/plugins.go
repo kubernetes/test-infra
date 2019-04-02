@@ -43,6 +43,7 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/override"
 	_ "k8s.io/test-infra/prow/plugins/owners-label"
 	_ "k8s.io/test-infra/prow/plugins/pony"
+	_ "k8s.io/test-infra/prow/plugins/project"
 	_ "k8s.io/test-infra/prow/plugins/releasenote"
 	_ "k8s.io/test-infra/prow/plugins/require-matching-label"
 	_ "k8s.io/test-infra/prow/plugins/requiresig"
