@@ -3345,6 +3345,9 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
 - name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aks-engine-azure-1-14-windows
+- name: pull-kubernetes-e2e-aks-engine-azure-windows
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-aks-engine-azure-windows
+  num_columns_recent: 30
 # Cloud-provider-azure e2e tests
 - name: pull-cloud-provider-azure-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-azure-e2e
@@ -7865,6 +7868,9 @@ dashboards:
   - name: aks-engine-azure-1-14-windows
     description: Release tests for K8s 1.14 on Clusters with Windows nodes provided by aks-engine on Azure cloud.
     test_group_name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
+  - name: aks-engine-azure-windows-presubmit
+    description: Presubmit job for Windows tests on k8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
+    test_group_name: pull-kubernetes-e2e-aks-engine-azure-windows
   - name: gce-windows-master
     description: Runs tests on a Kubernetes cluster with Windows nodes on GCE"
     test_group_name: ci-kubernetes-e2e-windows-gce
