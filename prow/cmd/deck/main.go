@@ -158,9 +158,7 @@ func main() {
 	// signal to the world that we are healthy
 	// this needs to be in a separate port as we don't start the
 	// main server with the main mux until we're ready
-	healthMux := http.NewServeMux()
-	healthMux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, "OK") })
-	go func() { logrus.WithError(http.ListenAndServe(":8081", healthMux)).Fatal("ListenAndServe returned.") }()
+	health := pjutil.NewHealth(8081)
 
 	mux := http.NewServeMux()
 	// setup common handlers for local and deployed runs
@@ -203,7 +201,8 @@ func main() {
 	}
 
 	// signal to the world that we're ready
-	healthMux.HandleFunc("/healthz/ready", func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, "OK") })
+	health.ServeReady()
+
 	// setup done, actually start the server
 	logrus.WithError(http.ListenAndServe(":8080", mux)).Fatal("ListenAndServe returned.")
 }
