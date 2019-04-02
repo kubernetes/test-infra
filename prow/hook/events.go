@@ -35,6 +35,8 @@ var (
 		github.IssueActionDemilestoned: true,
 		github.IssueActionClosed:       true,
 		github.IssueActionReopened:     true,
+		github.IssueActionPinned:       true,
+		github.IssueActionUnpinned:     true,
 	}
 	nonCommentPullRequestActions = map[github.PullRequestEventAction]bool{
 		github.PullRequestActionAssigned:             true,
@@ -46,6 +48,7 @@ var (
 		github.PullRequestActionClosed:               true,
 		github.PullRequestActionReopened:             true,
 		github.PullRequestActionSynchronize:          true,
+		github.PullRequestActionReadyForReview:       true,
 	}
 )
 
@@ -252,7 +255,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 	action := genericCommentAction(string(i.Action))
 	if action == "" {
 		if !nonCommentIssueActions[i.Action] {
-			l.Errorf(failedCommentCoerceFmt, "pull_request", string(i.Action))
+			l.Errorf(failedCommentCoerceFmt, "issues", string(i.Action))
 		}
 		return
 	}

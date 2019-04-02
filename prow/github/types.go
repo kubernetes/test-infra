@@ -165,25 +165,27 @@ const (
 	// PullRequestActionAssigned means assignees were added.
 	PullRequestActionAssigned PullRequestEventAction = "assigned"
 	// PullRequestActionUnassigned means assignees were removed.
-	PullRequestActionUnassigned = "unassigned"
+	PullRequestActionUnassigned PullRequestEventAction = "unassigned"
 	// PullRequestActionReviewRequested means review requests were added.
-	PullRequestActionReviewRequested = "review_requested"
+	PullRequestActionReviewRequested PullRequestEventAction = "review_requested"
 	// PullRequestActionReviewRequestRemoved means review requests were removed.
-	PullRequestActionReviewRequestRemoved = "review_request_removed"
+	PullRequestActionReviewRequestRemoved PullRequestEventAction = "review_request_removed"
 	// PullRequestActionLabeled means labels were added.
-	PullRequestActionLabeled = "labeled"
+	PullRequestActionLabeled PullRequestEventAction = "labeled"
 	// PullRequestActionUnlabeled means labels were removed
-	PullRequestActionUnlabeled = "unlabeled"
+	PullRequestActionUnlabeled PullRequestEventAction = "unlabeled"
 	// PullRequestActionOpened means the PR was created
-	PullRequestActionOpened = "opened"
+	PullRequestActionOpened PullRequestEventAction = "opened"
 	// PullRequestActionEdited means the PR body changed.
-	PullRequestActionEdited = "edited"
+	PullRequestActionEdited PullRequestEventAction = "edited"
 	// PullRequestActionClosed means the PR was closed (or was merged).
-	PullRequestActionClosed = "closed"
+	PullRequestActionClosed PullRequestEventAction = "closed"
 	// PullRequestActionReopened means the PR was reopened.
-	PullRequestActionReopened = "reopened"
+	PullRequestActionReopened PullRequestEventAction = "reopened"
 	// PullRequestActionSynchronize means the git state changed.
-	PullRequestActionSynchronize = "synchronize"
+	PullRequestActionSynchronize PullRequestEventAction = "synchronize"
+	// PullRequestActionReadyForReview means the PR is no longer a draft PR.
+	PullRequestActionReadyForReview PullRequestEventAction = "ready_for_review"
 )
 
 // PullRequestEvent is what GitHub sends us when a PR is changed.
@@ -376,23 +378,27 @@ const (
 	// IssueActionAssigned means assignees were added.
 	IssueActionAssigned IssueEventAction = "assigned"
 	// IssueActionUnassigned means assignees were added.
-	IssueActionUnassigned = "unassigned"
+	IssueActionUnassigned IssueEventAction = "unassigned"
 	// IssueActionLabeled means labels were added.
-	IssueActionLabeled = "labeled"
+	IssueActionLabeled IssueEventAction = "labeled"
 	// IssueActionUnlabeled means labels were removed.
-	IssueActionUnlabeled = "unlabeled"
+	IssueActionUnlabeled IssueEventAction = "unlabeled"
 	// IssueActionOpened means issue was opened/created.
-	IssueActionOpened = "opened"
+	IssueActionOpened IssueEventAction = "opened"
 	// IssueActionEdited means issue body was edited.
-	IssueActionEdited = "edited"
+	IssueActionEdited IssueEventAction = "edited"
 	// IssueActionMilestoned means the milestone was added/changed.
-	IssueActionMilestoned = "milestoned"
+	IssueActionMilestoned IssueEventAction = "milestoned"
 	// IssueActionDemilestoned means a milestone was removed.
-	IssueActionDemilestoned = "demilestoned"
+	IssueActionDemilestoned IssueEventAction = "demilestoned"
 	// IssueActionClosed means issue was closed.
-	IssueActionClosed = "closed"
+	IssueActionClosed IssueEventAction = "closed"
 	// IssueActionReopened means issue was reopened.
-	IssueActionReopened = "reopened"
+	IssueActionReopened IssueEventAction = "reopened"
+	// IssueActionPinned means the issue was pinned.
+	IssueActionPinned IssueEventAction = "pinned"
+	// IssueActionUnpinned means the issue was unpinned.
+	IssueActionUnpinned IssueEventAction = "unpinned"
 )
 
 // IssueEvent represents an issue event from a webhook payload (not from the events API).
@@ -425,9 +431,9 @@ const (
 	// IssueCommentActionCreated means the comment was created.
 	IssueCommentActionCreated IssueCommentEventAction = "created"
 	// IssueCommentActionEdited means the comment was edited.
-	IssueCommentActionEdited = "edited"
+	IssueCommentActionEdited IssueCommentEventAction = "edited"
 	// IssueCommentActionDeleted means the comment was deleted.
-	IssueCommentActionDeleted = "deleted"
+	IssueCommentActionDeleted IssueCommentEventAction = "deleted"
 )
 
 // IssueCommentEvent is what GitHub sends us when an issue comment is changed.
@@ -578,9 +584,9 @@ const (
 	// ReviewActionSubmitted means the review was submitted.
 	ReviewActionSubmitted ReviewEventAction = "submitted"
 	// ReviewActionEdited means the review was edited.
-	ReviewActionEdited = "edited"
+	ReviewActionEdited ReviewEventAction = "edited"
 	// ReviewActionDismissed means the review was dismissed.
-	ReviewActionDismissed = "dismissed"
+	ReviewActionDismissed ReviewEventAction = "dismissed"
 )
 
 // ReviewEvent is what GitHub sends us when a PR review is changed.
@@ -625,9 +631,9 @@ const (
 	// ReviewCommentActionCreated means the comment was created.
 	ReviewCommentActionCreated ReviewCommentEventAction = "created"
 	// ReviewCommentActionEdited means the comment was edited.
-	ReviewCommentActionEdited = "edited"
+	ReviewCommentActionEdited ReviewCommentEventAction = "edited"
 	// ReviewCommentActionDeleted means the comment was deleted.
-	ReviewCommentActionDeleted = "deleted"
+	ReviewCommentActionDeleted ReviewCommentEventAction = "deleted"
 )
 
 // ReviewCommentEvent is what GitHub sends us when a PR review comment is changed.
@@ -777,9 +783,9 @@ const (
 	// GenericCommentActionCreated means something was created/opened/submitted
 	GenericCommentActionCreated GenericCommentEventAction = "created" // "opened", "submitted"
 	// GenericCommentActionEdited means something was edited.
-	GenericCommentActionEdited = "edited"
+	GenericCommentActionEdited GenericCommentEventAction = "edited"
 	// GenericCommentActionDeleted means something was deleted/dismissed.
-	GenericCommentActionDeleted = "deleted" // "dismissed"
+	GenericCommentActionDeleted GenericCommentEventAction = "deleted" // "dismissed"
 )
 
 // GenericCommentEvent is a fake event type that is instantiated for any github event that contains
