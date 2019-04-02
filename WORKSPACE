@@ -6,7 +6,9 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 git_repository(
     name = "bazel_skylib",
     remote = "https://github.com/bazelbuild/bazel-skylib.git",
-    tag = "0.6.0",
+    commit = "f83cb8dd6f5658bc574ccd873e25197055265d1c",
+    shallow_since = "1543273402 -0500",
+    # tag = "0.6.0",
 )
 
 load("@bazel_skylib//lib:versions.bzl", "versions")
@@ -118,7 +120,9 @@ git_repository(
 git_repository(
     name = "build_bazel_rules_nodejs",
     remote = "https://github.com/bazelbuild/rules_nodejs.git",
-    tag = "0.16.6",
+    commit = "0eb4a19507211ab3863f4d82e9412a33f759abcd",
+    shallow_since = "1548802468 -0800",
+    #tag = "0.16.6",
 )
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "yarn_install")
@@ -473,6 +477,7 @@ git_repository(
     name = "io_bazel_rules_appengine",
     commit = "fdbce051adecbb369b15260046f4f23684369efc",
     remote = "https://github.com/bazelbuild/rules_appengine.git",
+    shallow_since = "1552415147 -0400",
     #tag = "0.0.8+but-this-isn't-new-enough", # Latest at https://github.com/bazelbuild/rules_appengine/releases.
 )
 
@@ -484,6 +489,7 @@ git_repository(
     name = "io_bazel_rules_python",
     commit = "cc4cbf2f042695f4d1d4198c22459b3dbe7f8e43",
     remote = "https://github.com/bazelbuild/rules_python.git",
+    shallow_since = "1546820050 -0500",
 )
 
 # Only needed for PIP support:
