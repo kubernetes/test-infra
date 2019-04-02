@@ -17,17 +17,21 @@ limitations under the License.
 package adapter
 
 import (
-	"k8s.io/test-infra/prow/pjutil"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/gerrit/reporter"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 // messageFilter builds a filter for jobs based on the messageBody matching the trigger regex of the jobs.
-func messageFilter(lastUpdate time.Time, change client.ChangeInfo, presubmits []config.Presubmit) (pjutil.Filter, error) {
+func messageFilter(lastUpdate time.Time, change client.ChangeInfo, presubmits []config.Presubmit, latestReport *reporter.JobReport) (pjutil.Filter, error) {
 	var filters []pjutil.Filter
 	currentRevision := change.Revisions[change.CurrentRevision].Number
 	for _, message := range change.Messages {
@@ -36,15 +40,35 @@ func messageFilter(lastUpdate time.Time, change client.ChangeInfo, presubmits []
 			continue
 		}
 
-		if !pjutil.TestAllRe.MatchString(message.Message) {
+		if pjutil.TestAllRe.MatchString(message.Message) {
+			filters = append(filters, pjutil.TestAllFilter())
+		} else if pjutil.RetestRe.MatchString(message.Message) {
+			if latestReport == nil {
+				continue
+			}
+			allContexts := sets.String{}
+			failedContexts := sets.String{}
+
+			jobs := map[string]*reporter.Job{}
+			for _, job := range latestReport.Jobs {
+				jobs[job.Name] = job
+			}
+			for _, presubmit := range presubmits {
+				allContexts.Insert(presubmit.Name)
+				j, ok := jobs[presubmit.Name]
+				if ok && strings.ToLower(j.State) == string(v1.FailureState) {
+					failedContexts.Insert(presubmit.Name)
+				}
+			}
+			filters = append(filters, pjutil.RetestFilter(failedContexts, allContexts))
+		} else {
 			for _, presubmit := range presubmits {
 				if presubmit.TriggerMatches(message.Message) {
 					logrus.Infof("Change %d: Comment %s matches triggering regex, for %s.", change.Number, message.Message, presubmit.Name)
 					filters = append(filters, pjutil.CommandFilter(message.Message))
 				}
 			}
-		} else {
-			filters = append(filters, pjutil.TestAllFilter())
+
 		}
 
 	}

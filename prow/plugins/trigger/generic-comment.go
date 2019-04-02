@@ -20,18 +20,17 @@ import (
 	"fmt"
 	"regexp"
 
-	"k8s.io/test-infra/prow/pjutil"
-
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 var okToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
-var retestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
 
 func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCommentEvent) error {
 	org := gc.Repo.Owner.Login
@@ -45,7 +44,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 		return nil
 	}
 	// Skip comments not germane to this plugin
-	if !retestRe.MatchString(gc.Body) && !okToTestRe.MatchString(gc.Body) && !pjutil.TestAllRe.MatchString(gc.Body) {
+	if !pjutil.RetestRe.MatchString(gc.Body) && !okToTestRe.MatchString(gc.Body) && !pjutil.TestAllRe.MatchString(gc.Body) {
 		matched := false
 		for _, presubmit := range c.Config.Presubmits[gc.Repo.FullName] {
 			matched = matched || presubmit.TriggerMatches(gc.Body)
@@ -170,7 +169,7 @@ func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, r
 	// match before others. We order filters by amount of specificity.
 	var filters []pjutil.Filter
 	filters = append(filters, pjutil.CommandFilter(body))
-	if retestRe.MatchString(body) {
+	if pjutil.RetestRe.MatchString(body) {
 		logger.Debug("Using retest filter.")
 		combinedStatus, err := statusGetter.GetCombinedStatus(org, repo, sha)
 		if err != nil {
@@ -185,18 +184,11 @@ func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, r
 			}
 		}
 
-		filters = append(filters, retestFilter(failedContexts, allContexts))
+		filters = append(filters, pjutil.RetestFilter(failedContexts, allContexts))
 	}
 	if (honorOkToTest && okToTestRe.MatchString(body)) || pjutil.TestAllRe.MatchString(body) {
 		logger.Debug("Using test-all filter.")
 		filters = append(filters, pjutil.TestAllFilter())
 	}
 	return pjutil.AggregateFilter(filters), nil
-}
-
-// retestFilter builds a filter for `/retest`
-func retestFilter(failedContexts, allContexts sets.String) pjutil.Filter {
-	return func(p config.Presubmit) (bool, bool, bool) {
-		return failedContexts.Has(p.Context) || (!p.NeedsExplicitTrigger() && !allContexts.Has(p.Context)), false, true
-	}
 }

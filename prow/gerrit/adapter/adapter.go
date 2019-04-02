@@ -29,11 +29,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/andygrunwald/go-gerrit"
 	"github.com/sirupsen/logrus"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/gerrit/reporter"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
@@ -46,6 +48,7 @@ type gerritClient interface {
 	QueryChanges(lastUpdate time.Time, rateLimit int) map[string][]client.ChangeInfo
 	GetBranchRevision(instance, project, branch string) (string, error)
 	SetReview(instance, id, revision, message string, labels map[string]string) error
+	Account(instance string) *gerrit.AccountInfo
 }
 
 type configAgent interface {
@@ -280,8 +283,27 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 	case client.New:
 		presubmits := c.config().Presubmits[cloneURI.String()]
 		presubmits = append(presubmits, c.config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
+
 		var filters []pjutil.Filter
-		filter, err := messageFilter(c.lastUpdate, change, presubmits)
+		var latestReport *reporter.JobReport
+		account := c.gc.Account(instance)
+		if account == nil {
+			return fmt.Errorf("unable to get gerrit account")
+		}
+
+		for _, message := range change.Messages {
+			// If message status report is not from the prow account ignore
+			if message.Author.AccountID != account.AccountID {
+				continue
+			}
+			report := reporter.ParseReport(message.Message)
+			if report != nil {
+				logrus.Infof("Found latest report: %s", message.Message)
+				latestReport = report
+				break
+			}
+		}
+		filter, err := messageFilter(c.lastUpdate, change, presubmits, latestReport)
 		if err != nil {
 			logger.WithError(err).Warn("failed to create filter on messages for presubmits")
 		} else {

@@ -25,6 +25,7 @@ import (
 )
 
 var TestAllRe = regexp.MustCompile(`(?m)^/test all,?($|\s.*)`)
+var RetestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
 
 // Filter digests a presubmit config to determine if:
 //  - we the presubmit matched the filter
@@ -114,4 +115,11 @@ func determineSkippedPresubmits(toTrigger, toSkipSuperset []config.Presubmit, lo
 		toSkip = append(toSkip, presubmit)
 	}
 	return toSkip
+}
+
+// RetestFilter builds a filter for `/retest`
+func RetestFilter(failedContexts, allContexts sets.String) Filter {
+	return func(p config.Presubmit) (bool, bool, bool) {
+		return failedContexts.Has(p.Context) || (!p.NeedsExplicitTrigger() && !allContexts.Has(p.Context)), false, true
+	}
 }

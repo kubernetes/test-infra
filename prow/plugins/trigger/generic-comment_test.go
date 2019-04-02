@@ -18,6 +18,7 @@ package trigger
 
 import (
 	"fmt"
+	"k8s.io/test-infra/prow/pjutil"
 	"log"
 	"reflect"
 	"testing"
@@ -1433,7 +1434,7 @@ func TestRetestFilter(t *testing.T) {
 			if err := config.SetPresubmitRegexes(testCase.presubmits); err != nil {
 				t.Fatalf("%s: could not set presubmit regexes: %v", testCase.name, err)
 			}
-			filter := retestFilter(testCase.failedContexts, testCase.allContexts)
+			filter := pjutil.RetestFilter(testCase.failedContexts, testCase.allContexts)
 			for i, presubmit := range testCase.presubmits {
 				actualFiltered, actualForced, actualDefault := filter(presubmit)
 				expectedFiltered, expectedForced, expectedDefault := testCase.expected[i][0], testCase.expected[i][1], testCase.expected[i][2]
