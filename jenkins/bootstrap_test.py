@@ -1082,6 +1082,7 @@ class FakeArgs(object):
     upload = UPLOAD
     json = False
     scenario = ''
+    compress = False
 
     def __init__(self, **kw):
         self.branch = BRANCH
@@ -1120,6 +1121,18 @@ class BootstrapTest(unittest.TestCase):
         for stub in self.boiler:
             with stub:  # Leaving with restores things
                 pass
+
+
+    def test_compress(self):
+        compressed = lambda s, d, o, c: self.assertTrue(c, 'failed to find compression')
+        uncompressed = lambda s, d, o, c: self.assertFalse(c, 'failed to find uncompression')
+        with Stub(bootstrap.GSUtil, 'copy_file', uncompressed):
+            test_bootstrap()
+        with Stub(bootstrap.GSUtil, 'copy_file', compressed):
+            test_bootstrap(compress=True)
+        with Stub(bootstrap.GSUtil, 'copy_file', uncompressed):
+            test_bootstrap(compress=False)
+
 
     def test_setcreds_setroot_fails(self):
         """We should still call setup_credentials even if setup_root blows up."""
