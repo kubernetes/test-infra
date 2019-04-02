@@ -7,7 +7,6 @@ go_library(
         "condition_set.go",
         "conditions_types.go",
         "doc.go",
-        "generational_types.go",
         "legacy_targetable_types.go",
         "register.go",
         "retired_targetable_types.go",

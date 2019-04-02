@@ -131,6 +131,7 @@ filegroup(
         "//vendor/github.com/knative/build/pkg/client/listers/build/v1alpha1:all-srcs",
         "//vendor/github.com/knative/pkg/apis:all-srcs",
         "//vendor/github.com/knative/pkg/kmeta:all-srcs",
+        "//vendor/github.com/knative/pkg/kmp:all-srcs",
         "//vendor/github.com/konsorten/go-windows-terminal-sequences:all-srcs",
         "//vendor/github.com/mailru/easyjson/buffer:all-srcs",
         "//vendor/github.com/mailru/easyjson/jlexer:all-srcs",

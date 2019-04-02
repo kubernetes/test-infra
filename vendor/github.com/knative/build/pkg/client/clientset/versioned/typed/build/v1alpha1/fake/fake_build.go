@@ -97,6 +97,18 @@ func (c *FakeBuilds) Update(build *v1alpha1.Build) (result *v1alpha1.Build, err 
 	return obj.(*v1alpha1.Build), err
 }
 
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+func (c *FakeBuilds) UpdateStatus(build *v1alpha1.Build) (*v1alpha1.Build, error) {
+	obj, err := c.Fake.
+		Invokes(testing.NewUpdateSubresourceAction(buildsResource, "status", c.ns, build), &v1alpha1.Build{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1alpha1.Build), err
+}
+
 // Delete takes name of the build and deletes it. Returns an error if one occurs.
 func (c *FakeBuilds) Delete(name string, options *v1.DeleteOptions) error {
 	_, err := c.Fake.
