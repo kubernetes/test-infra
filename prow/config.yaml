@@ -40,6 +40,7 @@ deck:
   tide_update_period: 1s
   hidden_repos:
   - kubernetes-security
+  google_analytics: UA-82843984-5
 
 prowjob_namespace: default
 pod_namespace: test-pods
