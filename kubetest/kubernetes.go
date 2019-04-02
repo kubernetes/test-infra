@@ -139,5 +139,6 @@ type nodeCondition struct {
 
 // metadata is a simplified version of the kubernetes metadata types
 type metadata struct {
-	Name string `json:"name"`
+	Name   string            `json:"name"`
+	Labels map[string]string `json:"labels"`
 }

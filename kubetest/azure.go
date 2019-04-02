@@ -82,29 +82,32 @@ type Config struct {
 }
 
 type Cluster struct {
-	ctx                     context.Context
-	credentials             *Creds
-	location                string
-	resourceGroup           string
-	name                    string
-	apiModelPath            string
-	dnsPrefix               string
-	templateJSON            map[string]interface{}
-	parametersJSON          map[string]interface{}
-	outputDir               string
-	sshPublicKey            string
-	adminUsername           string
-	adminPassword           string
-	masterVMSize            string
-	agentVMSize             string
-	acsCustomHyperKubeURL   string
-	acsCustomWinBinariesURL string
-	acsEngineBinaryPath     string
-	acsCustomCcmURL         string
-	agentPoolCount          int
-	k8sVersion              string
-	networkPlugin           string
-	azureClient             *AzureClient
+	ctx                      context.Context
+	credentials              *Creds
+	location                 string
+	resourceGroup            string
+	name                     string
+	apiModelPath             string
+	dnsPrefix                string
+	templateJSON             map[string]interface{}
+	parametersJSON           map[string]interface{}
+	outputDir                string
+	sshPublicKey             string
+	adminUsername            string
+	adminPassword            string
+	masterVMSize             string
+	agentVMSize              string
+	acsCustomHyperKubeURL    string
+	acsCustomWinBinariesURL  string
+	acsEngineBinaryPath      string
+	acsCustomCcmURL          string
+	agentPoolCount           int
+	k8sVersion               string
+	networkPlugin            string
+	azureClient              *AzureClient
+	oneTimeSshPublicKeyPath  string
+	oneTimeSshPrivateKeyPath string
+	masterFqdn               string
 }
 
 func (c *Cluster) getAzCredentials() error {
@@ -169,26 +172,29 @@ func newAcsEngine() (*Cluster, error) {
 		return nil, fmt.Errorf("error reading SSH Key %v %v", *acsSSHPublicKeyPath, err)
 	}
 	c := Cluster{
-		ctx:                     context.Background(),
-		apiModelPath:            *acsTemplateURL,
-		name:                    *acsResourceName,
-		dnsPrefix:               *acsDnsPrefix,
-		location:                *acsLocation,
-		resourceGroup:           *acsResourceGroupName,
-		outputDir:               tempdir,
-		sshPublicKey:            fmt.Sprintf("%s", sshKey),
-		credentials:             &Creds{},
-		masterVMSize:            *acsMasterVmSize,
-		agentVMSize:             *acsAgentVmSize,
-		adminUsername:           *acsAdminUsername,
-		adminPassword:           *acsAdminPassword,
-		agentPoolCount:          *acsAgentPoolCount,
-		k8sVersion:              *acsOrchestratorRelease,
-		networkPlugin:           *acsNetworkPlugin,
-		acsCustomHyperKubeURL:   "",
-		acsCustomWinBinariesURL: "",
-		acsCustomCcmURL:         "",
-		acsEngineBinaryPath:     "aks-engine", // use the one in path by default
+		ctx:                      context.Background(),
+		apiModelPath:             *acsTemplateURL,
+		name:                     *acsResourceName,
+		dnsPrefix:                *acsDnsPrefix,
+		location:                 *acsLocation,
+		resourceGroup:            *acsResourceGroupName,
+		outputDir:                tempdir,
+		sshPublicKey:             fmt.Sprintf("%s", sshKey),
+		credentials:              &Creds{},
+		masterVMSize:             *acsMasterVmSize,
+		agentVMSize:              *acsAgentVmSize,
+		adminUsername:            *acsAdminUsername,
+		adminPassword:            *acsAdminPassword,
+		agentPoolCount:           *acsAgentPoolCount,
+		k8sVersion:               *acsOrchestratorRelease,
+		networkPlugin:            *acsNetworkPlugin,
+		acsCustomHyperKubeURL:    "",
+		acsCustomWinBinariesURL:  "",
+		acsCustomCcmURL:          "",
+		acsEngineBinaryPath:      "aks-engine", // use the one in path by default
+		oneTimeSshPrivateKeyPath: path.Join(tempdir, "oneTimeSSH"),
+		oneTimeSshPublicKeyPath:  path.Join(tempdir, "oneTimeSSH.pub"),
+		masterFqdn:               fmt.Sprintf("%s.%s.cloudapp.azure.com", *acsDnsPrefix, *acsLocation),
 	}
 	c.getAzCredentials()
 	err = c.getARMClient(c.ctx)
@@ -202,6 +208,17 @@ func newAcsEngine() (*Cluster, error) {
 	}
 
 	return &c, nil
+}
+
+func (c *Cluster) generateOneTimeSSHKeyPair() error {
+
+	var err error
+	log.Printf("Generating one time ssh key pair.")
+	gen_ssh_cmd := exec.Command("ssh-keygen", "-t", "rsa", "-b", "4096", "-f", c.oneTimeSshPrivateKeyPath, "-N", "", "-q")
+	if err = control.FinishRunning(gen_ssh_cmd); err != nil {
+		return fmt.Errorf("failed to generate one time rsa key pair: %v.", err)
+	}
+	return nil
 }
 
 func (c *Cluster) populateApiModelTemplate() error {
@@ -266,9 +283,19 @@ func (c *Cluster) populateApiModelTemplate() error {
 			v.Properties.WindowsProfile.AdminPassword = c.adminPassword
 		}
 	}
-	v.Properties.LinuxProfile.SSHKeys.PublicKeys = []PublicKey{{
-		KeyData: c.sshPublicKey,
-	}}
+
+	sshKey, err := ioutil.ReadFile(c.oneTimeSshPublicKeyPath)
+	if err != nil {
+		return fmt.Errorf("error reading SSH Key %v %v", c.oneTimeSshPublicKeyPath, err)
+	}
+	v.Properties.LinuxProfile.SSHKeys.PublicKeys = []PublicKey{
+		{
+			KeyData: c.sshPublicKey,
+		},
+		{
+			KeyData: fmt.Sprintf("%s", sshKey),
+		},
+	}
 	v.Properties.ServicePrincipalProfile.ClientID = c.credentials.ClientID
 	v.Properties.ServicePrincipalProfile.Secret = c.credentials.ClientSecret
 
@@ -613,6 +640,13 @@ func (c *Cluster) buildWinZip() error {
 func (c Cluster) Up() error {
 
 	var err error
+
+	// Generating a one time ssh key pair per run. It will be used to collect logs from the generated cluster.
+	err = c.generateOneTimeSSHKeyPair()
+	if err != nil {
+		return fmt.Errorf("error generating one time ssh key pair %v", err)
+	}
+
 	if *acsCcm == true {
 		err = c.buildCcm()
 		if err != nil {
@@ -671,6 +705,38 @@ func (c Cluster) Down() error {
 }
 
 func (c Cluster) DumpClusterLogs(localPath, gcsPath string) error {
+
+	nodes, _ := kubectlGetNodes("")
+	log.Printf("nodes: %v", nodes)
+
+	logslurp := path.Join(os.Getenv("HOME"), "logslurp.sh")
+
+	// Testing only. Will be removed once WIP tag is removed
+	logslurp_url := "https://raw.githubusercontent.com/adelina-t/logslurp/master/logslurp.sh"
+	f, err := os.Create(logslurp)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	log.Printf("downloading %v from %v.", logslurp, logslurp_url)
+	err = httpRead(logslurp_url, f)
+	if err != nil {
+		return fmt.Errorf("url=%s failed get %v: %v.", logslurp_url, logslurp, err)
+	}
+	f.Chmod(0744)
+
+	master_ssh := fmt.Sprintf("%s@%s", c.adminUsername, c.masterFqdn)
+	for _, node := range nodes.Items {
+		if val, ok := node.Metadata.Labels["kubernetes.io/os"]; ok && val == "windows" {
+			log.Printf("Running logslurp for node: %v", node.Metadata.Name)
+			node_ssh := fmt.Sprintf("%s@%s", c.adminUsername, node.Metadata.Name)
+			logslurp_cmd := exec.Command(logslurp, master_ssh, node_ssh, c.oneTimeSshPrivateKeyPath)
+			if err = control.FinishRunning(logslurp_cmd); err != nil {
+				log.Printf("Failed to run logslurp on node %v : %v.", node.Metadata.Name, err)
+			}
+		}
+	}
 	return nil
 }
 
@@ -721,6 +787,7 @@ func (c Cluster) TestSetup() error {
 	if err != nil {
 		return fmt.Errorf("url=%s failed get %v: %v.", downloadUrl, downloadPath, err)
 	}
+	f.Close()
 	f.Chmod(0744)
 	if err := os.Setenv("KUBE_TEST_REPO_LIST", downloadPath); err != nil {
 		return err
