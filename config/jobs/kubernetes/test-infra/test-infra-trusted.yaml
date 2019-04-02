@@ -114,7 +114,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20190130-b4da262c0-0.21.0
+    - image: gcr.io/k8s-testimages/bazelbuild:v20190401-918468dbb-0.24.0
       command:
       - hack/autodeps.sh
       args:
@@ -147,7 +147,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20190130-b4da262c0-0.21.0
+    - image: gcr.io/k8s-testimages/bazelbuild:v20190401-918468dbb-0.24.0
       command:
       - hack/autodeps.sh
       args:
