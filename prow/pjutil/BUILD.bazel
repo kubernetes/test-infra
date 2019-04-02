@@ -13,6 +13,7 @@ go_library(
     srcs = [
         "abort.go",
         "filter.go",
+        "health.go",
         "pjutil.go",
         "pprof.go",
         "tot.go",
