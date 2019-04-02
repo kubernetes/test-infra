@@ -51,6 +51,10 @@ default_dashboard_tab:
 #
 
 test_groups:
+- name: post-k8sio-cip
+  gcs_prefix: kubernetes-jenkins/logs/post-k8sio-cip
+- name: ci-k8sio-cip
+  gcs_prefix: kubernetes-jenkins/logs/ci-k8sio-cip
 - name: ci-cadvisor-canarypush
   gcs_prefix: kubernetes-jenkins/logs/ci-cadvisor-canarypush
 - name: ci-cadvisor-e2e
@@ -5235,6 +5239,10 @@ dashboards:
     test_group_name: ci-kops-build
   - name: debian-unstable
     test_group_name: ci-kubernetes-build-debian-unstable
+  - name: post-k8sio-cip
+    test_group_name: post-k8sio-cip
+  - name: ci-k8sio-cip
+    test_group_name: ci-k8sio-cip
   - name: periodic-packages-pushed
     test_group_name: periodic-kubernetes-e2e-packages-pushed
   - name: periodic-packages-install-deb

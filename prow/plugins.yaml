@@ -457,6 +457,9 @@ plugins:
   kubernetes/federation:
   - trigger
 
+  kubernetes/k8s.io:
+  - trigger
+
   kubernetes/kops:
   - trigger
 
