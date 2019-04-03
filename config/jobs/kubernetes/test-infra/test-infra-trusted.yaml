@@ -75,7 +75,7 @@ postsubmits:
   - name: post-k8sio-cip
     cluster: test-infra-trusted
     decorate: true
-    run_if_changed: ".*/manifest.yaml"
+    run_if_changed: "k8s.gcr.io/.*/manifest.yaml"
     # Never run more than 1 job at a time. This is because we don't want to run
     # into a case where an older manifest PR merge gets run last (after a newer
     # one).
