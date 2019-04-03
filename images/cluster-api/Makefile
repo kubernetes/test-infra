@@ -12,14 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-VERSION := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
+push-prod:
+  bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch images/cluster-api
 
-IMG="gcr.io/k8s-testimages/cluster-api"
+push:
+	bazel run //images/builder -- --allow-dirty images/cluster-api
 
-image:
-	docker build --build-arg "IMAGE_ARG=$(IMG):$(VERSION)" -t "$(IMG):$(VERSION)" .
-
-push: image
-	docker push "$(IMG):$(VERSION)"
-
-.PHONY: image push
+.PHONY: push push-prod

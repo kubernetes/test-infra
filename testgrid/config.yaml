@@ -2701,6 +2701,34 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-deploy-prow
 - name: post-test-infra-push-prow
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-prow
+- name: post-test-infra-push-velodrome
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-velodrome
+- name: post-test-infra-push-boskos
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-boskos
+- name: post-test-infra-push-kettle
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-kettle
+- name: post-test-infra-push-planter
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-planter
+- name: post-test-infra-push-triage
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-triage
+- name: post-test-infra-push-bazelbuild
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-bazelbuild
+- name: post-test-infra-push-bigquery
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-bigquery
+- name: post-test-infra-push-bootstrap
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-bootstrap
+- name: post-test-infra-push-cluster-api
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-cluster-api
+- name: post-test-infra-push-gcloud
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-gcloud
+- name: post-test-infra-push-kubekins-e2e
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-kubekins-e2e
+- name: post-test-infra-push-kubekins-test
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-kubekins-test
+- name: post-test-infra-push-kubemci
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-kubemci
+- name: post-test-infra-push-test-gubernator
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-test-gubernator
 - name: ci-test-infra-autoupdate-minor
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-autoupdate-minor
 - name: ci-test-infra-autoupdate-patch
@@ -7007,6 +7035,36 @@ dashboards:
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 
+- name: sig-testing-images
+  dashboard_tab:
+  - name: velodrome
+    test_group_name: post-test-infra-push-velodrome
+  - name: boskos
+    test_group_name: post-test-infra-push-boskos
+  - name: kettle
+    test_group_name: post-test-infra-push-kettle
+  - name: planter
+    test_group_name: post-test-infra-push-planter
+  - name: triage
+    test_group_name: post-test-infra-push-triage
+  - name: bazelbuild
+    test_group_name: post-test-infra-push-bazelbuild
+  - name: bigquery
+    test_group_name: post-test-infra-push-bigquery
+  - name: bootstrap
+    test_group_name: post-test-infra-push-bootstrap
+  - name: cluster-api
+    test_group_name: post-test-infra-push-cluster-api
+  - name: gcloud-in-go
+    test_group_name: post-test-infra-push-gcloud
+  - name: kubekins-e2e
+    test_group_name: post-test-infra-push-kubekins-e2e
+  - name: kubekins-test
+    test_group_name: post-test-infra-push-kubekins-test
+  - name: kubemci
+    test_group_name: post-test-infra-push-kubemci
+  - name: test-gubernator
+    test_group_name: post-test-infra-push-test-gubernator
 - name: sig-testing-misc
   dashboard_tab:
   - name: bazel
@@ -8136,6 +8194,7 @@ dashboard_groups:
   - sig-testing-maintenance
   - sig-testing-org
   - sig-testing-prow
+  - sig-testing-images
 
 - name: sig-gcp
   dashboard_names:

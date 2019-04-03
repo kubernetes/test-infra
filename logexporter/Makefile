@@ -12,11 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-PROJECT = k8s-testimages
-IMG = gcr.io/$(PROJECT)/logexporter
-TAG = v0.1.6
 
-.PHONY: build push
+.PHONY: build push push-prod
 
 all: build
 
@@ -24,12 +21,9 @@ cmd/logexporter: cmd/main.go
 	CGO_ENABLED=0 go build -o cmd/logexporter k8s.io/test-infra/logexporter/cmd
 
 build: cmd/logexporter
-	docker build --pull -t $(IMG):$(TAG) cmd
-	docker tag $(IMG):$(TAG) $(IMG):latest
-	rm cmd/logexporter
-	@echo Built $(IMG):$(TAG) and tagged with latest
 
-push: build
-	docker push $(IMG):$(TAG)
-	docker push $(IMG):latest
-	@echo Pushed $(IMG) with :latest and :$(TAG) tags
+push-prod:
+  bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch logexporter
+
+push:
+	bazel run //images/builder -- --allow-dirty logexporter

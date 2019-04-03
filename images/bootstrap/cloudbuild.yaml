@@ -1,0 +1,18 @@
+steps:
+  - name: gcr.io/cloud-builders/go
+    args: ['build', '-o', '/workspace/images/bootstrap/barnacle/barnacle', './images/bootstrap/barnacle/']
+    env: ['PROJECT_ROOT=k8s.io/test-infra', 'CGO_ENABLED=0', 'GOOS=linux', 'GOARCH=amd64']
+  - name: busybox
+    args: ['cp', '-r', 'scenarios', './images/bootstrap/scenarios']
+  - name: gcr.io/cloud-builders/docker
+    args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/bootstrap:$_GIT_TAG',
+            '--build-arg', 'IMAGE_ARG=gcr.io/$PROJECT_ID/bootstrap:$_GIT_TAG',
+            '.' ]
+    dir: images/bootstrap
+  - name: gcr.io/cloud-builders/docker
+    args: [ 'tag', 'gcr.io/$PROJECT_ID/bootstrap:$_GIT_TAG', 'gcr.io/$PROJECT_ID/bootstrap:latest']
+substitutions:
+  _GIT_TAG: '12345'
+images:
+  - 'gcr.io/$PROJECT_ID/bootstrap:$_GIT_TAG'
+  - 'gcr.io/$PROJECT_ID/bootstrap:latest'

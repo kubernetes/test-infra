@@ -1,4 +1,5 @@
-# Copyright 2017 The Kubernetes Authors.
+#!/bin/bash
+# Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,8 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-push-prod:
-  bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch planter
+set -o errexit
+set -o nounset
+set -o pipefail
 
-push:
-	bazel run //images/builder -- --allow-dirty planter
+echo "Activating service account..."
+gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
+
+echo "Executing builder, sending logs to ${ARTIFACTS}..."
+bazel run //images/builder -- --log-dir="${ARTIFACTS}" "$@"
