@@ -83,20 +83,22 @@ func (o *options) warningEnabled(warning string) bool {
 }
 
 const (
-	mismatchedTideWarning   = "mismatched-tide"
-	tideStrictBranchWarning = "tide-strict-branch"
-	nonDecoratedJobsWarning = "non-decorated-jobs"
-	jobNameLengthWarning    = "long-job-names"
-	needsOkToTestWarning    = "needs-ok-to-test"
-	validateOwnersWarning   = "validate-owners"
-	missingTriggerWarning   = "missing-trigger"
-	validateURLsWarning     = "validate-urls"
-	unknownFieldsWarning    = "unknown-fields"
+	mismatchedTideWarning        = "mismatched-tide"
+	mismatchedTideLenientWarning = "mismatched-tide-lenient"
+	tideStrictBranchWarning      = "tide-strict-branch"
+	nonDecoratedJobsWarning      = "non-decorated-jobs"
+	jobNameLengthWarning         = "long-job-names"
+	needsOkToTestWarning         = "needs-ok-to-test"
+	validateOwnersWarning        = "validate-owners"
+	missingTriggerWarning        = "missing-trigger"
+	validateURLsWarning          = "validate-urls"
+	unknownFieldsWarning         = "unknown-fields"
 )
 
 var allWarnings = []string{
 	mismatchedTideWarning,
 	tideStrictBranchWarning,
+	mismatchedTideLenientWarning,
 	nonDecoratedJobsWarning,
 	jobNameLengthWarning,
 	needsOkToTestWarning,
@@ -130,7 +132,7 @@ func gatherOptions() options {
 	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	flag.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
-	flag.Var(&o.warnings, "warnings", "Comma-delimited list of warnings to validate.")
+	flag.Var(&o.warnings, "warnings", "Warnings to validate. Use repeatedly to provide a list of warnings.")
 	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
 	flag.Parse()
 	return o
@@ -172,7 +174,11 @@ func main() {
 	// in all components on their failure.
 	var errs []error
 	if pcfg != nil && o.warningEnabled(mismatchedTideWarning) {
-		if err := validateTideRequirements(cfg, pcfg); err != nil {
+		if err := validateTideRequirements(cfg, pcfg, true); err != nil {
+			errs = append(errs, err)
+		}
+	} else if pcfg != nil && o.warningEnabled(mismatchedTideLenientWarning) {
+		if err := validateTideRequirements(cfg, pcfg, false); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -461,7 +467,7 @@ func validatePeriodicJob(job config.Periodic) error {
 	return errorutil.NewAggregate(validationErrs...)
 }
 
-func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration) error {
+func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration, includeForbidden bool) error {
 	type matcher struct {
 		// matches determines if the tide query appropriately honors the
 		// label in question -- whether by requiring it or forbidding it
@@ -482,11 +488,9 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration) e
 		verb: "forbid",
 	}
 
-	// configs list relationships between tide config
-	// and plugin enablement that we want to validate
-	configs := []struct {
-		// plugin and label identify the relationship we are validating
-		plugin, label string
+	type plugin struct {
+		// name and label identify the relationship we are validating
+		name, label string
 		// external indicates plugin is external or not
 		external bool
 		// matcher determines if the tide query appropriately honors the
@@ -496,16 +500,23 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration) e
 		// label; this container is populated conditionally from queries
 		// using the matcher
 		config *orgRepoConfig
-	}{
-		{plugin: lgtm.PluginName, label: labels.LGTM, matcher: requires},
-		{plugin: approve.PluginName, label: labels.Approved, matcher: requires},
-		{plugin: hold.PluginName, label: labels.Hold, matcher: forbids},
-		{plugin: wip.PluginName, label: labels.WorkInProgress, matcher: forbids},
-		{plugin: verifyowners.PluginName, label: labels.InvalidOwners, matcher: forbids},
-		{plugin: releasenote.PluginName, label: releasenote.ReleaseNoteLabelNeeded, matcher: forbids},
-		{plugin: cherrypickunapproved.PluginName, label: labels.CpUnapproved, matcher: forbids},
-		{plugin: blockade.PluginName, label: labels.BlockedPaths, matcher: forbids},
-		{plugin: needsrebase.PluginName, label: labels.NeedsRebase, external: true, matcher: forbids},
+	}
+	// configs list relationships between tide config
+	// and plugin enablement that we want to validate
+	configs := []plugin{
+		{name: lgtm.PluginName, label: labels.LGTM, matcher: requires},
+		{name: approve.PluginName, label: labels.Approved, matcher: requires},
+	}
+	if includeForbidden {
+		configs = append(configs,
+			plugin{name: hold.PluginName, label: labels.Hold, matcher: forbids},
+			plugin{name: wip.PluginName, label: labels.WorkInProgress, matcher: forbids},
+			plugin{name: verifyowners.PluginName, label: labels.InvalidOwners, matcher: forbids},
+			plugin{name: releasenote.PluginName, label: releasenote.ReleaseNoteLabelNeeded, matcher: forbids},
+			plugin{name: cherrypickunapproved.PluginName, label: labels.CpUnapproved, matcher: forbids},
+			plugin{name: blockade.PluginName, label: labels.BlockedPaths, matcher: forbids},
+			plugin{name: needsrebase.PluginName, label: labels.NeedsRebase, external: true, matcher: forbids},
+		)
 	}
 
 	for i := range configs {
@@ -526,12 +537,12 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration) e
 	var validationErrs []error
 	for _, pluginConfig := range configs {
 		err := ensureValidConfiguration(
-			pluginConfig.plugin,
+			pluginConfig.name,
 			pluginConfig.label,
 			pluginConfig.matcher.verb,
 			pluginConfig.config,
 			overallTideConfig,
-			enabledOrgReposForPlugin(pcfg, pluginConfig.plugin, pluginConfig.external),
+			enabledOrgReposForPlugin(pcfg, pluginConfig.name, pluginConfig.external),
 		)
 		validationErrs = append(validationErrs, err)
 	}
