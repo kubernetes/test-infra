@@ -104,9 +104,9 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 	if o.project != "" {
 		args = append(args, "--project", o.project)
 	}
-	if o.tempBucket != "" {
-		args = append(args, "--gcs-log-dir", o.tempBucket+gcsLogsDir)
-		args = append(args, "--gcs-source-staging-dir", o.tempBucket+gcsSourceDir)
+	if o.scratchBucket != "" {
+		args = append(args, "--gcs-log-dir", o.scratchBucket+gcsLogsDir)
+		args = append(args, "--gcs-source-staging-dir", o.scratchBucket+gcsSourceDir)
 	}
 	if uploaded != "" {
 		args = append(args, uploaded)
@@ -167,9 +167,9 @@ func getVariants(o options) (variants, error) {
 
 func runBuildJobs(o options) []error {
 	var uploaded string
-	if o.tempBucket != "" {
+	if o.scratchBucket != "" {
 		var err error
-		uploaded, err = uploadWorkingDir(o.tempBucket + gcsSourceDir)
+		uploaded, err = uploadWorkingDir(o.scratchBucket + gcsSourceDir)
 		if err != nil {
 			return []error{fmt.Errorf("failed to upload source: %v", err)}
 		}
@@ -222,7 +222,7 @@ func runBuildJobs(o options) []error {
 
 type options struct {
 	logDir         string
-	tempBucket     string
+	scratchBucket  string
 	imageDirectory string
 	project        string
 	allowDirty     bool
@@ -232,7 +232,7 @@ type options struct {
 func parseFlags() options {
 	o := options{}
 	flag.StringVar(&o.logDir, "log-dir", "", "If provided, build logs will be sent to files in this directory instead of to stdout/stderr.")
-	flag.StringVar(&o.tempBucket, "temp-bucket", "", "The complete GCS path for Cloud Build to store temporary files (sources, logs).")
+	flag.StringVar(&o.scratchBucket, "scratch-bucket", "", "The complete GCS path for Cloud Build to store scratch files (sources, logs).")
 	flag.StringVar(&o.project, "project", "", "If specified, use a non-default GCP project.")
 	flag.BoolVar(&o.allowDirty, "allow-dirty", false, "If true, allow pushing dirty builds.")
 	flag.StringVar(&o.variant, "variant", "", "If specified, build only the given variant. An error if no variants are defined.")

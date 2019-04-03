@@ -82,7 +82,7 @@ postsubmits:
           command:
             - images/builder/ci-runner.sh
           args:
-            - --temp-bucket=gs://k8s-testimages-scratch
+            - --scratch-bucket=gs://k8s-testimages-scratch
             - --project=k8s-testimages
             - velodrome/
           env:
@@ -107,7 +107,7 @@ postsubmits:
           command:
             - images/builder/ci-runner.sh
           args:
-            - --temp-bucket=gs://k8s-testimages-scratch
+            - --scratch-bucket=gs://k8s-testimages-scratch
             - --project=k8s-testimages
             - boskos/
           env:
@@ -132,7 +132,7 @@ postsubmits:
           command:
             - images/builder/ci-runner.sh
           args:
-            - --temp-bucket=gs://k8s-testimages-scratch
+            - --scratch-bucket=gs://k8s-testimages-scratch
             - --project=k8s-testimages
             - kettle/
           env:
@@ -157,7 +157,7 @@ postsubmits:
           command:
             - images/builder/ci-runner.sh
           args:
-            - --temp-bucket=gs://k8s-testimages-scratch
+            - --scratch-bucket=gs://k8s-testimages-scratch
             - --project=k8s-testimages
             - planter/
           env:
@@ -182,7 +182,7 @@ postsubmits:
           command:
             - images/builder/ci-runner.sh
           args:
-            - --temp-bucket=gs://k8s-testimages-scratch
+            - --scratch-bucket=gs://k8s-testimages-scratch
             - --project=k8s-testimages
             - triage/
           env:
@@ -207,7 +207,7 @@ postsubmits:
           command:
             - images/builder/ci-runner.sh
           args:
-            - --temp-bucket=gs://k8s-testimages-scratch
+            - --scratch-bucket=gs://k8s-testimages-scratch
             - --project=k8s-testimages
             - images/bazelbuild/
           env:
@@ -232,7 +232,7 @@ postsubmits:
           command:
             - images/builder/ci-runner.sh
           args:
-            - --temp-bucket=gs://k8s-testimages-scratch
+            - --scratch-bucket=gs://k8s-testimages-scratch
             - --project=k8s-testimages
             - images/bigquery/
           env:
@@ -257,7 +257,7 @@ postsubmits:
           command:
             - images/builder/ci-runner.sh
           args:
-            - --temp-bucket=gs://k8s-testimages-scratch
+            - --scratch-bucket=gs://k8s-testimages-scratch
             - --project=k8s-testimages
             - images/bootstrap/
           env:
@@ -282,7 +282,7 @@ postsubmits:
           command:
             - images/builder/ci-runner.sh
           args:
-            - --temp-bucket=gs://k8s-testimages-scratch
+            - --scratch-bucket=gs://k8s-testimages-scratch
             - --project=k8s-testimages
             - images/cluster-api/
           env:
@@ -307,7 +307,7 @@ postsubmits:
           command:
             - images/builder/ci-runner.sh
           args:
-            - --temp-bucket=gs://k8s-testimages-scratch
+            - --scratch-bucket=gs://k8s-testimages-scratch
             - --project=k8s-testimages
             - images/gcloud/
           env:
@@ -332,7 +332,7 @@ postsubmits:
           command:
             - images/builder/ci-runner.sh
           args:
-            - --temp-bucket=gs://k8s-testimages-scratch
+            - --scratch-bucket=gs://k8s-testimages-scratch
             - --project=k8s-testimages
             - images/kubekins-e2e/
           env:
@@ -357,7 +357,7 @@ postsubmits:
           command:
             - images/builder/ci-runner.sh
           args:
-            - --temp-bucket=gs://k8s-testimages-scratch
+            - --scratch-bucket=gs://k8s-testimages-scratch
             - --project=k8s-testimages
             - images/kubekins-test/
           env:
@@ -382,7 +382,7 @@ postsubmits:
           command:
             - images/builder/ci-runner.sh
           args:
-            - --temp-bucket=gs://k8s-testimages-scratch
+            - --scratch-bucket=gs://k8s-testimages-scratch
             - --project=k8s-testimages
             - images/kubemci/
           env:
@@ -407,7 +407,7 @@ postsubmits:
           command:
             - images/builder/ci-runner.sh
           args:
-            - --temp-bucket=gs://k8s-testimages-scratch
+            - --scratch-bucket=gs://k8s-testimages-scratch
             - --project=k8s-testimages
             - images/pull-test-infra-gubernator/
           env:
