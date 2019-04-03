@@ -38,35 +38,23 @@ janitor-aws:
 metrics:
 	go build -o metrics/metrics k8s.io/test-infra/boskos/metrics/
 
+images:
+	bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch boskos
+
 server-image:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o boskos k8s.io/test-infra/boskos/
-	docker build -t "$(HUB)/boskos:$(TAG)" .
-	docker push "$(HUB)/boskos:$(TAG)"
-	rm boskos
+	bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch --variant boskos boskos
 
 reaper-image:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o reaper/reaper k8s.io/test-infra/boskos/reaper/
-	docker build -t "$(HUB)/reaper:$(TAG)" reaper
-	docker push "$(HUB)/reaper:$(TAG)"
-	rm reaper/reaper
+	bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch --variant reaper boskos
 
 janitor-image:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o janitor/janitor k8s.io/test-infra/boskos/janitor/
-	docker build --no-cache -t "$(HUB)/janitor:$(TAG)" janitor
-	docker push "$(HUB)/janitor:$(TAG)"
-	rm janitor/janitor
+	bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch --variant janitor boskos
 
-janitor-aws-image: export DOCKER_OPTS=--no-cache
-janitor-aws-image: export IMAGE=$(HUB)/janitor-aws
 janitor-aws-image:
-	$(MAKE) -C ../maintenance/aws-janitor/cmd/aws-janitor-boskos image push
-	$(MAKE) -C ../maintenance/aws-janitor/cmd/aws-janitor-boskos clean
+	bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch --variant aws-janitor boskos
 
 metrics-image:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o metrics/metrics k8s.io/test-infra/boskos/metrics/
-	docker build -t "$(HUB)/metrics:$(TAG)" metrics
-	docker push "$(HUB)/metrics:$(TAG)"
-	rm metrics/metrics
+	bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch --variant metrics boskos
 
 server-deployment: get-cluster-credentials
 	kubectl apply -f deployment.yaml
@@ -90,4 +78,4 @@ update-config: get-cluster-credentials
 get-cluster-credentials:
 	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
-.PHONY: boskos client reaper janitor janitor-aws metrics server-image reaper-image janitor-image janitor-aws-image metrics-image server-deployment reaper-deployment janitor-deployment metrics-deployment service update-config get-cluster-credentials
+.PHONY: boskos client reaper janitor janitor-aws metrics images server-image reaper-image janitor-image janitor-aws-image metrics-image server-deployment reaper-deployment janitor-deployment metrics-deployment service update-config get-cluster-credentials
