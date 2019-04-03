@@ -1,0 +1,5 @@
+variants:
+  - VERSION: 1.14
+  - VERSION: 1.13
+  - VERSION: 1.12
+  - VERSION: 1.11
