@@ -4,20 +4,19 @@ presubmits:
     decorate: true
     skip_report: false
     run_if_changed: ".*/manifest.yaml"
-    # It's OK to run things concurrently, because we're using "-dry-run".
     max_concurrency: 10
     branches:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/cip-demo-staging/cip:20190401-v1.0.0-3-g44d6169
+      - image: gcr.io/cip-demo-staging/cip:20190402-v1.0.2-0-g45293ca
         command:
         - multirun.sh
         args:
         - /app/cip-docker-image.binary
-        - k8s-staging-cluster-api/manifest.yaml
-        - k8s-staging-coredns/manifest.yaml
-        - k8s-staging-csi/manifest.yaml
+        - k8s.gcr.io/k8s-staging-cluster-api/manifest.yaml
+        - k8s.gcr.io/k8s-staging-coredns/manifest.yaml
+        - k8s.gcr.io/k8s-staging-csi/manifest.yaml
         env:
         - name: CIP_GIT_DIR
           # Pod Utilities already sets pwd to
