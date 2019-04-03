@@ -100,11 +100,18 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 		"builds", "submit",
 		"--config", path.Join(o.imageDirectory, "cloudbuild.yaml"),
 		"--substitutions", strings.Join(s, ","),
-		"--gcs-source-staging-dir", o.tempBucket + gcsSourceDir,
-		"--gcs-log-dir", o.tempBucket + gcsLogsDir,
-		uploaded}
+	}
 	if o.project != "" {
 		args = append(args, "--project", o.project)
+	}
+	if o.tempBucket != "" {
+		args = append(args, "--gcs-log-dir", o.tempBucket+gcsLogsDir)
+		args = append(args, "--gcs-source-staging-dir", o.tempBucket+gcsSourceDir)
+	}
+	if uploaded != "" {
+		args = append(args, uploaded)
+	} else {
+		args = append(args, ".")
 	}
 	cmd := exec.Command("gcloud", args...)
 
@@ -137,6 +144,9 @@ func getVariants(o options) (variants, error) {
 		if !os.IsNotExist(err) {
 			return nil, fmt.Errorf("failed to load variants.yaml: %v", err)
 		}
+		if o.variant != "" {
+			return nil, fmt.Errorf("no variants.yaml found, but a build variant (%q) was specified", o.variant)
+		}
 		return nil, nil
 	}
 	v := struct {
@@ -145,10 +155,28 @@ func getVariants(o options) (variants, error) {
 	if err := yaml.UnmarshalStrict(content, &v); err != nil {
 		return nil, fmt.Errorf("failed to read variants.yaml: %v", err)
 	}
+	if o.variant != "" {
+		va, ok := v.Variants[o.variant]
+		if !ok {
+			return nil, fmt.Errorf("requested variant %q, which is not present in variants.yaml", o.variant)
+		}
+		return variants{o.variant: va}, nil
+	}
 	return v.Variants, nil
 }
 
-func runBuildJobs(o options, uploaded string) []error {
+func runBuildJobs(o options) []error {
+	var uploaded string
+	if o.tempBucket != "" {
+		var err error
+		uploaded, err = uploadWorkingDir(o.tempBucket + gcsSourceDir)
+		if err != nil {
+			return []error{fmt.Errorf("failed to upload source: %v", err)}
+		}
+	} else {
+		log.Println("Skipping advance upload and relying on gcloud...")
+	}
+
 	log.Println("Running build jobs...")
 	tag, err := getVersion()
 	if err != nil {
@@ -198,21 +226,19 @@ type options struct {
 	imageDirectory string
 	project        string
 	allowDirty     bool
+	variant        string
 }
 
 func parseFlags() options {
 	o := options{}
-	flag.StringVar(&o.logDir, "log-dir", "", "If provided, build logs will be sent to files in this directory instead of to stdout/stderr")
-	flag.StringVar(&o.tempBucket, "temp-bucket", "", "The complete GCS path for Cloud Build to store temporary files (sources, logs)")
-	flag.StringVar(&o.project, "project", "", "If specified, use a non-default GCP project")
-	flag.BoolVar(&o.allowDirty, "allow-dirty", false, "If true, allow pushing dirty builds")
+	flag.StringVar(&o.logDir, "log-dir", "", "If provided, build logs will be sent to files in this directory instead of to stdout/stderr.")
+	flag.StringVar(&o.tempBucket, "temp-bucket", "", "The complete GCS path for Cloud Build to store temporary files (sources, logs).")
+	flag.StringVar(&o.project, "project", "", "If specified, use a non-default GCP project.")
+	flag.BoolVar(&o.allowDirty, "allow-dirty", false, "If true, allow pushing dirty builds.")
+	flag.StringVar(&o.variant, "variant", "", "If specified, build only the given variant. An error if no variants are defined.")
 	flag.Parse()
 	if flag.NArg() < 1 {
 		_, _ = fmt.Fprintln(os.Stderr, "expected an image directory to be provided")
-		os.Exit(1)
-	}
-	if o.tempBucket == "" {
-		_, _ = fmt.Fprintln(os.Stderr, "--temp-bucket is mandatory")
 		os.Exit(1)
 	}
 	o.imageDirectory = flag.Arg(0)
@@ -225,12 +251,7 @@ func main() {
 		log.Fatalf("Failed to cd to root: %v\n", err)
 	}
 
-	uploadedFile, err := uploadWorkingDir(o.tempBucket + gcsSourceDir)
-	if err != nil {
-		log.Fatalf("Failed to upload source: %v", err)
-	}
-
-	errors := runBuildJobs(o, uploadedFile)
+	errors := runBuildJobs(o)
 	if len(errors) != 0 {
 		log.Fatalf("Failed to push some images: %v", errors)
 	}
