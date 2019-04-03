@@ -238,7 +238,7 @@ repo_milestone:
     maintainers_friendly_name: Community Milestone Maintainers
   kubernetes/website:
     maintainers_id: 3175912
-    maintainers_team: website-milestone-maintainers 
+    maintainers_team: website-milestone-maintainers
     maintainers_friendly_name: Website milestone maintainers
 
 project_config:
@@ -503,7 +503,7 @@ plugins:
 
   kubernetes/utils:
   - override
-  
+
   kubernetes/website:
   - milestone
 
@@ -658,9 +658,6 @@ plugins:
   - trigger
 
   kubernetes-sigs/gcp-filestore-csi-driver:
-  - trigger
-
-  kubernetes-sigs/cri-o:
   - trigger
 
   kubernetes-sigs/kube-storage-version-migrator:
