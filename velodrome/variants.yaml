@@ -1,0 +1,7 @@
+variants:
+  fetcher:
+    COMPONENT: fetcher
+  token-counter:
+    COMPONENT: token-counter
+  transform:
+    COMPONENT: transform

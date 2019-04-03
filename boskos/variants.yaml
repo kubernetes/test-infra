@@ -1,0 +1,13 @@
+variants:
+  boskos:
+    COMPONENT: boskos
+    SUBDIR: ''
+  reaper:
+    COMPONENT: reaper
+    SUBDIR: reaper
+  janitor:
+    COMPONENT: janitor
+    SUBDIR: janitor
+  aws-janitor:
+    COMPONENT: aws-janitor
+    SUBDIR: ../maintenance/aws-janitor # why?
