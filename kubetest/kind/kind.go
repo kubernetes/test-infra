@@ -23,7 +23,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"go/build"
 	"io"
 	"io/ioutil"
 	"log"
@@ -80,6 +79,7 @@ type Deployer struct {
 	buildType         string
 	configPath        string
 	importPathK8s     string
+	importPathKind    string
 	kindBinaryDir     string
 	kindBinaryVersion string
 	kindBinaryPath    string
@@ -107,15 +107,6 @@ func NewDeployer(ctl *process.Control, buildType string) (*Deployer, error) {
 	return k, nil
 }
 
-func getImportPath(path string) (string, error) {
-	// look up the source the way go build would
-	pkg, err := build.Default.Import(path, ".", build.FindOnly)
-	if err == nil && pkg.Dir != "" {
-		return pkg.Dir, nil
-	}
-	return "", fmt.Errorf("could not find the source directory for package: %s", path)
-}
-
 // initializeDeployer initializers the kind deployer flags.
 func initializeDeployer(ctl *process.Control, buildType string) (*Deployer, error) {
 	if ctl == nil {
@@ -135,22 +126,26 @@ func initializeDeployer(ctl *process.Control, buildType string) (*Deployer, erro
 			return nil, err
 		}
 	}
-	// Obtain the import paths for k8s
-	importPathK8s, err := getImportPath("k8s.io/kubernetes")
-	if err != nil {
-		return nil, err
-	}
 	d := &Deployer{
 		control:           ctl,
 		buildType:         buildType,
 		configPath:        *kindConfigPath,
-		importPathK8s:     importPathK8s,
 		kindBinaryDir:     kindBinaryDir,
 		kindBinaryPath:    filepath.Join(kindBinaryDir, "kind"),
 		kindBinaryVersion: *kindBinaryVersion,
 		kindNodeImage:     kindNodeImageLatest,
 		kindClusterName:   *kindClusterName,
 	}
+	// Obtain the import paths for k8s and kind
+	d.importPathK8s, err = d.getImportPath("k8s.io/kubernetes")
+	if err != nil {
+		return nil, err
+	}
+	d.importPathKind, err = d.getImportPath("sigs.k8s.io/kind")
+	if err != nil {
+		return nil, err
+	}
+
 	if kindBaseImage != nil {
 		d.kindBaseImage = *kindBaseImage
 	}
@@ -159,6 +154,17 @@ func initializeDeployer(ctl *process.Control, buildType string) (*Deployer, erro
 		return nil, err
 	}
 	return d, nil
+}
+
+// getImportPath does a naive concat between GOPATH, "src" and a user provided path.
+func (d *Deployer) getImportPath(path string) (string, error) {
+	o, err := d.control.Output(exec.Command("go", "env", "GOPATH"))
+	if err != nil {
+		return "", err
+	}
+	trimmed := strings.TrimSuffix(string(o), "\n")
+	log.Printf("kind.go:getImportPath(): %s\n", trimmed)
+	return filepath.Join(trimmed, "src", path), nil
 }
 
 // getKubeConfigPath returns the path to the kubeconfig file.
@@ -196,14 +202,10 @@ func (d *Deployer) prepareKindBinary() error {
 	log.Println("kind.go:prepareKindBinary()")
 	switch d.kindBinaryVersion {
 	case kindBinaryBuild:
-		importPathKind, err := getImportPath("sigs.k8s.io/kind")
-		if err != nil {
-			return err
-		}
 		log.Println("Building a kind binary from source.")
 		// Build the kind binary.
 		cmd := exec.Command("go", "build", "-o", d.kindBinaryPath)
-		cmd.Dir = importPathKind
+		cmd.Dir = d.importPathKind
 		if err := d.control.FinishRunning(cmd); err != nil {
 			return err
 		}
@@ -251,7 +253,7 @@ func (d *Deployer) Build() error {
 		buildType = d.buildType
 	}
 
-	args := []string{"build", "node-image", "--type=" + buildType, flagLogLevel}
+	args := []string{"build", "node-image", "--type=" + buildType, flagLogLevel, "--kube-root=" + d.importPathK8s}
 	if d.kindNodeImage != "" {
 		args = append(args, "--image="+d.kindNodeImage)
 	}
