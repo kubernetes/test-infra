@@ -31,6 +31,11 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+const (
+	gcsSourceDir = "/source"
+	gcsLogsDir   = "/logs"
+)
+
 func runCmd(command string, args ...string) error {
 	cmd := exec.Command(command, args...)
 	cmd.Stderr = os.Stderr
@@ -91,7 +96,13 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 		s = append(s, fmt.Sprintf("_%s=%s", k, v))
 	}
 	s = append(s, "_GIT_TAG="+version)
-	args := []string{"builds", "submit", "--config", path.Join(o.imageDirectory, "cloudbuild.yaml"), "--substitutions", strings.Join(s, ","), "--gcs-source-staging-dir", o.sourceBucket, uploaded}
+	args := []string{
+		"builds", "submit",
+		"--config", path.Join(o.imageDirectory, "cloudbuild.yaml"),
+		"--substitutions", strings.Join(s, ","),
+		"--gcs-source-staging-dir", o.tempBucket + gcsSourceDir,
+		"--gcs-log-dir", o.tempBucket + gcsLogsDir,
+		uploaded}
 	if o.project != "" {
 		args = append(args, "--project", o.project)
 	}
@@ -183,7 +194,7 @@ func runBuildJobs(o options, uploaded string) []error {
 
 type options struct {
 	logDir         string
-	sourceBucket   string
+	tempBucket     string
 	imageDirectory string
 	project        string
 	allowDirty     bool
@@ -192,7 +203,7 @@ type options struct {
 func parseFlags() options {
 	o := options{}
 	flag.StringVar(&o.logDir, "log-dir", "", "If provided, build logs will be sent to files in this directory instead of to stdout/stderr")
-	flag.StringVar(&o.sourceBucket, "source-bucket", "", "The complete GCS path for source to be uploaded to (e.g. gs://temp-bucket/source)")
+	flag.StringVar(&o.tempBucket, "temp-bucket", "", "The complete GCS path for Cloud Build to store temporary files (sources, logs)")
 	flag.StringVar(&o.project, "project", "", "If specified, use a non-default GCP project")
 	flag.BoolVar(&o.allowDirty, "allow-dirty", false, "If true, allow pushing dirty builds")
 	flag.Parse()
@@ -200,8 +211,8 @@ func parseFlags() options {
 		_, _ = fmt.Fprintln(os.Stderr, "expected an image directory to be provided")
 		os.Exit(1)
 	}
-	if o.sourceBucket == "" {
-		_, _ = fmt.Fprintln(os.Stderr, "--source-bucket is mandatory")
+	if o.tempBucket == "" {
+		_, _ = fmt.Fprintln(os.Stderr, "--temp-bucket is mandatory")
 		os.Exit(1)
 	}
 	o.imageDirectory = flag.Arg(0)
@@ -214,7 +225,7 @@ func main() {
 		log.Fatalf("Failed to cd to root: %v\n", err)
 	}
 
-	uploadedFile, err := uploadWorkingDir(o.sourceBucket)
+	uploadedFile, err := uploadWorkingDir(o.tempBucket + gcsSourceDir)
 	if err != nil {
 		log.Fatalf("Failed to upload source: %v", err)
 	}
