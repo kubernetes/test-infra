@@ -109,6 +109,11 @@ def object(name, cluster = CORE_CLUSTER, **kwargs):
         **kwargs
     )
 
+def _basename(name):
+    if '/' not in name:
+        return name
+    return name.rpartition('/')[-1]
+
 # component generates k8s_object rules and returns a {kind: [targets]} map.
 #
 # This will generate a k8s_object rule for each specified kind.
@@ -131,7 +136,7 @@ def component(cmd, *kinds, **kwargs):
             n = cmd
         else:
             n = "%s_%s" % (cmd, k)
-        kwargs["name"] = n
+        kwargs["name"] = _basename(n)
         kwargs["kind"] = k
         kwargs["template"] = ":%s.yaml" % n
         object(**kwargs)
