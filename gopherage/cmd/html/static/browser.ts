@@ -20,7 +20,7 @@ import {enumerate, map} from './utils';
 declare const embeddedProfiles: Array<{path: string, content: string}>;
 
 let coverageFiles: Array<{name: string, coverage: Coverage}> = [];
-let gPrefix = 'k8s.io/kubernetes/';
+let gPrefix = '';
 
 function filenameForDisplay(path: string): string {
   const basename = path.split('/').pop()!;
