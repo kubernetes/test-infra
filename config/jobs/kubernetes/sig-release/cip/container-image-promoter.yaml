@@ -3,7 +3,7 @@ presubmits:
   - name: pull-k8sio-cip
     decorate: true
     skip_report: false
-    run_if_changed: ".*/manifest.yaml"
+    run_if_changed: "k8s.gcr.io/.*/manifest.yaml"
     max_concurrency: 10
     branches:
     - ^master$
