@@ -39,7 +39,7 @@ periodics:
       - e2e
       env:
       - name: BOSKOS_HOST
-        value: "http://boskos.test-pods.svc.cluster.local."
+        value: "boskos.test-pods.svc.cluster.local"
       securityContext:
         privileged: true
 postsubmits:
@@ -65,6 +65,6 @@ postsubmits:
         - e2e
         env:
         - name: BOSKOS_HOST
-          value: "http://boskos.test-pods.svc.cluster.local."
+          value: "boskos.test-pods.svc.cluster.local"
         securityContext:
           privileged: true
