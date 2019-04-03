@@ -8,6 +8,9 @@ variants:
   janitor:
     COMPONENT: janitor
     SUBDIR: janitor
+  metrics:
+    COMPONENT: metrics
+    SUBDIR: metrics
   aws-janitor:
     COMPONENT: aws-janitor
     SUBDIR: ../maintenance/aws-janitor # why?
