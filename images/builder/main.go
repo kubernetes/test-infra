@@ -26,6 +26,7 @@ import (
 	"path"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	"sigs.k8s.io/yaml"
@@ -49,7 +50,8 @@ func getVersion() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return strings.TrimSpace(string(output)), nil
+	t := time.Now().Format("20060102")
+	return t + "-" + strings.TrimSpace(string(output)), nil
 }
 
 func cdToRootDir() error {
