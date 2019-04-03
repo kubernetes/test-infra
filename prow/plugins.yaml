@@ -500,6 +500,7 @@ plugins:
   - override
   - trigger
   - welcome
+  - project
 
   kubernetes/utils:
   - override
