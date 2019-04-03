@@ -51,7 +51,7 @@ func getVersion() (string, error) {
 		return "", err
 	}
 	t := time.Now().Format("20060102")
-	return t + "-" + strings.TrimSpace(string(output)), nil
+	return fmt.Sprintf("v%s-%s", t, strings.TrimSpace(string(output))), nil
 }
 
 func cdToRootDir() error {
