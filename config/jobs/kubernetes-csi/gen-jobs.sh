@@ -225,30 +225,30 @@ done
 
 # The csi-driver-host-path repo contains different deployments. We
 # test those against different Kubernetes releases at regular
-# intervals to detect regressions in Kubernetes. Should not happen as
-# Kubernetes itself (at least currently) runs the same tests, but
-# better safe than sorry...
+# intervals. We do this for several reasons:
+# - Detect regressions in Kubernetes. This can happen because
+#   Kubernetes does not test against all of our deployments when
+#   preparing an update.
+# - Not all test configurations are covered by pre-submit jobs.
+# - The actual deployment content is not used verbatim in pre-submit
+#   jobs. The csi-driver-host-path image itself always gets replaced.
 cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 
 periodics:
 EOF
 
-for deployment in 1.13 1.14; do
+# TODO: decide how we want to test the kubernetes-1.14 deployment
+for deployment in 1.13; do
     for kubernetes in 1.13 1.14 master; do
-        # We allow alpha feature testing in all combinations for
-        # periodic jobs. This is not guaranteed to work. If it starts
-        # breaking due to API changes in Kubernetes, we must update
-        # the configuration either here or in csi-release-tools (TBD).
         actual="$(if [ "$kubernetes" = "master" ]; then echo latest; else echo "release-$kubernetes"; fi)"
         cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 - interval: 6h
   name: ci-kubernetes-csi-$(kubernetes_job_name $deployment $kubernetes)
   decorate: true
   extra_refs:
-  # TODO: replace with kubernetes-csi/csi-driver-host-path master once branch prow is merged
-  - org: pohly
+  - org: kubernetes-csi
     repo: csi-driver-host-path
-    base_ref: prow
+    base_ref: master
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -278,7 +278,7 @@ EOF
 done
 
 # The canary builds use the latest sidecars from master and run them on
-# specific Kubernetes versions, using the deployments for that Kubernetes
+# specific Kubernetes versions, using the default deployment for that Kubernetes
 # release.
 for kubernetes in 1.13 1.14 master; do
     actual="${kubernetes/master/latest}"
@@ -287,10 +287,9 @@ for kubernetes in 1.13 1.14 master; do
   name: ci-kubernetes-csi-$(kubernetes_job_name canary $kubernetes)
   decorate: true
   extra_refs:
-  # TODO: replace with kubernetes-csi/csi-driver-host-path master once branch prow is merged
   - org: pohly
     repo: csi-driver-host-path
-    base_ref: prow
+    base_ref: master
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -309,8 +308,12 @@ for kubernetes in 1.13 1.14 master; do
         value: "$actual"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
-      - name: CSI_PROW_DEPLOYMENT
-        value: "kubernetes-$deployment"
+      # Replace images....
+      - name: CSI_PROW_HOSTPATH_CANARY
+        value: "canary"
+      # ... but not the RBAC rules.
+      - name: UPDATE_RBAC_RULES
+        value: "false"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
