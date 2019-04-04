@@ -26,18 +26,12 @@ import (
 	"k8s.io/test-infra/prow/gerrit/client"
 )
 
-const layout = "2006-01-02 15:04:05"
-
 // messageFilter builds a filter for jobs based on the messageBody matching the trigger regex of the jobs.
 func messageFilter(lastUpdate time.Time, change client.ChangeInfo, presubmits []config.Presubmit) (pjutil.Filter, error) {
 	var filters []pjutil.Filter
 	currentRevision := change.Revisions[change.CurrentRevision].Number
 	for _, message := range change.Messages {
-		messageTime, err := time.Parse(layout, message.Date)
-		if err != nil {
-			logrus.WithError(err).Errorf("Parse time %v failed", message.Date)
-			continue
-		}
+		messageTime := message.Date.Time
 		if message.RevisionNumber != currentRevision || messageTime.Before(lastUpdate) {
 			continue
 		}

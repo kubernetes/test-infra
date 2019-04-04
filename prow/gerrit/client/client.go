@@ -254,6 +254,10 @@ func (h *gerritInstanceHandler) queryAllChanges(lastUpdate time.Time, rateLimit 
 	return result
 }
 
+func parseStamp(value gerrit.Timestamp) time.Time {
+	return value.Time
+}
+
 func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdate time.Time, rateLimit int) ([]gerrit.ChangeInfo, error) {
 	pending := []gerrit.ChangeInfo{}
 
@@ -286,12 +290,7 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 
 		for _, change := range *changes {
 			// if we already processed this change, then we stop the current sync loop
-			const layout = "2006-01-02 15:04:05"
-			updated, err := time.Parse(layout, change.Updated)
-			if err != nil {
-				logrus.WithError(err).Errorf("Parse time %v failed", change.Updated)
-				continue
-			}
+			updated := parseStamp(change.Updated)
 
 			logrus.Infof("Change %d, last updated %s, status %s", change.Number, change.Updated, change.Status)
 
@@ -300,11 +299,7 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 			if !updated.Before(lastUpdate) {
 				switch change.Status {
 				case Merged:
-					submitted, err := time.Parse(layout, change.Submitted)
-					if err != nil {
-						logrus.WithError(err).Errorf("Parse time %v failed", change.Submitted)
-						continue
-					}
+					submitted := parseStamp(*change.Submitted)
 					if submitted.Before(lastUpdate) {
 						logrus.Infof("Change %d, submitted %s before lastUpdate %s, skipping this patchset", change.Number, submitted, lastUpdate)
 						continue
@@ -318,22 +313,13 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 						continue
 					}
 
-					created, err := time.Parse(layout, rev.Created)
-					if err != nil {
-						logrus.WithError(err).Errorf("Parse time %v failed", rev.Created)
-						continue
-					}
-
+					created := parseStamp(rev.Created)
 					changeMessages := change.Messages
 					newMessages := false
 
 					for _, message := range changeMessages {
 						if message.RevisionNumber == rev.Number {
-							messageTime, err := time.Parse(layout, message.Date)
-							if err != nil {
-								logrus.WithError(err).Errorf("Parse time %v failed", message.Date)
-								continue
-							}
+							messageTime := parseStamp(message.Date)
 							if messageTime.After(lastUpdate) {
 								newMessages = true
 								break
