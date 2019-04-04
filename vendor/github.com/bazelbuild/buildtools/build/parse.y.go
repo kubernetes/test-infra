@@ -149,6 +149,18 @@ func unary(pos Position, op string, x Expr) Expr {
 func binary(x Expr, pos Position, op string, y Expr) Expr {
 	_, xend := x.Span()
 	ystart, _ := y.Span()
+
+	switch op {
+	case "=", "+=", "-=", "*=", "/=", "//=", "%=", "|=":
+		return &AssignExpr{
+			LHS:       x,
+			OpPos:     pos,
+			Op:        op,
+			LineBreak: xend.Line < ystart.Line,
+			RHS:       y,
+		}
+	}
+
 	return &BinaryExpr{
 		X:         x,
 		OpStart:   pos,

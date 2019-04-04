@@ -91,10 +91,12 @@ var goKinds = map[string]rule.KindInfo{
 			"remote":       true,
 			"sha256":       true,
 			"strip_prefix": true,
+			"sum":          true,
 			"tag":          true,
 			"type":         true,
 			"urls":         true,
 			"vcs":          true,
+			"version":      true,
 		},
 	},
 	"go_test": {

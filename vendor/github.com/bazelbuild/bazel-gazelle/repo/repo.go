@@ -48,6 +48,13 @@ type Repo struct {
 	// VCS is the version control system used to check out the repository.
 	// May also be "http" for HTTP archives.
 	VCS string
+
+	// Version is the semantic version of the module to download. Exactly one
+	// of Version, Commit, and Tag must be set.
+	Version string
+
+	// Sum is the hash of the module to be verified after download.
+	Sum string
 }
 
 type byName []Repo
@@ -122,6 +129,12 @@ func GenerateRule(repo Repo) *rule.Rule {
 	}
 	if repo.VCS != "" {
 		r.SetAttr("vcs", repo.VCS)
+	}
+	if repo.Version != "" {
+		r.SetAttr("version", repo.Version)
+	}
+	if repo.Sum != "" {
+		r.SetAttr("sum", repo.Sum)
 	}
 	return r
 }

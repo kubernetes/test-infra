@@ -193,7 +193,6 @@ filegroup(
         "//vendor/golang.org/x/tools/cover:all-srcs",
         "//vendor/golang.org/x/tools/go/ast/astutil:all-srcs",
         "//vendor/golang.org/x/tools/go/gcexportdata:all-srcs",
-        "//vendor/golang.org/x/tools/go/internal/cgo:all-srcs",
         "//vendor/golang.org/x/tools/go/internal/gcimporter:all-srcs",
         "//vendor/golang.org/x/tools/go/internal/packagesdriver:all-srcs",
         "//vendor/golang.org/x/tools/go/packages:all-srcs",
