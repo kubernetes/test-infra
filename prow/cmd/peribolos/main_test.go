@@ -24,6 +24,7 @@ import (
 	"sort"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
@@ -854,14 +855,15 @@ func TestConfigureTeams(t *testing.T) {
 	desc := "so interesting"
 	priv := org.Secret
 	cases := []struct {
-		name            string
-		err             bool
-		orgNameOverride string
-		config          org.Config
-		teams           []github.Team
-		expected        map[string]github.Team
-		deleted         []int
-		delta           float64
+		name               string
+		err                bool
+		orgNameOverride    string
+		ignorePrivateTeams bool
+		config             org.Config
+		teams              []github.Team
+		expected           map[string]github.Team
+		deleted            []int
+		delta              float64
 	}{
 		{
 			name: "do nothing without error",
@@ -997,7 +999,8 @@ func TestConfigureTeams(t *testing.T) {
 			expected: map[string]github.Team{
 				"used": {ID: 2, Name: "used"},
 			},
-			delta: 0.6,
+			deleted: []int{1},
+			delta:   0.6,
 		},
 		{
 			name: "refuse to delete too many teams",
@@ -1019,6 +1022,26 @@ func TestConfigureTeams(t *testing.T) {
 			err:   true,
 			delta: 0.1,
 		},
+		{
+			name:               "refuse to delete private teams if ignoring them",
+			ignorePrivateTeams: true,
+			teams: []github.Team{
+				{
+					Name:    "secret",
+					ID:      1,
+					Privacy: string(org.Secret),
+				},
+				{
+					Name:    "closed",
+					ID:      2,
+					Privacy: string(org.Closed),
+				},
+			},
+			config:   org.Config{Teams: map[string]org.Team{}},
+			err:      false,
+			expected: map[string]github.Team{},
+			delta:    1,
+		},
 	}
 
 	for _, tc := range cases {
@@ -1034,7 +1057,7 @@ func TestConfigureTeams(t *testing.T) {
 			if tc.delta == 0 {
 				tc.delta = 1
 			}
-			actual, err := configureTeams(fc, orgName, tc.config, tc.delta)
+			actual, err := configureTeams(fc, orgName, tc.config, tc.delta, tc.ignorePrivateTeams)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -1049,6 +1072,16 @@ func TestConfigureTeams(t *testing.T) {
 				if team, ok := fc.teams[id]; ok {
 					t.Errorf("%d still present: %#v", id, team)
 				}
+			}
+			original, current, deleted := sets.NewInt(), sets.NewInt(), sets.NewInt(tc.deleted...)
+			for _, team := range tc.teams {
+				original.Insert(team.ID)
+			}
+			for id := range fc.teams {
+				current.Insert(id)
+			}
+			if unexpected := original.Difference(current).Difference(deleted); unexpected.Len() > 0 {
+				t.Errorf("the following teams were unexpectedly deleted: %v", unexpected.List())
 			}
 		})
 	}
@@ -1681,17 +1714,19 @@ func TestDumpOrgConfig(t *testing.T) {
 	no := false
 	perm := org.Write
 	pub := org.Privacy("")
+	secret := org.Secret
 	cases := []struct {
-		name        string
-		orgOverride string
-		meta        github.Organization
-		members     []string
-		admins      []string
-		teams       []github.Team
-		teamMembers map[int][]string
-		maintainers map[int][]string
-		expected    org.Config
-		err         bool
+		name               string
+		orgOverride        string
+		ignorePrivateTeams bool
+		meta               github.Organization
+		members            []string
+		admins             []string
+		teams              []github.Team
+		teamMembers        map[int][]string
+		maintainers        map[int][]string
+		expected           org.Config
+		err                bool
 	}{
 		{
 			name:        "fails if GetOrg fails",
@@ -1749,6 +1784,7 @@ func TestDumpOrgConfig(t *testing.T) {
 						ID:   6,
 						Name: "enemies",
 					},
+					Privacy: string(org.Secret),
 				},
 			},
 			teamMembers: map[int][]string{
@@ -1795,13 +1831,90 @@ func TestDumpOrgConfig(t *testing.T) {
 							"archenemies": {
 								TeamMetadata: org.TeamMetadata{
 									Description: &empty,
-									Privacy:     &pub,
+									Privacy:     &secret,
 								},
 								Members:     []string{},
 								Maintainers: []string{"banana"},
 								Children:    map[string]org.Team{},
 							},
 						},
+					},
+				},
+				Members: []string{"george", "jungle", "banana"},
+				Admins:  []string{"james", "giant", "peach"},
+			},
+		},
+		{
+			name:               "ignores private teams when expected to",
+			ignorePrivateTeams: true,
+			meta: github.Organization{
+				Name:                         hello,
+				MembersCanCreateRepositories: yes,
+				DefaultRepositoryPermission:  string(perm),
+			},
+			members: []string{"george", "jungle", "banana"},
+			admins:  []string{"james", "giant", "peach"},
+			teams: []github.Team{
+				{
+					ID:          5,
+					Name:        "friends",
+					Description: details,
+				},
+				{
+					ID:   6,
+					Name: "enemies",
+				},
+				{
+					ID:   7,
+					Name: "archenemies",
+					Parent: &github.Team{
+						ID:   6,
+						Name: "enemies",
+					},
+					Privacy: string(org.Secret),
+				},
+			},
+			teamMembers: map[int][]string{
+				5: {"george", "james"},
+				6: {"george"},
+				7: {},
+			},
+			maintainers: map[int][]string{
+				5: {},
+				6: {"giant", "jungle"},
+				7: {"banana"},
+			},
+			expected: org.Config{
+				Metadata: org.Metadata{
+					Name:                         &hello,
+					BillingEmail:                 &empty,
+					Company:                      &empty,
+					Email:                        &empty,
+					Description:                  &empty,
+					Location:                     &empty,
+					HasOrganizationProjects:      &no,
+					HasRepositoryProjects:        &no,
+					DefaultRepositoryPermission:  &perm,
+					MembersCanCreateRepositories: &yes,
+				},
+				Teams: map[string]org.Team{
+					"friends": {
+						TeamMetadata: org.TeamMetadata{
+							Description: &details,
+							Privacy:     &pub,
+						},
+						Members:     []string{"george", "james"},
+						Maintainers: []string{},
+						Children:    map[string]org.Team{},
+					},
+					"enemies": {
+						TeamMetadata: org.TeamMetadata{
+							Description: &empty,
+							Privacy:     &pub,
+						},
+						Members:     []string{"george"},
+						Maintainers: []string{"giant", "jungle"},
+						Children:    map[string]org.Team{},
 					},
 				},
 				Members: []string{"george", "jungle", "banana"},
@@ -1825,7 +1938,7 @@ func TestDumpOrgConfig(t *testing.T) {
 				teamMembers: tc.teamMembers,
 				maintainers: tc.maintainers,
 			}
-			actual, err := dumpOrgConfig(fc, orgName)
+			actual, err := dumpOrgConfig(fc, orgName, tc.ignorePrivateTeams)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -1839,7 +1952,7 @@ func TestDumpOrgConfig(t *testing.T) {
 				if !reflect.DeepEqual(actual, &tc.expected) {
 					a, _ := yaml.Marshal(*actual)
 					e, _ := yaml.Marshal(tc.expected)
-					t.Errorf("actual:\n%s != expected:\n%s", string(a), string(e))
+					t.Errorf("did not get correct config: %v", diff.StringDiff(string(a), string(e)))
 				}
 
 			}
