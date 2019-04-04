@@ -86,6 +86,7 @@ approve:
   - kubernetes/community
   - kubernetes/org
   - kubernetes/test-infra
+  - kubernetes-sigs/kind
   require_self_approval: false
   ignore_review_state: false
 - repos:
@@ -128,6 +129,9 @@ lgtm:
   - kubernetes/test-infra
   review_acts_as_lgtm: true
   store_tree_hash: true
+- repos:
+  - kubernetes-sigs/kind
+  review_acts_as_lgtm: true
 
 blockades:
 - repos:
