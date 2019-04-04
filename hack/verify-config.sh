@@ -42,4 +42,12 @@ if [ ! -z "$DIFF" ]; then
 fi
 
 # Run checkconfig with strict warnings.
-bazel run //prow/cmd/checkconfig -- --config-path="${PROW_CONFIG}" --job-config-path="${JOBS_DIR}" --plugin-config="${PLUGIN_CONFIG}" --strict --warnings=tide-strict-branch --warnings=needs-ok-to-test --warnings=validate-owners --warnings=missing-trigger --warnings=validate-urls --warnings=unknown-fields
+bazel run //prow/cmd/checkconfig -- \
+--config-path="${PROW_CONFIG}" --job-config-path="${JOBS_DIR}" --plugin-config="${PLUGIN_CONFIG}" --strict \
+--warnings=mismatched-tide-lenient \
+--warnings=tide-strict-branch \
+--warnings=needs-ok-to-test \
+--warnings=validate-owners \
+--warnings=missing-trigger \
+--warnings=validate-urls \
+--warnings=unknown-fields
