@@ -5,8 +5,8 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 git_repository(
     name = "bazel_skylib",
-    remote = "https://github.com/bazelbuild/bazel-skylib.git",
     commit = "f83cb8dd6f5658bc574ccd873e25197055265d1c",
+    remote = "https://github.com/bazelbuild/bazel-skylib.git",
     shallow_since = "1543273402 -0500",
     # tag = "0.6.0",
 )
@@ -15,16 +15,20 @@ load("@bazel_skylib//lib:versions.bzl", "versions")
 
 versions.check(minimum_bazel_version = "0.23.0")
 
-http_archive(
+git_repository(
     name = "io_bazel_rules_go",
-    sha256 = "6776d68ebb897625dead17ae510eac3d5f6342367327875210df44dbe2aeeb19",
-    url = "https://github.com/bazelbuild/rules_go/releases/download/0.17.1/rules_go-0.17.1.tar.gz",
+    commit = "0c4a3523fe18441b73308a8d56ea946888aab6bf",
+    remote = "https://github.com/bazelbuild/rules_go.git",
+    shallow_since = "1552603757 -0400",
+    #tag = "0.18.1",
 )
 
-http_archive(
+git_repository(
     name = "bazel_gazelle",
-    sha256 = "3c681998538231a2d24d0c07ed5a7658cb72bfb5fd4bf9911157c0e9ac6a2687",
-    urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/0.17.0/bazel-gazelle-0.17.0.tar.gz"],
+    commit = "e530fae7ce5cfda701f450ab2d7c4619b87f4df9",
+    remote = "https://github.com/bazelbuild/bazel-gazelle",
+    shallow_since = "1554245619 -0400",
+    # tag = "latest" and matching go.mod
 )
 
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
@@ -119,8 +123,8 @@ git_repository(
 
 git_repository(
     name = "build_bazel_rules_nodejs",
-    remote = "https://github.com/bazelbuild/rules_nodejs.git",
     commit = "0eb4a19507211ab3863f4d82e9412a33f759abcd",
+    remote = "https://github.com/bazelbuild/rules_nodejs.git",
     shallow_since = "1548802468 -0800",
     #tag = "0.16.6",
 )
