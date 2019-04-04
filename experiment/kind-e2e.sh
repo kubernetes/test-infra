@@ -66,7 +66,7 @@ build() {
     fi
 
     # build the node image w/ kubernetes
-    kind build node-image --type=bazel
+    kind build node-image --type=bazel --kube-root="${PWD}"
 
     # make sure we have e2e requirements
     #make all WHAT="cmd/kubectl test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo"
