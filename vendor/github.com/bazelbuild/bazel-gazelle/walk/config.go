@@ -24,6 +24,10 @@ import (
 	"github.com/bazelbuild/bazel-gazelle/rule"
 )
 
+// TODO(#472): store location information to validate each exclude. They
+// may be set in one directory and used in another. Excludes work on
+// declared generated files, so we can't just stat.
+
 type walkConfig struct {
 	excludes []string
 	ignore   bool

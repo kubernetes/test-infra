@@ -14,8 +14,8 @@ require (
 	github.com/andygrunwald/go-gerrit v0.0.0-20171029143327-95b11af228a1
 	github.com/aws/aws-k8s-tester v0.0.0-20190114231546-b411acf57dfe
 	github.com/aws/aws-sdk-go v1.16.36
-	github.com/bazelbuild/bazel-gazelle v0.0.0-20190227183720-e443c54b396a
-	github.com/bazelbuild/buildtools v0.0.0-20190202002759-027686e28d67
+	github.com/bazelbuild/bazel-gazelle v0.0.0-20190402225339-e530fae7ce5c
+	github.com/bazelbuild/buildtools v0.0.0-20190404153937-93253d6efaa9
 	github.com/bwmarrin/snowflake v0.0.0-20170221160716-02cc386c183a
 	github.com/deckarep/golang-set v0.0.0-20171013212420-1d4478f51bed
 	github.com/denisenkom/go-mssqldb v0.0.0-20190111225525-2fea367d496d // indirect
@@ -65,7 +65,7 @@ require (
 	github.com/mattn/go-zglob v0.0.1
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
-	github.com/pelletier/go-toml v1.2.0
+	github.com/pelletier/go-toml v1.3.0
 	github.com/peterbourgon/diskv v0.0.0-20171120014656-2973218375c3
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829
@@ -76,14 +76,13 @@ require (
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3
 	github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1 // indirect
-	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
+	golang.org/x/crypto v0.0.0-20190404164418-38d8ce5564a5
 	golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
-	golang.org/x/net v0.0.0-20190311183353-d8887717615a
+	golang.org/x/net v0.0.0-20190403144856-b630fd6fe46b
 	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421
 	golang.org/x/sync v0.0.0-20190227155943-e225da77a7e6
-	golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223 // indirect
 	golang.org/x/time v0.0.0-20181108054448-85acf8d2951c
-	golang.org/x/tools v0.0.0-20190312170243-e65039ee4138
+	golang.org/x/tools v0.0.0-20190404132500-923d25813098
 	google.golang.org/api v0.3.0
 	google.golang.org/genproto v0.0.0-20190307195333-5fe7a883aa19
 	google.golang.org/grpc v1.19.1

@@ -361,6 +361,22 @@ func (x *BinaryExpr) Span() (start, end Position) {
 	return start, end
 }
 
+// An AssignExpr represents a binary expression with `=`: LHS = RHS.
+type AssignExpr struct {
+	Comments
+	LHS       Expr
+	OpPos     Position
+	Op        string
+	LineBreak bool // insert line break between Op and RHS
+	RHS       Expr
+}
+
+func (x *AssignExpr) Span() (start, end Position) {
+	start, _ = x.LHS.Span()
+	_, end = x.RHS.Span()
+	return start, end
+}
+
 // A ParenExpr represents a parenthesized expression: (X).
 type ParenExpr struct {
 	Comments
