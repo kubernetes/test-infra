@@ -1109,7 +1109,7 @@ presubmits:
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=90
+        - --timeout=105
         - --scenario=kubernetes_e2e
         - --
         - --build=bazel
@@ -1123,7 +1123,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
-        - --timeout=65m
+        - --timeout=80m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
         - --gcp-project=k8s-jkns-pr-gce-etcd3
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
