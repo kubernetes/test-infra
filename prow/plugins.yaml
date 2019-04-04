@@ -675,6 +675,9 @@ plugins:
   kubernetes-sigs/kubebuilder-declarative-pattern:
   - trigger
 
+  kubernetes-sigs/slack-infra:
+  - trigger
+
   containerd/cri:
   - assign
   - cla
