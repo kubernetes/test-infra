@@ -555,8 +555,8 @@ go_repository(
 go_repository(
     name = "com_github_andygrunwald_go_gerrit",
     importpath = "github.com/andygrunwald/go-gerrit",
-    sum = "h1:2Qp3BQZ7r1z+oMUnFhD6FQ86Hh1PO+59yoUNNJ5Dn0M=",
-    version = "v0.0.0-20171029143327-95b11af228a1",
+    sum = "h1:uUuUZipfD5nPl2L/i0I3N4iRKJcoO2CPjktaH/kP9gQ=",
+    version = "v0.0.0-20190120104749-174420ebee6c",
 )
 
 go_repository(

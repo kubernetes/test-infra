@@ -143,6 +143,7 @@ type ReceiveInfo struct {
 
 // PluginConfigInfo entity contains information about Gerrit extensions by plugins.
 type PluginConfigInfo struct {
+	// HasAvatars reports whether an avatar provider is registered.
 	HasAvatars bool `json:"has_avatars,omitempty"`
 }
 
