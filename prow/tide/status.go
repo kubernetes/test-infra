@@ -437,13 +437,12 @@ func (sc *statusController) sync(pool map[string]PullRequest) {
 }
 
 func (sc *statusController) search() []PullRequest {
-	// Note: negative repo matches are ignored for simplicity when tracking orgs.
-	// This means that the addition/removal of a negative repo token on a query
-	// with an existing org token for the parent org won't cause statuses to be
-	// updated until PRs are individually bumped or Tide is restarted.
-	// The actual queries must still consider negative matches in order to avoid
-	// adding statuses to excluded repos.
-	orgExceptions, repos := sc.config().Tide.Queries.OrgExceptionsAndRepos()
+	queries := sc.config().Tide.Queries
+	if len(queries) == 0 {
+		return nil
+	}
+
+	orgExceptions, repos := queries.OrgExceptionsAndRepos()
 	orgs := sets.StringKeySet(orgExceptions)
 	query := openPRsQuery(orgs.List(), repos.List(), orgExceptions)
 	now := time.Now()
