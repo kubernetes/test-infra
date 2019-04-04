@@ -2,6 +2,7 @@ package gerrit
 
 import (
 	"fmt"
+	"net/url"
 )
 
 // DiffInfo entity contains information about the diff of a file in a revision.
@@ -28,6 +29,8 @@ type FileInfo struct {
 	OldPath       string `json:"old_path,omitempty"`
 	LinesInserted int    `json:"lines_inserted,omitempty"`
 	LinesDeleted  int    `json:"lines_deleted,omitempty"`
+	SizeDelta     int    `json:"size_delta"`
+	Size          int    `json:"size"`
 }
 
 // ActionInfo entity describes a REST API call the client can make to manipulate a resource.
@@ -62,8 +65,14 @@ type DiffOptions struct {
 	// If the intraline parameter is specified, intraline differences are included in the diff.
 	Intraline bool `url:"intraline,omitempty"`
 
-	//The base parameter can be specified to control the base patch set from which the diff should be generated.
-	Base bool `url:"base,omitempty"`
+	// The base parameter can be specified to control the base patch set from which the diff
+	// should be generated.
+	Base string `url:"base,omitempty"`
+
+	// The integer-valued request parameter parent can be specified to control the parent commit number
+	// against which the diff should be generated. This is useful for supporting review of merge commits.
+	// The value is the 1-based index of the parent’s position in the commit object.
+	Parent int `url:"parent,omitempty"`
 
 	// If the weblinks-only parameter is specified, only the diff web links are returned.
 	WeblinksOnly bool `url:"weblinks-only,omitempty"`
@@ -92,6 +101,28 @@ type MergableOptions struct {
 	OtherBranches bool `url:"other-branches,omitempty"`
 }
 
+// FilesOptions specifies the parameters for ListFiles and ListFilesReviewed calls.
+//
+// Gerrit API docs: https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-files
+type FilesOptions struct {
+	// The request parameter q changes the response to return a list of all files (modified or unmodified)
+	// that contain that substring in the path name. This is useful to implement suggestion services
+	// finding a file by partial name.
+	Q string `url:"q,omitempty"`
+
+	// The base parameter can be specified to control the base patch set from which the list of files
+	// should be generated.
+	//
+	// Note: This option is undocumented.
+	Base string `url:"base,omitempty"`
+
+	// The integer-valued request parameter parent changes the response to return a list of the files
+	// which are different in this commit compared to the given parent commit. This is useful for
+	// supporting review of merge commits. The value is the 1-based index of the parent’s position
+	// in the commit object.
+	Parent int `url:"parent,omitempty"`
+}
+
 // PatchOptions specifies the parameters for GetPatch call.
 //
 // Gerrit API docs: https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#get-patch
@@ -103,13 +134,16 @@ type PatchOptions struct {
 
 	// Query parameter download (e.g. /changes/.../patch?download) will suggest the browser save the patch as commitsha1.diff.base64, for later processing by command line tools.
 	Download bool `url:"download,omitempty"`
+
+	// If the path parameter is set, the returned content is a diff of the single file that the path refers to.
+	Path string `url:"path,omitempty"`
 }
 
 // GetDiff gets the diff of a file from a certain revision.
 //
 // Gerrit API docs: https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#get-diff
 func (s *ChangesService) GetDiff(changeID, revisionID, fileID string, opt *DiffOptions) (*DiffInfo, *Response, error) {
-	u := fmt.Sprintf("changes/%s/revisions/%s/files/%s/diff", changeID, revisionID, fileID)
+	u := fmt.Sprintf("changes/%s/revisions/%s/files/%s/diff", changeID, revisionID, url.PathEscape(fileID))
 
 	u, err := addOptions(u, opt)
 	if err != nil {
@@ -284,41 +318,8 @@ func (s *ChangesService) ListRevisionComments(changeID, revisionID string) (*map
 // The entries in the map are sorted by file path.
 //
 // Gerrit API docs: https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-files
-func (s *ChangesService) ListFiles(changeID, revisionID string) (*map[string]FileInfo, *Response, error) {
-	// TODO: Missing q parameter
-	// The request parameter q changes the response to return a list of all files (modified or unmodified) that contain that substring in the path name. This is useful to implement suggestion services finding a file by partial name.
+func (s *ChangesService) ListFiles(changeID, revisionID string, opt *FilesOptions) (map[string]FileInfo, *Response, error) {
 	u := fmt.Sprintf("changes/%s/revisions/%s/files/", changeID, revisionID)
-
-	req, err := s.client.NewRequest("GET", u, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	v := new(map[string]FileInfo)
-	resp, err := s.client.Do(req, v)
-	if err != nil {
-		return nil, resp, err
-	}
-
-	return v, resp, err
-}
-
-// ListFilesReviewed lists the files that were modified, added or deleted in a revision.
-// The difference between ListFiles and ListFilesReviewed is that the caller has marked these files as reviewed.
-// Clients that also need the FileInfo should make two requests.
-//
-// Gerrit API docs: https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-files
-func (s *ChangesService) ListFilesReviewed(changeID, revisionID string) (*[]FileInfo, *Response, error) {
-	// TODO: Missing q parameter
-	// The request parameter q changes the response to return a list of all files (modified or unmodified) that contain that substring in the path name. This is useful to implement suggestion services finding a file by partial name.
-	u := fmt.Sprintf("changes/%s/revisions/%s/files/", changeID, revisionID)
-
-	opt := struct {
-		// The request parameter reviewed changes the response to return a list of the paths the caller has marked as reviewed.
-		Reviewed bool `url:"reviewed,omitempty"`
-	}{
-		Reviewed: true,
-	}
 
 	u, err := addOptions(u, opt)
 	if err != nil {
@@ -330,8 +331,46 @@ func (s *ChangesService) ListFilesReviewed(changeID, revisionID string) (*[]File
 		return nil, nil, err
 	}
 
-	v := new([]FileInfo)
-	resp, err := s.client.Do(req, v)
+	var v map[string]FileInfo
+	resp, err := s.client.Do(req, &v)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return v, resp, err
+}
+
+// ListFilesReviewed lists the files that were modified, added or deleted in a revision.
+// Unlike ListFiles, the response of ListFilesReviewed is a list of the paths the caller
+// has marked as reviewed. Clients that also need the FileInfo should make two requests.
+//
+// Gerrit API docs: https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-files
+func (s *ChangesService) ListFilesReviewed(changeID, revisionID string, opt *FilesOptions) ([]string, *Response, error) {
+	u := fmt.Sprintf("changes/%s/revisions/%s/files/", changeID, revisionID)
+
+	o := struct {
+		// The request parameter reviewed changes the response to return a list of the paths the caller has marked as reviewed.
+		Reviewed bool `url:"reviewed,omitempty"`
+
+		FilesOptions
+	}{
+		Reviewed: true,
+	}
+	if opt != nil {
+		o.FilesOptions = *opt
+	}
+	u, err := addOptions(u, o)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	req, err := s.client.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var v []string
+	resp, err := s.client.Do(req, &v)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -520,7 +559,7 @@ func (s *ChangesService) DeleteDraft(changeID, revisionID, draftID string) (*Res
 //
 // Gerrit API docs: https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#delete-reviewed
 func (s *ChangesService) DeleteReviewed(changeID, revisionID, fileID string) (*Response, error) {
-	u := fmt.Sprintf("changes/%s/revisions/%s/files/%s/reviewed", changeID, revisionID, fileID)
+	u := fmt.Sprintf("changes/%s/revisions/%s/files/%s/reviewed", changeID, revisionID, url.PathEscape(fileID))
 	return s.client.DeleteRequest(u, nil)
 }
 
@@ -531,7 +570,7 @@ func (s *ChangesService) DeleteReviewed(changeID, revisionID, fileID string) (*R
 //
 // Gerrit API docs: https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#get-content
 func (s *ChangesService) GetContent(changeID, revisionID, fileID string) (*string, *Response, error) {
-	u := fmt.Sprintf("changes/%s/revisions/%s/files/%s/content", changeID, revisionID, fileID)
+	u := fmt.Sprintf("changes/%s/revisions/%s/files/%s/content", changeID, revisionID, url.PathEscape(fileID))
 
 	req, err := s.client.NewRequest("GET", u, nil)
 	if err != nil {
@@ -555,7 +594,7 @@ func (s *ChangesService) GetContent(changeID, revisionID, fileID string) (*strin
 //
 // Gerrit API docs: https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#get-content
 func (s *ChangesService) GetContentType(changeID, revisionID, fileID string) (*Response, error) {
-	u := fmt.Sprintf("changes/%s/revisions/%s/files/%s/content", changeID, revisionID, fileID)
+	u := fmt.Sprintf("changes/%s/revisions/%s/files/%s/content", changeID, revisionID, url.PathEscape(fileID))
 
 	req, err := s.client.NewRequest("HEAD", u, nil)
 	if err != nil {
@@ -571,7 +610,7 @@ func (s *ChangesService) GetContentType(changeID, revisionID, fileID string) (*R
 //
 // Gerrit API docs: https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#set-reviewed
 func (s *ChangesService) SetReviewed(changeID, revisionID, fileID string) (*Response, error) {
-	u := fmt.Sprintf("changes/%s/revisions/%s/files/%s/reviewed", changeID, revisionID, fileID)
+	u := fmt.Sprintf("changes/%s/revisions/%s/files/%s/reviewed", changeID, revisionID, url.PathEscape(fileID))
 
 	req, err := s.client.NewRequest("PUT", u, nil)
 	if err != nil {
