@@ -7646,6 +7646,8 @@ dashboards:
     test_group_name: istio-e2e-simpleTests-presubmit
   - name: e2e-bookInfoTests-envoyv2-v1alpha3
     test_group_name: istio-e2e-bookInfoTests-envoyv2-v1alpha3-presubmit
+  - name: e2e-bookInfoTests-trustdomain
+    test_group_name: istio-e2e-bookInfoTests-trustdomain-presubmit
   - name: circleci-e2e-simple
     test_group_name: istio-circleci-e2e-simple-presubmit
   - name: circleci-e2e-dashboard
