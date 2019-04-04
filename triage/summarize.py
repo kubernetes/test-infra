@@ -417,7 +417,7 @@ def clusters_to_display(clustered, builds):
         "text": clusters[0][1][0]['failure_text'],
         "tests": [{
             "name": test_name,
-            "jobs": [{"name": n, "builds": b}
+            "jobs": [{"name": n, "builds": [str(x) for x in b]}
                      for n, b in tests_group_by_job(tests, builds)]
             }
                   for test_name, tests in sorted(clusters, key=lambda (n, t): (-len(t), n))
@@ -510,7 +510,7 @@ def annotate_owners(data, builds, owners):
                     continue
                 job_path = job_paths[job['name']]
                 for build in job['builds']:
-                    if builds['%s/%d' % (job_path, build)]['started'] > yesterday:
+                    if builds['%s/%s' % (job_path, build)]['started'] > yesterday:
                         counts[0] += 1
                     else:
                         counts[1] += 1

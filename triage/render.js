@@ -126,7 +126,10 @@ function renderJobs(parent, clusterId) {
 
   var jobList = addElement(parent, 'ul');
   for (let [job, buildNumbersSet] of jobs) {
-    let buildNumbers = Array.from(buildNumbersSet).sort((a,b) => b - a);
+    // This sort isn't strictly correct - our numbers are too large - but in practice we shouldn't
+    // have ID numbers this similar anyway, and it's not fatal if builds this close together
+    // are sorted wrong.
+    let buildNumbers = Array.from(buildNumbersSet).sort((a,b) => Number(b) - Number(a));
     var count = counts[job];
     if (jobs.length > kCollapseThreshold && !jobAllSection && countSum > 0.8 * dayCount) {
       addElement(jobList, 'button', {className: 'rest', title: 'Show Daily Bottom 20%'}, 'More');

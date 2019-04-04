@@ -119,7 +119,7 @@ class ClusterTest(unittest.TestCase):
                     'cols': {'started': [now]}
                 },
                 'clustered': [
-                    {'tests': [{'name': test, 'jobs': [{'name': 'somejob', 'builds': [123]}]}]}
+                    {'tests': [{'name': test, 'jobs': [{'name': 'somejob', 'builds': ['123']}]}]}
                 ],
             }
             summarize.annotate_owners(
@@ -237,7 +237,7 @@ class IntegrationTest(unittest.TestCase):
             output['clustered'],
             [{'id': random_hash_1,
               'key': 'some awful stack trace exit 1',
-              'tests': [{'jobs': [{'builds': [4, 3, 2, 1],
+              'tests': [{'jobs': [{'builds': ['4', '3', '2', '1'],
                                    'name': 'some-job'}],
                          'name': 'example test'}],
               'spans': [29],
@@ -245,10 +245,10 @@ class IntegrationTest(unittest.TestCase):
               'text': 'some awful stack trace exit 1'},
              {'id': random_hash_2,
               'key': 'some other error message',
-              'tests': [{'jobs': [{'builds': [7, 5],
+              'tests': [{'jobs': [{'builds': ['7', '5'],
                                    'name': 'other-job'}],
                          'name': 'unrelated test'},
-                        {'jobs': [{'builds': [4], 'name': 'some-job'}],
+                        {'jobs': [{'builds': ['4'], 'name': 'some-job'}],
                          'name': 'another test'}],
               'spans': [24],
               'owner': 'testing',
