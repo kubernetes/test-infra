@@ -16,7 +16,7 @@ A resource yaml looks looks like:
 ---
 resources:
   - type: "aws-account"
-    state: clean
+    state: free
     names:
     - "account1"
     - "account2"
@@ -172,7 +172,7 @@ and reset the stale resources to dirty state for the [`Janitor`] component to pi
 state leaks if a client process is killed unexpectedly.
 
 [`Janitor`] looks for dirty resources from boskos, and will kick off sub-janitor process to clean up the
-resource, finally return them back to boskos in a clean state.
+resource, finally return them back to boskos in a free state.
 
 [`Metrics`] is a separate service, which can display json metric results, and has HTTP endpoint
 opened for prometheus monitoring.
@@ -198,7 +198,7 @@ For the boskos server that handles k8s e2e jobs, the status is available from th
 
 1. Check it out: 
     ```shell
-    curl -X POST "http://localhost:8080/acquire?type=my-resource&state=clean&dest=busy&owner=$(whoami)"
+    curl -X POST "http://localhost:8080/acquire?type=my-resource&state=free&dest=busy&owner=$(whoami)"
     {"type":"my-resource","name":"resource1","state":"busy","owner":"user","lastupdate":"2019-02-07T22:33:38.01350902Z","userdata":null}
     ```
 
@@ -209,7 +209,7 @@ For the boskos server that handles k8s e2e jobs, the status is available from th
 
 1. Check it back in:
     ```shell
-    curl -X POST 'http://localhost:8080/release?name=liz2&dest=clean&owner=user'
+    curl -X POST 'http://localhost:8080/release?name=liz2&dest=free&owner=user'
     ```
 
 ## Local test:
