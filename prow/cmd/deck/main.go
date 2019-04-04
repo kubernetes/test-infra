@@ -158,7 +158,7 @@ func main() {
 	// signal to the world that we are healthy
 	// this needs to be in a separate port as we don't start the
 	// main server with the main mux until we're ready
-	health := pjutil.NewHealth(8081)
+	health := pjutil.NewHealth()
 
 	mux := http.NewServeMux()
 	// setup common handlers for local and deployed runs

@@ -278,7 +278,7 @@ func main() {
 	)
 
 	pjutil.ServePProf()
-	health := pjutil.NewHealth(8081)
+	health := pjutil.NewHealth()
 
 	s, err := newStore(o.storagePath)
 	if err != nil {

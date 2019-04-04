@@ -25,6 +25,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const healthPort = 8081
+
 // Health keeps a request multiplexer for health liveness and readiness endpoints
 type Health struct {
 	healthMux *http.ServeMux
@@ -32,11 +34,11 @@ type Health struct {
 
 // NewHealth creates a new health request multiplexer and starts serving the liveness endpoint
 // on the given port
-func NewHealth(port int) *Health {
+func NewHealth() *Health {
 	healthMux := http.NewServeMux()
 	healthMux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, "OK") })
 	go func() {
-		logrus.WithError(http.ListenAndServe(":"+strconv.Itoa(port), healthMux)).Fatal("ListenAndServe returned.")
+		logrus.WithError(http.ListenAndServe(":"+strconv.Itoa(healthPort), healthMux)).Fatal("ListenAndServe returned.")
 	}()
 	return &Health{
 		healthMux: healthMux,
