@@ -43,6 +43,7 @@ prune-vendor() {
     -delete
 }
 
+export GO111MODULE=on
 mode="${1:-}"
 shift || true
 case "$mode" in
@@ -62,7 +63,6 @@ case "$mode" in
 esac
 
 rm -rf vendor
-export GO111MODULE=on
 bazel run //:go -- mod tidy
 bazel run //:go -- mod vendor
 prune-vendor
