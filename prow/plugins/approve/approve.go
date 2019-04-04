@@ -47,9 +47,9 @@ const (
 )
 
 var (
-	associatedIssueRegex = regexp.MustCompile(`(?:kubernetes/[^/]+/issues/|#)(\d+)`)
-	commandRegex         = regexp.MustCompile(`(?m)^/([^\s]+)[\t ]*([^\n\r]*)`)
-	notificationRegex    = regexp.MustCompile(`(?is)^\[` + approvers.ApprovalNotificationName + `\] *?([^\n]*)(?:\n\n(.*))?`)
+	associatedIssueRegexFormat = `(?:%s/[^/]+/issues/|#)(\d+)`
+	commandRegex               = regexp.MustCompile(`(?m)^/([^\s]+)[\t ]*([^\n\r]*)`)
+	notificationRegex          = regexp.MustCompile(`(?is)^\[` + approvers.ApprovalNotificationName + `\] *?([^\n]*)(?:\n\n(.*))?`)
 
 	// deprecatedBotNames are the names of the bots that previously handled approvals.
 	// Each can be removed once every PR approved by the old bot has been merged or unapproved.
@@ -312,16 +312,20 @@ func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, git
 
 // Returns associated issue, or 0 if it can't find any.
 // This is really simple, and could be improved later.
-func findAssociatedIssue(body string) int {
+func findAssociatedIssue(body, org string) (int, error) {
+	associatedIssueRegex, err := regexp.Compile(fmt.Sprintf(associatedIssueRegexFormat, org))
+	if err != nil {
+		return 0, err
+	}
 	match := associatedIssueRegex.FindStringSubmatch(body)
 	if len(match) == 0 {
-		return 0
+		return 0, nil
 	}
 	v, err := strconv.Atoi(match[1])
 	if err != nil {
-		return 0
+		return 0, err
 	}
-	return v
+	return v, nil
 }
 
 // handle is the workhorse the will actually make updates to the PR.
@@ -388,7 +392,10 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 			int64(pr.number),
 		),
 	)
-	approversHandler.AssociatedIssue = findAssociatedIssue(pr.body)
+	approversHandler.AssociatedIssue, err = findAssociatedIssue(pr.body, pr.org)
+	if err != nil {
+		log.WithError(err).Errorf("Failed to find associated issue from PR body: %v", err)
+	}
 	approversHandler.RequireIssue = opts.IssueRequired
 	approversHandler.ManuallyApproved = humanAddedApproved(ghc, log, pr.org, pr.repo, pr.number, botName, hasApprovedLabel)
 
