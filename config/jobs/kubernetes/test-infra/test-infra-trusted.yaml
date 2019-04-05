@@ -433,7 +433,7 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/cip-demo-staging/cip:20190405-v1.0.3-0-gdf34e5f
+      - image: gcr.io/cip-demo-staging/cip:20190405-v1.0.4-0-gc882e4a
         command:
         - multirun.sh
         args:
@@ -727,7 +727,7 @@ periodics:
     # interactive bash session:
     #
     #   docker run --rm -it gcr.io/cip-demo-staging/cip:<tag> "cd /cip && bash"
-    - image: gcr.io/cip-demo-staging/cip:20190405-v1.0.3-0-gdf34e5f
+    - image: gcr.io/cip-demo-staging/cip:20190405-v1.0.4-0-gc882e4a
       command:
       - multirun.sh
       args:
