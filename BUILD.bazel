@@ -197,3 +197,15 @@ filegroup(
 )
 
 exports_files(["tsconfig.json"])
+
+platform(
+    name = "rbe_with_network",
+    parents = ["@rbe_default//config:platform"],
+    remote_execution_properties = """
+      properties: {
+        name: "dockerNetwork"
+        value: "standard"
+      }
+      {PARENT_REMOTE_EXECUTION_PROPERTIES}
+    """,
+)
