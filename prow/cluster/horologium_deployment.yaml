@@ -34,6 +34,7 @@ spec:
       - name: horologium
         image: gcr.io/k8s-prow/horologium:v20190405-651ad49e6
         args:
+        - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --dry-run=false
         volumeMounts:
