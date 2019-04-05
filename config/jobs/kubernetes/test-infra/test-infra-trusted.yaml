@@ -438,9 +438,9 @@ postsubmits:
         - multirun.sh
         args:
         - /app/cip-docker-image.binary
-        - k8s-staging-cluster-api/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
-        - k8s-staging-coredns/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
-        - k8s-staging-csi/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
+        - k8s.gcr.io/k8s-staging-cluster-api/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
+        - k8s.gcr.io/k8s-staging-coredns/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
+        - k8s.gcr.io/k8s-staging-csi/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
         env:
         - name: CIP_OPTS
           value: "-dry-run=false"
@@ -738,9 +738,9 @@ periodics:
       # If you run mkpj for this postsubmit, the job will query you for the base
       # ref to fetch (name of a branch, not a SHA, e.g. "master").
       - /app/cip-docker-image.binary
-      - k8s-staging-cluster-api/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
-      - k8s-staging-coredns/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
-      - k8s-staging-csi/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
+      - k8s.gcr.io/k8s-staging-cluster-api/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
+      - k8s.gcr.io/k8s-staging-coredns/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
+      - k8s.gcr.io/k8s-staging-csi/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
       env:
       - name: CIP_OPTS
         value: "-dry-run=false"
