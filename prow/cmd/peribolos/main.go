@@ -43,21 +43,22 @@ const (
 )
 
 type options struct {
-	config         string
-	confirm        bool
-	dump           string
-	jobConfig      string
-	maximumDelta   float64
-	minAdmins      int
-	requireSelf    bool
-	requiredAdmins flagutil.Strings
-	fixOrg         bool
-	fixOrgMembers  bool
-	fixTeamMembers bool
-	fixTeams       bool
-	github         flagutil.GitHubOptions
-	tokenBurst     int
-	tokensPerHour  int
+	config             string
+	confirm            bool
+	dump               string
+	jobConfig          string
+	maximumDelta       float64
+	minAdmins          int
+	requireSelf        bool
+	requiredAdmins     flagutil.Strings
+	fixOrg             bool
+	fixOrgMembers      bool
+	fixTeamMembers     bool
+	fixTeams           bool
+	ignorePrivateTeams bool
+	github             flagutil.GitHubOptions
+	tokenBurst         int
+	tokensPerHour      int
 }
 
 func parseOptions() options {
@@ -80,6 +81,7 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
 	flags.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
 	flags.StringVar(&o.dump, "dump", "", "Output current config of this org if set")
+	flags.BoolVar(&o.ignorePrivateTeams, "ignore-private-teams", false, "Do not dump or update private teams if set")
 	flags.BoolVar(&o.fixOrg, "fix-org", false, "Change org metadata if set")
 	flags.BoolVar(&o.fixOrgMembers, "fix-org-members", false, "Add/remove org members if set")
 	flags.BoolVar(&o.fixTeams, "fix-teams", false, "Create/delete/update teams if set")
@@ -139,7 +141,7 @@ func main() {
 	}
 
 	if o.dump != "" {
-		ret, err := dumpOrgConfig(githubClient, o.dump)
+		ret, err := dumpOrgConfig(githubClient, o.dump, o.ignorePrivateTeams)
 		if err != nil {
 			logrus.WithError(err).Fatalf("Dump %s failed to collect current data.", o.dump)
 		}
@@ -171,7 +173,7 @@ type dumpClient interface {
 	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
 }
 
-func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
+func dumpOrgConfig(client dumpClient, orgName string, ignorePrivateTeams bool) (*org.Config, error) {
 	out := org.Config{}
 	meta, err := client.GetOrg(orgName)
 	if err != nil {
@@ -217,6 +219,9 @@ func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
 
 	for _, t := range teams {
 		p := org.Privacy(t.Privacy)
+		if ignorePrivateTeams && (p == org.Closed || p == org.Secret) {
+			continue
+		}
 		d := t.Description
 		nt := org.Team{
 			TeamMetadata: org.TeamMetadata{
@@ -492,7 +497,7 @@ type teamClient interface {
 }
 
 // configureTeams returns the ids for all expected team names, creating/deleting teams as necessary.
-func configureTeams(client teamClient, orgName string, orgConfig org.Config, maxDelta float64) (map[string]github.Team, error) {
+func configureTeams(client teamClient, orgName string, orgConfig org.Config, maxDelta float64, ignorePrivateTeams bool) (map[string]github.Team, error) {
 	if err := validateTeamNames(orgConfig); err != nil {
 		return nil, err
 	}
@@ -505,6 +510,9 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 		return nil, fmt.Errorf("failed to list teams: %v", err)
 	}
 	for _, t := range teamList {
+		if p := org.Privacy(t.Privacy); ignorePrivateTeams && (p == org.Closed || p == org.Secret) {
+			continue
+		}
 		ids[t.ID] = t
 		ints.Insert(t.ID)
 	}
@@ -708,7 +716,7 @@ func configureOrg(opt options, client *github.Client, orgName string, orgConfig 
 	}
 
 	// Find the id and current state of each declared team (create/delete as necessary)
-	githubTeams, err := configureTeams(client, orgName, orgConfig, opt.maximumDelta)
+	githubTeams, err := configureTeams(client, orgName, orgConfig, opt.maximumDelta, opt.ignorePrivateTeams)
 	if err != nil {
 		return fmt.Errorf("failed to configure %s teams: %v", orgName, err)
 	}
