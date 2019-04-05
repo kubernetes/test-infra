@@ -9,7 +9,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/cip-demo-staging/cip:20190405-v1.0.4-0-gc882e4a
+      - image: gcr.io/cip-demo-staging/cip:20190405-v1.0.5-0-g314afe0
         command:
         - multirun.sh
         args:
