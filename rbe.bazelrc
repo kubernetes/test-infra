@@ -24,9 +24,9 @@ build:remote --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
 # by "extra_execution_platforms", "host_platform" and "platforms".
 # More about platforms: https://docs.bazel.build/versions/master/platforms.html
 build:remote --extra_toolchains=@rbe_default//config:cc-toolchain
-build:remote --extra_execution_platforms=@rbe_default//config:platform
-build:remote --host_platform=@rbe_default//config:platform
-build:remote --platforms=@rbe_default//config:platform
+build:remote --extra_execution_platforms=:rbe_with_network
+build:remote --host_platform=:rbe_with_network
+build:remote --platforms=:rbe_with_network
 
 # Set various strategies so that all actions execute remotely. Mixing remote
 # and local execution will lead to errors unless the toolchain and remote
