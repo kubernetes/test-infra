@@ -26,17 +26,22 @@ hostpath_example_repos="
 csi-driver-host-path
 external-attacher
 external-provisioner
-livenessprobe
 node-driver-registrar
 "
 
 # kubernetes-csi repos which only need to be tested against a single
-# Kubernetes version. They might not even bring up a cluster at all.
-single_config_repos="
+# Kubernetes version. We generate unit, stable and alpha jobs for these,
+# without specifying a Kubernetes version.
+single_kubernetes_repos="
+livenessprobe
+external-snapshotter
+"
+
+# kubernetes-csi repos which only need unit testing.
+unit_testing_repos="
 csi-test
 csi-release-tools
 csi-lib-utils
-external-snapshotter
 "
 
 # No Prow support in them yet.
@@ -97,6 +102,43 @@ kubernetes_job_name () {
     echo "$(echo "$deployment" | tr . -)-on-kubernetes-$(echo "$kubernetes" | tr . - | sed 's/\([0-9]*\)-\([0-9]*\)-\([0-9]*\)/\1-\2/')"
 }
 
+# Combines type ("ci" or "pull"), repo, test type ("unit", "alpha", "non-alpha") and deployment+kubernetes into a
+# Prow job name of the format <type>-kubernetes-csi[-<repo>][-<test type>][-<kubernetes job name].
+# The <test type> part is only added for "unit" and "non-alpha" because there is no good name for it ("stable"?!)
+# and to keep the job name a bit shorter.
+job_name () {
+    local type="$1"
+    local repo="$2"
+    local tests="$3"
+    local deployment="$4"
+    local kubernetes="$5"
+    local name
+
+    name="$type-kubernetes-csi"
+    if [ "$repo" ]; then
+        name+="-$repo"
+    fi
+    if [ "$tests" != "non-alpha" ]; then
+        name+="-$tests"
+    fi
+    if [ "$deployment" ] || [ "$kubernetes" ]; then
+        name+="-$(kubernetes_job_name "$deployment" "$kubernetes")"
+    fi
+    echo "$name"
+}
+
+# "alpha" and "non-alpha" need to be expanded to different CSI_PROW_TESTS names.
+expand_tests () {
+    case "$1" in
+        non-alpha)
+            echo "sanity serial parallel";;
+        alpha)
+            echo "serial-alpha parallel-alpha";;
+        *)
+            echo "$1";;
+    esac
+}
+
 for repo in $hostpath_example_repos; do
     mkdir -p "$base/$repo"
     cat >"$base/$repo/$repo-config.yaml" <<EOF
@@ -106,17 +148,18 @@ presubmits:
   kubernetes-csi/$repo:
 EOF
 
-    for deployment in 1.13 1.14; do # must have a deploy/kubernetes-<version> dir in csi-driver-host-path
-        for kubernetes in 1.13.3 1.14.0; do # these versions must have pre-built kind images (see https://hub.docker.com/r/kindest/node/tags)
-            # We could generate these pre-submit jobs for all combinations, but to save resources in the Prow
-            # cluster we only do it for those cases where the deployment matches the Kubernetes version.
-            # Once we have more than two supported Kubernetes releases we should limit this to the most
-            # recent two.
-            #
-            # Periodic jobs need to test the full matrix.
-            if echo "$kubernetes" | grep -q "^$deployment"; then
-                cat >>"$base/$repo/$repo-config.yaml" <<EOF
-  - name: pull-sig-storage-$repo-$(kubernetes_job_name $deployment $kubernetes)
+    for tests in non-alpha alpha; do
+        for deployment in 1.13 1.14; do # must have a deploy/kubernetes-<version> dir in csi-driver-host-path
+            for kubernetes in 1.13.3 1.14.0; do # these versions must have pre-built kind images (see https://hub.docker.com/r/kindest/node/tags)
+                # We could generate these pre-submit jobs for all combinations, but to save resources in the Prow
+                # cluster we only do it for those cases where the deployment matches the Kubernetes version.
+                # Once we have more than two supported Kubernetes releases we should limit this to the most
+                # recent two.
+                #
+                # Periodic jobs need to test the full matrix.
+                if echo "$kubernetes" | grep -q "^$deployment"; then
+                    cat >>"$base/$repo/$repo-config.yaml" <<EOF
+  - name: $(job_name "pull" "$repo" "$tests" "$deployment" "$kubernetes")
     # Experimental job, explicitly needs to be started with /test.
     # This can be enabled once the components have the necessary configuration
     # for this combination of deployment+Kubernetes.
@@ -146,16 +189,19 @@ EOF
           value: "$kubernetes"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "$deployment"
+        - name: CSI_PROW_TESTS
+          value: "$(expand_tests "$tests")"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
 $(resources_for_kubernetes "$kubernetes")
 EOF
-            fi
-        done
+                fi
+            done
 
-        cat >>"$base/$repo/$repo-config.yaml" <<EOF
-  - name: pull-sig-storage-$repo-$(kubernetes_job_name $deployment master)
+            if [ "$tests" != "alpha" ]; then
+                cat >>"$base/$repo/$repo-config.yaml" <<EOF
+  - name: $(job_name "pull" "$repo" "$tests" "$deployment" master)
     # Experimental job, explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
@@ -178,15 +224,91 @@ EOF
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
+        - name: CSI_PROW_TESTS
+          value: "$(expand_tests "$tests")"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
 $(resources_for_kubernetes master)
 EOF
+            fi
+        done
+    done
+
+    cat >>"$base/$repo/$repo-config.yaml" <<EOF
+  - name: $(job_name "pull" "$repo" "unit")
+    # Experimental job, explicitly needs to be started with /test.
+    # This cannot be enabled by default because there's always the risk
+    # that something changes in master which breaks the pre-merge check.
+    always_run: false
+    decorate: true
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      # We need this image because it has Docker in Docker and go.
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        command:
+        - runner.sh
+        args:
+        - ./.prow.sh
+        env:
+        - name: CSI_PROW_TESTS
+          value: "unit"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+$(resources_for_kubernetes master)
+EOF
+done
+
+for repo in $single_kubernetes_repos; do
+    mkdir -p "$base/$repo"
+    cat >"$base/$repo/$repo-config.yaml" <<EOF
+# generated by gen-jobs.sh, do not edit manually
+
+presubmits:
+  kubernetes-csi/$repo:
+EOF
+    for tests in non-alpha unit alpha; do
+        cat >>"$base/$repo/$repo-config.yaml" <<EOF
+  - name: $(job_name "pull" "$repo" "$tests")
+    # Experimental job, explicitly needs to be started with /test.
+    # This can be enabled once the components have the necessary configuration
+    # for this combination of deployment+Kubernetes.
+    always_run: false
+    decorate: true
+    skip_report: false
+    skip_branches: [$(skip_branches $repo)]
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      # We need this image because it has Docker in Docker and go.
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        command:
+        - runner.sh
+        args:
+        - ./.prow.sh
+        env:
+        - name: CSI_PROW_TESTS
+          value: "$(expand_tests "$tests")"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+$(resources_for_kubernetes default)
+EOF
     done
 done
 
-for repo in $single_config_repos; do
+# Single job for everything.
+for repo in $unit_testing_repos; do
     mkdir -p "$base/$repo"
     cat >"$base/$repo/$repo-config.yaml" <<EOF
 # generated by gen-jobs.sh, do not edit manually
@@ -232,18 +354,27 @@ done
 # - Not all test configurations are covered by pre-submit jobs.
 # - The actual deployment content is not used verbatim in pre-submit
 #   jobs. The csi-driver-host-path image itself always gets replaced.
+#
+# This does E2E testing, with alpha tests only enabled in cases where
+# it makes sense. Unit tests are not enabled because we aren't building
+# the components.
 cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 
 periodics:
 EOF
 
 # TODO: decide how we want to test the kubernetes-1.14 deployment
-for deployment in 1.13; do
-    for kubernetes in 1.13 1.14 master; do
-        actual="$(if [ "$kubernetes" = "master" ]; then echo latest; else echo "release-$kubernetes"; fi)"
-        cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
+for tests in non-alpha alpha; do
+    for deployment in 1.13; do
+        for kubernetes in 1.13 1.14 master; do
+            # No version skew testing of alpha features, deployment has to match Kubernetes.
+            if [ "$tests" = "alpha" ] && ! echo "$kubernetes" | grep -q "^$deployment"; then
+                continue
+            fi
+            actual="$(if [ "$kubernetes" = "master" ]; then echo latest; else echo "release-$kubernetes"; fi)"
+            cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 - interval: 6h
-  name: ci-kubernetes-csi-$(kubernetes_job_name $deployment $kubernetes)
+  name: $(job_name "ci" "" "$tests" "$deployment" "$kubernetes")
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -269,11 +400,14 @@ for deployment in 1.13; do
         value: "false"
       - name: CSI_PROW_DEPLOYMENT
         value: "kubernetes-$deployment"
+      - name: CSI_PROW_TESTS
+        value: "$(expand_tests "$tests")"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
 $(resources_for_kubernetes "$actual")
 EOF
+        done
     done
 done
 
@@ -282,9 +416,14 @@ done
 # release.
 for kubernetes in 1.13 1.14 master; do
     actual="${kubernetes/master/latest}"
-    cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
+    for tests in non-alpha alpha; do
+        # Alpha with latest sidecars only on master.
+        if [ "$tests" = "alpha" ] && [ "$kubernetes" != "master" ]; then
+            continue
+        fi
+        cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 - interval: 6h
-  name: ci-kubernetes-csi-$(kubernetes_job_name canary $kubernetes)
+  name: $(job_name "ci" "" "$tests" "canary" "$kubernetes")
   decorate: true
   extra_refs:
   - org: pohly
@@ -314,11 +453,14 @@ for kubernetes in 1.13 1.14 master; do
       # ... but not the RBAC rules.
       - name: UPDATE_RBAC_RULES
         value: "false"
+      - name: CSI_PROW_TESTS
+        value: "$(expand_tests "$tests")"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
 $(resources_for_kubernetes "$actual")
 EOF
+    done
 done
 
 # This job can eventually get replaced by the generated job above.
