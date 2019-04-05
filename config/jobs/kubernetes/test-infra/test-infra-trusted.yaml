@@ -704,6 +704,7 @@ periodics:
 # ci-k8sio-cip runs daily, to make sure that the destination GCRs do not deviate
 # away from the intent of the manifest.
 - interval: 24h
+  cluster: test-infra-trusted
   max_concurrency: 1
   # This name is the "job name", passed in as "--job=NAME" for mkpj.
   name: ci-k8sio-cip
