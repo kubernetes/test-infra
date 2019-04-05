@@ -51,6 +51,9 @@ import (
 const (
 	// DefaultJobTimeout represents the default deadline for a prow job.
 	DefaultJobTimeout = 24 * time.Hour
+
+	// githubAPIEndpoints represents the default github api endpoints.
+	githubAPIEndpoints = []string{"https://api.github.com"}
 )
 
 // Config is a read-only snapshot of the config.
@@ -379,6 +382,12 @@ type GitHubOptions struct {
 	// LinkURL is the url representation of LinkURLFromConfig. This variable should be used
 	// in all places internally.
 	LinkURL *url.URL
+
+	// APIEndpoints is a config parameter allows users to override the default GitHub API Endpoint.
+	// This config parameter is a slice, so users can specify multiple api endpoints to use. If
+	// an api endpoint returns an error, the next endpoint will be used.
+	// If this options is not set, we assume "https://api.github.com"
+	APIEndpoints []string `json:"api_endpoints,omitempty"`
 }
 
 // Load loads and parses the config at path.
@@ -1054,6 +1063,15 @@ func parseProwConfig(c *Config) error {
 		return fmt.Errorf("unable to parse github.link_url, might not be a valid url: %v", err)
 	}
 	c.GitHubOptions.LinkURL = linkURL
+	if len(c.GitHubOptions.APIEndpoints) == 0 {
+		c.GitHubOptions.APIEndpoints = githubAPIEndpoints
+	}
+	for k, v := range c.GitHubOptions.APIEndpoints {
+		_, err := url.Parse(v)
+		if err != nil {
+			return fmt.Errorf("unable to parse github.api_endpoints[%d], might not be a valid url: %v", k, err)
+		}
+	}
 
 	if c.StatusErrorLink == "" {
 		c.StatusErrorLink = "https://github.com/kubernetes/test-infra/issues"

@@ -46,6 +46,11 @@ prowjob_namespace: default
 pod_namespace: test-pods
 log_level: debug
 
+github:
+  api_endpoints:
+    - http://ghproxy
+    - https://api.github.com
+
 branch-protection:
   allow_disabled_policies: true  # TODO(fejta): remove, needed by k/website
   orgs:
