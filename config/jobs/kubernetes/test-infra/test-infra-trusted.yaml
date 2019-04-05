@@ -433,14 +433,14 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/cip-demo-staging/cip:20190404-v1.0.2-2-g41b62df
+      - image: gcr.io/cip-demo-staging/cip:20190405-v1.0.3-0-gdf34e5f
         command:
         - multirun.sh
         args:
         - /app/cip-docker-image.binary
-        - k8s-staging-cluster-api/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
-        - k8s-staging-coredns/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
-        - k8s-staging-csi/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
+        - k8s.gcr.io/k8s-staging-cluster-api/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
+        - k8s.gcr.io/k8s-staging-coredns/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
+        - k8s.gcr.io/k8s-staging-csi/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
         env:
         - name: CIP_OPTS
           value: "-dry-run=false"
@@ -727,7 +727,7 @@ periodics:
     # interactive bash session:
     #
     #   docker run --rm -it gcr.io/cip-demo-staging/cip:<tag> "cd /cip && bash"
-    - image: gcr.io/cip-demo-staging/cip:20190404-v1.0.2-2-g41b62df
+    - image: gcr.io/cip-demo-staging/cip:20190405-v1.0.3-0-gdf34e5f
       command:
       - multirun.sh
       args:
@@ -738,9 +738,9 @@ periodics:
       # If you run mkpj for this postsubmit, the job will query you for the base
       # ref to fetch (name of a branch, not a SHA, e.g. "master").
       - /app/cip-docker-image.binary
-      - k8s-staging-cluster-api/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
-      - k8s-staging-coredns/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
-      - k8s-staging-csi/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
+      - k8s.gcr.io/k8s-staging-cluster-api/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
+      - k8s.gcr.io/k8s-staging-coredns/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
+      - k8s.gcr.io/k8s-staging-csi/manifest.yaml,/etc/k8s-gcr-prod-service-account/service-account.json
       env:
       - name: CIP_OPTS
         value: "-dry-run=false"
