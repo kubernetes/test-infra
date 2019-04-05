@@ -535,7 +535,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		previous = ""
 		exitZero = false
 	)
-	wrapperOptions, err := InjectEntrypoint(&spec.Containers[0], pj.Spec.DecorationConfig.Timeout, pj.Spec.DecorationConfig.GracePeriod, prefix, previous, exitZero, logMount, toolsMount)
+	wrapperOptions, err := InjectEntrypoint(&spec.Containers[0], pj.Spec.DecorationConfig.Timeout.Duration, pj.Spec.DecorationConfig.GracePeriod.Duration, prefix, previous, exitZero, logMount, toolsMount)
 	if err != nil {
 		return fmt.Errorf("wrap container: %v", err)
 	}

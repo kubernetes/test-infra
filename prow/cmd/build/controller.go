@@ -686,7 +686,7 @@ func decorateSteps(steps []coreapi.Container, dc prowjobv1.DecorationConfig, too
 			previousMarker = entries[i-1].MarkerFile
 		}
 		// TODO(fejta): consider refactoring entrypoint to accept --expire=time.Now.Add(dc.Timeout) so we timeout each step correctly (assuming a good clock)
-		opt, err := decorate.InjectEntrypoint(&steps[i], dc.Timeout, dc.GracePeriod, steps[i].Name, previousMarker, alwaysPass, logMount, toolsMount)
+		opt, err := decorate.InjectEntrypoint(&steps[i], dc.Timeout.Duration, dc.GracePeriod.Duration, steps[i].Name, previousMarker, alwaysPass, logMount, toolsMount)
 		if err != nil {
 			return nil, fmt.Errorf("inject entrypoint into %s: %v", steps[i].Name, err)
 		}
@@ -723,8 +723,8 @@ func determineTimeout(spec *buildv1alpha1.BuildSpec, dc *prowjobv1.DecorationCon
 	switch {
 	case spec.Timeout != nil:
 		return spec.Timeout.Duration
-	case dc != nil && dc.Timeout > 0:
-		return dc.Timeout
+	case dc != nil && dc.Timeout.Duration > 0:
+		return dc.Timeout.Duration
 	default:
 		return defaultTimeout
 	}

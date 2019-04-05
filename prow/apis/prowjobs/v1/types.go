@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -158,6 +159,38 @@ type ProwJobSpec struct {
 	DecorationConfig *DecorationConfig `json:"decoration_config,omitempty"`
 }
 
+// Duration is a wrapper around time.Duration that parses times in either
+// 'integer number of nanoseconds' or 'duration string' formats and serializes
+// to 'duration string' format.
+type Duration struct {
+	time.Duration
+}
+
+func (d *Duration) UnmarshalJSON(b []byte) error {
+	if err := json.Unmarshal(b, &d.Duration); err == nil {
+		// b was an integer number of nanoseconds.
+		return nil
+	}
+	// b was not an integer. Assume that it is a duration string.
+
+	var str string
+	err := json.Unmarshal(b, &str)
+	if err != nil {
+		return err
+	}
+
+	pd, err := time.ParseDuration(str)
+	if err != nil {
+		return err
+	}
+	d.Duration = pd
+	return nil
+}
+
+func (d *Duration) MarshalJSON() ([]byte, error) {
+	return json.Marshal(d.Duration.String())
+}
+
 // DecorationConfig specifies how to augment pods.
 //
 // This is primarily used to provide automatic integration with gubernator
@@ -165,11 +198,12 @@ type ProwJobSpec struct {
 type DecorationConfig struct {
 	// Timeout is how long the pod utilities will wait
 	// before aborting a job with SIGINT.
-	Timeout time.Duration `json:"timeout,omitempty"`
+	Timeout Duration `json:"timeout,omitempty"`
 	// GracePeriod is how long the pod utilities will wait
 	// after sending SIGINT to send SIGKILL when aborting
 	// a job. Only applicable if decorating the PodSpec.
-	GracePeriod time.Duration `json:"grace_period,omitempty"`
+	GracePeriod Duration `json:"grace_period,omitempty"`
+
 	// UtilityImages holds pull specs for utility container
 	// images used to decorate a PodSpec.
 	UtilityImages *UtilityImages `json:"utility_images,omitempty"`
@@ -212,10 +246,10 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	merged.UtilityImages = merged.UtilityImages.ApplyDefault(def.UtilityImages)
 	merged.GCSConfiguration = merged.GCSConfiguration.ApplyDefault(def.GCSConfiguration)
 
-	if merged.Timeout == 0 {
+	if merged.Timeout.Duration == 0 {
 		merged.Timeout = def.Timeout
 	}
-	if merged.GracePeriod == 0 {
+	if merged.GracePeriod.Duration == 0 {
 		merged.GracePeriod = def.GracePeriod
 	}
 	if merged.GCSCredentialsSecret == "" {
