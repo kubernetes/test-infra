@@ -100,7 +100,7 @@ func gitCtxForRefs(refs prowapi.Refs, baseDir string, env []string) gitCtx {
 	g := gitCtx{
 		cloneDir:      PathForRefs(baseDir, refs),
 		env:           env,
-		repositoryURI: fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo),
+		repositoryURI: fmt.Sprintf("https://github.com./%s/%s.git", refs.Org, refs.Repo),
 	}
 	if refs.CloneURI != "" {
 		g.repositoryURI = refs.CloneURI
