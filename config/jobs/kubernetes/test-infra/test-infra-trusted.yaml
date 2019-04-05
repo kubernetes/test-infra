@@ -433,7 +433,7 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/cip-demo-staging/cip:20190401-v1.0.0-3-g44d6169
+      - image: gcr.io/cip-demo-staging/cip:20190404-v1.0.2-2-g41b62df
         command:
         - multirun.sh
         args:
@@ -721,13 +721,13 @@ periodics:
     #
     # To check the Go binary version in the image, run:
     #
-    #   docker run --rm -it gcr.io/cip-demo-staging/cip:20190401-v1.0.0-3-g44d6169 "cip -version"
+    #   docker run --rm -it gcr.io/cip-demo-staging/cip:<tag> "cip -version"
     #
     # You can also nspect the /cip folder in the image's filesystem with an
     # interactive bash session:
     #
-    #   docker run --rm -it gcr.io/cip-demo-staging/cip:20190401-v1.0.0-3-g44d6169 "cd /cip && bash"
-    - image: gcr.io/cip-demo-staging/cip:20190401-v1.0.0-3-g44d6169
+    #   docker run --rm -it gcr.io/cip-demo-staging/cip:<tag> "cd /cip && bash"
+    - image: gcr.io/cip-demo-staging/cip:20190404-v1.0.2-2-g41b62df
       command:
       - multirun.sh
       args:
