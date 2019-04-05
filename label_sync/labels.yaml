@@ -19,6 +19,11 @@ default:
       name: area/licensing
       target: both
       addedBy: label
+    - color: 0052cc
+      description: Issues or PRs related to dependency changes
+      name: area/dependency
+      target: both
+      addedBy: label
     - color: 0ffa16
       description: Indicates a PR has been approved by an approver from all required OWNERS files.
       name: approved
