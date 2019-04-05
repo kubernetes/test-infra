@@ -2503,7 +2503,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-cluster-api-provider-aws-test-creds
   num_columns_recent: 20
 - name: ci-cluster-api-provider-aws-bazel-e2e
-  gcs_prefix: kubernetes-jenkins/logs/directory/ci-cluster-api-provider-aws-bazel-e2e
+  gcs_prefix: kubernetes-jenkins/logs/ci-cluster-api-provider-aws-bazel-e2e
   num_columns_recent: 20
 - name: pull-cluster-api-provider-aws-bazel-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-verify
