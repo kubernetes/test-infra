@@ -1211,7 +1211,7 @@ images:
     - --gcp-node-image=custom
   cos2:
     args:
-    - --image-family=cos-lts-2
+    - --image-family=cos-lts-1
     - --image-project=gke-node-images-test
     - --gcp-node-image=custom
   ubuntu1:
@@ -1329,7 +1329,7 @@ nodeImages:
     - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
   cos2:
     args:
-    - --image-family=cos-lts-2
+    - --image-family=cos-lts-1
     - --image-project=gke-node-images-test
     - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
   ubuntu1:
