@@ -426,7 +426,7 @@ for kubernetes in 1.13 1.14 master; do
   name: $(job_name "ci" "" "$tests" "canary" "$kubernetes")
   decorate: true
   extra_refs:
-  - org: pohly
+  - org: kubernetes-csi
     repo: csi-driver-host-path
     base_ref: master
   labels:

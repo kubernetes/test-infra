@@ -403,7 +403,7 @@ periodics:
   name: ci-kubernetes-csi-canary-on-kubernetes-1-13
   decorate: true
   extra_refs:
-  - org: pohly
+  - org: kubernetes-csi
     repo: csi-driver-host-path
     base_ref: master
   labels:
@@ -442,7 +442,7 @@ periodics:
   name: ci-kubernetes-csi-canary-on-kubernetes-1-14
   decorate: true
   extra_refs:
-  - org: pohly
+  - org: kubernetes-csi
     repo: csi-driver-host-path
     base_ref: master
   labels:
@@ -481,7 +481,7 @@ periodics:
   name: ci-kubernetes-csi-canary-on-kubernetes-master
   decorate: true
   extra_refs:
-  - org: pohly
+  - org: kubernetes-csi
     repo: csi-driver-host-path
     base_ref: master
   labels:
@@ -520,7 +520,7 @@ periodics:
   name: ci-kubernetes-csi-alpha-canary-on-kubernetes-master
   decorate: true
   extra_refs:
-  - org: pohly
+  - org: kubernetes-csi
     repo: csi-driver-host-path
     base_ref: master
   labels:
