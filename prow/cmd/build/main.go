@@ -34,6 +34,7 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 
 	buildset "github.com/knative/build/pkg/client/clientset/versioned"
+	buildclient "github.com/knative/build/pkg/client/clientset/versioned/typed/build/v1alpha1"
 	buildinfo "github.com/knative/build/pkg/client/informers/externalversions"
 	buildinfov1alpha1 "github.com/knative/build/pkg/client/informers/externalversions/build/v1alpha1"
 	"github.com/sirupsen/logrus"
@@ -111,7 +112,7 @@ func stopper() chan struct{} {
 }
 
 type buildConfig struct {
-	client   buildset.Interface
+	client   buildclient.BuildsGetter
 	informer buildinfov1alpha1.BuildInformer
 }
 
@@ -133,7 +134,7 @@ func newBuildConfig(cfg rest.Config, stop chan struct{}) (*buildConfig, error) {
 	bif.Build().V1alpha1().Builds().Lister()
 	go bif.Start(stop)
 	return &buildConfig{
-		client:   bc,
+		client:   bc.BuildV1alpha1(),
 		informer: bif.Build().V1alpha1().Builds(),
 	}, nil
 }

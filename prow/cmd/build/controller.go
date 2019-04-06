@@ -282,26 +282,28 @@ func (c *controller) enqueueKey(ctx string, obj interface{}) {
 
 type reconciler interface {
 	getProwJob(name string) (*prowjobv1.ProwJob, error)
+	listProwJobs() ([]prowjobv1.ProwJob, error)
+	updateProwJob(pj prowjobv1.ProwJob) error
+	cleanup(pj prowjobv1.ProwJob) error
+
 	getBuild(context, namespace, name string) (*buildv1alpha1.Build, error)
 	deleteBuild(context, namespace, name string) error
 	createBuild(context, namespace string, b *buildv1alpha1.Build) (*buildv1alpha1.Build, error)
-	updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error)
 	now() metav1.Time
 	buildID(prowjobv1.ProwJob) (string, string, error)
 	defaultBuildTimeout() time.Duration
-	terminateDupProwJobs(ctx string, namespace string) error
 }
 
 func (c *controller) getProwJob(name string) (*prowjobv1.ProwJob, error) {
 	return c.pjLister.ProwJobs(c.pjNamespace()).Get(name)
 }
 
-func (c *controller) getProwJobs(namespace string) ([]prowjobv1.ProwJob, error) {
-	result := []prowjobv1.ProwJob{}
-	jobs, err := c.pjLister.ProwJobs(namespace).List(labels.Everything())
+func (c *controller) listProwJobs() ([]prowjobv1.ProwJob, error) {
+	jobs, err := c.pjLister.ProwJobs(c.pjNamespace()).List(labels.Everything())
 	if err != nil {
-		return result, err
+		return nil, err
 	}
+	var result []prowjobv1.ProwJob
 	for _, job := range jobs {
 		if job.Spec.Agent == prowjobv1.KnativeBuildAgent {
 			result = append(result, *job)
@@ -310,9 +312,10 @@ func (c *controller) getProwJobs(namespace string) ([]prowjobv1.ProwJob, error) 
 	return result, nil
 }
 
-func (c *controller) updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
+func (c *controller) updateProwJob(pj prowjobv1.ProwJob) error {
 	logrus.Debugf("updateProwJob(%s)", pj.Name)
-	return c.pjc.ProwV1().ProwJobs(c.pjNamespace()).Update(pj)
+	_, err := c.pjc.ProwV1().ProwJobs(c.pjNamespace()).Update(&pj)
+	return err
 }
 
 func (c *controller) getBuild(context, namespace, name string) (*buildv1alpha1.Build, error) {
@@ -322,22 +325,25 @@ func (c *controller) getBuild(context, namespace, name string) (*buildv1alpha1.B
 	}
 	return b.informer.Lister().Builds(namespace).Get(name)
 }
+
 func (c *controller) deleteBuild(context, namespace, name string) error {
 	logrus.Debugf("deleteBuild(%s,%s,%s)", context, namespace, name)
 	b, ok := c.builds[context]
 	if !ok {
 		return errors.New("context not found")
 	}
-	return b.client.BuildV1alpha1().Builds(namespace).Delete(name, &metav1.DeleteOptions{})
+	return b.client.Builds(namespace).Delete(name, &metav1.DeleteOptions{})
 }
+
 func (c *controller) createBuild(context, namespace string, b *buildv1alpha1.Build) (*buildv1alpha1.Build, error) {
 	logrus.Debugf("createBuild(%s,%s,%s)", context, namespace, b.Name)
 	bc, ok := c.builds[context]
 	if !ok {
 		return nil, errors.New("context not found")
 	}
-	return bc.client.BuildV1alpha1().Builds(namespace).Create(b)
+	return bc.client.Builds(namespace).Create(b)
 }
+
 func (c *controller) now() metav1.Time {
 	return metav1.Now()
 }
@@ -356,28 +362,23 @@ func (c *controller) defaultBuildTimeout() time.Duration {
 	return c.config().DefaultJobTimeout
 }
 
-func (c *controller) allowCancellations() bool {
-	return c.useAllowCancellations && c.config().Plank.AllowCancellations
-}
-
-func (c *controller) terminateDupProwJobs(ctx string, namespace string) error {
-	pjClient := &pjClient{
-		pjc: c.pjc.ProwV1().ProwJobs(c.config().ProwJobNamespace),
+func (c *controller) cleanup(pj prowjobv1.ProwJob) error {
+	if !c.useAllowCancellations || !c.config().Plank.AllowCancellations {
+		return nil
 	}
-	log := logrus.NewEntry(logrus.StandardLogger()).WithField("aborter", "build")
-
-	jobs, err := c.getProwJobs(namespace)
-	if err != nil {
+	if err := c.deleteBuild(pj.ClusterAlias(), pj.Namespace, pj.Name); err != nil && !apierrors.IsNotFound(err) {
 		return err
 	}
-	return pjutil.TerminateOlderPresubmitJobs(pjClient, log, jobs, func(toCancel prowjobv1.ProwJob) error {
-		if c.allowCancellations() {
-			if err := c.deleteBuild(ctx, namespace, toCancel.GetName()); err != nil && !apierrors.IsNotFound(err) {
-				return fmt.Errorf("deleting build: %v", err)
-			}
-		}
-		return nil
-	})
+	return nil
+}
+
+func abortDuplicates(r reconciler) error {
+	jobs, err := r.listProwJobs()
+	if err != nil {
+		return fmt.Errorf("list: %v", err)
+	}
+	log := logrus.NewEntry(logrus.StandardLogger()).WithField("aborter", "build")
+	return pjutil.AbortDuplicates(jobs, log, r.updateProwJob, r.cleanup)
 }
 
 // reconcile ensures a knative-build prowjob has a corresponding build, updating the prowjob's status as the build progresses.
@@ -388,8 +389,8 @@ func reconcile(c reconciler, key string) error {
 		return nil
 	}
 
-	if err := c.terminateDupProwJobs(ctx, namespace); err != nil {
-		logrus.WithError(err).Warn("Cannot terminate duplicated prow jobs")
+	if err := abortDuplicates(c); err != nil {
+		logrus.WithError(err).Warn("Failed terminating duplicates")
 	}
 
 	var wantBuild bool
@@ -478,7 +479,7 @@ func reconcile(c reconciler, key string) error {
 		npj.Status.State = wantState
 		npj.Status.Description = wantMsg
 		logrus.Infof("Update prowjobs/%s", key)
-		if _, err = c.updateProwJob(npj); err != nil {
+		if err = c.updateProwJob(*npj); err != nil {
 			return fmt.Errorf("update prow status: %v", err)
 		}
 	}

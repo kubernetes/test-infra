@@ -25,6 +25,7 @@ import (
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -161,8 +162,7 @@ func (c *Controller) setPreviousReportState(pj prowapi.ProwJob) error {
 		latestPJ.Status.PrevReportStates = map[string]prowapi.ProwJobState{}
 	}
 	latestPJ.Status.PrevReportStates[reporter.GitHubReporterName] = latestPJ.Status.State
-	_, err = c.kc.ReplaceProwJob(latestPJ.ObjectMeta.Name, latestPJ)
-	return err
+	return c.replaceProwJob(latestPJ)
 }
 
 // Sync does one sync iteration.
@@ -197,7 +197,7 @@ func (c *Controller) Sync() error {
 	pjs = k8sJobs
 
 	var syncErrs []error
-	if err := c.terminateDupes(pjs, pm); err != nil {
+	if err := pjutil.AbortDuplicates(pjs, c.log.WithField("aborter", "pod"), c.replaceProwJob, c.cleanupProwJob); err != nil {
 		syncErrs = append(syncErrs, err)
 	}
 
@@ -258,25 +258,37 @@ func (c *Controller) SyncMetrics() {
 	kube.GatherProwJobMetrics(c.pjs)
 }
 
-// terminateDupes aborts presubmits that have a newer version. It modifies pjs
-// in-place when it aborts.
-// TODO: Dry this out - need to ensure we can abstract children cancellation first.
-func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, pm map[string]coreapi.Pod) error {
-	log := c.log.WithField("aborter", "pod")
-	return pjutil.TerminateOlderPresubmitJobs(c.kc, log, pjs, func(toCancel prowapi.ProwJob) error {
-		// Allow aborting presubmit jobs for commits that have been superseded by
-		// newer commits in GitHub pull requests.
-		if c.config().Plank.AllowCancellations {
-			if pod, exists := pm[toCancel.ObjectMeta.Name]; exists {
-				if client, ok := c.pkcs[toCancel.ClusterAlias()]; !ok {
-					return fmt.Errorf("unknown cluster alias %q", toCancel.ClusterAlias())
-				} else if err := client.DeletePod(pod.ObjectMeta.Name); err != nil {
-					return fmt.Errorf("deleting pod: %v", err)
-				}
-			}
-		}
+func (c *Controller) deletePod(pj prowapi.ProwJob) error {
+	name := pj.Name
+	kubeCtx := pj.ClusterAlias()
+	client, ok := c.pkcs[kubeCtx]
+	if !ok {
+		return fmt.Errorf("unknown context: %q", kubeCtx)
+	}
+	if err := client.DeletePod(name); apierrors.IsNotFound(err) {
+		return err
+	} else if err != nil {
+		return fmt.Errorf("delete pod %s: %v", name, err)
+	}
+	return nil
+}
+
+func (c *Controller) replaceProwJob(pj prowapi.ProwJob) error {
+	// TODO(fejta): should probably use update (and just update status)
+	_, err := c.kc.ReplaceProwJob(pj.Name, pj)
+	return err
+}
+
+// cleanupProwJob deletes the job's associated pod if it exists.
+func (c *Controller) cleanupProwJob(pj prowapi.ProwJob) error {
+	if !c.config().Plank.AllowCancellations {
 		return nil
-	})
+	}
+	err := c.deletePod(pj)
+	if err != nil && !apierrors.IsNotFound(err) {
+		return err
+	}
+	return nil
 }
 
 // TODO: Dry this out
@@ -414,8 +426,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := c.kc.ReplaceProwJob(pj.ObjectMeta.Name, pj)
-	return err
+	return c.replaceProwJob(pj)
 }
 
 func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]coreapi.Pod, reports chan<- prowapi.ProwJob) error {
@@ -465,8 +476,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]coreapi.
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := c.kc.ReplaceProwJob(pj.ObjectMeta.Name, pj)
-	return err
+	return c.replaceProwJob(pj)
 }
 
 // TODO: No need to return the pod name since we already have the

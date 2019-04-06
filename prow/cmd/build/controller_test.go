@@ -24,19 +24,17 @@ import (
 	"time"
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
-	fake_buildset "github.com/knative/build/pkg/client/clientset/versioned/fake"
+	buildclient "github.com/knative/build/pkg/client/clientset/versioned/typed/build/v1alpha1"
 	duckv1alpha1 "github.com/knative/pkg/apis/duck/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/diff"
-	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/client-go/tools/cache"
+	"k8s.io/apimachinery/pkg/watch"
+
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	fake_prowjobclient "k8s.io/test-infra/prow/client/clientset/versioned/fake"
-	prowjoblistv1 "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
@@ -51,6 +49,58 @@ const (
 	errorCreateBuild   = "error-create-build"
 	errorUpdateProwJob = "error-update-prowjob"
 )
+
+type fakeBuildClient struct {
+	builds        map[string]map[string]buildv1alpha1.Build
+	current       map[string]buildv1alpha1.Build
+	deletedBuilds map[string]buildv1alpha1.Build
+}
+
+func (bc fakeBuildClient) Builds(namespace string) buildclient.BuildInterface {
+	return &fakeBuildClient{
+		current:       bc.builds[namespace],
+		deletedBuilds: bc.deletedBuilds,
+	}
+}
+
+func (bc *fakeBuildClient) Create(b *buildv1alpha1.Build) (*buildv1alpha1.Build, error) {
+	return nil, errors.New("not supported")
+}
+
+func (bc *fakeBuildClient) Delete(name string, opt *metav1.DeleteOptions) error {
+	if name == errorDeleteBuild {
+		return errors.New("injected delete error")
+	}
+	b, found := bc.current[name]
+	if !found {
+		return apierrors.NewNotFound(buildv1alpha1.Resource("Build"), name)
+	}
+	bc.deletedBuilds[name] = b
+	delete(bc.current, name)
+	return nil
+}
+
+func (bc *fakeBuildClient) Update(*buildv1alpha1.Build) (*buildv1alpha1.Build, error) {
+	return nil, errors.New("not supported")
+}
+func (bc *fakeBuildClient) UpdateStatus(*buildv1alpha1.Build) (*buildv1alpha1.Build, error) {
+	return nil, errors.New("not supported")
+}
+func (bc *fakeBuildClient) DeleteCollection(options *metav1.DeleteOptions, listOptions metav1.ListOptions) error {
+	return errors.New("not supported")
+}
+func (bc *fakeBuildClient) Get(name string, options metav1.GetOptions) (*buildv1alpha1.Build, error) {
+	return nil, errors.New("not supported")
+}
+func (bc *fakeBuildClient) List(opts metav1.ListOptions) (*buildv1alpha1.BuildList, error) {
+	return nil, errors.New("not supported")
+}
+func (bc *fakeBuildClient) Watch(opts metav1.ListOptions) (watch.Interface, error) {
+	return nil, errors.New("not supported")
+}
+func (bc *fakeBuildClient) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *buildv1alpha1.Build, err error) {
+	return nil, errors.New("not supported")
+}
 
 type fakeReconciler struct {
 	jobs   map[string]prowjobv1.ProwJob
@@ -78,11 +128,11 @@ func (r *fakeReconciler) getProwJob(name string) (*prowjobv1.ProwJob, error) {
 	return &pj, nil
 }
 
-func (r *fakeReconciler) terminateDupProwJobs(ctx string, namespace string) error {
-	return nil
+func (r *fakeReconciler) cleanup(pj prowjobv1.ProwJob) error {
+	return errors.New("cleanup not supported")
 }
 
-func (r *fakeReconciler) getProwJobs() ([]prowjobv1.ProwJob, error) {
+func (r *fakeReconciler) listProwJobs() ([]prowjobv1.ProwJob, error) {
 	var jobs []prowjobv1.ProwJob
 	for _, j := range r.jobs {
 		jobs = append(jobs, j)
@@ -90,19 +140,16 @@ func (r *fakeReconciler) getProwJobs() ([]prowjobv1.ProwJob, error) {
 	return jobs, nil
 }
 
-func (r *fakeReconciler) updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
+func (r *fakeReconciler) updateProwJob(pj prowjobv1.ProwJob) error {
 	if pj.Name == errorUpdateProwJob {
-		return nil, errors.New("injected update prowjob error")
-	}
-	if pj == nil {
-		return nil, errors.New("nil prowjob")
+		return errors.New("injected update prowjob error")
 	}
 	k := toKey(fakePJCtx, fakePJNS, pj.Name)
 	if _, present := r.jobs[k]; !present {
-		return nil, apierrors.NewNotFound(prowjobv1.Resource("ProwJob"), pj.Name)
+		return apierrors.NewNotFound(prowjobv1.Resource("ProwJob"), pj.Name)
 	}
-	r.jobs[k] = *pj
-	return pj, nil
+	r.jobs[k] = *pj.DeepCopy()
+	return nil
 }
 
 func (r *fakeReconciler) getBuild(context, namespace, name string) (*buildv1alpha1.Build, error) {
@@ -236,466 +283,97 @@ func TestEnqueueKey(t *testing.T) {
 	}
 }
 
-func TestTerminateDupProwJobs(t *testing.T) {
-	now := time.Now()
-	nowFn := func() *metav1.Time {
-		reallyNow := metav1.NewTime(now)
-		return &reallyNow
-	}
+func TestCleanup(t *testing.T) {
 	cases := []struct {
-		name string
-
-		useAllowCancellations bool
-		allowCancellations    bool
-		pjs                   []prowjobv1.ProwJob
-		builds                []buildv1alpha1.Build
-
-		abortedPJs     sets.String
-		expectedBuilds sets.String
+		name                 string
+		disableCancelFeature bool
+		cancel               bool
+		haveBuild            bool
+		deleted              bool
+		deleteError          bool
+		err                  bool
 	}{
 		{
-			name:                  "terminates all duplicated jobs and all builds",
-			useAllowCancellations: true,
-			allowCancellations:    true,
-			pjs: []prowjobv1.ProwJob{
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KnativeBuildAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-time.Minute)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KnativeBuildAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "older", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KnativeBuildAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "older-k8s-agent", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KubernetesAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "completed", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KnativeBuildAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime:      metav1.NewTime(now.Add(-2 * time.Hour)),
-						CompletionTime: nowFn(),
-					},
-				},
-			},
-			builds: []buildv1alpha1.Build{
-				{ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS}},
-				{ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS}},
-				{ObjectMeta: metav1.ObjectMeta{Name: "older", Namespace: fakePJNS}},
-			},
-			abortedPJs:     sets.NewString("old", "older"),
-			expectedBuilds: sets.NewString("newest"),
+			name: "basically works",
 		},
 		{
-			name:                  "terminates all duplicated jobs and available builds",
-			useAllowCancellations: true,
-			allowCancellations:    true,
-			pjs: []prowjobv1.ProwJob{
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KnativeBuildAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-time.Minute)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KnativeBuildAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "older", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KnativeBuildAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "older-k8s-agent", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KubernetesAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "completed", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KnativeBuildAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime:      metav1.NewTime(now.Add(-2 * time.Hour)),
-						CompletionTime: nowFn(),
-					},
-				},
-			},
-			builds: []buildv1alpha1.Build{
-				{ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS}},
-				{ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS}},
-			},
-			abortedPJs:     sets.NewString("old", "older"),
-			expectedBuilds: sets.NewString("newest"),
+			name:                 "do not delete build when feature disabled",
+			haveBuild:            true,
+			cancel:               true,
+			disableCancelFeature: true,
 		},
 		{
-			name:                  "terminates all duplicated jobs without deleting the builds (allowCancellations set)",
-			useAllowCancellations: true,
-			allowCancellations:    false,
-			pjs: []prowjobv1.ProwJob{
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KnativeBuildAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-time.Minute)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KnativeBuildAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "older", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KnativeBuildAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "older-k8s-agent", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KubernetesAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "completed", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KnativeBuildAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime:      metav1.NewTime(now.Add(-2 * time.Hour)),
-						CompletionTime: nowFn(),
-					},
-				},
-			},
-			builds: []buildv1alpha1.Build{
-				{ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS}},
-				{ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS}},
-				{ObjectMeta: metav1.ObjectMeta{Name: "older", Namespace: fakePJNS}},
-			},
-			abortedPJs:     sets.NewString("old", "older"),
-			expectedBuilds: sets.NewString("newest", "old", "older"),
+			name:      "do not delete build when disallowed",
+			haveBuild: true,
 		},
 		{
-			name:                  "terminates all duplicated jobs without deleting the builds (allowCancellations feature disabled)",
-			useAllowCancellations: false,
-			allowCancellations:    true,
-			pjs: []prowjobv1.ProwJob{
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KnativeBuildAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-time.Minute)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KnativeBuildAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "older", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KnativeBuildAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "older-k8s-agent", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KubernetesAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "completed", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Agent: prowjobv1.KnativeBuildAgent,
-						Type:  prowjobv1.PresubmitJob,
-						Job:   "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime:      metav1.NewTime(now.Add(-2 * time.Hour)),
-						CompletionTime: nowFn(),
-					},
-				},
-			},
-			builds: []buildv1alpha1.Build{
-				{ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS}},
-				{ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS}},
-				{ObjectMeta: metav1.ObjectMeta{Name: "older", Namespace: fakePJNS}},
-			},
-			abortedPJs:     sets.NewString("old", "older"),
-			expectedBuilds: sets.NewString("newest", "old", "older"),
+			name:        "delete build error returns error",
+			cancel:      true,
+			haveBuild:   true,
+			deleteError: true,
+			err:         true,
+		},
+		{
+			name:   "not found does not cause error",
+			cancel: true,
+		},
+		{
+			name:      "delete build successfully",
+			cancel:    true,
+			haveBuild: true,
+			deleted:   true,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			var prowJobs []runtime.Object
-			for i := range tc.pjs {
-				prowJobs = append(prowJobs, &tc.pjs[i])
+			var pj prowjobv1.ProwJob
+			if tc.deleteError {
+				pj.Name = errorDeleteBuild
+			} else {
+				pj.Name = tc.name
 			}
-			pjc := fake_prowjobclient.NewSimpleClientset(prowJobs...)
-			var builds []runtime.Object
-			for i := range tc.builds {
-				builds = append(builds, &tc.builds[i])
+			var build buildv1alpha1.Build
+			if tc.haveBuild {
+				build.Name = pj.Name
+			} else {
+				build.Name = "random-build"
 			}
-			buildClient := fake_buildset.NewSimpleClientset(builds...)
-
-			agent := &config.Agent{}
-			config := &config.Config{
-				ProwConfig: config.ProwConfig{
-					ProwJobNamespace: fakePJNS,
-					Plank: config.Plank{
-						Controller: config.Controller{
-							AllowCancellations: tc.allowCancellations,
-						},
+			client := fakeBuildClient{
+				builds: map[string]map[string]buildv1alpha1.Build{
+					"": {
+						build.Name: build,
 					},
 				},
+				deletedBuilds: map[string]buildv1alpha1.Build{},
 			}
-			agent.Set(config)
-
-			indexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{})
-			for _, pj := range tc.pjs {
-				err := indexer.Add(pj.DeepCopy())
-				if err != nil {
-					t.Fatalf("%s: error updating the lister index with prow job %q", err, pj.GetName())
-				}
-			}
-			pjl := prowjoblistv1.NewProwJobLister(indexer)
-
+			var cfg config.Config
+			cfg.Plank.AllowCancellations = tc.cancel
 			c := controller{
-				config: agent.Config,
+				config: func() *config.Config {
+					return &cfg
+				},
 				builds: map[string]buildConfig{
-					fakePJCtx: {
-						client: buildClient,
+					kube.DefaultClusterAlias: buildConfig{
+						client: client,
 					},
 				},
-				pjc:                   pjc,
-				pjLister:              pjl,
-				useAllowCancellations: tc.useAllowCancellations,
+				useAllowCancellations: !tc.disableCancelFeature,
 			}
-
-			if err := c.terminateDupProwJobs(fakePJCtx, fakePJNS); err != nil {
-				t.Fatalf("%s: error terminating duplicated prow jobs: %v", tc.name, err)
-			}
-
-			abortedPJs := sets.NewString()
-			pjs, err := pjc.ProwV1().ProwJobs(fakePJNS).List(metav1.ListOptions{})
-			if err != nil {
-				t.Fatalf("%s: error listing the prow jobs: %v", tc.name, err)
-			}
-			for _, j := range pjs.Items {
-				if j.Status.State == prowjobv1.AbortedState {
-					abortedPJs.Insert(j.GetName())
+			err := c.cleanup(pj)
+			switch {
+			case err != nil:
+				if !tc.err {
+					t.Errorf("unexpected error: %v", err)
 				}
-			}
-			if missing := tc.abortedPJs.Difference(abortedPJs); missing.Len() > 0 {
-				t.Errorf("%s: did not aborted expected prow jobs: %v", tc.name, missing.List())
-			}
-			if extra := abortedPJs.Difference(tc.abortedPJs); extra.Len() > 0 {
-				t.Errorf("%s: found unexpectedly aborted prow jobs: %v", tc.name, extra.List())
+			case tc.err:
+				t.Error("failed to receive expected error")
+			case tc.deleted && len(client.deletedBuilds) != 1:
+				t.Errorf("failed to delete 1 build: %v", client.deletedBuilds)
+			case len(client.deletedBuilds) > 0 && !tc.deleted:
+				t.Errorf("unexpected build deletions: %v", client.deletedBuilds)
 			}
 
-			foundBuilds := sets.NewString()
-			buildList, err := buildClient.Build().Builds(fakePJNS).List(metav1.ListOptions{})
-			if err != nil {
-				t.Fatalf("%s: error list the builds: %v", tc.name, err)
-			}
-			for _, b := range buildList.Items {
-				foundBuilds.Insert(b.GetName())
-			}
-			if missing := tc.expectedBuilds.Difference(foundBuilds); missing.Len() > 0 {
-				t.Errorf("%s: did not deleted the expected builds: %v", tc.name, missing.List())
-			}
-			if extra := foundBuilds.Difference(tc.expectedBuilds); extra.Len() > 0 {
-				t.Errorf("%s: found unexpectedly deleted builds: %v", tc.name, extra.List())
-			}
 		})
 	}
 }

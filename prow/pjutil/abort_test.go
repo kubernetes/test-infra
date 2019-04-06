@@ -20,150 +20,229 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
-type fakeProwClient struct {
-	repalcedJobs map[string]*prowjobv1.ProwJob
-}
-
-func newFakeProwClient() *fakeProwClient {
-	return &fakeProwClient{
-		repalcedJobs: map[string]*prowjobv1.ProwJob{},
+func TestOlderPresubmits(t *testing.T) {
+	type fakeJob struct {
+		name     string
+		complete bool
+		kind     prowjobv1.ProwJobType
+		number   int
+		org      string
+		repo     string
+		job      string
+		start    time.Time
 	}
-}
 
-func (c *fakeProwClient) ReplaceProwJob(name string, pj prowjobv1.ProwJob) (prowjobv1.ProwJob, error) {
-	c.repalcedJobs[name] = pj.DeepCopy()
-	return pj, nil
-}
+	const (
+		presubmit = prowjobv1.PresubmitJob
+	)
 
-func TestTerminateOlderPresubmitJobs(t *testing.T) {
-	fakePJNS := "prow-job"
 	now := time.Now()
-	nowFn := func() *metav1.Time {
-		reallyNow := metav1.NewTime(now)
-		return &reallyNow
-	}
+	yesterday := now.Add(-24 * time.Hour)
+	twoDaysAgo := yesterday.Add(-24 * time.Hour)
 	cases := []struct {
-		name           string
-		pjs            []prowjobv1.ProwJob
-		terminateddPJs sets.String
+		name     string
+		jobs     []fakeJob
+		expected sets.String
 	}{
 		{
-			name: "terminate all older presubmit jobs",
-			pjs: []prowjobv1.ProwJob{
+			name: "empty works",
+		},
+		{
+			name: "no duplicates",
+			jobs: []fakeJob{
 				{
-					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Type: prowjobv1.PresubmitJob,
-						Job:  "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-time.Minute)),
-					},
+					name: "foo",
+					kind: presubmit,
+					job:  "foo",
 				},
 				{
-					ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Type: prowjobv1.PresubmitJob,
-						Job:  "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "older", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Type: prowjobv1.PresubmitJob,
-						Job:  "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "postsubmit", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Type: prowjobv1.PostsubmitJob,
-						Job:  "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "completed", Namespace: fakePJNS},
-					Spec: prowjobv1.ProwJobSpec{
-						Type: prowjobv1.PresubmitJob,
-						Job:  "j1",
-						Refs: &prowjobv1.Refs{
-							Repo:  "test",
-							Pulls: []prowjobv1.Pull{{Number: 1}},
-						},
-					},
-					Status: prowjobv1.ProwJobStatus{
-						StartTime:      metav1.NewTime(now.Add(-2 * time.Hour)),
-						CompletionTime: nowFn(),
-					},
+					name: "bar",
+					kind: presubmit,
+					job:  "bar",
 				},
 			},
-			terminateddPJs: sets.NewString("old", "older"),
+		},
+		{
+			name: "ignore postsubmits",
+			jobs: []fakeJob{
+				{
+					name: "old",
+					kind: prowjobv1.PostsubmitJob,
+				},
+				{
+					name: "new",
+					kind: prowjobv1.PostsubmitJob,
+				},
+			},
+		},
+		{
+			name: "ignore periodics",
+			jobs: []fakeJob{
+				{
+					name: "old",
+					kind: prowjobv1.PeriodicJob,
+				},
+				{
+					name: "new",
+					kind: prowjobv1.PeriodicJob,
+				},
+			},
+		},
+		{
+			name: "ignore completed jobs",
+			jobs: []fakeJob{
+				{
+					name:     "aborted",
+					complete: true,
+					kind:     presubmit,
+				},
+				{
+					name: "current",
+					kind: presubmit,
+				},
+			},
+		},
+		{
+			name: "ignore different repos",
+			jobs: []fakeJob{
+				{
+					name: "foo",
+					repo: "foo",
+					kind: presubmit,
+				},
+				{
+					name: "bar",
+					repo: "bar",
+					kind: presubmit,
+				},
+			},
+		},
+		{
+			name: "ignore different orgs",
+			jobs: []fakeJob{
+				{
+					name: "foo",
+					org:  "foo",
+					kind: presubmit,
+				},
+				{
+					name: "bar",
+					org:  "bar",
+					kind: presubmit,
+				},
+			},
+		},
+		{
+			name: "ignore different PRs",
+			jobs: []fakeJob{
+				{
+					name:   "one",
+					number: 1,
+					kind:   presubmit,
+				},
+				{
+					name:   "two",
+					number: 2,
+					kind:   presubmit,
+				},
+			},
+		},
+		{
+			name: "identify duplicates",
+			jobs: []fakeJob{
+				{
+					name:  "older",
+					kind:  presubmit,
+					start: twoDaysAgo,
+				},
+				{
+					name:  "new",
+					kind:  presubmit,
+					start: now,
+				},
+				{
+					name:  "old",
+					kind:  presubmit,
+					start: yesterday,
+				},
+			},
+			expected: sets.NewString("older", "old"),
+		},
+		{
+			name: "multiple duplicated jobs",
+			jobs: []fakeJob{
+				{
+					name:  "old-foo",
+					kind:  presubmit,
+					job:   "foo",
+					start: yesterday,
+				},
+				{
+					name:  "new-foo",
+					kind:  presubmit,
+					job:   "foo",
+					start: now,
+				},
+				{
+					name:  "new-bar",
+					kind:  presubmit,
+					job:   "bar",
+					start: now,
+				},
+				{
+					name:  "old-bar",
+					kind:  presubmit,
+					job:   "bar",
+					start: yesterday,
+				},
+				{
+					name: "ignore",
+					kind: presubmit,
+					job:  "ignore",
+				},
+			},
+			expected: sets.NewString("old-foo", "old-bar"),
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			pjc := newFakeProwClient()
-			log := logrus.NewEntry(logrus.StandardLogger())
-			cleanedupPJs := sets.NewString()
-			err := TerminateOlderPresubmitJobs(pjc, log, tc.pjs, func(pj prowjobv1.ProwJob) error {
-				cleanedupPJs.Insert(pj.GetName())
-				return nil
-			})
-			if err != nil {
-				t.Fatalf("%s: error terminating the older presubmit jobs: %v", tc.name, err)
-			}
-
-			if missing := tc.terminateddPJs.Difference(cleanedupPJs); missing.Len() > 0 {
-				t.Errorf("%s: did not cleaned up the expected jobs: %v", tc.name, missing.List())
-			}
-			if extra := cleanedupPJs.Difference(tc.terminateddPJs); extra.Len() > 0 {
-				t.Errorf("%s: found unexpectedly cleaned up jobs: %v", tc.name, extra.List())
-			}
-
-			replacedJobs := sets.NewString()
-			for _, pj := range pjc.repalcedJobs {
-				if pj.Status.State != prowjobv1.AbortedState {
-					t.Errorf("%s: did not aborted the prow job: name=%s, state=%s", tc.name, pj.GetName(), pj.Status.State)
+			var pjs []prowjobv1.ProwJob
+			for _, j := range tc.jobs {
+				var pj prowjobv1.ProwJob
+				pj.Name = j.name
+				pj.Spec.Job = j.job
+				pj.Spec.Type = j.kind
+				if j.complete {
+					pj.SetComplete()
 				}
-				replacedJobs.Insert(pj.GetName())
+				pj.Spec.Refs = &prowjobv1.Refs{
+					Org:  j.org,
+					Repo: j.repo,
+					Pulls: []prowjobv1.Pull{
+						{
+							Number: j.number,
+						},
+					},
+				}
+				pj.Status.StartTime = metav1.NewTime(j.start)
+				pjs = append(pjs, pj)
 			}
-			if missing := tc.terminateddPJs.Difference(replacedJobs); missing.Len() > 0 {
-				t.Errorf("%s: did not replace the expected jobs: %v", tc.name, missing.Len())
+			actual := sets.String{}
+			dups := olderPresubmits(pjs)
+			for _, d := range dups {
+				actual.Insert(d.Name)
 			}
-			if extra := replacedJobs.Difference(tc.terminateddPJs); extra.Len() > 0 {
-				t.Errorf("%s: found unexpectedly replaced job: %v", tc.name, extra.List())
+			if tc.expected == nil {
+				tc.expected = sets.String{}
+			}
+			if !tc.expected.Equal(actual) {
+				t.Errorf("%v != expected %v", actual, tc.expected)
 			}
 		})
 	}

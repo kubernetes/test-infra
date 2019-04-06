@@ -29,7 +29,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -165,12 +167,15 @@ func (f *fkc) DeletePod(name string) error {
 	defer f.Unlock()
 	for i := range f.pods {
 		if f.pods[i].ObjectMeta.Name == name {
+			if f.err != nil {
+				return f.err
+			}
 			f.deletedPods = append(f.deletedPods, f.pods[i])
 			f.pods = append(f.pods[:i], f.pods[i+1:]...)
 			return nil
 		}
 	}
-	return fmt.Errorf("did not find pod %s", name)
+	return apierrors.NewNotFound(schema.GroupResource{}, name)
 }
 
 type fghc struct {
@@ -194,224 +199,91 @@ func (f *fghc) CreateComment(org, repo string, number int, comment string) error
 func (f *fghc) DeleteComment(org, repo string, ID int) error                     { return nil }
 func (f *fghc) EditComment(org, repo string, ID int, comment string) error       { return nil }
 
-func TestTerminateDupes(t *testing.T) {
-	now := time.Now()
-	nowFn := func() *metav1.Time {
-		reallyNow := metav1.NewTime(now)
-		return &reallyNow
-	}
-	var testcases = []struct {
-		name string
-
-		allowCancellations bool
-		pjs                []prowapi.ProwJob
-		pm                 map[string]kube.Pod
-
-		terminatedPJs  map[string]struct{}
-		terminatedPods map[string]struct{}
-	}{
-		{
-			name: "terminate all duplicates",
-
-			pjs: []prowapi.ProwJob{
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "newest"},
-					Spec: prowapi.ProwJobSpec{
-						Type: prowapi.PresubmitJob,
-						Job:  "j1",
-						Refs: &prowapi.Refs{Pulls: []prowapi.Pull{{}}},
-					},
-					Status: prowapi.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-time.Minute)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "old"},
-					Spec: prowapi.ProwJobSpec{
-						Type: prowapi.PresubmitJob,
-						Job:  "j1",
-						Refs: &prowapi.Refs{Pulls: []prowapi.Pull{{}}},
-					},
-					Status: prowapi.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "older"},
-					Spec: prowapi.ProwJobSpec{
-						Type: prowapi.PresubmitJob,
-						Job:  "j1",
-						Refs: &prowapi.Refs{Pulls: []prowapi.Pull{{}}},
-					},
-					Status: prowapi.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "complete"},
-					Spec: prowapi.ProwJobSpec{
-						Type: prowapi.PresubmitJob,
-						Job:  "j1",
-						Refs: &prowapi.Refs{Pulls: []prowapi.Pull{{}}},
-					},
-					Status: prowapi.ProwJobStatus{
-						StartTime:      metav1.NewTime(now.Add(-3 * time.Hour)),
-						CompletionTime: nowFn(),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "newest_j2"},
-					Spec: prowapi.ProwJobSpec{
-						Type: prowapi.PresubmitJob,
-						Job:  "j2",
-						Refs: &prowapi.Refs{Pulls: []prowapi.Pull{{}}},
-					},
-					Status: prowapi.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-time.Minute)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "old_j2"},
-					Spec: prowapi.ProwJobSpec{
-						Type: prowapi.PresubmitJob,
-						Job:  "j2",
-						Refs: &prowapi.Refs{Pulls: []prowapi.Pull{{}}},
-					},
-					Status: prowapi.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "old_j3"},
-					Spec: prowapi.ProwJobSpec{
-						Type: prowapi.PresubmitJob,
-						Job:  "j3",
-						Refs: &prowapi.Refs{Pulls: []prowapi.Pull{{}}},
-					},
-					Status: prowapi.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-time.Hour)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "new_j3"},
-					Spec: prowapi.ProwJobSpec{
-						Type: prowapi.PresubmitJob,
-						Job:  "j3",
-						Refs: &prowapi.Refs{Pulls: []prowapi.Pull{{}}},
-					},
-					Status: prowapi.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-time.Minute)),
-					},
-				},
-			},
-
-			terminatedPJs: map[string]struct{}{
-				"old": {}, "older": {}, "old_j2": {}, "old_j3": {},
-			},
-		},
-		{
-			name: "should also terminate pods",
-
-			allowCancellations: true,
-			pjs: []prowapi.ProwJob{
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "newest"},
-					Spec: prowapi.ProwJobSpec{
-						Type:    prowapi.PresubmitJob,
-						Job:     "j1",
-						Refs:    &prowapi.Refs{Pulls: []prowapi.Pull{{}}},
-						PodSpec: &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
-					},
-					Status: prowapi.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-time.Minute)),
-					},
-				},
-				{
-					ObjectMeta: metav1.ObjectMeta{Name: "old"},
-					Spec: prowapi.ProwJobSpec{
-						Type:    prowapi.PresubmitJob,
-						Job:     "j1",
-						Refs:    &prowapi.Refs{Pulls: []prowapi.Pull{{}}},
-						PodSpec: &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
-					},
-					Status: prowapi.ProwJobStatus{
-						StartTime: metav1.NewTime(now.Add(-time.Hour)),
-					},
-				},
-			},
-			pm: map[string]kube.Pod{
-				"newest": {ObjectMeta: metav1.ObjectMeta{Name: "newest"}},
-				"old":    {ObjectMeta: metav1.ObjectMeta{Name: "old"}},
-			},
-
-			terminatedPJs: map[string]struct{}{
-				"old": {},
-			},
-			terminatedPods: map[string]struct{}{
-				"old": {},
-			},
-		},
-	}
-
-	for _, tc := range testcases {
-		var pods []kube.Pod
-		for _, pod := range tc.pm {
-			pods = append(pods, pod)
-		}
-		fkc := &fkc{pods: pods, prowjobs: tc.pjs}
-		fca := &fca{
-			c: &config.Config{
-				ProwConfig: config.ProwConfig{
-					Plank: config.Plank{
-						Controller: config.Controller{
-							AllowCancellations: tc.allowCancellations,
-						},
-					},
-				},
-			},
-		}
-		log := logrus.NewEntry(logrus.StandardLogger())
-		c := Controller{
-			kc:     fkc,
-			pkcs:   map[string]kubeClient{kube.DefaultClusterAlias: fkc},
-			log:    log,
-			config: fca.Config,
-		}
-
-		if err := c.terminateDupes(fkc.prowjobs, tc.pm); err != nil {
-			t.Fatalf("Error terminating dupes: %v", err)
-		}
-
-		for terminatedName := range tc.terminatedPJs {
-			terminated := false
-			for _, pj := range fkc.prowjobs {
-				if pj.ObjectMeta.Name == terminatedName && !pj.Complete() {
-					t.Errorf("expected prowjob %q to be terminated!", terminatedName)
-				} else {
-					terminated = true
-				}
-			}
-			if !terminated {
-				t.Errorf("expected prowjob %q to be terminated, got %+v", terminatedName, fkc.prowjobs)
-			}
-		}
-		for terminatedName := range tc.terminatedPods {
-			terminated := false
-			for _, deleted := range fkc.deletedPods {
-				if deleted.ObjectMeta.Name == terminatedName {
-					terminated = true
-				}
-			}
-			if !terminated {
-				t.Errorf("expected pod %q to be terminated, got terminated: %v", terminatedName, fkc.deletedPods)
-			}
-		}
-
-	}
-}
-
 func handleTot(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "42")
+}
+
+func TestCleanupProwJob(t *testing.T) {
+	cases := []struct {
+		name        string
+		cancel      bool
+		havePod     bool
+		deleted     bool
+		deleteError bool
+		err         bool
+	}{
+		{
+			name: "basically works",
+		},
+		{
+			name:    "do not delete pod when disallowed",
+			havePod: true,
+		},
+		{
+			name:        "delete pod error returns error",
+			cancel:      true,
+			havePod:     true,
+			deleteError: true,
+			err:         true,
+		},
+		{
+			name:   "not found does not cause error",
+			cancel: true,
+		},
+		{
+			name:    "delete pod successfully",
+			cancel:  true,
+			havePod: true,
+			deleted: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var pj prowapi.ProwJob
+			pj.Name = tc.name
+			var pod kube.Pod
+			if tc.havePod {
+				pod.Name = pj.Name
+			} else {
+				pod.Name = "random-pod"
+			}
+			var err error
+			if tc.deleteError {
+				err = errors.New("injected delete error")
+			}
+			client := fkc{
+				pods: []kube.Pod{pod},
+				err:  err,
+			}
+
+			pkcs := map[string]kubeClient{
+				kube.DefaultClusterAlias: &client,
+			}
+			var cfg config.Config
+			cfg.Plank.AllowCancellations = tc.cancel
+			c := Controller{
+				pkcs: pkcs,
+				config: func() *config.Config {
+					return &cfg
+				},
+			}
+			err = c.cleanupProwJob(pj)
+			switch {
+			case err != nil:
+				if !tc.err {
+					t.Errorf("unexpected error: %v", err)
+				}
+			case tc.err:
+				t.Error("failed to receive expected error")
+			case tc.deleted && len(client.deletedPods) != 1:
+				t.Errorf("failed to delete 1 pod: %v", client.deletedPods)
+			case len(client.deletedPods) > 0 && !tc.deleted:
+				t.Errorf("unexpected pod deletions: %v", client.deletedPods)
+			}
+
+		})
+	}
 }
 
 func TestSyncTriggeredJobs(t *testing.T) {
