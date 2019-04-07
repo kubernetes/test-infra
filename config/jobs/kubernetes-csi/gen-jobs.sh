@@ -414,7 +414,7 @@ done
 # The canary builds use the latest sidecars from master and run them on
 # specific Kubernetes versions, using the default deployment for that Kubernetes
 # release.
-for kubernetes in 1.13 1.14 master; do
+for kubernetes in 1.13.3 1.14.0 master; do
     actual="${kubernetes/master/latest}"
     for tests in non-alpha alpha; do
         # Alpha with latest sidecars only on master.
