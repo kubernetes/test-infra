@@ -3044,7 +3044,53 @@ presubmits:
           secretName: ssh-security
     trigger: (?m)^/test( | .* )pull-security-kubernetes-conformance-image-test,?($|\s.*)
   - agent: kubernetes
+    always_run: true
+    cluster: security
+    context: pull-security-kubernetes-dependencies
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-dependencies
+    path_alias: k8s.io/kubernetes
+    rerun_command: /test pull-security-kubernetes-dependencies
+    skip_branches:
+    - release-1.14
+    - release-1.13
+    - release-1.12
+    - release-1.11
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - make
+        - verify
+        command:
+        - runner.sh
+        env:
+        - name: WHAT
+          value: vendor vendor-licenses
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        name: main
+        resources: {}
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-dependencies,?($|\s.*)
+  - agent: kubernetes
     always_run: false
+    branches:
+    - release-1.14
+    - release-1.13
+    - release-1.12
+    - release-1.11
     cluster: security
     context: pull-security-kubernetes-godeps
     decorate: true
