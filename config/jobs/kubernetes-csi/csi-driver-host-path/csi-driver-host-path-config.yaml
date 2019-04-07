@@ -421,7 +421,7 @@ periodics:
       - ./.prow.sh
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
-        value: "1.13"
+        value: "1.13.3"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....
@@ -460,7 +460,7 @@ periodics:
       - ./.prow.sh
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
-        value: "1.14"
+        value: "1.14.0"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....
