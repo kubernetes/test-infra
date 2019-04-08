@@ -28,15 +28,11 @@ import (
 	"strings"
 )
 
-var imageRegexp *regexp.Regexp
-var tagRegexp *regexp.Regexp
-var tagCache map[string]string
-
-func init() {
-	imageRegexp = regexp.MustCompile("\\b(gcr\\.io)/([a-z][a-z0-9-]{5,29}/[a-zA-Z0-9][a-zA-Z0-9_.-]+):([a-zA-Z0-9_.-]+)\\b")
-	tagRegexp = regexp.MustCompile("(v?[0-9]{8}-(?:v\\d(?:[.-]\\d+)*-g)?[0-9a-f]{6,10}|latest)(-.+)?")
-	tagCache = make(map[string]string)
-}
+var (
+	imageRegexp = regexp.MustCompile(`\b(gcr\.io)/([a-z][a-z0-9-]{5,29}/[a-zA-Z0-9][a-zA-Z0-9_.-]+):([a-zA-Z0-9_.-]+)\b`)
+	tagRegexp   = regexp.MustCompile(`(v?\d{8}-(?:v\d(?:[.-]\d+)*-g)?[0-9a-f]{6,10}|latest)(-.+)?`)
+	tagCache    = make(map[string]string)
+)
 
 const (
 	imageHostPart  = 1
