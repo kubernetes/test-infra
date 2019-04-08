@@ -104,8 +104,21 @@ func TestProjectCommand(t *testing.T) {
 		},
 	}
 
+	fakeClient := &fakegithub.FakeClient{
+		RepoProjects:      repoProjects,
+		ProjectColumnsMap: projectColumnsMap,
+		ColumnIDMap:       columnIDMap,
+		IssueComments:     make(map[int][]github.IssueComment),
+	}
+	botName, err := fakeClient.BotName()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
 	type testCase struct {
 		name            string
+		action          github.GenericCommentEventAction
+		noAction        bool
 		body            string
 		repo            string
 		org             string
@@ -120,6 +133,7 @@ func TestProjectCommand(t *testing.T) {
 	testcases := []testCase{
 		{
 			name:            "Setting project and column with valid values, but commenter does not belong to the project maintainer team",
+			action:          github.GenericCommentActionCreated,
 			body:            "/project 0.0.0 To do",
 			repo:            "kubernetes",
 			org:             "kubernetes",
@@ -132,6 +146,7 @@ func TestProjectCommand(t *testing.T) {
 		},
 		{
 			name:            "Setting project and column with valid values; project card does not currently exist for this issue/PR in the project",
+			action:          github.GenericCommentActionCreated,
 			body:            "/project 0.0.0 To do",
 			repo:            "kubernetes",
 			org:             "kubernetes",
@@ -143,6 +158,7 @@ func TestProjectCommand(t *testing.T) {
 		},
 		{
 			name:            "Setting project and column with valid values; project card already exist for this issue/PR in the project, but the project card is under a different column",
+			action:          github.GenericCommentActionCreated,
 			body:            "/project 0.0.0 To do",
 			repo:            "kubernetes",
 			org:             "kubernetes",
@@ -154,6 +170,7 @@ func TestProjectCommand(t *testing.T) {
 		},
 		{
 			name:            "Setting project without column value; the project specified exists on the repo level; the default column is set on the project and it exists on the project",
+			action:          github.GenericCommentActionCreated,
 			body:            "/project 0.1.0",
 			repo:            "kubernetes",
 			org:             "kubernetes",
@@ -165,6 +182,7 @@ func TestProjectCommand(t *testing.T) {
 		},
 		{
 			name:            "Setting project without column value; the project specified exists on the org level; the default column is set on the project and it exists on the project",
+			action:          github.GenericCommentActionCreated,
 			body:            "/project 0.0.0",
 			repo:            "kubernetes",
 			org:             "kubernetes",
@@ -176,6 +194,7 @@ func TestProjectCommand(t *testing.T) {
 		},
 		{
 			name:            "Setting project without column value; the default column is set on the project but it does not exist on the project",
+			action:          github.GenericCommentActionCreated,
 			body:            "/project 0.1.0",
 			repo:            "community",
 			org:             "kubernetes",
@@ -188,6 +207,7 @@ func TestProjectCommand(t *testing.T) {
 		},
 		{
 			name:            "Setting project with invalid column value; an error will be returned",
+			action:          github.GenericCommentActionCreated,
 			body:            "/project 0.1.0 Random 2",
 			repo:            "kubernetes",
 			org:             "kubernetes",
@@ -200,6 +220,7 @@ func TestProjectCommand(t *testing.T) {
 		},
 		{
 			name:            "Clearing project for a issue/PR; the project name provided is valid",
+			action:          github.GenericCommentActionCreated,
 			body:            "/project clear 0.0.0",
 			repo:            "kubernetes",
 			org:             "kubernetes",
@@ -211,6 +232,7 @@ func TestProjectCommand(t *testing.T) {
 		},
 		{
 			name:            "Setting project with invalid project name",
+			action:          github.GenericCommentActionCreated,
 			body:            "/project invalidprojectname",
 			repo:            "community",
 			org:             "kubernetes",
@@ -223,6 +245,7 @@ func TestProjectCommand(t *testing.T) {
 		},
 		{
 			name:            "Clearing project for a issue/PR; the project name provided is invalid",
+			action:          github.GenericCommentActionCreated,
 			body:            "/project clear invalidprojectname",
 			repo:            "kubernetes",
 			org:             "kubernetes",
@@ -233,20 +256,54 @@ func TestProjectCommand(t *testing.T) {
 			expectedColumn:  "To do",
 			expectedComment: "@sig-lead: " + fmt.Sprintf(invalidProject, "`0.0.0`, `0.1.0`"),
 		},
+		{
+			name:            "No action on events that are not new comments",
+			action:          github.GenericCommentActionEdited,
+			body:            "/project 0.0.0 To do",
+			repo:            "kubernetes",
+			org:             "kubernetes",
+			commenter:       "sig-lead",
+			previousProject: "",
+			previousColumn:  "",
+			expectedProject: "",
+			expectedColumn:  "",
+			noAction:        true,
+		},
+		{
+			name:            "No action on bot comments",
+			action:          github.GenericCommentActionCreated,
+			body:            "/project 0.0.0 To do",
+			repo:            "kubernetes",
+			org:             "kubernetes",
+			commenter:       botName,
+			previousProject: "",
+			previousColumn:  "",
+			expectedProject: "",
+			expectedColumn:  "",
+			noAction:        true,
+		},
+		{
+			name:            "No action on non-matching comments",
+			action:          github.GenericCommentActionCreated,
+			body:            "random comment",
+			repo:            "kubernetes",
+			org:             "kubernetes",
+			commenter:       "sig-lead",
+			previousProject: "",
+			previousColumn:  "",
+			expectedProject: "",
+			expectedColumn:  "",
+			noAction:        true,
+		},
 	}
 
-	fakeClient := &fakegithub.FakeClient{
-		RepoProjects:      repoProjects,
-		ProjectColumnsMap: projectColumnsMap,
-		ColumnIDMap:       columnIDMap,
-		IssueComments:     make(map[int][]github.IssueComment),
-	}
+	prevCommentCount := 0
 	for _, tc := range testcases {
 		fakeClient.Project = tc.previousProject
 		fakeClient.Column = tc.previousColumn
 
 		e := &github.GenericCommentEvent{
-			Action: github.GenericCommentActionCreated,
+			Action: tc.action,
 			Body:   tc.body,
 			Number: 1,
 			Repo:   github.Repo{Owner: github.User{Login: tc.org}, Name: tc.repo},
@@ -262,64 +319,88 @@ func TestProjectCommand(t *testing.T) {
 		if fakeClient.Column != tc.expectedColumn {
 			t.Errorf("(%s): Unexpected column %s but got %s", tc.name, tc.expectedColumn, fakeClient.Column)
 		}
+		issueComments := fakeClient.IssueComments[e.Number]
 		if tc.expectedComment != "" {
-			issueComments := fakeClient.IssueComments[e.Number]
 			actualComment := issueComments[len(issueComments)-1].Body
 			// Only check for substring because the actual comment contains a lot of extra stuff
 			if !strings.Contains(actualComment, tc.expectedComment) {
 				t.Errorf("(%s): Unexpected comment\n%s\nbut got\n%s", tc.name, tc.expectedComment, actualComment)
 			}
 		}
+		if tc.noAction {
+			if len(issueComments) != prevCommentCount {
+				t.Errorf("(%s): No new comment should be created", tc.name)
+			}
+		}
+		prevCommentCount = len(issueComments)
 	}
 }
 
 func TestParseCommand(t *testing.T) {
 	var testcases = []struct {
+		hasMatches      bool
 		command         string
 		proposedProject string
 		proposedColumn  string
 		shouldClear     bool
 	}{
 		{
+			hasMatches:      true,
 			command:         "/project 0.0.0 To do",
 			proposedProject: "0.0.0",
 			proposedColumn:  "To do",
 			shouldClear:     false,
 		},
 		{
+			hasMatches:      true,
 			command:         "/project 0.0.0 Backlog",
 			proposedProject: "0.0.0",
 			proposedColumn:  "Backlog",
 			shouldClear:     false,
 		},
 		{
+			hasMatches:      true,
 			command:         "/project clear 0.0.0",
 			proposedProject: "0.0.0",
 			proposedColumn:  "",
 			shouldClear:     true,
 		},
 		{
+			hasMatches:      true,
 			command:         "/project clear",
 			proposedProject: "",
 			proposedColumn:  "",
 			shouldClear:     false,
 		},
 		{
+			hasMatches:      true,
 			command:         "/project 0.0.0",
 			proposedProject: "0.0.0",
 			proposedColumn:  "",
 			shouldClear:     false,
 		},
 		{
+			hasMatches:      false,
 			command:         "/project",
 			proposedProject: "",
 			proposedColumn:  "",
 			shouldClear:     false,
 		},
+		{
+			hasMatches: false,
+			command:    "random comment",
+		},
 	}
 
 	for _, test := range testcases {
-		proposedProject, proposedColumn, shouldClear, _ := parseCommand(test.command)
+		matches := projectRegex.FindStringSubmatch(test.command)
+		if !test.hasMatches {
+			if len(matches) > 0 {
+				t.Errorf("For command %s, project command regex should not match", test.command)
+			}
+			continue
+		}
+		proposedProject, proposedColumn, shouldClear, _ := processRegexMatches(matches)
 		if proposedProject != test.proposedProject ||
 			proposedColumn != test.proposedColumn ||
 			shouldClear != test.shouldClear {
