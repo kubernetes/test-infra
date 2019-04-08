@@ -57,7 +57,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 <li>size/XS:  0-%d</li>
 <li>size/S:   %d-%d</li>
 <li>size/M:   %d-%d</li>
-<li>size/L    %d-%d</li>
+<li>size/L:   %d-%d</li>
 <li>size/XL:  %d-%d</li>
 <li>size/XXL: %d+</li>
 </ul>`, sizes.S-1, sizes.S, sizes.M-1, sizes.M, sizes.L-1, sizes.L, sizes.Xl-1, sizes.Xl, sizes.Xxl-1, sizes.Xxl),
