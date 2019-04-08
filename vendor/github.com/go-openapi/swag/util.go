@@ -18,63 +18,91 @@ import (
 	"math"
 	"reflect"
 	"regexp"
-	"sort"
 	"strings"
+	"sync"
 	"unicode"
 )
 
-// Taken from https://github.com/golang/lint/blob/3390df4df2787994aea98de825b964ac7944b817/lint.go#L732-L769
-var commonInitialisms = map[string]bool{
-	"ACL":   true,
-	"API":   true,
-	"ASCII": true,
-	"CPU":   true,
-	"CSS":   true,
-	"DNS":   true,
-	"EOF":   true,
-	"GUID":  true,
-	"HTML":  true,
-	"HTTPS": true,
-	"HTTP":  true,
-	"ID":    true,
-	"IP":    true,
-	"JSON":  true,
-	"LHS":   true,
-	"OAI":   true,
-	"QPS":   true,
-	"RAM":   true,
-	"RHS":   true,
-	"RPC":   true,
-	"SLA":   true,
-	"SMTP":  true,
-	"SQL":   true,
-	"SSH":   true,
-	"TCP":   true,
-	"TLS":   true,
-	"TTL":   true,
-	"UDP":   true,
-	"UI":    true,
-	"UID":   true,
-	"UUID":  true,
-	"URI":   true,
-	"URL":   true,
-	"UTF8":  true,
-	"VM":    true,
-	"XML":   true,
-	"XMPP":  true,
-	"XSRF":  true,
-	"XSS":   true,
-}
+// commonInitialisms are common acronyms that are kept as whole uppercased words.
+var commonInitialisms *indexOfInitialisms
+
+// initialisms is a slice of sorted initialisms
 var initialisms []string
 
+var once sync.Once
+
+var isInitialism func(string) bool
+
+var (
+	splitRex1     *regexp.Regexp
+	splitRex2     *regexp.Regexp
+	splitReplacer *strings.Replacer
+)
+
 func init() {
-	for k := range commonInitialisms {
-		initialisms = append(initialisms, k)
+	// Taken from https://github.com/golang/lint/blob/3390df4df2787994aea98de825b964ac7944b817/lint.go#L732-L769
+	var configuredInitialisms = map[string]bool{
+		"ACL":   true,
+		"API":   true,
+		"ASCII": true,
+		"CPU":   true,
+		"CSS":   true,
+		"DNS":   true,
+		"EOF":   true,
+		"GUID":  true,
+		"HTML":  true,
+		"HTTPS": true,
+		"HTTP":  true,
+		"ID":    true,
+		"IP":    true,
+		"JSON":  true,
+		"LHS":   true,
+		"OAI":   true,
+		"QPS":   true,
+		"RAM":   true,
+		"RHS":   true,
+		"RPC":   true,
+		"SLA":   true,
+		"SMTP":  true,
+		"SQL":   true,
+		"SSH":   true,
+		"TCP":   true,
+		"TLS":   true,
+		"TTL":   true,
+		"UDP":   true,
+		"UI":    true,
+		"UID":   true,
+		"UUID":  true,
+		"URI":   true,
+		"URL":   true,
+		"UTF8":  true,
+		"VM":    true,
+		"XML":   true,
+		"XMPP":  true,
+		"XSRF":  true,
+		"XSS":   true,
 	}
-	sort.Sort(sort.Reverse(byLength(initialisms)))
+
+	// a thread-safe index of initialisms
+	commonInitialisms = newIndexOfInitialisms().load(configuredInitialisms)
+
+	// a test function
+	isInitialism = commonInitialisms.isInitialism
 }
 
-// JoinByFormat joins a string array by a known format:
+func ensureSorted() {
+	initialisms = commonInitialisms.sorted()
+}
+
+const (
+	//collectionFormatComma = "csv"
+	collectionFormatSpace = "ssv"
+	collectionFormatTab   = "tsv"
+	collectionFormatPipe  = "pipes"
+	collectionFormatMulti = "multi"
+)
+
+// JoinByFormat joins a string array by a known format (e.g. swagger's collectionFormat attribute):
 //		ssv: space separated value
 //		tsv: tab separated value
 //		pipes: pipe (|) separated value
@@ -85,13 +113,13 @@ func JoinByFormat(data []string, format string) []string {
 	}
 	var sep string
 	switch format {
-	case "ssv":
+	case collectionFormatSpace:
 		sep = " "
-	case "tsv":
+	case collectionFormatTab:
 		sep = "\t"
-	case "pipes":
+	case collectionFormatPipe:
 		sep = "|"
-	case "multi":
+	case collectionFormatMulti:
 		return data
 	default:
 		sep = ","
@@ -104,19 +132,20 @@ func JoinByFormat(data []string, format string) []string {
 //		tsv: tab separated value
 //		pipes: pipe (|) separated value
 //		csv: comma separated value (default)
+//
 func SplitByFormat(data, format string) []string {
 	if data == "" {
 		return nil
 	}
 	var sep string
 	switch format {
-	case "ssv":
+	case collectionFormatSpace:
 		sep = " "
-	case "tsv":
+	case collectionFormatTab:
 		sep = "\t"
-	case "pipes":
+	case collectionFormatPipe:
 		sep = "|"
-	case "multi":
+	case collectionFormatMulti:
 		return nil
 	default:
 		sep = ","
@@ -130,49 +159,54 @@ func SplitByFormat(data, format string) []string {
 	return result
 }
 
-type byLength []string
+type byInitialism []string
 
-func (s byLength) Len() int {
+func (s byInitialism) Len() int {
 	return len(s)
 }
-func (s byLength) Swap(i, j int) {
+func (s byInitialism) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
-func (s byLength) Less(i, j int) bool {
-	return len(s[i]) < len(s[j])
+func (s byInitialism) Less(i, j int) bool {
+	if len(s[i]) != len(s[j]) {
+		return len(s[i]) < len(s[j])
+	}
+
+	return strings.Compare(s[i], s[j]) > 0
 }
 
 // Prepares strings by splitting by caps, spaces, dashes, and underscore
-func split(str string) (words []string) {
-	repl := strings.NewReplacer(
-		"@", "At ",
-		"&", "And ",
-		"|", "Pipe ",
-		"$", "Dollar ",
-		"!", "Bang ",
-		"-", " ",
-		"_", " ",
-	)
-
-	rex1 := regexp.MustCompile(`(\p{Lu})`)
-	rex2 := regexp.MustCompile(`(\pL|\pM|\pN|\p{Pc})+`)
+func split(str string) []string {
+	// check if consecutive single char things make up an initialism
+	once.Do(func() {
+		splitRex1 = regexp.MustCompile(`(\p{Lu})`)
+		splitRex2 = regexp.MustCompile(`(\pL|\pM|\pN|\p{Pc})+`)
+		splitReplacer = strings.NewReplacer(
+			"@", "At ",
+			"&", "And ",
+			"|", "Pipe ",
+			"$", "Dollar ",
+			"!", "Bang ",
+			"-", " ",
+			"_", " ",
+		)
+		ensureSorted()
+	})
 
 	str = trim(str)
 
 	// Convert dash and underscore to spaces
-	str = repl.Replace(str)
+	str = splitReplacer.Replace(str)
 
 	// Split when uppercase is found (needed for Snake)
-	str = rex1.ReplaceAllString(str, " $1")
+	str = splitRex1.ReplaceAllString(str, " $1")
 
-	// check if consecutive single char things make up an initialism
 	for _, k := range initialisms {
-		str = strings.Replace(str, rex1.ReplaceAllString(k, " $1"), " "+k, -1)
+		str = strings.Replace(str, splitRex1.ReplaceAllString(k, " $1"), " "+k, -1)
 	}
 	// Get the final list of words
-	words = rex2.FindAllString(str, -1)
-
-	return
+	//words = rex2.FindAllString(str, -1)
+	return splitRex2.FindAllString(str, -1)
 }
 
 // Removes leading whitespaces
@@ -192,7 +226,7 @@ func lower(str string) string {
 
 // Camelize an uppercased word
 func Camelize(word string) (camelized string) {
-	for pos, ru := range word {
+	for pos, ru := range []rune(word) {
 		if pos > 0 {
 			camelized += string(unicode.ToLower(ru))
 		} else {
@@ -204,42 +238,22 @@ func Camelize(word string) (camelized string) {
 
 // ToFileName lowercases and underscores a go type name
 func ToFileName(name string) string {
-	var out []string
-	cml := trim(name)
+	in := split(name)
+	out := make([]string, 0, len(in))
 
-	// Camelize any capital word preceding a reserved keyword ("initialism")
-	// thus, upper-cased words preceding a common initialism will get separated
-	// e.g: ELBHTTPLoadBalancer becomes elb_http_load_balancer
-	rexPrevious := regexp.MustCompile(`(?P<word>\p{Lu}{2,})(?:HTTP|OAI)`)
-	cml = rexPrevious.ReplaceAllStringFunc(cml, func(match string) (replaceInMatch string) {
-		for _, m := range rexPrevious.FindAllStringSubmatch(match, -1) { // [ match submatch ]
-			if m[1] != "" {
-				replaceInMatch = strings.Replace(m[0], m[1], Camelize(m[1]), -1)
-			}
-		}
-		return
-	})
-
-	// Pre-camelize reserved keywords ("initialisms") to avoid unnecessary hyphenization
-	for _, k := range initialisms {
-		cml = strings.Replace(cml, k, Camelize(k), -1)
-	}
-
-	// Camelize other capital words to avoid unnecessary hyphenization
-	rexCase := regexp.MustCompile(`(\p{Lu}{2,})`)
-	cml = rexCase.ReplaceAllStringFunc(cml, Camelize)
-
-	// Final split with hyphens
-	for _, w := range split(cml) {
+	for _, w := range in {
 		out = append(out, lower(w))
 	}
+
 	return strings.Join(out, "_")
 }
 
 // ToCommandName lowercases and underscores a go type name
 func ToCommandName(name string) string {
-	var out []string
-	for _, w := range split(name) {
+	in := split(name)
+	out := make([]string, 0, len(in))
+
+	for _, w := range in {
 		out = append(out, lower(w))
 	}
 	return strings.Join(out, "-")
@@ -247,9 +261,11 @@ func ToCommandName(name string) string {
 
 // ToHumanNameLower represents a code name as a human series of words
 func ToHumanNameLower(name string) string {
-	var out []string
-	for _, w := range split(name) {
-		if !commonInitialisms[upper(w)] {
+	in := split(name)
+	out := make([]string, 0, len(in))
+
+	for _, w := range in {
+		if !isInitialism(upper(w)) {
 			out = append(out, lower(w))
 		} else {
 			out = append(out, w)
@@ -260,11 +276,13 @@ func ToHumanNameLower(name string) string {
 
 // ToHumanNameTitle represents a code name as a human series of words with the first letters titleized
 func ToHumanNameTitle(name string) string {
-	var out []string
-	for _, w := range split(name) {
+	in := split(name)
+	out := make([]string, 0, len(in))
+
+	for _, w := range in {
 		uw := upper(w)
-		if !commonInitialisms[uw] {
-			out = append(out, upper(w[:1])+lower(w[1:]))
+		if !isInitialism(uw) {
+			out = append(out, Camelize(w))
 		} else {
 			out = append(out, w)
 		}
@@ -274,13 +292,15 @@ func ToHumanNameTitle(name string) string {
 
 // ToJSONName camelcases a name which can be underscored or pascal cased
 func ToJSONName(name string) string {
-	var out []string
-	for i, w := range split(name) {
+	in := split(name)
+	out := make([]string, 0, len(in))
+
+	for i, w := range in {
 		if i == 0 {
 			out = append(out, lower(w))
 			continue
 		}
-		out = append(out, upper(w[:1])+lower(w[1:]))
+		out = append(out, Camelize(w))
 	}
 	return strings.Join(out, "")
 }
@@ -288,7 +308,7 @@ func ToJSONName(name string) string {
 // ToVarName camelcases a name which can be underscored or pascal cased
 func ToVarName(name string) string {
 	res := ToGoName(name)
-	if _, ok := commonInitialisms[res]; ok {
+	if isInitialism(res) {
 		return lower(res)
 	}
 	if len(res) <= 1 {
@@ -299,27 +319,35 @@ func ToVarName(name string) string {
 
 // ToGoName translates a swagger name which can be underscored or camel cased to a name that golint likes
 func ToGoName(name string) string {
-	var out []string
-	for _, w := range split(name) {
+	in := split(name)
+	out := make([]string, 0, len(in))
+
+	for _, w := range in {
 		uw := upper(w)
 		mod := int(math.Min(float64(len(uw)), 2))
-		if !commonInitialisms[uw] && !commonInitialisms[uw[:len(uw)-mod]] {
-			uw = upper(w[:1]) + lower(w[1:])
+		if !isInitialism(uw) && !isInitialism(uw[:len(uw)-mod]) {
+			uw = Camelize(w)
 		}
 		out = append(out, uw)
 	}
 
 	result := strings.Join(out, "")
 	if len(result) > 0 {
-		ud := upper(result[:1])
-		ru := []rune(ud)
-		if unicode.IsUpper(ru[0]) {
-			result = ud + result[1:]
-		} else {
-			result = "X" + ud + result[1:]
+		if !unicode.IsUpper([]rune(result)[0]) {
+			result = "X" + result
 		}
 	}
 	return result
+}
+
+// ContainsStrings searches a slice of strings for a case-sensitive match
+func ContainsStrings(coll []string, item string) bool {
+	for _, a := range coll {
+		if a == item {
+			return true
+		}
+	}
+	return false
 }
 
 // ContainsStringsCI searches a slice of strings for a case-insensitive match
@@ -364,6 +392,16 @@ func IsZero(data interface{}) bool {
 		return true
 	}
 	return false
+}
+
+// AddInitialisms add additional initialisms
+func AddInitialisms(words ...string) {
+	for _, word := range words {
+		//commonInitialisms[upper(word)] = true
+		commonInitialisms.add(upper(word))
+	}
+	// sort again
+	initialisms = commonInitialisms.sorted()
 }
 
 // CommandLineOptionsGroup represents a group of user-defined command line options

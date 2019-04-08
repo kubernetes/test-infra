@@ -108,8 +108,6 @@ go_library(
         "task_inspect.go",
         "task_list.go",
         "task_logs.go",
-        "tlsconfig_clone.go",
-        "tlsconfig_clone_go17.go",
         "transport.go",
         "utils.go",
         "version.go",
@@ -140,7 +138,6 @@ go_library(
         "//vendor/github.com/docker/go-connections/tlsconfig:go_default_library",
         "//vendor/github.com/opencontainers/go-digest:go_default_library",
         "//vendor/github.com/pkg/errors:go_default_library",
-        "//vendor/golang.org/x/net/context:go_default_library",
         "//vendor/golang.org/x/net/context/ctxhttp:go_default_library",
     ],
 )

@@ -7,6 +7,7 @@ go_library(
         "generated_expansion.go",
         "storage_client.go",
         "storageclass.go",
+        "volumeattachment.go",
     ],
     importmap = "k8s.io/test-infra/vendor/k8s.io/client-go/kubernetes/typed/storage/v1",
     importpath = "k8s.io/client-go/kubernetes/typed/storage/v1",
@@ -14,7 +15,6 @@ go_library(
     deps = [
         "//vendor/k8s.io/api/storage/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/runtime/serializer:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/watch:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/scheme:go_default_library",
