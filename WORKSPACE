@@ -31,10 +31,10 @@ versions.check(minimum_bazel_version = "0.23.0")
 
 git_repository(
     name = "io_bazel_rules_go",
-    commit = "0c4a3523fe18441b73308a8d56ea946888aab6bf",
+    commit = "c694c0f39b073bc991865080a4d01b56a2aa94c5",
     remote = "https://github.com/bazelbuild/rules_go.git",
-    shallow_since = "1552603757 -0400",
-    #tag = "0.18.1",
+    shallow_since = "1554506517 -0400",
+    #tag = "0.18.2",
 )
 
 git_repository(
@@ -50,7 +50,7 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_depe
 go_rules_dependencies()
 
 go_register_toolchains(
-    go_version = "1.11.5",
+    go_version = "1.12.2",
     nogo = "@//:nogo_vet",
 )
 
