@@ -266,7 +266,8 @@ project_config:
             Workloads:
               Backlog
     kubeflow:
-      org_maintainers_team_id: 2460384 # kubernetes-milestone-maintainers
+      org_maintainers_team_id: 3198542 # kubeflow-project-maintainers
+
 config_updater:
   maps:
     label_sync/labels.yaml:
@@ -359,11 +360,14 @@ plugins:
   - approve   # Enable /approve and /assign commands.
   - assign
   - blunderbuss
+  - golint
   - help
   - hold
   - label
   - lgtm
   - lifecycle   # Lets PRs & issues be flagged as stale
+  - override
+  - project
   - size
   - skip  # Allows cleaning up stale commit statuses
   - verify-owners   # Validates OWNERS file changes in PRs.
