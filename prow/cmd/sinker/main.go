@@ -50,6 +50,9 @@ type options struct {
 }
 
 const (
+	// TODO(fejta): require setting this explicitly
+	defaultConfigPath = "/etc/config/config.yaml"
+
 	reasonPodAged     = "aged"
 	reasonPodOrphaned = "orphaned"
 
@@ -60,7 +63,7 @@ const (
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o := options{}
 	fs.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
+	fs.StringVar(&o.configPath, "config-path", defaultConfigPath, "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 
 	// TODO(fejta): switch dryRun to be a bool, defaulting to true after March 15, 2019.
@@ -100,13 +103,10 @@ func main() {
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "sinker"}),
 	)
-
 	if !o.dryRun.Explicit {
-		logrus.Warning("Sinker requires --dry-run=false to function correctly in production.")
+		logrus.Warning("Sinker requies --dry-run=false to function correctly in production.")
 		logrus.Warning("--dry-run will soon default to true. Set --dry-run=false by March 15.")
 	}
-
-	o.configPath = config.ConfigPath(o.configPath)
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {

@@ -818,20 +818,6 @@ func (c *Config) validateJobConfig() error {
 	return nil
 }
 
-// ConfigPath returns the value for the component's configPath if provided
-// explicityly or default otherwise.
-func ConfigPath(value string) string {
-
-	// TODO: require setting this explicitly
-	defaultConfigPath := "/etc/config/config.yaml"
-
-	if value != "" {
-		return value
-	}
-	logrus.Warningf("defaulting to %s until 15 July 2019, please migrate", defaultConfigPath)
-	return defaultConfigPath
-}
-
 func parseProwConfig(c *Config) error {
 	if err := ValidateController(&c.Plank.Controller); err != nil {
 		return fmt.Errorf("validating plank config: %v", err)
