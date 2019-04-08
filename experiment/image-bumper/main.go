@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 var imageRegexp *regexp.Regexp
@@ -44,6 +45,11 @@ const (
 	tagVersionPart = 1
 	tagExtraPart   = 2
 )
+
+type manifest map[string]struct {
+	TimeCreatedMs string   `json:"timeCreatedMs"`
+	Tags          []string `json:"tag"`
+}
 
 func findLatestTag(imageHost, imageName, currentTag string) (string, error) {
 	k := imageHost + "/" + imageName + ":" + currentTag
@@ -65,25 +71,30 @@ func findLatestTag(imageHost, imageName, currentTag string) (string, error) {
 	}
 
 	result := struct {
-		Manifest map[string]struct {
-			TimeCreatedMs string   `json:"timeCreatedMs"`
-			Tags          []string `json:"tag"`
-		}
-		Name string   `json:"name"`
-		Tags []string `json:"tags"`
+		Manifest manifest `json:"manifest"`
 	}{}
 
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return "", fmt.Errorf("couldn't parse tag information from registry: %v", err)
 	}
 
+	latestTag, err := pickBestTag(currentTagParts, result.Manifest)
+	if err != nil {
+		return "", err
+	}
+
+	tagCache[k] = latestTag
+
+	return latestTag, nil
+}
+
+func pickBestTag(currentTagParts []string, manifest manifest) (string, error) {
 	// The approach is to find the most recently created image that has the same suffix as the
 	// current tag. However, if we find one called "latest" (with appropriate suffix), we assume
 	// that's the latest regardless of when it was created.
-
 	var latestTime int64
 	latestTag := ""
-	for _, v := range result.Manifest {
+	for _, v := range manifest {
 		bestVariant := ""
 		override := false
 		for _, t := range v.Tags {
@@ -121,8 +132,6 @@ func findLatestTag(imageHost, imageName, currentTag string) (string, error) {
 	if latestTag == "" {
 		return "", fmt.Errorf("failed to find a good tag")
 	}
-
-	tagCache[k] = latestTag
 
 	return latestTag, nil
 }
@@ -198,7 +207,7 @@ func main() {
 	}
 	log.Println("Done.")
 	for before, after := range tagCache {
-		if before == after {
+		if strings.Split(before, ":")[1] == after {
 			continue
 		}
 		log.Printf("%s -> %s\n", before, after)
