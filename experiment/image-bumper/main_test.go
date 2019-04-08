@@ -204,6 +204,14 @@ func TestUpdateAllTags(t *testing.T) {
 			},
 		},
 		{
+			name:           "gcr subdomains are supported",
+			content:        `{"images": ["eu.gcr.io/k8s-testimages/some-image:v20190404-12345678"]}`,
+			expectedResult: `{"images": ["eu.gcr.io/k8s-testimages/some-image:v20190405-123456789"]}`,
+			newTags: map[string]string{
+				"eu.gcr.io/k8s-testimages/some-image:v20190404-12345678": "v20190405-123456789",
+			},
+		},
+		{
 			name:           "images not matching the filter regex are not updated",
 			content:        `{"images": ["gcr.io/k8s-prow/prow-thing:v20190404-12345678", "gcr.io/k8s-testimages/some-image:v20190404-12345678"]}`,
 			expectedResult: `{"images": ["gcr.io/k8s-prow/prow-thing:v20190404-12345678", "gcr.io/k8s-testimages/some-image:v20190405-123456789"]}`,
