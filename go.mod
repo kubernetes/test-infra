@@ -45,7 +45,6 @@ require (
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.1.3
 	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7
-	github.com/grpc-ecosystem/grpc-gateway v1.6.2 // indirect
 	github.com/hashicorp/errwrap v0.0.0-20141028054710-7554cd9344ce // indirect
 	github.com/hashicorp/go-multierror v0.0.0-20171204182908-b7773ae21874
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
@@ -76,6 +75,7 @@ require (
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3
 	github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1 // indirect
+	go.opencensus.io v0.19.3 // indirect
 	golang.org/x/crypto v0.0.0-20190404164418-38d8ce5564a5
 	golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
 	golang.org/x/net v0.0.0-20190403144856-b630fd6fe46b

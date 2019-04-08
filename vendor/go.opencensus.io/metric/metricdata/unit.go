@@ -1,4 +1,4 @@
-// Copyright 2017, OpenCensus Authors
+// Copyright 2018, OpenCensus Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package opencensus contains Go support for OpenCensus.
-package opencensus // import "go.opencensus.io"
+package metricdata
 
-// Version is the current release version of OpenCensus in use.
-func Version() string {
-	return "0.19.3"
-}
+// Unit is a string encoded according to the case-sensitive abbreviations from the
+// Unified Code for Units of Measure: http://unitsofmeasure.org/ucum.html
+type Unit string
+
+// Predefined units. To record against a unit not represented here, create your
+// own Unit type constant from a string.
+const (
+	UnitDimensionless Unit = "1"
+	UnitBytes         Unit = "By"
+	UnitMilliseconds  Unit = "ms"
+)

@@ -1,4 +1,4 @@
-// Copyright 2017, OpenCensus Authors
+// Copyright 2019, OpenCensus Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package opencensus contains Go support for OpenCensus.
-package opencensus // import "go.opencensus.io"
+package ochttp
 
-// Version is the current release version of OpenCensus in use.
-func Version() string {
-	return "0.19.3"
+import (
+	"io"
+)
+
+// wrappedBody returns a wrapped version of the original
+// Body and only implements the same combination of additional
+// interfaces as the original.
+func wrappedBody(wrapper io.ReadCloser, body io.ReadCloser) io.ReadCloser {
+	var (
+		wr, i0 = body.(io.Writer)
+	)
+	switch {
+	case !i0:
+		return struct {
+			io.ReadCloser
+		}{wrapper}
+
+	case i0:
+		return struct {
+			io.ReadCloser
+			io.Writer
+		}{wrapper, wr}
+	default:
+		return struct {
+			io.ReadCloser
+		}{wrapper}
+	}
 }

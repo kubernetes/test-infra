@@ -1,4 +1,4 @@
-// Copyright 2017, OpenCensus Authors
+// Copyright 2018, OpenCensus Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package opencensus contains Go support for OpenCensus.
-package opencensus // import "go.opencensus.io"
+package metricdata
 
-// Version is the current release version of OpenCensus in use.
-func Version() string {
-	return "0.19.3"
+// LabelValue represents the value of a label.
+// The zero value represents a missing label value, which may be treated
+// differently to an empty string value by some back ends.
+type LabelValue struct {
+	Value   string // string value of the label
+	Present bool   // flag that indicated whether a value is present or not
+}
+
+// NewLabelValue creates a new non-nil LabelValue that represents the given string.
+func NewLabelValue(val string) LabelValue {
+	return LabelValue{Value: val, Present: true}
 }
