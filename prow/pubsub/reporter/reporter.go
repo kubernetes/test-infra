@@ -111,7 +111,9 @@ func (c *Client) Report(pj *prowapi.ProwJob) ([]*prowapi.ProwJob, error) {
 
 	_, err = res.Get(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to publish pubsub message: %v", err)
+		return nil, fmt.Errorf(
+			"failed to publish pubsub message with run ID %q to topic: \"%s/%s\". %v",
+			message.RunID, message.Project, message.Topic, err)
 	}
 
 	return []*prowapi.ProwJob{pj}, nil
