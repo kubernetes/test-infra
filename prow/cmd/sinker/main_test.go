@@ -439,10 +439,12 @@ func TestFlags(t *testing.T) {
 			name: "minimal flags work",
 		},
 		{
-			name: "config-path defaults to something valid",
-			del:  sets.NewString("--config-path"),
+			name: "explicitly set --config-path",
+			args: map[string]string{
+				"--config-path": "/etc/config/config.yaml",
+			},
 			expected: func(o *options) {
-				o.configPath = defaultConfigPath
+				o.configPath = "/etc/config/config.yaml"
 			},
 		},
 		{
