@@ -31,7 +31,7 @@ import (
 var (
 	imageRegexp = regexp.MustCompile(`\b(gcr\.io)/([a-z][a-z0-9-]{5,29}/[a-zA-Z0-9][a-zA-Z0-9_.-]+):([a-zA-Z0-9_.-]+)\b`)
 	tagRegexp   = regexp.MustCompile(`(v?\d{8}-(?:v\d(?:[.-]\d+)*-g)?[0-9a-f]{6,10}|latest)(-.+)?`)
-	tagCache    = make(map[string]string)
+	tagCache    = map[string]string{}
 )
 
 const (
@@ -132,16 +132,11 @@ func pickBestTag(currentTagParts []string, manifest manifest) (string, error) {
 	return latestTag, nil
 }
 
-func updateFile(path string, imageFilter *regexp.Regexp) error {
-	content, err := ioutil.ReadFile(path)
-	if err != nil {
-		return fmt.Errorf("failed to read %s: %v", path, err)
-	}
-
+func updateAllTags(tagPicker func(host, image, tag string) (string, error), content []byte, imageFilter *regexp.Regexp) []byte {
 	indexes := imageRegexp.FindAllSubmatchIndex(content, -1)
 	// Not finding any images is not an error.
 	if indexes == nil {
-		return nil
+		return content
 	}
 
 	newContent := make([]byte, 0, len(content))
@@ -158,7 +153,7 @@ func updateFile(path string, imageFilter *regexp.Regexp) error {
 			continue
 		}
 
-		latest, err := findLatestTag(host, image, tag)
+		latest, err := tagPicker(host, image, tag)
 		if err != nil {
 			log.Printf("Failed to update %s/%s:%s: %v.\n", host, image, tag, err)
 			newContent = append(newContent, content[m[imageTagPart*2]:m[1]]...)
@@ -167,6 +162,18 @@ func updateFile(path string, imageFilter *regexp.Regexp) error {
 		newContent = append(newContent, []byte(latest)...)
 	}
 	newContent = append(newContent, content[lastIndex:]...)
+
+	return newContent
+}
+
+func updateFile(path string, imageFilter *regexp.Regexp) error {
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("failed to read %s: %v", path, err)
+	}
+
+	newContent := updateAllTags(findLatestTag, content, imageFilter)
+
 	if err := ioutil.WriteFile(path, newContent, 0644); err != nil {
 		return fmt.Errorf("failed to write %s: %v", path, err)
 	}
