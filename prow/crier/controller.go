@@ -242,7 +242,12 @@ func (c *Controller) processNextItem() bool {
 	logrus.WithField("prowjob", keyRaw).Infof("Will report state : %s", pj.Status.State)
 	pjs, err := c.reporter.Report(pj)
 	if err != nil {
-		logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to report job")
+		fields := logrus.Fields{
+			"prowjob":   keyRaw,
+			"jobName":   pj.Name,
+			"jobStatus": pj.Status,
+		}
+		logrus.WithError(err).WithFields(fields).Error("failed to report job")
 		return c.retry(key, err)
 	}
 
