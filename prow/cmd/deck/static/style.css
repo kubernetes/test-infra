@@ -206,13 +206,22 @@ i.state {
     cursor: pointer;
 }
 
-#job-histogram-labels span {
+#job-histogram-labels {
+    text-align: center;
+}
+
+#job-histogram-labels > span {
     padding: 0 6px;
     font-size: 12px;
+    color: #777;
 }
 
 #job-histogram-start {
     float: right;
+}
+
+#job-histogram-end {
+    float: left;
 }
 
 #job-histogram-container {
