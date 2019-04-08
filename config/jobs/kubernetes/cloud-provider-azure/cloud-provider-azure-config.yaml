@@ -323,3 +323,58 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: cloud-provider-azure
+
+- interval: 8h
+  # ci-cloud-provider-azure-slow runs Kubernetes slow tests periodically.
+  name: ci-cloud-provider-azure-slow
+  labels:
+    preset-service-account: "true"
+    preset-cloudprovider-azure-cred: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: k8s.io/cloud-provider-azure
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190322-1960d2fdd-master
+      args:
+      - --job=$(JOB_NAME)
+      - --repo=k8s.io/kubernetes=v1.14.0
+      - --repo=k8s.io/$(REPO_NAME)=master
+      - --root=/go/src
+      - --service-account=/etc/service-account/service-account.json
+      - --timeout=450
+      - --upload=gs://kubernetes-jenkins/logs/
+      - --scenario=kubernetes_e2e
+      - --
+      - --gce-ssh=
+      - --test=true
+      - --up=true
+      - --down=true
+      - --deployment=acsengine
+      - --build=bazel
+      - --provider=skeleton
+      - --ginkgo-parallel=30
+      - --acsengine-agentpoolcount=2
+      - --acsengine-admin-username=azureuser
+      - --acsengine-creds=$AZURE_CREDENTIALS
+      - --acsengine-orchestratorRelease=1.14
+      - --acsengine-mastervmsize=Standard_DS2_v2
+      - --acsengine-agentvmsize=Standard_D4s_v3
+      - --acsengine-ccm=True
+      - --acsengine-hyperkube=True
+      - --acsengine-location=eastus2
+      - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
+      - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
+      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz
+      - --test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=420m
+      securityContext:
+        privileged: true
+      env:
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: cloud-provider-azure
