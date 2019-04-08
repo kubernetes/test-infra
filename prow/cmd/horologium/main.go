@@ -44,9 +44,12 @@ type options struct {
 	dryRun     flagutil.Bool
 }
 
+// TODO(fejta): require setting this explicitly
+const defaultConfigPath = "/etc/config/config.yaml"
+
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
+	fs.StringVar(&o.configPath, "config-path", defaultConfigPath, "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 
 	// TODO(fejta): switch dryRun to be a bool, defaulting to true after March 15, 2019.
@@ -81,10 +84,8 @@ func main() {
 
 	pjutil.ServePProf()
 
-	o.configPath = config.ConfigPath(o.configPath)
-
 	if !o.dryRun.Explicit {
-		logrus.Warning("Horologium requires --dry-run=false to function correctly in production.")
+		logrus.Warning("Horologium requies --dry-run=false to function correctly in production.")
 		logrus.Warning("--dry-run will soon default to true. Set --dry-run=false by March 15.")
 	}
 
