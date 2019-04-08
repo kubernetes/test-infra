@@ -1581,8 +1581,8 @@ go_repository(
 go_repository(
     name = "io_opencensus_go",
     importpath = "go.opencensus.io",
-    sum = "h1:ZZpq6xI6kv/LuE/5s5UQvBU5vMjvRnPb8PvJrIntAnc=",
-    version = "v0.19.2",
+    sum = "h1:ipnRUwS2uKC3aNamEPYhubgto3O2DqsZ7OheoKvHYN4=",
+    version = "v0.19.3",
 )
 
 go_repository(
@@ -1595,7 +1595,8 @@ go_repository(
 go_repository(
     name = "org_apache_git_thrift_git",
     importpath = "git.apache.org/thrift.git",
-    tag = "v0.12.0",
+    sum = "h1:CMxsZlAmxKs+VAZMlDDL0wXciMblJcutQbEe3A9CYUM=",
+    version = "v0.12.0",
 )
 
 go_repository(

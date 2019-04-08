@@ -11,6 +11,7 @@ go_library(
         "span_annotating_client_trace.go",
         "stats.go",
         "trace.go",
+        "wrapped_body.go",
     ],
     importmap = "k8s.io/test-infra/vendor/go.opencensus.io/plugin/ochttp",
     importpath = "go.opencensus.io/plugin/ochttp",
