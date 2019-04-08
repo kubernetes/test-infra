@@ -1,0 +1,15 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  # "namespace" omitted since ClusterRoles are not namespaced
+  name: crier
+rules:
+- apiGroups:
+    - "prow.k8s.io"
+  resources:
+    - "prowjobs"
+  verbs:
+    - "get"
+    - "watch"
+    - "list"
+    - "patch"

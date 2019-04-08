@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: default
+  name: ghproxy
+  labels:
+    app: ghproxy
+spec:
+  replicas: 1  # TODO(fejta): this should be HA
+  template:
+    metadata:
+      labels:
+        app: ghproxy
+    spec:
+      containers:
+      - name: ghproxy
+        image: gcr.io/k8s-prow/ghproxy:v20190408-5796ba99f
+        args:
+        - --cache-dir=/cache
+        - --cache-sizeGB=99
+        - --push-gateway=pushgateway
+        ports:
+        - containerPort: 8888
+        volumeMounts:
+        - name: cache
+          mountPath: /cache
+      volumes:
+      - name: cache
+        persistentVolumeClaim:
+          claimName: ghproxy
+      # run on our dedicated node
+      tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "ghproxy"
+        effect: "NoSchedule"
+      nodeSelector:
+        dedicated: "ghproxy"

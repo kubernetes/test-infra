@@ -5,39 +5,61 @@ load("//prow:def.bzl", "BUILD_CLUSTER", "MULTI_KIND", "component", "release")
 # Usage:
 #   bazel run //prow/cluster:foo.apply
 
+# The production job deploys Prow to the Prow cluster.
+# If you are deploying into an RBAC enabled cluster, you must also deploy the
+# production.rbac target defined below as well.
+# To deploy these rules, run "bazel run //prow/cluster:production.apply"
 release(
     "production",
-    component("build", "deployment"),
-    component("build_rbac", MULTI_KIND),
-    component("crier", "deployment"),
-    component("crier_rbac", MULTI_KIND),
-    component("deck", "service", "deployment"),
+    component("build", "deployment", "serviceaccount"),
+    component("cert-manager", "clusterissuer"),
+    component("crier", "deployment", "serviceaccount"),
+    component("deck", "service", "deployment", "serviceaccount"),
     component("gce-ssd-retain", "storageclass"),
-    component("ghproxy", MULTI_KIND),
-    component(
-        "grandmatriarch",
-        MULTI_KIND,
-        cluster = BUILD_CLUSTER,
-    ),
-    component("hook", "service", "deployment"),
-    component("horologium", "deployment"),
-    component("cert-manager", MULTI_KIND),
-    component("cluster-issuer", MULTI_KIND),
-    component(
-        "mem-limit-range",
-        "limitrange",
-        cluster = BUILD_CLUSTER,
-    ),
-    component("plank", "deployment"),
+    component("ghproxy", "deployment", "service", "persistentvolumeclaim"),
+    component("grandmatriarch", "deployment", "serviceaccount"),
+    component("hook", "service", "deployment", "serviceaccount"),
+    component("horologium", "deployment", "serviceaccount"),
+    component("needs-rebase", "deployment", "service"),
+    component("plank", "deployment", "serviceaccount"),
     component("prowjob", "customresourcedefinition"),
     component("pushgateway", "deployment"),
     component("sinker", "deployment"),
-    component("tide", "service", "deployment"),
+    component("statusreconciler", "deployment", "serviceaccount"),
+    component("tide", "service", "deployment", "serviceaccount"),
     component("tls-ing", "ingress"),
     component("tot", "service", "deployment"),
-    component("needs-rebase", "deployment"),
+
+    # These components will only be deployed to the test/build cluster
+    component("mem-limit-range", "limitrange", cluster = BUILD_CLUSTER),
+
+    # These components will **NOT** be automatically deployed
+    component("cert-manager", MULTI_KIND),
 )
 
+# The production.rbac job applies RBAC configuration to the Prow cluster.
+# This is defined as a separate rule so that CI jobs that automatically deploy
+# Prow do not need high RBAC privileges.
+# To deploy these rules, run "bazel run //prow/cluster:production.rbac.apply"
+component(
+    "production.rbac",
+    component("build", "clusterrole", "clusterrolebinding"),
+    component("crier", "clusterrole", "clusterrolebinding"),
+    component("deck", "role", "rolebinding", "clusterrole", "clusterrolebinding"),
+    component("grandmatriarch", "role", "rolebinding"),
+    component("hook", "role", "rolebinding"),
+    component("horologium", "role", "rolebinding"),
+    component("plank", "role", "rolebinding"),
+    component("sinker", "role", "rolebinding"),
+    component("statusreconciler", "role", "rolebinding"),
+    component("tide", "role", "rolebinding"),
+)
+
+# Note that this rule can only be used to generate YAML which can be piped
+# to kubectl apply.
+# This is due to limitations in rules_k8s meaning MULTI_KIND manifests cannot
+# be applied to the cluster.
+# To generate manifests, run "bazel run //prow/cluster:starter"
 component("starter", MULTI_KIND)
 
 filegroup(
