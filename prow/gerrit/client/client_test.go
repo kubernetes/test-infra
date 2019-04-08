@@ -63,9 +63,17 @@ func (f *fgc) SetReview(changeID, revisionID string, input *gerrit.ReviewInput) 
 	return nil, nil, nil
 }
 
+func makeStamp(t time.Time) gerrit.Timestamp {
+	return gerrit.Timestamp{Time: t}
+}
+
+func newStamp(t time.Time) *gerrit.Timestamp {
+	gt := makeStamp(t)
+	return &gt
+}
+
 func TestQueryChange(t *testing.T) {
 	now := time.Now().UTC()
-	layout := "2006-01-02 15:04:05"
 
 	var testcases = []struct {
 		name       string
@@ -87,10 +95,10 @@ func TestQueryChange(t *testing.T) {
 						Project:         "bar",
 						ID:              "1",
 						CurrentRevision: "1-1",
-						Updated:         now.Add(-time.Hour).Format(layout),
+						Updated:         makeStamp(now.Add(-time.Hour)),
 						Revisions: map[string]gerrit.RevisionInfo{
 							"1-1": {
-								Created: now.Add(-time.Hour).Format(layout),
+								Created: makeStamp(now.Add(-time.Hour)),
 							},
 						},
 						Status: "NEW",
@@ -108,17 +116,17 @@ func TestQueryChange(t *testing.T) {
 						Project:         "bar",
 						ID:              "100",
 						CurrentRevision: "1-1",
-						Updated:         now.Format(layout),
+						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
 							"1-1": {
-								Created: now.Add(-time.Hour).Format(layout),
+								Created: makeStamp(now.Add(-time.Hour)),
 								Number:  1,
 							},
 						},
 						Status: "NEW",
 						Messages: []gerrit.ChangeMessageInfo{
 							{
-								Date:           now.Format(layout),
+								Date:           makeStamp(now),
 								Message:        "some message",
 								RevisionNumber: 1,
 							},
@@ -137,10 +145,10 @@ func TestQueryChange(t *testing.T) {
 						Project:         "bar",
 						ID:              "1",
 						CurrentRevision: "1-1",
-						Updated:         now.Format(layout),
+						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
 							"1-1": {
-								Created: now.Format(layout),
+								Created: makeStamp(now),
 							},
 						},
 						Status: "NEW",
@@ -160,10 +168,10 @@ func TestQueryChange(t *testing.T) {
 						Project:         "bar",
 						ID:              "1",
 						CurrentRevision: "1-1",
-						Updated:         now.Format(layout),
+						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
 							"1-1": {
-								Created: now.Format(layout),
+								Created: makeStamp(now),
 							},
 						},
 						Status: "NEW",
@@ -183,10 +191,10 @@ func TestQueryChange(t *testing.T) {
 						Project:         "bar",
 						ID:              "1",
 						CurrentRevision: "1-1",
-						Updated:         now.Format(layout),
+						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
 							"1-1": {
-								Created: now.Add(-time.Hour).Format(layout),
+								Created: makeStamp(now.Add(-time.Hour)),
 							},
 						},
 						Status: "NEW",
@@ -204,10 +212,10 @@ func TestQueryChange(t *testing.T) {
 						Project:         "bar",
 						ID:              "1",
 						CurrentRevision: "1-1",
-						Updated:         now.Format(layout),
+						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
 							"1-1": {
-								Created: now.Format(layout),
+								Created: makeStamp(now),
 							},
 						},
 						Status: "NEW",
@@ -225,10 +233,10 @@ func TestQueryChange(t *testing.T) {
 						Project:         "evil",
 						ID:              "1",
 						CurrentRevision: "1-1",
-						Updated:         now.Format(layout),
+						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
 							"1-1": {
-								Created: now.Format(layout),
+								Created: makeStamp(now),
 							},
 						},
 						Status: "NEW",
@@ -246,10 +254,10 @@ func TestQueryChange(t *testing.T) {
 						Project:         "bar",
 						ID:              "1",
 						CurrentRevision: "1-1",
-						Updated:         now.Format(layout),
+						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
 							"1-1": {
-								Created: now.Format(layout),
+								Created: makeStamp(now),
 							},
 						},
 						Status: "NEW",
@@ -258,10 +266,10 @@ func TestQueryChange(t *testing.T) {
 						Project:         "bar",
 						ID:              "2",
 						CurrentRevision: "2-1",
-						Updated:         now.Format(layout),
+						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
 							"2-1": {
-								Created: now.Format(layout),
+								Created: makeStamp(now),
 							},
 						},
 						Status: "NEW",
@@ -281,10 +289,10 @@ func TestQueryChange(t *testing.T) {
 						Project:         "bar",
 						ID:              "1",
 						CurrentRevision: "1-1",
-						Updated:         now.Format(layout),
+						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
 							"1-1": {
-								Created: now.Format(layout),
+								Created: makeStamp(now),
 							},
 						},
 						Status: "NEW",
@@ -293,10 +301,10 @@ func TestQueryChange(t *testing.T) {
 						Project:         "bar",
 						ID:              "2",
 						CurrentRevision: "2-1",
-						Updated:         now.Add(-time.Hour).Format(layout),
+						Updated:         makeStamp(now.Add(-time.Hour)),
 						Revisions: map[string]gerrit.RevisionInfo{
 							"2-1": {
-								Created: now.Add(-time.Hour).Format(layout),
+								Created: makeStamp(now.Add(-time.Hour)),
 							},
 						},
 						Status: "NEW",
@@ -316,10 +324,10 @@ func TestQueryChange(t *testing.T) {
 						Project:         "bar",
 						ID:              "1",
 						CurrentRevision: "1-1",
-						Updated:         now.Format(layout),
+						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
 							"1-1": {
-								Created: now.Format(layout),
+								Created: makeStamp(now),
 							},
 						},
 						Status: "NEW",
@@ -328,10 +336,10 @@ func TestQueryChange(t *testing.T) {
 						Project:         "bar",
 						ID:              "2",
 						CurrentRevision: "2-1",
-						Updated:         now.Format(layout),
+						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
 							"2-1": {
-								Created: now.Format(layout),
+								Created: makeStamp(now),
 							},
 						},
 						Status: "NEW",
@@ -342,13 +350,13 @@ func TestQueryChange(t *testing.T) {
 						Project:         "boo",
 						ID:              "3",
 						CurrentRevision: "3-2",
-						Updated:         now.Format(layout),
+						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
 							"3-2": {
-								Created: now.Format(layout),
+								Created: makeStamp(now),
 							},
 							"3-1": {
-								Created: now.Format(layout),
+								Created: makeStamp(now),
 							},
 						},
 						Status: "NEW",
@@ -357,10 +365,10 @@ func TestQueryChange(t *testing.T) {
 						Project:         "evil",
 						ID:              "4",
 						CurrentRevision: "4-1",
-						Updated:         now.Add(-time.Hour).Format(layout),
+						Updated:         makeStamp(now.Add(-time.Hour)),
 						Revisions: map[string]gerrit.RevisionInfo{
 							"4-1": {
-								Created: now.Add(-time.Hour).Format(layout),
+								Created: makeStamp(now.Add(-time.Hour)),
 							},
 						},
 						Status: "NEW",
@@ -381,8 +389,8 @@ func TestQueryChange(t *testing.T) {
 						Project:         "bar",
 						ID:              "1",
 						CurrentRevision: "1-1",
-						Updated:         now.Format(layout),
-						Submitted:       now.Format(layout),
+						Updated:         makeStamp(now),
+						Submitted:       newStamp(now),
 						Status:          "MERGED",
 					},
 				},
@@ -400,8 +408,8 @@ func TestQueryChange(t *testing.T) {
 						Project:         "bar",
 						ID:              "1",
 						CurrentRevision: "1-1",
-						Updated:         now.Format(layout),
-						Submitted:       now.Format(layout),
+						Updated:         makeStamp(now),
+						Submitted:       newStamp(now),
 						Status:          "ABANDONED",
 					},
 				},
@@ -417,8 +425,8 @@ func TestQueryChange(t *testing.T) {
 						Project:         "bar",
 						ID:              "1",
 						CurrentRevision: "1-1",
-						Updated:         now.Format(layout),
-						Submitted:       now.Add(-2 * time.Minute).Format(layout),
+						Updated:         makeStamp(now),
+						Submitted:       newStamp(now.Add(-2 * time.Minute)),
 						Status:          "MERGED",
 					},
 				},
@@ -434,15 +442,15 @@ func TestQueryChange(t *testing.T) {
 						Project:         "bar",
 						ID:              "1",
 						CurrentRevision: "1-1",
-						Updated:         now.Format(layout),
+						Updated:         makeStamp(now),
 						Status:          "ABANDONED",
 					},
 					{
 						Project:         "bar",
 						ID:              "2",
 						CurrentRevision: "2-1",
-						Updated:         now.Format(layout),
-						Submitted:       now.Format(layout),
+						Updated:         makeStamp(now),
+						Submitted:       newStamp(now),
 						Status:          "MERGED",
 					},
 				},
@@ -460,12 +468,12 @@ func TestQueryChange(t *testing.T) {
 						Project:         "bar",
 						ID:              "2",
 						CurrentRevision: "2-1",
-						Updated:         now.Format(layout),
-						Submitted:       now.Add(-time.Hour).Format(layout),
+						Updated:         makeStamp(now),
+						Submitted:       newStamp(now.Add(-time.Hour)),
 						Status:          "MERGED",
 						Messages: []gerrit.ChangeMessageInfo{
 							{
-								Date:           now.Format(layout),
+								Date:           makeStamp(now),
 								Message:        "some message",
 								RevisionNumber: 1,
 							},

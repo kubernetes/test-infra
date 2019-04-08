@@ -16,7 +16,7 @@ type GroupAuditEventInfo struct {
 	// TODO Member AccountInfo OR GroupInfo `json:"member"`
 	Type string      `json:"type"`
 	User AccountInfo `json:"user"`
-	Date string      `json:"date"`
+	Date Timestamp   `json:"date"`
 }
 
 // GroupInfo entity contains information about a group.
@@ -30,6 +30,7 @@ type GroupInfo struct {
 	GroupID     int              `json:"group_id,omitempty"`
 	Owner       string           `json:"owner,omitempty"`
 	OwnerID     string           `json:"owner_id,omitempty"`
+	CreatedOn   *Timestamp       `json:"created_on,omitempty"`
 	Members     []AccountInfo    `json:"members,omitempty"`
 	Includes    []GroupInfo      `json:"includes,omitempty"`
 }
