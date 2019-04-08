@@ -516,7 +516,7 @@ function redraw(fz: FuzzySearch): void {
             }
             jobInterval[currentInterval][1] = successCount / totalJob;
             currentInterval++;
-            if (currentInterval > jobInterval.length) {
+            if (currentInterval >= jobInterval.length) {
                 currentInterval = -1;
             }
         }
