@@ -68,6 +68,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	o.kubernetes.AddFlags(fs)
 	fs.Parse(args)
+	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
@@ -105,8 +106,6 @@ func main() {
 		logrus.Warning("Sinker requires --dry-run=false to function correctly in production.")
 		logrus.Warning("--dry-run will soon default to true. Set --dry-run=false by March 15.")
 	}
-
-	o.configPath = config.ConfigPath(o.configPath)
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {

@@ -54,6 +54,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o.kubernetes.AddFlags(fs)
 
 	fs.Parse(args)
+	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
@@ -80,8 +81,6 @@ func main() {
 	)
 
 	pjutil.ServePProf()
-
-	o.configPath = config.ConfigPath(o.configPath)
 
 	if !o.dryRun.Explicit {
 		logrus.Warning("Horologium requires --dry-run=false to function correctly in production.")

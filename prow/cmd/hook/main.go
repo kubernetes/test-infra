@@ -87,6 +87,7 @@ func gatherOptions() options {
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to the file containing the Slack token to use.")
 	fs.Parse(os.Args[1:])
+	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
@@ -96,8 +97,6 @@ func main() {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "hook"}))
-
-	o.configPath = config.ConfigPath(o.configPath)
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {

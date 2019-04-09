@@ -255,18 +255,20 @@ func TestFlags(t *testing.T) {
 		{
 			name: "explicitly set --config-path",
 			args: map[string]string{
-				"--config-path": "/etc/config/config.yaml",
+				"--config-path": "/random/value",
 			},
 			expected: func(o *options) {
-				o.configPath = "/etc/config/config.yaml"
+				o.configPath = "/random/value"
 			},
 		},
 		{
-			name: "require config-path",
+			name: "empty config-path defaults to old value",
 			args: map[string]string{
 				"--config-path": "",
 			},
-			err: true,
+			expected: func(o *options) {
+				o.configPath = config.DefaultConfigPath
+			},
 		},
 		{
 			name: "expicitly set --dry-run=false",

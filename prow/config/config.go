@@ -818,18 +818,18 @@ func (c *Config) validateJobConfig() error {
 	return nil
 }
 
+// DefaultConfigPath will be used if a --config-path is unset
+const DefaultConfigPath = "/etc/config/config.yaml"
+
 // ConfigPath returns the value for the component's configPath if provided
 // explicityly or default otherwise.
 func ConfigPath(value string) string {
 
-	// TODO: require setting this explicitly
-	defaultConfigPath := "/etc/config/config.yaml"
-
 	if value != "" {
 		return value
 	}
-	logrus.Warningf("defaulting to %s until 15 July 2019, please migrate", defaultConfigPath)
-	return defaultConfigPath
+	logrus.Warningf("defaulting to %s until 15 July 2019, please migrate", DefaultConfigPath)
+	return DefaultConfigPath
 }
 
 func parseProwConfig(c *Config) error {

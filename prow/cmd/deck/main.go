@@ -129,6 +129,7 @@ func gatherOptions() options {
 	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the GCS credentials file")
 	o.kubernetes.AddFlags(fs)
 	fs.Parse(os.Args[1:])
+	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
@@ -147,8 +148,6 @@ func main() {
 	)
 
 	pjutil.ServePProf()
-
-	o.configPath = config.ConfigPath(o.configPath)
 
 	// setup config agent, pod log clients etc.
 	configAgent := &config.Agent{}
