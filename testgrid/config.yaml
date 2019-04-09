@@ -2236,6 +2236,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-rotten
 - name: periodic-test-infra-close
   gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-close
+- name: periodic-kubespray-close
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubespray-close
+- name: periodic-kubespray-rotten
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubespray-rotten
+- name: periodic-kubespray-stale
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubespray-stale
 - name: periodic-api-review-help
   gcs_prefix: kubernetes-jenkins/logs/periodic-api-review-help
 - name: periodic-test-infra-retester
@@ -7064,6 +7070,18 @@ dashboards:
     test_group_name: issue-creator
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+
+- name: sig-kubespray-fejtabot
+  dashboard_tab:
+  - name: stale
+    description: Adds lifecycle/stale to issues after 30d of inactivity
+    test_group_name: periodic-kubespray-stale
+  - name: rotten
+    description: Adds lifecycle/rotten to stale issues after 30d of inactivity
+    test_group_name: periodic-kubespray-rotten
+  - name: close
+    description: Closes rotten issues after 30d of inactivity
+    test_group_name: periodic-kubespray-close
 
 - name: sig-testing-prow
   dashboard_tab:
