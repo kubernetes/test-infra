@@ -78,7 +78,6 @@ larger set of contributors to apply/remove them.
 | <a id="sig/autoscaling" href="#sig/autoscaling">`sig/autoscaling`</a> | Categorizes an issue or PR as relevant to sig-autoscaling.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/aws" href="#sig/aws">`sig/aws`</a> | Categorizes an issue or PR as relevant to sig-aws.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/azure" href="#sig/azure">`sig/azure`</a> | Categorizes an issue or PR as relevant to sig-azure.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
-| <a id="sig/big-data" href="#sig/big-data">`sig/big-data`</a> | Categorizes an issue or PR as relevant to sig-big-data.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/cli" href="#sig/cli">`sig/cli`</a> | Categorizes an issue or PR as relevant to sig-cli.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/cloud-provider" href="#sig/cloud-provider">`sig/cloud-provider`</a> | Categorizes an issue or PR as relevant to sig-cloud-provider.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/cluster-lifecycle" href="#sig/cluster-lifecycle">`sig/cluster-lifecycle`</a> | Categorizes an issue or PR as relevant to sig-cluster-lifecycle.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
@@ -107,6 +106,7 @@ larger set of contributors to apply/remove them.
 | <a id="triage/not-reproducible" href="#triage/not-reproducible">`triage/not-reproducible`</a> | Indicates an issue can not be reproduced as described. <br><br> This was previously `close/not-reproducible`, | humans | |
 | <a id="triage/support" href="#triage/support">`triage/support`</a> | Indicates an issue that is a support question. <br><br> This was previously `close/support`, `kind/support`, `question`, | humans | |
 | <a id="triage/unresolved" href="#triage/unresolved">`triage/unresolved`</a> | Indicates an issue that can not or will not be resolved. <br><br> This was previously `close/unresolved`, `invalid`, `wontfix`, | humans | |
+| <a id="ug/big-data" href="#ug/big-data">`ug/big-data`</a> | Categorizes an issue or PR as relevant to ug-big-data. <br><br> This was previously `sig/big-data`, | anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/apply" href="#wg/apply">`wg/apply`</a> | Categorizes an issue or PR as relevant to wg-apply.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/component-standard" href="#wg/component-standard">`wg/component-standard`</a> | Categorizes an issue or PR as relevant to wg-component-standard.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/iot-edge" href="#wg/iot-edge">`wg/iot-edge`</a> | Categorizes an issue or PR as relevant to wg-iot-edge.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |

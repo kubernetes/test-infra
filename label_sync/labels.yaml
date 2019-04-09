@@ -387,12 +387,6 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-big-data.
-      name: sig/big-data
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
       description: Categorizes an issue or PR as relevant to sig-cli.
       name: sig/cli
       target: both
@@ -593,6 +587,14 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
+    - color: d2b48c
+      description: Categorizes an issue or PR as relevant to ug-big-data.
+      name: ug/big-data
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+      previously:
+      - name: sig/big-data
     - color: ee9900
       description: Denotes a PR that changes 100-499 lines, ignoring generated files.
       name: size/L
