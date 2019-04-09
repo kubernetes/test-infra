@@ -5,11 +5,11 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "8d43844d1d4447be2a108834771d617a1ad2a107f1680190bfe44925e7bf530e",
-    strip_prefix = "bazel-toolchains-4c003ad45e8a2d829ffc40e3aecfb6b8577a9406",
+    sha256 = "67335b3563d9b67dc2550b8f27cc689b64fadac491e69ce78763d9ba894cc5cc",
+    strip_prefix = "bazel-toolchains-cddc376d428ada2927ad359211c3e356bd9c9fbb",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/4c003ad45e8a2d829ffc40e3aecfb6b8577a9406.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/4c003ad45e8a2d829ffc40e3aecfb6b8577a9406.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/cddc376d428ada2927ad359211c3e356bd9c9fbb.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/cddc376d428ada2927ad359211c3e356bd9c9fbb.tar.gz",
     ],
 )
 
@@ -31,10 +31,10 @@ versions.check(minimum_bazel_version = "0.23.0")
 
 git_repository(
     name = "io_bazel_rules_go",
-    commit = "3c34e66b0507056e83bcbd9c963ab9d7e6cb049f",
+    commit = "c694c0f39b073bc991865080a4d01b56a2aa94c5",
     remote = "https://github.com/bazelbuild/rules_go.git",
-    shallow_since = "1555072240 -0400",
-    # tag = "0.18.3",
+    shallow_since = "1554506517 -0400",
+    #tag = "0.18.2",
 )
 
 git_repository(
@@ -2011,6 +2011,7 @@ go_repository(
     sum = "h1:TKdv8HiTLgE5wdJuEML90aBgNWsokNbMijUGhmcoBJc=",
     version = "v2.1.4+incompatible",
 )
+<<<<<<< HEAD
 
 go_repository(
     name = "com_github_klauspost_pgzip",
@@ -2018,6 +2019,8 @@ go_repository(
     sum = "h1:oIPZROsWuPHpOdMVWLuJZXwgjhrW8r1yEX8UqMyeNHM=",
     version = "v1.2.1",
 )
+||||||| merged common ancestors
+=======
 
 go_repository(
     name = "com_github_gobuffalo_envy",
@@ -2060,3 +2063,4 @@ go_repository(
     sum = "h1:6T2iAEoOYQnzQb3WvPlUkcczEEXZ7+YPlAO8olwujRw=",
     version = "v1.14.0",
 )
+>>>>>>> Update dependencies by running hack/update-deps.sh script
