@@ -26,12 +26,14 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var (
 	imageRegexp = regexp.MustCompile(`\b((?:[a-z0-9]+\.)?gcr\.io)/([a-z][a-z0-9-]{5,29}/[a-zA-Z0-9][a-zA-Z0-9_.-]+):([a-zA-Z0-9_.-]+)\b`)
 	tagRegexp   = regexp.MustCompile(`(v?\d{8}-(?:v\d(?:[.-]\d+)*-g)?[0-9a-f]{6,10}|latest)(-.+)?`)
 	tagCache    = map[string]string{}
+	httpClient  = http.Client{Timeout: 1 * time.Minute}
 )
 
 const (
@@ -61,10 +63,11 @@ func findLatestTag(imageHost, imageName, currentTag string) (string, error) {
 		return currentTag, nil
 	}
 
-	resp, err := http.Get("https://" + imageHost + "/v2/" + imageName + "/tags/list")
+	resp, err := httpClient.Get("https://" + imageHost + "/v2/" + imageName + "/tags/list")
 	if err != nil {
 		return "", fmt.Errorf("couldn't fetch tag list: %v", err)
 	}
+	defer resp.Body.Close()
 
 	result := struct {
 		Manifest manifest `json:"manifest"`
