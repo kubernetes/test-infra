@@ -46,6 +46,7 @@ var (
 		github.PullRequestActionClosed:               true,
 		github.PullRequestActionReopened:             true,
 		github.PullRequestActionSynchronize:          true,
+		github.PullRequestActionReadyForReview:       true,
 	}
 )
 

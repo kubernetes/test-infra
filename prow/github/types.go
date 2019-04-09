@@ -184,6 +184,8 @@ const (
 	PullRequestActionReopened = "reopened"
 	// PullRequestActionSynchronize means the git state changed.
 	PullRequestActionSynchronize = "synchronize"
+	// PullRequestActionReadyForReview means the draft PR is now ready for review
+	PullRequestActionReadyForReview = "ready_for_review"
 )
 
 // PullRequestEvent is what GitHub sends us when a PR is changed.
