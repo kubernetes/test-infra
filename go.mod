@@ -1,7 +1,5 @@
 module k8s.io/test-infra
 
-replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
-
 require (
 	cloud.google.com/go v0.37.2
 	github.com/Azure/azure-sdk-for-go v21.1.0+incompatible
