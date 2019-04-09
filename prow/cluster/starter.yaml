@@ -142,6 +142,7 @@ spec:
         imagePullPolicy: Always
         args:
         - --dry-run=false
+        - --config-path=/etc/config/config.yaml
         ports:
           - name: http
             containerPort: 8888
@@ -219,6 +220,7 @@ spec:
         image: gcr.io/k8s-prow/plank:v20190408-e33d1b1eb
         args:
         - --dry-run=false
+        - --config-path=/etc/config/config.yaml
         volumeMounts:
         - name: oauth
           mountPath: /etc/github
@@ -252,6 +254,8 @@ spec:
       containers:
       - name: sinker
         image: gcr.io/k8s-prow/sinker:v20190408-e33d1b1eb
+        args:
+        - --config-path=/etc/config/config.yaml
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -286,6 +290,7 @@ spec:
       - name: deck
         image: gcr.io/k8s-prow/deck:v20190408-e33d1b1eb
         args:
+        - --config-path=/etc/config/config.yaml
         - --tide-url=http://tide/
         - --hook-url=http://hook:8888/plugin-help
         ports:
@@ -347,6 +352,8 @@ spec:
       containers:
       - name: horologium
         image: gcr.io/k8s-prow/horologium:v20190408-e33d1b1eb
+        args:
+        - --config-path=/etc/config/config.yaml
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -378,6 +385,7 @@ spec:
         image: gcr.io/k8s-prow/tide:v20190408-e33d1b1eb
         args:
         - --dry-run=false
+        - --config-path=/etc/config/config.yaml
         ports:
           - name: http
             containerPort: 8888
