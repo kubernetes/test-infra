@@ -101,6 +101,7 @@ func gatherOptions() options {
 	fs.StringVar(&o.statusURI, "status-path", "", "The /local/path or gs://path/to/object to store status controller state. GCS writes will use the default object ACL for the bucket.")
 
 	fs.Parse(os.Args[1:])
+	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
@@ -115,8 +116,6 @@ func main() {
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
-
-	o.configPath = config.ConfigPath(o.configPath)
 
 	opener, err := io.NewOpener(context.Background(), o.gcsCredentialsFile)
 	if err != nil {

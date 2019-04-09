@@ -72,6 +72,7 @@ func gatherOptions() options {
 	}
 
 	fs.Parse(os.Args[1:])
+	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
@@ -100,8 +101,6 @@ func main() {
 	)
 
 	pjutil.ServePProf()
-
-	o.configPath = config.ConfigPath(o.configPath)
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
