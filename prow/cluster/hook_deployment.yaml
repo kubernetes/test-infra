@@ -42,6 +42,7 @@ spec:
         - --slack-token-file=/etc/slack/token
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         ports:
           - name: http

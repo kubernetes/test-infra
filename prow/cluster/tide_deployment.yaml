@@ -36,6 +36,7 @@ spec:
         - --dry-run=false
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --gcs-credentials-file=/etc/service-account/service-account.json
         - --history-uri=gs://k8s-prow/tide-history.json
