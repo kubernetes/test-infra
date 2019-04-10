@@ -2486,6 +2486,7 @@ test_groups:
 - name: pull-org-verify-all
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-org-verify-all
   num_columns_recent: 30
+  num_failures_to_alert: 1
 #presubmits
 - name: pull-cluster-api-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-build
@@ -7287,6 +7288,8 @@ dashboards:
       url: https://github.com/kubernetes/org/compare/<start-custom-0>...<end-custom-0>
   - name: verify-all
     test_group_name: pull-org-verify-all
+    alert_options:
+      alert_mail_to_addresses: cblecker+testgrid@redhat.com,kubernetes-github-managment-alerts@googlegroups.com
     code_search_url_template:
       url: https://github.com/kubernetes/org/compare/<start-custom-0>...<end-custom-0>
 
