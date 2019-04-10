@@ -71,6 +71,7 @@ presubmits:
         args:
         - --bazelrc=rbe.bazelrc
         - test
+        - --nobuild_tests_only
         - //...
         - --config=unit
         - --config=remote
