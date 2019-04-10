@@ -648,6 +648,13 @@ default:
       name: tide/merge-method-merge
       target: prs
       addedBy: humans
+    - color: e11d21
+      description: Denotes an issue that blocks the tide merge queue for a branch while it is open.
+      name: tide/merge-blocker
+      target: issues
+      addedBy: humans
+      previously:
+        - name: merge-blocker
     - color: f9d0c4
       description: ¯\\\_(ツ)_/¯
       name: "¯\\_(ツ)_/¯"
@@ -1037,7 +1044,7 @@ repos:
         description: Issues or PRs related to the Kubernetes Blog subproject
         name: area/blog
         target: both
-        prowPlugin: label 
+        prowPlugin: label
         addedBy: anyone
       - color: e9b3f9
         description: Issues or PRs related to German language

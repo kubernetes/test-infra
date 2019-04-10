@@ -443,7 +443,7 @@ tide:
     kubernetes/kube-deploy: squash
     kubernetes/website: squash
   pr_status_base_url: https://prow.k8s.io/pr
-  blocker_label: merge-blocker
+  blocker_label: tide/merge-blocker
   squash_label: tide/merge-method-squash
   rebase_label: tide/merge-method-rebase
   merge_label: tide/merge-method-merge
@@ -460,7 +460,7 @@ tide:
 push_gateway:
   endpoint: pushgateway
 
-github_reporter: 
+github_reporter:
   job_types_to_report:
   - presubmit
   - postsubmit
