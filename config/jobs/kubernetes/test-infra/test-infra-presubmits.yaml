@@ -65,7 +65,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/cloud-builders/bazel
+      - image: launcher.gcr.io/google/bazel:0.24.0
         command:
         - bazel
         args:
