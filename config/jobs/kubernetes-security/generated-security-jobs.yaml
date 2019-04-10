@@ -2263,9 +2263,9 @@ presubmits:
         - --test-cmd-args=--nodes=500
         - --test-cmd-args=--provider=kubemark
         - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
-        - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
+        - --test-cmd-args=--testconfig=testing/density/legacy/config.yaml
+        - --test-cmd-args=--testconfig=testing/load/legacy/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/load/legacy/kubemark/500_nodes/override.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
@@ -2336,9 +2336,9 @@ presubmits:
         - --test-cmd-args=--nodes=500
         - --test-cmd-args=--provider=kubemark
         - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
-        - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
+        - --test-cmd-args=--testconfig=testing/density/legacy/config.yaml
+        - --test-cmd-args=--testconfig=testing/load/legacy/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/load/legacy/kubemark/500_nodes/override.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
@@ -2409,9 +2409,9 @@ presubmits:
         - --test-cmd-args=--nodes=500
         - --test-cmd-args=--provider=kubemark
         - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
-        - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
+        - --test-cmd-args=--testconfig=testing/density/legacy/config.yaml
+        - --test-cmd-args=--testconfig=testing/load/legacy/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/load/legacy/kubemark/500_nodes/override.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
