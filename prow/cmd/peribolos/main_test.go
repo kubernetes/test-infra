@@ -69,6 +69,7 @@ func TestOptions(t *testing.T) {
 				maximumDelta:  1,
 				tokensPerHour: defaultTokens,
 				tokenBurst:    defaultBurst,
+				logLevel:      "info",
 			},
 		},
 		{
@@ -81,6 +82,7 @@ func TestOptions(t *testing.T) {
 				maximumDelta:  0,
 				tokensPerHour: defaultTokens,
 				tokenBurst:    defaultBurst,
+				logLevel:      "info",
 			},
 		},
 		{
@@ -93,6 +95,7 @@ func TestOptions(t *testing.T) {
 				maximumDelta:  defaultDelta,
 				tokensPerHour: defaultTokens,
 				tokenBurst:    defaultBurst,
+				logLevel:      "info",
 			},
 		},
 		{
@@ -121,6 +124,7 @@ func TestOptions(t *testing.T) {
 				maximumDelta:  defaultDelta,
 				tokensPerHour: 0,
 				tokenBurst:    defaultBurst,
+				logLevel:      "info",
 			},
 		},
 		{
@@ -133,6 +137,7 @@ func TestOptions(t *testing.T) {
 				tokensPerHour: defaultTokens,
 				tokenBurst:    defaultBurst,
 				dump:          "frogger",
+				logLevel:      "info",
 			},
 		},
 		{
@@ -145,11 +150,12 @@ func TestOptions(t *testing.T) {
 				maximumDelta:  defaultDelta,
 				tokensPerHour: defaultTokens,
 				tokenBurst:    defaultBurst,
+				logLevel:      "info",
 			},
 		},
 		{
 			name: "full",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--github-endpoint=weird://url", "--confirm=true", "--require-self=false", "--tokens=5", "--token-burst=2", "--dump=", "--fix-org", "--fix-org-members", "--fix-teams", "--fix-team-members"},
+			args: []string{"--config-path=foo", "--github-token-path=bar", "--github-endpoint=weird://url", "--confirm=true", "--require-self=false", "--tokens=5", "--token-burst=2", "--dump=", "--fix-org", "--fix-org-members", "--fix-teams", "--fix-team-members", "--log-level=debug"},
 			expected: &options{
 				config:         "foo",
 				confirm:        true,
@@ -162,6 +168,7 @@ func TestOptions(t *testing.T) {
 				fixOrgMembers:  true,
 				fixTeams:       true,
 				fixTeamMembers: true,
+				logLevel:       "debug",
 			},
 		},
 	}
@@ -177,7 +184,7 @@ func TestOptions(t *testing.T) {
 		case err != nil && tc.expected != nil:
 			t.Errorf("%s: unexpected error: %v", tc.name, err)
 		case tc.expected != nil && !reflect.DeepEqual(*tc.expected, actual):
-			t.Errorf("%s: actual %v != expected %v", tc.name, actual, *tc.expected)
+			t.Errorf("%s: got incorrect options: %v", tc.name, diff.ObjectReflectDiff(actual, *tc.expected))
 		}
 	}
 }
