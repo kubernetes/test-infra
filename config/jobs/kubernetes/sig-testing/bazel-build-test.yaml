@@ -161,6 +161,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true
   - name: pull-kubernetes-bazel-test
     always_run: true
     branches:
@@ -189,6 +191,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true
   - name: pull-kubernetes-bazel-test
     always_run: true
     branches:
@@ -217,6 +221,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true
   - name: pull-kubernetes-bazel-test
     always_run: true
     branches:
@@ -245,6 +251,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true
   - name: pull-kubernetes-bazel-test
     always_run: true
     branches:
@@ -273,6 +281,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true
 
 postsubmits:
   kubernetes/kubernetes:
