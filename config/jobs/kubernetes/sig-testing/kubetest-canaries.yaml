@@ -20,9 +20,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -47,9 +44,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "make"
         - "bazel-test"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -74,9 +68,6 @@ presubmits:
         - "--test=//test/integration/..."
         - "--test-args=--config=integration"
         - "--timeout=60"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
