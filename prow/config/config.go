@@ -53,7 +53,7 @@ const (
 	DefaultJobTimeout = 24 * time.Hour
 
 	// githubAPIEndpoints represents the default github api endpoints.
-	githubAPIEndpoints = []string{"https://api.github.com"}
+	githubAPIEndpoint = "https://api.github.com"
 )
 
 // Config is a read-only snapshot of the config.
@@ -1064,7 +1064,7 @@ func parseProwConfig(c *Config) error {
 	}
 	c.GitHubOptions.LinkURL = linkURL
 	if len(c.GitHubOptions.APIEndpoints) == 0 {
-		c.GitHubOptions.APIEndpoints = githubAPIEndpoints
+		c.GitHubOptions.APIEndpoints = []string{githubAPIEndpoint}
 	}
 	for k, v := range c.GitHubOptions.APIEndpoints {
 		_, err := url.Parse(v)
