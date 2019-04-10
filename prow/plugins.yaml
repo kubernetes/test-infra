@@ -209,6 +209,9 @@ slack:
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
             - apelisse # feature-serverside-apply "branch manager"
+        feature-rate-limiting:
+            - lavalamp # feature-rate-limiting "branch manager"
+            - deads2k # feature-rate-limiting "branch manager"
   - repos:
     - kubernetes/test-infra
     channels:
