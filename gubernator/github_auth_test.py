@@ -37,7 +37,7 @@ app = webtest.TestApp(main.app)
 VEND_URL = 'https://github.com/login/oauth/access_token'
 USER_URL = 'https://api.github.com/user'
 
-class TestGitHubAuth(unittest.TestCase):
+class TestGithubAuth(unittest.TestCase):
     def setUp(self):
         app.reset()
         self.testbed.init_app_identity_stub()
@@ -89,7 +89,7 @@ class TestGitHubAuth(unittest.TestCase):
             'redirect_uri': ['http://localhost/github_auth/done'],
             'client_id': [CLIENT_ID]})
 
-        # 2) GitHub redirects back
+        # 2) Github redirects back
         resp = self.do_phase2(resp)
         self.assertIn('Welcome, foo', resp)
 
