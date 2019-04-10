@@ -502,7 +502,7 @@ function redraw(fz: FuzzySearch): void {
         }
 
         if (!jobCountMap.has(build.state)) {
-          jobCountMap.set(build.state, 0);
+            jobCountMap.set(build.state, 0);
         }
         totalJob++;
         jobCountMap.set(build.state, jobCountMap.get(build.state)! + 1);
@@ -514,7 +514,16 @@ function redraw(fz: FuzzySearch): void {
             if (!successCount) {
                 successCount = 0;
             }
-            jobInterval[currentInterval][1] = successCount / totalJob;
+            let failureCount = jobCountMap.get("failure");
+            if (!failureCount) {
+                failureCount = 0;
+            }
+            const total = successCount + failureCount;
+            if (total > 0) {
+                jobInterval[currentInterval][1] = successCount / total;
+            } else {
+                jobInterval[currentInterval][1] = 0;
+            }
             currentInterval++;
             if (currentInterval >= jobInterval.length) {
                 currentInterval = -1;
@@ -605,8 +614,17 @@ function redraw(fz: FuzzySearch): void {
         if (!successCount) {
             successCount = 0;
         }
+        let failureCount = jobCountMap.get("failure");
+        if (!failureCount) {
+            failureCount = 0;
+        }
+        const total = successCount + failureCount;
         for (let i = currentInterval; i < jobInterval.length; i++) {
-            jobInterval[i][1] = successCount / totalJob;
+            if (total > 0) {
+                jobInterval[i][1] = successCount / total;
+            } else {
+                jobInterval[i][1] = 0;
+            }
         }
     }
 
