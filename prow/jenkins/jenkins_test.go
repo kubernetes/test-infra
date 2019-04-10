@@ -182,9 +182,11 @@ func TestListBuilds(t *testing.T) {
 
 func TestBuildCreate(t *testing.T) {
 	testCases := []struct {
-		name   string
-		input  *prowapi.ProwJobSpec
-		output string
+		name        string
+		input       *prowapi.ProwJobSpec
+		expectError bool
+		statusCode  int
+		output      []string
 	}{
 		{
 			name: "GitHub Branch Source based PR job",
@@ -205,7 +207,14 @@ func TestBuildCreate(t *testing.T) {
 					},
 				},
 			},
-			output: "/job/my-jenkins-job-name/view/change-requests/job/PR-123/buildWithParameters",
+			statusCode: 201,
+			output: []string{
+				"/job/my-jenkins-job-name/view/change-requests/job/PR-123/api/json",
+				"/job/my-jenkins-job-name/view/change-requests/job/PR-123/build",
+				"/job/my-jenkins-job-name/view/change-requests/job/PR-123/api/json",
+				"/job/my-jenkins-job-name/view/change-requests/job/PR-123/5/stop",
+				"/job/my-jenkins-job-name/view/change-requests/job/PR-123/buildWithParameters",
+			},
 		},
 		{
 			name: "GitHub Branch Source based branch job",
@@ -221,7 +230,14 @@ func TestBuildCreate(t *testing.T) {
 					BaseSHA: "deadbeef",
 				},
 			},
-			output: "/job/my-jenkins-job-name/job/master/buildWithParameters",
+			statusCode: 201,
+			output: []string{
+				"/job/my-jenkins-job-name/job/master/api/json",
+				"/job/my-jenkins-job-name/job/master/build",
+				"/job/my-jenkins-job-name/job/master/api/json",
+				"/job/my-jenkins-job-name/job/master/5/stop",
+				"/job/my-jenkins-job-name/job/master/buildWithParameters",
+			},
 		},
 		{
 			name: "Static Jenkins job",
@@ -239,20 +255,60 @@ func TestBuildCreate(t *testing.T) {
 					},
 				},
 			},
-			output: "/job/my-k8s-job-name/buildWithParameters",
+			statusCode: 201,
+			output: []string{
+				"/job/my-k8s-job-name/api/json",
+				"/job/my-k8s-job-name/build",
+				"/job/my-k8s-job-name/api/json",
+				"/job/my-k8s-job-name/5/stop",
+				"/job/my-k8s-job-name/buildWithParameters",
+			},
+		},
+		{
+			name: "Non-404 error getting Jenkins job",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Job:   "my-k8s-job-name",
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 123,
+							SHA:    "abcd1234",
+						},
+					},
+				},
+			},
+			statusCode:  500,
+			expectError: true,
+			// 5 times because Client.Get does retries on 5xx status code
+			output: []string{
+				"/job/my-k8s-job-name/api/json",
+				"/job/my-k8s-job-name/api/json",
+				"/job/my-k8s-job-name/api/json",
+				"/job/my-k8s-job-name/api/json",
+				"/job/my-k8s-job-name/api/json",
+			},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			var handler http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
-				actualPath := r.URL.Path
+			actualPaths := []string{}
 
-				if !reflect.DeepEqual(testCase.output, actualPath) {
-					t.Errorf("%s: expected path %s, got %s", testCase.name, testCase.output, actualPath)
+			var handler http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+				actualPaths = append(actualPaths, r.URL.Path)
+				var response string
+
+				if len(actualPaths) < 3 {
+					response = `{"builds":[],"lastBuild":null,"property":[]}`
+				} else {
+					response = `{"builds":[{"_class":"org.jenkinsci.plugins.workflow.job.WorkflowRun","number":5,"url":"https://myjenkins.com/job/very-good-job/view/change-requests/job/PR-23/5/"},{"_class":"org.jenkinsci.plugins.workflow.job.WorkflowRun","number":4,"url":"https://myjenkins.com/job/very-good-job/view/change-requests/job/PR-23/4/"},{"_class":"org.jenkinsci.plugins.workflow.job.WorkflowRun","number":3,"url":"https://myjenkins.com/job/very-good-job/view/change-requests/job/PR-23/3/"},{"_class":"org.jenkinsci.plugins.workflow.job.WorkflowRun","number":2,"url":"https://myjenkins.com/job/very-good-job/view/change-requests/job/PR-23/2/"},{"_class":"org.jenkinsci.plugins.workflow.job.WorkflowRun","number":1,"url":"https://myjenkins.com/job/very-good-job/view/change-requests/job/PR-23/1/"}],"lastBuild":{"_class":"org.jenkinsci.plugins.workflow.job.WorkflowRun","number":5,"url":"https://myjenkins.com/job/very-good-job/view/change-requests/job/PR-23/5/"},"property":[{"_class":"hudson.model.ParametersDefinitionProperty","parameterDefinitions":[{"_class":"hudson.model.StringParameterDefinition","defaultParameterValue":{"_class":"hudson.model.StringParameterValue","name":"PROW_JOB_ID","value":""},"description":"Prow Job ID – set when the job is triggered by Prow","name":"PROW_JOB_ID","type":"StringParameterDefinition"}]},{"_class":"org.jenkinsci.plugins.workflow.multibranch.BranchJobProperty","branch":{}}]}`
 				}
 
-				w.WriteHeader(201)
+				w.WriteHeader(testCase.statusCode)
+				w.Write([]byte(response))
 			}
 
 			ts := httptest.NewServer(handler)
@@ -264,7 +320,15 @@ func TestBuildCreate(t *testing.T) {
 				baseURL: ts.URL,
 			}
 
-			jc.BuildFromSpec(testCase.input, "buildID", "prowJobID")
+			buildErr := jc.BuildFromSpec(testCase.input, "buildID", "prowJobID")
+
+			if buildErr != nil && !testCase.expectError {
+				t.Errorf("%s: unexpected build error: %v", testCase.name, buildErr)
+			}
+
+			if !reflect.DeepEqual(testCase.output, actualPaths) {
+				t.Errorf("%s: expected path %s, got %s", testCase.name, testCase.output, actualPaths)
+			}
 		})
 	}
 }
@@ -334,10 +398,237 @@ func TestGetJobName(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			actualName := getJobName(testCase.input)
-			if !reflect.DeepEqual(testCase.output, actualName) {
-				t.Errorf("%s: expected path %s, got %s", testCase.name, testCase.output, actualName)
+			actualValue := getJobName(testCase.input)
+
+			if !reflect.DeepEqual(testCase.output, actualValue) {
+				t.Errorf("%s: expected values %s, got %s", testCase.name, testCase.output, actualValue)
 			}
+
+		})
+	}
+}
+
+func TestGetJobInfoPath(t *testing.T) {
+	testCases := []struct {
+		name   string
+		input  *prowapi.ProwJobSpec
+		output string
+	}{
+		{
+			name: "GitHub Branch Source based PR job",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Job:   "my-jenkins-job-name",
+				JenkinsSpec: &prowapi.JenkinsSpec{
+					GitHubBranchSourceJob: true,
+				},
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 123,
+							SHA:    "abcd1234",
+						},
+					},
+				},
+			},
+			output: "/job/my-jenkins-job-name/view/change-requests/job/PR-123/api/json",
+		},
+		{
+			name: "GitHub Branch Source based branch job",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Type:  prowapi.PostsubmitJob,
+				Job:   "my-jenkins-job-name",
+				JenkinsSpec: &prowapi.JenkinsSpec{
+					GitHubBranchSourceJob: true,
+				},
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+				},
+			},
+			output: "/job/my-jenkins-job-name/job/master/api/json",
+		},
+		{
+			name: "Static Jenkins job",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Job:   "my-k8s-job-name",
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 123,
+							SHA:    "abcd1234",
+						},
+					},
+				},
+			},
+			output: "/job/my-k8s-job-name/api/json",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actualValue := getJobInfoPath(testCase.input)
+
+			if !reflect.DeepEqual(testCase.output, actualValue) {
+				t.Errorf("%s: expected values %s, got %s", testCase.name, testCase.output, actualValue)
+			}
+
+		})
+	}
+}
+
+func TestGetBuildPath(t *testing.T) {
+	testCases := []struct {
+		name   string
+		input  *prowapi.ProwJobSpec
+		output string
+	}{
+		{
+			name: "GitHub Branch Source based PR job",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Job:   "my-jenkins-job-name",
+				JenkinsSpec: &prowapi.JenkinsSpec{
+					GitHubBranchSourceJob: true,
+				},
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 123,
+							SHA:    "abcd1234",
+						},
+					},
+				},
+			},
+			output: "/job/my-jenkins-job-name/view/change-requests/job/PR-123/build",
+		},
+		{
+			name: "GitHub Branch Source based branch job",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Type:  prowapi.PostsubmitJob,
+				Job:   "my-jenkins-job-name",
+				JenkinsSpec: &prowapi.JenkinsSpec{
+					GitHubBranchSourceJob: true,
+				},
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+				},
+			},
+			output: "/job/my-jenkins-job-name/job/master/build",
+		},
+		{
+			name: "Static Jenkins job",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Job:   "my-k8s-job-name",
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 123,
+							SHA:    "abcd1234",
+						},
+					},
+				},
+			},
+			output: "/job/my-k8s-job-name/build",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actualValue := getBuildPath(testCase.input)
+
+			if !reflect.DeepEqual(testCase.output, actualValue) {
+				t.Errorf("%s: expected values %s, got %s", testCase.name, testCase.output, actualValue)
+			}
+
+		})
+	}
+}
+
+func TestGetBuildWithParametersPath(t *testing.T) {
+	testCases := []struct {
+		name   string
+		input  *prowapi.ProwJobSpec
+		output string
+	}{
+		{
+			name: "GitHub Branch Source based PR job",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Job:   "my-jenkins-job-name",
+				JenkinsSpec: &prowapi.JenkinsSpec{
+					GitHubBranchSourceJob: true,
+				},
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 123,
+							SHA:    "abcd1234",
+						},
+					},
+				},
+			},
+			output: "/job/my-jenkins-job-name/view/change-requests/job/PR-123/buildWithParameters",
+		},
+		{
+			name: "GitHub Branch Source based branch job",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Type:  prowapi.PostsubmitJob,
+				Job:   "my-jenkins-job-name",
+				JenkinsSpec: &prowapi.JenkinsSpec{
+					GitHubBranchSourceJob: true,
+				},
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+				},
+			},
+			output: "/job/my-jenkins-job-name/job/master/buildWithParameters",
+		},
+		{
+			name: "Static Jenkins job",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Job:   "my-k8s-job-name",
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 123,
+							SHA:    "abcd1234",
+						},
+					},
+				},
+			},
+			output: "/job/my-k8s-job-name/buildWithParameters",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actualValue := getBuildWithParametersPath(testCase.input)
+
+			if !reflect.DeepEqual(testCase.output, actualValue) {
+				t.Errorf("%s: expected values %s, got %s", testCase.name, testCase.output, actualValue)
+			}
+
 		})
 	}
 }
