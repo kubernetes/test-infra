@@ -231,14 +231,16 @@ func (c *Client) Throttle(hourlyTokens, burst int) {
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewClientWithFields(fields logrus.Fields, getToken func() []byte, bases ...string) *Client {
+func NewClientWithFields(fields logrus.Fields, getToken func() []byte, graphqlEndpoint string, bases ...string) *Client {
 	return &Client{
 		logger: logrus.WithFields(fields).WithField("client", "github"),
 		time:   &standardTime{},
-		gqlc: githubql.NewClient(&http.Client{
-			Timeout:   maxRequestTime,
-			Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)},
-		}),
+		gqlc: githubql.NewEnterpriseClient(
+			graphqlEndpoint,
+			&http.Client{
+				Timeout:   maxRequestTime,
+				Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)},
+			}),
 		client:   &http.Client{Timeout: maxRequestTime},
 		bases:    bases,
 		getToken: getToken,
@@ -247,8 +249,8 @@ func NewClientWithFields(fields logrus.Fields, getToken func() []byte, bases ...
 }
 
 // NewClient creates a new fully operational GitHub client.
-func NewClient(getToken func() []byte, bases ...string) *Client {
-	return NewClientWithFields(logrus.Fields{}, getToken, bases...)
+func NewClient(getToken func() []byte, graphqlEndpoint string, bases ...string) *Client {
+	return NewClientWithFields(logrus.Fields{}, getToken, graphqlEndpoint, bases...)
 }
 
 // NewDryRunClientWithFields creates a new client that will not perform mutating actions
@@ -259,14 +261,16 @@ func NewClient(getToken func() []byte, bases ...string) *Client {
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, bases ...string) *Client {
+func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, graphqlEndpoint string, bases ...string) *Client {
 	return &Client{
 		logger: logrus.WithFields(fields).WithField("client", "github"),
 		time:   &standardTime{},
-		gqlc: githubql.NewClient(&http.Client{
-			Timeout:   maxRequestTime,
-			Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)},
-		}),
+		gqlc: githubql.NewEnterpriseClient(
+			graphqlEndpoint,
+			&http.Client{
+				Timeout:   maxRequestTime,
+				Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)},
+			}),
 		client:   &http.Client{Timeout: maxRequestTime},
 		bases:    bases,
 		getToken: getToken,
@@ -282,8 +286,8 @@ func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, bas
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewDryRunClient(getToken func() []byte, bases ...string) *Client {
-	return NewDryRunClientWithFields(logrus.Fields{}, getToken, bases...)
+func NewDryRunClient(getToken func() []byte, graphqlEndpoint string, bases ...string) *Client {
+	return NewDryRunClientWithFields(logrus.Fields{}, getToken, graphqlEndpoint, bases...)
 }
 
 // NewFakeClient creates a new client that will not perform any actions at all.
