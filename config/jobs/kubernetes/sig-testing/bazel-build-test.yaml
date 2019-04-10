@@ -25,9 +25,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -53,9 +50,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -81,9 +75,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -109,9 +100,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -137,9 +125,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -173,9 +158,6 @@ presubmits:
         - "--test-args=--build_tag_filters=-e2e,-integration"
         - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -204,9 +186,6 @@ presubmits:
         - "--test-args=--build_tag_filters=-e2e,-integration"
         - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -235,9 +214,6 @@ presubmits:
         - "--test-args=--build_tag_filters=-e2e,-integration"
         - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -266,9 +242,6 @@ presubmits:
         - "--test-args=--build_tag_filters=-e2e,-integration"
         - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -297,9 +270,6 @@ presubmits:
         - "--test-args=--build_tag_filters=-e2e,-integration"
         - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -329,9 +299,6 @@ postsubmits:
         - "--gcs=gs://kubernetes-release-dev/ci"
         - "--version-suffix=-bazel"
         - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -358,8 +325,6 @@ postsubmits:
         - "--test-args=--build_tag_filters=-e2e,-integration"
         - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -388,9 +353,6 @@ postsubmits:
         - "--gcs=gs://kubernetes-release-dev/ci"
         - "--version-suffix=-bazel"
         - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.11.txt"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -417,9 +379,6 @@ postsubmits:
         - "--gcs=gs://kubernetes-release-dev/ci"
         - "--version-suffix=-bazel"
         - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.12.txt"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -446,9 +405,6 @@ postsubmits:
         - "--gcs=gs://kubernetes-release-dev/ci"
         - "--version-suffix=-bazel"
         - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.13.txt"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -475,8 +431,6 @@ postsubmits:
         - "--gcs=gs://kubernetes-release-dev/ci"
         - "--version-suffix=-bazel"
         - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.14.txt"
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -504,8 +458,6 @@ postsubmits:
         - "--test-args=--build_tag_filters=-e2e,-integration"
         - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -533,8 +485,6 @@ postsubmits:
         - "--test-args=--build_tag_filters=-e2e,-integration"
         - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -562,8 +512,6 @@ postsubmits:
         - "--test-args=--build_tag_filters=-e2e,-integration"
         - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -591,8 +539,6 @@ postsubmits:
             - "--test-args=--build_tag_filters=-e2e,-integration"
             - "--test-args=--test_tag_filters=-e2e,-integration"
             - "--test-args=--flaky_test_attempts=3"
-          securityContext:
-            privileged: true
           resources:
             requests:
               memory: "6Gi"
@@ -628,9 +574,6 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: kubernetes
-      # Bazel needs privileged mode in order to sandbox builds.
-      securityContext:
-        privileged: true
       resources:
         requests:
           memory: "6Gi"
@@ -660,9 +603,6 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: kubernetes
-      # Bazel needs privileged mode in order to sandbox builds.
-      securityContext:
-        privileged: true
       resources:
         requests:
           memory: "6Gi"
@@ -693,9 +633,6 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: kubernetes
-      # Bazel needs privileged mode in order to sandbox builds.
-      securityContext:
-        privileged: true
       resources:
         requests:
           memory: "6Gi"
@@ -726,9 +663,6 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: kubernetes
-      # Bazel needs privileged mode in order to sandbox builds.
-      securityContext:
-        privileged: true
       resources:
         requests:
           memory: "6Gi"
@@ -759,9 +693,6 @@ periodics:
             value: kubernetes
           - name: REPO_NAME
             value: kubernetes
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -796,8 +727,6 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: kubernetes
-      securityContext:
-        privileged: true
       resources:
         requests:
           memory: "6Gi"
@@ -832,8 +761,6 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: kubernetes
-      securityContext:
-        privileged: true
       resources:
         requests:
           memory: "6Gi"
@@ -867,8 +794,6 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: kubernetes
-      securityContext:
-        privileged: true
       resources:
         requests:
           memory: "6Gi"
@@ -902,8 +827,6 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: kubernetes
-      securityContext:
-        privileged: true
       resources:
         requests:
           memory: "6Gi"
@@ -937,8 +860,6 @@ periodics:
             value: kubernetes
           - name: REPO_NAME
             value: kubernetes
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"

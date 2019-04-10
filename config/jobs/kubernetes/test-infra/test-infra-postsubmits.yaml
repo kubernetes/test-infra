@@ -34,9 +34,6 @@ postsubmits:
         - --install=gubernator/test_requirements.txt
         - --test=//...
         - --test-args=--test_output=errors
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "2Gi"
