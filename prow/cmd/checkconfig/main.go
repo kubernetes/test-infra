@@ -60,8 +60,9 @@ type options struct {
 	jobConfigPath string
 	pluginConfig  string
 
-	warnings flagutil.Strings
-	strict   bool
+	warnings        flagutil.Strings
+	excludeWarnings flagutil.Strings
+	strict          bool
 }
 
 func reportWarning(strict bool, errs errorutil.Aggregate) {
@@ -74,12 +75,7 @@ func reportWarning(strict bool, errs errorutil.Aggregate) {
 }
 
 func (o *options) warningEnabled(warning string) bool {
-	for _, registeredWarning := range o.warnings.Strings() {
-		if warning == registeredWarning {
-			return true
-		}
-	}
-	return false
+	return sets.NewString(o.warnings.Strings()...).Difference(sets.NewString(o.excludeWarnings.Strings()...)).Has(warning)
 }
 
 const (
@@ -132,7 +128,8 @@ func gatherOptions() options {
 	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	flag.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
-	flag.Var(&o.warnings, "warnings", "Warnings to validate. Use repeatedly to provide a list of warnings.")
+	flag.Var(&o.warnings, "warnings", "Warnings to validate. Use repeatedly to provide a list of warnings")
+	flag.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
 	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
 	flag.Parse()
 	return o

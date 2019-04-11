@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/plugins"
 	"sigs.k8s.io/yaml"
 )
@@ -859,5 +860,47 @@ func TestValidateStrictBranches(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestWarningEnabled(t *testing.T) {
+	var testCases = []struct {
+		name      string
+		warnings  []string
+		excludes  []string
+		candidate string
+		expected  bool
+	}{
+		{
+			name:      "nothing is found in empty sets",
+			warnings:  []string{},
+			excludes:  []string{},
+			candidate: "missing",
+			expected:  false,
+		},
+		{
+			name:      "explicit warning is found",
+			warnings:  []string{"found"},
+			excludes:  []string{},
+			candidate: "found",
+			expected:  true,
+		},
+		{
+			name:      "explicit warning that is excluded is not found",
+			warnings:  []string{"found"},
+			excludes:  []string{"found"},
+			candidate: "found",
+			expected:  false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		opt := options{
+			warnings:        flagutil.NewStrings(testCase.warnings...),
+			excludeWarnings: flagutil.NewStrings(testCase.excludes...),
+		}
+		if actual, expected := opt.warningEnabled(testCase.candidate), testCase.expected; actual != expected {
+			t.Errorf("%s: expected warning %s enablement to be %v but got %v", testCase.name, testCase.candidate, expected, actual)
+		}
 	}
 }
