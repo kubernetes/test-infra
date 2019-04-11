@@ -104,6 +104,23 @@ func pickLatestJobs(jobs []prowapi.ProwJob, selector string) []prowapi.ProwJob {
 	return out
 }
 
+func LatestStatusJobs(jobs []prowapi.ProwJob) bool {
+	var prowStatus bool
+	succeededJobs := []string{}
+	failedJobs := []string{}
+	for _, job := range jobs {
+		if job.Status.State == "success" {
+			succeededJobs = append(succeededJobs, job.Spec.Job)
+		} else {
+			failedJobs = append(failedJobs, job.Spec.Job)
+		}
+	}
+	if len(failedJobs) >= 8 {
+		prowStatus = true
+	}
+	return prowStatus
+}
+
 func renderBadge(jobs []prowapi.ProwJob) (string, string, []byte) {
 	color := "brightgreen"
 	status := "passing"
@@ -121,7 +138,7 @@ func renderBadge(jobs []prowapi.ProwJob) (string, string, []byte) {
 		if len(failedJobs) > 3 {
 			failedJobs = append(failedJobs[:3], "...")
 		}
-		if len(failedJobs) > 0 {
+		if len(failedJobs) > 0 && LatestStatusJobs(jobs) {
 			color = "red"
 			status = "failing " + strings.Join(failedJobs, ", ")
 		}
