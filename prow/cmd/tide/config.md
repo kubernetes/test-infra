@@ -22,6 +22,19 @@ The following configuration fields are available:
    a link that will be used for the tide status context. It is mutually exclusive with the `target_url` field.
 * `max_goroutines`: The maximum number of goroutines spawned inside the component to
    handle org/repo:branch pools. Defaults to 20. Needs to be a positive number.
+* `blocker_label`: The label used to identify issues which block merges to repository branches.
+* `squash_label`: The label used to ask Tide to use the squash method when merging the labeled PR. 
+* `rebase_label`: The label used to ask Tide to use the rebase method when merging the labeled PR. 
+* `merge_label`: The label used to ask Tide to use the merge method when merging the labeled PR. 
+
+### Merge Blocker Issues
+
+Tide supports temporary holds on merging into branches via the `blocker_label` configuration option.
+In order to use this option, set the `blocker_label` configuration option for the Tide deployment.
+Then, when blocking merges is required, if an issue is found with the label it will block merges to
+all branches for the repo. In order to scope the branches which are blocked, add a `branch:name` token
+to the issue title. These tokens can be repeated to select multiple branches and the tokens also support
+quoting, so `branch:"name"` will block the `name` branch just as `branch:name` would. 
 
 ### Queries
 
