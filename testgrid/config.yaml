@@ -3500,6 +3500,8 @@ test_groups:
 
 - name: ci-kubernetes-e2e-windows-gce-k8sbeta
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-windows-gce-k8sbeta
+- name: pull-kubernetes-e2e-windows-gce
+  gcs_prefix: kubernetes-jenkins/logs/pull-kubernetes-e2e-windows-gce
 
 # Pivotal Windows test groups
 - name: ci-kubernetes-e2e-windows-cfcr
@@ -4937,6 +4939,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-windows-gce-alpha-features
   - name: windows-gce-1.14
     test_group_name: ci-kubernetes-e2e-windows-gce-k8sbeta
+  - name: pull-windows-gce
+    test_group_name: pull-kubernetes-e2e-windows-gce
 
 - name: sig-release-master-upgrade
   dashboard_tab:
