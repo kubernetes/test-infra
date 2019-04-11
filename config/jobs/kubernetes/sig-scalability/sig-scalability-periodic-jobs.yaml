@@ -92,7 +92,8 @@ periodics:
       - --
       - --cluster=gke-scale-cluster
       - --deployment=gke
-      - --extract=ci/latest
+      # TODO(wojtek-t): get rid of it once GKE is fixed in master.
+      - --extract=ci/k8s-beta
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=kubernetes-scale
@@ -138,7 +139,8 @@ periodics:
       - --
       - --cluster=gke-regional-cluster
       - --deployment=gke
-      - --extract=ci/latest
+      # TODO(wojtek-t): get rid of it once GKE is fixed in master.
+      - --extract=ci/k8s-beta
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=kubernetes-scale
@@ -180,7 +182,8 @@ periodics:
       - --
       - --cluster=gke-scale-cluster
       - --deployment=gke
-      - --extract=ci/latest
+      # TODO(wojtek-t): get rid of it once GKE is fixed in master.
+      - --extract=ci/k8s-beta
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=kubernetes-scale
@@ -218,7 +221,8 @@ periodics:
       - --
       - --cluster=gke-scale-cluster
       - --deployment=gke
-      - --extract=ci/latest
+      # TODO(wojtek-t): get rid of it once GKE is fixed in master.
+      - --extract=ci/k8s-beta
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=kubernetes-scale
