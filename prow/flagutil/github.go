@@ -68,7 +68,7 @@ func (o *GitHubOptions) Validate(dryRun bool) error {
 		}
 	}
 
-	if _, err := url.ParseRequestURI(o.graphqlEndpoint); err != nil {
+	if _, err := url.Parse(o.graphqlEndpoint); err != nil {
 		return fmt.Errorf("invalid -github-graphql-endpoint URI: %q", o.graphqlEndpoint)
 	}
 

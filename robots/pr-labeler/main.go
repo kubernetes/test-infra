@@ -47,6 +47,7 @@ type client interface {
 type options struct {
 	confirm            bool
 	endpoint           flagutil.Strings
+	graphqlEndpoint    string
 	org                string
 	repo               string
 	tokenPath          string
@@ -57,6 +58,7 @@ func flagOptions() options {
 	o := options{
 		endpoint: flagutil.NewStrings("https://api.github.com"),
 	}
+	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", "https://api.github.com/graphql", "github graphql endpoint")
 	flag.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	flag.StringVar(&o.org, "org", "", "github org")
 	flag.StringVar(&o.repo, "repo", "", "github repo")
@@ -93,11 +95,16 @@ func main() {
 		}
 	}
 
+	_, err = url.Parse(o.graphqlEndpoint)
+	if err != nil {
+		log.Fatalf("Invalid --graphql-endpoint URL %q: %v.", o.graphqlEndpoint, err)
+	}
+
 	var c client
 	if o.confirm {
-		c = github.NewClient(secretAgent.GetTokenGenerator(o.tokenPath), o.endpoint.Strings()...)
+		c = github.NewClient(secretAgent.GetTokenGenerator(o.tokenPath), o.graphqlEndpoint, o.endpoint.Strings()...)
 	} else {
-		c = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.tokenPath), o.endpoint.Strings()...)
+		c = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.tokenPath), o.graphqlEndpoint, o.endpoint.Strings()...)
 	}
 
 	// get all open PRs
