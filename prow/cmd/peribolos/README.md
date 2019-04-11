@@ -46,6 +46,9 @@ orgs:
         - anne
         maintainers:
         - jane
+        repos: # Ensure the team has the following permissions levels on repos in the org
+          some-repo: admin
+          other-repo: read
       another-team:
         ...
       ...
@@ -66,6 +69,7 @@ This config will:
   - Rename the backend team to node
   - Add anne as a member and jane as a maintainer to node
   - Similar things for another-team (details elided)
+* Ensure that the team has admin rights to `some-repo`, read access to `other-repo` and no other privileges
 
 Note that any fields missing from the config will not be managed by peribolos. So if description is missing from the org setting, the current value will remain.
 
