@@ -665,6 +665,11 @@ repos:
   kubernetes/community:
     labels:
       - color: 0052cc
+        description: Issues or PRs related to kubernetes code organization
+        name: area/code-organization
+        target: both
+        addedBy: label
+      - color: 0052cc
         description: Issues or PRs related to kubernetes conformance tests
         name: area/conformance
         target: both
@@ -745,6 +750,11 @@ repos:
         description: Indicates an issue on api area.
         name: area/api
         target: issues
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to kubernetes code organization
+        name: area/code-organization
+        target: both
         addedBy: label
       - color: 0052cc
         description: Issues or PRs related to kubernetes conformance tests
@@ -829,6 +839,11 @@ repos:
       - color: 0052cc
         description: Issues or PRs related to code in /config
         name: area/config
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to kubernetes code organization
+        name: area/code-organization
         target: both
         addedBy: label
       - color: 0052cc
