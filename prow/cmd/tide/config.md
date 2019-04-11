@@ -167,4 +167,4 @@ not be publicly readable if any repos are sensitive and must be a GCS URI like `
 
 Before a PR is merged, Tide ensures that all jobs configured as required in the `presubmits` part of the `config.yaml` file are passing against the latest base branch commit, rerunning the jobs if necessary. **No job is required to be configured** in which case it's enough if a PR meets all GitHub search criteria.
 
-Semantic of individual fields of the `presubmits` is described in [prow/jobs.md](prow/jobs.md).
+Semantic of individual fields of the `presubmits` is described in [prow/jobs.md](/prow/jobs.md).
