@@ -210,9 +210,6 @@ branch-protection:
             - continuous-integration/travis-ci
         website:
           protect: false # TODO(fejta): protect all branches soon
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
           branches:
             master:
               protect: true
