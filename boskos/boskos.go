@@ -106,6 +106,8 @@ func ErrorToStatus(err error) int {
 		return http.StatusUnauthorized
 	case *ranch.ResourceNotFound:
 		return http.StatusNotFound
+	case *ranch.ResourceTypeNotFound:
+		return http.StatusNotFound
 	case *ranch.StateNotMatch:
 		return http.StatusConflict
 	}

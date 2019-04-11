@@ -51,6 +51,15 @@ func (r ResourceNotFound) Error() string {
 	return fmt.Sprintf("Resource %s not exist", r.name)
 }
 
+// ResourceTypeNotFound will be returned if requested resource type does not exist.
+type ResourceTypeNotFound struct {
+	rType string
+}
+
+func (r ResourceTypeNotFound) Error() string {
+	return fmt.Sprintf("Resource Type %s not exist", r.rType)
+}
+
 // OwnerNotMatch will be returned if request owner does not match current owner for target resource.
 type OwnerNotMatch struct {
 	request string
@@ -107,20 +116,27 @@ func (r *Ranch) Acquire(rType, state, dest, owner string) (*common.Resource, err
 		return nil, &ResourceNotFound{rType}
 	}
 
+	foundType := false
 	for idx := range resources {
 		res := resources[idx]
-		if rType == res.Type && state == res.State && res.Owner == "" {
-			res.LastUpdate = r.UpdateTime()
-			res.Owner = owner
-			res.State = dest
-			if err := r.Storage.UpdateResource(res); err != nil {
-				logrus.WithError(err).Errorf("could not update resource %s", res.Name)
-				return nil, err
+		if rType == res.Type {
+			foundType = true
+			if state == res.State && res.Owner == "" {
+				res.LastUpdate = r.UpdateTime()
+				res.Owner = owner
+				res.State = dest
+				if err := r.Storage.UpdateResource(res); err != nil {
+					logrus.WithError(err).Errorf("could not update resource %s", res.Name)
+					return nil, err
+				}
+				return &res, nil
 			}
-			return &res, nil
 		}
 	}
-	return nil, &ResourceNotFound{rType}
+	if foundType {
+		return nil, &ResourceNotFound{rType}
+	}
+	return nil, &ResourceTypeNotFound{rType}
 }
 
 // AcquireByState checks out resources of a given type without an owner,
