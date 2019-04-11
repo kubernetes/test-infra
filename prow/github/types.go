@@ -286,6 +286,60 @@ type Repo struct {
 	Fork          bool   `json:"fork"`
 	DefaultBranch string `json:"default_branch"`
 	Archived      bool   `json:"archived"`
+
+	// Permissions reflect the permission level for the requester, so
+	// on a repository GET call this will be for the user whose token
+	// is being used, if listing a team's repos this will be for the
+	// team's privilege level in the repo
+	Permissions RepoPermissions `json:"permissions"`
+}
+
+// RepoPermissions describes which permission level an entity has in a
+// repo. At most one of the booleans here should be true.
+type RepoPermissions struct {
+	// Pull is equivalent to "Read" permissions in the web UI
+	Pull bool `json:"pull"`
+	// Push is equivalent to "Edit" permissions in the web UI
+	Push  bool `json:"push"`
+	Admin bool `json:"admin"`
+}
+
+// RepoPermissionLevel is admin, write, read or none.
+//
+// See https://developer.github.com/v3/repos/collaborators/#review-a-users-permission-level
+type RepoPermissionLevel string
+
+const (
+	// Read allows pull but not push
+	Read RepoPermissionLevel = "read"
+	// Write allows Read plus push
+	Write RepoPermissionLevel = "write"
+	// Admin allows Write plus change others' rights.
+	Admin RepoPermissionLevel = "admin"
+	// None disallows everything
+	None RepoPermissionLevel = "none"
+)
+
+var repoPermissionLevels = map[RepoPermissionLevel]bool{
+	Read:  true,
+	Write: true,
+	Admin: true,
+	None:  true,
+}
+
+// MarshalText returns the byte representation of the permission
+func (l RepoPermissionLevel) MarshalText() ([]byte, error) {
+	return []byte(l), nil
+}
+
+// UnmarshalText validates the text is a valid string
+func (l *RepoPermissionLevel) UnmarshalText(text []byte) error {
+	v := RepoPermissionLevel(text)
+	if _, ok := repoPermissionLevels[v]; !ok {
+		return fmt.Errorf("bad repo permission: %s not in %v", v, repoPermissionLevels)
+	}
+	*l = v
+	return nil
 }
 
 // Branch contains general branch information.
