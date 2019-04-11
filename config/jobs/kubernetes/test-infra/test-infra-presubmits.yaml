@@ -46,9 +46,6 @@ presubmits:
         - ./scenarios/kubernetes_execute_bazel.py
         args:
         - hack/build-then-unit.sh
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "2Gi"
@@ -76,9 +73,6 @@ presubmits:
         - --config=unit
         - --config=remote
         - --remote_instance_name=projects/rbe-eytankidron-prod-0/instances/default_instance
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "2Gi"
@@ -116,9 +110,6 @@ presubmits:
         - "--install=gubernator/test_requirements.txt"
         - "--test=//..."
         - "--test-args=--config=lint"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         volumeMounts:
         resources:
           requests:
@@ -165,9 +156,6 @@ presubmits:
         - runner.sh
         args:
         - ./hack/verify-config.sh
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "2Gi"
@@ -186,8 +174,6 @@ presubmits:
         env:
         - name: TEST_TMPDIR
           value: /bazel-scratch/.cache/bazel
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "2Gi"
@@ -213,9 +199,6 @@ presubmits:
         - runner.sh
         args:
         - ./hack/verify-deps.sh
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "2Gi"
@@ -263,9 +246,6 @@ presubmits:
         - runner.sh
         args:
         - ./hack/verify-labels.sh
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "2Gi"

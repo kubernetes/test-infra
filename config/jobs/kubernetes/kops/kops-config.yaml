@@ -21,9 +21,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "make"
         - "bazel-build"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "2Gi"
@@ -49,9 +46,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "make"
         - "bazel-test"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "2Gi"
@@ -227,9 +221,6 @@ postsubmits:
         - "make"
         - "prow-postsubmit"
         - "UPLOAD_DEST=gs://kubernetes-release-dev/kops/ci"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "2Gi"

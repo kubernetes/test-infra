@@ -31,9 +31,6 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-csi-serial
         - --test_args=--ginkgo.focus=CSI.*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|gcePD-external --minStartupPods=8
         - --timeout=120m
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
         resources:
           requests:
