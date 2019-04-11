@@ -2478,15 +2478,16 @@ test_groups:
 # kubernetes org jobs
 - name: ci-org-peribolos
   gcs_prefix: kubernetes-jenkins/logs/ci-org-peribolos
+  num_failures_to_alert: 1
 - name: post-org-peribolos
   gcs_prefix: kubernetes-jenkins/logs/post-org-peribolos
+  num_failures_to_alert: 1
 - name: pull-org-test-all
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-org-test-all
   num_columns_recent: 30
 - name: pull-org-verify-all
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-org-verify-all
   num_columns_recent: 30
-  num_failures_to_alert: 1
 #presubmits
 - name: pull-cluster-api-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-build
@@ -7278,8 +7279,12 @@ dashboards:
   dashboard_tab:
   - name: ci-peribolos
     test_group_name: ci-org-peribolos
+    alert_options:
+      alert_mail_to_addresses: kubernetes-github-managment-alerts@googlegroups.com
   - name: post-peribolos
     test_group_name: post-org-peribolos
+    alert_options:
+      alert_mail_to_addresses: kubernetes-github-managment-alerts@googlegroups.com
     code_search_url_template:
       url: https://github.com/kubernetes/org/compare/<start-custom-0>...<end-custom-0>
   - name: test-all
@@ -7288,8 +7293,6 @@ dashboards:
       url: https://github.com/kubernetes/org/compare/<start-custom-0>...<end-custom-0>
   - name: verify-all
     test_group_name: pull-org-verify-all
-    alert_options:
-      alert_mail_to_addresses: cblecker+testgrid@redhat.com,kubernetes-github-managment-alerts@googlegroups.com
     code_search_url_template:
       url: https://github.com/kubernetes/org/compare/<start-custom-0>...<end-custom-0>
 
