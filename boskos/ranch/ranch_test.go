@@ -60,6 +60,13 @@ func AreErrorsEqual(got error, expect error) bool {
 			}
 		}
 		return false
+	case *ResourceTypeNotFound:
+		if o, ok := expect.(*ResourceTypeNotFound); ok {
+			if o.rType == got.(*ResourceTypeNotFound).rType {
+				return true
+			}
+		}
+		return false
 	case *StateNotMatch:
 		if o, ok := expect.(*StateNotMatch); ok {
 			if o.expect == got.(*StateNotMatch).expect && o.current == got.(*StateNotMatch).current {
@@ -90,7 +97,7 @@ func TestAcquire(t *testing.T) {
 			rtype:     "t",
 			state:     "s",
 			dest:      "d",
-			expectErr: &ResourceNotFound{"t"},
+			expectErr: &ResourceTypeNotFound{"t"},
 		},
 		{
 			name: "no match type",
@@ -101,7 +108,7 @@ func TestAcquire(t *testing.T) {
 			rtype:     "t",
 			state:     "s",
 			dest:      "d",
-			expectErr: &ResourceNotFound{"t"},
+			expectErr: &ResourceTypeNotFound{"t"},
 		},
 		{
 			name: "no match state",

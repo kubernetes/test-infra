@@ -43,9 +43,6 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
         resources:
           requests:
@@ -93,9 +90,6 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=240m
         - --use-logexporter
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
         resources:
           requests:
@@ -143,9 +137,6 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=540m
         - --use-logexporter
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
         resources:
           requests:
@@ -211,9 +202,6 @@ presubmits:
         #env:
         # - name: KUBEMARK_BAZEL_BUILD
         # value: "y"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -274,9 +262,6 @@ presubmits:
         #env:
         # - name: KUBEMARK_BAZEL_BUILD
         # value: "y"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -328,18 +313,15 @@ presubmits:
         - --test-cmd-args=--nodes=500
         - --test-cmd-args=--provider=kubemark
         - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
-        - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
+        - --test-cmd-args=--testconfig=testing/density/legacy/config.yaml
+        - --test-cmd-args=--testconfig=testing/load/legacy/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/load/legacy/kubemark/500_nodes/override.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         # TODO(krzyzacy): Figure out bazel built kubemark image
         #env:
         # - name: KUBEMARK_BAZEL_BUILD
         # value: "y"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -391,18 +373,15 @@ presubmits:
         - --test-cmd-args=--nodes=500
         - --test-cmd-args=--provider=kubemark
         - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
-        - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
+        - --test-cmd-args=--testconfig=testing/density/legacy/config.yaml
+        - --test-cmd-args=--testconfig=testing/load/legacy/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/load/legacy/kubemark/500_nodes/override.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         # TODO(krzyzacy): Figure out bazel built kubemark image
         #env:
         # - name: KUBEMARK_BAZEL_BUILD
         # value: "y"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -454,18 +433,15 @@ presubmits:
         - --test-cmd-args=--nodes=500
         - --test-cmd-args=--provider=kubemark
         - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/density/config.yaml
-        - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
+        - --test-cmd-args=--testconfig=testing/density/legacy/config.yaml
+        - --test-cmd-args=--testconfig=testing/load/legacy/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/load/legacy/kubemark/500_nodes/override.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         # TODO(krzyzacy): Figure out bazel built kubemark image
         #env:
         # - name: KUBEMARK_BAZEL_BUILD
         # value: "y"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -522,9 +498,6 @@ presubmits:
         #env:
         # - name: KUBEMARK_BAZEL_BUILD
         # value: "y"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"

@@ -253,18 +253,22 @@ func TestFlags(t *testing.T) {
 			name: "minimal flags work",
 		},
 		{
-			name: "config-path defaults to something valid",
-			del:  sets.NewString("--config-path"),
+			name: "explicitly set --config-path",
+			args: map[string]string{
+				"--config-path": "/random/value",
+			},
 			expected: func(o *options) {
-				o.configPath = defaultConfigPath
+				o.configPath = "/random/value"
 			},
 		},
 		{
-			name: "require config-path",
+			name: "empty config-path defaults to old value",
 			args: map[string]string{
 				"--config-path": "",
 			},
-			err: true,
+			expected: func(o *options) {
+				o.configPath = config.DefaultConfigPath
+			},
 		},
 		{
 			name: "expicitly set --dry-run=false",

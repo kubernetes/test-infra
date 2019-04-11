@@ -37,7 +37,6 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
-
 	"k8s.io/test-infra/ghproxy/ghcache"
 	"k8s.io/test-infra/prow/errorutil"
 )
@@ -2184,6 +2183,78 @@ func (c *Client) ListTeamMembers(id int, role string) ([]TeamMember, error) {
 		return nil, err
 	}
 	return teamMembers, nil
+}
+
+// ListTeamRepos gets a list of team repos for the given team id
+//
+// https://developer.github.com/v3/teams/#list-team-repos
+func (c *Client) ListTeamRepos(id int) ([]Repo, error) {
+	c.log("ListTeamRepos", id)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/teams/%d/repos", id)
+	var repos []Repo
+	err := c.readPaginatedResultsWithValues(
+		path,
+		url.Values{
+			"per_page": []string{"100"},
+		},
+		// This accept header enables the nested teams preview.
+		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
+		"application/vnd.github.hellcat-preview+json",
+		func() interface{} {
+			return &[]Repo{}
+		},
+		func(obj interface{}) {
+			repos = append(repos, *(obj.(*[]Repo))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return repos, nil
+}
+
+// UpdateTeamRepo adds the repo to the team with the provided role.
+//
+// https://developer.github.com/v3/teams/#add-or-update-team-repository
+func (c *Client) UpdateTeamRepo(id int, org, repo string, permission RepoPermissionLevel) error {
+	c.log("UpdateTeamRepo", id, org, repo, permission)
+	if c.fake || c.dry {
+		return nil
+	}
+
+	data := struct {
+		Permission string `json:"permission"`
+	}{
+		Permission: string(permission),
+	}
+
+	_, err := c.request(&request{
+		method:      http.MethodPut,
+		path:        fmt.Sprintf("/teams/%d/repos/%s/%s", id, org, repo),
+		requestBody: &data,
+		exitCodes:   []int{204},
+	}, nil)
+	return err
+}
+
+// RemoveTeamRepo removes the team from the repo.
+//
+// https://developer.github.com/v3/teams/#add-or-update-team-repository
+func (c *Client) RemoveTeamRepo(id int, org, repo string) error {
+	c.log("RemoveTeamRepo", id, org, repo)
+	if c.fake || c.dry {
+		return nil
+	}
+
+	_, err := c.request(&request{
+		method:    http.MethodDelete,
+		path:      fmt.Sprintf("/teams/%d/repos/%s/%s", id, org, repo),
+		exitCodes: []int{204},
+	}, nil)
+	return err
 }
 
 // ListTeamInvitations gets a list of team members with pending invitations for the

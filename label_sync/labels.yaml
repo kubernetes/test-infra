@@ -387,12 +387,6 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-big-data.
-      name: sig/big-data
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
       description: Categorizes an issue or PR as relevant to sig-cli.
       name: sig/cli
       target: both
@@ -593,6 +587,14 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
+    - color: d2b48c
+      description: Categorizes an issue or PR as relevant to ug-big-data.
+      name: ug/big-data
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+      previously:
+      - name: sig/big-data
     - color: ee9900
       description: Denotes a PR that changes 100-499 lines, ignoring generated files.
       name: size/L
@@ -646,6 +648,13 @@ default:
       name: tide/merge-method-merge
       target: prs
       addedBy: humans
+    - color: e11d21
+      description: Denotes an issue that blocks the tide merge queue for a branch while it is open.
+      name: tide/merge-blocker
+      target: issues
+      addedBy: humans
+      previously:
+        - name: merge-blocker
     - color: f9d0c4
       description: ¯\\\_(ツ)_/¯
       name: "¯\\_(ツ)_/¯"
@@ -1035,7 +1044,7 @@ repos:
         description: Issues or PRs related to the Kubernetes Blog subproject
         name: area/blog
         target: both
-        prowPlugin: label 
+        prowPlugin: label
         addedBy: anyone
       - color: e9b3f9
         description: Issues or PRs related to German language

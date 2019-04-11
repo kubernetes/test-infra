@@ -49,9 +49,6 @@ presubmits:
         - --test-args=--build_tag_filters=-e2e
         - --test-args=--test_tag_filters=-e2e
         - --test-args=--flaky_test_attempts=3
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "2Gi"

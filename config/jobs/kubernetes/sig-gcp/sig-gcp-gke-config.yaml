@@ -41,9 +41,6 @@ presubmits:
         - --stage-suffix=pull-kubernetes-e2e-gke
         - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=65m
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
         resources:
           requests:
@@ -83,9 +80,6 @@ presubmits:
         - --stage-suffix=pull-kubernetes-e2e-gke
         - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=65m
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-1.14
         resources:
           requests:
@@ -125,9 +119,6 @@ presubmits:
         - --stage-suffix=pull-kubernetes-e2e-gke
         - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=65m
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-1.13
         resources:
           requests:
@@ -167,9 +158,6 @@ presubmits:
             - --stage-suffix=pull-kubernetes-e2e-gke
             - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
             - --timeout=65m
-          # Bazel needs privileged mode in order to sandbox builds.
-          securityContext:
-            privileged: true
           image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-1.12
           resources:
             requests:
@@ -209,9 +197,6 @@ presubmits:
         - --stage-suffix=pull-kubernetes-e2e-gke
         - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=65m
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-1.11
         resources:
           requests:

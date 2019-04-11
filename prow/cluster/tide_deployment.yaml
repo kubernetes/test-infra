@@ -31,11 +31,12 @@ spec:
       # serviceAccountName: "tide" # Uncomment for use with RBAC
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20190405-651ad49e6
+        image: gcr.io/k8s-prow/tide:v20190411-24aefcb76
         args:
         - --dry-run=false
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --gcs-credentials-file=/etc/service-account/service-account.json
         - --history-uri=gs://k8s-prow/tide-history.json

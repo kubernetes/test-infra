@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Periodically synchronize our Datastore view of PRs with GitHub.
+"""Periodically synchronize our Datastore view of PRs with Github.
 
 Various things can cause the local status of a PR to diverge from upstream:
 dropped hooks from bugs in the app, upstream GitHub bugs (webhooks aren't
@@ -26,13 +26,13 @@ and clutter out real items, decreasing signal-to-noise ratio and user trust.
 To handle these, on a regular schedule we perform a reconciliation step:
 - for each repository that we're tracking:
   - A = all open PRs from Datastore
-  - B = all open PRs from GitHub
+  - B = all open PRs from Github
   - A-B is the set of improperly open PRs. For each PR, add a synthetic
     webhook event to Datastore with state=closed, and reprocess.
   - B-A is the set of improperly closed or missing PRs. Again, inject a
     synthetic webhook with the details received from GitHub and reprocess.
 
-This requires a GitHub token set like other secrets with /config in the root.
+This requires a Github token set like other secrets with /config in the root.
 Total token usage is low: number of open PRs / 100 PRs per list call.
 As of 2018-01-10, 1666 open PRs in the k8s org translates into ~56 list calls.
 """
@@ -79,9 +79,9 @@ def get_prs_from_github(token, repo):
 
 
 def inject_event_and_reclassify(repo, number, action, body):
-    # this follows similar code as handlers.GitHubHandler
-    parent = models.GitHubResource.make_key(repo, number)
-    hook = models.GitHubWebhookRaw(
+    # this follows similar code as handlers.GithubHandler
+    parent = models.GithubResource.make_key(repo, number)
+    hook = models.GithubWebhookRaw(
         parent=parent, repo=repo, number=number, event='pull_request',
         body=json.dumps({'action': action, 'pull_request': body}, sort_keys=True))
     hook.put()

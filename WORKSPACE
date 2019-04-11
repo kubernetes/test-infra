@@ -5,11 +5,11 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "67335b3563d9b67dc2550b8f27cc689b64fadac491e69ce78763d9ba894cc5cc",
-    strip_prefix = "bazel-toolchains-cddc376d428ada2927ad359211c3e356bd9c9fbb",
+    sha256 = "8d43844d1d4447be2a108834771d617a1ad2a107f1680190bfe44925e7bf530e",
+    strip_prefix = "bazel-toolchains-4c003ad45e8a2d829ffc40e3aecfb6b8577a9406",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/cddc376d428ada2927ad359211c3e356bd9c9fbb.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/cddc376d428ada2927ad359211c3e356bd9c9fbb.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/4c003ad45e8a2d829ffc40e3aecfb6b8577a9406.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/4c003ad45e8a2d829ffc40e3aecfb6b8577a9406.tar.gz",
     ],
 )
 
@@ -31,10 +31,10 @@ versions.check(minimum_bazel_version = "0.23.0")
 
 git_repository(
     name = "io_bazel_rules_go",
-    commit = "0c4a3523fe18441b73308a8d56ea946888aab6bf",
+    commit = "c694c0f39b073bc991865080a4d01b56a2aa94c5",
     remote = "https://github.com/bazelbuild/rules_go.git",
-    shallow_since = "1552603757 -0400",
-    #tag = "0.18.1",
+    shallow_since = "1554506517 -0400",
+    #tag = "0.18.2",
 )
 
 git_repository(
@@ -50,7 +50,7 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_depe
 go_rules_dependencies()
 
 go_register_toolchains(
-    go_version = "1.11.5",
+    go_version = "1.12.2",
     nogo = "@//:nogo_vet",
 )
 
@@ -555,8 +555,8 @@ go_repository(
 go_repository(
     name = "com_github_andygrunwald_go_gerrit",
     importpath = "github.com/andygrunwald/go-gerrit",
-    sum = "h1:2Qp3BQZ7r1z+oMUnFhD6FQ86Hh1PO+59yoUNNJ5Dn0M=",
-    version = "v0.0.0-20171029143327-95b11af228a1",
+    sum = "h1:uUuUZipfD5nPl2L/i0I3N4iRKJcoO2CPjktaH/kP9gQ=",
+    version = "v0.0.0-20190120104749-174420ebee6c",
 )
 
 go_repository(
@@ -1581,8 +1581,8 @@ go_repository(
 go_repository(
     name = "io_opencensus_go",
     importpath = "go.opencensus.io",
-    sum = "h1:ZZpq6xI6kv/LuE/5s5UQvBU5vMjvRnPb8PvJrIntAnc=",
-    version = "v0.19.2",
+    sum = "h1:ipnRUwS2uKC3aNamEPYhubgto3O2DqsZ7OheoKvHYN4=",
+    version = "v0.19.3",
 )
 
 go_repository(
@@ -1595,7 +1595,8 @@ go_repository(
 go_repository(
     name = "org_apache_git_thrift_git",
     importpath = "git.apache.org/thrift.git",
-    tag = "v0.12.0",
+    sum = "h1:CMxsZlAmxKs+VAZMlDDL0wXciMblJcutQbEe3A9CYUM=",
+    version = "v0.12.0",
 )
 
 go_repository(
@@ -1844,6 +1845,20 @@ go_repository(
 )
 
 go_repository(
+    name = "com_github_klauspost_compress",
+    importpath = "github.com/klauspost/compress",
+    sum = "h1:8VMb5+0wMgdBykOV96DwNwKFQ+WTI4pzYURP99CcB9E=",
+    version = "v1.4.1",
+)
+
+go_repository(
+    name = "com_github_klauspost_cpuid",
+    importpath = "github.com/klauspost/cpuid",
+    sum = "h1:NMpwD2G9JSFOE1/TJjGSo5zG7Yb2bTe7eq1jH+irmeE=",
+    version = "v1.2.0",
+)
+
+go_repository(
     name = "com_github_kr_logfmt",
     importpath = "github.com/kr/logfmt",
     sum = "h1:T+h1c/A9Gawja4Y9mFVWj2vyii2bbUNDw3kt9VxK2EY=",
@@ -1995,4 +2010,11 @@ go_repository(
     importpath = "github.com/Shopify/toxiproxy",
     sum = "h1:TKdv8HiTLgE5wdJuEML90aBgNWsokNbMijUGhmcoBJc=",
     version = "v2.1.4+incompatible",
+)
+
+go_repository(
+    name = "com_github_klauspost_pgzip",
+    importpath = "github.com/klauspost/pgzip",
+    sum = "h1:oIPZROsWuPHpOdMVWLuJZXwgjhrW8r1yEX8UqMyeNHM=",
+    version = "v1.2.1",
 )

@@ -7,7 +7,6 @@ go_library(
         "config.go",
         "doc.go",
         "evictedqueue.go",
-        "exemplar.go",
         "export.go",
         "lrumap.go",
         "sampling.go",
@@ -23,7 +22,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/hashicorp/golang-lru/simplelru:go_default_library",
-        "//vendor/go.opencensus.io/exemplar:go_default_library",
         "//vendor/go.opencensus.io/internal:go_default_library",
         "//vendor/go.opencensus.io/trace/internal:go_default_library",
         "//vendor/go.opencensus.io/trace/tracestate:go_default_library",

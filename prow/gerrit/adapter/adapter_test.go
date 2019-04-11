@@ -31,7 +31,14 @@ import (
 	"k8s.io/test-infra/prow/config"
 )
 
-var timeNow = time.Date(1234, time.May, 15, 1, 2, 3, 4, time.UTC)
+func makeStamp(t time.Time) gerrit.Timestamp {
+	return gerrit.Timestamp{Time: t}
+}
+
+var (
+	timeNow  = time.Date(1234, time.May, 15, 1, 2, 3, 4, time.UTC)
+	stampNow = makeStamp(timeNow)
+)
 
 type fca struct {
 	sync.Mutex
@@ -198,7 +205,7 @@ func TestProcessChange(t *testing.T) {
 				Status:          "NEW",
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
-						Created: timeNow.Format(layout),
+						Created: stampNow,
 					},
 				},
 			},
@@ -212,7 +219,7 @@ func TestProcessChange(t *testing.T) {
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Ref:     "refs/changes/00/1/1",
-						Created: timeNow.Format(layout),
+						Created: stampNow,
 					},
 				},
 			},
@@ -228,11 +235,11 @@ func TestProcessChange(t *testing.T) {
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Ref:     "refs/changes/00/2/1",
-						Created: timeNow.Format(layout),
+						Created: stampNow,
 					},
 					"2": {
 						Ref:     "refs/changes/00/2/2",
-						Created: timeNow.Format(layout),
+						Created: stampNow,
 					},
 				},
 			},
@@ -248,7 +255,7 @@ func TestProcessChange(t *testing.T) {
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Ref:     "refs/changes/00/1/1",
-						Created: timeNow.Format(layout),
+						Created: stampNow,
 					},
 				},
 			},
@@ -264,7 +271,7 @@ func TestProcessChange(t *testing.T) {
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Ref:     "refs/changes/00/1/1",
-						Created: timeNow.Format(layout),
+						Created: stampNow,
 					},
 				},
 			},
@@ -280,7 +287,7 @@ func TestProcessChange(t *testing.T) {
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Ref:     "refs/changes/00/1/1",
-						Created: timeNow.Format(layout),
+						Created: stampNow,
 					},
 				},
 			},
@@ -298,7 +305,7 @@ func TestProcessChange(t *testing.T) {
 							"africa-lyrics.txt":    {},
 							"important-code.go":    {},
 						},
-						Created: timeNow.Format(layout),
+						Created: stampNow,
 					},
 				},
 			},
@@ -317,7 +324,7 @@ func TestProcessChange(t *testing.T) {
 							"README.md":     {},
 							"let-it-go.txt": {},
 						},
-						Created: timeNow.Format(layout),
+						Created: stampNow,
 					},
 				},
 			},
@@ -332,7 +339,7 @@ func TestProcessChange(t *testing.T) {
 				Status:          "NEW",
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
-						Created: timeNow.Format(layout),
+						Created: stampNow,
 					},
 				},
 			},
@@ -347,7 +354,7 @@ func TestProcessChange(t *testing.T) {
 				Status:          "NEW",
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
-						Created: timeNow.Format(layout),
+						Created: stampNow,
 					},
 				},
 			},
@@ -363,14 +370,14 @@ func TestProcessChange(t *testing.T) {
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Number:  1,
-						Created: timeNow.Add(-time.Hour).Format(layout),
+						Created: makeStamp(timeNow.Add(-time.Hour)),
 					},
 				},
 				Messages: []gerrit.ChangeMessageInfo{
 					{
 						Message:        "/test troll",
 						RevisionNumber: 1,
-						Date:           timeNow.Add(time.Hour).Format(layout),
+						Date:           makeStamp(timeNow.Add(time.Hour)),
 					},
 				},
 			},
@@ -386,14 +393,14 @@ func TestProcessChange(t *testing.T) {
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Number:  1,
-						Created: timeNow.Add(-time.Hour).Format(layout),
+						Created: makeStamp(timeNow.Add(-time.Hour)),
 					},
 				},
 				Messages: []gerrit.ChangeMessageInfo{
 					{
 						Message:        "/test diasghdgasudhkashdk",
 						RevisionNumber: 1,
-						Date:           timeNow.Add(time.Hour).Format(layout),
+						Date:           makeStamp(timeNow.Add(time.Hour)),
 					},
 				},
 			},
@@ -409,14 +416,14 @@ func TestProcessChange(t *testing.T) {
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Number:  1,
-						Created: timeNow.Add(-time.Hour).Format(layout),
+						Created: makeStamp(timeNow.Add(-time.Hour)),
 					},
 				},
 				Messages: []gerrit.ChangeMessageInfo{
 					{
 						Message:        "/test all",
 						RevisionNumber: 1,
-						Date:           timeNow.Add(time.Hour).Format(layout),
+						Date:           makeStamp(timeNow.Add(time.Hour)),
 					},
 				},
 			},

@@ -1,4 +1,4 @@
-# MkBuild-Cluster 
+# MkBuild-Cluster
 
 The `mkbuild-cluster` program helps create `cluster.yaml` files that [plank] accepts via the `--build-cluster` flag.
 
@@ -54,6 +54,14 @@ kubectl apply -f ~/updated.yaml
 Note: restart plank to see the updated values.
 
 ## More options:
+
+### Credential errors
+
+By default we validate the new client works before printing out its credentials.
+
+The `--get-client-cert` flag may fix these errors.
+
+### All options
 
 ```sh
 # Full list of flags like --account, --print-entry, --get-client-cert, etc.
