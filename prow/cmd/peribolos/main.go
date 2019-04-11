@@ -187,7 +187,7 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 	out.Metadata.Location = &meta.Location
 	out.Metadata.HasOrganizationProjects = &meta.HasOrganizationProjects
 	out.Metadata.HasRepositoryProjects = &meta.HasRepositoryProjects
-	drp := org.RepoPermissionLevel(meta.DefaultRepositoryPermission)
+	drp := github.RepoPermissionLevel(meta.DefaultRepositoryPermission)
 	out.Metadata.DefaultRepositoryPermission = &drp
 	out.Metadata.MembersCanCreateRepositories = &meta.MembersCanCreateRepositories
 

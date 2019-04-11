@@ -1552,7 +1552,7 @@ func TestConfigureOrgMeta(t *testing.T) {
 	no := false
 	str := "random-letters"
 	fail := "fail"
-	read := org.Read
+	read := github.Read
 
 	cases := []struct {
 		name     string
@@ -1713,7 +1713,7 @@ func TestDumpOrgConfig(t *testing.T) {
 	details := "wise and brilliant exemplary human specimens"
 	yes := true
 	no := false
-	perm := org.Write
+	perm := github.Write
 	pub := org.Privacy("")
 	secret := org.Secret
 	closed := org.Closed
