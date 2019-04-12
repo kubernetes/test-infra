@@ -61,6 +61,22 @@ By default we validate the new client works before printing out its credentials.
 
 The `--get-client-cert` flag may fix these errors.
 
+On some platform, MasterAuth has [no RBAC permissions](https://github.com/kubernetes/kubernetes/issues/65400) on the server.
+If you see an error of the following form, this is likely the case.
+
+```console
+Failed: authenticated client could not list pods: response has status "403 Forbidden" and body "{"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"pods is forbidden: User \"client\" cannot list pods in the namespace \"kube-system\"","reason":"Forbidden","details":{"kind":"pods"},"code":403}
+```
+
+You need to give the user access to pods in that cluster.
+
+```sh
+# Create the pod-reader role
+kubectl create clusterrole cluster-pod-admin --verb=* --resource=pods
+# Give the user access to read pods. The user in this example is 'client'.
+kubectl create clusterrolebinding cluster-pod-admin-binding --clusterrole=cluster-pod-admin --user=client
+```
+
 ### All options
 
 ```sh
