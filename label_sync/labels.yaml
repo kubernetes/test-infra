@@ -710,6 +710,11 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
+        description: Issues or PRs related to GitHub Management subproject
+        name: area/github-management
+        target: both
+        addedBy: label
+      - color: 0052cc
         description: Issues or PRs related to the Contributor Summit in North America
         name: area/na-summit
         target: both
