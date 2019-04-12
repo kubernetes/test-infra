@@ -3494,6 +3494,12 @@ test_groups:
 # kube-storage-version-migrator
 - name: pull-kube-storage-version-migrator-test
   gcs_prefix: kubernetes-jenkins/pr-logs/pull-kube-storage-version-migrator-test
+- name: pull-kube-storage-version-migrator-manually-launched-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/pull-kube-storage-version-migrator-manually-launched-e2e
+- name: pull-kube-storage-version-migrator-fully-automated-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/pull-kube-storage-version-migrator-fully-automated-e2e
+- name: pull-kube-storage-version-migrator-disruptive
+  gcs_prefix: kubernetes-jenkins/pr-logs/pull-kube-storage-version-migrator-disruptive
 
 # kubernetes-sigs/structured-merge-diff
 - name: pull-structured-merge-diff-test
@@ -8052,6 +8058,12 @@ dashboards:
   dashboard_tab:
   - name: pr-test
     test_group_name: pull-kube-storage-version-migrator-test
+  - name: pr-e2e-manually-launched
+    test_group_name: pull-kube-storage-version-migrator-manually-launched-e2e
+  - name: pr-e2e-fully-automated
+    test_group_name: pull-kube-storage-version-migrator-fully-automated-e2e
+  - name: ci-disruptive
+    test_group_name: pull-kube-storage-version-migrator-disruptive
 
 - name: sig-api-machinery-structured-merge-diff
   dashboard_tab:
