@@ -1394,6 +1394,7 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-e2e-containerd: "true"
+      preset-e2e-containerd-image-load: "true"
       preset-k8s-ssh: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"

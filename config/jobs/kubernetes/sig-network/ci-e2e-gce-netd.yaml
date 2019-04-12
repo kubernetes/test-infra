@@ -648,7 +648,7 @@ presets:
   - name: KUBE_CONTAINER_RUNTIME_NAME
     value: containerd
   - name: KUBE_LOAD_IMAGE_COMMAND
-    value: /home/containerd/usr/local/bin/ctr cri load
+    value: /home/containerd/usr/local/bin/ctr -n=k8s.io images import
   - name: KUBELET_TEST_ARGS
     value: --runtime-cgroups=/system.slice/containerd.service
 
