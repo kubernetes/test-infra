@@ -134,7 +134,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
@@ -279,7 +279,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
@@ -455,7 +455,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
@@ -514,7 +514,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
@@ -572,7 +572,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
@@ -915,7 +915,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
@@ -1055,7 +1055,7 @@ periodics:
       - --node-tests=true
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --timeout=120m
       - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
@@ -1138,7 +1138,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
@@ -1193,7 +1193,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
@@ -1253,7 +1253,7 @@ periodics:
       - --node-tests=true
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
@@ -1429,7 +1429,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
@@ -1458,7 +1458,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
@@ -1487,7 +1487,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
@@ -1688,7 +1688,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
@@ -1767,7 +1767,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
@@ -2232,7 +2232,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
@@ -2393,7 +2393,7 @@ periodics:
       - --deployment=gke
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
@@ -2568,7 +2568,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
@@ -2682,7 +2682,7 @@ periodics:
       - --deployment=gke
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
@@ -2828,7 +2828,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
@@ -2858,7 +2858,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
@@ -3004,7 +3004,7 @@ periodics:
       - --deployment=gke
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
@@ -3092,7 +3092,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
@@ -3122,7 +3122,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
@@ -3527,7 +3527,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
@@ -3614,7 +3614,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
@@ -3643,7 +3643,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
@@ -3704,7 +3704,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
@@ -3958,7 +3958,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
@@ -4014,7 +4014,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
@@ -4100,7 +4100,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
@@ -4241,7 +4241,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
@@ -4414,7 +4414,7 @@ periodics:
       - --node-tests=true
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --timeout=120m
       - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
@@ -4527,7 +4527,7 @@ periodics:
       - --node-tests=true
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
@@ -4779,7 +4779,7 @@ periodics:
       - --node-tests=true
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --timeout=120m
       - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
@@ -4839,7 +4839,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
@@ -4954,7 +4954,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
@@ -5383,7 +5383,7 @@ periodics:
       - --node-tests=true
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
@@ -5531,7 +5531,7 @@ periodics:
       - --deployment=gke
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
@@ -5561,7 +5561,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
@@ -5617,7 +5617,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
@@ -5701,7 +5701,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
@@ -5729,7 +5729,7 @@ periodics:
       - --node-tests=true
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --timeout=120m
       - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
@@ -6035,7 +6035,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
@@ -6117,7 +6117,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
@@ -6258,7 +6258,7 @@ periodics:
       - --node-tests=true
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --timeout=300m
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
@@ -6425,7 +6425,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
@@ -6480,7 +6480,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
@@ -6594,7 +6594,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
@@ -6624,7 +6624,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
@@ -6855,7 +6855,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gce
       - --gcp-zone=us-west1-b
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable3
@@ -6885,7 +6885,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
@@ -7154,7 +7154,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-beta
@@ -7184,7 +7184,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable2
@@ -7531,7 +7531,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
@@ -7589,7 +7589,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
-      - --image-family=cos-shielded-lts-1
+      - --image-family=cos-69-lts
       - --image-project=gke-node-images-test
       - --gcp-node-image=custom
       - --extract=ci/k8s-stable1
