@@ -318,11 +318,8 @@ presubmits:
 EOF
 
     cat >>"$base/$repo/$repo-config.yaml" <<EOF
-  - name: pull-sig-storage-$repo
-    # Experimental job, explicitly needs to be started with /test.
-    # This can be enabled once the components have the necessary configuration
-    # for this combination of deployment+Kubernetes.
-    always_run: false
+  - name: pull-kubernetes-csi-$repo
+    always_run: true
     decorate: true
     skip_report: false
     skip_branches: [$(skip_branches $repo)]

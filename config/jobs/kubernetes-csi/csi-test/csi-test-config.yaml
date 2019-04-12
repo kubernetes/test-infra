@@ -2,11 +2,8 @@
 
 presubmits:
   kubernetes-csi/csi-test:
-  - name: pull-sig-storage-csi-test
-    # Experimental job, explicitly needs to be started with /test.
-    # This can be enabled once the components have the necessary configuration
-    # for this combination of deployment+Kubernetes.
-    always_run: false
+  - name: pull-kubernetes-csi-csi-test
+    always_run: true
     decorate: true
     skip_report: false
     skip_branches: ["^(release-0.3|release-1.0|saad-ali-patch-1|saad-ali-patch-2|v0.1.0|v0.2.0)$"]
