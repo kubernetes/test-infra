@@ -665,6 +665,11 @@ repos:
   kubernetes/community:
     labels:
       - color: 0052cc
+        description: Issues or PRs related to the Contributor Summit in China
+        name: area/cn-summit
+        target: both
+        addedBy: label
+      - color: 0052cc
         description: Issues or PRs related to kubernetes code organization
         name: area/code-organization
         target: both
@@ -680,33 +685,13 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
-        description: Issues or PRs related to all contributor summit events
+        description: Issues or PRs related to all Contributor Summit events
         name: area/contributor-summit
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to the contributor summit in North America
-        name: area/na-summit
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to the Contributor Summit in China
-        name: area/cn-summit
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to the Contributor Summit in Europe
-        name: area/eu-summit
         target: both
         addedBy: label
       - color: 0052cc
         description: Issues or PRs related to deflaking kubernetes tests
         name: area/deflake
-        target: both
-        addedBy: label
-      - color: 0052cc
-        description: Issues or PRs related to refactoring the kubernetes e2e test framework
-        name: area/e2e-test-framework
         target: both
         addedBy: label
       - color: 0052cc
@@ -717,6 +702,21 @@ repos:
       - color: 0052cc
         description: Issues or PRs related to the devstats subproject
         name: area/devstats
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to refactoring the kubernetes e2e test framework
+        name: area/e2e-test-framework
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to the Contributor Summit in North America
+        name: area/na-summit
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to the Contributor Summit in Europe
+        name: area/eu-summit
         target: both
         addedBy: label
       - color: 0052cc
