@@ -484,17 +484,24 @@ func description(cond duckv1alpha1.Condition, fallback string) string {
 }
 
 const (
-	descScheduling = "scheduling"
-	descRunning    = "running"
-	descSucceeded  = "succeeded"
-	descFailed     = "failed"
-	descUnknown    = "unknown status"
+	descScheduling       = "scheduling"
+	descInitializing     = "initializing"
+	descRunning          = "running"
+	descSucceeded        = "succeeded"
+	descFailed           = "failed"
+	descUnknown          = "unknown status"
+	descMissingCondition = "missing end condition"
 )
 
 // prowJobStatus returns the desired state and description based on the pipeline status
 func prowJobStatus(ps pipelinev1alpha1.PipelineRunStatus) (prowjobv1.ProwJobState, string) {
+	started := ps.StartTime
+	finished := ps.CompletionTime
 	pcond := ps.GetCondition(duckv1alpha1.ConditionSucceeded)
 	if pcond == nil {
+		if !finished.IsZero() {
+			return prowjobv1.ErrorState, descMissingCondition
+		}
 		return prowjobv1.TriggeredState, descScheduling
 	}
 	cond := *pcond
@@ -503,7 +510,9 @@ func prowJobStatus(ps pipelinev1alpha1.PipelineRunStatus) (prowjobv1.ProwJobStat
 		return prowjobv1.SuccessState, description(cond, descSucceeded)
 	case cond.Status == untypedcorev1.ConditionFalse:
 		return prowjobv1.FailureState, description(cond, descFailed)
-	case cond.Status == untypedcorev1.ConditionUnknown:
+	case started.IsZero():
+		return prowjobv1.TriggeredState, description(cond, descInitializing)
+	case cond.Status == untypedcorev1.ConditionUnknown, finished.IsZero():
 		return prowjobv1.PendingState, description(cond, descRunning)
 	}
 

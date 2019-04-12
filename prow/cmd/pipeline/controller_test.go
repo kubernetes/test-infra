@@ -1057,6 +1057,8 @@ func TestDescription(t *testing.T) {
 }
 
 func TestProwJobStatus(t *testing.T) {
+	now := metav1.Now()
+	later := metav1.NewTime(now.Time.Add(1 * time.Hour))
 	cases := []struct {
 		name     string
 		input    pipelinev1alpha1.PipelineRunStatus
@@ -1100,7 +1102,7 @@ func TestProwJobStatus(t *testing.T) {
 			fallback: descFailed,
 		},
 		{
-			name: "unstarted job returns pending/running",
+			name: "unstarted job returns triggered/initializing",
 			input: pipelinev1alpha1.PipelineRunStatus{
 				Conditions: []duckv1alpha1.Condition{
 					{
@@ -1110,13 +1112,14 @@ func TestProwJobStatus(t *testing.T) {
 					},
 				},
 			},
-			state:    prowjobv1.PendingState,
+			state:    prowjobv1.TriggeredState,
 			desc:     "hola",
-			fallback: descRunning,
+			fallback: descInitializing,
 		},
 		{
 			name: "unfinished job returns running",
 			input: pipelinev1alpha1.PipelineRunStatus{
+				StartTime: now.DeepCopy(),
 				Conditions: []duckv1alpha1.Condition{
 					{
 						Type:    duckv1alpha1.ConditionSucceeded,
@@ -1132,6 +1135,8 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "pipelines with unknown success status are still running",
 			input: pipelinev1alpha1.PipelineRunStatus{
+				StartTime:      now.DeepCopy(),
+				CompletionTime: later.DeepCopy(),
 				Conditions: []duckv1alpha1.Condition{
 					{
 						Type:    duckv1alpha1.ConditionSucceeded,
@@ -1145,10 +1150,13 @@ func TestProwJobStatus(t *testing.T) {
 			fallback: descRunning,
 		},
 		{
-			name:  "completed pipelines without a succeeded condition end in tirggered/scheduling",
-			input: pipelinev1alpha1.PipelineRunStatus{},
-			state: prowjobv1.TriggeredState,
-			desc:  descScheduling,
+			name: "completed pipelines without a succeeded condition end in error",
+			input: pipelinev1alpha1.PipelineRunStatus{
+				StartTime:      now.DeepCopy(),
+				CompletionTime: later.DeepCopy(),
+			},
+			state: prowjobv1.ErrorState,
+			desc:  descMissingCondition,
 		},
 	}
 
