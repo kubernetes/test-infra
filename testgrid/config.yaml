@@ -3654,6 +3654,14 @@ test_groups:
   alert_stale_results_hours: 24
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 
+- name: pull-community-tempelis-check
+  gcs_prefix: kubernetes-jenkins/pr-logs/community/directory/pull-community-tempelis-check
+- name: post-community-tempelis-apply
+  gcs_prefix: kubernetes-jenkins/logs/community/post-community-tempelis-apply
+  alert_options:
+    alert_mail_to_addresses: ktbry@google.com
+    num_failures_to_alert: 1
+
 #
 # Start dashboards
 #
@@ -5337,6 +5345,13 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster
   - name: gke-gci-1.13-gci-1.12-downgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
+
+- name: sig-contribex-tempelis
+  dashboard_tab:
+  - name: presubmit
+    test_group_name: pull-community-tempelis-check
+  - name: postsubmit
+    test_group_name: post-community-tempelis-apply
 
 - name: sig-release-misc
   dashboard_tab:
@@ -8287,6 +8302,10 @@ dashboard_groups:
   - sig-cluster-lifecycle-cluster-api-provider-gcp
   - sig-cluster-lifecycle-cluster-api-provider-openstack
   - sig-cluster-lifecycle-kops
+
+- name: sig-contribex
+  dashboard_names:
+  - sig-contribex-tempelis
 
 - name: sig-multicluster
   dashboard_names:
