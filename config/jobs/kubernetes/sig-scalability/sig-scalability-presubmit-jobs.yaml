@@ -205,6 +205,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true # TODO(fejta): https://github.com/kubernetes/kubernetes/issues/76484
 
   - name: pull-kubernetes-kubemark-e2e-gce-big
     always_run: true
@@ -265,6 +267,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true # TODO(fejta): https://github.com/kubernetes/kubernetes/issues/76484
 
   - name: pull-kubernetes-kubemark-e2e-gce-big
     always_run: true
@@ -325,6 +329,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true # TODO(fejta): https://github.com/kubernetes/kubernetes/issues/76484
 
   - name: pull-kubernetes-kubemark-e2e-gce-big
     always_run: true
@@ -385,6 +391,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true # TODO(fejta): https://github.com/kubernetes/kubernetes/issues/76484
 
   - name: pull-kubernetes-kubemark-e2e-gce-big
     always_run: true
@@ -445,6 +453,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true # TODO(fejta): https://github.com/kubernetes/kubernetes/issues/76484
 
   - name: pull-kubernetes-kubemark-e2e-gce-scale
     always_run: false
