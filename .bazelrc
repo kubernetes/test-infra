@@ -15,3 +15,10 @@ test:lint --test_tag_filters=lint
 # you can run non-lint tests with:
 # bazel test //... --config=unit
 test:unit --test_tag_filters=-lint
+
+build:remote --remote_cache=remotebuildexecution.googleapis.com
+build:remote --tls_enabled=true
+build:remote --remote_timeout=3600
+build:remote --auth_enabled=true
+
+build:remote-fejta --remote_instance_name=projects/fejta-prod/instances/default_instance
