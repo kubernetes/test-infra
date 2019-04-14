@@ -54,7 +54,10 @@ py_test(
         "stream_test.py",
         ":package-srcs",
     ],
-    data = ["schema.json"],
+    data = [
+        "buckets.yaml",
+        "schema.json",
+    ],
     deps = [
         "@requests",
         "@yaml",

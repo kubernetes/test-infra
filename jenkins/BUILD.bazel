@@ -7,7 +7,7 @@ py_test(
     data = [
         "//jobs",
         "//prow:config.yaml",
-    ],
+    ] + glob(["fake/**"]),
     deps = ["@yaml"],
 )
 
