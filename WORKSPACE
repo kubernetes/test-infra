@@ -31,10 +31,10 @@ versions.check(minimum_bazel_version = "0.23.0")
 
 git_repository(
     name = "io_bazel_rules_go",
-    commit = "c694c0f39b073bc991865080a4d01b56a2aa94c5",
+    commit = "3c34e66b0507056e83bcbd9c963ab9d7e6cb049f",
     remote = "https://github.com/bazelbuild/rules_go.git",
-    shallow_since = "1554506517 -0400",
-    #tag = "0.18.2",
+    shallow_since = "1555072240 -0400",
+    # tag = "0.18.3",
 )
 
 git_repository(
