@@ -46,12 +46,15 @@ func wait(ctx context.Context, entries []wrapper.Options) (bool, bool, int) {
 	var aborted bool
 	var failures int
 
-	for _, opt := range entries {
+	for i, opt := range entries {
 		returnCode, err := wrapper.WaitForMarker(ctx, opt.MarkerFile)
 		passed = passed && err == nil && returnCode == 0
 		aborted = aborted || returnCode == entrypoint.AbortedErrorCode
 		if returnCode != 0 && returnCode != entrypoint.PreviousErrorCode {
 			failures++
+		}
+		if err != nil {
+			logrus.Errorf("Error waiting for marker for %s: %v.", nameEntry(i, opt), err)
 		}
 	}
 	return passed, aborted, failures
@@ -66,7 +69,11 @@ func (o Options) Run(ctx context.Context) (int, error) {
 		return 0, fmt.Errorf("could not resolve job spec: %v", err)
 	}
 
-	ctx, cancel := context.WithCancel(ctx)
+	if o.DeprecatedWrapperOptions != nil {
+		// This only fires if the prowjob controller and sidecar are at different commits
+		logrus.Warnf("Using deprecated wrapper_options instead of entries. Please update prow/pod-utils/decorate before June 2019")
+	}
+	entries := o.entries()
 
 	// If we are being asked to terminate by the kubelet but we have
 	// NOT seen the test process exit cleanly, we need a to start
@@ -77,22 +84,12 @@ func (o Options) Run(ctx context.Context) (int, error) {
 	interrupt := make(chan os.Signal)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		select {
-		case s := <-interrupt:
-			logrus.Errorf("Received an interrupt: %s, cancelling...", s)
-			cancel()
-		case <-ctx.Done():
-		}
+		s := <-interrupt
+		logrus.Errorf("Received an interrupt: %s.", s)
+		o.doUpload(spec, false, true, true, entries)
 	}()
 
-	if o.DeprecatedWrapperOptions != nil {
-		// This only fires if the prowjob controller and sidecar are at different commits
-		logrus.Warnf("Using deprecated wrapper_options instead of entries. Please update prow/pod-utils/decorate before June 2019")
-	}
-	entries := o.entries()
 	passed, aborted, failures := wait(ctx, entries)
-
-	cancel()
 	// If we are being asked to terminate by the kubelet but we have
 	// seen the test process exit cleanly, we need a chance to upload
 	// artifacts to GCS. The only valid way for this program to exit
@@ -100,9 +97,7 @@ func (o Options) Run(ctx context.Context) (int, error) {
 	// uploading, so we ignore the signals.
 	signal.Ignore(os.Interrupt, syscall.SIGTERM)
 
-	buildLog := logReader(entries)
-	metadata := combineMetadata(entries)
-	return failures, o.doUpload(spec, passed, aborted, metadata, buildLog)
+	return failures, o.doUpload(spec, passed, aborted, false, entries)
 }
 
 const errorKey = "sidecar-errors"
@@ -166,9 +161,16 @@ func combineMetadata(entries []wrapper.Options) map[string]interface{} {
 	return metadata
 }
 
-func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool, metadata map[string]interface{}, logReader io.Reader) error {
+func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted, interrupt bool, entries []wrapper.Options) error {
+	buildLog := logReader(entries)
+	if interrupt {
+		buildLog = io.MultiReader(buildLog, strings.NewReader("The pod was interrupted by the kubelet and the test container(s) did not write to marker file(s)."))
+		// If the test containers do write to their marker files before the pod is
+		// terminated then this will be overwritten by the resulting extra upload.
+	}
+
 	uploadTargets := map[string]gcs.UploadFunc{
-		"build-log.txt": gcs.DataUpload(logReader),
+		"build-log.txt": gcs.DataUpload(buildLog),
 	}
 
 	var result string
@@ -186,7 +188,7 @@ func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool, metad
 		Timestamp: &now,
 		Passed:    &passed,
 		Result:    result,
-		Metadata:  metadata,
+		Metadata:  combineMetadata(entries),
 		// TODO(fejta): JobVersion,
 	}
 
