@@ -94,7 +94,7 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 		return fmt.Errorf("failed to fetch current state of configmap: %v", getErr)
 	}
 
-	if cm == nil {
+	if cm == nil || isNotFound {
 		cm = &coreapi.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
