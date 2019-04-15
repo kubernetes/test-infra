@@ -367,7 +367,6 @@ plugins:
   - lgtm
   - lifecycle   # Lets PRs & issues be flagged as stale
   - override
-  - project
   - size
   - skip  # Allows cleaning up stale commit statuses
   - verify-owners   # Validates OWNERS file changes in PRs.
