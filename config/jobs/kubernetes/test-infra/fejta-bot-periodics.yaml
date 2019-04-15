@@ -53,6 +53,10 @@ periodics:
       args:
       - |-
         --query=org:kubernetes
+        org:kubernetes-sigs
+        org:kubernetes-incubator
+        org:kubernetes-client
+        org:kubernetes-csi
         is:pr
         is:open
         -label:"cncf-cla: no"
@@ -85,6 +89,10 @@ periodics:
       args:
       - |-
         --query=org:kubernetes
+        org:kubernetes-sigs
+        org:kubernetes-incubator
+        org:kubernetes-client
+        org:kubernetes-csi
         -label:lifecycle/frozen
         label:lifecycle/rotten
       - --updated=720h
@@ -163,6 +171,10 @@ periodics:
       args:
       - |-
         --query=org:kubernetes
+        org:kubernetes-sigs
+        org:kubernetes-incubator
+        org:kubernetes-client
+        org:kubernetes-csi
         -label:lifecycle/frozen
         label:lifecycle/stale
         -label:lifecycle/rotten
@@ -199,6 +211,10 @@ periodics:
       args:
       - |-
         --query=org:kubernetes
+        org:kubernetes-sigs
+        org:kubernetes-incubator
+        org:kubernetes-client
+        org:kubernetes-csi
         -label:lifecycle/frozen
         -label:lifecycle/stale
         -label:lifecycle/rotten
