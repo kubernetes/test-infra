@@ -18,3 +18,18 @@ presubmits:
         - image: golang:1.11.5
           command:
             - "./hack/verify-build.sh"
+  - name: pull-slack-infra-test
+    decorate: true
+    path_alias: sigs.k8s.io/slack-infra
+    always_run: true
+    spec:
+      containers:
+        - image: golang:1.11.5
+          command:
+            - "go"
+          args:
+            - "test"
+            - "./..."
+          env:
+            - name: GO111MODULE
+              value: "on"
