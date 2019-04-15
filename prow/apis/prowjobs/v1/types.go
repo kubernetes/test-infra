@@ -73,7 +73,7 @@ const (
 	// KnativeBuildAgent means prow will schedule the job via a build-crd resource.
 	KnativeBuildAgent ProwJobAgent = "knative-build"
 	// TektonAgent means prow will schedule the job via a tekton PipelineRun CRD resource.
-	TektonAgent = "tekton"
+	TektonAgent = "tekton-pipeline"
 )
 
 const (
