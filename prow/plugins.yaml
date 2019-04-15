@@ -626,6 +626,9 @@ plugins:
   kubernetes-sigs/poseidon:
   - trigger
 
+  kubernetes-sigs/kube-batch:
+    - trigger
+
   kubernetes-sigs/cluster-api:
   - trigger
   - milestone
