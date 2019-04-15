@@ -25,7 +25,7 @@ presubmits:
         - --provider=gce
         - --test=false
         - --test-cmd=../test/e2e/test-fully-automated.sh
-        - --test-cmd-args=--focus=\[Disruptive\]
+        - --test-cmd-args=--focus="\[Disruptive\]"
         - --timeout=50m
         # docker-in-docker needs privileged mode
         securityContext:
