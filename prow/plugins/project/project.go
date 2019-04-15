@@ -52,6 +52,7 @@ var (
 )
 
 type githubClient interface {
+	BotName() (string, error)
 	CreateComment(owner, repo string, number int, comment string) error
 	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
 	GetRepos(org string, isUser bool) ([]github.Repo, error)
@@ -112,18 +113,11 @@ func updateProjectNameToIDMap(projects []github.Project) {
 	}
 }
 
-// parseCommand parses the user command and returns the proposed project name,
+// processRegexMatches processes the user command regex matches and returns the proposed project name,
 // proposed column name, whether the command is to remove issue/PR from project,
 // and the error message
-func parseCommand(command string) (string, string, bool, string) {
+func processRegexMatches(matches []string) (string, string, bool, string) {
 	var shouldClear = false
-	matches := projectRegex.FindStringSubmatch(command)
-
-	// No project is provided
-	if len(matches) == 0 {
-		msg := invalidNumArgs
-		return "", "", false, msg
-	}
 	proposedProject := matches[1]
 	proposedColumnName := ""
 	if len(matches) > 1 && proposedProject != clearKeyword {
@@ -144,13 +138,29 @@ func parseCommand(command string) (string, string, bool, string) {
 }
 
 func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, projectConfig plugins.ProjectConfig) error {
+	// Only handle new comments
 	if e.Action != github.GenericCommentActionCreated {
+		return nil
+	}
+
+	// Only handle comments that don't come from the bot
+	botName, err := gc.BotName()
+	if err != nil {
+		return err
+	}
+	if e.User.Login == botName {
+		return nil
+	}
+
+	// Only handle comments that match the regex
+	matches := projectRegex.FindStringSubmatch(e.Body)
+	if len(matches) == 0 {
 		return nil
 	}
 
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
-	proposedProject, proposedColumnName, shouldClear, msg := parseCommand(e.Body)
+	proposedProject, proposedColumnName, shouldClear, msg := processRegexMatches(matches)
 	if proposedProject == "" {
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
