@@ -73,6 +73,7 @@ filegroup(
         "//prow/plugins/heart:all-srcs",
         "//prow/plugins/help:all-srcs",
         "//prow/plugins/hold:all-srcs",
+        "//prow/plugins/invalidcommitmsg:all-srcs",
         "//prow/plugins/label:all-srcs",
         "//prow/plugins/lgtm:all-srcs",
         "//prow/plugins/lifecycle:all-srcs",
