@@ -3,10 +3,7 @@
 presubmits:
   kubernetes-csi/csi-driver-host-path:
   - name: pull-kubernetes-csi-csi-driver-host-path-1-13-on-kubernetes-1-13
-    # Experimental job, explicitly needs to be started with /test.
-    # This can be enabled once the components have the necessary configuration
-    # for this combination of deployment+Kubernetes.
-    always_run: false
+    always_run: true
     decorate: true
     skip_report: false
     skip_branches: []
@@ -41,7 +38,7 @@ presubmits:
           requests:
             cpu: 2000m
   - name: pull-kubernetes-csi-csi-driver-host-path-1-13-on-kubernetes-master
-    # Experimental job, explicitly needs to be started with /test.
+    # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
     always_run: false
@@ -76,10 +73,7 @@ presubmits:
           # during the tests more like 3-20m is used
           cpu: 2000m
   - name: pull-kubernetes-csi-csi-driver-host-path-1-14-on-kubernetes-1-14
-    # Experimental job, explicitly needs to be started with /test.
-    # This can be enabled once the components have the necessary configuration
-    # for this combination of deployment+Kubernetes.
-    always_run: false
+    always_run: true
     decorate: true
     skip_report: false
     skip_branches: []
@@ -114,7 +108,7 @@ presubmits:
           requests:
             cpu: 2000m
   - name: pull-kubernetes-csi-csi-driver-host-path-1-14-on-kubernetes-master
-    # Experimental job, explicitly needs to be started with /test.
+    # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
     always_run: false
@@ -149,10 +143,7 @@ presubmits:
           # during the tests more like 3-20m is used
           cpu: 2000m
   - name: pull-kubernetes-csi-csi-driver-host-path-alpha-1-13-on-kubernetes-1-13
-    # Experimental job, explicitly needs to be started with /test.
-    # This can be enabled once the components have the necessary configuration
-    # for this combination of deployment+Kubernetes.
-    always_run: false
+    always_run: true
     decorate: true
     skip_report: false
     skip_branches: []
@@ -187,10 +178,7 @@ presubmits:
           requests:
             cpu: 2000m
   - name: pull-kubernetes-csi-csi-driver-host-path-alpha-1-14-on-kubernetes-1-14
-    # Experimental job, explicitly needs to be started with /test.
-    # This can be enabled once the components have the necessary configuration
-    # for this combination of deployment+Kubernetes.
-    always_run: false
+    always_run: true
     decorate: true
     skip_report: false
     skip_branches: []
@@ -225,10 +213,7 @@ presubmits:
           requests:
             cpu: 2000m
   - name: pull-kubernetes-csi-csi-driver-host-path-unit
-    # Experimental job, explicitly needs to be started with /test.
-    # This cannot be enabled by default because there's always the risk
-    # that something changes in master which breaks the pre-merge check.
-    always_run: false
+    always_run: true
     decorate: true
     skip_report: false
     labels:

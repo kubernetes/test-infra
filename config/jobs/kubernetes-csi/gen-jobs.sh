@@ -160,10 +160,7 @@ EOF
                 if echo "$kubernetes" | grep -q "^$deployment"; then
                     cat >>"$base/$repo/$repo-config.yaml" <<EOF
   - name: $(job_name "pull" "$repo" "$tests" "$deployment" "$kubernetes")
-    # Experimental job, explicitly needs to be started with /test.
-    # This can be enabled once the components have the necessary configuration
-    # for this combination of deployment+Kubernetes.
-    always_run: false
+    always_run: true
     decorate: true
     skip_report: false
     skip_branches: [$(skip_branches $repo)]
@@ -202,7 +199,7 @@ EOF
             if [ "$tests" != "alpha" ]; then
                 cat >>"$base/$repo/$repo-config.yaml" <<EOF
   - name: $(job_name "pull" "$repo" "$tests" "$deployment" master)
-    # Experimental job, explicitly needs to be started with /test.
+    # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
     always_run: false
@@ -237,10 +234,7 @@ EOF
 
     cat >>"$base/$repo/$repo-config.yaml" <<EOF
   - name: $(job_name "pull" "$repo" "unit")
-    # Experimental job, explicitly needs to be started with /test.
-    # This cannot be enabled by default because there's always the risk
-    # that something changes in master which breaks the pre-merge check.
-    always_run: false
+    always_run: true
     decorate: true
     skip_report: false
     labels:
@@ -277,10 +271,7 @@ EOF
     for tests in non-alpha unit alpha; do
         cat >>"$base/$repo/$repo-config.yaml" <<EOF
   - name: $(job_name "pull" "$repo" "$tests")
-    # Experimental job, explicitly needs to be started with /test.
-    # This can be enabled once the components have the necessary configuration
-    # for this combination of deployment+Kubernetes.
-    always_run: false
+    always_run: true
     decorate: true
     skip_report: false
     skip_branches: [$(skip_branches $repo)]
@@ -459,22 +450,3 @@ $(resources_for_kubernetes "$actual")
 EOF
     done
 done
-
-# This job can eventually get replaced by the generated job above.
-cat >>"$base/csi-lib-utils/csi-lib-utils-config.yaml" <<EOF
-  - name: pull-sig-storage-csi-lib-utils-stable
-    always_run: true
-    decorate: true
-    skip_report: false
-    spec:
-      containers:
-      # This image was chosen over the more often used kubekins-e2e because
-      # it is smaller and has everything we need (basically just a Go environment).
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20180927-6b4facbe6
-        command:
-        - make
-        args:
-        - -k # report as many failures as possible (if any) before finally failing
-        - all # build...
-        - test # ... and test
-EOF
