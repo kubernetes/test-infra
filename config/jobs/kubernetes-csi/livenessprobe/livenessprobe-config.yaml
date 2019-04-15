@@ -3,10 +3,7 @@
 presubmits:
   kubernetes-csi/livenessprobe:
   - name: pull-kubernetes-csi-livenessprobe
-    # Experimental job, explicitly needs to be started with /test.
-    # This can be enabled once the components have the necessary configuration
-    # for this combination of deployment+Kubernetes.
-    always_run: false
+    always_run: true
     decorate: true
     skip_report: false
     skip_branches: ["^(re|release-0.4|release-1.0|saad-ali-patch-1|saad-ali-patch-2|saad-ali-patch-3|saad-ali-patch-4)$"]
@@ -32,10 +29,7 @@ presubmits:
           requests:
             cpu: 2000m
   - name: pull-kubernetes-csi-livenessprobe-unit
-    # Experimental job, explicitly needs to be started with /test.
-    # This can be enabled once the components have the necessary configuration
-    # for this combination of deployment+Kubernetes.
-    always_run: false
+    always_run: true
     decorate: true
     skip_report: false
     skip_branches: ["^(re|release-0.4|release-1.0|saad-ali-patch-1|saad-ali-patch-2|saad-ali-patch-3|saad-ali-patch-4)$"]
@@ -61,10 +55,7 @@ presubmits:
           requests:
             cpu: 2000m
   - name: pull-kubernetes-csi-livenessprobe-alpha
-    # Experimental job, explicitly needs to be started with /test.
-    # This can be enabled once the components have the necessary configuration
-    # for this combination of deployment+Kubernetes.
-    always_run: false
+    always_run: true
     decorate: true
     skip_report: false
     skip_branches: ["^(re|release-0.4|release-1.0|saad-ali-patch-1|saad-ali-patch-2|saad-ali-patch-3|saad-ali-patch-4)$"]

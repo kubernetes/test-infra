@@ -3,10 +3,7 @@
 presubmits:
   kubernetes-csi/external-snapshotter:
   - name: pull-kubernetes-csi-external-snapshotter
-    # Experimental job, explicitly needs to be started with /test.
-    # This can be enabled once the components have the necessary configuration
-    # for this combination of deployment+Kubernetes.
-    always_run: false
+    always_run: true
     decorate: true
     skip_report: false
     skip_branches: ["^(errorhandling|k8s_1.12.0-beta.1|release-0.4|release-1.0|revert-72-pvclister|saad-ali-patch-1|saad-ali-patch-2|test-yang|updateSize)$"]
@@ -32,10 +29,7 @@ presubmits:
           requests:
             cpu: 2000m
   - name: pull-kubernetes-csi-external-snapshotter-unit
-    # Experimental job, explicitly needs to be started with /test.
-    # This can be enabled once the components have the necessary configuration
-    # for this combination of deployment+Kubernetes.
-    always_run: false
+    always_run: true
     decorate: true
     skip_report: false
     skip_branches: ["^(errorhandling|k8s_1.12.0-beta.1|release-0.4|release-1.0|revert-72-pvclister|saad-ali-patch-1|saad-ali-patch-2|test-yang|updateSize)$"]
@@ -61,10 +55,7 @@ presubmits:
           requests:
             cpu: 2000m
   - name: pull-kubernetes-csi-external-snapshotter-alpha
-    # Experimental job, explicitly needs to be started with /test.
-    # This can be enabled once the components have the necessary configuration
-    # for this combination of deployment+Kubernetes.
-    always_run: false
+    always_run: true
     decorate: true
     skip_report: false
     skip_branches: ["^(errorhandling|k8s_1.12.0-beta.1|release-0.4|release-1.0|revert-72-pvclister|saad-ali-patch-1|saad-ali-patch-2|test-yang|updateSize)$"]
