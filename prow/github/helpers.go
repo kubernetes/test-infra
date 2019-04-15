@@ -33,6 +33,16 @@ func HasLabel(label string, issueLabels []Label) bool {
 	return false
 }
 
+// hasLabels checks if all labels are in the github.label set "issueLabels"
+func HasLabels(labels []string, issueLabels []Label) bool {
+	for _, label := range labels {
+		if !HasLabel(label, issueLabels) {
+			return false
+		}
+	}
+	return true
+}
+
 // ImageTooBig checks if image is bigger than github limits
 func ImageTooBig(url string) (bool, error) {
 	// limit is 10MB

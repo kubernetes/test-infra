@@ -185,6 +185,7 @@ type ProjectClient interface {
 	GetOrgProjects(org string) ([]Project, error)
 	GetProjectColumns(projectID int) ([]ProjectColumn, error)
 	CreateProjectCard(columnID int, projectCard ProjectCard) (*ProjectCard, error)
+	GetColumnProjectCards(columnID int) ([]ProjectCard, error)
 	GetColumnProjectCard(columnID int, issueURL string) (*ProjectCard, error)
 	MoveProjectCard(projectCardID int, newColumnID int) error
 	DeleteProjectCard(projectCardID int) error
@@ -3118,11 +3119,10 @@ func (c *client) CreateProjectCard(columnID int, projectCard ProjectCard) (*Proj
 	return &retProjectCard, err
 }
 
-// GetColumnProjectCard of a specific issue or PR for a specific column in a board/project
-// This method requires the URL of the issue/pr to compare the issue with the content_url
-// field of the card.  See https://developer.github.com/v3/projects/cards/#list-project-cards
-func (c *client) GetColumnProjectCard(columnID int, issueURL string) (*ProjectCard, error) {
-	c.log("GetColumnProjectCard", columnID, issueURL)
+// GetProjectColumnCards get all project cards in a column. This helps in iterating all
+// issues and PRs that are under a column
+func (c *client) GetColumnProjectCards(columnID int) ([]ProjectCard, error) {
+	c.log("GetColumnProjectCards", columnID)
 	if c.fake {
 		return nil, nil
 	}
@@ -3139,6 +3139,14 @@ func (c *client) GetColumnProjectCard(columnID int, issueURL string) (*ProjectCa
 			cards = append(cards, *(obj.(*[]ProjectCard))...)
 		},
 	)
+	return cards, err
+}
+
+// GetColumnProjectCard of a specific issue or PR for a specific column in a board/project
+// This method requires the URL of the issue/pr to compare the issue with the content_url
+// field of the card.  See https://developer.github.com/v3/projects/cards/#list-project-cards
+func (c *client) GetColumnProjectCard(columnID int, issueURL string) (*ProjectCard, error) {
+	cards, err := c.GetColumnProjectCards(columnID)
 	if err != nil {
 		return nil, err
 	}
