@@ -42,6 +42,12 @@ const (
 	// SearchTimeFormat is a time.Time format string for ISO8601 which is the
 	// format that GitHub requires for times specified as part of a search query.
 	SearchTimeFormat = "2006-01-02T15:04:05Z"
+
+	// DefaultAPIEndpoint is the default GitHub API endpoint.
+	DefaultAPIEndpoint = "https://api.github.com"
+
+	// DefaultGraphQLEndpoint is the default GitHub GraphQL API endpoint.
+	DefaultGraphQLEndpoint = "https://api.github.com/graphql"
 )
 
 var (

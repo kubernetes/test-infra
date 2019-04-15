@@ -49,9 +49,9 @@ func (o *GitHubOptions) AddFlagsWithoutDefaultGitHubTokenPath(fs *flag.FlagSet) 
 }
 
 func (o *GitHubOptions) addFlags(wantDefaultGitHubTokenPath bool, fs *flag.FlagSet) {
-	o.endpoint = NewStrings("https://api.github.com")
+	o.endpoint = NewStrings(github.DefaultAPIEndpoint)
 	fs.Var(&o.endpoint, "github-endpoint", "GitHub's API endpoint (may differ for enterprise).")
-	fs.StringVar(&o.graphqlEndpoint, "github-graphql-endpoint", "https://api.github.com/graphql", "GitHub GraphQL API endpoint (may differ for enterprise).")
+	fs.StringVar(&o.graphqlEndpoint, "github-graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub GraphQL API endpoint (may differ for enterprise).")
 	defaultGitHubTokenPath := ""
 	if wantDefaultGitHubTokenPath {
 		defaultGitHubTokenPath = "/etc/github/oauth"

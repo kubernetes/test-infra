@@ -56,9 +56,9 @@ type options struct {
 
 func flagOptions() options {
 	o := options{
-		endpoint: flagutil.NewStrings("https://api.github.com"),
+		endpoint: flagutil.NewStrings(github.DefaultAPIEndpoint),
 	}
-	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", "https://api.github.com/graphql", "github graphql endpoint")
+	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "github graphql endpoint")
 	flag.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	flag.StringVar(&o.org, "org", "", "github org")
 	flag.StringVar(&o.repo, "repo", "", "github repo")

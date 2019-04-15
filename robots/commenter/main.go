@@ -58,7 +58,7 @@ const (
 
 func flagOptions() options {
 	o := options{
-		endpoint: flagutil.NewStrings("https://api.github.com"),
+		endpoint: flagutil.NewStrings(github.DefaultAPIEndpoint),
 	}
 	flag.StringVar(&o.query, "query", "", "See https://help.github.com/articles/searching-issues-and-pull-requests/")
 	flag.DurationVar(&o.updated, "updated", 2*time.Hour, "Filter to issues unmodified for at least this long if set")
@@ -68,7 +68,7 @@ func flagOptions() options {
 	flag.BoolVar(&o.useTemplate, "template", false, templateHelp)
 	flag.IntVar(&o.ceiling, "ceiling", 3, "Maximum number of issues to modify, 0 for infinite")
 	flag.Var(&o.endpoint, "endpoint", "GitHub's API endpoint")
-	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", "https://api.github.com/graphql", "GitHub's GraphQL API Endpoint")
+	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API Endpoint")
 	flag.StringVar(&o.token, "token", "", "Path to github token")
 	flag.BoolVar(&o.random, "random", false, "Choose random issues to comment on from the query")
 	flag.Parse()

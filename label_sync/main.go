@@ -119,8 +119,8 @@ const (
 var (
 	debug           = flag.Bool("debug", false, "Turn on debug to be more verbose")
 	confirm         = flag.Bool("confirm", false, "Make mutating API calls to GitHub.")
-	endpoint        = flagutil.NewStrings("https://api.github.com")
-	graphqlEndpoint = flag.String("graphql-endpoint", "https://api.github.com/graphql", "GitHub's GraphQL API endpoint")
+	endpoint        = flagutil.NewStrings(github.DefaultAPIEndpoint)
+	graphqlEndpoint = flag.String("graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API endpoint")
 	labelsPath      = flag.String("config", "", "Path to labels.yaml")
 	onlyRepos       = flag.String("only", "", "Only look at the following comma separated org/repos")
 	orgs            = flag.String("orgs", "", "Comma separated list of orgs to sync")
