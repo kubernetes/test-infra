@@ -3250,6 +3250,11 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-poseidon-verify
   num_columns_recent: 20
 
+# Kube-Batch
+- name: pull-kube-batch-verify
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kube-batch-verify
+  num_columns_recent: 20
+
 # Prow hosted conformance tests
 - name: ci-kubernetes-gce-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance
@@ -7746,6 +7751,11 @@ dashboards:
   - name: e2e
     test_group_name: ci-poseidon-e2e-gce
 
+- name: presubmits-kube-batch
+  dashboard_tab:
+    - name: verify
+      test_group_name: pull-kube-batch-verify
+
 - name: presubmits-node-problem-detector
   dashboard_tab:
   - name: pull-npd-build
@@ -8280,6 +8290,7 @@ dashboard_groups:
   - presubmits-kops
   - presubmits-node-problem-detector
   - presubmits-poseidon
+  - presubmits-kube-batch
   - presubmits-misc
 
 - name: sig-api-machinery
