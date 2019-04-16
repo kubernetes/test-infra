@@ -50,11 +50,6 @@ type options struct {
 	kubeconfig   string
 	totURL       string
 
-	// Create these values by following:
-	//   https://github.com/kelseyhightower/grafeas-tutorial/blob/master/pki/gen-certs.sh
-	cert       string
-	privateKey string
-
 	// This is a termporary flag which gates the usage of plank.allow_cancellations config value
 	// for build aborter.
 	// TODO remove this flag and use directly the config flag.
@@ -75,14 +70,9 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	flags.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to kubeconfig. Only required if out of cluster")
 	flags.StringVar(&o.config, "config", "", "Path to prow config.yaml")
 	flags.StringVar(&o.buildCluster, "build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
-	flags.StringVar(&o.cert, "tls-cert-file", "", "Path to x509 certificate for HTTPS")
-	flags.StringVar(&o.privateKey, "tls-private-key-file", "", "Path to matching x509 private key.")
 	flags.BoolVar(&o.useAllowCancellations, "use-allow-cancellations", false, "Gates the usage of plank.allow_cancellations config flag for build aborter")
 	if err := flags.Parse(args); err != nil {
 		return fmt.Errorf("parse flags: %v", err)
-	}
-	if (len(o.cert) == 0) != (len(o.privateKey) == 0) {
-		return errors.New("Both --tls-cert-file and --tls-private-key-file are required for HTTPS")
 	}
 	if o.kubeconfig != "" && o.buildCluster != "" {
 		return errors.New("deprecated --build-cluster may not be used with --kubeconfig")
@@ -192,11 +182,6 @@ func main() {
 			logrus.WithError(err).Fatalf("Failed to create %s build client", context)
 		}
 		buildConfigs[context] = *bc
-	}
-
-	// TODO(fejta): move to its own binary
-	if len(o.cert) > 0 {
-		go runServer(o.cert, o.privateKey)
 	}
 
 	opts := controllerOptions{
