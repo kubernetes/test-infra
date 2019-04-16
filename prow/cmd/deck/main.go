@@ -323,6 +323,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 			},
 			hiddenRepos: cfg().Deck.HiddenRepos,
 			hiddenOnly:  o.hiddenOnly,
+			showHidden:  o.showHidden,
 		}
 		ta.start()
 		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTidePools(cfg, ta)))
