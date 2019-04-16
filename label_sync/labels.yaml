@@ -1101,6 +1101,12 @@ repos:
         prowPlugin: label
         addedBy: anyone
       - color: e9b3f9
+        description: Issues or PRs related to Indonesian language
+        name: language/id
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
         description: Issues or PRs related to Italian language
         name: language/it
         target: both
@@ -1121,6 +1127,12 @@ repos:
       - color: e9b3f9
         description: Issues or PRs related to Norwegian language
         name: language/no
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
+        description: Issues or PRs related to Portuguese language
+        name: language/pt
         target: both
         prowPlugin: label
         addedBy: anyone
