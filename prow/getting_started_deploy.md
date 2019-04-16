@@ -124,7 +124,7 @@ The `oauth-token` is an OAuth2 token that has read and write access to the bot a
 - Token must have `public_repo` and `repo:status` scopes (and repo for private repos), more details [here][8].
 
 Generate it from the
-[account's settings -> Personal access tokens -> Generate new token][1].
+[account's Settings -> Developer settings -> Personal access tokens -> Generate new token][1].
 
 ```sh
 # https://github.com/settings/tokens
