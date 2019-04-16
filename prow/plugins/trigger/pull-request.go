@@ -19,17 +19,21 @@ package trigger
 import (
 	"encoding/json"
 	"fmt"
-	"k8s.io/test-infra/prow/pjutil"
 	"net/url"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) error {
+	if len(c.Config.Presubmits[pr.PullRequest.Base.Repo.FullName]) == 0 {
+		return nil
+	}
+
 	org, repo, a := orgRepoAuthor(pr.PullRequest)
 	author := string(a)
 	num := pr.PullRequest.Number
