@@ -24,10 +24,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	wait "k8s.io/apimachinery/pkg/util/wait"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/pjutil"
@@ -94,6 +96,28 @@ type Build struct {
 	Number   int     `json:"number"`
 	Result   *string `json:"result"`
 	enqueued bool
+}
+
+// ParameterDefinition holds information about a build parameter
+type ParameterDefinition struct {
+	DefaultParameterValue Parameter `json:"defaultParameterValue,omitempty"`
+	Description           string    `json:"description"`
+	Name                  string    `json:"name"`
+	Type                  string    `json:"type"`
+}
+
+// JobProperty is a generic Jenkins job property,
+// but ParameterDefinitions is specific to Build Parameters
+type JobProperty struct {
+	Class                string                `json:"_class"`
+	ParameterDefinitions []ParameterDefinition `json:"parameterDefinitions,omitempty"`
+}
+
+// JobInfo holds infofmation about a job from $job/api/json endpoint
+type JobInfo struct {
+	Builds    []Build       `json:"builds"`
+	LastBuild *Build        `json:"lastBuild,omitempty"`
+	Property  []JobProperty `json:"property"`
 }
 
 // IsRunning means the job started but has not finished.
@@ -401,12 +425,164 @@ func getJobName(spec *prowapi.ProwJobSpec) string {
 	return spec.Job
 }
 
-// getRequestPath builds an approriate path to use for this Jenkins Job.
-func getRequestPath(spec *prowapi.ProwJobSpec) string {
+// getJobInfoPath builds an approriate path to use for this Jenkins Job to get the job information
+func getJobInfoPath(spec *prowapi.ProwJobSpec) string {
+	jenkinsJobName := getJobName(spec)
+	jenkinsPath := fmt.Sprintf("/job/%s/api/json", jenkinsJobName)
+
+	return jenkinsPath
+}
+
+// getBuildPath builds a path to trigger a regular build for this job
+func getBuildPath(spec *prowapi.ProwJobSpec) string {
+	jenkinsJobName := getJobName(spec)
+	jenkinsPath := fmt.Sprintf("/job/%s/build", jenkinsJobName)
+
+	return jenkinsPath
+}
+
+// getBuildWithParametersPath builds a path to trigger a build with parameters for this job
+func getBuildWithParametersPath(spec *prowapi.ProwJobSpec) string {
 	jenkinsJobName := getJobName(spec)
 	jenkinsPath := fmt.Sprintf("/job/%s/buildWithParameters", jenkinsJobName)
 
 	return jenkinsPath
+}
+
+// GetJobInfo retrieves Jenkins job information
+func (c *Client) GetJobInfo(spec *prowapi.ProwJobSpec) (*JobInfo, error) {
+	path := getJobInfoPath(spec)
+	c.logger.Debugf("getJobInfoPath: %s", path)
+
+	data, err := c.Get(path)
+
+	if err != nil {
+		c.logger.Errorf("Failed to get job info: %v", err)
+		return nil, err
+	}
+
+	var jobInfo JobInfo
+
+	if err := json.Unmarshal(data, &jobInfo); err != nil {
+		return nil, fmt.Errorf("Cannot unmarshal job info from API: %v", err)
+	}
+
+	c.logger.Tracef("JobInfo: %+v", jobInfo)
+
+	return &jobInfo, nil
+}
+
+// JobParameterized tells us if the Jenkins job for this ProwJob is parameterized
+func (c *Client) JobParameterized(jobInfo *JobInfo) bool {
+	for _, prop := range jobInfo.Property {
+		if prop.ParameterDefinitions != nil && len(prop.ParameterDefinitions) > 0 {
+			return true
+		}
+	}
+
+	return false
+}
+
+// EnsureBuildableJob attempts to detect a job that hasn't yet ran and populated
+// its parameters. If detected, it tries to run a build until the job parameters
+// are processed, then it aborts the build.
+func (c *Client) EnsureBuildableJob(spec *prowapi.ProwJobSpec) error {
+	var jobInfo *JobInfo
+
+	// wait at most 20 seconds for the job to appear
+	getJobInfoBackoff := wait.Backoff{
+		Duration: time.Duration(10) * time.Second,
+		Factor:   1,
+		Jitter:   0,
+		Steps:    2,
+	}
+
+	getJobErr := wait.ExponentialBackoff(getJobInfoBackoff, func() (bool, error) {
+		var jobErr error
+		jobInfo, jobErr = c.GetJobInfo(spec)
+
+		if jobErr != nil && !strings.Contains(strings.ToLower(jobErr.Error()), "404 not found") {
+			return false, jobErr
+		}
+
+		return jobInfo != nil, nil
+	})
+
+	if getJobErr != nil {
+		return fmt.Errorf("Job %v does not exist", spec.Job)
+	}
+
+	isParameterized := c.JobParameterized(jobInfo)
+
+	c.logger.Tracef("JobHasParameters: %v", isParameterized)
+
+	if isParameterized || len(jobInfo.Builds) > 0 {
+		return nil
+	}
+
+	buildErr := c.LaunchBuild(spec, nil)
+
+	if buildErr != nil {
+		return buildErr
+	}
+
+	backoff := wait.Backoff{
+		Duration: time.Duration(5) * time.Second,
+		Factor:   1,
+		Jitter:   1,
+		Steps:    10,
+	}
+
+	return wait.ExponentialBackoff(backoff, func() (bool, error) {
+		c.logger.Debugf("Waiting for job %v to become parameterized", spec.Job)
+
+		jobInfo, _ := c.GetJobInfo(spec)
+		isParameterized := false
+
+		if jobInfo != nil {
+			isParameterized = c.JobParameterized(jobInfo)
+
+			if isParameterized && jobInfo.LastBuild != nil {
+				c.logger.Debugf("Job %v is now parameterized, aborting the build", spec.Job)
+				err := c.Abort(getJobName(spec), jobInfo.LastBuild)
+
+				if err != nil {
+					c.logger.Infof("Couldn't abort build #%v for job %v: %v", jobInfo.LastBuild.Number, spec.Job, err)
+				}
+			}
+		}
+
+		// don't stop on (possibly) intermittent errors
+		return isParameterized, nil
+	})
+}
+
+// LaunchBuild launches a regular or parameterized Jenkins build, depending on
+// whether or not we have `params` to POST
+func (c *Client) LaunchBuild(spec *prowapi.ProwJobSpec, params url.Values) error {
+	var path string
+
+	if params != nil {
+		path = getBuildWithParametersPath(spec)
+	} else {
+		path = getBuildPath(spec)
+	}
+
+	c.logger.Debugf("getBuildPath/getBuildWithParametersPath: %s", path)
+
+	resp, err := c.request(http.MethodPost, path, params, true)
+
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 201 {
+		return fmt.Errorf("response not 201: %s", resp.Status)
+	}
+
+	return nil
 }
 
 // Build triggers a Jenkins build for the provided ProwJob. The name of
@@ -431,18 +607,12 @@ func (c *Client) BuildFromSpec(spec *prowapi.ProwJobSpec, buildID, prowJobID str
 	for key, value := range env {
 		params.Set(key, value)
 	}
-	path := getRequestPath(spec)
-	c.logger.Debugf("getRequestPath: %s", path)
 
-	resp, err := c.request(http.MethodPost, path, params, true)
-	if err != nil {
-		return err
+	if err := c.EnsureBuildableJob(spec); err != nil {
+		return fmt.Errorf("Job %v cannot be build: %v", spec.Job, err)
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 201 {
-		return fmt.Errorf("response not 201: %s", resp.Status)
-	}
-	return nil
+
+	return c.LaunchBuild(spec, params)
 }
 
 // ListBuilds returns a list of all Jenkins builds for the
