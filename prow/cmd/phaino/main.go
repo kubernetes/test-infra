@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -58,7 +59,30 @@ func gatherOptions() options {
 	return o
 }
 
-func readPJ(reader io.Reader) (*prowapi.ProwJob, error) {
+func validate(pj prowapi.ProwJob) error {
+	switch {
+	case pj.Kind != "ProwJob":
+		return fmt.Errorf("bad kind: %q", pj.Kind)
+	case pj.Spec.PodSpec == nil && pj.Spec.Agent != prowapi.KubernetesAgent:
+		return fmt.Errorf("unsupported agent: %q. Only %q with a pod_spec is supported at present", pj.Spec.Agent, prowapi.KubernetesAgent)
+	case pj.Spec.PodSpec == nil:
+		return errors.New("empty pod_spec")
+	}
+	return nil
+}
+
+func readPJ(ctx context.Context, reader io.ReadCloser) (*prowapi.ProwJob, error) {
+	read, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() {
+		select {
+		case <-read.Done():
+			// finished reading
+		case <-ctx.Done():
+			logrus.Info("Interrupting read...")
+			reader.Close() // interrupt reading
+		}
+	}()
 	var pj prowapi.ProwJob
 	buf, err := ioutil.ReadAll(reader)
 	if err != nil {
@@ -67,23 +91,23 @@ func readPJ(reader io.Reader) (*prowapi.ProwJob, error) {
 	if err := yaml.Unmarshal(buf, &pj); err != nil {
 		return nil, fmt.Errorf("unmarshal: %v", err)
 	}
-	if pj.Kind != "ProwJob" {
-		return nil, fmt.Errorf("bad kind: %q", pj.Kind)
+	if err := validate(pj); err != nil {
+		return nil, fmt.Errorf("validate: %v", err)
 	}
 	return &pj, nil
 }
 
-func readFile(path string) (*prowapi.ProwJob, error) {
+func readFile(ctx context.Context, path string) (*prowapi.ProwJob, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("open: %v", err)
 	}
 	defer f.Close()
-	return readPJ(f)
+	return readPJ(ctx, f)
 
 }
 
-func readHTTP(url string) (*prowapi.ProwJob, error) {
+func readHTTP(ctx context.Context, url string) (*prowapi.ProwJob, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("get: %v", err)
@@ -92,7 +116,7 @@ func readHTTP(url string) (*prowapi.ProwJob, error) {
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return nil, fmt.Errorf("bad status: %d", resp.StatusCode)
 	}
-	return readPJ(resp.Body)
+	return readPJ(ctx, resp.Body)
 }
 
 func readPJs(ctx context.Context, jobs []string) (<-chan prowapi.ProwJob, <-chan error) {
@@ -103,12 +127,18 @@ func readPJs(ctx context.Context, jobs []string) (<-chan prowapi.ProwJob, <-chan
 		defer close(errch)
 		if len(jobs) == 0 {
 			logrus.Info("Converting stdin prowjob...")
-			pj, err := readPJ(os.Stdin)
+			pj, err := readPJ(ctx, os.Stdin)
 			if err != nil {
-				errch <- err
+				select {
+				case errch <- err:
+				case <-ctx.Done():
+				}
 				return
 			}
-			ch <- *pj
+			select {
+			case ch <- *pj:
+			case <-ctx.Done():
+			}
 			return
 		}
 		for _, j := range jobs {
@@ -116,18 +146,28 @@ func readPJs(ctx context.Context, jobs []string) (<-chan prowapi.ProwJob, <-chan
 			var err error
 			if strings.HasPrefix(j, "https:") || strings.HasPrefix(j, "http:") {
 				logrus.WithField("url", j).Info("Downloading...")
-				pj, err = readHTTP(j)
+				pj, err = readHTTP(ctx, j)
 			} else {
 				logrus.WithField("path", j).Info("Reading...")
-				pj, err = readFile(j)
+				pj, err = readFile(ctx, j)
 			}
 			if err != nil {
-				errch <- fmt.Errorf("%q: %v", j, err)
+				select {
+				case errch <- fmt.Errorf("%q: %v", j, err):
+				case <-ctx.Done():
+				}
 				return
 			}
-			ch <- *pj
+			select {
+			case ch <- *pj:
+			case <-ctx.Done():
+				return
+			}
 		}
-		errch <- nil
+		select {
+		case errch <- nil:
+		case <-ctx.Done():
+		}
 	}()
 	return ch, errch
 }

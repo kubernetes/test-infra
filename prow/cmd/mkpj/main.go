@@ -269,7 +269,7 @@ func main() {
 	}
 	fmt.Print(string(b))
 	if o.local {
-		logrus.Info("Use 'bazel run //prow/cmd/oikos' to run this job locally in docker")
+		logrus.Info("Use 'bazel run //prow/cmd/phaino' to run this job locally in docker")
 	}
 }
 
