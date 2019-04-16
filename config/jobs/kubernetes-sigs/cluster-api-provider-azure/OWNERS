@@ -8,4 +8,7 @@ approvers:
 - karataliu
 - khenidak
 - soggiest
-- tariq1890
+reviewers:
+- awesomenix
+- juan-lee
+- serbrech
