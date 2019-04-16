@@ -111,7 +111,6 @@ spec:
     JSONPath: .status.completionTime
   - name: State
     description: The state of the job.
-    name: state
     type: string
     JSONPath: .status.state
 ---
