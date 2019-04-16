@@ -47,6 +47,8 @@ type options struct {
 	org        string
 	repo       string
 
+	local bool
+
 	github       prowflagutil.GitHubOptions
 	githubClient githubClient
 	pullRequest  *github.PullRequest
@@ -90,6 +92,9 @@ func (o *options) defaultPR(pjs *prowapi.ProwJobSpec) error {
 }
 
 func (o *options) defaultBaseRef(pjs *prowapi.ProwJobSpec) error {
+	if pjs.Refs == nil {
+		return nil
+	}
 	if pjs.Refs.BaseRef == "" {
 		if o.pullNumber != 0 {
 			pr, err := o.getPullRequest()
@@ -143,9 +148,10 @@ func (o *options) Validate() error {
 }
 
 func gatherOptions() options {
-	o := options{}
+	var o options
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.StringVar(&o.jobName, "job", "", "Job to run.")
+	fs.BoolVar(&o.local, "local", false, "Print help for running locally")
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.baseRef, "base-ref", "", "Git base ref under test")
@@ -161,24 +167,24 @@ func gatherOptions() options {
 func main() {
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
-		logrus.Fatalf("Invalid options: %v", err)
+		logrus.WithError(err).Fatalf("Bad flags")
 	}
 
 	conf, err := config.Load(o.configPath, o.jobConfigPath)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error loading config.")
+		logrus.WithError(err).Fatal("Error loading config")
 	}
 
 	var secretAgent *secret.Agent
 	if o.github.TokenPath != "" {
 		secretAgent = &secret.Agent{}
 		if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
-			logrus.Fatalf("Failed to start secret agent: %v", err)
+			logrus.WithError(err).Fatal("Failed to start secret agent")
 		}
 	}
 	o.githubClient, err = o.github.GitHubClient(secretAgent, false)
 	if err != nil {
-		logrus.Fatalf("failed to get GitHub client: %v", err)
+		logrus.WithError(err).Fatal("Failed to get GitHub client")
 	}
 
 	var pjs prowapi.ProwJobSpec
@@ -248,12 +254,12 @@ func main() {
 	}
 	if needsPR {
 		if err := o.defaultPR(&pjs); err != nil {
-			logrus.Fatalf("failed to default PR: %v", err)
+			logrus.WithError(err).Fatal("Failed to default PR")
 		}
 	}
 	if needsBaseRef {
 		if err := o.defaultBaseRef(&pjs); err != nil {
-			logrus.Fatalf("failed to default base ref: %v", err)
+			logrus.WithError(err).Fatal("Failed to default base ref")
 		}
 	}
 	pj := pjutil.NewProwJob(pjs, labels)
@@ -262,6 +268,9 @@ func main() {
 		logrus.WithError(err).Fatal("Error marshalling YAML.")
 	}
 	fmt.Print(string(b))
+	if o.local {
+		logrus.Info("Use 'bazel run //prow/cmd/oikos' to run this job locally in docker")
+	}
 }
 
 func splitRepoName(repo string) (string, string, error) {
