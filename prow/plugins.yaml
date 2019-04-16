@@ -409,6 +409,9 @@ plugins:
   - wip
   - yuks
 
+  kubernetes/client-go:
+  - trigger
+
   kubernetes/cloud-provider-aws:
   - milestone
   - milestonestatus
