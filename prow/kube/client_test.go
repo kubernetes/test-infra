@@ -37,6 +37,9 @@ import (
 	"time"
 
 	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
+
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 func getClient(url string) *Client {
@@ -81,7 +84,7 @@ func TestSetHiddenReposProviderGet(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	c.SetHiddenReposProvider(func() []string { return []string{"hidden-org"} }, false)
+	c.SetHiddenReposProvider(func() []string { return []string{"hidden-org"} }, false, false)
 	pj, err := c.GetProwJob("pja")
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
@@ -112,7 +115,7 @@ func TestHiddenReposProviderGet(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	c.SetHiddenReposProvider(func() []string { return []string{"hidden-org"} }, true)
+	c.SetHiddenReposProvider(func() []string { return []string{"hidden-org"} }, true, false)
 	pj, err := c.GetProwJob("pjb")
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
@@ -134,7 +137,7 @@ func TestSetHiddenReposProviderList(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	c.SetHiddenReposProvider(func() []string { return []string{"org/hidden-repo"} }, false)
+	c.SetHiddenReposProvider(func() []string { return []string{"org/hidden-repo"} }, false, false)
 	pjs, err := c.ListProwJobs(EmptySelector)
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
@@ -159,7 +162,7 @@ func TestHiddenReposProviderList(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	c.SetHiddenReposProvider(func() []string { return []string{"org/hidden-repo"} }, true)
+	c.SetHiddenReposProvider(func() []string { return []string{"org/hidden-repo"} }, true, false)
 	pjs, err := c.ListProwJobs(EmptySelector)
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
@@ -567,4 +570,68 @@ clientKey: "key1"
 			t.Errorf("Expected cluster config to produce map %v, but got %v.", expect, got)
 		}
 	}
+}
+
+func TestShouldHide(t *testing.T) {
+	testCases := []struct {
+		name           string
+		pj             *prowapi.ProwJob
+		hiddenRepos    sets.String
+		showHiddenOnly bool
+		showHidden     bool
+		expectedResult bool
+	}{
+		{
+			name: "Hidden job is omitted",
+			pj: &prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					Refs: &prowapi.Refs{
+						Org:  "my-org",
+						Repo: "my-repo",
+					},
+				},
+			},
+			hiddenRepos:    sets.NewString("my-org/my-repo"),
+			expectedResult: true,
+		},
+		{
+			name: "Hidden job is returned with showHiddenOnly",
+			pj: &prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					Refs: &prowapi.Refs{
+						Org:  "my-org",
+						Repo: "my-repo",
+					},
+				},
+			},
+			hiddenRepos:    sets.NewString("my-org/my-repo"),
+			showHiddenOnly: true,
+			expectedResult: false,
+		},
+		{
+			name: "Hidden job is returned with showHidden",
+			pj: &prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					Refs: &prowapi.Refs{
+						Org:  "my-org",
+						Repo: "my-repo",
+					},
+				},
+			},
+			hiddenRepos:    sets.NewString("my-org/my-repo"),
+			showHidden:     true,
+			expectedResult: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := shouldHide(tc.pj, tc.hiddenRepos, tc.showHiddenOnly, tc.showHidden)
+			if result != tc.expectedResult {
+				t.Errorf("Expected result to be %t but was %t", tc.expectedResult, result)
+			}
+		})
+	}
+
+	//func shouldHide(pj *prowapi.ProwJob, hiddenRepos sets.String, showHiddenOnly, showHidden bool) bool {
 }

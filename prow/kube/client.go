@@ -78,14 +78,16 @@ type Client struct {
 
 	hiddenReposProvider func() []string
 	hiddenOnly          bool
+	showHidden          bool
 }
 
 // SetHiddenReposProvider takes a continuation that fetches a list of orgs and repos for
 // which PJs should not be returned.
 // NOTE: This function is not thread safe and should be called before the client is in use.
-func (c *Client) SetHiddenReposProvider(p func() []string, hiddenOnly bool) {
+func (c *Client) SetHiddenReposProvider(p func() []string, hiddenOnly, showHidden bool) {
 	c.hiddenReposProvider = p
 	c.hiddenOnly = hiddenOnly
+	c.showHidden = showHidden
 }
 
 // Namespace returns a copy of the client pointing at the specified namespace.
@@ -486,10 +488,13 @@ func (c *Client) getHiddenRepos() sets.String {
 	return sets.NewString(c.hiddenReposProvider()...)
 }
 
-func shouldHide(pj *prowapi.ProwJob, hiddenRepos sets.String, showHiddenOnly bool) bool {
+func shouldHide(pj *prowapi.ProwJob, hiddenRepos sets.String, showHiddenOnly, showHidden bool) bool {
 	if pj.Spec.Refs == nil {
 		// periodic jobs do not have refs and therefore cannot be
 		// hidden by the org/repo mechanism
+		return false
+	}
+	if showHidden {
 		return false
 	}
 	shouldHide := hiddenRepos.HasAny(fmt.Sprintf("%s/%s", pj.Spec.Refs.Org, pj.Spec.Refs.Repo), pj.Spec.Refs.Org)
@@ -508,7 +513,7 @@ func (c *Client) GetProwJob(name string) (prowapi.ProwJob, error) {
 	err := c.request(&request{
 		path: fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs/%s", c.namespace, name),
 	}, &pj)
-	if err == nil && shouldHide(&pj, c.getHiddenRepos(), c.hiddenOnly) {
+	if err == nil && shouldHide(&pj, c.getHiddenRepos(), c.hiddenOnly, c.showHidden) {
 		pj = prowapi.ProwJob{}
 		// Revealing the existence of this prow job is ok because the pj name cannot be used to
 		// retrieve the pj itself. Furthermore, a timing attack could differentiate true 404s from
@@ -535,7 +540,7 @@ func (c *Client) ListProwJobs(selector string) ([]prowapi.ProwJob, error) {
 		hidden := c.getHiddenRepos()
 		var pjs []prowapi.ProwJob
 		for _, pj := range jl.Items {
-			if !shouldHide(&pj, hidden, c.hiddenOnly) {
+			if !shouldHide(&pj, hidden, c.hiddenOnly, c.showHidden) {
 				pjs = append(pjs, pj)
 			}
 		}
