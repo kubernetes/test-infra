@@ -473,6 +473,9 @@ plugins:
   kubernetes/kops:
   - trigger
 
+  kubernetes/kubeadm:
+  - trigger
+
   kubernetes/kubernetes:
   - blockade
   - cherry-pick-unapproved
