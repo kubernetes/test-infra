@@ -171,6 +171,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        legacy-cloud-providers:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         metrics:
           restrictions:
             users: []
@@ -373,6 +378,7 @@ tide:
     - kubernetes/kube-proxy
     - kubernetes/kube-scheduler
     - kubernetes/kubelet
+    - kubernetes/legacy-cloud-providers
     - kubernetes/metrics
     - kubernetes/node-api
     - kubernetes/sample-apiserver
