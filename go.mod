@@ -38,6 +38,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20180513044358-24b0969c4cb7 // indirect
 	github.com/golang/mock v1.2.0
 	github.com/golang/protobuf v1.3.1
+	github.com/google/go-containerregistry v0.0.0-20190401215819-f1df91a4a813 // indirect
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/uuid v1.0.0
 	github.com/googleapis/gnostic v0.1.0 // indirect
@@ -62,6 +63,7 @@ require (
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/lib/pq v1.0.0 // indirect
 	github.com/mailru/easyjson v0.0.0-20171120080333-32fa128f234d // indirect
+	github.com/markbates/inflect v1.0.4 // indirect
 	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a // indirect
 	github.com/mattn/go-sqlite3 v0.0.0-20160514122348-38ee283dabf1 // indirect
 	github.com/mattn/go-zglob v0.0.1
@@ -77,6 +79,7 @@ require (
 	github.com/sirupsen/logrus v1.2.0
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3
+	github.com/tektoncd/pipeline v0.1.1-0.20190327171839-7c43fbae2816
 	github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1 // indirect
 	go.opencensus.io v0.19.3 // indirect
 	golang.org/x/crypto v0.0.0-20190404164418-38d8ce5564a5
@@ -99,6 +102,7 @@ require (
 	k8s.io/gengo v0.0.0-20190306031000-7a1b7fb0289f // indirect
 	k8s.io/klog v0.1.0
 	k8s.io/kube-openapi v0.0.0-20180711000925-0cf8f7e6ed1d // indirect
+	k8s.io/kubernetes v1.14.0 // indirect
 	k8s.io/repo-infra v0.0.0-20190329054012-df02ded38f95
 	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/yaml v1.1.0

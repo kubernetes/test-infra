@@ -2018,3 +2018,45 @@ go_repository(
     sum = "h1:oIPZROsWuPHpOdMVWLuJZXwgjhrW8r1yEX8UqMyeNHM=",
     version = "v1.2.1",
 )
+
+go_repository(
+    name = "com_github_gobuffalo_envy",
+    importpath = "github.com/gobuffalo/envy",
+    sum = "h1:X3is06x7v0nW2xiy2yFbbIjwHz57CD6z6MkvqULTCm8=",
+    version = "v1.6.5",
+)
+
+go_repository(
+    name = "com_github_google_go_containerregistry",
+    importpath = "github.com/google/go-containerregistry",
+    sum = "h1:p6kvQYhOQUpogpCn1p/XI/A9UClYVyNTkYkKIijnl7M=",
+    version = "v0.0.0-20190401215819-f1df91a4a813",
+)
+
+go_repository(
+    name = "com_github_joho_godotenv",
+    importpath = "github.com/joho/godotenv",
+    sum = "h1:Zjp+RcGpHhGlrMbJzXTrZZPrWj+1vfm90La1wgB6Bhc=",
+    version = "v1.3.0",
+)
+
+go_repository(
+    name = "com_github_markbates_inflect",
+    importpath = "github.com/markbates/inflect",
+    sum = "h1:5fh1gzTFhfae06u3hzHYO9xe3l3v3nW5Pwt3naLTP5g=",
+    version = "v1.0.4",
+)
+
+go_repository(
+    name = "com_github_tektoncd_pipeline",
+    importpath = "github.com/tektoncd/pipeline",
+    sum = "h1:qxPdNf3noTDiB1IhLJk5MK7giWPk36oXF6LObILlbIk=",
+    version = "v0.1.1-0.20190327171839-7c43fbae2816",
+)
+
+go_repository(
+    name = "io_k8s_kubernetes",
+    importpath = "k8s.io/kubernetes",
+    sum = "h1:6T2iAEoOYQnzQb3WvPlUkcczEEXZ7+YPlAO8olwujRw=",
+    version = "v1.14.0",
+)

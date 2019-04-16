@@ -1123,7 +1123,8 @@ func validateAgent(v JobBase, podNamespace string) error {
 	k := string(prowapi.KubernetesAgent)
 	b := string(prowapi.KnativeBuildAgent)
 	j := string(prowapi.JenkinsAgent)
-	agents := sets.NewString(k, b, j)
+	p := string(prowapi.TektonAgent)
+	agents := sets.NewString(k, b, j, p)
 	agent := v.Agent
 	switch {
 	case !agents.Has(agent):
@@ -1143,9 +1144,9 @@ func validateAgent(v JobBase, podNamespace string) error {
 		return fmt.Errorf("error_on_eviction only applies to agent: %s (found %q)", k, agent)
 	case v.Namespace == nil || *v.Namespace == "":
 		return fmt.Errorf("failed to default namespace")
-	case *v.Namespace != podNamespace && agent != b:
+	case *v.Namespace != podNamespace && agent != b && agent != p:
 		// TODO(fejta): update plank to allow this (depends on client change)
-		return fmt.Errorf("namespace customization requires agent: %s (found %q)", b, agent)
+		return fmt.Errorf("namespace customization requires agent: %s or %s (found %q)", b, p, agent)
 	}
 	return nil
 }

@@ -22,6 +22,7 @@ package v1
 
 import (
 	v1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
+	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
@@ -189,6 +190,11 @@ func (in *ProwJobSpec) DeepCopyInto(out *ProwJobSpec) {
 		in, out := &in.JenkinsSpec, &out.JenkinsSpec
 		*out = new(JenkinsSpec)
 		**out = **in
+	}
+	if in.PipelineRunSpec != nil {
+		in, out := &in.PipelineRunSpec, &out.PipelineRunSpec
+		*out = new(pipelinev1alpha1.PipelineRunSpec)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.DecorationConfig != nil {
 		in, out := &in.DecorationConfig, &out.DecorationConfig
