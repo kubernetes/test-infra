@@ -82,14 +82,6 @@ func (r *fakeReconciler) terminateDupProwJobs(ctx string, namespace string) erro
 	return nil
 }
 
-func (r *fakeReconciler) getProwJobs() ([]prowjobv1.ProwJob, error) {
-	var jobs []prowjobv1.ProwJob
-	for _, j := range r.jobs {
-		jobs = append(jobs, j)
-	}
-	return jobs, nil
-}
-
 func (r *fakeReconciler) updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
 	if pj.Name == errorUpdateProwJob {
 		return nil, errors.New("injected update prowjob error")
