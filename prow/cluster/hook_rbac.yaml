@@ -23,6 +23,7 @@ rules:
       - configmaps
     verbs:
       - create
+      - get
       - update
 ---
 kind: RoleBinding
