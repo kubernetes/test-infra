@@ -105,6 +105,10 @@ func (o *options) Validate() error {
 			return errors.New("an OAuth URL was provided but required flag --cookie-secret was unset")
 		}
 	}
+
+	if o.hiddenOnly && o.showHidden {
+		return errors.New("'--hidden-only' and '--show-hidden' are mutually exclusive")
+	}
 	return nil
 }
 
