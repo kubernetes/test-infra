@@ -405,12 +405,10 @@ plugins:
   - size
   - skip
   - slackevents
+  - trigger
   - verify-owners
   - wip
   - yuks
-
-  kubernetes/client-go:
-  - trigger
 
   kubernetes/cloud-provider-aws:
   - milestone
@@ -418,7 +416,6 @@ plugins:
   - release-note
   - require-matching-label
   - welcome
-  - trigger
 
   kubernetes/cloud-provider-azure:
   - milestone
@@ -426,55 +423,21 @@ plugins:
   - release-note
   - require-matching-label
   - welcome
-  - trigger
-
-  kubernetes/cloud-provider-gcp:
-  - trigger
 
   kubernetes/cloud-provider-openstack:
-  - trigger
   - override
-
-  kubernetes/cloud-provider-vsphere:
-  - trigger
-
-  kubernetes/cluster-registry:
-  - trigger
 
   kubernetes/community:
   - blockade
   - milestone
   - require-sig
-  - trigger
   - welcome
-
-  kubernetes/dns:
-  - trigger
 
   kubernetes/enhancements:
   - blockade
   - milestone
   - require-sig
   - stage
-  - trigger
-
-  kubernetes/examples:
-  - trigger
-
-  kubernetes/ingress-gce:
-  - trigger
-
-  kubernetes/federation:
-  - trigger
-
-  kubernetes/k8s.io:
-  - trigger
-
-  kubernetes/kops:
-  - trigger
-
-  kubernetes/kubeadm:
-  - trigger
 
   kubernetes/kubernetes:
   - blockade
@@ -484,41 +447,24 @@ plugins:
   - override
   - release-note
   - require-matching-label
-  - trigger
-
-  kubernetes/minikube:
-  - trigger
-
-  kubernetes/node-problem-detector:
-  - trigger
-
-  kubernetes/org:
-  - trigger
-
-  kubernetes/perf-tests:
-  - trigger
 
   kubernetes/publishing-bot:
-  - trigger
   - override
 
   kubernetes/release:
   - milestone
   - override
-  - trigger
   - welcome
 
   kubernetes/sig-release:
   - milestone
   - override
-  - trigger
   - welcome
 
   kubernetes/test-infra:
   - config-updater
   - milestone
   - override
-  - trigger
   - welcome
 
   kubernetes/utils:
@@ -545,6 +491,7 @@ plugins:
   - shrug
   - size
   - skip
+  - trigger
   - verify-owners
   - wip
   - yuks
@@ -590,15 +537,10 @@ plugins:
   - shrug
   - size
   - skip
+  - trigger
   - verify-owners
   - wip
   - yuks
-
-  kubernetes-incubator/service-catalog:
-  - trigger
-
-  kubernetes-incubator/ip-masq-agent:
-  - trigger
 
   kubernetes-security/kubernetes:
   - trigger
@@ -621,33 +563,19 @@ plugins:
   - shrug
   - size
   - skip
+  - trigger
   - verify-owners
   - wip
   - yuks
 
   kubernetes-sigs/kind:
   - override
-  - trigger
   - welcome
 
-  kubernetes-sigs/federation-v2:
-  - trigger
-
-  kubernetes-sigs/testing_frameworks:
-  - trigger
-
-  kubernetes-sigs/poseidon:
-  - trigger
-
-  kubernetes-sigs/kube-batch:
-    - trigger
-
   kubernetes-sigs/cluster-api:
-  - trigger
   - milestone
 
   kubernetes-sigs/cluster-api-provider-aws:
-  - trigger
   - milestone
 
   kubernetes-sigs/cluster-api-provider-azure:
@@ -656,51 +584,11 @@ plugins:
   - release-note
   - require-matching-label
   - welcome
-  - trigger
-
-  kubernetes-sigs/cluster-api-provider-digitalocean:
-  - trigger
-
-  kubernetes-sigs/cluster-api-provider-gcp:
-  - trigger
-
-  kubernetes-sigs/cluster-api-provider-openstack:
-  - trigger
-
-  kubernetes-sigs/cluster-api-provider-vsphere:
-  - trigger
 
   kubernetes-sigs/contributor-playground:
   - invalidcommitmsg
   - require-sig
   - welcome
-
-  kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
-  - trigger
-
-  kubernetes-sigs/sig-storage-local-static-provisioner:
-  - trigger
-
-  kubernetes-sigs/gcp-filestore-csi-driver:
-  - trigger
-
-  kubernetes-sigs/kube-storage-version-migrator:
-  - trigger
-
-  kubernetes-sigs/structured-merge-diff:
-  - trigger
-
-  kubernetes-sigs/aws-alb-ingress-controller:
-  - trigger
-
-  kubernetes-sigs/aws-ebs-csi-driver:
-  - trigger
-
-  kubernetes-sigs/kubebuilder-declarative-pattern:
-  - trigger
-
-  kubernetes-sigs/slack-infra:
-  - trigger
 
   containerd/cri:
   - assign
