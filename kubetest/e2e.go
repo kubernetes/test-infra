@@ -621,6 +621,20 @@ func kubemarkUp(dump string, o options, deploy deployer) error {
 		return err
 	}
 
+	masterInternalIP, err := control.Output(exec.Command(
+		"gcloud", "compute", "instances", "describe",
+		os.Getenv("MASTER_NAME"),
+		"--project="+o.gcpProject,
+		"--zone="+o.gcpZone,
+		"--format=value(networkInterfaces[0].networkIP)"))
+	if err != nil {
+		return fmt.Errorf("failed to get masterInternalIP: %v", err)
+	}
+	// MASTER_INTERNAL_IP variable is needed by the clusterloader2 when running on kubemark clusters.
+	if err := os.Setenv("MASTER_INTERNAL_IP", strings.TrimSpace(string(masterInternalIP))); err != nil {
+		return err
+	}
+
 	cwd, err := os.Getwd()
 	if err != nil {
 		return err
