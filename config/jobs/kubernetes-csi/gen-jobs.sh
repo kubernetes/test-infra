@@ -139,6 +139,24 @@ expand_tests () {
     esac
 }
 
+# "alpha" features can be breaking across releases and
+# therefore cannot be a required job
+pull_optional() {
+    if [ "$1" == "alpha" ]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+pull_alwaysrun() {
+    if [ "$1" != "alpha" ]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
 for repo in $hostpath_example_repos; do
     mkdir -p "$base/$repo"
     cat >"$base/$repo/$repo-config.yaml" <<EOF
@@ -158,9 +176,12 @@ EOF
                 #
                 # Periodic jobs need to test the full matrix.
                 if echo "$kubernetes" | grep -q "^$deployment"; then
+                    # These required jobs test the binary built from the PR against
+                    # older, stable hostpath driver deployments and Kubernetes versions
                     cat >>"$base/$repo/$repo-config.yaml" <<EOF
   - name: $(job_name "pull" "$repo" "$tests" "$deployment" "$kubernetes")
-    always_run: true
+    always_run: $(pull_alwaysrun "$tests")
+    optional: $(pull_optional "$tests")
     decorate: true
     skip_report: false
     skip_branches: [$(skip_branches $repo)]
@@ -194,8 +215,11 @@ EOF
 $(resources_for_kubernetes "$kubernetes")
 EOF
                 fi
-            done
+            done # end kubernetes
 
+
+            # These optional jobs test the binary built from the PR against
+            # older, stable hostpath driver deployments and Kubernetes master
             if [ "$tests" != "alpha" ]; then
                 cat >>"$base/$repo/$repo-config.yaml" <<EOF
   - name: $(job_name "pull" "$repo" "$tests" "$deployment" master)
@@ -203,6 +227,7 @@ EOF
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
     always_run: false
+    optional: true
     decorate: true
     skip_report: false
     labels:
@@ -229,8 +254,8 @@ EOF
 $(resources_for_kubernetes master)
 EOF
             fi
-        done
-    done
+        done # end deployment
+    done # end tests
 
     cat >>"$base/$repo/$repo-config.yaml" <<EOF
   - name: $(job_name "pull" "$repo" "unit")
@@ -272,6 +297,7 @@ EOF
         cat >>"$base/$repo/$repo-config.yaml" <<EOF
   - name: $(job_name "pull" "$repo" "$tests")
     always_run: true
+    optional: $(pull_optional "$tests")
     decorate: true
     skip_report: false
     skip_branches: [$(skip_branches $repo)]

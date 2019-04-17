@@ -4,6 +4,7 @@ presubmits:
   kubernetes-csi/node-driver-registrar:
   - name: pull-kubernetes-csi-node-driver-registrar-1-13-on-kubernetes-1-13
     always_run: true
+    optional: false
     decorate: true
     skip_report: false
     skip_branches: ["^(release-1.0)$"]
@@ -42,6 +43,7 @@ presubmits:
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
     always_run: false
+    optional: true
     decorate: true
     skip_report: false
     labels:
@@ -74,6 +76,7 @@ presubmits:
           cpu: 2000m
   - name: pull-kubernetes-csi-node-driver-registrar-1-14-on-kubernetes-1-14
     always_run: true
+    optional: false
     decorate: true
     skip_report: false
     skip_branches: ["^(release-1.0)$"]
@@ -112,6 +115,7 @@ presubmits:
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
     always_run: false
+    optional: true
     decorate: true
     skip_report: false
     labels:
@@ -143,7 +147,8 @@ presubmits:
           # during the tests more like 3-20m is used
           cpu: 2000m
   - name: pull-kubernetes-csi-node-driver-registrar-alpha-1-13-on-kubernetes-1-13
-    always_run: true
+    always_run: false
+    optional: true
     decorate: true
     skip_report: false
     skip_branches: ["^(release-1.0)$"]
@@ -178,7 +183,8 @@ presubmits:
           requests:
             cpu: 2000m
   - name: pull-kubernetes-csi-node-driver-registrar-alpha-1-14-on-kubernetes-1-14
-    always_run: true
+    always_run: false
+    optional: true
     decorate: true
     skip_report: false
     skip_branches: ["^(release-1.0)$"]
