@@ -2,13 +2,25 @@
 
 Run prowjobs on your local workstation with `phaino`.
 
+Plato believed that [ideas and forms] are the ultimate truth,
+whereas we only see the imperfect physical appearances of those idea.
+
+He linkens this in his [Allegory of the Cave] to someone living in a cave
+who can only see the shadows projected on the wall
+from objects passing in front of a fire. 
+
+[Phaino] is act of making those imperfect shadows appear.
+
+Phaino shares a prefix with [Pharos], meaning lighthouse and in particular the ancient one in Alexandria.
+
 ## Usage
 
 Usage:
 ```console
 # Use a job from deck
 bazel run //prow/cmd/phaino -- $URL # or /path/to/prowjob.yaml
-bazel run //prow/cmd/mkpj -- --config=/your/config --job=foo | bazel run //prow/cmd/phaino
+# Use mkpj to create the job
+bazel run //prow/cmd/phaino -- <(bazel run //prow/cmd/mkpj -- --config-path=/your/config --job=foo)
 ```
 
 ### Common options
@@ -29,15 +41,21 @@ URL example:
 * Copy the URL (something like https://prow.k8s.io/rerun?prowjob=d08f1ca5-5d63-11e9-ab62-0a580a6c1281)
 * Paste it as a phaino arg
   - `bazel run //prow/cmd/phaino -- https://prow.k8s.io/rerun?prowjob=d08f1ca5-5d63-11e9-ab62-0a580a6c1281
-  - Alternatively `curl $URL | bazel run //prow/cmd/phaino`
+  - Alternatively `bazel run //prow/cmd/phaino -- <(curl $URL)`
 
 
 A `mkpj` example:
 
 * Use `mkpj` to create the job and pipe this to `phaino`
   - For prow.k8s.io jobs use `//config:mkpj`
-      * `bazel run //config:mkpj -- --job=pull-test-infra-bazel | bazel run //prow/cmd/bazel`
+      * `bazel run //prow/cmd/phaino -- <(bazel run //config:mkpj -- --job=pull-test-infra-bazel)`
   - Other deployments will need to clone that rule and/or pass in extra flags:
-      * `bazel run //prow/cmd/mkpj -- --config=/my/config.yaml --job=my-job | bazel run //prow/cmd/bazel`
+      * `bazel run //prow/cmd/phaino -- <(bazel run //prow/cmd/mkpj -- --config-path=/my/config.yaml --job=my-job)`
 
 If you cannot use bazel (or do not want to), use `go get -u k8s.io/test-infra/prow/cmd/phaino`.
+
+
+[ideas and forms]: https://en.wikipedia.org/wiki/Theory_of_forms#Forms
+[Allegory of the Cave]: https://en.wikipedia.org/wiki/Allegory_of_the_Cave
+[Phaino]: https://en.wiktionary.org/wiki/%CF%86%CE%B1%CE%AF%CE%BD%CF%89
+[Pharos]: https://en.wikipedia.org/wiki/Lighthouse_of_Alexandria

@@ -241,10 +241,11 @@ func convertToLocal(log *logrus.Entry, pj prowapi.ProwJob, allowPrivilege bool) 
 		}
 	}
 	if workingDir == "" {
-		workingDir = "/random-location"
-		localArgs = append(localArgs, "-v", workingDir)
+		workingDir = container.WorkingDir
 	}
-	localArgs = append(localArgs, "-w", workingDir)
+	if workingDir != "" {
+		localArgs = append(localArgs, "-v", workingDir, "-w", workingDir)
+	}
 
 	image := pj.Spec.PodSpec.Containers[0].Image
 	localArgs = append(localArgs, image)
@@ -298,6 +299,7 @@ func abort(ctx context.Context, log *logrus.Entry, cmd *exec.Cmd) error {
 }
 
 func convertJob(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, priv, onlyPrint bool, timeout, grace time.Duration) error {
+	// TODO(fejta): default grace and timeout to the job's decoration_config
 	if timeout > 0 {
 		var cancel func()
 		ctx, cancel = context.WithTimeout(ctx, timeout)

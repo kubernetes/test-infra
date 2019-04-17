@@ -24,6 +24,8 @@ bazel test //prow/plugins/lgtm:go_default_test
 
 ## How to test a ProwJob
 
+EXPERIMENTAL: try out [phaino](/prow/cmd/phaino) to run the job locally on your workstation in a docker container.
+
 The best way to go about testing a new ProwJob depends on the job itself. If the
 job's test container can be run locally that is typically the best way to
 initially test the job because local debugging is easier than debugging a job in
