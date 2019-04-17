@@ -667,6 +667,7 @@ plugins:
   - trigger
 
   kubernetes-sigs/contributor-playground:
+  - invalidcommitmsg
   - require-sig
   - welcome
 
