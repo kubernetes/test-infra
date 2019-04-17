@@ -5893,6 +5893,9 @@ dashboards:
   - name: kubeflow-arena-presubmit
     description: Presubmit tests for kubeflow/arena.
     test_group_name: kubeflow-arena-presubmit
+  - name: kubeflow-fairing-presubmit
+    description: Presubmit tests for kubeflow/fairing.
+    test_group_name: kubeflow-fairing-presubmit
   - name: kubeflow-pipeline-postsubmit
     description: Postsubmit tests for kubeflow/pipeline.
     test_group_name: kubeflow-pipeline-postsubmit
