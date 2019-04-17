@@ -284,7 +284,7 @@ default:
       target: prs
       prowPlugin: trigger
       addedBy: prow
-    - color: BDBDBD
+    - color: e11d21
       description: Indicates a PR cannot be merged because it has merge conflicts with HEAD.
       name: needs-rebase
       target: prs
