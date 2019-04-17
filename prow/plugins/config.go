@@ -61,6 +61,7 @@ type Configuration struct {
 	Cat                        Cat                          `json:"cat,omitempty"`
 	CherryPickUnapproved       CherryPickUnapproved         `json:"cherry_pick_unapproved,omitempty"`
 	ConfigUpdater              ConfigUpdater                `json:"config_updater,omitempty"`
+	Dco                        map[string]*Dco              `json:"dco,omitempty"`
 	Golint                     Golint                       `json:"golint"`
 	Heart                      Heart                        `json:"heart,omitempty"`
 	Label                      Label                        `json:"label"`
@@ -471,6 +472,17 @@ type Welcome struct {
 	MessageTemplate string `json:"message_template,omitempty"`
 }
 
+// Dco is config for the DCO (https://developercertificate.org/) checker plugin.
+type Dco struct {
+	// SkipDCOCheckForMembers is used to skip DCO check for trusted org members
+	SkipDCOCheckForMembers bool `json:"skip_dco_check_for_members,omitempty"`
+	// TrustedOrg is the org whose members' commits will not be checked for DCO signoff
+	// if the skip DCO option is enabled. The default is the PR's org.
+	TrustedOrg string `json:"trusted_org,omitempty"`
+	// SkipDCOCheckForCollaborators is used to skip DCO check for trusted org members
+	SkipDCOCheckForCollaborators bool `json:"skip_dco_check_for_collaborators,omitempty"`
+}
+
 // CherryPickUnapproved is the config for the cherrypick-unapproved plugin.
 type CherryPickUnapproved struct {
 	// BranchRegexp is the regular expression for branch names such that
@@ -624,6 +636,22 @@ func (c *Configuration) TriggerFor(org, repo string) Trigger {
 		}
 	}
 	return Trigger{}
+}
+
+// DcoFor finds the Dco for a repo, if one exists
+// a Dco can be listed for the repo itself or for the
+// owning organization
+func (c *Configuration) DcoFor(org, repo string) *Dco {
+	if c.Dco[fmt.Sprintf("%s/%s", org, repo)] != nil {
+		return c.Dco[fmt.Sprintf("%s/%s", org, repo)]
+	}
+	if c.Dco[org] != nil {
+		return c.Dco[org]
+	}
+	if c.Dco["*"] != nil {
+		return c.Dco["*"]
+	}
+	return &Dco{}
 }
 
 // EnabledReposForPlugin returns the orgs and repos that have enabled the passed plugin.

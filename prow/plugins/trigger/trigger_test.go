@@ -515,3 +515,87 @@ func TestValidateContextOverlap(t *testing.T) {
 		}
 	}
 }
+
+func TestTrustedUser(t *testing.T) {
+	var testcases = []struct {
+		name string
+
+		onlyOrgMembers bool
+		trustedOrg     string
+
+		user string
+		org  string
+		repo string
+
+		expectedTrusted bool
+	}{
+		{
+			name:            "user is member of trusted org",
+			onlyOrgMembers:  false,
+			user:            "test",
+			org:             "kubernetes",
+			repo:            "kubernetes",
+			expectedTrusted: true,
+		},
+		{
+			name:            "user is member of trusted org (only org members enabled)",
+			onlyOrgMembers:  true,
+			user:            "test",
+			org:             "kubernetes",
+			repo:            "kubernetes",
+			expectedTrusted: true,
+		},
+		{
+			name:            "user is collaborator",
+			onlyOrgMembers:  false,
+			user:            "test-collaborator",
+			org:             "kubernetes",
+			repo:            "kubernetes",
+			expectedTrusted: true,
+		},
+		{
+			name:            "user is collaborator (only org members enabled)",
+			onlyOrgMembers:  true,
+			user:            "test-collaborator",
+			org:             "kubernetes",
+			repo:            "kubernetes",
+			expectedTrusted: false,
+		},
+		{
+			name:            "user is trusted org member",
+			onlyOrgMembers:  false,
+			trustedOrg:      "kubernetes",
+			user:            "test",
+			org:             "kubernetes-sigs",
+			repo:            "test",
+			expectedTrusted: true,
+		},
+		{
+			name:            "user is not org member",
+			onlyOrgMembers:  false,
+			user:            "test-2",
+			org:             "kubernetes",
+			repo:            "kubernetes",
+			expectedTrusted: false,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			fc := &fakegithub.FakeClient{
+				OrgMembers: map[string][]string{
+					"kubernetes": {"test"},
+				},
+				Collaborators: []string{"test-collaborator"},
+			}
+
+			trusted, err := TrustedUser(fc, tc.onlyOrgMembers, tc.trustedOrg, tc.user, tc.org, tc.repo)
+			if err != nil {
+				t.Errorf("For case %s, didn't expect error from TrustedUser: %v", tc.name, err)
+			}
+			if trusted != tc.expectedTrusted {
+				t.Errorf("For case %s, expect result: %v, but got: %v", tc.name, tc.expectedTrusted, trusted)
+			}
+		})
+	}
+}

@@ -122,6 +122,7 @@ type Client struct {
 	Logger        *logrus.Entry
 }
 
+// trustedUserClient is used to check is user member and repo collaborator
 type trustedUserClient interface {
 	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
@@ -150,12 +151,10 @@ func handlePush(pc plugins.Agent, pe github.PushEvent) error {
 }
 
 // TrustedUser returns true if user is trusted in repo.
-//
 // Trusted users are either repo collaborators, org members or trusted org members.
-// Whether repo collaborators and/or a second org is trusted is configured by trigger.
-func TrustedUser(ghc trustedUserClient, trigger plugins.Trigger, user, org, repo string) (bool, error) {
+func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, org, repo string) (bool, error) {
 	// First check if user is a collaborator, assuming this is allowed
-	if !trigger.OnlyOrgMembers {
+	if !onlyOrgMembers {
 		if ok, err := ghc.IsCollaborator(org, repo, user); err != nil {
 			return false, fmt.Errorf("error in IsCollaborator: %v", err)
 		} else if ok {
@@ -173,14 +172,14 @@ func TrustedUser(ghc trustedUserClient, trigger plugins.Trigger, user, org, repo
 	}
 
 	// Determine if there is a second org to check
-	if trigger.TrustedOrg == "" || trigger.TrustedOrg == org {
+	if trustedOrg == "" || trustedOrg == org {
 		return false, nil // No trusted org and/or it is the same
 	}
 
 	// Check the second trusted org.
-	member, err := ghc.IsMember(trigger.TrustedOrg, user)
+	member, err := ghc.IsMember(trustedOrg, user)
 	if err != nil {
-		return false, fmt.Errorf("error in IsMember(%s): %v", trigger.TrustedOrg, err)
+		return false, fmt.Errorf("error in IsMember(%s): %v", trustedOrg, err)
 	}
 	return member, nil
 }
