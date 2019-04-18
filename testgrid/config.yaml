@@ -6816,8 +6816,6 @@ dashboards:
   dashboard_tab:
   - name: gci-gce-scalability
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
-  - name: gci-gce-scalability-killer
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-killer
   - name: gci-gce-scalability-1.11
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable3
   - name: gci-gce-scalability-1.12
@@ -6871,6 +6869,11 @@ dashboards:
     test_group_name: ci-benchmark-scheduler-master
   - name: kube-dns
     test_group_name: ci-benchmark-kube-dns-master
+
+- name: sig-scalability-experiments
+  dashboard_tab:
+  - name: gci-gce-scalability-killer
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-killer
 
 - name: sig-scheduling
   dashboard_tab:
@@ -8384,6 +8387,7 @@ dashboard_groups:
   - sig-scalability-kubemark
   - sig-scalability-perf-tests
   - sig-scalability-benchmarks
+  - sig-scalability-experiments
 
 - name: sig-testing
   dashboard_names:
