@@ -16,9 +16,17 @@ test:lint --test_tag_filters=lint
 # bazel test //... --config=unit
 test:unit --test_tag_filters=-lint
 
+# --config=remote enable a remote bazel cache
+# Note needs an instance name, see --config=remote-fejta for an example
 build:remote --remote_cache=remotebuildexecution.googleapis.com
 build:remote --tls_enabled=true
 build:remote --remote_timeout=3600
 build:remote --auth_enabled=true
 
+# --config=remote-exec rmote execution to the the --config=remote cache
+build:remote-exec --remote_executor=remotebuildexecution.googleapis.com
+build:remote-exec --jobs=500
+
+# --config=remote-fejta is an example instance name
+# TODO(fejta): see how broadly we can provide this and/or add common corp instances
 build:remote-fejta --remote_instance_name=projects/fejta-prod/instances/default_instance
