@@ -25,7 +25,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -51,7 +53,7 @@ func gatherOptions() options {
 	fs.BoolVar(&o.keepGoing, "keep-going", false, "Continue running jobs after one fails if set")
 	fs.BoolVar(&o.printCmd, "print", false, "Just print the command it would run")
 	fs.BoolVar(&o.priv, "privileged", false, "Allow privileged local runs")
-	fs.DurationVar(&o.timeout, "timeout", 10*time.Minute, "Maximum duration for each job (0 for unlimited)")
+	fs.DurationVar(&o.timeout, "timeout", time.Hour, "Maximum duration for each job (0 for unlimited)")
 	fs.DurationVar(&o.totalTimeout, "total-timeout", 0, "Maximum duration for all jobs (0 for unlimited)")
 	fs.DurationVar(&o.grace, "grace", 10*time.Second, "Terminate timed out jobs after this grace period (1s minimum)")
 	fs.Parse(os.Args[1:])
@@ -71,18 +73,7 @@ func validate(pj prowapi.ProwJob) error {
 	return nil
 }
 
-func readPJ(ctx context.Context, reader io.ReadCloser) (*prowapi.ProwJob, error) {
-	read, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	go func() {
-		select {
-		case <-read.Done():
-			// finished reading
-		case <-ctx.Done():
-			logrus.Info("Interrupting read...")
-			reader.Close() // interrupt reading
-		}
-	}()
+func readPJ(reader io.ReadCloser) (*prowapi.ProwJob, error) {
 	var pj prowapi.ProwJob
 	buf, err := ioutil.ReadAll(reader)
 	if err != nil {
@@ -97,17 +88,17 @@ func readPJ(ctx context.Context, reader io.ReadCloser) (*prowapi.ProwJob, error)
 	return &pj, nil
 }
 
-func readFile(ctx context.Context, path string) (*prowapi.ProwJob, error) {
+func readFile(path string) (*prowapi.ProwJob, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("open: %v", err)
 	}
 	defer f.Close()
-	return readPJ(ctx, f)
+	return readPJ(f)
 
 }
 
-func readHTTP(ctx context.Context, url string) (*prowapi.ProwJob, error) {
+func readHTTP(url string) (*prowapi.ProwJob, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("get: %v", err)
@@ -116,10 +107,10 @@ func readHTTP(ctx context.Context, url string) (*prowapi.ProwJob, error) {
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return nil, fmt.Errorf("bad status: %d", resp.StatusCode)
 	}
-	return readPJ(ctx, resp.Body)
+	return readPJ(resp.Body)
 }
 
-func readPJs(ctx context.Context, jobs []string) (<-chan prowapi.ProwJob, <-chan error) {
+func readPJs(jobs []string) (<-chan prowapi.ProwJob, <-chan error) {
 	ch := make(chan prowapi.ProwJob)
 	errch := make(chan error)
 	go func() {
@@ -127,18 +118,13 @@ func readPJs(ctx context.Context, jobs []string) (<-chan prowapi.ProwJob, <-chan
 		defer close(errch)
 		if len(jobs) == 0 {
 			logrus.Info("Converting stdin prowjob...")
-			pj, err := readPJ(ctx, os.Stdin)
+			pj, err := readPJ(os.Stdin)
 			if err != nil {
-				select {
-				case errch <- err:
-				case <-ctx.Done():
-				}
+				errch <- err
 				return
 			}
-			select {
-			case ch <- *pj:
-			case <-ctx.Done():
-			}
+			ch <- *pj
+			errch <- nil
 			return
 		}
 		for _, j := range jobs {
@@ -146,28 +132,18 @@ func readPJs(ctx context.Context, jobs []string) (<-chan prowapi.ProwJob, <-chan
 			var err error
 			if strings.HasPrefix(j, "https:") || strings.HasPrefix(j, "http:") {
 				logrus.WithField("url", j).Info("Downloading...")
-				pj, err = readHTTP(ctx, j)
+				pj, err = readHTTP(j)
 			} else {
 				logrus.WithField("path", j).Info("Reading...")
-				pj, err = readFile(ctx, j)
+				pj, err = readFile(j)
 			}
 			if err != nil {
-				select {
-				case errch <- fmt.Errorf("%q: %v", j, err):
-				case <-ctx.Done():
-				}
+				errch <- fmt.Errorf("%q: %v", j, err)
 				return
 			}
-			select {
-			case ch <- *pj:
-			case <-ctx.Done():
-				return
-			}
+			ch <- *pj
 		}
-		select {
-		case errch <- nil:
-		case <-ctx.Done():
-		}
+		errch <- nil
 	}()
 	return ch, errch
 }
@@ -182,12 +158,32 @@ func jobName(pj prowapi.ProwJob) string {
 func main() {
 	opt := gatherOptions()
 	ctx, cancel := context.WithCancel(context.Background())
-	pjs, errs := readPJs(ctx, opt.jobs)
-	if opt.totalTimeout > 0 {
-		var c2 func()
-		ctx, c2 = context.WithTimeout(ctx, opt.totalTimeout)
-		defer c2()
+	defer cancel()
+	go func() {
+		sigs := make(chan os.Signal)
+		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+		sig := <-sigs
+		logrus.WithField("signal", sig).Warn("Signaled, cancelling...")
+		cancel()
+	}()
+
+	pjs, errs := readPJs(opt.jobs)
+
+	if err := processJobs(ctx, opt, pjs, errs); err != nil {
+		logrus.WithError(err).Fatal("FAILED")
 	}
+	logrus.Info("SUCCESS")
+}
+
+func processJobs(ctx context.Context, opt options, pjs <-chan prowapi.ProwJob, errs <-chan error) error {
+	var cancel func()
+	if opt.totalTimeout > 0 {
+		ctx, cancel = context.WithTimeout(ctx, opt.totalTimeout)
+	} else {
+		ctx, cancel = context.WithCancel(ctx)
+	}
+	defer cancel()
+
 	for {
 		select {
 		case pj := <-pjs:
@@ -205,12 +201,9 @@ func main() {
 			}
 			log.Info("PASS")
 		case err := <-errs:
-			if err != nil {
-				logrus.WithError(err).Fatal("Error reading jobs")
-			}
-			return
+			return err
 		case <-ctx.Done():
-			logrus.WithError(ctx.Err()).Fatal("Total timeout expired")
+			return fmt.Errorf("cancel: %v", ctx.Err())
 		}
 	}
 }
