@@ -540,3 +540,31 @@ periodics:
       - --test-cmd-args=/workspace/_artifacts
       - --test-cmd-name=KubeDnsBenchmark
       - --timeout=120m
+
+# Experimental config for testing private gce clusters.
+- name: ci-kubernetes-e2e-gce-private-cluster-correctness
+  interval: 3h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        args:
+          - --timeout=150
+          - --bare
+          - --scenario=kubernetes_e2e
+          - --
+          - --env=GCE_PRIVATE_CLUSTER=true
+          - --extract=ci/latest
+          - --gcp-master-image=gci
+          - --gcp-node-image=gci
+          - --gcp-nodes=5
+          - --gcp-zone=us-east1-b
+          - --provider=gce
+          - --cluster=private-gce-correctness
+          # TODO(mm4tt): Start setting --ssh-proxy-instance-name= when it's supported in kubetest
+          - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
+          - --timeout=120m
+          - --use-logexporter

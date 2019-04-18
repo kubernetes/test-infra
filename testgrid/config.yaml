@@ -3675,6 +3675,8 @@ test_groups:
     alert_mail_to_addresses: ktbry@google.com
     num_failures_to_alert: 1
 
+- name: ci-kubernetes-e2e-gce-private-cluster-correctness
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-private-cluster-correctness
 #
 # Start dashboards
 #
@@ -6874,6 +6876,8 @@ dashboards:
   dashboard_tab:
   - name: gci-gce-scalability-killer
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-killer
+  - name: gce-private-cluster-correctness
+    test_group_name: ci-kubernetes-e2e-gce-private-cluster-correctness
 
 - name: sig-scheduling
   dashboard_tab:
