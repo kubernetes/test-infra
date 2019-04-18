@@ -503,12 +503,16 @@ plugins:
   - override
 
   kubernetes/release:
+  - milestone
+  - override
   - trigger
+  - welcome
 
   kubernetes/sig-release:
-  - blockade
   - milestone
-  - stage
+  - override
+  - trigger
+  - welcome
 
   kubernetes/test-infra:
   - config-updater
@@ -784,6 +788,14 @@ external_plugins:
     events:
       - pull_request
   kubernetes/org:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes/release:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes/sig-release:
   - name: needs-rebase
     events:
       - pull_request
