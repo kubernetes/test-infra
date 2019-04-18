@@ -84,36 +84,41 @@ type options struct {
 	gcpProject         string
 	gcpProjectType     string
 	gcpServiceAccount  string
-	gcpRegion          string
-	gcpZone            string
-	ginkgoParallel     ginkgoParallelValue
-	kubecfg            string
-	kubemark           bool
-	kubemarkMasterSize string
-	kubemarkNodes      string // TODO(fejta): switch to int after migration
-	logexporterGCSPath string
-	metadataSources    string
-	noAllowDup         bool
-	nodeArgs           string
-	nodeTestArgs       string
-	nodeTests          bool
-	provider           string
-	publish            string
-	runtimeConfig      string
-	save               string
-	skew               bool
-	skipRegex          string
-	soak               bool
-	soakDuration       time.Duration
-	sshUser            string
-	stage              stageStrategy
-	test               bool
-	testArgs           string
-	testCmd            string
-	testCmdName        string
-	testCmdArgs        []string
-	up                 bool
-	upgradeArgs        string
+	// gcpSSHProxyInstanceName is the name of the vm instance which ip address will be used to set the
+	// KUBE_SSH_BASTION env. If set, it will result in proxying ssh connections in tests through the
+	// "bastion". It's useful for clusters with nodes without public ssh access, e.g. nodes without
+	// public ip addresses. Works only for gcp providers (gce, gke).
+	gcpSSHProxyInstanceName string
+	gcpRegion               string
+	gcpZone                 string
+	ginkgoParallel          ginkgoParallelValue
+	kubecfg                 string
+	kubemark                bool
+	kubemarkMasterSize      string
+	kubemarkNodes           string // TODO(fejta): switch to int after migration
+	logexporterGCSPath      string
+	metadataSources         string
+	noAllowDup              bool
+	nodeArgs                string
+	nodeTestArgs            string
+	nodeTests               bool
+	provider                string
+	publish                 string
+	runtimeConfig           string
+	save                    string
+	skew                    bool
+	skipRegex               string
+	soak                    bool
+	soakDuration            time.Duration
+	sshUser                 string
+	stage                   stageStrategy
+	test                    bool
+	testArgs                string
+	testCmd                 string
+	testCmdName             string
+	testCmdArgs             []string
+	up                      bool
+	upgradeArgs             string
 }
 
 func defineFlags() *options {
@@ -146,6 +151,7 @@ func defineFlags() *options {
 	flag.StringVar(&o.gcpImageProject, "image-project", "", "Project containing node image family, required when --gcp-node-image=CUSTOM")
 	flag.StringVar(&o.gcpNodes, "gcp-nodes", "", "(--provider=gce only) Number of nodes to create.")
 	flag.StringVar(&o.gcpNodeSize, "gcp-node-size", "", "(--provider=gce only) Size of nodes to create (e.g n1-standard-1).")
+	flag.StringVar(&o.gcpSSHProxyInstanceName, "gcp-ssh-proxy-instance-name", "", "(--provider=gce|gke only) If set, will result in proxing the ssh connections via the provided instance name while running tests")
 	flag.StringVar(&o.kubecfg, "kubeconfig", "", "The location of a kubeconfig file.")
 	flag.StringVar(&o.focusRegex, "ginkgo-focus", "", "The ginkgo regex to focus. Currently only respected for (dind).")
 	flag.StringVar(&o.skipRegex, "ginkgo-skip", "", "The ginkgo regex to skip. Currently only respected for (dind).")
@@ -227,11 +233,11 @@ type publisher interface {
 func getDeployer(o *options) (deployer, error) {
 	switch o.deployment {
 	case "bash":
-		return newBash(&o.clusterIPRange), nil
+		return newBash(&o.clusterIPRange, o.gcpProject, o.gcpZone, o.gcpSSHProxyInstanceName, o.provider), nil
 	case "conformance":
 		return conformance.NewDeployer(o.kubecfg)
 	case "gke":
-		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.gcpImageFamily, o.gcpImageProject, o.cluster, &o.testArgs, &o.upgradeArgs)
+		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.gcpImageFamily, o.gcpImageProject, o.cluster, o.gcpSSHProxyInstanceName, &o.testArgs, &o.upgradeArgs)
 	case "eks":
 		return newEKS(timeout, verbose)
 	case "kind":

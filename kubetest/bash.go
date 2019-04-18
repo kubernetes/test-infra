@@ -25,18 +25,22 @@ import (
 )
 
 type bashDeployer struct {
-	clusterIPRange string
+	clusterIPRange          string
+	gcpProject              string
+	gcpZone                 string
+	gcpSSHProxyInstanceName string
+	provider                string
 }
 
 var _ deployer = &bashDeployer{}
 
-func newBash(clusterIPRange *string) *bashDeployer {
+func newBash(clusterIPRange *string, gcpProject, gcpZone, gcpSSHProxyInstanceName, provider string) *bashDeployer {
 	if *clusterIPRange == "" {
 		if numNodes, err := strconv.Atoi(os.Getenv("NUM_NODES")); err == nil {
 			*clusterIPRange = getClusterIPRange(numNodes)
 		}
 	}
-	b := &bashDeployer{*clusterIPRange}
+	b := &bashDeployer{*clusterIPRange, gcpProject, gcpZone, gcpSSHProxyInstanceName, provider}
 	return b
 }
 
@@ -57,6 +61,11 @@ func (b *bashDeployer) DumpClusterLogs(localPath, gcsPath string) error {
 }
 
 func (b *bashDeployer) TestSetup() error {
+	if b.provider == "gce" && b.gcpSSHProxyInstanceName != "" {
+		if err := setKubeShhBastionEnv(b.gcpProject, b.gcpZone, b.gcpSSHProxyInstanceName); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
