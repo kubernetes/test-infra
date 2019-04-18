@@ -2439,6 +2439,9 @@ test_groups:
 - name: kubeflow-arena-presubmit
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-arena-presubmit
   num_columns_recent: 30
+- name: kubeflow-fairing-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-fairing-presubmit
+  num_columns_recent: 30
 - name: kubeflow-arena-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_arena/kubeflow-arena-postsubmit
 - name: kubeflow-pipeline-postsubmit
@@ -5894,6 +5897,9 @@ dashboards:
   - name: kubeflow-arena-presubmit
     description: Presubmit tests for kubeflow/arena.
     test_group_name: kubeflow-arena-presubmit
+  - name: kubeflow-fairing-presubmit
+    description: Presubmit tests for kubeflow/fairing.
+    test_group_name: kubeflow-fairing-presubmit
   - name: kubeflow-pipeline-postsubmit
     description: Postsubmit tests for kubeflow/pipeline.
     test_group_name: kubeflow-pipeline-postsubmit

@@ -199,6 +199,17 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+  kubeflow/fairing:
+  - name: kubeflow-fairing-presubmit
+    always_run: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
 
   kubeflow/pipelines:
   - name: kubeflow-pipeline-e2e-test
