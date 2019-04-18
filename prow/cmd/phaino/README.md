@@ -7,7 +7,7 @@ whereas we only see the imperfect physical appearances of those idea.
 
 He linkens this in his [Allegory of the Cave] to someone living in a cave
 who can only see the shadows projected on the wall
-from objects passing in front of a fire. 
+from objects passing in front of a fire.
 
 [Phaino] is act of making those imperfect shadows appear.
 
@@ -20,7 +20,8 @@ Usage:
 # Use a job from deck
 bazel run //prow/cmd/phaino -- $URL # or /path/to/prowjob.yaml
 # Use mkpj to create the job
-bazel run //prow/cmd/phaino -- <(bazel run //prow/cmd/mkpj -- --config-path=/your/config --job=foo)
+bazel run //prow/cmd/mkpj -- --config-path=/your/config --job=foo > /tmp/foo
+bazel run //prow/cmd/phaino -- /tmp/foo
 ```
 
 ### Common options
@@ -48,9 +49,15 @@ A `mkpj` example:
 
 * Use `mkpj` to create the job and pipe this to `phaino`
   - For prow.k8s.io jobs use `//config:mkpj`
-      * `bazel run //prow/cmd/phaino -- <(bazel run //config:mkpj -- --job=pull-test-infra-bazel)`
+      ```
+      bazel run //config:mkpj -- --job=pull-test-infra-bazel > /tmp/foo
+      bazel run //prow/cmd/phaino -- /tmp/foo
+      ```
   - Other deployments will need to clone that rule and/or pass in extra flags:
-      * `bazel run //prow/cmd/phaino -- <(bazel run //prow/cmd/mkpj -- --config-path=/my/config.yaml --job=my-job)`
+      ```
+      bazel run //prow/cmd/mkpj -- --config-path=/my/config.yaml --job=my-job
+      bazel run //prow/cmd/phaino -- /tmp/foo
+      ```
 
 If you cannot use bazel (or do not want to), use `go get -u k8s.io/test-infra/prow/cmd/phaino`.
 
