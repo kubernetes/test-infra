@@ -39,9 +39,7 @@ spec:
         - --config-path=/etc/config/config.yaml
         - --github-token-path=/etc/github/oauth
         - --job-config-path=/etc/job-config
-        ports:
-          - name: http
-            containerPort: 8888
+        - --blacklist=kubernetes/kubernetes
         volumeMounts:
         - name: oauth
           mountPath: /etc/github
