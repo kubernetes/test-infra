@@ -1284,12 +1284,18 @@ func (c *Client) CreateStatus(org, repo, SHA string, s Status) error {
 // See https://developer.github.com/v3/repos/statuses/#list-statuses-for-a-specific-ref
 func (c *Client) ListStatuses(org, repo, ref string) ([]Status, error) {
 	c.log("ListStatuses", org, repo, ref)
+	path := fmt.Sprintf("/repos/%s/%s/statuses/%s", org, repo, ref)
 	var statuses []Status
-	_, err := c.request(&request{
-		method:    http.MethodGet,
-		path:      fmt.Sprintf("/repos/%s/%s/statuses/%s", org, repo, ref),
-		exitCodes: []int{200},
-	}, &statuses)
+	err := c.readPaginatedResults(
+		path,
+		acceptNone,
+		func() interface{} {
+			return &[]Status{}
+		},
+		func(obj interface{}) {
+			statuses = append(statuses, *(obj.(*[]Status))...)
+		},
+	)
 	return statuses, err
 }
 
