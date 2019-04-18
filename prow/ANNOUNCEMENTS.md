@@ -61,6 +61,11 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *April 26, 2019* `blunderbuss`, `approve`, and other plugins that read OWNERS
+   now treat `owners_dir_blacklist` as a list of regular expressions matched
+   against the entire (repository-relative) directory path of the OWNERS file rather
+   than as a list of strings matched exactly against the basename only of the directory
+   containing the OWNERS file.
  - *April 2, 2019* `hook`, `deck`, `horologium`, `tide`, `plank` and `sinker` will no
    longer provide a default value for the `--config-path` flag.
    It is required to explicitly provide `--config-path` when upgrading to a new version of

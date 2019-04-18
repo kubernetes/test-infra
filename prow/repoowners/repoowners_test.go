@@ -331,8 +331,23 @@ func TestOwnersDirBlacklist(t *testing.T) {
 		includeDirs: []string{"", "src", "src/dir", "src/dir/conformance", "src/dir/subdir"},
 	}
 	tests["non-matching blacklist"] = testConf{
-		blacklistDefault: []string{"sr"},
+		blacklistDefault: []string{"sr$"},
 		includeDirs:      []string{"", "src", "src/dir", "src/dir/conformance", "src/dir/subdir"},
+	}
+	tests["path blacklist"] = testConf{
+		blacklistDefault: []string{"src/dir"},
+		includeDirs:      []string{"", "src"},
+		excludeDirs:      []string{"src/dir", "src/dir/conformance", "src/dir/subdir"},
+	}
+	tests["regexp blacklist path"] = testConf{
+		blacklistDefault: []string{"src/dir/."},
+		includeDirs:      []string{"", "src", "src/dir"},
+		excludeDirs:      []string{"src/dir/conformance", "src/dir/subdir"},
+	}
+	tests["path substring"] = testConf{
+		blacklistDefault: []string{"/c"},
+		includeDirs:      []string{"", "src", "src/dir", "src/dir/subdir"},
+		excludeDirs:      []string{"src/dir/conformance"},
 	}
 
 	for name, conf := range tests {
