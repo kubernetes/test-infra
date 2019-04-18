@@ -47,6 +47,7 @@ type options struct {
 	config            string
 	confirm           bool
 	dump              string
+	dumpFull          bool
 	jobConfig         string
 	maximumDelta      float64
 	minAdmins         int
@@ -84,6 +85,7 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
 	flags.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
 	flags.StringVar(&o.dump, "dump", "", "Output current config of this org if set")
+	flags.BoolVar(&o.dumpFull, "dump-full", false, "Output current config of the org as a valid input config file instead of a snippet")
 	flags.BoolVar(&o.ignoreSecretTeams, "ignore-secret-teams", false, "Do not dump or update secret teams if set")
 	flags.BoolVar(&o.fixOrg, "fix-org", false, "Change org metadata if set")
 	flags.BoolVar(&o.fixOrgMembers, "fix-org-members", false, "Add/remove org members if set")
@@ -117,6 +119,10 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	}
 	if o.config != "" && o.dump != "" {
 		return fmt.Errorf("--config-path=%s and --dump=%s cannot both be set", o.config, o.dump)
+	}
+
+	if o.dumpFull && o.dump == "" {
+		return errors.New("--dump-full can't be used without --dump")
 	}
 
 	if o.fixTeamMembers && !o.fixTeams {
@@ -160,7 +166,17 @@ func main() {
 		if err != nil {
 			logrus.WithError(err).Fatalf("Dump %s failed to collect current data.", o.dump)
 		}
-		out, err := yaml.Marshal(ret)
+		var output interface{}
+		if o.dumpFull {
+			output = struct {
+				Orgs map[string]*org.Config `json:"orgs,omitempty"`
+			}{
+				Orgs: map[string]*org.Config{o.dump: ret},
+			}
+		} else {
+			output = ret
+		}
+		out, err := yaml.Marshal(output)
 		if err != nil {
 			logrus.WithError(err).Fatalf("Dump %s failed to marshal output.", o.dump)
 		}

@@ -60,6 +60,10 @@ func TestOptions(t *testing.T) {
 			args: []string{"--config-path=foo", "--maximum-removal-delta=-0.1"},
 		},
 		{
+			name: "reject --dump-full-config without --dump",
+			args: []string{"--config-path=foo", "--dump-full-config"},
+		},
+		{
 			name: "maximal delta",
 			args: []string{"--config-path=foo", "--maximum-removal-delta=1"},
 			expected: &options{
