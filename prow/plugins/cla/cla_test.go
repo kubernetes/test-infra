@@ -345,10 +345,11 @@ func TestCheckCLA(t *testing.T) {
 				Number:     3,
 				IssueState: tc.issueState,
 			}
-			fc.CreatedStatuses["sha"] = []github.Status{
-				{
-					State:   tc.state,
-					Context: tc.context,
+			fc.CombinedStatuses = map[string]*github.CombinedStatus{
+				tc.SHA: {
+					Statuses: []github.Status{
+						{State: tc.state, Context: tc.context},
+					},
 				},
 			}
 			if tc.hasCLAYes {
