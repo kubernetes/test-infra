@@ -359,6 +359,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubernetes-sigs/poseidon",
 		"kubernetes-sigs/kube-batch",
 		"kubernetes-sigs/structured-merge-diff",
+		"kubernetes-sigs/vsphere-csi-driver",
 		"tensorflow/minigo",
 	}) {
 		jobs[job.Name] = false

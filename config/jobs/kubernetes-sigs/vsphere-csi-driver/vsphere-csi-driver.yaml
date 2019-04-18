@@ -1,0 +1,78 @@
+presubmits:
+  kubernetes-sigs/vsphere-csi-driver:
+
+  # Runs "gofmt", "go vet", and "golint" on the sources.
+  - name: pull-vsphere-csi-driver-check
+    decorate: true
+    branches:
+    - ^master$
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    skip_submodules: true
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+        command:
+        - "make"
+        args:
+        - "check"
+
+  # Builds the CSI binary
+  - name: pull-vsphere-csi-driver-build
+    decorate: true
+    branches:
+    - ^master$
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    skip_submodules: true
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+        command:
+        - "make"
+        args:
+        - "build"
+
+  # Executes the unit tests.
+  - name: pull-vsphere-csi-driver-unit-test
+    decorate: true
+    branches:
+    - ^master$
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    skip_submodules: true
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+        command:
+        - "make"
+        args:
+        - "unit-test"
+
+postsubmits:
+  kubernetes-sigs/vsphere-csi-driver:
+
+  # Deploys the CSI image
+  - name: post-vsphere-csi-driver-deploy
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-cloud-provider-vsphere-e2e-config: "true"
+    max_concurrency: 1
+    branches:
+    - ^master$
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    skip_submodules: true
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+        command:
+        - "make"
+        args:
+        - "deploy"
+        securityContext:
+          privileged: true
