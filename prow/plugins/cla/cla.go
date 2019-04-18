@@ -87,7 +87,7 @@ type gitHubClient interface {
 	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
 	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
-	ListStatuses(org, repo, ref string) ([]github.Status, error)
+	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 }
 
 func handleStatusEvent(pc plugins.Agent, se github.StatusEvent) error {
@@ -232,12 +232,12 @@ func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentE
 
 	// Check for the cla in past commit statuses, and add/remove corresponding cla label if necessary.
 	ref := pr.Head.SHA
-	statuses, err := gc.ListStatuses(org, repo, ref)
+	combined, err := gc.GetCombinedStatus(org, repo, ref)
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get statuses on %s/%s#%d", org, repo, number)
 	}
 
-	for _, status := range statuses {
+	for _, status := range combined.Statuses {
 
 		// Only consider "cla/linuxfoundation" status.
 		if status.Context == claContextName {
@@ -277,7 +277,7 @@ func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentE
 				}
 			}
 
-			// Only consider the latest relevant status.
+			// No need to consider other contexts once you find the one you need.
 			break
 		}
 	}
