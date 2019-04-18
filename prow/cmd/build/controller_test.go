@@ -1178,6 +1178,9 @@ func TestReconcile(t *testing.T) {
 			} else if tc.namespace == errorUpdateProwJob {
 				name = errorUpdateProwJob
 			}
+			if tc.context == "" {
+				tc.context = kube.DefaultClusterAlias
+			}
 			bk := toKey(tc.context, tc.namespace, name)
 			jk := toKey(fakePJCtx, fakePJNS, name)
 			r := &fakeReconciler{
