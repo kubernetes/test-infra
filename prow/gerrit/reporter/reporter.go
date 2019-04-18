@@ -19,6 +19,7 @@ package reporter
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
@@ -157,11 +158,13 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 		}
 		toReportJobs = append(toReportJobs, pjOnRevisionWithSameLabel)
 
+		checkOrX := "❌"
 		if pjOnRevisionWithSameLabel.Status.State == v1.SuccessState {
+			checkOrX = "✔️"
 			success++
 		}
 
-		message = fmt.Sprintf("%s\nJob %s finished with %s -- URL: %s", message, pjOnRevisionWithSameLabel.Spec.Job, pjOnRevisionWithSameLabel.Status.State, pjOnRevisionWithSameLabel.Status.URL)
+		message += fmt.Sprintf("\n\n%s %s %s - %s", checkOrX, pjOnRevisionWithSameLabel.Spec.Job, strings.ToUpper(string(pjOnRevisionWithSameLabel.Status.State)), pjOnRevisionWithSameLabel.Status.URL)
 	}
 	total := len(toReportJobs)
 	if total <= 0 {
@@ -170,7 +173,7 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 		return nil, nil
 	}
 
-	message = fmt.Sprintf("%d out of %d jobs passed!\n%s", success, total, message)
+	message = fmt.Sprintf("%d out of %d jobs passed!%s", success, total, message)
 
 	// report back
 	gerritID := pj.ObjectMeta.Annotations[clientGerritID]
