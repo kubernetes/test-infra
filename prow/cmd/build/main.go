@@ -160,7 +160,6 @@ func main() {
 	if !o.allContexts { // Just the default context please
 		logrus.Warn("Truncating to local and default contexts")
 		configs = map[string]rest.Config{
-			kube.InClusterContext:    configs[kube.InClusterContext],
 			kube.DefaultClusterAlias: configs[kube.DefaultClusterAlias],
 		}
 	}

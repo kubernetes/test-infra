@@ -82,14 +82,6 @@ func (r *fakeReconciler) terminateDupProwJobs(ctx string, namespace string) erro
 	return nil
 }
 
-func (r *fakeReconciler) getProwJobs() ([]prowjobv1.ProwJob, error) {
-	var jobs []prowjobv1.ProwJob
-	for _, j := range r.jobs {
-		jobs = append(jobs, j)
-	}
-	return jobs, nil
-}
-
 func (r *fakeReconciler) updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
 	if pj.Name == errorUpdateProwJob {
 		return nil, errors.New("injected update prowjob error")
@@ -1185,6 +1177,9 @@ func TestReconcile(t *testing.T) {
 				name = errorGetProwJob
 			} else if tc.namespace == errorUpdateProwJob {
 				name = errorUpdateProwJob
+			}
+			if tc.context == "" {
+				tc.context = kube.DefaultClusterAlias
 			}
 			bk := toKey(tc.context, tc.namespace, name)
 			jk := toKey(fakePJCtx, fakePJNS, name)
