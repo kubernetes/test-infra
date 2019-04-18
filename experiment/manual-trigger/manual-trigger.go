@@ -55,8 +55,8 @@ func flagOptions() options {
 	flag.StringVar(&o.jenkinsTokenFile, "jenkins-token-file", "", "Path to the file containing the Jenkins API token.")
 	flag.StringVar(&o.jenkinsUserName, "jenkins-user-name", "", "Jenkins username.")
 
-	flag.StringVar(&o.githubEndpoint, "github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
-	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", "https://api.github.com/graphql", "GitHub's GraphQL API endpoint.")
+	flag.StringVar(&o.githubEndpoint, "github-endpoint", github.DefaultAPIEndpoint, "GitHub's API endpoint.")
+	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API endpoint.")
 	flag.StringVar(&o.githubTokenFile, "github-token-file", "", "Path to file containing GitHub OAuth token.")
 
 	flag.StringVar(&o.jobName, "job-name", "", "Name of Jenkins job")
