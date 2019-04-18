@@ -27,15 +27,20 @@ import (
 // CleanAll cleans all of the resources for all of the regions visible to
 // the provided AWS session.
 func CleanAll(sess *session.Session, region string) error {
-	acct, err := account.GetAccount(sess, region)
+	acct, err := account.GetAccount(sess, regions.Default)
 	if err != nil {
 		return errors.Wrap(err, "Failed to retrieve account")
 	}
 	klog.V(1).Infof("Account: %s", acct)
 
-	regionList, err := regions.GetAll(sess)
-	if err != nil {
-		return errors.Wrap(err, "Couldn't retrieve list of regions")
+	var regionList []string
+	if region == "" {
+		regionList, err = regions.GetAll(sess)
+		if err != nil {
+			return errors.Wrap(err, "Couldn't retrieve list of regions")
+		}
+	} else {
+		regionList = []string{region}
 	}
 	klog.Infof("Regions: %+v", regionList)
 
