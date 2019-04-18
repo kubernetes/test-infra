@@ -556,7 +556,7 @@ periodics:
           - --bare
           - --scenario=kubernetes_e2e
           - --
-          - --env=GCE_PRIVATE_CLUSTER=true
+          - --env=KUBE_GCE_PRIVATE_CLUSTER=true
           - --extract=ci/latest
           - --gcp-master-image=gci
           - --gcp-node-image=gci
