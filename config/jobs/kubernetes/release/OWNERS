@@ -2,3 +2,8 @@
 
 approvers:
 - calebamiles
+- justaugustus
+- tpepper
+
+labels:
+- sig/release
