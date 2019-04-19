@@ -29,9 +29,18 @@ load("@bazel_skylib//lib:versions.bzl", "versions")
 
 versions.check(minimum_bazel_version = "0.23.0")
 
+# TODO(fejta): delete the com_google_protobuf rule once rules_go >= 0.18.4
+# This silences the shallow_since message (and increases cache hit rate)
+git_repository(
+    name = "com_google_protobuf",
+    remote = "https://github.com/protocolbuffers/protobuf",
+    commit = "582743bf40c5d3639a70f98f183914a2c0cd0680",  # v3.7.0, as of 2019-03-03
+    shallow_since = "1551387314 -0800",
+)
+
 git_repository(
     name = "io_bazel_rules_go",
-    commit = "3c34e66b0507056e83bcbd9c963ab9d7e6cb049f",
+    commit = "3c34e66b0507056e83bcbd9c963ab9d7e6cb049f",  # Delete com_google_protobuf please
     remote = "https://github.com/bazelbuild/rules_go.git",
     shallow_since = "1555072240 -0400",
     # tag = "0.18.3",
