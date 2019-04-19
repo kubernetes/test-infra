@@ -563,7 +563,7 @@ periodics:
           - --gcp-nodes=5
           - --gcp-zone=us-east1-b
           - --provider=gce
-          - --cluster=private-gce-correctness
+          - --cluster=private-gce-test
           # TODO(mm4tt): Start setting --ssh-proxy-instance-name= when it's supported in kubetest
           - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
           - --timeout=120m
