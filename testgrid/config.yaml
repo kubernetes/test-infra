@@ -3567,12 +3567,16 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-4.0
 - name: release-openshift-origin-installer-e2e-aws-serial-4.0
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-serial-4.0
-- name: release-openshift-origin-installer-e2e-aws-upgrade-4.0
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.0
-- name: release-openshift-ocp-installer-e2e-aws-4.0
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-4.0
-- name: release-openshift-ocp-installer-e2e-aws-serial-4.0
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-serial-4.0
+- name: release-openshift-origin-installer-e2e-aws-4.1
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-4.1
+- name: release-openshift-origin-installer-e2e-aws-serial-4.1
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-serial-4.1
+- name: release-openshift-origin-installer-e2e-aws-upgrade
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade
+- name: release-openshift-ocp-installer-e2e-aws-4.1
+  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-4.1
+- name: release-openshift-ocp-installer-e2e-aws-serial-4.1
+  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-serial-4.1
 - name: release-openshift-osd-e2e-4.0
   gcs_prefix: redhat-openshift-osd-e2e/logs/release-openshift-osd-e2e-4.0
 
@@ -8206,17 +8210,25 @@ dashboards:
     description: Runs Kubernetes serial e2e tests against an OpenShift 4.0 cluster.
     test_group_name: release-openshift-origin-installer-e2e-aws-serial-4.0
     base_options: width=10
-  - name: redhat-release-openshift-origin-installer-e2e-aws-upgrade-4.0
-    description: Runs Kubernetes upgrade e2e tests against an OpenShift 4.0 cluster.
-    test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.0
+  - name: redhat-release-openshift-origin-installer-e2e-aws-4.1
+    description: Runs Kubernetes e2e tests against an OpenShift 4.1 cluster.
+    test_group_name: release-openshift-origin-installer-e2e-aws-4.1
     base_options: width=10
-  - name: redhat-release-openshift-ocp-installer-e2e-aws-4.0
-    description: Runs Kubernetes e2e tests against an OpenShift 4.0 OCP cluster.
-    test_group_name: release-openshift-ocp-installer-e2e-aws-4.0
+  - name: redhat-release-openshift-origin-installer-e2e-aws-serial-4.1
+    description: Runs Kubernetes serial e2e tests against an OpenShift 4.1 cluster.
+    test_group_name: release-openshift-origin-installer-e2e-aws-serial-4.1
     base_options: width=10
-  - name: redhat-release-openshift-ocp-installer-e2e-aws-serial-4.0
-    description: Runs Kubernetes serial e2e tests against an OpenShift 4.0 OCP cluster.
-    test_group_name: release-openshift-ocp-installer-e2e-aws-serial-4.0
+  - name: redhat-release-openshift-origin-installer-e2e-aws-upgrade
+    description: Runs Kubernetes upgrade e2e tests against an OpenShift 4.x cluster.
+    test_group_name: release-openshift-origin-installer-e2e-aws-upgrade
+    base_options: width=10
+  - name: redhat-release-openshift-ocp-installer-e2e-aws-4.1
+    description: Runs Kubernetes e2e tests against an OpenShift 4.1 OCP cluster.
+    test_group_name: release-openshift-ocp-installer-e2e-aws-4.1
+    base_options: width=10
+  - name: redhat-release-openshift-ocp-installer-e2e-aws-serial-4.1
+    description: Runs Kubernetes serial e2e tests against an OpenShift 4.1 OCP cluster.
+    test_group_name: release-openshift-ocp-installer-e2e-aws-serial-4.1
     base_options: width=10
   - name: redhat-release-openshift-osd-e2e-4.0
     description: Runs cluster acceptance tests on a OpenShift 4.X cluster created with UHC.
