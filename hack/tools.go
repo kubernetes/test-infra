@@ -1,3 +1,5 @@
+// +build tools
+
 /*
 Copyright 2019 The Kubernetes Authors.
 
@@ -15,8 +17,6 @@ limitations under the License.
 */
 
 package hack
-
-// +build tools
 
 // Add tools that hack scripts depend on here, to ensure they are vendored.
 import (
