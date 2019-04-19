@@ -3671,9 +3671,10 @@ test_groups:
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 
 - name: pull-community-tempelis-check
-  gcs_prefix: kubernetes-jenkins/pr-logs/community/directory/pull-community-tempelis-check
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-community-tempelis-check
+  num_columns_recent: 20
 - name: post-community-tempelis-apply
-  gcs_prefix: kubernetes-jenkins/logs/community/post-community-tempelis-apply
+  gcs_prefix: kubernetes-jenkins/logs/post-community-tempelis-apply
   alert_options:
     alert_mail_to_addresses: ktbry@google.com
     num_failures_to_alert: 1
