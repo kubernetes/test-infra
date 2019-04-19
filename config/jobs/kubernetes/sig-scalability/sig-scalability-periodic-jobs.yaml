@@ -543,7 +543,8 @@ periodics:
 
 # Experimental config for testing private gce clusters.
 - name: ci-kubernetes-e2e-gce-private-cluster-correctness
-  interval: 3h
+  # TODO(mm4tt): Lower the timeout once we know how long the test takes.
+  interval: 6h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -552,19 +553,20 @@ periodics:
     containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
         args:
-          - --timeout=150
+          - --timeout=300
           - --bare
           - --scenario=kubernetes_e2e
           - --
+          - --cluster=private-gce-test
           - --env=KUBE_GCE_PRIVATE_CLUSTER=true
           - --extract=ci/latest
           - --gcp-master-image=gci
           - --gcp-node-image=gci
           - --gcp-nodes=5
           - --gcp-zone=us-east1-b
+          - --ginkgo-parallel=5
           - --provider=gce
-          - --cluster=private-gce-test
           # TODO(mm4tt): Start setting --ssh-proxy-instance-name= when it's supported in kubetest
           - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
-          - --timeout=120m
+          - --timeout=240m
           - --use-logexporter
