@@ -41,10 +41,50 @@ sh_test(
     tags = ["lint"],
 )
 
+protoc = "@com_google_protobuf//:protoc"
+
+protoc_gen_go = "@com_github_golang_protobuf//protoc-gen-go"
+
+sh_binary(
+    name = "update-protos",
+    srcs = ["update-protos.sh"],
+    args = [
+        "$(location %s)" % protoc,
+        "$(location %s)" % protoc_gen_go,
+        "$(location %s)" % ":boilerplate/boilerplate.generated.go.txt",
+    ],
+    data = [
+        ":boilerplate/boilerplate.generated.go.txt",
+        "//:all-srcs",
+        protoc,
+        protoc_gen_go,
+    ],
+    tags = ["local"],
+)
+
+sh_test(
+    name = "verify-protos",
+    srcs = ["verify-protos.sh"],
+    args = [
+        "$(location %s)" % ":update-protos",
+        "$(location %s)" % protoc,
+        "$(location %s)" % protoc_gen_go,
+        "$(location %s)" % ":boilerplate/boilerplate.generated.go.txt",
+    ],
+    data = [
+        ":boilerplate/boilerplate.generated.go.txt",
+        ":update-protos",
+        protoc,
+        protoc_gen_go,
+        "//:all-srcs",
+    ],
+)
+
 test_suite(
     name = "verify-all",
     tags = ["lint"],
     tests = [
+        "verify-protos",
         "verify-pylint",
         "verify_boilerplate",
     ],
