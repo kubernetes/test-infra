@@ -1,13 +1,11 @@
-load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
-
-# gazelle:proto package
-# gazelle:resolve go github.com/golang/protobuf/proto //vendor/github.com/golang/protobuf/proto:go_default_library
 
 go_library(
     name = "go_default_library",
-    srcs = ["config.go"],
-    embed = [":config_go_proto"],
+    srcs = [
+        "config.go",
+        "config.pb.go",
+    ],
     importpath = "k8s.io/test-infra/testgrid/config",
     visibility = ["//visibility:public"],
     deps = [
@@ -28,18 +26,5 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
-    visibility = ["//visibility:public"],
-)
-
-proto_library(
-    name = "config_proto",
-    srcs = ["config.proto"],
-    visibility = ["//visibility:public"],
-)
-
-go_proto_library(
-    name = "config_go_proto",
-    importpath = "k8s.io/test-infra/testgrid/config",
-    proto = ":config_proto",
     visibility = ["//visibility:public"],
 )

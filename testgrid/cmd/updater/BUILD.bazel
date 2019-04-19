@@ -21,7 +21,7 @@ go_library(
     deps = [
         "//testgrid/config:go_default_library",
         "//testgrid/metadata/junit:go_default_library",
-        "//testgrid/state:state_go_proto",
+        "//testgrid/state:go_default_library",
         "//testgrid/util/gcs:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
@@ -49,7 +49,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//testgrid/metadata/junit:go_default_library",
-        "//testgrid/state:state_go_proto",
+        "//testgrid/state:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
     ],
 )
