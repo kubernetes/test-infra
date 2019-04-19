@@ -1,0 +1,30 @@
+# periodic jobs
+
+periodics:
+- name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
+  interval: 1h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decoration_config:
+    timeout: 2400000000000 #40m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  path_alias: k8s.io/kubeadm
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      command:
+      - "./kinder/ci/kinder-run.sh"
+      args:
+      - "upgrade-stable-master"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "9000Mi"
+          cpu: 2000m
