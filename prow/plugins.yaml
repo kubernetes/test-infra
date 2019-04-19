@@ -511,6 +511,7 @@ plugins:
   - lifecycle
   - owners-label
   - pony
+  - release-note
   - shrug
   - size
   - skip
