@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -26,7 +27,6 @@ import (
 
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/boskos/common"
-	"strings"
 )
 
 var (
@@ -74,11 +74,14 @@ func format(rtype string) string {
 
 // Clean by janitor script
 func janitorClean(resource *common.Resource, flags []string) error {
-	cmd := exec.Command(*janitorPath, append([]string{fmt.Sprintf("--%s=%s", format(resource.Type), resource.Name)}, flags...)...)
+	args := append([]string{fmt.Sprintf("--%s=%s", format(resource.Type), resource.Name)}, flags...)
+	logrus.Infof("executing janitor: %s %s", *janitorPath, strings.Join(args, " "))
+	cmd := exec.Command(*janitorPath, args...)
 	b, err := cmd.CombinedOutput()
 	if err != nil {
 		logrus.WithError(err).Errorf("failed to clean up project %s, error info: %s", resource.Name, string(b))
 	} else {
+		logrus.Tracef("output from janitor: %s", string(b))
 		logrus.Infof("successfully cleaned up resource %s", resource.Name)
 	}
 	return err
