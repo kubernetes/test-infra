@@ -31,6 +31,7 @@ import (
 // GitHubOptions holds options for interacting with GitHub.
 type GitHubOptions struct {
 	endpoint            Strings
+	graphqlEndpoint     string
 	TokenPath           string
 	deprecatedTokenFile string
 }
@@ -48,8 +49,9 @@ func (o *GitHubOptions) AddFlagsWithoutDefaultGitHubTokenPath(fs *flag.FlagSet) 
 }
 
 func (o *GitHubOptions) addFlags(wantDefaultGitHubTokenPath bool, fs *flag.FlagSet) {
-	o.endpoint = NewStrings("https://api.github.com")
+	o.endpoint = NewStrings(github.DefaultAPIEndpoint)
 	fs.Var(&o.endpoint, "github-endpoint", "GitHub's API endpoint (may differ for enterprise).")
+	fs.StringVar(&o.graphqlEndpoint, "github-graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub GraphQL API endpoint (may differ for enterprise).")
 	defaultGitHubTokenPath := ""
 	if wantDefaultGitHubTokenPath {
 		defaultGitHubTokenPath = "/etc/github/oauth"
@@ -61,9 +63,17 @@ func (o *GitHubOptions) addFlags(wantDefaultGitHubTokenPath bool, fs *flag.FlagS
 // Validate validates GitHub options.
 func (o *GitHubOptions) Validate(dryRun bool) error {
 	for _, uri := range o.endpoint.Strings() {
-		if _, err := url.ParseRequestURI(uri); err != nil {
+		if uri == "" {
+			uri = github.DefaultAPIEndpoint
+		} else if _, err := url.ParseRequestURI(uri); err != nil {
 			return fmt.Errorf("invalid -github-endpoint URI: %q", uri)
 		}
+	}
+
+	if o.graphqlEndpoint == "" {
+		o.graphqlEndpoint = github.DefaultGraphQLEndpoint
+	} else if _, err := url.Parse(o.graphqlEndpoint); err != nil {
+		return fmt.Errorf("invalid -github-graphql-endpoint URI: %q", o.graphqlEndpoint)
 	}
 
 	if o.deprecatedTokenFile != "" {
@@ -95,9 +105,9 @@ func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, dry
 	}
 
 	if dryRun {
-		return github.NewDryRunClientWithFields(fields, *generator, o.endpoint.Strings()...), nil
+		return github.NewDryRunClientWithFields(fields, *generator, o.graphqlEndpoint, o.endpoint.Strings()...), nil
 	}
-	return github.NewClientWithFields(fields, *generator, o.endpoint.Strings()...), nil
+	return github.NewClientWithFields(fields, *generator, o.graphqlEndpoint, o.endpoint.Strings()...), nil
 }
 
 // GitHubClient returns a GitHub client.

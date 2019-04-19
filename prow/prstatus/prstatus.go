@@ -35,11 +35,10 @@ import (
 )
 
 const (
-	loginSession   = "github_login"
-	githubEndpoint = "https://api.github.com"
-	tokenSession   = "access-token-session"
-	tokenKey       = "access-token"
-	loginKey       = "login"
+	loginSession = "github_login"
+	tokenSession = "access-token-session"
+	tokenKey     = "access-token"
+	loginKey     = "login"
 )
 
 type githubClient interface {
@@ -201,7 +200,7 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 		var user *github.User
 		var botName string
 		if ok && token.Valid() {
-			githubClient := github.NewClient(func() []byte { return []byte(token.AccessToken) }, githubEndpoint)
+			githubClient := github.NewClient(func() []byte { return []byte(token.AccessToken) }, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
 			var err error
 			botName, err = githubClient.BotName()
 			user = &github.User{Login: botName}
@@ -238,7 +237,7 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 			}
 
 			// Construct query
-			ghc := github.NewClient(func() []byte { return []byte(token.AccessToken) }, githubEndpoint)
+			ghc := github.NewClient(func() []byte { return []byte(token.AccessToken) }, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
 			query := da.ConstructSearchQuery(login)
 			if err := r.ParseForm(); err == nil {
 				if q := r.Form.Get("query"); q != "" {

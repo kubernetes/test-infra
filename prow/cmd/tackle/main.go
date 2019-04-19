@@ -454,9 +454,9 @@ func githubClient(tokenPath string, dry bool) (*github.Client, error) {
 
 	gen := secretAgent.GetTokenGenerator(tokenPath)
 	if dry {
-		return github.NewDryRunClient(gen, "https://api.github.com"), nil
+		return github.NewDryRunClient(gen, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint), nil
 	}
-	return github.NewClient(gen, "https://api.github.com"), nil
+	return github.NewClient(gen, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint), nil
 }
 
 func applySecret(ctx, ns, name, key, path string) error {

@@ -58,7 +58,7 @@ const (
 
 func flagOptions() options {
 	o := options{
-		endpoint: flagutil.NewStrings("https://api.github.com"),
+		endpoint: flagutil.NewStrings(github.DefaultAPIEndpoint),
 	}
 	flag.StringVar(&o.query, "query", "", "See https://help.github.com/articles/searching-issues-and-pull-requests/")
 	flag.DurationVar(&o.updated, "updated", 2*time.Hour, "Filter to issues unmodified for at least this long if set")
@@ -68,6 +68,7 @@ func flagOptions() options {
 	flag.BoolVar(&o.useTemplate, "template", false, templateHelp)
 	flag.IntVar(&o.ceiling, "ceiling", 3, "Maximum number of issues to modify, 0 for infinite")
 	flag.Var(&o.endpoint, "endpoint", "GitHub's API endpoint")
+	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API Endpoint")
 	flag.StringVar(&o.token, "token", "", "Path to github token")
 	flag.BoolVar(&o.random, "random", false, "Choose random issues to comment on from the query")
 	flag.Parse()
@@ -82,18 +83,19 @@ type meta struct {
 }
 
 type options struct {
-	asc           bool
-	ceiling       int
-	comment       string
-	includeClosed bool
-	useTemplate   bool
-	query         string
-	sort          string
-	endpoint      flagutil.Strings
-	token         string
-	updated       time.Duration
-	confirm       bool
-	random        bool
+	asc             bool
+	ceiling         int
+	comment         string
+	includeClosed   bool
+	useTemplate     bool
+	query           string
+	sort            string
+	endpoint        flagutil.Strings
+	graphqlEndpoint string
+	token           string
+	updated         time.Duration
+	confirm         bool
+	random          bool
 }
 
 func parseHTMLURL(url string) (string, string, int, error) {
@@ -161,9 +163,9 @@ func main() {
 
 	var c client
 	if o.confirm {
-		c = github.NewClient(secretAgent.GetTokenGenerator(o.token), o.endpoint.Strings()...)
+		c = github.NewClient(secretAgent.GetTokenGenerator(o.token), o.graphqlEndpoint, o.endpoint.Strings()...)
 	} else {
-		c = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.token), o.endpoint.Strings()...)
+		c = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.token), o.graphqlEndpoint, o.endpoint.Strings()...)
 	}
 
 	query, err := makeQuery(o.query, o.includeClosed, o.updated)

@@ -35,6 +35,7 @@ import (
 
 type options struct {
 	githubEndpoint         string
+	graphqlEndpoint        string
 	githubTokenFile        string
 	jenkinsBearerTokenFile string
 	jenkinsURL             string
@@ -54,7 +55,8 @@ func flagOptions() options {
 	flag.StringVar(&o.jenkinsTokenFile, "jenkins-token-file", "", "Path to the file containing the Jenkins API token.")
 	flag.StringVar(&o.jenkinsUserName, "jenkins-user-name", "", "Jenkins username.")
 
-	flag.StringVar(&o.githubEndpoint, "github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
+	flag.StringVar(&o.githubEndpoint, "github-endpoint", github.DefaultAPIEndpoint, "GitHub's API endpoint.")
+	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API endpoint.")
 	flag.StringVar(&o.githubTokenFile, "github-token-file", "", "Path to file containing GitHub OAuth token.")
 
 	flag.StringVar(&o.jobName, "job-name", "", "Name of Jenkins job")
@@ -91,6 +93,12 @@ func sanityCheckFlags(o options) error {
 		return fmt.Errorf("empty --github-endpoint")
 	} else if _, err := url.Parse(o.githubEndpoint); err != nil {
 		return fmt.Errorf("bad --github-endpoint provided: %v", err)
+	}
+
+	if o.graphqlEndpoint == "" {
+		return fmt.Errorf("empty --graphql-endpoint")
+	} else if _, err := url.Parse(o.graphqlEndpoint); err != nil {
+		return fmt.Errorf("bad --graphql-endpoint provided: %v", err)
 	}
 
 	if o.jenkinsURL == "" {
@@ -145,7 +153,7 @@ func main() {
 		log.Fatalf("cannot setup Jenkins client: %v", err)
 	}
 
-	gc := github.NewClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint)
+	gc := github.NewClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.graphqlEndpoint, o.githubEndpoint)
 
 	pr, err := gc.GetPullRequest(o.org, o.repo, o.num)
 	if err != nil {
