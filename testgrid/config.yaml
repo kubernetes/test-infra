@@ -2143,6 +2143,9 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kind-1-13
 - name: ci-kubernetes-e2e-kubeadm-kind-1-12
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kind-1-12
+# kubeadm-kinder tests
+- name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
 # kubeadm x-on-y tests
 - name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
@@ -6162,6 +6165,9 @@ dashboards:
       alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
     alert_stale_results_hours: 24
     num_failures_to_alert: 12 # Runs every 1h. Alert when it's been failing for 12 hours
+# kubeadm-kinder tests
+  - name: kubeadm-kinder-upgrade-stable-master
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
 # kubeadm x-on-y tests
   - name: kubeadm-gce-1.11-on-1.12
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
