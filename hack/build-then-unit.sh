@@ -18,12 +18,25 @@
 
 res=0
 
-bazel build //...
+bazel=(
+  bazel
+)
+
+if [[ "${BAZEL_REMOTE_CACHE_ENABLED}" == "true" ]]; then
+  # TODO(fejta): remove logic associated with this env
+  echo "Disabling deprecated http cache in system/home bazelrcs..." >&2
+  bazel+=(
+    --nosystem_rc
+    --nohome_rc
+  )
+fi
+
+"${bazel[@]}" build --config=ci //...
 if [[ $? -ne 0 ]]; then
     res=1
 fi
 
-bazel test //... --config=unit
+"${bazel[@]}" test --config=ci //... --config=unit
 if [[ $? -ne 0 ]]; then
     res=1
 fi
