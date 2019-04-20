@@ -56,7 +56,7 @@ type options struct {
 
 func gatherOptions() (options, error) {
 	o := options{}
-	flag.StringVar(&o.creds, "gcp-service-account", "", "/path/to/gcp/creds (use local creds if empty")
+	flag.StringVar(&o.creds, "gcp-service-account", "", "/path/to/gcp/creds (use local creds if empty)")
 	flag.BoolVar(&o.oneshot, "oneshot", false, "Write proto once and exit instead of monitoring --yaml files for changes")
 	flag.StringVar(&o.output, "output", "", "write proto to gs://bucket/obj or /local/path")
 	flag.BoolVar(&o.printText, "print-text", false, "print generated proto in text format to stdout")
