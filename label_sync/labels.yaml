@@ -1107,6 +1107,12 @@ repos:
         prowPlugin: label
         addedBy: anyone
       - color: e9b3f9
+        description: Issues or PRs related to Hindi language
+        name: language/hi
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
         description: Issues or PRs related to Indonesian language
         name: language/id
         target: both
