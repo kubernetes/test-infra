@@ -724,3 +724,7 @@ external_plugins:
   - name: needs-rebase
     events:
       - pull_request
+  kubernetes-sigs/kubespray:
+  - name: needs-rebase
+    events:
+      - pull_request
