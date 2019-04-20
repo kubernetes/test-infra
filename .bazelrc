@@ -57,3 +57,7 @@ build:fejta-instance --remote_instance_name=projects/fejta-prod/instances/defaul
 build:remote-fejta --config=remote --config=fejta-instance
 # --config=remote-fejta-cache caches actions on fejta-instance
 build:remote-fejta-cache --config=remote-cache --config=fejta-instance
+
+# Config we want to use for prow
+# TODO(fejta): move to a different project
+build:ci --config=remote-fejta

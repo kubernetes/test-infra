@@ -62,17 +62,9 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.24.0
+      - image: launcher.gcr.io/google/bazel:0.24.1
         command:
-        - bazel
-        args:
-        - --bazelrc=rbe.bazelrc
-        - test
-        - --nobuild_tests_only
-        - //...
-        - --config=unit
-        - --config=remote
-        - --remote_instance_name=projects/rbe-eytankidron-prod-0/instances/default_instance
+        - hack/build-then-unit.sh
         resources:
           requests:
             memory: "2Gi"
