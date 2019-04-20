@@ -214,7 +214,7 @@ periodics:
       - --gcp-project-type=ingress-project
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\] --ginkgo.skip=\[Unreleased\]
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
       - --timeout=320m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
 
@@ -237,7 +237,7 @@ periodics:
       - --gcp-project-type=ingress-project
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
 
