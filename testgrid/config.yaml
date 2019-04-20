@@ -2860,6 +2860,18 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 16
   num_failures_to_alert: 1
+- name: pull-vsphere-csi-driver-check
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-vsphere-csi-driver-check
+  num_columns_recent: 20
+- name: pull-vsphere-csi-driver-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-vsphere-csi-driver-build
+  num_columns_recent: 20
+- name: pull-vsphere-csi-driver-unit-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-vsphere-csi-driver-unit-test
+  num_columns_recent: 20
+- name: post-vsphere-csi-driver-deploy
+  gcs_prefix: kubernetes-jenkins/logs/post-vsphere-csi-driver-deploy
+  num_columns_recent: 20
 - name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-default
 - name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
@@ -7665,6 +7677,26 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
 
+- name: vmware-presubmits-vsphere-csi-driver
+  dashboard_tab:
+  - name: pull-vsphere-csi-driver-check
+    test_group_name: pull-vsphere-csi-driver-check
+    base_options: width=10
+  - name: pull-vsphere-csi-driver-build
+    test_group_name: pull-vsphere-csi-driver-build
+    base_options: width=10
+  - name: pull-vsphere-csi-driver-unit-test
+    test_group_name: pull-vsphere-csi-driver-unit-test
+    base_options: width=10
+
+- name: vmware-postsubmits-vsphere-csi-driver
+  dashboard_tab:
+  - name: post-vsphere-csi-driver-deploy
+    test_group_name: post-vsphere-csi-driver-deploy
+    base_options: width=10
+    alert_options:
+      alert_mail_to_addresses: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
 - name: presubmits-kubernetes-scalability
   dashboard_tab:
   - name: pull-kubernetes-e2e-gce-100-performance
@@ -8472,6 +8504,8 @@ dashboard_groups:
   dashboard_names:
   - vmware-presubmits-cloud-provider-vsphere
   - vmware-postsubmits-cloud-provider-vsphere
+  - vmware-presubmits-vsphere-csi-driver
+  - vmware-postsubmits-vsphere-csi-driver
   - vmware-conformance
   - vmware-conformance-cloud-provider
   - vmware-cluster-api-provider-vsphere
