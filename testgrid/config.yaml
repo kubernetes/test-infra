@@ -2239,6 +2239,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-rotten
 - name: periodic-test-infra-close
   gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-close
+- name: periodic-test-infra-cla
+  gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-cla
 - name: periodic-kubespray-close
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubespray-close
 - name: periodic-kubespray-rotten
@@ -7116,6 +7118,9 @@ dashboards:
   - name: close
     description: Closes rotten issues after 30d of inactivity
     test_group_name: periodic-test-infra-close
+  - name: cla
+    description: Re-checks CLA context when CLA labels are missing
+    test_group_name: periodic-test-infra-cla
   - name: api-review-help
     description: Adds API review process description to kind/api-change PRs
     test_group_name: periodic-api-review-help
