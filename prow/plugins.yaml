@@ -395,6 +395,7 @@ plugins:
   - heart
   - help
   - hold
+  - invalidcommitmsg
   - label
   - lgtm
   - lifecycle
@@ -483,6 +484,7 @@ plugins:
   - heart
   - help
   - hold
+  - invalidcommitmsg
   - label
   - lgtm
   - lifecycle
@@ -506,6 +508,7 @@ plugins:
   - heart
   - help
   - hold
+  - invalidcommitmsg
   - label
   - lgtm
   - lifecycle
@@ -530,6 +533,7 @@ plugins:
   - heart
   - help
   - hold
+  - invalidcommitmsg
   - label
   - lgtm
   - lifecycle
@@ -556,6 +560,7 @@ plugins:
   - heart
   - help
   - hold
+  - invalidcommitmsg
   - label
   - lgtm
   - lifecycle
@@ -587,7 +592,6 @@ plugins:
   - welcome
 
   kubernetes-sigs/contributor-playground:
-  - invalidcommitmsg
   - require-sig
   - welcome
 
