@@ -129,16 +129,22 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20180927-6b4facbe6
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-experimental
         args:
+        - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
+        - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
+        - "--scenario=kubernetes_execute_bazel"
+        - "--" # end bootstrap args, scenario args below
         - ./hack/verify-gofmt.sh
+        resources:
+          requests:
+            memory: "2Gi"
 
   - name: pull-kops-verify-govet
     branches:
