@@ -24,6 +24,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -62,6 +63,7 @@ func flagOptions() options {
 	}
 	flag.StringVar(&o.query, "query", "", "See https://help.github.com/articles/searching-issues-and-pull-requests/")
 	flag.DurationVar(&o.updated, "updated", 2*time.Hour, "Filter to issues unmodified for at least this long if set")
+	flag.BoolVar(&o.includeArchived, "include-archived", false, "Match archived issues if set")
 	flag.BoolVar(&o.includeClosed, "include-closed", false, "Match closed issues if set")
 	flag.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	flag.StringVar(&o.comment, "comment", "", "Append the following comment to matching issues")
@@ -86,6 +88,7 @@ type options struct {
 	asc             bool
 	ceiling         int
 	comment         string
+	includeArchived bool
 	includeClosed   bool
 	useTemplate     bool
 	query           string
@@ -112,15 +115,23 @@ func parseHTMLURL(url string) (string, string, int, error) {
 	return mat[1], mat[2], n, nil
 }
 
-func makeQuery(query string, includeClosed bool, minUpdated time.Duration) (string, error) {
+func makeQuery(query string, includeArchived, includeClosed bool, minUpdated time.Duration) (string, error) {
 	parts := []string{query}
+	if !includeArchived {
+		if strings.Contains(query, "archived:true") {
+			return "", errors.New("archived:true requires --include-archived")
+		}
+		parts = append(parts, "archived:false")
+	} else if strings.Contains(query, "archived:false") {
+		return "", errors.New("archived:false conflicts with --include-archived")
+	}
 	if !includeClosed {
 		if strings.Contains(query, "is:closed") {
-			return "", fmt.Errorf("--query='%s' containing is:closed requires --include-closed", query)
+			return "", errors.New("is:closed requires --include-closed")
 		}
 		parts = append(parts, "is:open")
 	} else if strings.Contains(query, "is:open") {
-		return "", fmt.Errorf("--query='%s' should not contain is:open when using --include-closed", query)
+		return "", errors.New("is:open conflicts with --include-closed")
 	}
 	if minUpdated != 0 {
 		latest := time.Now().Add(-minUpdated)
@@ -168,9 +179,9 @@ func main() {
 		c = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.token), o.graphqlEndpoint, o.endpoint.Strings()...)
 	}
 
-	query, err := makeQuery(o.query, o.includeClosed, o.updated)
+	query, err := makeQuery(o.query, o.includeArchived, o.includeClosed, o.updated)
 	if err != nil {
-		log.Fatalf("Bad query: %v", err)
+		log.Fatalf("Bad query %q: %v", o.query, err)
 	}
 	sort := ""
 	asc := false
