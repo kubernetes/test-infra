@@ -93,6 +93,7 @@ func TestMakeQuery(t *testing.T) {
 	cases := []struct {
 		name       string
 		query      string
+		archived   bool
 		closed     bool
 		dur        time.Duration
 		expected   []string
@@ -102,15 +103,22 @@ func TestMakeQuery(t *testing.T) {
 		{
 			name:       "basic query",
 			query:      "hello world",
-			expected:   []string{"hello world", "is:open"},
+			expected:   []string{"hello world", "is:open", "archived:false"},
 			unexpected: []string{"updated:", "openhello", "worldis"},
 		},
 		{
 			name:       "basic closed",
 			query:      "hello world",
 			closed:     true,
-			expected:   []string{"hello world"},
+			expected:   []string{"hello world", "archived:false"},
 			unexpected: []string{"is:open"},
+		},
+		{
+			name:       "basic archived",
+			query:      "hello world",
+			archived:   true,
+			expected:   []string{"hello world", "is:open"},
+			unexpected: []string{"archived:false"},
 		},
 		{
 			name:     "basic duration",
@@ -135,10 +143,21 @@ func TestMakeQuery(t *testing.T) {
 			query: "hello is:closed",
 			err:   true,
 		},
+		{
+			name:     "archived:false with include-archived errors",
+			query:    "hello archived:false",
+			archived: true,
+			err:      true,
+		},
+		{
+			name:  "archived:true without includeArchived errors",
+			query: "hello archived:true",
+			err:   true,
+		},
 	}
 
 	for _, tc := range cases {
-		actual, err := makeQuery(tc.query, tc.closed, tc.dur)
+		actual, err := makeQuery(tc.query, tc.archived, tc.closed, tc.dur)
 		if err != nil && !tc.err {
 			t.Errorf("%s: unexpected error: %v", tc.name, err)
 		} else if err == nil && tc.err {
