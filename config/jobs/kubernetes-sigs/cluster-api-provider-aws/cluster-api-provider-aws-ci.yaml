@@ -1,4 +1,4 @@
-periodics:  
+periodics:
 - name: periodic-cluster-api-provider-aws-test-creds
   decorate: true
   interval: 4h
@@ -13,7 +13,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-1.12
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.14
       command:
       - "./scripts/ci-aws-cred-test.sh"
 - name: periodic-cluster-api-provider-aws-bazel-e2e
@@ -32,7 +32,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-1.12
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.14
       command:
       - make
       args:
@@ -58,7 +58,7 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.14
         command:
         - make
         args:
