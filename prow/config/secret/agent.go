@@ -79,6 +79,7 @@ func (a *Agent) reloadSecret(secretPath string) {
 				WithError(err).Error("Error loading secret.")
 		} else {
 			a.setSecret(secretPath, secretValue)
+			skips = 0
 		}
 	}
 }

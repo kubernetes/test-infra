@@ -822,7 +822,7 @@ func (c *Config) validateJobConfig() error {
 const DefaultConfigPath = "/etc/config/config.yaml"
 
 // ConfigPath returns the value for the component's configPath if provided
-// explicityly or default otherwise.
+// explicitly or default otherwise.
 func ConfigPath(value string) string {
 
 	if value != "" {
