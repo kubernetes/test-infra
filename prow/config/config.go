@@ -194,6 +194,10 @@ type Plank struct {
 	// PodPendingTimeout is after how long the controller will perform a garbage
 	// collection on pending pods. Defaults to one day.
 	PodPendingTimeout time.Duration `json:"-"`
+	// SyncPeriodString compiles into SyncPeriodTimeout at load time.
+	SyncPeriodString string `json:"sync_period,omitempty"`
+	// SyncPeriod is after how long the controller will sync builds
+	SyncPeriod time.Duration `json:"-"`
 	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
 	// that request to have their PodSpecs decorated
 	DefaultDecorationConfig *prowapi.DecorationConfig `json:"default_decoration_config,omitempty"`
@@ -820,6 +824,16 @@ func parseProwConfig(c *Config) error {
 			return fmt.Errorf("cannot parse duration for plank.pod_pending_timeout: %v", err)
 		}
 		c.Plank.PodPendingTimeout = podPendingTimeout
+	}
+
+	if c.Plank.SyncPeriodString == "" {
+		c.Plank.SyncPeriod = time.Second * 30
+	} else {
+		period, err := time.ParseDuration(c.Plank.SyncPeriodString)
+		if err != nil {
+			return fmt.Errorf("cannot parse duration for plank.sync_period: %v", err)
+		}
+		c.Plank.SyncPeriod = period
 	}
 
 	if c.Gerrit.TickIntervalString == "" {

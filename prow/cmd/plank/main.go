@@ -154,7 +154,7 @@ func main() {
 	// gather metrics for the jobs handled by plank.
 	go gather(c)
 
-	tick := time.Tick(30 * time.Second)
+	tick := time.Tick(cfg().Plank.SyncPeriod)
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 
