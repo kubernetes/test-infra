@@ -467,6 +467,7 @@ plugins:
   - milestone
   - override
   - welcome
+  - project
 
   kubernetes/utils:
   - override
