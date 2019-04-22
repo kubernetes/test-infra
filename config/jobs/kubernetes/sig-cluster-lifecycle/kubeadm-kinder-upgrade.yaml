@@ -22,6 +22,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
       command:
+      - runner.sh
       - "./kinder/ci/kinder-run.sh"
       args:
       - "upgrade-stable-master"
