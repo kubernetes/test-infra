@@ -3271,6 +3271,9 @@ test_groups:
 - name: pull-kube-batch-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kube-batch-verify
   num_columns_recent: 20
+- name: pull-kube-batch-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kube-batch-e2e
+  num_columns_recent: 20
 
 # Prow hosted conformance tests
 - name: ci-kubernetes-gce-conformance
@@ -7808,6 +7811,9 @@ dashboards:
   dashboard_tab:
     - name: verify
       test_group_name: pull-kube-batch-verify
+    - name: e2e
+      test_group_name: pull-kube-batch-e2e
+
 
 - name: presubmits-node-problem-detector
   dashboard_tab:
