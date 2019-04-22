@@ -8,6 +8,8 @@ not make any attempt to preserve backwards compatibility.
 
 For a brief overview of how Prow runs jobs take a look at ["Life of a Prow Job"](/prow/life_of_a_prow_job.md).
 
+For a sequence diagram of common usage and interactions flow, click [here](/prow/docs/pr-interactions-sequence.svg).
+
 #### Functions and Features
 * Job execution for testing, batch processing, artifact publishing.
     * GitHub events are used to trigger post-PR-merge (postsubmit) jobs and on-PR-update (presubmit) jobs.
