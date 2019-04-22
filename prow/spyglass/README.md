@@ -150,6 +150,9 @@ more details and examples.
 Spyglass is currently disabled by default. To enable it, add the `--spyglass` arg to your
 [deck deployment](https://github.com/kubernetes/test-infra/blob/e9e544733854d54403aa1dfd84ca009fd9b942f0/prow/cluster/starter.yaml#L236).
 
+Note: if the log files aren't publicly accessible from within GCS, `--gcs-credentials-file` arg must be passed to deck deployment as well to be able to surf the logs in spyglass. By doing this, spyglass will display the build logs from GCS to anyone who is authorized to access spyglass.
+
+
 To provide any use, Spyglass must by configured. Its config takes the following form:
 ```yaml
 deck:
