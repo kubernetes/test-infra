@@ -13,6 +13,7 @@ prow_push(
         "build",
         "checkconfig",
         "clonerefs",
+        "config-bootstrapper",
         "deck",
         "entrypoint",
         "gerrit",

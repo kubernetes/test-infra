@@ -1,6 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("//prow:def.bzl", "prow_image")
 
 go_library(
     name = "go_default_library",
@@ -35,4 +36,10 @@ filegroup(
 go_binary(
     name = "config-bootstrapper",
     embed = [":go_default_library"],
+)
+
+prow_image(
+    name = "image",
+    base = "@git-base//image",
+    visibility = ["//visibility:public"],
 )
