@@ -1,22 +1,19 @@
 periodics:
 - name: periodic-cluster-api-provider-aws-test-creds
+  path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   decorate: true
   interval: 4h
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-aws
-    base_ref: master
-    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.14
       command:
       - "./scripts/ci-aws-cred-test.sh"
 - name: periodic-cluster-api-provider-aws-bazel-e2e
+  path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   decorate: true
   interval: 1h
   labels:
@@ -25,11 +22,6 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-aws
-    base_ref: master
-    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.14
