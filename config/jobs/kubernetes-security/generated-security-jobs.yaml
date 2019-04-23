@@ -1885,7 +1885,7 @@ presubmits:
         - --use-logexporter
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-100-performance
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190418-925ad44-master
         name: ""
         resources:
           requests:
@@ -1948,7 +1948,7 @@ presubmits:
         - --use-logexporter
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-big-performance
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190418-925ad44-master
         name: ""
         resources:
           requests:
@@ -2011,7 +2011,7 @@ presubmits:
         - --use-logexporter
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-large-performance
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190418-925ad44-master
         name: ""
         resources:
           requests:
@@ -2085,7 +2085,7 @@ presubmits:
         - --timeout=100m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190418-925ad44-master
         name: ""
         resources:
           requests:
@@ -2447,7 +2447,7 @@ presubmits:
         - --timeout=1200m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-scale
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190418-925ad44-master
         name: ""
         resources:
           requests:
