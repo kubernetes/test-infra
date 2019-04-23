@@ -296,7 +296,7 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 
 			// process if updated later than last updated
 			// stop if update was stale
-			if !updated.Before(lastUpdate) {
+			if updated.After(lastUpdate) {
 				switch change.Status {
 				case Merged:
 					submitted := parseStamp(*change.Submitted)
