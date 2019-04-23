@@ -34,6 +34,23 @@ periodics:
         value: "boskos.test-pods.svc.cluster.local"
       securityContext:
         privileged: true
+      # volumeMounts for kind
+      volumeMounts:
+      - mountPath: /lib/modules
+        name: modules
+        readOnly: true
+      - mountPath: /sys/fs/cgroup
+        name: cgroup
+    volumes:
+    - name: modules
+      hostPath:
+        path: /lib/modules
+        type: Directory
+    - name: cgroup
+      hostPath:
+        path: /sys/fs/cgroup
+        type: Directory
+
 postsubmits:
   kubernetes-sigs/cluster-api-provider-aws:
   - name: ci-cluster-api-provider-aws-bazel-e2e
@@ -61,3 +78,19 @@ postsubmits:
           value: "boskos.test-pods.svc.cluster.local"
         securityContext:
           privileged: true
+      # volumeMounts for kind
+      volumeMounts:
+      - mountPath: /lib/modules
+        name: modules
+        readOnly: true
+      - mountPath: /sys/fs/cgroup
+        name: cgroup
+    volumes:
+    - name: modules
+      hostPath:
+        path: /lib/modules
+        type: Directory
+    - name: cgroup
+      hostPath:
+        path: /sys/fs/cgroup
+        type: Directory
