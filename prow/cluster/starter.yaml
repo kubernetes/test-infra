@@ -481,6 +481,11 @@ spec:
         configMap:
           name: plugins
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-pods
+---
 kind: ServiceAccount
 apiVersion: v1
 metadata:
