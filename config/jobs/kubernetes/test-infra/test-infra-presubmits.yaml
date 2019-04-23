@@ -40,16 +40,14 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-experimental
+      - image: launcher.gcr.io/google/bazel:0.24.1
         command:
-        - runner.sh
-        - ./scenarios/kubernetes_execute_bazel.py
-        args:
         - hack/build-then-unit.sh
         resources:
           requests:
             memory: "2Gi"
 
+  # TODO(fejta): delete this job its non-rbe parent is equivalent
   - name: pull-test-infra-bazel-rbe
     branches:
     - master
@@ -59,15 +57,11 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
       - image: launcher.gcr.io/google/bazel:0.24.1
         command:
         - hack/build-then-unit.sh
-        resources:
-          requests:
-            memory: "2Gi"
 
   - name: pull-test-infra-gubernator
     branches:

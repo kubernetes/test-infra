@@ -16,7 +16,9 @@
 # used in presubmits / CI testing
 # bazel build then unit test, exiting non-zero if either failed
 
-res=0
+set -o nounset
+set -o errexit
+set -o pipefail
 
 bazel=(
   bazel
@@ -31,14 +33,6 @@ if [[ "${BAZEL_REMOTE_CACHE_ENABLED}" == "true" ]]; then
   )
 fi
 
-"${bazel[@]}" build --config=ci //...
-if [[ $? -ne 0 ]]; then
-    res=1
-fi
-
-"${bazel[@]}" test --config=ci //... --config=unit
-if [[ $? -ne 0 ]]; then
-    res=1
-fi
-
-exit ${res}
+# --config=unit ignores lint tests
+# --nobuild_tests_only builds all targets, not just test targets
+"${bazel[@]}" test --config=ci --config=unit --nobuild_tests_only //...
