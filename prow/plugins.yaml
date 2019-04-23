@@ -661,67 +661,23 @@ plugins:
   - dog # /bark replies with dog pictures
 
 external_plugins:
-  kubernetes/community:
+  kubernetes:
   - name: needs-rebase
     events:
       - pull_request
-  kubernetes/contrib:
+  kubernetes-sigs:
   - name: needs-rebase
     events:
       - pull_request
-  kubernetes/cloud-provider-openstack:
+  kubernetes-csi:
   - name: needs-rebase
     events:
       - pull_request
-  kubernetes/kops:
+  kubernetes-client:
   - name: needs-rebase
     events:
       - pull_request
-  kubernetes/kubernetes:
-  - name: needs-rebase
-    events:
-      - pull_request
-  kubernetes/org:
-  - name: needs-rebase
-    events:
-      - pull_request
-  kubernetes/release:
-  - name: needs-rebase
-    events:
-      - pull_request
-  kubernetes/sig-release:
-  - name: needs-rebase
-    events:
-      - pull_request
-  kubernetes/test-infra:
-  - name: needs-rebase
-    events:
-      - pull_request
-  client-go/unofficial-docs:
-  - name: needs-rebase
-    events:
-      - pull_request
-  kubernetes-incubator/service-catalog:
-  - name: needs-rebase
-    events:
-      - pull_request
-  kubernetes-sigs/contributor-playground:
-  - name: needs-rebase
-    events:
-      - pull_request
-  kubernetes-sigs/cluster-api-provider-azure:
-  - name: needs-rebase
-    events:
-      - pull_request
-  kubernetes-sigs/cluster-api-provider-digitalocean:
-  - name: needs-rebase
-    events:
-      - pull_request
-  kubernetes-sigs/cluster-api-provider-openstack:
-  - name: needs-rebase
-    events:
-      - pull_request
-  kubernetes-sigs/kind:
+  kubernetes-incubator:
   - name: needs-rebase
     events:
       - pull_request
