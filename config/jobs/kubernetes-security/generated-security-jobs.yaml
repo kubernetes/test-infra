@@ -1390,6 +1390,61 @@ presubmits:
     branches:
     - master
     cluster: security
+    context: pull-security-kubernetes-e2e-windows-gce
+    decorate: true
+    extra_refs:
+    - base_ref: master
+      org: yujuhong
+      path_alias: k8s.io/gce-k8s-windows-testing
+      repo: gce-k8s-windows-testing
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-e2e-gce-windows: "true"
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-e2e-windows-gce
+    optional: true
+    rerun_command: /test pull-security-kubernetes-e2e-windows-gce
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --build=gce-windows-bazel
+        - --check-leaked-resources
+        - --cluster=
+        - --extract=local
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=8
+        - --provider=gce
+        - --gcp-nodes=2
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
+        - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]
+          --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+        - --test-cmd-args=--node-os-distro=windows
+        - --timeout=120m
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-windows-gce,?($|\s.*)
+  - agent: kubernetes
+    always_run: false
+    branches:
+    - master
+    cluster: security
     context: pull-security-kubernetes-e2e-containerd-gce
     labels:
       preset-bazel-scratch-dir: "true"
