@@ -46,6 +46,7 @@ const (
 %s
 </details>
 `
+	commentPruneBody = "**The list of commits with invalid commit messages**:"
 )
 
 var (
@@ -125,7 +126,7 @@ func handle(gc githubClient, log *logrus.Entry, pr github.PullRequestEvent, cp c
 			log.WithError(err).Errorf("GitHub failed to remove the following label: %s", invalidCommitMsgLabel)
 		}
 		cp.PruneComments(func(comment github.IssueComment) bool {
-			return strings.Contains(comment.Body, commentBody)
+			return strings.Contains(comment.Body, commentPruneBody)
 		})
 	}
 
@@ -141,7 +142,7 @@ func handle(gc githubClient, log *logrus.Entry, pr github.PullRequestEvent, cp c
 	if len(invalidCommits) != 0 {
 		// prune old comments before adding a new one
 		cp.PruneComments(func(comment github.IssueComment) bool {
-			return strings.Contains(comment.Body, commentBody)
+			return strings.Contains(comment.Body, commentPruneBody)
 		})
 
 		log.Debugf("Commenting on PR to advise users of invalid commit messages")
