@@ -2596,6 +2596,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-test
   num_columns_recent: 20
   alert_stale_results_hours: 24
+- name: pull-kubernetes-bazel-test-rbe
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-test-rbe
+  num_columns_recent: 20
+  alert_stale_results_hours: 24
   num_failures_to_alert: 10
 - name: pull-kubernetes-bazel-test-canary
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-test-canary
@@ -7603,6 +7607,9 @@ dashboards:
 
 - name: presubmits-kubernetes-nonblocking
   dashboard_tab:
+  - name: bazel-test-rbe
+    test_group_name: pull-kubernetes-bazel-test-rbe
+    base_options: width=10
   - name: pull-kubernetes-e2e-kind
     test_group_name: pull-kubernetes-e2e-kind
     base_options: width=10

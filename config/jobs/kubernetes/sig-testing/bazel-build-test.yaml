@@ -163,6 +163,32 @@ presubmits:
             memory: "6Gi"
         securityContext:
           privileged: true
+  - name: pull-kubernetes-bazel-test-rbe
+    decorate: true
+    always_run: true
+    skip_report: true
+    skip_branches:
+    - release-1.14 # per-release job
+    - release-1.13 # per-release job
+    - release-1.12 # per-release job
+    - release-1.11 # per-release job
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+    spec:
+      containers:
+      - image: launcher.gcr.io/google/bazel:0.24.1
+        command:
+        - bazel
+        args:
+        - --config=unit
+        - --config=remote
+        - --remote_instance_name=projects/fejta-prod/instances/default_instance
+        - test
+        - //...
+        - --
+        - -//build/...
+        - -//vendor/...
   - name: pull-kubernetes-bazel-test
     always_run: true
     branches:

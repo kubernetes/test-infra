@@ -2879,6 +2879,48 @@ presubmits:
     trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test,?($|\s.*)
   - agent: kubernetes
     always_run: true
+    cluster: security
+    context: pull-security-kubernetes-bazel-test-rbe
+    decorate: true
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-bazel-test-rbe
+    rerun_command: /test pull-security-kubernetes-bazel-test-rbe
+    skip_branches:
+    - release-1.14
+    - release-1.13
+    - release-1.12
+    - release-1.11
+    skip_report: true
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --config=unit
+        - --config=remote
+        - --remote_instance_name=projects/fejta-prod/instances/default_instance
+        - test
+        - //...
+        - --
+        - -//build/...
+        - -//vendor/...
+        command:
+        - bazel
+        image: launcher.gcr.io/google/bazel:0.24.1
+        name: ""
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test-rbe,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
     branches:
     - release-1.14
     cluster: security
