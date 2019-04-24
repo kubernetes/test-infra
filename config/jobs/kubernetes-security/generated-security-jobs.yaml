@@ -2897,10 +2897,10 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
+        - test
         - --config=unit
         - --config=remote
         - --remote_instance_name=projects/fejta-prod/instances/default_instance
-        - test
         - //...
         - --
         - -//build/...
