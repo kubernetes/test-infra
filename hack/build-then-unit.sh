@@ -24,7 +24,7 @@ bazel=(
   bazel
 )
 
-if [[ "${BAZEL_REMOTE_CACHE_ENABLED}" == "true" ]]; then
+if [[ "${BAZEL_REMOTE_CACHE_ENABLED:-}" == "true" ]]; then
   # TODO(fejta): remove logic associated with this env
   echo "Disabling deprecated http cache in system/home bazelrcs..." >&2
   bazel+=(
