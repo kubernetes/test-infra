@@ -321,6 +321,7 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 						if message.RevisionNumber == rev.Number {
 							messageTime := parseStamp(message.Date)
 							if messageTime.After(lastUpdate) {
+								logrus.Infof("Change %d: Found a new message %s at time %v after lastSync at %v", change.Number, message.Message, messageTime, lastUpdate)
 								newMessages = true
 								break
 							}
