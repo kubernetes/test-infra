@@ -456,8 +456,8 @@ presubmits:
         default_repo: kubernetes
         path_strategy: legacy
       gcs_credentials_secret: service-account
-      grace_period: 15000000000
-      timeout: 2400000000000
+      grace_period: 15s
+      timeout: 40m0s
     extra_refs:
     - base_ref: master
       org: kubernetes
@@ -539,8 +539,8 @@ presubmits:
         default_repo: kubernetes
         path_strategy: legacy
       gcs_credentials_secret: service-account
-      grace_period: 15000000000
-      timeout: 2400000000000
+      grace_period: 15s
+      timeout: 40m0s
     extra_refs:
     - base_ref: master
       org: kubernetes
@@ -622,8 +622,8 @@ presubmits:
         default_repo: kubernetes
         path_strategy: legacy
       gcs_credentials_secret: service-account
-      grace_period: 15000000000
-      timeout: 2400000000000
+      grace_period: 15s
+      timeout: 40m0s
     extra_refs:
     - base_ref: master
       org: kubernetes
@@ -703,8 +703,8 @@ presubmits:
         default_repo: kubernetes
         path_strategy: legacy
       gcs_credentials_secret: service-account
-      grace_period: 15000000000
-      timeout: 2400000000000
+      grace_period: 15s
+      timeout: 40m0s
     extra_refs:
     - base_ref: master
       org: kubernetes
