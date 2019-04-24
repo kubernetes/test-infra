@@ -31,9 +31,10 @@ dest=${4:-$BUILD_WORKSPACE_DIRECTORY}
 genproto() {
   dir=$(dirname "$1")
   base=$(basename "$1")
+  out=$dest/$dir/${base%.proto}.pb.go
+  rm -f "$out" # mac will complain otherwise
   "$protoc" "--plugin=$plugin" "--proto_path=$dir" "--go_out=$dest/$dir" "$1"
   tmp=$(mktemp)
-  out=$dest/$dir/${base%.proto}.pb.go
   mv "$out" "$tmp"
   cat "$boiler" "$tmp" > "$out"
 }
