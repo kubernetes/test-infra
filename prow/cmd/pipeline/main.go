@@ -143,14 +143,13 @@ func main() {
 		logrus.WithError(err).Fatal("Error building client configs")
 	}
 
-	if !o.allContexts { // Just the default context please
-		logrus.Warn("Truncating to local and default contexts")
+	local := configs[kube.InClusterContext]
+	if !o.allContexts {
+		logrus.Warn("Truncating to default context")
 		configs = map[string]rest.Config{
-			kube.InClusterContext:    configs[kube.InClusterContext],
 			kube.DefaultClusterAlias: configs[kube.DefaultClusterAlias],
 		}
 	}
-	local := configs[kube.InClusterContext]
 
 	stop := stopper()
 

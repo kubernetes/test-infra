@@ -31,6 +31,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
@@ -277,4 +278,12 @@ func JobURL(plank config.Plank, pj prowapi.ProwJob, log *logrus.Entry) string {
 		return b.String()
 	}
 	return ""
+}
+
+// ClusterToCtx converts the prow job's cluster to a cluster context
+func ClusterToCtx(cluster string) string {
+	if cluster == kube.InClusterContext {
+		return kube.DefaultClusterAlias
+	}
+	return cluster
 }

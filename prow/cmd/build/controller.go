@@ -173,7 +173,7 @@ func newController(opts controllerOptions) (*controller, error) {
 				logrus.Warnf("Ignoring bad prowjob add: %v", obj)
 				return
 			}
-			c.enqueueKey(clusterToCtx(pj.Spec.Cluster), pj)
+			c.enqueueKey(pjutil.ClusterToCtx(pj.Spec.Cluster), pj)
 		},
 		UpdateFunc: func(old, new interface{}) {
 			pj, ok := new.(*prowjobv1.ProwJob)
@@ -181,7 +181,7 @@ func newController(opts controllerOptions) (*controller, error) {
 				logrus.Warnf("Ignoring bad prowjob update: %v", new)
 				return
 			}
-			c.enqueueKey(clusterToCtx(pj.Spec.Cluster), pj)
+			c.enqueueKey(pjutil.ClusterToCtx(pj.Spec.Cluster), pj)
 		},
 		DeleteFunc: func(obj interface{}) {
 			pj, ok := obj.(*prowjobv1.ProwJob)
@@ -189,7 +189,7 @@ func newController(opts controllerOptions) (*controller, error) {
 				logrus.Warnf("Ignoring bad prowjob delete: %v", obj)
 				return
 			}
-			c.enqueueKey(clusterToCtx(pj.Spec.Cluster), pj)
+			c.enqueueKey(pjutil.ClusterToCtx(pj.Spec.Cluster), pj)
 		},
 	})
 
@@ -210,14 +210,6 @@ func newController(opts controllerOptions) (*controller, error) {
 	}
 
 	return c, nil
-}
-
-// clusterToCtx converts the prow job's cluster to a cluster context
-func clusterToCtx(cluster string) string {
-	if cluster == kube.InClusterContext {
-		return kube.DefaultClusterAlias
-	}
-	return cluster
 }
 
 // Run starts threads workers, returning after receiving a stop signal.
@@ -410,9 +402,9 @@ func reconcile(c reconciler, key string) error {
 		return fmt.Errorf("get prowjob: %v", err)
 	case pj.Spec.Agent != prowjobv1.KnativeBuildAgent:
 		// Do not want a build for this job
-	case clusterToCtx(pj.Spec.Cluster) != ctx:
+	case pjutil.ClusterToCtx(pj.Spec.Cluster) != ctx:
 		// Build is in wrong cluster, we do not want this build
-		logrus.Warnf("%s found in context %s not %s", key, ctx, clusterToCtx(pj.Spec.Cluster))
+		logrus.Warnf("%s found in context %s not %s", key, ctx, pjutil.ClusterToCtx(pj.Spec.Cluster))
 	case pj.DeletionTimestamp == nil:
 		wantBuild = true
 	}
