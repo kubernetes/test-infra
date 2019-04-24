@@ -181,10 +181,10 @@ presubmits:
         command:
         - bazel
         args:
+        - test
         - --config=unit
         - --config=remote
         - --remote_instance_name=projects/fejta-prod/instances/default_instance
-        - test
         - //...
         - --
         - -//build/...
