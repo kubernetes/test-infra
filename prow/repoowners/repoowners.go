@@ -310,6 +310,20 @@ func (a RepoAliases) ExpandAliases(logins sets.String) sets.String {
 	return logins
 }
 
+// ExpandAllAliases returns members of all aliases mentioned, duplicates are pruned
+func (a RepoAliases) ExpandAllAliases() sets.String {
+	if a == nil {
+		return nil
+	}
+
+	var result, users sets.String
+	for alias := range a {
+		users = a.ExpandAlias(alias)
+		result = result.Union(users)
+	}
+	return result
+}
+
 func loadAliasesFrom(baseDir string, log *logrus.Entry) RepoAliases {
 	path := filepath.Join(baseDir, aliasesFileName)
 	b, err := ioutil.ReadFile(path)
@@ -459,6 +473,24 @@ func ParseSimpleConfig(b []byte) (SimpleConfig, error) {
 	simple := new(SimpleConfig)
 	err := yaml.Unmarshal(b, simple)
 	return *simple, err
+}
+
+// ParseAliasesConfig will unmarshal an OWNERS_ALIASES file's content into RepoAliases.
+// Returns an error if the content cannot be unmarshalled.
+func ParseAliasesConfig(b []byte) (RepoAliases, error) {
+	result := make(RepoAliases)
+
+	config := &struct {
+		Data map[string][]string `json:"aliases,omitempty"`
+	}{}
+	if err := yaml.Unmarshal(b, config); err != nil {
+		return result, err
+	}
+
+	for alias, expanded := range config.Data {
+		result[github.NormLogin(alias)] = normLogins(expanded)
+	}
+	return result, nil
 }
 
 var mdStructuredHeaderRegex = regexp.MustCompile("^---\n(.|\n)*\n---")
