@@ -27,10 +27,10 @@ fi
 # More info: https://cloud.google.com/remote-build-execution/docs/overview
 
 proj=$1
-pool=${2:-prow-pool}
-workers=25
-disk=500
-machine=n1-standard-8
+pool=${2:-}
+workers=100
+disk=300
+machine=n1-standard-2
 
 users=()
 groups=()
@@ -52,6 +52,18 @@ check=(
   worker-pools describe
   "$pool" "--project=$proj" --instance=default_instance
 )
+
+if [[ -z $pool ]]; then
+    echo "Existing pools:" >&2
+    for i in $(gcloud alpha remote-build-execution worker-pools list \
+        "--project=$proj" \
+        --instance=default_instance \
+        --format='value(name)'); do
+      echo "  $(basename "$i")" >&2
+    done
+    echo "Usage: $0 $1 <pool>" >&2
+    exit 1
+fi
 
 if ! "${check[@]}" 2>/dev/null; then
   log gcloud alpha remote-build-execution worker-pools create  \
