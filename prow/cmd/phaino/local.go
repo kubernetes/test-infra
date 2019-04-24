@@ -24,6 +24,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -36,10 +37,29 @@ func realPath(p string) (string, error) {
 	return filepath.Abs(os.ExpandEnv(p))
 }
 
-func readMount(mount coreapi.VolumeMount) (string, error) {
+func scanln(ctx context.Context) (string, error) {
+	ch := make(chan string)
+	go func() {
+		defer close(ch)
+		var out string
+		fmt.Scanln(&out)
+		ch <- out
+	}()
+	select {
+	case s := <-ch:
+		return s, nil
+	case <-ctx.Done():
+		os.Stdin.Close()
+		return "", ctx.Err()
+	}
+}
+
+func readMount(ctx context.Context, mount coreapi.VolumeMount) (string, error) {
 	fmt.Fprintf(os.Stderr, "local %s path (%q mount): ", mount.MountPath, mount.Name)
-	var out string
-	fmt.Scanln(&out)
+	out, err := scanln(ctx)
+	if err != nil {
+		return "", fmt.Errorf("scan: %v", err)
+	}
 	return realPath(out)
 }
 
@@ -59,7 +79,7 @@ func pathAlias(r prowapi.Refs) string {
 	return r.PathAlias
 }
 
-func readRepo(path string) (string, error) {
+func readRepo(ctx context.Context, path string) (string, error) {
 	wd, err := workingDir()
 	if err != nil {
 		return "", fmt.Errorf("workingDir: %v", err)
@@ -73,8 +93,10 @@ func readRepo(path string) (string, error) {
 		fmt.Fprintf(os.Stderr, " [%s]", def)
 	}
 	fmt.Fprint(os.Stderr, ": ")
-	var out string
-	fmt.Scanln(&out)
+	out, err := scanln(ctx)
+	if err != nil {
+		return "", fmt.Errorf("scan: %v", err)
+	}
 	if out == "" {
 		out = def
 	}
@@ -138,7 +160,7 @@ func findRepo(wd, path string) (string, error) {
 
 var baseArgs = []string{"docker", "run", "--rm=true"}
 
-func checkPrivilege(cont coreapi.Container, allow bool) (bool, error) {
+func checkPrivilege(ctx context.Context, cont coreapi.Container, allow bool) (bool, error) {
 	if cont.SecurityContext == nil {
 		return false, nil
 	}
@@ -149,8 +171,10 @@ func checkPrivilege(cont coreapi.Container, allow bool) (bool, error) {
 		return false, nil
 	}
 	fmt.Fprint(os.Stderr, "Privileged jobs are unsafe. Remove from local run? [yes]: ")
-	var out string
-	fmt.Scanln(&out)
+	out, err := scanln(ctx)
+	if err != nil {
+		return false, fmt.Errorf("scan: %v", err)
+	}
 	if out == "no" || out == "n" {
 		if !allow {
 			return false, errors.New("privileged jobs are disallowed")
@@ -161,10 +185,11 @@ func checkPrivilege(cont coreapi.Container, allow bool) (bool, error) {
 	return false, nil
 }
 
-func convertToLocal(log *logrus.Entry, pj prowapi.ProwJob, allowPrivilege bool) ([]string, error) {
+func convertToLocal(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, name string, allowPrivilege bool) ([]string, error) {
 	log.Info("Converting job into docker run command...")
 	var localArgs []string
 	localArgs = append(localArgs, baseArgs...)
+	localArgs = append(localArgs, "--name="+name)
 	container := pj.Spec.PodSpec.Containers[0]
 	decoration := pj.Spec.DecorationConfig
 	var entrypoint string
@@ -185,7 +210,8 @@ func convertToLocal(log *logrus.Entry, pj prowapi.ProwJob, allowPrivilege bool) 
 		localArgs = append(localArgs, "-e", env.Name+"="+env.Value)
 	}
 
-	priv, err := checkPrivilege(container, allowPrivilege)
+	// TODO(fejta): capabilities
+	priv, err := checkPrivilege(ctx, container, allowPrivilege)
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +232,7 @@ func convertToLocal(log *logrus.Entry, pj prowapi.ProwJob, allowPrivilege bool) 
 		if vol.EmptyDir != nil {
 			localArgs = append(localArgs, "-v", mount.MountPath)
 		} else {
-			local, err := readMount(mount)
+			local, err := readMount(ctx, mount)
 			if err != nil {
 				return nil, fmt.Errorf("bad mount %q: %v", mount.Name, err)
 			}
@@ -228,9 +254,9 @@ func convertToLocal(log *logrus.Entry, pj prowapi.ProwJob, allowPrivilege bool) 
 		refs = append(refs, pj.Spec.ExtraRefs...)
 		for _, ref := range refs {
 			path := pathAlias(ref)
-			repo, err := readRepo(path)
+			repo, err := readRepo(ctx, path)
 			if err != nil {
-				return nil, fmt.Errorf("bad %q repo: %v", path, err)
+				return nil, fmt.Errorf("bad repo(%s): %v", path, err)
 			}
 			dest := filepath.Join("/go/src", path)
 			if workingDir == "" {
@@ -246,6 +272,11 @@ func convertToLocal(log *logrus.Entry, pj prowapi.ProwJob, allowPrivilege bool) 
 	if workingDir != "" {
 		localArgs = append(localArgs, "-v", workingDir, "-w", workingDir)
 	}
+
+	for k, v := range pj.Labels {
+		localArgs = append(localArgs, "--label="+k+"="+v)
+	}
+	localArgs = append(localArgs, "--label=phaino=true")
 
 	image := pj.Spec.PodSpec.Containers[0].Image
 	localArgs = append(localArgs, image)
@@ -270,42 +301,31 @@ func start(args []string) (*exec.Cmd, error) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
-
 	return cmd, cmd.Start()
 }
 
-func abort(ctx context.Context, log *logrus.Entry, cmd *exec.Cmd) error {
-	if err := cmd.Process.Signal(os.Interrupt); err != nil {
-		log.WithError(err).Warn("Interrupt error")
-	} else {
-		log.Warn("Interrupted")
-	}
-	ch := make(chan error)
-	go func() {
-		defer close(ch)
-		ch <- cmd.Wait()
-	}()
-	select {
-	case err := <-ch:
-		return err
-	case <-ctx.Done():
-		if err := cmd.Process.Kill(); err != nil { // TODO(fejta): docker rm
-			log.WithError(err).Warn("Kill error")
-			return err
-		}
-		log.Warn("Killed")
-	}
-	return nil
+func kill(cid, signal string) error {
+	cmd := exec.Command("docker", "kill", "--signal="+signal, cid)
+	cmd.Stdin = os.Stdin
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
+var (
+	nameLock sync.Mutex
+	nameId   int
+)
+
+func containerID() string {
+	nameLock.Lock()
+	defer nameLock.Unlock()
+	nameId++
+	return fmt.Sprintf("phaino-%d-%d", os.Getpid(), nameId)
 }
 
 func convertJob(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, priv, onlyPrint bool, timeout, grace time.Duration) error {
-	// TODO(fejta): default grace and timeout to the job's decoration_config
-	if timeout > 0 {
-		var cancel func()
-		ctx, cancel = context.WithTimeout(ctx, timeout)
-		defer cancel()
-	}
-	args, err := convertToLocal(log, pj, priv)
+	cid := containerID()
+	args, err := convertToLocal(ctx, log, pj, cid, priv)
 	if err != nil {
 		return fmt.Errorf("convert: %v", err)
 	}
@@ -314,28 +334,53 @@ func convertJob(ctx context.Context, log *logrus.Entry, pj prowapi.ProwJob, priv
 		return nil
 	}
 	log.Info("Starting job...")
+	// TODO(fejta): default grace and timeout to the job's decoration_config
+	if timeout > 0 {
+		var cancel func()
+		ctx, cancel = context.WithTimeout(ctx, timeout)
+		defer cancel()
+	}
 	cmd, err := start(args)
 	if err != nil {
 		return fmt.Errorf("start: %v", err)
 	}
-	log = log.WithField("pid", cmd.Process.Pid)
+	log = log.WithField("container", cid)
 	ch := make(chan error)
 	go func() {
 		log.Info("Waiting for job to finish...")
 		ch <- cmd.Wait()
 	}()
+
 	select {
 	case err := <-ch:
 		return err
 	case <-ctx.Done():
-		if grace < time.Second {
-			grace = time.Second
-		}
-		ctx2, c2 := context.WithTimeout(context.Background(), grace)
-		defer c2()
-		if err := abort(ctx2, log, cmd); err != nil {
-			log.WithError(err).Error("Abort error")
-		}
-		return ctx.Err()
+		// cancelled
 	}
+
+	if grace < time.Second {
+		log.WithField("grace", grace).Info("Increasing grace period to the 1s minimum")
+		grace = time.Second
+	}
+	log = log.WithFields(logrus.Fields{
+		"grace":     grace,
+		"interrupt": ctx.Err(),
+	})
+	abort, cancel := context.WithTimeout(context.Background(), grace)
+	defer cancel()
+	if err := kill(cid, "SIGINT"); err != nil {
+		log.WithError(err).Error("Interrupt error")
+	} else {
+		log.Warn("Interrupted container...")
+	}
+	select {
+	case err := <-ch:
+		log.WithError(err).Info("Graceful exit after interrupt")
+		return err
+	case <-abort.Done():
+	}
+	if err := kill(cid, "SIGKILL"); err != nil {
+		return fmt.Errorf("kill: %v", err)
+	}
+	return fmt.Errorf("grace period expired, aborted: %v", ctx.Err())
 }
