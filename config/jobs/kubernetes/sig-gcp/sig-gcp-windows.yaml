@@ -55,8 +55,8 @@ periodics:
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
       env:
-      - name: USE_RELEASE_NODE_BINARIES
-        value: "true"
+      - name: OVERRIDE_NODE_BINARY_TAR_URL
+        value: "https://storage.googleapis.com/kubernetes-release/release/v1.14.1/kubernetes-node-windows-amd64.tar.gz"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
       resources:
         requests:
