@@ -254,27 +254,7 @@ type Approve struct {
 var (
 	warnImplicitSelfApprove time.Time
 	warnReviewActsAsApprove time.Time
-	warnLock                sync.RWMutex // Rare updates and concurrent readers, so reuse the same lock
 )
-
-func warnDeprecated(last *time.Time, freq time.Duration, msg string) {
-	// have we warned within the last freq?
-	warnLock.RLock()
-	fresh := time.Now().Sub(*last) <= freq
-	warnLock.RUnlock()
-	if fresh { // we've warned recently
-		return
-	}
-	// Warning is stale, will we win the race to warn?
-	warnLock.Lock()
-	defer warnLock.Unlock()
-	now := time.Now()           // Recalculate now, we might wait awhile for the lock
-	if now.Sub(*last) <= freq { // Nope, we lost
-		return
-	}
-	*last = now
-	logrus.Warn(msg)
-}
 
 func (a Approve) HasSelfApproval() bool {
 	if a.DeprecatedImplicitSelfApprove != nil {
@@ -563,6 +543,29 @@ func (r RequireMatchingLabel) validate() error {
 		return errors.New("'regexp' must not match 'missing_label'")
 	}
 	return nil
+}
+
+var warnLock sync.RWMutex // Rare updates and concurrent readers, so reuse the same lock
+
+// warnDeprecated prints a deprecation warning for a particular configuration
+// option.
+func warnDeprecated(last *time.Time, freq time.Duration, msg string) {
+	// have we warned within the last freq?
+	warnLock.RLock()
+	fresh := time.Now().Sub(*last) <= freq
+	warnLock.RUnlock()
+	if fresh { // we've warned recently
+		return
+	}
+	// Warning is stale, will we win the race to warn?
+	warnLock.Lock()
+	defer warnLock.Unlock()
+	now := time.Now()           // Recalculate now, we might wait awhile for the lock
+	if now.Sub(*last) <= freq { // Nope, we lost
+		return
+	}
+	*last = now
+	logrus.Warn(msg)
 }
 
 // Describe generates a human readable description of the behavior that this
