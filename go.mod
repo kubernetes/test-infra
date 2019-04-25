@@ -3,7 +3,8 @@ module k8s.io/test-infra
 replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
 
 require (
-	cloud.google.com/go v0.37.2
+	cloud.google.com/go v0.37.4
+	github.com/Azure/azure-pipeline-go v0.1.9 // indirect
 	github.com/Azure/azure-sdk-for-go v21.1.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.0.0-20190123011202-457680cc0804
 	github.com/Azure/go-autorest v10.15.5+incompatible
@@ -16,7 +17,7 @@ require (
 	github.com/aws/aws-sdk-go v1.16.36
 	github.com/bazelbuild/bazel-gazelle v0.0.0-20190402225339-e530fae7ce5c
 	github.com/bazelbuild/buildtools v0.0.0-20190404153937-93253d6efaa9
-	github.com/bwmarrin/snowflake v0.0.0-20170221160716-02cc386c183a
+	github.com/bwmarrin/snowflake v0.0.0
 	github.com/deckarep/golang-set v0.0.0-20171013212420-1d4478f51bed
 	github.com/denisenkom/go-mssqldb v0.0.0-20190111225525-2fea367d496d // indirect
 	github.com/djherbis/atime v1.0.0
@@ -33,6 +34,7 @@ require (
 	github.com/go-openapi/spec v0.0.0-20171219195406-fa03337d7da5
 	github.com/go-openapi/swag v0.0.0-20171111214437-cf0bdb963811 // indirect
 	github.com/go-sql-driver/mysql v0.0.0-20160411075031-7ebe0a500653 // indirect
+	github.com/gobuffalo/envy v1.6.15 // indirect
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/groupcache v0.0.0-20180513044358-24b0969c4cb7 // indirect
@@ -40,6 +42,7 @@ require (
 	github.com/golang/protobuf v1.3.1
 	github.com/google/go-containerregistry v0.0.0-20190401215819-f1df91a4a813 // indirect
 	github.com/google/go-github v17.0.0+incompatible
+	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/uuid v1.0.0
 	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/gophercloud/gophercloud v0.0.0-20181215224939-bdd8b1ecd793 // indirect
@@ -56,7 +59,7 @@ require (
 	github.com/jinzhu/now v0.0.0-20181116074157-8ec929ed50c3 // indirect
 	github.com/json-iterator/go v1.1.6 // indirect
 	github.com/klauspost/compress v1.4.1 // indirect
-	github.com/klauspost/cpuid v1.2.0 // indirect
+	github.com/klauspost/cpuid v1.2.1 // indirect
 	github.com/klauspost/pgzip v1.2.1
 	github.com/knative/build v0.3.1-0.20190330033454-38ace00371c7
 	github.com/knative/pkg v0.0.0-20190330034653-916205998db9
@@ -81,16 +84,17 @@ require (
 	github.com/spf13/pflag v1.0.3
 	github.com/tektoncd/pipeline v0.1.1-0.20190327171839-7c43fbae2816
 	github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1 // indirect
-	go.opencensus.io v0.19.3 // indirect
+	go.opencensus.io v0.20.2 // indirect
 	golang.org/x/crypto v0.0.0-20190404164418-38d8ce5564a5
 	golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
 	golang.org/x/net v0.0.0-20190403144856-b630fd6fe46b
 	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421
 	golang.org/x/sync v0.0.0-20190227155943-e225da77a7e6
+	golang.org/x/text v0.3.1 // indirect
 	golang.org/x/time v0.0.0-20181108054448-85acf8d2951c
 	golang.org/x/tools v0.0.0-20190404132500-923d25813098
-	google.golang.org/api v0.3.0
-	google.golang.org/genproto v0.0.0-20190307195333-5fe7a883aa19
+	google.golang.org/api v0.3.2
+	google.golang.org/genproto v0.0.0-20190404172233-64821d5d2107
 	google.golang.org/grpc v1.19.1
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v2 v2.2.2
@@ -102,7 +106,7 @@ require (
 	k8s.io/gengo v0.0.0-20190306031000-7a1b7fb0289f // indirect
 	k8s.io/klog v0.1.0
 	k8s.io/kube-openapi v0.0.0-20180711000925-0cf8f7e6ed1d // indirect
-	k8s.io/kubernetes v1.14.0 // indirect
+	k8s.io/kubernetes v1.14.1 // indirect
 	k8s.io/repo-infra v0.0.0-20190329054012-df02ded38f95
 	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/yaml v1.1.0
