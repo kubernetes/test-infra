@@ -107,7 +107,7 @@ func (o *options) Validate() error {
 	}
 
 	if o.hiddenOnly && o.showHidden {
-		return errors.New("'--hidden-only' and '--show-hidden' are mutually exclusive")
+		return errors.New("'--hidden-only' and '--show-hidden' are mutually exclusive, the first one shows only hidden job, the second one shows both hidden and non-hidden jobs")
 	}
 	return nil
 }
@@ -267,8 +267,7 @@ func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJo
 		shouldHide := c.hiddenRepos.HasAny(fmt.Sprintf("%s/%s", refs.Org, refs.Repo), refs.Org)
 		if shouldHide && c.showHidden {
 			filtered = append(filtered, item)
-		}
-		if shouldHide == c.hiddenOnly {
+		} else if shouldHide == c.hiddenOnly {
 			// this is a hidden job, show it if we're asked
 			// to only show hidden jobs otherwise hide it
 			filtered = append(filtered, item)

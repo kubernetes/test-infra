@@ -165,8 +165,7 @@ func (ta *tideAgent) filterHiddenPools(pools []tide.Pool) []tide.Pool {
 		needsHide := matches(pool.Org+"/"+pool.Repo, ta.hiddenRepos)
 		if needsHide && ta.showHidden {
 			filtered = append(filtered, pool)
-		}
-		if needsHide == ta.hiddenOnly {
+		} else if needsHide == ta.hiddenOnly {
 			filtered = append(filtered, pool)
 		} else {
 			ta.log.Debugf("Ignoring pool for %s.", pool.Org+"/"+pool.Repo)
@@ -185,8 +184,7 @@ func (ta *tideAgent) filterHiddenHistory(hist map[string][]history.Record) map[s
 		needsHide := matches(strings.Split(pool, ":")[0], ta.hiddenRepos)
 		if needsHide && ta.showHidden {
 			filtered[pool] = records
-		}
-		if needsHide == ta.hiddenOnly {
+		} else if needsHide == ta.hiddenOnly {
 			filtered[pool] = records
 		} else {
 			ta.log.Debugf("Ignoring history for %s.", pool)
@@ -213,8 +211,7 @@ func (ta *tideAgent) filterHiddenQueries(queries []config.TideQuery) []config.Ti
 		}
 		if includesHidden && ta.showHidden {
 			filtered = append(filtered, qc)
-		}
-		if includesHidden == ta.hiddenOnly {
+		} else if includesHidden == ta.hiddenOnly {
 			filtered = append(filtered, qc)
 		} else {
 			ta.log.Debugf("Ignoring query: %s", qc.Query())
