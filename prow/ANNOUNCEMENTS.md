@@ -1,6 +1,9 @@
 # Announcements
 
 New features added to each component:
+ - *April 25, 2019* `--job-config` in `peribolos` has never been used; it is
+   deprecated and will be removed in July 2019. Remove the flag from any calls
+   to the tool.
  - *April 24, 2019* `file_weight_count` in blunderbuss is being deprecated in
    favour of the more current `max_request_count` functionality. Please ensure
    your configuration is up to date before the end of May 2019.

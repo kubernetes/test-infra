@@ -22,6 +22,12 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
+// FullConfig stores the full configuration to be used by the tool, mapping
+// orgs to their configuration at the top level under an `orgs` key.
+type FullConfig struct {
+	Orgs map[string]Config `json:"orgs,omitempty"`
+}
+
 // Metadata declares metadata about the GitHub org.
 //
 // See https://developer.github.com/v3/orgs/#edit-an-organization

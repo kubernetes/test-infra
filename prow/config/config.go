@@ -41,7 +41,6 @@ import (
 
 	buildapi "github.com/knative/build/pkg/apis/build/v1alpha1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
@@ -73,14 +72,13 @@ type JobConfig struct {
 
 // ProwConfig is config for all prow controllers
 type ProwConfig struct {
-	Tide             Tide                  `json:"tide,omitempty"`
-	Plank            Plank                 `json:"plank,omitempty"`
-	Sinker           Sinker                `json:"sinker,omitempty"`
-	Deck             Deck                  `json:"deck,omitempty"`
-	BranchProtection BranchProtection      `json:"branch-protection,omitempty"`
-	Orgs             map[string]org.Config `json:"orgs,omitempty"`
-	Gerrit           Gerrit                `json:"gerrit,omitempty"`
-	GitHubReporter   GitHubReporter        `json:"github_reporter,omitempty"`
+	Tide             Tide             `json:"tide,omitempty"`
+	Plank            Plank            `json:"plank,omitempty"`
+	Sinker           Sinker           `json:"sinker,omitempty"`
+	Deck             Deck             `json:"deck,omitempty"`
+	BranchProtection BranchProtection `json:"branch-protection,omitempty"`
+	Gerrit           Gerrit           `json:"gerrit,omitempty"`
+	GitHubReporter   GitHubReporter   `json:"github_reporter,omitempty"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`

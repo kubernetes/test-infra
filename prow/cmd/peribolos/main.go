@@ -20,6 +20,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 
@@ -27,7 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
 
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/errorutil"
@@ -79,7 +79,7 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.IntVar(&o.minAdmins, "min-admins", defaultMinAdmins, "Ensure config specifies at least this many admins")
 	flags.BoolVar(&o.requireSelf, "require-self", true, "Ensure --github-token-path user is an admin")
 	flags.Float64Var(&o.maximumDelta, "maximum-removal-delta", defaultDelta, "Fail if config removes more than this fraction of current members")
-	flags.StringVar(&o.config, "config-path", "", "Path to prow config.yaml")
+	flags.StringVar(&o.config, "config-path", "", "Path to org config.yaml")
 	flags.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
 	flags.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	flags.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
@@ -119,6 +119,10 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	}
 	if o.config != "" && o.dump != "" {
 		return fmt.Errorf("--config-path=%s and --dump=%s cannot both be set", o.config, o.dump)
+	}
+
+	if o.jobConfig != "" {
+		logrus.Warn("--job-config-path is deprecated and unused, stop using it before July 2019")
 	}
 
 	if o.dumpFull && o.dump == "" {
@@ -168,10 +172,8 @@ func main() {
 		}
 		var output interface{}
 		if o.dumpFull {
-			output = struct {
-				Orgs map[string]*org.Config `json:"orgs,omitempty"`
-			}{
-				Orgs: map[string]*org.Config{o.dump: ret},
+			output = org.FullConfig{
+				Orgs: map[string]org.Config{o.dump: *ret},
 			}
 		} else {
 			output = ret
@@ -185,9 +187,14 @@ func main() {
 		return
 	}
 
-	cfg, err := config.Load(o.config, o.jobConfig)
+	raw, err := ioutil.ReadFile(o.config)
 	if err != nil {
-		logrus.Fatalf("Failed to load --config=%s: %v", o.config, err)
+		logrus.WithError(err).Fatal("Could not read --config-path file")
+	}
+
+	var cfg org.FullConfig
+	if err := yaml.Unmarshal(raw, &cfg); err != nil {
+		logrus.WithError(err).Fatal("Failed to load configuration")
 	}
 
 	for name, orgcfg := range cfg.Orgs {
