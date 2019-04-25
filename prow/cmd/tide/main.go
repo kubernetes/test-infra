@@ -81,9 +81,8 @@ func (o *options) Validate() error {
 	return nil
 }
 
-func gatherOptions() options {
-	o := options{}
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+func gatherOptions(fs *flag.FlagSet, args ...string) options {
+	var o options
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
@@ -100,7 +99,7 @@ func gatherOptions() options {
 	fs.StringVar(&o.historyURI, "history-uri", "", "The /local/path or gs://path/to/object to store tide action history. GCS writes will use the default object ACL for the bucket")
 	fs.StringVar(&o.statusURI, "status-path", "", "The /local/path or gs://path/to/object to store status controller state. GCS writes will use the default object ACL for the bucket.")
 
-	fs.Parse(os.Args[1:])
+	fs.Parse(args)
 	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
@@ -112,9 +111,9 @@ func main() {
 
 	pjutil.ServePProf()
 
-	o := gatherOptions()
+	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
-		logrus.Fatalf("Invalid options: %v", err)
+		logrus.WithError(err).Fatal("Invalid options")
 	}
 
 	opener, err := io.NewOpener(context.Background(), o.gcsCredentialsFile)
