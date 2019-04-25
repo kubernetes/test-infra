@@ -1,14 +1,17 @@
 # Announcements
 
 New features added to each component:
+ - *April 24, 2019* `file_weight_count` in blunderbuss is being deprecated in
+   favour of the more current `max_request_count` functionality. Please ensure
+   your configuration is up to date before the end of May 2019.
  - *March 12, 2019* tide now records a history of its actions and exposes a
    filterable view of these actions at the `/tide-history` deck path.
  - *March 9, 2019* prow components now support reading gzipped config files
  - *February 13, 2019* prow (both plank and crier) can set status on the commit
-   for postsubmit jobs on github now! 
+   for postsubmit jobs on github now!
    Type of jobs can be reported to github is gated by a config field like
    ```yaml
-   github_reporter: 
+   github_reporter:
      job_types_to_report:
      - presubmit
      - postsubmit
@@ -55,9 +58,9 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
- - *April 2, 2019* `hook`, `deck`, `horologium`, `tide`, `plank` and `sinker` will no 
+ - *April 2, 2019* `hook`, `deck`, `horologium`, `tide`, `plank` and `sinker` will no
    longer provide a default value for the `--config-path` flag.
-   It is required to explicitly provide `--config-path` when upgrading to a new version of 
+   It is required to explicitly provide `--config-path` when upgrading to a new version of
    these components that were previously relying on the default `--config-path=/etc/config/config.yaml`.
  - *March 29, 2019* Custom logos should be provided as full paths in the configuration
    under `deck.branding.logos` and will not implicitly be assumed to be under the static
