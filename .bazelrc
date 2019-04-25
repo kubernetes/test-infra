@@ -49,15 +49,8 @@ build:remote --define=EXECUTOR=remote
 # Compose the remote configs with an instance name
 # A couple examples below:
 
-# --config=fejta-instance adds the instance name
-# TODO(fejta): see how broadly we can provide this and/or add common corp instances
-build:fejta-instance --remote_instance_name=projects/fejta-prod/instances/default_instance
+# --config=ci-instance adds the instance name
+build:ci-instance --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
 
-# --config=remote-fejta runs actions on fejta-instance
-build:remote-fejta --config=remote --config=fejta-instance
-# --config=remote-fejta-cache caches actions on fejta-instance
-build:remote-fejta-cache --config=remote-cache --config=fejta-instance
-
-# Config we want to use for prow
-# TODO(fejta): move to a different project
-build:ci --config=remote-fejta
+# Config we want to use in ci
+build:ci --config=remote --config=ci-instance
