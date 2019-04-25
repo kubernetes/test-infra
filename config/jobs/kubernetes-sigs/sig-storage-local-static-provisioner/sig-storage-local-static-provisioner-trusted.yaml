@@ -40,7 +40,8 @@ postsubmits:
   # A postsubmit job to build release image on release tags.
   - name: post-sig-storage-local-static-provisioner-build-release
     branches:
-    - ^v\d+\.\d+\.\d+$
+    - ^v\d+\.\d+\.\d+$ # stable
+    - ^v\d+\.\d+\.\d+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ # pre-release
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
@@ -55,15 +56,12 @@ postsubmits:
         - runner.sh
         args:
         - make
-        - e2e
         - release
         env:
-        - name: PROVIDER
-          value: gce
-        - name: EXTRACT_STRATEGY
-          value: ci/latest
         - name: CONFIRM
           value: "yes"
+        - name: ALLOW_UNSTABLE
+          value: "true"
         - name: DOCKER_CONFIG
           value: /etc/pusher-docker-config
         # docker-in-docker needs privileged mode
