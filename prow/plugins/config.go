@@ -816,6 +816,8 @@ func validateExternalPlugins(pluginMap map[string][]ExternalPlugin) error {
 	return nil
 }
 
+var warnBlunderbussFileWeightCount time.Time
+
 func validateBlunderbuss(b *Blunderbuss) error {
 	if b.ReviewerCount != nil && b.FileWeightCount != nil {
 		return errors.New("cannot use both request_count and file_weight_count in blunderbuss")
@@ -825,6 +827,9 @@ func validateBlunderbuss(b *Blunderbuss) error {
 	}
 	if b.FileWeightCount != nil && *b.FileWeightCount < 1 {
 		return fmt.Errorf("invalid file_weight_count: %v (needs to be positive)", *b.FileWeightCount)
+	}
+	if b.FileWeightCount != nil {
+		warnDeprecated(&warnBlunderbussFileWeightCount, 5*time.Minute, "file_weight_count is being deprecated in favour of max_request_count. Please ensure your configuration is updated before the end of May 2019.")
 	}
 	return nil
 }
