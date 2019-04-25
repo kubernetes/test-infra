@@ -43,7 +43,8 @@ It may take a couple minutes for the CLA signature to be fully registered; after
 
 - If you've already signed a CLA, it's possible we don't have your GitHub username or you're using a different email address.  Check your existing CLA data and verify that your [email is set on your git commits](https://help.github.com/articles/setting-your-email-in-git/).
 - If you signed the CLA as a corporation, please sign in with your organization's credentials at <https://identity.linuxfoundation.org/projects/cncf> to be authorized.
-- If you have done the above and are still having issues with the CLA being reported as unsigned, please email the CNCF helpdesk: helpdesk@rt.linuxfoundation.org
+- If you have done the above and are still having issues with the CLA being reported as unsigned, please log a ticket with the Linux Foundation Helpdesk: <https://support.linuxfoundation.org/>
+- Should you encounter any issues with the Linux Foundation Helpdesk, send a message to the backup e-mail support address at: login-issues@jira.linuxfoundation.org
 
 <!-- need_sender_cla -->
 
