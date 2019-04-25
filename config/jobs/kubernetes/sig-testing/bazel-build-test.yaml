@@ -175,20 +175,24 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      repo: test-infra
     spec:
       containers:
       - image: launcher.gcr.io/google/bazel:0.24.1
         command:
-        - bazel
+        - bash
         args:
-        - test
-        - --config=unit
-        - --config=remote
-        - --remote_instance_name=projects/fejta-prod/instances/default_instance
-        - //...
-        - --
-        - -//build/...
-        - -//vendor/...
+        - -c
+        - |
+              code=0
+              if ! bazel test --config=unit --config=remote --remote_instance_name=projects/fejta-prod/instances/default_instance //... -- -//build/... -//vendor/...; then
+                code=1
+              fi
+              ../test-infra/hack/coalesce.py || true
+              exit "$code"
   - name: pull-kubernetes-bazel-test
     always_run: true
     branches:

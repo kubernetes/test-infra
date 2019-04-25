@@ -2882,6 +2882,10 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-bazel-test-rbe
     decorate: true
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      repo: test-infra
     labels:
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
@@ -2897,16 +2901,16 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - test
-        - --config=unit
-        - --config=remote
-        - --remote_instance_name=projects/fejta-prod/instances/default_instance
-        - //...
-        - --
-        - -//build/...
-        - -//vendor/...
+        - -c
+        - |
+          code=0
+          if ! bazel test --config=unit --config=remote --remote_instance_name=projects/fejta-prod/instances/default_instance //... -- -//build/... -//vendor/...; then
+            code=1
+          fi
+          ../test-infra/hack/coalesce.py || true
+          exit "$code"
         command:
-        - bazel
+        - bash
         image: launcher.gcr.io/google/bazel:0.24.1
         name: ""
         resources: {}
