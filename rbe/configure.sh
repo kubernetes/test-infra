@@ -30,7 +30,10 @@ if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
     echo "Application default: $GOOGLE_APPLICATION_CREDENTIALS"
 elif [[ ! -f ~/.config/gcloud/application_default_credentials.json ]]; then
     echo "Remote execution requires application-default credentials..."
-    log gcloud auth application-default login
+    (
+      set -o xtrace
+      gcloud auth application-default login
+    )
 fi
 
 echo "Add the following line to ~/.bazelrc:"
