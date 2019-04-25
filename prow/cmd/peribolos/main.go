@@ -566,6 +566,7 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 	if err != nil {
 		return nil, fmt.Errorf("failed to list teams: %v", err)
 	}
+	logrus.Debugf("Found %d teams", len(teamList))
 	for _, t := range teamList {
 		if ignoreSecretTeams && org.Privacy(t.Privacy) == org.Secret {
 			continue
@@ -573,19 +574,26 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 		ids[t.ID] = t
 		ints.Insert(t.ID)
 	}
+	if ignoreSecretTeams {
+		logrus.Debugf("Found %d non-secret teams", len(teamList))
+	}
 
 	// What is the lowest ID for each team?
 	older := map[string][]github.Team{}
 	names := map[string]github.Team{}
 	for _, t := range ids {
+		logger := logrus.WithFields(logrus.Fields{"id": t.ID, "name": t.Name})
 		n := t.Name
 		switch val, ok := names[n]; {
 		case !ok: // first occurrence of the name
+			logger.Debug("First occurrence of this team name.")
 			names[n] = t
 		case ok && t.ID < val.ID: // t has the lower ID, replace and send current to older set
+			logger.Debugf("Replacing previous recorded team (%d) with this one due to smaller ID.", val.ID)
 			names[n] = t
 			older[n] = append(older[n], val)
 		default: // t does not have smallest id, add it to older set
+			logger.Debugf("Adding team to older set as a smaller ID is already recoded for it.", val.ID)
 			older[n] = append(older[n], val)
 		}
 	}
@@ -597,13 +605,16 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 	var match func(teams map[string]org.Team)
 	match = func(teams map[string]org.Team) {
 		for name, orgTeam := range teams {
+			logger := logrus.WithField("name", name)
 			match(orgTeam.Children)
 			t := findTeam(names, name, orgTeam.Previously...)
 			if t == nil {
 				missing[name] = orgTeam
+				logger.Debug("Could not find team in GitHub for this configuration.")
 				continue
 			}
 			matches[name] = *t // t.Name != name if we matched on orgTeam.Previously
+			logger.WithField("id", t.ID).Debug("Found a team in GitHub for this configuration.")
 			used.Insert(t.ID)
 		}
 	}
