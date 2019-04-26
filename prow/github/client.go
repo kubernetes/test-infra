@@ -1700,24 +1700,26 @@ func (c *Client) CreateReview(org, repo string, number int, r DraftReview) error
 //
 // https://developer.github.com/v3/pulls/review_requests/#create-a-review-request
 func prepareReviewersBody(logins []string, org string) (map[string][]string, error) {
-	body := map[string][]string{}
 	var errors []error
+
+	// form initial body with empty arrays
+	body := map[string][]string{}
+	body["reviewers"] = []string{}
+	body["team_reviewers"] = []string{}
+
+	// iterate through list of logins, and split up users from teams
 	for _, login := range logins {
 		mat := teamRe.FindStringSubmatch(login)
 		if mat == nil {
-			if _, exists := body["reviewers"]; !exists {
-				body["reviewers"] = []string{}
-			}
 			body["reviewers"] = append(body["reviewers"], login)
 		} else if mat[1] == org {
-			if _, exists := body["team_reviewers"]; !exists {
-				body["team_reviewers"] = []string{}
-			}
 			body["team_reviewers"] = append(body["team_reviewers"], mat[2])
 		} else {
 			errors = append(errors, fmt.Errorf("team %s is not part of %s org", login, org))
 		}
 	}
+
+	// return the completed body
 	return body, errorutil.NewAggregate(errors...)
 }
 
