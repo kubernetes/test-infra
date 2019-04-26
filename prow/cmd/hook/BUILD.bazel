@@ -25,7 +25,12 @@ go_test(
         "//prow:configs",
     ],
     embed = [":go_default_library"],
-    deps = ["//prow/plugins:go_default_library"],
+    deps = [
+        "//prow/config:go_default_library",
+        "//prow/flagutil:go_default_library",
+        "//prow/plugins:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+    ],
 )
 
 go_library(

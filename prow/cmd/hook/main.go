@@ -69,9 +69,8 @@ func (o *options) Validate() error {
 	return nil
 }
 
-func gatherOptions() options {
-	o := options{}
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+func gatherOptions(fs *flag.FlagSet, args ...string) options {
+	var o options
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
 
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
@@ -86,15 +85,15 @@ func gatherOptions() options {
 
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to the file containing the Slack token to use.")
-	fs.Parse(os.Args[1:])
+	fs.Parse(args)
 	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
 func main() {
-	o := gatherOptions()
+	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
-		logrus.Fatalf("Invalid options: %v", err)
+		logrus.WithError(err).Fatal("Invalid options")
 	}
 	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "hook"}))
 
