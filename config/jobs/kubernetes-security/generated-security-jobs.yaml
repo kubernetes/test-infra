@@ -2213,7 +2213,7 @@ presubmits:
         - --timeout=100m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-1.14
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190418-925ad44-1.14
         name: ""
         resources:
           requests:
@@ -2286,7 +2286,7 @@ presubmits:
         - --timeout=100m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-1.13
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190418-925ad44-1.13
         name: ""
         resources:
           requests:
@@ -2359,7 +2359,7 @@ presubmits:
         - --timeout=100m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-1.12
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190418-925ad44-1.12
         name: ""
         resources:
           requests:
@@ -2432,7 +2432,7 @@ presubmits:
         - --timeout=100m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
         - --gcp-project=k8s-jkns-pr-gce-etcd3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-1.11
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190418-925ad44-1.11
         name: ""
         resources:
           requests:
