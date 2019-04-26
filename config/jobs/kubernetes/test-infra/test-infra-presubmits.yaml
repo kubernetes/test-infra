@@ -37,26 +37,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-    spec:
-      containers:
-      - image: launcher.gcr.io/google/bazel:0.24.1
-        command:
-        - hack/build-then-unit.sh
-        resources:
-          requests:
-            memory: "2Gi"
-
-  # TODO(fejta): delete this job its non-rbe parent is equivalent
-  - name: pull-test-infra-bazel-rbe
-    branches:
-    - master
-    always_run: true
-    skip_report: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
     spec:
       containers:
       - image: launcher.gcr.io/google/bazel:0.24.1
