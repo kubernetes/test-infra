@@ -128,7 +128,7 @@ func main() {
 		if err := updateconfig.Update(&osFileGetter{root: o.sourcePath}, client.CoreV1().ConfigMaps(cm.Namespace), cm.Name, cm.Namespace, data, logger); err != nil {
 			logger.WithError(err).Error("failed to update config on cluster")
 		} else {
-			logger.Infof("Successfully processed configmap")
+			logger.Info("Successfully processed configmap")
 		}
 	}
 }
