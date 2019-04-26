@@ -2672,6 +2672,50 @@ presubmits:
     trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-build,?($|\s.*)
   - agent: kubernetes
     always_run: true
+    cluster: security
+    context: pull-security-kubernetes-bazel-build-rbe
+    decorate: true
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      repo: test-infra
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-bazel-build-rbe
+    rerun_command: /test pull-security-kubernetes-bazel-build-rbe
+    skip_branches:
+    - release-1.14
+    - release-1.13
+    - release-1.12
+    - release-1.11
+    skip_report: true
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - build
+        - --config=remote
+        - //...
+        - //build/release-tars
+        - --
+        - -//vendor/...
+        command:
+        - ../test-infra/hack/bazel.sh
+        image: launcher.gcr.io/google/bazel:0.24.1
+        name: ""
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-build-rbe,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
     branches:
     - release-1.14
     cluster: security
@@ -2853,16 +2897,16 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - -c
-        - |
-          code=0
-          if ! bazel test --config=unit --config=remote --remote_instance_name=projects/fejta-prod/instances/default_instance //... -- -//build/... -//vendor/...; then
-            code=1
-          fi
-          ../test-infra/hack/coalesce.py || true
-          exit "$code"
+        - test
+        - --config=unit
+        - --config=remote
+        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
+        - //...
+        - --
+        - -//build/...
+        - -//vendor/...
         command:
-        - bash
+        - ../test-infra/hack/bazel.sh
         image: launcher.gcr.io/google/bazel:0.24.1
         name: ""
         resources: {}

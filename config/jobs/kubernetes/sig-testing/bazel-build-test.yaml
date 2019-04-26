@@ -29,6 +29,35 @@ presubmits:
           requests:
             memory: "6Gi"
 
+  - name: pull-kubernetes-bazel-build-rbe
+    decorate: true
+    skip_report: true
+    always_run: true
+    skip_branches:
+    - release-1.14 # per-release job
+    - release-1.13 # per-release job
+    - release-1.12 # per-release job
+    - release-1.11 # per-release job
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      repo: test-infra
+    spec:
+      containers:
+      - image: launcher.gcr.io/google/bazel:0.24.1
+        command:
+        - ../test-infra/hack/bazel.sh
+        args:
+        - build
+        - --config=remote
+        - //...
+        - //build/release-tars
+        - --
+        - -//vendor/...
+
   - name: pull-kubernetes-bazel-build
     always_run: true
     branches:
@@ -149,16 +178,17 @@ presubmits:
       containers:
       - image: launcher.gcr.io/google/bazel:0.24.1
         command:
-        - bash
+        - ../test-infra/hack/bazel.sh
         args:
-        - -c
-        - |
-              code=0
-              if ! bazel test --config=unit --config=remote --remote_instance_name=projects/fejta-prod/instances/default_instance //... -- -//build/... -//vendor/...; then
-                code=1
-              fi
-              ../test-infra/hack/coalesce.py || true
-              exit "$code"
+        - test
+        - --config=unit
+        - --config=remote
+        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
+        - //...
+        - --
+        - -//build/...
+        - -//vendor/...
+
   - name: pull-kubernetes-bazel-test
     always_run: true
     branches:
