@@ -2834,6 +2834,11 @@ presubmits:
     always_run: true
     cluster: security
     context: pull-security-kubernetes-bazel-test
+    decorate: true
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      repo: test-infra
     labels:
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
@@ -2844,59 +2849,6 @@ presubmits:
     - release-1.13
     - release-1.12
     - release-1.11
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=60
-        - --scenario=kubernetes_bazel
-        - --
-        - --test=//... -//build/... -//vendor/...
-        - --manual-test=//hack:verify-all
-        - --test-args=--config=unit
-        - --test-args=--build_tag_filters=-e2e,-integration
-        - --test-args=--test_tag_filters=-e2e,-integration
-        - --test-args=--flaky_test_attempts=3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test,?($|\s.*)
-  - agent: kubernetes
-    always_run: true
-    cluster: security
-    context: pull-security-kubernetes-bazel-test-rbe
-    decorate: true
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      repo: test-infra
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-service-account: "true"
-    name: pull-security-kubernetes-bazel-test-rbe
-    rerun_command: /test pull-security-kubernetes-bazel-test-rbe
-    skip_branches:
-    - release-1.14
-    - release-1.13
-    - release-1.12
-    - release-1.11
-    skip_report: true
     spec:
       containers:
       - args:
@@ -2922,7 +2874,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test-rbe,?($|\s.*)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
