@@ -39,7 +39,7 @@ func TestKubernetesOptions_Validate(t *testing.T) {
 			name:   "all ok with dry-run",
 			dryRun: true,
 			kubernetes: &KubernetesOptions{
-				deckURI: "https://example.com",
+				DeckURI: "https://example.com",
 			},
 			expectedErr: false,
 		},
