@@ -113,6 +113,7 @@ func main() {
 				Filename: relPath,
 				Status:   github.PullRequestFileAdded,
 			})
+			logrus.Infof("added to mock change: %s", relPath)
 		} else {
 			logrus.WithError(err).Warn("unexpected error determining relative path to file")
 		}
@@ -126,6 +127,8 @@ func main() {
 		logger := logrus.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace}})
 		if err := updateconfig.Update(&osFileGetter{root: o.sourcePath}, client.CoreV1().ConfigMaps(cm.Namespace), cm.Name, cm.Namespace, data, logger); err != nil {
 			logger.WithError(err).Error("failed to update config on cluster")
+		} else {
+			logger.Infof("Successfully processed configmap")
 		}
 	}
 }
