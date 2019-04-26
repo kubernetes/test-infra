@@ -29,25 +29,25 @@ import (
 type KubernetesOptions struct {
 	cluster    string
 	kubeconfig string
-	deckURI    string
+	DeckURI    string
 }
 
 // AddFlags injects Kubernetes options into the given FlagSet.
 func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.cluster, "cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
 	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If empty, uses the local cluster.")
-	fs.StringVar(&o.deckURI, "deck-url", "", "Deck URI for read-only access to the cluster.")
+	fs.StringVar(&o.DeckURI, "deck-url", "", "Deck URI for read-only access to the cluster.")
 }
 
 // Validate validates Kubernetes options.
 func (o *KubernetesOptions) Validate(dryRun bool) error {
-	if dryRun && o.deckURI == "" {
+	if dryRun && o.DeckURI == "" {
 		return errors.New("a dry-run was requested but required flag -deck-url was unset")
 	}
 
-	if o.deckURI != "" {
-		if _, err := url.ParseRequestURI(o.deckURI); err != nil {
-			return fmt.Errorf("invalid -deck-url URI: %q", o.deckURI)
+	if o.DeckURI != "" {
+		if _, err := url.ParseRequestURI(o.DeckURI); err != nil {
+			return fmt.Errorf("invalid -deck-url URI: %q", o.DeckURI)
 		}
 	}
 
@@ -62,7 +62,7 @@ func (o *KubernetesOptions) InjectBuildCluster(buildCluster string) {
 // Client returns a Kubernetes client.
 func (o *KubernetesOptions) Client(namespace string, dryRun bool) (*kube.Client, error) {
 	if dryRun {
-		return kube.NewFakeClient(o.deckURI), nil
+		return kube.NewFakeClient(o.DeckURI), nil
 	}
 
 	if o.cluster == "" {
