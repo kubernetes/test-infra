@@ -388,6 +388,12 @@ func TestAssignAndReview(t *testing.T) {
 			commenter:   "rando",
 			unrequested: []string{"kubernetes/sig-testing-misc"},
 		},
+		{
+			name:      "add mixed case user",
+			body:      "/assign BenTheElder",
+			commenter: "rando",
+			assigned:  []string{"bentheelder"},
+		},
 	}
 	for _, tc := range testcases {
 		fc := newFakeClient([]string{"hello-world", "allow_underscore", "cjwagner", "merlin", "kubernetes/sig-testing-misc"})

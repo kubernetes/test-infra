@@ -90,7 +90,7 @@ func parseLogins(text string) []string {
 		if t == "" {
 			continue
 		}
-		parts = append(parts, t)
+		parts = append(parts, github.NormLogin(t))
 	}
 	return parts
 }
