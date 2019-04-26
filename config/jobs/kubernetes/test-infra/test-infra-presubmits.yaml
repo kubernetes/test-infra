@@ -81,6 +81,24 @@ presubmits:
           requests:
             memory: "2Gi"
 
+  - name: pull-test-infra-lint-rbe
+    skip_report: true
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+    spec:
+      containers:
+      - image: launcher.gcr.io/google/bazel:0.24.1
+        command:
+        - hack/bazel.sh
+        args:
+        - test
+        - --config=ci
+        - --config=lint
+        - //...
+
   - name: pull-test-infra-verify-tslint
     branches:
       - master

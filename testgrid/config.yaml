@@ -786,6 +786,8 @@ test_groups:
   num_columns_recent: 20
 - name: post-test-infra-build-smoke
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-build-smoke
+- name: post-test-infra-bazel
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-bazel
 - name: ci-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-bazel
 - name: ci-test-infra-canary-echo-test
@@ -2763,6 +2765,9 @@ test_groups:
   num_columns_recent: 20
 - name: pull-test-infra-bazel-canary
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-bazel-canary
+  num_columns_recent: 20
+- name: pull-test-infra-lint-rbe
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-lint-rbe
   num_columns_recent: 20
 - name: pull-test-infra-lint
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-lint
@@ -7284,9 +7289,14 @@ dashboards:
     test_group_name: post-test-infra-push-test-gubernator
 - name: sig-testing-misc
   dashboard_tab:
-  - name: bazel
-    description: Runs bazel test //... on the test-infra repo.
+  - name: ci-bazel
+    description: Runs bazel test //... on the test-infra repo every hour
     test_group_name: ci-test-infra-bazel
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: post-bazel
+    description: Runs bazel test //... on the test-infra repo on each commit
+    test_group_name: post-test-infra-bazel
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: triage
@@ -7772,6 +7782,9 @@ dashboards:
     base_options: width=10
   - name: lint
     test_group_name: pull-test-infra-lint
+    base_options: width=10
+  - name: lint-rbe
+    test_group_name: pull-test-infra-lint-rbe
     base_options: width=10
   - name: bazel-canary
     test_group_name: pull-test-infra-bazel-canary
