@@ -87,6 +87,10 @@ build() {
 
 # up a cluster with kind
 create_cluster() {
+    # create the audit-policy necessary for API Coverage
+    # https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#audit-policy
+    cp $(dirname $0)/audit-policy.yaml /tmp/audit-policy.yaml
+
     # create the config file
     cat <<EOF > "${ARTIFACTS}/kind-config.yaml"
 # config for 1 control plane node and 2 workers
@@ -106,15 +110,13 @@ nodes:
 # the control plane node
 - role: control-plane
   extraMounts:
+  - containerPath: /var/log/audit/
+    hostPath: "${ARTIFACTS}/logs/audit/"
   - containerPath: /etc/kubernetes/audit-policy.yaml
-  - hostPath: /tmp/audit-policy.yaml
+    hostPath: /tmp/audit-policy.yaml
 - role: worker
   replicas: 2
 EOF
-    # create the audit-policy necessary for API Coverage
-    # https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#audit-policy
-    cp $(dirname $0)/audit-policy.yaml > /tmp/audit-policy.yaml
-
     # mark the cluster as up for cleanup
     # even if kind create fails, kind delete can clean up after it
     KIND_IS_UP=true
