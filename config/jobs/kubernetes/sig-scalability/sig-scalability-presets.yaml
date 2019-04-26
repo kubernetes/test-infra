@@ -41,7 +41,8 @@ presets:
   - name: ALLOWED_NOTREADY_NODES
     value: 1
   - name: ENABLE_PROMETHEUS_SERVER
-    value: "true"
+    # TODO(https://github.com/kubernetes/kubernetes/issues/73105): Set to true
+    value: "false"
 ### kubemark-gce-big
 - labels:
     preset-e2e-kubemark-gce-big: "true"
@@ -127,7 +128,8 @@ presets:
   - name: KUBE_GCE_MASTER_IMAGE
     value: cos-69-10895-138-0
   - name: ENABLE_PROMETHEUS_SERVER
-    value: "true"
+    # TODO(https://github.com/kubernetes/kubernetes/issues/73105): Set to true
+    value: "false"
 
 ###### Scalability Envs
 ### Common env variables for all scalability-related suites.
