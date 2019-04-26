@@ -17,6 +17,8 @@ metadata:
   name: config
 data:
   config.yaml: |
+    prowjob_namespace: default
+    pod_namespace: test-pods
     periodics:
     - interval: 10m
       agent: kubernetes
