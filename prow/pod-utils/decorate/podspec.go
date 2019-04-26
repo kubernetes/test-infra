@@ -174,14 +174,20 @@ func ProwJobToPod(pj prowapi.ProwJob, buildID string) (*coreapi.Pod, error) {
 	}
 
 	podLabels, annotations := LabelsAndAnnotationsForJob(pj)
-	return &coreapi.Pod{
+	pod := &coreapi.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        pj.ObjectMeta.Name,
 			Labels:      podLabels,
 			Annotations: annotations,
 		},
 		Spec: *spec,
-	}, nil
+	}
+	// override if pj has a non-empty namespace
+	// otherwise will fallback to the default namespace of the pod client
+	if pj.Spec.Namespace != "" {
+		pod.ObjectMeta.Namespace = pj.Spec.Namespace
+	}
+	return pod, nil
 }
 
 const cloneLogPath = "clone.json"

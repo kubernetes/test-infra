@@ -1603,6 +1603,7 @@ func TestProwJobToPod(t *testing.T) {
 						},
 					},
 				},
+				Namespace: "test-pods",
 			},
 			expected: &coreapi.Pod{
 				ObjectMeta: metav1.ObjectMeta{
@@ -1620,6 +1621,7 @@ func TestProwJobToPod(t *testing.T) {
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
 					},
+					Namespace: "test-pods",
 				},
 				Spec: coreapi.PodSpec{
 					AutomountServiceAccountToken: &falseth,
