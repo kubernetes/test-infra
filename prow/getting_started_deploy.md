@@ -261,6 +261,25 @@ label. When you make a change to the plugin config and push it with `make
 update-plugins`, you do not need to redeploy any of your cluster components.
 They will pick up the change within a few minutes.
 
+### Set namespaces for prowjobs and test pods
+
+Add the following to `config.yaml`:
+
+```yaml
+prowjob_namespace: default
+pod_namespace: test-pods
+```
+
+By doing so, we keep prowjobs in the `default` namespace and test pods in the
+`test_pods` namespace.
+
+You can also choose other names. Remember to update the RBAC roles and
+rolebindings afterwards.
+
+**Note**: If you set or update the `prowjob_namespace` or `pod_namespace`
+fields after deploying the prow components, you will need to redeploy them
+so that they pick up the change.
+
 ### Add more jobs by modifying `config.yaml`
 
 Add the following to `config.yaml`:
@@ -327,26 +346,6 @@ the change within a few minutes.
 When you push or merge a new change to the git repo, the postsubmit job will run.
 
 For more information on the job environment, see [`jobs.md`](/prow/jobs.md)
-
-### Run test pods in a different namespace
-
-You may choose to keep prowjobs or run tests in a different namespace. First
-create the namespace by `kubectl create -f`ing this:
-
-```yaml
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: prow
-```
-
-Now, in `config.yaml`, set `prowjob_namespace` or `pod_namespace` to the
-name from the YAML file. You can then use RBAC roles to limit what test pods
-can do.
-
-**Note**: If you set or update the `prowjob_namespace` or `pod_namespace`
-fields after deploying the prow components, you will need to redeploy them
-so that they pick up the change.
 
 ### Run test pods in different clusters
 
