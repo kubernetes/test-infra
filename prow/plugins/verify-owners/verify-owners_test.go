@@ -196,6 +196,24 @@ func TestHandle(t *testing.T) {
 			shouldLabel:  true,
 		},
 		{
+			name:         "forbidden labels in OWNERS file at top of vendor",
+			filesChanged: []string{"vendor/OWNERS", "b.go"},
+			ownersFile:   "invalidLabels",
+			shouldLabel:  true,
+		},
+		{
+			name:         "forbidden labels in OWNERS file somewhere under vendor",
+			filesChanged: []string{"vendor/github.com/oopsie/doopsie/OWNERS", "b.go"},
+			ownersFile:   "invalidLabels",
+			shouldLabel:  false,
+		},
+		{
+			name:         "forbidden labels in OWNERS file somewhere under vendor-like dir",
+			filesChanged: []string{"vendorability/github.com/oopsie/doopsie/OWNERS", "b.go"},
+			ownersFile:   "invalidLabels",
+			shouldLabel:  true,
+		},
+		{
 			name:         "forbidden labels in OWNERS file with filters",
 			filesChanged: []string{"OWNERS", "b.go"},
 			ownersFile:   "invalidLabelsFilters",

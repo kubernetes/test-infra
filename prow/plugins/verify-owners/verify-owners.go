@@ -43,6 +43,7 @@ const (
 	PluginName                    = "verify-owners"
 	ownersFileName                = "OWNERS"
 	ownersAliasesFileName         = "OWNERS_ALIASES"
+	vendorDir                     = "vendor"
 	nonCollaboratorResponseFormat = "The following users are mentioned in %s file(s) but are not members of the %s org."
 )
 
@@ -115,6 +116,12 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 	// List modified OWNERS files.
 	var modifiedOwnersFiles []github.PullRequestChange
 	for _, change := range changes {
+		if filepath.Dir(change.Filename) != vendorDir && strings.Split(change.Filename, string(os.PathSeparator))[0] == vendorDir {
+			// we care about OWNERS at the top-level of vendor/ but not any
+			// under that, as they are not under the control of the repo
+			// vendoring them
+			continue
+		}
 		if filepath.Base(change.Filename) == ownersFileName {
 			modifiedOwnersFiles = append(modifiedOwnersFiles, change)
 		}
@@ -124,6 +131,12 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 	var modifiedOwnerAliasesFile github.PullRequestChange
 	var ownerAliasesModified bool
 	for _, change := range changes {
+		if filepath.Dir(change.Filename) != vendorDir && strings.HasPrefix(change.Filename, vendorDir) {
+			// we care about OWNERS_ALIASES at the top-level of vendor/ but
+			// not any under that, as they are not under the control of the
+			// repo vendoring them
+			continue
+		}
 		if change.Filename == ownersAliasesFileName {
 			modifiedOwnerAliasesFile = change
 			ownerAliasesModified = true
