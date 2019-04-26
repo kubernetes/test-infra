@@ -175,6 +175,10 @@ func (c *Controller) updateReportState(pj *v1.ProwJob) error {
 		return fmt.Errorf("error CreateMergePatch: %v", err)
 	}
 
+	if len(patch) == 0 {
+		logrus.Warnf("Empty merge patch: pjData: %s, newpjData: %s", string(pjData), string(newpjData))
+	}
+
 	logrus.Infof("Created merge patch: %v", string(patch))
 
 	_, err = c.pjclientset.Prow().ProwJobs(pj.Namespace).Patch(pj.Name, types.MergePatchType, patch)
