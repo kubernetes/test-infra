@@ -93,12 +93,28 @@ create_cluster() {
 # necessary for conformance
 kind: Config
 apiVersion: kind.sigs.k8s.io/v1alpha2
+kubeadmConfigPatches:
+- |
+  apiVersion: kubeadm.k8s.io/v1beta1
+  kind: ClusterConfiguration
+  metadata:
+    name: config
+  apiServer:
+  extraArgs:
+    "audit-policy-file": "/etc/kubernetes/audit-policy.yaml"
 nodes:
 # the control plane node
 - role: control-plane
+  extraMounts:
+  - containerPath: /etc/kubernetes/audit-policy.yaml
+  - hostPath: /tmp/audit-policy.yaml
 - role: worker
   replicas: 2
 EOF
+    # create the audit-policy necessary for API Coverage
+    # https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#audit-policy
+    cp $(dirname $0)/audit-policy.yaml > /tmp/audit-policy.yaml
+
     # mark the cluster as up for cleanup
     # even if kind create fails, kind delete can clean up after it
     KIND_IS_UP=true
