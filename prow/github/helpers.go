@@ -55,12 +55,12 @@ func ImageTooBig(url string) (bool, error) {
 // LevelFromPermissions adapts a repo permissions struct to the
 // appropriate permission level used elsewhere
 func LevelFromPermissions(permissions RepoPermissions) RepoPermissionLevel {
-	if permissions.Pull {
-		return Read
+	if permissions.Admin {
+		return Admin
 	} else if permissions.Push {
 		return Write
-	} else if permissions.Admin {
-		return Admin
+	} else if permissions.Pull {
+		return Read
 	} else {
 		return None
 	}
@@ -75,9 +75,9 @@ func PermissionsFromLevel(permission RepoPermissionLevel) RepoPermissions {
 	case Read:
 		return RepoPermissions{Pull: true}
 	case Write:
-		return RepoPermissions{Push: true}
+		return RepoPermissions{Pull: true, Push: true}
 	case Admin:
-		return RepoPermissions{Admin: true}
+		return RepoPermissions{Pull: true, Push: true, Admin: true}
 	default:
 		return RepoPermissions{}
 	}
