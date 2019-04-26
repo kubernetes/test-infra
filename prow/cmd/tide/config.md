@@ -17,15 +17,16 @@ The following configuration fields are available:
 * `merge_method`: A key/value pair of an `org/repo` as the key and merge method to override
    the default method of merge as value. Valid options are `squash`, `rebase`, and `merge`.
    Defaults to `merge`.
+* `merge_commit_template`: A mapping from `org/repo` or `org` to a set of Go templates to use when creating the title and body of merge commits. Go templates are evaluated with a `PullRequest`  (see [`PullRequest`](https://godoc.org/k8s.io/test-infra/prow/tide#PullRequest) type). This field and map keys are optional.
 * `target_url`: URL for tide status contexts.
 * `pr_status_base_url`: The base URL for the PR status page. If specified, this URL is used to construct
    a link that will be used for the tide status context. It is mutually exclusive with the `target_url` field.
 * `max_goroutines`: The maximum number of goroutines spawned inside the component to
    handle org/repo:branch pools. Defaults to 20. Needs to be a positive number.
 * `blocker_label`: The label used to identify issues which block merges to repository branches.
-* `squash_label`: The label used to ask Tide to use the squash method when merging the labeled PR. 
-* `rebase_label`: The label used to ask Tide to use the rebase method when merging the labeled PR. 
-* `merge_label`: The label used to ask Tide to use the merge method when merging the labeled PR. 
+* `squash_label`: The label used to ask Tide to use the squash method when merging the labeled PR.
+* `rebase_label`: The label used to ask Tide to use the rebase method when merging the labeled PR.
+* `merge_label`: The label used to ask Tide to use the merge method when merging the labeled PR.
 
 ### Merge Blocker Issues
 
@@ -34,7 +35,7 @@ In order to use this option, set the `blocker_label` configuration option for th
 Then, when blocking merges is required, if an issue is found with the label it will block merges to
 all branches for the repo. In order to scope the branches which are blocked, add a `branch:name` token
 to the issue title. These tokens can be repeated to select multiple branches and the tokens also support
-quoting, so `branch:"name"` will block the `name` branch just as `branch:name` would. 
+quoting, so `branch:"name"` will block the `name` branch just as `branch:name` would.
 
 ### Queries
 

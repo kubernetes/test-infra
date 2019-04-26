@@ -25,6 +25,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"text/template"
 	"time"
 
 	githubql "github.com/shurcooL/githubv4"
@@ -2303,6 +2304,107 @@ func TestPresubmitsByPull(t *testing.T) {
 		}
 		if got := c.changedFiles.changeCache; !reflect.DeepEqual(got, tc.expectedChangeCache) {
 			t.Errorf("got incorrect file change cache: %v", diff.ObjectReflectDiff(tc.expectedChangeCache, got))
+		}
+	}
+}
+
+func getTemplate(name, tplStr string) *template.Template {
+	tpl, _ := template.New(name).Parse(tplStr)
+	return tpl
+}
+
+func TestPrepareMergeDetails(t *testing.T) {
+	pr := PullRequest{
+		Number:     githubql.Int(1),
+		Mergeable:  githubql.MergeableStateMergeable,
+		HeadRefOID: githubql.String("SHA"),
+		Title:      "my commit title",
+		Body:       "my commit body",
+	}
+
+	testCases := []struct {
+		name        string
+		tpl         config.TideMergeCommitTemplate
+		pr          PullRequest
+		mergeMethod github.PullRequestMergeType
+		expected    github.MergeDetails
+	}{{
+		name:        "No commit template",
+		tpl:         config.TideMergeCommitTemplate{},
+		pr:          pr,
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:         "SHA",
+			MergeMethod: "merge",
+		},
+	}, {
+		name: "No commit template fields",
+		tpl: config.TideMergeCommitTemplate{
+			Title: nil,
+			Body:  nil,
+		},
+		pr:          pr,
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:         "SHA",
+			MergeMethod: "merge",
+		},
+	}, {
+		name: "Static commit template",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "static title"),
+			Body:  getTemplate("CommitBody", "static body"),
+		},
+		pr:          pr,
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "static title",
+			CommitMessage: "static body",
+		},
+	}, {
+		name: "Commit template uses PullRequest fields",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Number }}: {{ .Title }}"),
+			Body:  getTemplate("CommitBody", "{{ .HeadRefOID }} - {{ .Body }}"),
+		},
+		pr:          pr,
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "1: my commit title",
+			CommitMessage: "SHA - my commit body",
+		},
+	}, {
+		name: "Commit template uses nonexistent fields",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Hello }}"),
+			Body:  getTemplate("CommitBody", "{{ .World }}"),
+		},
+		pr:          pr,
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:         "SHA",
+			MergeMethod: "merge",
+		},
+	}}
+
+	for _, test := range testCases {
+		cfg := &config.Config{}
+		cfgAgent := &config.Agent{}
+		cfgAgent.Set(cfg)
+		c := &Controller{
+			config: cfgAgent.Config,
+			ghc:    &fgc{},
+			logger: logrus.WithField("component", "tide"),
+		}
+
+		actual := c.prepareMergeDetails(test.tpl, test.pr, test.mergeMethod)
+
+		if !reflect.DeepEqual(actual, test.expected) {
+			t.Errorf("Case %s failed: expected %+v, got %+v", test.name, test.expected, actual)
 		}
 	}
 }

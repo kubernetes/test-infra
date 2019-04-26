@@ -1020,6 +1020,30 @@ func parseProwConfig(c *Config) error {
 		}
 	}
 
+	for name, templates := range c.Tide.MergeTemplate {
+		if templates.TitleTemplate != "" {
+			titleTemplate, err := template.New("CommitTitle").Parse(templates.TitleTemplate)
+
+			if err != nil {
+				return fmt.Errorf("parsing template for commit title: %v", err)
+			}
+
+			templates.Title = titleTemplate
+		}
+
+		if templates.BodyTemplate != "" {
+			bodyTemplate, err := template.New("CommitBody").Parse(templates.BodyTemplate)
+
+			if err != nil {
+				return fmt.Errorf("parsing template for commit body: %v", err)
+			}
+
+			templates.Body = bodyTemplate
+		}
+
+		c.Tide.MergeTemplate[name] = templates
+	}
+
 	for i, tq := range c.Tide.Queries {
 		if err := tq.Validate(); err != nil {
 			return fmt.Errorf("tide query (index %d) is invalid: %v", i, err)
