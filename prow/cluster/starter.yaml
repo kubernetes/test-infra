@@ -505,10 +505,38 @@ subjects:
 - kind: ServiceAccount
   name: "deck"
 ---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
+  name: "deck"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "deck"
+subjects:
+- kind: ServiceAccount
+  name: "deck"
+  namespace: default
+---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   namespace: default
+  name: "deck"
+rules:
+  - apiGroups:
+      - "prow.k8s.io"
+    resources:
+      - prowjobs
+    verbs:
+      - get
+      - list
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
   name: "deck"
 rules:
   - apiGroups:
@@ -517,13 +545,6 @@ rules:
       - pods/log
     verbs:
       - get
-  - apiGroups:
-      - "prow.k8s.io"
-    resources:
-      - prowjobs
-    verbs:
-      - get
-      - list
 ---
 kind: ServiceAccount
 apiVersion: v1
@@ -570,14 +591,6 @@ metadata:
   namespace: default
   name: "plank"
 rules:
-  - apiGroups:
-      - ""
-    resources:
-      - pods
-    verbs:
-      - create
-      - delete
-      - list
   - apiGroups:
       - "prow.k8s.io"
     resources:
@@ -588,6 +601,21 @@ rules:
       - list
       - update
 ---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
+  name: "plank"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - create
+      - delete
+      - list
+---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
@@ -600,6 +628,20 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: "plank"
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
+  name: "plank"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "plank"
+subjects:
+- kind: ServiceAccount
+  name: "plank"
+  namespace: default
 ---
 kind: ServiceAccount
 apiVersion: v1
@@ -614,16 +656,23 @@ metadata:
   name: "sinker"
 rules:
   - apiGroups:
-      - ""
-    resources:
-      - pods
-    verbs:
-      - delete
-      - list
-  - apiGroups:
       - "prow.k8s.io"
     resources:
       - prowjobs
+    verbs:
+      - delete
+      - list
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
+  name: "sinker"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
     verbs:
       - delete
       - list
@@ -640,6 +689,20 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: "sinker"
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
+  name: "sinker"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "sinker"
+subjects:
+- kind: ServiceAccount
+  name: "sinker"
+  namespace: default
 ---
 apiVersion: v1
 kind: ServiceAccount
