@@ -119,7 +119,7 @@ func (f *fjc) Build(pj *prowapi.ProwJob, buildID string) error {
 	return nil
 }
 
-func (f *fjc) ListBuilds(jobs []string) (map[string]Build, error) {
+func (f *fjc) ListBuilds(jobs []BuildQueryParams) (map[string]Build, error) {
 	f.Lock()
 	defer f.Unlock()
 	if f.err != nil {
@@ -946,7 +946,7 @@ func TestGetJenkinsJobs(t *testing.T) {
 		for _, ej := range test.expected {
 			var found bool
 			for _, gj := range got {
-				if ej == gj {
+				if ej == gj.JobName {
 					found = true
 					break
 				}

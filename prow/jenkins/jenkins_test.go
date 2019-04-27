@@ -68,7 +68,27 @@ func testWrapper(t *testing.T, jobs []string, builds map[string][]Build, status 
 			return
 		}
 		if r.URL.Path == "/queue/api/json" {
-			fmt.Fprint(w, `{"items": []}`)
+			fmt.Fprint(w, `{"items": [
+				{
+					"actions": [
+						{
+							"parameters": [
+								{
+									"name": "BUILD_ID",
+									"value": "queued-int"
+								},
+								{
+									"name": "PROW_JOB_ID",
+									"value": "queued_pj_id"
+								}
+							]
+						}
+					],
+					"task": {
+						"name": "PR-763"
+					}
+				}
+			]}`)
 			return
 		}
 		var found bool
@@ -104,11 +124,16 @@ func intP(i int) *int {
 }
 
 func TestListBuilds(t *testing.T) {
+	type Task struct {
+		// Used for tracking unscheduled builds for jobs.
+		Name string `json:"name"`
+	}
+
 	tests := []struct {
 		name string
 
 		existingJobs  []string
-		requestedJobs []string
+		requestedJobs []BuildQueryParams
 		builds        map[string][]Build
 		status        *int
 
@@ -119,7 +144,7 @@ func TestListBuilds(t *testing.T) {
 			name: "missing job does not block",
 
 			existingJobs:  []string{"unit", "integration"},
-			requestedJobs: []string{"unit", "integration", "e2e"},
+			requestedJobs: []BuildQueryParams{{JobName: "unit", ProwJobID: "unitpj"}, {JobName: "unit", ProwJobID: "queued_pj_id"}, {JobName: "integration", ProwJobID: "integrationpj"}, {JobName: "e2e", ProwJobID: "e2epj"}},
 			builds: map[string][]Build{
 				"unit": {
 					{Number: 1, Result: strP(success), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "first"}, {Name: prowJobID, Value: "first"}}}}},
@@ -138,13 +163,15 @@ func TestListBuilds(t *testing.T) {
 				"third":      {Number: 3, Result: strP(failure), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "third"}, {Name: prowJobID, Value: "third"}}}}},
 				"first-int":  {Number: 1, Result: strP(failure), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "first-int"}, {Name: prowJobID, Value: "first-int"}}}}},
 				"second-int": {Number: 2, Result: strP(success), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "second-int"}, {Name: prowJobID, Value: "second-int"}}}}},
+				// queued_pj_id is returned from the testWrapper
+				"queued_pj_id": {Number: 0, Result: nil, Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "queued-int"}, {Name: prowJobID, Value: "queued_pj_id"}}}}, enqueued: true, Task: Task{Name: "PR-763"}},
 			},
 		},
 		{
 			name: "bad error",
 
 			existingJobs:  []string{"unit"},
-			requestedJobs: []string{"unit"},
+			requestedJobs: []BuildQueryParams{{JobName: "unit", ProwJobID: "prowjobidhere"}},
 			status:        intP(502),
 
 			expectedErr: fmt.Errorf("cannot list builds for job \"unit\": response not 2XX: 502 Bad Gateway"),
