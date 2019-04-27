@@ -60,28 +60,6 @@ presubmits:
           value: "/workspace"
 
   - name: pull-test-infra-lint
-    always_run: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-experimental
-        command:
-        - runner.sh
-        - ./scenarios/kubernetes_bazel.py
-        args:
-        - "--install=gubernator/test_requirements.txt"
-        - "--test=//..."
-        - "--test-args=--config=lint"
-        volumeMounts:
-        resources:
-          requests:
-            memory: "2Gi"
-
-  - name: pull-test-infra-lint-rbe
     skip_report: true
     always_run: true
     decorate: true

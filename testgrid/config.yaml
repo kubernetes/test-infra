@@ -2771,9 +2771,6 @@ test_groups:
 - name: pull-test-infra-bazel-canary
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-bazel-canary
   num_columns_recent: 20
-- name: pull-test-infra-lint-rbe
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-lint-rbe
-  num_columns_recent: 20
 - name: pull-test-infra-lint
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-lint
   num_columns_recent: 20
@@ -7790,9 +7787,6 @@ dashboards:
     base_options: width=10
   - name: lint
     test_group_name: pull-test-infra-lint
-    base_options: width=10
-  - name: lint-rbe
-    test_group_name: pull-test-infra-lint-rbe
     base_options: width=10
   - name: bazel-canary
     test_group_name: pull-test-infra-bazel-canary
