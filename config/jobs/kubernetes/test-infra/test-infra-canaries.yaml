@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/test-infra:
   - name: pull-test-infra-bazel-canary
+    decorate: true
     skip_report: true
     always_run: true
     labels:

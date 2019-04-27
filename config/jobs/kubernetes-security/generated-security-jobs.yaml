@@ -2696,6 +2696,7 @@ presubmits:
         - --ssh=/etc/ssh-security/ssh-security
         - build
         - --config=remote
+        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
         - //...
         - //build/release-tars
         - --
