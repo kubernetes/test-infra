@@ -90,13 +90,24 @@ create_cluster() {
     # create the audit-policy necessary for API Coverage
     # https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#audit-policy
     cp $(dirname $0)/audit-policy.yaml /tmp/audit-policy.yaml
-
+    mkdir -p "${ARTIFACTS}/logs"
+    touch "${ARTIFACTS}/logs/apiserver-audit.log"
     # create the config file
     cat <<EOF > "${ARTIFACTS}/kind-config.yaml"
 # config for 1 control plane node and 2 workers
 # necessary for conformance
-kind: Config
-apiVersion: kind.sigs.k8s.io/v1alpha2
+kind: Cluster
+apiVersion: kind.sigs.k8s.io/v1alpha3
+nodes:
+# the control plane node
+- role: control-plane
+  extraMounts:
+  - hostPath: "${ARTIFACTS}/logs/apiserver-audit.log"
+    containerPath: /var/log/apiserver-audit.log
+  - hostPath: /tmp/audit-policy.yaml
+    containerPath: /etc/kubernetes/audit-policy.yaml
+- role: worker
+  replicas: 2
 kubeadmConfigPatches:
 - |
   apiVersion: kubeadm.k8s.io/v1beta1
@@ -104,18 +115,19 @@ kubeadmConfigPatches:
   metadata:
     name: config
   apiServer:
-  extraArgs:
-    "audit-policy-file": "/etc/kubernetes/audit-policy.yaml"
-nodes:
-# the control plane node
-- role: control-plane
-  extraMounts:
-  - containerPath: /var/log/audit/
-    hostPath: "${ARTIFACTS}/logs/audit/"
-  - containerPath: /etc/kubernetes/audit-policy.yaml
-    hostPath: /tmp/audit-policy.yaml
-- role: worker
-  replicas: 2
+    timeoutForControlPlane: 5m0s
+    extraArgs:
+      audit-log-path: /var/log/apiserver-audit.log
+      audit-policy-file: /etc/kubernetes/audit-policy.yaml
+    extraVolumes:
+    - hostPath: /etc/kubernetes/audit-policy.yaml
+      mountPath: /etc/kubernetes/audit-policy.yaml
+      name: auditpolicy
+      readOnly: true
+    - hostPath: /var/log/apiserver-audit.log
+      mountPath: /var/log/apiserver-audit.log
+      name: auditlog
+      readOnly: false
 EOF
     # mark the cluster as up for cleanup
     # even if kind create fails, kind delete can clean up after it
