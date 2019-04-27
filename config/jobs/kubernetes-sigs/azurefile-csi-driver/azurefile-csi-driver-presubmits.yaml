@@ -1,0 +1,48 @@
+presubmits:
+  kubernetes-sigs/azurefile-csi-driver:
+  - name: pull-azurefile-csi-driver-unit
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test
+  - name: pull-azurefile-csi-driver-sanity
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test-sanity
+  - name: pull-azurefile-csi-driver-integration
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test-integration
+  - name: pull-azurefile-csi-driver-e2e
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test-e2e
+        securityContext:
+          privileged: true
