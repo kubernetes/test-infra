@@ -52,9 +52,10 @@ const (
 )
 
 const (
-	success = "SUCCESS"
-	failure = "FAILURE"
-	aborted = "ABORTED"
+	success  = "SUCCESS"
+	failure  = "FAILURE"
+	unstable = "UNSTABLE"
+	aborted  = "ABORTED"
 )
 
 // NotFoundError is returned by the Jenkins client when
@@ -132,7 +133,7 @@ func (jb *Build) IsSuccess() bool {
 
 // IsFailure means the job completed with problems.
 func (jb *Build) IsFailure() bool {
-	return jb.Result != nil && *jb.Result == failure
+	return jb.Result != nil && (*jb.Result == failure || *jb.Result == unstable)
 }
 
 // IsAborted means something stopped the job before it could finish.
