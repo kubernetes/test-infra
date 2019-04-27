@@ -54,6 +54,7 @@ filegroup(
         "//experiment/aws-stockout:all-srcs",
         "//experiment/ci-janitor:all-srcs",
         "//experiment/coverage:all-srcs",
+        "//experiment/dummybenchmarks:all-srcs",
         "//experiment/image-bumper:all-srcs",
         "//experiment/logviewer/gcsreader:all-srcs",
         "//experiment/manual-trigger:all-srcs",

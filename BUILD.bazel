@@ -125,6 +125,7 @@ filegroup(
         "//maintenance/aws-janitor:all-srcs",
         "//maintenance/migratestatus:all-srcs",
         "//metrics:all-srcs",
+        "//pkg/benchmarkjunit:all-srcs",
         "//pkg/flagutil:all-srcs",
         "//pkg/ghclient:all-srcs",
         "//pkg/io:all-srcs",
