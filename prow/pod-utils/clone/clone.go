@@ -203,7 +203,7 @@ func (g *gitCtx) commandsForPullRefs(refs prowapi.Refs, fakeTimestamp int) []clo
 		if prRef.Ref != "" {
 			ref = prRef.Ref
 		}
-		commands = append(commands, g.gitCommand("fetch", g.repositoryURI, ref))
+		commands = append(commands, g.gitCommand("fetch", "--depth", strconv.Itoa(refs.CloneDepth), g.repositoryURI, ref))
 		var prCheckout string
 		if prRef.SHA != "" {
 			prCheckout = prRef.SHA

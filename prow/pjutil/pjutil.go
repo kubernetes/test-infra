@@ -185,6 +185,7 @@ func completePrimaryRefs(refs prowapi.Refs, jb config.JobBase) *prowapi.Refs {
 		refs.CloneURI = jb.CloneURI
 	}
 	refs.SkipSubmodules = jb.SkipSubmodules
+	refs.CloneDepth = jb.CloneDepth
 	return &refs
 }
 
