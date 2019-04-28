@@ -77,7 +77,9 @@ func (o Options) assembleTargets(spec *downwardapi.JobSpec, extra map[string]gcs
 
 	if latestBuilds := gcs.LatestBuildForSpec(spec, builder); len(latestBuilds) > 0 {
 		for _, latestBuild := range latestBuilds {
-			uploadTargets[latestBuild] = gcs.DataUpload(strings.NewReader(spec.BuildID))
+			dir, filename := path.Split(latestBuild)
+			metadataFromFileName, metadata := gcs.MetadataFromFileName(filename)
+			uploadTargets[path.Join(dir, metadataFromFileName)] = gcs.DataUploadWithMetadata(strings.NewReader(spec.BuildID), metadata)
 		}
 	}
 
@@ -90,12 +92,13 @@ func (o Options) assembleTargets(spec *downwardapi.JobSpec, extra map[string]gcs
 		if info.IsDir() {
 			gatherArtifacts(item, gcsPath, info.Name(), uploadTargets)
 		} else {
-			destination := path.Join(gcsPath, info.Name())
+			metadataFromFileName, metadata := gcs.MetadataFromFileName(info.Name())
+			destination := path.Join(gcsPath, metadataFromFileName)
 			if _, exists := uploadTargets[destination]; exists {
 				logrus.Warnf("Encountered duplicate upload of %s, skipping...", destination)
 				continue
 			}
-			uploadTargets[destination] = gcs.FileUpload(item)
+			uploadTargets[destination] = gcs.FileUploadWithMetadata(item, metadata)
 		}
 	}
 
@@ -153,13 +156,15 @@ func gatherArtifacts(artifactDir, gcsPath, subDir string, uploadTargets map[stri
 		// this error as we can be certain it won't occur and best-
 		// effort upload is OK in any case
 		if relPath, err := filepath.Rel(artifactDir, fspath); err == nil {
-			destination := path.Join(gcsPath, subDir, relPath)
+			dir, filename := path.Split(path.Join(gcsPath, subDir, relPath))
+			metadataFromFileName, metadata := gcs.MetadataFromFileName(filename)
+			destination := path.Join(dir, metadataFromFileName)
 			if _, exists := uploadTargets[destination]; exists {
 				logrus.Warnf("Encountered duplicate upload of %s, skipping...", destination)
 				return nil
 			}
 			logrus.Printf("Found %s in artifact directory. Uploading as %s\n", fspath, destination)
-			uploadTargets[destination] = gcs.FileUpload(fspath)
+			uploadTargets[destination] = gcs.FileUploadWithMetadata(fspath, metadata)
 		} else {
 			logrus.Warnf("Encountered error in relative path calculation for %s under %s: %v", fspath, artifactDir, err)
 		}
