@@ -220,6 +220,31 @@ postsubmits:
         - name: creds
           secret:
             secretName: deployer-service-account
+  - name: post-test-infra-push-bazel-krte
+    cluster: test-infra-trusted
+    run_if_changed: '^images/bazel-krte/'
+    decorate: true
+    branches:
+      - master
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/gcloud-bazel:v20190402-v0.1-35-g8b2d62a
+          command:
+            - images/builder/ci-runner.sh
+          args:
+            - --scratch-bucket=gs://k8s-testimages-scratch
+            - --project=k8s-testimages
+            - images/bazel-krte/
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /creds/service-account.json
+          volumeMounts:
+            - name: creds
+              mountPath: /creds
+      volumes:
+        - name: creds
+          secret:
+            secretName: deployer-service-account
   - name: post-test-infra-push-bigquery
     cluster: test-infra-trusted
     run_if_changed: '^images/bigquery/'
