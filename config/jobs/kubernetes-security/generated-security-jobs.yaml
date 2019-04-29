@@ -2694,15 +2694,11 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - build
-        - --config=remote
-        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
-        - //...
-        - //build/release-tars
-        - --
-        - -//vendor/...
+        - -c
+        - |
+          ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance $(bazel query --keep_going --noshow_progress "kind(.*_binary, rdeps(//... -//vendor/..., //...)) except attr('tags', 'manual', //...)") //build/release-tars
         command:
-        - ../test-infra/hack/bazel.sh
+        - bash
         image: launcher.gcr.io/google/bazel:0.24.1
         name: ""
         resources: {}
