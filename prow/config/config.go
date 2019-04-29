@@ -79,6 +79,7 @@ type ProwConfig struct {
 	BranchProtection BranchProtection `json:"branch-protection,omitempty"`
 	Gerrit           Gerrit           `json:"gerrit,omitempty"`
 	GitHubReporter   GitHubReporter   `json:"github_reporter,omitempty"`
+	SlackReporter    *SlackReporter   `json:"slack_reporter,omitempty"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
@@ -377,6 +378,36 @@ type GitHubOptions struct {
 	// LinkURL is the url representation of LinkURLFromConfig. This variable should be used
 	// in all places internally.
 	LinkURL *url.URL
+}
+
+// SlackReporter represents the config for the Slack reporter
+type SlackReporter struct {
+	JobTypesToReport  []prowapi.ProwJobType  `json:"job_types_to_report"`
+	JobStatesToReport []prowapi.ProwJobState `json:"job_states_to_report"`
+	Channel           string                 `json:"channel"`
+	ReportTemplate    string                 `json:"report_template"`
+}
+
+func (cfg *SlackReporter) DefaultAndValidate() error {
+	// Default ReportTemplate
+	if cfg.ReportTemplate == "" {
+		cfg.ReportTemplate = `Job {{.Spec.Job}} of type {{.Spec.Type}} ended with state {{.Status.State}}. <{{.Status.URL}}|View logs>`
+	}
+
+	if cfg.Channel == "" {
+		return errors.New("channel must be set")
+	}
+
+	// Validate ReportTemplate
+	tmpl, err := template.New("").Parse(cfg.ReportTemplate)
+	if err != nil {
+		return fmt.Errorf("failed to parse template: %v", err)
+	}
+	if err := tmpl.Execute(&bytes.Buffer{}, &prowapi.ProwJob{}); err != nil {
+		return fmt.Errorf("failed to execute report_template: %v", err)
+	}
+
+	return nil
 }
 
 // Load loads and parses the config at path.
@@ -699,6 +730,12 @@ func (c *Config) validateComponentConfig() error {
 	for k, v := range c.Plank.JobURLPrefixConfig {
 		if _, err := url.Parse(v); err != nil {
 			return fmt.Errorf(`Invalid value for Planks job_url_prefix_config["%s"]: %v`, k, err)
+		}
+	}
+
+	if c.SlackReporter != nil {
+		if err := c.SlackReporter.DefaultAndValidate(); err != nil {
+			return fmt.Errorf("failed to validate slackreporter config: %v", err)
 		}
 	}
 	return nil
