@@ -90,7 +90,7 @@ require (
 	golang.org/x/net v0.0.0-20190403144856-b630fd6fe46b
 	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421
 	golang.org/x/sync v0.0.0-20190227155943-e225da77a7e6
-	golang.org/x/text v0.3.1 // indirect
+	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/time v0.0.0-20181108054448-85acf8d2951c
 	golang.org/x/tools v0.0.0-20190404132500-923d25813098
 	google.golang.org/api v0.3.2
