@@ -2741,6 +2741,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-triage
 - name: post-test-infra-push-bazelbuild
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-bazelbuild
+- name: post-test-infra-push-bazel-krte
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-bazel-krte
 - name: post-test-infra-push-bigquery
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-bigquery
 - name: post-test-infra-push-bootstrap
@@ -7273,6 +7275,8 @@ dashboards:
     test_group_name: post-test-infra-push-triage
   - name: bazelbuild
     test_group_name: post-test-infra-push-bazelbuild
+  - name: bazel-krte
+    test_group_name: post-test-infra-push-bazel-krte
   - name: bigquery
     test_group_name: post-test-infra-push-bigquery
   - name: bootstrap
