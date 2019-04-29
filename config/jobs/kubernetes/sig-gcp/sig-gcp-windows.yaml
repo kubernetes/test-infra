@@ -57,7 +57,7 @@ periodics:
       env:
       - name: OVERRIDE_NODE_BINARY_TAR_URL
         value: "https://storage.googleapis.com/kubernetes-release/release/v1.14.1/kubernetes-node-windows-amd64.tar.gz"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
       resources:
         requests:
           memory: "8Gi"
@@ -92,7 +92,7 @@ periodics:
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
 
 - name: ci-kubernetes-e2e-windows-gce-k8sbeta
   decorate: true
@@ -124,7 +124,7 @@ periodics:
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
 
 - name: ci-kubernetes-e2e-windows-gce-alpha-features
   decorate: true
@@ -159,7 +159,7 @@ periodics:
       env:
       - name: KUBE_FEATURE_GATES
         value: "WindowsGMSA=true"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
 
 - name: ci-kubernetes-e2e-windows-gce-serial
   decorate: true
@@ -191,7 +191,7 @@ periodics:
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[Flaky\]|\[LinuxOnly\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=240m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
 
 presubmits:
   kubernetes/kubernetes:
@@ -231,7 +231,7 @@ presubmits:
         - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
         - --test-cmd-args=--node-os-distro=windows
         - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
         resources:
           requests:
             memory: "6Gi"
