@@ -2021,3 +2021,44 @@ func TestValidateComponentConfig(t *testing.T) {
 		})
 	}
 }
+
+func TestSlackReporterValidation(t *testing.T) {
+	testCases := []struct {
+		name            string
+		channel         string
+		reportTemplate  string
+		successExpected bool
+	}{
+		{
+			name:            "Valid config - no error",
+			channel:         "my-channel",
+			successExpected: true,
+		},
+		{
+			name: "No channel - error",
+		},
+		{
+			name:           "Invalid template - error",
+			channel:        "my-channel",
+			reportTemplate: "{{ if .Spec.Name}}",
+		},
+		{
+			name:           "Template accessed invalid property - error",
+			channel:        "my-channel",
+			reportTemplate: "{{ .Undef}}",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := &SlackReporter{
+				Channel:        tc.channel,
+				ReportTemplate: tc.reportTemplate,
+			}
+
+			if err := cfg.DefaultAndValidate(); (err == nil) != tc.successExpected {
+				t.Errorf("Expected success=%t but got err=%v", tc.successExpected, err)
+			}
+		})
+	}
+}

@@ -4,7 +4,7 @@ Crier reports your prowjobs on their status changes.
 
 ## Usage / How to enable existing available reporters
 
-For any reporter you want to use, you need to mount your prow configs and specify `--config-path` and `job-config-path` 
+For any reporter you want to use, you need to mount your prow configs and specify `--config-path` and `job-config-path`
 flag as most of other prow controllers do.
 
 ### [Gerrit reporter](/prow/gerrit/reporter)
@@ -32,7 +32,7 @@ You need to specify following labels in order for pubsub reporter to report your
 
 Pubsub reporter will report whenever prowjob has a state transition.
 
-You can check the reported result by [list the pubsub topic](https://cloud.google.com/sdk/gcloud/reference/pubsub/topics/list). 
+You can check the reported result by [list the pubsub topic](https://cloud.google.com/sdk/gcloud/reference/pubsub/topics/list).
 
 ### [GitHub reporter](/prow/github/reporter)
 
@@ -44,12 +44,39 @@ If you have a [ghproxy](/ghproxy) deployed, also remember to point `--github-end
 
 The actual report logic is in the [github report library](/prow/github/report) for your reference.
 
+### [Slack reporter](/prow/slack/reporter)
+
+You can enable the Slack reporter in crier by specifying the `--slack-workers=n` and `--slack-token-file=path-to-tokenfile` flags.
+
+In order for it to work, you must add the following to your `config.yaml`:
+
+```
+slack_reporter:
+  # Default: None
+  job_types_to_report:
+  - presubmit
+  - postsubmit
+  - periodic
+  - batch
+  # Default: None
+  job_states_to_report:
+  - triggered
+  - pending
+  - success
+  - failure
+  - aborted
+  - error
+  channel: my-slack-channel
+  # The template shown below is the default
+  report_template: 'Job {{.Spec.Job}} of type {{.Spec.Type}} ended with state {{.Status.State}}. <{{.Status.URL}}|View logs>'
+```
+
 ## Implementation details
 
 Crier supports multiple reporters, each reporter will become a crier controller. Controllers
 will get prowjob change notifications from a [shared informer](https://github.com/kubernetes/client-go/blob/master/tools/cache/shared_informer.go), and you can specify `--num-workers` to change parallelism.
 
-If you are interested in how client-go works under the hood, the details are explained 
+If you are interested in how client-go works under the hood, the details are explained
 [in this doc](https://github.com/kubernetes/sample-controller/blob/master/docs/controller-client-go.md)
 
 
