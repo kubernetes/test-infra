@@ -49,15 +49,11 @@ presubmits:
       containers:
       - image: launcher.gcr.io/google/bazel:0.24.1
         command:
-        - ../test-infra/hack/bazel.sh
+        - bash
         args:
-        - build
-        - --config=remote
-        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
-        - //...
-        - //build/release-tars
-        - --
-        - -//vendor/...
+        - -c
+        - |
+          ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance $(bazel query --keep_going --noshow_progress "kind(.*_binary, rdeps(//... -//vendor/..., //...)) except attr('tags', 'manual', //...)") //build/release-tars
 
   - name: pull-kubernetes-bazel-build
     always_run: true
