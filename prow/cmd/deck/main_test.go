@@ -435,6 +435,7 @@ func TestListProwJobs(t *testing.T) {
 		listErr     bool
 		hiddenRepos sets.String
 		hiddenOnly  bool
+		showHidden  bool
 		expected    sets.String
 		expectedErr bool
 	}{
@@ -588,6 +589,24 @@ func TestListProwJobs(t *testing.T) {
 			hiddenRepos: sets.NewString("org/repo"),
 			expected:    sets.NewString("first"),
 		},
+		{
+			name:     "all prowjobs are returned when showHidden is true",
+			selector: labels.Everything().String(),
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "first"
+					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "org", Repo: "repo"}}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "second"
+					return in
+				},
+			},
+			hiddenRepos: sets.NewString("org/repo"),
+			expected:    sets.NewString("first", "second"),
+			showHidden:  true,
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -605,6 +624,7 @@ func TestListProwJobs(t *testing.T) {
 			client:      fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
 			hiddenRepos: testCase.hiddenRepos,
 			hiddenOnly:  testCase.hiddenOnly,
+			showHidden:  testCase.showHidden,
 		}
 
 		filtered, err := lister.ListProwJobs(testCase.selector)

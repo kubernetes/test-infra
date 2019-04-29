@@ -83,6 +83,7 @@ type options struct {
 	pregeneratedData      string
 	staticFilesLocation   string
 	templateFilesLocation string
+	showHidden            bool
 	spyglass              bool
 	spyglassFilesLocation string
 	gcsCredentialsFile    string
@@ -104,6 +105,10 @@ func (o *options) Validate() error {
 			return errors.New("an OAuth URL was provided but required flag --cookie-secret was unset")
 		}
 	}
+
+	if o.hiddenOnly && o.showHidden {
+		return errors.New("'--hidden-only' and '--show-hidden' are mutually exclusive, the first one shows only hidden job, the second one shows both hidden and non-hidden jobs")
+	}
 	return nil
 }
 
@@ -122,6 +127,7 @@ func gatherOptions() options {
 	// use when behind an oauth proxy
 	fs.BoolVar(&o.hiddenOnly, "hidden-only", false, "Show only hidden jobs. Useful for serving hidden jobs behind an oauth proxy.")
 	fs.StringVar(&o.pregeneratedData, "pregenerated-data", "", "Use API output from another prow instance. Used by the prow/cmd/deck/runlocal script")
+	fs.BoolVar(&o.showHidden, "show-hidden", false, "Show all jobs, including hidden ones")
 	fs.BoolVar(&o.spyglass, "spyglass", false, "Use Prow built-in job viewing instead of Gubernator")
 	fs.StringVar(&o.spyglassFilesLocation, "spyglass-files-location", "/lenses", "Location of the static files for spyglass.")
 	fs.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
@@ -237,6 +243,7 @@ type filteringProwJobLister struct {
 	client      prowv1.ProwJobInterface
 	hiddenRepos sets.String
 	hiddenOnly  bool
+	showHidden  bool
 }
 
 func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJob, error) {
@@ -258,7 +265,9 @@ func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJo
 			refs = &item.Spec.ExtraRefs[0]
 		}
 		shouldHide := c.hiddenRepos.HasAny(fmt.Sprintf("%s/%s", refs.Org, refs.Repo), refs.Org)
-		if shouldHide == c.hiddenOnly {
+		if shouldHide && c.showHidden {
+			filtered = append(filtered, item)
+		} else if shouldHide == c.hiddenOnly {
 			// this is a hidden job, show it if we're asked
 			// to only show hidden jobs otherwise hide it
 			filtered = append(filtered, item)
@@ -288,6 +297,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 		client:      prowJobClient,
 		hiddenRepos: sets.NewString(cfg().Deck.HiddenRepos...),
 		hiddenOnly:  o.hiddenOnly,
+		showHidden:  o.showHidden,
 	}, podLogClients, cfg)
 	ja.Start()
 
@@ -316,6 +326,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 			},
 			hiddenRepos: cfg().Deck.HiddenRepos,
 			hiddenOnly:  o.hiddenOnly,
+			showHidden:  o.showHidden,
 		}
 		ta.start()
 		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTidePools(cfg, ta)))
