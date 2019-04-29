@@ -109,21 +109,12 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 
 	approveConfig := map[string]string{}
 	for _, repo := range enabledRepos {
-		opts := config.ApproveFor(repo.Org, repo.Repo)
-		approveConfig[repo.String()] = fmt.Sprintf("Pull requests %s require an associated issue.<br>Pull request authors %s implicitly approve their own PRs.<br>The /lgtm [cancel] command(s) %s act as approval.<br>A GitHub approved or changes requested review %s act as approval or cancel respectively.", doNot(opts.IssueRequired), doNot(opts.HasSelfApproval()), willNot(opts.LgtmActsAsApprove), willNot(opts.ConsiderReviewState()))
+		opts := config.Approve.RepoOptions(repo.Org, repo.Repo)
+		approveConfig[repo.String()] = fmt.Sprintf("Pull requests %s require an associated issue.<br>Pull request authors %s implicitly approve their own PRs.<br>The /lgtm [cancel] command(s) %s act as approval.<br>A GitHub approved or changes requested review %s act as approval or cancel respectively.", doNot(opts.AreIssueRequired()), doNot(opts.HasSelfApproval()), willNot(opts.ShouldLgtmActsAsApprove()), willNot(opts.ConsiderReviewState()))
 	}
 
 	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
-		Approve: []plugins.Approve{
-			{
-				Repos: []string{
-					"ORGANIZATION",
-					"ORGANIZATION/REPOSITORY",
-				},
-				RequireSelfApproval: new(bool),
-				IgnoreReviewState:   new(bool),
-			},
-		},
+		Approve: plugins.ApproveConfigTree{},
 	})
 	if err != nil {
 		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", PluginName)
@@ -148,17 +139,18 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 }
 
 func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
+	opts := pc.PluginConfig.Approve.BranchOptions(ce.Repo.Owner.Login, ce.Repo.Name, ce.Repo.DefaultBranch)
 	return handleGenericComment(
 		pc.Logger,
 		pc.GitHubClient,
 		pc.OwnersClient,
 		pc.Config.GitHubOptions,
-		pc.PluginConfig,
+		opts,
 		&ce,
 	)
 }
 
-func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, ce *github.GenericCommentEvent) error {
+func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, opts *plugins.Approve, ce *github.GenericCommentEvent) error {
 	funcStart := time.Now()
 	defer func() {
 		log.WithField("duration", time.Since(funcStart).String()).Debug("Completed handleGenericComment")
@@ -173,8 +165,7 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, 
 		return err
 	}
 
-	opts := config.ApproveFor(ce.Repo.Owner.Login, ce.Repo.Name)
-	if !isApprovalCommand(botUserChecker, opts.LgtmActsAsApprove, &comment{Body: ce.Body, Author: ce.User.Login}) {
+	if !isApprovalCommand(botUserChecker, *opts.LgtmActsAsApprove, &comment{Body: ce.Body, Author: ce.User.Login}) {
 		log.Debug("Comment does not constitute approval, skipping event.")
 		return nil
 	}
@@ -213,17 +204,18 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, 
 // handleReviewEvent should only handle reviews that have no approval command.
 // Reviews with approval commands will be handled by handleGenericCommentEvent.
 func handleReviewEvent(pc plugins.Agent, re github.ReviewEvent) error {
+	opts := pc.PluginConfig.Approve.BranchOptions(re.Repo.Owner.Login, re.Repo.Name, re.Repo.DefaultBranch)
 	return handleReview(
 		pc.Logger,
 		pc.GitHubClient,
 		pc.OwnersClient,
 		pc.Config.GitHubOptions,
-		pc.PluginConfig,
+		opts,
 		&re,
 	)
 }
 
-func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, re *github.ReviewEvent) error {
+func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, opts *plugins.Approve, re *github.ReviewEvent) error {
 	funcStart := time.Now()
 	defer func() {
 		log.WithField("duration", time.Since(funcStart).String()).Debug("Completed handleReview")
@@ -238,12 +230,10 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubCo
 		return err
 	}
 
-	opts := config.ApproveFor(re.Repo.Owner.Login, re.Repo.Name)
-
 	// Check for an approval command is in the body. If one exists, let the
 	// genericCommentEventHandler handle this event. Approval commands override
 	// review state.
-	if isApprovalCommand(botUserChecker, opts.LgtmActsAsApprove, &comment{Body: re.Review.Body, Author: re.Review.User.Login}) {
+	if isApprovalCommand(botUserChecker, *opts.LgtmActsAsApprove, &comment{Body: re.Review.Body, Author: re.Review.User.Login}) {
 		log.Debug("Review constitutes approval, skipping event.")
 		return nil
 	}
@@ -282,17 +272,18 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubCo
 }
 
 func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
+	opts := pc.PluginConfig.Approve.BranchOptions(pre.Repo.Owner.Login, pre.Repo.Name, pre.Repo.DefaultBranch)
 	return handlePullRequest(
 		pc.Logger,
 		pc.GitHubClient,
 		pc.OwnersClient,
 		pc.Config.GitHubOptions,
-		pc.PluginConfig,
+		opts,
 		&pre,
 	)
 }
 
-func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, pre *github.PullRequestEvent) error {
+func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, opts *plugins.Approve, pre *github.PullRequestEvent) error {
 	funcStart := time.Now()
 	defer func() {
 		log.WithField("duration", time.Since(funcStart).String()).Debug("Completed handlePullRequest")
@@ -325,7 +316,7 @@ func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, git
 		ghc,
 		repo,
 		githubConfig,
-		config.ApproveFor(pre.Repo.Owner.Login, pre.Repo.Name),
+		opts,
 		&state{
 			org:       pre.Repo.Owner.Login,
 			repo:      pre.Repo.Name,
@@ -432,7 +423,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 	if err != nil {
 		log.WithError(err).Errorf("Failed to find associated issue from PR body: %v", err)
 	}
-	approversHandler.RequireIssue = opts.IssueRequired
+	approversHandler.RequireIssue = *opts.IssueRequired
 	approversHandler.ManuallyApproved = humanAddedApproved(ghc, log, pr.org, pr.repo, pr.number, hasApprovedLabel)
 
 	// Author implicitly approves their own PR if config allows it
@@ -451,7 +442,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 	sort.SliceStable(comments, func(i, j int) bool {
 		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
 	})
-	approveComments := filterComments(comments, approvalMatcher(botUserChecker, opts.LgtmActsAsApprove, opts.ConsiderReviewState()))
+	approveComments := filterComments(comments, approvalMatcher(botUserChecker, *opts.LgtmActsAsApprove, opts.ConsiderReviewState()))
 	addApprovers(&approversHandler, approveComments, pr.author, opts.ConsiderReviewState())
 	log.WithField("duration", time.Since(start).String()).Debug("Completed filtering approval comments in handle")
 
