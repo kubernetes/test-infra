@@ -1,25 +1,53 @@
 # Built-in plugins specific configuration.
 approve:
-  - # CommandHelpLink is the link to the help page which shows the available commands for each repo.
-    # The default value is "https://go.k8s.io/bot-commands". The command help page is served by Deck
-    # and available under https://<deck-url>/command-help, e.g. "https://prow.k8s.io/command-help"
     commandHelpLink: ' '
-
-    # IgnoreReviewState causes the approve plugin to ignore the GitHub review state. Otherwise:
-    # * an APPROVE github review is equivalent to leaving an "/approve" message.
-    # * A REQUEST_CHANGES github review is equivalent to leaving an /approve cancel" message.
     ignore_review_state: false
+    issue_required: false
+    lgtm_acts_as_approve: false
+    orgs:
+        "":
+            commandHelpLink: ' '
+            ignore_review_state: false
+            issue_required: false
+            lgtm_acts_as_approve: false
+            pr_process_link: ' '
+            repos:
+                "":
+                    branches:
+                        "":
+                            # CommandHelpLink is the link to the help page which shows the available commands for each repo.
+                            # The default value is "https://go.k8s.io/bot-commands". The command help page is served by Deck
+                            # and available under https://<deck-url>/command-help, e.g. "https://prow.k8s.io/command-help"
+                            commandHelpLink: ' '
 
-    # PrProcessLink is the link to the help page which explains the code review process.
-    # The default value is "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process".
+                            # IgnoreReviewState causes the approve plugin to ignore the GitHub review state. Otherwise:
+                            # * an APPROVE github review is equivalent to leaving an "/approve" message.
+                            # * A REQUEST_CHANGES github review is equivalent to leaving an /approve cancel" message.
+                            ignore_review_state: false
+
+                            # IssueRequired indicates if an associated issue is required for approval in
+                            # the specified repos.
+                            issue_required: false
+
+                            # LgtmActsAsApprove indicates that the lgtm command should be used to
+                            # indicate approval
+                            lgtm_acts_as_approve: false
+
+                            # PrProcessLink is the link to the help page which explains the code review process.
+                            # The default value is "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process".
+                            pr_process_link: ' '
+
+                            # RequireSelfApproval requires PR authors to explicitly approve their PRs.
+                            # Otherwise the plugin assumes the author of the PR approves the changes in the PR.
+                            require_self_approval: false
+                    commandHelpLink: ' '
+                    ignore_review_state: false
+                    issue_required: false
+                    lgtm_acts_as_approve: false
+                    pr_process_link: ' '
+                    require_self_approval: false
+            require_self_approval: false
     pr_process_link: ' '
-
-    # Repos is either of the form org/repos or just org.
-    repos:
-      - ""
-
-    # RequireSelfApproval requires PR authors to explicitly approve their PRs.
-    # Otherwise the plugin assumes the author of the PR approves the changes in the PR.
     require_self_approval: false
 blockades:
   - # BlockRegexps are regular expressions matching the file paths to block.
