@@ -2706,7 +2706,7 @@ func (c *Client) GetColumnProjectCard(columnID int, cardNumber int) (*ProjectCar
 	if c.fake {
 		return nil, nil
 	}
-	path := fmt.Sprintf("/projects/columns/:%d/cards", columnID)
+	path := fmt.Sprintf("/projects/columns/%d/cards", columnID)
 	var cards []ProjectCard
 	err := c.readPaginatedResults(
 		path,
@@ -2736,7 +2736,7 @@ func (c *Client) MoveProjectCard(projectCardID int, newColumnID int) error {
 	c.log("MoveProjectCard", projectCardID, newColumnID)
 	_, err := c.request(&request{
 		method:      http.MethodPost,
-		path:        fmt.Sprintf("/projects/columns/cards/:%d/moves", projectCardID),
+		path:        fmt.Sprintf("/projects/columns/cards/%d/moves", projectCardID),
 		accept:      "application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
 		requestBody: fmt.Sprintf("{column_id: %d}", newColumnID),
 		exitCodes:   []int{201},
