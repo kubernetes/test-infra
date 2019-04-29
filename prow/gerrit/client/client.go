@@ -21,7 +21,6 @@ package client
 import (
 	"fmt"
 	"io/ioutil"
-	"net/url"
 	"strings"
 	"time"
 
@@ -229,7 +228,7 @@ func (c *Client) GetBranchRevision(instance, project, branch string) (string, er
 		return "", fmt.Errorf("not activated gerrit instance: %s", instance)
 	}
 
-	res, _, err := h.projectService.GetBranch(project, url.QueryEscape(branch))
+	res, _, err := h.projectService.GetBranch(project, branch)
 	if err != nil {
 		return "", err
 	}
