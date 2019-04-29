@@ -1,7 +1,7 @@
 plank:
   default_decoration_config:
     timeout: 7200000000000 # 2h
-    grace_period: 15s
+    grace_period: 15000000000 # 15s
     utility_images:
       clonerefs: "clonerefs:default"
       initupload: "initupload:default"

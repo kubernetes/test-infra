@@ -161,7 +161,9 @@ type ProwJobSpec struct {
 
 // Duration is a wrapper around time.Duration that parses times in either
 // 'integer number of nanoseconds' or 'duration string' formats and serializes
-// to 'duration string' format.
+// to 'integer number of nanoseconds' format.
+// TODO(cjwagner): Switch to serializing to 'duration string' format after
+// October 2019.
 type Duration struct {
 	time.Duration
 }
@@ -188,7 +190,10 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 }
 
 func (d *Duration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(d.Duration.String())
+	// TODO(cjwagner): Switch to serializing to 'duration string' format after
+	// October 2019.
+	// return json.Marshal(d.Duration.String())
+	return json.Marshal(d.Duration)
 }
 
 // DecorationConfig specifies how to augment pods.
