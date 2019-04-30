@@ -105,19 +105,10 @@ func (sl *Client) WriteMessage(text, channel string) error {
 		return nil
 	}
 
-	text = escapeText(text)
-
 	var uv = sl.urlValues()
 	uv.Add("channel", channel)
 	uv.Add("text", text)
 
 	_, err := sl.postMessage(chatPostMessage, uv)
 	return err
-}
-
-func escapeText(s string) string {
-	// See https://api.slack.com/docs/message-formatting#how_to_escape_characters
-	s = strings.Replace(s, "&", "&amp;", -1)
-	s = strings.Replace(s, "<", "&lt;", -1)
-	return strings.Replace(s, ">", "&gt;", -1)
 }
