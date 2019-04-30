@@ -445,6 +445,31 @@ postsubmits:
         - name: creds
           secret:
             secretName: deployer-service-account
+  - name: post-test-infra-push-image-builder
+    cluster: test-infra-trusted
+    run_if_changed: '^images/builder/'
+    decorate: true
+    branches:
+      - master
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/gcloud-bazel:v20190402-v0.1-35-g8b2d62a
+          command:
+            - images/builder/ci-runner.sh
+          args:
+            - --scratch-bucket=gs://k8s-testimages-scratch
+            - --project=k8s-testimages
+            - images/builder/
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /creds/service-account.json
+          volumeMounts:
+            - name: creds
+              mountPath: /creds
+      volumes:
+        - name: creds
+          secret:
+            secretName: deployer-service-account
   kubernetes/k8s.io:
   - name: post-k8sio-cip
     cluster: test-infra-trusted
