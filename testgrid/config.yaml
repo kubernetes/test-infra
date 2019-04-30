@@ -2883,10 +2883,13 @@ test_groups:
   days_of_results: 7
 - name: istio-circleci-racetest-presubmit
   gcs_prefix: istio-circleci/presubmit/racetest
+  days_of_results: 7
 - name: istio-circleci-test-integration-local-presubmit
   gcs_prefix: istio-circleci/presubmit/test-integration-local
+  days_of_results: 7
 - name: istio-circleci-test-integration-kubernetes-presubmit
   gcs_prefix: istio-circleci/presubmit/test-integration-kubernetes
+  days_of_results: 7
 - name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-mcp-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-mixer-noauth-v1alpha3-v2-mcp
 - name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-mcp-presubmit
