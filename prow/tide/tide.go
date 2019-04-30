@@ -20,6 +20,7 @@ limitations under the License.
 package tide
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -829,6 +830,35 @@ func checkMergeLabels(pr PullRequest, squash, rebase, merge string, method githu
 	return method, nil
 }
 
+func (c *Controller) prepareMergeDetails(commitTemplates config.TideMergeCommitTemplate, pr PullRequest, mergeMethod github.PullRequestMergeType) github.MergeDetails {
+	ghMergeDetails := github.MergeDetails{
+		SHA:         string(pr.HeadRefOID),
+		MergeMethod: string(mergeMethod),
+	}
+
+	if commitTemplates.Title != nil {
+		var b bytes.Buffer
+
+		if err := commitTemplates.Title.Execute(&b, pr); err != nil {
+			c.logger.Errorf("error executing commit title template: %v", err)
+		} else {
+			ghMergeDetails.CommitTitle = b.String()
+		}
+	}
+
+	if commitTemplates.Body != nil {
+		var b bytes.Buffer
+
+		if err := commitTemplates.Body.Execute(&b, pr); err != nil {
+			c.logger.Errorf("error executing commit body template: %v", err)
+		} else {
+			ghMergeDetails.CommitMessage = b.String()
+		}
+	}
+
+	return ghMergeDetails
+}
+
 func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	var merged, failed []int
 	defer func() {
@@ -843,6 +873,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	for i, pr := range prs {
 		log := log.WithFields(pr.logFields())
 		mergeMethod := c.config().Tide.MergeMethod(sp.org, sp.repo)
+		commitTemplates := c.config().Tide.MergeCommitTemplate(sp.org, sp.repo)
 		squashLabel := c.config().Tide.SquashLabel
 		rebaseLabel := c.config().Tide.RebaseLabel
 		mergeLabel := c.config().Tide.MergeLabel
@@ -858,10 +889,8 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 		}
 
 		keepTrying, err := tryMerge(func() error {
-			return c.ghc.Merge(sp.org, sp.repo, int(pr.Number), github.MergeDetails{
-				SHA:         string(pr.HeadRefOID),
-				MergeMethod: string(mergeMethod),
-			})
+			ghMergeDetails := c.prepareMergeDetails(commitTemplates, pr, mergeMethod)
+			return c.ghc.Merge(sp.org, sp.repo, int(pr.Number), ghMergeDetails)
 		})
 		if err != nil {
 			log.WithError(err).Error("Merge failed.")
@@ -1330,6 +1359,7 @@ type PullRequest struct {
 	Milestone *struct {
 		Title githubql.String
 	}
+	Body      githubql.String
 	Title     githubql.String
 	UpdatedAt githubql.DateTime
 }

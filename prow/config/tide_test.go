@@ -148,6 +148,80 @@ func TestMergeMethod(t *testing.T) {
 		}
 	}
 }
+func TestMergeTemplate(t *testing.T) {
+	ti := &Tide{
+		MergeTemplate: map[string]TideMergeCommitTemplate{
+			"kubernetes/kops": {
+				TitleTemplate: "",
+				BodyTemplate:  "",
+			},
+			"kubernetes/charts": {
+				TitleTemplate: "{{ .Number }}",
+				BodyTemplate:  "",
+			},
+			"helm/charts": {
+				TitleTemplate: "",
+				BodyTemplate:  "{{ .Body }}",
+			},
+			"kubernetes-helm": {
+				TitleTemplate: "{{ .Title }}",
+				BodyTemplate:  "{{ .Body }}",
+			},
+		},
+	}
+
+	var testcases = []struct {
+		org      string
+		repo     string
+		expected TideMergeCommitTemplate
+	}{
+		{
+			org:      "kubernetes",
+			repo:     "kubernetes",
+			expected: TideMergeCommitTemplate{},
+		},
+		{
+			org:  "kubernetes",
+			repo: "kops",
+			expected: TideMergeCommitTemplate{
+				TitleTemplate: "",
+				BodyTemplate:  "",
+			},
+		},
+		{
+			org:  "kubernetes",
+			repo: "charts",
+			expected: TideMergeCommitTemplate{
+				TitleTemplate: "{{ .Number }}",
+				BodyTemplate:  "",
+			},
+		},
+		{
+			org:  "helm",
+			repo: "charts",
+			expected: TideMergeCommitTemplate{
+				TitleTemplate: "",
+				BodyTemplate:  "{{ .Body }}",
+			},
+		},
+		{
+			org:  "kubernetes-helm",
+			repo: "monocular",
+			expected: TideMergeCommitTemplate{
+				TitleTemplate: "{{ .Title }}",
+				BodyTemplate:  "{{ .Body }}",
+			},
+		},
+	}
+
+	for _, test := range testcases {
+		actual := ti.MergeCommitTemplate(test.org, test.repo)
+
+		if actual.TitleTemplate != test.expected.TitleTemplate || actual.BodyTemplate != test.expected.BodyTemplate {
+			t.Errorf("Expected title \"%v\", body \"%v\", but got title \"%v\", body \"%v\" for %v/%v", test.expected.TitleTemplate, test.expected.BodyTemplate, actual.TitleTemplate, actual.BodyTemplate, test.org, test.repo)
+		}
+	}
+}
 
 func TestParseTideContextPolicyOptions(t *testing.T) {
 	yes := true

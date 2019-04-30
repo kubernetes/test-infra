@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"text/template"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -62,6 +63,15 @@ type TideContextPolicyOptions struct {
 	Orgs map[string]TideOrgContextPolicy `json:"orgs,omitempty"`
 }
 
+// TideMergeCommitTemplate holds templates to use for merge commits.
+type TideMergeCommitTemplate struct {
+	TitleTemplate string `json:"title,omitempty"`
+	BodyTemplate  string `json:"body,omitempty"`
+
+	Title *template.Template `json:"-"`
+	Body  *template.Template `json:"-"`
+}
+
 // Tide is config for the tide pool.
 type Tide struct {
 	// SyncPeriodString compiles into SyncPeriod at load time.
@@ -80,6 +90,11 @@ type Tide struct {
 	// A key/value pair of an org/repo as the key and merge method to override
 	// the default method of merge. Valid options are squash, rebase, and merge.
 	MergeType map[string]github.PullRequestMergeType `json:"merge_method,omitempty"`
+
+	// A key/value pair of an org/repo as the key and Go template to override
+	// the default merge commit title and/or message. Template is passed the
+	// PullRequest struct (prow/github/types.go#PullRequest)
+	MergeTemplate map[string]TideMergeCommitTemplate `json:"merge_commit_template,omitempty"`
 
 	// URL for tide status contexts.
 	// We can consider allowing this to be set separately for separate repos, or
@@ -135,6 +150,18 @@ func (t *Tide) MergeMethod(org, repo string) github.PullRequestMergeType {
 		}
 
 		return github.MergeMerge
+	}
+
+	return v
+}
+
+// MergeCommitTemplate returns a struct with Go template string(s) or nil
+func (t *Tide) MergeCommitTemplate(org, repo string) TideMergeCommitTemplate {
+	name := org + "/" + repo
+
+	v, ok := t.MergeTemplate[name]
+	if !ok {
+		return t.MergeTemplate[org]
 	}
 
 	return v
