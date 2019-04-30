@@ -41,7 +41,13 @@ presubmits:
       containers:
       - image: launcher.gcr.io/google/bazel:0.24.1
         command:
-        - hack/build-then-unit.sh
+        - hack/bazel.sh
+        command:
+        - test
+        - --config=ci
+        - --config=unit
+        - --nobuild_tests_only
+        - //...
 
   - name: pull-test-infra-gubernator
     branches:
