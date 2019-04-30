@@ -4,7 +4,6 @@
 # gazelle:exclude hack
 
 load("@io_k8s_repo_infra//defs:run_in_workspace.bzl", "workspace_binary")
-load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
 load("@io_bazel_rules_go//go:def.bzl", "nogo")
 
 workspace_binary(
@@ -73,14 +72,6 @@ workspace_binary(
 workspace_binary(
     name = "golint",
     cmd = "@com_github_golang_lint//golint",
-)
-
-nodejs_binary(
-    name = "tslint",
-    data = [
-        "@npm//tslint",
-    ],
-    entry_point = "tslint/bin/tslint",
 )
 
 filegroup(
