@@ -29,13 +29,11 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-  branches:
-    - release-0.4.0
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
       args:
-      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
+      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver=release-0.4.0"
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--clean"
