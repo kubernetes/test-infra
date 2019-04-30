@@ -32,7 +32,7 @@ presubmits:
             - "bash"
             - "--"
             - "-c"
-            - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-e2e.sh"
+            - "cd ./../../k8s.io/kubernetes && source ./../../sigs.k8s.io/kind/hack/e2e.sh"
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
@@ -71,7 +71,7 @@ periodics:
             - "bash"
             - "--"
             - "-c"
-            - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-e2e.sh"
+            - "cd ./../../k8s.io/kubernetes && source ./../../sigs.k8s.io/kind/hack/e2e.sh"
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
@@ -108,7 +108,7 @@ periodics:
             - "bash"
             - "--"
             - "-c"
-            - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-e2e.sh"
+            - "cd ./../../k8s.io/kubernetes && source ./../../sigs.k8s.io/kind/hack/e2e.sh"
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
