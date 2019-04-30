@@ -42,7 +42,7 @@ presubmits:
       - image: launcher.gcr.io/google/bazel:0.24.1
         command:
         - hack/bazel.sh
-        command:
+        args:
         - test
         - --config=ci
         - --config=unit
