@@ -198,6 +198,13 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 			continue
 		}
 		for _, pr := range prs {
+			if pr.Mergable != nil && !*pr.Mergable {
+				// the PR cannot be merged as it is, so the user will need to update the PR (and trigger
+				// testing via the PR push event) or re-test if the HEAD of the branch they are targeting
+				// changes (and re-trigger tests anyway) so we do not need to do anything in this case and
+				// launching jobs that instantly fail due to merge conflicts is a waste of time
+				continue
+			}
 			if err := c.triggerIfTrusted(org, repo, pr, presubmits); err != nil {
 				triggerErrors = append(triggerErrors, fmt.Errorf("failed to trigger jobs for %s#%d: %v", orgrepo, pr.Number, err))
 				if !c.continueOnError {
