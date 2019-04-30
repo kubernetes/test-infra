@@ -2148,6 +2148,12 @@ test_groups:
 # kubeadm-kinder tests
 - name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
+- name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-13-1-14
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-13-1-14
+- name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-12-1-13
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-12-1-13
+- name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-11-1-12
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-11-1-12
 # kubeadm x-on-y tests
 - name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
@@ -6250,6 +6256,12 @@ dashboards:
 # kubeadm-kinder tests
   - name: kubeadm-kinder-upgrade-stable-master
     test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
+  - name: kubeadm-kinder-upgrade-1.13-1.14
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-13-1-14
+  - name: kubeadm-kinder-upgrade-1.12-1.13
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-12-1-13
+  - name: kubeadm-kinder-upgrade-1.11-1.12
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-11-1-12
 # kubeadm x-on-y tests
   - name: kubeadm-gce-1.11-on-1.12
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
