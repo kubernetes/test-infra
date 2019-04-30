@@ -33,3 +33,16 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+
+  - name: unit-test
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/release
+    spec:
+      containers:
+        - image: golang:1.12
+          command:
+            - go
+          args:
+            - test
+            - ./...
