@@ -24,11 +24,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-- name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable-1-13-4
+- name: ci-gcp-compute-persistent-disk-csi-driver-0-4-0-k8s-integration-stable-1-13-5
   interval: 4h
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
+  branches:
+    - release-0.4.0
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
@@ -41,12 +43,13 @@ periodics:
       - "--scenario=execute"
       - "--" # end bootstrap args, scenario args below
       - "test/run-k8s-integration.sh"
-      - "--kube-version=1.13.4"
       env:
       - name: GCE_PD_OVERLAY_NAME
         value: "stable"
       - name: GCE_PD_DO_DRIVER_BUILD
         value: "false"
+      - name: GCE_PD_KUBE_VERSION
+        value: "1.13.5"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
