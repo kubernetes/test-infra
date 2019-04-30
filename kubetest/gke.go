@@ -88,6 +88,7 @@ type gkeDeployer struct {
 	commandGroup                []string
 	createCommand               []string
 	singleZoneNodeInstanceGroup bool
+	sshProxyInstanceName        string
 
 	setup          bool
 	kubecfg        string
@@ -103,7 +104,7 @@ type ig struct {
 
 var _ deployer = &gkeDeployer{}
 
-func newGKE(provider, project, zone, region, network, image, imageFamily, imageProject, cluster string, testArgs *string, upgradeArgs *string) (*gkeDeployer, error) {
+func newGKE(provider, project, zone, region, network, image, imageFamily, imageProject, cluster, sshProxyInstanceName string, testArgs *string, upgradeArgs *string) (*gkeDeployer, error) {
 	if provider != "gke" {
 		return nil, fmt.Errorf("--provider must be 'gke' for GKE deployment, found %q", provider)
 	}
@@ -263,6 +264,7 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 	}
 
 	g.singleZoneNodeInstanceGroup = *gkeSingleZoneNodeInstanceGroup
+	g.sshProxyInstanceName = sshProxyInstanceName
 
 	return g, nil
 }
@@ -434,6 +436,11 @@ func (g *gkeDeployer) TestSetup() error {
 	}
 	if err := g.setupEnv(); err != nil {
 		return err
+	}
+	if g.sshProxyInstanceName != "" {
+		if err := setKubeShhBastionEnv(g.project, g.zone, g.sshProxyInstanceName); err != nil {
+			return err
+		}
 	}
 	g.setup = true
 	return nil
