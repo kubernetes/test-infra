@@ -1404,6 +1404,7 @@ presubmits:
       preset-service-account: "true"
     name: pull-security-kubernetes-e2e-windows-gce
     optional: true
+    path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-e2e-windows-gce
     spec:
       containers:
