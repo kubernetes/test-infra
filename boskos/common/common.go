@@ -67,13 +67,37 @@ type Resource struct {
 	LastUpdate time.Time `json:"lastupdate"`
 	// Customized UserData
 	UserData *UserData `json:"userdata"`
+	// Used to clean up dynamic resources
+	ExpirationDate *time.Time `json:"expiration-date,omitempty"`
 }
 
 // ResourceEntry is resource config format defined from config.yaml
 type ResourceEntry struct {
-	Type  string   `json:"type"`
-	State string   `json:"state"`
-	Names []string `json:"names,flow"`
+	Type     string         `json:"type"`
+	State    string         `json:"state"`
+	Names    []string       `json:"names,flow"`
+	MaxCount int            `json:"max-count,omitempty"`
+	MinCount int            `json:"min-count,omitempty"`
+	LifeSpan *time.Duration `json:"lifespan,omitempty"`
+}
+
+// DynamicResourceLifeCycle defines the life cycle of a dynamic resource.
+type DynamicResourceLifeCycle struct {
+	Type string `json:"type"`
+	// Initial state to be created as
+	InitialState string `json:"state"`
+	// Maximum resources expected
+	MaxCount int `json:"max-count"`
+	// Minimum Number of resources to be use a buffer
+	MinCount int `json:"min-count"`
+	// Lifespan of a resource, time after which the resource should be reset.
+	LifeSpan *time.Duration `json:"lifespan,omitempty"`
+}
+
+type NewResourceRequest struct {
+	Type string `json:"type"`
+	User string `json:"user"`
+	ID   string `json:"id"`
 }
 
 // BoskosConfig defines config used by boskos server
@@ -89,8 +113,24 @@ type Metric struct {
 	// TODO: implements state transition metrics
 }
 
+func (r *Resource) IsInUsed() bool {
+	return r.Owner != ""
+}
+
+func (r *Resource) IsExpired() bool {
+	if r.ExpirationDate != nil {
+		return time.Now().After(*r.ExpirationDate)
+	}
+	// Never expires.
+	return false
+}
+
 // NewResource creates a new Boskos Resource.
 func NewResource(name, rtype, state, owner string, t time.Time) Resource {
+	// If no state defined, mark as Free
+	if state == "" {
+		state = Free
+	}
 	return Resource{
 		Name:       name,
 		Type:       rtype,
@@ -108,6 +148,17 @@ func NewResourcesFromConfig(e ResourceEntry) []Resource {
 		resources = append(resources, NewResource(name, e.Type, e.State, "", time.Time{}))
 	}
 	return resources
+}
+
+// NewResourceTypeLifeCycleFromConfig parse the a ResourceEntry into a DynamicResourceLifeCycle
+func NewDynamicResourceLifeCycleFromConfig(e ResourceEntry) DynamicResourceLifeCycle {
+	return DynamicResourceLifeCycle{
+		Type:         e.Type,
+		MaxCount:     e.MaxCount,
+		MinCount:     e.MinCount,
+		LifeSpan:     e.LifeSpan,
+		InitialState: e.State,
+	}
 }
 
 // UserDataFromMap returns a UserData from a map
@@ -166,6 +217,9 @@ func (r *CommaSeparatedStrings) Type() string {
 
 // GetName implements the Item interface used for storage
 func (res Resource) GetName() string { return res.Name }
+
+// GetName implements the Item interface used for storage
+func (res DynamicResourceLifeCycle) GetName() string { return res.Type }
 
 // UnmarshalJSON implements JSON Unmarshaler interface
 func (ud *UserData) UnmarshalJSON(data []byte) error {
@@ -243,6 +297,15 @@ func ItemToResource(i Item) (Resource, error) {
 	res, ok := i.(Resource)
 	if !ok {
 		return Resource{}, fmt.Errorf("cannot construct Resource from received object %v", i)
+	}
+	return res, nil
+}
+
+// ItemToDynamicResourceLifeCycle casts a Item back to a Resource
+func ItemToDynamicResourceLifeCycle(i Item) (DynamicResourceLifeCycle, error) {
+	res, ok := i.(DynamicResourceLifeCycle)
+	if !ok {
+		return DynamicResourceLifeCycle{}, fmt.Errorf("cannot construct Resource from received object %v", i)
 	}
 	return res, nil
 }
