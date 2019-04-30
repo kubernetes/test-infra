@@ -2,36 +2,7 @@ presubmits:
   kubernetes/kubernetes:
   #manual-release-bump-required
   - name: pull-kubernetes-bazel-build
-    always_run: true
-    skip_branches:
-    - release-1.14 # per-release job
-    - release-1.13 # per-release job
-    - release-1.12 # per-release job
-    - release-1.11 # per-release job
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=60"
-        - "--scenario=kubernetes_bazel"
-        - "--" # end bootstrap args, scenario args below
-        - "--build=//... -//vendor/..."
-        - "--release=//build/release-tars"
-        resources:
-          requests:
-            memory: "6Gi"
-
-  - name: pull-kubernetes-bazel-build-rbe
     decorate: true
-    skip_report: true
     always_run: true
     skip_branches:
     - release-1.14 # per-release job

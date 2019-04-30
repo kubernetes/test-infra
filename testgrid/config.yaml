@@ -2586,11 +2586,6 @@ test_groups:
 - name: pull-cluster-api-provider-openstack-check
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-openstack-check
   num_columns_recent: 20
-- name: pull-kubernetes-bazel-build-rbe
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-build-rbe
-  num_columns_recent: 20
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 10
 - name: pull-kubernetes-bazel-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-build
   num_columns_recent: 20
@@ -7751,9 +7746,6 @@ dashboards:
 
 - name: presubmits-kubernetes-nonblocking
   dashboard_tab:
-  - name: pull-kubernetes-bazel-build-rbe
-    test_group_name: pull-kubernetes-bazel-build-rbe
-    base_options: width=10
   - name: pull-kubernetes-e2e-kind
     test_group_name: pull-kubernetes-e2e-kind
     base_options: width=10
