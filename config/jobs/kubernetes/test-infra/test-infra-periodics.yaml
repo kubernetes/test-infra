@@ -32,7 +32,7 @@ periodics:
     containers:
     - image: launcher.gcr.io/google/bazel:0.24.1
       command:
-      - bazel
+      - hack/bazel.sh
       args:
       - test
       - --config=ci
