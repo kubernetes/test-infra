@@ -66,13 +66,20 @@ func Upload(bucket *storage.BucketHandle, uploadTargets map[string]UploadFunc) e
 // FileUpload returns an UploadFunc which copies all
 // data from the file on disk to the GCS object
 func FileUpload(file string) UploadFunc {
+	return FileUploadWithMetadata(file, nil)
+}
+
+// FileUploadWithMetadata returns an UploadFunc which copies all
+// data from the file on disk into GCS object and also sets the provided
+// metadata fields on the object.
+func FileUploadWithMetadata(file string, metadata map[string]string) UploadFunc {
 	return func(obj *storage.ObjectHandle) error {
 		reader, err := os.Open(file)
 		if err != nil {
 			return err
 		}
 
-		uploadErr := DataUpload(reader)(obj)
+		uploadErr := DataUploadWithMetadata(reader, metadata)(obj)
 		closeErr := reader.Close()
 
 		return errorutil.NewAggregate(uploadErr, closeErr)
@@ -80,15 +87,9 @@ func FileUpload(file string) UploadFunc {
 }
 
 // DataUpload returns an UploadFunc which copies all
-// data from src reader into GCS
+// data from src reader into GCS.
 func DataUpload(src io.Reader) UploadFunc {
-	return func(obj *storage.ObjectHandle) error {
-		writer := obj.NewWriter(context.Background())
-		_, copyErr := io.Copy(writer, src)
-		closeErr := writer.Close()
-
-		return errorutil.NewAggregate(copyErr, closeErr)
-	}
+	return DataUploadWithMetadata(src, nil)
 }
 
 // DataUploadWithMetadata returns an UploadFunc which copies all
