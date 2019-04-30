@@ -758,11 +758,14 @@ func TestControllerReconcile(t *testing.T) {
 	org, repo := "org", "repo"
 	orgRepoKey := orgRepo{org: org, repo: repo}
 	prNumber := 1
+	secondPrNumber := 2
 	author := "user"
 	prAuthorKey := prAuthor{author: author, pr: prNumber}
+	secondPrAuthorKey := prAuthor{author: author, pr: secondPrNumber}
 	prOrgRepoKey := prKey{org: org, repo: repo, num: prNumber}
 	baseRef := "base"
 	baseSha := "abc"
+	notMergable := false
 	pr := github.PullRequest{
 		User: github.User{
 			Login: author,
@@ -780,6 +783,25 @@ func TestControllerReconcile(t *testing.T) {
 		Head: github.PullRequestBranch{
 			SHA: "prsha",
 		},
+	}
+	secondPr := github.PullRequest{
+		User: github.User{
+			Login: author,
+		},
+		Number: secondPrNumber,
+		Base: github.PullRequestBranch{
+			Repo: github.Repo{
+				Owner: github.User{
+					Login: org,
+				},
+				Name: repo,
+			},
+			Ref: baseRef,
+		},
+		Head: github.PullRequestBranch{
+			SHA: "prsha2",
+		},
+		Mergable: &notMergable,
 	}
 	var testCases = []struct {
 		name string
@@ -895,6 +917,38 @@ func TestControllerReconcile(t *testing.T) {
 				fsm := newFakeMigrator(orgRepoKey)
 				ftc := newFakeTrustedChecker(orgRepoKey)
 				ftc.trusted[orgRepoKey][prAuthorKey] = false
+				controller := Controller{
+					continueOnError:         true,
+					addedPresubmitBlacklist: sets.NewString(),
+					prowJobTriggerer:        &fpjt,
+					githubClient:            &fghc,
+					statusMigrator:          &fsm,
+					trustedChecker:          &ftc,
+				}
+				checker := func(t *testing.T) {
+					if actual, expected := fpjt.created, map[prKey]sets.String{}; !reflect.DeepEqual(actual, expected) {
+						t.Errorf("did not create expected ProwJob: %s", diff.ObjectReflectDiff(actual, expected))
+					}
+					if actual, expected := fsm.retired, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}; !reflect.DeepEqual(actual, expected) {
+						t.Errorf("did not retire correct statuses: %s", diff.ObjectReflectDiff(actual, expected))
+					}
+					if actual, expected := fsm.migrated, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}}; !reflect.DeepEqual(actual, expected) {
+						t.Errorf("did not migrate correct statuses: %s", diff.ObjectReflectDiff(actual, expected))
+					}
+				}
+				return controller, checker
+			},
+		},
+		{
+			name: "no errors and unmergable PR means we should see no trigger, a retire and a migrate",
+			generator: func() (Controller, func(*testing.T)) {
+				fpjt := newfakeProwJobTriggerer()
+				fghc := newFakeGitHubClient(orgRepoKey)
+				fghc.prs[orgRepoKey] = []github.PullRequest{secondPr}
+				fghc.refs[orgRepoKey]["heads/"+secondPr.Base.Ref] = baseSha
+				fsm := newFakeMigrator(orgRepoKey)
+				ftc := newFakeTrustedChecker(orgRepoKey)
+				ftc.trusted[orgRepoKey][secondPrAuthorKey] = true
 				controller := Controller{
 					continueOnError:         true,
 					addedPresubmitBlacklist: sets.NewString(),
