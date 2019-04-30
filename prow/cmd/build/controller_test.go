@@ -1469,6 +1469,8 @@ func TestMakeBuild(t *testing.T) {
 				pj.Spec.ExtraRefs = []prowjobv1.Refs{{Org: "bonus"}}
 				pj.Spec.DecorationConfig = &prowjobv1.DecorationConfig{
 					UtilityImages: &prowjobv1.UtilityImages{},
+					Timeout:       &prowjobv1.Duration{Duration: 0},
+					GracePeriod:   &prowjobv1.Duration{Duration: 0},
 				}
 				return pj
 			},
@@ -1479,6 +1481,8 @@ func TestMakeBuild(t *testing.T) {
 				pj.Spec.ExtraRefs = []prowjobv1.Refs{{Org: "bonus"}}
 				pj.Spec.DecorationConfig = &prowjobv1.DecorationConfig{
 					UtilityImages: &prowjobv1.UtilityImages{},
+					Timeout:       &prowjobv1.Duration{Duration: 0},
+					GracePeriod:   &prowjobv1.Duration{Duration: 0},
 				}
 				pj.Spec.BuildSpec.Source = &buildv1alpha1.SourceSpec{}
 				return pj
@@ -1542,8 +1546,8 @@ func TestMakeBuild(t *testing.T) {
 
 func TestDecorateSteps(t *testing.T) {
 	var dc prowjobv1.DecorationConfig
-	dc.Timeout = prowjobv1.Duration{Duration: 10 * time.Minute}
-	dc.GracePeriod = prowjobv1.Duration{Duration: 5 * time.Minute}
+	dc.Timeout = &prowjobv1.Duration{Duration: 10 * time.Minute}
+	dc.GracePeriod = &prowjobv1.Duration{Duration: 5 * time.Minute}
 	_, tm := tools()
 	tm.Name += "not-static"
 	tm.MountPath += "fancy"
@@ -1739,6 +1743,9 @@ func TestInjectTimeout(t *testing.T) {
 
 			dc := prowjobv1.DecorationConfig{
 				UtilityImages: &prowjobv1.UtilityImages{},
+				Timeout: &prowjobv1.Duration{
+					Duration: defaultTimeout,
+				},
 			}
 			if tc.decoratedTimeout != nil {
 				dc.Timeout.Duration = *tc.decoratedTimeout

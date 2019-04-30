@@ -456,8 +456,8 @@ func TestProwJobToPod(t *testing.T) {
 				Type: prowapi.PresubmitJob,
 				Job:  "job-name",
 				DecorationConfig: &prowapi.DecorationConfig{
-					Timeout:     prowapi.Duration{Duration: 120 * time.Minute},
-					GracePeriod: prowapi.Duration{Duration: 10 * time.Second},
+					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
+					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
 					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
@@ -677,8 +677,8 @@ func TestProwJobToPod(t *testing.T) {
 				Type: prowapi.PresubmitJob,
 				Job:  "job-name",
 				DecorationConfig: &prowapi.DecorationConfig{
-					Timeout:     prowapi.Duration{Duration: 120 * time.Minute},
-					GracePeriod: prowapi.Duration{Duration: 10 * time.Second},
+					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
+					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
 					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
@@ -898,8 +898,8 @@ func TestProwJobToPod(t *testing.T) {
 				Type: prowapi.PresubmitJob,
 				Job:  "job-name",
 				DecorationConfig: &prowapi.DecorationConfig{
-					Timeout:     prowapi.Duration{Duration: 120 * time.Minute},
-					GracePeriod: prowapi.Duration{Duration: 10 * time.Second},
+					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
+					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
 					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
@@ -1145,8 +1145,8 @@ func TestProwJobToPod(t *testing.T) {
 				Type: prowapi.PresubmitJob,
 				Job:  "job-name",
 				DecorationConfig: &prowapi.DecorationConfig{
-					Timeout:     prowapi.Duration{Duration: 120 * time.Minute},
-					GracePeriod: prowapi.Duration{Duration: 10 * time.Second},
+					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
+					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
 					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
@@ -1391,8 +1391,8 @@ func TestProwJobToPod(t *testing.T) {
 				Type: prowapi.PeriodicJob,
 				Job:  "job-name",
 				DecorationConfig: &prowapi.DecorationConfig{
-					Timeout:     prowapi.Duration{Duration: 120 * time.Minute},
-					GracePeriod: prowapi.Duration{Duration: 10 * time.Second},
+					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
+					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
 					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
@@ -1554,8 +1554,8 @@ func TestProwJobToPod(t *testing.T) {
 				Type: prowapi.PresubmitJob,
 				Job:  "job-name",
 				DecorationConfig: &prowapi.DecorationConfig{
-					Timeout:     prowapi.Duration{Duration: 120 * time.Minute},
-					GracePeriod: prowapi.Duration{Duration: 10 * time.Second},
+					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
+					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
 					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",

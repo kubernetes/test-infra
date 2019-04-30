@@ -323,8 +323,8 @@ periodics:
       - "test"
       - "./..."`,
 			expected: &prowapi.DecorationConfig{
-				Timeout:     prowapi.Duration{Duration: 2 * time.Hour},
-				GracePeriod: prowapi.Duration{Duration: 15 * time.Second},
+				Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
+				GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
 				UtilityImages: &prowapi.UtilityImages{
 					CloneRefs:  "clonerefs:default",
 					InitUpload: "initupload:default",
@@ -382,8 +382,8 @@ periodics:
       - "test"
       - "./..."`,
 			expected: &prowapi.DecorationConfig{
-				Timeout:     prowapi.Duration{Duration: 1 * time.Nanosecond},
-				GracePeriod: prowapi.Duration{Duration: 1 * time.Nanosecond},
+				Timeout:     &prowapi.Duration{Duration: 1 * time.Nanosecond},
+				GracePeriod: &prowapi.Duration{Duration: 1 * time.Nanosecond},
 				UtilityImages: &prowapi.UtilityImages{
 					CloneRefs:  "clonerefs:explicit",
 					InitUpload: "initupload:explicit",
