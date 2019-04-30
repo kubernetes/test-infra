@@ -64,6 +64,7 @@ periodics:
 
 - name: ci-kubernetes-e2e-windows-gce
   decorate: true
+  path_alias: k8s.io/kubernetes
   extra_refs:
   - org: yujuhong
     repo: gce-k8s-windows-testing
