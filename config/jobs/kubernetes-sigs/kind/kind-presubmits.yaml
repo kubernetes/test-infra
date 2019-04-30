@@ -40,6 +40,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     always_run: true
     spec:
       containers:
@@ -65,13 +66,6 @@ presubmits:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
-        # kind needs /lib/modules and cgroups from the host
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: modules
-          readOnly: true
-        - mountPath: /sys/fs/cgroup
-          name: cgroup
         resources:
           requests:
             # these are both a bit below peak usage during build
@@ -79,15 +73,6 @@ presubmits:
             memory: "9000Mi"
             # during the tests more like 3-20m is used
             cpu: 2000m
-      volumes:
-      - name: modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: cgroup
-        hostPath:
-          path: /sys/fs/cgroup
-          type: Directory
   # conformance test against kubernetes release-1.13 branch with `kind`, skipping
   # serial tests so it runs in ~20m
   - name: pull-kind-conformance-parallel-1-13
@@ -96,6 +81,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     always_run: true
     spec:
       containers:
@@ -121,13 +107,6 @@ presubmits:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
-        # kind needs /lib/modules and cgroups from the host
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: modules
-          readOnly: true
-        - mountPath: /sys/fs/cgroup
-          name: cgroup
         resources:
           requests:
             # these are both a bit below peak usage during build
@@ -135,15 +114,6 @@ presubmits:
             memory: "9000Mi"
             # during the tests more like 3-20m is used
             cpu: 2000m
-      volumes:
-      - name: modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: cgroup
-        hostPath:
-          path: /sys/fs/cgroup
-          type: Directory
   # conformance test against kubernetes release-1.12 branch with `kind`, skipping
   # serial tests so it runs in ~20m
   - name: pull-kind-conformance-parallel-1-12
@@ -152,6 +122,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     always_run: true
     spec:
       containers:
@@ -177,13 +148,6 @@ presubmits:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
-        # kind needs /lib/modules and cgroups from the host
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: modules
-          readOnly: true
-        - mountPath: /sys/fs/cgroup
-          name: cgroup
         resources:
           requests:
             # these are both a bit below peak usage during build
@@ -191,15 +155,6 @@ presubmits:
             memory: "9000Mi"
             # during the tests more like 3-20m is used
             cpu: 2000m
-      volumes:
-      - name: modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: cgroup
-        hostPath:
-          path: /sys/fs/cgroup
-          type: Directory
   # conformance test against kubernetes release-1.11 branch with `kind`, skipping
   # serial tests so it runs in ~20m
   - name: pull-kind-conformance-parallel-1-11
@@ -208,6 +163,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     always_run: true
     spec:
       containers:
@@ -233,13 +189,6 @@ presubmits:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
-        # kind needs /lib/modules and cgroups from the host
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: modules
-          readOnly: true
-        - mountPath: /sys/fs/cgroup
-          name: cgroup
         resources:
           requests:
             # these are both a bit below peak usage during build
@@ -247,12 +196,3 @@ presubmits:
             memory: "9000Mi"
             # during the tests more like 3-20m is used
             cpu: 2000m
-      volumes:
-      - name: modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: cgroup
-        hostPath:
-          path: /sys/fs/cgroup
-          type: Directory
