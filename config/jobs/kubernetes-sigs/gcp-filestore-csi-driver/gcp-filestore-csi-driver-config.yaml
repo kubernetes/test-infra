@@ -1,7 +1,8 @@
 presubmits:
   kubernetes-sigs/gcp-filestore-csi-driver:
   - name: pull-gcp-filestore-csi-driver-e2e
-    always_run: true
+    optional: true
+    always_run: false
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
