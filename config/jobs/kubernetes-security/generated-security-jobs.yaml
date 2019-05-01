@@ -3185,6 +3185,49 @@ presubmits:
           secretName: ssh-security
     trigger: (?m)^/test( | .* )pull-security-kubernetes-dependencies,?($|\s.*)
   - agent: kubernetes
+    always_run: true
+    branches:
+    - master
+    cluster: security
+    context: pull-security-kubernetes-dependencies-canary
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-dependencies-canary
+    path_alias: k8s.io/kubernetes
+    rerun_command: /test pull-security-kubernetes-dependencies-canary
+    skip_report: true
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - make
+        - verify
+        command:
+        - runner.sh
+        env:
+        - name: WHAT
+          value: vendor vendor-licenses
+        - name: GOPROXY
+          value: https://proxy.golang.org
+        - name: GOSUMDB
+          value: sum.golang.org
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
+        name: main
+        resources: {}
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-dependencies-canary,?($|\s.*)
+  - agent: kubernetes
     always_run: false
     branches:
     - release-1.14
