@@ -724,7 +724,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20190430-6a7dd776a
+      image: gcr.io/k8s-prow/branchprotector:v20190430-866dcd93f
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -751,7 +751,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20190430-6a7dd776a
+      image: gcr.io/k8s-prow/label_sync:v20190430-866dcd93f
       command:
       - /app/label_sync/app.binary
       args:
