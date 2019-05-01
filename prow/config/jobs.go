@@ -249,8 +249,13 @@ func (br Brancher) Intersects(other Brancher) bool {
 			}
 			return false
 		}
-		if !baseBranches.Intersection(sets.NewString(other.SkipBranches...)).Equal(baseBranches) {
-			return true
+
+		// Actually test our branches against the other brancher - if there are regex skip lists, simple comparison
+		// is insufficient.
+		for _, b := range baseBranches.List() {
+			if other.ShouldRun(b) {
+				return true
+			}
 		}
 		return false
 	}
