@@ -3125,7 +3125,7 @@ presubmits:
         - bash
         - --
         - -c
-        - cd ./../../k8s.io/kubernetes && source ./../../sigs.k8s.io/kind/hack/e2e.sh
+        - cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-e2e.sh
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
         name: ""
         resources:
