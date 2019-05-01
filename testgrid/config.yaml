@@ -2714,6 +2714,9 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
+- name: pull-kubernetes-dependencies-canary
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-dependencies-canary
+  num_columns_recent: 20
 - name: pull-kubernetes-godeps
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-godeps
   num_columns_recent: 20
@@ -7806,6 +7809,9 @@ dashboards:
     base_options: width=10
   - name: pull-kubernetes-e2e-kops-aws
     test_group_name: pull-kubernetes-e2e-kops-aws
+    base_options: width=10
+  - name: pull-canaries
+    test_group_name: pull-kubernetes-dependencies-canary
     base_options: width=10
 
 - name: presubmits-cloud-provider-vsphere-blocking
