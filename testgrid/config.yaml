@@ -2759,6 +2759,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-kubemci
 - name: post-test-infra-push-test-gubernator
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-test-gubernator
+- name: post-test-infra-push-image-builder
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-image-builder
 - name: ci-test-infra-autoupdate-minor
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-autoupdate-minor
 - name: ci-test-infra-autoupdate-patch
@@ -7372,6 +7374,8 @@ dashboards:
     test_group_name: post-test-infra-push-kubemci
   - name: test-gubernator
     test_group_name: post-test-infra-push-test-gubernator
+  - name: image-builder
+    test_group_name: post-test-infra-push-image-builder
 - name: sig-testing-misc
   dashboard_tab:
   - name: ci-bazel
