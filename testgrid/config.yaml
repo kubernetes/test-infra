@@ -5093,33 +5093,6 @@ dashboards:
   - name: pull-windows-gce
     test_group_name: pull-kubernetes-e2e-windows-gce
 
-- name: sig-release-master-upgrade
-  dashboard_tab:
-  - name: gce-new-master-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master
-    description: Upgrade master only, in gce(gci), from 1.14 to master, run non-parallel-safe tests only
-  - name: gce-new-master-upgrade-master-parallel
-    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master-parallel
-    description: Upgrade master only, in gce(gci), from 1.14 to master, run parallel tests only
-  - name: gce-new-master-upgrade-cluster-parallel
-    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
-    description: Upgrade master and node, in gce(gci), from 1.14 to master, run parallel tests only
-  - name: gce-new-master-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
-    description: Upgrade master and node, in gce(gci), from 1.14 to master
-  - name: gce-master-new-downgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster
-    description: Downgrade master and node, in gce(gci), from master to 1.14
-  - name: gce-master-new-downgrade-cluster-parallel
-    test_group_name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster-parallel
-    description: Downgrade master and node, in gce(gci), from master to 1.14, run parallel tests only
-  - name: gce-new-master-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
-    description: Upgrade master and node, in gce(gci), from 1.14 to master, and run skewed e2e tests.  We only run the serial & disruptive tests; the others are run in the -parallel test.
-  - name: gce-new-master-upgrade-cluster-new-parallel
-    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new-parallel
-    description: Upgrade master and node, in gce(gci), from 1.14 to master, and run skewed e2e tests.  We skip the serial & disruptive tests; those are run in the non-parallel test.
-
 # These are the master *blocking* tests.  These provide a valid binary signal
 # to gate releases (alpha, beta, official).
 # This list is used by kubernetes/release/lib/releaselib.sh to provide go/nogo
@@ -5188,6 +5161,30 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
   - name: bazel-test-master
     test_group_name: post-kubernetes-bazel-test
+  - name: gce-new-master-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master
+    description: Upgrade master only, in gce(gci), from 1.14 to master, run non-parallel-safe tests only
+  - name: gce-new-master-upgrade-master-parallel
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master-parallel
+    description: Upgrade master only, in gce(gci), from 1.14 to master, run parallel tests only
+  - name: gce-new-master-upgrade-cluster-parallel
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
+    description: Upgrade master and node, in gce(gci), from 1.14 to master, run parallel tests only
+  - name: gce-new-master-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
+    description: Upgrade master and node, in gce(gci), from 1.14 to master
+  - name: gce-master-new-downgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster
+    description: Downgrade master and node, in gce(gci), from master to 1.14
+  - name: gce-master-new-downgrade-cluster-parallel
+    test_group_name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster-parallel
+    description: Downgrade master and node, in gce(gci), from master to 1.14, run parallel tests only
+  - name: gce-new-master-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
+    description: Upgrade master and node, in gce(gci), from 1.14 to master, and run skewed e2e tests.  We only run the serial & disruptive tests; the others are run in the -parallel test.
+  - name: gce-new-master-upgrade-cluster-new-parallel
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new-parallel
+    description: Upgrade master and node, in gce(gci), from 1.14 to master, and run skewed e2e tests.  We skip the serial & disruptive tests; those are run in the non-parallel test.
 
 - name: sig-release-1.14-all
   dashboard_tab:
@@ -8619,7 +8616,6 @@ dashboard_groups:
   dashboard_names:
   - sig-release-master-blocking
   - sig-release-master-informing
-  - sig-release-master-upgrade
   - sig-release-1.14-all
   - sig-release-1.14-blocking
   - sig-release-1.13-all
