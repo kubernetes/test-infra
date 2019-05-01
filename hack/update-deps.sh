@@ -25,7 +25,38 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-cd "$(git rev-parse --show-toplevel)"
+if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then
+  echo "Updating modules..." >&2
+elif ! command -v bazel &>/dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
+  exit 1
+elif ! bazel query @io_k8s_test_infra//vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle &>/dev/null; then
+  (
+    set -o xtrace
+    bazel run @io_k8s_test_infra//hack:bootstrap-testinfra
+    bazel run @io_k8s_test_infra//hack:update-bazel
+  )
+  exit 0
+else
+  (
+    set -o xtrace
+    bazel run @io_k8s_test_infra//hack:update-deps
+  )
+  exit 0
+fi
+
+go=$(realpath "$1")
+gazelle=$(realpath "$2")
+kazel=$(realpath "$3")
+update_bazel=(
+  $(realpath "$4")
+  "$gazelle"
+  "$kazel"
+)
+
+shift 4
+
+cd "$BUILD_WORKSPACE_DIRECTORY"
 trap 'echo "FAILED" >&2' ERR
 
 prune-vendor() {
@@ -48,10 +79,10 @@ mode="${1:-}"
 shift || true
 case "$mode" in
 --minor)
-    bazel run //:update-minor -- "$@"
+    "$go" get -u
     ;;
 --patch)
-    bazel run //:update-patch -- "$@"
+    "$go" get -u=patch
     ;;
 "")
     # Just validate, or maybe manual go.mod edit
@@ -63,10 +94,13 @@ case "$mode" in
 esac
 
 rm -rf vendor
-bazel run //:go -- mod tidy
-bazel run //:go -- mod vendor
+export GOPROXY=https://proxy.golang.org
+export GOSUMDB=sum.golang.org
+"$go" mod tidy
+"$go" mod vendor
 prune-vendor
-hack/update-bazel.sh
-bazel run //:gazelle -- update-repos --from_file=go.mod
-hack/update-bazel.sh # TODO(fejta): seems to cause weird changes otherwise
-echo SUCCESS
+touch ./vendor/BUILD.bazel
+"$gazelle" update-repos --from_file=go.mod
+"${update_bazel[@]}"
+"${update_bazel[@]}"
+echo "SUCCESS: updated modules"

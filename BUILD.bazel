@@ -75,52 +75,6 @@ workspace_binary(
     cmd = "@com_github_golang_lint//golint",
 )
 
-load("@bazel_gazelle//:def.bzl", "gazelle")
-
-GAZELLE_CMD = "//vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle"
-
-KAZEL_CMD = "//vendor/k8s.io/repo-infra/kazel"
-
-gazelle(
-    name = "gazelle-bootstrap",
-    command = "fix",
-    external = "vendored",
-    # Use the built-in version
-)
-
-gazelle(
-    name = "gazelle",
-    command = "fix",
-    external = "vendored",
-    gazelle = GAZELLE_CMD,
-)
-
-gazelle(
-    name = "gazelle-diff",
-    command = "fix",
-    external = "vendored",
-    gazelle = GAZELLE_CMD,
-    mode = "diff",
-)
-
-workspace_binary(
-    name = "kazel",
-    args = [
-        "--cfg-path=./hack/.kazelcfg.json",
-    ],
-    cmd = KAZEL_CMD,
-)
-
-workspace_binary(
-    name = "kazel-diff",
-    args = [
-        "--dry-run",
-        "--print-diff",
-        "--cfg-path=./hack/.kazelcfg.json",
-    ],
-    cmd = KAZEL_CMD,
-)
-
 nodejs_binary(
     name = "tslint",
     data = [

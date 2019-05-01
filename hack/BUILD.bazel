@@ -76,18 +76,106 @@ sh_test(
         ":update-protos",
         protoc,
         protoc_gen_go,
-        "//:all-srcs",
+        "@//:all-srcs",
     ],
 )
 
 test_suite(
     name = "verify-all",
-    tags = ["lint"],
-    tests = [
-        "verify-protos",
-        "verify-pylint",
-        "verify_boilerplate",
+    tags = ["lint"],  # picks up all non-manual targets with this tag
+)
+
+GAZELLE = "//vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle"
+
+KAZEL = "//vendor/k8s.io/repo-infra/kazel"
+
+GO = "@go_sdk//:bin/go"
+
+sh_binary(
+    name = "update-deps",
+    srcs = ["update-deps.sh"],
+    args = [
+        "$(location %s)" % GO,
+        "$(location %s)" % GAZELLE,
+        "$(location %s)" % KAZEL,
+        "$(location :update-bazel)",
     ],
+    data = [
+        GAZELLE,
+        GO,
+        KAZEL,
+        ":update-bazel",
+    ],
+)
+
+GAZELLE_BOOT = "@bazel_gazelle//cmd/gazelle"
+
+KAZEL_BOOT = "@io_k8s_repo_infra//kazel"
+
+sh_binary(
+    name = "bootstrap-testinfra",
+    srcs = ["update-deps.sh"],
+    args = [
+        "$(location %s)" % GO,
+        "$(location %s)" % GAZELLE_BOOT,
+        "$(location %s)" % KAZEL_BOOT,
+        "$(location :update-bazel.sh)",
+    ],
+    data = [
+        GAZELLE_BOOT,
+        GO,
+        KAZEL_BOOT,
+        ":update-bazel.sh",
+    ],
+)
+
+sh_test(
+    name = "verify-deps",
+    srcs = ["verify-deps.sh"],
+    args = [
+        "$(location :update-deps)",
+        "$(location %s)" % GO,
+        "$(location %s)" % GAZELLE,
+        "$(location %s)" % KAZEL,
+        "$(location :update-bazel)",
+    ],
+    data = [
+        GAZELLE,
+        GO,
+        KAZEL,
+        ":update-bazel",
+        ":update-deps",
+        "@//:all-srcs",
+    ],
+    tags = ["lint"],
+)
+
+sh_binary(
+    name = "update-bazel",
+    srcs = ["update-bazel.sh"],
+    args = [
+        "$(location %s)" % GAZELLE,
+        "$(location %s)" % KAZEL,
+    ],
+    data = [
+        GAZELLE,
+        KAZEL,
+    ],
+)
+
+sh_test(
+    name = "verify-bazel",
+    srcs = ["verify-bazel.sh"],
+    args = [
+        "$(location %s)" % GAZELLE,
+        "$(location %s)" % KAZEL,
+    ],
+    data = [
+        "@//:all-srcs",
+        GAZELLE,
+        KAZEL,
+    ],
+    tags = ["lint"],
 )
 
 py_binary(
