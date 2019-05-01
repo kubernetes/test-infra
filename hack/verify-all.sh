@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2017 The Kubernetes Authors.
+# Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,4 +18,4 @@ set -o nounset
 set -o pipefail
 
 cd "$(git rev-parse --show-toplevel)"
-find hack -name 'update-*.sh' -not -name "$(basename "$0")" \( -print -exec '{}' ';' -o -quit \)
+find hack -name 'verify-*.sh' -not -name "$(basename "$0")" \( -print -exec '{}' ';' -o -quit \)
