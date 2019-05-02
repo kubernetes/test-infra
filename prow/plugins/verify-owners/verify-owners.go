@@ -318,7 +318,7 @@ func markdownFriendlyComment(org string, nonTrustedUsers map[string][]string) st
 	commentLines = append(commentLines, fmt.Sprintf(nonCollaboratorResponseFormat, ownersFileName, org))
 
 	for user, ownersFiles := range nonTrustedUsers {
-		commentLines = append(commentLines, fmt.Sprintf("- @%s", user))
+		commentLines = append(commentLines, fmt.Sprintf("- %s", user))
 		for _, filename := range ownersFiles {
 			commentLines = append(commentLines, fmt.Sprintf("  - %s", filename))
 		}
