@@ -18,19 +18,42 @@ limitations under the License.
 package metrics
 
 import (
+	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/client_golang/prometheus/push"
 	"github.com/sirupsen/logrus"
 )
 
-// PushMetrics is meant to run in a goroutine and continuously push
+const metricsPort = 9090
+
+// ExposeMetrics chooses whether to serve or push metrics for the service
+func ExposeMetrics(component string, endpoint string, interval time.Duration) {
+	if endpoint != "" {
+		go pushMetrics(component, endpoint, interval)
+	} else {
+		serveMetrics()
+	}
+}
+
+// serveMetrics serves prometheus metrics for the service
+func serveMetrics() {
+	metricsMux := http.NewServeMux()
+	metricsMux.Handle("/metrics", promhttp.Handler())
+	go func() {
+		logrus.WithError(http.ListenAndServe(":"+strconv.Itoa(metricsPort), metricsMux)).Fatal("ListenAndServe returned while serving metrics.")
+	}()
+}
+
+// pushMetrics is meant to run in a goroutine and continuously push
 // metrics to the provided endpoint.
-func PushMetrics(component, endpoint string, interval time.Duration) {
+func pushMetrics(component, endpoint string, interval time.Duration) {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 

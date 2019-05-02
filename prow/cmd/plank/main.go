@@ -19,13 +19,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/test-infra/prow/pjutil"
@@ -146,13 +144,9 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating plank controller.")
 	}
 
-	// Push metrics to the configured prometheus pushgateway endpoint.
+	// Expose prometheus metrics
 	pushGateway := cfg().PushGateway
-	if pushGateway.Endpoint != "" {
-		go metrics.PushMetrics("plank", pushGateway.Endpoint, pushGateway.Interval)
-	}
-	// serve prometheus metrics.
-	go serve()
+	metrics.ExposeMetrics("plank", pushGateway.Endpoint, pushGateway.Interval)
 	// gather metrics for the jobs handled by plank.
 	go gather(c)
 
@@ -173,13 +167,6 @@ func main() {
 			return
 		}
 	}
-}
-
-// serve starts a http server and serves prometheus metrics.
-// Meant to be called inside a goroutine.
-func serve() {
-	http.Handle("/metrics", promhttp.Handler())
-	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
 }
 
 // gather metrics from plank.

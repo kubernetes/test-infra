@@ -26,7 +26,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/pkg/flagutil"
@@ -175,11 +174,9 @@ func main() {
 
 	promMetrics := hook.NewMetrics()
 
-	// Push metrics to the configured prometheus pushgateway endpoint.
+	// Expose prometheus metrics
 	pushGateway := configAgent.Config().PushGateway
-	if pushGateway.Endpoint != "" {
-		go metrics.PushMetrics("hook", pushGateway.Endpoint, pushGateway.Interval)
-	}
+	metrics.ExposeMetrics("hook", pushGateway.Endpoint, pushGateway.Interval)
 
 	server := &hook.Server{
 		ClientAgent:    clientAgent,
@@ -196,7 +193,6 @@ func main() {
 	// Return 200 on / for health checks.
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
 
-	http.Handle("/metrics", promhttp.Handler())
 	// For /hook, handle a webhook normally.
 	http.Handle("/hook", server)
 	// Serve plugin help information from /plugin-help.
