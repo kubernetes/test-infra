@@ -18,7 +18,6 @@ prow_image(
 go_library(
     name = "go_default_library",
     srcs = [
-        "admission.go",
         "controller.go",
         "main.go",
     ],
@@ -46,15 +45,10 @@ go_library(
         "//vendor/github.com/knative/build/pkg/client/informers/externalversions/build/v1alpha1:go_default_library",
         "//vendor/github.com/knative/pkg/apis/duck/v1alpha1:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
-        "//vendor/k8s.io/api/admission/v1beta1:go_default_library",
-        "//vendor/k8s.io/api/admissionregistration/v1beta1:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/runtime/serializer:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
@@ -93,7 +87,6 @@ go_binary(
 go_test(
     name = "go_default_test",
     srcs = [
-        "admission_test.go",
         "controller_test.go",
         "main_test.go",
     ],
@@ -110,7 +103,6 @@ go_test(
         "//vendor/github.com/knative/build/pkg/apis/build/v1alpha1:go_default_library",
         "//vendor/github.com/knative/build/pkg/client/clientset/versioned/fake:go_default_library",
         "//vendor/github.com/knative/pkg/apis/duck/v1alpha1:go_default_library",
-        "//vendor/k8s.io/api/admission/v1beta1:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
