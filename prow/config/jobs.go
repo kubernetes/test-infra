@@ -84,8 +84,8 @@ type JobBase struct {
 	Labels map[string]string `json:"labels,omitempty"`
 	// MaximumConcurrency of this job, 0 implies no limit.
 	MaxConcurrency int `json:"max_concurrency,omitempty"`
-	// Agent that will take care of running this job.
-	Agent string `json:"agent"`
+	// Agent that will take care of running this job. Defaults to "kubernetes"
+	Agent string `json:"agent,omitempty"`
 	// Cluster is the alias of the cluster to run this job in.
 	// (Default: kube.DefaultClusterAlias)
 	Cluster string `json:"cluster,omitempty"`
@@ -122,12 +122,12 @@ type Presubmit struct {
 	// e.g. `@k8s-bot e2e test this`
 	// RerunCommand must also be specified if this field is specified.
 	// (Default: `(?m)^/test (?:.*? )?<job name>(?: .*?)?$`)
-	Trigger string `json:"trigger"`
+	Trigger string `json:"trigger,omitempty"`
 
 	// The RerunCommand to give users. Must match Trigger.
 	// Trigger must also be specified if this field is specified.
 	// (Default: `/test <job name>`)
-	RerunCommand string `json:"rerun_command"`
+	RerunCommand string `json:"rerun_command,omitempty"`
 
 	Brancher
 
@@ -160,9 +160,9 @@ type Periodic struct {
 	JobBase
 
 	// (deprecated)Interval to wait between two runs of the job.
-	Interval string `json:"interval"`
+	Interval string `json:"interval,omitempty"`
 	// Cron representation of job trigger time
-	Cron string `json:"cron"`
+	Cron string `json:"cron,omitempty"`
 	// Tags for config entries
 	Tags []string `json:"tags,omitempty"`
 
@@ -209,7 +209,8 @@ type RegexpChangeMatcher struct {
 
 type Reporter struct {
 	// Context is the name of the GitHub status context for the job.
-	Context string `json:"context"`
+	// Defaults: the same as the name of the job.
+	Context string `json:"context,omitempty"`
 	// SkipReport skips commenting and setting status on GitHub.
 	SkipReport bool `json:"skip_report,omitempty"`
 }
