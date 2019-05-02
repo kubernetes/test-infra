@@ -229,3 +229,15 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-experimental
         command:
         - ./hack/verify-github-spelling.sh
+
+  - name: pull-test-infra-yamllint
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: quay.io/kubermatic/yamllint:0.1
+        command:
+        - yamllint
+        - -c
+        - config/jobs/.yamllint.conf
+        - config/jobs
