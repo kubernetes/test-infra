@@ -153,6 +153,10 @@ func main() {
 		configs = map[string]rest.Config{
 			kube.DefaultClusterAlias: configs[kube.DefaultClusterAlias],
 		}
+	} else {
+		if configs[kube.DefaultClusterAlias].Host == configs[kube.InClusterContext].Host {
+			delete(configs, kube.InClusterContext)
+		}
 	}
 
 	stop := stopper()
