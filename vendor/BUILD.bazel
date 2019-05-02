@@ -67,6 +67,7 @@ filegroup(
         "//vendor/github.com/beorn7/perks/quantile:all-srcs",
         "//vendor/github.com/blang/semver:all-srcs",
         "//vendor/github.com/bwmarrin/snowflake:all-srcs",
+        "//vendor/github.com/client9/misspell:all-srcs",
         "//vendor/github.com/davecgh/go-spew/spew:all-srcs",
         "//vendor/github.com/deckarep/golang-set:all-srcs",
         "//vendor/github.com/dgrijalva/jwt-go:all-srcs",

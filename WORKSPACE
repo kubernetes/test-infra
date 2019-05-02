@@ -655,7 +655,8 @@ go_repository(
 go_repository(
     name = "com_github_client9_misspell",
     importpath = "github.com/client9/misspell",
-    tag = "v0.3.4",
+    sum = "h1:ta993UF76GwbvJcIo3Y68y/M3WxlpEHPWIGDkJYwzJI=",
+    version = "v0.3.4",
 )
 
 go_repository(
