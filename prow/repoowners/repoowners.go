@@ -42,8 +42,6 @@ const (
 	baseDirConvention = ""
 )
 
-var commonDirBlacklist = []string{"^\\.git$", "^_output$"}
-
 type dirOptions struct {
 	NoParentOwners bool `json:"no_parent_owners,omitempty"`
 }
@@ -257,7 +255,7 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 				entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
 			}
 
-			dirBlacklistPatterns := append(c.ownersDirBlacklist().DirBlacklist(org, repo), commonDirBlacklist...)
+			dirBlacklistPatterns := c.ownersDirBlacklist().DirBlacklist(org, repo)
 			var dirBlacklist []*regexp.Regexp
 			for _, pattern := range dirBlacklistPatterns {
 				re, err := regexp.Compile(pattern)
