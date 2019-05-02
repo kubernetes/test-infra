@@ -43,7 +43,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: master
+    base_ref: release-1.14
     path_alias: k8s.io/kubernetes
   - org: kubernetes
     repo: kubeadm
@@ -74,7 +74,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: master
+    base_ref: release-1.13
     path_alias: k8s.io/kubernetes
   - org: kubernetes
     repo: kubeadm
@@ -105,7 +105,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: master
+    base_ref: release-1.12
     path_alias: k8s.io/kubernetes
   - org: kubernetes
     repo: kubeadm
