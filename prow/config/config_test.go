@@ -1689,12 +1689,40 @@ func TestBrancher_Intersects(t *testing.T) {
 			},
 			result: true,
 		},
+		{
+			name: "NoIntersectionBecauseRegexSkip",
+			a: Brancher{
+				SkipBranches: []string{`release-\d+\.\d+`},
+			},
+			b: Brancher{
+				Branches: []string{`release-1.14`, `release-1.13`},
+			},
+			result: false,
+		},
+		{
+			name: "IntersectionDespiteRegexSkip",
+			a: Brancher{
+				SkipBranches: []string{`release-\d+\.\d+`},
+			},
+			b: Brancher{
+				Branches: []string{`release-1.14`, `master`},
+			},
+			result: true,
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(st *testing.T) {
-			r1 := tc.a.Intersects(tc.b)
-			r2 := tc.b.Intersects(tc.a)
+			a, err := setBrancherRegexes(tc.a)
+			if err != nil {
+				st.Fatalf("Failed to set brancher A regexes: %v", err)
+			}
+			b, err := setBrancherRegexes(tc.b)
+			if err != nil {
+				st.Fatalf("Failed to set brancher B regexes: %v", err)
+			}
+			r1 := a.Intersects(b)
+			r2 := b.Intersects(a)
 			for _, result := range []bool{r1, r2} {
 				if result != tc.result {
 					st.Errorf("Expected %v got %v", tc.result, result)
