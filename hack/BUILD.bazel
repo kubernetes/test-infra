@@ -1,4 +1,5 @@
 load("@pylint_deps//:requirements.bzl", "requirement")
+load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -26,6 +27,20 @@ sh_test(
         "//:all-srcs",
     ],
     tags = ["lint"],
+)
+
+nodejs_test(
+    name = "verify-tslint",
+    data = [
+        "//:all-srcs",
+        "@npm//tslint",
+    ],
+    entry_point = "tslint/bin/tslint",
+    tags = ["lint"],
+    templated_args = [
+        "-p",
+        ".",
+    ],
 )
 
 MISSPELL = "@com_github_client9_misspell//cmd/misspell"
