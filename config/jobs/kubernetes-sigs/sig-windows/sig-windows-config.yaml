@@ -7,7 +7,7 @@ presets:
   - name: AZURE_SSH_PUBLIC_KEY_FILE
     value: /etc/azure-ssh/azure-ssh-pub
   - name: CLOUD_CONFIG
-    value: random 
+    value: random
   - name: AZ_STORAGE_CONTAINER_NAME
     value: mystoragecontainer
   - name: REGISTRY

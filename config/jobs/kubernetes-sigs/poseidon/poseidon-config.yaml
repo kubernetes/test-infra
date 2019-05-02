@@ -1,4 +1,4 @@
-presubmits:  
+presubmits:
   kubernetes-sigs/poseidon:
   - name: ci-poseidon-e2e-gce
     always_run: true

@@ -51,4 +51,3 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-    
