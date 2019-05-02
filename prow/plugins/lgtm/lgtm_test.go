@@ -18,11 +18,16 @@ package lgtm
 
 import (
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/yaml"
+
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -48,8 +53,9 @@ func (f *fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.Re
 }
 
 type fakeRepoOwners struct {
-	approvers map[string]sets.String
-	reviewers map[string]sets.String
+	approvers    map[string]sets.String
+	reviewers    map[string]sets.String
+	dirBlacklist []*regexp.Regexp
 }
 
 type fakePruner struct {
@@ -76,6 +82,40 @@ func (f *fakeRepoOwners) Approvers(path string) sets.String             { return
 func (f *fakeRepoOwners) LeafReviewers(path string) sets.String         { return nil }
 func (f *fakeRepoOwners) Reviewers(path string) sets.String             { return f.reviewers[path] }
 func (f *fakeRepoOwners) RequiredReviewers(path string) sets.String     { return nil }
+
+func (f *fakeRepoOwners) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
+	dir := filepath.Dir(path)
+	for _, re := range f.dirBlacklist {
+		if re.MatchString(dir) {
+			return repoowners.SimpleConfig{}, filepath.SkipDir
+		}
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return repoowners.SimpleConfig{}, err
+	}
+	full := new(repoowners.SimpleConfig)
+	err = yaml.Unmarshal(b, full)
+	return *full, err
+}
+
+func (f *fakeRepoOwners) ParseFullConfig(path string) (repoowners.FullConfig, error) {
+	dir := filepath.Dir(path)
+	for _, re := range f.dirBlacklist {
+		if re.MatchString(dir) {
+			return repoowners.FullConfig{}, filepath.SkipDir
+		}
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return repoowners.FullConfig{}, err
+	}
+	full := new(repoowners.FullConfig)
+	err = yaml.Unmarshal(b, full)
+	return *full, err
+}
 
 var approvers = map[string]sets.String{
 	"doc/README.md": {

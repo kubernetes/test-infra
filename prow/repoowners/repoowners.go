@@ -147,6 +147,8 @@ type RepoOwner interface {
 	LeafReviewers(path string) sets.String
 	Reviewers(path string) sets.String
 	RequiredReviewers(path string) sets.String
+	ParseSimpleConfig(path string) (SimpleConfig, error)
+	ParseFullConfig(path string) (FullConfig, error)
 }
 
 var _ RepoOwner = &RepoOwners{}
@@ -431,15 +433,9 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 		return nil
 	}
 
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.WithError(err).Errorf("Failed to read the OWNERS file.")
-		return nil
-	}
-
-	simple, err := ParseSimpleConfig(b)
+	simple, err := o.ParseSimpleConfig(path)
 	if err != nil || simple.Empty() {
-		c, err := ParseFullConfig(b)
+		c, err := o.ParseFullConfig(path)
 		if err != nil {
 			log.WithError(err).Errorf("Failed to unmarshal %s into either Simple or FullConfig.", path)
 		} else {
@@ -464,19 +460,45 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 	return nil
 }
 
-// ParseFullConfig will unmarshal OWNERS file's content into a FullConfig
-// Returns an error if the content cannot be unmarshalled
-func ParseFullConfig(b []byte) (FullConfig, error) {
+// ParseFullConfig will unmarshal the content of the OWNERS file at the path into a FullConfig.
+// If the OWNERS directory is blacklisted, it returns filepath.SkipDir.
+// Returns an error if the content cannot be unmarshalled.
+func (o *RepoOwners) ParseFullConfig(path string) (FullConfig, error) {
+	// if path is in a blacklisted directory, ignore it
+	dir := filepath.Dir(path)
+	for _, re := range o.dirBlacklist {
+		if re.MatchString(dir) {
+			return FullConfig{}, filepath.SkipDir
+		}
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return FullConfig{}, err
+	}
 	full := new(FullConfig)
-	err := yaml.Unmarshal(b, full)
+	err = yaml.Unmarshal(b, full)
 	return *full, err
 }
 
-// ParseSimpleConfig will unmarshal an OWNERS file's content into a SimpleConfig
-// Returns an error if the content cannot be unmarshalled
-func ParseSimpleConfig(b []byte) (SimpleConfig, error) {
+// ParseSimpleConfig will unmarshal the content of the OWNERS file at the path into a SimpleConfig.
+// If the OWNERS directory is blacklisted, it returns filepath.SkipDir.
+// Returns an error if the content cannot be unmarshalled.
+func (o *RepoOwners) ParseSimpleConfig(path string) (SimpleConfig, error) {
+	// if path is in a blacklisted directory, ignore it
+	dir := filepath.Dir(path)
+	for _, re := range o.dirBlacklist {
+		if re.MatchString(dir) {
+			return SimpleConfig{}, filepath.SkipDir
+		}
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return SimpleConfig{}, err
+	}
 	simple := new(SimpleConfig)
-	err := yaml.Unmarshal(b, simple)
+	err = yaml.Unmarshal(b, simple)
 	return *simple, err
 }
 

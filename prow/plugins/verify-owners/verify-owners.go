@@ -65,6 +65,11 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 }
 
 type ownersClient interface {
+	ParseSimpleConfig(path string) (repoowners.SimpleConfig, error)
+	ParseFullConfig(path string) (repoowners.FullConfig, error)
+}
+
+type repoownersClient interface {
 	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error)
 }
 
@@ -75,6 +80,7 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	CreateReview(org, repo string, number int, r github.DraftReview) error
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	RemoveLabel(owner, repo string, number int, label string) error
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
@@ -92,7 +98,7 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	if err != nil {
 		return err
 	}
-	return handle(pc.GitHubClient, pc.GitClient, pc.Logger, &pre, pc.PluginConfig.Owners.LabelsBlackList, pc.PluginConfig.TriggerFor(pre.Repo.Owner.Login, pre.Repo.Name), cp)
+	return handle(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &pre, pc.PluginConfig.Owners.LabelsBlackList, pc.PluginConfig.TriggerFor(pre.Repo.Owner.Login, pre.Repo.Name), cp)
 }
 
 type messageWithLine struct {
@@ -100,7 +106,7 @@ type messageWithLine struct {
 	message string
 }
 
-func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.PullRequestEvent, labelsBlackList []string, triggerConfig plugins.Trigger, cp commentPruner) error {
+func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.Entry, pre *github.PullRequestEvent, labelsBlackList []string, triggerConfig plugins.Trigger, cp commentPruner) error {
 	org := pre.Repo.Owner.Login
 	repo := pre.Repo.Name
 	number := pre.Number
@@ -163,14 +169,18 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 
 	// Check if OWNERS files have the correct config and if they do,
 	// check if all newly added owners are trusted users.
+	pr, err := ghc.GetPullRequest(org, repo, number)
+	if err != nil {
+		return fmt.Errorf("error loading PullRequest: %v", err)
+	}
+	oc, err := roc.LoadRepoOwners(org, repo, pr.Base.Ref)
+	if err != nil {
+		return fmt.Errorf("error loading RepoOwners: %v", err)
+	}
+
 	for _, c := range modifiedOwnersFiles {
 		path := filepath.Join(r.Dir, c.Filename)
-		b, err := ioutil.ReadFile(path)
-		if err != nil {
-			log.WithError(err).Warningf("Failed to read %s.", path)
-			return nil
-		}
-		msg, owners := parseOwnersFile(b, c, log, labelsBlackList)
+		msg, owners := parseOwnersFile(oc, path, c, log, labelsBlackList)
 		if msg != nil {
 			wrongOwnersFiles[c.Filename] = *msg
 			continue
@@ -254,15 +264,19 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 	return nil
 }
 
-func parseOwnersFile(b []byte, c github.PullRequestChange, log *logrus.Entry, labelsBlackList []string) (*messageWithLine, []string) {
+func parseOwnersFile(oc ownersClient, path string, c github.PullRequestChange, log *logrus.Entry, labelsBlackList []string) (*messageWithLine, []string) {
 	var reviewers []string
 	var approvers []string
 	var labels []string
+
 	// by default we bind errors to line 1
 	lineNumber := 1
-	simple, err := repoowners.ParseSimpleConfig(b)
+	simple, err := oc.ParseSimpleConfig(path)
 	if err != nil || simple.Empty() {
-		full, err := repoowners.ParseFullConfig(b)
+		full, err := oc.ParseFullConfig(path)
+		if err == filepath.SkipDir {
+			return nil, nil
+		}
 		if err != nil {
 			lineNumberRe, _ := regexp.Compile(`line (\d+)`)
 			lineNumberMatches := lineNumberRe.FindStringSubmatch(err.Error())

@@ -19,15 +19,19 @@ package blunderbuss
 import (
 	"context"
 	"errors"
+	"io/ioutil"
+	"path/filepath"
 	"reflect"
+	"regexp"
 	"sort"
 	"strings"
 	"testing"
 
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/util/sets"
+	"sigs.k8s.io/yaml"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/repoowners"
@@ -105,6 +109,7 @@ type fakeOwnersClient struct {
 	reviewers         map[string]sets.String
 	requiredReviewers map[string]sets.String
 	leafReviewers     map[string]sets.String
+	dirBlacklist      []*regexp.Regexp
 }
 
 func (foc *fakeOwnersClient) Approvers(path string) sets.String {
@@ -141,6 +146,40 @@ func (foc *fakeOwnersClient) FindLabelsForFile(path string) sets.String {
 
 func (foc *fakeOwnersClient) IsNoParentOwners(path string) bool {
 	return false
+}
+
+func (foc *fakeOwnersClient) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
+	dir := filepath.Dir(path)
+	for _, re := range foc.dirBlacklist {
+		if re.MatchString(dir) {
+			return repoowners.SimpleConfig{}, filepath.SkipDir
+		}
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return repoowners.SimpleConfig{}, err
+	}
+	full := new(repoowners.SimpleConfig)
+	err = yaml.Unmarshal(b, full)
+	return *full, err
+}
+
+func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig, error) {
+	dir := filepath.Dir(path)
+	for _, re := range foc.dirBlacklist {
+		if re.MatchString(dir) {
+			return repoowners.FullConfig{}, filepath.SkipDir
+		}
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return repoowners.FullConfig{}, err
+	}
+	full := new(repoowners.FullConfig)
+	err = yaml.Unmarshal(b, full)
+	return *full, err
 }
 
 var (
