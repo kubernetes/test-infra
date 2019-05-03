@@ -73,7 +73,7 @@ presubmits:
         - runner.sh
         args:
         - ./scripts/ci-test.sh
-  
+
   - name: pull-cluster-api-provider-vsphere-e2e
     labels:
       preset-dind-enabled: "true"

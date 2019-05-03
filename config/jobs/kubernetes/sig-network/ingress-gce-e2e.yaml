@@ -259,7 +259,7 @@ periodics:
       - --gcp-project-type=ingress-project
       - --ginkgo-parallel=1
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] 
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\]
       - --timeout=320m
 
 - name: ci-ingress-gce-e2e-release-1-4
@@ -283,7 +283,7 @@ periodics:
       - --gcp-project-type=ingress-project
       - --ginkgo-parallel=1
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] 
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\]
       - --timeout=320m
 
 - name: ci-ingress-gce-e2e-release-1-5
@@ -307,7 +307,7 @@ periodics:
       - --gcp-project-type=ingress-project
       - --ginkgo-parallel=1
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] 
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\]
       - --timeout=320m
 
 - name: ci-ingress-gce-e2e-scale

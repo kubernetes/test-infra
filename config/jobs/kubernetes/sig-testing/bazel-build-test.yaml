@@ -896,4 +896,3 @@ periodics:
         resources:
           requests:
             memory: "6Gi"
-
