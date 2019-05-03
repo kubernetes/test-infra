@@ -96,9 +96,25 @@ func DataUpload(src io.Reader) UploadFunc {
 // data from src reader into GCS and also sets the provided metadata
 // fields onto the object.
 func DataUploadWithMetadata(src io.Reader, metadata map[string]string) UploadFunc {
+	meta := make(map[string]string, len(metadata))
+	for key, value := range metadata {
+		meta[key] = value
+	}
+
 	return func(obj *storage.ObjectHandle) error {
 		writer := obj.NewWriter(context.Background())
-		writer.Metadata = metadata
+
+		if value, ok := meta["Content-Encoding"]; ok {
+			writer.ContentEncoding = value
+			delete(meta, "Content-Encoding")
+		}
+
+		if value, ok := meta["Content-Type"]; ok {
+			writer.ContentType = value
+			delete(meta, "Content-Type")
+		}
+
+		writer.Metadata = meta
 		_, copyErr := io.Copy(writer, src)
 		closeErr := writer.Close()
 
