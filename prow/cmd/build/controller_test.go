@@ -1469,6 +1469,8 @@ func TestMakeBuild(t *testing.T) {
 				pj.Spec.ExtraRefs = []prowjobv1.Refs{{Org: "bonus"}}
 				pj.Spec.DecorationConfig = &prowjobv1.DecorationConfig{
 					UtilityImages: &prowjobv1.UtilityImages{},
+					Timeout:       &prowjobv1.Duration{Duration: 0},
+					GracePeriod:   &prowjobv1.Duration{Duration: 0},
 				}
 				return pj
 			},
@@ -1479,6 +1481,8 @@ func TestMakeBuild(t *testing.T) {
 				pj.Spec.ExtraRefs = []prowjobv1.Refs{{Org: "bonus"}}
 				pj.Spec.DecorationConfig = &prowjobv1.DecorationConfig{
 					UtilityImages: &prowjobv1.UtilityImages{},
+					Timeout:       &prowjobv1.Duration{Duration: 0},
+					GracePeriod:   &prowjobv1.Duration{Duration: 0},
 				}
 				pj.Spec.BuildSpec.Source = &buildv1alpha1.SourceSpec{}
 				return pj
@@ -1542,8 +1546,8 @@ func TestMakeBuild(t *testing.T) {
 
 func TestDecorateSteps(t *testing.T) {
 	var dc prowjobv1.DecorationConfig
-	dc.Timeout = prowjobv1.Duration{Duration: 10 * time.Minute}
-	dc.GracePeriod = prowjobv1.Duration{Duration: 5 * time.Minute}
+	dc.Timeout = &prowjobv1.Duration{Duration: 10 * time.Minute}
+	dc.GracePeriod = &prowjobv1.Duration{Duration: 5 * time.Minute}
 	_, tm := tools()
 	tm.Name += "not-static"
 	tm.MountPath += "fancy"
@@ -1570,15 +1574,15 @@ func TestDecorateSteps(t *testing.T) {
 		},
 	}
 	expected[1].Name = "step-1"
-	o1, err := decorate.InjectEntrypoint(&expected[0], dc.Timeout.Duration, dc.GracePeriod.Duration, expected[0].Name, "", true, logMount, tm)
+	o1, err := decorate.InjectEntrypoint(&expected[0], dc.Timeout.Get(), dc.GracePeriod.Get(), expected[0].Name, "", true, logMount, tm)
 	if err != nil {
 		t.Fatalf("inject expected 0: %v", err)
 	}
-	o2, err := decorate.InjectEntrypoint(&expected[1], dc.Timeout.Duration, dc.GracePeriod.Duration, expected[1].Name, o1.MarkerFile, true, logMount, tm)
+	o2, err := decorate.InjectEntrypoint(&expected[1], dc.Timeout.Get(), dc.GracePeriod.Get(), expected[1].Name, o1.MarkerFile, true, logMount, tm)
 	if err != nil {
 		t.Fatalf("inject expected 1: %v", err)
 	}
-	o3, err := decorate.InjectEntrypoint(&expected[2], dc.Timeout.Duration, dc.GracePeriod.Duration, expected[2].Name, o2.MarkerFile, true, logMount, tm)
+	o3, err := decorate.InjectEntrypoint(&expected[2], dc.Timeout.Get(), dc.GracePeriod.Get(), expected[2].Name, o2.MarkerFile, true, logMount, tm)
 	if err != nil {
 		t.Fatalf("inject expected 2: %v", err)
 	}
@@ -1739,6 +1743,9 @@ func TestInjectTimeout(t *testing.T) {
 
 			dc := prowjobv1.DecorationConfig{
 				UtilityImages: &prowjobv1.UtilityImages{},
+				Timeout: &prowjobv1.Duration{
+					Duration: defaultTimeout,
+				},
 			}
 			if tc.decoratedTimeout != nil {
 				dc.Timeout.Duration = *tc.decoratedTimeout
