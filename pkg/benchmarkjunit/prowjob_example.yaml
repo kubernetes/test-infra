@@ -1,0 +1,19 @@
+periodics:
+- name: ci-benchmark-demo
+  interval: 10m
+  decorate: true
+  extra_refs:
+  - org: cjwagner
+    repo: test-infra
+    base_ref: microbe-nchmarks
+  spec:
+    containers:
+    - image: golang:latest
+      command:
+      - go
+      args:
+      - run
+      - ./pkg/benchmarkjunit
+      - --log-file=$(ARTIFACTS)/benchmark-log.txt
+      - --output=$(ARTIFACTS)/junit_benchmarks.xml
+      - ./experiment/dummybenchmarks/...
