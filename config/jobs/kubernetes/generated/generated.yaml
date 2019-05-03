@@ -2288,7 +2288,7 @@ periodics:
       - --extract=ci/k8s-beta
       - --timeout=180m
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
-      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
 - tags:
@@ -3763,7 +3763,7 @@ periodics:
       - --extract=ci/k8s-stable2
       - --timeout=180m
       - --env=KUBE_FEATURE_GATES=AllAlpha=true
-      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
 - tags:
@@ -5361,7 +5361,7 @@ periodics:
       - --extract=ci/k8s-stable1
       - --timeout=180m
       - --env=KUBE_FEATURE_GATES=AllAlpha=true
-      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
 - tags:
