@@ -32,6 +32,7 @@ color-version() { # Bold blue
 }
 
 cd "$(dirname "${BASH_SOURCE}")"
+TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 
 if [[ $# -lt 2 ]]; then
     echo "Usage: $(basename "$0") <github-login> </path/to/github/token> [git-name] [git-email]" >&2
@@ -53,8 +54,9 @@ ensure-config() {
 }
 ensure-config "$@"
 
-echo "Bumping prow to latest..." >&2
-./bump.sh --latest
+echo "Bumping images to latest..." >&2
+output=$(find "${TESTINFRA_ROOT}" -name '*.yaml' -exec bazel run //experiment/image-bumper -- --image-regex="gcr.io/(k8s-prow|k8s-testimages)/" "{}" +)
+body=$(echo "${output}" | grep -v gcr.io/k8s-prow | sort | sed -e 's/\(.*\):v\([0-9]\{8\}\)-\([0-9a-f]\+\)\(.*\) -> v\([0-9]\{8\}\)-\([0-9a-f]\+\).*/`\1\4`: https:\/\/github.com\/kubernetes\/test-infra\/compare\/\3...\6 (\2 to \5)/')
 
 # Also try to regenerate security-job configs which uses explicit podutils image config
 # TODO(krzyzacy): workaround before we resolves https://github.com/kubernetes/test-infra/issues/9783
@@ -73,21 +75,23 @@ extract-commit() {
   echo ${c##*-}
 }
 
-old_version=$(git show HEAD:prow/cluster/plank_deployment.yaml | extract-version)
-version=$(cat cluster/plank_deployment.yaml | extract-version)
-comparison=$(extract-commit "${old_version}")...$(extract-commit "${version}")
-echo -e "Pushing $(color-version ${version}) to ${user}:autobump..." >&2
+oncall=$(python2.7 -c 'import urllib2;import json;print json.loads(urllib2.urlopen("https://storage.googleapis.com/kubernetes-jenkins/oncall.json").read())["Oncall"]["testinfra"]')
 
-title="Bump prow from ${old_version} to ${version}"
+old_prow_version=$(git show HEAD:prow/cluster/plank_deployment.yaml | extract-version)
+prow_version=$(cat cluster/plank_deployment.yaml | extract-version)
+prow_comparison=$(extract-commit "${old_prow_version}")...$(extract-commit "${prow_version}")
+echo -e "Pushing prow $(color-version ${prow_version}) to ${user}:autobump..." >&2
+
+title="Bump prow (${old_prow_version} to ${prow_version}) and test images as necessary"
 git add -A
-git commit -m "${title}"
+git commit -m "Bump all images"
 git push -f "git@github.com:${user}/test-infra.git" HEAD:autobump
 
 echo "Creating PR to merge ${user}:autobump into master..." >&2
 bazel run //robots/pr-creator -- \
     --github-token-path="${token}" \
     --org=kubernetes --repo=test-infra --branch=master \
-    --title="${title}" --match-title="Bump prow to" \
-    --body="Included changes: https://github.com/kubernetes/test-infra/compare/${comparison}" \
+    --title="${title}" --match-title="Bump prow to and test images" \
+    --body="Prow changes: https://github.com/kubernetes/test-infra/compare/${prow_comparison}"$'\n\nOthers:\n'"${body}"$'\n\n'"/cc @${oncall}" \
     --source="${user}":autobump \
     --confirm
