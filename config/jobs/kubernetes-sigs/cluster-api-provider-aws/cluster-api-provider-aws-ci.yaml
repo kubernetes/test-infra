@@ -13,7 +13,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.14
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190430-b9fa7d8-1.14
       command:
       - "./scripts/ci-aws-cred-test.sh"
 - name: periodic-cluster-api-provider-aws-bazel-e2e
@@ -32,7 +32,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.14
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190430-b9fa7d8-1.14
       command: ["runner.sh"]
       args: ["make", "e2e"]
       env:
@@ -59,7 +59,7 @@ postsubmits:
     - ^release-.*$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.14
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190430-b9fa7d8-1.14
         command: ["runner.sh"]
         args: ["make", "e2e"]
         env:

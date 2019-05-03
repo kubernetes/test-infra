@@ -1,0 +1,42 @@
+2019/05/03 09:50:09 Failed to update gcr.io/k8s-testimages/logexporter:v0.1.6: couldn't figure out the current tag in "v0.1.6".
+2019/05/03 09:50:09 Failed to update gcr.io/k8s-testimages/logexporter:v0.1.6: couldn't figure out the current tag in "v0.1.6".
+2019/05/03 09:50:18 Failed to update gcr.io/k8s-testimages/gubernator:0.4: couldn't figure out the current tag in "0.4".
+2019/05/03 09:50:19 Done.
+2019/05/03 09:50:19 gcr.io/k8s-prow/branchprotector:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-testimages/cluster-api:v20180720-d52d72975 -> v20190114-652973a54
+2019/05/03 09:50:19 gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285 -> v20190420-772ff94
+2019/05/03 09:50:19 gcr.io/k8s-prow/label_sync:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master -> v20190430-b9fa7d8-master
+2019/05/03 09:50:19 gcr.io/k8s-prow/horologium:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-prow/needs-rebase:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-prow/initupload:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-prow/commenter:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-experimental -> v20190430-b9fa7d8-experimental
+2019/05/03 09:50:19 gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master -> v20190430-b9fa7d8-master
+2019/05/03 09:50:19 gcr.io/k8s-testimages/kubekins-e2e-prow:v20170606-e69a3df0 -> v20170929-9413e407
+2019/05/03 09:50:19 gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.12 -> v20190430-b9fa7d8-1.12
+2019/05/03 09:50:19 gcr.io/k8s-prow/grandmatriarch:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-prow/plank:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-prow/deck:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.13 -> v20190430-b9fa7d8-1.13
+2019/05/03 09:50:19 gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.11 -> v20190430-b9fa7d8-1.11
+2019/05/03 09:50:19 gcr.io/k8s-prow/tot:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-testimages/cluster-api:v20180927-f09bc3b1b -> v20190114-652973a54
+2019/05/03 09:50:19 gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25 -> v20190125-cc5d6ecff3
+2019/05/03 09:50:19 gcr.io/k8s-testimages/gcloud-in-go:v20180927-6b4facbe6 -> v20190125-cc5d6ecff3
+2019/05/03 09:50:19 gcr.io/k8s-prow/hook:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-prow/build:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-testimages/reaper:v20190319-1a5a7d7fb -> v20190419-3a36c16
+2019/05/03 09:50:19 gcr.io/k8s-testimages/metrics:v20180604-ea866c2e8 -> v20190419-3a36c16
+2019/05/03 09:50:19 gcr.io/k8s-testimages/janitor:v20190320-fb2c17c2f -> v20190419-3a36c1625
+2019/05/03 09:50:19 gcr.io/k8s-prow/sidecar:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-testimages/boskos:v20190326-21e7f896f -> v20190419-3a36c16
+2019/05/03 09:50:19 gcr.io/k8s-prow/sinker:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-prow/ghproxy:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-prow/status-reconciler:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-prow/clonerefs:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.14 -> v20190430-b9fa7d8-1.14
+2019/05/03 09:50:19 gcr.io/k8s-prow/crier:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-prow/tide:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-prow/entrypoint:v20190503-f018ebad7 -> v20190503-2b73a65db
+2019/05/03 09:50:19 gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4 -> v20190420-772ff94

@@ -216,6 +216,6 @@ func main() {
 		if strings.Split(before, ":")[1] == after {
 			continue
 		}
-		log.Printf("%s -> %s\n", before, after)
+		fmt.Printf("%s -> %s\n", before, after)
 	}
 }

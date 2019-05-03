@@ -57,7 +57,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master # whatever image you use here must have bash 4.4+
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190430-b9fa7d8-master # whatever image you use here must have bash 4.4+
         command:
         - prow/push.sh
         env:
@@ -724,7 +724,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20190503-f018ebad7
+      image: gcr.io/k8s-prow/branchprotector:v20190503-2b73a65db
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -751,7 +751,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20190503-f018ebad7
+      image: gcr.io/k8s-prow/label_sync:v20190503-2b73a65db
       command:
       - /app/label_sync/app.binary
       args:
