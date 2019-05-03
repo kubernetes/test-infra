@@ -723,7 +723,7 @@ func determineTimeout(spec *buildv1alpha1.BuildSpec, dc *prowjobv1.DecorationCon
 	switch {
 	case spec.Timeout != nil:
 		return spec.Timeout.Duration
-	case dc != nil && dc.Timeout.Duration > 0:
+	case dc != nil && dc.Timeout.Get() > 0:
 		return dc.Timeout.Duration
 	default:
 		return defaultTimeout

@@ -1574,15 +1574,15 @@ func TestDecorateSteps(t *testing.T) {
 		},
 	}
 	expected[1].Name = "step-1"
-	o1, err := decorate.InjectEntrypoint(&expected[0], dc.Timeout.Duration, dc.GracePeriod.Duration, expected[0].Name, "", true, logMount, tm)
+	o1, err := decorate.InjectEntrypoint(&expected[0], dc.Timeout.Get(), dc.GracePeriod.Get(), expected[0].Name, "", true, logMount, tm)
 	if err != nil {
 		t.Fatalf("inject expected 0: %v", err)
 	}
-	o2, err := decorate.InjectEntrypoint(&expected[1], dc.Timeout.Duration, dc.GracePeriod.Duration, expected[1].Name, o1.MarkerFile, true, logMount, tm)
+	o2, err := decorate.InjectEntrypoint(&expected[1], dc.Timeout.Get(), dc.GracePeriod.Get(), expected[1].Name, o1.MarkerFile, true, logMount, tm)
 	if err != nil {
 		t.Fatalf("inject expected 1: %v", err)
 	}
-	o3, err := decorate.InjectEntrypoint(&expected[2], dc.Timeout.Duration, dc.GracePeriod.Duration, expected[2].Name, o2.MarkerFile, true, logMount, tm)
+	o3, err := decorate.InjectEntrypoint(&expected[2], dc.Timeout.Get(), dc.GracePeriod.Get(), expected[2].Name, o2.MarkerFile, true, logMount, tm)
 	if err != nil {
 		t.Fatalf("inject expected 2: %v", err)
 	}
