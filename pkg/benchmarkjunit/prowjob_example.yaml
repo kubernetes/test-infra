@@ -6,6 +6,7 @@ periodics:
   - org: cjwagner
     repo: test-infra
     base_ref: microbe-nchmarks
+    path_alias: k8s.io/test-infra
   spec:
     containers:
     - image: golang:latest
