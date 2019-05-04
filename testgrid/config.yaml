@@ -2795,9 +2795,6 @@ test_groups:
 - name: pull-test-infra-gubernator
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-gubernator
   num_columns_recent: 20
-- name: pull-test-infra-verify-bazel
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-bazel
-  num_columns_recent: 20
 - name: pull-test-infra-verify-gofmt
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-gofmt
   num_columns_recent: 20
@@ -7933,9 +7930,6 @@ dashboards:
     base_options: width=10
   - name: gubernator
     test_group_name: pull-test-infra-gubernator
-    base_options: width=10
-  - name: verify-bazel
-    test_group_name: pull-test-infra-verify-bazel
     base_options: width=10
   - name: verify-gofmt
     test_group_name: pull-test-infra-verify-gofmt
