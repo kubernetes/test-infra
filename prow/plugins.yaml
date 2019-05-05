@@ -592,6 +592,9 @@ plugins:
   - release-note
   - require-matching-label
   - welcome
+  
+  kubernetes-sigs/cluster-api-provider-ibmcloud:
+  - milestone
 
   kubernetes-sigs/contributor-playground:
   - require-sig
