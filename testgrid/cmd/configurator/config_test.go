@@ -55,6 +55,11 @@ var (
 	prefixes = [][]string{orgs, companies}
 )
 
+const (
+	prowPath = "../../../prow/config.yaml"
+	jobPath  = "../../../config/jobs"
+)
+
 // Shared testgrid config, loaded at TestMain.
 var cfg *config_pb.Configuration
 
@@ -69,6 +74,16 @@ func TestMain(m *testing.M) {
 	c := Config{}
 	if err := c.Update(yamlData); err != nil {
 		fmt.Printf("Yaml2Proto - Conversion Error %v", err)
+		os.Exit(1)
+	}
+
+	pca := &prow_config.Agent{}
+	if err := pca.Start(prowPath, jobPath); err != nil {
+		fmt.Printf("Prow config agent error: %v", err)
+		os.Exit(1)
+	}
+	if err := applyProwjobAnnotations(&c, pca); err != nil {
+		fmt.Printf("Couldn't apply prowjob annotations: %v", err)
 		os.Exit(1)
 	}
 
@@ -302,9 +317,6 @@ func TestConfig(t *testing.T) {
 }
 
 func TestJobsTestgridEntryMatch(t *testing.T) {
-	prowPath := "../../../prow/config.yaml"
-	jobPath := "../../../config/jobs"
-
 	jobs := make(map[string]bool)
 
 	prowConfig, err := prow_config.Load(prowPath, jobPath)

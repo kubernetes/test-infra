@@ -28,6 +28,7 @@ import (
 	"strings"
 	"time"
 
+	prowConfig "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/testgrid/util/gcs"
 
 	"cloud.google.com/go/storage"
@@ -52,6 +53,8 @@ type options struct {
 	printText          bool
 	validateConfigFile bool
 	worldReadable      bool
+	prowConfig         string
+	prowJobConfig      string
 }
 
 func gatherOptions() (options, error) {
@@ -63,6 +66,8 @@ func gatherOptions() (options, error) {
 	flag.BoolVar(&o.validateConfigFile, "validate-config-file", false, "validate that the given config files are syntactically correct and exit (proto is not written anywhere)")
 	flag.BoolVar(&o.worldReadable, "world-readable", false, "when uploading the proto to GCS, makes it world readable. Has no effect on writing to the local filesystem.")
 	flag.Var(&o.inputs, "yaml", "comma-separated list of input YAML files")
+	flag.StringVar(&o.prowConfig, "prow-config", "", "path to the prow config file. Required by --prow-job-config")
+	flag.StringVar(&o.prowJobConfig, "prow-job-config", "", "path to the prow job config. If specified, incorporates testgrid annotations on prowjobs. Requires --prow-config.")
 	flag.Parse()
 	if len(o.inputs) == 0 || o.inputs[0] == "" {
 		return o, errors.New("--yaml must include at least one file")
@@ -73,6 +78,9 @@ func gatherOptions() (options, error) {
 	}
 	if o.validateConfigFile && o.output != "" {
 		return o, errors.New("--validate-config-file doesn't write the proto anywhere")
+	}
+	if (o.prowConfig == "") != (o.prowJobConfig == "") {
+		return o, errors.New("--prow-config and --prow-job-config must be specified together")
 	}
 	return o, nil
 }
@@ -121,6 +129,19 @@ func announceChanges(ctx context.Context, paths []string, channel chan []string)
 	}
 }
 
+func announceProwChanges(ctx context.Context, pca *prowConfig.Agent, channel chan []string) {
+	pch := make(chan prowConfig.Delta)
+	pca.Subscribe(pch)
+	for {
+		<-pch
+		select {
+		case <-ctx.Done():
+			return
+		case channel <- []string{"prow config"}:
+		}
+	}
+}
+
 func readConfig(paths []string) (*Config, error) {
 	var c Config
 	for _, file := range paths {
@@ -150,11 +171,15 @@ func write(ctx context.Context, client *storage.Client, path string, bytes []byt
 	return gcs.Upload(ctx, client, p, bytes, worldReadable)
 }
 
-func doOneshot(ctx context.Context, client *storage.Client, opt options) error {
+func doOneshot(ctx context.Context, client *storage.Client, opt options, prowConfigAgent *prowConfig.Agent) error {
 	// Ignore what changed for now and just recompute everything
 	c, err := readConfig(opt.inputs)
 	if err != nil {
 		return fmt.Errorf("could not read config: %v", err)
+	}
+
+	if err := applyProwjobAnnotations(c, prowConfigAgent); err != nil {
+		return fmt.Errorf("could not apply prowjob annotations: %v", err)
 	}
 
 	// Print proto if requested
@@ -186,9 +211,16 @@ func main() {
 
 	ctx := context.Background()
 
+	prowConfigAgent := &prowConfig.Agent{}
+	if opt.prowConfig != "" && opt.prowJobConfig != "" {
+		if err := prowConfigAgent.Start(opt.prowConfig, opt.prowJobConfig); err != nil {
+			log.Fatalf("FAIL: couldn't load prow config: %v", err)
+		}
+	}
+
 	// Config file validation only
 	if opt.validateConfigFile {
-		if err := doOneshot(ctx, nil, opt); err != nil {
+		if err := doOneshot(ctx, nil, opt, prowConfigAgent); err != nil {
 			log.Fatalf("FAIL: %v", err)
 		}
 		log.Println("Config validated successfully")
@@ -196,14 +228,17 @@ func main() {
 	}
 
 	// Setup GCS client
-	client, err := gcs.ClientWithCreds(ctx, opt.creds)
-	if err != nil {
-		log.Fatalf("Failed to create storage client: %v", err)
+	var client *storage.Client
+	if opt.output != "" {
+		client, err = gcs.ClientWithCreds(ctx, opt.creds)
+		if err != nil {
+			log.Fatalf("Failed to create storage client: %v", err)
+		}
 	}
 
 	// Oneshot mode, write config and exit
 	if opt.oneshot {
-		if err := doOneshot(ctx, client, opt); err != nil {
+		if err := doOneshot(ctx, client, opt, prowConfigAgent); err != nil {
 			log.Fatalf("FAIL: %v", err)
 		}
 		return
@@ -213,12 +248,13 @@ func main() {
 	channel := make(chan []string)
 	// Monitor files for changes
 	go announceChanges(ctx, opt.inputs, channel)
+	go announceProwChanges(ctx, prowConfigAgent, channel)
 
 	// Wait for changed files
 	for changes := range channel {
 		log.Printf("Changed: %v", changes)
 		log.Println("Writing config...")
-		if err := doOneshot(ctx, client, opt); err != nil {
+		if err := doOneshot(ctx, client, opt, prowConfigAgent); err != nil {
 			log.Printf("FAIL: %v", err)
 			continue
 		}

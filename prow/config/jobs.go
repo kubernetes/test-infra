@@ -104,6 +104,8 @@ type JobBase struct {
 	Spec *v1.PodSpec `json:"spec,omitempty"`
 	// BuildSpec is the Knative build spec used if Agent is knative-build.
 	BuildSpec *buildv1alpha1.BuildSpec `json:"build_spec,omitempty"`
+	// Annotations are unused by prow itself, but provide a space to configure other automation.
+	Annotations map[string]string `json:"annotations,omitempty"`
 
 	UtilityConfig
 }
