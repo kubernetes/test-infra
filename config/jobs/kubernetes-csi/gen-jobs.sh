@@ -20,6 +20,9 @@
 
 base="$(dirname $0)"
 
+# We need this image because it has Docker in Docker and go.
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master"
+
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix.
 hostpath_example_repos="
@@ -192,7 +195,7 @@ EOF
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      - image: ${dind_image}
         command:
         - runner.sh
         args:
@@ -238,7 +241,7 @@ EOF
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      - image: ${dind_image}
         command:
         - runner.sh
         args:
@@ -270,7 +273,7 @@ EOF
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      - image: ${dind_image}
         command:
         - runner.sh
         args:
@@ -308,7 +311,7 @@ EOF
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      - image: ${dind_image}
         command:
         - runner.sh
         args:
@@ -347,7 +350,7 @@ EOF
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      - image: ${dind_image}
         command:
         - runner.sh
         args:
@@ -402,7 +405,7 @@ for tests in non-alpha alpha; do
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: ${dind_image}
       command:
       - runner.sh
       args:
@@ -451,7 +454,7 @@ for kubernetes in 1.13.3 1.14.0 master; do
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: ${dind_image}
       command:
       - runner.sh
       args:
