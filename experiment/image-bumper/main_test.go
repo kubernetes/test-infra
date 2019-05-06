@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+	"k8s.io/test-infra/experiment/image-bumper/bumper"
 	"regexp"
 	"testing"
 )
@@ -26,14 +27,14 @@ func TestPickBestTag(t *testing.T) {
 	tests := []struct {
 		name      string
 		tag       string
-		manifest  manifest
+		manifest  bumper.manifest
 		bestTag   string
 		expectErr bool
 	}{
 		{
 			name: "simple lookup",
 			tag:  "v20190329-811f7954b",
-			manifest: manifest{
+			manifest: bumper.manifest{
 				"image1": {
 					TimeCreatedMs: "2000",
 					Tags:          []string{"v20190404-65af07d"},
@@ -48,7 +49,7 @@ func TestPickBestTag(t *testing.T) {
 		{
 			name: "'latest' overrides date",
 			tag:  "v20190329-811f7954b",
-			manifest: manifest{
+			manifest: bumper.manifest{
 				"image1": {
 					TimeCreatedMs: "2000",
 					Tags:          []string{"v20190404-65af07d"},
@@ -63,7 +64,7 @@ func TestPickBestTag(t *testing.T) {
 		{
 			name: "tags with suffixes only match other tags with the same suffix",
 			tag:  "v20190329-811f7954b-experimental",
-			manifest: manifest{
+			manifest: bumper.manifest{
 				"image1": {
 					TimeCreatedMs: "2000",
 					Tags:          []string{"v20190404-65af07d"},
@@ -78,7 +79,7 @@ func TestPickBestTag(t *testing.T) {
 		{
 			name: "unsuffixed 'latest' has no effect on suffixed tags",
 			tag:  "v20190329-811f7954b-experimental",
-			manifest: manifest{
+			manifest: bumper.manifest{
 				"image1": {
 					TimeCreatedMs: "2000",
 					Tags:          []string{"v20190404-65af07d", "latest"},
@@ -93,7 +94,7 @@ func TestPickBestTag(t *testing.T) {
 		{
 			name: "suffixed 'latest' has no effect on unsuffixed tags",
 			tag:  "v20190329-811f7954b",
-			manifest: manifest{
+			manifest: bumper.manifest{
 				"image1": {
 					TimeCreatedMs: "2000",
 					Tags:          []string{"v20190404-65af07d"},
@@ -108,7 +109,7 @@ func TestPickBestTag(t *testing.T) {
 		{
 			name: "'latest' with the correct suffix overrides date",
 			tag:  "v20190329-811f7954b-experimental",
-			manifest: manifest{
+			manifest: bumper.manifest{
 				"image1": {
 					TimeCreatedMs: "2000",
 					Tags:          []string{"v20190404-65af07d-experimental"},
@@ -123,7 +124,7 @@ func TestPickBestTag(t *testing.T) {
 		{
 			name: "it is an error when no tags are found",
 			tag:  "v20190329-811f7954b-master",
-			manifest: manifest{
+			manifest: bumper.manifest{
 				"image1": {
 					TimeCreatedMs: "2000",
 					Tags:          []string{"v20190404-65af07d-experimental"},
@@ -139,8 +140,8 @@ func TestPickBestTag(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			tagParts := tagRegexp.FindStringSubmatch(test.tag)
-			bestTag, err := pickBestTag(tagParts, test.manifest)
+			tagParts := bumper.tagRegexp.FindStringSubmatch(test.tag)
+			bestTag, err := bumper.pickBestTag(tagParts, test.manifest)
 			if err != nil {
 				if !test.expectErr {
 					t.Fatalf("Unexpected error: %v", err)
@@ -233,7 +234,7 @@ func TestUpdateAllTags(t *testing.T) {
 				return result, nil
 			}
 
-			newContent := updateAllTags(tagPicker, []byte(test.content), test.imageFilter)
+			newContent := bumper.updateAllTags(tagPicker, []byte(test.content), test.imageFilter)
 			if test.expectedResult != string(newContent) {
 				t.Fatalf("Expected content:\n%s\n\nActual content:\n%s\n\n", test.expectedResult, string(newContent))
 			}

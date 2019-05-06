@@ -6,6 +6,6 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190506-563bcb3-master
         command:
         - "./hack/ci/test.sh"

@@ -16,7 +16,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190506-563bcb3-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -50,7 +50,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.14
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190506-563bcb3-1.14
           imagePullPolicy: Always
           command:
             - runner.sh
@@ -85,7 +85,7 @@ presubmits:
     - release-1.11
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+      - image: gcr.io/k8s-testimages/bootstrap:v20190420-772ff94
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -119,7 +119,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190506-563bcb3-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -155,7 +155,7 @@ periodics:
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.14
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190506-563bcb3-1.14
         imagePullPolicy: Always
         command:
           - runner.sh
@@ -185,7 +185,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
+    - image: gcr.io/k8s-testimages/bootstrap:v20190420-772ff94
       args:
       - --repo=k8s.io/kubernetes=release-1.13
       - --timeout=75
@@ -209,7 +209,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
+    - image: gcr.io/k8s-testimages/bootstrap:v20190420-772ff94
       args:
       - --repo=k8s.io/kubernetes=release-1.12
       - --timeout=90
@@ -233,7 +233,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
+    - image: gcr.io/k8s-testimages/bootstrap:v20190420-772ff94
       args:
       - --repo=k8s.io/kubernetes=release-1.11
       - --timeout=75

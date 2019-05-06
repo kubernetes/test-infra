@@ -5,6 +5,7 @@ go_library(
     srcs = ["main.go"],
     importpath = "k8s.io/test-infra/experiment/image-bumper",
     visibility = ["//visibility:private"],
+    deps = ["//experiment/image-bumper/bumper:go_default_library"],
 )
 
 go_binary(
@@ -22,7 +23,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//experiment/image-bumper/bumper:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
@@ -31,4 +35,5 @@ go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
+    deps = ["//experiment/image-bumper/bumper:go_default_library"],
 )
