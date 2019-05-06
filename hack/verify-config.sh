@@ -17,7 +17,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [[ -n "${TEST_WORKSPACE:-}" ]]; then
+if [[ -n "${TEST_WORKSPACE:-}" ]]; then # Running inside bazel
   echo "Validating job configs..." >&2
 elif ! command -v bazel &> /dev/null; then
   echo "Install bazel at https://bazel.build" >&2
