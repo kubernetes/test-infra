@@ -312,6 +312,11 @@ postsubmits:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+    skip_branches:
+    - release-1.14 # per-release job
+    - release-1.13 # per-release job
+    - release-1.12 # per-release job
+    - release-1.11 # per-release job
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
@@ -341,6 +346,11 @@ postsubmits:
     - base_ref: master
       org: kubernetes
       repo: test-infra
+    skip_branches:
+    - release-1.14 # per-release job
+    - release-1.13 # per-release job
+    - release-1.12 # per-release job
+    - release-1.11 # per-release job
     spec:
       containers:
       - image: launcher.gcr.io/google/bazel:0.24.1
