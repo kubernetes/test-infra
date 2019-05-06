@@ -332,6 +332,30 @@ postsubmits:
         resources:
           requests:
             memory: "6Gi"
+  - name: post-kubernetes-bazel-test
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      repo: test-infra
+    spec:
+      containers:
+      - image: launcher.gcr.io/google/bazel:0.24.1
+        command:
+        - ../test-infra/hack/bazel.sh
+        args:
+        - test
+        - --config=unit
+        - --config=remote
+        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
+        - //...
+        - //hack:verify-all
+        - --
+        - -//build/...
+        - -//vendor/...
 
   # manual-release-bump-required (add a job for the new release branch and delete the one for the deprecated release.)
   - name: ci-kubernetes-bazel-build-1-11

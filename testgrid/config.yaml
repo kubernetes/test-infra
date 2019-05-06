@@ -768,6 +768,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-14
 - name: ci-kubernetes-bazel-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test
+- name: post-kubernetes-bazel-test
+  gcs_prefix: kubernetes-jenkins/logs/post-kubernetes-bazel-test
 - name: ci-kubernetes-bazel-test-1-11
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-11
 - name: ci-kubernetes-bazel-test-1-12
@@ -5182,6 +5184,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
   - name: kubeadm-kind-master
     test_group_name: ci-kubernetes-e2e-kubeadm-kind-master
+  - name: bazel-test-master
+    test_group_name: post-kubernetes-bazel-test
 
 - name: sig-release-1.14-all
   dashboard_tab:
