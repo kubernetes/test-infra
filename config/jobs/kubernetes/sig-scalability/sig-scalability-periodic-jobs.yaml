@@ -551,7 +551,7 @@ periodics:
     preset-e2e-scalability-common: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190506-4306ad7b3-master
         args:
           - --timeout=300
           - --bare
@@ -563,10 +563,10 @@ periodics:
           - --gcp-master-image=gci
           - --gcp-node-image=gci
           - --gcp-nodes=5
+          - --gcp-ssh-proxy-instance-name=private-gce-test-master
           - --gcp-zone=us-east1-b
           - --ginkgo-parallel=5
           - --provider=gce
-          # TODO(mm4tt): Start setting --ssh-proxy-instance-name= when it's supported in kubetest
           - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
           - --timeout=240m
           - --use-logexporter
