@@ -3693,8 +3693,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-1-13-on-kubernetes-1-14
 - name: ci-kubernetes-csi-1-13-on-kubernetes-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-1-13-on-kubernetes-master
+- name: ci-kubernetes-csi-1-14-on-kubernetes-1-13
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-1-14-on-kubernetes-1-13
+- name: ci-kubernetes-csi-1-14-on-kubernetes-1-14
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-1-14-on-kubernetes-1-14
+- name: ci-kubernetes-csi-1-14-on-kubernetes-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-1-14-on-kubernetes-master
 - name: ci-kubernetes-csi-alpha-1-13-on-kubernetes-1-13
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-alpha-1-13-on-kubernetes-1-13
+- name: ci-kubernetes-csi-alpha-1-14-on-kubernetes-1-14
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-alpha-1-14-on-kubernetes-1-14
 - name: ci-kubernetes-csi-canary-on-kubernetes-1-13
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-canary-on-kubernetes-1-13
 - name: ci-kubernetes-csi-canary-on-kubernetes-1-14
@@ -7250,9 +7258,21 @@ dashboards:
   - name: 1-13-on-master
     test_group_name: ci-kubernetes-csi-1-13-on-kubernetes-master
     description: Kubernetes-CSI non-alpha tests with Kubernetes master and 1.13 sidecars
+  - name: 1-14-on-1-13
+    test_group_name: ci-kubernetes-csi-1-14-on-kubernetes-1-13
+    description: Kubernetes-CSI non-alpha tests with Kubernetes 1.13.x and 1.14 sidecars
+  - name: 1-14-on-1-14
+    test_group_name: ci-kubernetes-csi-1-14-on-kubernetes-1-14
+    description: Kubernetes-CSI non-alpha tests with Kubernetes 1.14.x and 1.14 sidecars
+  - name: 1-14-on-master
+    test_group_name: ci-kubernetes-csi-1-14-on-kubernetes-master
+    description: Kubernetes-CSI non-alpha tests with Kubernetes master and 1.14 sidecars
   - name: alpha-1-13-on-1-13
     test_group_name: ci-kubernetes-csi-alpha-1-13-on-kubernetes-1-13
     description: Kubernetes-CSI alpha tests with Kubernetes 1.13.x and 1.13 sidecars
+  - name: alpha-1-14-on-1-14
+    test_group_name: ci-kubernetes-csi-alpha-1-14-on-kubernetes-1-14
+    description: Kubernetes-CSI alpha tests with Kubernetes 1.14.x and 1.14 sidecars
   - name: canary-on-1-13
     test_group_name: ci-kubernetes-csi-canary-on-kubernetes-1-13
     description: Kubernetes-CSI non-alpha tests with Kubernetes 1.13.x and 1.14 sidecars

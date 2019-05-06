@@ -380,9 +380,8 @@ cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 periodics:
 EOF
 
-# TODO: decide how we want to test the kubernetes-1.14 deployment
 for tests in non-alpha alpha; do
-    for deployment in 1.13; do
+    for deployment in 1.13 1.14; do
         for kubernetes in 1.13 1.14 master; do
             # No version skew testing of alpha features, deployment has to match Kubernetes.
             if [ "$tests" = "alpha" ] && ! echo "$kubernetes" | grep -q "^$deployment"; then
