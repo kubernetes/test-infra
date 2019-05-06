@@ -53,6 +53,7 @@ filegroup(
         "//experiment/add-hook:all-srcs",
         "//experiment/aws-stockout:all-srcs",
         "//experiment/ci-janitor:all-srcs",
+        "//experiment/config-forker:all-srcs",
         "//experiment/coverage:all-srcs",
         "//experiment/dummybenchmarks:all-srcs",
         "//experiment/image-bumper:all-srcs",
