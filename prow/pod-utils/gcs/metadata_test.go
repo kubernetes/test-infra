@@ -20,116 +20,118 @@ import (
 	"mime"
 	"reflect"
 	"testing"
+
+	"cloud.google.com/go/storage"
 )
 
-func TestMetadataFromFileName(t *testing.T) {
+func TestAttrsFromFileName(t *testing.T) {
 	mime.AddExtensionType(".log", "text/plain")
 
 	testCases := []struct {
 		name             string
 		filename         string
 		expectedFileName string
-		expectedMetadata map[string]string
+		expectedAttrs    *storage.ObjectAttrs
 	}{
 		{
 			name:             "txt",
 			filename:         "build-log.txt",
 			expectedFileName: "build-log.txt",
-			expectedMetadata: map[string]string{
-				"Content-Type": "text/plain; charset=utf-8",
+			expectedAttrs: &storage.ObjectAttrs{
+				ContentType: "text/plain; charset=utf-8",
 			},
 		},
 		{
 			name:             "txt.gz",
 			filename:         "build-log.txt.gz",
 			expectedFileName: "build-log.txt",
-			expectedMetadata: map[string]string{
-				"Content-Encoding": "gzip",
-				"Content-Type":     "text/plain; charset=utf-8",
+			expectedAttrs: &storage.ObjectAttrs{
+				ContentEncoding: "gzip",
+				ContentType:     "text/plain; charset=utf-8",
 			},
 		},
 		{
 			name:             "txt.gzip",
 			filename:         "build-log.txt.gzip",
 			expectedFileName: "build-log.txt",
-			expectedMetadata: map[string]string{
-				"Content-Encoding": "gzip",
-				"Content-Type":     "text/plain; charset=utf-8",
+			expectedAttrs: &storage.ObjectAttrs{
+				ContentEncoding: "gzip",
+				ContentType:     "text/plain; charset=utf-8",
 			},
 		},
 		{
 			name:             "bare gz",
 			filename:         "gz",
 			expectedFileName: "gz",
-			expectedMetadata: map[string]string{
-				"Content-Type": "application/gzip",
+			expectedAttrs: &storage.ObjectAttrs{
+				ContentType: "application/gzip",
 			},
 		},
 		{
 			name:             "gz",
 			filename:         "build-log.gz",
 			expectedFileName: "build-log",
-			expectedMetadata: map[string]string{
-				"Content-Type": "application/gzip",
+			expectedAttrs: &storage.ObjectAttrs{
+				ContentType: "application/gzip",
 			},
 		},
 		{
 			name:             "gzip",
 			filename:         "build-log.gzip",
 			expectedFileName: "build-log",
-			expectedMetadata: map[string]string{
-				"Content-Type": "application/gzip",
+			expectedAttrs: &storage.ObjectAttrs{
+				ContentType: "application/gzip",
 			},
 		},
 		{
 			name:             "json",
 			filename:         "events.json",
 			expectedFileName: "events.json",
-			expectedMetadata: map[string]string{
-				"Content-Type": "application/json",
+			expectedAttrs: &storage.ObjectAttrs{
+				ContentType: "application/json",
 			},
 		},
 		{
 			name:             "json.gz",
 			filename:         "events.json.gz",
 			expectedFileName: "events.json",
-			expectedMetadata: map[string]string{
-				"Content-Encoding": "gzip",
-				"Content-Type":     "application/json",
+			expectedAttrs: &storage.ObjectAttrs{
+				ContentEncoding: "gzip",
+				ContentType:     "application/json",
 			},
 		},
 		{
 			name:             "log",
 			filename:         "journal.log",
 			expectedFileName: "journal.log",
-			expectedMetadata: map[string]string{
-				"Content-Type": "text/plain; charset=utf-8",
+			expectedAttrs: &storage.ObjectAttrs{
+				ContentType: "text/plain; charset=utf-8",
 			},
 		},
 		{
 			name:             "empty",
 			filename:         "",
 			expectedFileName: "",
-			expectedMetadata: map[string]string{},
+			expectedAttrs:    &storage.ObjectAttrs{},
 		},
 		{
 			name:             "dot",
 			filename:         ".",
 			expectedFileName: ".",
-			expectedMetadata: map[string]string{},
+			expectedAttrs:    &storage.ObjectAttrs{},
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			actualFileName, actualMetadata := MetadataFromFileName(test.filename)
+			actualFileName, actualAttrs := AttributesFromFileName(test.filename)
 
 			if actualFileName != test.expectedFileName {
 				t.Errorf("expected file name %q but got %q", test.expectedFileName, actualFileName)
 			}
 
-			if !reflect.DeepEqual(actualMetadata, test.expectedMetadata) {
-				t.Errorf("expected metadata %#+v but got %#+v", test.expectedMetadata, actualMetadata)
+			if !reflect.DeepEqual(actualAttrs, test.expectedAttrs) {
+				t.Errorf("expected attributes %#+v but got %#+v", test.expectedAttrs, actualAttrs)
 			}
 		})
 	}
