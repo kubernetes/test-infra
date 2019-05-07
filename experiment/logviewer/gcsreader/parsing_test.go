@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"io"
 	"regexp"
 	"strings"
 	"testing"
@@ -27,7 +28,7 @@ func TestMatchSingleLine(t *testing.T) {
 	regex := regexp.MustCompile("\"auditID\":\"39aec93e-031b-4002-8c0a-4ddcd92e250b\"")
 	arr := []string{line1, line2, line3}
 	text := strings.Join(arr, "\r\n")
-	lines, err := processLines(strings.NewReader(text), regex)
+	lines, err := processAllLines(strings.NewReader(text), regex)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,8 +49,21 @@ func TestParseSingleLine(t *testing.T) {
 		t.Fatalf("Expected time %s received %s", expectedTime, line.time)
 	}
 
-	if line.log != line1 {
-		t.Fatalf("Expected log %s received %s", line1, line.log)
+	if *line.log != line1 {
+		t.Fatalf("Expected log %s received %s", line1, *line.log)
+	}
+}
+
+func processAllLines(reader io.Reader, regex *regexp.Regexp) ([]*logEntry, error) {
+	res := make([]*logEntry, 0)
+	ch := make(chan *lineEntry, 100000)
+	go getMatchingLines(reader, ch, &lineFilter{regex: regex})
+	for {
+		line, hasMore := <-ch
+		if !hasMore {
+			return res, nil
+		}
+		res = append(res, line.logEntry)
 	}
 }
 

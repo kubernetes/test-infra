@@ -19,58 +19,123 @@ package main
 import (
 	"context"
 	"io"
+	"net"
 	"os"
+	"path/filepath"
 	"regexp"
+	"strings"
+	"time"
+
+	"github.com/golang/protobuf/ptypes"
 
 	"cloud.google.com/go/storage"
+	ts "github.com/golang/protobuf/ptypes/timestamp"
 	gzip "github.com/klauspost/pgzip"
+	pb "github.com/kzmrv/gcsreader/proto"
 	"google.golang.org/api/option"
-	"k8s.io/klog"
+	"google.golang.org/grpc"
+	log "k8s.io/klog"
 )
 
+const (
+	port       = ":17654"
+	bucketName = "kubernetes-jenkins"
+	lineBuffer = 100000
+)
+
+type serverType struct{}
+
+type lineFilter struct {
+	regex *regexp.Regexp
+	since time.Time
+	until time.Time
+}
+
 func main() {
-	logPath, targetSubstring := setupFromConsole()
-	regex := regexp.MustCompile(targetSubstring)
+	log.InitFlags(nil)
 
-	r, err := downloadAndDecompress(logPath)
+	listener, err := net.Listen("tcp", port)
 	if err != nil {
-		klog.Fatal(err)
+		log.Fatalf("Failed to listen: %v", err)
 	}
-	parsed, err := processLines(r, regex)
+	log.Infof("Listening on port: %v", port)
+	server := grpc.NewServer()
+	pb.RegisterWorkerServer(server, &serverType{})
+	err = server.Serve(listener)
 	if err != nil {
-		klog.Fatal(err)
-	}
-
-	if len(parsed) == 0 {
-		klog.Info("No lines found")
-	} else {
-		for _, line := range parsed {
-			klog.Infoln(*line)
-		}
+		log.Fatalf("Failed to serve: %v", err)
 	}
 }
 
-const testLogPath = "logs/ci-kubernetes-e2e-gce-scale-performance/290/artifacts/gce-scale-cluster-master/kube-apiserver-audit.log-20190102-1546444805.gz"
-const testTargetSubstring = "\"auditID\":\"07ff64df-fcfe-4cdc-83a5-0c6a09237698\""
+func (*serverType) DoWork(request *pb.Work, server pb.Worker_DoWorkServer) error {
+	defer timeTrack(time.Now(), "Call duration")
+	log.Infof("Received: file %v, substring %v, since %v, until %v",
+		request.File, request.TargetSubstring, ptypes.TimestampString(request.Since), ptypes.TimestampString(request.Until))
 
-func setupFromConsole() (string, string) {
-	var logPath, targetSubstring string
-	if len(os.Args) < 2 || os.Args[1] == "" {
-		logPath = testLogPath
-	} else {
-		logPath = os.Args[1]
+	reader, err := downloadAndDecompress(request.File)
+	if err != nil {
+		return err
+	}
+	lineChannel := make(chan *lineEntry, lineBuffer)
+	regex, err := regexp.Compile(request.TargetSubstring)
+	if err != nil {
+		return err
 	}
 
-	if len(os.Args) < 3 || os.Args[2] == "" {
-		targetSubstring = testTargetSubstring
-	} else {
-		targetSubstring = os.Args[2]
+	since, _ := ptypes.Timestamp(request.Since)
+	until, _ := ptypes.Timestamp(request.Until)
+	filters := &lineFilter{
+		regex: regex,
+		since: since,
+		until: until,
 	}
 
-	return logPath, targetSubstring
+	go getMatchingLines(reader, lineChannel, filters)
+	batchAndSend(lineChannel, server)
+
+	return nil
+}
+
+func batchAndSend(ch chan *lineEntry, server pb.Worker_DoWorkServer) {
+	lineCounter := 0
+	const batchSize = 100
+	for hasMoreBatches := true; hasMoreBatches; {
+		batches := make([]*pb.LogLine, batchSize)
+		i := 0
+		for i < batchSize {
+			line, hasMore := <-ch
+			if line.err == io.EOF || !hasMore {
+				hasMoreBatches = false
+				break
+			}
+			if line.err != nil {
+				log.Errorf("Failed to parse line with error %v", line.err)
+				continue
+			}
+
+			entry := line.logEntry
+			pbLine := &pb.LogLine{
+				Entry:     *entry.log,
+				Timestamp: &ts.Timestamp{Seconds: entry.time.Unix(), Nanos: int32(entry.time.Nanosecond())}}
+
+			batches[i] = pbLine
+			i++
+		}
+
+		if i != 0 {
+			err := server.Send(&pb.WorkResult{LogLines: batches[:i]})
+			if err != nil {
+				log.Errorf("Failed to send result with: %v", err)
+			}
+			lineCounter += i
+		}
+	}
+
+	log.Infof("Finished with %v lines", lineCounter)
 }
 
 func downloadAndDecompress(objectPath string) (io.Reader, error) {
+	//return loadFromLocalFS(objectPath)
 	reader, err := download(objectPath)
 	if err != nil {
 		return nil, err
@@ -82,8 +147,6 @@ func downloadAndDecompress(objectPath string) (io.Reader, error) {
 	}
 	return decompressed, nil
 }
-
-const bucketName = "kubernetes-jenkins"
 
 func download(objectPath string) (io.Reader, error) {
 	context := context.Background()
@@ -109,4 +172,18 @@ func decompress(reader io.Reader) (io.Reader, error) {
 		return nil, err
 	}
 	return newReader, nil
+}
+
+func timeTrack(start time.Time, name string) {
+	elapsed := time.Since(start)
+	log.Infof("%s took %s", name, elapsed)
+}
+
+// for testing purposes
+func loadFromLocalFS(objectPath string) (io.Reader, error) {
+	const folder = "/Downloads/kubernetes-jenkins-310"
+	idx := strings.LastIndex(objectPath, "/") + 1
+	fileName := strings.TrimSuffix(objectPath[idx:], ".gz")
+	home, _ := os.UserHomeDir()
+	return os.Open(filepath.Join(home, folder, fileName))
 }
