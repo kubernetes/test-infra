@@ -326,6 +326,56 @@ func TestConfig(t *testing.T) {
 	}
 }
 
+// TODO(spiffxp): These are all repos that don't have their presubmits in testgrid.
+// Convince sig leads or subproject owners this is a bad idea and whittle this down
+// to just kubernetes-security/
+var noPresubmitsInTestgridPrefixes = []string{
+	"GoogleCloudPlatform/k8s-multicluster-ingress",
+	"containerd/cri",
+	"kubeflow/pipelines",
+	"kubernetes-csi/csi-driver-host-path",
+	"kubernetes-csi/csi-lib-utils",
+	"kubernetes-csi/csi-release-tools",
+	"kubernetes-csi/csi-test",
+	"kubernetes-csi/external-attacher",
+	"kubernetes-csi/external-provisioner",
+	"kubernetes-csi/external-snapshotter",
+	"kubernetes-csi/livenessprobe",
+	"kubernetes-csi/node-driver-registrar",
+	"kubernetes-incubator/service-catalog",
+	"kubernetes-sigs/gcp-compute-persistent-disk-csi-driver",
+	"kubernetes-sigs/gcp-filestore-csi-driver",
+	"kubernetes-sigs/kind",
+	"kubernetes-sigs/kube-storage-version-migrator",
+	"kubernetes-sigs/kubebuilder-declarative-pattern",
+	"kubernetes-sigs/sig-storage-local-static-provisioner",
+	"kubernetes-sigs/slack-infra",
+	"kubernetes-sigs/testing_frameworks",
+	"kubernetes/client-go",
+	"kubernetes/cloud-provider-gcp",
+	"kubernetes/cloud-provider-openstack",
+	"kubernetes/community",
+	"kubernetes/dns",
+	"kubernetes/enhancements",
+	"kubernetes/ingress-gce",
+	"kubernetes/k8s.io",
+	"kubernetes/kubeadm",
+	"kubernetes/minikube",
+	"kubernetes/release",
+	"kubernetes-csi/csi-driver-host-path",
+	// This is the one entry that should be here
+	"kubernetes-security/",
+}
+
+func hasAnyPrefix(s string, prefixes []string) bool {
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(s, prefix) {
+			return true
+		}
+	}
+	return false
+}
+
 func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T) {
 	prowPath := "../../../prow/config.yaml"
 	jobPath := "../../../config/jobs"
@@ -337,60 +387,13 @@ func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T)
 		t.Fatalf("Could not load prow configs: %v\n", err)
 	}
 
-	// TODO(spiffxp): can we invert this? make this a project-wide default,
-	// then filter out valid exceptions (like pull-kubernetes-security)
-	for _, job := range prowConfig.AllPresubmits([]string{
-		"bazelbuild/rules_k8s",
-		"google/cadvisor",
-		"helm/charts",
-		"GoogleCloudPlatform/k8s-cluster-bundle",
-		"kubeflow/arena",
-		"kubeflow/caffe2-operator",
-		"kubeflow/chainer-operator",
-		"kubeflow/examples",
-		"kubeflow/experimental-beagle",
-		"kubeflow/experimental-kvc",
-		"kubeflow/experimental-seldon",
-		"kubeflow/fairing",
-		"kubeflow/katib",
-		"kubeflow/kubebench",
-		"kubeflow/kubeflow",
-		"kubeflow/metadata",
-		"kubeflow/mpi-operator",
-		"kubeflow/mxnet-operator",
-		"kubeflow/pytorch-operator",
-		"kubeflow/reporting",
-		"kubeflow/testing",
-		"kubeflow/tf-operator",
-		"kubeflow/website",
-		"kubernetes/cloud-provider-aws",
-		"kubernetes/cloud-provider-azure",
-		"kubernetes/cloud-provider-vsphere",
-		"kubernetes/cluster-registry",
-		"kubernetes/federation",
-		"kubernetes/kops",
-		"kubernetes/kubernetes",
-		"kubernetes/node-problem-detector",
-		"kubernetes/org",
-		"kubernetes/publishing-bot",
-		"kubernetes/test-infra",
-		"kubernetes-sigs/aws-alb-ingress-controller",
-		"kubernetes-sigs/aws-ebs-csi-driver",
-		"kubernetes-sigs/cluster-api",
-		"kubernetes-sigs/cluster-api-provider-aws",
-		"kubernetes-sigs/cluster-api-provider-azure",
-		"kubernetes-sigs/cluster-api-provider-digitalocean",
-		"kubernetes-sigs/cluster-api-provider-gcp",
-		"kubernetes-sigs/cluster-api-provider-ibmcloud",
-		"kubernetes-sigs/cluster-api-provider-vsphere",
-		"kubernetes-sigs/cluster-api-provider-openstack",
-		"kubernetes-sigs/poseidon",
-		"kubernetes-sigs/kube-batch",
-		"kubernetes-sigs/structured-merge-diff",
-		"kubernetes-sigs/vsphere-csi-driver",
-		"tensorflow/minigo",
-	}) {
-		jobs[job.Name] = false
+	for repo, presubmits := range prowConfig.Presubmits {
+		if hasAnyPrefix(repo, noPresubmitsInTestgridPrefixes) {
+			continue
+		}
+		for _, job := range presubmits {
+			jobs[job.Name] = false
+		}
 	}
 
 	for _, job := range prowConfig.AllPostsubmits([]string{}) {
