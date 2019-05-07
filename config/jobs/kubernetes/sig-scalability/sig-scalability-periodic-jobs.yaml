@@ -541,6 +541,33 @@ periodics:
       - --test-cmd-name=KubeDnsBenchmark
       - --timeout=120m
 
+- name: ci-benchmark-microbenchmarks
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    # TODO(wojtek-t): Can we use the current Go version from Kubernetes?
+    - image: golang:latest
+      command:
+      - go
+      args:
+      - run
+      - ../test-infra/pkg/benchmarkjunit
+      - --log-file=$(ARTIFACTS)/benchmark-log.txt
+      - --output=$(ARTIFACTS)/junit_benchmarks.xml
+      - ./pkg/api/...
+
 # Experimental config for testing private gce clusters.
 - name: ci-kubernetes-e2e-gce-private-cluster-correctness
   # TODO(mm4tt): Lower the timeout once we know how long the test takes.
