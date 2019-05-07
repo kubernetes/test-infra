@@ -3,9 +3,9 @@ periodics:
   interval: 10m
   decorate: true
   extra_refs:
-  - org: cjwagner
+  - org: kubernetes
     repo: test-infra
-    base_ref: microbe-nchmarks
+    base_ref: master
     path_alias: k8s.io/test-infra
   spec:
     containers:
@@ -17,4 +17,5 @@ periodics:
       - ./pkg/benchmarkjunit
       - --log-file=$(ARTIFACTS)/benchmark-log.txt
       - --output=$(ARTIFACTS)/junit_benchmarks.xml
+      - --pass-on-error
       - ./experiment/dummybenchmarks/...

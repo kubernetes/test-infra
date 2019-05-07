@@ -32,6 +32,7 @@ type options struct {
 	benchRegexp   string
 	extraTestArgs []string
 	goBinaryPath  string
+	passOnError   bool
 }
 
 func main() {
@@ -49,6 +50,7 @@ func main() {
 	cmd.Flags().StringVar(&opts.benchRegexp, "bench", ".", "The regexp to pass to the -bench 'go test' flag to select benchmarks to run.")
 	cmd.Flags().StringSliceVar(&opts.extraTestArgs, "test-arg", nil, "additional args for go test")
 	cmd.Flags().StringVar(&opts.goBinaryPath, "go", "go", "The location of the go binary. This flag is primarily intended for use with bazel.")
+	cmd.Flags().BoolVar(&opts.passOnError, "pass-on-error", false, "Indicates that benchmarkjunit should exit zero if junit is properly generated, even if benchmarks fail.")
 
 	if err := cmd.Execute(); err != nil {
 		logrus.WithError(err).Fatal("Command failed.")
@@ -64,9 +66,9 @@ func run(opts *options, args []string) {
 	testCmd := exec.Command(opts.goBinaryPath, testArgs...)
 
 	logrus.Infof("Running command %q...", append([]string{opts.goBinaryPath}, testArgs...))
-	testOutput, err := testCmd.CombinedOutput()
-	if err != nil {
-		logrus.WithError(err).Error("Error(s) executing benchmarks.")
+	testOutput, testErr := testCmd.CombinedOutput()
+	if testErr != nil {
+		logrus.WithError(testErr).Error("Error(s) executing benchmarks.")
 	}
 	if len(opts.logFile) > 0 {
 		if err := ioutil.WriteFile(opts.logFile, testOutput, 0666); err != nil {
@@ -78,11 +80,10 @@ func run(opts *options, args []string) {
 	// Now parse output to JUnit, marshal to XML, and output.
 	junit, err := parse(testOutput)
 	if err != nil {
-		fmt.Printf("Error parsing go test output: %v.\nOutput:\n%s\n\n", err, string(testOutput))
-		logrus.WithError(err).Fatal("Error parsing 'go test' output.")
+		logrus.WithField("output", string(testOutput)).WithError(err).Fatal("Error parsing 'go test' output.")
 	}
 	if len(junit.Suites) == 0 {
-		logrus.Warn("Warning: no test suites were found in the 'go test' output.")
+		logrus.WithField("output", string(testOutput)).Fatal("Error: no test suites were found in the 'go test' output.")
 	}
 	junitBytes, err := xml.Marshal(junit)
 	if err != nil {
@@ -96,4 +97,8 @@ func run(opts *options, args []string) {
 		}
 	}
 	logrus.Info("Successfully generated JUnit XML for Benchmarks.")
+
+	if !opts.passOnError && testErr != nil {
+		logrus.WithError(testErr).Fatal("Exiting non-zero due to benchmark error.")
+	}
 }

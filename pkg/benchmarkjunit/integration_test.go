@@ -72,6 +72,7 @@ func TestDummybenchmarksIntegration(t *testing.T) {
 		outputFile:   outFile,
 		logFile:      logFile,
 		goBinaryPath: *goBinaryPath,
+		passOnError:  true,
 		// Omit benchmarks that aren't in the core group to keep test time reasonable.
 		benchRegexp: "Core",
 	}
