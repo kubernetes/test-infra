@@ -542,10 +542,8 @@ periodics:
       - --timeout=120m
 
 - name: ci-benchmark-microbenchmarks
-  interval: 1h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
+  interval: 20m
+  decorate: true
   extra_refs:
   - org: kubernetes
     repo: test-infra
