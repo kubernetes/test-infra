@@ -80,11 +80,10 @@ func run(opts *options, args []string) {
 	// Now parse output to JUnit, marshal to XML, and output.
 	junit, err := parse(testOutput)
 	if err != nil {
-		fmt.Printf("Error parsing go test output: %v.\nOutput:\n%s\n\n", err, string(testOutput))
-		logrus.WithError(err).Fatal("Error parsing 'go test' output.")
+		logrus.WithField("output", string(testOutput)).WithError(err).Fatal("Error parsing 'go test' output.")
 	}
 	if len(junit.Suites) == 0 {
-		logrus.Warn("Warning: no test suites were found in the 'go test' output.")
+		logrus.WithField("output", string(testOutput)).Fatal("Error: no test suites were found in the 'go test' output.")
 	}
 	junitBytes, err := xml.Marshal(junit)
 	if err != nil {
