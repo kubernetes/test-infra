@@ -8,10 +8,13 @@ Run `go run ./pkg/benchmarkjunit --help` to see all the available flags.
 go run ./pkg/benchmarkjunit k8s.io/test-infra/experiment/dummybenchmarks
 ```
 ```shell
-go run ./pkg/benchmarkjunit ./experiment/dummybenchmarks
+go run ./pkg/benchmarkjunit ./experiment/dummybenchmarks/...
 ```
 ```shell
-go run ./pkg/benchmarkjunit -o junit_benchmark.xml -l testlog.txt --test-arg=-benchmem --bench=Core ./experiment/dummybenchmarks
+go run ./pkg/benchmarkjunit \
+-o junit_benchmark.xml -l testlog.txt \
+--test-arg=-benchmem --bench=Core --pass-on-error \
+./experiment/dummybenchmarks/...
 ```
 With bazel:
 ```shell
