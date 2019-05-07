@@ -16,11 +16,13 @@
 
 # pylint: disable=invalid-name,missing-docstring
 
+from __future__ import unicode_literals
+
 import json
 import os
-import unittest
 import shutil
 import tempfile
+import unittest
 
 import summarize
 
@@ -51,8 +53,7 @@ class StringsTest(unittest.TestCase):
 
     def test_make_ngram_counts(self):
         self.assertEqual(sum(summarize.make_ngram_counts('abcdefg')), 4)
-        self.assertEqual(sum(summarize.make_ngram_counts(u'abcdefg')), 4)
-        self.assertEqual(sum(summarize.make_ngram_counts(u'abcdefg\u2006')), 5)
+        self.assertEqual(sum(summarize.make_ngram_counts('abcdefg\u2006')), 5)
 
     def test_make_ngram_counts_digest(self):
         # ensure stability of ngram count digest
@@ -133,33 +134,6 @@ class ClusterTest(unittest.TestCase):
         expect('Variable test with old-style prefixes', 'node', {'node': ['Variable']})
 
 
-############ decode JSON without a bunch of unicode garbage
-### http://stackoverflow.com/a/33571117
-def json_load_byteified(json_text):
-    return _byteify(
-        json.load(json_text, object_hook=_byteify),
-        ignore_dicts=True
-    )
-
-def _byteify(data, ignore_dicts=False):
-    # if this is a unicode string, return its string representation
-    if isinstance(data, unicode):
-        return data.encode('utf-8')
-    # if this is a list of values, return list of byteified values
-    if isinstance(data, list):
-        return [_byteify(item, ignore_dicts=True) for item in data]
-    # if this is a dictionary, return dictionary of byteified keys and values
-    # but only if we haven't already byteified it
-    if isinstance(data, dict) and not ignore_dicts:
-        return {
-            _byteify(key, ignore_dicts=True): _byteify(value, ignore_dicts=True)
-            for key, value in data.iteritems()
-        }
-    # if it's anything else, return it in its original form
-    return data
-################################
-
-
 class IntegrationTest(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='summarize_test_')
@@ -170,7 +144,7 @@ class IntegrationTest(unittest.TestCase):
 
     def test_main(self):
         def smear(l):
-            "given a list of dictionary deltas, return a list of dictionaries"
+            """given a list of dictionary deltas, return a list of dictionaries"""
             cur = {}
             out = []
             for delta in l:
@@ -207,7 +181,7 @@ class IntegrationTest(unittest.TestCase):
             ['builds.json', 'tests.json',
              '--output_slices=failure_data_PREFIX.json',
              '--owners=owners.json']))
-        output = json_load_byteified(open('failure_data.json'))
+        output = json.load(open('failure_data.json'))
 
         # uncomment when output changes
         # import pprint; pprint.pprint(output)
@@ -255,7 +229,7 @@ class IntegrationTest(unittest.TestCase):
               'text': 'some other error message'}]
         )
 
-        slice_output = json_load_byteified(open('failure_data_%s.json' % random_hash_1[:2]))
+        slice_output = json.load(open('failure_data_%s.json' % random_hash_1[:2]))
 
         self.assertEqual(slice_output['clustered'], [output['clustered'][0]])
         self.assertEqual(slice_output['builds']['cols']['started'], [1234, 1234, 1234, 1234])
