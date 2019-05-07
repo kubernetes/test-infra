@@ -2632,49 +2632,6 @@ presubmits:
     always_run: true
     cluster: security
     context: pull-security-kubernetes-bazel-build
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-service-account: "true"
-    name: pull-security-kubernetes-bazel-build
-    rerun_command: /test pull-security-kubernetes-bazel-build
-    skip_branches:
-    - release-1.14
-    - release-1.13
-    - release-1.12
-    - release-1.11
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=60
-        - --scenario=kubernetes_bazel
-        - --
-        - --build=//... -//vendor/...
-        - --release=//build/release-tars
-        - --gcs=gs://kubernetes-security-prow/ci/pull-security-kubernetes-bazel-build
-        - --gcs-shared=gs://kubernetes-security-prow/bazel
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-build,?($|\s.*)
-  - agent: kubernetes
-    always_run: true
-    cluster: security
-    context: pull-security-kubernetes-bazel-build-rbe
     decorate: true
     extra_refs:
     - base_ref: master
@@ -2683,14 +2640,10 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
-    name: pull-security-kubernetes-bazel-build-rbe
-    rerun_command: /test pull-security-kubernetes-bazel-build-rbe
+    name: pull-security-kubernetes-bazel-build
+    rerun_command: /test pull-security-kubernetes-bazel-build
     skip_branches:
-    - release-1.14
-    - release-1.13
-    - release-1.12
-    - release-1.11
-    skip_report: true
+    - release-\d+.\d+
     spec:
       containers:
       - args:
@@ -2711,7 +2664,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-build-rbe,?($|\s.*)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-build,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -2887,10 +2840,7 @@ presubmits:
     name: pull-security-kubernetes-bazel-test
     rerun_command: /test pull-security-kubernetes-bazel-test
     skip_branches:
-    - release-1.14
-    - release-1.13
-    - release-1.12
-    - release-1.11
+    - release-\d+.\d+
     spec:
       containers:
       - args:
@@ -3125,7 +3075,7 @@ presubmits:
         - bash
         - --
         - -c
-        - cd ./../../k8s.io/kubernetes && source ./../../sigs.k8s.io/kind/hack/e2e.sh
+        - cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-e2e.sh
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
         name: ""
         resources:
@@ -3155,10 +3105,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-dependencies
     skip_branches:
-    - release-1.14
-    - release-1.13
-    - release-1.12
-    - release-1.11
+    - release-\d+.\d+
     spec:
       containers:
       - args:
@@ -3184,6 +3131,49 @@ presubmits:
           defaultMode: 256
           secretName: ssh-security
     trigger: (?m)^/test( | .* )pull-security-kubernetes-dependencies,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
+    cluster: security
+    context: pull-security-kubernetes-dependencies-canary
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-dependencies-canary
+    path_alias: k8s.io/kubernetes
+    rerun_command: /test pull-security-kubernetes-dependencies-canary
+    skip_branches:
+    - release-\d+.\d+
+    skip_report: true
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - make
+        - verify
+        command:
+        - runner.sh
+        env:
+        - name: WHAT
+          value: vendor vendor-licenses
+        - name: GOPROXY
+          value: https://proxy.golang.org
+        - name: GOSUMDB
+          value: sum.golang.org
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
+        name: main
+        resources: {}
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-dependencies-canary,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -3482,10 +3472,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-typecheck
     skip_branches:
-    - release-1.11
-    - release-1.12
-    - release-1.13
-    - release-1.14
+    - release-\d+.\d+
     spec:
       containers:
       - args:
@@ -3648,10 +3635,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-verify
     skip_branches:
-    - release-1.14
-    - release-1.13
-    - release-1.12
-    - release-1.11
+    - release-\d+.\d+
     spec:
       containers:
       - args:

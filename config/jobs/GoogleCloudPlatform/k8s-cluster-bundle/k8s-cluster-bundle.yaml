@@ -7,10 +7,10 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/cloud-builders/bazel	
+      - image: gcr.io/cloud-builders/bazel
         command:
         - "bazel"
-        args:  
+        args:
         - "test"
         - "..."
         volumeMounts:
@@ -27,10 +27,10 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/cloud-builders/bazel	
+      - image: gcr.io/cloud-builders/bazel
         command:
         - "bazel"
-        args: 
+        args:
         - "test"
         - "..."
         volumeMounts:

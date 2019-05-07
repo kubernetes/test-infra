@@ -434,52 +434,27 @@ func Load(prowConfig, jobConfig string) (c *Config, err error) {
 	return c, nil
 }
 
-// loadConfig loads one or multiple config files and returns a config object.
-func loadConfig(prowConfig, jobConfig string) (*Config, error) {
-	stat, err := os.Stat(prowConfig)
+// ReadJobConfig reads the JobConfig yaml, but does not expand or validate it.
+func ReadJobConfig(jobConfig string) (JobConfig, error) {
+	stat, err := os.Stat(jobConfig)
 	if err != nil {
-		return nil, err
-	}
-
-	if stat.IsDir() {
-		return nil, fmt.Errorf("prowConfig cannot be a dir - %s", prowConfig)
-	}
-
-	var nc Config
-	if err := yamlToConfig(prowConfig, &nc); err != nil {
-		return nil, err
-	}
-	if err := parseProwConfig(&nc); err != nil {
-		return nil, err
-	}
-
-	// TODO(krzyzacy): temporary allow empty jobconfig
-	//                 also temporary allow job config in prow config
-	if jobConfig == "" {
-		return &nc, nil
-	}
-
-	stat, err = os.Stat(jobConfig)
-	if err != nil {
-		return nil, err
+		return JobConfig{}, err
 	}
 
 	if !stat.IsDir() {
 		// still support a single file
 		var jc JobConfig
 		if err := yamlToConfig(jobConfig, &jc); err != nil {
-			return nil, err
+			return JobConfig{}, err
 		}
-		if err := nc.mergeJobConfig(jc); err != nil {
-			return nil, err
-		}
-		return &nc, nil
+		return jc, nil
 	}
 
 	// we need to ensure all config files have unique basenames,
 	// since updateconfig plugin will use basename as a key in the configmap
 	uniqueBasenames := sets.String{}
 
+	jc := JobConfig{}
 	err = filepath.Walk(jobConfig, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			logrus.WithError(err).Errorf("walking path %q.", path)
@@ -514,10 +489,47 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 		if err := yamlToConfig(path, &subConfig); err != nil {
 			return err
 		}
-		return nc.mergeJobConfig(subConfig)
+		jc, err = mergeJobConfigs(jc, subConfig)
+		return err
 	})
 
 	if err != nil {
+		return JobConfig{}, err
+	}
+
+	return jc, nil
+}
+
+// loadConfig loads one or multiple config files and returns a config object.
+func loadConfig(prowConfig, jobConfig string) (*Config, error) {
+	stat, err := os.Stat(prowConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	if stat.IsDir() {
+		return nil, fmt.Errorf("prowConfig cannot be a dir - %s", prowConfig)
+	}
+
+	var nc Config
+	if err := yamlToConfig(prowConfig, &nc); err != nil {
+		return nil, err
+	}
+	if err := parseProwConfig(&nc); err != nil {
+		return nil, err
+	}
+
+	// TODO(krzyzacy): temporary allow empty jobconfig
+	//                 also temporary allow job config in prow config
+	if jobConfig == "" {
+		return &nc, nil
+	}
+
+	jc, err := ReadJobConfig(jobConfig)
+	if err != nil {
+		return nil, err
+	}
+	if err := nc.mergeJobConfig(jc); err != nil {
 		return nil, err
 	}
 
@@ -589,16 +601,34 @@ func ReadFileMaybeGZIP(path string) ([]byte, error) {
 	return ioutil.ReadAll(gzipReader)
 }
 
-// mergeConfig merges two JobConfig together
+func (c *Config) mergeJobConfig(jc JobConfig) error {
+	m, err := mergeJobConfigs(JobConfig{
+		Presets:     c.Presets,
+		Presubmits:  c.Presubmits,
+		Periodics:   c.Periodics,
+		Postsubmits: c.Postsubmits,
+	}, jc)
+	if err != nil {
+		return err
+	}
+	c.Presets = m.Presets
+	c.Presubmits = m.Presubmits
+	c.Periodics = m.Periodics
+	c.Postsubmits = m.Postsubmits
+	return nil
+}
+
+// mergeJobConfigs merges two JobConfig together
 // It will try to merge:
 //	- Presubmits
 //	- Postsubmits
 // 	- Periodics
 //	- PodPresets
-func (c *Config) mergeJobConfig(jc JobConfig) error {
+func mergeJobConfigs(a, b JobConfig) (JobConfig, error) {
 	// Merge everything
 	// *** Presets ***
-	c.Presets = append(c.Presets, jc.Presets...)
+	c := JobConfig{}
+	c.Presets = append(a.Presets, b.Presets...)
 
 	// validate no duplicated preset key-value pairs
 	validLabels := map[string]bool{}
@@ -606,32 +636,33 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 		for label, val := range preset.Labels {
 			pair := label + ":" + val
 			if _, ok := validLabels[pair]; ok {
-				return fmt.Errorf("duplicated preset 'label:value' pair : %s", pair)
+				return JobConfig{}, fmt.Errorf("duplicated preset 'label:value' pair : %s", pair)
 			}
 			validLabels[pair] = true
 		}
 	}
 
 	// *** Periodics ***
-	c.Periodics = append(c.Periodics, jc.Periodics...)
+	c.Periodics = append(a.Periodics, b.Periodics...)
 
 	// *** Presubmits ***
-	if c.Presubmits == nil {
-		c.Presubmits = make(map[string][]Presubmit)
+	c.Presubmits = make(map[string][]Presubmit)
+	for repo, jobs := range a.Presubmits {
+		c.Presubmits[repo] = jobs
 	}
-	for repo, jobs := range jc.Presubmits {
+	for repo, jobs := range b.Presubmits {
 		c.Presubmits[repo] = append(c.Presubmits[repo], jobs...)
 	}
 
 	// *** Postsubmits ***
-	if c.Postsubmits == nil {
-		c.Postsubmits = make(map[string][]Postsubmit)
+	c.Postsubmits = make(map[string][]Postsubmit)
+	for repo, jobs := range a.Postsubmits {
+		c.Postsubmits[repo] = jobs
 	}
-	for repo, jobs := range jc.Postsubmits {
+	for repo, jobs := range b.Postsubmits {
 		c.Postsubmits[repo] = append(c.Postsubmits[repo], jobs...)
 	}
-
-	return nil
+	return c, nil
 }
 
 func setPresubmitDecorationDefaults(c *Config, ps *Presubmit) {

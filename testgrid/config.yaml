@@ -768,6 +768,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-14
 - name: ci-kubernetes-bazel-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test
+- name: post-kubernetes-bazel-test
+  gcs_prefix: kubernetes-jenkins/logs/post-kubernetes-bazel-test
 - name: ci-kubernetes-bazel-test-1-11
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-11
 - name: ci-kubernetes-bazel-test-1-12
@@ -792,6 +794,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-bazel
 - name: ci-test-infra-canary-echo-test
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-canary-echo-test
+- name: ci-test-infra-benchmark-demo
+  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-benchmark-demo
 - name: ci-test-infra-resultstore-upload
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-resultstore-upload
 # Ubuntu node e2e tests (contact: @kubernetes/ubuntu-image on github)
@@ -2148,6 +2152,20 @@ test_groups:
 # kubeadm-kinder tests
 - name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
+- name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-13-1-14
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-13-1-14
+- name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-12-1-13
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-12-1-13
+- name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-11-1-12
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-11-1-12
+- name: ci-kubernetes-e2e-kubeadm-kinder-master-on-stable
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-master-on-stable
+- name: ci-kubernetes-e2e-kubeadm-kinder-1-14-on-1-13
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-1-14-on-1-13
+- name: ci-kubernetes-e2e-kubeadm-kinder-1-13-on-1-12
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-1-13-on-1-12
+- name: ci-kubernetes-e2e-kubeadm-kinder-1-12-on-1-11
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-1-12-on-1-11
 # kubeadm x-on-y tests
 - name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
@@ -2217,6 +2235,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-enhancements-unfreeze
 - name: periodic-kubernetes-bazel-test-master
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-master
+- name: periodic-kubernetes-bazel-test-rbe-master
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-rbe-master
 - name: periodic-kubernetes-bazel-test-1-11
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-11
 - name: periodic-kubernetes-bazel-test-1-12
@@ -2259,6 +2279,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-benchmark-kube-dns-master
 - name: ci-benchmark-scheduler-master
   gcs_prefix: kubernetes-jenkins/logs/ci-benchmark-scheduler-master
+- name: ci-benchmark-microbenchmarks
+  gcs_prefix: kubernetes-jenkins/logs/ci-benchmark-microbenchmarks
 - name: ci-kubernetes-e2e-gce-cos-k8sstable2-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable2-default
 - name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
@@ -2568,6 +2590,15 @@ test_groups:
 - name: pull-cluster-api-provider-gcp-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-gcp-test
   num_columns_recent: 20
+- name: pull-cluster-api-provider-ibmcloud-make
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-ibmcloud-make
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-ibmcloud-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-ibmcloud-test
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-ibmcloud-check
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-ibmcloud-check
+  num_columns_recent: 20
 - name: pull-cluster-api-provider-vsphere-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-vsphere-test
   num_columns_recent: 20
@@ -2586,11 +2617,6 @@ test_groups:
 - name: pull-cluster-api-provider-openstack-check
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-openstack-check
   num_columns_recent: 20
-- name: pull-kubernetes-bazel-build-rbe
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-build-rbe
-  num_columns_recent: 20
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 10
 - name: pull-kubernetes-bazel-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-build
   num_columns_recent: 20
@@ -2714,6 +2740,9 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
+- name: pull-kubernetes-dependencies-canary
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-dependencies-canary
+  num_columns_recent: 20
 - name: pull-kubernetes-godeps
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-godeps
   num_columns_recent: 20
@@ -2729,38 +2758,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-deploy-prow
 - name: post-test-infra-push-prow
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-prow
-- name: post-test-infra-push-velodrome
-  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-velodrome
-- name: post-test-infra-push-boskos
-  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-boskos
-- name: post-test-infra-push-kettle
-  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-kettle
-- name: post-test-infra-push-planter
-  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-planter
-- name: post-test-infra-push-triage
-  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-triage
-- name: post-test-infra-push-bazelbuild
-  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-bazelbuild
-- name: post-test-infra-push-bazel-krte
-  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-bazel-krte
-- name: post-test-infra-push-bigquery
-  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-bigquery
-- name: post-test-infra-push-bootstrap
-  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-bootstrap
-- name: post-test-infra-push-cluster-api
-  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-cluster-api
-- name: post-test-infra-push-gcloud
-  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-gcloud
-- name: post-test-infra-push-kubekins-e2e
-  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-kubekins-e2e
-- name: post-test-infra-push-kubekins-test
-  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-kubekins-test
-- name: post-test-infra-push-kubemci
-  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-kubemci
-- name: post-test-infra-push-test-gubernator
-  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-test-gubernator
-- name: post-test-infra-push-image-builder
-  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-image-builder
 - name: ci-test-infra-autoupdate-minor
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-autoupdate-minor
 - name: ci-test-infra-autoupdate-patch
@@ -2780,12 +2777,6 @@ test_groups:
   num_columns_recent: 20
 - name: pull-test-infra-gubernator
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-gubernator
-  num_columns_recent: 20
-- name: pull-test-infra-verify-tslint
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-tslint
-  num_columns_recent: 20
-- name: pull-test-infra-verify-bazel
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-bazel
   num_columns_recent: 20
 - name: pull-test-infra-verify-gofmt
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-gofmt
@@ -2811,6 +2802,9 @@ test_groups:
   num_columns_recent: 20
 - name: pull-test-infra-verify-github-spelling
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-github-spelling
+  num_columns_recent: 20
+- name: pull-test-infra-yamllint
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-yamllint
   num_columns_recent: 20
 - name: pull-cloud-provider-vsphere-check
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-check
@@ -3207,6 +3201,7 @@ test_groups:
   days_of_results: 15
 - name: istio-circleci-e2e-galley-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-galley
+  days_of_results: 7
 - name: istio-circleci-e2e-pilot-cloudfoundry-v1alpha3-v2-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-pilot-cloudfoundry-v1alpha3-v2
 - name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
@@ -3218,12 +3213,16 @@ test_groups:
   days_of_results: 7
 - name: istio-circleci-codecov-presubmit
   gcs_prefix: istio-circleci/presubmit/codecov
+  days_of_results: 7
 - name: istio-circleci-racetest-presubmit
   gcs_prefix: istio-circleci/presubmit/racetest
+  days_of_results: 7
 - name: istio-circleci-test-integration-local-presubmit
   gcs_prefix: istio-circleci/presubmit/test-integration-local
+  days_of_results: 7
 - name: istio-circleci-test-integration-kubernetes-presubmit
   gcs_prefix: istio-circleci/presubmit/test-integration-kubernetes
+  days_of_results: 7
 # Istio CircleCI Presubmits Master
 - name: istio-circleci-e2e-simple-presubmit-master
   gcs_prefix: istio-circleci/presubmit/e2e-simple-master
@@ -3251,7 +3250,7 @@ test_groups:
   gcs_prefix: istio-circleci/presubmit/test-integration-local-master
 - name: istio-circleci-test-integration-kubernetes-presubmit-master
   gcs_prefix: istio-circleci/presubmit/test-integration-kubernetes-master
-
+  days_of_results: 7
 # Istio CircleCI Postsubmits
 - name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2
   gcs_prefix: istio-circleci/e2e-mixer-noauth-v1alpha3-v2
@@ -5164,6 +5163,8 @@ dashboards:
     test_group_name: ci-kubernetes-bazel-test
   - name: periodic-bazel-test-master
     test_group_name: periodic-kubernetes-bazel-test-master
+  - name: periodic-bazel-test-rbe-master
+    test_group_name: periodic-kubernetes-bazel-test-rbe-master
   - name: bazel-test-1.11
     test_group_name: ci-kubernetes-bazel-test-1-11
   - name: bazel-test-1.12
@@ -5207,33 +5208,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-windows-gce-k8sbeta
   - name: pull-windows-gce
     test_group_name: pull-kubernetes-e2e-windows-gce
-
-- name: sig-release-master-upgrade
-  dashboard_tab:
-  - name: gce-new-master-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master
-    description: Upgrade master only, in gce(gci), from 1.14 to master, run non-parallel-safe tests only
-  - name: gce-new-master-upgrade-master-parallel
-    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master-parallel
-    description: Upgrade master only, in gce(gci), from 1.14 to master, run parallel tests only
-  - name: gce-new-master-upgrade-cluster-parallel
-    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
-    description: Upgrade master and node, in gce(gci), from 1.14 to master, run parallel tests only
-  - name: gce-new-master-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
-    description: Upgrade master and node, in gce(gci), from 1.14 to master
-  - name: gce-master-new-downgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster
-    description: Downgrade master and node, in gce(gci), from master to 1.14
-  - name: gce-master-new-downgrade-cluster-parallel
-    test_group_name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster-parallel
-    description: Downgrade master and node, in gce(gci), from master to 1.14, run parallel tests only
-  - name: gce-new-master-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
-    description: Upgrade master and node, in gce(gci), from 1.14 to master, and run skewed e2e tests.  We only run the serial & disruptive tests; the others are run in the -parallel test.
-  - name: gce-new-master-upgrade-cluster-new-parallel
-    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new-parallel
-    description: Upgrade master and node, in gce(gci), from 1.14 to master, and run skewed e2e tests.  We skip the serial & disruptive tests; those are run in the non-parallel test.
 
 # These are the master *blocking* tests.  These provide a valid binary signal
 # to gate releases (alpha, beta, official).
@@ -5295,12 +5269,38 @@ dashboards:
   - name: gce-master-scale-performance
     description: 5000-node performance test, runs once a day on weekdays
     test_group_name: ci-kubernetes-e2e-gce-scale-performance
-  - name: kubeadm-gce-master
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-master
-  - name: kubeadm-gce-stable-on-master
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
   - name: kubeadm-kind-master
     test_group_name: ci-kubernetes-e2e-kubeadm-kind-master
+  - name: kubeadm-kinder-master-on-stable
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-master-on-stable
+  - name: kubeadm-kinder-upgrade-stable-master
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
+  - name: bazel-test-master
+    test_group_name: post-kubernetes-bazel-test
+  - name: gce-new-master-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master
+    description: Upgrade master only, in gce(gci), from 1.14 to master, run non-parallel-safe tests only
+  - name: gce-new-master-upgrade-master-parallel
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master-parallel
+    description: Upgrade master only, in gce(gci), from 1.14 to master, run parallel tests only
+  - name: gce-new-master-upgrade-cluster-parallel
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
+    description: Upgrade master and node, in gce(gci), from 1.14 to master, run parallel tests only
+  - name: gce-new-master-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
+    description: Upgrade master and node, in gce(gci), from 1.14 to master
+  - name: gce-master-new-downgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster
+    description: Downgrade master and node, in gce(gci), from master to 1.14
+  - name: gce-master-new-downgrade-cluster-parallel
+    test_group_name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster-parallel
+    description: Downgrade master and node, in gce(gci), from master to 1.14, run parallel tests only
+  - name: gce-new-master-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
+    description: Upgrade master and node, in gce(gci), from 1.14 to master, and run skewed e2e tests.  We only run the serial & disruptive tests; the others are run in the -parallel test.
+  - name: gce-new-master-upgrade-cluster-new-parallel
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new-parallel
+    description: Upgrade master and node, in gce(gci), from 1.14 to master, and run skewed e2e tests.  We skip the serial & disruptive tests; those are run in the non-parallel test.
 
 - name: sig-release-1.14-all
   dashboard_tab:
@@ -5401,14 +5401,12 @@ dashboards:
     test_group_name: periodic-kubernetes-bazel-build-1-14
   - name: periodic-bazel-test-1.14
     test_group_name: periodic-kubernetes-bazel-test-1-14
-  - name: kubeadm-gce-1.13-on-1.14
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-13-on-1-14
-  - name: kubeadm-gce-1.14
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-14
-  - name: kubeadm-gce-upgrade-1.13-1.14
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-13-1-14
   - name: kubeadm-kind-1.14
     test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-14
+  - name: kubeadm-kinder-1.14-on-1.13
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-1-14-on-1-13
+  - name: kubeadm-kinder-upgrade-1.13-1.14
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-13-1-14
   - name: aks-engine-azure-1-14-windows-release
     test_group_name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
   - name: gce-windows-1.14
@@ -5474,12 +5472,12 @@ dashboards:
     test_group_name: periodic-kubernetes-bazel-build-1-13
   - name: periodic-bazel-test-1.13
     test_group_name: periodic-kubernetes-bazel-test-1-13
-  - name: kubeadm-gce-1.12-on-1.13
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-12-on-1-13
-  - name: kubeadm-gce-1.13
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-13
-  - name: kubeadm-gce-upgrade-1.12-1.13
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-12-1-13
+  - name: kubeadm-kind-1.13
+    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-13
+  - name: kubeadm-kinder-1.13-on-1.12
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-1-13-on-1-12
+  - name: kubeadm-kinder-upgrade-1.12-1.13
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-12-1-13
   - name: gce-cos-1.13-default
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   - name: gce-cos-1.13-slow
@@ -5550,8 +5548,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   - name: gke-device-plugin-gpu-p100-1.13
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
-  - name: kubeadm-kind-1.13
-    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-13
 
 - name: sig-release-1.13-blocking
   dashboard_tab:
@@ -5694,10 +5690,12 @@ dashboards:
     test_group_name: periodic-kubernetes-bazel-build-1-12
   - name: periodic-bazel-test-1.12
     test_group_name: periodic-kubernetes-bazel-test-1-12
-  - name: kubeadm-gce-1.12
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-12
-  - name: kubeadm-gce-upgrade-1.11-1.12
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
+  - name: kubeadm-kind-1.12
+    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-12
+  - name: kubeadm-kinder-1.12-on-1.11
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-1-12-on-1-11
+  - name: kubeadm-kinder-upgrade-1.11-1.12
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-11-1-12
   - name: node-kubelet-1.12
     test_group_name: ci-kubernetes-node-kubelet-stable2
   - name: gce-cos-1.12-default
@@ -5732,8 +5730,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable2
   - name: gke-device-plugin-gpu-p100-1.12
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2
-  - name: kubeadm-kind-1.12
-    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-12
 
 # These are the release *blocking* tests.  These provide a valid binary signal
 # to gate releases (alpha, beta, official).
@@ -6456,6 +6452,20 @@ dashboards:
 # kubeadm-kinder tests
   - name: kubeadm-kinder-upgrade-stable-master
     test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
+  - name: kubeadm-kinder-upgrade-1.13-1.14
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-13-1-14
+  - name: kubeadm-kinder-upgrade-1.12-1.13
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-12-1-13
+  - name: kubeadm-kinder-upgrade-1.11-1.12
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-11-1-12
+  - name: kubeadm-kinder-master-on-stable
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-master-on-stable
+  - name: kubeadm-kinder-1-14-on-1-13
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-1-14-on-1-13
+  - name: kubeadm-kinder-1-13-on-1-12
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-1-13-on-1-12
+  - name: kubeadm-kinder-1-12-on-1-11
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-1-12-on-1-11
 # kubeadm x-on-y tests
   - name: kubeadm-gce-1.11-on-1.12
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
@@ -6585,6 +6595,15 @@ dashboards:
   - name: Kubernetes v1.13.5 Driver Stable
     test_group_name: ci-gcp-compute-persistent-disk-csi-driver-0-4-0-k8s-integration-stable-1-13-5
     description: Kubernetes Integration tests for Kubernetes 1.13.5 and Driver Stable
+
+- name: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+  dashboard_tab:
+  - name: pr-make
+    test_group_name: pull-cluster-api-provider-ibmcloud-make
+  - name: pr-check
+    test_group_name: pull-cluster-api-provider-ibmcloud-check
+  - name: pr-test
+    test_group_name: pull-cluster-api-provider-ibmcloud-test
 
 - name: sig-cluster-lifecycle-cluster-api-provider-vsphere
   dashboard_tab:
@@ -7174,6 +7193,8 @@ dashboards:
     test_group_name: ci-benchmark-scheduler-master
   - name: kube-dns
     test_group_name: ci-benchmark-kube-dns-master
+  - name: microbenchmarks
+    test_group_name: ci-benchmark-microbenchmarks
 
 - name: sig-scalability-experiments
   dashboard_tab:
@@ -7466,39 +7487,6 @@ dashboards:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 
 - name: sig-testing-images
-  dashboard_tab:
-  - name: velodrome
-    test_group_name: post-test-infra-push-velodrome
-  - name: boskos
-    test_group_name: post-test-infra-push-boskos
-  - name: kettle
-    test_group_name: post-test-infra-push-kettle
-  - name: planter
-    test_group_name: post-test-infra-push-planter
-  - name: triage
-    test_group_name: post-test-infra-push-triage
-  - name: bazelbuild
-    test_group_name: post-test-infra-push-bazelbuild
-  - name: bazel-krte
-    test_group_name: post-test-infra-push-bazel-krte
-  - name: bigquery
-    test_group_name: post-test-infra-push-bigquery
-  - name: bootstrap
-    test_group_name: post-test-infra-push-bootstrap
-  - name: cluster-api
-    test_group_name: post-test-infra-push-cluster-api
-  - name: gcloud-in-go
-    test_group_name: post-test-infra-push-gcloud
-  - name: kubekins-e2e
-    test_group_name: post-test-infra-push-kubekins-e2e
-  - name: kubekins-test
-    test_group_name: post-test-infra-push-kubekins-test
-  - name: kubemci
-    test_group_name: post-test-infra-push-kubemci
-  - name: test-gubernator
-    test_group_name: post-test-infra-push-test-gubernator
-  - name: image-builder
-    test_group_name: post-test-infra-push-image-builder
 - name: sig-testing-misc
   dashboard_tab:
   - name: ci-bazel
@@ -7620,6 +7608,9 @@ dashboards:
   - name: echo-test
     test_group_name: ci-test-infra-canary-echo-test
     description: temporarily echoing things.
+  - name: benchmark-demo
+    test_group_name: ci-test-infra-benchmark-demo
+    description: Demoing JUnit golang benchmark results.
 
 - name: sig-testing-org
   dashboard_tab:
@@ -7884,9 +7875,6 @@ dashboards:
 
 - name: presubmits-kubernetes-nonblocking
   dashboard_tab:
-  - name: pull-kubernetes-bazel-build-rbe
-    test_group_name: pull-kubernetes-bazel-build-rbe
-    base_options: width=10
   - name: pull-kubernetes-e2e-kind
     test_group_name: pull-kubernetes-e2e-kind
     base_options: width=10
@@ -7918,6 +7906,9 @@ dashboards:
     base_options: width=10
   - name: pull-kubernetes-e2e-kops-aws
     test_group_name: pull-kubernetes-e2e-kops-aws
+    base_options: width=10
+  - name: pull-canaries
+    test_group_name: pull-kubernetes-dependencies-canary
     base_options: width=10
 
 - name: presubmits-cloud-provider-vsphere-blocking
@@ -8010,12 +8001,6 @@ dashboards:
   - name: gubernator
     test_group_name: pull-test-infra-gubernator
     base_options: width=10
-  - name: verify-tslint
-    test_group_name: pull-test-infra-verify-tslint
-    base_options: width=10
-  - name: verify-bazel
-    test_group_name: pull-test-infra-verify-bazel
-    base_options: width=10
   - name: verify-gofmt
     test_group_name: pull-test-infra-verify-gofmt
     base_options: width=10
@@ -8039,6 +8024,9 @@ dashboards:
     base_options: width=10
   - name: verify-spelling
     test_group_name: pull-test-infra-verify-github-spelling
+    base_options: width=10
+  - name: verify-yaml
+    test_group_name: pull-test-infra-yamllint
     base_options: width=10
 
 - name: presubmits-cluster-registry
@@ -8833,6 +8821,7 @@ dashboard_groups:
   - sig-cluster-lifecycle-cluster-api-provider-digitalocean
   - sig-cluster-lifecycle-cluster-api-provider-vsphere
   - sig-cluster-lifecycle-cluster-api-provider-gcp
+  - sig-cluster-lifecycle-cluster-api-provider-ibmcloud
   - sig-cluster-lifecycle-cluster-api-provider-openstack
   - sig-cluster-lifecycle-kops
 
@@ -8868,7 +8857,6 @@ dashboard_groups:
   dashboard_names:
   - sig-release-master-blocking
   - sig-release-master-informing
-  - sig-release-master-upgrade
   - sig-release-1.14-all
   - sig-release-1.14-blocking
   - sig-release-1.13-all

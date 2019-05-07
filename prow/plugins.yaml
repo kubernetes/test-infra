@@ -243,6 +243,10 @@ repo_milestone:
     maintainers_id: 3169231
     maintainers_team: community-milestone-maintainers
     maintainers_friendly_name: Community Milestone Maintainers
+  kubernetes/kops:
+    maintainers_id: 2060651
+    maintainers_team: kops-maintainers
+    maintainers_friendly_name: Kops Maintainers
   kubernetes/website:
     maintainers_id: 3175912
     maintainers_team: website-milestone-maintainers
@@ -367,6 +371,7 @@ plugins:
   - lgtm
   - lifecycle   # Lets PRs & issues be flagged as stale
   - override
+  - project # Lets issues be tagged into projects
   - size
   - skip  # Allows cleaning up stale commit statuses
   - verify-owners   # Validates OWNERS file changes in PRs.
@@ -439,6 +444,9 @@ plugins:
   - milestone
   - require-sig
   - stage
+
+  kubernetes/kops:
+  - milestone
 
   kubernetes/kubernetes:
   - blockade
@@ -591,6 +599,9 @@ plugins:
   - release-note
   - require-matching-label
   - welcome
+  
+  kubernetes-sigs/cluster-api-provider-ibmcloud:
+  - milestone
 
   kubernetes-sigs/contributor-playground:
   - require-sig

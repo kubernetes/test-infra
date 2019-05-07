@@ -66,20 +66,27 @@ func Upload(bucket *storage.BucketHandle, uploadTargets map[string]UploadFunc) e
 // FileUpload returns an UploadFunc which copies all
 // data from the file on disk to the GCS object
 func FileUpload(file string) UploadFunc {
-	return FileUploadWithMetadata(file, nil)
+	return FileUploadWithAttributes(file, nil)
 }
 
 // FileUploadWithMetadata returns an UploadFunc which copies all
 // data from the file on disk into GCS object and also sets the provided
 // metadata fields on the object.
 func FileUploadWithMetadata(file string, metadata map[string]string) UploadFunc {
+	return FileUploadWithAttributes(file, &storage.ObjectAttrs{Metadata: metadata})
+}
+
+// FileUploadWithAttributes returns an UploadFunc which copies all data
+// from the file on disk into GCS object and also sets the provided
+// attributes on the object.
+func FileUploadWithAttributes(file string, attrs *storage.ObjectAttrs) UploadFunc {
 	return func(obj *storage.ObjectHandle) error {
 		reader, err := os.Open(file)
 		if err != nil {
 			return err
 		}
 
-		uploadErr := DataUploadWithMetadata(reader, metadata)(obj)
+		uploadErr := DataUploadWithAttributes(reader, attrs)(obj)
 		closeErr := reader.Close()
 
 		return errorutil.NewAggregate(uploadErr, closeErr)
@@ -89,16 +96,29 @@ func FileUploadWithMetadata(file string, metadata map[string]string) UploadFunc 
 // DataUpload returns an UploadFunc which copies all
 // data from src reader into GCS.
 func DataUpload(src io.Reader) UploadFunc {
-	return DataUploadWithMetadata(src, nil)
+	return DataUploadWithAttributes(src, nil)
 }
 
 // DataUploadWithMetadata returns an UploadFunc which copies all
 // data from src reader into GCS and also sets the provided metadata
 // fields onto the object.
 func DataUploadWithMetadata(src io.Reader, metadata map[string]string) UploadFunc {
+	return DataUploadWithAttributes(src, &storage.ObjectAttrs{Metadata: metadata})
+}
+
+// DataUploadWithAttributes returns an UploadFunc which copies all data
+// from src reader into GCS and also sets the provided attributes on
+// the object.
+func DataUploadWithAttributes(src io.Reader, attrs *storage.ObjectAttrs) UploadFunc {
 	return func(obj *storage.ObjectHandle) error {
 		writer := obj.NewWriter(context.Background())
-		writer.Metadata = metadata
+
+		if attrs != nil {
+			name := writer.ObjectAttrs.Name
+			writer.ObjectAttrs = *attrs
+			writer.ObjectAttrs.Name = name
+		}
+
 		_, copyErr := io.Copy(writer, src)
 		closeErr := writer.Close()
 

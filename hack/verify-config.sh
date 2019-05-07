@@ -17,37 +17,39 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
-
-PROW_CONFIG="${TESTINFRA_ROOT}/prow/config.yaml"
-PLUGIN_CONFIG="${TESTINFRA_ROOT}/prow/plugins.yaml"
-JOBS_DIR="${TESTINFRA_ROOT}/config/jobs"
-TMP_CONFIG=$(mktemp)
-TMP_GENERATED_JOBS=$(mktemp)
-
-trap 'rm ${TMP_CONFIG} && rm ${TMP_GENERATED_JOBS}' EXIT
-cp "${PROW_CONFIG}" "${TMP_CONFIG}"
-
-bazel run //config/jobs/kubernetes-security:genjobs -- \
-"--config=${PROW_CONFIG}" \
-"--jobs=${JOBS_DIR}" \
-"--output=${TMP_GENERATED_JOBS}"
-
-DIFF=$(diff "${TMP_GENERATED_JOBS}" "${JOBS_DIR}/kubernetes-security/generated-security-jobs.yaml" || true)
-if [ ! -z "$DIFF" ]; then
-    echo "${DIFF}"
-    echo ""
-    echo "FAILED: config is not correct, please run 'hack/update-config.sh'"
-    exit 1
+if [[ -n "${TEST_WORKSPACE:-}" ]]; then # Running inside bazel
+  echo "Validating job configs..." >&2
+elif ! command -v bazel &> /dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
+  exit 1
+else
+  (
+    set -o xtrace
+    bazel test --test_output=streamed //hack:verify-config
+  )
+  exit 0
 fi
 
-# Run checkconfig with strict warnings.
-bazel run //prow/cmd/checkconfig -- \
---config-path="${PROW_CONFIG}" --job-config-path="${JOBS_DIR}" --plugin-config="${PLUGIN_CONFIG}" --strict \
---warnings=mismatched-tide-lenient \
---warnings=tide-strict-branch \
---warnings=needs-ok-to-test \
---warnings=validate-owners \
---warnings=missing-trigger \
---warnings=validate-urls \
---warnings=unknown-fields
+trap 'echo ERROR: security jobs changed, run hack/update-config.sh >&2' ERR
+
+echo -n "Running checkconfig with strict warnings..." >&2
+"$@" \
+    --strict \
+    --warnings=mismatched-tide-lenient \
+    --warnings=tide-strict-branch \
+    --warnings=needs-ok-to-test \
+    --warnings=validate-owners \
+    --warnings=missing-trigger \
+    --warnings=validate-urls \
+    --warnings=unknown-fields
+echo PASS
+
+echo -n "Checking generated security jobs..." >&2
+d=$(diff config/jobs/kubernetes-security/generated-security-jobs.yaml hack/zz.security-jobs.yaml || true)
+if [[ -n "$d" ]]; then
+  echo "FAIL" >&2
+  echo "< unexpected" >&2
+  echo "> missing" >&2
+  echo "$d" >&2
+  false
+fi

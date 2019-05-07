@@ -299,7 +299,7 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 				switch change.Status {
 				case Merged:
 					submitted := parseStamp(*change.Submitted)
-					if submitted.Before(lastUpdate) {
+					if !submitted.After(lastUpdate) {
 						logrus.Infof("Change %d, submitted %s before lastUpdate %s, skipping this patchset", change.Number, submitted, lastUpdate)
 						continue
 					}
@@ -327,7 +327,7 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 						}
 					}
 
-					if !newMessages && created.Before(lastUpdate) {
+					if !newMessages && !created.After(lastUpdate) {
 						// stale commit
 						logrus.Infof("Change %d, latest revision updated %s before lastUpdate %s, skipping this patchset", change.Number, created, lastUpdate)
 						continue

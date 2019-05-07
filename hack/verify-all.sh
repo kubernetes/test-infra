@@ -13,15 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -o errexit
 set -o nounset
 set -o pipefail
 
-TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
-bazel run //:tslint -- -p "${TESTINFRA_ROOT}"
-result=$?
-
-if [[ "${result}" -ne 0 ]]; then
-  echo "tslint failed. \`bazel run //:tslint -- -p \$PWD --fix\` might help."
-fi
-
-exit "${result}"
+cd "$(git rev-parse --show-toplevel)"
+find hack -name 'verify-*.sh' -not -name "$(basename "$0")" \( -print -exec '{}' ';' -o -quit \)

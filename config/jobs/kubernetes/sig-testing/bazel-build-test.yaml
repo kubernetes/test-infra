@@ -2,42 +2,10 @@ presubmits:
   kubernetes/kubernetes:
   #manual-release-bump-required
   - name: pull-kubernetes-bazel-build
-    always_run: true
-    skip_branches:
-    - release-1.14 # per-release job
-    - release-1.13 # per-release job
-    - release-1.12 # per-release job
-    - release-1.11 # per-release job
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=60"
-        - "--scenario=kubernetes_bazel"
-        - "--" # end bootstrap args, scenario args below
-        - "--build=//... -//vendor/..."
-        - "--release=//build/release-tars"
-        resources:
-          requests:
-            memory: "6Gi"
-
-  - name: pull-kubernetes-bazel-build-rbe
     decorate: true
-    skip_report: true
     always_run: true
     skip_branches:
-    - release-1.14 # per-release job
-    - release-1.13 # per-release job
-    - release-1.12 # per-release job
-    - release-1.11 # per-release job
+    - release-\d+.\d+ # per-release job
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -160,10 +128,7 @@ presubmits:
     decorate: true
     always_run: true
     skip_branches:
-    - release-1.14 # per-release job
-    - release-1.13 # per-release job
-    - release-1.12 # per-release job
-    - release-1.11 # per-release job
+    - release-\d+.\d+ # per-release job
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -336,31 +301,59 @@ postsubmits:
           requests:
             memory: "6Gi"
 
-  - name: ci-kubernetes-bazel-test
+  - name: ci-kubernetes-bazel-test # TODO(fejta): delete after 1m (dup of post-kubernetes-bazel-test)
+    decorate: true
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      repo: test-infra
+    skip_branches:
+    - release-\d+.\d+ # per-release job
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
+      - image: launcher.gcr.io/google/bazel:0.24.1
+        command:
+        - ../test-infra/hack/bazel.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        - "--timeout=60"
-        - "--scenario=kubernetes_bazel"
-        - "--" # end bootstrap args, scenario args below
-        - "--test=//... -//build/... -//vendor/..."
-        - "--manual-test=//hack:verify-all"
-        - "--test-args=--config=unit"
-        - "--test-args=--build_tag_filters=-e2e,-integration"
-        - "--test-args=--test_tag_filters=-e2e,-integration"
-        - "--test-args=--flaky_test_attempts=3"
-        resources:
-          requests:
-            memory: "6Gi"
+        - test
+        - --config=unit
+        - --config=remote
+        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
+        - //...
+        - //hack:verify-all
+        - --
+        - -//build/...
+        - -//vendor/...
+
+  - name: post-kubernetes-bazel-test
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      repo: test-infra
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    spec:
+      containers:
+      - image: launcher.gcr.io/google/bazel:0.24.1
+        command:
+        - ../test-infra/hack/bazel.sh
+        args:
+        - test
+        - --config=unit
+        - --config=remote
+        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
+        - //...
+        - //hack:verify-all
+        - --
+        - -//build/...
+        - -//vendor/...
 
   # manual-release-bump-required (add a job for the new release branch and delete the one for the deprecated release.)
   - name: ci-kubernetes-bazel-build-1-11
@@ -764,6 +757,36 @@ periodics:
         requests:
           memory: "6Gi"
 
+- interval: 5m
+  name: periodic-kubernetes-bazel-test-rbe-master
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+  extra_refs:
+  - base_ref: master
+    org: kubernetes
+    repo: kubernetes
+  - base_ref: master
+    org: kubernetes
+    repo: test-infra
+  spec:
+    containers:
+    - image: launcher.gcr.io/google/bazel:0.24.1
+      command:
+      - ../test-infra/hack/bazel.sh
+      args:
+      - test
+      - --config=unit
+      - --config=remote
+      - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
+      - //...
+      - //hack:verify-all
+      - --
+      - -//build/...
+      - -//vendor/...
+
+
 # manual-release-bump-required (add a job for the new release branch and delete the one for the deprecated release.)
 - name: periodic-kubernetes-bazel-test-1-11
   interval: 6h
@@ -896,4 +919,3 @@ periodics:
         resources:
           requests:
             memory: "6Gi"
-

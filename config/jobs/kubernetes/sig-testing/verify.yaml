@@ -1,15 +1,11 @@
 presubmits:
   kubernetes/kubernetes:
-  # TODO(krzyzacy): add branches once this works
   # TODO(krzyzacy): Consider combine kubekins-e2e and kubekins-test
   - name: pull-kubernetes-verify
     always_run: true
     decorate: true
     skip_branches:
-    - release-1.14
-    - release-1.13
-    - release-1.12
-    - release-1.11
+    - release-\d+.\d+ # per-release job
     path_alias: k8s.io/kubernetes
     labels:
       preset-service-account: "true"

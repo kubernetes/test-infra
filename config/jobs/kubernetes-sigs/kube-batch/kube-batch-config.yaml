@@ -1,4 +1,4 @@
-presubmits:  
+presubmits:
   kubernetes-sigs/kube-batch:
   - name: pull-kube-batch-verify
     branches:
