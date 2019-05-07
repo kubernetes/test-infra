@@ -18,7 +18,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then
+if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then # Running inside bazel
   echo "Updating protos..." >&2
 elif ! command -v bazel &>/dev/null; then
   echo "Install bazel at https://bazel.build" >&2

@@ -216,6 +216,7 @@ genrule(
         "//prow:config.yaml",
     ],
     outs = ["zz.security-jobs.yaml"],
+    # $@ == expected location for zz.security-jobs.yaml
     cmd = "./$(location //config/jobs/kubernetes-security:genjobs) --config=prow/config.yaml --jobs=config/jobs --output=\"$@\"",
     tools = ["//config/jobs/kubernetes-security:genjobs"],
 )
