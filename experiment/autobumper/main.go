@@ -36,19 +36,22 @@ import (
 	"k8s.io/test-infra/robots/pr-creator/updater"
 )
 
-const prowPrefix = "gcr.io/k8s-prow/"
-const testImagePrefix = "gcr.io/k8s-testimages/"
-const prowRepo = "https://github.com/kubernetes/test-infra"
-const testImageRepo = prowRepo
-const oncallAddress = "https://storage.googleapis.com/kubernetes-jenkins/oncall.json"
-const githubOrg = "kubernetes"
-const githubRepo = "test-infra"
+const (
+	prowPrefix      = "gcr.io/k8s-prow/"
+	testImagePrefix = "gcr.io/k8s-testimages/"
+	prowRepo        = "https://github.com/kubernetes/test-infra"
+	testImageRepo   = prowRepo
+	oncallAddress   = "https://storage.googleapis.com/kubernetes-jenkins/oncall.json"
+	githubOrg       = "kubernetes"
+	githubRepo      = "test-infra"
+)
 
 func cdToRootDir() error {
 	if bazelWorkspace := os.Getenv("BUILD_WORKSPACE_DIRECTORY"); bazelWorkspace != "" {
 		if err := os.Chdir(bazelWorkspace); err != nil {
 			return fmt.Errorf("failed to chdir to bazel workspace (%s): %v", bazelWorkspace, err)
 		}
+		return nil
 	}
 	cmd := exec.Command("git", "rev-parse", "--show-toplevel")
 	output, err := cmd.Output()
@@ -148,6 +151,8 @@ func makeCommitSummary(images map[string]string) string {
 }
 
 func updateConfig() error {
+	// Try to regenerate security job configs which use an explicit podutils image config
+	// TODO(krzyzacy): workaround before we resolve https://github.com/kubernetes/test-infra/issues/9783
 	logrus.Info("Updating generated config...")
 	return call("bazel", "run", "//hack:update-config")
 }
