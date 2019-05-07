@@ -1,0 +1,602 @@
+presubmits:
+  kubernetes/kubernetes:
+    - name: pull-kubernetes-e2e-gce
+      always_run: true
+      branches:
+        - release-1.13 # per-release image
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+        preset-bazel-scratch-dir: "true"
+        preset-bazel-remote-cache-enabled: "true"
+        preset-pull-kubernetes-e2e: "true"
+        preset-pull-kubernetes-e2e-gce: "true"
+      spec:
+        containers:
+          - args:
+              - --root=/go/src
+              - --repo=k8s.io/kubernetes=$(PULL_REFS)
+              - --repo=k8s.io/release
+              - --upload=gs://kubernetes-jenkins/pr-logs
+              - --timeout=90
+              - --scenario=kubernetes_e2e
+              - --
+              - --build=bazel
+              - --cluster=
+              - --extract=local
+              - --gcp-node-image=gci
+              - --gcp-zone=us-west1-b
+              - --ginkgo-parallel=30
+              - --provider=gce
+              - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
+              - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
+              - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+              - --timeout=65m
+            image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.13
+            resources:
+              requests:
+                memory: "6Gi"
+    - name: pull-kubernetes-e2e-gke
+      always_run: false
+      optional: true
+      branches:
+        - release-1.13 # per-release image
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+        preset-bazel-scratch-dir: "true"
+      spec:
+        containers:
+          - args:
+              - --root=/go/src
+              - --repo=k8s.io/kubernetes=$(PULL_REFS)
+              - --repo=k8s.io/release
+              - --upload=gs://kubernetes-jenkins/pr-logs
+              - --timeout=90
+              - --scenario=kubernetes_e2e
+              - --
+              - --build=bazel
+              - --cluster=
+              - --deployment=gke
+              - --extract=local
+              - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+              - --gcp-node-image=gci
+              - --gcp-zone=us-west1-b
+              - --ginkgo-parallel=30
+              - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard
+              - --gke-environment=test
+              - '--gke-shape={"default":{"Nodes":4,"MachineType":"n1-standard-2"}}'
+              - --provider=gke
+              - --stage=gs://kubernetes-release-dev/ci
+              - --stage-suffix=pull-kubernetes-e2e-gke
+              - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+              - --timeout=65m
+            image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.13
+            resources:
+              requests:
+                memory: "6Gi"
+    - name: pull-kubernetes-e2e-gce-device-plugin-gpu
+      branches:
+        - release-1.13  # per-release image
+      always_run: true
+      optional: true
+      max_concurrency: 12
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+        preset-bazel-scratch-dir: "true"
+        preset-bazel-remote-cache-enabled: "true"
+        preset-pull-kubernetes-e2e: "true"
+        preset-pull-gce-device-plugin-gpu: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.13
+            args:
+              - --root=/go/src
+              - "--job=$(JOB_NAME)"
+              - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+              - "--repo=k8s.io/release"
+              - "--service-account=/etc/service-account/service-account.json"
+              - "--upload=gs://kubernetes-jenkins/pr-logs"
+              - "--timeout=90"
+              - --scenario=kubernetes_e2e
+              - --
+              - --build=bazel
+              - --cluster=
+              - --extract=local
+              - --gcp-node-image=gci
+              - --gcp-nodes=4
+              - --gcp-project=k8s-jkns-pr-gce-gpus
+              - --gcp-zone=us-west1-b
+              - --ginkgo-parallel=30
+              - --provider=gce
+              - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-device-plugin-gpu
+              - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
+              - --timeout=60m
+            resources:
+              requests:
+                memory: "6Gi"
+    - name: pull-kubernetes-e2e-gke-device-plugin-gpu
+      branches:
+        - release-1.13  # per-release image
+      always_run: false
+      skip_report: false
+      max_concurrency: 1
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+        preset-bazel-scratch-dir: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.13
+            args:
+              - --root=/go/src
+              - "--job=$(JOB_NAME)"
+              - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+              - "--repo=k8s.io/release"
+              - "--service-account=/etc/service-account/service-account.json"
+              - "--upload=gs://kubernetes-jenkins/pr-logs"
+              - "--timeout=90"
+              - --scenario=kubernetes_e2e
+              - --
+              - --build=bazel
+              - --cluster=
+              - --deployment=gke
+              - --extract=local
+              - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+              - --gcp-node-image=gci
+              - --gcp-project=k8s-gke-gpu-pr
+              - --gcp-zone=us-west1-b
+              - --ginkgo-parallel=30
+              - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
+              - --gke-environment=test
+              - --provider=gke
+              - --stage=gs://kubernetes-release-dev/ci
+              - --stage-suffix=pull-kubernetes-e2e-gke-device-plugin-gpu
+              - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
+              - --timeout=60m
+            resources:
+              requests:
+                memory: "6Gi"
+    - name: pull-kubernetes-node-e2e
+      branches:
+        - release-1.13  # per-release image
+      always_run: true
+      max_concurrency: 12
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.13
+            args:
+              - --root=/go/src
+              - "--job=$(JOB_NAME)"
+              - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+              - "--service-account=/etc/service-account/service-account.json"
+              - "--upload=gs://kubernetes-jenkins/pr-logs"
+              - "--timeout=90"
+              - --scenario=kubernetes_e2e
+              - -- # end bootstrap args, scenario args below
+              - --deployment=node
+              - --gcp-project=k8s-jkns-pr-node-e2e
+              - --gcp-zone=us-west1-b
+              - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+              - --node-tests=true
+              - --provider=gce
+              - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2
+              - --timeout=65m
+              - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
+            resources:
+              requests:
+                memory: "6Gi"
+    - name: pull-kubernetes-bazel-build
+      always_run: true
+      branches:
+        - release-1.13 # per-release job
+      labels:
+        preset-service-account: "true"
+        preset-bazel-scratch-dir: "true"
+        preset-bazel-remote-cache-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.13
+            args:
+              - "--job=$(JOB_NAME)"
+              - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+              - "--service-account=/etc/service-account/service-account.json"
+              - "--upload=gs://kubernetes-jenkins/pr-logs"
+              - "--timeout=60"
+              - "--scenario=kubernetes_bazel"
+              - "--" # end bootstrap args, scenario args below
+              - "--build=//... -//vendor/..."
+              - "--release=//build/release-tars"
+            resources:
+              requests:
+                memory: "6Gi"
+    - name: pull-kubernetes-bazel-test
+      always_run: true
+      branches:
+        - release-1.13 # per-release job
+      labels:
+        preset-service-account: "true"
+        preset-bazel-scratch-dir: "true"
+        preset-bazel-remote-cache-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.13
+            args:
+              - "--job=$(JOB_NAME)"
+              - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+              - "--service-account=/etc/service-account/service-account.json"
+              - "--upload=gs://kubernetes-jenkins/pr-logs"
+              - "--timeout=60"
+              - "--scenario=kubernetes_bazel"
+              - "--" # end bootstrap args, scenario args below
+              - "--test=//... -//build/... -//vendor/..."
+              - "--manual-test=//hack:verify-all"
+              - "--test-args=--config=unit"
+              - "--test-args=--build_tag_filters=-e2e,-integration"
+              - "--test-args=--test_tag_filters=-e2e,-integration"
+              - "--test-args=--flaky_test_attempts=3"
+            resources:
+              requests:
+                memory: "6Gi"
+            securityContext:
+              privileged: true
+    - name: pull-kubernetes-typecheck
+      path_alias: "k8s.io/kubernetes"
+      decorate: true
+      always_run: true
+      skip_report: false
+      branches:
+        - release-1.13 # per-release job
+      spec:
+        containers:
+          - name: main
+            command:
+              - make
+            image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.13
+            args:
+              - verify
+            env:
+              # Space separated list of the checks to run
+              - name: WHAT
+                value: typecheck
+    - name: pull-kubernetes-kubemark-e2e-gce-big
+      always_run: true
+      skip_report: false
+      max_concurrency: 12
+      branches:
+        - release-1.13  # per-release image
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+        preset-bazel-scratch-dir: "true"
+        preset-dind-enabled: "true"
+        preset-e2e-kubemark-common: "true"
+        preset-e2e-kubemark-gce-big: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.13
+            args:
+              - --root=/go/src
+              - "--job=$(JOB_NAME)"
+              - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+              - "--repo=k8s.io/perf-tests=master"
+              - "--repo=k8s.io/release"
+              - "--service-account=/etc/service-account/service-account.json"
+              - "--upload=gs://kubernetes-jenkins/pr-logs"
+              - "--timeout=120"
+              - --scenario=kubernetes_e2e
+              - --
+              - --build=bazel
+              - --cluster=
+              - --extract=local
+              - --gcp-master-size=n1-standard-4
+              - --gcp-node-size=n1-standard-8
+              - --gcp-nodes=7
+              - --gcp-project=k8s-presubmit-scale
+              - --gcp-zone=us-east1-b
+              - --kubemark
+              - --kubemark-nodes=500
+              - --provider=gce
+              - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big
+              - --tear-down-previous
+              - --test=false
+              - --test_args=--ginkgo.focus=xxxx
+              - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+              - --test-cmd-args=cluster-loader2
+              - --test-cmd-args=--nodes=500
+              - --test-cmd-args=--provider=kubemark
+              - --test-cmd-args=--report-dir=/workspace/_artifacts
+              - --test-cmd-args=--testconfig=testing/density/legacy/config.yaml
+              - --test-cmd-args=--testconfig=testing/load/legacy/config.yaml
+              - --test-cmd-args=--testoverrides=./testing/load/legacy/kubemark/500_nodes/override.yaml
+              - --test-cmd-name=ClusterLoaderV2
+              - --timeout=100m
+            # TODO(krzyzacy): Figure out bazel built kubemark image
+            #env:
+            # - name: KUBEMARK_BAZEL_BUILD
+            # value: "y"
+            resources:
+              requests:
+                memory: "6Gi"
+            securityContext:
+              privileged: true # TODO(fejta): https://github.com/kubernetes/kubernetes/issues/76484
+    - name: pull-kubernetes-e2e-kops-aws
+      branches:
+        - release-1.13  # per-release image
+      max_concurrency: 12
+      always_run: false
+      optional: true
+      labels:
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-aws-credential: "true"
+        preset-bazel-remote-cache-enabled: "true"
+        preset-bazel-scratch-dir: "true"
+        preset-e2e-platform-aws: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.13
+            args:
+              - --root=/go/src
+              - "--job=$(JOB_NAME)"
+              - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+              - "--repo=k8s.io/release"
+              - "--service-account=/etc/service-account/service-account.json"
+              - "--upload=gs://kubernetes-jenkins/pr-logs"
+              - "--timeout=75"
+              - --scenario=kubernetes_e2e
+              - --
+              - --aws
+              - --aws-cluster-domain=test-cncf-aws.k8s.io
+              - --build=bazel
+              - --cluster=
+              - --env=KOPS_LATEST=latest-ci-green.txt
+              - --env=KOPS_DEPLOY_LATEST_KUBE=n
+              - --env=KUBE_GCS_UPDATE_LATEST=n
+              - --env=KUBE_FASTBUILD=true
+              - --extract=local
+              - --ginkgo-parallel
+              - --provider=aws
+              - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws
+              - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+              - --timeout=55m
+            resources:
+              requests:
+                memory: "6Gi"
+postsubmits:
+  kubernetes/kubernetes:
+    - name: ci-kubernetes-bazel-build-1-13
+      branches:
+        - release-1.13
+      labels:
+        preset-service-account: "true"
+        preset-bazel-scratch-dir: "true"
+        preset-bazel-remote-cache-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.13
+            args:
+              - "--job=$(JOB_NAME)"
+              - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+              - "--service-account=/etc/service-account/service-account.json"
+              - "--upload=gs://kubernetes-jenkins/logs"
+              - "--timeout=60"
+              - "--scenario=kubernetes_bazel"
+              - "--" # end bootstrap args, scenario args below
+              - "--build=//... -//vendor/..."
+              - "--release=//build/release-tars"
+              - "--gcs=gs://kubernetes-release-dev/ci"
+              - "--version-suffix=-bazel"
+              - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.13.txt"
+            resources:
+              requests:
+                memory: "6Gi"
+    - name: ci-kubernetes-bazel-test-1-13
+      branches:
+        - release-1.13
+      labels:
+        preset-service-account: "true"
+        preset-bazel-scratch-dir: "true"
+        preset-bazel-remote-cache-enabled: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.13
+            args:
+              - "--job=$(JOB_NAME)"
+              - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+              - "--service-account=/etc/service-account/service-account.json"
+              - "--upload=gs://kubernetes-jenkins/logs"
+              - "--timeout=60"
+              - "--scenario=kubernetes_bazel"
+              - "--" # end bootstrap args, scenario args below
+              - "--test=//... -//build/... -//vendor/..."
+              - "--manual-test=//hack:verify-all"
+              - "--test-args=--config=unit"
+              - "--test-args=--build_tag_filters=-e2e,-integration"
+              - "--test-args=--test_tag_filters=-e2e,-integration"
+              - "--test-args=--flaky_test_attempts=3"
+            resources:
+              requests:
+                memory: "6Gi"
+periodics:
+  - interval: 6h
+    name: ci-kubernetes-gce-conformance-latest-1-13
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+        - args:
+            - --timeout=220
+            - --bare
+            - --scenario=kubernetes_e2e
+            - --
+            - --extract=ci/latest-1.13
+            - --gcp-master-image=gci
+            - --gcp-node-image=gci
+            - --gcp-zone=us-west1-b
+            - --provider=gce
+            - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]
+            - --timeout=200m
+          image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.13
+  - name: ci-kubernetes-node-kubelet-stable1
+    interval: 2h
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.13
+          args:
+            - --repo=k8s.io/kubernetes=release-1.13
+            - --timeout=90
+            - --root=/go/src
+            - --scenario=kubernetes_e2e
+            - --
+            - --deployment=node
+            - --gcp-project=k8s-jkns-ci-node-e2e
+            - --gcp-zone=us-west1-b
+            - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-1-13.yaml
+            - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+            - --node-tests=true
+            - --provider=gce
+            - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Serial\]"
+            - --timeout=65m
+          env:
+            - name: GOPATH
+              value: /go
+  - interval: 1h
+    name: ci-kubernetes-build-stable1
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
+          args:
+            - --repo=k8s.io/kubernetes=release-1.13
+            - --repo=k8s.io/release
+            - --root=/go/src
+            - --timeout=180
+            - --scenario=kubernetes_build
+            - --
+            - --allow-dup
+            - --extra-publish-file=k8s-stable1
+            - --hyperkube
+            - --registry=gcr.io/kubernetes-ci-images
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 4
+              memory: "8Gi"
+  - interval: 2h
+    name: ci-kubernetes-verify-stable1
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
+          args:
+            - --repo=k8s.io/kubernetes=release-1.13
+            - --timeout=75
+            - --scenario=kubernetes_verify
+            - --
+            - --branch=release-1.13
+            - --force
+            - --script=./hack/jenkins/verify-dockerized.sh
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 4
+  - name: periodic-kubernetes-bazel-build-1-13
+    interval: 6h
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.13
+          args:
+            - "--job=$(JOB_NAME)"
+            - "--repo=k8s.io/kubernetes=release-1.13"
+            - "--service-account=/etc/service-account/service-account.json"
+            - "--upload=gs://kubernetes-jenkins/logs"
+            - "--timeout=60"
+            - "--scenario=kubernetes_bazel"
+            - "--" # end bootstrap args, scenario args below
+            - "--build=//... -//vendor/..."
+            - "--release=//build/release-tars"
+          env:
+            # so we can use the right cache id
+            # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
+            - name: REPO_OWNER
+              value: kubernetes
+            - name: REPO_NAME
+              value: kubernetes
+          resources:
+            requests:
+              memory: "6Gi"
+  - name: periodic-kubernetes-bazel-test-1-13
+    interval: 6h
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-1.13
+          args:
+            - "--repo=k8s.io/kubernetes=release-1.13"
+            - --root=/go/src
+            - "--service-account=/etc/service-account/service-account.json"
+            - "--upload=gs://kubernetes-jenkins/logs"
+            - "--timeout=60"
+            - "--scenario=kubernetes_bazel"
+            - "--" # end bootstrap args, scenario args below
+            - "--test=//... -//build/... -//vendor/..."
+            - "--manual-test=//hack:verify-all"
+            - "--test-args=--config=unit"
+            - "--test-args=--build_tag_filters=-e2e,-integration"
+            - "--test-args=--test_tag_filters=-e2e,-integration"
+            - "--test-args=--flaky_test_attempts=3"
+          env:
+            # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
+            - name: REPO_OWNER
+              value: kubernetes
+            - name: REPO_NAME
+              value: kubernetes
+          resources:
+            requests:
+              memory: "6Gi"
+  - interval: 2h
+    name: ci-kubernetes-integration-stable1
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+          args:
+            - --repo=k8s.io/kubernetes=release-1.13
+            - --timeout=100
+            - --scenario=kubernetes_verify
+            - --
+            - --branch=release-1.13
+            - --force
+            - --prow
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 4

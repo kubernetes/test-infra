@@ -268,8 +268,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-cluster-api-provider-gcp-test
 - name: ci-kubemci-image-push
   gcs_prefix: kubernetes-jenkins/logs/ci-kubemci-image-push
-- name: ci-kubernetes-build
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build
+- name: ci-kubernetes-build-fast
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-fast
 - name: ci-kubernetes-build-beta
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-beta
 - name: ci-kubernetes-build-stable1
@@ -681,8 +681,8 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-beta-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-beta-features
+- name: ci-kubernetes-node-kubelet-features-beta
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-features-beta
   test_name_config:
     name_elements:
     - target_config: Tests name
@@ -3280,8 +3280,8 @@ test_groups:
   num_columns_recent: 20
 
 # Prow hosted conformance tests
-- name: ci-kubernetes-gce-conformance
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance
+- name: ci-kubernetes-gce-conformance-latest
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-latest
   num_columns_recent: 3
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
@@ -3770,7 +3770,7 @@ dashboards:
   dashboard_tab:
   - name: GCE, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
-    test_group_name: ci-kubernetes-gce-conformance
+    test_group_name: ci-kubernetes-gce-conformance-latest
   - name: GCE, v1.14 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.14 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-14
@@ -3961,7 +3961,7 @@ dashboards:
   dashboard_tab:
   - name: GCE, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
-    test_group_name: ci-kubernetes-gce-conformance
+    test_group_name: ci-kubernetes-gce-conformance-latest
   - name: GCE, v1.14 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.14 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-14
@@ -5026,7 +5026,7 @@ dashboards:
 - name: google-unit
   dashboard_tab:
   - name: build
-    test_group_name: ci-kubernetes-build
+    test_group_name: ci-kubernetes-build-fast
   - name: build-1.11
     test_group_name: ci-kubernetes-build-stable3
   - name: build-1.12
@@ -5106,7 +5106,7 @@ dashboards:
 - name: sig-release-master-blocking
   dashboard_tab:
   - name: build-master
-    test_group_name: ci-kubernetes-build
+    test_group_name: ci-kubernetes-build-fast
   - name: integration-master
     test_group_name: ci-kubernetes-integration-master
   - name: bazel-build-master
@@ -5141,7 +5141,7 @@ dashboards:
   dashboard_tab:
   - name: Conformance - GCE
     description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
-    test_group_name: ci-kubernetes-gce-conformance
+    test_group_name: ci-kubernetes-gce-conformance-latest
   - name: Conformance - OpenStack
     description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
@@ -5278,7 +5278,7 @@ dashboards:
   - name: node-kubelet-1.14
     test_group_name: ci-kubernetes-node-kubelet-beta
   - name: node-kubelet-1.14-features
-    test_group_name: ci-kubernetes-node-kubelet-beta-features
+    test_group_name: ci-kubernetes-node-kubelet-features-beta
   - name: gci-gce-scalability-1.14
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
   - name: bazel-build-1.14
