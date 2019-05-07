@@ -3562,7 +3562,7 @@ presubmits:
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
+        - --timeout=90
         - --scenario=kubernetes_verify
         - --
         - --branch=${PULL_BASE_REF}
