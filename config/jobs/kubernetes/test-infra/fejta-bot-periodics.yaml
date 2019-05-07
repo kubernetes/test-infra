@@ -5,7 +5,7 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190503-f018ebad7
+    - image: gcr.io/k8s-prow/commenter:v20190506-d97b87848
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -47,7 +47,7 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190503-f018ebad7
+    - image: gcr.io/k8s-prow/commenter:v20190506-d97b87848
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -83,7 +83,7 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190503-f018ebad7
+    - image: gcr.io/k8s-prow/commenter:v20190506-d97b87848
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -120,7 +120,7 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190503-f018ebad7
+    - image: gcr.io/k8s-prow/commenter:v20190506-d97b87848
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -165,7 +165,7 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190503-f018ebad7
+    - image: gcr.io/k8s-prow/commenter:v20190506-d97b87848
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -205,7 +205,7 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190503-f018ebad7
+    - image: gcr.io/k8s-prow/commenter:v20190506-d97b87848
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -273,7 +273,7 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190503-f018ebad7
+    - image: gcr.io/k8s-prow/commenter:v20190506-d97b87848
       command:
       - /app/robots/commenter/app.binary
       args:
