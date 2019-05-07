@@ -2643,10 +2643,7 @@ presubmits:
     name: pull-security-kubernetes-bazel-build
     rerun_command: /test pull-security-kubernetes-bazel-build
     skip_branches:
-    - release-1.14
-    - release-1.13
-    - release-1.12
-    - release-1.11
+    - release-\d+.\d+
     spec:
       containers:
       - args:
@@ -2843,10 +2840,7 @@ presubmits:
     name: pull-security-kubernetes-bazel-test
     rerun_command: /test pull-security-kubernetes-bazel-test
     skip_branches:
-    - release-1.14
-    - release-1.13
-    - release-1.12
-    - release-1.11
+    - release-\d+.\d+
     spec:
       containers:
       - args:
@@ -3111,10 +3105,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-dependencies
     skip_branches:
-    - release-1.14
-    - release-1.13
-    - release-1.12
-    - release-1.11
+    - release-\d+.\d+
     spec:
       containers:
       - args:
@@ -3142,8 +3133,6 @@ presubmits:
     trigger: (?m)^/test( | .* )pull-security-kubernetes-dependencies,?($|\s.*)
   - agent: kubernetes
     always_run: true
-    branches:
-    - master
     cluster: security
     context: pull-security-kubernetes-dependencies-canary
     decorate: true
@@ -3153,6 +3142,8 @@ presubmits:
     name: pull-security-kubernetes-dependencies-canary
     path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-dependencies-canary
+    skip_branches:
+    - release-\d+.\d+
     skip_report: true
     spec:
       containers:
@@ -3481,10 +3472,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-typecheck
     skip_branches:
-    - release-1.11
-    - release-1.12
-    - release-1.13
-    - release-1.14
+    - release-\d+.\d+
     spec:
       containers:
       - args:
@@ -3647,10 +3635,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-verify
     skip_branches:
-    - release-1.14
-    - release-1.13
-    - release-1.12
-    - release-1.11
+    - release-\d+.\d+
     spec:
       containers:
       - args:
