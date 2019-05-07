@@ -243,6 +243,10 @@ repo_milestone:
     maintainers_id: 3169231
     maintainers_team: community-milestone-maintainers
     maintainers_friendly_name: Community Milestone Maintainers
+  kubernetes/kops:
+    maintainers_id: 2060651
+    maintainers_team: kops-maintainers
+    maintainers_friendly_name: Kops Maintainers
   kubernetes/website:
     maintainers_id: 3175912
     maintainers_team: website-milestone-maintainers
@@ -440,6 +444,9 @@ plugins:
   - milestone
   - require-sig
   - stage
+
+  kubernetes/kops:
+  - milestone
 
   kubernetes/kubernetes:
   - blockade
