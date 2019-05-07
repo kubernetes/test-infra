@@ -20,6 +20,7 @@ import (
 	"bufio"
 	"bytes"
 	"io"
+	"io/ioutil"
 	"os"
 )
 
@@ -51,6 +52,28 @@ func Command(command string, args ...string) Cmd {
 	return DefaultCmder.Command(command, args...)
 }
 
+// Output is for compatibility with cmd.Output.
+func Output(cmd Cmd) ([]byte, error) {
+	var buff bytes.Buffer
+	cmd.SetStdout(&buff)
+	err := cmd.Run()
+	return buff.Bytes(), err
+}
+
+// OutputLines is like os/exec's cmd.Output(),
+// but over our Cmd interface, and instead of returning the byte buffer of
+// stdout, it scans it for lines and returns a slice of output lines
+func OutputLines(cmd Cmd) (lines []string, err error) {
+	var buff bytes.Buffer
+	cmd.SetStdout(&buff)
+	err = cmd.Run()
+	scanner := bufio.NewScanner(&buff)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines, err
+}
+
 // CombinedOutputLines is like os/exec's cmd.CombinedOutput(),
 // but over our Cmd interface, and instead of returning the byte buffer of
 // stderr + stdout, it scans these for lines and returns a slice of output lines
@@ -70,4 +93,10 @@ func CombinedOutputLines(cmd Cmd) (lines []string, err error) {
 func InheritOutput(cmd Cmd) {
 	cmd.SetStderr(os.Stderr)
 	cmd.SetStdout(os.Stdout)
+}
+
+// NoOutput ignores all output from the command.
+func NoOutput(cmd Cmd) {
+	cmd.SetStdout(ioutil.Discard)
+	cmd.SetStderr(ioutil.Discard)
 }
