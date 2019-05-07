@@ -54,7 +54,7 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 			if j.DecorationConfig != nil && j.DecorationConfig.GCSConfiguration != nil {
 				prefix = path.Join(j.DecorationConfig.GCSConfiguration.Bucket, j.DecorationConfig.GCSConfiguration.PathPrefix)
 			} else if pc.Plank.DefaultDecorationConfig != nil && pc.Plank.DefaultDecorationConfig.GCSConfiguration != nil {
-				prefix = path.Join(pc.Plank.DefaultDecorationConfig.GCSConfiguration.Bucket, j.DecorationConfig.GCSConfiguration.PathPrefix)
+				prefix = path.Join(pc.Plank.DefaultDecorationConfig.GCSConfiguration.Bucket, pc.Plank.DefaultDecorationConfig.GCSConfiguration.PathPrefix)
 			} else {
 				return fmt.Errorf("job %s: couldn't figure out a default decoration config", j.Name)
 			}
