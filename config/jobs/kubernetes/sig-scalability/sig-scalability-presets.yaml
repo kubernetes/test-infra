@@ -103,9 +103,6 @@ presets:
     value: "--profiling --metrics-bind-address=0.0.0.0"
   - name: SCHEDULER_TEST_ARGS
     value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
-  # Switch off image puller to workaround #44701
-  - name: PREPULL_E2E_IMAGES
-    value: "false"
   # Reduce logs verbosity.
   - name: TEST_CLUSTER_LOG_LEVEL
     value: --v=2
@@ -169,9 +166,6 @@ presets:
     value: "--profiling"
   - name: SCHEDULER_TEST_ARGS
     value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
-  # Switch off image puller to workaround #44701
-  - name: PREPULL_E2E_IMAGES
-    value: "false"
   # Reduce logs verbosity.
   - name: TEST_CLUSTER_LOG_LEVEL
     value: --v=2

@@ -173,7 +173,6 @@ periodics:
       - --env=KUBELET_TEST_ARGS=--redirect-container-streaming
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1/env
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1/env
-      - --env=PREPULL_E2E_IMAGES=false
       - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/latest-1.11
       - --gcp-node-image=gci
@@ -202,7 +201,6 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.2/env
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.2/env
-      - --env=PREPULL_E2E_IMAGES=false
       - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/latest-1.12
       - --gcp-node-image=gci
@@ -1043,7 +1041,6 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.2/env
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.2/env
-      - --env=PREPULL_E2E_IMAGES=false
       - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/latest-1.13
       - --gcp-node-image=gci
