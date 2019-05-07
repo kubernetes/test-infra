@@ -3127,7 +3127,6 @@ test_groups:
   gcs_prefix: istio-prow/pr-logs/directory/e2e-bookInfoTests-envoyv2-v1alpha3-master
 - name: istio-e2e-bookInfoTests-trustdomain-presubmit-master
   gcs_prefix: istio-prow/pr-logs/directory/e2e-bookInfoTests-trustdomain-master
-
 # Istio Prow Postsubmits
 - name: istio-postsubmit
   gcs_prefix: istio-prow/logs/istio-postsubmit
@@ -3159,7 +3158,6 @@ test_groups:
 - name: istio-e2e-simpleTests-minProfile
   gcs_prefix: istio-prow/logs/e2e-simpleTestsMinProfile
   num_failures_to_alert: 1
-
 # Istio Prow Postsubmits Master
 - name: istio-postsubmit-master
   gcs_prefix: istio-prow/logs/istio-postsubmit-master-master
