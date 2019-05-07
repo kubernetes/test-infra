@@ -2235,6 +2235,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-enhancements-unfreeze
 - name: periodic-kubernetes-bazel-test-master
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-master
+- name: periodic-kubernetes-bazel-test-rbe-master
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-rbe-master
 - name: periodic-kubernetes-bazel-test-1-11
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-11
 - name: periodic-kubernetes-bazel-test-1-12
@@ -5049,6 +5051,8 @@ dashboards:
     test_group_name: ci-kubernetes-bazel-test
   - name: periodic-bazel-test-master
     test_group_name: periodic-kubernetes-bazel-test-master
+  - name: periodic-bazel-test-rbe-master
+    test_group_name: periodic-kubernetes-bazel-test-rbe-master
   - name: bazel-test-1.11
     test_group_name: ci-kubernetes-bazel-test-1-11
   - name: bazel-test-1.12
