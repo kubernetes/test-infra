@@ -41,7 +41,7 @@ periodics:
 
 - name: ci-test-infra-triage
   decorate: true
-  interval: 20m
+  interval: 40m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/triage:latest
