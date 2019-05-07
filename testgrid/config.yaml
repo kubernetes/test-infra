@@ -5178,12 +5178,12 @@ dashboards:
   - name: gce-master-scale-performance
     description: 5000-node performance test, runs once a day on weekdays
     test_group_name: ci-kubernetes-e2e-gce-scale-performance
-  - name: kubeadm-gce-master
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-master
-  - name: kubeadm-gce-stable-on-master
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
   - name: kubeadm-kind-master
     test_group_name: ci-kubernetes-e2e-kubeadm-kind-master
+  - name: kubeadm-kinder-master-on-stable
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-master-on-stable
+  - name: kubeadm-kinder-upgrade-stable-master
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
   - name: bazel-test-master
     test_group_name: post-kubernetes-bazel-test
 
@@ -5286,14 +5286,12 @@ dashboards:
     test_group_name: periodic-kubernetes-bazel-build-1-14
   - name: periodic-bazel-test-1.14
     test_group_name: periodic-kubernetes-bazel-test-1-14
-  - name: kubeadm-gce-1.13-on-1.14
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-13-on-1-14
-  - name: kubeadm-gce-1.14
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-14
-  - name: kubeadm-gce-upgrade-1.13-1.14
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-13-1-14
   - name: kubeadm-kind-1.14
     test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-14
+  - name: kubeadm-kinder-1.14-on-1.13
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-1-14-on-1-13
+  - name: kubeadm-kinder-upgrade-1.13-1.14
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-13-1-14
   - name: aks-engine-azure-1-14-windows-release
     test_group_name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
   - name: gce-windows-1.14
@@ -5359,12 +5357,12 @@ dashboards:
     test_group_name: periodic-kubernetes-bazel-build-1-13
   - name: periodic-bazel-test-1.13
     test_group_name: periodic-kubernetes-bazel-test-1-13
-  - name: kubeadm-gce-1.12-on-1.13
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-12-on-1-13
-  - name: kubeadm-gce-1.13
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-13
-  - name: kubeadm-gce-upgrade-1.12-1.13
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-12-1-13
+  - name: kubeadm-kind-1.13
+    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-13
+  - name: kubeadm-kinder-1.13-on-1.12
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-1-13-on-1-12
+  - name: kubeadm-kinder-upgrade-1.12-1.13
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-12-1-13
   - name: gce-cos-1.13-default
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   - name: gce-cos-1.13-slow
@@ -5435,8 +5433,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   - name: gke-device-plugin-gpu-p100-1.13
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
-  - name: kubeadm-kind-1.13
-    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-13
 
 - name: sig-release-1.13-blocking
   dashboard_tab:
@@ -5579,10 +5575,12 @@ dashboards:
     test_group_name: periodic-kubernetes-bazel-build-1-12
   - name: periodic-bazel-test-1.12
     test_group_name: periodic-kubernetes-bazel-test-1-12
-  - name: kubeadm-gce-1.12
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-12
-  - name: kubeadm-gce-upgrade-1.11-1.12
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
+  - name: kubeadm-kind-1.12
+    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-12
+  - name: kubeadm-kinder-1.12-on-1.11
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-1-12-on-1-11
+  - name: kubeadm-kinder-upgrade-1.11-1.12
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-11-1-12
   - name: node-kubelet-1.12
     test_group_name: ci-kubernetes-node-kubelet-stable2
   - name: gce-cos-1.12-default
@@ -5617,8 +5615,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable2
   - name: gke-device-plugin-gpu-p100-1.12
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2
-  - name: kubeadm-kind-1.12
-    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-12
 
 # These are the release *blocking* tests.  These provide a valid binary signal
 # to gate releases (alpha, beta, official).
