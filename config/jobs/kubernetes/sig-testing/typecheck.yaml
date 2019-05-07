@@ -8,10 +8,7 @@ presubmits:
     skip_report: false
     # branched per release (older go versions)
     skip_branches:
-    - release-1.11
-    - release-1.12
-    - release-1.13
-    - release-1.14
+    - release-\d+.\d+ # per-release job
     spec:
       containers:
       - name: main

@@ -4,10 +4,7 @@ presubmits:
     path_alias: "k8s.io/kubernetes"
     decorate: true
     skip_branches:
-    - release-1.14
-    - release-1.13
-    - release-1.12
-    - release-1.11
+    - release-\d+.\d+ # per-release job
     always_run: true
     skip_report: false
     labels:
@@ -33,8 +30,8 @@ presubmits:
   - name: pull-kubernetes-dependencies-canary
     path_alias: "k8s.io/kubernetes"
     decorate: true
-    branches:
-    - master
+    skip_branches:
+    - release-\d+.\d+ # per-release job
     always_run: true
     skip_report: true
     labels:
