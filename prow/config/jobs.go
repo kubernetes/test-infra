@@ -404,6 +404,9 @@ type UtilityConfig struct {
 	// SkipSubmodules determines if submodules should be
 	// cloned when the job is run. Defaults to true.
 	SkipSubmodules bool `json:"skip_submodules,omitempty"`
+	// CloneDepth is the depth of the clone that will be used. 
+	// A depth of zero will do a full clone.
+	CloneDepth int `json:"clone_depth,omitempty"`
 
 	// ExtraRefs are auxiliary repositories that
 	// need to be cloned, determined from config
