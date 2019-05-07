@@ -548,13 +548,13 @@ periodics:
     preset-k8s-ssh: "true"
   extra_refs:
   - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
     repo: test-infra
     base_ref: master
     path_alias: k8s.io/test-infra
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
     # TODO(wojtek-t): Can we use the current Go version from Kubernetes?
@@ -563,7 +563,7 @@ periodics:
       - go
       args:
       - run
-      - ../test-infra/pkg/benchmarkjunit
+      - ./pkg/benchmarkjunit
       - --log-file=$(ARTIFACTS)/benchmark-log.txt
       - --output=$(ARTIFACTS)/junit_benchmarks.xml
       - ./pkg/api/...
